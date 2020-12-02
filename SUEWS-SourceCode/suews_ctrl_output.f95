@@ -65,7 +65,7 @@ MODULE ctrl_output
    END TYPE varAttr
 
    ! initialise valist
-   TYPE(varAttr) :: varListAll(500)
+   TYPE(varAttr) :: varListAll(600)
 
    ! datetime:
    DATA(varListAll(n), n=1, 5)/ &
@@ -560,6 +560,45 @@ MODULE ctrl_output
       varAttr('flag_RSL', '-', f104, 'flag for RSL', aA, 'RSL', 0) &
       /
 
+      ! debug info
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        )/ &
+      varAttr('RSS_Paved', 'm', f104, 'wetness adjusted RS for paved surface', aA, 'debug', 0), &
+      varAttr('RSS_Bldgs', 'm', f104, 'wetness adjusted RS for building surface', aA, 'debug', 0), &
+      varAttr('RSS_EveTr', 'm', f104, 'wetness adjusted RS for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('RSS_DecTr', 'm', f104, 'wetness adjusted RS for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('RSS_Grass', 'm', f104, 'wetness adjusted RS for grass surface', aA, 'debug', 0), &
+      varAttr('RSS_BSoil', 'm', f104, 'wetness adjusted RS for bare soil surface', aA, 'debug', 0), &
+      varAttr('RSS_Water', 'm', f104, 'wetness adjusted RS for water surface', aA, 'debug', 0), &
+      varAttr('state_Paved', 'm', f104, 'surface wetness for paved surface', aA, 'debug', 0), &
+      varAttr('state_Bldgs', 'm', f104, 'surface wetness for building surface', aA, 'debug', 0), &
+      varAttr('state_EveTr', 'm', f104, 'surface wetness for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('state_DecTr', 'm', f104, 'surface wetness for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('state_Grass', 'm', f104, 'surface wetness for grass surface', aA, 'debug', 0), &
+      varAttr('state_BSoil', 'm', f104, 'surface wetness for bare soil surface', aA, 'debug', 0), &
+      varAttr('state_Water', 'm', f104, 'surface wetness for water surface', aA, 'debug', 0), &
+      varAttr('RS', 'm', f104, 'RS', aA, 'debug', 0), &
+      varAttr('RA', 'm', f104, 'RA', aA, 'debug', 0), &
+      varAttr('RB', 'm', f104, 'RB', aA, 'debug', 0), &
+      varAttr('RAsnow', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('vpd_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('avdens', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('avcp', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('qn_e', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('s_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('psyc_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0) &
+      /
+
 CONTAINS
    ! main wrapper that handles both txt and nc files
    SUBROUTINE SUEWS_Output(irMax, iv, Gridiv, iyr)
@@ -571,11 +610,11 @@ CONTAINS
       INTEGER, INTENT(in) ::iv, Gridiv, iyr
 ! #endif
 
-      INTEGER :: xx, err, outLevel, i
+      INTEGER :: n_group_use, err, outLevel, i
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListX
-      CHARACTER(len=10) :: grpList0(7)
+      CHARACTER(len=10) :: groupList0(8)
       CHARACTER(len=10), DIMENSION(:), ALLOCATABLE :: grpList
-      LOGICAL :: grpCond(7)
+      LOGICAL :: groupCond(8)
 
       ! determine outLevel
       SELECT CASE (WriteOutOption)
@@ -589,44 +628,47 @@ CONTAINS
 
       ! determine groups to output
       ! TODO: needs to be smarter, automate this filtering
-      grpList0(1) = 'SUEWS'
-      grpList0(2) = 'SOLWEIG'
-      grpList0(3) = 'BL'
-      grpList0(4) = 'snow'
-      grpList0(5) = 'ESTM'
-      grpList0(6) = 'DailyState'
-      grpList0(7) = 'RSL'
-      grpCond = [ &
+      groupList0(1) = 'SUEWS'
+      groupList0(2) = 'SOLWEIG'
+      groupList0(3) = 'BL'
+      groupList0(4) = 'snow'
+      groupList0(5) = 'ESTM'
+      groupList0(6) = 'DailyState'
+      groupList0(7) = 'RSL'
+      groupList0(8) = 'debug'
+      groupCond = [ &
                 .TRUE., &
                 .TRUE., &
                 CBLuse >= 1, &
                 SnowUse >= 1, &
                 StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
                 .TRUE., &
-                .TRUE.]
-      xx = COUNT(grpCond)
+                .TRUE.,&
+                .TRUE. &
+                ]
+      n_group_use = COUNT(groupCond)
 
       ! PRINT*, grpList0,xx
 
-      ALLOCATE (grpList(xx), stat=err)
+      ALLOCATE (grpList(n_group_use), stat=err)
       IF (err /= 0) PRINT *, "grpList: Allocation request denied"
 
-      grpList = PACK(grpList0, mask=grpCond)
+      grpList = PACK(groupList0, mask=groupCond)
 
       ! PRINT*, grpList,SIZE(grpList, dim=1)
 
       ! loop over all groups
       DO i = 1, SIZE(grpList), 1
          !PRINT*, 'i',i
-         xx = COUNT(varListAll%group == TRIM(grpList(i)), dim=1)
+         n_group_use = COUNT(varListAll%group == TRIM(grpList(i)), dim=1)
          !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
          !  print*, 'all group names: ',varList%group
-         ALLOCATE (varListX(5 + xx), stat=err)
+         ALLOCATE (varListX(5 + n_group_use), stat=err)
          IF (err /= 0) PRINT *, "varListX: Allocation request denied"
          ! datetime
          varListX(1:5) = varListAll(1:5)
          ! variable
-         varListX(6:5 + xx) = PACK(varListAll, mask=(varListAll%group == TRIM(grpList(i))))
+         varListX(6:5 + n_group_use) = PACK(varListAll, mask=(varListAll%group == TRIM(grpList(i))))
 
          IF (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
             ! all output arrays but DailyState
@@ -688,8 +730,11 @@ CONTAINS
       CASE ('ESTM')    !ESTM
          dataOutX = dataOutESTM(1:irMax, 1:SIZE(varListX), Gridiv)
 
-      CASE ('RSL')    !ESTM
+      CASE ('RSL')    !RSL
          dataOutX = dataOutRSL(1:irMax, 1:SIZE(varListX), Gridiv)
+
+      CASE ('debug')    !debug
+         dataOutX = dataOutDebug(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('DailyState')    !DailyState
          ! get correct day index

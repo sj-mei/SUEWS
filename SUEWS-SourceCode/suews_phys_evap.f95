@@ -4,8 +4,8 @@ module evap_module
 contains
    SUBROUTINE cal_evap( &
       EvapMethod, state_is, WetThresh_is, capStore_is, &!input
-      vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
-      rss, ev, qe) !output
+      vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, rb, tlv, &
+      RSS, ev, qe) !output
       !------------------------------------------------------------------------------
       !-Calculates evaporation for each surface from modified Penman-Monteith eqn
       !-State determines whether each surface type is dry or wet (wet/transition)
@@ -38,20 +38,20 @@ contains
       REAL(KIND(1d0)), INTENT(in)::qn_e !net available energy for evaporation
       REAL(KIND(1d0)), INTENT(in)::s_hPa!Vapour pressure versus temperature slope in hPa
       REAL(KIND(1d0)), INTENT(in)::psyc_hPa!Psychometric constant in hPa
-      REAL(KIND(1d0)), INTENT(in)::ResistSurf!Surface resistance
+      REAL(KIND(1d0)), INTENT(in)::RS!Surface resistance
       ! REAL(KIND(1d0)),INTENT(in)::sp!Term in calculation of E
       REAL(KIND(1d0)), INTENT(in)::RA!Aerodynamic resistance
       REAL(KIND(1d0)), INTENT(in)::rb!Boundary layer resistance
       REAL(KIND(1d0)), INTENT(in)::tlv!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
 
-      REAL(KIND(1d0)), INTENT(out)::rss !Redefined surface resistance for wet
+      REAL(KIND(1d0)), INTENT(out)::RSS !Redefined surface resistance for wet
       REAL(KIND(1d0)), INTENT(out)::ev ! evapotranspiration [mm]
       REAL(KIND(1d0)), INTENT(out)::qe ! latent heat flux [W m-2]
 
       REAL(KIND(1d0))::numPM!numerator of P-M eqn
-      REAL(KIND(1d0))::rbsg  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+      REAL(KIND(1d0))::RB_SG  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
       REAL(KIND(1d0))::rsrbsg  !RS + rbsg [s m-1]
-      REAL(KIND(1d0))::rst
+      REAL(KIND(1d0))::flag_dry
       REAL(KIND(1d0))::W  !Depends on the amount of water on the canopy [-]
       REAL(KIND(1d0))::x
       REAL(KIND(1d0))::r
@@ -71,38 +71,38 @@ contains
 
       ! Dry surface ---------------------------------------------------------------
       IF (state_is <= 0.001) THEN
-         qe = numPM/(s_hPa + psyc_hPa*(1 + ResistSurf/RA))  !QE [W m-2] (numPM = numerator of P-M eqn)
+         qe = numPM/(s_hPa + psyc_hPa*(1 + RS/RA))  !QE [W m-2] (numPM = numerator of P-M eqn)
          ev = qe/tlv !Ev [mm] (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])
          W = NAN    !W not needed for dry surfaces (set to -999)
-         rst = 1      !Set flag indicating dry surface(1)
+         flag_dry = 1      !Set flag indicating dry surface(1)
 
          ! Wet surface ---------------------------------------------------------------
       ELSE
-         rst = 0   !Set flag=0 indicating wet surface(0)
+         flag_dry = 0   !Set flag=0 indicating wet surface(0)
 
          ! Evaporation calculated according to Rutter(EvapMethod=1) or Shuttleworth(EvapMethod=2).
          !Set in SUEWS_initial (so not an input to the model)
          IF (EvapMethod == 2) THEN   !-- Shuttleworth (1978) --
-            rbsg = rb*(s_hPa/psyc_hPa + 1)           !Boundary-layer resistance x (slope/psychro + 1)
-            rsrbsg = ResistSurf + rbsg   !RS + rsbg
+            RB_SG = rb*(s_hPa/psyc_hPa + 1)           !Boundary-layer resistance x (slope/psychro + 1)
+            rsrbsg = RS + RB_SG   !RS + rsbg
 
             ! If surface is completely wet, set RS to zero -------------------
             !if(state(is)>=StoreDrainPrm(6,is).or.ResistSurf<25) then   !If at storage capacity or RS is small
-            IF (state_is >= WetThresh_is .OR. ResistSurf < 25) THEN   !If at storage capacity or RS is small
+            IF (state_is >= WetThresh_is .OR. RS < 25) THEN   !If at storage capacity or RS is small
                W = 1                                            !So that RS=0 (Eq7, Jarvi et al. 2011)
                ! If surface is in transition, use rss ---------------------------
             ELSE   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then
-               r = (ResistSurf/RA)*(RA - rb)/rsrbsg
+               r = (RS/RA)*(RA - rb)/rsrbsg
                W = (r - 1)/(r - (WetThresh_is/state_is))
             ENDIF
 
             ! PRINT*, 'r',r
             ! PRINT*, 'W',W
 
-            rss = (1/((W/rbsg) + ((1 - W)/rsrbsg))) - rbsg !Redefined surface resistance for wet
+            RSS = (1/((W/RB_SG) + ((1 - W)/rsrbsg))) - RB_SG !Redefined surface resistance for wet
             ! PRINT*, 'resistances:',rbsg,rsrbsg,rss
             !surfaces (zero if W=1). Eq7, Jarvi et al. (2011)
-            qe = numPM/(s_hPa + psyc_hPa*(1 + rss/RA))   !QE [W m-2]
+            qe = numPM/(s_hPa + psyc_hPa*(1 + RSS/RA))   !QE [W m-2]
             ev = qe/tlv                              !Ev [mm]
             ! PRINT*, 'numPM',numPM
             ! PRINT*, 'qe',qe

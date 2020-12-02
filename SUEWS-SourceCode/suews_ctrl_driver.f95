@@ -34,7 +34,7 @@ MODULE SUEWS_Driver
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
-      ncolumnsDataOutRSL, ncolumnsdataOutSOL
+      ncolumnsDataOutRSL, ncolumnsdataOutSOL, ncolumnsDataOutDebug
    use moist, only: avcp, avdens, lv_J_kg
    use solweig_module, only: SOLWEIG_cal_main
 
@@ -88,6 +88,7 @@ CONTAINS
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!output
+      dataOutLineDebug, &
       DailyStateLine)!output
 
       IMPLICIT NONE
@@ -340,6 +341,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)      ::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! RSL variable array
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT)     ::dataOutLineDebug
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
       ! ########################################################################################
 
@@ -399,8 +401,9 @@ CONTAINS
       REAL(KIND(1D0))::qn1_S
       REAL(KIND(1D0))::qn1_snowfree
       REAL(KIND(1D0))::qs
-      REAL(KIND(1D0))::RA
-      REAL(KIND(1D0))::ResistSurf
+      REAL(KIND(1D0))::RA ! aerodynamic resistance
+      REAL(KIND(1D0))::RS ! surface resistance
+      REAL(KIND(1D0)), DIMENSION(NSURF)::RSS_nsurf ! surface resistance adjusted by surface wetness state
       REAL(KIND(1D0))::RH2
       REAL(KIND(1d0))::runoffAGveg
       REAL(KIND(1d0))::runoffAGimpervious
@@ -456,7 +459,7 @@ CONTAINS
       REAL(KIND(1D0))::lvS_J_kg
       REAL(KIND(1D0))::psyc_hPa
       REAL(KIND(1D0))::RAsnow
-      REAL(KIND(1D0))::rb
+      REAL(KIND(1D0))::RB
       REAL(KIND(1D0))::runoff_per_interval
       REAL(KIND(1D0))::s_hPa
       REAL(KIND(1D0))::sIce_hpa
@@ -847,7 +850,7 @@ CONTAINS
             th, tl, &
             dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_next, sfr, &
             UStar, TStar, L_mod, &!output
-            zL, gsc, ResistSurf, RA, RAsnow, rb)
+            zL, gsc, RS, RA, RAsnow, RB)
 
          !======== Evaporation and surface state_id ========
          CALL SUEWS_cal_QE( &
@@ -856,7 +859,7 @@ CONTAINS
             dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
             RAsnow, psyc_hPa, sIce_hPa, &
             PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
-            ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+            RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
             NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
             SurfaceArea, FlowChange, drain, WetThresh, state_id_updated, mw_ind, SoilStoreCap, rainonsnow, &
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
@@ -870,7 +873,7 @@ CONTAINS
             state_per_tstep, NWstate_per_tstep, qe, &
             swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
             surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-            runoffAGveg, runoffAGimpervious)
+            runoffAGveg, runoffAGimpervious, rss_nsurf)
          !======== Evaporation and surface state_id end========
 
          !============ Sensible heat flux ===============
@@ -1012,7 +1015,7 @@ CONTAINS
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
          qe, qf, qh, qh_resist, Qm, QmFreez, &
          QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
-         resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
+         RS, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
          state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
@@ -1041,6 +1044,9 @@ CONTAINS
          DailyStateLine)!out
 
       !==============translation end ================
+
+      dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA, RB, RAsnow, &
+                          vpd_hPa, avdens, avcp, qn1_snowfree + qf - qs, s_hPa, psyc_hPa]
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -1747,7 +1753,7 @@ CONTAINS
       dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
       RAsnow, psyc_hPa, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
-      ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+      RS, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
@@ -1761,7 +1767,7 @@ CONTAINS
       state_per_tstep, NWstate_per_tstep, qe, &
       swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
       surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-      runoffAGveg, runoffAGimpervious)
+      runoffAGveg, runoffAGimpervious, rss_nsurf)
 
       IMPLICIT NONE
       ! TODO: #140 several state/soilstore related variables need to be sorted out
@@ -1797,7 +1803,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::qs
       REAL(KIND(1d0)), INTENT(in)::vpd_hPa
       REAL(KIND(1d0)), INTENT(in)::s_hPa
-      REAL(KIND(1d0)), INTENT(in)::ResistSurf
+      REAL(KIND(1d0)), INTENT(in)::RS
       REAL(KIND(1d0)), INTENT(in)::RA
       REAL(KIND(1d0)), INTENT(in)::rb
       REAL(KIND(1d0)), INTENT(in)::snowdensmin
@@ -1866,7 +1872,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf)::ev_snow
       REAL(KIND(1d0)), DIMENSION(2), INTENT(out)::SnowRemoval
       REAL(KIND(1d0)), DIMENSION(nsurf)::evap
-      REAL(KIND(1d0)), DIMENSION(nsurf)::rss_nsurf
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::rss_nsurf
 
       REAL(KIND(1d0))::p_mm!Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
@@ -1979,7 +1985,7 @@ CONTAINS
                   EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
                   avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
                   PervFraction, vegfraction, addimpervious, &
-                  vpd_hPa, qn_e, s_hPa, ResistSurf, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
+                  vpd_hPa, qn_e, s_hPa, RS, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
                   PipeCapacity, RunoffToWater, &
                   addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
                   WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
@@ -2015,7 +2021,7 @@ CONTAINS
             !Calculates ev [mm]
             CALL cal_evap( &
                EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
-               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
+               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, rb, tlv, &
                rss_nsurf(is), ev, qe_surf) !output
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
@@ -2140,7 +2146,7 @@ CONTAINS
       avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
       xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
       UStar, TStar, L_mod, &!output
-      zL, gsc, ResistSurf, RA, RAsnow, rb)
+      zL, gsc, RS, RA, RAsnow, RB)
 
       IMPLICIT NONE
 
@@ -2191,10 +2197,10 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)  ::UStar     !Friction velocity
       REAL(KIND(1d0)), INTENT(out)  ::zL        !
       REAL(KIND(1d0)), INTENT(out)  ::gsc       !Surface Layer Conductance
-      REAL(KIND(1d0)), INTENT(out)  ::ResistSurf!Surface resistance
+      REAL(KIND(1d0)), INTENT(out)  ::RS!Surface resistance
       REAL(KIND(1d0)), INTENT(out)  ::RA        !Aerodynamic resistance [s m^-1]
       REAL(KIND(1d0)), INTENT(out)  ::RAsnow    !Aerodynamic resistance for snow [s m^-1]
-      REAL(KIND(1d0)), INTENT(out)  ::rb        !boundary layer resistance shuttleworth
+      REAL(KIND(1d0)), INTENT(out)  ::RB        !boundary layer resistance shuttleworth
       REAL(KIND(1d0)), INTENT(out)  ::L_mod     !Obukhov length
       REAL(KIND(1d0))              ::gfunc     !gdq*gtemp*gs*gq for photosynthesis calculations
       ! REAL(KIND(1d0))              ::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
@@ -2256,7 +2262,7 @@ CONTAINS
          SMDMethod, SnowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
          LAIMax, LAI_id, gsModel, Kmax, &
          G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
-         gfunc, gsc, ResistSurf)! output:
+         gfunc, gsc, RS)! output:
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
       CALL BoundaryLayerResistance( &
@@ -2264,7 +2270,7 @@ CONTAINS
          z0m, &     !Aerodynamic roughness length
          avU1, &    !Average wind speed
          UStar, &  ! input/output:
-         rb)  ! output:
+         RB)  ! output:
 
    END SUBROUTINE SUEWS_cal_Resistance
    !========================================================================
@@ -2462,8 +2468,8 @@ CONTAINS
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutSOLWEIG)!inout
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, dataoutlineDebug, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutSOLWEIG, dataOutDebug)!inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::ReadLinesMetdata
@@ -2479,18 +2485,21 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(in) :: dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
       REAL(KIND(1d0)), DIMENSION(ncolumnsdataOutSOL - 5), INTENT(in) :: dataOutLineSOLWEIG
+      REAL(KIND(1d0)), DIMENSION(ncolumnsdataOutDebug - 5), INTENT(in) :: dataOutLineDebug
 
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutESTM(ReadLinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSOLWEIG(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
+      REAL(KIND(1d0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
       dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, (dataOutLineSUEWS)]
       ! dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
       dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, (dataoutLineRSL)]
+      dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [datetimeLine, (dataOutLineDebug)]
       ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
       dataOutSOLWEIG(ir, 1:ncolumnsDataOutSOL, Gridiv) = [datetimeLine, set_nan(dataOutLineSOLWEIG)]
       ! ! set invalid values to NAN
@@ -2857,6 +2866,7 @@ CONTAINS
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockSOL, &!output
+      dataOutBlockDebug, &
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -3106,6 +3116,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) ::dataOutBlockESTM
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsdataOutSOL), INTENT(OUT) ::dataOutBlockSOL
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDebug), INTENT(OUT) ::dataOutBlockDebug
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
       ! ########################################################################################
 
@@ -3151,6 +3162,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5)::dataOutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5) ::dataOutLineSOLWEIG
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) ::dataOutLinedebug
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
@@ -3158,6 +3170,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) ::dataOutBlockESTM_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutSOL, 1) ::dataOutBlockSOL_X
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) ::dataOutBlockDebug_X
       ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
       REAL(KIND(1D0)), DIMENSION(10, 10)          ::MetForcingData_grid ! fake array as a placeholder
@@ -3477,6 +3490,7 @@ CONTAINS
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
             datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!output
+            dataOutLineDebug, &
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -3490,8 +3504,10 @@ CONTAINS
          CALL SUEWS_update_output( &
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
-            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!input
-            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X, dataOutBlockSOL_X)!inout
+            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
+            dataoutLineRSL, dataOutLineSOLWEIG, dataOutLinedebug, &!input
+            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, &!
+            dataOutBlockRSL_X, dataOutBlockSOL_X, dataOutBlockDebug_X)!inout
 
       END DO
 
@@ -3500,6 +3516,7 @@ CONTAINS
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
       dataOutBlockSOL = dataOutBlockSOL_X(:, :, 1)
+      dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
       ! DailyStateBlock=DailyStateBlock_X(:,:,1)
 
    END SUBROUTINE SUEWS_cal_multitsteps

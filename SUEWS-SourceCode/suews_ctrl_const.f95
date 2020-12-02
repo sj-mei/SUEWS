@@ -53,7 +53,7 @@ MODULE allocateArray
                         ncolumnsDataOutESTM = 32, &
                         ncolumnsDataOutDailyState = 50, &
                         ncolumnsDataOutRSL = 30*4 + 5 + 13,&
-                        ncolumnsDataOutDebug = 5+5
+                        ncolumnsDataOutDebug = 5+24
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -123,6 +123,7 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutRSL              !Main data output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBL            !CBL output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSOLWEIG           !SOLWEIG POI output matrix
+   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDebug           !SOLWEIG POI output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSnow          !Main data output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutESTM          !ESTM output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDailyState    !DailyState output array
@@ -134,6 +135,7 @@ MODULE allocateArray
    ! REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5)      ::dataOutLineRSL  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5 + 12)      ::dataOutLineRSL  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSOL - 5)      ::dataOutLineSOLWEIG  ! output of snow results per each timestep
+   REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDebug):: dataOutLineDebug ! output line for debugging info
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine   ! output of DailyState results per each timestep
 
    REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
@@ -467,6 +469,7 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(5, nsurfIncSnow):: zSurf_SUEWSsurfs, &
                                                  kSurf_SUEWSsurfs, &
                                                  rSurf_SUEWSsurfs
+
    !-----------------------------------------------------------------------------------------------
    !---------------------------------- Column numbers ---------------------------------------------
 
