@@ -283,7 +283,7 @@ html_theme = "sphinx_rtd_theme"
 # html_theme_path = ["_themes"]
 html_context = {
     "display_github": True,  # Integrate GitHub
-    "github_user": "Urban-Meteorology-Reading",  # Username
+    "github_user": "UMEP-dev",  # Username
     "github_repo": "SUEWS",  # Repo name
     "github_version": "master",  # Version
     "conf_py_path": "/source/",  # Path in the checkout to the docs root
@@ -446,11 +446,11 @@ def source_read_handler(app, docname, source):
 <!-- Please describe the issue below this line -->
 
 ## Links
-[source doc](https://github.com/Urban-Meteorology-Reading/{str_repo}/blob/master/{str_base}/{docname}.rst)
+[source doc](https://github.com/UMEP-dev/{str_repo}/blob/master/{str_base}/{docname}.rst)
 [RTD page](https://suews.readthedocs.org/en/latest/{docname}.html)
 """
     str_query_body=urllib.parse.urlencode({'body':str_body})
-    str_url = f"https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&{str_query_body}&title=[Docs]{docname}"
+    str_url = f"https://github.com/UMEP-dev/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&{str_query_body}&title=[Docs]{docname}"
     str_GHPage = f"""
 .. _GitHub page: {str_url}
 """
@@ -462,7 +462,7 @@ def source_read_handler(app, docname, source):
 # https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
 def setup(app):
     app.connect("source-read", source_read_handler)
-    app.add_stylesheet("theme_overrides.css")
+    app.add_css_file("theme_overrides.css")
     # Fix equation formatting in the RTD-theme
     app.add_css_file("fix-eq.css")
 

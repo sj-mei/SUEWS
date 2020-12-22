@@ -87,7 +87,7 @@ No.,Column Name,Use,Description
 86,`WithinGridGrassCode`,`L`,Code that links to the fraction of water that flows from `Grass` surfaces to surfaces in columns 2-10 of `SUEWS_WithinGridWaterDist.txt`.
 87,`WithinGridBSoilCode`,`L`,Code that links to the fraction of water that flows from `BSoil` surfaces to surfaces in columns 2-10 of `SUEWS_WithinGridWaterDist.txt`.
 88,`WithinGridWaterCode`,`L`,Code that links to the fraction of water that flows from Water surfaces to surfaces in columns 2-10 of `SUEWS_WithinGridWaterDist.txt`.
-89,`AreaWall`,`MU`,Area of wall within grid (needed for ESTM calculation).
+89,`AreaWall`,`MU`,Area of wall within grid (needed for ESTM calculation) [ |m^2| ].
 90,`Fr_ESTMClass_Paved1`,`MU`,Surface cover fraction of `Paved` surface class 1 used in ESTM calculations
 91,`Fr_ESTMClass_Paved2`,`MU`,Surface cover fraction of `Paved` surface class 2 used in ESTM calculations
 92,`Fr_ESTMClass_Paved3`,`MU`,Surface cover fraction of `Paved` surface class 3 used in ESTM calculations

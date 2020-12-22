@@ -30,7 +30,7 @@ This is a public repo for SUEWS source code and documentation.
 ### Branch
 
 #### Central curated branches
-These branches are regularly curated by admin members with specific purposes and set with triggers for automatic deployment (via MS Azure Pipeline) in the [*releases* page](https://github.com/Urban-Meteorology-Reading/SUEWS/releases) named **Latest Release Test**:
+These branches are regularly curated by admin members with specific purposes and set with triggers for automatic deployment (via MS Azure Pipeline) in the [*releases* page](https://github.com/UMEP-dev/SUEWS/releases) named **Latest Release Test**:
 
 * `master`:
   * the main branch that keeps milestone and stable features.
@@ -42,7 +42,7 @@ These branches are regularly curated by admin members with specific purposes and
 
 ### Manual
 
-* Please keep the development changes documented in the [Documentation repo](https://github.com/Urban-Meteorology-Reading/SUEWS-Docs).
+* Please keep the development changes documented in the [Documentation repo](https://github.com/UMEP-dev/SUEWS-Docs).
 * The SUEWS docs are mainly written in [RST](http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html) but [Markdown](https://guides.github.com/features/mastering-markdown/) is also acceptable.
 * Your changes to docs will be reviewed and merged into public release if appropriate.
 
@@ -134,4 +134,4 @@ More detailed GDB tutorial can be found [here](https://github.com/jackrosenthal/
 
 ### Questions
 
-* Please [raise issues](https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new) for questions in the development so our progress can be well managed.
+* Please [raise issues](https://github.com/UMEP-dev/SUEWS/issues/new) for questions in the development so our progress can be well managed.

@@ -58,7 +58,7 @@ Decide what type of model run you are interested in
 Download the program and example data files
 -------------------------------------------
 
-Visit the `website <https://urban-meteorology-reading.github.io/SUEWS>`_ to receive a link to download the program and example
+Visit the `website <https://UMEP-dev.github.io/SUEWS>`_ to receive a link to download the program and example
 data files. Select the appropriate compiled version of the model to download. For windows there is an installation version which will put the programs and all the files into the appropriate place. There is also a version linked to QGIS:
 `UMEP`_.
 
@@ -425,7 +425,7 @@ Get in contact
 --------------
 For issues met in using SUEWS, we recommend the following ways to get in contact with the developers and the SUEWS community:
 
-#. Report issues on `our GitHub page <https://github.com/Urban-Meteorology-Reading/Urban-Meteorology-Reading.github.io/issues>`_.
+#. Report issues on `our GitHub page <https://github.com/UMEP-dev/UMEP-dev.github.io/issues>`_.
 
 #. Ask for help by joining `the Email-list for SUEWS <https://www.lists.reading.ac.uk/mailman/listinfo/met-suews>`_.
 
@@ -433,4 +433,4 @@ For issues met in using SUEWS, we recommend the following ways to get in contact
 .. _`tutorials`: http://umep-docs.readthedocs.io/en/latest/Tutorials/Tutorials.html
 .. _`UMEP`: http://umep-docs.readthedocs.io/en/latest/index.html
 .. _`LQF`: http://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html
-.. _`LUCY`: https://urban-meteorology-reading.github.io/LUCY
+.. _`LUCY`: https://UMEP-dev.github.io/LUCY
