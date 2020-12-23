@@ -449,7 +449,7 @@ def source_read_handler(app, docname, source):
 [source doc](https://github.com/UMEP-dev/{str_repo}/blob/master/{str_base}/{docname}.rst)
 [RTD page](https://suews.readthedocs.org/en/latest/{docname}.html)
 """
-    str_query_body=urllib.parse.urlencode({'body':str_body})
+    str_query_body = urllib.parse.urlencode({"body": str_body})
     str_url = f"https://github.com/UMEP-dev/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&{str_query_body}&title=[Docs]{docname}"
     str_GHPage = f"""
 .. _GitHub page: {str_url}
@@ -478,7 +478,10 @@ intersphinx_mapping = {
 
 # -- sphinxcontrib.bibtex configuration -------------------------------------------------
 
-bibtex_bibfiles=['assets/refs/refs-SUEWS.bib']
+bibtex_bibfiles = [
+    "assets/refs/refs-SUEWS.bib",
+]
+
 # Custom bibliography stuff for sphinxcontrib.bibtex
 class MySort(Sorter):
     def sort(self, entries):
@@ -569,4 +572,3 @@ class RLStyle(UnsrtStyle):
 register_plugin("pybtex.style.formatting", "refs", MyStyle)
 register_plugin("pybtex.style.formatting", "rl", RLStyle)
 register_plugin("pybtex.style.sorting", "year_author_title", MySort)
-

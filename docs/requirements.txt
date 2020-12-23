@@ -4,7 +4,7 @@ f90nml
 pandas
 numpy
 nbsphinx
-exhale==0.2.3
+exhale
 sphinxcontrib_programoutput
 sphinxcontrib.bibtex
 sphinx_rtd_theme
