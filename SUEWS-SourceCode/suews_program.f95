@@ -264,7 +264,9 @@ PROGRAM SUEWS_Program
       ALLOCATE (dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids))                 !Main output array
       dataOutSUEWS = NaN ! initialise Main output array
       ALLOCATE (dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids))                 !RSL output array
-      dataOutRSL = NaN ! initialise Main output array
+      dataOutRSL = NaN ! initialise RSL array
+      ALLOCATE (dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids))                 !RSL output array
+      dataOutDebug = NaN ! initialise Debug array
       ALLOCATE (dataOutDailyState(ndays, ncolumnsDataOutDailyState, NumberOfGrids))                 !DailyState array
       dataOutDailyState = NaN ! initialise DailyState
       ! IF (SOLWEIGuse == 1) ALLOCATE (dataOutSOLWEIG(ReadLinesMetdata, ncolumnsdataOutSOL, NumberOfGrids))     !SOLWEIG POI output
@@ -689,6 +691,7 @@ PROGRAM SUEWS_Program
       DEALLOCATE (ModelOutputData)
       DEALLOCATE (dataOutSUEWS)
       DEALLOCATE (dataOutRSL)
+      DEALLOCATE (dataOutDebug)
       DEALLOCATE (dataOutSOLWEIG)
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN
