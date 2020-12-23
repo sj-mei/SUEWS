@@ -477,6 +477,8 @@ intersphinx_mapping = {
 
 
 # -- sphinxcontrib.bibtex configuration -------------------------------------------------
+
+bibtex_bibfiles=['assets/refs/refs-SUEWS.bib']
 # Custom bibliography stuff for sphinxcontrib.bibtex
 class MySort(Sorter):
     def sort(self, entries):
