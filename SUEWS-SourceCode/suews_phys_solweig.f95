@@ -2,7 +2,7 @@ MODULE solweig_module
    ! USE data_in
    ! USE gis_data
    ! USE time
-   USE allocateArray, only: ncolumnsDataOutSol, deg2rad, rad2deg
+   USE allocateArray, only: ncolumnsdataOutSOLWEIG, deg2rad, rad2deg
    ! USE InitialCond
    ! USE sues_data
    USE defaultNotUsed, only: notUsed, notUsedI
@@ -108,7 +108,7 @@ CONTAINS
       REAL(KIND(1D0)), intent(in)::emis_wall           ! Tranmissivity of K through decidious vegetation (leaf off)
       REAL(KIND(1D0)), intent(in)::emis_ground           ! Tranmissivity of K through decidious vegetation (leaf off)
 
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
+      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
 
       REAL(KIND(1d0)) :: t, Tstart, height, psi!,timezone,lat,lng,alt,amaxvalue
       REAL(KIND(1d0)) :: altitude, zen!scale,azimuth,zenith

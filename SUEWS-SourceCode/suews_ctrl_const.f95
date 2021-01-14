@@ -48,7 +48,8 @@ MODULE allocateArray
    ! ---- Set number of columns in output files ---------------------------------------------------
    INTEGER, PARAMETER:: ncolumnsDataOutSUEWS = 87, &    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
                         ncolumnsDataOutSnow = 103, &
-                        ncolumnsdataOutSOL = 31, &
+                        ncolumnsdataOutSOLWEIG = 31, &
+                        ncolumnsDataOutBEERS = 34, &
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
                         ncolumnsDataOutDailyState = 50, &
@@ -123,7 +124,8 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutRSL              !Main data output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBL            !CBL output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSOLWEIG           !SOLWEIG POI output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDebug           !SOLWEIG POI output matrix
+   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBEERS           ! BEERS output matrix
+   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDebug           !debugging info matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSnow          !Main data output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutESTM          !ESTM output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDailyState    !DailyState output array
@@ -134,7 +136,8 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)      ::dataOutLineSnow  ! output of snow results per each timestep
    ! REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5)      ::dataOutLineRSL  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5 + 12)      ::dataOutLineRSL  ! output of snow results per each timestep
-   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSOL - 5)      ::dataOutLineSOLWEIG  ! output of snow results per each timestep
+   REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5)      ::dataOutLineSOLWEIG  ! output of snow results per each timestep
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5)      ::dataOutLineBEERS  ! output of snow results per each timestep
    REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDebug):: dataOutLineDebug ! output line for debugging info
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine   ! output of DailyState results per each timestep
 

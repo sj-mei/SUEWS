@@ -25,6 +25,7 @@ MODULE beers_module
    ! USE allocateArray, only: ncolumnsDataOutSol, deg2rad, rad2deg
    ! USE defaultNotUsed, only: notUsed, notUsedI
    USE NARP_MODULE, only: NARP_cal_SunPosition
+   use allocateArray, only: ncolumnsDataOutBEERS
 
    IMPLICIT NONE
    REAL(KIND(1D0)), parameter :: pi = atan(1.)*4
@@ -35,7 +36,8 @@ CONTAINS
 
    SUBROUTINE BEERS_cal_main(iy, id, dectime, lamdaP, lamdaF, avkdn, ldown, Temp_C, avrh, &
                              Press_hPa, Tsurf, lat, lng, alt, timezone, zenith_deg, azimuth, &
-                             alb_ground, alb_bldg, emis_ground, emis_wall, kdir, kdiff, &
+                             alb_ground, alb_bldg, emis_ground, emis_wall, &
+                           !   kdir, kdiff, &
                              dataOutLineBEERS) ! output
 
       IMPLICIT NONE
@@ -54,8 +56,8 @@ CONTAINS
       REAL(KIND(1d0)), intent(in) :: avkdn
       REAL(KIND(1d0)), intent(in) :: ldown
       REAL(KIND(1d0)), intent(in) :: Tsurf
-      REAL(KIND(1d0)), intent(in) :: kdiff !Actual inputs from metfile.
-      REAL(KIND(1d0)), intent(in) :: kdir  !Actual inputs from metfile.
+      ! REAL(KIND(1d0)), intent(in) :: kdiff !Actual inputs from metfile.
+      ! REAL(KIND(1d0)), intent(in) :: kdir  !Actual inputs from metfile.
       REAL(KIND(1d0)), intent(in) :: zenith_deg
       REAL(KIND(1d0)), intent(in) :: azimuth
       REAL(KIND(1d0)), intent(in) :: dectime
@@ -70,8 +72,8 @@ CONTAINS
       REAL(KIND(1D0)), parameter :: Fside = 0.22    ! Standing human shape factor
       REAL(KIND(1D0)), parameter :: Fup = 0.06      ! Standing human shape factor
 
-      integer, parameter :: ncolumnsDataOutSol = 34      ! Standing human shape factor
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5), INTENT(OUT) ::dataOutLineBEERS   ! 26 columns of output at the moment
+      ! integer, parameter :: ncolumnsDataOutSol = 34      ! Standing human shape factor
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT) ::dataOutLineBEERS   ! 26 columns of output at the moment
 
       REAL(KIND(1d0)) :: t, psi
       REAL(KIND(1d0)) :: altitude, zen!azimuth,zenith
@@ -94,10 +96,10 @@ CONTAINS
       REAL(KIND(1d0)) :: Tmrt, Sstr, F_sh
       !REAL(KIND(1d0))  :: vegsh
       REAL(KIND(1d0)) :: tmp, altmax
-      REAL(KIND(1d0)) :: svfbuveg
-      REAL(KIND(1d0))  :: svf, svfr
-      REAL(KIND(1d0))  :: svfveg
-      REAL(KIND(1d0))  :: svfaveg
+      REAL(KIND(1d0)) :: svf_bldg_veg
+      REAL(KIND(1d0))  :: svf_ground, svf_roof
+      REAL(KIND(1d0))  :: svf_veg
+      REAL(KIND(1d0))  :: svf_aveg
       REAL(KIND(1d0))  :: Kdown, Keast, Knorth, Ksouth, Kup2d, Kwest
       REAL(KIND(1d0))  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
 
@@ -136,8 +138,8 @@ CONTAINS
       RH = avrh
       radG = avkdn
       DOY = int(id)
-      radD = kdiff
-      radI = kdir
+      ! radD = kdiff
+      ! radI = kdir
 
       psi = 0.03 ! Tranmissivity of K through vegetation
 
@@ -154,18 +156,18 @@ CONTAINS
       ! parameterisation using NYC building data
       ! TODO: #5 which SVF should be used here? in python code, SVF_roof is used.
       ! Both are used. svfr for roof fluxes. Changed in code below. FL
-      svf = hwToSVF_ground(hw) !TODO: Should change based on Oke equation???
-      svfr = hwToSVF_roof(hw) !TODO: Should change based on Oke equation???
+      svf_ground = hwToSVF_ground(hw) !TODO: Should change based on Oke equation???
+      svf_roof = hwToSVF_roof(hw) !TODO: Should change based on Oke equation???
 
-      svfveg = 1 ! svfveg: SVF based on vegetation blocking the sky (1 = no vegetation)
-      svfaveg = 1  ! view factor where vegetation is in view before buildings.
+      svf_veg = 1 ! svfveg: SVF based on vegetation blocking the sky (1 = no vegetation)
+      svf_aveg = 1  ! view factor where vegetation is in view before buildings.
 
-      tmp = 1 - (svf + svfveg - 1)
-      if (tmp <= 0) tmp = 0.000000001 ! avoiding log(0)
+      tmp = 1 - (svf_ground + svf_veg - 1)
+      if (tmp <= 1.e-6) tmp = 1.e-6 ! avoiding log(0)
       svfalfa = ASIN(EXP(LOG(tmp)/2))
 
       ! SVF combines for buildings and vegetation
-      svfbuveg = (svf - (1 - svfveg)*(1 - psi))
+      svf_bldg_veg = (svf_ground - (1 - svf_veg)*(1 - psi))
 
       ! Sun position related things
       CALL DAYLEN(DOY, lat, DAYL, DEC, SNDN, SNUP)
@@ -197,7 +199,7 @@ CONTAINS
          call cylindric_wedge(zen, svfalfa, F_sh)
 
          !!! Calculation of shortwave daytime radiative fluxes !!!
-         CALL KRoof(radI, radD, radG, F_sh, altitude, svfr, svfveg, shadowroof, psi, alb_bldg, Kdown)
+         CALL KRoof(radI, radD, radG, F_sh, altitude, svf_roof, svf_veg, shadowroof, psi, alb_bldg, Kdown)
          !Kdown2d = radI*shadowroof*SIN(altitude*DEG2RAD) &
          !          + radD*svfr &
          !          ! TODO: #6 F_sh issue: used below is calculated as a variable but
@@ -205,12 +207,12 @@ CONTAINS
 
          Kup2d = alb_ground*( &
                  radI*shadowground*SIN(altitude*DEG2RAD) & ! gvf not defined TODO #2 FIXED
-                 + radD*svfbuveg &
-                 + alb_bldg*(1 - svfbuveg)*(radG*(1 - F_sh) + radD*F_sh))
+                 + radD*svf_bldg_veg &
+                 + alb_bldg*(1 - svf_bldg_veg)*(radG*(1 - F_sh) + radD*F_sh))
 
          ! TODO: #7 check consistency with python code
          CALL KWalls( &
-            svf, svfveg, shadowground, F_sh, &
+            svf_ground, svf_veg, shadowground, F_sh, &
             radI, radG, radD, azimuth, altitude, psi, t, alb_ground, alb_bldg, & ! input
             Keast, Knorth, Ksouth, Kwest) ! output
 
@@ -289,29 +291,29 @@ CONTAINS
 
       !!! Ldown !!!
       IF (SOLWEIG_ldown == 1) THEN   ! Third
-         Ldown2d = (svfr + svfveg - 1)*emis_sky*SBC*((Ta + 273.15)**4) &
-                   + (2 - svfveg - svfaveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-                   + (svfaveg - svfr)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-                   + (2 - svfr - svfveg)*(1 - emis_wall)*emis_sky*SBC*((Ta + 273.15)**4)
+         Ldown2d = (svf_roof + svf_veg - 1)*emis_sky*SBC*((Ta + 273.15)**4) &
+                   + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                   + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                   + (2 - svf_roof - svf_veg)*(1 - emis_wall)*emis_sky*SBC*((Ta + 273.15)**4)
 
          IF (CI < 0.95) THEN !non-clear conditions
             c = 1 - CI
             Ldown2d = Ldown2d*(1 - c) + c*( &
-                      (svfr + svfveg - 1)*SBC*((Ta + 273.15)**4) &
-                      + (2 - svfveg - svfaveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-                      + (svfaveg - svfr)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-                      + (2 - svfr - svfveg)*(1 - emis_wall)*SBC*((Ta + 273.15)**4))
+                      (svf_roof + svf_veg - 1)*SBC*((Ta + 273.15)**4) &
+                      + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                      + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                      + (2 - svf_roof - svf_veg)*(1 - emis_wall)*SBC*((Ta + 273.15)**4))
          endif
 
       ELSE
-         Ldown2d = (svfr + svfveg - 1)*ldown &
-                   + (2 - svfveg - svfaveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-                   + (svfaveg - svfr)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-                   + (2 - svfr - svfveg)*(1 - emis_wall)*ldown
+         Ldown2d = (svf_roof + svf_veg - 1)*ldown &
+                   + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                   + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                   + (2 - svf_roof - svf_veg)*(1 - emis_wall)*ldown
       END IF
 
       !!! Lside !!!
-      CALL LWalls(svf, svfveg, svfaveg, &
+      CALL LWalls(svf_ground, svf_veg, svf_aveg, &
                   Ldown2d, Lup2d, &
                   altitude, Ta, Tw, SBC, emis_wall, &
                   emis_sky, t, CI, azimuth, ldown, svfalfa, F_sh, &
@@ -325,7 +327,7 @@ CONTAINS
       dataOutLineBEERS = [azimuth, altitude, radG, radI, radD, &
                           Kdown, Kup2d, Ksouth, Kwest, Knorth, Keast, &
                           Ldown2d, Lup2d, Lsouth, Lwest, Lnorth, Least, &
-                          Tmrt, I0, CI, shadowground, shadowwalls, svf, svfr, svfbuveg, &
+                          Tmrt, I0, CI, shadowground, shadowwalls, svf_ground, svf_roof, svf_bldg_veg, &
                           emis_sky, &
                           Ta, Tg, Tw]
 
