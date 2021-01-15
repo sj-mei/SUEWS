@@ -89,7 +89,7 @@ CONTAINS
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,&!output
-      dataOutLineBEERS, dataOutLineSOLWEIG, &!output
+      dataOutLineBEERS, &!output
       dataOutLineDebug, &
       DailyStateLine)!output
 
@@ -342,7 +342,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT)      ::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)      ::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! RSL variable array
-      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT)     ::dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT)     ::dataOutLineDebug
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
@@ -1002,12 +1001,12 @@ CONTAINS
 
 
       !==============use SOLWEIG to get localised radiation flux==================
-      if (sfr(BldgSurf) > 0) then
-         CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
-         lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
-      else
-         dataOutLineSOLWEIG = set_nan(dataOutLineSOLWEIG)
-      endif
+      ! if (sfr(BldgSurf) > 0) then
+      !    CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
+      !    lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
+      ! else
+      !    dataOutLineSOLWEIG = set_nan(dataOutLineSOLWEIG)
+      ! endif
 
       !==============use BEERS to get localised radiation flux==================
       ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
@@ -3512,7 +3511,7 @@ CONTAINS
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
             datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &
-            dataOutLineBEERS, dataOutLineSOLWEIG, &!output
+            dataOutLineBEERS, &!output
             dataOutLineDebug, &
             DailyStateLine)!output
 

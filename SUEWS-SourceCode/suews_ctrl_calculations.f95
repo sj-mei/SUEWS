@@ -79,10 +79,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WUDay_id, &
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
-      dataoutlineestm, dataoutlineRSL,dataOutLineBEERS,dataOutLineSOLWEIG, &
+      dataoutlineestm, dataoutlineRSL,dataOutLineBEERS, &
       dataOutLineDebug,dataOutLineDebug,&
       dailystateline, dataoutdailystate, &
-      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, dataOutSOLWEIG, &
+      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, &
       dataoutBL,dataOutDebug
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
@@ -171,7 +171,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,&!output
-      dataOutLineBEERS, dataOutLineSOLWEIG, &!output
+      dataOutLineBEERS, &!output
       dataOutLineDebug,&
       DailyStateLine)!output
 

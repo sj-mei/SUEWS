@@ -695,10 +695,6 @@ PROGRAM SUEWS_Program
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN
       DEALLOCATE (dataOutSnow)
-      ! DEALLOCATE(qn1_S_store)
-      ! DEALLOCATE(qn1_S_av_store)
-      ! DEALLOCATE(qn1_S_store_grid)
-      ! DEALLOCATE(qn1_S_av_store_grid)
       DEALLOCATE (qn1_s_av_grids)
       DEALLOCATE (dqnsdt_grids)
       ! ENDIF
@@ -709,17 +705,6 @@ PROGRAM SUEWS_Program
       DEALLOCATE (Ts5mindata_ir)
       DEALLOCATE (Tair24HR)
       ! ENDIF
-      ! DEALLOCATE(TstepProfiles)
-      ! DEALLOCATE(AHProf_tstep)
-      ! DEALLOCATE(WUProfM_tstep)
-      ! DEALLOCATE(WUProfA_tstep)
-      ! DEALLOCATE(HumActivity_tstep)
-      ! DEALLOCATE(TraffProf_tstep)
-      ! DEALLOCATE(PopProf_tstep)
-      ! DEALLOCATE(qn1_store)
-      ! DEALLOCATE(qn1_av_store)
-      ! DEALLOCATE(qn1_store_grid)
-      ! DEALLOCATE(qn1_av_store_grid)
       DEALLOCATE (qhforCBL)
       DEALLOCATE (qeforCBL)
       DEALLOCATE (tair_av_grids)
