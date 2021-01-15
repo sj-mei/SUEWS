@@ -1,5 +1,5 @@
 # compilers
-FC = gfortran $(FFLAGS)
+FC = gfortran-10 $(FFLAGS)
 CC = gcc $(CFLAGS)
 
 # source code suffix: gfortran can work with f95 files
@@ -21,7 +21,7 @@ else
 			endif
 			ifeq ($(UNAME_S),Darwin) # macOS
 				STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
-				STATICLIB = $(shell gfortran -print-file-name=libquadmath.dylib | xargs -t rm -rf; gfortran -print-file-name=libquadmath.a) # force-ship this static lib
+				STATICLIB = $(shell $(FC) -print-file-name=libquadmath.dylib | xargs -t rm -rf; $(FC) -print-file-name=libquadmath.a) # force-ship this static lib
 				SUEWS_build_dir = $(addprefix $(SUEWS_build_base), macOS)
 			endif
 endif
@@ -30,8 +30,9 @@ FCNOOPT = #-O0
 FCDEBUG = #-g $(FCNOOPT) -fbacktrace -ggdb -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
 FCPROF = #-pg
 
-FFLAGS = -g -O3 $(STATIC) $(FCDEBUG) -Wall -Wtabs -fbounds-check -cpp \
-					-Wno-unused-dummy-argument -Wno-unused-variable
+FFLAGS = -O3 $(STATIC) $(FCDEBUG) \
+		-Wall -Wtabs -fbounds-check -cpp \
+		-Wno-unused-dummy-argument -Wno-unused-variable
 CFLAGS =
 
 
