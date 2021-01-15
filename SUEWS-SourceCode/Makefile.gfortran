@@ -11,6 +11,7 @@ ifeq ($(OS),Windows_NT)
 			STATIC = -static -mcmodel=medium# mingw
 			STATICLIB =
 			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), win64)
+			FC = gfortran $(FFLAGS)
 else
 			C_MODULE =
 			UNAME_S := $(shell uname -s)
