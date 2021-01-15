@@ -38,6 +38,7 @@ jobs:
 
     - name: build and test
       run: |
+        make release
         make test
 
     # - name: Setup git user
