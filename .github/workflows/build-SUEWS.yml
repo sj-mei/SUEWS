@@ -1,0 +1,97 @@
+name: build and check
+
+on:
+
+  # File paths to consider in the event. Optional; defaults to all
+  push:
+    # branches:    # Array of patterns that match refs/heads
+    #   - master     # Push events on master branch
+    #   - test-dev
+  #     - 'releases/*' # Push events to branches matching refs/heads/releases/*
+  #     - '!refs/pull/*'
+  #   tags:        # Array of patterns that match refs/tags.
+  #     - v1         # Push events to v1 tag
+    paths:       # Push events containing matching files
+      - 'SUEWS-SourceCode/*'
+      - 'supy-driver/*'
+      - '.github/workflows/build-SUEWS.yml'
+
+jobs:
+  linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
+
+    # - name: show version
+    #   run: |
+    #     bin_gfortran=$(which gfortran-10)
+    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+    #     gfortran --version
+
+    - name: Setup Python for use with actions
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build and test
+      run: |
+        gfortran --version
+        make release
+
+  mac:
+
+    runs-on: macos-latest
+
+    steps:
+
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
+
+    - name: Setup Python for use with actions
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    # - name: show version
+    #   run: |
+    #     bin_gfortran=$(which gfortran-10)
+    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+    #     gfortran --version
+
+    - name: build and test
+      run: |
+        make release
+        make test
+
+  windows:
+
+    runs-on: windows-latest
+
+    steps:
+
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
+
+    - name: Setup Python for use with actions
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build and pack as release
+      run: |
+        make release
+
+      # make test
