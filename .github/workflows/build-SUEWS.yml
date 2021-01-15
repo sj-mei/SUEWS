@@ -58,7 +58,7 @@ jobs:
 
     - name: show version
       run: |
-        export gfortran=gfortran-10
+        alias gfortran="gfortran-10"
         gfortran --version
 
     - name: build and test
