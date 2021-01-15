@@ -14,6 +14,7 @@ on:
     paths:       # Push events containing matching files
       - 'SUEWS-SourceCode/*'
       - 'supy-driver/*'
+      - '.github/workflows/build-SUEWS.yml'
 
 jobs:
   build:
