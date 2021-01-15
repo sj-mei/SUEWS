@@ -36,6 +36,7 @@ jobs:
 
     - name: build and test
       run: |
+        gfortran --version
         make release
         make test
 
