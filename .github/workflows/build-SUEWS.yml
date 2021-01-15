@@ -28,6 +28,12 @@ jobs:
         submodules: true
         token: ${{ secrets.PAT }}
 
+    - name: show version
+      run: |
+        bin_gfortran=$(which gfortran-10)
+        ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+        gfortran --version
+
     - name: Setup Python for use with actions
       uses: actions/setup-python@v2
       with:
