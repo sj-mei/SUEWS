@@ -22,8 +22,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # - name: Fix up git URLs
-    #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
 
     - uses: actions/checkout@v1
       with:
@@ -46,8 +44,6 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    # - name: Fix up git URLs
-    #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
 
     - uses: actions/checkout@v1
       with:
@@ -61,7 +57,9 @@ jobs:
         architecture: 'x64' # (x64 or x86)
 
     - name: show version
-      run: gfortran --version
+      run: |
+        export gfortran=gfortran-10
+        gfortran --version
 
     - name: build and test
       run: |
@@ -73,8 +71,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    # - name: Fix up git URLs
-    #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
 
     - uses: actions/checkout@v1
       with:
@@ -90,42 +86,5 @@ jobs:
     - name: build and test
       run: |
         make release
-        make test
 
-    # - name: Setup git user
-    #   env:
-    #     ACCESS_TOKEN: ${{ secrets.PAT }}
-    #   run: |
-    #     if [ -z "$COMMIT_EMAIL" ]
-    #     then
-    #       COMMIT_EMAIL="${GITHUB_ACTOR}@users.noreply.github.com"
-    #     fi
-
-    #     if [ -z "$COMMIT_NAME" ]
-    #     then
-    #       COMMIT_NAME="${GITHUB_ACTOR}"
-    #     fi
-    #     git config --global credential.helper store && \
-    #     git config --global user.email "${COMMIT_EMAIL}" && \
-    #     git config --global user.name "${COMMIT_NAME}" && \
-    #     REPOSITORY_PATH="https://${ACCESS_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-
-
-    # - name: format Fortran code
-    #   run: fprettify SUEWS-SourceCode/*f95
-
-    # - name: Commit changes
-    #   uses: elstudio/actions-js-build/commit@v2
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.PAT }}
-#     - name: configure
-#       run: ./configure
-    # - name: install
-    #   run: sudo
-    # - name: make and test
-    #   run: make test
-#     - name: make check
-#       run: make check
-#     - name: make distcheck
-#       run: make distcheck
+      # make test
