@@ -62,7 +62,7 @@ CONTAINS
             NetRadiationMethod_use = 3000
             ldown_option = 3              !LDOWN will be modelled
             !NetRadiationMethod=NetRadiationMethod/1000
-         ENDIF
+         END IF
 
       ELSEIF (NetRadiationMethod > 0) THEN  !Modelled Q* is used (NARP)
          AlbedoChoice = -9
@@ -89,15 +89,15 @@ CONTAINS
             IF (NetRadiationMethod == 300) ldown_option = 3
             ! NetRadiationMethod=NetRadiationMethod/100
             NetRadiationMethod_use = NetRadiationMethod/100
-         ENDIF
+         END IF
 
          !If bad NetRadiationMethod value
          IF (mod(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
             WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
             WRITE (*, *) 'Value not usable'
             STOP
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
    END SUBROUTINE RadMethod
 
@@ -250,24 +250,36 @@ CONTAINS
 
       !===================================================================================
       !Calculate radiation for each sub-surface
+
+      ! initialisation
       qn1_cum = 0
       kup_cum = 0
       lup_cum = 0
       tsurf_cum = 0
 
+      QSTARall = 0
       QSTAR_SF = 0
       QSTAR_S = 0
+      kclear = 0
+      KUPall = 0
+      LDOWN = 0
+      LUPall = 0
+      fcld = 0
+      TSURFall = 0
 
       qn1_ind_snow = 0
       kup_ind_snow = 0
       lup_ind_snow = 0
       Tsurf_ind_snow = 0
+      Tsurf_ind = 0
+      albedo_snowfree = 0
+      albedo_snow = 0
 
       !Total snowfree surface fraction
       SF_all = 0
       DO is = 1, nsurf
          IF (sfr(is) /= 0) SF_all = SF_all + sfr(is)*(1 - SnowFrac(is))
-      ENDDO
+      END DO
 
       DO is = 1, nsurf
          IF (DiagQN == 1) WRITE (*, *) 'is ', is
@@ -281,7 +293,7 @@ CONTAINS
             albedo_snowfree = ALB(is) + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
          ELSE
             albedo_snowfree = ALB(is)
-         ENDIF
+         END IF
          EMIS0 = EMIS(is)
 
          !Downward longwave radiation
@@ -299,8 +311,8 @@ CONTAINS
                   ELSE
                      !FCLD is left to the latest calculable value
                      EMIS_A = EMIS_CLOUD_SQ(EMIS_A, FCLD)
-                  ENDIF
-               ENDIF
+                  END IF
+               END IF
             ELSE !NIGHT TIME CALCULATIONS
                IF (ldown_option == 4) THEN
                   !FCLD is left to the latest calculable value
@@ -308,20 +320,20 @@ CONTAINS
                ELSEIF ((ldown_option == 5)) THEN ! Use RH
                   FCLD = WC_fraction(RH, Temp_C)
                   EMIS_A = EMIS_CLOUD(EMIS_A, FCLD)
-               ENDIF
-            ENDIF
+               END IF
+            END IF
          ELSEIF (ldown_option == 3) THEN !Always use RH
             FCLD = WC_fraction(RH, Temp_C)
             EMIS_A = EMIS_CLOUD(EMIS_A, FCLD)
          ELSEIF (ldown_option == 2) THEN ! FCLD obs, came from input
             EMIS_A = EMIS_CLOUD(EMIS_A, FCLD)
-         ENDIF
+         END IF
          IF (DiagQN == 1) WRITE (*, *) 'ldown_option: ', ldown_option, 'FCLD:', FCLD
 
          IF (ldown_option > 1) THEN ! Forcing available if ldown_option=1, model otherwise
             LDOWN = EMIS_A*SIGMATK4
             IF (DiagQN == 1) WRITE (*, *) 'EMIS_A: ', EMIS_A, 'SIGMATK4:', SIGMATK4, 'LDOWN: ', LDOWN
-         ENDIF
+         END IF
 
          !----------------------------------------------------------------------------
          !Note that this is not averaged over the hour for cases where time step < 1hr
@@ -330,7 +342,7 @@ CONTAINS
             LUPCORR = (1 - albedo_snowfree)*(0.08*KDOWN_HR)
          ELSE
             LUPCORR = 0.
-         ENDIF
+         END IF
 
          KUP = albedo_snowfree*KDOWN
 
@@ -355,7 +367,7 @@ CONTAINS
                albedo_snow = SnowAlb + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
             ELSE
                albedo_snow = SnowAlb
-            ENDIF
+            END IF
 
             KUP_SNOW = (albedo_snow*(SnowFrac(is) - SnowFrac(is)*IceFrac(is)) + albedo_snowfree*SnowFrac(is)*IceFrac(is))*KDOWN
 
@@ -383,7 +395,7 @@ CONTAINS
             QSTAR_SNOW = 0
             !QSTAR_ICE = 0
             !KUP_ICE = 0
-         ENDIF
+         END IF
 
          qn1_ind_nosnow(is) = QSTAR          !Define sub-surface radiation components
          kup_ind_nosnow(is) = KUP
@@ -399,13 +411,13 @@ CONTAINS
             QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - SnowFrac(is))/SF_all
          ELSE
             QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - SnowFrac(is))
-         ENDIF
+         END IF
 
          IF ((1 - SF_all) /= 0) THEN
             QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*SnowFrac(is)/(1 - SF_all)
          ELSE
             QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*SnowFrac(is)
-         ENDIF
+         END IF
 
          !---------------------------------------------------------------------
          !Calculate weighted variables for each subsurface
@@ -428,14 +440,14 @@ CONTAINS
 
          IF (DiagQN == 1) WRITE (*, *) 'qn1_is: ', qn1_is
 
-      ENDDO !End of the surface types
+      END DO !End of the surface types
 
       !Set overall radiation components
       IF (NetRadiationMethod_use /= 3000) THEN !Observed Q* used and snow is modeled
          QSTARall = qn1_cum
       ELSE
          QSTARall = qn1_obs
-      ENDIF
+      END IF
 
       KUPall = kup_cum
       LUPall = lup_cum
@@ -1341,7 +1353,7 @@ CONTAINS
          Isurf = Itoa*cosZ            !ground level solar irradiance in W/m2
       ELSE
          Isurf = 0.
-      ENDIF
+      END IF
 
    END FUNCTION ISURFACE
 
@@ -1377,11 +1389,11 @@ CONTAINS
       OPEN (99, file=smithFile, iostat=ios)
       DO ilat = 1, lat
          READ (99, *)
-      ENDDO
+      END DO
       READ (99, *, iostat=ios) ilat, G
       IF (ios /= 0) THEN
          CALL ErrorHint(11, 'reading Smith1966.grd (ios).', notUsed, notUsed, ios)
-      ENDIF
+      END IF
       CLOSE (99)
    END FUNCTION SmithLambda
 
@@ -1403,7 +1415,7 @@ CONTAINS
          cosZ = COS(80.*DEG2RAD)
       ELSE
          cosZ = COS(zenith)
-      ENDIF
+      END IF
 
       Tdf = TemP_C_dew*1.8 + 32. !celsius to fahrenheit
       !        Transmission coefficients
