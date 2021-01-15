@@ -1,4 +1,4 @@
-name: Fortran prettify
+name: Fortran_prettify
 
 on:
 
@@ -62,7 +62,9 @@ jobs:
       run: fprettify SUEWS-SourceCode/*f95
 
     - name: Commit changes
-      uses: elstudio/actions-js-build/commit@v2
+      uses: elstudio/actions-js-build/commit@v3
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
+      with:
+        commitMessage: "[GH Actions] fprettify source code"
 
