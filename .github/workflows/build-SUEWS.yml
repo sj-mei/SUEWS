@@ -17,9 +17,60 @@ on:
       - '.github/workflows/build-SUEWS.yml'
 
 jobs:
-  build:
+  linux:
 
     runs-on: ubuntu-latest
+
+    steps:
+    # - name: Fix up git URLs
+    #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
+
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
+
+    - name: Setup Python for use with actions
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build and test
+      run: |
+        make release
+        make test
+
+  mac:
+
+    runs-on: macos-latest
+
+    steps:
+    # - name: Fix up git URLs
+    #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
+
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
+
+    - name: Setup Python for use with actions
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: show version
+      run: gfortran --version
+
+    - name: build and test
+      run: |
+        make release
+        make test
+
+  windows:
+
+    runs-on: windows-latest
 
     steps:
     # - name: Fix up git URLs
