@@ -65,13 +65,4 @@ jobs:
       uses: elstudio/actions-js-build/commit@v2
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
-#     - name: configure
-#       run: ./configure
-    # - name: install
-    #   run: sudo
-    # - name: make and test
-    #   run: make test
-#     - name: make check
-#       run: make check
-#     - name: make distcheck
-#       run: make distcheck
+

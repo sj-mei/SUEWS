@@ -44,7 +44,6 @@ jobs:
       run: |
         gfortran --version
         make release
-        make test
 
   mac:
 
