@@ -55,7 +55,7 @@ MODULE ctrl_output
 
    ! define type: variable attributes
    TYPE varAttr
-      CHARACTER(len=15) :: header ! short name in headers
+      CHARACTER(len=20) :: header ! short name in headers
       CHARACTER(len=12) :: unit   ! unit
       CHARACTER(len=10) :: fmt    ! output format
       CHARACTER(len=100) :: longNm ! long name for detailed description
@@ -164,42 +164,46 @@ MODULE ctrl_output
       varAttr('RH2', '%', f94, 'Relative humidity at 2 m', aA, 'SUEWS', 0) &
       /
 
-   ! SOLWEIG:
+   ! BEERS (successor of SOLWEIG):
    DATA(varListAll(n), &
         n=ncolumnsDataOutSUEWS + 1, &
-        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5)/ &
-      varAttr('azimuth', 'to_add', f106, 'azimuth', aA, 'SOLWEIG', 0), &
-      varAttr('altitude', 'to_add', f106, 'altitude', aA, 'SOLWEIG', 0), &
-      varAttr('GlobalRad', 'W m-2', f106, 'Global Irradiance', aA, 'SOLWEIG', 0), &
-      varAttr('DiffuseRad', 'W m-2', f106, 'Diffuse Radiation', aA, 'SOLWEIG', 0), &
-      varAttr('DirectRad', 'W m-2', f106, 'Direct Radiation', aA, 'SOLWEIG', 0), &
-      varAttr('Kdown2d', 'W m-2', f106, 'Incoming shortwave radiation at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Kup2d', 'W m-2', f106, 'Outgoing shortwave radiation at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Ksouth', 'W m-2', f106, 'Shortwave radiation from south at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Kwest', 'W m-2', f106, 'Shortwave radiation from west at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Knorth', 'W m-2', f106, 'Shortwave radiation from north at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Keast', 'W m-2', f106, 'Shortwave radiation from east at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Ldown2d', 'W m-2', f106, 'Incoming longwave radiation at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Lup2d', 'W m-2', f106, 'Outgoing longwave radiation at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Lsouth', 'W m-2', f106, 'Longwave radiation from west at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Lwest', 'W m-2', f106, 'Longwave radiation from south at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Lnorth', 'W m-2', f106, 'Longwave radiation from north at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Least', 'W m-2', f106, 'Longwave radiation from east at POI', aA, 'SOLWEIG', 0), &
-      varAttr('Tmrt', 'degC', f106, 'Mean Radiant Temperature', aA, 'SOLWEIG', 0), &
-      varAttr('I0', 'W m-2', f106, 'theoretical value of maximum incoming solar radiation', aA, 'SOLWEIG', 0), &
-      varAttr('CI', '', f106, 'clearness index for Ldown', aA, 'SOLWEIG', 0), &
-      varAttr('gvf', '', f106, 'Ground view factor', aA, 'SOLWEIG', 0), &
-      varAttr('shadow', '', f106, 'Shadow value (0= shadow, 1 = sun)', aA, 'SOLWEIG', 0), &
-      varAttr('svf', '', f106, 'Sky View Factor from ground and buildings', aA, 'SOLWEIG', 0), &
-      varAttr('svfbuveg', '', f106, 'Sky View Factor from ground, buildings and vegetation', aA, 'SOLWEIG', 0), &
-      varAttr('Ta', 'degC', f106, 'Air temperature', aA, 'SOLWEIG', 0), &
-      varAttr('Tg', 'degC', f106, 'Surface temperature', aA, 'SOLWEIG', 0) &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5)/ &
+      varAttr('azimuth', 'to_add', f106, 'azimuth', aA, 'BEERS', 0), &
+      varAttr('altitude', 'to_add', f106, 'altitude', aA, 'BEERS', 0), &
+      varAttr('GlobalRad', 'W m-2', f106, 'Global Irradiance', aA, 'BEERS', 0), &
+      varAttr('DiffuseRad', 'W m-2', f106, 'Diffuse Radiation', aA, 'BEERS', 0), &
+      varAttr('DirectRad', 'W m-2', f106, 'Direct Radiation', aA, 'BEERS', 0), &
+      varAttr('Kdown2d', 'W m-2', f106, 'Incoming shortwave radiation at POI', aA, 'BEERS', 0), &
+      varAttr('Kup2d', 'W m-2', f106, 'Outgoing shortwave radiation at POI', aA, 'BEERS', 0), &
+      varAttr('Ksouth', 'W m-2', f106, 'Shortwave radiation from south at POI', aA, 'BEERS', 0), &
+      varAttr('Kwest', 'W m-2', f106, 'Shortwave radiation from west at POI', aA, 'BEERS', 0), &
+      varAttr('Knorth', 'W m-2', f106, 'Shortwave radiation from north at POI', aA, 'BEERS', 0), &
+      varAttr('Keast', 'W m-2', f106, 'Shortwave radiation from east at POI', aA, 'BEERS', 0), &
+      varAttr('Ldown2d', 'W m-2', f106, 'Incoming longwave radiation at POI', aA, 'BEERS', 0), &
+      varAttr('Lup2d', 'W m-2', f106, 'Outgoing longwave radiation at POI', aA, 'BEERS', 0), &
+      varAttr('Lsouth', 'W m-2', f106, 'Longwave radiation from west at POI', aA, 'BEERS', 0), &
+      varAttr('Lwest', 'W m-2', f106, 'Longwave radiation from south at POI', aA, 'BEERS', 0), &
+      varAttr('Lnorth', 'W m-2', f106, 'Longwave radiation from north at POI', aA, 'BEERS', 0), &
+      varAttr('Least', 'W m-2', f106, 'Longwave radiation from east at POI', aA, 'BEERS', 0), &
+      varAttr('Tmrt', 'degC', f106, 'Mean Radiant Temperature', aA, 'BEERS', 0), &
+      varAttr('I0', 'W m-2', f106, 'theoretical value of maximum incoming solar radiation', aA, 'BEERS', 0), &
+      varAttr('CI', '', f106, 'clearness index for Ldown', aA, 'BEERS', 0), &
+      ! varAttr('gvf', '', f106, 'Ground view factor', aA, 'BEERS', 0), &
+      varAttr('SH_Ground', '', f106, 'shadowground', aA, 'BEERS', 0), &
+      varAttr('SH_Walls', '', f106, 'shadowwalls', aA, 'BEERS', 0), &
+      varAttr('SVF_Ground', '', f106, 'Sky View Factor from ground', aA, 'BEERS', 0), &
+      varAttr('SVF_Roof', '', f106, 'Sky View Factor from roof', aA, 'BEERS', 0), &
+      varAttr('SVF_BdVeg', '', f106, 'Sky View Factor from buildings and vegetation', aA, 'BEERS', 0), &
+      varAttr('Emis_Sky', 'degC', f106, 'clear-sky emissivity from Prata (1996)', aA, 'BEERS', 0), &
+      varAttr('Ta', 'degC', f104, 'Air temperature', aA, 'BEERS', 0), &
+      varAttr('Tg', 'degC', f104, 'Ground Surface temperature', aA, 'BEERS', 0), &
+      varAttr('Tw', 'degC', f104, 'Wall Surface temperature', aA, 'BEERS', 0) &
       /
 
    ! BL:
    DATA(varListAll(n), &
-        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + 1, &
-        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5)/ &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 + ncolumnsdataOutBL - 5)/ &
       varAttr('z', 'to_add', f104, 'z', aA, 'BL', 0), &
       varAttr('theta', 'to_add', f104, 'theta', aA, 'BL', 0), &
       varAttr('q', 'to_add', f104, 'q', aA, 'BL', 0), &
@@ -221,8 +225,8 @@ MODULE ctrl_output
 
    ! Snow:
    DATA(varListAll(n), &
-        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + 1, &
-        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5)/ &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 + ncolumnsdataOutBL - 5 + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5)/ &
       varAttr('SWE_Paved', 'mm', f106, 'Snow water equivalent for paved surface', aA, 'snow', 0), &
       varAttr('SWE_Bldgs', 'mm', f106, 'Snow water equivalent for building surface', aA, 'snow', 0), &
       varAttr('SWE_EveTr', 'mm', f106, 'Snow water equivalent for evergreen tree surface', aA, 'snow', 0), &
@@ -325,8 +329,9 @@ MODULE ctrl_output
 
    ! ESTM:
    DATA(varListAll(n), &
-        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + 1, &
-       ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5)/ &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + 1, &
+       ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 &
+       + ncolumnsDataOutESTM - 5)/ &
       varAttr('QS', 'W m-2', f104, 'Total Storage', aA, 'ESTM', 0), &
       varAttr('QSAir', 'W m-2', f104, 'Storage air', aA, 'ESTM', 0), &
       varAttr('QSWall', 'W m-2', f104, 'Storage Wall', aA, 'ESTM', 0), &
@@ -358,9 +363,9 @@ MODULE ctrl_output
 
    ! DailyState:
    DATA(varListAll(n), &
-        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 + 1, &
-        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
         + ncolumnsDataOutDailyState - 5)/ &
       varAttr('HDD1_h', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
@@ -412,11 +417,11 @@ MODULE ctrl_output
 
    ! RSL profiles
    DATA(varListAll(n), &
-        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
         + ncolumnsDataOutDailyState - 5 &
         + 1, &
-        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
         + ncolumnsDataOutDailyState - 5 &
         + ncolumnsDataOutRSL - 5)/ &
@@ -562,12 +567,12 @@ MODULE ctrl_output
 
       ! debug info
    DATA(varListAll(n), &
-        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
         + ncolumnsDataOutDailyState - 5 &
         + ncolumnsDataOutRSL - 5 &
         + 1, &
-        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
         + ncolumnsDataOutDailyState - 5 &
         + ncolumnsDataOutRSL - 5 &
@@ -629,7 +634,7 @@ CONTAINS
       ! determine groups to output
       ! TODO: needs to be smarter, automate this filtering
       groupList0(1) = 'SUEWS'
-      groupList0(2) = 'SOLWEIG'
+      groupList0(2) = 'BEERS'
       groupList0(3) = 'BL'
       groupList0(4) = 'snow'
       groupList0(5) = 'ESTM'
@@ -718,8 +723,9 @@ CONTAINS
       CASE ('SUEWS') !default
          dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
 
-      CASE ('SOLWEIG') !SOLWEIG
-         dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('BEERS') !SOLWEIG
+         dataOutX = dataOutBEERS(1:irMax, 1:SIZE(varListX), Gridiv)
+         ! dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('BL') !BL
          dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)
@@ -1302,7 +1308,7 @@ CONTAINS
 !       CASE ('SUEWS') !default
 !          dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varList), :)
 
-!       CASE ('SOLWEIG') !SOLWEIG
+!       CASE ('BEERS') !SOLWEIG
 !          ! todo: inconsistent data structure
 !          dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varList), :)
 

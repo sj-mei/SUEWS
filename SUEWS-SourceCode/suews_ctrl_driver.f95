@@ -34,9 +34,10 @@ MODULE SUEWS_Driver
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
-      ncolumnsDataOutRSL, ncolumnsdataOutSOL, ncolumnsDataOutDebug
+      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG,ncolumnsDataOutBEERS, ncolumnsDataOutDebug
    use moist, only: avcp, avdens, lv_J_kg
    use solweig_module, only: SOLWEIG_cal_main
+   use beers_module, only: BEERS_cal_main
 
    IMPLICIT NONE
 
@@ -87,7 +88,8 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,&!output
+      dataOutLineBEERS, &!output
       dataOutLineDebug, &
       DailyStateLine)!output
 
@@ -340,7 +342,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT)      ::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)      ::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! RSL variable array
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT)     ::dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT)     ::dataOutLineDebug
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
       ! ########################################################################################
@@ -385,7 +387,8 @@ CONTAINS
       REAL(KIND(1D0))::mwh
       REAL(KIND(1D0))::mwstore
       REAL(KIND(1D0))::NWstate_per_tstep
-      REAL(KIND(1D0))::FAI
+      REAL(KIND(1D0))::FAI ! frontal area index
+      REAL(KIND(1D0))::PAI ! plan area index
       REAL(KIND(1D0))::zL
       REAL(KIND(1D0))::q2_gkg
       REAL(KIND(1D0))::qe
@@ -501,8 +504,8 @@ CONTAINS
       REAL(KIND(1D0))::NonWaterFraction
 
       ! snow related temporary values
-      ! REAL(KIND(1D0))::alb0
-      REAL(KIND(1D0))::alb1
+      ! REAL(KIND(1D0))::albedo_snowfree
+      REAL(KIND(1D0))::albedo_snow
 
       ! ########################################################################################
       ! TS 19 Sep 2019
@@ -773,7 +776,7 @@ CONTAINS
             ldown, fcld, &!output
             qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
             qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            alb1, snowFrac_next, SnowAlb_next)
+            albedo_snow, snowFrac_next, SnowAlb_next)
 
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
@@ -799,7 +802,7 @@ CONTAINS
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
             SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
             nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn1_ind_snow, &
-            kup_ind_snow, SnowWater_prev, deltaQi, alb1, &
+            kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
             SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, &!input
             SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, &!output
             mwh, Qm, QmFreez, QmRain, &! output
@@ -996,13 +999,29 @@ CONTAINS
       HDD_id = HDD_id_next
       WUDay_id = WUDay_id_next
 
+
       !==============use SOLWEIG to get localised radiation flux==================
+      ! if (sfr(BldgSurf) > 0) then
+      !    CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
+      !    lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
+      ! else
+      !    dataOutLineSOLWEIG = set_nan(dataOutLineSOLWEIG)
+      ! endif
+
+      !==============use BEERS to get localised radiation flux==================
+      ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
       if (sfr(BldgSurf) > 0) then
-         CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
-                               lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
+         PAI=sfr(2)/sum(sfr(1:2))
+         CALL BEERS_cal_main(iy, id, dectime, PAI, FAI, avkdn, ldown, Temp_C, avrh, &
+                             Press_hPa, TSfc_C, lat, lng, alt, timezone, zenith_deg, azimuth, &
+                             alb(1), alb(2), emis(1), emis(2), &
+                             dataOutLineBEERS) ! output
+         ! CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
+         ! lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
       else
-         dataOutLineSOLWEIG = set_nan(dataOutLineSOLWEIG)
+         dataOutLineBEERS = set_nan(dataOutLineBEERS)
       endif
+
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
          AdditionalWater, alb, avkdn, U10_ms, azimuth, &!input
@@ -1303,7 +1322,7 @@ CONTAINS
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      alb1, snowFrac_next, SnowAlb_next)
+      albedo_snow, snowFrac_next, SnowAlb_next)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
       IMPLICIT NONE
@@ -1362,9 +1381,9 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::kup
       REAL(KIND(1d0)), INTENT(out)::lup
       REAL(KIND(1d0)), INTENT(out)::tsurf
-      REAL(KIND(1d0)), INTENT(out)::alb1
+      REAL(KIND(1d0)), INTENT(out)::albedo_snow
       REAL(KIND(1d0)), INTENT(out)::SnowAlb_next
-      REAL(KIND(1d0))::alb0
+      REAL(KIND(1d0))::albedo_snowfree
       REAL(KIND(1d0))::SnowAlb
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
@@ -1429,7 +1448,7 @@ CONTAINS
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn1, qn1_snowfree, qn1_S, kclear, kup, LDown, lup, fcld, tsurf, &! output:
-            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, alb0, alb1)
+            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
 
       ELSE ! NetRadiationMethod==0
          SnowFrac = snowFrac_obs
@@ -2468,8 +2487,9 @@ CONTAINS
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, dataoutlineDebug, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutSOLWEIG, dataOutDebug)!inout
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
+      dataoutlineDebug, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug)!inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::ReadLinesMetdata
@@ -2484,14 +2504,14 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(in) :: dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(in) :: dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
-      REAL(KIND(1d0)), DIMENSION(ncolumnsdataOutSOL - 5), INTENT(in) :: dataOutLineSOLWEIG
+      REAL(KIND(1d0)), DIMENSION(ncolumnsdataOutBEERS - 5), INTENT(in) :: dataOutLineBEERS
       REAL(KIND(1d0)), DIMENSION(ncolumnsdataOutDebug - 5), INTENT(in) :: dataOutLineDebug
 
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutESTM(ReadLinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
-      REAL(KIND(1d0)), INTENT(inout) :: dataOutSOLWEIG(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
+      REAL(KIND(1d0)), INTENT(inout) :: dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
 
       !====================== update output arrays ==============================
@@ -2501,7 +2521,7 @@ CONTAINS
       dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, (dataoutLineRSL)]
       dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [datetimeLine, (dataOutLineDebug)]
       ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
-      dataOutSOLWEIG(ir, 1:ncolumnsDataOutSOL, Gridiv) = [datetimeLine, set_nan(dataOutLineSOLWEIG)]
+      dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [datetimeLine, set_nan(dataOutLineBEERS)]
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
 
@@ -2865,7 +2885,7 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockSOL, &!output
+      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, &!output
       dataOutBlockDebug, &
       DailyStateBlock)
 
@@ -3115,7 +3135,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) ::dataOutBlockSnow
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) ::dataOutBlockESTM
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
-      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsdataOutSOL), INTENT(OUT) ::dataOutBlockSOL
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsdataOutBEERS), INTENT(OUT) ::dataOutBlockBEERS
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDebug), INTENT(OUT) ::dataOutBlockDebug
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
       ! ########################################################################################
@@ -3161,7 +3181,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5)::dataOutLineRSL
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5) ::dataOutLineSOLWEIG
+      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) ::dataOutLineSOLWEIG
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) ::dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) ::dataOutLinedebug
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
 
@@ -3169,7 +3190,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) ::dataOutBlockSnow_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) ::dataOutBlockESTM_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
-      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutSOL, 1) ::dataOutBlockSOL_X
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsdataOutBEERS, 1) ::dataOutBlockBEERS_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) ::dataOutBlockDebug_X
       ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
@@ -3489,7 +3510,8 @@ CONTAINS
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!output
+            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &
+            dataOutLineBEERS, &!output
             dataOutLineDebug, &
             DailyStateLine)!output
 
@@ -3505,9 +3527,9 @@ CONTAINS
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
             ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
-            dataoutLineRSL, dataOutLineSOLWEIG, dataOutLinedebug, &!input
+            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, &!input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, &!
-            dataOutBlockRSL_X, dataOutBlockSOL_X, dataOutBlockDebug_X)!inout
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X)!inout
 
       END DO
 
@@ -3515,7 +3537,7 @@ CONTAINS
       dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
-      dataOutBlockSOL = dataOutBlockSOL_X(:, :, 1)
+      dataOutBlockBEERS = dataOutBlockBEERS_X(:, :, 1)
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
       ! DailyStateBlock=DailyStateBlock_X(:,:,1)
 

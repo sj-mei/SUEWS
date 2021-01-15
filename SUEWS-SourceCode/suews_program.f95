@@ -269,9 +269,8 @@ PROGRAM SUEWS_Program
       dataOutDebug = NaN ! initialise Debug array
       ALLOCATE (dataOutDailyState(ndays, ncolumnsDataOutDailyState, NumberOfGrids))                 !DailyState array
       dataOutDailyState = NaN ! initialise DailyState
-      ! IF (SOLWEIGuse == 1) ALLOCATE (dataOutSOLWEIG(ReadLinesMetdata, ncolumnsdataOutSOL, NumberOfGrids))     !SOLWEIG POI output
-      ALLOCATE (dataOutSOLWEIG(ReadLinesMetdata, ncolumnsdataOutSOL, NumberOfGrids))     !SOLWEIG POI output
-      dataOutSOLWEIG = NaN
+      ALLOCATE (dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids))     !SOLWEIG POI output
+      dataOutBEERS = NaN
       IF (CBLuse >= 1) ALLOCATE (dataOutBL(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids))       !CBL output
       ! IF (SnowUse == 1) THEN
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids))   !Snow output
@@ -692,14 +691,10 @@ PROGRAM SUEWS_Program
       DEALLOCATE (dataOutSUEWS)
       DEALLOCATE (dataOutRSL)
       DEALLOCATE (dataOutDebug)
-      DEALLOCATE (dataOutSOLWEIG)
+      DEALLOCATE (dataOutBEERS)
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN
       DEALLOCATE (dataOutSnow)
-      ! DEALLOCATE(qn1_S_store)
-      ! DEALLOCATE(qn1_S_av_store)
-      ! DEALLOCATE(qn1_S_store_grid)
-      ! DEALLOCATE(qn1_S_av_store_grid)
       DEALLOCATE (qn1_s_av_grids)
       DEALLOCATE (dqnsdt_grids)
       ! ENDIF
@@ -710,17 +705,6 @@ PROGRAM SUEWS_Program
       DEALLOCATE (Ts5mindata_ir)
       DEALLOCATE (Tair24HR)
       ! ENDIF
-      ! DEALLOCATE(TstepProfiles)
-      ! DEALLOCATE(AHProf_tstep)
-      ! DEALLOCATE(WUProfM_tstep)
-      ! DEALLOCATE(WUProfA_tstep)
-      ! DEALLOCATE(HumActivity_tstep)
-      ! DEALLOCATE(TraffProf_tstep)
-      ! DEALLOCATE(PopProf_tstep)
-      ! DEALLOCATE(qn1_store)
-      ! DEALLOCATE(qn1_av_store)
-      ! DEALLOCATE(qn1_store_grid)
-      ! DEALLOCATE(qn1_av_store_grid)
       DEALLOCATE (qhforCBL)
       DEALLOCATE (qeforCBL)
       DEALLOCATE (tair_av_grids)
