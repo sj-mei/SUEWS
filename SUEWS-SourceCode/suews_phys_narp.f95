@@ -111,7 +111,7 @@ CONTAINS
       NetRadiationMethod_use, DiagQN, &
       QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, &! output:
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      alb0, alb1)
+      albedo_snowfree, albedo_snow)
       !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
       !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
       !,zenith_degnetRadiationChoice,
@@ -146,7 +146,7 @@ CONTAINS
       ! EA_Pa = vapor pressure (hPa)
       ! TD = dewpoint (C)
       ! ZENITH = solar zenith angle
-      ! ALB0 = surface albedo
+      ! albedo_snowfree = surface albedo
       ! EMIS0 = surface emissivity
       ! EMIS_A = atmospheric emissivity
       ! TRANS = atmospheric transmissivity
@@ -203,8 +203,8 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
 
-      REAL(KIND(1d0)), INTENT(out) ::alb0
-      REAL(KIND(1d0)), INTENT(out) ::alb1
+      REAL(KIND(1d0)), INTENT(out) ::albedo_snowfree
+      REAL(KIND(1d0)), INTENT(out) ::albedo_snow
 
       REAL(KIND(1d0)), DIMENSION(nsurf) ::qn1_ind
       REAL(KIND(1d0)), DIMENSION(nsurf) ::kup_ind
@@ -278,9 +278,9 @@ CONTAINS
          !-------SNOW FREE SURFACE--------------------------
 
          IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
-            ALB0 = ALB(is) + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
+            albedo_snowfree = ALB(is) + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
          ELSE
-            ALB0 = ALB(is)
+            albedo_snowfree = ALB(is)
          ENDIF
          EMIS0 = EMIS(is)
 
@@ -327,12 +327,12 @@ CONTAINS
          !Note that this is not averaged over the hour for cases where time step < 1hr
          KDOWN_HR = KDOWN
          IF (KDOWN_HR > 0) THEN
-            LUPCORR = (1 - ALB0)*(0.08*KDOWN_HR)
+            LUPCORR = (1 - albedo_snowfree)*(0.08*KDOWN_HR)
          ELSE
             LUPCORR = 0.
          ENDIF
 
-         KUP = ALB0*KDOWN
+         KUP = albedo_snowfree*KDOWN
 
          if (NetRadiationMethod_use < 10) then
             ! NARP method
@@ -352,19 +352,19 @@ CONTAINS
          !Snow related parameters if snow pack existing
          IF (SnowFrac(is) > 0) THEN
             IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
-               ALB1 = SnowAlb + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
+               albedo_snow = SnowAlb + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
             ELSE
-               ALB1 = SnowAlb
+               albedo_snow = SnowAlb
             ENDIF
 
-            KUP_SNOW = (ALB1*(SnowFrac(is) - SnowFrac(is)*IceFrac(is)) + ALB0*SnowFrac(is)*IceFrac(is))*KDOWN
+            KUP_SNOW = (albedo_snow*(SnowFrac(is) - SnowFrac(is)*IceFrac(is)) + albedo_snowfree*SnowFrac(is)*IceFrac(is))*KDOWN
 
             if (NetRadiationMethod_use < 10) then
                ! NARP method
                TSURF_SNOW = ((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
                !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)
                !open(34,file='TestingSnowFrac.txt',position='append')
-               !write(34,*) dectime,is,alb1,alb0,SnowFrac(is),IceFrac(is),KDOWN,KUP_snow
+               !write(34,*) dectime,is,albedo_snow,albedo_snowfree,SnowFrac(is),IceFrac(is),KDOWN,KUP_snow
                !close(34)
                LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
             else

@@ -36,7 +36,7 @@ CONTAINS
       lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
       nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
-      kup_ind_snow, SnowWater, deltaQi, alb1, &
+      kup_ind_snow, SnowWater, deltaQi, albedo_snow, &
       SnowPack_in, SnowFrac_in, SnowAlb_in, SnowDens_in, SnowfallCum_in, &!input
       SnowPack_out, SnowFrac_out, SnowAlb_out, SnowDens_out, SnowfallCum_out, &!output
       mwh, Qm, QmFreez, QmRain, &! output
@@ -73,7 +73,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::PrecipLimit
       REAL(KIND(1d0)), INTENT(in)::PrecipLimitAlb
       REAL(KIND(1d0)), INTENT(in)::nsh_real
-      REAL(KIND(1d0)), INTENT(in)::alb1
+      REAL(KIND(1d0)), INTENT(in)::albedo_snow
       REAL(KIND(1d0)), INTENT(in)::tau_r
       ! REAL(KIND(1d0)),INTENT(in)::waterdens
 
@@ -187,7 +187,7 @@ CONTAINS
                         qn1_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
                         SnowWater(1:nsurf), SnowDens_out(1:nsurf), & !88
                         snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf), &
-                        alb1]
+                        albedo_snow]
       ! dataOutLineSnow=set_nan(dataOutLineSnow)
 
    END SUBROUTINE Snow_cal_MeltHeat

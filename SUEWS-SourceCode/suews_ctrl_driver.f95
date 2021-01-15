@@ -505,8 +505,8 @@ CONTAINS
       REAL(KIND(1D0))::NonWaterFraction
 
       ! snow related temporary values
-      ! REAL(KIND(1D0))::alb0
-      REAL(KIND(1D0))::alb1
+      ! REAL(KIND(1D0))::albedo_snowfree
+      REAL(KIND(1D0))::albedo_snow
 
       ! ########################################################################################
       ! TS 19 Sep 2019
@@ -777,7 +777,7 @@ CONTAINS
             ldown, fcld, &!output
             qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
             qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            alb1, snowFrac_next, SnowAlb_next)
+            albedo_snow, snowFrac_next, SnowAlb_next)
 
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
@@ -803,7 +803,7 @@ CONTAINS
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
             SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
             nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn1_ind_snow, &
-            kup_ind_snow, SnowWater_prev, deltaQi, alb1, &
+            kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
             SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, &!input
             SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, &!output
             mwh, Qm, QmFreez, QmRain, &! output
@@ -1323,7 +1323,7 @@ CONTAINS
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      alb1, snowFrac_next, SnowAlb_next)
+      albedo_snow, snowFrac_next, SnowAlb_next)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
       IMPLICIT NONE
@@ -1382,9 +1382,9 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::kup
       REAL(KIND(1d0)), INTENT(out)::lup
       REAL(KIND(1d0)), INTENT(out)::tsurf
-      REAL(KIND(1d0)), INTENT(out)::alb1
+      REAL(KIND(1d0)), INTENT(out)::albedo_snow
       REAL(KIND(1d0)), INTENT(out)::SnowAlb_next
-      REAL(KIND(1d0))::alb0
+      REAL(KIND(1d0))::albedo_snowfree
       REAL(KIND(1d0))::SnowAlb
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
@@ -1449,7 +1449,7 @@ CONTAINS
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn1, qn1_snowfree, qn1_S, kclear, kup, LDown, lup, fcld, tsurf, &! output:
-            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, alb0, alb1)
+            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
 
       ELSE ! NetRadiationMethod==0
          SnowFrac = snowFrac_obs
