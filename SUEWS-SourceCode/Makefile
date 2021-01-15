@@ -1,5 +1,5 @@
 # compilers
-FC = gfortran $(FFLAGS)
+FC = gfortran-10 $(FFLAGS)
 CC = gcc $(CFLAGS)
 
 # source code suffix: gfortran can work with f95 files

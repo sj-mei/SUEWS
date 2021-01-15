@@ -28,11 +28,11 @@ jobs:
         submodules: true
         token: ${{ secrets.PAT }}
 
-    - name: show version
-      run: |
-        bin_gfortran=$(which gfortran-10)
-        ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
-        gfortran --version
+    # - name: show version
+    #   run: |
+    #     bin_gfortran=$(which gfortran-10)
+    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+    #     gfortran --version
 
     - name: Setup Python for use with actions
       uses: actions/setup-python@v2
@@ -63,11 +63,11 @@ jobs:
         python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
 
-    - name: show version
-      run: |
-        bin_gfortran=$(which gfortran-10)
-        ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
-        gfortran --version
+    # - name: show version
+    #   run: |
+    #     bin_gfortran=$(which gfortran-10)
+    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+    #     gfortran --version
 
     - name: build and test
       run: |
