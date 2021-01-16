@@ -76,6 +76,7 @@ jobs:
         push_options: '--force'
         skip_dirty_check: true
         skip_fetch: true
+        commit_options: '--no-verify'
 
 
 
