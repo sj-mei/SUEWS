@@ -25,28 +25,28 @@ jobs:
     # - name: Fix up git URLs
     #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
         token: ${{ secrets.PAT }}
 
-    - name: Setup git user
-      env:
-        ACCESS_TOKEN: ${{ secrets.PAT }}
-      run: |
-        if [ -z "$COMMIT_EMAIL" ]
-        then
-          COMMIT_EMAIL="${GITHUB_ACTOR}@users.noreply.github.com"
-        fi
+    # - name: Setup git user
+    #   env:
+    #     ACCESS_TOKEN: ${{ secrets.PAT }}
+    #   run: |
+    #     if [ -z "$COMMIT_EMAIL" ]
+    #     then
+    #       COMMIT_EMAIL="${GITHUB_ACTOR}@users.noreply.github.com"
+    #     fi
 
-        if [ -z "$COMMIT_NAME" ]
-        then
-          COMMIT_NAME="${GITHUB_ACTOR}"
-        fi
-        git config --global credential.helper store && \
-        git config --global user.email "${COMMIT_EMAIL}" && \
-        git config --global user.name "${COMMIT_NAME}" && \
-        REPOSITORY_PATH="https://${ACCESS_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+    #     if [ -z "$COMMIT_NAME" ]
+    #     then
+    #       COMMIT_NAME="${GITHUB_ACTOR}"
+    #     fi
+    #     git config --global credential.helper store && \
+    #     git config --global user.email "${COMMIT_EMAIL}" && \
+    #     git config --global user.name "${COMMIT_NAME}" && \
+    #     REPOSITORY_PATH="https://${ACCESS_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
     - name: Setup Python for use with actions
       uses: actions/setup-python@v2
