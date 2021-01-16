@@ -156,7 +156,7 @@ SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
 
    ELSE
       CALL ErrorHint(21, 'In SUEWS_OHM.f95: bad value for qn1 found during qs calculation.', qn1, -55.55d0, -55)
-   ENDIF
+   END IF
 
    !write(*,*) qs
    !write(*,*) '--------------------'
@@ -191,9 +191,9 @@ SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
 
       ELSE
          CALL ErrorHint(21, 'In SUEWS_OHM.f95: bad value for qn1(snow) found during qs calculation.', qn1_S, -55.55d0, -55)
-      ENDIF
+      END IF
 
-   ENDIF
+   END IF
 
    RETURN
 END SUBROUTINE OHM
@@ -240,7 +240,7 @@ SUBROUTINE OHM_coef_cal(sfr, nsurf, &
          ii = 0
       ELSE          !Winter
          ii = 2
-      ENDIF
+      END IF
 
       IF (state_id(is) > 0) THEN     !Wet surface
          i = ii + 1
@@ -250,21 +250,21 @@ SUBROUTINE OHM_coef_cal(sfr, nsurf, &
          IF (is > BldgSurf .AND. is /= WaterSurf) THEN    !Wet soil (i.e. EveTr, DecTr, Grass, BSoil surfaces)
             IF (soilstore_id(is)/SoilStoreCap(is) > OHM_threshWD(is)) THEN
                i = ii + 1
-            ENDIF
-         ENDIF
-      ENDIF
+            END IF
+         END IF
+      END IF
 
       ! If snow, adjust surface fractions accordingly
       IF (SnowUse == 1 .AND. is /= BldgSurf .AND. is /= WaterSurf) THEN   ! QUESTION: Why is BldgSurf excluded here?
          surfrac = surfrac*(1 - SnowFrac(is))
-      ENDIF
+      END IF
 
       ! Calculate the areally-weighted OHM coefficients
       a1 = a1 + surfrac*OHM_coef(is, i, 1)
       a2 = a2 + surfrac*OHM_coef(is, i, 2)
       a3 = a3 + surfrac*OHM_coef(is, i, 3)
 
-   ENDDO  !end of loop over surface types ------------------------------------------------
+   END DO  !end of loop over surface types ------------------------------------------------
 END SUBROUTINE OHM_coef_cal
 
 ! Updated OHM calculations for WRF-SUEWS coupling (v2018b onwards) weighted mean (TS Apr 2018)
@@ -290,7 +290,7 @@ SUBROUTINE OHM_dqndt_cal_X(dt, dt_since_start, qn1_av_prev, qn1, dqndt_prev, qn1
 
    ELSE ! effective period
       dt0 = dt0_thresh
-   ENDIF
+   END IF
 
    ! get weighted average at a previous time specified by `window_hr`
    qn1_av_0 = qn1_av_prev - dqndt_prev*(window_hr - dt/3600.)
@@ -327,20 +327,20 @@ SUBROUTINE OHM_dqndt_cal(nsh, qn1, qn1_store_grid, qn1_av_store_grid, dqndt)
    ELSEIF (nsh == 1) THEN
       qn1_store_grid(:) = qn1
       qn1_av = qn1
-   ENDIF
+   END IF
    ! Store hourly average values (calculated every timestep) for previous 2 hours
    IF (nsh > 1) THEN
       qn1_av_store_grid = CSHIFT(qn1_av_store_grid, 1)
       qn1_av_store_grid(2*nsh + 1) = qn1_av
    ELSEIF (nsh == 1) THEN
       qn1_av_store_grid(:) = qn1_av
-   ENDIF
+   END IF
    ! Calculate dQ* per dt for 60 min (using running mean Q* at t hours and (t-2) hours)
    IF (ANY(qn1_av_store_grid == -999)) THEN
       dqndt = 0  ! Set dqndt term to zero for spinup
    ELSE
       dqndt = 0.5*(qn1_av_store_grid((2*nsh + 1)) - qn1_av_store_grid(1))
-   ENDIF
+   END IF
 
 END SUBROUTINE OHM_dqndt_cal
 

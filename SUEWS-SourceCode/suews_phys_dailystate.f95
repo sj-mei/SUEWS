@@ -282,7 +282,7 @@ CONTAINS
          Tmin_id = Temp_C   !Daily min T in column 3
          Tmax_id = Temp_C   !Daily max T in column 4
          lenDay_id = 0        !Cumulate daytime hours
-      ENDIF
+      END IF
 
       ! --------------------------------------------------------------------------------
       ! regular update at all timesteps of a day
@@ -328,7 +328,7 @@ CONTAINS
             porosity_id, &
             StoreDrainPrm, &
             WUDay_id, deltaLAI)!output
-      ENDIF   !End of section done only at the end of each day (i.e. only once per day)
+      END IF   !End of section done only at the end of each day (i.e. only once per day)
 
       ! translate values back
       LAI_id_next = LAI_id
@@ -559,7 +559,7 @@ CONTAINS
       Tmax_id = MAX(Temp_C, Tmax_id)     !Daily max T in column 4
       IF (avkdn > 10) THEN
          lenDay_id = lenDay_id + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
-      ENDIF
+      END IF
 
       ! Calculations related to heating and cooling degree days (HDD) ------------------
       ! See Sailor & Vasireddy (2006) EMS Eq 1,2 (theirs is hourly timestep)
@@ -649,19 +649,19 @@ CONTAINS
          albChangeDecTr = (AlbMax_DecTr - AlbMin_DecTr)*deltaLAI
          CapChange = (CapMin_dec - CapMax_dec)*deltaLAI
          porChange = (PorMin_dec - PorMax_dec)*deltaLAI
-      ENDIF
+      END IF
 
       iv = ivConif
       IF ((LAI_id(iv) - LAI_id_prev(iv)) /= 0) THEN
          deltaLAIEveTr = (LAI_id(iv) - LAI_id_prev(iv))/(LAImax(iv) - LAIMin(iv))
          albChangeEveTr = (AlbMax_EveTr - AlbMin_EveTr)*deltaLAIEveTr    !!N.B. Currently uses deltaLAI for deciduous trees only!!
-      ENDIF
+      END IF
 
       iv = ivGrass
       IF ((LAI_id(iv) - LAI_id_prev(iv)) /= 0) THEN
          deltaLAIGrass = (LAI_id(iv) - LAI_id_prev(iv))/(LAImax(iv) - LAIMin(iv))
          albChangeGrass = (AlbMax_Grass - AlbMin_Grass)*deltaLAIGrass    !!N.B. Currently uses deltaLAI for deciduous trees only!!
-      ENDIF
+      END IF
 
       iv = ivDecid
 
@@ -751,7 +751,7 @@ CONTAINS
          IF (yes < 0) THEN   !GDD cannot be negative
             indHelp = yes   !Amount of negative GDD
             yes = 0
-         ENDIF
+         END IF
 
          IF (no > 0) no = 0    !SDD cannot be positive
 
@@ -762,17 +762,17 @@ CONTAINS
          ! Possibility for cold spring
          IF (SDD_id(iv) <= SDDFull(iv) .AND. indHelp < 0) THEN
             GDD_id(iv) = 0
-         ENDIF
+         END IF
 
          IF (GDD_id(iv) >= GDDFull(iv)) THEN   !Start senescence
             GDD_id(iv) = GDDFull(iv)          !Leaves should not grow so delete yes from earlier
             IF (SDD_id(iv) < -critDays) GDD_id(iv) = 0
-         ENDIF
+         END IF
 
          IF (SDD_id(iv) <= SDDFull(iv)) THEN   !After senescence now start growing leaves
             SDD_id(iv) = SDDFull(iv)           !Leaves off so add back earlier
             IF (GDD_id(iv) > critDays) SDD_id(iv) = 0
-         ENDIF
+         END IF
 
          ! With these limits SDD, GDD is set to zero
          IF (SDD_id(iv) < -critDays .AND. SDD_id(iv) > SDDFull(iv)) GDD_id(iv) = 0
@@ -794,7 +794,7 @@ CONTAINS
                   LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*SDD_id(iv)*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
                   LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
+               END IF
             ELSEIF (LAItype(iv) >= 0.5) THEN
                IF (GDD_id(iv) > 0 .AND. GDD_id(iv) < GDDFull(iv)) THEN        !Leaves can still grow
                   LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(iv)*LAIPower(2, iv)) + LAI_id_prev(iv)
@@ -803,8 +803,8 @@ CONTAINS
                   LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - SDD_id(iv))*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
                   LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
-            ENDIF
+               END IF
+            END IF
 
          ELSEIF (lat < 0) THEN   !Southern hemisphere !! N.B. not identical to N hemisphere - return to later
             !If SDD is not zero by late Oct, this is forced
@@ -821,7 +821,7 @@ CONTAINS
                   LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*SDD_id(iv)*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
                   LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
+               END IF
             ELSE
                IF (GDD_id(iv) > 0 .AND. GDD_id(iv) < GDDFull(iv)) THEN
                   LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(iv)*LAIPower(2, iv)) + LAI_id_prev(iv)
@@ -830,23 +830,23 @@ CONTAINS
                   LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - SDD_id(iv))*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
                   LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
-            ENDIF
-         ENDIF   !N or S hemisphere
+               END IF
+            END IF
+         END IF   !N or S hemisphere
 
          ! Check LAI within limits; if not set to limiting value
          IF (LAI_id_next(iv) > LAImax(iv)) THEN
             LAI_id_next(iv) = LAImax(iv)
          ELSEIF (LAI_id_next(iv) < LAImin(iv)) THEN
             LAI_id_next(iv) = LAImin(iv)
-         ENDIF
+         END IF
 
-      ENDDO   !End of loop over veg surfaces
+      END DO   !End of loop over veg surfaces
 
       IF (LAICalcYes == 0) THEN ! moved to SUEWS_cal_DailyState, TS 18 Sep 2017
          ! LAI(id-1,:)=LAI_obs ! check -- this is going to be a problem as it is not for each vegetation class
          LAI_id_next = LAI_obs
-      ENDIF
+      END IF
       !------------------------------------------------------------------------------
 
    END SUBROUTINE update_GDDLAI
@@ -914,7 +914,7 @@ CONTAINS
             ELSE                        !Southern Hemisphere
                calc = 1
                IF (id >= Ie_end .AND. id <= Ie_start) calc = 0       !Day between irrigation period
-            ENDIF
+            END IF
 
             IF (calc == 1) THEN
                ! Model daily water use based on days_since_rain (days since rain) and temp_avg (average temp)
@@ -948,9 +948,9 @@ CONTAINS
 
             ELSE   !If no irrigation on this day
                WUDay_id = 0
-            ENDIF
-         ENDIF
-      ENDIF
+            END IF
+         END IF
+      END IF
 
    END SUBROUTINE update_WaterUse
 
@@ -983,7 +983,7 @@ CONTAINS
          HDD_id(6) = 0
       ELSE
          HDD_id(6) = HDD_id(6) + 1  !Days since rain
-      ENDIF
+      END IF
 
       ! save updated HDD_id(1:6) values to the last-half part (i.e., HDD_id(7:12))
       HDD_id(6 + 1:6 + 6) = HDD_id(1:6)

@@ -94,7 +94,7 @@ contains
             ELSE   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then
                r = (RS/RA)*(RA - rb)/rsrbsg
                W = (r - 1)/(r - (WetThresh_is/state_is))
-            ENDIF
+            END IF
 
             ! PRINT*, 'r',r
             ! PRINT*, 'W',W
@@ -114,8 +114,8 @@ contains
             x = MERGE(1d0, state_is/capStore_is, state_is > capStore_is)
             ev = ev*x !QE [W m-2]
             qe = ev*tlv !Ev [mm]
-         ENDIF   !Rutter/Shuttleworth calculation
-      ENDIF   !Wet/dry surface
+         END IF   !Rutter/Shuttleworth calculation
+      END IF   !Wet/dry surface
 
       ! IF ( id>190 ) THEN
       !    STOP "stop in Evap_SUEWS_new"

@@ -185,7 +185,7 @@ contains
          ELSE
             QF_SAHP_heating = 0
             !    QF_SAHP = AH_MIN(iu)*AHDorNorT
-         ENDIF
+         END IF
 
          ! Need to be checked later, not recommended to use
          QF_SAHP_base = AH_MIN(iu)*AHDorNorT         ! Temperature-independent contribution
@@ -228,9 +228,9 @@ contains
          ELSE
             QF_SAHP_heating = 0
             QF_SAHP_cooling = 0
-         ENDIF
+         END IF
 
-      ENDIF
+      END IF
 
       ! total QF as the sum of components
       QF_SAHP = QF_SAHP_base + QF_SAHP_heating + QF_SAHP_cooling
@@ -250,7 +250,7 @@ contains
             CALL ErrorHint(69, 'QF metab exceeds base QF.', QF_metab, QF_SAHP_base)
 
             QF_build = QF_SAHP_heating + QF_SAHP_cooling + (QF_SAHP_base - QF_metab) !If human metabolism greater than Base QF, remove this from the heating/cooling contribution also
-         ENDIF
+         END IF
 
          ! Consider the various components of QF_build to calculate Fc_build
          ! Assume all A/C electric, so QF_SAHP_ac is not associated with any local CO2 emissions
@@ -260,7 +260,7 @@ contains
          ! ... and there is also a temperature-independent contribution from building energy use.
          IF ((QF_SAHP_base - QF_metab) > 0) THEN
             Fc_build = Fc_build + QF_SAHP_base*QF0_BEU(iu)*FrFossilFuel_NonHeat*EF_umolCO2perJ
-         ENDIF
+         END IF
 
          ! Remainder of temperature-independent part must be traffic
          !QF_traff = (QF_SAHP_base-QF_metab)*(1.0-QF0_BEU(iu))
@@ -274,7 +274,7 @@ contains
             Fc_point = CO2PointSource*1e3*1e6/(12*60*60*24*SurfaceArea)
          ELSE
             Fc_point = 0
-         ENDIF
+         END IF
 
          ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
          Fc_anthro = Fc_metab + Fc_traff + Fc_build + Fc_point
@@ -303,7 +303,7 @@ contains
          ELSE ! If TrafficUnits doesn't match possible units
             CALL ErrorHint(75, 'Check TrafficUnits', TrafficUnits, -999d1)
 
-         ENDIF
+         END IF
 
          ! Energy released from buildings only
          ! Should buildings have their own profile? Now using population profile
@@ -320,7 +320,7 @@ contains
             Fc_point = CO2PointSource*1e3*1e6/(12*60*60*24*SurfaceArea)
          ELSE
             Fc_point = 0
-         ENDIF
+         END IF
 
          ! Add other QF components to QF_SAHP_base (because if AnthropEmissionsMethod = 4, QF calculated above is building part only)
          QF_SAHP_base = QF_SAHP_base + QF_traff + QF_metab
@@ -331,7 +331,7 @@ contains
          ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
          Fc_anthro = Fc_metab + Fc_traff + Fc_build + Fc_point
 
-      ENDIF
+      END IF
 
       RETURN
    END SUBROUTINE AnthropogenicEmissions

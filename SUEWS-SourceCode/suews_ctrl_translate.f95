@@ -153,7 +153,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       veg_fr = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
    ELSEIF (veg_type == 2) THEN      ! area irrigated
       veg_fr = (IrrFracEveTr*sfr(ConifSurf) + IrrFracDecTr*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
-   ENDIF
+   END IF
 
    ImpervFraction = (sfr(PavSurf) + sfr(BldgSurf))
    PervFraction = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
@@ -400,27 +400,27 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       IF (sfr(PavSurf) > 0) THEN  !If surface exists, ESTM fractions must be correct
          IF (SUM(ESTMsfr_Paved) > 1.001 .OR. SUM(ESTMsfr_Paved) < 0.999) THEN
             CALL ErrorHint(10, 'Surface fractions (Fr_ESTMClass_Paved) should sum to 1.', SUM(ESTMsfr_Paved), notUsed, notUsedI)
-         ENDIF
+         END IF
       ELSEIF (sfr(PavSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
          IF (SUM(ESTMsfr_Paved) > 1.001 .OR. SUM(ESTMsfr_Paved) < 0.999) THEN   !If ESTM fractions do not sum to 1, set here
             ESTMsfr_Paved(1) = 1.000
             ESTMsfr_Paved(2:3) = 0.000
             CALL ErrorHint(67, 'ESTM Paved classes do not sum to 1 (but no Paved surface present).', &
                            SUM(ESTMsfr_Paved), notUsed, notUsedI)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
       IF (sfr(BldgSurf) > 0) THEN
          IF (SUM(ESTMsfr_Bldgs) > 1.001 .OR. SUM(ESTMsfr_Bldgs) < 0.999) THEN
             CALL ErrorHint(10, 'Surface fractions (Fr_ESTMClass_Bldgs) should sum to 1.', SUM(ESTMsfr_Bldgs), notUsed, notUsedI)
-         ENDIF
+         END IF
       ELSEIF (sfr(BldgSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
          IF (SUM(ESTMsfr_Bldgs) > 1.001 .OR. SUM(ESTMsfr_Bldgs) < 0.999) THEN   !If ESTM fractions do not sum to 1, set here
             ESTMsfr_Bldgs(1) = 1.000
             ESTMsfr_Bldgs(2:5) = 0.000
             CALL ErrorHint(67, 'ESTM Bldgs classes do not sum to 1 (but no Bldgs surface present).', &
                            SUM(ESTMsfr_Bldgs), notUsed, notUsedI)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       ! ===== PAVED =====
       ! First combine characteristics of the 3x Paved classes
@@ -433,7 +433,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
                                                       c_Surf_k4_Paved(i), c_Surf_k5_Paved(i)/))
             rSurf_Paved(:, i) = SurfaceChar(Gridiv, (/c_Surf_rhoCp1_Paved(i), c_Surf_rhoCp2_Paved(i), c_Surf_rhoCp3_Paved(i), &
                                                       c_Surf_rhoCp4_Paved(i), c_Surf_rhoCp5_Paved(i)/))
-         ENDDO
+         END DO
          ! Average characteristics of each Paved class according to surface fractions (these sum to 1)
          zSurf_SUEWSsurfs(:, PavSurf) = zSurf_Paved(:, 1)*ESTMsfr_Paved(1) &
                                         + zSurf_Paved(:, 2)*ESTMsfr_Paved(2) &
@@ -454,7 +454,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          rSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, &
                                                     (/c_Surf_rhoCp1(PavSurf), c_Surf_rhoCp2(PavSurf), c_Surf_rhoCp3(PavSurf), &
                                                       c_Surf_rhoCp4(PavSurf), c_Surf_rhoCp5(PavSurf)/))
-      ENDIF
+      END IF
 
       ! ===== BLDGS =====
       ! Combine characteristics of 5x Bldgs classes into one
@@ -487,7 +487,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
             CH_iwall_Bldgs(i) = SurfaceChar(Gridiv, c_CH_iwall_Bldgs(i))
             CH_iroof_Bldgs(i) = SurfaceChar(Gridiv, c_CH_iroof_Bldgs(i))
             CH_ibld_Bldgs(i) = SurfaceChar(Gridiv, c_CH_ibld_Bldgs(i))
-         ENDDO
+         END DO
          ! Average characteristics of each Bldgs class according to surface fractions (these sum to 1)
          zSurf_SUEWSsurfs(:, BldgSurf) = zSurf_Bldgs(:, 1)*ESTMsfr_Bldgs(1) &
                                          + zSurf_Bldgs(:, 2)*ESTMsfr_Bldgs(2) &
@@ -592,7 +592,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          CH_iwall = SurfaceChar(Gridiv, c_CH_iwall)
          CH_iroof = SurfaceChar(Gridiv, c_CH_iroof)
          CH_ibld = SurfaceChar(Gridiv, c_CH_ibld)
-      ENDIF
+      END IF
 
       !For other surfaces, only one ESTM class
       DO iv = ConifSurf, nsurfIncSnow
@@ -602,7 +602,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
                                                          c_Surf_k4(iv), c_Surf_k5(iv)/))
          rSurf_SUEWSsurfs(:, iv) = SurfaceChar(Gridiv, (/c_Surf_rhoCp1(iv), c_Surf_rhoCp2(iv), c_Surf_rhoCp3(iv), &
                                                          c_Surf_rhoCp4(iv), c_Surf_rhoCp5(iv)/))
-      ENDDO
+      END DO
 
       ! Now combine SUEWS surfaces into ESTM facets
       !Surface fractions for ESTM facets (moved from SUEWS_ESTM_initials HCW 16 Jun 2016)
@@ -629,8 +629,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
             ! PRINT*, zground
             ! PRINT*, kground
             ! PRINT*, rground
-         ENDIF
-      ENDDO
+         END IF
+      END DO
       ! Roof = buildings
       zroof = zSurf_SUEWSsurfs(:, BldgSurf)
       kroof = kSurf_SUEWSsurfs(:, BldgSurf)
@@ -647,27 +647,27 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          IF (zground(i) <= 0) THEN
             Nground = i - 1
             EXIT
-         ENDIF
-      ENDDO
+         END IF
+      END DO
       DO i = 1, 5
          IF (zroof(i) <= 0) THEN
             Nroof = i - 1
             EXIT
-         ENDIF
-      ENDDO
+         END IF
+      END DO
       DO i = 1, 5
          IF (zwall(i) <= 0) THEN
             Nwall = i - 1
             EXIT
-         ENDIF
-      ENDDO
+         END IF
+      END DO
       DO i = 1, 5
          IF (zibld(i) <= 0) THEN
             Nibld = i - 1
             EXIT
-         ENDIF
-      ENDDO
-   ENDIF ! ESTM related translation finished here.
+         END IF
+      END DO
+   END IF ! ESTM related translation finished here.
 
    ! ---- AnOHM related ------------------------------
    IF (StorageHeatMethod == 3) THEN
@@ -825,8 +825,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          WaterDist((nsurf + 1), iv) = SurfaceChar(Gridiv, c_WGToRunoff(iv))
       ELSE
          WaterDist((nsurf + 1), iv) = SurfaceChar(Gridiv, c_WGToSoilStore(iv))
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    ! Access required DailyState variables for the current grid (moved HCW 26 Jun 2015)
    ! HDD(:,:)    = HDD_grids(:,:,Gridiv)
@@ -880,7 +880,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       !  INIITIALIZE SMITH DAY OF YEAR GRID G
       !  NARP_G=SMITHLAMBDA(NINT(LAT))
       !ENDIF
-   ENDIF
+   END IF
 
    !=================================================================================
    ! When SUEWS_Translate is called from InitialState (ir=0), inputs need translating
@@ -986,7 +986,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! ---- Liquid (melted) water in SnowPack
       SnowWater(1:nsurf) = ModelOutputData(0, cMOD_SnowWaterState(1:nsurf), Gridiv)
 
-   ENDIF  !ir = 0
+   END IF  !ir = 0
    !=================================================================================
 
    !=========================== Write FileChoices.txt ===============================
@@ -1099,7 +1099,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       DO iv = 1, (nsurf - 1)
          WRITE (12, '(8f10.4)') (WaterDist(j, iv), j=1, nsurf + 1)
-      ENDDO
+      END DO
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Other parameters'//' -----'
       WRITE (12, '(a12,7a10)') 'Grid', 'FlowChange', 'ROToWater', 'PipeCap', &   ! Water-related
@@ -1127,13 +1127,13 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       IF (EmissionsMethod == 1) THEN   !Loridan et al. (2011) calculation
          IF (AH_min(1) == 0 .AND. Ah_slope_Heating(1) == 0 .AND. BaseT_Heating(1) == 0) THEN
             CALL ErrorHint(53, 'Check QF calculation coefficients.', notUsed, notUsed, EmissionsMethod)
-         ENDIF
+         END IF
 
       ELSEIF (EmissionsMethod == 2) THEN   !Jarvi et al. (2011) calculation
          IF (SUM(QF_A) == 0 .AND. SUM(QF_B) == 0 .AND. SUM(QF_C) == 0) THEN
             CALL ErrorHint(54, 'Check QF calculation coefficients.', notUsed, notUsed, EmissionsMethod)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       ! Morphometric parameters -----------------------------------------------------
       IF (RoughLenMomMethod == 1) THEN   !z0, zd values provided in input file
@@ -1149,9 +1149,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          IF (FAITree < 0) CALL ErrorHint(1, &
                                          'FAI_EveTr/DecTr value provided is very small (RoughLenMomMethod=3)', &
                                          FAITree, notUsed, GridID)
-      ENDIF
+      END IF
 
-   ENDIF   !End for first row of first block only ===================================
+   END IF   !End for first row of first block only ===================================
 
    !=================================================================================
    !For each row of the met forcing file (ir), translate correct info for each grid
@@ -1194,7 +1194,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       IF (SnowUse == 1) THEN
          dqnsdt = dqnsdt_grids(Gridiv)
          qn1_s_av = qn1_s_av_grids(Gridiv)
-      ENDIF
+      END IF
 
       ! added by TS 29 Jun 2018 to remove annual loops in main calculation
       GDD_id = GDD_id_grids(:, Gridiv)
@@ -1264,15 +1264,15 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          Ts5mindata(ir, 1:ncolsESTMdata) = ESTMForcingData(ir, 1:ncolsESTMdata, Gridiv)
          Ts5mindata_ir(1:ncolsESTMdata) = ESTMForcingData(ir, 1:ncolsESTMdata, Gridiv)
          CALL ESTM_translate(Gridiv)
-      ENDIF
+      END IF
 
-   ENDIF !ir>0   !===================================================================
+   END IF !ir>0   !===================================================================
 
    ! --------------------------------------------------------------------------------
    ! Check Initial Conditions are reasonable ----------------------------------------
    IF (ir == 1 .AND. iMB == 1) THEN   !For first row of first block only
       CALL CheckInitial
-   ENDIF
+   END IF
    ! --------------------------------------------------------------------------------
 
    ! ======================================================================
@@ -1580,7 +1580,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    IF (SnowUse == 1) THEN
       dqnsdt_grids(Gridiv) = dqnsdt
       qn1_s_av_grids(Gridiv) = qn1_s_av
-   ENDIF
+   END IF
 
    ! added by TS 29 Jun 2018 to remove annual loops in main calculation
    GDD_id_grids(:, Gridiv) = GDD_id
@@ -1621,8 +1621,8 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
       ModelOutputData(0, cMOD_SnowFrac(1:nsurf), Gridiv) = SnowFrac(1:nsurf)
       ModelOutputData(0, cMOD_SnowPack(1:nsurf), Gridiv) = SnowPack(1:nsurf)
       ModelOutputData(0, cMOD_SnowWaterState(1:nsurf), Gridiv) = SnowWater(1:nsurf)
-   ENDIF
+   END IF
 
    RETURN
-endsubroutine SUEWS_TranslateBack
+end subroutine SUEWS_TranslateBack
 !===================================================================================

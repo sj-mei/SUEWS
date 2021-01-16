@@ -59,7 +59,7 @@ CONTAINS
                drain_is = 0   !No drainage if state_id is less than storage capacity
             ELSE
                drain_is = (DrainCoef1*(state_is - StorCap)**DrainCoef2)/nsh_real
-            ENDIF
+            END IF
 
          ELSEIF (INT(DrainEq) == 2) THEN   !Rutter eqn corrected for c=0, see Eq 9 of Calder & Wright 1986
             drain_is = (DrainCoef1*(EXP(DrainCoef2*state_is) - 1))/nsh_real
@@ -68,7 +68,7 @@ CONTAINS
          ELSEIF (INT(DrainEq) == 3) THEN   !Falk and Niemczynowicz (1978)
             drain_is = (DrainCoef1*(state_is**DrainCoef2))/nsh_real
 
-         ENDIF
+         END IF
 
          ! Check value obtained is physically reasonable
          ! More water cannot drain than is in the surface state_id
@@ -80,8 +80,8 @@ CONTAINS
             drain_is = state_is   !All water in state_id is drained (but no more)
          ELSEIF (drain_is < 0.0001) THEN
             drain_is = 0
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       RETURN
 
@@ -223,8 +223,8 @@ CONTAINS
          IF (is == PavSurf) THEN
             IF (sfr(PavSurf) /= 0) THEN   ! If loop added HCW 08 Dec 2015
                p_mm = p_mm + addImpervious/sfr(PavSurf)
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
          ! Calculate change in surface state_id (inputs - outputs)
          chang(is) = p_mm - (drain(is) + ev)
@@ -234,7 +234,7 @@ CONTAINS
          IF (p_mm > IPThreshold_mmhr/nsh_real) THEN
             runoff(is) = runoff(is) + (p_mm - IPThreshold_mmhr/nsh_real)
             chang(is) = IPThreshold_mmhr/nsh_real - (drain(is) + ev)
-         ENDIF
+         END IF
 
          ! Calculate updated state_id using chang
          state_id(is) = stateOld(is) + chang(is)
@@ -251,7 +251,7 @@ CONTAINS
             !    !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
             !    runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
             !    state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
-         ENDIF
+         END IF
 
          ! Recalculate change in surface state_id from difference with previous timestep
          chang(is) = state_id(is) - stateOld(is)
@@ -281,8 +281,8 @@ CONTAINS
          IF (is == GrassSurf .OR. is == BSoilSurf) THEN
             IF ((sfr(GrassSurf) + sfr(BSoilSurf)) /= 0) THEN
                p_mm = p_mm + addVeg/(sfr(GrassSurf) + sfr(BSoilSurf))
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
          ! Calculate change in surface state_id (inputs - outputs)
          chang(is) = p_mm - (drain(is) + ev)
@@ -292,7 +292,7 @@ CONTAINS
          IF (p_mm > IPThreshold_mmhr/nsh_real) THEN
             runoff(is) = runoff(is) + (p_mm - IPThreshold_mmhr/nsh_real)
             chang(is) = IPThreshold_mmhr/nsh_real - (drain(is) + ev)
-         ENDIF
+         END IF
 
          ! Calculate updated state_id using chang
          state_id(is) = stateOld(is) + chang(is)
@@ -308,14 +308,14 @@ CONTAINS
             ELSE
                ev = ev - ABS(state_id(is))   !Limit evaporation according to water availability
                state_id(is) = 0.0          !Now surface is dry
-            ENDIF
+            END IF
 
             !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
             !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
             !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
             !   runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
             !   state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
-         ENDIF
+         END IF
 
          ! Recalculate change in surface state_id from difference with previous timestep
          chang(is) = state_id(is) - stateOld(is)
@@ -334,7 +334,7 @@ CONTAINS
             CALL ErrorHint(62, 'SUEWS_store: soilstore_id(is) < 0 ', soilstore_id(is), NotUsed, is)
             ! Code this properly - soilstore_id(is) < 0 shouldn't happen given the above loops
             !soilstore_id(is)=0   !Groundwater / deeper soil should kick in
-         ENDIF
+         END IF
 
       CASE (WaterSurf)
          IF (sfr(WaterSurf) /= 0) THEN
@@ -360,7 +360,7 @@ CONTAINS
                !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
                !   runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
                !   state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
-            ENDIF
+            END IF
 
             ! Recalculate change in surface state_id from difference with previous timestep
             chang(is) = state_id(is) - stateOld(is)
@@ -375,12 +375,12 @@ CONTAINS
                IF (state_id(WaterSurf) > StateLimit(WaterSurf)) THEN
                   runoffWaterBody = runoffWaterBody + (state_id(WaterSurf) - StateLimit(WaterSurf))*sfr(WaterSurf)
                   state_id(WaterSurf) = StateLimit(WaterSurf)
-               ENDIF
-            ENDIF
+               END IF
+            END IF
 
             ! Recalculate change in surface state_id from difference with previous timestep
             chang(is) = state_id(is) - stateOld(is)
-         ENDIF
+         END IF
       END SELECT
       !==================================================================
 
@@ -396,7 +396,7 @@ CONTAINS
             is, runoff, &! input:
             sfr, PipeCapacity, RunoffToWater, &
             runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes)! inout:
-      ENDIF
+      END IF
 
    END SUBROUTINE cal_water_storage
    !------------------------------------------------------------------------------
@@ -430,7 +430,7 @@ CONTAINS
             ELSE
                ! Otherwise, all flood water must go to runoff
                runoffAGimpervious = runoffAGimpervious + (runoffPipes - PipeCapacity)
-            ENDIF
+            END IF
             !------other surfaces
          ELSEIF (is >= ConifSurf .AND. is <= BSoilSurf) THEN
             IF (sfr(WaterSurf) > 0.0000001) THEN
@@ -440,12 +440,12 @@ CONTAINS
             ELSE
                ! Otherwise, all flood water must go to runoff
                runoffAGveg = runoffAGveg + (runoffPipes - PipeCapacity)
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
          runoffPipes = PipeCapacity   !Pipes are at their max capacity
 
-      ENDIF   !If runoff exceed pipe capacity
+      END IF   !If runoff exceed pipe capacity
 
    END SUBROUTINE updateFlood
    !------------------------------------------------------------------------------
@@ -475,7 +475,7 @@ CONTAINS
       !Fractions that go to runoff from each surface
       DO ii = 1, nsurf - 1   !not water in the calculation
          AddWaterRunoff(ii) = WaterDist(8, ii)
-      ENDDO
+      END DO
       AddWaterRunoff(WaterSurf) = 0
       AddWater = 0
 
@@ -491,14 +491,14 @@ CONTAINS
                   !Snow included, This needs to be fixed at some point. LJ Mar 2013
                ELSE
                   AddWaterRunoff(jj) = AddWaterRunoff(jj) + WaterDist(ii, jj) !No receiving surface -> runoff
-               ENDIF
+               END IF
 
             ELSE
                AddWaterRunoff(jj) = AddWaterRunoff(jj) + WaterDist(ii, jj) !If no receiving surface exists,
                !water fraction goes to AddWaterRunoff
-            ENDIF
-         ENDDO
-      ENDDO
+            END IF
+         END DO
+      END DO
 
    END SUBROUTINE ReDistributeWater
    !------------------------------------------------------------------------------
@@ -527,8 +527,8 @@ CONTAINS
          DO is = 1, nsurf - 1   !No water body included
             SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr(is)/NonWaterFraction)
             SoilState = SoilState + (soilstore_id(is)*sfr(is)/NonWaterFraction)
-         ENDDO
-      ENDIF
+         END DO
+      END IF
 
       !If loop removed HCW 26 Feb 2015
       !if (ir==1) then  !Calculate initial smd
@@ -544,7 +544,7 @@ CONTAINS
             vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
          END IF
          !write(*,*) is, vsmd, smd
-      ENDDO
+      END DO
 
    END SUBROUTINE SUEWS_update_SoilMoist
    !------------------------------------------------------------------------------
@@ -588,8 +588,8 @@ CONTAINS
             ELSEIF (SoilState > SoilMoistCap) THEN
                CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState > capacity (just added surface is) ', SoilState, NotUsed, is)
                !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
-            ENDIF
-         ENDDO  !end loop over surfaces
+            END IF
+         END DO  !end loop over surfaces
          ! SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr(1:nsurf - 1))/NonWaterFraction
          ! IF (SoilState < 0) THEN
          !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
@@ -597,7 +597,7 @@ CONTAINS
          !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState > capacity (just added surface is) ', SoilState, NotUsed, is)
          !    !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
          ! ENDIF
-      ENDIF
+      END IF
 
       ! Calculate soil moisture deficit
       smd = SoilMoistCap - SoilState   !One value for whole surface
@@ -608,13 +608,13 @@ CONTAINS
       tot_chang_per_tstep = surf_chang_per_tstep   !Change in surface state_id
       DO is = 1, (nsurf - 1)   !No soil for water surface (so change in soil moisture is zero)
          tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilstoreOld(is))*sfr(is))   !Add change in soil state_id
-      ENDDO
+      END DO
 
       IF (SMDMethod > 0) THEN ! use observed value
          !  smd_nsurf=NAN
          smd_nsurf = NAN
          smd = xsmd
-      ENDIF
+      END IF
 
    END SUBROUTINE SUEWS_cal_SoilState
    !===================================================================================
@@ -727,11 +727,11 @@ CONTAINS
                      ! If very large or very small, adjust for calculation of MatPot and Km
                      IF (DimenWaterCon1 > 0.99999) THEN
                         DimenWaterCon1 = DimenWaterCon1 - 0.0001 !This cannot equal 1
-                     ENDIF
+                     END IF
 
                      IF (DimenWaterCon1 < 0.00000005) THEN
                         DimenWaterCon1 = DimenWaterCon1 + 0.0000001   !Added HCW 22 Feb 2017
-                     ENDIF
+                     END IF
 
                      !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2
                      !Water potential of first store [mm] (van Genuchten 1980, Eq 3 rearranged)
@@ -744,9 +744,9 @@ CONTAINS
                      IF (MatPot1 > 100000) THEN
                         MatPot1 = 100000  !Max. potential is 100000 mm (van Genuchten 1980)
                         Km1 = 0   !Added by HCW 12/08/2014
-                     ENDIF
+                     END IF
 
-                  ENDIF
+                  END IF
 
                   ! ---- For surface 2 -----------------------------------------------------
                   ! Calculate non-saturated VWC
@@ -767,11 +767,11 @@ CONTAINS
 
                      IF (DimenWaterCon2 > 0.99999) THEN
                         DimenWaterCon2 = DimenWaterCon2 - 0.0001 !This cannot equal 1
-                     ENDIF
+                     END IF
 
                      IF (DimenWaterCon2 < 0.00000005) THEN
                         DimenWaterCon2 = DimenWaterCon2 + 0.0000001   !Added HCW 22 Feb 2017
-                     ENDIF
+                     END IF
 
                      !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2
                      !Water potential of second store [mm] (van Genuchten 1980, Eq 3 rearranged)
@@ -783,9 +783,9 @@ CONTAINS
                      IF ((MatPot2) > 100000) THEN
                         MatPot2 = 100000 !Max. potential is 100000 mm (van Genuchten 1980)
                         Km2 = 0   !Added by HCW 12/08/2014
-                     ENDIF
+                     END IF
 
-                  ENDIF
+                  END IF
 
                   ! ------------------------------------------------------------------------
 
@@ -821,7 +821,7 @@ CONTAINS
                   ELSE
                      soilstore_id(is) = soilstore_id(is) + soilstore_id(jj)*sfr(jj)/sfr(is)
                      soilstore_id(jj) = 0
-                  ENDIF
+                  END IF
 
                   !If soil moisture exceeds capacity, excess goes to soil runoff (first surface)
                   IF (soilstore_id(is) > SoilStoreCap(is)) THEN
@@ -829,7 +829,7 @@ CONTAINS
                      soilstore_id(is) = SoilStoreCap(is)
                      !elseif (soilstore_id(is)<0) then  !HCW 13/08/2014 commented out as should never be true here anyway...
                      !   soilstore_id(is)=0             ! ... and if so, need to do more here (i.e. account for other water too)
-                  ENDIF
+                  END IF
 
                   !If soil moisture exceeds capacity, excess goes to soil runoff (second surface)
                   IF (soilstore_id(jj) > SoilStoreCap(jj)) THEN
@@ -837,19 +837,19 @@ CONTAINS
                      soilstore_id(jj) = SoilStoreCap(jj)
                      !elseif (soilstore_id(jj)<0) then  !HCW 13/08/2014 commented out (as above)
                      !         soilstore_id(jj)=0
-                  ENDIF
+                  END IF
 
-               ENDIF  !end if second surface exists and is capable of storing water
+               END IF  !end if second surface exists and is capable of storing water
 
-            ENDDO  !end jj loop over second surface
+            END DO  !end jj loop over second surface
 
             runoffSoil_per_tstep = runoffSoil_per_tstep + (runoffSoil(is)*sfr(is)/NonWaterFraction)  !Excludes water body. Moved here as otherwise code crashed when NonWaterFraction=0
 
-         ENDIF  !end if first surface exists and is capable of storing water
+         END IF  !end if first surface exists and is capable of storing water
 
          !runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr(is)/NonWaterFraction)  !Excludes water body
 
-      ENDDO !is loop over first surface
+      END DO !is loop over first surface
 
    END SUBROUTINE SUEWS_cal_HorizontalSoilWater
    !===================================================================================
@@ -1009,8 +1009,8 @@ CONTAINS
                wu_nsurf = wu*IrrFrac
 
                wu = (wu_m3/SurfaceArea*1000)     !Water use for the whole study area in mm
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
          ! --------------------------------------------------------------------------------
          ! If water use is modelled, calculate at timestep of model resolution [mm]
@@ -1025,7 +1025,7 @@ CONTAINS
          !  IF(DayofWeek(id,1)==1.OR.DayofWeek(id,1)==7) THEN
          IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) THEN
             iu = 2  !Set to 2=weekend
-         ENDIF
+         END IF
 
          !write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
          WUDay_A_id = 0
@@ -1060,7 +1060,7 @@ CONTAINS
          ! If cumulative daily precipitation exceeds 2 mm
          IF (rain_cum_daily > 2) THEN    !.and.WUDay(id-1,3)>0) then !Commented out HCW 23/01/2015
             flag_WuM = 0   ! 0 -> No manual irrigation if raining
-         ENDIF
+         END IF
 
          ! Add manual to automatic to find total irrigation
          ! wu_EveTr = wu_EveTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(3)) !Manual evergreen trees
@@ -1094,7 +1094,7 @@ CONTAINS
          ! wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
          wu = dot_product(wu_nsurf, sfr)
 
-      ENDIF   !End WU_choice
+      END IF   !End WU_choice
       ! --------------------------------------------------------------------------------
 
       ! Internal water use is supplied in SUEWS_Irrigation in mm h-1
@@ -1109,7 +1109,7 @@ CONTAINS
          wu_ext = 0
       ELSE
          OverUse = 0
-      ENDIF
+      END IF
 
       wu_int = wu - wu_ext
 
@@ -1119,7 +1119,7 @@ CONTAINS
          ! wu_DecTr = wu_DecTr*wu_ext/wu
          ! wu_Grass = wu_Grass*wu_ext/wu
          wu_nsurf = wu_nsurf*wu_ext/wu
-      ENDIF
+      END IF
 
    END SUBROUTINE SUEWS_cal_WaterUse
    !===================================================================================

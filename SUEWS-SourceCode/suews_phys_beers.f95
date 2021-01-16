@@ -37,7 +37,7 @@ CONTAINS
    SUBROUTINE BEERS_cal_main(iy, id, dectime, lamdaP, lamdaF, avkdn, ldown, Temp_C, avrh, &
                              Press_hPa, Tsurf, lat, lng, alt, timezone, zenith_deg, azimuth, &
                              alb_ground, alb_bldg, emis_ground, emis_wall, &
-                           !   kdir, kdiff, &
+                             !   kdir, kdiff, &
                              dataOutLineBEERS) ! output
 
       IMPLICIT NONE
@@ -287,7 +287,7 @@ CONTAINS
          !!! Lup !!!
          Lup2d = SBC*emis_ground*((Ta + Tg + 273.15)**4)
 
-      endif
+      end if
 
       !!! Ldown !!!
       IF (SOLWEIG_ldown == 1) THEN   ! Third
@@ -303,7 +303,7 @@ CONTAINS
                       + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
                       + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
                       + (2 - svf_roof - svf_veg)*(1 - emis_wall)*SBC*((Ta + 273.15)**4))
-         endif
+         end if
 
       ELSE
          Ldown2d = (svf_roof + svf_veg - 1)*ldown &
@@ -517,7 +517,7 @@ CONTAINS
             dectimemax, &! sun position at middle of timestep before
             timezone, lat, lng, alt, &
             azimuth, zen_sunmax)!output:
-      ENDDO
+      END DO
 
       altmax = sunmaximum
 
@@ -569,7 +569,7 @@ CONTAINS
          wx = 1./sin(abs((float(idir)*pi/ndir) - THETA_S180))  ! sun azimuth length in canyon
          LshadowRoad(idir) = (ROOF_HEIGHT/ROAD_WIDTH)*tan(THETA_Z)*sin(abs((float(idir)*pi/ndir) - THETA_S180))
          Wallsun(idir) = (wx/tan(THETA_Z))/(ROOF_HEIGHT/ROAD_WIDTH)
-      ENDDO
+      END DO
 
       ! shadow fraction ground
       WHERE (LshadowRoad >= 1.) LshadowRoad = 1.
@@ -1074,7 +1074,7 @@ CONTAINS
       Lsky = ((svfE + svfEveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Least = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lsouth
@@ -1100,7 +1100,7 @@ CONTAINS
       Lsky = ((svfS + svfSveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Lsouth = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lwest
@@ -1126,7 +1126,7 @@ CONTAINS
       Lsky = ((svfW + svfWveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Lwest = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lnorth
@@ -1152,7 +1152,7 @@ CONTAINS
       Lsky = ((svfN + svfNveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Lnorth = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       ! DEALLOCATE (svfE)
@@ -1288,7 +1288,7 @@ CONTAINS
          K = 1
       ELSE
          K = 0
-      ENDIF
+      END IF
 
       IF (B <= 31) THEN !January
          MB = 1
@@ -1326,7 +1326,7 @@ CONTAINS
       ELSEIF (B > 334 + K) THEN
          MB = 12
          md = B - (334 + K)
-      ENDIF
+      END IF
 
       !
       IF (latitude > 0) THEN  ! Northern Hemisphere
@@ -1334,14 +1334,14 @@ CONTAINS
             seas = 1
          ELSE
             seas = 2 !Winter rest of the months
-         ENDIF
+         END IF
       ELSE  ! southern hemisphere
          IF (mb < 4 .OR. mb > 9) THEN !Summer is from Oct to Mar
             seas = 1
          ELSE
             seas = 2 !Winter rest of the months
-         ENDIF
-      ENDIF
+         END IF
+      END IF
       RETURN
    END SUBROUTINE day2month
 !===============================================================================
@@ -1390,7 +1390,7 @@ CONTAINS
          nroDays = 366
       ELSE
          nroDays = 365
-      ENDIF
+      END IF
    END SUBROUTINE LeapYearCalc
 
 !===============================================================================
@@ -1407,7 +1407,7 @@ CONTAINS
          nDays = 366
       ELSE
          nDays = 365
-      ENDIF
+      END IF
 
    END FUNCTION Days_of_Year
 

@@ -565,7 +565,7 @@ MODULE ctrl_output
       varAttr('flag_RSL', '-', f104, 'flag for RSL', aA, 'RSL', 0) &
       /
 
-      ! debug info
+   ! debug info
    DATA(varListAll(n), &
         n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
@@ -642,15 +642,15 @@ CONTAINS
       groupList0(7) = 'RSL'
       groupList0(8) = 'debug'
       groupCond = [ &
-                .TRUE., &
-                .TRUE., &
-                CBLuse >= 1, &
-                SnowUse >= 1, &
-                StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
-                .TRUE., &
-                .TRUE.,&
-                .TRUE. &
-                ]
+                  .TRUE., &
+                  .TRUE., &
+                  CBLuse >= 1, &
+                  SnowUse >= 1, &
+                  StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
+                  .TRUE., &
+                  .TRUE., &
+                  .TRUE. &
+                  ]
       n_group_use = COUNT(groupCond)
 
       ! PRINT*, grpList0,xx
@@ -681,17 +681,17 @@ CONTAINS
             ! as forcing:
             IF (ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1) THEN
                CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
-            ENDIF
+            END IF
             !  as specified ResolutionFilesOut:
             IF (ResolutionFilesOut /= Tstep) THEN
                CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, ResolutionFilesOut)
-            ENDIF
+            END IF
          ELSE
             !  DailyState array, which does not need aggregation
 
             CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
 
-         ENDIF
+         END IF
 
          IF (ALLOCATED(varListX)) DEALLOCATE (varListX, stat=err)
          IF (err /= 0) PRINT *, "varListX: Deallocation request denied"
@@ -716,7 +716,7 @@ CONTAINS
       IF (.NOT. ALLOCATED(dataOutX)) THEN
          ALLOCATE (dataOutX(irMax, SIZE(varListX)), stat=err)
          IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
-      ENDIF
+      END IF
 
       ! determine dataOutX array according to variable group
       SELECT CASE (TRIM(varListX(SIZE(varListX))%group))
@@ -752,12 +752,12 @@ CONTAINS
          IF (ALLOCATED(dataOutX)) THEN
             DEALLOCATE (dataOutX)
             IF (err /= 0) PRINT *, "dataOutX: Deallocation request denied"
-         ENDIF
+         END IF
 
          IF (.NOT. ALLOCATED(dataOutX)) THEN
             ALLOCATE (dataOutX(SIZE(id_seq), SIZE(varListX)), stat=err)
             IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
-         ENDIF
+         END IF
 
          dataOutX = dataOutDailyState(id_seq, 1:SIZE(varListX), Gridiv)
          ! print*, id_seq
@@ -774,9 +774,9 @@ CONTAINS
          IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
             ALLOCATE (dataOutX_agg(SIZE(dataOutX, dim=1), SIZE(varListX)), stat=err)
             IF (err /= 0) PRINT *, ": Allocation request denied"
-         ENDIF
+         END IF
          dataOutX_agg = dataOutX
-      ENDIF
+      END IF
 
       ! output:
       ! initialise file when processing first metblock
@@ -887,7 +887,7 @@ CONTAINS
             str_cat = TRIM(ADJUSTL(itextX))
          ELSE
             str_cat = TRIM(str_cat)//';'//ADJUSTL(itextX)
-         ENDIF
+         END IF
       END DO
       WRITE (fn, '(a)') TRIM(str_cat)
 
@@ -899,7 +899,7 @@ CONTAINS
             str_cat = TRIM(ADJUSTL(str_x))
          ELSE
             str_cat = TRIM(str_cat)//';'//ADJUSTL(str_x)
-         ENDIF
+         END IF
       END DO
       WRITE (fn, '(a)') TRIM(str_cat)
 
@@ -911,7 +911,7 @@ CONTAINS
             str_cat = TRIM(ADJUSTL(str_x))
          ELSE
             str_cat = TRIM(str_cat)//';'//ADJUSTL(str_x)
-         ENDIF
+         END IF
       END DO
       WRITE (fn, '(a)') TRIM(str_cat)
 
@@ -923,7 +923,7 @@ CONTAINS
             str_cat = TRIM(ADJUSTL(str_x))
          ELSE
             str_cat = TRIM(str_cat)//';'//ADJUSTL(str_x)
-         ENDIF
+         END IF
       END DO
       WRITE (fn, '(a)') TRIM(str_cat)
 
@@ -935,7 +935,7 @@ CONTAINS
             str_cat = TRIM(ADJUSTL(str_x))
          ELSE
             str_cat = TRIM(str_cat)//';'//ADJUSTL(str_x)
-         ENDIF
+         END IF
       END DO
       WRITE (fn, '(a)') TRIM(str_cat)
 
@@ -947,7 +947,7 @@ CONTAINS
             str_cat = TRIM(ADJUSTL(str_x))
          ELSE
             str_cat = TRIM(str_cat)//';'//ADJUSTL(str_x)
-         ENDIF
+         END IF
       END DO
       WRITE (fn, '(a)') TRIM(str_cat)
 
@@ -1078,7 +1078,7 @@ CONTAINS
          WRITE (fn, FormatOut) &
             (INT(dataOutSel(i, xx)), xx=1, 4), &
             (dataOutSel(i, xx), xx=5, sizeVarListSel)
-      ENDDO
+      END DO
       CLOSE (fn)
 
       IF (ALLOCATED(varListSel)) DEALLOCATE (varListSel, stat=err)
@@ -1152,7 +1152,7 @@ CONTAINS
          delta_t_min = INT(dt_x%total_seconds()/60)
          WRITE (str_out_min, '(i4)') delta_t_min
          str_out_min = '_'//TRIM(ADJUSTL(str_out_min))
-      ENDIF
+      END IF
 
       ! group: output type
       str_grp = varList(6)%group
@@ -1264,7 +1264,7 @@ CONTAINS
       IF (io /= 0) THEN
          PRINT *, 'io', io, 'for', filename
          STOP 'Cannot open file! '
-      ENDIF
+      END IF
 
       nlines = 0
       DO

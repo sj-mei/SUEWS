@@ -22,7 +22,7 @@ CONTAINS
          CALL Partition(A, iq)
          CALL QsortC(A(:iq - 1))
          CALL QsortC(A(iq:))
-      ENDIF
+      END IF
    END SUBROUTINE QsortC
 
    SUBROUTINE Partition(A, marker)
@@ -57,7 +57,7 @@ CONTAINS
          ELSE
             marker = i
             RETURN
-         ENDIF
+         END IF
       END DO
 
    END SUBROUTINE Partition

@@ -99,11 +99,11 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
          xsmd = (SmCap - xsmd)*SoilDensity*SoilDepthMeas*SoilRocks
       ELSE
          xsmd = -999
-      ENDIF
+      END IF
 
    ELSE
       CALL ErrorHint(55, 'RunControl.nml, InputMetFormat not usable.', notUsed, notUsed, InputmetFormat)
-   ENDIF
+   END IF
 
    !===============Meteorological variables reading done==========================
    Pres_hPa = Pres_kPa*10. ! convert to hPa
@@ -112,14 +112,14 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
       iostat_var = 0
       CLOSE (lfn)
       RETURN
-   ENDIF
+   END IF
 
    IF (AvKdn < 0) THEN
       CALL ErrorHint(27, 'Met Data: avKdn - needed for StoreDrainPrm. resistance, If present, check file not tab delimited', &
                      avkdn, dectime, notUsedI)
       !sg removed this is causing the problems with resistances
       !  AvKdn=0 !Solar radiation cannot be lower than 1
-   ENDIF
+   END IF
 
    IF ((ldown_option == 1) .AND. (ldown_obs < 0)) THEN
       CALL ErrorHint(27, 'Met Data: LWdn (ldown_obs) - impact Q* calc', ldown_obs, dectime, notUsedI)
@@ -127,42 +127,42 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
    ELSEIF (ldown_option == 2) THEN
       IF (fcld_obs == -999.0 .OR. fcld_obs < 0 .OR. fcld_obs > 1) THEN
          CALL ErrorHint(27, 'Met Data: flcd_obs - impacts LW & Q* radiation', fcld_obs, dectime, notUsedI)
-      ENDIF
-   ENDIF
+      END IF
+   END IF
 
    IF (qn1_obs == -999 .AND. NetRadiationMethod == 0) THEN  !If measured Q* is used and it is -999
       CALL ErrorHint(27, 'Met Data: Q* - will impact everything', qn1_obs, dectime, notUsedI)
-   ENDIF
+   END IF
 
    IF (avu1 <= 0) THEN !If wind speed is negative
       CALL ErrorHint(27, 'Met Data: avU1 - impacts aeroydnamic resistances', avU1, dectime, notUsedI)
-   ENDIF
+   END IF
 
    IF (Temp_C < -50 .OR. Temp_C > 60) THEN !If temperature unrealistic
       CALL ErrorHint(27, 'Met Data: Temp_C - beyond what is expected', Temp_C, dectime, notUsedI)
-   ENDIF
+   END IF
 
    IF (avrh > 100 .OR. avrh < 1) THEN !If relative humidity larger than 100%
       CALL ErrorHint(27, 'Met Data: avRH - beyond what is expected', avRH, dectime, notUsedI)
-   ENDIF
+   END IF
 
    IF (Pres_kPa < 80) THEN  !If pressure too low
       CALL ErrorHint(27, 'Met Data: Pres_kPa - too low - this could be fixed in model', Pres_kPa, dectime, notUsedI)
-   ENDIF
+   END IF
 
    IF (Precip < 0) THEN  !If rain in negative, set it to zero
       CALL ErrorHint(27, 'Met Data: Precip - less than 0', Precip, dectime, notUsedI)
-   ENDIF
+   END IF
 
    IF (snowFrac_obs == NAN) snowFrac_obs = 0
 
    IF (snowUse == 0 .AND. (snowFrac_obs < 0 .OR. snowFrac_obs > 1)) THEN
       CALL ErrorHint(27, 'Met Data: snow not between [0  1]', snowFrac_obs, dectime, notUsedI)
-   ENDIF
+   END IF
 
    IF (xsmd < 0 .AND. SMDMethod == 1) THEN  !If soil moisture deficit is zero
       CALL ErrorHint(27, 'Met Data: xsmd - less than 0', xsmd, dectime, notUsedI)
-   ENDIF
+   END IF
 
    !Create an array to be printed out.
    MetArray(1:24) = (/iy, id, it, imin, qn1_obs, qh_obs, qe_obs, qs_obs, qf_obs, avu1, &
@@ -217,9 +217,9 @@ SUBROUTINE run_control(eval, LowerLimit, Upperlimit)
             READ (lfn_us, *) eval
             !write(*,*)eval, TEXT(1)
             EXIT
-         ENDIF
-      ENDDO
-   ENDIF
+         END IF
+      END DO
+   END IF
 
    WRITE (12, 120) eval, text(1)
 
@@ -227,7 +227,7 @@ SUBROUTINE run_control(eval, LowerLimit, Upperlimit)
       WRITE (*, *) "Value out of range"
       WRITE (*, *) eval, text(1)
       STOP
-   ENDIF
+   END IF
 
    WRITE (*, 120) eval, text(1)
 120 FORMAT(i4, 2x, a90)
@@ -608,13 +608,13 @@ SUBROUTINE InputHeaderCheck(FileName)
          WRITE (*, *) HeaderNonVeg_File
          WRITE (*, *) HeaderNonVeg_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_NonVeg.txt does not match model code.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_Veg.txt') THEN
       IF (ANY(HeaderVeg_File /= HeaderVeg_Reqd)) THEN
          WRITE (*, *) HeaderVeg_File == HeaderVeg_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_Veg.txt does not match model code.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_Water.txt') THEN
       IF (ANY(HeaderWater_File /= HeaderWater_Reqd)) THEN
@@ -622,46 +622,46 @@ SUBROUTINE InputHeaderCheck(FileName)
          WRITE (*, *) HeaderWater_File
          WRITE (*, *) HeaderWater_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_Water.txt does not match model code.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_Snow.txt') THEN
       IF (ANY(HeaderSnow_File /= HeaderSnow_Reqd)) THEN
          WRITE (*, *) HeaderSnow_File == HeaderSnow_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_Snow.txt does not match model code.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_Soil.txt') THEN
       IF (ANY(HeaderSoil_File /= HeaderSoil_Reqd)) THEN
          WRITE (*, *) HeaderSoil_File == HeaderSoil_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_Soil.txt does not match model code.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_Conductance.txt') THEN
       IF (ANY(HeaderCond_File /= HeaderCond_Reqd)) THEN
          WRITE (*, *) HeaderCond_File == HeaderCond_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_Cond.txt does not match model code.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_OHMCoefficients.txt') THEN
       IF (ANY(HeaderOHMCoefficients_File /= HeaderOHMCoefficients_Reqd)) THEN
          WRITE (*, *) HeaderOHMCoefficients_File == HeaderOHMCoefficients_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_OHMCoefficients.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_ESTMCoefficients.txt') THEN
       IF (ANY(HeaderESTMCoefficients_File /= HeaderESTMCoefficients_Reqd)) THEN
          WRITE (*, *) HeaderESTMCoefficients_File == HeaderESTMCoefficients_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_ESTMCoefficients.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_AnthropogenicEmission.txt') THEN
       IF (ANY(HeaderAnthropogenic_File /= HeaderAnthropogenic_Reqd)) THEN
          WRITE (*, *) HeaderAnthropogenic_File == HeaderAnthropogenic_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_AnthropogenicEmission.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_Irrigation.txt') THEN
       IF (ANY(HeaderIrrigation_File /= HeaderIrrigation_Reqd)) THEN
@@ -670,36 +670,36 @@ SUBROUTINE InputHeaderCheck(FileName)
          WRITE (*, *) HeaderIrrigation_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_Irrigation.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_Profiles.txt') THEN
       IF (ANY(HeaderProfiles_File /= HeaderProfiles_Reqd)) THEN
          WRITE (*, *) HeaderProfiles_File == HeaderProfiles_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_Profiles.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_WithinGridWaterDist.txt') THEN
       IF (ANY(HeaderWGWaterDist_File /= HeaderWGWaterDist_Reqd)) THEN
          WRITE (*, *) HeaderWGWaterDist_File == HeaderWGWaterDist_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_WithinGridWaterDist.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (FileName == 'SUEWS_BiogenCO2.txt') THEN
       IF (ANY(HeaderBiogen_File /= HeaderBiogen_Reqd)) THEN
          WRITE (*, *) HeaderBiogen_File == HeaderBiogen_Reqd
          CALL ErrorHint(56, 'Names or order of columns in SUEWS_BiogenCO2.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
 
    ELSE
       WRITE (*, *) 'Problem in subroutine InputHeaderCheck. File header not specified in model code for ', FileName
       CALL ErrorHint(58, FileName, notUsed, notUsed, notUsedI)
 
-   ENDIF
+   END IF
 
-ENDSUBROUTINE InputHeaderCheck
+END SUBROUTINE InputHeaderCheck
 
 !-------------------------------------------------------------------------
 !
@@ -857,8 +857,8 @@ SUBROUTINE CodeMatchOHM(Gridiv, is, SWWD)
             WRITE (*, *) 'Program stopped! OHM code (summer wet)', SurfaceChar(gridiv, c_OHMCode_SWet(is)), &
                'not found in OHM_Coefficients.txt for surface', is, '.'
             CALL ErrorHint(57, 'Cannot find OHM code (summer wet)', SurfaceChar(gridiv, c_OHMCode_SWet(is)), notUsed, notUsedI)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
    ELSEIF (SWWD == 'SDry') THEN
 
@@ -869,8 +869,8 @@ SUBROUTINE CodeMatchOHM(Gridiv, is, SWWD)
             WRITE (*, *) 'Program stopped! OHM code (summer dry)', SurfaceChar(gridiv, c_OHMCode_SDry(is)), &
                'not found in OHM_Coefficients.txt for surface', is, '.'
             CALL ErrorHint(57, 'Cannot find OHM code (summer dry)', SurfaceChar(gridiv, c_OHMCode_SDry(is)), notUsed, notUsedI)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
    ELSEIF (SWWD == 'WWet') THEN
 
@@ -881,8 +881,8 @@ SUBROUTINE CodeMatchOHM(Gridiv, is, SWWD)
             WRITE (*, *) 'Program stopped! OHM code (winter wet)', SurfaceChar(gridiv, c_OHMCode_WWet(is)), &
                'not found in OHM_Coefficients.txt for surface', is, '.'
             CALL ErrorHint(57, 'Cannot find OHM code (winter wet)', SurfaceChar(gridiv, c_OHMCode_WWet(is)), notUsed, notUsedI)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
    ELSEIF (SWWD == 'WDry') THEN
 
@@ -893,17 +893,17 @@ SUBROUTINE CodeMatchOHM(Gridiv, is, SWWD)
             WRITE (*, *) 'Program stopped! OHM code (winter dry)', SurfaceChar(gridiv, c_OHMCode_WDry(is)), &
                'not found in OHM_Coefficients.txt for surface', is, '.'
             CALL ErrorHint(57, 'Cannot find OHM code (winter dry)', SurfaceChar(gridiv, c_OHMCode_WDry(is)), notUsed, notUsedI)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
    ELSE
       WRITE (*, *) 'Problem with CodeMatchOHM (in SUEWS_CodeMatch.f95). ', SWWD, ' not recognised. Needs to be one of: ', &
          'SWet = Summer Wet, SDry = Summer Dry, WWet = WinterWet, WDry = Winter Dry. N.B. Case sensitive. '
       STOP
-   ENDIF
+   END IF
 
    RETURN
-ENDSUBROUTINE CodeMatchOHM
+END SUBROUTINE CodeMatchOHM
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchESTM(Gridiv, is)
@@ -932,11 +932,11 @@ SUBROUTINE CodeMatchESTM(Gridiv, is)
          WRITE (*, *) 'Program stopped! ESTM code', SurfaceChar(gridiv, c_ESTMCode(is)), &
             'not found in ESTM_Coefficients.txt for surface', is, '.'
          CALL ErrorHint(57, 'Cannot find ESTM code', SurfaceChar(gridiv, c_ESTMCode(is)), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchESTM
+END SUBROUTINE CodeMatchESTM
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchESTM_Class(Gridiv, is, ii)
@@ -964,8 +964,8 @@ SUBROUTINE CodeMatchESTM_Class(Gridiv, is, ii)
             WRITE (*, *) 'Program stopped! ESTM code', SurfaceChar(gridiv, c_Code_ESTMClass_Bldgs(ii)), &
                'not found in ESTM_Coefficients.txt for surface', is, '.'
             CALL ErrorHint(57, 'Cannot find ESTM code', SurfaceChar(gridiv, c_Code_ESTMClass_Bldgs(ii)), notUsed, notUsedI)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
    ELSEIF (is == PavSurf) THEN
       DO iv5 = 1, nlinesESTMCoefficients
          IF (ESTMCoefficients_Coeff(iv5, cE_Code) == SurfaceChar(gridiv, c_Code_ESTMClass_Paved(ii))) THEN
@@ -974,15 +974,15 @@ SUBROUTINE CodeMatchESTM_Class(Gridiv, is, ii)
             WRITE (*, *) 'Program stopped! ESTM code', SurfaceChar(gridiv, c_Code_ESTMClass_Paved(ii)), &
                'not found in ESTM_Coefficients.txt for surface', is, '.'
             CALL ErrorHint(57, 'Cannot find ESTM code', SurfaceChar(gridiv, c_Code_ESTMClass_Paved(ii)), notUsed, notUsedI)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
    ELSE
       WRITE (*, *) 'Problem with CodeMatchESTM_Class (in SUEWS_ctrl_input.f95). ', is, ' not correct. Needs to be either ', &
          '1 = Paved surfaced, 2 = Bldgs surfaces.'
       STOP
-   ENDIF
+   END IF
    RETURN
-ENDSUBROUTINE CodeMatchESTM_Class
+END SUBROUTINE CodeMatchESTM_Class
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchProf(Gridiv, SurfaceCharCodeCol)
@@ -1009,11 +1009,11 @@ SUBROUTINE CodeMatchProf(Gridiv, SurfaceCharCodeCol)
       ELSEIF (iv5 == nlinesProfiles) THEN
          WRITE (*, *) 'Program stopped! Profile code ', SurfaceChar(Gridiv, SurfaceCharCodeCol), 'not found in SUEWS_Profiles.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_Profiles.txt', SurfaceChar(Gridiv, SurfaceCharCodeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchProf
+END SUBROUTINE CodeMatchProf
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
@@ -1042,14 +1042,14 @@ SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
          WRITE (*, *) 'Program stopped! Within-grid water distribution code ', SiteSelect(rr, codeCol), &
             'not found in SUEWS_WaterDistWithinGrid.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_WaterDistWithinGrid.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    ! Check water flow to same surface is zero (previously in RunControlByGridByYear in SUEWS_Initial.f95)
    IF (WGWaterDist_Coeff(iv5, codeColSameSurf) /= 0) THEN
       CALL ErrorHint(8, 'Diagonal elements should be zero as water cannot move from one surface to the same surface.', &
                      WGWaterDist_Coeff(iv5, codeColSameSurf), notUsed, notUsedI)
-   ENDIF
+   END IF
 
    !! QUESTION: MODIFY THIS?
    ! Check water either moves to runoff or soilstore, but not to both
@@ -1059,7 +1059,7 @@ SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
    IF (WGWaterDist_Coeff(iv5, cWG_ToRunoff) /= 0 .AND. WGWaterDist_Coeff(iv5, cWG_ToSoilStore) /= 0) THEN
       CALL ErrorHint(9, 'One of these (ToRunoff,ToSoilStore) should be zero.', &
                      WGWaterDist_Coeff(iv5, cWG_ToRunoff), WGWaterDist_Coeff(iv5, cWG_ToSoilStore), notUsedI)
-   ENDIF
+   END IF
 
    !! Also do for water surface once implemented
    IF (codeCol /= c_WGWaterCode) THEN   ! Except for Water surface
@@ -1068,11 +1068,11 @@ SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
           .OR. SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999) THEN
          CALL ErrorHint(8, 'Total water distribution from each surface should add up to 1.', &
                         SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)), notUsed, notUsedI)
-      ENDIF
-   ENDIF
+      END IF
+   END IF
 
    RETURN
-ENDSUBROUTINE CodeMatchDist
+END SUBROUTINE CodeMatchDist
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchNonVeg(rr, CodeCol)
@@ -1098,11 +1098,11 @@ SUBROUTINE CodeMatchNonVeg(rr, CodeCol)
       ELSEIF (iv5 == nlinesNonVeg) THEN
          WRITE (*, *) 'Program stopped! NonVeg code ', SiteSelect(rr, codeCol), 'not found in SUEWS_NonVeg.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_NonVeg.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchNonVeg
+END SUBROUTINE CodeMatchNonVeg
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchVeg(rr, CodeCol)
@@ -1128,11 +1128,11 @@ SUBROUTINE CodeMatchVeg(rr, CodeCol)
       ELSEIF (iv5 == nlinesVeg) THEN
          WRITE (*, *) 'Program stopped! Veg code ', SiteSelect(rr, codeCol), 'not found in SUEWS_Vegs.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_Veg.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchVeg
+END SUBROUTINE CodeMatchVeg
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchWater(rr, CodeCol)
@@ -1158,11 +1158,11 @@ SUBROUTINE CodeMatchWater(rr, CodeCol)
       ELSEIF (iv5 == nlinesWater) THEN
          WRITE (*, *) 'Program stopped! Water code ', SiteSelect(rr, codeCol), 'not found in SUEWS_Water.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_Water.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchWater
+END SUBROUTINE CodeMatchWater
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchSnow(rr, CodeCol)
@@ -1188,11 +1188,11 @@ SUBROUTINE CodeMatchSnow(rr, CodeCol)
       ELSEIF (iv5 == nlinesSnow) THEN
          WRITE (*, *) 'Program stopped! Snow code ', SiteSelect(rr, codeCol), 'not found in SUEWS_Snow.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_Snow.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchSnow
+END SUBROUTINE CodeMatchSnow
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchConductance(rr, CodeCol)
@@ -1218,11 +1218,11 @@ SUBROUTINE CodeMatchConductance(rr, CodeCol)
       ELSEIF (iv5 == nlinesConductance) THEN
          WRITE (*, *) 'Program stopped! Conductance code ', SiteSelect(rr, codeCol), 'not found in SUEWS_Conductance.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_Conductance.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchConductance
+END SUBROUTINE CodeMatchConductance
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
@@ -1251,11 +1251,11 @@ SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
             'not found in SUEWS_AnthropogenicEmission.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicEmission.txt', &
                         SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchAnthropogenic
+END SUBROUTINE CodeMatchAnthropogenic
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchIrrigation(rr, CodeCol)
@@ -1281,11 +1281,11 @@ SUBROUTINE CodeMatchIrrigation(rr, CodeCol)
       ELSEIF (iv5 == nlinesIrrigation) THEN
          WRITE (*, *) 'Program stopped! Irrigation code ', SiteSelect(rr, codeCol), 'not found in SUEWS_Irrigation.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_Irrigation.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchIrrigation
+END SUBROUTINE CodeMatchIrrigation
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchSoil(Gridiv, SurfaceCharCodeCol)
@@ -1311,11 +1311,11 @@ SUBROUTINE CodeMatchSoil(Gridiv, SurfaceCharCodeCol)
       ELSEIF (iv5 == nlinesSoil) THEN
          WRITE (*, *) 'Program stopped! Soil code ', SurfaceChar(Gridiv, SurfaceCharCodeCol), 'not found in SUEWS_Soil.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_Soil.txt', SurfaceChar(Gridiv, SurfaceCharCodeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchSoil
+END SUBROUTINE CodeMatchSoil
 ! ---------------------------------------------------------
 
 SUBROUTINE CodeMatchBiogen(Gridiv, SurfaceCharCodeCol)
@@ -1341,11 +1341,11 @@ SUBROUTINE CodeMatchBiogen(Gridiv, SurfaceCharCodeCol)
       ELSEIF (iv5 == nlinesBiogen) THEN
          WRITE (*, *) 'Program stopped! Biogen code ', SurfaceChar(Gridiv, SurfaceCharCodeCol), 'not found in SUEWS_BiogenCO2.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_BiogenCO2.txt', SurfaceChar(Gridiv, SurfaceCharCodeCol), notUsed, notUsedI)
-      ENDIF
-   ENDDO
+      END IF
+   END DO
 
    RETURN
-ENDSUBROUTINE CodeMatchBiogen
+END SUBROUTINE CodeMatchBiogen
 ! ---------------------------------------------------------
 
 MODULE MetDisagg
@@ -1437,7 +1437,7 @@ CONTAINS
       ELSE
          CALL errorHint(2, 'Problem in SUEWS_MetDisagg: DisaggMethod value should be 1, 2, or 3', &
                         NotUsed, NotUsed, DisaggMethod)
-      ENDIF
+      END IF
       ! Set rainfall
       MetDisaggMethod(14) = RainDisaggMethod
 
@@ -1451,12 +1451,12 @@ CONTAINS
       IF (SkippedLinesOrig > 0) THEN
          DO i = 1, skippedLinesOrig - 1   ! minus 1 here because last line of last block needs to be read again
             READ (lunit, *)
-         ENDDO
+         END DO
          ! Read in last line of previous block
          CALL MetRead(lunit, MetArrayOrig, InputmetFormat, ldown_option, NetRadiationMethod, &
                       snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
          MetForDisaggPrev(1:ncolumnsMetForcingData) = MetArrayOrig
-      ENDIF
+      END IF
       ! print*, 'MetForDisagg',MetForDisagg(1:3,1:4)
       ! print*, 'ReadLinesOrigMetDataMax',ReadLinesOrigMetDataMax
       ! Read in current block
@@ -1464,14 +1464,14 @@ CONTAINS
          CALL MetRead(lunit, MetArrayOrig, InputmetFormat, ldown_option, NetRadiationMethod, &
                       snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
          MetForDisagg(i, 1:ncolumnsMetForcingData) = MetArrayOrig
-      ENDDO
+      END DO
       ! print*, 'MetForDisagg',MetForDisagg(1:3,1:4)
       ! Read in first line of next block (except for last block)
       IF (iBlock /= ReadBlocksOrigMetData) THEN
          CALL MetRead(lunit, MetArrayOrig, InputmetFormat, ldown_option, NetRadiationMethod, &
                       snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
          MetForDisaggNext(1:ncolumnsMetForcingData) = MetArrayOrig
-      ENDIF
+      END IF
       CLOSE (lunit)
 
       ! Check resolution of original met forcing data -------------------------------------
@@ -1481,19 +1481,19 @@ CONTAINS
       IF (tdiff < 0) THEN   !If time difference is negative (e.g. change of day), instead use second and third row
          tdiff = INT(MetForDisagg(3, 4) - MetForDisagg(2, 4))
          IF (tdiff == 0) tdiff = INT(MetForDisagg(3, 3) - MetForDisagg(2, 3))*60   !If no difference in minutes, try using hours
-      ENDIF
+      END IF
       ! Check actual resolution matches specified input resolution
       IF (tdiff /= ResolutionFilesIn/60) THEN
          CALL errorHint(2, 'Problem in SUEWS_MetDisagg: timestamps in met forcing file inconsistent with ResolutionFilesIn', &
                         REAL(ResolutionFilesIn, KIND(1d0)), NotUsed, tdiff*60)
-      ENDIF
+      END IF
 
       ! Check file only contains a single year --------------------------------------------
       ! Very last data point is allowed to be (should be) timestamped with following year
       IF (ANY(MetForDisagg(1:(ReadLinesOrigMetDataMax - 1), 1) /= MetForDisagg(1, 1))) THEN
          CALL errorHint(3, 'Problem in SUEWS_MetDisagg: multiple years found in original met forcing file.', &
                         MetForDisagg(1, 1), NotUsed, NotUsedI)
-      ENDIF
+      END IF
 
       ! Disaggregate time columns ---------------------------------------------------------
       IF (Diagnose == 1) WRITE (*, *) 'Disaggregating met forcing data (', TRIM(FileOrigMet), ') to model time-step...'
@@ -1509,7 +1509,7 @@ CONTAINS
                   Met_tt(:, 16) = -999
                ELSE
                   Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), Nper, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
-               ENDIF
+               END IF
             ELSEIF (MetDisaggMethod(14) == 101) THEN
                IF (RainAmongN == -999) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
@@ -1524,8 +1524,8 @@ CONTAINS
                   ELSE
                      Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), &
                                                     RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
-                  ENDIF
-               ENDIF
+                  END IF
+               END IF
             ELSEIF (MetDisaggMethod(14) == 102) THEN
                IF (ALL(MultRainAmongN == -999)) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongN', &
@@ -1544,15 +1544,15 @@ CONTAINS
                   ELSE
                      Met_tt(:, 16) = DisaggP_amongNMult(MetForDisagg(:, 16), MultRainAmongNUpperI, MultRainAmongN, Nper, &
                                                         ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
-                  ENDIF
-               ENDIF
+                  END IF
+               END IF
             ELSE
                WRITE (*, *) 'Disaggregation code for rain not recognised'
-            ENDIF
+            END IF
          ELSEIF (ii == 24) THEN  !wind direction disaggregation not coded yet...
             IF (ANY(MetForDisagg(:, ii) /= -999)) THEN
                WRITE (*, *) 'Disaggregation of wind direction not currently implemented!'
-            ENDIF
+            END IF
          ELSE
             IF (ALL(MetForDisagg(:, ii) == -999)) THEN
                !IF(DiagnoseDisagg==1) write(*,*) 'No data for col.', ii
@@ -1560,9 +1560,9 @@ CONTAINS
             ELSE
                Met_tt(:, ii) = Disagg_Lin(MetForDisagg(:, ii), MetForDisaggPrev(ii), MetForDisaggNext(ii), MetDisaggMethod(ii), &
                                           Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax, iBlock)
-            ENDIF
-         ENDIF
-      ENDDO
+            END IF
+         END IF
+      END DO
 
       ! Adjust kdown disaggregation using zenith angle
       IF (KdownZen == 1) THEN
@@ -1582,18 +1582,18 @@ CONTAINS
             IF (zenith_deg > 90) THEN
                !write(*,*) Met_tt(i,1:4)
                Met_tt_kdownAdj(i) = 0.0
-            ENDIF
-         ENDDO
+            END IF
+         END DO
          ! Redistribute kdown over each day
          DO i = 1, (ReadLinesOrigMetDataMax*Nper/nsd) ! Loop over each day
             Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) = &
                Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) &
                *SUM(Met_tt((i - 1)*nsd + seq1nsd, 15)) &
                /SUM(Met_tt_kdownAdj((i - 1)*nsd + seq1nsd))
-         ENDDO
+         END DO
          ! Copy adjusted kdown back to Met_tt array
          Met_tt(:, 15) = Met_tt_kdownAdj(:)
-      ENDIF
+      END IF
 
       ! Copy disaggregated data to MetForcingDataArray
       MetForcingData(:, 1:24, GridCounter) = Met_tt(:, 1:24)
@@ -1613,24 +1613,24 @@ CONTAINS
                   HeaderMetOut = ADJUSTL(HeaderMet(i))
                ELSE
                   HeaderMetOut = TRIM(HeaderMetOut)//' '//ADJUSTL(HeaderMet(i))
-               ENDIF
-            ENDDO
+               END IF
+            END DO
             ! Write out header
             OPEN (78, file=TRIM(FileDscdMet), err=112)
             WRITE (78, '(a)') HeaderMetOut
          ELSE
             OPEN (78, file=TRIM(FileDscdMet), position='append')!,err=112)
-         ENDIF
+         END IF
          ! Write out data
          DO i = 1, (ReadLinesOrigMetDataMax*Nper)
             WRITE (78, 303) (INT(Met_tt(i, ii)), ii=1, 4), Met_tt(i, 5:ncolumnsMetForcingData)
-         ENDDO
+         END DO
          !IF(iBlock == ReadBlocksOrigMetData) THEN
          !   WRITE(78,'(i2)') -9
          !   WRITE(78,'(i2)') -9
          !ENDIF
          CLOSE (78)   !Close output file
-      ENDIF
+      END IF
 
 303   FORMAT((i4, 1X), 3(i3, 1X), 9(f12.6, 1X), (f9.4, 1X), 10(f9.4, 1X))  !Allows 4 dp for rainfall
 
@@ -1643,7 +1643,7 @@ CONTAINS
 
 112   CALL ErrorHint(52, TRIM(FileDscdMet), notUsed, notUsed, notUsedI)
 
-   ENDSUBROUTINE DisaggregateMet
+   END SUBROUTINE DisaggregateMet
    !======================================================================================
 
    !======================================================================================
@@ -1699,7 +1699,7 @@ CONTAINS
       ELSE
          CALL errorHint(2, 'Problem in SUEWS_ESTMDisagg: DisaggMethodESTM value should be 1 or 2', &
                         NotUsed, NotUsed, DisaggMethodESTM)
-      ENDIF
+      END IF
 
       ! Read data ---------------------------------------------------------------------
       IF (DiagnoseDisaggESTM == 1) WRITE (*, *) 'Reading file: ', TRIM(FileOrigESTM)
@@ -1711,21 +1711,21 @@ CONTAINS
       IF (SkippedLinesOrigESTM > 0) THEN
          DO i = 1, skippedLinesOrigESTM - 1   ! minus 1 here because last line of last block needs to be read again
             READ (lunit, *)
-         ENDDO
+         END DO
          ! Read in last line of previous block
          READ (lunit, *, iostat=iostat_var) ESTMArrayOrig
          ESTMForDisaggPrev(1:ncolsESTMdata) = ESTMArrayOrig
-      ENDIF
+      END IF
       ! Read in current block
       DO i = 1, ReadLinesOrigESTMDataMax
          READ (lunit, *, iostat=iostat_var) ESTMArrayOrig
          ESTMForDisagg(i, 1:ncolsESTMdata) = ESTMArrayOrig
-      ENDDO
+      END DO
       ! Read in first line of next block (except for last block)
       IF (iBlock /= ReadBlocksOrigMetData) THEN
          READ (lunit, *, iostat=iostat_var) ESTMArrayOrig
          ESTMForDisaggNext(1:ncolsESTMdata) = ESTMArrayOrig
-      ENDIF
+      END IF
       CLOSE (lunit)
 
       ! Check resolution of original met forcing data -------------------------------------
@@ -1735,12 +1735,12 @@ CONTAINS
       IF (tdiff < 0) THEN   !If time difference is negative (e.g. change of day), instead use second and third row
          tdiff = INT(ESTMForDisagg(3, 4) - ESTMForDisagg(2, 4))
          IF (tdiff == 0) tdiff = INT(ESTMForDisagg(3, 3) - ESTMForDisagg(2, 3))*60   !If no difference in minutes, try using hours
-      ENDIF
+      END IF
       ! Check actual resolution matches specified input resolution
       IF (tdiff /= ResolutionFilesInESTM/60) THEN
          CALL errorHint(2, 'Problem in SUEWS_ESTMDisagg: timestamps in ESTM forcing file inconsistent with ResolutionFilesInESTM', &
                         REAL(ResolutionFilesInESTM, KIND(1d0)), NotUsed, tdiff*60)
-      ENDIF
+      END IF
 
       ! Disaggregate time columns ---------------------------------------------------------
       IF (Diagnose == 1) THEN
@@ -1802,8 +1802,8 @@ CONTAINS
          ELSE
             ESTM_tt(:, ii) = Disagg_Lin(ESTMForDisagg(:, ii), ESTMForDisaggPrev(ii), ESTMForDisaggNext(ii), ESTMDisaggMethod(ii), &
                                         NperESTM, ReadLinesOrigESTMData, ReadLinesOrigESTMDataMax, iBlock)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
       ! Copy disaggregated data to MetForcingDataArray
       ESTMForcingData(:, 1:ncolsESTMdata, GridCounter) = ESTM_tt(:, 1:ncolsESTMdata)
@@ -1817,24 +1817,24 @@ CONTAINS
                   HeaderESTMOut = ADJUSTL(HeaderESTM(i))
                ELSE
                   HeaderESTMOut = TRIM(HeaderESTMOut)//' '//ADJUSTL(HeaderESTM(i))
-               ENDIF
-            ENDDO
+               END IF
+            END DO
             ! Write out header
             OPEN (78, file=TRIM(FileDscdESTM), err=113)
             WRITE (78, '(a)') HeaderESTMOut
          ELSE
             OPEN (78, file=TRIM(FileDscdESTM), position='append')!,err=113)
-         ENDIF
+         END IF
          ! Write out data
          DO i = 1, (ReadLinesOrigESTMDataMax*NperESTM)
             WRITE (78, 304) (INT(ESTM_tt(i, ii)), ii=1, 4), ESTM_tt(i, 5:ncolsESTMdata)
-         ENDDO
+         END DO
          !IF(iBlock == ReadBlocksOrigMetData) THEN
          !   WRITE(78,'(i2)') -9
          !   WRITE(78,'(i2)') -9
          !ENDIF
          CLOSE (78)   !Close output file
-      ENDIF
+      END IF
 
 304   FORMAT((i4, 1X), 3(i3, 1X), 9(f9.4, 1X))
 
@@ -1847,7 +1847,7 @@ CONTAINS
 
 113   CALL ErrorHint(52, TRIM(FileDscdESTM), notUsed, notUsed, notUsedI)
 
-   ENDSUBROUTINE DisaggregateESTM
+   END SUBROUTINE DisaggregateESTM
    !======================================================================================
 
    !======================================================================================
@@ -1899,7 +1899,7 @@ CONTAINS
          DateTimeDscd(Nper*(i - 1) + Seq1Nper, 3) = temp_ih
          DateTimeDscd(Nper*(i - 1) + Seq1Nper, 4) = temp_im
 
-      ENDDO
+      END DO
 
    END SUBROUTINE DisaggregateDateTime
    !======================================================================================
@@ -1943,7 +1943,7 @@ CONTAINS
       ELSEIF (DisaggType == 20) THEN
          FastRows = Nper_loc + seq1Nper_loc   !Rows to create at model time-step
          FirstRows20 = (/(i, i=1, (FastRows(1) - 1), 1)/)   !For start of dataset
-      ENDIF
+      END IF
 
       ! Initialise fast array to -999
       Fast = -999
@@ -1954,7 +1954,7 @@ CONTAINS
             Fast(Nper_loc*(i - 1) + FastRows) = Slow(i) - &
                                                 (Slow(i + 1) - Slow(i))/(XNper_loc*Nper_loc) + &
                                                 (Slow(i + 1) - Slow(i))/Nper_loc*(/(ii, ii=1, Nper_loc, 1)/)
-         ENDDO
+         END DO
 
          ! For first few rows, use previous met block
          IF (iBlock == 1) THEN
@@ -1964,7 +1964,7 @@ CONTAINS
                                 (Slow(1) - SlowPrev)/(XNper_loc*Nper_loc) + &
                                 (Slow(1) - SlowPrev)/Nper_loc* &
                                 (/(ii, ii=(Nper_loc - SIZE(FirstRows10) + 1), Nper_loc, 1)/)
-         ENDIF
+         END IF
          ! For last few rows, use next met block
          IF (iBlock == ReadBlocksOrigMetData) THEN
             Fast(LastRows10) = Fast(Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc))   !Use repeat values at the end of the year
@@ -1973,14 +1973,14 @@ CONTAINS
                                (SlowNext - Slow(ReadLinesOrigMax_loc))/(XNper_loc*Nper_loc) + &
                                (SlowNext - Slow(ReadLinesOrigMax_loc))/Nper_loc* &
                                (/(ii, ii=1, SIZE(LastRows10), 1)/)
-         ENDIF
+         END IF
       ELSEIF (DisaggType == 20) THEN   !Instantaneous variables
          IF (DiagnoseDisagg == 1) WRITE (*, *) 'Linearly disaggregating instantaneous variable'
          DO i = 1, (ReadLinesOrigMax_loc - 1)
             Fast(Nper_loc*(i - 1) + FastRows) = (Slow(i) + &
                                                  (Slow(i + 1) - Slow(i))/Nper_loc*2*(seq1Nper_loc - 1) + &
                                                  Slow(i))/2
-         ENDDO
+         END DO
          ! For first few rows, use previous met block
          IF (iBlock == 1) THEN
             Fast(FirstRows20) = Fast(FastRows(1))   !Use repeat values at the start of the year
@@ -1989,7 +1989,7 @@ CONTAINS
                                  (Slow(1) - SlowPrev)/Nper_loc*2* &
                                  ((/(ii, ii=(Nper_loc - SIZE(FirstRows20) + 1), Nper_loc, 1)/) - 1) + &
                                  SlowPrev)/2
-         ENDIF
+         END IF
          !! Last few rows are already filled for the instantaneous value disaggregation
          !IF(iBlock==ReadBlocksOrigMetData) THEN
          !   Fast(LastRows20) = Fast(Nper_loc*(ReadLinesOrigMax_loc-1-1)+FastRows(Nper_loc))   !Use repeat values at the end of the year
@@ -1999,14 +1999,14 @@ CONTAINS
          !                        ((/(ii, ii=1,SIZE(LastRows20), 1)/)-1) + &
          !                       Slow(ReadLinesOrigMax_loc))/2
          !ENDIF
-      ENDIF
+      END IF
 
       IF (ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
          WRITE (*, *) 'Problem: -999s (', COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999), ') in disaggregated data.'
          CALL errorHint(13, 'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.', NotUsed, NotUsed, NotUsedI)
-      ENDIF
+      END IF
 
-   ENDFUNCTION Disagg_Lin
+   END FUNCTION Disagg_Lin
    !======================================================================================
 
    !======================================================================================
@@ -2041,7 +2041,7 @@ CONTAINS
       ! If all subintervals are to contain rain, don't need to generate random numbers
       IF (amongN == Nper_loc) THEN
          Subintervals(:) = seq1Nper_loc
-      ENDIF
+      END IF
       IF (amongN > Nper_loc) &
          CALL errorHint(2, 'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed number of subintervals', &
                         REAL(Nper_loc, KIND(1d0)), NotUsed, amongN)
@@ -2054,17 +2054,17 @@ CONTAINS
             IF (amongN < Nper_loc) THEN
                Subintervals(:) = -999
                Subintervals = RandomSamples(amongN, Nper_loc)
-            ENDIF
+            END IF
             Fast(Nper_loc*(i - 1) + SubIntervals) = Slow(i)/amongN
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
       IF (ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
          WRITE (*, *) 'Problem: -999s (', COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999), ') in disaggregated data'
          CALL errorHint(13, 'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.', NotUsed, NotUsed, NotUsedI)
-      ENDIF
+      END IF
 
-   ENDFUNCTION DisaggP_amongN
+   END FUNCTION DisaggP_amongN
    !======================================================================================
 
    !======================================================================================
@@ -2115,7 +2115,7 @@ CONTAINS
                thisamongN = multamongN(5)
                CALL errorHint(4, 'Precip in met forcing file exceeds maxiumum MultRainAmongNUpperI', &
                               Slow(i), MultRainAmongNUpperI(5), notUsedI)
-            ENDIF
+            END IF
 
             ! For each averaging period, get subintervals which will receive rain
             ALLOCATE (Subintervals(thisamongN))
@@ -2128,19 +2128,19 @@ CONTAINS
                Subintervals(:) = seq1Nper_loc
             ELSEIF (thisamongN < Nper_loc) THEN
                Subintervals = RandomSamples(thisamongN, Nper_loc)
-            ENDIF
+            END IF
             Fast(Nper_loc*(i - 1) + SubIntervals) = Slow(i)/thisamongN
             !write(*,*) Slow(i), thisamongN
             DEALLOCATE (Subintervals)
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
       IF (ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
          WRITE (*, *) 'Problem: -999s (', COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999), ') in disaggregated data'
          CALL errorHint(13, 'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.', NotUsed, NotUsed, NotUsedI)
-      ENDIF
+      END IF
 
-   ENDFUNCTION DisaggP_amongNMult
+   END FUNCTION DisaggP_amongNMult
    !======================================================================================
 
    !======================================================================================
@@ -2174,12 +2174,12 @@ CONTAINS
             ! Only keep if this subinterval has not already been selected
             i = i + 1
             Samples(i) = X
-         ENDIF
+         END IF
          !write(*,*) Samples
-      ENDDO
+      END DO
 
-   ENDFUNCTION RandomSamples
+   END FUNCTION RandomSamples
    !======================================================================================
 
-ENDMODULE MetDisagg
+END MODULE MetDisagg
 !========================================================================================

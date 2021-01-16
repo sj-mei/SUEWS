@@ -42,7 +42,7 @@ module mod_strftime
       integer(kind=c_int) :: tm_yday  !! Days in year [0-365]
       integer(kind=c_int) :: tm_isdst !! DST          [-1/0/1]
 
-   endtype tm_struct
+   end type tm_struct
 !=======================================================================
 
    interface
@@ -69,7 +69,7 @@ module mod_strftime
          type(tm_struct), intent(in)  :: tm     !! tm_struct instance
          integer(kind=c_int)                             :: rc     !! return code
 
-      endfunction c_strftime
+      end function c_strftime
 
       function c_strptime(str, format, tm) bind(c, name='strptime') result(rc)
 
@@ -88,11 +88,11 @@ module mod_strftime
          type(tm_struct), intent(out) :: tm     !! result tm_struct
          integer(kind=c_int)                             :: rc     !! return code
 
-      endfunction c_strptime
+      end function c_strptime
 
-   endinterface
+   end interface
 !=======================================================================
-endmodule mod_strftime
+end module mod_strftime
 
 !
 ! datetime-fortran - A Fortran library for date and time manipulation
@@ -138,7 +138,7 @@ module mod_constants
    integer, parameter :: MAXSTRLEN = 99
 
 !=======================================================================
-endmodule mod_constants
+end module mod_constants
 
 !
 ! datetime-fortran - A Fortran library for date and time manipulation
@@ -209,11 +209,11 @@ module mod_timedelta
       generic :: operator(<) => lt
       generic :: operator(<=) => le
 
-   endtype timedelta
+   end type timedelta
 
    interface timedelta
       module procedure :: timedelta_constructor
-   endinterface timedelta
+   end interface timedelta
 
 !=======================================================================
 contains
@@ -233,33 +233,33 @@ contains
          timedelta_constructor%days = days
       else
          timedelta_constructor%days = 0
-      endif
+      end if
 
       if (present(hours)) then
          timedelta_constructor%hours = hours
       else
          timedelta_constructor%hours = 0
-      endif
+      end if
 
       if (present(minutes)) then
          timedelta_constructor%minutes = minutes
       else
          timedelta_constructor%minutes = 0
-      endif
+      end if
 
       if (present(seconds)) then
          timedelta_constructor%seconds = seconds
       else
          timedelta_constructor%seconds = 0
-      endif
+      end if
 
       if (present(milliseconds)) then
          timedelta_constructor%milliseconds = milliseconds
       else
          timedelta_constructor%milliseconds = 0
-      endif
+      end if
 
-   endfunction timedelta_constructor
+   end function timedelta_constructor
 
 ! timedelta getters
 !=======================================================================
@@ -268,31 +268,31 @@ contains
       !! Returns the number of days.
       class(timedelta), intent(in) :: self !! `timedelta` instance
       getDays = self%days
-   endfunction getDays
+   end function getDays
 
    pure elemental integer function getHours(self)
       !! Returns the number of hours.
       class(timedelta), intent(in) :: self !! `timedelta` instance
       getHours = self%hours
-   endfunction getHours
+   end function getHours
 
    pure elemental integer function getMinutes(self)
       !! Returns the number of minutes.
       class(timedelta), intent(in) :: self !! `timedelta` instance
       getMinutes = self%minutes
-   endfunction getMinutes
+   end function getMinutes
 
    pure elemental integer function getSeconds(self)
       !! Returns the number of seconds.
       class(timedelta), intent(in) :: self !! `timedelta` instance
       getSeconds = self%seconds
-   endfunction getSeconds
+   end function getSeconds
 
    pure elemental integer function getMilliseconds(self)
       !! Returns the number of milliseconds.
       class(timedelta), intent(in) :: self !! `timedelta` instance
       getMilliseconds = self%milliseconds
-   endfunction getMilliseconds
+   end function getMilliseconds
 
    pure elemental real(kind=real64) function total_seconds(self)
 
@@ -307,7 +307,7 @@ contains
                       + self%seconds &
                       + self%milliseconds*1e-3_real64
 
-   endfunction total_seconds
+   end function total_seconds
 
    pure elemental function timedelta_plus_timedelta(t0, t1) result(t)
 
@@ -324,7 +324,7 @@ contains
                     seconds=t0%seconds + t1%seconds, &
                     milliseconds=t0%milliseconds + t1%milliseconds)
 
-   endfunction timedelta_plus_timedelta
+   end function timedelta_plus_timedelta
 
    pure elemental function timedelta_minus_timedelta(t0, t1) result(t)
 
@@ -337,7 +337,7 @@ contains
 
       t = t0 + (-t1)
 
-   endfunction timedelta_minus_timedelta
+   end function timedelta_minus_timedelta
 
    pure elemental function unary_minus_timedelta(t0) result(t)
 
@@ -353,7 +353,7 @@ contains
       t%seconds = -t0%seconds
       t%milliseconds = -t0%milliseconds
 
-   endfunction unary_minus_timedelta
+   end function unary_minus_timedelta
 
    pure elemental logical function eq(td0, td1)
 
@@ -366,7 +366,7 @@ contains
 
       eq = td0%total_seconds() == td1%total_seconds()
 
-   endfunction eq
+   end function eq
 
    pure elemental logical function neq(td0, td1)
 
@@ -379,7 +379,7 @@ contains
 
       neq = .not. (td0%total_seconds() == td1%total_seconds())
 
-   endfunction neq
+   end function neq
 
    pure elemental logical function gt(td0, td1)
 
@@ -392,7 +392,7 @@ contains
 
       gt = td0%total_seconds() > td1%total_seconds()
 
-   endfunction gt
+   end function gt
 
    pure elemental logical function ge(td0, td1)
 
@@ -405,7 +405,7 @@ contains
 
       ge = td0%total_seconds() >= td1%total_seconds()
 
-   endfunction ge
+   end function ge
 
    pure elemental logical function lt(td0, td1)
 
@@ -418,7 +418,7 @@ contains
 
       lt = td0%total_seconds() < td1%total_seconds()
 
-   endfunction lt
+   end function lt
 
    pure elemental logical function le(td0, td1)
 
@@ -431,9 +431,9 @@ contains
 
       le = td0%total_seconds() <= td1%total_seconds()
 
-   endfunction le
+   end function le
 !=======================================================================
-endmodule mod_timedelta
+end module mod_timedelta
 
 !
 ! datetime-fortran - A Fortran library for date and time manipulation
@@ -548,11 +548,11 @@ module mod_datetime
       generic :: operator(<) => lt
       generic :: operator(<=) => le
 
-   endtype datetime
+   end type datetime
 
    interface datetime
       module procedure :: datetime_constructor
-   endinterface datetime
+   end interface datetime
 
 !=======================================================================
 contains
@@ -575,51 +575,51 @@ contains
          datetime_constructor%year = year
       else
          datetime_constructor%year = 1
-      endif
+      end if
 
       if (present(month)) then
          datetime_constructor%month = month
       else
          datetime_constructor%month = 1
-      endif
+      end if
 
       if (present(day)) then
          datetime_constructor%day = day
       else
          datetime_constructor%day = 1
-      endif
+      end if
 
       if (present(hour)) then
          datetime_constructor%hour = hour
       else
          datetime_constructor%hour = 0
-      endif
+      end if
 
       if (present(minute)) then
          datetime_constructor%minute = minute
       else
          datetime_constructor%minute = 0
-      endif
+      end if
 
       if (present(second)) then
          datetime_constructor%second = second
       else
          datetime_constructor%second = 0
-      endif
+      end if
 
       if (present(millisecond)) then
          datetime_constructor%millisecond = millisecond
       else
          datetime_constructor%millisecond = 0
-      endif
+      end if
 
       if (present(tz)) then
          datetime_constructor%tz = tz
       else
          datetime_constructor%tz = 0
-      endif
+      end if
 
-   endfunction datetime_constructor
+   end function datetime_constructor
 
 ! datetime getters
 !=======================================================================
@@ -628,49 +628,49 @@ contains
       !! Returns the year component
       class(datetime), intent(in) :: self !! `datetime` instance
       getYear = self%year
-   endfunction getYear
+   end function getYear
 
    pure elemental integer function getMonth(self)
       !! Returns the year component
       class(datetime), intent(in) :: self !! `datetime` instance
       getMonth = self%month
-   endfunction getMonth
+   end function getMonth
 
    pure elemental integer function getDay(self)
       !! Returns the year component
       class(datetime), intent(in) :: self !! `datetime` instance
       getDay = self%day
-   endfunction getDay
+   end function getDay
 
    pure elemental integer function getHour(self)
       !! Returns the year component
       class(datetime), intent(in) :: self !! `datetime` instance
       getHour = self%hour
-   endfunction getHour
+   end function getHour
 
    pure elemental integer function getMinute(self)
       !! Returns the year component
       class(datetime), intent(in) :: self !! `datetime` instance
       getMinute = self%minute
-   endfunction getMinute
+   end function getMinute
 
    pure elemental integer function getSecond(self)
       !! Returns the year component
       class(datetime), intent(in) :: self !! `datetime` instance
       getSecond = self%second
-   endfunction getSecond
+   end function getSecond
 
    pure elemental integer function getMillisecond(self)
       !! Returns the year component
       class(datetime), intent(in) :: self !! `datetime` instance
       getMillisecond = self%millisecond
-   endfunction getMillisecond
+   end function getMillisecond
 
    pure elemental real(kind=real64) function getTz(self)
       !! Returns the timezone offset component
       class(datetime), intent(in) :: self !! `datetime` instance
       getTz = self%tz
-   endfunction getTz
+   end function getTz
 
    pure elemental subroutine addMilliseconds(self, ms)
 
@@ -691,10 +691,10 @@ contains
             self%millisecond = mod(self%millisecond, 1000) + 1000
          else
             exit
-         endif
-      enddo
+         end if
+      end do
 
-   endsubroutine addMilliseconds
+   end subroutine addMilliseconds
 
 ! datetime-bound methods
 !=======================================================================
@@ -718,10 +718,10 @@ contains
             self%second = mod(self%second, 60) + 60
          else
             exit
-         endif
-      enddo
+         end if
+      end do
 
-   endsubroutine addSeconds
+   end subroutine addSeconds
 
    pure elemental subroutine addMinutes(self, m)
 
@@ -742,10 +742,10 @@ contains
             self%minute = mod(self%minute, 60) + 60
          else
             exit
-         endif
-      enddo
+         end if
+      end do
 
-   endsubroutine addMinutes
+   end subroutine addMinutes
 
    pure elemental subroutine addHours(self, h)
 
@@ -766,10 +766,10 @@ contains
             self%hour = mod(self%hour, 24) + 24
          else
             exit
-         endif
-      enddo
+         end if
+      end do
 
-   endsubroutine addHours
+   end subroutine addHours
 
    pure elemental subroutine addDays(self, d)
 
@@ -790,20 +790,20 @@ contains
             if (self%month > 12) then
                self%year = self%year + self%month/12
                self%month = mod(self%month, 12)
-            endif
+            end if
          elseif (self%day < 1) then
             self%month = self%month - 1
             if (self%month < 1) then
                self%year = self%year + self%month/12 - 1
                self%month = 12 + mod(self%month, 12)
-            endif
+            end if
             self%day = self%day + daysInMonth(self%month, self%year)
          else
             exit
-         endif
-      enddo
+         end if
+      end do
 
-   endsubroutine addDays
+   end subroutine addDays
 
    pure elemental character(len=23) function isoformat(self, sep)
 
@@ -819,7 +819,7 @@ contains
          separator = sep
       else
          separator = 'T'
-      endif
+      end if
 
       ! TODO below is a bit cumbersome and was implemented
       ! at a time before the interface to strftime. Now we
@@ -835,7 +835,7 @@ contains
                   int2str(self%second, 2)//'.'// &
                   int2str(self%millisecond, 3)
 
-   endfunction isoformat
+   end function isoformat
 
    pure elemental logical function isValid(self)
 
@@ -851,40 +851,40 @@ contains
       if (self%year < 1) then
          isValid = .false.
          return
-      endif
+      end if
 
       if (self%month < 1 .or. self%month > 12) then
          isValid = .false.
          return
-      endif
+      end if
 
       if (self%day < 1 .or. &
           self%day > daysInMonth(self%month, self%year)) then
          isValid = .false.
          return
-      endif
+      end if
 
       if (self%hour < 0 .or. self%hour > 23) then
          isValid = .false.
          return
-      endif
+      end if
 
       if (self%minute < 0 .or. self%minute > 59) then
          isValid = .false.
          return
-      endif
+      end if
 
       if (self%second < 0 .or. self%second > 59) then
          isValid = .false.
          return
-      endif
+      end if
 
       if (self%millisecond < 0 .or. self%millisecond > 999) then
          isValid = .false.
          return
-      endif
+      end if
 
-   endfunction isValid
+   end function isValid
 
    type(datetime) function now()
 
@@ -912,7 +912,7 @@ contains
 
       now%tz = hour + minute*m2h
 
-   endfunction now
+   end function now
 
    pure elemental integer function weekday(self)
 
@@ -938,7 +938,7 @@ contains
       if (month <= 2) then
          month = month + 12
          year = year - 1
-      endif
+      end if
 
       j = year/100
       k = mod(year, 100)
@@ -947,7 +947,7 @@ contains
 
       if (weekday < 0) weekday = 6
 
-   endfunction weekday
+   end function weekday
 
    pure elemental integer function isoweekday(self)
 
@@ -970,7 +970,7 @@ contains
          isoweekday = 7
       end if
 
-   endfunction isoweekday
+   end function isoweekday
 
    pure elemental character(len=9) function weekdayLong(self)
 
@@ -984,7 +984,7 @@ contains
 
       weekdayLong = days(self%weekday() + 1)
 
-   endfunction weekdayLong
+   end function weekdayLong
 
    pure elemental character(len=9) function isoweekdayLong(self)
 
@@ -999,7 +999,7 @@ contains
 
       isoweekdayLong = days(self%isoweekday())
 
-   endfunction isoweekdayLong
+   end function isoweekdayLong
 
    pure elemental character(len=3) function weekdayShort(self)
 
@@ -1012,7 +1012,7 @@ contains
 
       weekdayShort = days(self%weekday() + 1)
 
-   endfunction weekdayShort
+   end function weekdayShort
 
    pure elemental character(len=3) function isoweekdayShort(self)
 
@@ -1026,7 +1026,7 @@ contains
 
       isoweekdayShort = days(self%isoweekday())
 
-   endfunction isoweekdayShort
+   end function isoweekdayShort
 
    function isocalendar(self)
 
@@ -1050,7 +1050,7 @@ contains
 
       isocalendar = [year, week, wday]
 
-   endfunction isocalendar
+   end function isocalendar
 
    integer function secondsSinceEpoch(self)
 
@@ -1066,7 +1066,7 @@ contains
       string = self%strftime('%s')
       read (unit=string, fmt='(I10)') secondsSinceEpoch
 
-   endfunction secondsSinceEpoch
+   end function secondsSinceEpoch
 
    function strftime(self, format)
 
@@ -1087,7 +1087,7 @@ contains
       n = len(strftime)
       strftime = strftime(1:n - 1)
 
-   endfunction strftime
+   end function strftime
 
    pure elemental type(tm_struct) function tm(self)
 
@@ -1105,7 +1105,7 @@ contains
       tm%tm_yday = self%yearday() - 1
       tm%tm_isdst = -1
 
-   endfunction tm
+   end function tm
 
    pure elemental character(len=5) function tzOffset(self)
 
@@ -1120,7 +1120,7 @@ contains
          tzOffset(1:1) = '-'
       else
          tzOffset(1:1) = '+'
-      endif
+      end if
 
       hours = int(abs(self%tz))
       minutes = nint((abs(self%tz) - hours)*60)
@@ -1128,11 +1128,11 @@ contains
       if (minutes == 60) then
          minutes = 0
          hours = hours + 1
-      endif
+      end if
 
       write (unit=tzOffset(2:5), fmt='(2I2.2)') hours, minutes
 
-   endfunction tzOffset
+   end function tzOffset
 
    pure elemental type(datetime) function utc(self)
 
@@ -1149,7 +1149,7 @@ contains
       utc = self - timedelta(hours=sgn*hours, minutes=sgn*minutes)
       utc%tz = 0
 
-   endfunction utc
+   end function utc
 
    pure elemental integer function yearday(self)
 
@@ -1162,10 +1162,10 @@ contains
       yearday = 0
       do month = 1, self%month - 1
          yearday = yearday + daysInMonth(month, self%year)
-      enddo
+      end do
       yearday = yearday + self%day
 
-   endfunction yearday
+   end function yearday
 
 ! datetime operators
 !=======================================================================
@@ -1202,7 +1202,7 @@ contains
       if (hours /= 0) call d%addHours(hours)
       if (days /= 0) call d%addDays(days)
 
-   endfunction datetime_plus_timedelta
+   end function datetime_plus_timedelta
 
    pure elemental function timedelta_plus_datetime(t, d0) result(d)
 
@@ -1215,7 +1215,7 @@ contains
 
       d = d0 + t
 
-   endfunction timedelta_plus_datetime
+   end function timedelta_plus_datetime
 
    pure elemental function datetime_minus_timedelta(d0, t) result(d)
 
@@ -1228,7 +1228,7 @@ contains
 
       d = d0 + (-t)
 
-   endfunction datetime_minus_timedelta
+   end function datetime_minus_timedelta
 
    pure elemental function datetime_minus_datetime(d0, d1) result(t)
 
@@ -1250,19 +1250,19 @@ contains
          daysDiff = ABS(daysDiff)
       else
          sign_ = 1
-      endif
+      end if
 
       days = int(daysDiff)
       hours = int((daysDiff - days)*d2h)
       minutes = int((daysDiff - days - hours*h2d)*d2m)
-      seconds = int((daysDiff - days - hours*h2d-minutes*m2d)*d2s)
-      milliseconds = nint((daysDiff - days - hours*h2d-minutes*m2d &
-                           -seconds*s2d)*d2s*1e3_real64)
+      seconds = int((daysDiff - days - hours*h2d - minutes*m2d)*d2s)
+      milliseconds = nint((daysDiff - days - hours*h2d - minutes*m2d &
+                           - seconds*s2d)*d2s*1e3_real64)
 
       t = timedelta(sign_*days, sign_*hours, sign_*minutes, sign_*seconds, &
                     sign_*milliseconds)
 
-   endfunction datetime_minus_datetime
+   end function datetime_minus_datetime
 
    pure elemental logical function gt(d0, d1)
 
@@ -1326,16 +1326,16 @@ contains
                            gt = .true.
                         else
                            gt = .false.
-                        endif
+                        end if
 
-                     endif
-                  endif
-               endif
-            endif
-         endif
-      endif
+                     end if
+                  end if
+               end if
+            end if
+         end if
+      end if
 
-   endfunction gt
+   end function gt
 
    pure elemental logical function lt(d0, d1)
 
@@ -1347,7 +1347,7 @@ contains
 
       lt = d1 > d0
 
-   endfunction lt
+   end function lt
 
    pure elemental logical function eq(d0, d1)
 
@@ -1371,7 +1371,7 @@ contains
            d0_utc%second == d1_utc%second .and. &
            d0_utc%millisecond == d1_utc%millisecond
 
-   endfunction eq
+   end function eq
 
    pure elemental logical function neq(d0, d1)
 
@@ -1383,7 +1383,7 @@ contains
 
       neq = .not. d0 == d1
 
-   endfunction neq
+   end function neq
 
    pure elemental logical function ge(d0, d1)
 
@@ -1396,7 +1396,7 @@ contains
 
       ge = d0 > d1 .or. d0 == d1
 
-   endfunction ge
+   end function ge
 
    pure elemental logical function le(d0, d1)
 
@@ -1409,7 +1409,7 @@ contains
 
       le = d1 > d0 .or. d0 == d1
 
-   endfunction le
+   end function le
 
 ! public procedures
 !=======================================================================
@@ -1423,7 +1423,7 @@ contains
       isLeapYear = (mod(year, 4) == 0 .and. .not. mod(year, 100) == 0) &
                    .or. (mod(year, 400) == 0)
 
-   endfunction isLeapYear
+   end function isLeapYear
 
    pure function datetimeRange(d0, d1, t)
 
@@ -1456,9 +1456,9 @@ contains
 
       do n = 1, nm
          datetimeRange(n) = num2date(datenum0 + (n - 1)*increment)
-      enddo
+      end do
 
-   endfunction datetimeRange
+   end function datetimeRange
 
    pure elemental integer function daysInMonth(month, year)
 
@@ -1477,15 +1477,15 @@ contains
          ! called with the month argument in range.
          daysInMonth = 0
          return
-      endif
+      end if
 
       if (month == 2 .and. isLeapYear(year)) then
          daysInMonth = 29
       else
          daysInMonth = days(month)
-      endif
+      end if
 
-   endfunction daysInMonth
+   end function daysInMonth
 
    pure elemental integer function daysInYear(year)
 
@@ -1497,9 +1497,9 @@ contains
          daysInYear = 366
       else
          daysInYear = 365
-      endif
+      end if
 
-   endfunction daysInYear
+   end function daysInYear
 
    pure elemental real(kind=real64) function date2num(d)
 
@@ -1518,20 +1518,20 @@ contains
       if (d_utc%year < 1) then
          date2num = 0
          return
-      endif
+      end if
 
       date2num = 0
       do year = 1, d_utc%year - 1
          date2num = date2num + daysInYear(year)
-      enddo
+      end do
 
       date2num = date2num &
                  + d_utc%yearday() &
                  + d_utc%hour*h2d &
-                 +d_utc%minute*m2d &
-                 +(d_utc%second + 1e-3_real64*d_utc%millisecond)*s2d
+                 + d_utc%minute*m2d &
+                 + (d_utc%second + 1e-3_real64*d_utc%millisecond)*s2d
 
-   endfunction date2num
+   end function date2num
 
    pure elemental type(datetime) function num2date(num)
 
@@ -1548,7 +1548,7 @@ contains
       if (num < 0) then
          num2date = datetime(1)
          return
-      endif
+      end if
 
       days = num
 
@@ -1557,14 +1557,14 @@ contains
          if (int(days) <= daysInYear(year)) exit
          days = days - daysInYear(year)
          year = year + 1
-      enddo
+      end do
 
       month = 1
       do
          if (inT(days) <= daysInMonth(month, year)) exit
          days = days - daysInMonth(month, year)
          month = month + 1
-      enddo
+      end do
 
       day = int(days)
       totseconds = (days - day)*d2s
@@ -1579,22 +1579,22 @@ contains
       if (num2date%millisecond == 1000) then
          num2date%millisecond = 0
          call num2date%addSeconds(1)
-      endif
+      end if
 
       if (num2date%second == 60) then
          num2date%second = 0
          call num2date%addMinutes(1)
-      endif
+      end if
       if (num2date%minute == 60) then
          num2date%minute = 0
          call num2date%addHours(1)
-      endif
+      end if
       if (num2date%hour == 60) then
          num2date%hour = 0
          call num2date%addDays(1)
-      endif
+      end if
 
-   endfunction num2date
+   end function num2date
 
    type(datetime) function strptime(str, format)
 
@@ -1610,7 +1610,7 @@ contains
       rc = c_strptime(trim(str)//c_null_char, trim(format)//c_null_char, tm)
       strptime = tm2date(tm)
 
-   endfunction strptime
+   end function strptime
 
    pure elemental type(datetime) function tm2date(ctime)
 
@@ -1628,7 +1628,7 @@ contains
       tm2date%year = ctime%tm_year + 1900
       tm2date%tz = 0
 
-   endfunction tm2date
+   end function tm2date
 
 ! private procedures
 !=======================================================================
@@ -1647,9 +1647,9 @@ contains
       write (unit=string, fmt='(I2)') length
       write (unit=int2str, fmt='(I'//string//'.'//string//')') i
 
-   endfunction int2str
+   end function int2str
 !=======================================================================
-endmodule mod_datetime
+end module mod_datetime
 
 !
 ! datetime-fortran - A Fortran library for date and time manipulation
@@ -1701,7 +1701,7 @@ module mod_clock
       procedure :: reset
       procedure :: tick
 
-   endtype clock
+   end type clock
 !=======================================================================
 contains
 
@@ -1717,7 +1717,7 @@ contains
       self%started = .false.
       self%stopped = .false.
 
-   endsubroutine reset
+   end subroutine reset
 !=======================================================================
 
 !=======================================================================
@@ -1729,22 +1729,22 @@ contains
 
       if (self%stopped) then
          return
-      endif
+      end if
 
       if (.not. self%started) then
          self%started = .true.
          self%currentTime = self%startTime
-      endif
+      end if
 
       self%currentTime = self%currentTime + self%tickInterval
 
       if (self%currentTime >= self%stopTime) then
          self%stopped = .true.
-      endif
+      end if
 
-   endsubroutine tick
+   end subroutine tick
 !=======================================================================
-endmodule mod_clock
+end module mod_clock
 
 ! datetime-fortran - A Fortran library for date and time manipulation
 ! Copyright (c) 2013-2017, Wavebit Scientific LLC
@@ -1762,4 +1762,4 @@ module datetime_module
    use mod_clock
    use mod_strftime
 
-endmodule datetime_module
+end module datetime_module

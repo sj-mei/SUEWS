@@ -136,7 +136,7 @@ CONTAINS
                   avcp, avdens, es_hPa, lv_J_kg)
          RETURN
          ! ENDIF
-      ENDIF
+      END IF
 
       IF (startflag == 0) THEN !write down initial values in previous time step
          !write(*,*) 'startflag', DateTime, iCBLcount
@@ -144,13 +144,13 @@ CONTAINS
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, (NAN, is=11, 20), gamt_Km, gamq_kgkgm/)
          startflag = 1
-      ENDIF
+      END IF
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
       IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
          CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL in CBL.', qh_use, qe_use, qh_choice)
-      ENDIF
+      END IF
       !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
       !IF(Qh_choice==1) THEN   !from SUEWS
       !  !qh_use=qh
@@ -196,14 +196,14 @@ CONTAINS
          fcbl = 0!fc(i)/(rmco2/volm)      ! units: mol/mol * m/s
       ELSE
          cm = NAN
-      ENDIF
+      END IF
 
       !   tpp_K=tp_K
       !   qpp_kgkg=qp_kgkg
 
       IF (sondeflag == 1) THEN
          CALL gamma_sonde
-      ENDIF
+      END IF
       !             set up array for Runge-Kutta call
       blh1_m = blh_m
       y(1) = blh_m ! integrate h, t, q, c from time s(i-1)
@@ -261,7 +261,7 @@ CONTAINS
          IF (avrh > 100) THEN
             CALL errorHint(34, 'subroutine CBL dectime, relative humidity', idoy + cbldata(1)/24.0, avrh, 100)
             avrh = 100
-         ENDIF
+         END IF
          ! iCBLcount = iCBLcount + 1
          ! write(*,*) 'qh1or2', iy,id,it,imin, iCBLcount
          dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
@@ -279,7 +279,7 @@ CONTAINS
          IF (avrh1 > 100) THEN
             CALL errorHint(34, 'subroutine CBL dectime, relative humidity', idoy + cbldata(1)/24.0, avrh1, 100)
             avrh1 = 100
-         ENDIF
+         END IF
          ! iCBLcount = iCBLcount + 1
          !write(*,*) 'qh3', DateTIme, iCBLcount
          dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
@@ -287,7 +287,7 @@ CONTAINS
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, &
                 Temp_C1, avrh1, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
                 gamt_Km, gamq_kgkgm/)
-      ENDIF
+      END IF
       ! move the counter at the end, TS 27 Aug 2019
       ! iCBLcount = iCBLcount + 1
 
@@ -330,7 +330,7 @@ CONTAINS
             READ (52, *, iostat=ios) l
             IF (ios < 0 .OR. l == -9) EXIT   !IF (l == -9) EXIT
             nlineInData = nlineInData + 1
-         ENDDO
+         END DO
          CLOSE (52)
 
          if (allocated(IniCBLdata)) deallocate (IniCBLdata)
@@ -339,13 +339,13 @@ CONTAINS
          READ (52, *)
          DO i = 1, nlineInData
             READ (52, *) IniCBLdata(i, 1:8)
-         ENDDO
+         END DO
          CLOSE (52)
-      ENDIF
+      END IF
 
       IF (CO2_included == 0) THEN
          fcbl = 0       ! hard-wire no CO2
-      ENDIF
+      END IF
 
       ! iCBLcount = 1
 
@@ -384,7 +384,7 @@ CONTAINS
       qe_use = qeforCBL(Gridiv)
       IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
          CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL in CBL_initial.', qh_use, qe_use, qh_choice)
-      ENDIF
+      END IF
       !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
       !IF(Qh_choice==1) THEN   !from SUEWS
       !   !qh_use=qh
@@ -412,8 +412,8 @@ CONTAINS
       DO i = 1, nlineInData
          IF (INT(IniCBLdata(i, 1)) <= id) THEN
             nLineDay = nLineDay + 1
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
       IF (InitialData_use == 2) THEN
          blh_m = IniCBLdata(nLineDay, 2)
@@ -447,7 +447,7 @@ CONTAINS
          qm_gkg = es_hPa - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
-      ENDIF
+      END IF
 
       gamq_kgkgm = gamq_gkgm/1000.
       qp_kgkg = qp_gkg/1000    !humidities: g/kg -> kg/kg   q+
@@ -462,15 +462,15 @@ CONTAINS
          CALL sonde(id)
          gamt_Km = 0
          gamq_kgkgm = 0
-      ENDIF
+      END IF
 
       !adjusting qp and pm in case of saturation
       IF (qp_kgkg > qsatf(tp_C, Press_hPa) .OR. qp_kgkg < 0) THEN
          qp_kgkg = qsatf(tp_C, Press_hPa)
-      ENDIF
+      END IF
       IF (qm_kgkg > qsatf(tm_C, Press_hPa) .OR. qm_kgkg < 0) THEN
          qm_kgkg = qsatf(tm_C, Press_hPa)
-      ENDIF
+      END IF
 
       !    if((CBLuse==2).and.(zenith_deg>=90))then
       !    blh_m=188
@@ -506,14 +506,14 @@ CONTAINS
       qe_use = qeforCBL(Gridiv)
       IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
          CALL ErrorHint(22, 'Unrealistic qh or qe value for CBL in NBL.', qh_use, qe_use, qh_choice)
-      ENDIF
+      END IF
 
       nLineDay = 0
       DO i = 1, nlineInData
          IF (INT(IniCBLdata(i, 1)) <= id) THEN
             nLineDay = nLineDay + 1
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
       !Assume Theta and Q in the night constantly Equal to the ones in the morning for CBL to run
       ! seems incorrect initialisation
@@ -547,7 +547,7 @@ CONTAINS
       IF (avrh > 100) THEN
          CALL errorHint(34, 'subroutine CBL dectime, relative humidity', dectime, avrh, 100)
          avrh = 100
-      ENDIF
+      END IF
 
       ! print *, 'iCBLcount in NBL',iCBLcount
       ! print *,iy, id,it,imin
@@ -591,7 +591,7 @@ CONTAINS
          qm_gkg = es_hPa - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
-      ENDIF
+      END IF
 
       gamq_kgkgm = gamq_gkgm/1000.
       qp_kgkg = qp_gkg/1000    !humidities: g/kg -> kg/kg   q+
@@ -606,15 +606,15 @@ CONTAINS
          CALL sonde(id)
          gamt_Km = 0
          gamq_kgkgm = 0
-      ENDIF
+      END IF
 
       !adjusting qp and pm in case of saturation
       IF (qp_kgkg > qsatf(tp_C, Press_hPa) .OR. qp_kgkg < 0) THEN
          qp_kgkg = qsatf(tp_C, Press_hPa)
-      ENDIF
+      END IF
       IF (qm_kgkg > qsatf(tm_C, Press_hPa) .OR. qm_kgkg < 0) THEN
          qm_kgkg = qsatf(tm_C, Press_hPa)
-      ENDIF
+      END IF
 
       startflag = 0
 
@@ -673,32 +673,32 @@ CONTAINS
       DO NS = 1, NSTEPS
          DO NJ = 1, neqn_use
             RK(NJ, 1) = 0
-         ENDDO
+         END DO
          X = XA + (NS - 1)*STEP
          DO N = 1, 4
             IF (N == 1) THEN
                XX = X
             ELSEIF (N > 1) THEN
                XX = X + COEF(N)*STEP
-            ENDIF
+            END IF
 
             DO NJ = 1, neqn_use
                ARG(NJ) = y_use(NJ) + COEF(N)*RK(NJ, N)
-            ENDDO
+            END DO
 
             CALL DIFF(xx, ARG, DYDX)
 
             DO NJ = 1, neqn_use
                RK(NJ, N + 1) = STEP*DYDX(NJ)
-            ENDDO
-         ENDDO
+            END DO
+         END DO
 
          DO NJ = 1, neqn_use
             DO N = 1, 4
                y_use(NJ) = y_use(NJ) + RK(NJ, N + 1)/(6*COEF(N))
-            ENDDO
-         ENDDO
-      ENDDO
+            END DO
+         END DO
+      END DO
 
       RETURN
    END SUBROUTINE RKUTTA
@@ -871,11 +871,11 @@ CONTAINS
       DO i = 1, 1000
          READ (fn, *, END=900, err=25) gtheta(i, 1), dxx, gtheta(i, 2), ghum(i, 1), dxx, ghum(i, 2)
          ghum(i, 2) = ghum(i, 2)
-      ENDDO
+      END DO
 900   zmax = i - 1
       IF (zmax > izm) THEN
          CALL ErrorHint(23, FileN, REAL(zmax, KIND(1D0)), notUsed, izm)
-      ENDIF
+      END IF
       CLOSE (fn)
       RETURN
 24    CALL ErrorHint(24, FileN, notUsed, notUsed, notUsedI)
@@ -898,17 +898,17 @@ CONTAINS
          DO j = 2, zmax
             IF (blh_m >= gtheta(j - 1, 1)) THEN
                gamtt = gtheta(j - 1, 2)
-            ENDIF
+            END IF
             gamt_Km = gamtt
-         ENDDO
+         END DO
 
          DO j = 2, zmax
             IF (blh_m >= ghum(j - 1, 1)) THEN
                gamqq = ghum(j - 1, 2)
-            ENDIF
+            END IF
             gamq_kgkgm = gamqq/1000.
-         ENDDO
-      ENDIF
+         END DO
+      END IF
       RETURN
 
    END SUBROUTINE gamma_sonde

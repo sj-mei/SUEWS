@@ -229,24 +229,24 @@ CONTAINS
          IF (ABS(e) < conv) THEN
             converged = .TRUE.
             EXIT
-         ENDIF
+         END IF
          f = 0; fp = 0
          DO j = 1, n - 1
             f = f + Pcoeff(j)*x**(n - j)
             fp = fp + Pcoeff(j)*(n - j)*x**(n - j - 1)                              !!FO!! derivative
-         ENDDO
+         END DO
 
          f = f + Pcoeff(n)
          xprev = x
          IF (fp == 0.) fp = TINY(1.)
          x = xprev - f/fp
          e = x - xprev
-      ENDDO
+      END DO
       niter = i - 1
       IF (.NOT. converged) THEN
          PRINT *, "Solution did not converge. Niter=", niter, " Error=", e
          x = x0
-      ENDIF
+      END IF
    END FUNCTION NewtonPolynomial
 END MODULE mod_solver
 !==============================================================================
@@ -357,7 +357,7 @@ CONTAINS
          Isurf = Itoa*cosZ      !ground level solar irradiance in W/m2
       ELSE
          Isurf = 0.
-      ENDIF
+      END IF
 
    END FUNCTION kdown_surface
 
@@ -371,7 +371,7 @@ CONTAINS
       IF (ios /= 0) THEN
          PRINT *, "Iostat=", ios, " reading Smith1966.grd"
          STOP
-      ENDIF
+      END IF
       READ (99, rec=lat + 1, iostat=ios) G
       IF (ios /= 0) PRINT *, "Iostat=", ios, " reading Smith1966.grd"
       CLOSE (99)
@@ -393,7 +393,7 @@ CONTAINS
          cosZ = COS(80.*dtr)
       ELSE
          cosZ = COS(zenith)
-      ENDIF
+      END IF
       Tdf = Td*1.8 + 32. !celsius to fahrenheit
       !  Transmission coefficients
       m = 35*cosZ/SQRT(1224.*cosZ*cosZ + 1) !optical air mass at p=1013 mb
@@ -497,11 +497,11 @@ CONTAINS
       a = k/dx
       DO i = 1, n - 1
          w(i) = (T(i + 1)*a(i + 1) + T(i)*a(i))/(a(i) + a(i + 1))
-      ENDDO
+      END DO
       !!FO!! print*, 'w: ', w
       DO i = 1, n
          T1(i) = (dt/rhocp(i))*(w(i - 1) - 2*T(i) + w(i))*2*a(i)/dx(i) + T(i)
-      ENDDO
+      END DO
       !!FO!! print*, 'T1: ', T1
       !for storage the internal distribution of heat should not be important
       Qs = (w(0) - T(1))*2*a(1) + (w(n) - T(n))*2*a(n)                           !!FO!! k*d(dT/dx)/dx = rhoCp*(dT/dt) -- rhoCp*(dT/dt)*dx = dQs -- dQs = k*d(dT/dx)
@@ -555,8 +555,8 @@ CONTAINS
       IF (skippedLines > 0) THEN
          DO iyy = 1, skippedLines
             READ (lunit, *)
-         ENDDO
-      ENDIF
+         END DO
+      END IF
 
       ! Read in next chunk of ESTM data and fill ESTMForcingData array with data for every timestep
       DO i = 1, ReadlinesMetdata
@@ -572,9 +572,9 @@ CONTAINS
             IF (tstep_estm /= tstep_real .AND. ESTMArray(2) == iday_prev) THEN
                CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of ESTM data (DOY).', &
                               REAL(tstep, KIND(1d0)), tstep_estm, INT(ESTMArray(2)))
-            ENDIF
-         ENDIF
-      ENDDO
+            END IF
+         END IF
+      END DO
 
       CLOSE (lunit)
 
@@ -708,7 +708,7 @@ CONTAINS
                       Troof_grids(Nroof, NumberOfGrids), &
                       Tground_grids(Nground, NumberOfGrids), &
                       Tw_4_grids(Nwall, 4, NumberOfGrids))
-         ENDIF
+         END IF
 
          ! Transfer variables from Ts5mindata to variable names
          ! N.B. column numbers here for the following file format - need to change if input columns change!
@@ -719,16 +719,16 @@ CONTAINS
          !  QUESTION: what if (Nground/Nwall/Nroof-1)==0? TS 21 Oct 2017
          DO i = 1, Nground
             Tground(i) = (LBC_soil - Ts5mindata(1, cTs_Troad))*(i - 1)/(Nground - 1) + Ts5mindata(1, cTs_Troad) + C2K
-         ENDDO
+         END DO
          DO i = 1, Nwall
             Twall(i) = (Ts5mindata(1, cTs_Tiair) - Ts5mindata(1, cTs_Twall))*(i - 1)/(Nwall - 1) + Ts5mindata(1, cTs_Twall) + C2K
-         ENDDO
+         END DO
          DO i = 1, Nroof
             Troof(i) = (Ts5mindata(1, cTs_Tiair) - Ts5mindata(1, cTs_Troof))*(i - 1)/(Nroof - 1) + Ts5mindata(1, cTs_Troof) + C2K
-         ENDDO
+         END DO
          Tibld(1:Nibld) = Ts5mindata(1, cTs_Tiair) + C2K
 
-      ENDIF  !End of loop run only at start (for each grid)
+      END IF  !End of loop run only at start (for each grid)
 
       ! ---- Parameters related to land surface characteristics ----
       ! QUESTION: Would Zref=z be more appropriate?
@@ -750,7 +750,7 @@ CONTAINS
       ELSE ! check fveg==0 scenario to avoid division-by-zero error, TS 21 Oct 2017
          alb_veg = NAN
          em_veg = NAN
-      ENDIF
+      END IF
 
       ! ==== ground (i.e. Paved, EveTr, DecTr, Grass, BSoil, Water - all except Bldgs)
       !fground=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(PavSurf)+sfr(BsoilSurf)+sfr(WaterSurf) ! Moved to SUEWS_translate HCW 16 Jun 2016
@@ -764,7 +764,7 @@ CONTAINS
       ELSE ! check fground==0 scenario to avoid division-by-zero error, TS 21 Jul 2016
          alb_ground = NAN
          em_ground = NAN
-      ENDIF
+      END IF
 
       IF (froof < 1.0) THEN
          HW = fwall/(2.0*(1.0 - froof))
@@ -823,7 +823,7 @@ CONTAINS
          RVF_veg = fveg*SVF_ground
          RVF_ROOF = froof
          RVF_Wall = 1 - RVF_ROOF - RVF_ground - RVF_VEG
-      ENDIF
+      END IF
 
       alb_avg = alb_ground*RVF_ground + alb_wall*RVF_WALL + alb_roof*RVF_ROOF + alb_veg*RVF_VEG
 
@@ -838,7 +838,7 @@ CONTAINS
          fibld = (FLOOR(BldgH/3.1 - 0.5) - 1)*froof
       ELSE
          fibld = (2.-2./nroom)*fwall + (FLOOR(BldgH/3.1 - 0.5) - 1)*froof
-      ENDIF
+      END IF
 
       IF (fibld == 0) fibld = 0.00001 !this just ensures a solution to radiation
       finternal = froof + fibld + fwall
@@ -859,7 +859,7 @@ CONTAINS
           (ivf_ri + ivf_rw + ivf_rf < 0.9999) .OR. &
           (ivf_fi + ivf_fw + ivf_fr < 0.9999)) THEN
          PRINT *, "At least one internal view factor <> 1. Check ivf in ESTMinput.nml"
-      ENDIF
+      END IF
 
       !=======Initial setting==============================================
       !! Rewritten by HCW 15 Jun 2016 to use existing SUEWS error handling
@@ -902,7 +902,7 @@ CONTAINS
       IF (ESTMStart == 1) THEN
          DO i = 1, 4
             Tw_4(:, i) = Twall  !!FO!! Tw_4 holds three differnet temp:s for each wall layer but the same set for all points of the compass
-         ENDDO
+         END DO
 
          !initialize surface temperatures
          T0_ground = Tground(1)
@@ -925,7 +925,7 @@ CONTAINS
          !  print*,'Alb_avg (VF)=',alb_avg
          !  print*,'z0m, Zd', z0m, ZD
 
-      ENDIF
+      END IF
 
       first = .TRUE.
 
@@ -1235,7 +1235,7 @@ CONTAINS
          Tibld(:) = Tibld_grids(:, Gridiv)
          Tw_4 = Tw_4_grids(:, :, Gridiv)
 
-      ENDIF
+      END IF
 
       ! Get Ts from Ts5min data array
       ! Tinternal  = Ts5mindata(ir,cTs_Tiair)
@@ -1296,7 +1296,7 @@ CONTAINS
          tanzenith = tanzenith*kdn_estm/(1370*COS(zenith_rad)) !REDUCTION FACTOR FOR MAXIMUM
       ELSE
          tanzenith = 0.
-      ENDIF
+      END IF
 
       SHC_air = HEATCAPACITY_AIR(Tair1, avrh, Press_hPa)   ! Use SUEWS version
 
@@ -1313,7 +1313,7 @@ CONTAINS
          ELSEIF (Tievolve < THEAT_ON) THEN   !THEAT_OFF now converted to Kelvin in ESTM_initials - HCW 15 Jun 2016
             !ELSEIF (Tievolve<THEAT_ON+C2K) THEN
             HVAC = .TRUE.
-         ENDIF
+         END IF
       CASE (2)
          diagnoseTi = .TRUE.                                                                 !!FO!! convection between ibld and inside of external walls(?)
       END SELECT
@@ -1325,7 +1325,7 @@ CONTAINS
          AIREXHR = 0.5 !No window or exterior doors, storm sash or weathertripped (ASHRAE 1981 22.8)
       ELSE
          AIREXHR = 1.0
-      ENDIF
+      END IF
 
       AIREXDT = AIREXHR*(Tstep/3600.0)
       shc_airbld = MAX(HEATCAPACITY_AIR(TiEVOLVE, avrh, Press_hPa), 0.00001) ! to avoid zero-division scenario TS 21 Oct 2017
@@ -1343,7 +1343,7 @@ CONTAINS
          CH_iwall = 1.823*(ABS(TN_wall - Tievolve))**0.293/shc_airbld
          CH_iroof = 2.175*(ABS(TN_roof - Tievolve))**0.308/shc_airbld
          IF (ABS(TN_roof - Tievolve) > 0) CH_iroof = 0.704*(ABS(TN_roof - Tievolve))**0.133/shc_airbld !effect of convection is weaker downward
-      ENDIF
+      END IF
 
       !Evolving T = (Previous Temp + dT from Sensible heat flux) mixed with outside air
       !ASSUMES THE CH_BLD INCLUDES THE EFFECT OF VENTILATION RATE IN m/s (e.g. if a normal CH is .005 and
@@ -1361,7 +1361,7 @@ CONTAINS
       IF (HVAC) THEN !Run up/down to set point +/- 1 degree with adjustment of 90% per hour
          Tadd = (SIGN(-1.0d0, THEAT_fix - Tievolve) + THEAT_fix - Tievolve)*MIN(4.*Tstep/3600.0, 0.9) !!**HCW check??
          Tievolve = Tievolve + Tadd
-      ENDIF
+      END IF
 
       !========>RADIATION<================
       IF (kdn_estm < 0) kdn_estm = 0. !set non-zero shortwave to zero  !Should this be moved up to line 183/4?
@@ -1398,7 +1398,7 @@ CONTAINS
          alb_avg = kup_estm/kdn_estm
          sumalb = sumalb + alb_avg
          Nalb = Nalb + 1
-      ENDIF
+      END IF
 
       !internal components
       Rs_ibld = 0 ! This could change if there are windows (need solar angles or wall svf * fraction glazing * transmissivity)
@@ -1453,7 +1453,7 @@ CONTAINS
             bc(1) = Tsurf_all + C2K; T0_wall = bc(1)
          ELSEIF (TsurfChoice == 1) THEN
             bc(1) = Twall_all + C2K; T0_wall = bc(1)
-         ENDIF                                                           !!FO!! Tsoil in Lodz2002HS.txt NB => Lodz2002HS.txt doesn't work with onewall = TRUE
+         END IF                                                           !!FO!! Tsoil in Lodz2002HS.txt NB => Lodz2002HS.txt doesn't work with onewall = TRUE
 
          CALL heatcond1d(Twall, Qswall, zwall(1:nwall), REAL(Tstep, KIND(1d0)), kwall(1:nwall), rwall(1:nwall), bc, bctype)     !!FO!! new set of Twalls are calculated from heat conduction through wall
 
@@ -1462,12 +1462,12 @@ CONTAINS
          DO i = 1, 4 !do 4 walls
             bc(1) = Tw_n + Tw_e + Tw_s + Tw_w + C2K; T0_wall = T0_wall + bc(1)
             CALL heatcond1d(Tw_4(:, i), Qs_4(i), zwall(1:nwall), REAL(Tstep, KIND(1d0)), kwall(1:nwall), rwall(1:nwall), bc, bctype)
-         ENDDO
+         END DO
          !Take average of 4 wall values
          T0_wall = T0_wall/4.
          Qswall = SUM(Qs_4)/4.
          Twall = SUM(Tw_4, 2)/4.
-      ENDIF
+      END IF
 
       !========>ROOF<================
       bctype = .FALSE.
@@ -1487,7 +1487,7 @@ CONTAINS
          bc(1) = Tsurf_all + C2K; T0_roof = bc(1)
       ELSE
          bc(1) = Troof_in + C2K; T0_roof = bc(1)
-      ENDIF
+      END IF
 
       CALL heatcond1d(Troof, Qsroof, zroof(1:nroof), REAL(Tstep, KIND(1d0)), kroof(1:nroof), rroof(1:nroof), bc, bctype)
 
@@ -1504,7 +1504,7 @@ CONTAINS
          bc(1) = Tsurf_all + C2K; T0_ground = bc(1)
       ELSE
          bc(1) = Troad + C2K; T0_ground = bc(1)
-      ENDIF
+      END IF
 
       bc(2) = LBC_soil + C2K
       !     bc(2)=0.; bctype(2)=.t.
@@ -1551,25 +1551,25 @@ CONTAINS
          Twallout = (/Twall, (dum(ii), ii=1, (5 - Nwall))/)
       ELSE
          Twallout = Twall
-      ENDIF
+      END IF
 
       IF (Nroof < 5) THEN
          Troofout = (/Troof, (dum(ii), ii=1, (5 - Nroof))/); 
       ELSE
          Troofout = Troof
-      ENDIF
+      END IF
 
       IF (Nground < 5) THEN
          Tgroundout = (/Tground, (dum(ii), ii=1, (5 - Nground))/)
       ELSE
          Tgroundout = Tground
-      ENDIF
+      END IF
 
       IF (Nibld < 5) THEN
          Tibldout = (/Tibld, (dum(ii), ii=1, (5 - Nibld))/)
       ELSE
          Tibldout = Tibld
-      ENDIF
+      END IF
 
       ! dataOutESTM(ir,1:ncolumnsDataOutESTM,Gridiv)=[&
       !      REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)), dectime,&!5
@@ -1616,7 +1616,7 @@ CONTAINS
          xx = NAN
       ELSE
          xx = x
-      ENDIF
+      END IF
 
    END FUNCTION set_nan
    !========================================================================

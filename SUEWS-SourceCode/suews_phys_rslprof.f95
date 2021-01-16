@@ -140,7 +140,7 @@ contains
          nz_can = 10
       else
          nz_can = 15
-      ENDIF
+      END IF
       ! fill up heights in canopy
       dz = Zh_RSL/nz_can
       do i = 1, nz_can
@@ -176,7 +176,7 @@ contains
       ! determine index at the canyon top
       DO z = 1, nz
          dif(z) = ABS(zarray(z) - Zh_RSL)
-      ENDDO
+      END DO
       idx_can = MINLOC(dif, DIM=1)
       zarray(idx_can) = Zh_RSL
 
@@ -218,7 +218,7 @@ contains
                            /(zarray(z + 1) - zd_RSL)
             psihath_z(z) = psihath_z(z) + dz/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
                            /(zarray(z) - zd_RSL)
-         ENDDO
+         END DO
 
       else
 
@@ -246,7 +246,7 @@ contains
          else
             ! eqn 26 in HF07, unstable condition:
             Lc = max(-2/beta**2*L_MOD_RSL, Lc)
-         endif
+         end if
          elm = cal_elm_RSL(beta, Lc)
 
          ! then MOST recovers from RSL correction
@@ -272,7 +272,7 @@ contains
          dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)
          dataoutLineqRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa
-      ENDDO
+      END DO
       !
       ! Step 7: calculate in canopy variables
       !
@@ -283,7 +283,7 @@ contains
             dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
             dataoutLineTRSL(z) = dataoutLineTRSL(idx_can) + (t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar_RSL
             dataoutLineqRSL(z) = dataoutLineqRSL(idx_can) + (q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar_RSL
-         ENDDO
+         END DO
       end if
 
       dataoutLineURSL = dataoutLineURSL*UStar_RSL
@@ -347,7 +347,7 @@ contains
          dz = z(idx_high) - z(idx_low)
          slope = (v(idx_high) - v(idx_low))/dz
          v_x = v(idx_low) + (z_x - z(idx_low))*slope
-      endif
+      end if
 
    end function interp_z
 
@@ -496,7 +496,7 @@ contains
       ELSE
          ! if very unstable this might cause some high values of psihat_z
          c2 = (kappa*(3.-(2.*beta**2.*Lc/phim_zh*dphi)))/(2.*beta*phim_zh - kappa)
-      ENDIF
+      END IF
       ! force c2 to 0.5 for better stability. TS 14 Jul 2020
       ! TODO: a more proper threshold needs to be determined
       c2 = 0.5
@@ -548,7 +548,7 @@ contains
       ELSE
          ! if very unstable this might cause some high values of psihat_z
          c2h = (kappa*Scc*(2.+f - (dphih*2.*beta**2.*Lc/phih_zh)))/(2.*beta*phih_zh - kappa*Scc)
-      ENDIF
+      END IF
       ! force c2h to 0.5 for better stability. TS 14 Jul 2020
       ! TODO: a more proper threshold needs to be determined
       c2h = 0.5
@@ -764,7 +764,7 @@ contains
          z0_RSL = (Zh_RSL - zd_RSL)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihatm_Zh)
          err = ABS(z0_RSL_x - z0_RSL)
          it = it + 1
-      ENDDO
+      END DO
 
       ! set limit on z0_RSL for numeric stability
       z0_RSL = merge(z0_RSL, 1d-2, z0_RSL > 1d-2)
@@ -900,7 +900,7 @@ contains
          betaN2 = 0.30*sfr_tr/PAI + (PAI - sfr_tr)/PAI*0.4
       ELSE
          betaN2 = 0.35
-      endif
+      end if
 
       betaHF = cal_beta_lc(stabilityMethod, betaN2, lc_over_L)
 
@@ -910,11 +910,11 @@ contains
          beta = betaHF
       ELSE
          beta = betaNL + ((betaHF - betaNL)/(1.+a1*abs(lc_over_L - a2)**a3))
-      ENDIF
+      END IF
 
       IF (beta > 0.5) THEN
          beta = 0.5
-      ENDIF
+      END IF
 
    end function cal_beta_RSL
 
@@ -946,7 +946,7 @@ contains
          ! print *, it, err, beta_x0, beta_x, phim, lc_over_l
          it = it + 1
 
-      ENDDO
+      END DO
       ! print *, ''
 
    end function cal_beta_lc

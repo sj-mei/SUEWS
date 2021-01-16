@@ -335,12 +335,12 @@ CONTAINS
                      mw_ind(is) = TempMeltFact*Temp_C             !(mm C−1 h−1)*(C) = in mm h-1
                   ELSE
                      mw_ind(is) = RadMeltFact*(qn1_ind_snow(is))  !(mm m2 W−1 h−1)*(W m-2)= mm h-1 ??
-                  ENDIF
+                  END IF
 
                ELSE  !Freezing equations
                   AdjMeltFact = 1  !Relationship between the temperature melt and freezing factors
                   mw_ind(is) = TempMeltFact*Temp_C*AdjMeltFact ! in mm h-1
-               ENDIF
+               END IF
                !Previous equation give the hourly values, divide these with the timestep number
                mw_ind(is) = mw_ind(is)/nsh_real
 
@@ -362,7 +362,7 @@ CONTAINS
 
                   !Recalculate melt related energy
                   Qm_melt(is) = waterDens*((-FreezMelt(is)/tstep_real)/1000)*(lvS_J_kg - lv_J_kg)
-               ENDIF
+               END IF
 
                !-----------------------------------------------------
                ! If air temperature is above zero, precipitation causes advective heat to the
@@ -374,10 +374,10 @@ CONTAINS
                      Qm_rain(is) = 0
                   ELSE
                      rainOnSnow(is) = Precip !Save information on the rain on snow event
-                  ENDIF
-               ENDIF
+                  END IF
+               END IF
 
-            ENDIF !End if SnowPack
+            END IF !End if SnowPack
 
             !=================================================================
 
@@ -401,14 +401,14 @@ CONTAINS
                      FreezStateVol(is) = FreezState(is)
                   ELSE                                         !There is snow already on ground
                      FreezStateVol(is) = FreezState(is)*(1 - SnowFrac(is))/SnowFrac(is)
-                  ENDIF
+                  END IF
 
                   ! If the amount of freezing water is very small and there is state_id left to the ground
                   ! no freezing of water will take place
                   IF (FreezStateVol(is) < 0.00000000001 .AND. FreezState(is) < state_id(is)) THEN
                      FreezState(is) = 0
                      FreezStateVol(is) = 0
-                  ENDIF
+                  END IF
 
                   !Calculate the heat exchange in W m-2
                   Qm_freezState(is) = -waterDens*(FreezState(is)/tstep_real/1000)*(lvS_J_kg - lv_J_kg)
@@ -423,9 +423,9 @@ CONTAINS
                   Watfreeze = 100*(0 - Temp_C)/(waterDens*(lvS_J_kg - lv_J_kg))
                   FreezState(is) = Watfreeze
                   Qm_freezState(is) = -waterDens*(Watfreeze/tstep_real/1000)*(lvS_J_kg - lv_J_kg)
-               ENDIF
+               END IF
 
-            ENDIF
+            END IF
 
             !======================================================================
             ! Define if any snowmelt calculations are made: SnowPack existing,
@@ -433,17 +433,17 @@ CONTAINS
             IF (is /= WaterSurf) THEN
                IF (SnowPack(is) > 0 .OR. (Precip > 0 .AND. Tsurf_ind(is) < 0)) THEN
                   snowCalcSwitch(is) = 1
-               ENDIF
+               END IF
             ELSE       !Water surface separately
                IF (SnowPack(WaterSurf) > 0 .OR. FreezState(WaterSurf) > 0) THEN
                   snowCalcSwitch(WaterSurf) = 1
-               ENDIF
-            ENDIF
+               END IF
+            END IF
 
             !Update snow density of each surface
             IF (Precip > 0 .AND. Tsurf_ind(is) < 0 .AND. SnowPack(is) > 0) THEN
                SnowDens(is) = SnowDens(is)*SnowPack(is)/(SnowPack(is) + Precip) + SnowDensMin*Precip/(SnowPack(is) + Precip)
-            ENDIF
+            END IF
 
             !Weighted variables for the whole area
             mwh = mwh + mw_ind(is)*sfr(is)*SnowFrac(is)        !Snowmelt
@@ -451,9 +451,9 @@ CONTAINS
             Qm = Qm + Qm_melt(is)*sfr(is)*SnowFrac(is)         !Energy consumed to the melt/freezing.
             QmRain = QmRain + Qm_rain(is)*sfr(is)*SnowFrac(is) !Rain on snow
             QmFreez = QmFreez + deltaQi(is)*sfr(is)*SnowFrac(is) + Qm_freezState(is)*sfr(is)*(1 - SnowFrac(is)) !Freezing water
-         ENDIF
+         END IF
 
-      ENDDO !End surface type
+      END DO !End surface type
 
       !Update snow albedo to its maximum value if precipitation exists
       IF (Precip > 0 .AND. SUM(SnowPack) > 0 .AND. Temp_C < 0) THEN
@@ -464,11 +464,11 @@ CONTAINS
 
             SnowAlb = SnowAlbMax
             SnowfallCum = 0
-         ENDIF
+         END IF
       ELSE
 
          SnowfallCum = 0
-      ENDIF
+      END IF
 
    END SUBROUTINE MeltHeat
 
@@ -688,7 +688,7 @@ CONTAINS
          WaterHoldCapFrac = CRWmin
       ELSE
          WaterHoldCapFrac = CRWmin + (CRWmax - CRWmin)*(200 - SnowDens(is))/200
-      ENDIF
+      END IF
 
       !======================================================================
       ! Calculate evaporation from SnowPack and snow free surfaces (in mm)
@@ -702,15 +702,15 @@ CONTAINS
       IF (SnowFrac(is) > 0) THEN
          call Evap_SUEWS_Snow(Qm_Melt(is), Qm_rain(is), lvS_J_kg, avdens, avRh, Press_hPa, Temp_C, RAsnow, &
                               psyc_hPa, tstep, avcp, sIce_hPa, dectime, ev_snow(is), tlv_sub)
-      ENDIF
+      END IF
 
       !If not enough water for evaporation in impervious surfaces,
       !evaporation is taken from pervious surfaces
       IF (is > 2) THEN
          IF (PervFraction /= 0) THEN
             EvPart = (SurplusEvap(PavSurf)*sfr(PavSurf) + SurplusEvap(BldgSurf)*sfr(BldgSurf))/PervFraction
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       !============================================================================
       !Water surface is treated separately
@@ -734,7 +734,7 @@ CONTAINS
          IF (rainOnSnow(is) > 0) THEN
             changSnow(is) = changSnow(is) - Precip
             SnowWater(is) = SnowWater(is) + rainOnSnow(is)
-         ENDIF
+         END IF
 
          SnowPack(is) = SnowPack(is) + changSnow(is)  !Update SnowPack
 
@@ -753,7 +753,7 @@ CONTAINS
                MeltExcess = SnowWater(is) - FWC !Calculate the exceess water
                SnowWater(is) = FWC            !Update the SnowWater to the maximum it can hold
                runoffSnow(is) = runoffSnow(is) + MeltExcess
-            ENDIF
+            END IF
 
             !At the end of the hour calculate possible snow removal
             IF (SnowProf_24hr(it, iu) == 1 .AND. is < 3 .AND. (imin == (nsh_real - 1)/nsh_real*60)) &
@@ -781,8 +781,8 @@ CONTAINS
                chang(is) = SnowWater(is)  !Meltwater goes to surface state_id as no snow exists anymore
                state_id(is) = state_id(is) + chang(is)
                SnowWater(is) = 0
-            ENDIF
-         ENDIF !SnowPack negative or positive
+            END IF
+         END IF !SnowPack negative or positive
 
          !2)------Surface not fully covered with snow-------------------------------------------
          !  ------------------------------------------------------------------------------------
@@ -800,7 +800,7 @@ CONTAINS
             IF (rainOnSnow(is) > 0) THEN
                changSnow(is) = changSnow(is) - Precip
                SnowWater(is) = SnowWater(is) + rainOnSnow(is)
-            ENDIF
+            END IF
             SnowPack(is) = SnowPack(is) + changSnow(is)
 
             !The fraction of snow will update when:
@@ -821,7 +821,7 @@ CONTAINS
                ! write(*,*) id,it,imin,SnowFrac(is),FreezState(is),state_id(is)
                ! pause
                !endif
-            ENDIF
+            END IF
 
             !SnowPack can also form at the current timestep (2). If this forms purely from snowfall or/and all water at surface freezes,
             !the whole surface will be covered with snow. If there is water on ground this snowfall can immediately melt
@@ -842,7 +842,7 @@ CONTAINS
                snowFracFresh1 = 1
                iceFrac(is) = FreezState(is)/(FreezState(is) + Precip)
                SnowDens(is) = SnowDensMin
-            ENDIF
+            END IF
 
             IF (FreezState(is) > 0 .AND. FreezState(is) < state_id(is)) THEN
 
@@ -857,8 +857,8 @@ CONTAINS
                !write(*,*) 2,is,id,it,imin,SnowFrac(is),FreezState(is),state_id(is),state_id(is)+Precip
                !pause
 
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
          !---------If SnowPack exists after the state_id calculations
          IF (SnowPack(is) > 0) THEN
@@ -882,8 +882,8 @@ CONTAINS
                   runoffSnow(is) = runoffSnow(is) + MeltExcess
                ELSE
                   SnowToSurf(is) = SnowToSurf(is) + MeltExcess*SnowFrac(is)/(1 - SnowFrac(is))
-               ENDIF
-            ENDIF
+               END IF
+            END IF
 
             !At the end of the hour calculate possible snow removal
             IF (SnowProf_24hr(it, iu) == 1 .AND. is < 3 .AND. (imin == (nsh_real - 1)/nsh_real*60)) &
@@ -912,8 +912,8 @@ CONTAINS
             ELSE
                SnowToSurf(is) = SnowToSurf(is) + SnowWater(is)*SnowFrac(is)/(1 - SnowFrac(is))
                SnowWater(is) = 0
-            ENDIF
-         ENDIF !SnowPack negative or positive
+            END IF
+         END IF !SnowPack negative or positive
 
          !--------
          !Next the snow free surface (3). Calculations only done if snowfraction is smaller than 1
@@ -928,7 +928,7 @@ CONTAINS
             ELSE
                !Add precip and water from other surfaces and remove drainage, evap and freezing of state_id
                chang(is) = Precip + SnowToSurf(is) + AddWater(is) - (drain(is) + ev + freezState(is))
-            ENDIF
+            END IF
 
             state_id(is) = state_id(is) + chang(is) !Change in state_id (for whole surface area areasfr(is))
 
@@ -942,7 +942,7 @@ CONTAINS
                SurplusEvap(is) = ABS(state_id(is)) !take evaporation from other surfaces in mm
                ev = ev - SurplusEvap(is)
                state_id(is) = 0.0
-            ENDIF
+            END IF
 
          ELSEIF (is >= 3 .AND. SnowFrac(is) < 1) THEN ! Pervious surfaces (conif, decid, grass unirr, grass irr)
 
@@ -957,7 +957,7 @@ CONTAINS
                ELSE
                   chang(is) = Precip + addVeg*(sfr(is)/VegFraction) + SnowToSurf(is) + &
                               AddWater(is) - (drain(is) + ev + freezState(is))
-               ENDIF
+               END IF
             ELSE
                chang(is) = Precip + SnowToSurf(is) + AddWater(is) - (drain(is) + ev + freezState(is))
             END IF
@@ -969,7 +969,7 @@ CONTAINS
                soilstore_id(is) = soilstore_id(is) + Drain(is)*AddWaterRunoff(is)*(1 - SnowFrac(is))
             ELSE
                runoff(is) = runoff(is) + Drain(is)*AddWaterRunoff(is)
-            ENDIF
+            END IF
 
             !If state_id of the surface is negative, remove water from soilstore
             IF (state_id(is) < 0.0) THEN
@@ -983,8 +983,8 @@ CONTAINS
                   chang(is) = chang(is) + state_id(is)
                   ev = ev + state_id(is)
                   state_id(is) = 0.0
-               ENDIF
-            ENDIF !state_id is negative
+               END IF
+            END IF !state_id is negative
 
             !If soilstorage is full at this point, excess will go to surface runoff
             IF (soilstore_id(is) > SoilStoreCap(is)) THEN
@@ -992,11 +992,11 @@ CONTAINS
                soilstore_id(is) = SoilStoreCap(is)
             ELSEIF (soilstore_id(is) < 0) THEN
                soilstore_id(is) = 0
-            ENDIF
+            END IF
 
-         ENDIF !Surface type
+         END IF !Surface type
 
-      ENDIF !Surface fraction
+      END IF !Surface fraction
 
       !-------------------------------------------------------------------------------------------------------------------
 
@@ -1008,7 +1008,7 @@ CONTAINS
       ELSE
          surf_chang_tot = (state_id(is) - stateOld(is))*sfr(is)*(1 - SnowFrac(is))
          chSnow_tot = ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
-      ENDIF
+      END IF
 
       !Add evaporation to total
       IF (is == BldgSurf .OR. is == PavSurf) THEN
@@ -1017,7 +1017,7 @@ CONTAINS
       ELSE
          ev_tot = ev*sfr(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
          qe_tot = ev_snow(is)*tlv_sub*sfr(is)*MAX(SnowFrac(is), snowfracOld) + ev*tlv*sfr(is)*(1 - SnowFrac(is))
-      ENDIF
+      END IF
 
       !========RUNOFF=======================
 
@@ -1035,7 +1035,7 @@ CONTAINS
       !===Update snow depth, weighted SWE, and Mwstore
       IF (SnowDens(is) /= 0) THEN
          SnowDepth(is) = SnowPack(is)*waterDens/SnowDens(is)
-      ENDIF
+      END IF
 
       ! Calculate overall snow water equivalent
       swe = swe + SnowPack(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
@@ -1072,8 +1072,8 @@ CONTAINS
             IF (SnowFrac(is) < 0.001) SnowFrac(is) = 0.001  !The snow fraction minimum is 1% of the surface
          ELSEIF (SnowPack(is) == 0) THEN
             SnowFrac(is) = 0
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       RETURN
 
@@ -1099,7 +1099,7 @@ CONTAINS
          IF (SnowWater(WaterSurf) >= FWC .AND. Temp_C >= 0) THEN
             state_id(WaterSurf) = state_id(WaterSurf) + (SnowWater(WaterSurf) - FWC)
             SnowWater(WaterSurf) = FWC
-         ENDIF
+         END IF
 
          !If SnowPack is negative, it melts at this timestep
       ELSEIF (SnowPack(is) < 0) THEN
@@ -1113,7 +1113,7 @@ CONTAINS
          SnowPack(WaterSurf) = 0
          IF (state_id(WaterSurf) < 0) ev_snow(WaterSurf) = ev_snow(WaterSurf) + state_id(WaterSurf)
 
-      ENDIF !SnowPack negative or positive
+      END IF !SnowPack negative or positive
 
       !Check water state_id separately
       IF (state_id(WaterSurf) > StoreDrainPrm(5, WaterSurf)) THEN
@@ -1126,8 +1126,8 @@ CONTAINS
          IF (state_id(WaterSurf) > StoreDrainPrm(5, WaterSurf)) THEN
             runoffWaterBody = runoffWaterBody + (state_id(WaterSurf) - StoreDrainPrm(5, WaterSurf))*sfr(WaterSurf)
             state_id(WaterSurf) = StoreDrainPrm(5, WaterSurf)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       !Change state_id of snow and surface
       chSnow_tot = ((SnowPack(WaterSurf) + SnowWater(WaterSurf)) - snowTotInit)*sfr(WaterSurf)
@@ -1143,7 +1143,7 @@ CONTAINS
          SnowFrac(WaterSurf) = 1
       ELSE
          SnowFrac(WaterSurf) = 0
-      ENDIF
+      END IF
 
    END SUBROUTINE SnowCalc
 
@@ -1225,15 +1225,15 @@ CONTAINS
             SnowRemoval(PavSurf) = (SnowPack(PavSurf) - SnowLimPaved)*sfr(PavSurf)*SnowFrac(PavSurf)
             SnowPack(PavSurf) = SnowLimPaved
             !SnowPack(PavSurf)=SnowPack(PavSurf)/SnowFrac(PavSurf)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
       IF (is == BldgSurf) THEN
          IF (SnowPack(BldgSurf) > SnowLimBldg) THEN
             SnowRemoval(2) = (SnowPack(BldgSurf) - SnowLimBldg)*sfr(BldgSurf)*SnowFrac(BldgSurf)
             SnowPack(BldgSurf) = SnowLimBldg
             !SnowPack(BldgSurf)=SnowPack(BldgSurf)/SnowFrac(BldgSurf)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
       !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBldg
       !pause
    END SUBROUTINE snowRem
@@ -1263,7 +1263,7 @@ CONTAINS
             asc = ((swe/sweD))**2
          ELSE
             asc = 1
-         ENDIF
+         END IF
 
          !Bldgs surface
       ELSEIF (is == BldgSurf) THEN
@@ -1273,10 +1273,10 @@ CONTAINS
                asc = (swe/sweD)*0.5
             ELSE
                asc = (swe/sweD)**8
-            ENDIF
+            END IF
          ELSE
             asc = 1
-         ENDIF
+         END IF
       ELSEIF (is == WaterSurf) THEN
          IF (swe > 0) asc = 1
 
@@ -1287,9 +1287,9 @@ CONTAINS
             asc = 1 - ((1/3.1416)*ACOS(2*(swe/sweD) - 1))**1.7
          ELSE
             asc = 1
-         ENDIF
+         END IF
 
-      ENDIF
+      END IF
 
       !asc=real(int(10000.*asc))/10000  !4 decimal precision
 
@@ -1440,13 +1440,13 @@ CONTAINS
             !alb_change = exp(-tau_f*(60*60)/tau_1)
             alb_change = EXP(-tau_f*(tstep)/tau_1)
             SnowAlb_next = (SnowAlb_prev - SnowAlbMin)*alb_change + SnowAlbMin
-         ENDIF
+         END IF
          IF (SnowAlb_next < SnowAlbMin) SnowAlb_next = SnowAlbMin !Albedo cannot be smaller than the min albedo
          IF (SnowAlb_next > SnowAlbMax) SnowAlb_next = SnowAlbMax !Albedo cannot be larger than the max albedo
          if (SnowAlb_next < 0) print *, 'SnowAlbMin/max in SnowUpdate', SnowAlbMin, SnowAlbMax, SnowAlb_next
       ELSE
          SnowAlb_next = 0
-      ENDIF
+      END IF
       if (SnowAlb_next < 0) print *, 'SnowAlb in SnowUpdate', SnowAlb_next
 
    end function update_snow_albedo
@@ -1483,8 +1483,8 @@ CONTAINS
             IF (SnowDens_next(is) > SnowDensMax) SnowDens_next(is) = SnowDensMax
          ELSE
             SnowDens_next(is) = SnowDensMin
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
    end function update_snow_dens
 

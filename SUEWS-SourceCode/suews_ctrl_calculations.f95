@@ -79,11 +79,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WUDay_id, &
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
-      dataoutlineestm, dataoutlineRSL,dataOutLineBEERS, &
-      dataOutLineDebug,dataOutLineDebug,&
+      dataoutlineestm, dataoutlineRSL, dataOutLineBEERS, &
+      dataOutLineDebug, dataOutLineDebug, &
       dailystateline, dataoutdailystate, &
       dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, &
-      dataoutBL,dataOutDebug
+      dataoutBL, dataOutDebug
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       H_maintain, &
@@ -170,9 +170,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,&!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
-      dataOutLineDebug,&
+      dataOutLineDebug, &
       DailyStateLine)!output
 
    !============ update and write out SUEWS_cal_DailyState ===============
@@ -189,8 +189,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &!input
-      dataOutLineDebug,&
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS,&!inout
+      dataOutLineDebug, &
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, &!inout
       dataOutDebug)!inout
 
    ! NB: CBL disabled for the moment for interface improvement
@@ -209,8 +209,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
          CALL ErrorHint(22, 'Unrealistic observed qh or qe_value for CBL.', qh_obs, qe_obs, qh_choice)
 
-      ENDIF
-   ENDIF
+      END IF
+   END IF
    IF (CBLuse >= 1) THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
       IF (Diagnose == 1) WRITE (*, *) 'Calling CBL...'
 
@@ -221,7 +221,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
                nsh_real, tstep, UStar, psih, is, NumberOfGrids, &
                qhforCBL, qeforCBL, ReadLinesMetdata, dataOutBL)
 
-   ENDIF
+   END IF
 
    ! NB: SOLWEIG can be treated as a separate part:
    ! NB: SOLWEIG is disabled for v2018a TS 10 Jun 2018
