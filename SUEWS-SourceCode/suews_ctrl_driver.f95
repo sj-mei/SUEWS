@@ -34,7 +34,7 @@ MODULE SUEWS_Driver
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
-      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG,ncolumnsDataOutBEERS, ncolumnsDataOutDebug
+      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, ncolumnsDataOutDebug
    use moist, only: avcp, avdens, lv_J_kg
    use solweig_module, only: SOLWEIG_cal_main
    use beers_module, only: BEERS_cal_main
@@ -88,7 +88,7 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,&!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
       dataOutLineDebug, &
       DailyStateLine)!output
@@ -939,7 +939,7 @@ CONTAINS
          i_iter = i_iter + 1
 
          !==============main calculation end=======================
-      ENDDO ! end iteration for tsurf calculations
+      END DO ! end iteration for tsurf calculations
 
       !==============================================================
       ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
@@ -999,7 +999,6 @@ CONTAINS
       HDD_id = HDD_id_next
       WUDay_id = WUDay_id_next
 
-
       !==============use SOLWEIG to get localised radiation flux==================
       ! if (sfr(BldgSurf) > 0) then
       !    CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
@@ -1011,7 +1010,7 @@ CONTAINS
       !==============use BEERS to get localised radiation flux==================
       ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
       if (sfr(BldgSurf) > 0) then
-         PAI=sfr(2)/sum(sfr(1:2))
+         PAI = sfr(2)/sum(sfr(1:2))
          CALL BEERS_cal_main(iy, id, dectime, PAI, FAI, avkdn, ldown, Temp_C, avrh, &
                              Press_hPa, TSfc_C, lat, lng, alt, timezone, zenith_deg, azimuth, &
                              alb(1), alb(2), emis(1), emis(2), &
@@ -1020,7 +1019,7 @@ CONTAINS
          ! lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
       else
          dataOutLineBEERS = set_nan(dataOutLineBEERS)
-      endif
+      end if
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
@@ -1162,7 +1161,7 @@ CONTAINS
 
       ELSE
          CALL ErrorHint(73, 'RunControl.nml:EmissionsMethod unusable', notUsed, notUsed, EmissionsMethod)
-      ENDIF
+      END IF
 
       IF (EmissionsMethod >= 1) qf = QF_SAHP
 
@@ -1172,7 +1171,7 @@ CONTAINS
          Fc_traff = 0
          Fc_build = 0
          Fc_point = 0
-      ENDIF
+      END IF
 
    END SUBROUTINE SUEWS_cal_AnthropogenicEmission
    ! ================================================================================
@@ -1273,7 +1272,7 @@ CONTAINS
                t2 = Temp_C
             ELSE
                t2 = t2_C
-            ENDIF
+            END IF
 
             CALL cal_AtmMoist( &
                t2, Press_hPa, avRh, dectime, &! input:
@@ -1286,7 +1285,7 @@ CONTAINS
                LAIMax, LAI_id, gsModel, Kmax, &
                G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
                gfunc2, dummy10, dummy11)! output:
-         ENDIF
+         END IF
 
          ! Calculate CO2 fluxes from biogenic components
          IF (Diagnose == 1) WRITE (*, *) 'Calling CO2_biogen...'
@@ -1296,13 +1295,13 @@ CONTAINS
             id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
             NVegSurf, resp_a, resp_b, sfr, SnowFrac, t2, Temp_C, theta_bioCO2, &
             Fc_biogen, Fc_photo, Fc_respi)! output:
-      ENDIF
+      END IF
 
       IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
          Fc_biogen = 0
          Fc_photo = 0
          Fc_respi = 0
-      ENDIF
+      END IF
 
       Fc = Fc_anthro + Fc_biogen
 
@@ -1422,11 +1421,11 @@ CONTAINS
             ldown = ldown_obs
          ELSE
             ldown = -9              !to be filled in NARP
-         ENDIF
+         END IF
 
          IF (ldown_option == 2) THEN !observed cloud fraction provided as forcing
             fcld = fcld_obs
-         ENDIF
+         END IF
 
          !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
 
@@ -1464,12 +1463,12 @@ CONTAINS
          tsurf_ind = NAN
          qn1_ind = NAN
          Fcld = NAN
-      ENDIF
+      END IF
       snowFrac_next = SnowFrac
 
       IF (ldown_option == 1) THEN
          Fcld = NAN
-      ENDIF
+      END IF
 
       ! translate values
       alb_next = alb
@@ -1578,7 +1577,7 @@ CONTAINS
          qn1_use = qf + qn1
       ELSEIF (OHMIncQF == 0) THEN
          qn1_use = qn1
-      ENDIF
+      END IF
 
       IF (StorageHeatMethod == 0) THEN           !Use observed QS
          qs = qs_obs
@@ -1630,7 +1629,7 @@ CONTAINS
             dataOutLineESTM, QS)!output
          !    CALL ESTM(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
          !    QS=QSestm   ! Use ESTM qs
-      ENDIF
+      END IF
 
    END SUBROUTINE SUEWS_cal_Qs
    !=======================================================================
@@ -1712,12 +1711,12 @@ CONTAINS
 
             ! !HCW added and changed to StoreDrainPrm(6,is) here 20 Feb 2015
             ! drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
-         ENDDO
+         END DO
          drain_per_tstep = DOT_PRODUCT(drain(1:nsurf - 1), sfr(1:nsurf - 1))/NonWaterFraction !No water body included
       ELSE
          drain(1:nsurf - 1) = 0
          drain_per_tstep = 0
-      ENDIF
+      END IF
 
       drain(WaterSurf) = 0  ! Set drainage from water body to zero
 
@@ -1758,7 +1757,7 @@ CONTAINS
       ELSE
          H_init = (qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
          CALL ErrorHint(38, 'LUMPS unable to calculate realistic value for H_mod.', h_mod, dectime, notUsedI)
-      ENDIF
+      END IF
       ! ENDIF
 
    END SUBROUTINE SUEWS_init_QH
@@ -2030,7 +2029,7 @@ CONTAINS
                SnowFrac(is) = 0
                SnowDens(is) = 0
                SnowPack(is) = 0
-            ENDIF
+            END IF
 
             !Store ev_tot for each surface
             evap(is) = ev_tot
@@ -2075,13 +2074,13 @@ CONTAINS
 
             IF (NonWaterFraction /= 0 .AND. is /= WaterSurf) THEN
                NWstate_per_tstep = NWstate_per_tstep + (state_id(is)*sfr(is)/NonWaterFraction)
-            ENDIF
+            END IF
 
             ChangSnow(is) = 0
             runoffSnow(is) = 0
 
-         ENDIF
-      ENDDO  !end loop over surfaces
+         END IF
+      END DO  !end loop over surfaces
 
       qe = qe_per_tstep
 
@@ -2142,7 +2141,7 @@ CONTAINS
          qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
       ELSE
          qh_resist = NAN
-      ENDIF
+      END IF
 
       ! choose output QH
       SELECT CASE (QHMethod)
@@ -2272,7 +2271,7 @@ CONTAINS
             StabilityMethod, &
             3, &
             RAsnow)     ! output:
-      ENDIF
+      END IF
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling SurfaceResistance...'
       ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
@@ -2774,7 +2773,7 @@ CONTAINS
          xx = NAN
       ELSE
          xx = x
-      ENDIF
+      END IF
 
    END FUNCTION set_nan
    !========================================================================

@@ -114,7 +114,7 @@ CONTAINS
                          alb, emis, cpAnOHM, kkAnOHM, chAnOHM, &! input
                          xa1(is), xa2(is), xa3(is))                         ! output
          ! print*, 'AnOHM_coef are: ',xa1,xa2,xa3
-      ENDDO
+      END DO
 
       !   calculate the areally-weighted OHM coefficients
       a1 = DOT_PRODUCT(xa1, sfr)
@@ -135,7 +135,7 @@ CONTAINS
 
       ELSE
          CALL ErrorHint(21, 'SUEWS_AnOHM.f95: bad value for qn found during qs calculation.', qn1, NotUsed, notUsedI)
-      ENDIF
+      END IF
 
    END SUBROUTINE AnOHM
    !========================================================================================

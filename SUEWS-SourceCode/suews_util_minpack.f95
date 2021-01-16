@@ -1246,7 +1246,7 @@ subroutine hybrd(fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
    actred = -1.0D+00
    if (fnorm1 < fnorm) then
       actred = 1.0D+00 - (fnorm1/fnorm)**2
-   endif
+   end if
 !
 !  Compute the scaled predicted reduction.
 !
@@ -3370,7 +3370,7 @@ subroutine lmdif(fcn, m, n, x, xdat, ydat, fvec, ftol, xtol, gtol, maxfev, epsfc
 
       if (actred >= 0.0D+00) then
          temp = 0.5D+00
-      endif
+      end if
 
       if (actred < 0.0D+00) then
          temp = 0.5D+00*dirder/(dirder + 0.5D+00*actred)

@@ -80,11 +80,11 @@ CONTAINS
          lvS_J_kg = lat_vapSublim(Temp_C, Ea_hPa, Press_hPa, avcp)
       ELSE
          lvS_J_kg = 2834000
-      ENDIF
+      END IF
       !if(debug)write(*,*)lv_J_kg,Temp_C,'lv2'
       IF (press_hPa < 900) THEN
          CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist', press_hPa, -55.55d0, -55)
-      ENDIF
+      END IF
       RETURN
    END SUBROUTINE cal_AtmMoist
 
@@ -173,7 +173,7 @@ CONTAINS
       IF (LOG(zzd/z0m) < 0.001000) THEN
          ! PRINT*, 1/(z0m-z0m)
          CALL ErrorHint(17, 'In stability subroutine, (z-zd) < z0.', zzd, z0m, notUsedI)
-      ENDIF
+      END IF
       i = 1
       LOLD = -999.
       DO WHILE ((ABS(LOLD - L_MOD) > 0.01) .AND. (i < 330)) !NT: add error threshold !Iteration starts
@@ -207,7 +207,7 @@ CONTAINS
          ! ENDIF
 
          i = i + 1
-      ENDDO
+      END DO
 
       ! limit zL to be within [-5,5]
       ! IF (zL < -5 .OR. zL > 5) THEN
@@ -297,7 +297,7 @@ CONTAINS
                x = 1 + 1.38*zl
             ELSE
                x = 0.42*(-1)*zl**0.333
-            ENDIF
+            END IF
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
 
@@ -306,10 +306,10 @@ CONTAINS
                x = 1
             ELSE
                x = ((-1)*zl/0.06)**0.25
-            ENDIF
+            END IF
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
-         ENDIF
+         END IF
 
       ELSEIF (zL > neut_limit) THEN            !Stable
 
@@ -326,8 +326,8 @@ CONTAINS
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
             psim = (-6)*LOG(1 + zl)
 
-         ENDIF
-      ENDIF
+         END IF
+      END IF
       RETURN
    END FUNCTION stab_psi_mom
 
@@ -368,14 +368,14 @@ CONTAINS
                phim = 1 + 1.38*zl
             ELSE
                phim = 0.42*(-1)*zl*(-0.333)
-            ENDIF
+            END IF
          ELSEIF (StabilityMethod == 6) THEN !     Foken and Skeib (1983)
             IF (zl >= 0.06) THEN
                phim = 1
             ELSE
                phim = ((-1)*zl/0.06)**(-0.25)
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
       ELSEIF (zL > neut_limit) THEN            !Stable
 
@@ -387,8 +387,8 @@ CONTAINS
             phim = 1 + 6*zl
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97  !!NT: checked
             phim = 1.+6.*zl/(1.+zl)  !!NT: checked reference and updated
-         ENDIF
-      ENDIF
+         END IF
+      END IF
       RETURN
    END FUNCTION stab_phi_mom
    !_______________________________________________________________
@@ -424,10 +424,10 @@ CONTAINS
                x = (1 - (28.*ZL))**0.25
             ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
                x = 0.95*(1.-15.2*zl)**0.5
-            ENDIF
+            END IF
             ! psih = 2*LOG((1 + x**2)/2)  ! NT: do not think this is correct
             psih = 2*LOG((1 + x)/2)
-         ENDIF
+         END IF
 
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (zL <= 1) THEN ! weak/moderate stable
@@ -435,17 +435,17 @@ CONTAINS
                psih = (-7.8)*zl
             ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
                psih = (-4.5)*zl
-            ENDIF
+            END IF
          ELSE
             ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
                psih = (-7.8)*(1 + LOG(zl))
             ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
                psih = (-4.5)*(1 + LOG(zl))
-            ENDIF
+            END IF
          END IF
 
-      ENDIF
+      END IF
 
       RETURN
    END FUNCTION stab_psi_heat
@@ -480,8 +480,8 @@ CONTAINS
                phih = (1 - (28.*ZL))**(-0.25)
             ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
                phih = 0.95*(1.-15.2*zl)**(-0.5)
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
@@ -489,9 +489,9 @@ CONTAINS
             phih = 1.+7.8*zl   ! this is the integral form, TS 13 Jun 2017
          ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
             phih = 1.+4.5*zl
-         ENDIF
+         END IF
 
-      ENDIF
+      END IF
 
       RETURN
    END FUNCTION stab_phi_heat

@@ -179,8 +179,8 @@ SUBROUTINE OverallRunControl
    IF (RainDisaggMethod == 102) THEN
       DO i = 1, 5
          IF (MultRainAmongNUpperI(i) == -999) MultRainAmongNUpperI(i) = MAXVAL(MultRainAmongNUpperI)
-      ENDDO
-   ENDIF
+      END DO
+   END IF
 
    !------------------------------------------------------------------
    !Print run information on the screen
@@ -212,13 +212,13 @@ SUBROUTINE OverallRunControl
    OPEN (21, file=TRIM(FileInputPath)//TRIM(FileN), err=300, status='old')
    DO SkipCounter = 1, (SkipHeaderSiteInfo - 1)
       READ (21, *)   !Skip lines before header
-   ENDDO
+   END DO
    READ (21, *) (HeaderSiteSelect_File(iv), iv=1, ncolumnsSiteSelect) !Get header
 
    DO i = 1, nlinesSiteSelect
       READ (21, *) (SiteSelect(i, iv), iv=1, ncolumnsSiteSelect)
       !write(*,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
-   ENDDO
+   END DO
    CLOSE (21)
 
    !call InputHeaderCheck(FileN) !! Need to add column checks for SiteSelect.txt
@@ -310,12 +310,12 @@ SUBROUTINE OverallRunControl
    ELSE
       CALL ErrorHint(39, &
                      'TSTEP must divide into t_INTERVAL exactly.', REAL(tstep, KIND(1d0)), REAL(t_INTERVAL, KIND(1d0)), notUsedI)
-   ENDIF
+   END IF
 
    ! Check nsh is reasonable
    IF (nsh_real < 6 .OR. nsh_real > 60) THEN
       CALL ErrorHint(39, 'TSTEP is too small or too large.', REAL(tstep, KIND(1d0)), REAL(t_INTERVAL, KIND(1d0)), notUsedI)
-   ENDIF
+   END IF
 
    ! Cast integer nsh as nsh_real for use in calculations
    nsh_real = REAL(nsh, KIND(1d0))
@@ -367,13 +367,13 @@ SUBROUTINE ReadCoeff(FileName, nlines, ncolumns, HeaderFile, Coeff)
 
    DO SkipCounter = 1, SkipHeaderSiteInfo - 1
       READ (22, *)   !Skip lines before header
-   ENDDO
+   END DO
    READ (22, *) (HeaderFile(iv), iv=1, ncolumns) !Get header
 
    DO i = 1, nlines
       READ (22, *) (Coeff(i, iv), iv=1, ncolumns)
       !write(*,*) (NonVeg_Coeff(i,iv),iv=1,ncolumnsNonVeg)
-   ENDDO
+   END DO
    CLOSE (22)
 
    CALL InputHeaderCheck(FileName)
@@ -384,9 +384,9 @@ SUBROUTINE ReadCoeff(FileName, nlines, ncolumns, HeaderFile, Coeff)
          IF (Coeff(i, 1) == Coeff(ii, 1) .AND. i /= ii) THEN
             WRITE (*, *) 'Code', Coeff(i, 1), 'in ', TRIM(FileName), ' not unique!'
             CALL ErrorHint(60, FileName, Coeff(i, 1), notUsed, notUsedI)
-         ENDIF
-      ENDDO
-   ENDDO
+         END IF
+      END DO
+   END DO
 
    RETURN
 
@@ -420,8 +420,8 @@ SUBROUTINE NumberRows(FileN, SkipHeaderLines)
       DO SkipCounter = 1, SkipHeaderLines
          READ (39, *, err=205)
          !write(*,*) SkipCounter, SkipHeaderLines
-      ENDDO
-   ENDIF
+      END DO
+   END IF
 
    nlines = 0 !Initialize nlines
    DO
@@ -1187,7 +1187,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
             SurfaceChar(Gridiv, c_CH_iwall) = ESTMCoefficients_Coeff(iv5, cE_CH_iwall)
             SurfaceChar(Gridiv, c_CH_iroof) = ESTMCoefficients_Coeff(iv5, cE_CH_iroof)
             SurfaceChar(Gridiv, c_CH_ibld) = ESTMCoefficients_Coeff(iv5, cE_CH_ibld)
-         ENDIF
+         END IF
          !If ESTM Code equals zero, use codes and surface fractions from SiteSelect.txt for Paved and Bldgs
       ELSEIF (iii == PavSurf .AND. SurfaceChar(Gridiv, c_ESTMCode(iii)) == 0) THEN
          DO ii = 1, 3   !for the 3x Paved ESTM classes
@@ -1207,7 +1207,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
             SurfaceChar(Gridiv, c_Surf_rhoCp3_Paved(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_rhoCp3)
             SurfaceChar(Gridiv, c_Surf_rhoCp4_Paved(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_rhoCp4)
             SurfaceChar(Gridiv, c_Surf_rhoCp5_Paved(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_rhoCp5)
-         ENDDO
+         END DO
       ELSEIF (iii == BldgSurf .AND. SurfaceChar(Gridiv, c_ESTMCode(iii)) == 0) THEN
          DO ii = 1, 5   !for the 5x Bldgs ESTM classes
             CALL CodeMatchESTM_Class(Gridiv, iii, ii)
@@ -1263,9 +1263,9 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
             SurfaceChar(Gridiv, c_CH_iwall_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5, cE_CH_iwall)
             SurfaceChar(Gridiv, c_CH_iroof_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5, cE_CH_iroof)
             SurfaceChar(Gridiv, c_CH_ibld_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5, cE_CH_ibld)
-         ENDDO
-      ENDIF
-   ENDDO
+         END DO
+      END IF
+   END DO
 
    ! ---- Find code for Surface conductances ----
    CALL CodeMatchConductance(rr, c_CondCode)
@@ -1620,8 +1620,8 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       IF (GridsInitialised == NumberOfGrids) THEN
          YearsInitialised = YearsInitialised + 1
          GridsInitialised = 0   !reset GridsInitialised
-      ENDIF
-   ENDIF
+      END IF
+   END IF
    !write(*,*) TRIM(FileInit)
 
    ! Open, read and close InitialConditions file -----------------------------
@@ -1653,19 +1653,19 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    IF (LeavesOutInitially == INT(NAN)) THEN
       IF (GDD_1_0 == NAN .OR. GDD_2_0 == NAN) THEN
          CALL ErrorHint(36, 'Specify values for GDD_1_0 and GDD_2_0.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (LAIinitialEveTr == NAN .OR. LAIinitialDecTr == NAN .OR. LAIinitialGrass == NAN) THEN
          CALL ErrorHint(36, 'Specify initial values for LAI for all vegetated surface types.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (AlbEveTr0 == NAN .OR. AlbDecTr0 == NAN .OR. AlbGrass0 == NAN) THEN
          CALL ErrorHint(36, 'Specify initial values for albedo for all vegetated surface types.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (DecidCap0 == NAN) THEN
          CALL ErrorHint(36, 'Specify DecidCap0.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (Porosity0 == NAN) THEN
          CALL ErrorHint(36, 'Specify Porosity0.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
    ELSEIF (LeavesOutInitially == 1) THEN   !If leaves out, set to summertime values using SUEWS_Veg.txt
       GDD_1_0 = NormalizeVegChar(c_GDDFull, Gridiv)
       GDD_2_0 = 0
@@ -1691,7 +1691,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ELSE
       CALL ErrorHint(36, 'LeavesOutInitially must be 0, 1, or -999 (or omitted from InitialConditions namelist)', &
                      notUsed, notUsed, notUsedI)
-   ENDIF
+   END IF
 
    ! If surface wetness states unknown, set to zero --------------------------
    IF (PavedState == NAN) PavedState = 0
@@ -1707,7 +1707,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    IF (SoilStorePavedState == NAN .OR. SoilStoreBldgsState == NAN .OR. SoilStoreEveTrState == NAN .OR. &
        SoilStoreDecTrState == NAN .OR. SoilStoreGrassState == NAN .OR. SoilStoreBSoilState == NAN) THEN
       CALL ErrorHint(36, 'Initial soil moisture must be provided for all surface types except water.', notUsed, notUsed, notUsedI)
-   ENDIF
+   END IF
 
    ! Set snow-related initial conditions -------------------------------
    ! If snow part not used, or no snow initially, set all snow-related initial conditions to zero
@@ -1746,29 +1746,29 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
           SnowWaterDecTrState == NAN .OR. SnowWaterGrassState == NAN .OR. SnowWaterBSoilState == NAN .OR. &
           SnowWaterWaterState == NAN) THEN
          CALL ErrorHint(36, 'Specify SnowWater state for all 7 surface types.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (SnowPackPaved == NAN .OR. SnowPackBldgs == NAN .OR. SnowPackEveTr == NAN .OR. &
           SnowPackDecTr == NAN .OR. SnowPackGrass == NAN .OR. SnowPackBSoil == NAN .OR. &
           SnowPackWater == NAN) THEN
          CALL ErrorHint(36, 'Specify SnowPack for all 7 surface types.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (SnowFracPaved == NAN .OR. SnowFracBldgs == NAN .OR. SnowFracEveTr == NAN .OR. &
           SnowFracDecTr == NAN .OR. SnowFracGrass == NAN .OR. SnowFracBSoil == NAN .OR. &
           SnowFracWater == NAN) THEN
          CALL ErrorHint(36, 'Specify SnowFrac for all 7 surface types.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (SnowDensPaved == NAN .OR. SnowDensBldgs == NAN .OR. SnowDensEveTr == NAN .OR. &
           SnowDensDecTr == NAN .OR. SnowDensGrass == NAN .OR. SnowDensBSoil == NAN .OR. &
           SnowDensWater == NAN) THEN
          CALL ErrorHint(36, 'Specify SnowDens for all 7 surface types.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
       IF (SnowAlb0 == NAN) THEN
          CALL ErrorHint(36, 'Specify SnowAlb0.', notUsed, notUsed, notUsedI)
-      ENDIF
+      END IF
    ELSE
       CALL ErrorHint(36, 'SnowInitially must be 0 or -999 (or omitted from InitialConditions namelist)', &
                      notUsed, notUsed, notUsedI)
-   ENDIF
+   END IF
 
    ! removed as no longer needed, TS 30 Jan 2018
    ! ! If AnOHM option selected, check initial Bowen ratio is provided ---------
@@ -1816,15 +1816,15 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
          gamma2 = 1
       ELSE
          gamma2 = 0
-      ENDIF
+      END IF
       IF ((BaseT_HC - Temp_C0) >= 0) THEN   !Heating
          gamma1 = 1
       ELSE
          gamma1 = 0
-      ENDIF
+      END IF
       ModelDailyState(Gridiv, cMDS_HDD1) = gamma1*(BaseT_HC - Temp_C0) ! Heating
       ModelDailyState(Gridiv, cMDS_HDD2) = gamma2*(Temp_C0 - BaseT_HC) ! Cooling
-   ENDIF
+   END IF
 
    ! -- Save snow density and snow albedo info in InitialConditions to ModelDailyState array --
    ModelDailyState(Gridiv, cMDS_SnowDens(PavSurf)) = SnowDensPaved
@@ -1912,7 +1912,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       year_int = year_int - 1                  !1) find the number of days on that year
       CALL LeapYearCalc(year_int, id_prev) !2) set switch to 1 so that the code knows to change back to current year (switch=0)
       switch = 1
-   ENDIF
+   END IF
 
    CALL day2month(id_prev, mb, date, seas, year_int, lat) !Calculate date information (mb = month, date = day,...)
    CALL Day_of_Week(date, mb, year_int, wd)             !Calculate weekday of the previous day (wd) (1=Sun, ..., 7=Sat)
@@ -1925,7 +1925,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       year_int = year_int + 1
       id_prev = 0
       switch = 0
-   ENDIF
+   END IF
 
    ! DayofWeek(id_prev,1)=wd   ! day of week
    ! DayofWeek(id_prev,2)=mb   ! month
@@ -1938,7 +1938,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       year_int = year_int + 1
       switch = 1
       CALL ErrorHint(43, 'switch- years', notUsed, notUsed, notUsedI)
-   ENDIF
+   END IF
 
    CALL day2month(id_next, mb, date, seas, year_int, lat) !Calculate real date from doy
    CALL Day_of_Week(date, mb, year_int, wd)             !Calculate weekday (1=Sun, ..., 7=Sat)
@@ -1946,7 +1946,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    IF (switch == 1) THEN
       iy = iy - 1
       switch = 0
-   ENDIF
+   END IF
 
    ! DayofWeek(id_next,1)=wd  ! day of week
    ! DayofWeek(id_next,2)=mb  ! month
@@ -1960,7 +1960,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       DLS = 1
    ELSE
       DLS = 0
-   ENDIF
+   END IF
 
    ! -----------------------------------------------------------------------
    ! Calculate daily water use if modelled (i.e. if WaterUseMethod = 0).
@@ -2065,7 +2065,7 @@ SUBROUTINE NextInitial(GridName, year_int)
       OPEN (57, File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))// &
             '_EndofRun.nml', err=201)
       nofDaysThisYear_ForOutput = id - 1
-   ENDIF
+   END IF
    ID_Prev_Out = (id - 1)
 
    !! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
@@ -2130,14 +2130,14 @@ SUBROUTINE NextInitial(GridName, year_int)
       WRITE (57, *) 'SnowDensBSoil=', SnowDens(BSoilSurf)
       WRITE (57, *) 'SnowDensWater=', SnowDens(WaterSurf)
       WRITE (57, *) 'SnowAlb0=', SnowAlb
-   ENDIF
+   END IF
    ! WRITE(57,*)'BoInit=',BoInit
    WRITE (57, *) '/'
    CLOSE (57)
 
    IF (it == 23 .AND. imin == (nsh_real - 1)/nsh_real*60) THEN
       id = id - 1
-   ENDIF
+   END IF
 
    RETURN
 
@@ -2185,8 +2185,8 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
    IF (skippedLines > 0) THEN
       DO iyy = 1, skippedLines
          READ (lunit, *)
-      ENDDO
-   ENDIF
+      END DO
+   END IF
 
    ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
    !NSHcounter = 1
@@ -2210,8 +2210,8 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
          IF (tstep_met /= tstep_real .AND. MetArray(2) == iday_prev) THEN
             CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of met data (DOY).', REAL(tstep, KIND(1d0)), tstep_met, &
                            INT(MetArray(2)))
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       ! Check file only contains a single year --------------------------------------------
       ! Very last data point is allowed to be (should be) timestamped with following year
@@ -2221,10 +2221,10 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
          ELSE
             CALL errorHint(3, 'Problem in SUEWS_Initial: multiple years found in met forcing file.', &
                            MetArray(1), NotUsed, NotUsedI)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
-   ENDDO
+   END DO
 
    CLOSE (lunit)
 
@@ -2254,97 +2254,97 @@ SUBROUTINE CheckInitial
 
    IF (Temp_C0 < (Temp_C - 10) .OR. Temp_C0 > (Temp_C + 10)) THEN
       CALL ErrorHint(37, 'Temp_C0 very different to Tair.', Temp_C0, Temp_C, notUsedI)
-   ENDIF
+   END IF
 
    !Check more thoroughly if LAI values are OK. Need to treat different hemispheres as well as tropics separately.
    IF (lat > 40) THEN
       IF ((LAIinitialEveTr > LAImin(ConifSurf - 2) + 1 .AND. (id < 60 .OR. id > 330)) .OR. &
           (LAIinitialEveTr < LAImax(ConifSurf - 2) - 1 .AND. (id > 130 .AND. id < 244))) THEN
          CALL ErrorHint(37, 'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImin(ConifSurf - 2), notUsedI)
-      ENDIF
+      END IF
       IF ((LAIinitialDecTr > LAImin(DecidSurf - 2) + 1 .AND. (id < 60 .OR. id > 330)) .OR. &
           (LAIinitialDecTr < LAImax(DecidSurf - 2) - 1 .AND. (id > 130 .AND. id < 244))) THEN
          CALL ErrorHint(37, 'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImin(DecidSurf - 2), notUsedI)
-      ENDIF
+      END IF
       IF ((LAIinitialGrass > LAImin(GrassSurf - 2) + 1 .AND. (id < 60 .OR. id > 330)) .OR. &
           (LAIinitialGrass < LAImax(GrassSurf - 2) - 1 .AND. (id > 130 .AND. id < 244))) THEN
          CALL ErrorHint(37, 'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImin(GrassSurf - 2), notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (lat < -40) THEN
       IF ((LAIinitialEveTr < LAImax(ConifSurf - 2) - 1 .AND. (id < 60 .OR. id > 330)) .OR. &
           (LAIinitialEveTr > LAImin(ConifSurf - 2) + 1 .AND. (id > 130 .AND. id < 244))) THEN
          CALL ErrorHint(37, 'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf - 2), notUsedI)
-      ENDIF
+      END IF
       IF ((LAIinitialDecTr > LAImax(DecidSurf - 2) - 1 .AND. (id < 60 .OR. id > 330)) .OR. &
           (LAIinitialDecTr > LAImin(DecidSurf - 2) + 1 .AND. (id > 130 .AND. id < 244))) THEN
          CALL ErrorHint(37, 'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf - 2), notUsedI)
-      ENDIF
+      END IF
       IF ((LAIinitialGrass < LAImax(GrassSurf - 2) - 1 .AND. (id < 60 .OR. id > 330)) .OR. &
           (LAIinitialGrass > LAImin(GrassSurf - 2) + 1 .AND. (id > 130 .AND. id < 244))) THEN
          CALL ErrorHint(37, 'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf - 2), notUsedI)
-      ENDIF
+      END IF
 
    ELSEIF (lat < 10 .AND. lat > -10) THEN
 
       IF (LAIinitialEveTr < LAImax(ConifSurf - 2) - 0.5) THEN
          CALL ErrorHint(37, 'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf - 2), notUsedI)
-      ENDIF
+      END IF
       IF (LAIinitialDecTr < LAImax(DecidSurf - 2) - 0.5) THEN
          CALL ErrorHint(37, 'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf - 2), notUsedI)
-      ENDIF
+      END IF
       IF (LAIinitialGrass < LAImax(GrassSurf - 2) - 0.5) THEN
          CALL ErrorHint(37, 'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf - 2), notUsedI)
-      ENDIF
+      END IF
 
-   ENDIF
+   END IF
 
    !Soilstore check
    IF (SoilstoreBldgsState > SoilStoreCap(BldgSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of building soil store.', &
                      SoilstoreBldgsState, SoilStoreCap(BldgSurf), notUsedI)
-   ENDIF
+   END IF
    IF (SoilstorePavedState > SoilStoreCap(PavSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of paved soil store.', &
                      SoilstorePavedState, SoilStoreCap(PavSurf), notUsedI)
-   ENDIF
+   END IF
    IF (SoilstoreEveTrState > SoilStoreCap(ConifSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of conif soil store.', &
                      SoilstoreEveTrState, SoilStoreCap(ConifSurf), notUsedI)
-   ENDIF
+   END IF
    IF (SoilstoreDecTrState > SoilStoreCap(DecidSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of deciduous soil store.', &
                      SoilstoreDecTrState, SoilStoreCap(DecidSurf), notUsedI)
-   ENDIF
+   END IF
    IF (SoilstoreBSoilState > SoilStoreCap(BSoilSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of bare soil soil store.', &
                      SoilstoreBSoilState, SoilStoreCap(BSoilSurf), notUsedI)
-   ENDIF
+   END IF
    IF (SoilstoreGrassState > SoilStoreCap(GrassSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of grass soil store.', &
                      SoilstoreGrassState, SoilStoreCap(GrassSurf), notUsedI)
-   ENDIF
+   END IF
 
    !Snow stuff
    IF (snowUse == 1) THEN
       IF (SnowWaterBldgsState > CRWmax*SnowPackBldgs) THEN
          CALL ErrorHint(37, 'InitialCond: SnowWaterBldgsState', SnowWaterBldgsState, SnowPackBldgs, notUsedI)
-      ENDIF
+      END IF
       IF (SnowWaterPavedState > CRWmax*SnowPackPaved) THEN
          CALL ErrorHint(37, 'InitialCond: SnowWaterPavedState', SnowWaterPavedState, SnowPackPaved, notUsedI)
-      ENDIF
+      END IF
       IF (SnowWaterEveTrState > CRWmax*SnowPackEveTr) THEN
          CALL ErrorHint(37, 'InitialCond: SnowWaterEveTrstate', SnowWaterEveTrstate, SnowPackEveTr, notUsedI)
-      ENDIF
+      END IF
       IF (SnowWaterDecTrState > CRWmax*SnowPackDecTr) THEN
          CALL ErrorHint(37, 'InitialCond: SnowWaterDecTrState', SnowWaterDecTrState, SnowPackDecTr, notUsedI)
-      ENDIF
+      END IF
       IF (SnowWaterGrassState > CRWmax*SnowPackGrass) THEN
          CALL ErrorHint(37, 'InitialCond: SnowWaterGrassState', SnowWaterGrassState, SnowPackGrass, notUsedI)
-      ENDIF
+      END IF
       IF (SnowWaterBSoilState > CRWmax*SnowPackBSoil) THEN
          CALL ErrorHint(37, 'InitialCond: SnowWaterGrassUnirState', SnowWaterBSoilState, SnowPackBSoil, notUsedI)
-      ENDIF
-   ENDIF
+      END IF
+   END IF
 
 END SUBROUTINE CheckInitial

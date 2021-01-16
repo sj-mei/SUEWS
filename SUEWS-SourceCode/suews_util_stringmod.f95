@@ -572,7 +572,7 @@ contains
       if (ipos > 0) then
          exp = str(ipos:)
          str = str(1:ipos - 1)
-      endif
+      end if
       lstr = len_trim(str)
       do i = lstr, 1, -1
          ch = str(i:i)
@@ -581,7 +581,7 @@ contains
             str = str(1:i)//'0'
             if (ipos > 0) str = trim(str)//trim(exp)
             exit
-         endif
+         end if
          str = str(1:i)
          exit
       end do

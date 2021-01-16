@@ -313,7 +313,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       text1 = 'erroneous T2 by RSL!'
       returnTrue = .FALSE.
       v4 = .TRUE.
-   ENDIF
+   END IF
 
    ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
    ! PRINT*, 'returnTrue',returnTrue
@@ -338,7 +338,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       WRITE (Errmessage, '(a,f9.4,2i10)') ' Values: ', VALUE, valueI2, valueI
    ELSEIF (v8) THEN
       ! no error values
-   ENDIF
+   END IF
 
    ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
    IF (returnTrue) THEN
@@ -358,7 +358,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
             warningChoice = 1
          ELSE
             OPEN (501, file='warnings.txt', position="append")
-         ENDIF
+         END IF
 
          !Writing of the warnings file
          WRITE (501, *) 'Warning: ', TRIM(ProblemFile)
@@ -372,7 +372,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
          WRITE (501, '(a,i14)') ' Count: ', ErrhCount(errh)
          CLOSE (501)
 #endif
-      ENDIF
+      END IF
 
    ELSE
 
@@ -395,7 +395,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
          errorChoice = 1
       ELSE
          OPEN (500, file='problems.txt', position="append")
-      ENDIF
+      END IF
 
       !Writing of the problem file
       WRITE (500, *) 'Problem: ', TRIM(ProblemFile)
@@ -415,7 +415,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       STOP 'Fatal error in SUEWS!'
 
 #endif
-   ENDIF
+   END IF
 
 END SUBROUTINE ErrorHint
 

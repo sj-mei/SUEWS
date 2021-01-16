@@ -93,9 +93,9 @@ contains
             sIce_hpa = slopeIce_svp(Temp_C)
          ELSE
             sIce_hpa = slope_svp(Temp_C)
-         ENDIF
+         END IF
          psyc_s = psyc_hPa/sIce_hPa   !Psychometric constant divided by the slope
-      ENDIF
+      END IF
 
       ! replaced by sinusoidal vegetation formulation
       !alpha=gis(idgis,itgis,1)*alpha_sl+alpha_in
@@ -132,7 +132,7 @@ contains
       ELSE
          VegPhenLumps = (VegPhen)/(VegMax)
          Veg_Fr_temp = Veg_Fr*VegPhenLumps   !Now this is veg_fraction in general
-      ENDIF
+      END IF
 
       ! initialisation
       alpha_sl = 0.6
@@ -149,9 +149,9 @@ contains
          ELSEIF (veg_type == 2) THEN   !Area irrigated vegetation
             alpha_sl = 0.610
             alpha_in = 0.222
-         ENDIF
+         END IF
          alpha_qhqe = Veg_Fr_temp*alpha_sl + alpha_in
-      ENDIF
+      END IF
 
       ! Calculate the actual heat fluxes
       QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn1 + qf - qs - Qm) - beta   !Eq 3, Grimmond & Oke (2002)

@@ -107,7 +107,7 @@ contains
          active_veg_fr(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
          active_veg_fr0(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)
 
-      ENDDO
+      END DO
 
       IF (EmissionsMethod >= 11 .AND. EmissionsMethod <= 16) THEN   ! Rectangular hyperbola
          ! Calculate carbon uptake due to photosynthesis -------------
@@ -116,7 +116,7 @@ contains
             Fc_photo_surf(iv) = -beta_bioCO2(iv)*alpha_bioCO2(iv)*PAR_umolm2s1/(alpha_bioCO2(iv)*PAR_umolm2s1 + beta_bioCO2(iv))
             ! For active vegetation fraction only
             Fc_photo = Fc_photo + Fc_photo_surf(iv)*active_veg_fr(iv)  !umol m-2 s-1
-         ENDDO
+         END DO
 
       ELSEIF (EmissionsMethod >= 21 .AND. EmissionsMethod <= 26) THEN  !Local model, Bellucco et al. (2017)
          ! Calculate carbon uptake due to photosynthesis -------------
@@ -129,7 +129,7 @@ contains
 
             ! For active vegetation fraction only
             Bellucco2017_Pho = Bellucco2017_Pho + Bellucco2017_Pho_surf(iv)*active_veg_fr(iv)
-         ENDDO
+         END DO
          Fc_photo = Bellucco2017_Pho
 
       ELSEIF (EmissionsMethod >= 31 .AND. EmissionsMethod <= 36) THEN  !General model, Bellucco et al. (2017)
@@ -184,7 +184,7 @@ contains
                                         - 4*alpha_bioCO2_v2(ivConif)*beta_bioCO2_v2(ivConif)*theta_bioCO2_v2(ivConif) &
                                         *PAR_umolm2s1)))
 
-         ENDIF
+         END IF
          ! Calculate carbon uptake due to photosynthesis -------------
          Fc_photo = Bellucco2017_Pho*active_veg_fr(ConifSurf - 2) + &
                     Bellucco2017_Pho*active_veg_fr(DecidSurf - 2) + &
@@ -195,15 +195,15 @@ contains
          Fc_photo = 0
          DO iv = ivConif, ivGrass
             Fc_photo = Fc_photo + active_veg_fr0(iv)*beta_bioCO2(iv)
-         ENDDO
+         END DO
 
          IF (gsmodel == 1 .OR. gsmodel == 2) THEN     !With air temperature
             Fc_photo = -Fc_Photo*gfunc
          ELSEIF (gsmodel == 3 .OR. gsmodel == 4) THEN !With modelled 2 meter temperature
             Fc_photo = -Fc_Photo*gfunc2
-         ENDIF
+         END IF
 
-      ENDIF
+      END IF
 
       ! Calculate carbon emissions due to respiration -------------
       Bellucco2017_Res = 0.0
@@ -215,12 +215,12 @@ contains
                   Bellucco2017_Res_surf = MAX(min_res_bioCO2(iv), resp_a(iv)*EXP(resp_b(iv)*Temp_C))
                ELSEIF (gsmodel == 3 .OR. gsmodel == 4) THEN !With modelled 2 meter temperature
                   Bellucco2017_Res_surf = MAX(min_res_bioCO2(iv), resp_a(iv)*EXP(resp_b(iv)*t2))
-               ENDIF
+               END IF
                ! Only for vegetation fraction
                Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf*sfr(2 + iv)/VegFracSum
-            ENDIF
-         ENDDO
-      ENDIF
+            END IF
+         END DO
+      END IF
       Fc_respi = Bellucco2017_Res*(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))
       ! Combine to find biogenic CO2 flux
       Fc_biogen = Fc_photo + Fc_respi

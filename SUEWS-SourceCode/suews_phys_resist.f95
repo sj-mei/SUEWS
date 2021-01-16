@@ -84,12 +84,12 @@ contains
             RA = (LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
          ELSE
             RA = ((LOG(ZZD/z0m) - psim)*(LOG(ZZD/z0V) - psih))/(K2*AVU1)
-         ENDIF
+         END IF
 
          !3) Thom and Oliver (1977)
       ELSEIF (AerodynamicResistanceMethod == 3) THEN
          RA = (4.72*LOG(ZZD/z0m)**2)/(1 + 0.54*AVU1)
-      ENDIF
+      END IF
 
       !If RA outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
       IF (RA > 200) THEN   !was 175
@@ -100,7 +100,7 @@ contains
          RA = 10
          ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
          IF (avu1 < 0) WRITE (*, *) avu1, RA
-      ENDIF
+      END IF
 
       RETURN
    END SUBROUTINE AerodynamicResistance
@@ -222,7 +222,7 @@ contains
             gdq = 1 - G3*dq
          ELSE
             gdq = 1 - G3*G4
-         ENDIF
+         END IF
          ! air temperature ----
          TC = (TH - G5)/(G5 - TL)
          TC2 = (G5 - TL)*(TH - G5)**TC
@@ -234,14 +234,14 @@ contains
             IF (MINVAL(SnowFrac(1:6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL=0.1,Temp_c,id,it', &
                               REAL(Temp_c, KIND(1d0)), id_real, it)
-            ENDIF
+            END IF
          ELSEIF (Temp_C >= th) THEN
             gtemp = ((th - 0.1) - tl)*(th - (th - 0.1))**tc/tc2
             CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TH=39.9,Temp_c,id,it', &
                            REAL(Temp_c, KIND(1d0)), id_real, it)
          ELSE
             gtemp = (Temp_C - tl)*(th - Temp_C)**tc/tc2
-         ENDIF
+         END IF
 
          ! soil moisture deficit ----
          sdp = S1/G6 + S2
@@ -251,15 +251,15 @@ contains
             gs = 1 - EXP(g6*(vsmd - sdp))   !Modelled is used
             IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf) == 1) THEN
                gs = 0   !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
-            ENDIF
-         ENDIF
+            END IF
+         END IF
          !gs = gs*(1 - SUM(SnowFrac(1:6))/6)
          IF (gs < 0) THEN
             CALL errorHint(65, &
                            'subroutine SurfaceResistance.f95 (gsModel=1): g(smd) < 0 calculated, setting to 0.0001', &
                            gs, id_real, it)
             gs = 0.0001
-         ENDIF
+         END IF
 
          !LAI
          !Original way
@@ -273,19 +273,19 @@ contains
          DO iv = 1, 3
             ! gl=gl+(sfr(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
             gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
-         ENDDO
+         END DO
 
          IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
             gsc = 0.1
          ELSE
             ! Multiply parts together
             gsc = (G1*gq*gdq*gtemp*gs*gl)
-         ENDIF
+         END IF
 
          IF (gsc <= 0) THEN
             CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=1): gs <= 0, setting to 0.1 mm s-1', gsc, id_real, it)
             gsc = 0.1
-         ENDIF
+         END IF
 
       ELSEIF (gsModel == 2 .OR. gsModel == 4) THEN
 
@@ -295,7 +295,7 @@ contains
          IF (avkdn >= Kmax) THEN   !! Add proper error handling later - HCW!!
             WRITE (*, *) 'Kmax exceeds Kdn setting to g(Kdn) to 1'
             gq = 1
-         ENDIF
+         END IF
 
          ! ---- g(delq) ----
          gdq = G3 + (1 - G3)*(G4**dq)   !Ogink-Hendriks (1995) Eq 12 (using G3 as Kshd and G4 as r)
@@ -310,14 +310,14 @@ contains
             IF (MIN(SnowFrac(1), SnowFrac(2), SnowFrac(3), SnowFrac(4), SnowFrac(5), SnowFrac(6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL+0.1,Temp_C,id,it', &
                               REAL(Temp_c, KIND(1d0)), id_real, it)
-            ENDIF
+            END IF
          ELSEIF (Temp_C >= TH) THEN
             gtemp = ((TH - 0.1) - TL)*(TH - (TH - 0.1))**Tc/Tc2
             CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TH-0.1,Temp_C,id,it', &
                            REAL(Temp_c, KIND(1d0)), id_real, it)
          ELSE
             gtemp = (Temp_C - TL)*(TH - Temp_C)**Tc/Tc2
-         ENDIF
+         END IF
          ! ---- g(smd) ----
          sdp = S1/G6 + S2
          IF (SMDMethod > 0) THEN   !Modified from ==1 to > 0 by HCW 31/07/2014
@@ -327,8 +327,8 @@ contains
             gs = (1 - EXP(g6*(vsmd - sdp)))/(1 - EXP(g6*(-sdp)))
             IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf) == 1) THEN
                gs = 0   !If no veg so no vsmd, or all water so no smd, set gs=0 HCW 21 Jul 2016
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
          !gs = gs*(1 - SUM(SnowFrac(1:6))/6)
 
@@ -337,7 +337,7 @@ contains
                            'subroutine SurfaceResistance.f95 (gsModel=2): gs < 0 calculated, setting to 0.0001', &
                            gs, id_real, it)
             gs = 0.0001
-         ENDIF
+         END IF
 
          ! ---- g(LAI) ----
          gl = 0    !Initialise
@@ -345,23 +345,23 @@ contains
          DO iv = 1, 3   !For vegetated surfaces
             !  gl=gl+(sfr(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
             gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
-         ENDDO
+         END DO
 
          IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
             gsc = 0.1
          ELSE
             ! Multiply parts together
             gsc = (G1*gq*gdq*gtemp*gs*gl)
-         ENDIF
+         END IF
 
          IF (gsc <= 0) THEN
             CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=2): gsc <= 0, setting to 0.1 mm s-1', gsc, id_real, it)
             gsc = 0.1
-         ENDIF
+         END IF
 
       ELSEIF (gsModel < 1 .OR. gsModel > 4) THEN
          CALL errorHint(71, 'Value of gsModel not recognised.', notUsed, NotUsed, gsModel)
-      ENDIF
+      END IF
 
       ResistSurf = 1/(gsc/1000)  ![s m-1]
       gfunc = gdq*gtemp*gs*gq
@@ -470,7 +470,7 @@ contains
       ELSE
          Zh = 0   !Set Zh to zero if areaZh = 0
          FAI = 1e-5
-      ENDIF
+      END IF
 
       IF (Zh /= 0) THEN
          !Calculate z0m and zdm depending on the Z0 method
@@ -480,7 +480,7 @@ contains
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
             zdm = (1 + 4.43**(-sfr(BldgSurf))*(sfr(BldgSurf) - 1))*Zh
             z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
-         ENDIF
+         END IF
       ELSEIF (Zh == 0) THEN   !If zh calculated to be zero, set default roughness length and displacement height
          IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)
          !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
@@ -495,13 +495,13 @@ contains
             z0m = 1
             zdm = 7
             CALL ErrorHint(15, 'Assuming mean height = 10 m, Setting z0m and zdm to default value', z0m, zdm, notUsedI)
-         ENDIF
-      ENDIF
+         END IF
+      END IF
 
       IF (RoughLenMomMethod == 1) THEN  !use values set in SiteSelect
          z0m = z0m_in
          zdm = zdm_in
-      ENDIF
+      END IF
 
       ZZD = Z - zdm
 
@@ -545,8 +545,8 @@ contains
          else
             ! impervious-pervious mixed surface
             z0V = z0m*EXP(2 - (1.2 - 0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
-         endif
-      ENDIF
+         end if
+      END IF
 
    END FUNCTION cal_z0v
 

@@ -32,7 +32,7 @@ CONTAINS
       TC = TK - 273.15
       IF (TC == 0) THEN
          TC = 0.001
-      ENDIF
+      END IF
       !Valid for 50>T>-40
       e = 6.1121*EXP(((18.729 - TC/227.3)*TC)/(TC + 257.87))
       f = 1.00072 + P*(3.2E-6 + 5.9E-10*TC**2)
@@ -163,9 +163,9 @@ CONTAINS
             iv = INT(press_Hpa)
             CALL errorHint(29, 'Function sat_vap_press: temp_C, dectime,press_Hpa = ', temp_C, dectime, iv)
 
-         ENDIF
+         END IF
          temp_C = 0.001000
-      ENDIF
+      END IF
 
       Press_kPa = Press_hPa/10
 
@@ -182,12 +182,12 @@ CONTAINS
             e_mb = 6.1115*EXP(((23.036 - Temp_C/333.7)*Temp_C)/(Temp_C + 279.82))
             f = 1.00022 + Press_kPa*(3.83E-6 + 6.4E-10*Temp_C**2)
             es_hPa = e_mb*f
-         ENDIF
+         END IF
 
       ELSE
          CALL ErrorHint(28, 'FUNCTION sat_vap_press: [Temperature is out of range], Temp_C,dectime', Temp_C, dectime, notUsedI)
 
-      ENDIF
+      END IF
 
       RETURN
    END FUNCTION sat_vap_press_x
@@ -210,9 +210,9 @@ CONTAINS
             iv = INT(press_Hpa)
             CALL errorHint(29, 'Function sat_vap_press: temp_C, dectime,press_Hpa = ', temp_C, dectime, iv)
 
-         ENDIF
+         END IF
          temp_C = 0.001000
-      ENDIF
+      END IF
 
       Press_kPa = Press_hPa/10
 
@@ -224,7 +224,7 @@ CONTAINS
       ELSE
          CALL ErrorHint(28, 'FUNCTION sat_vap_press: [Temperature is out of range], Temp_C,dectime', Temp_C, dectime, notUsedI)
 
-      ENDIF
+      END IF
 
       RETURN
    END FUNCTION sat_vap_pressIce
@@ -262,7 +262,7 @@ CONTAINS
 
       IF (ABS(rho_d) < 0.000100 .OR. ABS(rho_v) < 0.000100 .OR. ABS(rho_d + rho_v) < 0.000100) THEN
          CALL ErrorHint(42, 'spec-heat_beer', rho_v, rho_d, INT(Temp_C))
-      ENDIF
+      END IF
 
       cp = cpd*(rho_d/(rho_d + rho_v)) + cpm*(rho_v/(rho_d + rho_v))
 
@@ -304,7 +304,7 @@ CONTAINS
       DO ii = 1, 100
          IF (Press_hPa < 900) THEN
             CALL ErrorHint(45, 'function Lat_vap', Press_hPA, notUsed, ii)
-         ENDIF
+         END IF
 
          ! if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'% 1',Tw
 
@@ -314,13 +314,13 @@ CONTAINS
 
          IF (Press_hPa < 900) THEN
             CALL ErrorHint(45, 'function Lat_vap - 2', Press_hPA, notUsed, ii)
-         ENDIF
+         END IF
 
          psyc = psyc_const(cp, Press_hPa, lv_J_kg) !in units hPa/K
 
          IF (Press_hPa < 900) THEN
             CALL ErrorHint(45, 'function Lat _vap -31', Press_hPA, notUsed, ii)
-         ENDIF
+         END IF
 
          ea_est = es_tw - psyc*(temp_C - tw)
 
@@ -330,7 +330,7 @@ CONTAINS
             incr = incr/10.
             switch1 = .FALSE.
             switch2 = .FALSE.
-         ENDIF
+         END IF
          IF (ABS(ea_est - ea_fix) < 0.001000) THEN
             RETURN
          ELSEIF (ea_est > ea_fix) THEN
@@ -339,8 +339,8 @@ CONTAINS
          ELSEIF (ea_est < ea_fix) THEN
             tw = tw + incr
             switch2 = .TRUE.
-         ENDIF
-      ENDDO
+         END IF
+      END DO
 
       RETURN
    END FUNCTION Lat_vap
@@ -417,7 +417,7 @@ CONTAINS
          CALL errorHint(19, &
                         'in psychrometric constant calculation:  cp [J kg-1 K-1], p [hPa], Lv [J kg-1]', &
                         cp, Press_hPa, INT(lv_J_kg))
-      ENDIF
+      END IF
 
       psyc_hPa = (cp*press_hPa)/(epsil*lv_J_kg)
       !    if(debug)write(*,*)psyc_hpa, 'g',cp,press_HPa,lv
@@ -509,7 +509,7 @@ CONTAINS
 
       IF (t > 55) THEN
          CALL ErrorHint(34, 'Function qsatf', T, 0.00D0, -55)
-      ENDIF
+      END IF
 
       ES = A*dEXP(B*T/(C + T))
       qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB

@@ -1,4 +1,4 @@
-name: Fortran prettify
+name: Fortran_prettify
 
 on:
 
@@ -14,6 +14,7 @@ on:
     paths:       # Push events containing matching files
       - 'SUEWS-SourceCode/*'
       - 'supy-driver/*'
+      - '.github/workflows/f-prettify.yml'
 
 jobs:
   build:
@@ -21,31 +22,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Fix up git URLs
-      run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
+    # - name: Fix up git URLs
+    #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
-        submodules: true
         token: ${{ secrets.PAT }}
+        submodules: true
 
-    - name: Setup git user
-      env:
-        ACCESS_TOKEN: ${{ secrets.PAT }}
-      run: |
-        if [ -z "$COMMIT_EMAIL" ]
-        then
-          COMMIT_EMAIL="${GITHUB_ACTOR}@users.noreply.github.com"
-        fi
+    # - name: Setup git user
+    #   env:
+    #     ACCESS_TOKEN: ${{ secrets.PAT }}
+    #   run: |
+    #     if [ -z "$COMMIT_EMAIL" ]
+    #     then
+    #       COMMIT_EMAIL="${GITHUB_ACTOR}@users.noreply.github.com"
+    #     fi
 
-        if [ -z "$COMMIT_NAME" ]
-        then
-          COMMIT_NAME="${GITHUB_ACTOR}"
-        fi
-        git config --global credential.helper store && \
-        git config --global user.email "${COMMIT_EMAIL}" && \
-        git config --global user.name "${COMMIT_NAME}" && \
-        REPOSITORY_PATH="https://${ACCESS_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+    #     if [ -z "$COMMIT_NAME" ]
+    #     then
+    #       COMMIT_NAME="${GITHUB_ACTOR}"
+    #     fi
+    #     git config --global credential.helper store && \
+    #     git config --global user.email "${COMMIT_EMAIL}" && \
+    #     git config --global user.name "${COMMIT_NAME}" && \
+    #     REPOSITORY_PATH="https://${ACCESS_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
     - name: Setup Python for use with actions
       uses: actions/setup-python@v2
@@ -61,8 +62,21 @@ jobs:
     - name: format Fortran code
       run: fprettify SUEWS-SourceCode/*f95
 
-    - name: Commit changes
-      uses: elstudio/actions-js-build/commit@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
+    # - name: Commit changes
+    #   uses: elstudio/actions-js-build/commit@v3
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.PAT }}
+    #   with:
+
+    - name: Git Auto Commit
+      uses: stefanzweifel/git-auto-commit-action@v4.8.0
+      with:
+        commit_message: "[GH Actions] fprettify source code"
+        file_pattern: SUEWS-SourceCode/*f95
+        push_options: '--force'
+        skip_dirty_check: true
+        skip_fetch: true
+
+
+
 

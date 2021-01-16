@@ -172,7 +172,7 @@ CONTAINS
       ELSE
          Fside = 0.1666666667
          Fup = 0.166666667
-      ENDIF
+      END IF
 
       ! These variables should change name in the future...
       P = Press_hPa
@@ -676,7 +676,7 @@ CONTAINS
       qa = 0.0D0
 
       WHERE (xa < 0) !qa(xa<0)=tan(beta)/2
-      qa = TAN(beta)/2
+         qa = TAN(beta)/2
       END WHERE
 
       Za = 0.0D0
@@ -687,14 +687,14 @@ CONTAINS
 
       ukil = 0.0D0
       WHERE (xa < 0)
-      !Za(xa<0)=((ba(xa<0).**2)-((qa(xa<0).**2)./4)).**0.5
-      Za = (ba**2 - qa**2/4.)**0.5
-      !phi(xa<0)=atan(Za(xa<0)./qa(xa<0))
-      phi = ATAN(Za/qa)
-      !A1(xa<0)=(sin(phi(xa<0))-phi(xa<0).*cos(phi(xa<0)))./(1-cos(phi(xa<0)))
-      Ai = (SIN(phi) - phi*COS(phi))/(1 - COS(phi))
-      !ukil(xa<0)=2*ba(xa<0).*xa(xa<0).*A1(xa<0)
-      ukil = 2*ba*xa*Ai
+         !Za(xa<0)=((ba(xa<0).**2)-((qa(xa<0).**2)./4)).**0.5
+         Za = (ba**2 - qa**2/4.)**0.5
+         !phi(xa<0)=atan(Za(xa<0)./qa(xa<0))
+         phi = ATAN(Za/qa)
+         !A1(xa<0)=(sin(phi(xa<0))-phi(xa<0).*cos(phi(xa<0)))./(1-cos(phi(xa<0)))
+         Ai = (SIN(phi) - phi*COS(phi))/(1 - COS(phi))
+         !ukil(xa<0)=2*ba(xa<0).*xa(xa<0).*A1(xa<0)
+         ukil = 2*ba*xa*Ai
       END WHERE
 
       Ssurf = hkil + ukil
@@ -1267,7 +1267,7 @@ CONTAINS
       Lsky = ((svfE + svfEveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Least = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lsouth
@@ -1293,7 +1293,7 @@ CONTAINS
       Lsky = ((svfS + svfSveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Lsouth = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lwest
@@ -1319,7 +1319,7 @@ CONTAINS
       Lsky = ((svfW + svfWveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Lwest = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lnorth
@@ -1345,7 +1345,7 @@ CONTAINS
       Lsky = ((svfN + svfNveg - 1)*Lsky_allsky)*viktsky*0.5
       Lveg = SBC*emis_wall*((Ta + 273.15)**4)*viktveg*0.5
       Lground = Lup2d*0.5
-      Lrefl = (Ldown2d+Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
+      Lrefl = (Ldown2d + Lup2d)*(viktrefl)*(1 - emis_wall)*0.5
       Lnorth = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       DEALLOCATE (svfalfaE)
@@ -1627,7 +1627,7 @@ CONTAINS
 
       f = f - a
       WHERE (f > 0)
-      f = -1
+         f = -1
       END WHERE
       shadow = f + 1
       !sh=f ! invert as in shadowingfunctionglobalradiation
@@ -1982,7 +1982,7 @@ CONTAINS
          tempwallsun(xp1:xp2, yp1:yp2) = sunwall(xc1:xc2, yc1:yc2) !moving building wall in sun image
          tempb = tempwallsun*f
          WHERE ((tempb + tempbub) > 0) !tempbub=(tempb+tempbub)>0==1
-         tempbub = 1.
+            tempbub = 1.
          END WHERE
 
          weightsumwall = weightsumwall + tempbub
@@ -1990,7 +1990,7 @@ CONTAINS
          IF (index*scale == first) THEN
             gvf1 = (weightsumwall + weightsumsh)/first
             WHERE (gvf1 > 1)
-            gvf1 = 1.
+               gvf1 = 1.
             END WHERE
          END IF
          index = index + 1
@@ -1998,7 +1998,7 @@ CONTAINS
       END DO
       gvf2 = (weightsumsh + weightsumwall)/second
       WHERE (gvf2 > 1)
-      gvf2 = 1.
+         gvf2 = 1.
       END WHERE
 
       ! Weighting

@@ -45,7 +45,7 @@ SUBROUTINE day2month(b, mb, md, seas, year, latitude)
       K = 1
    ELSE
       K = 0
-   ENDIF
+   END IF
 
    IF (B <= 31) THEN !January
       MB = 1
@@ -83,7 +83,7 @@ SUBROUTINE day2month(b, mb, md, seas, year, latitude)
    ELSEIF (B > 334 + K) THEN
       MB = 12
       md = B - (334 + K)
-   ENDIF
+   END IF
 
    !
    IF (latitude > 0) THEN  ! Northern Hemisphere
@@ -91,14 +91,14 @@ SUBROUTINE day2month(b, mb, md, seas, year, latitude)
          seas = 1
       ELSE
          seas = 2 !Winter rest of the months
-      ENDIF
+      END IF
    ELSE  ! southern hemisphere
       IF (mb < 4 .OR. mb > 9) THEN !Summer is from Oct to Mar
          seas = 1
       ELSE
          seas = 2 !Winter rest of the months
-      ENDIF
-   ENDIF
+      END IF
+   END IF
    RETURN
 END SUBROUTINE day2month
 !===============================================================================
@@ -147,7 +147,7 @@ SUBROUTINE LeapYearCalc(year_int, nroDays)
       nroDays = 366
    ELSE
       nroDays = 365
-   ENDIF
+   END IF
 END SUBROUTINE LeapYearCalc
 
 !===============================================================================
@@ -164,7 +164,7 @@ ELEMENTAL FUNCTION Days_of_Year(year_int) RESULT(nDays)
       nDays = 366
    ELSE
       nDays = 365
-   ENDIF
+   END IF
 
 END FUNCTION Days_of_Year
 
