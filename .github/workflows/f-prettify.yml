@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Fix up git URLs
-      run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
+    # - name: Fix up git URLs
+    #   run: echo -e '[url "https://github.com/"]\n  insteadOf = "git@github.com:"' >> ~/.gitconfig
 
     - uses: actions/checkout@v1
       with:
@@ -62,10 +62,21 @@ jobs:
     - name: format Fortran code
       run: fprettify SUEWS-SourceCode/*f95
 
-    - name: Commit changes
-      uses: elstudio/actions-js-build/commit@v3
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
+    # - name: Commit changes
+    #   uses: elstudio/actions-js-build/commit@v3
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.PAT }}
+    #   with:
+
+    - name: Git Auto Commit
+      uses: stefanzweifel/git-auto-commit-action@v4.8.0
       with:
-        commitMessage: "[GH Actions] fprettify source code"
+        commit_message: "[GH Actions] fprettify source code"
+        file_pattern: SUEWS-SourceCode/*f95
+        push_options: '--force'
+        skip_dirty_check: true
+        skip_fetch: true
+
+
+
 
