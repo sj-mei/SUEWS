@@ -48,6 +48,9 @@ jobs:
   #       make release
 
   manylinux:
+
+    # needs: test-suews
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -89,6 +92,8 @@ jobs:
 
   build_wheels:
 
+    # needs: test-suews
+
     strategy:
       matrix:
         py: ["3.9", "3.8", "3.7", "3.6"]
@@ -100,6 +105,13 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PAT }}
+
+      - name: fix gfortran on mac
+        if: ${{ matrix.os}} == macos-latest
+        run: |
+          brew reinstall gcc
+          which gfortran
+          gfortran --version
 
       - name: set up py${{ matrix.py }}
         uses: actions/setup-python@v2
@@ -117,7 +129,7 @@ jobs:
           name: python-package-distributions
           path: supy-driver/dist/
 
-  # test:
+  # test-suews:
 
   #   runs-on: macos-latest
 
@@ -216,11 +228,7 @@ jobs:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
       - build_wheels
-      # - windows  # transitive, for accessing settings
       - manylinux
-    # if: >-
-    #   fromJSON(needs.pre-setup.outputs.is_untagged_devel) ||
-    #   fromJSON(needs.pre-setup.outputs.is_tagged)
     runs-on: ubuntu-latest
 
     steps:
