@@ -18,36 +18,36 @@ on:
 
 jobs:
 
-  linux:
+  # linux:
 
-    needs:
-    - mac
+  #   needs:
+  #   - test
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
+  #   steps:
 
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-        token: ${{ secrets.PAT }}
+  #   - uses: actions/checkout@v1
+  #     with:
+  #       submodules: true
+  #       token: ${{ secrets.PAT }}
 
-    # - name: show version
-    #   run: |
-    #     bin_gfortran=$(which gfortran-10)
-    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
-    #     gfortran --version
+  #   # - name: show version
+  #   #   run: |
+  #   #     bin_gfortran=$(which gfortran-10)
+  #   #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+  #   #     gfortran --version
 
-    - name: Setup Python for use with actions
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+  #   - name: Setup Python for use with actions
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
 
-    - name: build and test
-      run: |
-        gfortran --version
-        make release
+  #   - name: build and test
+  #     run: |
+  #       gfortran --version
+  #       make release
 
   manylinux:
 
@@ -91,10 +91,17 @@ jobs:
         name: python-package-distributions
         path: supy-driver/wheelhouse/
 
-
   mac:
 
     runs-on: macos-latest
+
+    strategy:
+      matrix:
+        py:
+        - 3.9
+        - 3.8
+        - 3.7
+        - 3.6
 
     steps:
 
@@ -103,22 +110,51 @@ jobs:
         submodules: true
         token: ${{ secrets.PAT }}
 
-    - name: Setup Python for use with actions
+    - name: set up py${{ matrix.py }}
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        python-version: {{ matrix.py }} # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
 
-    - name: fix gfortran
+    - name: build supy-driver
       run: |
-        brew reinstall gcc
-        which gfortran
-        gfortran --version
+        make driver
+        ls -lrt supy-driver/dist/
 
-    - name: build and test
-      run: |
-        make release
-        make test
+    - name: Store the ${{ matrix.py }} wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-package-distributions
+        path: supy-driver/dist/
+
+
+  # test:
+
+  #   runs-on: macos-latest
+
+  #   steps:
+
+  #   - uses: actions/checkout@v1
+  #     with:
+  #       submodules: true
+  #       token: ${{ secrets.PAT }}
+
+  #   - name: Setup Python for use with actions
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
+
+  #   - name: fix gfortran
+  #     run: |
+  #       brew reinstall gcc
+  #       which gfortran
+  #       gfortran --version
+
+  #   - name: build and test
+  #     run: |
+  #       make release
+  #       make test
 
     # - name: Upload diff results from test
     #   uses: actions/upload-artifact@v2
@@ -126,106 +162,69 @@ jobs:
     #     name: diff csv
     #     path: Test/BaseRun/**/*diff.csv
 
-    - name: set up py3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
-
-    - name: build supy-driver
-      run: |
-        make driver
-        ls -lrt supy-driver/dist/
-
-    - name: set up py3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
-
-    - name: build supy-driver
-      run: |
-        make driver
-        ls -lrt supy-driver/dist/
-
-    - name: set up py3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
-
-    - name: build supy-driver
-      run: |
-        make driver
-        ls -lrt supy-driver/dist/
-
-    - name: Store the binary wheel
-      uses: actions/upload-artifact@v2
-      with:
-        name: python-package-distributions
-        path: supy-driver/dist/
 
 
-  windows:
 
-    runs-on: windows-latest
+  # windows:
 
-    steps:
+  #   runs-on: windows-latest
 
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-        token: ${{ secrets.PAT }}
+  #   steps:
 
-    - name: Setup Python for use with actions
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+  #   - uses: actions/checkout@v1
+  #     with:
+  #       submodules: true
+  #       token: ${{ secrets.PAT }}
 
-    - name: build and pack as release
-      run: |
-        make release
+  #   - name: Setup Python for use with actions
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
 
-    - name: set py3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+  #   - name: build and pack as release
+  #     run: |
+  #       make release
 
-    - name: build supy-driver
-      run: |
-        make driver
+  #   - name: set py3.7
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
 
-    - name: set py3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+  #   - name: build supy-driver
+  #     run: |
+  #       make driver
 
-    - name: build supy-driver
-      run: |
-        make driver
+  #   - name: set py3.8
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.8' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
 
-    - name: build supy-driver
-      run: |
-        make driver
+  #   - name: build supy-driver
+  #     run: |
+  #       make driver
 
-    - name: set py3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+  #   - name: build supy-driver
+  #     run: |
+  #       make driver
 
-    - name: build supy-driver
-      run: |
-        make driver
+  #   - name: set py3.9
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
 
-    - name: Store the binary wheel
-      uses: actions/upload-artifact@v2
-      with:
-        name: python-package-distributions
-        path: supy-driver/dist/
+  #   - name: build supy-driver
+  #     run: |
+  #       make driver
+
+  #   - name: Store the binary wheel
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: python-package-distributions
+  #       path: supy-driver/dist/
 
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
