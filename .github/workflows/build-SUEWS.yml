@@ -98,10 +98,10 @@ jobs:
     strategy:
       matrix:
         py:
-        - 3.9
-        - 3.8
-        - 3.7
-        - 3.6
+        - '3.9'
+        - '3.8'
+        - '3.7'
+        - '3.6'
 
     steps:
 
@@ -113,7 +113,7 @@ jobs:
     - name: set up py${{ matrix.py }}
       uses: actions/setup-python@v2
       with:
-        python-version: '{{ matrix.py }}' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        python-version: {{ matrix.py }} # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
 
     - name: build supy-driver
