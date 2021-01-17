@@ -90,6 +90,17 @@ jobs:
         name: diff csv
         path: Test/BaseRun/**/*diff.csv
 
+    - name: set py3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build supy-driver
+      run: |
+        make driver
+        ls -lrt supy-driver/dist/
+
 
   windows:
 
@@ -112,13 +123,13 @@ jobs:
       run: |
         make release
 
-    - name: set py3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+    # - name: set py3.7
+    #   uses: actions/setup-python@v2
+    #   with:
+    #     python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+    #     architecture: 'x64' # (x64 or x86)
 
-    - name: build supy-driver
-      run: |
-        make driver
-        ls -lrt supy-driver/dist/
+    # - name: build supy-driver
+    #   run: |
+    #     make driver
+    #     ls -lrt supy-driver/dist/

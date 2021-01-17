@@ -486,9 +486,12 @@ def test_samerun(
                 .unstack("file")
                 .droplevel(0, axis=1)
             )
-            df_diff.to_csv(path_res_sample/(file+'.diff.csv'))
-            print(df_diff)
-            print(f"===  {path_res_sample/(file+'.diff.csv')} has been saved")
+            if df_diff.size>0:
+                df_diff.to_csv(path_res_sample/(file+'.diff.csv'))
+                print(df_diff)
+                print(f"===  {path_res_sample/(file+'.diff.csv')} has been saved")
+            else:
+                res_test = True
 
     # res_test = (set(comp_files_test[0]) == set(common_files))
     # print res_test
