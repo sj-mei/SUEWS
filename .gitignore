@@ -333,3 +333,4 @@ Release/
 supy-driver/wheelhouse/
 test-dev/
 Test/BaseRun/*/SUEWS_V2*
+SUEWS-SourceCode/SUEWS_V20*
