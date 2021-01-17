@@ -56,6 +56,7 @@ jobs:
   #       make driver
   #       ls -lrt supy-driver/dist/
 
+
   mac:
 
     runs-on: macos-latest
@@ -123,23 +124,12 @@ jobs:
         make driver
         ls -lrt supy-driver/dist/
 
-    - name: Publish distribution 📦 to Test PyPI
-      uses: pypa/gh-action-pypi-publish@master
+    - name: Store the binary wheel
+      uses: actions/upload-artifact@v2
       with:
-        packages_dir: supy-driver/dist/
-        verbose: true
-        skip_existing: true
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
+        name: python-package-distributions
+        path: supy-driver/dist/
 
-    - name: Publish distribution 📦 to PyPI
-      if: startsWith(github.ref, 'refs/tags')
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        packages_dir: supy-driver/dist/
-        verbose: true
-        skip_existing: true
-        password: ${{ secrets.PYPI_API_TOKEN }}
 
   windows:
 
@@ -162,13 +152,79 @@ jobs:
       run: |
         make release
 
-    # - name: set py3.7
-    #   uses: actions/setup-python@v2
-    #   with:
-    #     python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-    #     architecture: 'x64' # (x64 or x86)
+    - name: set py3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
 
-    # - name: build supy-driver
-    #   run: |
-    #     make driver
-    #     ls -lrt supy-driver/dist/
+    - name: build supy-driver
+      run: |
+        make driver
+
+    - name: set py3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build supy-driver
+      run: |
+        make driver
+
+    - name: build supy-driver
+      run: |
+        make driver
+
+    - name: set py3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build supy-driver
+      run: |
+        make driver
+
+    - name: Store the binary wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-package-distributions
+        path: supy-driver/dist/
+
+  deploy:
+    name: Publish 🐍📦 to (Test)PyPI
+    needs:
+    - mac
+    - windows  # transitive, for accessing settings
+    # - linux
+    # if: >-
+    #   fromJSON(needs.pre-setup.outputs.is_untagged_devel) ||
+    #   fromJSON(needs.pre-setup.outputs.is_tagged)
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Download all the dists
+      uses: actions/download-artifact@v2
+      with:
+        name: python-package-distributions
+        path: supy-driver/dist/
+
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        packages_dir: supy-driver/dist/
+        verbose: true
+        skip_existing: true
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+
+    - name: Publish distribution 📦 to PyPI
+      if: startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        packages_dir: supy-driver/dist/
+        verbose: true
+        skip_existing: true
+        password: ${{ secrets.PYPI_API_TOKEN }}
