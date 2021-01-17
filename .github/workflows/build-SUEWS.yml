@@ -105,7 +105,7 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: fix gfortran on mac
-        if: ${{ matrix.os }} == 'macOS-latest'
+        if: startsWith(matrix.os, 'macOS')
         run: |
           brew reinstall gcc
           which gfortran
