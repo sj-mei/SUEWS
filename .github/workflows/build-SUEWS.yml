@@ -230,7 +230,7 @@ jobs:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
     - mac
-    - windows  # transitive, for accessing settings
+    # - windows  # transitive, for accessing settings
     - manylinux
     # if: >-
     #   fromJSON(needs.pre-setup.outputs.is_untagged_devel) ||
