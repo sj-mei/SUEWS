@@ -396,43 +396,45 @@ def test_samerun(
     dict_runcontrol,
     dict_initcond,
     df_siteselect,
-    dir_exe,
-    dir_baserun,
-    dir_save=tempfile.mkdtemp(),
+    path_dir_exe,
+    path_dir_baserun,
+    path_dir_save=tempfile.mkdtemp(),
 ):
-    dir_sys = os.getcwd()
+    from pathlib import Path
+
+    path_dir_sys = Path.cwd()
+    path_dir_baserun=Path(path_dir_baserun)
     # load RunControl
-    dict_runcontrol = load_SUEWS_RunControl(
-        os.path.join(dir_baserun, "RunControl.nml")
-    )["runcontrol"]
+    path_runcontrol = path_dir_baserun / "RunControl.nml"
+    dict_runcontrol = load_SUEWS_RunControl(path_runcontrol)["runcontrol"]
     # dir_input = dict_runcontrol['fileoutiutpath']
-    dir_output = dict_runcontrol["fileoutputpath"]
+    path_dir_output = Path(dict_runcontrol["fileoutputpath"])
 
     # temp dir for testing
-    dir_test = dir_save
+    path_dir_test = Path(path_dir_save)
     # clear tempdir
-    rmtree(dir_test)
+    rmtree(path_dir_test)
 
     # load configurations from dir_baserun
-    copytree(dir_baserun, dir_test)
+    copytree(path_dir_baserun, path_dir_test)
 
-    # change workign directory
-    os.chdir(dir_test)
+    # change working directory
+    os.chdir(path_dir_test)
 
     # use long-term forcing for this testing
     path_input = Path(dict_runcontrol["fileinputpath"])
     input_short = list(path_input.glob("*.txt.long"))[0]
     move(input_short, input_short.parent / input_short.stem)
 
-    if os.path.exists(dir_output):
-        rmtree(dir_output)
-        os.mkdir(dir_output)
+    if path_dir_output.exists():
+        rmtree(path_dir_output)
+        path_dir_output.mkdir(parents=True)
 
     # remove existing build
     if os.path.exists(name_exe):
         os.remove(name_exe)
     # copy SUEWS
-    path_exe = os.path.join(dir_exe, name_exe)
+    path_exe = path_dir_exe/name_exe
     copyfile(path_exe, name_exe)
     os.chmod(name_exe, 755)
 
@@ -441,20 +443,20 @@ def test_samerun(
     os.system("./" + name_exe + " &>/dev/null")
 
     # compare results
-    dir_res_sample = os.path.join(dir_baserun, dir_output)
-    dir_res_test = os.path.join(dir_test, dir_output)
+    path_res_sample = path_dir_baserun/path_dir_output.name
+    path_res_test = path_dir_test/path_dir_output.name
     # print('thse folders will be compared:')
     # print(dir_res_sample)
     # print(dir_res_test)
 
     common_files = [
-        os.path.basename(x)
-        for x in glob(os.path.join(dir_res_sample, "*"))
+        x.name
+        for x in path_res_sample.glob("*")
         # exclude certain files
-        if not any(excl in x for excl in ["FileChoices.txt", "state_init.txt"])
+        if not any(excl in x.name for excl in ["FileChoices.txt", "state_init.txt"])
     ]
     comp_files_test = filecmp.cmpfiles(
-        dir_res_sample, dir_res_test, common_files, shallow=False
+        path_res_sample, path_res_test, common_files, shallow=False
     )
     print(("comp_files_test", comp_files_test))
     print(("common_files", common_files))
@@ -463,9 +465,20 @@ def test_samerun(
     res_test = len(comp_files_test[1]) == 0
 
     if not res_test:
+        import difflib
+
         # if not match, print mismatch list
         print("these files are different:")
-        print(sorted(comp_files_test[1]))
+        list_file_dif = sorted(comp_files_test[1])
+        print(list_file_dif)
+        for file in list_file_dif:
+            print(f"======={file}=======")
+            text_sample = (path_res_sample/file).read_text()
+            text_test = (path_res_test/file).read_text()
+            for line in difflib.unified_diff(
+                text_sample, text_test, fromfile="sample", tofile="test"
+            ):
+                print(line)
 
     # res_test = (set(comp_files_test[0]) == set(common_files))
     # print res_test
@@ -474,10 +487,10 @@ def test_samerun(
     #     print 'these files are different:'
     #     print comp_files_test[1]
 
-    dir_sys = os.chdir(dir_sys)
+    path_dir_sys = os.chdir(path_dir_sys)
     # rmtree(dir_test)
     print(("test_samerun for", name_exe))
-    print(("running here:", dir_save))
+    print(("running here:", path_dir_save))
 
     return res_test
 

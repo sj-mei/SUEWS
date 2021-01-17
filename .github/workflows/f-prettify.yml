@@ -68,15 +68,22 @@ jobs:
     #     GITHUB_TOKEN: ${{ secrets.PAT }}
     #   with:
 
-    - name: Git Auto Commit
-      uses: stefanzweifel/git-auto-commit-action@v4.8.0
+    # - name: Git Auto Commit
+    #   uses: stefanzweifel/git-auto-commit-action@v4.8.0
+    #   with:
+    #     commit_message: "[GH Actions] fprettify source code"
+    #     file_pattern: SUEWS-SourceCode/*f95
+    #     push_options: '--force'
+    #     skip_dirty_check: true
+    #     skip_fetch: true
+    #     commit_options: '--no-verify'
+
+    - name: Add & Commit
+      uses: EndBug/add-and-commit@v6.2.0
       with:
-        commit_message: "[GH Actions] fprettify source code"
-        file_pattern: SUEWS-SourceCode/*f95
-        push_options: '--force'
-        skip_dirty_check: true
-        skip_fetch: true
-        commit_options: '--no-verify'
+        add: 'SUEWS-SourceCode/*f95'
+        message: "[GH Actions] fprettify source code"
+
 
 
 
