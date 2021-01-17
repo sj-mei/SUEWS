@@ -17,44 +17,44 @@ on:
       - '.github/workflows/build-SUEWS.yml'
 
 jobs:
-  linux:
+  # linux:
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
+  #   steps:
 
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-        token: ${{ secrets.PAT }}
+  #   - uses: actions/checkout@v1
+  #     with:
+  #       submodules: true
+  #       token: ${{ secrets.PAT }}
 
-    # - name: show version
-    #   run: |
-    #     bin_gfortran=$(which gfortran-10)
-    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
-    #     gfortran --version
+  #   # - name: show version
+  #   #   run: |
+  #   #     bin_gfortran=$(which gfortran-10)
+  #   #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+  #   #     gfortran --version
 
-    - name: Setup Python for use with actions
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+  #   - name: Setup Python for use with actions
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
 
-    - name: build and test
-      run: |
-        gfortran --version
-        make release
+  #   - name: build and test
+  #     run: |
+  #       gfortran --version
+  #       make release
 
-    - name: set py3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+  #   - name: set py3.7
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+  #       architecture: 'x64' # (x64 or x86)
 
-    - name: build supy-driver
-      run: |
-        make driver
-        ls -lrt supy-driver/dist/
+  #   - name: build supy-driver
+  #     run: |
+  #       make driver
+  #       ls -lrt supy-driver/dist/
 
   mac:
 
@@ -81,8 +81,11 @@ jobs:
 
     - name: build and test
       run: |
+        brew install gcc
+        which gfortran
+        gfortran --version
         make release
-        make test
+# make test
 
     - name: Upload diff results from test
       uses: actions/upload-artifact@v2

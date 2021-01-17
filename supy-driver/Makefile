@@ -1,7 +1,7 @@
 # -*- makefile -*-
 .PHONY: main clean test pip supy
 
-FC = gfortran-10 $(FFLAGS)
+FC = gfortran $(FFLAGS)
 
 # OS-specific configurations
 OSFLAG 				:=
@@ -63,8 +63,8 @@ main:
 
 # make fortran exe
 suews:
+	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
 	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran main; # make SUEWS with the `main` recipe
-	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 show:
 	@echo $(info $$OSFLAG is [${OSFLAG}])
@@ -82,6 +82,7 @@ clean:
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
 test:
+	$(MAKE) suews
 	$(MAKE) main
 	$(PYTHON) setup.py test
 
