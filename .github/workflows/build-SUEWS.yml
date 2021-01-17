@@ -63,6 +63,11 @@ jobs:
 
     steps:
 
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
+
     - name: manylinux build
       run: |
         docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;gfortran --version; make clean;make suews"
