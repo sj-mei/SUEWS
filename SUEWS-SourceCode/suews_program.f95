@@ -40,7 +40,7 @@ PROGRAM SUEWS_Program
    USE Sues_Data
    USE Time
    USE WhereWhen
-   USE  ctrl_output
+   USE ctrl_output
    USE ESTM_module, ONLY: SUEWS_GetESTMData, ESTM_initials
    USE BLUEWS_module, ONLY: CBL_ReadInputData
 
