@@ -73,27 +73,24 @@ jobs:
         python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
 
-    # - name: show version
-    #   run: |
-    #     bin_gfortran=$(which gfortran-10)
-    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
-    #     gfortran --version
-
-    - name: build and test
+    - name: fix gfortran
       run: |
         brew reinstall gcc
         which gfortran
         gfortran --version
+
+    - name: build and test
+      run: |
         make release
-# make test
+        make test
 
-    - name: Upload diff results from test
-      uses: actions/upload-artifact@v2
-      with:
-        name: diff csv
-        path: Test/BaseRun/**/*diff.csv
+    # - name: Upload diff results from test
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: diff csv
+    #     path: Test/BaseRun/**/*diff.csv
 
-    - name: set py3.7
+    - name: set up py3.7
       uses: actions/setup-python@v2
       with:
         python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
@@ -104,6 +101,45 @@ jobs:
         make driver
         ls -lrt supy-driver/dist/
 
+    - name: set up py3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build supy-driver
+      run: |
+        make driver
+        ls -lrt supy-driver/dist/
+
+    - name: set up py3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build supy-driver
+      run: |
+        make driver
+        ls -lrt supy-driver/dist/
+
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        packages_dir: supy-driver/dist/
+        verbose: true
+        skip_existing: true
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+
+    - name: Publish distribution 📦 to PyPI
+      if: startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        packages_dir: supy-driver/dist/
+        verbose: true
+        skip_existing: true
+        password: ${{ secrets.PYPI_API_TOKEN }}
 
   windows:
 

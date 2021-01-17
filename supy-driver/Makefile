@@ -82,7 +82,6 @@ clean:
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
 test:
-	$(MAKE) suews
 	$(MAKE) main
 	$(PYTHON) setup.py test
 
