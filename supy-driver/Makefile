@@ -1,6 +1,8 @@
 # -*- makefile -*-
 .PHONY: main clean test pip supy
 
+FC = gfortran-10 $(FFLAGS)
+
 # OS-specific configurations
 OSFLAG 				:=
 ifeq ($(OS),Windows_NT)
@@ -8,6 +10,7 @@ ifeq ($(OS),Windows_NT)
 	# pyver := 3.6
 	# PYTHON:= py -${pyver}
 	PYTHON:=python
+	FC = gfortran $(FFLAGS)
 	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
 		OSFLAG += -D AMD64
 	endif
