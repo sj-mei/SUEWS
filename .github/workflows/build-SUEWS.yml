@@ -81,7 +81,7 @@ jobs:
 
     - name: build and test
       run: |
-        brew install gcc
+        brew reinstall gcc
         which gfortran
         gfortran --version
         make release
