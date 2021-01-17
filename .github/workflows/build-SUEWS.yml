@@ -20,6 +20,9 @@ jobs:
 
   linux:
 
+    needs:
+    - mac
+
     runs-on: ubuntu-latest
 
     steps:
@@ -45,17 +48,6 @@ jobs:
       run: |
         gfortran --version
         make release
-
-    - name: set py3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
-
-    - name: build supy-driver
-      run: |
-        make driver
-        ls -lrt supy-driver/dist/
 
   manylinux:
 
