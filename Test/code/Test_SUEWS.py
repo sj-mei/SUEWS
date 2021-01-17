@@ -403,7 +403,7 @@ def test_samerun(
     from pathlib import Path
 
     path_dir_sys = Path.cwd()
-    path_dir_baserun=Path(path_dir_baserun)
+    path_dir_baserun = Path(path_dir_baserun)
     # load RunControl
     path_runcontrol = path_dir_baserun / "RunControl.nml"
     dict_runcontrol = load_SUEWS_RunControl(path_runcontrol)["runcontrol"]
@@ -434,7 +434,7 @@ def test_samerun(
     if os.path.exists(name_exe):
         os.remove(name_exe)
     # copy SUEWS
-    path_exe = path_dir_exe/name_exe
+    path_exe = path_dir_exe / name_exe
     copyfile(path_exe, name_exe)
     os.chmod(name_exe, 755)
 
@@ -443,8 +443,8 @@ def test_samerun(
     os.system("./" + name_exe + " &>/dev/null")
 
     # compare results
-    path_res_sample = path_dir_baserun/path_dir_output.name
-    path_res_test = path_dir_test/path_dir_output.name
+    path_res_sample = path_dir_baserun / path_dir_output.name
+    path_res_test = path_dir_test / path_dir_output.name
     # print('thse folders will be compared:')
     # print(dir_res_sample)
     # print(dir_res_test)
@@ -472,13 +472,22 @@ def test_samerun(
         list_file_dif = sorted(comp_files_test[1])
         print(list_file_dif)
         for file in list_file_dif:
-            print(f"======={file}=======")
-            text_sample = (path_res_sample/file).read_text()
-            text_test = (path_res_test/file).read_text()
-            for line in difflib.unified_diff(
-                text_sample, text_test, fromfile="sample", tofile="test"
-            ):
-                print(line)
+            df_test = pd.read_csv(path_res_test/file, sep="\s+")
+            df_sample = pd.read_csv(path_res_sample/file, sep="\s+")
+            df_diff = (
+                pd.concat(
+                    {"test": df_test, "sample": df_sample}, names=["file", "line"]
+                )
+                .drop_duplicates(keep=False)
+                .reset_index()
+                .melt(id_vars=["file", "line"])
+                .drop_duplicates(keep=False, subset=["line", "variable", "value"])
+                .set_index(["file", "line", "variable"])
+                .unstack("file")
+                .droplevel(0, axis=1)
+            )
+            df_diff.to_csv(file+'.diff.csv')
+            print(f"======={file+'.diff.csv'} has been saved=======")
 
     # res_test = (set(comp_files_test[0]) == set(common_files))
     # print res_test
