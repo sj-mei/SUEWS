@@ -48,7 +48,6 @@ jobs:
   #       make release
 
   manylinux:
-
     # needs: test-suews
 
     runs-on: ubuntu-latest
@@ -91,7 +90,6 @@ jobs:
           path: supy-driver/wheelhouse/
 
   build_wheels:
-
     # needs: test-suews
 
     strategy:
@@ -107,7 +105,7 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: fix gfortran on mac
-        if: ${{ matrix.os}} == macos-latest
+        if: ${{ matrix.os }} == 'macos-latest'
         run: |
           brew reinstall gcc
           which gfortran
