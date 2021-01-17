@@ -17,44 +17,67 @@ on:
       - '.github/workflows/build-SUEWS.yml'
 
 jobs:
-  # linux:
 
-  #   runs-on: ubuntu-latest
+  linux:
 
-  #   steps:
+    runs-on: ubuntu-latest
 
-  #   - uses: actions/checkout@v1
-  #     with:
-  #       submodules: true
-  #       token: ${{ secrets.PAT }}
+    steps:
 
-  #   # - name: show version
-  #   #   run: |
-  #   #     bin_gfortran=$(which gfortran-10)
-  #   #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
-  #   #     gfortran --version
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
 
-  #   - name: Setup Python for use with actions
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
+    # - name: show version
+    #   run: |
+    #     bin_gfortran=$(which gfortran-10)
+    #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
+    #     gfortran --version
 
-  #   - name: build and test
-  #     run: |
-  #       gfortran --version
-  #       make release
+    - name: Setup Python for use with actions
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
 
-  #   - name: set py3.7
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
+    - name: build and test
+      run: |
+        gfortran --version
+        make release
 
-  #   - name: build supy-driver
-  #     run: |
-  #       make driver
-  #       ls -lrt supy-driver/dist/
+    - name: set py3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+
+    - name: build supy-driver
+      run: |
+        make driver
+        ls -lrt supy-driver/dist/
+
+  manylinux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: manylinux build
+      run: |
+        docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;gfortran --version; make clean;make suews"
+        docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python -m pip install numpy==1.15.4; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt *; ls -lrt dist/*; ls -lrt wheelhouse/*"
+        docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python -m pip install numpy==1.15.4; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt *; ls -lrt dist/*; ls -lrt wheelhouse/*"
+        docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp38-cp38/bin/python -m pip install -r requirements.txt; /opt/python/cp38-cp38/bin/python -m pip install numpy==1.15.4; /opt/python/cp38-cp38/bin/python setup.py bdist_wheel; ls -lrt *; ls -lrt dist/*; ls -lrt wheelhouse/*"
+        docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp39-cp39/bin/python -m pip install -r requirements.txt; /opt/python/cp39-cp39/bin/python -m pip install numpy==1.15.4; /opt/python/cp39-cp39/bin/python setup.py bdist_wheel; ls -lrt *; ls -lrt dist/*; ls -lrt wheelhouse/*"
+
+    - name: Store the binary wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-package-distributions
+        path: supy-driver/wheelhouse/
+
+
 
 
   mac:
@@ -197,7 +220,7 @@ jobs:
     needs:
     - mac
     - windows  # transitive, for accessing settings
-    # - linux
+    - manylinux
     # if: >-
     #   fromJSON(needs.pre-setup.outputs.is_untagged_devel) ||
     #   fromJSON(needs.pre-setup.outputs.is_tagged)
@@ -209,12 +232,12 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: python-package-distributions
-        path: supy-driver/dist/
+        path: dist/
 
     - name: Publish distribution 📦 to Test PyPI
       uses: pypa/gh-action-pypi-publish@master
       with:
-        packages_dir: supy-driver/dist/
+        packages_dir: dist/
         verbose: true
         skip_existing: true
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
@@ -224,7 +247,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master
       with:
-        packages_dir: supy-driver/dist/
+        packages_dir: dist/
         verbose: true
         skip_existing: true
         password: ${{ secrets.PYPI_API_TOKEN }}
