@@ -87,7 +87,7 @@ jobs:
           name: python-package-distributions
           path: supy-driver/wheelhouse/
 
-  build wheels:
+  build_wheels:
 
     strategy:
       matrix:
@@ -216,7 +216,7 @@ jobs:
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
-      - build wheels
+      - build_wheels
       # - windows  # transitive, for accessing settings
       - manylinux
     # if: >-
