@@ -94,15 +94,12 @@ jobs:
     - name: Setup Python for use with actions
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        python-version: '3.6' # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
 
     - name: build and pack as release
       run: |
         make release
-
-    - name: build supy-driver
-      run: |
         make driver
 
     - name: build supy-driver
@@ -110,3 +107,25 @@ jobs:
       with:
         python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
+      run: |
+        make driver
+        ls -lrt supy-driver/dist/
+
+    - name: build supy-driver
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+      run: |
+        make driver
+        ls -lrt supy-driver/dist/
+
+    - name: build supy-driver
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
+      run: |
+        make driver
+        ls -lrt supy-driver/dist/
+
