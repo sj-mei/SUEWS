@@ -65,14 +65,12 @@ jobs:
       matrix:
         manylinux-python-target:
         # NOTE: Must be from this list:
-        # NOTE: $ podman run -it --rm \
+        # NOTE: $ docker run -it --rm \
         # NOTE:   quay.io/pypa/manylinux1_x86_64 \
         # NOTE:   ls -1 /opt/python
         - cp39-cp39
         - cp38-cp38
         - cp37-cp37m
-        - cp36-cp36m
-        - cp35-cp35m
 
     steps:
 
