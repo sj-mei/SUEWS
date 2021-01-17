@@ -609,6 +609,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       !roof = Bldgs
       froof = sfr(BldgSurf)
       !ground = all except Bldgs
+      ! TODO: surface heterogeneity in ESTM: all surfaces on ground are lumped into one;
+      ! when coupled with SUEWS framework #34, we may need to split them into individual ones in SUEWS
+
       fground = sfr(PavSurf) + sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BsoilSurf) + sfr(WaterSurf)
       !veg = EveTr, DecTr, Grass
       fveg = sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf)

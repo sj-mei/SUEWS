@@ -1554,7 +1554,7 @@ CONTAINS
       END IF
 
       IF (Nroof < 5) THEN
-         Troofout = (/Troof, (dum(ii), ii=1, (5 - Nroof))/); 
+         Troofout = (/Troof, (dum(ii), ii=1, (5 - Nroof))/)
       ELSE
          Troofout = Troof
       END IF
