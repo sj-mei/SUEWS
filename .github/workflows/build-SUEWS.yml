@@ -16,12 +16,9 @@ on:
       - ".github/workflows/build-SUEWS.yml"
 
 jobs:
-  # linux:
+  # test-suews:
 
-  #   needs:
-  #   - test
-
-  #   runs-on: ubuntu-latest
+  #   runs-on: macos-latest
 
   #   steps:
 
@@ -30,22 +27,29 @@ jobs:
   #       submodules: true
   #       token: ${{ secrets.PAT }}
 
-  #   # - name: show version
-  #   #   run: |
-  #   #     bin_gfortran=$(which gfortran-10)
-  #   #     ln -sf $bin_gfortran "$(dirname "$bin_gfortran")"/gfortran
-  #   #     gfortran --version
-
   #   - name: Setup Python for use with actions
   #     uses: actions/setup-python@v2
   #     with:
   #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
   #       architecture: 'x64' # (x64 or x86)
 
+  #   - name: fix gfortran
+  #     run: |
+  #       brew reinstall gcc
+  #       which gfortran
+  #       gfortran --version
+
   #   - name: build and test
   #     run: |
-  #       gfortran --version
   #       make release
+  #       make test
+
+  # - name: Upload diff results from test
+  #   uses: actions/upload-artifact@v2
+  #   with:
+  #     name: diff csv
+  #     path: Test/BaseRun/**/*diff.csv
+
 
   manylinux:
     # needs: test-suews
@@ -72,11 +76,11 @@ jobs:
 
       - name: build for ${{ matrix.manylinux-python-target }}
         run: |
+          docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver; make suews"
           docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c \
           "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
           which python;\
-          cd /io/supy-driver; pwd;\
-          make test"
+          cd /io/supy-driver; make test"
 
       - name: Store ${{ matrix.manylinux-python-target }} binary wheel
         uses: actions/upload-artifact@v2
@@ -124,39 +128,7 @@ jobs:
           name: python-package-distributions
           path: supy-driver/dist/
 
-  # test-suews:
 
-  #   runs-on: macos-latest
-
-  #   steps:
-
-  #   - uses: actions/checkout@v1
-  #     with:
-  #       submodules: true
-  #       token: ${{ secrets.PAT }}
-
-  #   - name: Setup Python for use with actions
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
-
-  #   - name: fix gfortran
-  #     run: |
-  #       brew reinstall gcc
-  #       which gfortran
-  #       gfortran --version
-
-  #   - name: build and test
-  #     run: |
-  #       make release
-  #       make test
-
-  # - name: Upload diff results from test
-  #   uses: actions/upload-artifact@v2
-  #   with:
-  #     name: diff csv
-  #     path: Test/BaseRun/**/*diff.csv
 
   # windows:
 
