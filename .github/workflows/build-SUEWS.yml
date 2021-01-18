@@ -73,11 +73,10 @@ jobs:
       - name: build for ${{ matrix.manylinux-python-target }}
         run: |
           docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c \
-          "ln -sf \
-          /opt/python/${{ matrix.manylinux-python-target }}/bin/python \
-          /usr/local/bin/python \
-          cd /io/; \
-          make driver"
+          "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python \
+          which python;\
+          pwd;\
+          cd /io; make driver"
 
       - name: Store ${{ matrix.manylinux-python-target }} binary wheel
         uses: actions/upload-artifact@v2
