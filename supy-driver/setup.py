@@ -42,7 +42,7 @@ target_f95 = [
         "suews_phys_rslprof.f95",
         "suews_phys_biogenco2.f95",
         "suews_phys_ohm.f95",
-        "suews_phys_solweig.f95",
+        "suews_phys_beers.f95",
         "suews_phys_waterdist.f95",
         "suews_util_meteo.f95",
         "suews_ctrl_driver.f95",
@@ -140,7 +140,9 @@ ext_modules = [
             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
         ],
         extra_objects=other_obj,
-        extra_link_args=[("" if sysname == "Linux" else "-static")],
+        # "-v" under Linux is necessary because it can avoid the blank variable issue
+        # ref: https://github.com/metomi/fcm/issues/220
+        extra_link_args=["-v" if sysname == "Linux" else "-static"],
     )
 ]
 
