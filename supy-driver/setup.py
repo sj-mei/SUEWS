@@ -42,7 +42,7 @@ target_f95 = [
         "suews_phys_rslprof.f95",
         "suews_phys_biogenco2.f95",
         "suews_phys_ohm.f95",
-        "suews_phys_beers.f95",
+        "suews_phys_solweig.f95",
         "suews_phys_waterdist.f95",
         "suews_util_meteo.f95",
         "suews_ctrl_driver.f95",
