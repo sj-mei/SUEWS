@@ -102,7 +102,9 @@ jobs:
       - name: fix gfortran on mac
         if: startsWith(matrix.os, 'macOS')
         run: |
-          brew reinstall gcc
+          echo $PATH
+          which gfortran-10
+          ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
           which gfortran
           gfortran --version
 
