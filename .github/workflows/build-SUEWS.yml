@@ -8,51 +8,56 @@ on:
     #   - test-dev
     #     - 'releases/*' # Push events to branches matching refs/heads/releases/*
     #     - '!refs/pull/*'
-    #   tags:        # Array of patterns that match refs/tags.
-    #     - v1         # Push events to v1 tag
+    tags:        # Array of patterns that match refs/tags.
+      - supy_v*    # Push events to supy-driver
+      - v*         # Push events to SUEWS
     paths: # Push events containing matching files
       - "SUEWS-SourceCode/*"
       - "supy-driver/*"
       - ".github/workflows/build-SUEWS.yml"
 
 jobs:
-  # test-suews:
+  test-suews:
 
-  #   runs-on: macos-latest
+    runs-on: macos-latest
 
-  #   steps:
+    steps:
 
-  #   - uses: actions/checkout@v1
-  #     with:
-  #       submodules: true
-  #       token: ${{ secrets.PAT }}
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+        token: ${{ secrets.PAT }}
 
-  #   - name: Setup Python for use with actions
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
+    - name: Setup Python for use with actions
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        architecture: 'x64' # (x64 or x86)
 
-  #   - name: fix gfortran
-  #     run: |
-  #       brew reinstall gcc
-  #       which gfortran
-  #       gfortran --version
+    - name: fix gfortran on mac
+      if: startsWith(matrix.os, 'macOS')
+      run: |
+        echo $PATH
+        which gfortran-10
+        ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
+        which gfortran
+        gfortran --version
 
-  #   - name: build and test
-  #     run: |
-  #       make release
-  #       make test
+    - name: build and test
+      run: |
+        make release
+        make test
 
-  # - name: Upload diff results from test
-  #   uses: actions/upload-artifact@v2
-  #   with:
-  #     name: diff csv
-  #     path: Test/BaseRun/**/*diff.csv
+    - name: Upload diff results from test
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: diff csv
+        path: Test/BaseRun/**/*diff.csv
 
 
-  manylinux:
-    # needs: test-suews
+  wheels-manylinux:
+    needs: test-suews
 
     runs-on: ubuntu-latest
 
@@ -88,8 +93,8 @@ jobs:
           name: python-package-distributions
           path: supy-driver/wheelhouse/
 
-  build_wheels:
-    # needs: test-suews
+  wheels-mac_win:
+    needs: test-suews
 
     strategy:
       matrix:
@@ -129,73 +134,11 @@ jobs:
           path: supy-driver/dist/
 
 
-
-  # windows:
-
-  #   runs-on: windows-latest
-
-  #   steps:
-
-  #   - uses: actions/checkout@v1
-  #     with:
-  #       submodules: true
-  #       token: ${{ secrets.PAT }}
-
-  #   - name: Setup Python for use with actions
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
-
-  #   - name: build and pack as release
-  #     run: |
-  #       make release
-
-  #   - name: set py3.7
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
-
-  #   - name: build supy-driver
-  #     run: |
-  #       make driver
-
-  #   - name: set py3.8
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.8' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
-
-  #   - name: build supy-driver
-  #     run: |
-  #       make driver
-
-  #   - name: build supy-driver
-  #     run: |
-  #       make driver
-
-  #   - name: set py3.9
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #       architecture: 'x64' # (x64 or x86)
-
-  #   - name: build supy-driver
-  #     run: |
-  #       make driver
-
-  #   - name: Store the binary wheel
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: python-package-distributions
-  #       path: supy-driver/dist/
-
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
-      - build_wheels
-      - manylinux
+      - wheels-manylinux
+      - wheels-mac_win
     runs-on: ubuntu-latest
 
     steps:
