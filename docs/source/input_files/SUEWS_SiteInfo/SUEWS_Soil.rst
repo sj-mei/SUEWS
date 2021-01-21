@@ -18,8 +18,9 @@ forcing file (`SMDMethod` = 1 or 2 in
 `RunControl.nml`) and providing some metadata information here (OBS columns),
 or modelled by SUEWS (`SMDMethod` = 0 in `RunControl.nml`).
 
-.. caution::
-  The option to use observational data is not operational in the current release!
+
+.. .. caution::
+..   The option to use observational data is not operational in the current release!
 
 
 .. DON'T manually modify the csv file below
