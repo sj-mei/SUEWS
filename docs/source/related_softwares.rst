@@ -15,7 +15,7 @@ The scientific rigour in SuPy results is thus gurranteed by SUEWS (see :ref:`SUE
 Meanwhile, the data analysis ability of SuPy is greatly enhanced by `the Python-based SciPy Stack <https://scipy.org>`_, notably `numpy`_ and `pandas`_.
 
 
-.. _SUEWS: https://suews-docs.readthedocs.io/en/latest/
+.. _SUEWS: https://suews.readthedocs.io/en/latest/
 .. _numpy: https://www.numpy.org
 .. _pandas: http://pandas.pydata.org/
 
