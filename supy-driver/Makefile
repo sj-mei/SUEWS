@@ -1,10 +1,10 @@
 # -*- makefile -*-
 .PHONY: main clean test pip supy
 
-FC = gfortran-10 $(FFLAGS)
+FC = gfortran $(FFLAGS)
 
 # OS-specific configurations
-OSFLAG 				:=
+OSFLAG 	:= ""
 ifeq ($(OS),Windows_NT)
 	OSFLAG += -D WIN32
 	# pyver := 3.6
@@ -21,7 +21,7 @@ else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
 		OSFLAG += -D LINUX
-		pyver := 37
+		# pyver := 37
 		# PYTHON:=/opt/python/cp${pyver}-cp${pyver}m/bin/python
 		PYTHON:=python
 	endif
@@ -55,7 +55,7 @@ SUEWS_dir = ../SUEWS-SourceCode
 # $(info $$UNAME_S is ${UNAME_S})
 # make suews_driver
 main:
-	$(MAKE) show
+	# $(MAKE) show
 	$(PYTHON) -m pip install -r requirements.txt
 	$(PYTHON) -m pip install auditwheel
 	$(PYTHON) setup.py bdist_wheel
@@ -63,8 +63,8 @@ main:
 
 # make fortran exe
 suews:
+	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
 	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran main; # make SUEWS with the `main` recipe
-	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 show:
 	@echo $(info $$OSFLAG is [${OSFLAG}])

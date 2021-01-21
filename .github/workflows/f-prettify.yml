@@ -17,7 +17,7 @@ on:
       - '.github/workflows/f-prettify.yml'
 
 jobs:
-  build:
+  fprettify:
 
     runs-on: ubuntu-latest
 
@@ -51,7 +51,7 @@ jobs:
     - name: Setup Python for use with actions
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        python-version: '3.7.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
 
     - name: install fprettify

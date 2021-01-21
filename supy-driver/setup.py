@@ -140,7 +140,9 @@ ext_modules = [
             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
         ],
         extra_objects=other_obj,
-        extra_link_args=[("" if sysname == "Linux" else "-static")],
+        # "-v" under Linux is necessary because it can avoid the blank variable issue
+        # ref: https://github.com/metomi/fcm/issues/220
+        extra_link_args=["-v" if sysname == "Linux" else "-static"],
     )
 ]
 
