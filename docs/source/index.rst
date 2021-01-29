@@ -72,10 +72,10 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
   #. Provide `suggestions and feedback <Development_Suggestions_Support>`.
 
 
-.. _our GitHub page: https://UMEP-dev.github.io/SUEWS
+.. _our GitHub page: https://github.com/UMEP-dev/SUEWS
 .. _our Zenodo repository: `Zenodo page`_
 .. _this form: `dowload form`_
-.. _dowload form: http://micromet.reading.ac.uk/software/
+.. _dowload form: https://github.com/UMEP-dev/SUEWS/releases
 
 .. |doi_software| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3533450.svg
     :target: http://doi.org/10.5281/zenodo.3533450

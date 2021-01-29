@@ -270,10 +270,14 @@ rst_prolog = """
 
 .. only:: html
 
-    .. note::
+    .. tip::
 
-      1. Please report issues with the manual on the `GitHub page`_.
-      2. Please cite SUEWS with proper information from our `Zenodo page`_.
+      1. Need help? Please let us know in the `UMEP Community`_.
+      1. Please report issues with the manual on the `GitHub Issues`_.
+      1. Please cite SUEWS with proper information from our `Zenodo page`_.
+
+.. _UMEP Community : https://github.com/UMEP-dev/UMEP/discussions/
+
 """
 # -- Options for HTML output -------------------------------------------------
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -452,7 +456,7 @@ def source_read_handler(app, docname, source):
     str_query_body = urllib.parse.urlencode({"body": str_body})
     str_url = f"https://github.com/UMEP-dev/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&{str_query_body}&title=[Docs]{docname}"
     str_GHPage = f"""
-.. _GitHub page: {str_url}
+.. _GitHub Issues: {str_url}
 """
     rendered = "\n".join([str_GHPage, src])
     source[0] = rendered.rstrip("\n")
