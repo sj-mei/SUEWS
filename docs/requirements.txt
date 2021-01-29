@@ -7,5 +7,6 @@ nbsphinx
 exhale
 sphinxcontrib_programoutput
 sphinxcontrib.bibtex
+sphinx_comments
 sphinx_rtd_theme
 recommonmark

@@ -164,6 +164,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
+    "sphinx_comments",
     "recommonmark",
     "nbsphinx",
     "sphinx.ext.mathjax",
@@ -173,6 +174,18 @@ extensions = [
 
 breathe_projects = {"SUEWS": "./doxygenoutput/xml"}
 breathe_default_project = "SUEWS"
+
+# sphinx comments
+# https://sphinx-comments.readthedocs.io/
+comments_config = {
+    "hypothesis": True,
+    "utterances": {
+        "repo": "UMEP-dev/SUEWS",
+        "issue-term": "title",
+        #   "optional": "config",
+    },
+}
+
 
 # run doxygen
 read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
