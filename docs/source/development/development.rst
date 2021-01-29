@@ -13,4 +13,5 @@ Please provide your feedbacks via `channels listed here <feedback>`.
    :hidden:
 
    coding_guideline
-   feedback
+
+   .. feedback

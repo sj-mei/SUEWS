@@ -9,7 +9,7 @@ Grimmond.
 Coding
 ******
 
-#. Core physics and calculatoin schemes of SUEWS are written in Fortran 90
+#. Core physics and calculation schemes of SUEWS are written in Fortran 90
 
 #. Code is hosted in GitHub as private repository
 

@@ -45,6 +45,12 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
     Note there are tutorials learning about running SUEWS available :ref:`the tutorial. <tutorials_suews>`
 
 
+- **How to get help in using SUEWS?**
+
+  - Please let us know in the `UMEP Community`_.
+    The developers and other users are willing to help you :)
+
+
 - **How has SUEWS been used?**
 
 .. epigraph::
@@ -53,6 +59,7 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
 
 .. _cite_suews:
 
+
 - **How to cite SUEWS?**
 
   .. tip::
@@ -60,7 +67,6 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
       Visit the repositories below for different citation styles.
 
   Please go to `our Zenodo repository`_ for a proper citation of SUEWS.
-
 
 
 
@@ -95,10 +101,12 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
    recent-publications
    related_softwares
    sub-tutorials/tutorials
-   development/development
    benchmark/benchmark_report
    api
    version-history/version-history
    acknowledgement
    notation
    references
+
+
+..  development/development
