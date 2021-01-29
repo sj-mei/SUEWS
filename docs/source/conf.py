@@ -273,10 +273,8 @@ rst_prolog = """
     .. tip::
 
       1. Need help? Please let us know in the `UMEP Community`_.
-
-      1. Please report issues with the manual on the `GitHub Issues`_.
-
-      1. Please cite SUEWS with proper information from our `Zenodo page`_.
+      2. Please report issues with the manual on the `GitHub Issues`_.
+      3. Please cite SUEWS with proper information from our `Zenodo page`_.
 
 .. _UMEP Community : https://github.com/UMEP-dev/UMEP/discussions/225
 
