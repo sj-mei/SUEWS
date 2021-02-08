@@ -22,7 +22,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
    !each INTERVAL (defined in RunControl.nml)
    ! - Met data now provided at a resolution of tstep, HCW Jan 2015
 
-   REAL(KIND(1d0))::SmCap, &
+   REAL(KIND(1d0))::SmCap, & !Volumetric/gravimetric soil moisture capacity
                      SoilDepthMeas, &        !Measured soil depth
                      SoilRocks, &            !Rocks on ground
                      SoilDensity            !Density of soil
