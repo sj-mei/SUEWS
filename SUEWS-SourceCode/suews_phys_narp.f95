@@ -272,8 +272,8 @@ CONTAINS
       lup_ind_snow = 0
       Tsurf_ind_snow = 0
       Tsurf_ind = 0
-      albedo_snowfree = 0
-      albedo_snow = 0
+      albedo_snowfree = 0.2 ! arbitrary non-zero value for initialisatoin
+      albedo_snow = SnowAlb
 
       !Total snowfree surface fraction
       SF_all = 0
