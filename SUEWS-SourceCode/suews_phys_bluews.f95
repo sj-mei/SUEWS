@@ -361,7 +361,7 @@ CONTAINS
    SUBROUTINE CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
 
       USE mod_z
-      USE mod_k
+      USE AtmMoistStab_module, only:k
       USE gas
       USE time
       USE data_in
