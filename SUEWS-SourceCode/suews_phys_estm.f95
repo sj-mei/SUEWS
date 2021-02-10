@@ -5,7 +5,7 @@ MODULE ESTM_data !S.O. and FO
               TsurfChoice, &
               ibldCHmod
 
-   REAL(KIND(1d0)):: LBC_soil, &        !Lowest boundary condition in soil
+   REAL(KIND(1D0)):: LBC_soil, &        !Lowest boundary condition in soil
                      THEAT_ON, &
                      THEAT_OFF, &
                      THEAT_fix, &
@@ -30,7 +30,7 @@ MODULE ESTM_data !S.O. and FO
              Nroof, &           !Number of layers in roof
              Nground           !Number of layers in ground
 
-   REAL(KIND(1d0)), DIMENSION(5):: zibld, &    !Thickness of layers in internal building
+   REAL(KIND(1D0)), DIMENSION(5):: zibld, &    !Thickness of layers in internal building
                                    zwall, &    !Thickness of layers in external wall
                                    zroof, &    !Thickness of layers in roof
                                    zground, &  !Thickness of layers in ground
@@ -45,27 +45,27 @@ MODULE ESTM_data !S.O. and FO
 
    ! Paved and Bldgs surfaces can include 3 and 5 classes respectively
    !For the 3x Paved surfaces
-   REAL(KIND(1d0)), DIMENSION(5, 3):: zSurf_Paved
-   REAL(KIND(1d0)), DIMENSION(5, 3):: kSurf_Paved
-   REAL(KIND(1d0)), DIMENSION(5, 3):: rSurf_Paved
+   REAL(KIND(1D0)), DIMENSION(5, 3):: zSurf_Paved
+   REAL(KIND(1D0)), DIMENSION(5, 3):: kSurf_Paved
+   REAL(KIND(1D0)), DIMENSION(5, 3):: rSurf_Paved
    !For the 5x Bldgs surfaces
-   REAL(KIND(1d0)), DIMENSION(5, 5):: zSurf_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: kSurf_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: rSurf_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: zwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: kwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: rwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: zibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: kibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: ribld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: nroom_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: alb_ibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: em_ibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: CH_iwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: CH_iroof_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: CH_ibld_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: zSurf_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: kSurf_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: rSurf_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: zwall_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: kwall_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: rwall_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: zibld_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: kibld_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5, 5):: ribld_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5):: nroom_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5):: alb_ibld_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5):: em_ibld_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5):: CH_iwall_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5):: CH_iroof_Bldgs
+   REAL(KIND(1D0)), DIMENSION(5):: CH_ibld_Bldgs
 
-   REAL(KIND(1d0))::   nroom, &      !Number of rooms in internal building  (changed from integer to real HCW 16 Jun 2016)
+   REAL(KIND(1D0))::   nroom, &      !Number of rooms in internal building  (changed from integer to real HCW 16 Jun 2016)
                      alb_ibld, & !albedo value of internal elements
                      em_ibld, &  !emissivity of internal elements
                      CH_iroof, & !bulk transfer coefficient of internal roof
@@ -75,14 +75,14 @@ MODULE ESTM_data !S.O. and FO
                      AreaWall   ! Area of wall within grid [m2]
 
    !=======ESTM Ts input=================================
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:)::  Tibld, Twall, Troof, Tground
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)::  Tw_4
+   REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:)::  Tibld, Twall, Troof, Tground
+   REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)::  Tw_4
 
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::  Tibld_grids, Twall_grids, Troof_grids, Tground_grids
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :, :)::  Tw_4_grids
+   REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  ::  Tibld_grids, Twall_grids, Troof_grids, Tground_grids
+   REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :, :)::  Tw_4_grids
 
    !=======variables and parameters created in ESTM=============================
-   REAL(KIND(1d0))                           ::  alb_avg, &
+   REAL(KIND(1D0))                           ::  alb_avg, &
                                                 alb_ground, &   !albedo value of ground
                                                 alb_roof, &     !albedo value of roof
                                                 alb_veg, &      !albedo value of veg
@@ -141,21 +141,21 @@ MODULE ESTM_data !S.O. and FO
                                                 zvf_WALL     !wall view factor from ground
 
    ! Arrays to store variables for each grid
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: Tair2_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: lup_ground_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: lup_wall_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: lup_roof_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: Tievolve_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_wall_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_roof_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_ground_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_ibld_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: TN_roof_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: TN_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: Tair2_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: lup_ground_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: lup_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: lup_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: Tievolve_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: T0_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: T0_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: T0_ground_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: T0_ibld_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: TN_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: TN_wall_grids
 
    ! Surface fractions for ESTM classes
-   REAL(KIND(1d0)), DIMENSION(3):: ESTMsfr_Paved
-   REAL(KIND(1d0)), DIMENSION(5):: ESTMsfr_Bldgs
+   REAL(KIND(1D0)), DIMENSION(3):: ESTMsfr_Paved
+   REAL(KIND(1D0)), DIMENSION(5):: ESTMsfr_Bldgs
 
    LOGICAL             ::bctype(2), &
                           CFLfail = .FALSE., &
@@ -164,14 +164,14 @@ MODULE ESTM_data !S.O. and FO
                           HVAC = .FALSE., &
                           SPINDONE = .FALSE.
 
-   REAL(KIND(1d0)), PARAMETER::alb_wall = 0.23, em_wall = 0.9  ! used only when radforce = T but radforce is always set to F.
+   REAL(KIND(1D0)), PARAMETER::alb_wall = 0.23, em_wall = 0.9  ! used only when radforce = T but radforce is always set to F.
    INTEGER, PARAMETER::        maxiter = 100
-   REAL(KIND(1d0)), PARAMETER:: conv = 0.0001
+   REAL(KIND(1D0)), PARAMETER:: conv = 0.0001
 
    !=============variables maybe will be removed=======================================
    INTEGER             ::nalb, &
                           nemis
-   REAL(KIND(1d0))     ::sumalb, &
+   REAL(KIND(1D0))     ::sumalb, &
                           sumemis
 
 END MODULE ESTM_data
@@ -183,10 +183,10 @@ MODULE mod_interp
 
 CONTAINS
    ELEMENTAL FUNCTION interp1d(x1, x2, y1, y2, xi) RESULT(yi)
-      REAL(KIND(1d0)), INTENT(in) ::x1, x2, xi
-      REAL(KIND(1d0)), INTENT(in) ::y1, y2
+      REAL(KIND(1D0)), INTENT(in) ::x1, x2, xi
+      REAL(KIND(1D0)), INTENT(in) ::y1, y2
       REAL(KIND(1D0))::b0, b1
-      REAL(KIND(1d0))         ::yi
+      REAL(KIND(1D0))         ::yi
       !integer         ::ny                 !!!!!FO!!!!!
       b1 = (y2 - y1)/(x2 - x1)
       b0 = y1 - b1*x1
@@ -213,9 +213,9 @@ CONTAINS
       !conv is the level required for convergence
       !maxiter is the maximum allowed iterations
       !----------------------------------------------------
-      REAL(KIND(1d0)) ::x0, x, conv
-      REAL(KIND(1d0)) ::Pcoeff(:)
-      REAL(KIND(1d0)) ::e, xprev
+      REAL(KIND(1D0)) ::x0, x, conv
+      REAL(KIND(1D0)) ::Pcoeff(:)
+      REAL(KIND(1D0)) ::e, xprev
       REAL(KIND(1D0))::f, fp
       INTEGER ::maxiter
       INTEGER ::niter
@@ -261,8 +261,8 @@ CONTAINS
    FUNCTION min_zenith(lat, doy) RESULT(zmin)
       !returns max zenith
       !returns zenith in radians for lat, lng in degrees
-      REAL(KIND(1d0)) ::lat, dectime, zmin
-      REAL(KIND(1d0)) ::latr, decl
+      REAL(KIND(1D0)) ::lat, dectime, zmin
+      REAL(KIND(1D0)) ::latr, decl
       INTEGER :: doy
       dectime = float(doy)
       latr = lat*dtr
@@ -274,12 +274,12 @@ CONTAINS
    !=======================================================
    FUNCTION Local_apparent_time(lng, dectime) RESULT(la_time)
       !Oke, 1989, equation of time elsewhere
-      REAL(KIND(1d0)) ::lng, dectime, la_time
-      REAL(KIND(1d0)) ::gamma, eqtime, lmst
+      REAL(KIND(1D0)) ::lng, dectime, la_time
+      REAL(KIND(1D0)) ::gamma, eqtime, lmst
 
       lmst = dectime - 4.*lng/60./1440.
       gamma = 2.*pi/365.*(lmst - 1.)
-      eqtime = 229.18*(7.5e-5 + 1.868e-3*COS(gamma) - 0.032077*SIN(gamma)&
+      eqtime = 229.18*(7.5E-5 + 1.868E-3*COS(gamma) - 0.032077*SIN(gamma)&
            &    - 0.014615*COS(2.*gamma) - 0.040849*SIN(2.*gamma))
       la_time = lmst + eqtime/1440.
    END FUNCTION Local_apparent_time
@@ -289,8 +289,8 @@ CONTAINS
 
       REAL, INTENT(in)  ::lat, lng, timezone, dectime
       INTEGER                 ::doy, hour, mn
-      REAL(KIND(1d0)), INTENT(out)  ::decl, zenith, azimuth
-      REAL(KIND(1d0))  ::ha, latr, eqtime, tst, &
+      REAL(KIND(1D0)), INTENT(out)  ::decl, zenith, azimuth
+      REAL(KIND(1D0))  ::ha, latr, eqtime, tst, &
                           time_offset, gamma           !!!!!FO!!!!! lngr, phi, theta
 
       latr = lat*pi/180.
@@ -299,11 +299,11 @@ CONTAINS
       mn = FLOOR((dectime - doy - hour/24.)*60.)   !!!Check this
 
       gamma = 2.*pi/365.25463*(doy - 1.+(hour - 12.)/24.)
-      eqtime = 229.18*(7.5e-5 + 1.868e-3*COS(gamma) - 0.032077*SIN(gamma)&
+      eqtime = 229.18*(7.5E-5 + 1.868E-3*COS(gamma) - 0.032077*SIN(gamma)&
            &    - 0.014615*COS(2.*gamma) - 0.040849*SIN(2.*gamma))
-      decl = 6.918e-3 - 0.399912*COS(gamma) + 0.070257*SIN(gamma)&
-           &    - 0.006758*COS(2.*gamma) + 9.07e-4*SIN(2.*gamma) - 2.697e-3*COS(3.*gamma)&
-           &    + 1.48e-3*SIN(3.*gamma)
+      decl = 6.918E-3 - 0.399912*COS(gamma) + 0.070257*SIN(gamma)&
+           &    - 0.006758*COS(2.*gamma) + 9.07E-4*SIN(2.*gamma) - 2.697E-3*COS(3.*gamma)&
+           &    + 1.48E-3*SIN(3.*gamma)
       time_offset = eqtime - 4.*lng + 60.*timezone
       tst = hour*60.+mn + time_offset
       ha = (tst/4.) - 180.
@@ -320,19 +320,19 @@ CONTAINS
       !  for sunrise and sunset ha = ha(zenith=90)
       !  timezone is offset to GMT e.g. -5 for EST
 
-      REAL(KIND(1d0)), INTENT(in)  ::lat, lng, timezone, dectime
+      REAL(KIND(1D0)), INTENT(in)  ::lat, lng, timezone, dectime
       INTEGER                 ::doy
-      REAL(KIND(1d0)), INTENT(out)  ::sunrise, sunset, snoon
-      REAL(KIND(1d0))  :: ha, latr, eqtime, gamma, zenith, decl
+      REAL(KIND(1D0)), INTENT(out)  ::sunrise, sunset, snoon
+      REAL(KIND(1D0))  :: ha, latr, eqtime, gamma, zenith, decl
       latr = lat*dtr
       zenith = 90.833*dtr
       doy = FLOOR(dectime)
       gamma = 2.*pi/365.*(float(doy) - 0.5) !fractional year
-      eqtime = 229.18*(7.5e-5 + 1.868e-3*COS(gamma) - 0.032077*SIN(gamma)&
+      eqtime = 229.18*(7.5E-5 + 1.868E-3*COS(gamma) - 0.032077*SIN(gamma)&
            &    - 0.014615*COS(2.*gamma) - 0.040849*SIN(2.*gamma))
-      decl = 6.918e-3 - 0.399912*COS(gamma) + 0.070257*SIN(gamma)&
-           &    - 0.006758*COS(2.*gamma) + 9.07e-4*SIN(2.*gamma) - 2.697e-3*COS(3.*gamma)&
-           &    + 1.48e-3*SIN(3.*gamma)
+      decl = 6.918E-3 - 0.399912*COS(gamma) + 0.070257*SIN(gamma)&
+           &    - 0.006758*COS(2.*gamma) + 9.07E-4*SIN(2.*gamma) - 2.697E-3*COS(3.*gamma)&
+           &    + 1.48E-3*SIN(3.*gamma)
       ha = ACOS(COS(zenith)/(COS(latr)*COS(decl)) - TAN(latr)*TAN(decl))
       ha = ha*rtd
       sunrise = (720.-4.*(lng - ha) - eqtime)/60.-timezone
@@ -345,9 +345,9 @@ CONTAINS
       ! Calculates ground level solar irradiance clear sky
       ! assuming transmissivity = 1
       ! let it report zero if zenith >= 90
-      REAL(KIND(1d0))    ::zenith, Isurf
+      REAL(KIND(1D0))    ::zenith, Isurf
       INTEGER    ::doy
-      REAL(KIND(1d0))::Rmean, Rse, cosZ, Itoa
+      REAL(KIND(1D0))::Rmean, Rse, cosZ, Itoa
 
       Rmean = 149.6   !Stull 1998
       Rse = solar_ESdist(doy)
@@ -385,9 +385,9 @@ CONTAINS
       ! zenith in radians
 
       !        integer         ::doy           !!!!!FO!!!!!
-      REAL(KIND(1d0))    ::P, Td, zenith, G, trans
-      REAL(KIND(1d0))::m, TrTpg, u, Tw, Ta, cosZ
-      REAL(KIND(1d0))::Tdf
+      REAL(KIND(1D0))    ::P, Td, zenith, G, trans
+      REAL(KIND(1D0))::m, TrTpg, u, Tw, Ta, cosZ
+      REAL(KIND(1D0))::Tdf
 
       IF (zenith > 80.*dtr) THEN
          cosZ = COS(80.*dtr)
@@ -457,14 +457,14 @@ CONTAINS
    FUNCTION solar_ESdist(doy) RESULT(Rse)
       !from Stull, 1998
       INTEGER  ::doy
-      REAL(KIND(1d0))  ::Rse
-      REAL(KIND(1d0)) ::MA, nu, e, a
+      REAL(KIND(1D0))  ::Rse
+      REAL(KIND(1D0)) ::MA, nu, e, a
 
       e = 0.0167
       a = 146.457
 
       MA = 2.*pi*(doy - 3)/365.25463 !Mean anomaly
-      nu = MA + 0.0333988*SIN(MA) + .0003486*SIN(2.*MA) + 5e-6*SIN(3.*MA) !true anomaly
+      nu = MA + 0.0333988*SIN(MA) + .0003486*SIN(2.*MA) + 5E-6*SIN(3.*MA) !true anomaly
       Rse = a*(1 - e*e)/(1 + e*COS(nu))
 
    END FUNCTION solar_ESdist
@@ -478,12 +478,12 @@ MODULE heatflux
 CONTAINS
 
    SUBROUTINE heatcond1d(T, Qs, dx, dt, k, rhocp, bc, bctype)
-      REAL(KIND(1d0)), INTENT(inout)::T(:)
-      REAL(KIND(1d0)), INTENT(in)::dx(:), dt, k(:), rhocp(:), bc(2)
-      REAL(KIND(1d0)), INTENT(out)::Qs
+      REAL(KIND(1D0)), INTENT(inout)::T(:)
+      REAL(KIND(1D0)), INTENT(in)::dx(:), dt, k(:), rhocp(:), bc(2)
+      REAL(KIND(1D0)), INTENT(out)::Qs
       LOGICAL, INTENT(in)::bctype(2)
       INTEGER         ::i, n!,j       !!!!!FO!!!!!
-      REAL(KIND(1d0)), ALLOCATABLE::w(:), a(:), T1(:)
+      REAL(KIND(1D0)), ALLOCATABLE::w(:), a(:), T1(:)
       n = SIZE(T)
       ALLOCATE (w(0:n), a(n), T1(n))
       !w = interface tempea
@@ -536,8 +536,8 @@ CONTAINS
       INTEGER, INTENT(in)::lunit
       INTEGER::i, iyy !,RunNumber,NSHcounter
       INTEGER :: iostat_var
-      REAL(KIND(1d0)), DIMENSION(ncolsESTMdata):: ESTMArray
-      REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_estm   !For checks on temporal resolution of estm data
+      REAL(KIND(1D0)), DIMENSION(ncolsESTMdata):: ESTMArray
+      REAL(KIND(1D0)):: imin_prev, ih_prev, iday_prev, tstep_estm   !For checks on temporal resolution of estm data
 
       ! initialise
       imin_prev = 0
@@ -571,7 +571,7 @@ CONTAINS
             tstep_estm = ((ESTMArray(4) + 60*ESTMArray(3)) - (imin_prev + 60*ih_prev))*60   !tstep in seconds
             IF (tstep_estm /= tstep_real .AND. ESTMArray(2) == iday_prev) THEN
                CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of ESTM data (DOY).', &
-                              REAL(tstep, KIND(1d0)), tstep_estm, INT(ESTMArray(2)))
+                              REAL(tstep, KIND(1D0)), tstep_estm, INT(ESTMArray(2)))
             END IF
          END IF
       END DO
@@ -648,7 +648,7 @@ CONTAINS
       INTEGER :: i
       !REAL(KIND(1d0)) :: CFLval
       !REAL(KIND(1d0)) :: t5min
-      REAL(KIND(1d0))::W, WB
+      REAL(KIND(1D0))::W, WB
       !CHARACTER (len=20)::FileCodeX
       !CHARACTER (len=150):: FileFinalTemp
       !LOGICAL:: inittemps=.FALSE.
@@ -1131,7 +1131,7 @@ CONTAINS
       INTEGER, PARAMETER:: cTs_Twall_e = 11
       INTEGER, PARAMETER:: cTs_Twall_s = 12
       INTEGER, PARAMETER:: cTs_Twall_w = 13
-      REAL(KIND(1d0)), PARAMETER::NAN = -999
+      REAL(KIND(1D0)), PARAMETER::NAN = -999
 
       INTEGER, INTENT(in)::Gridiv
       INTEGER, INTENT(in)::tstep
@@ -1140,52 +1140,52 @@ CONTAINS
       ! INTEGER,INTENT(in)::it !Hour
       ! INTEGER,INTENT(in)::imin          !Minutes
 
-      REAL(KIND(1d0)), INTENT(in)::avkdn
-      REAL(KIND(1d0)), INTENT(in)::avu1
-      REAL(KIND(1d0)), INTENT(in)::temp_c
-      REAL(KIND(1d0)), INTENT(in)::zenith_deg
-      REAL(KIND(1d0)), INTENT(in)::avrh
-      REAL(KIND(1d0)), INTENT(in)::press_hpa
-      REAL(KIND(1d0)), INTENT(in)::ldown
-      REAL(KIND(1d0)), INTENT(in)::bldgh
+      REAL(KIND(1D0)), INTENT(in)::avkdn
+      REAL(KIND(1D0)), INTENT(in)::avu1
+      REAL(KIND(1D0)), INTENT(in)::temp_c
+      REAL(KIND(1D0)), INTENT(in)::zenith_deg
+      REAL(KIND(1D0)), INTENT(in)::avrh
+      REAL(KIND(1D0)), INTENT(in)::press_hpa
+      REAL(KIND(1D0)), INTENT(in)::ldown
+      REAL(KIND(1D0)), INTENT(in)::bldgh
       ! REAL(KIND(1d0)),INTENT(in):: dectime        !Decimal time
-      REAL(KIND(1d0)), DIMENSION(ncolsESTMdata), INTENT(in)::  Ts5mindata_ir     !surface temperature input data
-      REAL(KIND(1d0)), INTENT(in) ::   Tair_av ! mean air temperature of past 24hr
+      REAL(KIND(1D0)), DIMENSION(ncolsESTMdata), INTENT(in)::  Ts5mindata_ir     !surface temperature input data
+      REAL(KIND(1D0)), INTENT(in) ::   Tair_av ! mean air temperature of past 24hr
 
-      REAL(KIND(1d0)), DIMENSION(27), INTENT(out):: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(27), INTENT(out):: dataOutLineESTM
       !Output to SUEWS
-      REAL(KIND(1d0)), INTENT(out)::QS
+      REAL(KIND(1D0)), INTENT(out)::QS
       !Input from SUEWS, corrected as Gridiv by TS 09 Jun 2016
 
       !Use only in this subroutine
       INTEGER::i, ii
       INTEGER:: Tair2Set = 0
-      REAL(KIND(1d0))::AIREXHR, AIREXDT
-      REAL(KIND(1d0)), DIMENSION(2)::bc
-      REAL(KIND(1d0))::chair_ground, chair_wall
-      REAL(KIND(1d0))::EM_EQUIV
-      REAL(KIND(1d0))::kdz
-      REAL(KIND(1d0))::kup_estm, LUP_net, kdn_estm
-      REAL(KIND(1d0))::QHestm
-      REAL(KIND(1d0))::QFBld !Anthropogenic heat from HVAC
-      REAL(KIND(1d0))::shc_airbld
-      REAL(KIND(1d0))::sw_hor, sw_vert
-      REAL(KIND(1d0))::T0
-      REAL(KIND(1d0))::Tinternal, Tsurf_all, Troof_in, Troad, Twall_all, Tw_n, Tw_e, Tw_s, Tw_w
-      REAL(KIND(1d0))::Twallout(5), Troofout(5), Tibldout(5), Tgroundout(5)
-      REAL(KIND(1d0))::Tadd, Tveg
-      REAL(KIND(1d0))::Tairmix
-      REAL(KIND(1d0))::RN
-      REAL(KIND(1d0))::Rs_roof, Rl_roof, RN_ROOF
-      REAL(KIND(1d0))::Rs_wall, Rl_wall, RN_WALL
-      REAL(KIND(1d0))::Rs_ground, Rl_ground, RN_ground
-      REAL(KIND(1d0))::Rs_ibld, Rl_ibld
-      REAL(KIND(1d0))::Rs_iroof, Rl_iroof
-      REAL(KIND(1d0))::Rs_iwall, Rl_iwall
-      REAL(KIND(1d0))::zenith_rad
-      REAL(KIND(1d0))::dum(50)
-      REAL(KIND(1d0))::bldgHX ! local bldgHX=max(bldgH,0.001)
-      REAL(KIND(1d0)), PARAMETER::WSmin = 0.1  ! Check why there is this condition. S.O.
+      REAL(KIND(1D0))::AIREXHR, AIREXDT
+      REAL(KIND(1D0)), DIMENSION(2)::bc
+      REAL(KIND(1D0))::chair_ground, chair_wall
+      REAL(KIND(1D0))::EM_EQUIV
+      REAL(KIND(1D0))::kdz
+      REAL(KIND(1D0))::kup_estm, LUP_net, kdn_estm
+      REAL(KIND(1D0))::QHestm
+      REAL(KIND(1D0))::QFBld !Anthropogenic heat from HVAC
+      REAL(KIND(1D0))::shc_airbld
+      REAL(KIND(1D0))::sw_hor, sw_vert
+      REAL(KIND(1D0))::T0
+      REAL(KIND(1D0))::Tinternal, Tsurf_all, Troof_in, Troad, Twall_all, Tw_n, Tw_e, Tw_s, Tw_w
+      REAL(KIND(1D0))::Twallout(5), Troofout(5), Tibldout(5), Tgroundout(5)
+      REAL(KIND(1D0))::Tadd, Tveg
+      REAL(KIND(1D0))::Tairmix
+      REAL(KIND(1D0))::RN
+      REAL(KIND(1D0))::Rs_roof, Rl_roof, RN_ROOF
+      REAL(KIND(1D0))::Rs_wall, Rl_wall, RN_WALL
+      REAL(KIND(1D0))::Rs_ground, Rl_ground, RN_ground
+      REAL(KIND(1D0))::Rs_ibld, Rl_ibld
+      REAL(KIND(1D0))::Rs_iroof, Rl_iroof
+      REAL(KIND(1D0))::Rs_iwall, Rl_iwall
+      REAL(KIND(1D0))::zenith_rad
+      REAL(KIND(1D0))::dum(50)
+      REAL(KIND(1D0))::bldgHX ! local bldgHX=max(bldgH,0.001)
+      REAL(KIND(1D0)), PARAMETER::WSmin = 0.1  ! Check why there is this condition. S.O.
       LOGICAL::radforce, groundradforce
 
       radforce = .FALSE.
@@ -1359,7 +1359,7 @@ CONTAINS
 
       IF (.NOT. diagnoseTi) Tievolve = Tinternal + C2K
       IF (HVAC) THEN !Run up/down to set point +/- 1 degree with adjustment of 90% per hour
-         Tadd = (SIGN(-1.0d0, THEAT_fix - Tievolve) + THEAT_fix - Tievolve)*MIN(4.*Tstep/3600.0, 0.9) !!**HCW check??
+         Tadd = (SIGN(-1.0D0, THEAT_fix - Tievolve) + THEAT_fix - Tievolve)*MIN(4.*Tstep/3600.0, 0.9) !!**HCW check??
          Tievolve = Tievolve + Tadd
       END IF
 
@@ -1419,7 +1419,7 @@ CONTAINS
       !========>INTERNAL<================
       bctype = .FALSE.
       kdz = 2*kibld(1)/zibld(1)
-      Pcoeff = (/em_ibld*SBConst*(1 - ivf_ii*em_ibld), 0.0d0, 0.0d0, kdz + shc_airbld*CH_ibld, &
+      Pcoeff = (/em_ibld*SBConst*(1 - ivf_ii*em_ibld), 0.0D0, 0.0D0, kdz + shc_airbld*CH_ibld, &
                  -kdz*Tibld(1) - shc_airbld*CH_ibld*Tievolve - Rs_ibld - Rl_ibld/)
       T0_ibld = NewtonPolynomial(T0_ibld, Pcoeff, conv, maxiter)
 
@@ -1430,14 +1430,14 @@ CONTAINS
       bc(2) = bc(1)
 
       ! print*,'ESTM Qsibld cal before',Qsibld,Tibld,zibld(1:Nibld)
-      CALL heatcond1d(Tibld, Qsibld, zibld(1:Nibld), REAL(Tstep, KIND(1d0)), kibld(1:Nibld), ribld(1:Nibld), bc, bctype)
+      CALL heatcond1d(Tibld, Qsibld, zibld(1:Nibld), REAL(Tstep, KIND(1D0)), kibld(1:Nibld), ribld(1:Nibld), bc, bctype)
 
       ! print*,'ESTM Qsibld cal after',Qsibld,Tibld
 
       !========>WALLS<================
       bctype = .FALSE.
       kdz = 2*kwall(nwall)/zwall(nwall)
-      Pcoeff = (/em_ibld*SBConst*(1 - ivf_ww*em_ibld), 0.0d0, 0.0d0, kdz + shc_airbld*CH_iwall, &
+      Pcoeff = (/em_ibld*SBConst*(1 - ivf_ww*em_ibld), 0.0D0, 0.0D0, kdz + shc_airbld*CH_iwall, &
                  -kdz*Twall(nwall) - shc_airbld*CH_iwall*Tievolve - Rs_iwall - Rl_iwall/)
       TN_wall = NewtonPolynomial(TN_wall, Pcoeff, conv, maxiter)
       bc(2) = TN_wall                                                       !!FO!! boundary condition #2 = inner surface Twall, originally from lodz_parms_ltm.txt or finaltemp.txt
@@ -1445,7 +1445,7 @@ CONTAINS
       IF (TsurfChoice < 2 .OR. radforce) THEN
          IF (radforce) THEN                                              !!FO!! 1st prio: radforce
             kdz = 2*kwall(1)/zwall(1)
-            Pcoeff = (/em_wall*SBConst*(1 - zvf_wall*em_wall), 0.0d0, 0.0d0, kdz + shc_air*chair_wall*WS, &
+            Pcoeff = (/em_wall*SBConst*(1 - zvf_wall*em_wall), 0.0D0, 0.0D0, kdz + shc_air*chair_wall*WS, &
                        -kdz*Twall(1) - shc_air*chair_wall*WS*Tair1 - Rs_wall - Rl_wall/)
             T0_wall = NewtonPolynomial(T0_wall, Pcoeff, conv, maxiter)
             bc(1) = T0_wall                                               !!FO!! boundary condition #1 = outer surface Twall, originally from lodz_parms_ltm.txt or finaltemp.txt
@@ -1455,13 +1455,13 @@ CONTAINS
             bc(1) = Twall_all + C2K; T0_wall = bc(1)
          END IF                                                           !!FO!! Tsoil in Lodz2002HS.txt NB => Lodz2002HS.txt doesn't work with onewall = TRUE
 
-         CALL heatcond1d(Twall, Qswall, zwall(1:nwall), REAL(Tstep, KIND(1d0)), kwall(1:nwall), rwall(1:nwall), bc, bctype)     !!FO!! new set of Twalls are calculated from heat conduction through wall
+         CALL heatcond1d(Twall, Qswall, zwall(1:nwall), REAL(Tstep, KIND(1D0)), kwall(1:nwall), rwall(1:nwall), bc, bctype)     !!FO!! new set of Twalls are calculated from heat conduction through wall
 
       ELSEIF (TsurfChoice == 2) THEN!SPECIAL FOR 4 WALLS
          T0_wall = 0.
          DO i = 1, 4 !do 4 walls
             bc(1) = Tw_n + Tw_e + Tw_s + Tw_w + C2K; T0_wall = T0_wall + bc(1)
-            CALL heatcond1d(Tw_4(:, i), Qs_4(i), zwall(1:nwall), REAL(Tstep, KIND(1d0)), kwall(1:nwall), rwall(1:nwall), bc, bctype)
+            CALL heatcond1d(Tw_4(:, i), Qs_4(i), zwall(1:nwall), REAL(Tstep, KIND(1D0)), kwall(1:nwall), rwall(1:nwall), bc, bctype)
          END DO
          !Take average of 4 wall values
          T0_wall = T0_wall/4.
@@ -1472,14 +1472,14 @@ CONTAINS
       !========>ROOF<================
       bctype = .FALSE.
       kdz = 2*kroof(nroof)/zroof(nroof)
-      Pcoeff = (/em_ibld*SBConst, 0.0d0, 0.0d0, kdz + shc_airbld*CH_iroof, &
+      Pcoeff = (/em_ibld*SBConst, 0.0D0, 0.0D0, kdz + shc_airbld*CH_iroof, &
                  -kdz*Troof(nroof) - shc_airbld*CH_iroof*Tievolve - Rs_iroof - Rl_iroof/)
       TN_roof = NewtonPolynomial(TN_roof, Pcoeff, conv, maxiter)
       bc(2) = TN_roof
 
       IF (radforce) THEN
          kdz = 2*kroof(1)/zroof(1)
-         Pcoeff = (/em_roof*SBConst, 0.0d0, 0.0d0, kdz + shc_air*chair*WS, &
+         Pcoeff = (/em_roof*SBConst, 0.0D0, 0.0D0, kdz + shc_air*chair*WS, &
                     -kdz*Troof(1) - shc_air*chair*WS*Tair1 - Rs_roof - Rl_roof/)
          T0_roof = NewtonPolynomial(T0_roof, Pcoeff, conv, maxiter)
          bc(1) = T0_roof
@@ -1489,14 +1489,14 @@ CONTAINS
          bc(1) = Troof_in + C2K; T0_roof = bc(1)
       END IF
 
-      CALL heatcond1d(Troof, Qsroof, zroof(1:nroof), REAL(Tstep, KIND(1d0)), kroof(1:nroof), rroof(1:nroof), bc, bctype)
+      CALL heatcond1d(Troof, Qsroof, zroof(1:nroof), REAL(Tstep, KIND(1D0)), kroof(1:nroof), rroof(1:nroof), bc, bctype)
 
       !========>ground<================
       bctype = .FALSE.
       kdz = 2*kground(1)/zground(1)
 
       IF (radforce .OR. groundradforce) THEN
-         Pcoeff = (/em_ground*SBConst, 0.0d0, 0.0d0, kdz + shc_air*chair_ground*WS, &
+         Pcoeff = (/em_ground*SBConst, 0.0D0, 0.0D0, kdz + shc_air*chair_ground*WS, &
                     -kdz*Tground(1) - shc_air*chair_ground*WS*Tair1 - Rs_ground - Rl_ground/)
          T0_ground = NewtonPolynomial(T0_ground, Pcoeff, conv, maxiter)
          bc(1) = T0_ground
@@ -1511,7 +1511,7 @@ CONTAINS
 
       IF (fground /= 0.) THEN   ! check fground==0 scenario to avoid division-by-zero error, TS 21 Jul 2016
          CALL heatcond1d(Tground, Qsground, zground(1:Nground), &
-                         REAL(Tstep, KIND(1d0)), kground(1:Nground), rground(1:Nground), bc, bctype)
+                         REAL(Tstep, KIND(1D0)), kground(1:Nground), rground(1:Nground), bc, bctype)
       ELSE
          Qsground = NAN
       END IF
@@ -1607,10 +1607,10 @@ CONTAINS
    !===============set variable of invalid value to NAN====================================
    ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER::pNAN = 9999
-      REAL(KIND(1d0)), PARAMETER::NAN = -999
-      REAL(KIND(1d0)), INTENT(in)::x
-      REAL(KIND(1d0))::xx
+      REAL(KIND(1D0)), PARAMETER::pNAN = 9999
+      REAL(KIND(1D0)), PARAMETER::NAN = -999
+      REAL(KIND(1D0)), INTENT(in)::x
+      REAL(KIND(1D0))::xx
 
       IF (ABS(x) > pNAN) THEN
          xx = NAN

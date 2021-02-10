@@ -109,7 +109,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    USE SUEWS_Driver, ONLY: SUEWS_cal_Main
    USE BLUEWS_module, ONLY: CBL
-   USE moist, only: avcp, avdens, es_hPa, lv_J_kg
+   USE moist, ONLY: avcp, avdens, es_hPa, lv_J_kg
 
    IMPLICIT NONE
 

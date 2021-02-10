@@ -1,7 +1,7 @@
-module evap_module
-   implicit none
+MODULE evap_module
+   IMPLICIT NONE
 
-contains
+CONTAINS
    SUBROUTINE cal_evap( &
       EvapMethod, state_is, WetThresh_is, capStore_is, &!input
       vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, rb, tlv, &
@@ -28,35 +28,35 @@ contains
       IMPLICIT NONE
       INTEGER, INTENT(in) :: EvapMethod!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
 
-      REAL(KIND(1d0)), INTENT(in)::state_is ! wetness status
-      REAL(KIND(1d0)), INTENT(in)::WetThresh_is!When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-      REAL(KIND(1d0)), INTENT(in)::capStore_is ! = StoreDrainPrm(6,is), current storage capacity [mm]
+      REAL(KIND(1D0)), INTENT(in)::state_is ! wetness status
+      REAL(KIND(1D0)), INTENT(in)::WetThresh_is!When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
+      REAL(KIND(1D0)), INTENT(in)::capStore_is ! = StoreDrainPrm(6,is), current storage capacity [mm]
 
-      REAL(KIND(1d0)), INTENT(in)::vpd_hPa ! vapour pressure deficit [hPa]
-      REAL(KIND(1d0)), INTENT(in)::avdens ! air density
-      REAL(KIND(1d0)), INTENT(in)::avcp ! air heat capacity
-      REAL(KIND(1d0)), INTENT(in)::qn_e !net available energy for evaporation
-      REAL(KIND(1d0)), INTENT(in)::s_hPa!Vapour pressure versus temperature slope in hPa
-      REAL(KIND(1d0)), INTENT(in)::psyc_hPa!Psychometric constant in hPa
-      REAL(KIND(1d0)), INTENT(in)::RS!Surface resistance
+      REAL(KIND(1D0)), INTENT(in)::vpd_hPa ! vapour pressure deficit [hPa]
+      REAL(KIND(1D0)), INTENT(in)::avdens ! air density
+      REAL(KIND(1D0)), INTENT(in)::avcp ! air heat capacity
+      REAL(KIND(1D0)), INTENT(in)::qn_e !net available energy for evaporation
+      REAL(KIND(1D0)), INTENT(in)::s_hPa!Vapour pressure versus temperature slope in hPa
+      REAL(KIND(1D0)), INTENT(in)::psyc_hPa!Psychometric constant in hPa
+      REAL(KIND(1D0)), INTENT(in)::RS!Surface resistance
       ! REAL(KIND(1d0)),INTENT(in)::sp!Term in calculation of E
-      REAL(KIND(1d0)), INTENT(in)::RA!Aerodynamic resistance
-      REAL(KIND(1d0)), INTENT(in)::rb!Boundary layer resistance
-      REAL(KIND(1d0)), INTENT(in)::tlv!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
+      REAL(KIND(1D0)), INTENT(in)::RA!Aerodynamic resistance
+      REAL(KIND(1D0)), INTENT(in)::rb!Boundary layer resistance
+      REAL(KIND(1D0)), INTENT(in)::tlv!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
 
-      REAL(KIND(1d0)), INTENT(out)::RSS !Redefined surface resistance for wet
-      REAL(KIND(1d0)), INTENT(out)::ev ! evapotranspiration [mm]
-      REAL(KIND(1d0)), INTENT(out)::qe ! latent heat flux [W m-2]
+      REAL(KIND(1D0)), INTENT(out)::RSS !Redefined surface resistance for wet
+      REAL(KIND(1D0)), INTENT(out)::ev ! evapotranspiration [mm]
+      REAL(KIND(1D0)), INTENT(out)::qe ! latent heat flux [W m-2]
 
-      REAL(KIND(1d0))::numPM!numerator of P-M eqn
-      REAL(KIND(1d0))::RB_SG  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
-      REAL(KIND(1d0))::rsrbsg  !RS + rbsg [s m-1]
-      REAL(KIND(1d0))::flag_dry
-      REAL(KIND(1d0))::W  !Depends on the amount of water on the canopy [-]
-      REAL(KIND(1d0))::x
-      REAL(KIND(1d0))::r
+      REAL(KIND(1D0))::numPM!numerator of P-M eqn
+      REAL(KIND(1D0))::RB_SG  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+      REAL(KIND(1D0))::rsrbsg  !RS + rbsg [s m-1]
+      REAL(KIND(1D0))::flag_dry
+      REAL(KIND(1D0))::W  !Depends on the amount of water on the canopy [-]
+      REAL(KIND(1D0))::x
+      REAL(KIND(1D0))::r
 
-      REAL(KIND(1d0)), PARAMETER::  NAN = -999
+      REAL(KIND(1D0)), PARAMETER::  NAN = -999
 
       ! Use Penman-Monteith eqn modified for urban areas (Eq6, Jarvi et al. 2011)
       ! Calculation independent of surface characteristics
@@ -111,7 +111,7 @@ contains
             qe = numPM/(s_hPa + psyc_hPa)
             ev = qe/tlv
 
-            x = MERGE(1d0, state_is/capStore_is, state_is > capStore_is)
+            x = MERGE(1D0, state_is/capStore_is, state_is > capStore_is)
             ev = ev*x !QE [W m-2]
             qe = ev*tlv !Ev [mm]
          END IF   !Rutter/Shuttleworth calculation
@@ -123,4 +123,4 @@ contains
       ! END IF
    END SUBROUTINE cal_evap
 
-end module evap_module
+END MODULE evap_module

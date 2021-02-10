@@ -560,6 +560,7 @@ MODULE ctrl_output
       varAttr('Scc', '-', f104, 'Schmidt number for temperature and humidity', aA, 'RSL', 0), &
       varAttr('f', 'g kg-1', f104, 'H&F07 and H&F08 constants', aA, 'RSL', 0), &
       varAttr('UStar_RSL', 'm s-1', f104, 'friction velocity used in RSL', aA, 'RSL', 0), &
+      varAttr('UStar0_RSL', 'm s-1', f104, 'unlimitted friction velocity used in RSL', aA, 'RSL', 0), &
       varAttr('FAI', '-', f104, 'frontal area index', aA, 'RSL', 0), &
       varAttr('PAI', '-', f104, 'plan area index', aA, 'RSL', 0), &
       varAttr('flag_RSL', '-', f104, 'flag for RSL', aA, 'RSL', 0) &
@@ -710,8 +711,8 @@ CONTAINS
       INTEGER :: err
 
       INTEGER, DIMENSION(:), ALLOCATABLE  ::id_seq ! id sequence as in the dataOutX/dataOutX_agg
-      REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::dataOutX
-      REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::dataOutX_agg
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOutX
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOutX_agg
 
       IF (.NOT. ALLOCATED(dataOutX)) THEN
          ALLOCATE (dataOutX(irMax, SIZE(varListX)), stat=err)
@@ -790,7 +791,7 @@ CONTAINS
    ! initialise an output file with file name and headers
    SUBROUTINE SUEWS_Output_Init(dataOutX, varList, iyr, Gridiv, outLevel)
       IMPLICIT NONE
-      REAL(KIND(1d0)), DIMENSION(:, :), INTENT(in)::dataOutX
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
       TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
       INTEGER, INTENT(in) :: iyr, Gridiv, outLevel
 
@@ -854,7 +855,7 @@ CONTAINS
    ! generate output format file
    SUBROUTINE formatFile_gen(dataOutX, varList, iyr, Gridiv, outLevel)
       IMPLICIT NONE
-      REAL(KIND(1d0)), DIMENSION(:, :), INTENT(in)::dataOutX
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
       TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
       INTEGER, INTENT(in) :: iyr, Gridiv, outLevel
 
@@ -963,14 +964,14 @@ CONTAINS
    ! aggregate data to specified resolution
    SUBROUTINE SUEWS_Output_Agg(dataOut_agg, dataOutX, varList, irMax, outFreq_s)
       IMPLICIT NONE
-      REAL(KIND(1d0)), DIMENSION(:, :), INTENT(in)::dataOutX
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
       TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
       INTEGER, INTENT(in) :: irMax, outFreq_s
-      REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE, INTENT(out)::dataOut_agg
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE, INTENT(out)::dataOut_agg
 
       INTEGER ::  nlinesOut, i, j, x
-      REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varList))
-      REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::dataOut_agg0
+      REAL(KIND(1D0))::dataOut_aggX(1:SIZE(varList))
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOut_agg0
       nlinesOut = INT(nsh/(60.*60/outFreq_s))
       ! nGrid=SIZE(dataOutX, dim=3)
 
@@ -1010,11 +1011,11 @@ CONTAINS
    ! append output data to the specific file at the specified outLevel
    SUBROUTINE SUEWS_Write_txt(dataOutX, varList, iyr, Gridiv, outLevel)
       IMPLICIT NONE
-      REAL(KIND(1d0)), DIMENSION(:, :), INTENT(in)::dataOutX
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
       TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
       INTEGER, INTENT(in) :: iyr, Gridiv, outLevel
 
-      REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::dataOutSel
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOutSel
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
       CHARACTER(len=365) :: FileOutX
       INTEGER :: fn, i, xx, err
@@ -1093,7 +1094,7 @@ CONTAINS
       USE datetime_module
 
       IMPLICIT NONE
-      REAL(KIND(1d0)), DIMENSION(:, :), INTENT(in)::dataOutX ! to determine year & output frequency
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX ! to determine year & output frequency
       TYPE(varAttr), DIMENSION(:), INTENT(in)::varList ! to determine output group
       INTEGER, INTENT(in) :: iyr ! to determine year
       INTEGER, INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect

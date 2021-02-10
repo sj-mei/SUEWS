@@ -20,7 +20,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
 
    IMPLICIT NONE
 
-   REAL(KIND(1d0)):: VALUE, value2
+   REAL(KIND(1D0)):: VALUE, value2
 
    CHARACTER(len=*)::ProblemFile                 ! Name of the problem file
    CHARACTER(len=150)::text1                      ! Initialization of text

@@ -18,11 +18,11 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
    IMPLICIT NONE
 
    !INPUT
-   REAL(KIND(1d0)), DIMENSION(24)::MetArray !Array leaving the subroutine within
+   REAL(KIND(1D0)), DIMENSION(24)::MetArray !Array leaving the subroutine within
    !each INTERVAL (defined in RunControl.nml)
    ! - Met data now provided at a resolution of tstep, HCW Jan 2015
 
-   REAL(KIND(1d0))::SmCap, & !Volumetric/gravimetric soil moisture capacity
+   REAL(KIND(1D0))::SmCap, & !Volumetric/gravimetric soil moisture capacity
                      SoilDepthMeas, &        !Measured soil depth
                      SoilRocks, &            !Rocks on ground
                      SoilDensity            !Density of soil
@@ -34,7 +34,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
              snowUse
 
    ! Variables read in
-   REAL(KIND(1d0))::avkdn, &     !Average downwelling shortwave radiation
+   REAL(KIND(1D0))::avkdn, &     !Average downwelling shortwave radiation
                      avrh, &      !Average relative humidity
                      avu1, &      !Average wind speed
                      dectime, &   !Decimal time
@@ -230,7 +230,7 @@ SUBROUTINE run_control(eval, LowerLimit, Upperlimit)
    END IF
 
    WRITE (*, 120) eval, text(1)
-120 FORMAT(i4, 2x, a90)
+120 FORMAT(i4, 2X, a90)
 
    RETURN
 END SUBROUTINE run_control
@@ -747,9 +747,9 @@ FUNCTION get_Prof_SpecTime_inst(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
    INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
    INTEGER, INTENT(IN) :: Hour, Min, Sec
    INTEGER :: total_sec, SecPerHour
-   REAL(KIND(1d0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
-   REAL(KIND(1d0)):: deltaProf   !Change in hourly profiles per model timestep
-   REAL(KIND(1d0)) :: Prof_CurrTime
+   REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
+   REAL(KIND(1D0)):: deltaProf   !Change in hourly profiles per model timestep
+   REAL(KIND(1D0)) :: Prof_CurrTime
 
    total_sec = Min*60 + Sec
    SecPerHour = 3600
@@ -773,15 +773,15 @@ FUNCTION get_Prof_SpecTime_mean(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
    INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
    INTEGER, INTENT(IN) :: Hour, Min, Sec
    INTEGER :: total_sec, SecPerHour
-   REAL(KIND(1d0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
-   REAL(KIND(1d0)), DIMENSION(0:23):: Prof_24h_mean
-   REAL(KIND(1d0)):: deltaProf   !Change in hourly profiles per model timestep
-   REAL(KIND(1d0)) :: Prof_CurrTime
+   REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
+   REAL(KIND(1D0)), DIMENSION(0:23):: Prof_24h_mean
+   REAL(KIND(1D0)):: deltaProf   !Change in hourly profiles per model timestep
+   REAL(KIND(1D0)) :: Prof_CurrTime
 
    total_sec = Min*60 + Sec
    SecPerHour = 3600
 
-   Prof_24h_mean = MERGE(Prof_24h/(SUM(Prof_24h)/size(Prof_24h, dim=1)), 0.d0, SUM(Prof_24h) /= 0) ! prevent zero-division
+   Prof_24h_mean = MERGE(Prof_24h/(SUM(Prof_24h)/SIZE(Prof_24h, dim=1)), 0.D0, SUM(Prof_24h) /= 0) ! prevent zero-division
    ! print*, Prof_24h_mean
 
    i = hour
@@ -805,15 +805,15 @@ FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTim
    INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
    INTEGER, INTENT(IN) :: Hour, Min, Sec, dt
    INTEGER :: total_sec, SecPerHour
-   REAL(KIND(1d0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
-   REAL(KIND(1d0)), DIMENSION(0:23):: Prof_24h_sum
-   REAL(KIND(1d0)):: deltaProf   !Change in hourly profiles per model timestep
-   REAL(KIND(1d0)) :: Prof_CurrTime
+   REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
+   REAL(KIND(1D0)), DIMENSION(0:23):: Prof_24h_sum
+   REAL(KIND(1D0)):: deltaProf   !Change in hourly profiles per model timestep
+   REAL(KIND(1D0)) :: Prof_CurrTime
 
    total_sec = Min*60 + Sec
    SecPerHour = 3600
 
-   Prof_24h_sum = MERGE(Prof_24h/(SUM(Prof_24h)), 0.d0, SUM(Prof_24h) /= 0) ! prevent zero-division
+   Prof_24h_sum = MERGE(Prof_24h/(SUM(Prof_24h)), 0.D0, SUM(Prof_24h) /= 0) ! prevent zero-division
 
    i = hour
    j = i + 1
@@ -1394,15 +1394,15 @@ CONTAINS
       INTEGER, DIMENSION(Nper):: seq1Nper
       INTEGER, DIMENSION(nsd):: seq1nsd
       INTEGER, DIMENSION(nColumnsMetForcingData):: MetDisaggMethod   ! Stores method to use for disaggregating met data
-      REAL(KIND(1d0)), DIMENSION(nColumnsMetForcingData):: MetArrayOrig
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigMetData*Nper, ncolumnsMetForcingData):: Met_tt
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigMetData*Nper):: Met_tt_kdownAdj
+      REAL(KIND(1D0)), DIMENSION(nColumnsMetForcingData):: MetArrayOrig
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper, ncolumnsMetForcingData):: Met_tt
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper):: Met_tt_kdownAdj
       CHARACTER(LEN=9), DIMENSION(ncolumnsMetForcingData):: HeaderMet
       CHARACTER(LEN=10*ncolumnsMetForcingData):: HeaderMetOut
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData):: dectimeOrig
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData*Nper):: dectimeDscd, dectimeFast
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigMetData*Nper):: dectimeFast
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigMetData*Nper):: idectime ! sun position at middle of time-step before
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper):: dectimeFast
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper):: idectime ! sun position at middle of time-step before
 
       ! INTEGER, DIMENSION(Nper):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm ! temorary varaibles for disaggragation
       ! REAL(KIND(1d0)), DIMENSION(Nper):: temp_dectime ! temorary varaibles for disaggragation
@@ -1485,7 +1485,7 @@ CONTAINS
       ! Check actual resolution matches specified input resolution
       IF (tdiff /= ResolutionFilesIn/60) THEN
          CALL errorHint(2, 'Problem in SUEWS_MetDisagg: timestamps in met forcing file inconsistent with ResolutionFilesIn', &
-                        REAL(ResolutionFilesIn, KIND(1d0)), NotUsed, tdiff*60)
+                        REAL(ResolutionFilesIn, KIND(1D0)), NotUsed, tdiff*60)
       END IF
 
       ! Check file only contains a single year --------------------------------------------
@@ -1513,9 +1513,9 @@ CONTAINS
             ELSEIF (MetDisaggMethod(14) == 101) THEN
                IF (RainAmongN == -999) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
-                                 REAL(RainAmongN, KIND(1d0)), NotUsed, RainDisaggMethod)
+                                 REAL(RainAmongN, KIND(1D0)), NotUsed, RainDisaggMethod)
                ELSEIF (RainAmongN > Nper) THEN
-                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainAmongN > Nper', REAL(Nper, KIND(1d0)), NotUsed, RainAmongN)
+                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainAmongN > Nper', REAL(Nper, KIND(1D0)), NotUsed, RainAmongN)
                ELSE
                   Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), &
                                                  RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
@@ -1529,12 +1529,12 @@ CONTAINS
             ELSEIF (MetDisaggMethod(14) == 102) THEN
                IF (ALL(MultRainAmongN == -999)) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongN', &
-                                 REAL(MultRainAmongN(1), KIND(1d0)), NotUsed, RainDisaggMethod)
+                                 REAL(MultRainAmongN(1), KIND(1D0)), NotUsed, RainDisaggMethod)
                ELSEIF (ALL(MultRainAmongNUpperI == -999)) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongNUpperI', &
                                  MultRainAmongNUpperI(1), NotUsed, RainDisaggMethod)
                ELSEIF (ANY(MultRainAmongN > Nper)) THEN
-                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: MultRainAmongN > Nper', REAL(Nper, KIND(1d0)), NotUsed, &
+                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: MultRainAmongN > Nper', REAL(Nper, KIND(1D0)), NotUsed, &
                                  MAXVAL(MultRainAmongN))
                ELSE
                   Met_tt(:, 14) = DisaggP_amongNMult(MetForDisagg(:, 14), MultRainAmongNUpperI, MultRainAmongN, Nper, &
@@ -1664,8 +1664,8 @@ CONTAINS
       INTEGER, DIMENSION(NperESTM):: seq1NperESTM
       INTEGER, DIMENSION(nsd):: seq1nsd
       INTEGER, DIMENSION(ncolsESTMdata):: ESTMDisaggMethod   ! Stores method to use for disaggregating met data
-      REAL(KIND(1d0)), DIMENSION(ncolsESTMdata):: ESTMArrayOrig
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigESTMData*NperESTM, ncolsESTMdata):: ESTM_tt
+      REAL(KIND(1D0)), DIMENSION(ncolsESTMdata):: ESTMArrayOrig
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigESTMData*NperESTM, ncolsESTMdata):: ESTM_tt
       CHARACTER(LEN=9), DIMENSION(ncolsESTMdata):: HeaderESTM
       CHARACTER(LEN=10*ncolsESTMdata):: HeaderESTMOut
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData):: dectimeOrig
@@ -1739,7 +1739,7 @@ CONTAINS
       ! Check actual resolution matches specified input resolution
       IF (tdiff /= ResolutionFilesInESTM/60) THEN
          CALL errorHint(2, 'Problem in SUEWS_ESTMDisagg: timestamps in ESTM forcing file inconsistent with ResolutionFilesInESTM', &
-                        REAL(ResolutionFilesInESTM, KIND(1d0)), NotUsed, tdiff*60)
+                        REAL(ResolutionFilesInESTM, KIND(1D0)), NotUsed, tdiff*60)
       END IF
 
       ! Disaggregate time columns ---------------------------------------------------------
@@ -1855,11 +1855,11 @@ CONTAINS
       USE datetime_module, ONLY: daysInYear
       IMPLICIT NONE
       INTEGER, INTENT(in) :: tstep, Nper, ReadLinesOrigMetDataMax
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigMetData, 4), INTENT(in):: DateTimeForDisagg
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigMetData*Nper, 4), INTENT(out):: DateTimeDscd
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData, 4), INTENT(in):: DateTimeForDisagg
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper, 4), INTENT(out):: DateTimeDscd
 
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrigMetData):: dectimeOrig
-      REAL(KIND(1d0)), DIMENSION(Nper) :: temp_dectime  !temorary varaibles for disaggragation
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData):: dectimeOrig
+      REAL(KIND(1D0)), DIMENSION(Nper) :: temp_dectime  !temorary varaibles for disaggragation
       INTEGER, DIMENSION(Nper):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm ! temorary varaibles for disaggragation
       INTEGER, DIMENSION(Nper)::ndays_iy ! number of days in iy
 
@@ -1916,9 +1916,9 @@ CONTAINS
       INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
       INTEGER:: ReadLinesOrig_loc, ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
       INTEGER:: iBlock
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
-      REAL(KIND(1d0)):: SlowPrev, SlowNext
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
+      REAL(KIND(1D0)):: SlowPrev, SlowNext
       INTEGER, DIMENSION(Nper_loc):: FastRows   !Group of rows that are filled with each iteration
       INTEGER, DIMENSION(FLOOR(Nper_loc/2.0)):: FirstRows10   !Rows at the beginning that are not filled during iteration (for averages)
       INTEGER, DIMENSION(Nper_loc - FLOOR(Nper_loc/2.0)):: LastRows10    !Rows at the end that are not filled during iteration
@@ -2025,8 +2025,8 @@ CONTAINS
       INTEGER:: amongN       !Number of subintervals over which rain will be distributed
       INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
       INTEGER:: ReadLinesOrig_loc, ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
       INTEGER, DIMENSION(:), ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
       INTEGER, DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
       INTEGER:: i
@@ -2044,7 +2044,7 @@ CONTAINS
       END IF
       IF (amongN > Nper_loc) &
          CALL errorHint(2, 'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed number of subintervals', &
-                        REAL(Nper_loc, KIND(1d0)), NotUsed, amongN)
+                        REAL(Nper_loc, KIND(1D0)), NotUsed, amongN)
 
       ! Initialise fast array to -999
       Fast = -999
@@ -2080,13 +2080,13 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1d0)), DIMENSION(5):: multupperI     !Upper bound of intensity bin
+      REAL(KIND(1D0)), DIMENSION(5):: multupperI     !Upper bound of intensity bin
       INTEGER, DIMENSION(5):: multamongN       !Number of subintervals over which rain will be distributed (array)
       INTEGER:: thisamongN       !Number of subintervals over which rain will be distributed
       INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
       INTEGER:: ReadLinesOrig_loc, ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-      REAL(KIND(1d0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
       INTEGER, DIMENSION(:), ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
       INTEGER, DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
       INTEGER:: i
@@ -2122,7 +2122,7 @@ CONTAINS
             Subintervals(:) = -999
 
             IF (thisamongN > Nper_loc) CALL errorHint(2, 'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed '// &
-                                                      'number of subintervals', REAL(Nper_loc, KIND(1d0)), NotUsed, thisamongN)
+                                                      'number of subintervals', REAL(Nper_loc, KIND(1D0)), NotUsed, thisamongN)
 
             IF (thisamongN == Nper_loc) THEN   ! If all subintervals are to contain rain, don't need to generate random numbers
                Subintervals(:) = seq1Nper_loc

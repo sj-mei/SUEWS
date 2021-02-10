@@ -1,7 +1,7 @@
-module CO2_module
-   implicit none
+MODULE CO2_module
+   IMPLICIT NONE
 
-contains
+CONTAINS
 !========================================================================================
 ! Created by HCW Aug 2016 to calculate biogenic component of CO2 flux.
 ! This subroutine is still under development and in the equations there might be bugs and
@@ -43,7 +43,7 @@ contains
          EmissionsMethod, id, it, ivConif, ivDecid, ivGrass, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, &
          nsurf, nvegSurf, gsmodel
 
-      REAL(KIND(1d0)), INTENT(in):: &
+      REAL(KIND(1D0)), INTENT(in):: &
          avkdn, &
          dectime, &
          gfunc, &
@@ -51,11 +51,11 @@ contains
          Temp_C, &
          t2
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: &
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in):: &
          sfr, &   !Surface fractions [-]
          SnowFrac
 
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in):: &
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in):: &
          LAIMin, LAIMax, &      ! [m2 m-2]
          alpha_bioCO2, &
          beta_bioCO2, &
@@ -73,14 +73,14 @@ contains
 
       INTEGER:: iv ! counter
 
-      REAL(KIND(1d0)):: &
+      REAL(KIND(1D0)):: &
          PAR_umolm2s1, &
          Bellucco2017_Pho, &     ! Photosynthesis (Bellucco et al. 2016)
          Bellucco2017_Res, &     ! Respiration (Bellucco et al. 2016)
          Bellucco2017_Res_surf, &! Respiration for each vegetated surface
          VegFracSum              ! Sum of vegetation fractions without water. Could be moved elsewhere later.
 
-      REAL(KIND(1d0)), DIMENSION(nvegsurf):: &
+      REAL(KIND(1D0)), DIMENSION(nvegsurf):: &
          active_veg_fr, &        ! Active vegetation fraction
          active_veg_fr0, &       ! Active vegetation fraction without LAI
          Fc_photo_surf, &        ! Photosynthesis for each vegetated surface
@@ -89,7 +89,7 @@ contains
          beta_bioCO2_v2, &
          theta_bioCO2_v2
 
-      REAL(KIND(1d0)), PARAMETER :: &
+      REAL(KIND(1D0)), PARAMETER :: &
          JtoumolPAR = 4.6, &
          KdntoPAR = 0.46
 
@@ -230,4 +230,4 @@ contains
    END SUBROUTINE CO2_biogen
 !========================================================================================
 
-end module CO2_module
+END MODULE CO2_module

@@ -1,7 +1,7 @@
-module lumps_module
-   implicit none
+MODULE lumps_module
+   IMPLICIT NONE
 
-contains
+CONTAINS
    SUBROUTINE LUMPS_cal_QHQE( &
       veg_type, & !input
       snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
@@ -33,43 +33,43 @@ contains
       INTEGER, INTENT(in) :: veg_type  !Defines how vegetation is calculated for LUMPS
       INTEGER, INTENT(in) :: snowUse ! option of snow module
 
-      REAL(KIND(1d0)), INTENT(in) :: qn1! net all-wave radiation
-      REAL(KIND(1d0)), INTENT(in) :: qf! anthropogenic heat flux
-      REAL(KIND(1d0)), INTENT(in) :: qs! storage heat flux
-      REAL(KIND(1d0)), INTENT(in) :: Qm!Snow melt associated heat flux
-      REAL(KIND(1d0)), INTENT(in) :: Temp_C!air temperature in degC
-      REAL(KIND(1d0)), INTENT(in) :: Veg_Fr!Vegetation fraction from land area
-      REAL(KIND(1d0)), INTENT(in) :: avcp!Specific heat capacity
-      REAL(KIND(1d0)), INTENT(in) :: Press_hPa!Station air pressure in hPa
-      REAL(KIND(1d0)), INTENT(in) :: lv_J_kg!Latent heat of vaporization in [J kg-1]
-      REAL(KIND(1d0)), INTENT(in) :: tstep_real ! time step in REAL
-      REAL(KIND(1d0)), INTENT(in) :: DRAINRT!Drainage rate of the water bucket [mm hr-1]
-      REAL(KIND(1d0)), INTENT(in) :: nsh_real! real cast of Number of timesteps per hour
-      REAL(KIND(1d0)), INTENT(in) :: Precip!Precipitation per timestep [mm]
-      REAL(KIND(1d0)), INTENT(in) :: RainMaxRes!Maximum water bucket reservoir [mm]
-      REAL(KIND(1d0)), INTENT(in) :: RAINCOVER! LUMPS Limit when surface totally wet [mm]
+      REAL(KIND(1D0)), INTENT(in) :: qn1! net all-wave radiation
+      REAL(KIND(1D0)), INTENT(in) :: qf! anthropogenic heat flux
+      REAL(KIND(1D0)), INTENT(in) :: qs! storage heat flux
+      REAL(KIND(1D0)), INTENT(in) :: Qm!Snow melt associated heat flux
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C!air temperature in degC
+      REAL(KIND(1D0)), INTENT(in) :: Veg_Fr!Vegetation fraction from land area
+      REAL(KIND(1D0)), INTENT(in) :: avcp!Specific heat capacity
+      REAL(KIND(1D0)), INTENT(in) :: Press_hPa!Station air pressure in hPa
+      REAL(KIND(1D0)), INTENT(in) :: lv_J_kg!Latent heat of vaporization in [J kg-1]
+      REAL(KIND(1D0)), INTENT(in) :: tstep_real ! time step in REAL
+      REAL(KIND(1D0)), INTENT(in) :: DRAINRT!Drainage rate of the water bucket [mm hr-1]
+      REAL(KIND(1D0)), INTENT(in) :: nsh_real! real cast of Number of timesteps per hour
+      REAL(KIND(1D0)), INTENT(in) :: Precip!Precipitation per timestep [mm]
+      REAL(KIND(1D0)), INTENT(in) :: RainMaxRes!Maximum water bucket reservoir [mm]
+      REAL(KIND(1D0)), INTENT(in) :: RAINCOVER! LUMPS Limit when surface totally wet [mm]
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) :: sfr! veg surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr! veg surface fractions [-]
       REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(in) :: LAI_id_prev! LAI(id-1,iv), LAI at the beginning of today
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(in) :: LAImax!Max LAI [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(in) :: LAImin    !Min LAI [m2 m-2]
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAImax!Max LAI [m2 m-2]
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAImin    !Min LAI [m2 m-2]
 
-      REAL(KIND(1d0)), INTENT(out) ::QH_LUMPS
-      REAL(KIND(1d0)), INTENT(out) ::QE_LUMPS !turbulent fluxes: QH, QE
-      REAL(KIND(1d0)), INTENT(out) ::psyc_hPa !Psychometric constant in hPa
-      REAL(KIND(1d0)), INTENT(out) ::s_hPa!Vapour pressure versus temperature slope in hPa
-      REAL(KIND(1d0)), INTENT(out) ::sIce_hpa!Vapour pressure versus temperature slope in hPa above ice/snow
-      REAL(KIND(1d0)), INTENT(out) ::Veg_Fr_temp !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
-      REAL(KIND(1d0)), INTENT(out) ::VegPhenLumps
+      REAL(KIND(1D0)), INTENT(out) ::QH_LUMPS
+      REAL(KIND(1D0)), INTENT(out) ::QE_LUMPS !turbulent fluxes: QH, QE
+      REAL(KIND(1D0)), INTENT(out) ::psyc_hPa !Psychometric constant in hPa
+      REAL(KIND(1D0)), INTENT(out) ::s_hPa!Vapour pressure versus temperature slope in hPa
+      REAL(KIND(1D0)), INTENT(out) ::sIce_hpa!Vapour pressure versus temperature slope in hPa above ice/snow
+      REAL(KIND(1D0)), INTENT(out) ::Veg_Fr_temp !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
+      REAL(KIND(1D0)), INTENT(out) ::VegPhenLumps
       ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
       ! INTEGER::iv
-      REAL(KIND(1d0)), DIMENSION(3) :: sfrVeg! veg surface fractions [-]                             !,start
-      REAL(KIND(1d0))::VegPhen, VegMax, VegMin, &   !Vegetation phenology for LUMPS
+      REAL(KIND(1D0)), DIMENSION(3) :: sfrVeg! veg surface fractions [-]                             !,start
+      REAL(KIND(1D0))::VegPhen, VegMax, VegMin, &   !Vegetation phenology for LUMPS
                         psyc_s, &       !Psychometric constant
                         alpha_sl, alpha_in, &              !Parameters used in LUMPS QH and QE calculations
                         beta, &                      !Beta parameter used in LUMPS QH and QE calculations [W m-2]
                         alpha_qhqe, RAINRES, RainBucket, tlv
-      REAL(KIND(1d0)), PARAMETER::NAN = -999
+      REAL(KIND(1D0)), PARAMETER::NAN = -999
 
       tlv = lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
       ! initialize VegPhenLumps to output
@@ -156,7 +156,7 @@ contains
       ! Calculate the actual heat fluxes
       QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn1 + qf - qs - Qm) - beta   !Eq 3, Grimmond & Oke (2002)
       !If LUMPS has had a problem, we still need a value
-      if (QH_LUMPS == NAN) QH_LUMPS = qn1*0.2
+      IF (QH_LUMPS == NAN) QH_LUMPS = qn1*0.2
       QE_LUMPS = (alpha_qhqe/(1 + psyc_s)*(qn1 + qf - qs - Qm)) + beta              !Eq 4, Grimmond & Oke (2002)
 
       ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018
@@ -173,4 +173,4 @@ contains
 
    END SUBROUTINE LUMPS_cal_QHQE
 
-end module lumps_module
+END MODULE lumps_module
