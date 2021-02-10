@@ -400,8 +400,8 @@ CONTAINS
 
       IF (ABS(zL) < neut_limit) THEN
          phih = 1
-      ELSEIF (zL < neut_limit) THEN
-         phih = phi_heat_CB05(ZL)
+      ELSEIF (zL < -neut_limit) THEN
+         phih = phi_heat_G00(ZL)
       ELSEIF (zL > neut_limit) THEN
          phih = phi_heat_CB05(ZL)
       END IF
@@ -436,30 +436,6 @@ CONTAINS
 
    END FUNCTION
 
-   FUNCTION phi_mom_G00(ZL) RESULT(phim)
-      REAL(KIND(1D0)), PARAMETER ::am = 10
-      REAL(KIND(1D0)), PARAMETER ::ah = 34
-      REAL(KIND(1D0)):: zl, phim
-      REAL(KIND(1D0)):: phim_K, psim_K ! Kansas part
-      REAL(KIND(1D0)):: phim_C, psim_C ! convective part
-
-      IF (ABS(zL) < neut_limit) THEN
-         phim = 1
-      ELSEIF (zL < -neut_limit) THEN
-         ! kansas
-         psim_K = psi_mom_B71(ZL)
-         phim_K = phi_mom_B71(ZL)
-
-         ! convective
-         psim_C = psi_conv(ZL, am)
-         phim_C = phi_conv(ZL, am)
-
-         ! phim=1-zL*d(Psi)/d(zL)
-         phim = 1 - zL*dPsi_dzL_G00(zL, psim_K, phim_K, psim_C, phim_C)
-      END IF
-
-   END FUNCTION
-
    FUNCTION psi_heat_G00(ZL) RESULT(psih)
       ! Grachev et al. (2000), eqn 18
       ! determination of `ah` see sect. 4.1 of G00
@@ -475,7 +451,7 @@ CONTAINS
          ! Kansas part:
          psih_k = psi_heat_B71(ZL)
          ! convective contribution:
-         psih_c = phi_conv(ZL, ah)
+         psih_c = psi_conv(ZL, ah)
          ! zL weighted sum:
          psih = DOT_PRODUCT([psih_k, psih_c], [1D0, zL**2])
          psih = psih/SUM([1D0, zL**2])
@@ -484,26 +460,65 @@ CONTAINS
 
    END FUNCTION
 
-   FUNCTION phi_heat_G00(ZL) RESULT(phih)
+   ! NB: the formulation of phi(zL) below is "correct" by definition:
+   ! phi=1-zL*d(Psi)/d(zL)
+   ! which however shows strange numeric behaviour:
+   ! a jumpy transition from phih_K to phih_C and dives into a negative range at some point
+   ! thus it's NOT adopted here
+   ! instead the following formulations phi_m/phi_h similar to the weighted psi_hm are used:
+
+   FUNCTION phi_mom_G00(ZL) RESULT(phim)
       REAL(KIND(1D0)), PARAMETER ::am = 10
+      REAL(KIND(1D0)):: zl, phim
+      REAL(KIND(1D0)):: phim_K ! Kansas part
+      ! REAL(KIND(1D0)):: psim_K ! Kansas part
+      REAL(KIND(1D0)):: phim_C ! convective part
+      ! REAL(KIND(1D0)):: psim_C ! convective part
+
+      IF (ABS(zL) < neut_limit) THEN
+         phim = 1
+      ELSEIF (zL < -neut_limit) THEN
+         ! kansas
+         ! psim_K = psi_mom_B71(ZL)
+         phim_K = phi_mom_B71(ZL)
+
+         ! convective
+         ! psim_C = psi_conv(ZL, am)
+         phim_C = phi_conv(ZL, am)
+
+         ! by definition correct but not used due to bizzare numeric behaviour
+         ! phim = 1 - zL*dPsi_dzL_G00(zL, psim_K, phim_K, psim_C, phim_C)
+
+         ! weighted sum:
+         phim = DOT_PRODUCT([phim_k, phim_c], [1D0, zL**2])
+         phim = phim/SUM([1D0, zL**2])
+
+      END IF
+
+   END FUNCTION
+
+   FUNCTION phi_heat_G00(ZL) RESULT(phih)
       REAL(KIND(1D0)), PARAMETER ::ah = 34
       REAL(KIND(1D0)):: zl, phih
-      REAL(KIND(1D0)):: phih_K, psih_K ! Kansas part
-      REAL(KIND(1D0)):: phih_C, psih_C ! convective part
+      REAL(KIND(1D0)):: phih_K ! Kansas part
+      ! REAL(KIND(1D0)):: psih_K ! Kansas part
+      REAL(KIND(1D0)):: phih_C ! convective part
+      ! REAL(KIND(1D0)):: psih_C ! convective part
 
       IF (ABS(zL) < neut_limit) THEN
          phih = 1
       ELSEIF (zL < -neut_limit) THEN
          ! kansas
-         psih_K = psi_heat_B71(ZL)
+         ! psih_K = psi_heat_B71(ZL)
          phih_K = phi_heat_B71(ZL)
 
          ! convective
-         psih_C = psi_conv(ZL, ah)
+         ! psih_C = psi_conv(ZL, ah)
          phih_C = phi_conv(ZL, ah)
 
-         ! phim=1-zL*d(Psi)/d(zL)
-         phih = 1 - zL*dPsi_dzL_G00(zL, psih_K, phih_K, psih_C, phih_C)
+         phih = DOT_PRODUCT([phih_k, phih_c], [1D0, zL**2])
+         phih = phih/SUM([1D0, zL**2])
+
       END IF
 
    END FUNCTION
@@ -546,10 +561,10 @@ CONTAINS
 
       ! convective contribution
       x_psiC = (2*psiC*zL)/(1 + zL**2)**2
-      x_phiC = -(phiC*(zL**2 + zL**4))/(zL*(1 + zL**2)**2)
+      x_phiC = -(phiC*zL)/(1 + zL**2)
 
       ! zL related
-      x_zl = ((1 + zL**2)/zL + (zL**2 + zL**4)/zL)/(1 + zL**2)**2
+      x_zl = 1/zL
 
       ! totoal
       dPsi = x_psiC + x_psiK + x_phiK + x_phiC + x_zl
@@ -737,7 +752,7 @@ CONTAINS
       IF (ABS(zL) < neut_limit) THEN
          psim = 0
       ELSEIF (zL < -neut_limit) THEN
-         x = (1 - 19.3*zl)**(0.25) ! M Nag spotted the wrong exponent, TS corrected this from (1 - 19.3*zl_f)**(-0.25)
+         x = (1 - 19.3*zl)**(0.25)
          X2 = LOG((1 + (X**2.))/2.)
          psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
 
