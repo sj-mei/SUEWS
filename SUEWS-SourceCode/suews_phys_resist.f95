@@ -12,7 +12,7 @@ CONTAINS
       AerodynamicResistanceMethod, &
       StabilityMethod, &
       RoughLenHeatMethod, &
-      RA)! output:
+      RA_h,z0V)! output:
 
       ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
       ! All RA equations reported in Thom & Oliver (1977)
@@ -52,7 +52,8 @@ CONTAINS
       INTEGER, INTENT(in)::StabilityMethod
       INTEGER, INTENT(in)::RoughLenHeatMethod
 
-      REAL(KIND(1D0)), INTENT(out)::RA !Aerodynamic resistance [s m^-1]
+      REAL(KIND(1D0)), INTENT(out)::RA_h !Aerodynamic resistance for heat/vapour [s m^-1]
+      REAL(KIND(1D0)), INTENT(out)::  z0V
 
       INTEGER, PARAMETER :: notUsedI = -55
 
@@ -62,11 +63,13 @@ CONTAINS
          muu = 1.46E-5 !molecular viscosity
       REAL(KIND(1D0)):: psim
       ! REAL(KIND(1d0)):: psih
-      REAL(KIND(1D0))::  z0V
+
+      !Z0V roughness length for vapour
+      z0V = cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar)
 
       !1)Monteith (1965)-neutral stability
       IF (AerodynamicResistanceMethod == 1) THEN
-         RA = (LOG(ZZD/z0m)**2)/(k2*AVU1)
+         RA_h = (LOG(ZZD/z0m)**2)/(k2*AVU1)
 
          !2) Non-neutral stability
          !    PSIM - stability function for momentum
@@ -74,32 +77,32 @@ CONTAINS
          !    assuming stability functions the same for heat and water
       ELSEIF (AerodynamicResistanceMethod == 2) THEN  !Dyer (1974)
 
-         psim = stab_psi_mom(StabilityMethod, zzd/L_mod)
-         psih = stab_psi_heat(StabilityMethod, ZZD/L_mod)
-
-         !Z0V roughness length for vapour
-         z0V = cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar)
+         ! psim = stab_psi_mom(StabilityMethod, zzd/L_mod)
+         ! psih = stab_psi_heat(StabilityMethod, ZZD/L_mod)
+         psim = stab_psi_mom(StabilityMethod, zzd/L_mod) - stab_psi_mom(StabilityMethod, z0m/L_mod)
+         psih = stab_psi_heat(StabilityMethod, ZZD/L_mod) - stab_psi_heat(StabilityMethod, z0v/L_mod)
 
          IF (Zzd/L_mod == 0 .OR. UStar == 0) THEN
-            RA = (LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
+            RA_h = (LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
          ELSE
-            RA = ((LOG(ZZD/z0m) - psim)*(LOG(ZZD/z0V) - psih))/(K2*AVU1)
+            RA_h = ((LOG(ZZD/z0m) - psim)*(LOG(ZZD/z0V) - psih))/(K2*AVU1)
+            ! RA = AVU1/UStar**2
          END IF
 
          !3) Thom and Oliver (1977)
       ELSEIF (AerodynamicResistanceMethod == 3) THEN
-         RA = (4.72*LOG(ZZD/z0m)**2)/(1 + 0.54*AVU1)
+         RA_h = (4.72*LOG(ZZD/z0m)**2)/(1 + 0.54*AVU1)
       END IF
 
       !If RA outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
-      IF (RA > 200) THEN   !was 175
-         CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA > 200 s m-1; RA set to 200 s m-1', RA, notUsed, notUsedI)
-         RA = 200
-      ELSEIF (RA < 10) THEN   !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
-         CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA < 10 s m-1; RA set to 10 s m-1', RA, notUsed, notUsedI)
-         RA = 10
+      IF (RA_h > 200) THEN   !was 175
+         CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA > 200 s m-1; RA set to 200 s m-1', RA_h, notUsed, notUsedI)
+         RA_h = 200
+      ELSEIF (RA_h < 10) THEN   !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
+         CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA < 10 s m-1; RA set to 10 s m-1', RA_h, notUsed, notUsedI)
+         RA_h = 10
          ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
-         IF (avu1 < 0) WRITE (*, *) avu1, RA
+         IF (avu1 < 0) WRITE (*, *) avu1, RA_h
       END IF
 
       RETURN

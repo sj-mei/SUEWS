@@ -404,7 +404,7 @@ CONTAINS
       REAL(KIND(1D0))::qn_snow
       REAL(KIND(1D0))::qn_snowfree
       REAL(KIND(1D0))::qs
-      REAL(KIND(1D0))::RA ! aerodynamic resistance
+      REAL(KIND(1D0))::RA_h ! aerodynamic resistance
       REAL(KIND(1D0))::RS ! surface resistance
       REAL(KIND(1D0)), DIMENSION(NSURF)::RSS_nsurf ! surface resistance adjusted by surface wetness state
       REAL(KIND(1D0))::RH2
@@ -461,6 +461,8 @@ CONTAINS
       REAL(KIND(1D0))::dq
       REAL(KIND(1D0))::lvS_J_kg
       REAL(KIND(1D0))::psyc_hPa
+      REAL(KIND(1D0))::z0v
+      REAL(KIND(1D0))::z0vSnow
       REAL(KIND(1D0))::RAsnow
       REAL(KIND(1D0))::RB
       REAL(KIND(1D0))::runoff_per_interval
@@ -853,7 +855,7 @@ CONTAINS
             th, tl, &
             dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_next, sfr, &
             UStar, TStar, L_mod, &!output
-            zL, gsc, RS, RA, RAsnow, RB)
+            zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
 
          !======== Evaporation and surface state_id ========
          CALL SUEWS_cal_QE( &
@@ -862,7 +864,7 @@ CONTAINS
             dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
             RAsnow, psyc_hPa, sIce_hPa, &
             PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
-            RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+            RS, RA_h, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
             NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
             SurfaceArea, FlowChange, drain, WetThresh, state_id_updated, mw_ind, SoilStoreCap, rainonsnow, &
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
@@ -883,7 +885,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
          CALL SUEWS_cal_QH( &
             1, &
-            qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, tsurf, Temp_C, RA, &
+            qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, tsurf, Temp_C, RA_h, &
             qh, qh_residual, qh_resist)!output
          !============ Sensible heat flux end===============
 
@@ -915,7 +917,7 @@ CONTAINS
             smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
          !============ calculate surface temperature ===============
-         TSfc_C = cal_tsfc(qh, avdens, avcp, RA, temp_c)
+         TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
 
          !============ surface-level diagonostics end ===============
 
@@ -947,8 +949,8 @@ CONTAINS
       !============ roughness sub-layer diagonostics ===============
       IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
       CALL RSLProfile( &
-         zH, z0m, zdm, &
-         L_MOD, sfr, FAI, StabilityMethod, &
+         zH, z0m, zdm, z0v, &
+         L_MOD, sfr, FAI, StabilityMethod, RA_h, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
          T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -1032,7 +1034,7 @@ CONTAINS
          MwStore, &
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
          qe, qf, qh, qh_resist, Qm, QmFreez, &
-         QmRain, qn, qn_snow, qn_snowfree, qs, RA, &
+         QmRain, qn, qn_snow, qn_snowfree, qs, RA_h, &
          RS, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
@@ -1063,7 +1065,7 @@ CONTAINS
 
       !==============translation end ================
 
-      dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA, RB, RAsnow, &
+      dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
                           vpd_hPa, avdens, avcp, qn_snowfree + qf - qs, s_hPa, psyc_hPa]
 
    END SUBROUTINE SUEWS_cal_Main
@@ -2164,7 +2166,7 @@ CONTAINS
       avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
       xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
       UStar, TStar, L_mod, &!output
-      zL, gsc, RS, RA, RAsnow, RB)
+      zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
 
       IMPLICIT NONE
 
@@ -2217,7 +2219,9 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out)  ::gsc       !Surface Layer Conductance
       REAL(KIND(1D0)), INTENT(out)  ::RS!Surface resistance
       REAL(KIND(1D0)), INTENT(out)  ::RA        !Aerodynamic resistance [s m^-1]
-      REAL(KIND(1D0)), INTENT(out)  ::RAsnow    !Aerodynamic resistance for snow [s m^-1]
+      REAL(KIND(1D0)), INTENT(out)  ::z0v        !roughness for heat [m]
+      REAL(KIND(1D0)), INTENT(out)  ::RASnow    !Aerodynamic resistance for snow [s m^-1]
+      REAL(KIND(1D0)), INTENT(out)  ::z0vSnow        !roughness for heat [m]
       REAL(KIND(1D0)), INTENT(out)  ::RB        !boundary layer resistance shuttleworth
       REAL(KIND(1D0)), INTENT(out)  ::L_mod     !Obukhov length
       REAL(KIND(1D0))              ::gfunc     !gdq*gtemp*gs*gq for photosynthesis calculations
@@ -2256,7 +2260,7 @@ CONTAINS
          AerodynamicResistanceMethod, &
          StabilityMethod, &
          RoughLenHeatMethod, &
-         RA) ! output:
+         RA, z0v) ! output:
 
       IF (snowUse == 1) THEN
          IF (Diagnose == 1) WRITE (*, *) 'Calling AerodynamicResistance for snow...'
@@ -2270,7 +2274,7 @@ CONTAINS
             AerodynamicResistanceMethod, &
             StabilityMethod, &
             3, &
-            RAsnow)     ! output:
+            RASnow, z0vSnow)     ! output:
       END IF
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling SurfaceResistance...'

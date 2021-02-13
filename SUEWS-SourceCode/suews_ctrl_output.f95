@@ -560,7 +560,8 @@ MODULE ctrl_output
       varAttr('Scc', '-', f104, 'Schmidt number for temperature and humidity', aA, 'RSL', 0), &
       varAttr('f', 'g kg-1', f104, 'H&F07 and H&F08 constants', aA, 'RSL', 0), &
       varAttr('UStar_RSL', 'm s-1', f104, 'friction velocity used in RSL', aA, 'RSL', 0), &
-      varAttr('UStar0_RSL', 'm s-1', f104, 'unlimitted friction velocity used in RSL', aA, 'RSL', 0), &
+      varAttr('UStar_heat', 'm s-1', f104, 'friction velocity implied by RA_h', aA, 'RSL', 0), &
+      varAttr('TStar_RSL', 'K', f104, 'friction temperature used in RSL', aA, 'RSL', 0), &
       varAttr('FAI', '-', f104, 'frontal area index', aA, 'RSL', 0), &
       varAttr('PAI', '-', f104, 'plan area index', aA, 'RSL', 0), &
       varAttr('flag_RSL', '-', f104, 'flag for RSL', aA, 'RSL', 0) &

@@ -219,18 +219,18 @@ CONTAINS
       ! limit other output variables as well as z/L
       ! L_MOD = zzd/zL
       ! limit L_mod to 3.e4 for consistency with output
-      IF (ABS(L_MOD) > 3E4) L_MOD = L_MOD/ABS(L_MOD)*3E4
-      z0L = z0m/L_MOD
-      psim = stab_psi_mom(StabilityMethod, zL)
-      psimz0 = stab_psi_mom(StabilityMethod, z0L)
+      ! IF (ABS(L_MOD) > 3E4) L_MOD = L_MOD/ABS(L_MOD)*3E4
+      ! z0L = z0m/L_MOD
+      ! psim = stab_psi_mom(StabilityMethod, zL)
+      ! psimz0 = stab_psi_mom(StabilityMethod, z0L)
 
-      ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1988, BLM, DOI: 10.1007/BF00123019)
+      ! TS 01 Aug 2018:
       ! TS: limit UStar and TStar to reasonable values
       ! to prevent potential issues in other stability-related calcualtions
-      UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0)
       ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1988, BLM, DOI: 10.1007/BF00123019)
+      ! UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0)
       ! UStar = MAX(0.15, UStar)
-      TStar = (-H/UStar)
+      ! TStar = (-H/UStar)
 
       ! IF (UStar < 0.0001) THEN       !If u* still too small after iteration, then force quit simulation and write out error info
       !    ! UStar=KUZ/(LOG(Zzd/z0m))
@@ -242,6 +242,17 @@ CONTAINS
 
       !    ! RETURN
       ! ENDIF
+
+      ! TS 11 Feb 2021: limit UStar and TStar to reasonable ranges
+      ! under all conditions, min(UStar)==0.001 m s-1 (Jimenez et al 2012, MWR, https://doi.org/10.1175/mwr-d-11-00056.1
+      UStar = MAX(0.001, UStar)
+      ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
+      IF (z0L < -neut_limit) UStar = MAX(0.15, UStar)
+
+      ! update associated variables
+      TStar = (-H/UStar)
+      L_MOD = (UStar**2)/(G_T_K*TStar)
+      zL = zzd/L_MOD
 
       ! if ( L_MOD<-990 ) then
       !   print*, 'L_MOD too low',L_MOD

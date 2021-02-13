@@ -1,5 +1,5 @@
 MODULE rsl_module
-   USE AtmMoistStab_module, ONLY: cal_Stab, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
+   USE AtmMoistStab_module, ONLY: neut_limit, cal_Stab, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
    USE meteo, ONLY: RH2qa, qa2RH
    USE resist_module, ONLY: SUEWS_cal_RoughnessParameters
    USE allocateArray, ONLY: &
@@ -11,8 +11,8 @@ MODULE rsl_module
 CONTAINS
 
    SUBROUTINE RSLProfile( &
-      Zh, z0m, zdm, &
-      L_MOD, sfr, FAI, StabilityMethod, &
+      Zh, z0m, zdm, z0v, &
+      L_MOD, sfr, FAI, StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
       avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       T2_C, q2_gkg, U10_ms, RH2, &!output
@@ -37,14 +37,16 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in):: avRH   ! relative humidity at forcing height [-]
       REAL(KIND(1D0)), INTENT(in):: Press_hPa ! pressure at forcing height [hPa]
       REAL(KIND(1D0)), INTENT(in):: L_MOD  ! Obukhov length [m]
+      REAL(KIND(1D0)), INTENT(in):: RA_h  ! aerodynamic resistance for heat [s m-1]
       REAL(KIND(1D0)), INTENT(in):: avcp  ! specific heat capacity [J kg-1 K-1]
       REAL(KIND(1D0)), INTENT(in):: lv_J_kg  ! Latent heat of vaporization in [J kg-1]
       REAL(KIND(1D0)), INTENT(in):: avdens  ! air density [kg m-3]
       REAL(KIND(1D0)), INTENT(in):: qh  ! sensible heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(in):: qe     ! Latent heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(in):: Zh     ! Mean building height [m]
-      REAL(KIND(1D0)), INTENT(in):: z0m     ! Mean building height [m]
-      REAL(KIND(1D0)), INTENT(in):: zdm     ! Mean building height [m]
+      REAL(KIND(1D0)), INTENT(in):: z0m     ! roughness for momentum [m]
+      REAL(KIND(1D0)), INTENT(in):: z0v  ! roughnesslength for heat [s m-1]
+      REAL(KIND(1D0)), INTENT(in):: zdm     ! zero-plane displacement [m]
       REAL(KIND(1D0)), INTENT(in):: FAI  ! Frontal area index [-]
 
       INTEGER, INTENT(in)::StabilityMethod
@@ -86,7 +88,7 @@ CONTAINS
       ! REAL(KIND(1d0))::Lc_stab ! threshold of canopy drag length scale under stable conditions
       ! REAL(KIND(1d0))::Lc_unstab ! threshold of canopy drag length scale under unstable conditions
       REAL(KIND(1D0))::Scc ! Schmidt number for temperature and humidity
-      REAL(KIND(1D0))::psimz, psimz0, psimza, phimzp, phimz, phihzp, phihz, psihz, psihza  ! stability function for momentum
+      REAL(KIND(1D0))::psimz, psimz0, psimza, phimzp, phimz, phihzp, phihz, psihz, psihz0, psihza  ! stability function for momentum
       ! REAL(KIND(1d0))::betaHF, betaNL, beta, betaN2  ! beta coefficient from Harman 2012
       REAL(KIND(1D0))::beta  ! beta coefficient from Harman 2012
       REAL(KIND(1D0))::elm ! mixing length
@@ -95,7 +97,7 @@ CONTAINS
       REAL(KIND(1D0))::t_h, q_h ! H&F'08 canopy corrections
       REAL(KIND(1D0))::TStar_RSL ! temperature scale
       REAL(KIND(1D0))::UStar_RSL ! friction velocity used in RSL
-      REAL(KIND(1D0))::UStar0_RSL ! friction velocity used in RSL
+      REAL(KIND(1D0))::UStar_heat ! friction velocity derived from RA_h with correction/restriction
       REAL(KIND(1D0))::PAI ! plan area index, including areas of roughness elements: buildings and trees
       ! REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
       REAL(KIND(1D0))::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
@@ -258,14 +260,26 @@ CONTAINS
       psimz0 = stab_psi_mom(StabilityMethod, z0_RSL/L_MOD_RSL)
       psimza = stab_psi_mom(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
-      UStar0_RSL = avU1*kappa/(LOG((zMeas - zd_RSL)/z0_RSL) - psimza + psimz0 + psihatm_z(nz))
 
-      ! set a lower limit for ustar to improve numeric stability
-      UStar_RSL = MERGE(UStar0_RSL, 0.15D0, UStar0_RSL > 0.15D0)
-      UStar_RSL = UStar0_RSL
+      UStar_RSL = avU1*kappa/(LOG((zMeas - zd_RSL)/z0_RSL) - psimza + psimz0 + psihatm_z(nz))
 
-      TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_RSL
-      qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_RSL
+      ! TS 11 Feb 2021: limit UStar and TStar to reasonable ranges
+      ! under all conditions, min(UStar)==0.001 m s-1 (Jimenez et al 2012, MWR, https://doi.org/10.1175/mwr-d-11-00056.1
+      UStar_RSL = MAX(0.001, UStar_RSL)
+      ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
+      IF ((ZMeas - zd_RSL)/L_MOD_RSL < -neut_limit) UStar_RSL = MAX(0.15, UStar_RSL)
+
+      ! TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_RSL
+      ! qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_RSL
+      IF (flag_RSL) THEN
+         UStar_heat = MAX(0.15, UStar_RSL)
+      ELSE
+         ! use UStar_heat implied by RA_h using MOST
+         psihz0 = stab_psi_heat(StabilityMethod, z0v/L_MOD_RSL)
+         UStar_heat = 1/(kappa*RA_h)*(LOG((zMeas - zd_RSL)/z0v) - psihza + psihz0)
+      END IF
+      TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_heat
+      qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_heat
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
 
       DO z = idx_can, nz
@@ -300,7 +314,7 @@ CONTAINS
          END DO
       END IF
 
-      dataoutLineURSL = dataoutLineURSL*UStar0_RSL
+      dataoutLineURSL = dataoutLineURSL*UStar_RSL
       dataoutLineTRSL = dataoutLineTRSL*TStar_RSL + Temp_C
       dataoutLineqRSL = (dataoutLineqRSL*qStar_RSL + qa_gkg/1000.)*1000.
 
@@ -311,7 +325,7 @@ CONTAINS
                         zH_RSL, &
                         ! Lc_stab, Lc_unstab,
                         Lc, &
-                        beta, zd_RSL, z0_RSL, elm, Scc, f, UStar_RSL, UStar0_RSL, FAI, PAI, MERGE(1.D0, 0.D0, flag_RSL) &
+                        beta, zd_RSL, z0_RSL, elm, Scc, f, UStar_RSL, UStar_heat, TStar_RSL, FAI, PAI, MERGE(1.D0, 0.D0, flag_RSL) &
                         ]
 
       !
