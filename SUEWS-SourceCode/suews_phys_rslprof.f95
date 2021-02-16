@@ -982,3 +982,4 @@ CONTAINS
    END FUNCTION cal_beta_lc
 
 END MODULE rsl_module
+
