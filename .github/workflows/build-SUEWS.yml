@@ -82,6 +82,8 @@ jobs:
         run: |
           docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver; make suews"
           docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c \
+          "/opt/python/${{ matrix.manylinux-python-target }}/bin/python -m pip install cryptography<=3.3.2"
+          docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c \
           "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
           which python;\
           cd /io/supy-driver; make test"
