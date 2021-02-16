@@ -70,7 +70,7 @@ jobs:
           - cp39-cp39
           - cp38-cp38
           - cp37-cp37m
-          # - cp36-cp36m
+          - cp36-cp36m
 
     steps:
       - uses: actions/checkout@v1
@@ -97,7 +97,7 @@ jobs:
 
     strategy:
       matrix:
-        py: ["3.9", "3.8", "3.7", "3.6"]
+        py: ["3.9", "3.8", "3.7"]
         os: [macOS-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
