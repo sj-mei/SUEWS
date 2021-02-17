@@ -13,15 +13,15 @@ MODULE cbl_MODULE
    CHARACTER(len=200), DIMENSION(366)::FileSonde = ""
    CHARACTER(len=200)::InitialDataFileName
    REAL(KIND(1D0)):: wsb       ! subsidence velocity
-   REAL(KIND(1d0)), DIMENSION(1:10):: cbldata
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::IniCBLdata
+   REAL(KIND(1D0)), DIMENSION(1:10):: cbldata
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::IniCBLdata
 
    !Parameters in CBL code
    INTEGER::zmax, &
              nEqn = 6, &  !NT changed from 4 to 6
              iCBLcount, &
              nlineInData
-   REAL(KIND(1d0))::C2K = 273.16
+   REAL(KIND(1D0))::C2K = 273.16
 
    REAL(KIND(1D0)):: usbl, ftbl, fqbl, fcbl, gamt, gamq, gamc, tpp, qpp, cp0!,tk
 
@@ -73,19 +73,19 @@ CONTAINS
       INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
 
       INTEGER, INTENT(IN):: tstep, is, NumberOfGrids, Gridiv, ReadLinesMetdata, ir
-      REAL(KIND(1d0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
-      REAL(KIND(1d0)), INTENT(IN):: avkdn, nsh_real, UStar, psih
+      REAL(KIND(1D0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
+      REAL(KIND(1D0)), INTENT(IN):: avkdn, nsh_real, UStar, psih
       INTEGER, INTENT(INOUT) :: qh_choice, iy, id, it, imin
-      REAL(KIND(1d0)), INTENT(INOUT):: dectime, Press_hPa, avu1, avrh, es_hPa, avcp, avdens, lv_J_kg
-      REAL(KIND(1d0)), INTENT(OUT):: Temp_C
-      REAL(KIND(1d0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
+      REAL(KIND(1D0)), INTENT(INOUT):: dectime, Press_hPa, avu1, avrh, es_hPa, avcp, avdens, lv_J_kg
+      REAL(KIND(1D0)), INTENT(OUT):: Temp_C
+      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
 
-      REAL(KIND(1d0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
+      REAL(KIND(1D0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
       ! REAL(KIND(1d0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
-      REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
-      REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
-      REAL(KIND(1d0))::secs0, secs1, Lv
-      REAL(KIND(1d0))::NAN = -999
+      REAL(KIND(1D0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1D0))::Temp_C1, avrh1, es_hPa1
+      REAL(KIND(1D0))::secs0, secs1, Lv
+      REAL(KIND(1D0))::NAN = -999
       INTEGER::idoy, startflag
 
       ! initialise startflag
@@ -304,7 +304,7 @@ CONTAINS
       CHARACTER(len=150), INTENT(IN):: FileInputPath
 
       INTEGER::i, ios
-      REAL(KIND(1d0))::l
+      REAL(KIND(1D0))::l
 
       NAMELIST /CBLInput/ EntrainmentType, &
          QH_choice, &
@@ -333,7 +333,7 @@ CONTAINS
          END DO
          CLOSE (52)
 
-         if (allocated(IniCBLdata)) deallocate (IniCBLdata)
+         IF (ALLOCATED(IniCBLdata)) DEALLOCATE (IniCBLdata)
          ALLOCATE (IniCBLdata(1:nlineInData, 1:8))
          OPEN (52, file=TRIM(FileInputPath)//TRIM(InitialDataFileName), status='old', err=25)
          READ (52, *)
@@ -361,7 +361,7 @@ CONTAINS
    SUBROUTINE CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
 
       USE mod_z
-      USE mod_k
+      USE AtmMoistStab_module, ONLY: k
       USE gas
       USE time
       USE data_in
@@ -376,8 +376,8 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
-      REAL(KIND(1d0))::lv
+      REAL(KIND(1D0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1D0))::lv
       INTEGER::i, nLineDay, ir, Gridiv, startflag
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
@@ -489,17 +489,17 @@ CONTAINS
       INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
 
       INTEGER, INTENT(IN) :: qh_choice, iy, id, it, imin, NumberOfGrids, ReadLinesMetdata, ir
-      REAL(KIND(1d0)), INTENT(IN)::  Press_hPa, psih, UStar
-      REAL(KIND(1d0)), INTENT(OUT):: Temp_C, tm_K_zm, qm_gkg_zm
-      REAL(KIND(1d0)), INTENT(INOUT):: dectime, avu1, avRH, avcp, avdens, es_hPa, lv_J_kg
-      REAL(KIND(1d0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
-      REAL(KIND(1d0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
+      REAL(KIND(1D0)), INTENT(IN)::  Press_hPa, psih, UStar
+      REAL(KIND(1D0)), INTENT(OUT):: Temp_C, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1D0)), INTENT(INOUT):: dectime, avu1, avRH, avcp, avdens, es_hPa, lv_J_kg
+      REAL(KIND(1D0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
+      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
 
-      REAL(KIND(1d0)) :: &
+      REAL(KIND(1D0)) :: &
          k = 0.4, &       !Von Karman's contant
          gas_ct_dry = 8.31451/0.028965  !j/kg/k=dry_gas/molar
-      REAL(KIND(1d0))::qh_use, qe_use
-      REAL(KIND(1d0))::lv
+      REAL(KIND(1D0))::qh_use, qe_use
+      REAL(KIND(1D0))::lv
       INTEGER::i, nLineDay, Gridiv, startflag
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
@@ -724,8 +724,8 @@ CONTAINS
 
       IMPLICIT NONE
       REAL(KIND(1D0)), DIMENSION(neqn)::dyds, y1
-      REAL(KIND(1d0)) :: zero = 0.0
-      REAL(KIND(1d0)) :: h1, t_K, q_kgkg, c, cp, ws, s, foo
+      REAL(KIND(1D0)) :: zero = 0.0
+      REAL(KIND(1D0)) :: h1, t_K, q_kgkg, c, cp, ws, s, foo
       !     real(kind(1D0)) :: tp_K,qp_kgkg
       REAL(KIND(1D0)):: delt_K, delq_kgkg, delc
       REAL(KIND(1D0)):: gamtv_Km, deltv_K, ftv_Kms
@@ -858,8 +858,8 @@ CONTAINS
       IMPLICIT NONE
       INTEGER::i, fn = 101, izm = 500, notUsedI = -9999, id
       CHARACTER(len=200)::FileN
-      REAL(KIND(1d0)):: dxx
-      REAL(KIND(1d0)), PARAMETER::notUsed = -9999.99
+      REAL(KIND(1D0)):: dxx
+      REAL(KIND(1D0)), PARAMETER::notUsed = -9999.99
 
       FileN = TRIM(FileInputPath)//TRIM(FileSonde(id))
       OPEN (fn, file=FileN, status="old", err=24)

@@ -111,7 +111,7 @@ PROGRAM SUEWS_Program
    IF (NumberOfGrids > MaxNumberOfGrids) THEN
       CALL ErrorHint(64, &
                      'No. of grids exceeds max. possible no. of grids.', &
-                     REAL(MaxNumberOfGrids, KIND(1d0)), NotUsed, NumberOfGrids)
+                     REAL(MaxNumberOfGrids, KIND(1D0)), NotUsed, NumberOfGrids)
    END IF
 
    ALLOCATE (GridIDmatrix(NumberOfGrids)) !Get the nGrid numbers correctly
@@ -137,7 +137,7 @@ PROGRAM SUEWS_Program
    WRITE (*, *) 'Maximum No. grids allowed:', MaxNumberOfGrids, 'grids'
 
    ! Set limit on number of lines to read
-   nlinesLimit = INT(FLOOR(MaxLinesMet/REAL(NumberOfGrids, KIND(1d0))))  !Uncommented HCW 29 Jun 2016
+   nlinesLimit = INT(FLOOR(MaxLinesMet/REAL(NumberOfGrids, KIND(1D0))))  !Uncommented HCW 29 Jun 2016
    !nlinesLimit = 24*nsh  !Commented out HCW 29 Jun 2016
 
    ! ---- Allocate arrays ----------------------------------------------------
@@ -167,13 +167,13 @@ PROGRAM SUEWS_Program
 
       ! Prepare to disaggregate met data to model time-step (if required) ------
       ! Find number of model time-steps per resolution of original met forcing file
-      Nper_real = ResolutionFilesIn/REAL(Tstep, KIND(1d0))
+      Nper_real = ResolutionFilesIn/REAL(Tstep, KIND(1D0))
       Nper = INT(Nper_real)
 
       IF (Nper /= Nper_real) THEN
          CALL ErrorHint(2, 'Problem in SUEWS_Program: check resolution of met forcing data (ResolutionFilesIn)'// &
                         'and model time-step (Tstep).', &
-                        REAL(Tstep, KIND(1d0)), NotUsed, ResolutionFilesIn)
+                        REAL(Tstep, KIND(1D0)), NotUsed, ResolutionFilesIn)
       ELSEIF (Nper > 1) THEN
          WRITE (*, *) 'Resolution of met forcing data: ', TRIM(ADJUSTL(ResIn_txt)), ' min;', &
             ' model time-step: ', TRIM(ADJUSTL(tstep_txt)), ' min', ' -> SUEWS will perform disaggregation.'
@@ -204,11 +204,11 @@ PROGRAM SUEWS_Program
          !WRITE(*,*) 'ReadlinesOrigMetdata', ReadlinesOrigMetdata
          WRITE (*, *) 'Original met data will be read in chunks of ', ReadlinesOrigMetdata, 'lines.'
 
-         ReadBlocksOrigMetData = INT(CEILING(REAL(nlinesOrigMetData, KIND(1d0))/REAL(ReadLinesOrigMetData, KIND(1d0))))
+         ReadBlocksOrigMetData = INT(CEILING(REAL(nlinesOrigMetData, KIND(1D0))/REAL(ReadLinesOrigMetData, KIND(1D0))))
 
          ! Set ReadLinesMetdata and ReadBlocksMetData
          ReadLinesMetdata = ReadLinesOrigMetdata*Nper
-         ReadBlocksMetData = INT(CEILING(REAL(nlinesOrigMetData*Nper, KIND(1d0))/REAL(ReadLinesMetdata, KIND(1d0))))
+         ReadBlocksMetData = INT(CEILING(REAL(nlinesOrigMetData*Nper, KIND(1D0))/REAL(ReadLinesMetdata, KIND(1D0))))
          WRITE (*, *) 'Processing current year in ', ReadBlocksMetData, 'blocks.'
 
          nlinesMetdata = nlinesOrigMetdata*Nper
@@ -248,7 +248,7 @@ PROGRAM SUEWS_Program
          WRITE (*, *) 'Met data will be read in blocks of ', ReadLinesMetdata, 'lines.'
 
          ! Find number of blocks of met data
-         ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData, KIND(1d0))/REAL(ReadLinesMetdata, KIND(1d0))))
+         ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData, KIND(1D0))/REAL(ReadLinesMetdata, KIND(1D0))))
          WRITE (*, *) 'Processing current year in ', ReadBlocksMetData, 'blocks.'
 
       END IF
@@ -325,12 +325,12 @@ PROGRAM SUEWS_Program
       IF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
          ! Prepare to disaggregate ESTM data to model time-step (if required) ------
          ! Find number of model time-steps per resolution of original met forcing file
-         NperESTM_real = ResolutionFilesInESTM/REAL(Tstep, KIND(1d0))
+         NperESTM_real = ResolutionFilesInESTM/REAL(Tstep, KIND(1D0))
          NperESTM = INT(NperESTM_real)
          IF (NperESTM /= NperESTM_real) THEN
             CALL ErrorHint(2, 'Problem in SUEWS_Program: check resolution of ESTM forcing data (ResolutionFilesInESTM)'// &
                            'and model time-step (Tstep).', &
-                           REAL(Tstep, KIND(1d0)), NotUsed, ResolutionFilesInESTM)
+                           REAL(Tstep, KIND(1D0)), NotUsed, ResolutionFilesInESTM)
          ELSEIF (NperESTM > 1) THEN
             WRITE (*, *) 'Resolution of ESTM forcing data: ', TRIM(ADJUSTL(ResInESTM_txt)), ' min;', &
                ' model time-step: ', TRIM(ADJUSTL(tstep_txt)), ' min', ' -> SUEWS will perform disaggregation.'
@@ -354,7 +354,7 @@ PROGRAM SUEWS_Program
             ! Check ESTM data and met data will have the same length (so that ESTM file can be read in same blocks as met data)
             IF (nlinesOrigESTMdata*NperESTM /= nlinesMetData) THEN
                CALL ErrorHint(66, &
-                              'Downscaled ESTM and met input files will have different lengths', REAL(nlinesMetdata, KIND(1d0)), &
+                              'Downscaled ESTM and met input files will have different lengths', REAL(nlinesMetdata, KIND(1D0)), &
                               NotUsed, nlinesESTMdata*NperESTM)
             END IF
 
@@ -388,7 +388,7 @@ PROGRAM SUEWS_Program
 
             ! Check ESTM data and met data are same length (so that ESTM file can be read in same blocks as met data)
             IF (nlinesESTMdata /= nlinesMetdata) THEN
-               CALL ErrorHint(66, 'ESTM input file different length to met forcing file', REAL(nlinesMetdata, KIND(1d0)), &
+               CALL ErrorHint(66, 'ESTM input file different length to met forcing file', REAL(nlinesMetdata, KIND(1D0)), &
                               NotUsed, nlinesESTMdata)
             END IF
 
@@ -443,7 +443,7 @@ PROGRAM SUEWS_Program
                      EXIT
                   ELSEIF (rr == nlinesSiteSelect) THEN
                      WRITE (*, *) 'Program stopped! Year', year_int, 'and/or grid', igrid, 'not found in SiteSelect.txt.'
-                     CALL ErrorHint(59, 'Cannot find year and/or grid in SiteSelect.txt', REAL(igrid, KIND(1d0)), NotUsed, year_int)
+                     CALL ErrorHint(59, 'Cannot find year and/or grid in SiteSelect.txt', REAL(igrid, KIND(1D0)), NotUsed, year_int)
                   END IF
                END DO
             END IF   !end first block of met data

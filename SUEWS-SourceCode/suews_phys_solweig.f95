@@ -2,10 +2,10 @@ MODULE solweig_module
    ! USE data_in
    ! USE gis_data
    ! USE time
-   USE allocateArray, only: ncolumnsdataOutSOLWEIG, deg2rad, rad2deg
+   USE allocateArray, ONLY: ncolumnsdataOutSOLWEIG, deg2rad, rad2deg
    ! USE InitialCond
    ! USE sues_data
-   USE defaultNotUsed, only: notUsed, notUsedI
+   USE defaultNotUsed, ONLY: notUsed, notUsedI
 
    IMPLICIT NONE
 
@@ -78,72 +78,72 @@ CONTAINS
 
       IMPLICIT NONE
 
-      integer, intent(in) ::id
-      integer, intent(in) ::it
-      REAL(KIND(1d0)), INTENT(in)::lamdaP ! plan area fraction
-      REAL(KIND(1d0)), INTENT(in)::lamdaF ! frontal area fraction
+      INTEGER, INTENT(in) ::id
+      INTEGER, INTENT(in) ::it
+      REAL(KIND(1D0)), INTENT(in)::lamdaP ! plan area fraction
+      REAL(KIND(1D0)), INTENT(in)::lamdaF ! frontal area fraction
 
       ! REAL(KIND(1d0)), intent(in) ::lai_id_dectr
       ! REAL(KIND(1d0)), intent(in) ::LAImax_dectr
-      REAL(KIND(1d0)), intent(in) ::Press_hPa
-      REAL(KIND(1d0)), intent(in) ::Temp_C
-      REAL(KIND(1d0)), intent(in) ::avrh
-      REAL(KIND(1d0)), intent(in) ::avkdn
-      REAL(KIND(1d0)), intent(in) ::ldown
-      REAL(KIND(1d0)), intent(in) ::Tg
+      REAL(KIND(1D0)), INTENT(in) ::Press_hPa
+      REAL(KIND(1D0)), INTENT(in) ::Temp_C
+      REAL(KIND(1D0)), INTENT(in) ::avrh
+      REAL(KIND(1D0)), INTENT(in) ::avkdn
+      REAL(KIND(1D0)), INTENT(in) ::ldown
+      REAL(KIND(1D0)), INTENT(in) ::Tg
       ! REAL(KIND(1d0)), intent(in) ::kdiff
       ! REAL(KIND(1d0)), intent(in) ::kdir
-      REAL(KIND(1d0)), intent(in) ::lat
-      REAL(KIND(1d0)), intent(in) ::zenith_deg
-      REAL(KIND(1d0)), intent(in) ::azimuth
-      REAL(KIND(1d0)), intent(in) ::dectime
-      REAL(KIND(1d0)), intent(in)  :: scale ! what is this?
+      REAL(KIND(1D0)), INTENT(in) ::lat
+      REAL(KIND(1D0)), INTENT(in) ::zenith_deg
+      REAL(KIND(1D0)), INTENT(in) ::azimuth
+      REAL(KIND(1D0)), INTENT(in) ::dectime
+      REAL(KIND(1D0)), INTENT(in)  :: scale ! what is this?
 
-      REAL(KIND(1D0)), parameter:: absL = 0.97          ! Absorption coefficient of longwave radiation of a person
-      REAL(KIND(1D0)), parameter:: absK = 0.7            ! Absorption coefficient of shortwave radiation of a person
-      REAL(KIND(1D0)), intent(in)::heightgravity    ! Centre of gravity for a standing person
+      REAL(KIND(1D0)), PARAMETER:: absL = 0.97          ! Absorption coefficient of longwave radiation of a person
+      REAL(KIND(1D0)), PARAMETER:: absK = 0.7            ! Absorption coefficient of shortwave radiation of a person
+      REAL(KIND(1D0)), INTENT(in)::heightgravity    ! Centre of gravity for a standing person
       ! REAL(KIND(1D0)), intent(in)::TransMin        ! Tranmissivity of K through decidious vegetation (leaf on)
-      REAL(KIND(1D0)), intent(in)::alb_bldg           ! Tranmissivity of K through decidious vegetation (leaf off)
-      REAL(KIND(1D0)), intent(in)::alb_ground           ! Tranmissivity of K through decidious vegetation (leaf off)
-      REAL(KIND(1D0)), intent(in)::emis_wall           ! Tranmissivity of K through decidious vegetation (leaf off)
-      REAL(KIND(1D0)), intent(in)::emis_ground           ! Tranmissivity of K through decidious vegetation (leaf off)
+      REAL(KIND(1D0)), INTENT(in)::alb_bldg           ! Tranmissivity of K through decidious vegetation (leaf off)
+      REAL(KIND(1D0)), INTENT(in)::alb_ground           ! Tranmissivity of K through decidious vegetation (leaf off)
+      REAL(KIND(1D0)), INTENT(in)::emis_wall           ! Tranmissivity of K through decidious vegetation (leaf off)
+      REAL(KIND(1D0)), INTENT(in)::emis_ground           ! Tranmissivity of K through decidious vegetation (leaf off)
 
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
 
-      REAL(KIND(1d0)) :: t, Tstart, height, psi!,timezone,lat,lng,alt,amaxvalue
-      REAL(KIND(1d0)) :: altitude, zen!scale,azimuth,zenith
-      REAL(KIND(1d0)) :: CI, c, I0, Kt, Tw, weight1
-      REAL(KIND(1d0)) :: Ta, RH, P, radG, radD, radI!,idectime,tdectime!dectime,
-      REAL(KIND(1d0)) :: I0et, CIuncorr!,lati
-      REAL(KIND(1d0)) :: SNDN, SNUP, DEC, DAYL!,timestepdec,YEAR
-      REAL(KIND(1d0)) :: msteg, emis_sky, ea
+      REAL(KIND(1D0)) :: t, Tstart, height, psi!,timezone,lat,lng,alt,amaxvalue
+      REAL(KIND(1D0)) :: altitude, zen!scale,azimuth,zenith
+      REAL(KIND(1D0)) :: CI, c, I0, Kt, Tw, weight1
+      REAL(KIND(1D0)) :: Ta, RH, P, radG, radD, radI!,idectime,tdectime!dectime,
+      REAL(KIND(1D0)) :: I0et, CIuncorr!,lati
+      REAL(KIND(1D0)) :: SNDN, SNUP, DEC, DAYL!,timestepdec,YEAR
+      REAL(KIND(1D0)) :: msteg, emis_sky, ea
       ! REAL(KIND(1d0)),intent(in) ::lai_id
       INTEGER         :: DOY, hour, first, second, j!,ith!onlyglobal,usevegdem,x,y,i
-      REAL(KIND(1d0)) :: timeadd
-      REAL(KIND(1d0)) :: firstdaytime ! if new day starts, =1 else =0
+      REAL(KIND(1D0)) :: timeadd
+      REAL(KIND(1D0)) :: firstdaytime ! if new day starts, =1 else =0
       ! REAL(KIND(1d0)) :: timestepdec !time step in decimal time
-      REAL(KIND(1d0)) :: CIlatenight
-      REAL(KIND(1d0)) :: Fside ! fraction of a person seen from each cardinal point
-      REAL(KIND(1d0)) :: Fup ! fraction of a person seen from down and up
-      REAL(KIND(1d0)) :: HW ! building height to width ratio
+      REAL(KIND(1D0)) :: CIlatenight
+      REAL(KIND(1D0)) :: Fside ! fraction of a person seen from each cardinal point
+      REAL(KIND(1D0)) :: Fup ! fraction of a person seen from down and up
+      REAL(KIND(1D0)) :: HW ! building height to width ratio
 
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfalfa, sos, Tgmap1
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: gvf   !Ground View Factors (GVF)
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: Tmrt, shadow, Sstr, F_sh
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: vegsh
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: buildings, svf
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfveg
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfaveg
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: svfalfa, sos, Tgmap1
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: gvf   !Ground View Factors (GVF)
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: Tmrt, shadow, Sstr, F_sh
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: vegsh
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: buildings, svf
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: svfveg
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: svfaveg
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
 
       ! Internal grids
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: tmp, Knight, svf_blgd_veg, Tgmap0!,Tgmap
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :) :: tmp, Knight, svf_blgd_veg, Tgmap0!,Tgmap
       !Search directions for Ground View Factors (GVF)
-      REAL(KIND(1d0)), PARAMETER :: azimuthA(1:18) = [(j*(360.0/18.0), j=0, 17)]
+      REAL(KIND(1D0)), PARAMETER :: azimuthA(1:18) = [(j*(360.0/18.0), j=0, 17)]
       ! temporary parameters and variables for testing
-      REAL(KIND(1d0)), PARAMETER   :: pi = 3.141592653589793
-      REAL(KIND(1d0)), PARAMETER   :: SBC = 5.67051e-8
+      REAL(KIND(1D0)), PARAMETER   :: pi = 3.141592653589793
+      REAL(KIND(1D0)), PARAMETER   :: SBC = 5.67051E-8
       !REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,RAD2DEG=57.29577951 !Now defined in AllocateArray HCW 02 Dec 2014
 
       INTEGER, PARAMETER:: onlyglobal = 1  !! force to calculate direct and diffuse components, TS 13 Dec 2019
@@ -179,8 +179,8 @@ CONTAINS
       Ta = Temp_C
       RH = avrh
       radG = avkdn
-      DOY = int(id)
-      hour = int(it)
+      DOY = INT(id)
+      hour = INT(it)
       height = heightgravity
 
       ! TODO: need to check this
@@ -458,15 +458,15 @@ CONTAINS
 
    FUNCTION cal_ratio_height2width(lamdaP, lamdaF) RESULT(HW)
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER::a = 0.5598
-      REAL(KIND(1d0)), PARAMETER::b = -0.2485
-      REAL(KIND(1d0)), PARAMETER::c = 0.4112
-      REAL(KIND(1d0)), PARAMETER::d = -0.02528
+      REAL(KIND(1D0)), PARAMETER::a = 0.5598
+      REAL(KIND(1D0)), PARAMETER::b = -0.2485
+      REAL(KIND(1D0)), PARAMETER::c = 0.4112
+      REAL(KIND(1D0)), PARAMETER::d = -0.02528
 
-      REAL(KIND(1d0)), INTENT(in)::lamdaP ! plan area fraction
-      REAL(KIND(1d0)), INTENT(in)::lamdaF ! frontal area fraction
-      REAL(KIND(1d0))::HW
-      REAL(KIND(1d0))::lamdaW !wall area fraction (wallarea / total area)
+      REAL(KIND(1D0)), INTENT(in)::lamdaP ! plan area fraction
+      REAL(KIND(1D0)), INTENT(in)::lamdaF ! frontal area fraction
+      REAL(KIND(1D0))::HW
+      REAL(KIND(1D0))::lamdaW !wall area fraction (wallarea / total area)
 
       lamdaW = 4*lamdaF ! assuming square shaped buildings
 
@@ -476,30 +476,30 @@ CONTAINS
 
    FUNCTION hwToSVF_ground(hw) RESULT(svfGround)
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER::a = 0.5598
-      REAL(KIND(1d0)), PARAMETER::b = -0.2485
-      REAL(KIND(1d0)), PARAMETER::c = 0.4112
-      REAL(KIND(1d0)), PARAMETER::d = -0.02528
+      REAL(KIND(1D0)), PARAMETER::a = 0.5598
+      REAL(KIND(1D0)), PARAMETER::b = -0.2485
+      REAL(KIND(1D0)), PARAMETER::c = 0.4112
+      REAL(KIND(1D0)), PARAMETER::d = -0.02528
 
-      REAL(KIND(1d0)), INTENT(in)::hw
-      REAL(KIND(1d0))::svfGround
+      REAL(KIND(1D0)), INTENT(in)::hw
+      REAL(KIND(1D0))::svfGround
 
       ! SvfGround: Parameterisation based on NYC data (500x500 meter grid)
-      svfGround = a*exp(b*hw) + c*exp(d*hw)
+      svfGround = a*EXP(b*hw) + c*EXP(d*hw)
 
    END FUNCTION hwToSVF_ground
 
    FUNCTION hwToSVF_roof(hw) RESULT(svfRoof)
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER::e = 0.5572
-      REAL(KIND(1d0)), PARAMETER::f = 0.0589
-      REAL(KIND(1d0)), PARAMETER::g = 0.4143
+      REAL(KIND(1D0)), PARAMETER::e = 0.5572
+      REAL(KIND(1D0)), PARAMETER::f = 0.0589
+      REAL(KIND(1D0)), PARAMETER::g = 0.4143
 
-      REAL(KIND(1d0)), INTENT(in)::hw
-      REAL(KIND(1d0))::svfRoof
+      REAL(KIND(1D0)), INTENT(in)::hw
+      REAL(KIND(1D0))::svfRoof
 
       ! SvfGround: Parameterisation based on NYC data (500x500 meter grid)
-      svfRoof = e*exp(-f*hw) + g
+      svfRoof = e*EXP(-f*hw) + g
 
    END FUNCTION hwToSVF_roof
 
@@ -510,22 +510,22 @@ CONTAINS
 
       IMPLICIT NONE
       ! Use somemodule
-      INTEGER, intent(in):: DOY
+      INTEGER, INTENT(in):: DOY
 
-      REAL(KIND(1d0)), intent(in):: zen
-      REAL(KIND(1d0)), intent(in):: Ta
-      REAL(KIND(1d0)), intent(in):: RH
-      REAL(KIND(1d0)), intent(in):: P_kPa
-      REAL(KIND(1d0)), intent(in):: radG
-      REAL(KIND(1d0)), intent(in):: lat
-      REAL(KIND(1d0)), intent(out):: I0et
-      REAL(KIND(1d0)), intent(out):: CIuncorr
-      REAL(KIND(1d0)), intent(out):: CI
-      REAL(KIND(1d0)), intent(out):: I0
-      REAL(KIND(1d0)), intent(out):: Kt
-      REAL(KIND(1d0)):: iG, Itoa, p
-      REAL(KIND(1d0)), DIMENSION(4)   :: G
-      REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
+      REAL(KIND(1D0)), INTENT(in):: zen
+      REAL(KIND(1D0)), INTENT(in):: Ta
+      REAL(KIND(1D0)), INTENT(in):: RH
+      REAL(KIND(1D0)), INTENT(in):: P_kPa
+      REAL(KIND(1D0)), INTENT(in):: radG
+      REAL(KIND(1D0)), INTENT(in):: lat
+      REAL(KIND(1D0)), INTENT(out):: I0et
+      REAL(KIND(1D0)), INTENT(out):: CIuncorr
+      REAL(KIND(1D0)), INTENT(out):: CI
+      REAL(KIND(1D0)), INTENT(out):: I0
+      REAL(KIND(1D0)), INTENT(out):: Kt
+      REAL(KIND(1D0)):: iG, Itoa, p
+      REAL(KIND(1D0)), DIMENSION(4)   :: G
+      REAL(KIND(1D0)), PARAMETER          :: pi = 3.141592653589793
 
       ! Variable declarations
       REAL*8 :: a2      !>
@@ -627,7 +627,7 @@ CONTAINS
       ! Partridge and Platt, 1975
 
       INTEGER          ::jday
-      REAL(KIND(1d0))  ::b, D
+      REAL(KIND(1D0))  ::b, D
 
       b = 2*3.141592654*jday/365
       D = SQRT(1.00011 + 0.034221*COS(b) + 0.001280*SIN(b) + 0.000719*COS(2*b) + 0.000077*SIN(2*b))
@@ -639,15 +639,15 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
-      REAL(KIND(1d0)), intent(in)         :: zen
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)         ::svfalfa     !>
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)::F_sh
+      REAL(KIND(1D0)), PARAMETER          :: pi = 3.141592653589793
+      REAL(KIND(1D0)), INTENT(in)         :: zen
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in)         ::svfalfa     !>
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)::F_sh
 
-      REAL(KIND(1d0)) :: beta      !>
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: alfa, xa, ha, hkil, ba
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: Ai, phi, qa, Za
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: ukil, Ssurf
+      REAL(KIND(1D0)) :: beta      !>
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :) :: alfa, xa, ha, hkil, ba
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :) :: Ai, phi, qa, Za
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :) :: ukil, Ssurf
       !real(kind(1d0)), dimension(1,1) ::
       !real(kind(1d0)), dimension(1,1) ::
       ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: sos, Tgmap1
@@ -720,14 +720,14 @@ CONTAINS
    SUBROUTINE diffusefraction(radG, altitude, Kt, Ta, RH, radI, radD)
       IMPLICIT NONE
 
-      REAL(KIND(1d0)), intent(in) :: radG
-      REAL(KIND(1d0)), intent(in) ::altitude
-      REAL(KIND(1d0)), intent(in) :: Kt
-      REAL(KIND(1d0)), intent(in) :: Ta
-      REAL(KIND(1d0)), intent(in) :: RH
-      REAL(KIND(1d0)), intent(out)::radD ! direct radiation
-      REAL(KIND(1d0)), intent(out)::radI ! diffusive radiation
-      REAL(KIND(1d0))::alfa
+      REAL(KIND(1D0)), INTENT(in) :: radG
+      REAL(KIND(1D0)), INTENT(in) ::altitude
+      REAL(KIND(1D0)), INTENT(in) :: Kt
+      REAL(KIND(1D0)), INTENT(in) :: Ta
+      REAL(KIND(1D0)), INTENT(in) :: RH
+      REAL(KIND(1D0)), INTENT(out)::radD ! direct radiation
+      REAL(KIND(1D0)), INTENT(out)::radI ! diffusive radiation
+      REAL(KIND(1D0))::alfa
       ! REAL(KIND(1D0)), PARAMETER       :: DEG2RAD = 0.017453292, RAD2DEG = 57.29577951  !!Already defined in AllocateArray module. Delete??
 
       alfa = altitude*DEG2RAD
@@ -751,8 +751,8 @@ CONTAINS
          END IF
       END IF
       ! correction of radD
-      radD = max(0.d0, radD)
-      radD = min(radG, radD)
+      radD = MAX(0.D0, radD)
+      radD = MIN(radG, radD)
 
       ! calculation of diffuse radiation
       radI = (radG - radD)/(SIN(alfa))
@@ -1049,34 +1049,34 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1d0)), PARAMETER     :: pi = 3.141592653589793
-      REAL(KIND(1D0)), intent(in)::radI
-      REAL(KIND(1D0)), intent(in)::radG
-      REAL(KIND(1D0)), intent(in)::radD
-      REAL(KIND(1D0)), intent(in)::azimuth
-      REAL(KIND(1D0)), intent(in)::altitude
-      REAL(KIND(1D0)), intent(in)::psi
-      REAL(KIND(1D0)), intent(in)::t
-      REAL(KIND(1D0)), intent(in)::albedo
+      REAL(KIND(1D0)), PARAMETER     :: pi = 3.141592653589793
+      REAL(KIND(1D0)), INTENT(in)::radI
+      REAL(KIND(1D0)), INTENT(in)::radG
+      REAL(KIND(1D0)), INTENT(in)::radD
+      REAL(KIND(1D0)), INTENT(in)::azimuth
+      REAL(KIND(1D0)), INTENT(in)::altitude
+      REAL(KIND(1D0)), INTENT(in)::psi
+      REAL(KIND(1D0)), INTENT(in)::t
+      REAL(KIND(1D0)), INTENT(in)::albedo
 
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)  :: shadow, F_sh
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: Keast, Knorth, Ksouth, Kwest
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in)  :: shadow, F_sh
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)  :: Keast, Knorth, Ksouth, Kwest
 
       REAL(KIND(1D0)) :: vikttot, aziE, aziN, aziS, aziW
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: viktveg, viktwall
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: viktveg, viktwall
 
       ! assuming the following SVF to ONE
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfE = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfS = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfW = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfN = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfEveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfSveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfWveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfNveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfE = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfS = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfW = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfN = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfEveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfSveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfWveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfNveg = 1
 
       ! Internal grids
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: svfviktbuveg
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :) :: svfviktbuveg
 
       ALLOCATE (svfviktbuveg(1, 1))
       ! New reflection equation 2012-05-25
@@ -1130,11 +1130,11 @@ CONTAINS
                         viktveg, viktwall) ! output
 
       IMPLICIT NONE
-      REAL(KIND(1D0)), intent(in):: vikttot
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in):: isvf
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in):: isvfveg
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: viktveg, viktwall
-      REAL(KIND(1d0)), DIMENSION(1, 1) :: svfvegbu
+      REAL(KIND(1D0)), INTENT(in):: vikttot
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in):: isvf
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in):: isvfveg
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)  :: viktveg, viktwall
+      REAL(KIND(1D0)), DIMENSION(1, 1) :: svfvegbu
 
       !! Least
       viktwall = (vikttot &
@@ -1157,38 +1157,38 @@ CONTAINS
       ! This m-file is the current one that estimates L from the four cardinal points 20100414
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), intent(in)::altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, ldown, zen
+      REAL(KIND(1D0)), INTENT(in)::altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, ldown, zen
 
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)::svfalfa
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)::Ldown2d, Lup2d
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)::Least, Lnorth, Lsouth, Lwest
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in)::svfalfa
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in)::Ldown2d, Lup2d
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)::Least, Lnorth, Lsouth, Lwest
 
       REAL(KIND(1D0))::vikttot, aziE, aziN, aziS, aziW, c
 
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: svfalfaE, svfalfaS, svfalfaW, svfalfaN
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: alfaB, betaB, betasun
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: Lground, Lrefl, Lsky, Lsky_allsky, Lveg, Lwallsh, Lwallsun
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: viktonlywall, viktaveg, svfvegbu
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: oneminussvfE, oneminussvfS, oneminussvfW, oneminussvfN
-      REAL(KIND(1d0)), PARAMETER                   :: pi = 3.141592653589793
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  :: svfalfaE, svfalfaS, svfalfaW, svfalfaN
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  :: alfaB, betaB, betasun
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  :: Lground, Lrefl, Lsky, Lsky_allsky, Lveg, Lwallsh, Lwallsun
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  :: viktonlywall, viktaveg, svfvegbu
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  :: oneminussvfE, oneminussvfS, oneminussvfW, oneminussvfN
+      REAL(KIND(1D0)), PARAMETER                   :: pi = 3.141592653589793
       INTEGER, PARAMETER:: SOLWEIG_ldown = 0  !! force to 0, TS 13 Dec 2019
 
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: viktveg, viktsky, viktrefl, viktwall
-      REAL(KIND(1d0)), DIMENSION(1, 1)  :: F_sh
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: viktveg, viktsky, viktrefl, viktwall
+      REAL(KIND(1D0)), DIMENSION(1, 1)  :: F_sh
 
       ! assuming all SVF to ONE, TS 14 Dec 2019
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfE = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfS = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfW = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfN = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEaveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSaveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWaveg = 1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNaveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfE = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfS = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfW = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfN = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfEveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfSveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfWveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfNveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfEaveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfSaveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfWaveg = 1
+      REAL(KIND(1D0)), DIMENSION(1, 1), PARAMETER  :: svfNaveg = 1
 
       ALLOCATE (oneminussvfE(1, 1))
       ALLOCATE (oneminussvfS(1, 1))
@@ -1233,7 +1233,7 @@ CONTAINS
       aziE = azimuth - 180 + t
       aziS = azimuth - 270 + t
 
-      call cylindric_wedge(zen, svfalfa, F_sh) !Fraction shadow on building walls based on sun altitude and svf
+      CALL cylindric_wedge(zen, svfalfa, F_sh) !Fraction shadow on building walls based on sun altitude and svf
       ! F_sh(isnan(F_sh))=0.5;
       F_sh = 2.*F_sh - 1. !(cylindric_wedge scaled 0-1)
 
@@ -1372,18 +1372,18 @@ CONTAINS
                         viktveg, viktsky, viktrefl, viktwall) !output
 
       IMPLICIT NONE
-      REAL(KIND(1D0)), intent(in):: vikttot
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in) :: isvf
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in) :: isvfveg
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in) :: isvfaveg
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: viktveg
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  ::viktsky
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: viktrefl
-      real(kind(1d0)), dimension(1, 1), intent(out)  :: viktwall
+      REAL(KIND(1D0)), INTENT(in):: vikttot
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in) :: isvf
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in) :: isvfveg
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in) :: isvfaveg
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)  :: viktveg
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)  ::viktsky
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)  :: viktrefl
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)  :: viktwall
 
-      REAL(KIND(1d0)), DIMENSION(1, 1) :: viktonlywall
-      REAL(KIND(1d0)), DIMENSION(1, 1) :: viktaveg
-      REAL(KIND(1d0)), DIMENSION(1, 1) :: svfvegbu
+      REAL(KIND(1D0)), DIMENSION(1, 1) :: viktonlywall
+      REAL(KIND(1D0)), DIMENSION(1, 1) :: viktaveg
+      REAL(KIND(1D0)), DIMENSION(1, 1) :: svfvegbu
 
       !allocate(svfalfaE(1,1))
       !allocate(svfalfaS(1,1))
@@ -1422,7 +1422,7 @@ CONTAINS
    !  FUNCTION TO RETURN 0 IF IX=0, 1 IF 0<IX<MAXPOS+1,-1 OTHERWISE.
    !  MAXPOS is given as the maximum positive Integer.
    SUBROUTINE issign(IX, MAXPOS, ISIGNM)
-      REAL(KIND(1d0)) IX, MAXPOS, ISIGNM
+      REAL(KIND(1D0)) IX, MAXPOS, ISIGNM
       ISIGNM = 1.0
       IF (IX < 0 .OR. IX > MAXPOS) ISIGNM = -1
       IF (IX == 0) ISIGNM = 0
@@ -1527,21 +1527,21 @@ CONTAINS
       ! Last modified LJ 27 Jan 2016 - Removal of tabs and fixing real-int conversions
 
       IMPLICIT NONE
-      REAL(KIND(1d0)), intent(in)  :: azimuth, altitude, scale
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: shadow
+      REAL(KIND(1D0)), INTENT(in)  :: azimuth, altitude, scale
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)  :: shadow
 
-      REAL(KIND(1d0)), DIMENSION(1, 1):: a
+      REAL(KIND(1D0)), DIMENSION(1, 1):: a
 
-      REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
-      REAL(KIND(1d0)), PARAMETER          :: maxpos = 10000000000.0
+      REAL(KIND(1D0)), PARAMETER          :: pi = 3.141592653589793
+      REAL(KIND(1D0)), PARAMETER          :: maxpos = 10000000000.0
       !real, allocatable, dimension(:,:)   :: a,f,temp !! Defined in matsize
-      REAL(KIND(1d0))                     :: degrees, azi, alt, dx, dy, dz, ds, absdx, absdy
-      REAL(KIND(1d0))                     :: amaxvalue, pibyfour, threetimespibyfour, fivetimespibyfour
-      REAL(KIND(1d0))                     :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
-      REAL(KIND(1d0))                     :: signsinazimuth, signcosazimuth, dssin, dscos, tanaltitudebyscale
+      REAL(KIND(1D0))                     :: degrees, azi, alt, dx, dy, dz, ds, absdx, absdy
+      REAL(KIND(1D0))                     :: amaxvalue, pibyfour, threetimespibyfour, fivetimespibyfour
+      REAL(KIND(1D0))                     :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
+      REAL(KIND(1D0))                     :: signsinazimuth, signcosazimuth, dssin, dscos, tanaltitudebyscale
       INTEGER                             :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2!,row,col !,1,1
       ! Internal grids
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: temp, f
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :) :: temp, f
 
       !special cases
       ! IF (altitude == 90) THEN
@@ -1556,8 +1556,8 @@ CONTAINS
 
       ! conversion
       degrees = pi/180
-      azi = min(azimuth, 0 - 0.0001)*degrees
-      alt = min(altitude, 90 - 0.0001)*degrees
+      azi = MIN(azimuth, 0 - 0.0001)*degrees
+      alt = MIN(altitude, 90 - 0.0001)*degrees
 
       ALLOCATE (f(1, 1))
       ALLOCATE (temp(1, 1))
@@ -1867,28 +1867,28 @@ CONTAINS
 
       INTEGER::first, second
 
-      REAL(KIND(1d0)), intent(in)::iazimuthA
-      REAL(KIND(1d0)), intent(in)::scale
-      REAL(KIND(1d0)), intent(in)::psi
+      REAL(KIND(1D0)), INTENT(in)::iazimuthA
+      REAL(KIND(1D0)), INTENT(in)::scale
+      REAL(KIND(1D0)), INTENT(in)::psi
 
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)  :: buildings
-      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)::sos
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(in)  :: buildings
+      REAL(KIND(1D0)), DIMENSION(1, 1), INTENT(out)::sos
 
-      REAL(KIND(1d0)), DIMENSION(1, 1):: sunwall
+      REAL(KIND(1D0)), DIMENSION(1, 1):: sunwall
 
-      REAL(KIND(1d0)), DIMENSION(1, 1):: sh, vegsh
+      REAL(KIND(1D0)), DIMENSION(1, 1):: sh, vegsh
 
-      REAL(KIND(1d0))             :: iazimuth, sinazimuth, cosazimuth, tanazimuth
+      REAL(KIND(1D0))             :: iazimuth, sinazimuth, cosazimuth, tanazimuth
       INTEGER                     :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2, n
-      REAL(KIND(1d0))             :: dx, dy, ds, absdx, absdy !,dz
-      REAL(KIND(1d0))             :: pibyfour, threetimespibyfour, fivetimespibyfour
-      REAL(KIND(1d0))             :: seventimespibyfour
-      REAL(KIND(1d0))             :: signsinazimuth, signcosazimuth, dssin, dscos
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::weightsumwall, weightsumsh, gvf1, gvf2
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::f, tempsh, tempbu, tempbub, tempwallsun, tempb, sh1
+      REAL(KIND(1D0))             :: dx, dy, ds, absdx, absdy !,dz
+      REAL(KIND(1D0))             :: pibyfour, threetimespibyfour, fivetimespibyfour
+      REAL(KIND(1D0))             :: seventimespibyfour
+      REAL(KIND(1D0))             :: signsinazimuth, signcosazimuth, dssin, dscos
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  ::weightsumwall, weightsumsh, gvf1, gvf2
+      REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :)  ::f, tempsh, tempbu, tempbub, tempwallsun, tempb, sh1
 
-      REAL(KIND(1d0)), PARAMETER  :: pi = 3.141592653589793
-      REAL(KIND(1d0)), PARAMETER  :: maxpos = 10000000000.0
+      REAL(KIND(1D0)), PARAMETER  :: pi = 3.141592653589793
+      REAL(KIND(1D0)), PARAMETER  :: maxpos = 10000000000.0
 
       ALLOCATE (weightsumwall(1, 1))
       ALLOCATE (weightsumsh(1, 1))
@@ -1929,8 +1929,8 @@ CONTAINS
       weightsumsh = 0.0D0
       weightsumwall = 0.0D0
 
-      first = INT(REAL(first, KIND(1d0))*scale)  !Int added around the equation as first and second are both integers
-      second = INT(REAL(second, KIND(1d0))*scale)
+      first = INT(REAL(first, KIND(1D0))*scale)  !Int added around the equation as first and second are both integers
+      second = INT(REAL(second, KIND(1D0))*scale)
 
       ! other loop parameters
       pibyfour = pi/4.

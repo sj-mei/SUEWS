@@ -302,25 +302,25 @@ SUBROUTINE OverallRunControl
    t_INTERVAL = 3600   !Number of seconds in an hour
 
    !Calculate nsh (number of steps per hour) from model timestep (tstep) set in in RunControl
-   nsh_real = t_INTERVAL/REAL(tstep, KIND(1d0))
+   nsh_real = t_INTERVAL/REAL(tstep, KIND(1D0))
 
    ! Check nsh is an integer
    IF (nsh_real == INT(nsh_real)) THEN
       nsh = INT(nsh_real)
    ELSE
       CALL ErrorHint(39, &
-                     'TSTEP must divide into t_INTERVAL exactly.', REAL(tstep, KIND(1d0)), REAL(t_INTERVAL, KIND(1d0)), notUsedI)
+                     'TSTEP must divide into t_INTERVAL exactly.', REAL(tstep, KIND(1D0)), REAL(t_INTERVAL, KIND(1D0)), notUsedI)
    END IF
 
    ! Check nsh is reasonable
    IF (nsh_real < 6 .OR. nsh_real > 60) THEN
-      CALL ErrorHint(39, 'TSTEP is too small or too large.', REAL(tstep, KIND(1d0)), REAL(t_INTERVAL, KIND(1d0)), notUsedI)
+      CALL ErrorHint(39, 'TSTEP is too small or too large.', REAL(tstep, KIND(1D0)), REAL(t_INTERVAL, KIND(1D0)), notUsedI)
    END IF
 
    ! Cast integer nsh as nsh_real for use in calculations
-   nsh_real = REAL(nsh, KIND(1d0))
+   nsh_real = REAL(nsh, KIND(1D0))
    ! Cast integer tstep as tstep_real for use in calculations
-   tstep_real = REAL(tstep, KIND(1d0))
+   tstep_real = REAL(tstep, KIND(1D0))
    ! get integer nsd from nsh for use in AnOHM checking, 20160708 TS
    nsd = 24*nsh
 
@@ -355,7 +355,7 @@ SUBROUTINE ReadCoeff(FileName, nlines, ncolumns, HeaderFile, Coeff)
    CHARACTER(len=*), INTENT(in)  :: FileName
    INTEGER, INTENT(in)           :: nlines, ncolumns
    CHARACTER(len=*), INTENT(out) :: HeaderFile(ncolumns)
-   REAL(KIND(1d0)), INTENT(out)  :: Coeff(nlines, ncolumns)
+   REAL(KIND(1D0)), INTENT(out)  :: Coeff(nlines, ncolumns)
 
    !----------------------------------------------------------------------
    ! local variables
@@ -1460,8 +1460,8 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    USE sues_data
    USE time
    USE InitialCond
-   use DailyState_module, only: update_WaterUse
-   use resist_module, only: SUEWS_cal_RoughnessParameters
+   USE DailyState_module, ONLY: update_WaterUse
+   USE resist_module, ONLY: SUEWS_cal_RoughnessParameters
 
    IMPLICIT NONE
 
@@ -1476,7 +1476,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
              year_int, switch = 0, &    !year as an integer, switch related to previous day
              id_next           !next day,counter in irrigation calculations
 
-   REAL(KIND(1d0))::PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState, &
+   REAL(KIND(1D0))::PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState, &
                      SnowFracPaved, SnowFracBldgs, SnowFracEveTr, SnowFracDecTr, &
                      SnowFracGrass, SnowFracBSoil, SnowFracWater, &
                      SnowDensPaved, SnowDensBldgs, SnowDensEveTr, SnowDensDecTr, &
@@ -1488,7 +1488,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    INTEGER:: GridsInitialised = 0   ! Number of grids initialised at start of model run
    INTEGER:: YearsInitialised = 0   ! Number of years initialised at start of model run
    INTEGER:: dayofWeek_id(3)
-   REAL(KIND(1d0)):: NormalizeVegChar  !Function
+   REAL(KIND(1D0)):: NormalizeVegChar  !Function
 
    ! Define InitialConditions namelist ---------------------------------------
    NAMELIST /InitialConditions/ DaysSinceRain, &
@@ -1799,7 +1799,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    ModelDailyState(Gridiv, cMDS_SnowfallCum) = 0 !!Check this
 
-   ModelDailyState(Gridiv, cMDS_DaysSinceRain) = REAL(DaysSinceRain, KIND(1d0))
+   ModelDailyState(Gridiv, cMDS_DaysSinceRain) = REAL(DaysSinceRain, KIND(1D0))
    ModelDailyState(Gridiv, cMDS_TempC) = Temp_C0
    ! Assume that the temperature has been the same for the previous days
    ModelDailyState(Gridiv, cMDS_TempCOld1) = Temp_C0
@@ -1971,7 +1971,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    state_id = [PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState]
    soilstore_id = [SoilStorePavedState, SoilStoreBldgsState, SoilStoreEveTrstate, SoilStoreDecTrState, &
-                   SoilStoreGrassState, SoilStoreBSoilState, 0d0]
+                   SoilStoreGrassState, SoilStoreBSoilState, 0D0]
    CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
       state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
@@ -2002,7 +2002,7 @@ FUNCTION NormalizeVegChar(VegCol, Gridiv) RESULT(NormVegResult)
 
    INTEGER, DIMENSION(nvegsurf):: VegCol  !Must be column numbers defined for veg surfaces only
    INTEGER:: Gridiv
-   REAL(KIND(1d0)):: NormVegResult
+   REAL(KIND(1D0)):: NormVegResult
    IF (SurfaceChar(Gridiv, c_FrEveTr) + &
        SurfaceChar(Gridiv, c_FrDecTr) + &
        SurfaceChar(Gridiv, c_FrGrass) == 0.) THEN ! prevent arithmetic error under a full impervious scenario
@@ -2165,8 +2165,8 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
    IMPLICIT NONE
 
    INTEGER::lunit, i, iyy !,RunNumber,NSHcounter
-   REAL(KIND(1d0)), DIMENSION(24)::MetArray
-   REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met, iy_only   !For checks on temporal resolution of met data
+   REAL(KIND(1D0)), DIMENSION(24)::MetArray
+   REAL(KIND(1D0)):: imin_prev, ih_prev, iday_prev, tstep_met, iy_only   !For checks on temporal resolution of met data
 
    ! initialisation
    iy_only = 1
@@ -2208,7 +2208,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
       ELSEIF (i == 2) THEN
          tstep_met = ((MetArray(4) + 60*MetArray(3)) - (imin_prev + 60*ih_prev))*60   !tstep in seconds
          IF (tstep_met /= tstep_real .AND. MetArray(2) == iday_prev) THEN
-            CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of met data (DOY).', REAL(tstep, KIND(1d0)), tstep_met, &
+            CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of met data (DOY).', REAL(tstep, KIND(1D0)), tstep_met, &
                            INT(MetArray(2)))
          END IF
       END IF

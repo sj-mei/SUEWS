@@ -53,7 +53,7 @@ MODULE allocateArray
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
                         ncolumnsDataOutDailyState = 50, &
-                        ncolumnsDataOutRSL = 30*4 + 5 + 13, &
+                        ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                         ncolumnsDataOutDebug = 5 + 24
 
    ! ---- Define input file headers ---------------------------------------------------------------
@@ -95,40 +95,40 @@ MODULE allocateArray
    CHARACTER(len=4*ncolumnsDataOutSUEWS):: ColNosUse
 
    ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::NonVeg_Coeff              !Coefficients for the nonveg surfaces
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Veg_Coeff                 !Coefficients for the veg surfaces
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Water_Coeff               !Coefficients for the water surface
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Snow_Coeff                !Coefficients for snow
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Soil_Coeff                !Coefficients for soil
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Conductance_Coeff         !Coefficients for conductances
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::OHMCoefficients_Coeff     !Coefficients for OHMCoefficients
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::ESTMCoefficients_Coeff    !Coefficients for ESTMCoefficients   ! S.O. 04 Feb 2016
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Anthropogenic_Coeff       !Coefficients for AnthropogenicEmissions
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Irrigation_Coeff          !Coefficients for Irrigation
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Profiles_Coeff            !Coefficients for Profiles
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::Biogen_Coeff              !Coefficients for BiogenCO2
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::NonVeg_Coeff              !Coefficients for the nonveg surfaces
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Veg_Coeff                 !Coefficients for the veg surfaces
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Water_Coeff               !Coefficients for the water surface
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Snow_Coeff                !Coefficients for snow
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Soil_Coeff                !Coefficients for soil
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Conductance_Coeff         !Coefficients for conductances
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::OHMCoefficients_Coeff     !Coefficients for OHMCoefficients
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::ESTMCoefficients_Coeff    !Coefficients for ESTMCoefficients   ! S.O. 04 Feb 2016
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Anthropogenic_Coeff       !Coefficients for AnthropogenicEmissions
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Irrigation_Coeff          !Coefficients for Irrigation
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Profiles_Coeff            !Coefficients for Profiles
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::Biogen_Coeff              !Coefficients for BiogenCO2
 
    ! ---- Define arrays for model calculations ----------------------------------------------------
    INTEGER, DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
    INTEGER, DIMENSION(:), ALLOCATABLE:: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: MetForcingData      !Array for meteorological forcing data
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE  :: MetForcingData_grid !Array for meteorological forcing data of one grid used by AnOHM
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE:: ModelDailyState      !DailyState array
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: DailyStateFirstOpen
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: ModelOutputData      !Output data matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSUEWS              !Main data output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutRSL              !Main data output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBL            !CBL output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSOLWEIG           !SOLWEIG POI output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBEERS           ! BEERS output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDebug           !debugging info matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSnow          !Main data output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutESTM          !ESTM output matrix
-   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDailyState    !DailyState output array
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: MetForcingData      !Array for meteorological forcing data
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE  :: MetForcingData_grid !Array for meteorological forcing data of one grid used by AnOHM
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE:: ModelDailyState      !DailyState array
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: DailyStateFirstOpen
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: ModelOutputData      !Output data matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSUEWS              !Main data output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutRSL              !Main data output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBL            !CBL output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSOLWEIG           !SOLWEIG POI output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBEERS           ! BEERS output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDebug           !debugging info matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSnow          !Main data output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutESTM          !ESTM output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDailyState    !DailyState output array
 
    ! -------- output per each timestep ----------------------------------------------------------------
    REAL(KIND(1D0)), DIMENSION(5)                          ::datetimeLine     ! output of datetime info per each timestep
@@ -138,14 +138,14 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5 + 12)      ::dataOutLineRSL  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5)      ::dataOutLineSOLWEIG  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5)      ::dataOutLineBEERS  ! output of snow results per each timestep
-   REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDebug):: dataOutLineDebug ! output line for debugging info
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug):: dataOutLineDebug ! output line for debugging info
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine   ! output of DailyState results per each timestep
 
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: MetForDisaggPrev, MetForDisaggNext !Stores last and next row of met data
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: MetForDisaggPrev, MetForDisaggNext !Stores last and next row of met data
 
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE:: ESTMForDisagg           !Array for original ESTM forcing data (for disaggregation)
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: ESTMForDisaggPrev, ESTMForDisaggNext !Stores last and next row of ESTM data
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE:: ESTMForDisagg           !Array for original ESTM forcing data (for disaggregation)
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: ESTMForDisaggPrev, ESTMForDisaggNext !Stores last and next row of ESTM data
 
    ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
    ! REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
@@ -156,18 +156,18 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: TraffProf_tstep
    ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: PopProf_tstep
 
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: AHProf_24hr     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: HumActivity_24hr   !Human actvity profiles for (1)weekdays / (2)weekends
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: TraffProf_24hr   !Traffic profiles for (1)weekdays / (2)weekends
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: PopProf_24hr   !Population profiles for (1)weekdays / (2)weekends
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24Hr !Hourly profiles for water use (manual irrigation)
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfA_24Hr !Hourly profiles for water use (automatic irrigation)
+   REAL(KIND(1D0)), DIMENSION(0:23, 2):: AHProf_24hr     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
+   REAL(KIND(1D0)), DIMENSION(0:23, 2):: HumActivity_24hr   !Human actvity profiles for (1)weekdays / (2)weekends
+   REAL(KIND(1D0)), DIMENSION(0:23, 2):: TraffProf_24hr   !Traffic profiles for (1)weekdays / (2)weekends
+   REAL(KIND(1D0)), DIMENSION(0:23, 2):: PopProf_24hr   !Population profiles for (1)weekdays / (2)weekends
+   REAL(KIND(1D0)), DIMENSION(0:23, 2):: WUProfM_24Hr !Hourly profiles for water use (manual irrigation)
+   REAL(KIND(1D0)), DIMENSION(0:23, 2):: WUProfA_24Hr !Hourly profiles for water use (automatic irrigation)
 
    ! ---- For ESTM
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :):: Ts5mindata   !surface temperature input data
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:)  :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:)  :: Tair24HR
-   REAL(KIND(1d0)), DIMENSION(27)  :: dataOutLineESTM !ESTM output for the current timestep and grid
+   REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :):: Ts5mindata   !surface temperature input data
+   REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:)  :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
+   REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:)  :: Tair24HR
+   REAL(KIND(1D0)), DIMENSION(27)  :: dataOutLineESTM !ESTM output for the current timestep and grid
 
    ! Column numbers for TstepProfiles
    INTEGER:: cTP_EnUseWD = 1, &
@@ -204,42 +204,42 @@ MODULE allocateArray
                         ivDecid = 2, &
                         ivGrass = 3
 
-   REAL(KIND(1d0)), DIMENSION(nsurf):: sfr   !Surface fractions [-]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: sfr   !Surface fractions [-]
 
    ! ---- Water balance for each surface  ---------------------------------------------------------
    !These variables are expressed as depths [mm] over each surface(is); the depth therefore varies with sfr(is)
-   REAL(KIND(1d0)), DIMENSION(nsurf):: AddWater       !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: AddWater       !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
    ! N.B. this is not an amount; drain(is)*AddWaterRunoff(is) is the amount [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: chang          !Change in state [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: drain          !Drainage of each surface type [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: evap           !Evaporation from each surface type [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: runoff         !Runoff from each surface type [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: runoffSoil     !Soil runoff from each soil sub-surface [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: soilstore_id      !Soil moisture of each surface type [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: soilstoreOld   !Soil moisture of each surface type from previous timestep [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: state_id          !Wetness status of each surface type [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: stateOut       !Wetness status of each surface type (written out) [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: chang          !Change in state [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: drain          !Drainage of each surface type [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: evap           !Evaporation from each surface type [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: runoff         !Runoff from each surface type [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: runoffSoil     !Soil runoff from each soil sub-surface [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: soilstore_id      !Soil moisture of each surface type [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: soilstoreOld   !Soil moisture of each surface type from previous timestep [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: state_id          !Wetness status of each surface type [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: stateOut       !Wetness status of each surface type (written out) [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf):: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
 
-   REAL(KIND(1d0)), DIMENSION(nsurf):: WetThresh      !When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-   REAL(KIND(1d0)), DIMENSION(nsurf):: StateLimit     !Limit for state_id of each surface type [mm] (specified in input files)
+   REAL(KIND(1D0)), DIMENSION(nsurf):: WetThresh      !When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
+   REAL(KIND(1D0)), DIMENSION(nsurf):: StateLimit     !Limit for state_id of each surface type [mm] (specified in input files)
 
-   REAL(KIND(1d0)), DIMENSION(1)::     WaterDepth     !Depth of open water
+   REAL(KIND(1D0)), DIMENSION(1)::     WaterDepth     !Depth of open water
 
    ! ---- Soil characteristics specified in input files -------------------------------------------
-   REAL(KIND(1d0)), DIMENSION(nsurf):: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: SoilStoreCap        !Capacity of soil store for each surface [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: SoilStoreCap        !Capacity of soil store for each surface [mm]
 
    ! ---- Within-grid water distribution matrix ---------------------------------------------------
-   REAL(KIND(1d0)), DIMENSION(nsurf + 1, nsurf - 1)::WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
+   REAL(KIND(1D0)), DIMENSION(nsurf + 1, nsurf - 1)::WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
 
    ! ---- Drainage characteristics ----------------------------------------------------------------
-   REAL(KIND(1d0)), DIMENSION(6, nsurf):: StoreDrainPrm   !Storage capacities and drainage equation info for each surface
+   REAL(KIND(1D0)), DIMENSION(6, nsurf):: StoreDrainPrm   !Storage capacities and drainage equation info for each surface
    ! 1 - min storage capacity [mm]
    ! 2 - Drainage equation to use
    ! 3 - Drainage coeff 1 [units depend on choice of eqn]
@@ -256,12 +256,12 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 9):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
    ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
 
-   REAL(KIND(1d0)), DIMENSION(nvegsurf)        :: GDD_id, GDD_id_prev     !Growing Degree Days (see SUEWS_DailyState.f95)
-   REAL(KIND(1d0)), DIMENSION(nvegsurf)        :: SDD_id     !Growing Degree Days (see SUEWS_DailyState.f95)
-   REAL(KIND(1d0)):: Tmin_id, Tmax_id, lenDay_id
-   REAL(KIND(1d0)), DIMENSION(12)       :: HDD_id
-   REAL(KIND(1d0)), DIMENSION(9)        :: WUDay_id, WUDay_id_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-   REAL(KIND(1d0)), DIMENSION(nvegsurf) :: LAI_id, LAI_id_prev     !LAI for each veg surface [m2 m-2]
+   REAL(KIND(1D0)), DIMENSION(nvegsurf)        :: GDD_id, GDD_id_prev     !Growing Degree Days (see SUEWS_DailyState.f95)
+   REAL(KIND(1D0)), DIMENSION(nvegsurf)        :: SDD_id     !Growing Degree Days (see SUEWS_DailyState.f95)
+   REAL(KIND(1D0)):: Tmin_id, Tmax_id, lenDay_id
+   REAL(KIND(1D0)), DIMENSION(12)       :: HDD_id
+   REAL(KIND(1D0)), DIMENSION(9)        :: WUDay_id, WUDay_id_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+   REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAI_id, LAI_id_prev     !LAI for each veg surface [m2 m-2]
 
    ! Seasonality of deciduous trees accounted for by the following variables which change with time
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
@@ -270,7 +270,7 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: albEveTr     !Albedo of evergreen trees [-]
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: albGrass   !Albedo of grass[-]
 
-   REAL(KIND(1d0)):: AlbMin_DecTr, &   !Min albedo for deciduous trees [-]
+   REAL(KIND(1D0)):: AlbMin_DecTr, &   !Min albedo for deciduous trees [-]
                      AlbMax_DecTr, &   !Max albedo for deciduous trees [-]
                      CapMin_dec, &   !Min storage capacity for deciduous trees [mm] (from input information)
                      CapMax_dec, &   !Max storage capacity for deciduous trees [mm] (from input information)
@@ -288,14 +288,14 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 9,MaxNumberOfGrids):: WUDay_grids
    ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
 
-   REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: GDD_id_grids
-   REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: SDD_id_grids
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: Tmin_id_grids
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: Tmax_id_grids
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: lenDay_id_grids
-   REAL(KIND(1d0)), DIMENSION(12, MaxNumberOfGrids):: HDD_id_grids
-   REAL(KIND(1d0)), DIMENSION(9, MaxNumberOfGrids):: WUDay_id_grids
-   REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: LAI_id_grids
+   REAL(KIND(1D0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: GDD_id_grids
+   REAL(KIND(1D0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: SDD_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: Tmin_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: Tmax_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: lenDay_id_grids
+   REAL(KIND(1D0)), DIMENSION(12, MaxNumberOfGrids):: HDD_id_grids
+   REAL(KIND(1D0)), DIMENSION(9, MaxNumberOfGrids):: WUDay_id_grids
+   REAL(KIND(1D0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: LAI_id_grids
 
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albDecTr_grids
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: DecidCap_grids
@@ -304,17 +304,17 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albEveTr_grids
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albGrass_grids
 
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: DecidCap_id_grids
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: albDecTr_id_grids
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: albEveTr_id_grids
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: albGrass_id_grids
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: porosity_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: DecidCap_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albDecTr_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albEveTr_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albGrass_id_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: porosity_id_grids
 
-   REAL(KIND(1d0)) :: DecidCap_id
-   REAL(KIND(1d0)) :: albDecTr_id
-   REAL(KIND(1d0)) :: albEveTr_id
-   REAL(KIND(1d0)) :: albGrass_id
-   REAL(KIND(1d0)) :: porosity_id
+   REAL(KIND(1D0)) :: DecidCap_id
+   REAL(KIND(1D0)) :: albDecTr_id
+   REAL(KIND(1D0)) :: albEveTr_id
+   REAL(KIND(1D0)) :: albGrass_id
+   REAL(KIND(1D0)) :: porosity_id
 
    ! AnOHM related: added by TS 01 Mar 2016
    ! store AnOHM coef. of all sfc. by TS 09 Apr 2016
@@ -324,7 +324,7 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a2AnOHM_grids
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a3AnOHM_grids
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids,nsurf,3):: a123AnOHM_gs
-   REAL(KIND(1d0)):: xBo ! daily Bowen ratio
+   REAL(KIND(1D0)):: xBo ! daily Bowen ratio
    !! store water states for AnOHM iteration, by TS 13 Apr 2016
    !REAL(KIND(1d0)),DIMENSION(0:ndays,MaxNumberOfGrids,nsurf):: soilmoistDay   !Soil moisture of each surface type at the end of a day [mm], 13 Apr 2016 TS
    !REAL(KIND(1d0)),DIMENSION(0:ndays,MaxNumberOfGrids,nsurf):: stateDay       !Wetness status of each existing surface type at the end of a day [mm], 13 Apr 2016 TS
@@ -335,19 +335,19 @@ MODULE allocateArray
 
    ! --- Vegetation phenology ---------------------------------------------------------------------
    ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: BaseT            !Base temperature for growing degree days [degC]
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: BaseTe           !Base temperature for senescence degree days [degC]
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: GDDFull          !Growing degree days needed for full capacity [degC]
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: SDDFull          !Senescence degree days needed to initiate leaf off [degC]
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: LAIMin           !Min LAI [m2 m-2]
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: LAIMax           !Max LAI  [m2 m-2]
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: MaxConductance   !Max conductance [mm s-1]
-   REAL(KIND(1d0)), DIMENSION(4, nvegsurf):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: BaseT            !Base temperature for growing degree days [degC]
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: BaseTe           !Base temperature for senescence degree days [degC]
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: GDDFull          !Growing degree days needed for full capacity [degC]
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: SDDFull          !Senescence degree days needed to initiate leaf off [degC]
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: LAIMin           !Min LAI [m2 m-2]
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: LAIMax           !Max LAI  [m2 m-2]
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: MaxConductance   !Max conductance [mm s-1]
+   REAL(KIND(1D0)), DIMENSION(4, nvegsurf):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
    !! N.B. currently DecTr only, although input provided for all veg types
    INTEGER, DIMENSION(nvegsurf):: LAIType                  !LAI equation to use: original (0) or new (1)
    !real(kind(1d0))::GDDmax,SDDMax                        ! Max GDD and SDD across all veg types [degC] (removed HCW 03 Mar 2015)
 
-   REAL(KIND(1d0)), DIMENSION(nvegsurf):: BiogenCO2Code, &    !Biogenic CO2 Code for SUEWS_BiogenCO2.txt
+   REAL(KIND(1D0)), DIMENSION(nvegsurf):: BiogenCO2Code, &    !Biogenic CO2 Code for SUEWS_BiogenCO2.txt
                                           alpha_bioCO2, &
                                           beta_bioCO2, &
                                           theta_bioCO2, &
@@ -364,27 +364,27 @@ MODULE allocateArray
    !-----------------------------------------------------------------------------------------------
 
    ! ---- Variables related to NARP ---------------------------------------------------------------
-   REAL(KIND(1d0)), DIMENSION(nsurf):: alb    !Albedo of each surface type [-]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: emis   !Emissivity of each surface type [-]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: alb    !Albedo of each surface type [-]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: emis   !Emissivity of each surface type [-]
 
-   REAL(KIND(1d0)):: bulkalbedo !Bulk albedo for whole surface (areally-weighted)
+   REAL(KIND(1D0)):: bulkalbedo !Bulk albedo for whole surface (areally-weighted)
 
    ! Radiation balance components for different surfaces
-   REAL(KIND(1d0)), DIMENSION(nsurf):: Tsurf_ind, &        !Surface temperature for each surface [degC]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: Tsurf_ind, &        !Surface temperature for each surface [degC]
                                        Tsurf_ind_snow, &   !Snow surface temperature for each surface [degC]
                                        Tsurf_ind_nosnow
-   REAL(KIND(1d0)), DIMENSION(nsurf):: kup_ind, &          !Outgoing shortwave radiation for each surface [W m-2]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: kup_ind, &          !Outgoing shortwave radiation for each surface [W m-2]
                                        kup_ind_snow, &     !Outgoing shortwave radiation for each snow surface [W m-2]
                                        kup_ind_nosnow
-   REAL(KIND(1d0)), DIMENSION(nsurf):: lup_ind, &          !Outgoing longwave radiation for each surface [W m-2]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: lup_ind, &          !Outgoing longwave radiation for each surface [W m-2]
                                        lup_ind_snow, &     !Outgoing longwave radiation for each snow surface [W m-2]
                                        lup_ind_nosnow
-   REAL(KIND(1d0)), DIMENSION(nsurf):: qn1_ind, &          !Net all-wave radiation for each surface [W m-2]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: qn1_ind, &          !Net all-wave radiation for each surface [W m-2]
                                        qn1_ind_snow, &     !Net all-wave radiation for each snow surface [W m-2]
                                        qn1_ind_nosnow
 
    ! ---- NARP-specific parameters ----------------------------------------------------------------
-   REAL(KIND(1d0))             :: NARP_LAT, NARP_LONG, NARP_YEAR, NARP_TZ, &
+   REAL(KIND(1D0))             :: NARP_LAT, NARP_LONG, NARP_YEAR, NARP_TZ, &
                                   NARP_ALB_SNOW, NARP_EMIS_SNOW, NARP_TRANS_SITE
    REAL(KIND(1D0))             :: NARP_G(365)   !!QUESTION: Should this be NDays? - HCW
    INTEGER                     :: NARP_NPERHOUR
@@ -396,25 +396,25 @@ MODULE allocateArray
    !-----------------------------------------------------------------------------------------------
 
    ! ---- OHM coefficients ------------------------------------------------------------------------
-   REAL(KIND(1d0)), DIMENSION(nsurf + 1, 4, 3):: OHM_coef   !Array for OHM coefficients
-   REAL(KIND(1d0)), DIMENSION(nsurf + 1)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
-   REAL(KIND(1d0)):: a1, a2, a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
+   REAL(KIND(1D0)), DIMENSION(nsurf + 1, 4, 3):: OHM_coef   !Array for OHM coefficients
+   REAL(KIND(1D0)), DIMENSION(nsurf + 1)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
+   REAL(KIND(1D0)):: a1, a2, a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
    ! REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
    ! REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
    ! REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_store_grid,qn1_av_store_grid
    ! REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
 
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE::tair_av_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE::qn1_av_grids, qn1_s_av_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE::dqndt_grids, dqnsdt_grids
-   REAL(KIND(1d0))::qn1_av, dqndt
-   REAL(KIND(1d0))::tair_av
-   REAL(KIND(1d0))::qn1_s_av, dqnsdt
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE::tair_av_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE::qn1_av_grids, qn1_s_av_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE::dqndt_grids, dqnsdt_grids
+   REAL(KIND(1D0))::qn1_av, dqndt
+   REAL(KIND(1D0))::tair_av
+   REAL(KIND(1D0))::qn1_s_av, dqnsdt
 
    !-----------------------------------------------------------------------------------------------
 
    ! ---- Snow-related variables ------------------------------------------------------------------
-   REAL(KIND(1d0)), DIMENSION(nsurf):: changSnow, &       !Change in snowpack in mm
+   REAL(KIND(1D0)), DIMENSION(nsurf):: changSnow, &       !Change in snowpack in mm
                                        maxSnowVol, &      !! Maximum snow volume
                                        SnowWater, &  !!Liquid water in the snow pack of ith surface
                                        ev_snow, &          !!Evaporation from snowpack in mm
@@ -439,9 +439,9 @@ MODULE allocateArray
                                        SnowPackLimit, &
                                        deltaQi
 
-   REAL(KIND(1d0)), DIMENSION(nsurf, MaxNumberOfGrids)::iceFrac_grids
+   REAL(KIND(1D0)), DIMENSION(nsurf, MaxNumberOfGrids)::iceFrac_grids
 
-   REAL(KIND(1d0)), DIMENSION(nsurf):: snowPack, &        !Amount of snow on each surface in mm
+   REAL(KIND(1D0)), DIMENSION(nsurf):: snowPack, &        !Amount of snow on each surface in mm
                                        snowPackOld
    INTEGER, DIMENSION(nsurf):: heiG, &                    !snow layer height
                                snowCoverForms, &
@@ -452,24 +452,24 @@ MODULE allocateArray
    !! Grid connections needs coding, currently no water transfer between grids
    ! Added HCW 14 Nov 2014
    INTEGER, PARAMETER:: nconns = 8   !Number of grids for between-grid connections
-   REAL(KIND(1d0)), DIMENSION(nconns):: GridToFrac   !Fraction of water moving to the grid specified in GridTo [-]
-   REAL(KIND(1d0)), DIMENSION(nconns):: GridTo       !Grid that water moves to
+   REAL(KIND(1D0)), DIMENSION(nconns):: GridToFrac   !Fraction of water moving to the grid specified in GridTo [-]
+   REAL(KIND(1D0)), DIMENSION(nconns):: GridTo       !Grid that water moves to
    !!character(len=15),dimension(2,MaxNumberOfGrids)::GridConnections  !List of different grid corrections
    !!real (kind(1d0)),dimension(MaxNumberOfGrids)::   GridConnectionsFrac   !Fraction of water moving between the different grids
    !-----------------------------------------------------------------------------------------------
 
    ! ---- AnOHM related variable, added by TS, 01 Mar 2016 ---------------------------------------------------------------
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: a1AnOHM, a2AnOHM, a3AnOHM ! OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: mAHAnOHM                ! daily mean AH [W m-2]
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: BoAnOHMStart            ! initial Bo for interation [-]
-   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: BoAnOHMEnd              ! final Bo for interation [-]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: cpAnOHM ! heat capacity [J m-3 K-1]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: kkAnOHM ! thermal conductivity [W m-1 K-1]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: chAnOHM ! bulk transfer coef. [-]
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids) :: a1AnOHM, a2AnOHM, a3AnOHM ! OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids) :: mAHAnOHM                ! daily mean AH [W m-2]
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids) :: BoAnOHMStart            ! initial Bo for interation [-]
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids) :: BoAnOHMEnd              ! final Bo for interation [-]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: cpAnOHM ! heat capacity [J m-3 K-1]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: kkAnOHM ! thermal conductivity [W m-1 K-1]
+   REAL(KIND(1D0)), DIMENSION(nsurf):: chAnOHM ! bulk transfer coef. [-]
    !-----------------------------------------------------------------------------------------------
 
    ! ESTM variables for SUEWS surfaces
-   REAL(KIND(1d0)), DIMENSION(5, nsurfIncSnow):: zSurf_SUEWSsurfs, &
+   REAL(KIND(1D0)), DIMENSION(5, nsurfIncSnow):: zSurf_SUEWSsurfs, &
                                                  kSurf_SUEWSsurfs, &
                                                  rSurf_SUEWSsurfs
 
@@ -1018,7 +1018,7 @@ MODULE data_in
 
    ! For more complex downscaling allow different RainAmongN for different intensities
    INTEGER, DIMENSION(5):: MultRainAmongN           ! RainAmongN for each intensity bin
-   REAL(KIND(1d0)), DIMENSION(5):: MultRainAmongNUpperI   ! Upper bound of intensity bin for which to apply MultRainAmongN
+   REAL(KIND(1D0)), DIMENSION(5):: MultRainAmongNUpperI   ! Upper bound of intensity bin for which to apply MultRainAmongN
 
    ! ---- Model options currently set in model, but may be moved to RunControl at a later date
    INTEGER:: AlbedoChoice, &         !No additional albedo varaition (0); zenith angle calculation (1)
@@ -1043,11 +1043,11 @@ MODULE data_in
    INTEGER:: OutputFormats   !Used to control writing out of output file format
 
    ! ---- Other options set in RunControl --------------------------------------------------------
-   REAL(KIND(1d0)):: timezone      !Timezone (GMT=0)
+   REAL(KIND(1D0)):: timezone      !Timezone (GMT=0)
 
    ! ---- Variables in alphabetical order --------------------------------------------------------
    !! Add units
-   REAL(KIND(1d0))::  alpha_qhqe, & !Alpha parameter used in LUMPS QH and QE calculations [-]
+   REAL(KIND(1D0))::  alpha_qhqe, & !Alpha parameter used in LUMPS QH and QE calculations [-]
                      alt, &       !Altitude  [m]
                      ! avdens, &    !Average air density, moved to  by TS, 27 Aug 2019
                      avkdn, &     !Average downwelling shortwave radiation
@@ -1140,7 +1140,7 @@ MODULE data_in
                      year, &      !Year of the measurements
                      zenith_deg  !Sun zenith angle in degrees
 
-   REAL(KIND(1d0)), DIMENSION(2)::Qf_A, Qf_B, Qf_C, &   !Qf coefficients
+   REAL(KIND(1D0)), DIMENSION(2)::Qf_A, Qf_B, Qf_C, &   !Qf coefficients
                                    AH_MIN, &    !Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
                                    AH_SLOPE_Heating, &  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
                                    AH_SLOPE_Cooling, &
@@ -1239,7 +1239,7 @@ MODULE snowMod
                      CRWmax  !Free water holding capacity of shallow SnowPack
 
    REAL(KIND(1D0)), DIMENSION(2)::  SnowRemoval = 0 ! Removal of snow in mm
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: SnowProf_24hr  ! Timing of snow removal (0 or 1) Hourly, WD/WE
+   REAL(KIND(1D0)), DIMENSION(0:23, 2):: SnowProf_24hr  ! Timing of snow removal (0 or 1) Hourly, WD/WE
 
    INTEGER::SnowFractionChoice = 2   !Choice how fraction of snow is calculated
 
@@ -1249,7 +1249,7 @@ END MODULE snowMod
 !==================================================================================================
 MODULE defaultNotUsed
    IMPLICIT NONE
-   REAL(KIND(1d0)):: notUsed = -55.55, reall, NAN = -999, pNAN = 999
+   REAL(KIND(1D0)):: notUsed = -55.55, reall, NAN = -999, pNAN = 999
    INTEGER:: notUsedI = -55, ios_out
    INTEGER:: errorChoice, warningChoice  !errorChoice/warningChoice defines if problems.txt/warnings.txt is opened for the first time
 END MODULE defaultNotUsed
@@ -1264,8 +1264,8 @@ MODULE time
              isec, &          !Seconds
              DLS             !day lightsavings =1 + 1h) =0
 
-   REAL(KIND(1d0)):: dectime        !Decimal time
-   REAL(KIND(1d0)):: tstepcount    !Count number of timesteps in this day
+   REAL(KIND(1D0)):: dectime        !Decimal time
+   REAL(KIND(1D0)):: tstepcount    !Count number of timesteps in this day
    INTEGER:: nofDaysThisYear        !Based on whether leap year or not
    INTEGER:: dt_since_start ! time since simulation starts [s]
 
@@ -1276,19 +1276,14 @@ END MODULE time
 
 !===================================================================================
 MODULE mod_grav
-   REAL(KIND(1d0)):: grav = 9.80665  !g - gravity - physics today august 1987
+   REAL(KIND(1D0)):: grav = 9.80665  !g - gravity - physics today august 1987
 END MODULE mod_grav
 
 !===================================================================================
-MODULE mod_k
-   REAL(KIND(1d0)) :: k = 0.4, &             !Von Karman's contant
-                      k2 = 0.16, &           !Power of Van Karman's contant
-                      neut_limit = 0.001000 !Limit for neutral stability
-END MODULE mod_k
 
 !===================================================================================
 MODULE Thresh
-   REAL(KIND(1d0)) :: IPThreshold_mmhr = 10   !Threshold for intense precipitation [mm hr-1]
+   REAL(KIND(1D0)) :: IPThreshold_mmhr = 10   !Threshold for intense precipitation [mm hr-1]
 
 END MODULE Thresh
 
@@ -1296,20 +1291,20 @@ END MODULE Thresh
 MODULE gas
    !   press (mb) ea (mb)
    IMPLICIT NONE
-   REAL(KIND(1d0))::  comp = 0.9995
-   REAL(KIND(1d0))::  epsil = 0.62197   !ratio molecular weight of water vapor/dry air (kg/mol/kg/mol)
-   REAL(KIND(1d0))::  epsil_gkg = 621.97   !ratio molecular weight of water vapor/dry air in g/kg
-   REAL(KIND(1d0))::  dry_gas = 8.31451 !Dry gas constant (J/k/mol)
-   REAL(KIND(1d0))::  gas_ct_wat = 461.05 !Gas constant for water (J/kg/K)
-   REAL(KIND(1d0))::  molar = 0.028965 !Dry air molar fraction in kg/mol
-   REAL(KIND(1d0))::  molar_wat_vap = 0.0180153 !Molar fraction of water vapor in kg/mol
-   REAL(KIND(1d0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
-   REAL(KIND(1d0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
+   REAL(KIND(1D0))::  comp = 0.9995
+   REAL(KIND(1D0))::  epsil = 0.62197   !ratio molecular weight of water vapor/dry air (kg/mol/kg/mol)
+   REAL(KIND(1D0))::  epsil_gkg = 621.97   !ratio molecular weight of water vapor/dry air in g/kg
+   REAL(KIND(1D0))::  dry_gas = 8.31451 !Dry gas constant (J/k/mol)
+   REAL(KIND(1D0))::  gas_ct_wat = 461.05 !Gas constant for water (J/kg/K)
+   REAL(KIND(1D0))::  molar = 0.028965 !Dry air molar fraction in kg/mol
+   REAL(KIND(1D0))::  molar_wat_vap = 0.0180153 !Molar fraction of water vapor in kg/mol
+   REAL(KIND(1D0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
+   REAL(KIND(1D0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
 END MODULE gas
 
 !**********************************************
 MODULE mod_z
-   REAL(KIND(1d0)) :: zzd, &  !Active measurement height (meas. height-displac. height)
+   REAL(KIND(1D0)) :: zzd, &  !Active measurement height (meas. height-displac. height)
                       z0m, &  !Aerodynamic roughness length
                       zdm, &  !Displacement height
                       z0m_in, &  !Aerodynamic roughness length set in SiteSelect
@@ -1321,7 +1316,7 @@ END MODULE mod_z
 !**********************************************
 MODULE resist  !Variables related surface resistance calculations (P. 1744 in G&O1991)
    IMPLICIT NONE
-   REAL(KIND(1d0)):: th, &             !Maximum temperature limit
+   REAL(KIND(1D0)):: th, &             !Maximum temperature limit
                      tl, &             !Minimum temperature limit
                      Kmax, &           !Annual maximum hourly solar radiation
                      g1, g2, g3, g4, &    !Fitted parameters related to
@@ -1335,7 +1330,7 @@ END MODULE resist
 MODULE moist
    IMPLICIT NONE
 
-   REAL(KIND(1d0))::avcp, &        !Specific heat capacity
+   REAL(KIND(1D0))::avcp, &        !Specific heat capacity
                      dens_dry, &    !Dry air density kg m-3
                      avdens, &    !Average air density
                      dq, &          !Specific humidity deficit
@@ -1358,7 +1353,7 @@ END MODULE moist
 MODULE gis_data
    IMPLICIT NONE
 
-   REAL(KIND(1d0)):: areaunir, &                   !Unirrigated area
+   REAL(KIND(1D0)):: areaunir, &                   !Unirrigated area
                      areair, &                     !Irrigated area
                      bldgH, &                      !Mean building height
                      FAIbldg, &                    !Frontal area fraction of buildings
@@ -1397,11 +1392,11 @@ MODULE sues_data
              t_interval, &   !Number of seconds in an hour [s] (now set in OverallRunControl)
              Nper, NperESTM   ! Number of model time-steps per input resolution (ResolutionFilesIn/Tstep)
 
-   REAL(KIND(1d0)):: nsh_real, &   !nsh cast as a real for use in calculations
+   REAL(KIND(1D0)):: nsh_real, &   !nsh cast as a real for use in calculations
                      tstep_real, &   !tstep cast as a real for use in calculations
                      Nper_real, NperESTM_real   !Nper as real
 
-   REAL(KIND(1d0)):: halftimestep   !In decimal time based on interval
+   REAL(KIND(1D0)):: halftimestep   !In decimal time based on interval
 
    !Options for model setup (switches, etc) mainly set in RunControl
    INTEGER:: StabilityMethod, &   !Defines stability functions used (set in RunControl)
@@ -1416,11 +1411,11 @@ MODULE sues_data
    INTEGER::Ie_start, &   !Starting time of water use (DOY)
              Ie_end       !Ending time of water use (DOY)
 
-   REAL(KIND(1d0)), DIMENSION(2):: SurplusEvap !Surplus for evaporation in 5 min timestep
+   REAL(KIND(1D0)), DIMENSION(2):: SurplusEvap !Surplus for evaporation in 5 min timestep
    ! sg -- need to determine size
 
    !Variables listed in SuesInput.nml
-   REAL(KIND(1d0))::FlowChange, &         !Difference between the input and output flow in the water body
+   REAL(KIND(1D0))::FlowChange, &         !Difference between the input and output flow in the water body
                      PipeCapacity, &       !Capacity of pipes to transfer water
                      RunoffToWater, &      !Fraction of surface runoff going to water body
                      SmCap, &              !Volumetric/gravimetric soil moisture capacity
@@ -1440,7 +1435,7 @@ MODULE sues_data
                      wu_Grass                !Water use for grass [mm]
 
    !Other related to SUES
-   REAL(KIND(1d0))::AdditionalWater, &     !Water flow from other grids
+   REAL(KIND(1D0))::AdditionalWater, &     !Water flow from other grids
                      ch_per_interval, &     !Change in state per interval
                      chSnow_per_interval, & !Change in snow state per interval
                      dI_dt, &               !Water flow between two stores
@@ -1484,7 +1479,7 @@ MODULE sues_data
                      Zh               !Areally weighted roughness element height
 
    !Calculation of u*,stability and aerodynamic resistance
-   REAL(KIND(1d0))::H, &          !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+   REAL(KIND(1D0))::H, &          !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                      l_mod, &      !Monin-Obukhov length (either measured or modelled)
                      psim, &       !Stability function of momentum
                      psih, &       !Stability function of heat
@@ -1495,7 +1490,7 @@ MODULE sues_data
                      z0_gis       !Roughness length for momentum from gis input file
 
    !Surface resistance related variables
-   REAL(KIND(1d0))::resistsurf, & !Surface resistance
+   REAL(KIND(1D0))::resistsurf, & !Surface resistance
                      gdq, &        !G(dq)
                      qnm, &        !QMAX/(QMAX+G2)
                      gq, &         !G(Q*)
@@ -1509,7 +1504,7 @@ MODULE sues_data
                      rss          !Surface resistance after wet/partially wet adjustment
 
    !SUES latent heat flux related variables
-   REAL(KIND(1d0))::  vdrc, &     !Second term up in calculation of E
+   REAL(KIND(1D0))::  vdrc, &     !Second term up in calculation of E
                      numPM, &    !Numerator of PM equation
                      sp, &       !Term in calculation of E
                      sae, &      !Same
@@ -1518,11 +1513,11 @@ MODULE sues_data
                      qeph, &     !Latent heat flux (W m^-2)
                      qeOut      !Latent heat flux [W m-2]
 
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: qhforCBL, qeforCBL   ! Stores previous timestep qh and qe for CBL model. Added by HCW 21 Mar 2017
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE:: qhforCBL, qeforCBL   ! Stores previous timestep qh and qe for CBL model. Added by HCW 21 Mar 2017
    INTEGER:: qh_choice        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs
 
    !Water use related variables
-   REAL(KIND(1d0)):: ext_wu, &         !External water use for the model timestep [mm] (over whole study area)
+   REAL(KIND(1D0)):: ext_wu, &         !External water use for the model timestep [mm] (over whole study area)
                      Faut, &           !Fraction of irrigated area using automatic irrigation
                      H_maintain, &      ! ponding water depth to maintain [mm] (over whole study area)
                      int_wu, &         !Internal water use for the model timestep [mm] (over whole study area)
@@ -1536,12 +1531,12 @@ MODULE sues_data
                      InternalWaterUse_h !Internal water use [mm h-1]
 
    ! 7 - number of days in week
-   REAL(KIND(1d0)), DIMENSION(7)::DayWatPer, &  !% of houses following daily water
+   REAL(KIND(1D0)), DIMENSION(7)::DayWatPer, &  !% of houses following daily water
                                    DayWat       !Days of watering allowed
    ! REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24hr, &   !Hourly profiles for water use (manual irrigation)
    !                                       WUProfA_24hr   !Hourly profiles for water use (automatic irrigation)
 
-   REAL(KIND(1d0)), DIMENSION(3)::Ie_a, Ie_m   !Coefficients for automatic and manual irrigation models
+   REAL(KIND(1D0)), DIMENSION(3)::Ie_a, Ie_m   !Coefficients for automatic and manual irrigation models
 
 END MODULE sues_data
 
@@ -1549,7 +1544,7 @@ END MODULE sues_data
 !===================================================================================
 MODULE VegPhenogy
    IMPLICIT NONE
-   REAL(KIND(1d0)):: VegPhenLumps, deltaLAI
+   REAL(KIND(1D0)):: VegPhenLumps, deltaLAI
 END MODULE VegPhenogy
 
 MODULE filename
@@ -1558,7 +1553,7 @@ END MODULE filename
 
 MODULE InitialCond
 
-   REAL(KIND(1d0))::LAIinitialEveTr, &
+   REAL(KIND(1D0))::LAIinitialEveTr, &
                      LAIinitialDecTr, &
                      LAIinitialGrass, &
                      porosity0, &
@@ -2082,17 +2077,17 @@ END MODULE WhereWhen
 !----------------------------------------------------------------------------------
 MODULE MathConstants
 
-   REAL(KIND(1d0)), PARAMETER ::pi = 3.14159265359
-   REAL(KIND(1d0)), PARAMETER ::dtr = 0.0174532925, rtd = 57.2957795
+   REAL(KIND(1D0)), PARAMETER ::pi = 3.14159265359
+   REAL(KIND(1D0)), PARAMETER ::dtr = 0.0174532925, rtd = 57.2957795
 
 END MODULE MathConstants
 
 !----------------------------------------------------------------------------------
 MODULE PhysConstants
 
-   REAL(KIND(1d0)), PARAMETER :: C2K = 273.15   !Celsius to Kelvin
-   REAL(KIND(1d0)), PARAMETER :: SBConst = 5.67051e-8   !Stefan Boltzmann constant [W m-2 K-4]
-   REAL(KIND(1d0)), PARAMETER :: JtoumolPAR = 4.6   ! Convert PAR from W m-2 to umol m-2 s-1
-   REAL(KIND(1d0)), PARAMETER :: KdntoPAR = 0.46    ! Conversion from Kdn to PAR, originally from Tsubo and Walker (2005), used in Bellucco et al. (2017)
+   REAL(KIND(1D0)), PARAMETER :: C2K = 273.15   !Celsius to Kelvin
+   REAL(KIND(1D0)), PARAMETER :: SBConst = 5.67051E-8   !Stefan Boltzmann constant [W m-2 K-4]
+   REAL(KIND(1D0)), PARAMETER :: JtoumolPAR = 4.6   ! Convert PAR from W m-2 to umol m-2 s-1
+   REAL(KIND(1D0)), PARAMETER :: KdntoPAR = 0.46    ! Conversion from Kdn to PAR, originally from Tsubo and Walker (2005), used in Bellucco et al. (2017)
 
 END MODULE PhysConstants

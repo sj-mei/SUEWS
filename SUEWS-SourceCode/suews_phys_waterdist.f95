@@ -41,13 +41,13 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(in):: is ! surface type number
 
-      REAL(KIND(1d0)), INTENT(in)::state_is !Wetness status of surface type "is" [mm]
-      REAL(KIND(1d0)), INTENT(in)::StorCap !current storage capacity [mm]
-      REAL(KIND(1d0)), INTENT(in)::DrainCoef1 !Drainage coeff 1 [units depend on choice of eqn]
-      REAL(KIND(1d0)), INTENT(in)::DrainCoef2 !Drainage coeff 2 [units depend on choice of eqn]
-      REAL(KIND(1d0)), INTENT(in)::DrainEq !Drainage equation to use
-      REAL(KIND(1d0)), INTENT(in)::nsh_real    !nsh cast as a real for use in calculations
-      REAL(KIND(1d0)), INTENT(out):: drain_is!Drainage of surface type "is" [mm]
+      REAL(KIND(1D0)), INTENT(in)::state_is !Wetness status of surface type "is" [mm]
+      REAL(KIND(1D0)), INTENT(in)::StorCap !current storage capacity [mm]
+      REAL(KIND(1D0)), INTENT(in)::DrainCoef1 !Drainage coeff 1 [units depend on choice of eqn]
+      REAL(KIND(1D0)), INTENT(in)::DrainCoef2 !Drainage coeff 2 [units depend on choice of eqn]
+      REAL(KIND(1D0)), INTENT(in)::DrainEq !Drainage equation to use
+      REAL(KIND(1D0)), INTENT(in)::nsh_real    !nsh cast as a real for use in calculations
+      REAL(KIND(1D0)), INTENT(out):: drain_is!Drainage of surface type "is" [mm]
 
       !If surface is dry, no drainage occurs
       IF (state_is < 0.000000001) THEN
@@ -142,45 +142,45 @@ CONTAINS
       !Stores flood water when surface state_id exceeds storage capacity [mm]
       INTEGER, INTENT(in)::is ! surface type
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr! surface fractions
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::AddWater!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::stateOld!Wetness status of each surface type from previous timestep [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap!Capacity of soil store for each surface [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::StateLimit!Limit for state_id of each surface type [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::sfr! surface fractions
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::AddWater!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::stateOld!Wetness status of each surface type from previous timestep [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap!Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::StateLimit!Limit for state_id of each surface type [mm] (specified in input files)
 
-      REAL(KIND(1d0)), INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
-      REAL(KIND(1d0)), INTENT(in)::RunoffToWater!Fraction of surface runoff going to water body
-      REAL(KIND(1d0)), INTENT(in)::pin!Rain per time interval
-      REAL(KIND(1d0)), INTENT(in)::addImpervious!Water from impervious surfaces of other grids [mm] for whole surface area
-      REAL(KIND(1d0)), INTENT(in)::nsh_real!nsh cast as a real for use in calculations
-      REAL(KIND(1d0)), INTENT(in)::PervFraction! sum of surface cover fractions for impervious surfaces
-      REAL(KIND(1d0)), INTENT(in)::addVeg!Water from vegetated surfaces of other grids [mm] for whole surface area
-      REAL(KIND(1d0)), INTENT(in)::addWaterBody!Water from water surface of other grids [mm] for whole surface area
-      REAL(KIND(1d0)), INTENT(in)::FlowChange!Difference between the input and output flow in the water body
+      REAL(KIND(1D0)), INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
+      REAL(KIND(1D0)), INTENT(in)::RunoffToWater!Fraction of surface runoff going to water body
+      REAL(KIND(1D0)), INTENT(in)::pin!Rain per time interval
+      REAL(KIND(1D0)), INTENT(in)::addImpervious!Water from impervious surfaces of other grids [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(in)::nsh_real!nsh cast as a real for use in calculations
+      REAL(KIND(1D0)), INTENT(in)::PervFraction! sum of surface cover fractions for impervious surfaces
+      REAL(KIND(1D0)), INTENT(in)::addVeg!Water from vegetated surfaces of other grids [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(in)::addWaterBody!Water from water surface of other grids [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(in)::FlowChange!Difference between the input and output flow in the water body
 
-      REAL(KIND(1d0)), INTENT(inout)::runoffAGimpervious!Above ground runoff from impervious surface [mm] for whole surface area
-      REAL(KIND(1d0)), INTENT(inout)::surplusWaterBody!Extra runoff that goes to water body [mm] as specified by RunoffToWater
-      REAL(KIND(1d0)), INTENT(inout)::runoffAGveg!Above ground runoff from vegetated surfaces [mm] for whole surface area
-      REAL(KIND(1d0)), INTENT(inout)::runoffPipes!Runoff in pipes [mm] for whole surface area
-      REAL(KIND(1d0)), INTENT(inout)::ev!Evaporation
-      REAL(KIND(1d0)), INTENT(inout)::runoffWaterBody!Above ground runoff from water surface [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(inout)::runoffAGimpervious!Above ground runoff from impervious surface [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(inout)::surplusWaterBody!Extra runoff that goes to water body [mm] as specified by RunoffToWater
+      REAL(KIND(1D0)), INTENT(inout)::runoffAGveg!Above ground runoff from vegetated surfaces [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(inout)::runoffPipes!Runoff in pipes [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(inout)::ev!Evaporation
+      REAL(KIND(1D0)), INTENT(inout)::runoffWaterBody!Above ground runoff from water surface [mm] for whole surface area
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::soilstore_id  !Soil moisture of each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(inout)    ::SurplusEvap!Surplus for evaporation in 5 min timestep
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::soilstore_id  !Soil moisture of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(inout)    ::SurplusEvap!Surplus for evaporation in 5 min timestep
 
-      REAL(KIND(1d0)), INTENT(out)::p_mm!Inputs to surface water balance
+      REAL(KIND(1D0)), INTENT(out)::p_mm!Inputs to surface water balance
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::drain !Drainage of each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::WU_nsurf !external water use of each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::chang !Change in state_id [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoff!Runoff from each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::state_id !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::drain !Drainage of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::WU_nsurf !external water use of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::chang !Change in state_id [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::runoff!Runoff from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::state_id !Wetness status of each surface type [mm]
 
       !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
-      REAL(KIND(1d0)):: EvPart
-      REAL(KIND(1d0)), PARAMETER:: NotUsed = -55.5
-      REAL(KIND(1d0)), PARAMETER:: IPThreshold_mmhr = 10 ! NB:this should be an input and can be specified. SG 25 Apr 2018
+      REAL(KIND(1D0)):: EvPart
+      REAL(KIND(1D0)), PARAMETER:: NotUsed = -55.5
+      REAL(KIND(1D0)), PARAMETER:: IPThreshold_mmhr = 10 ! NB:this should be an input and can be specified. SG 25 Apr 2018
 
       !Initialise extra evaporation to zero
       EvPart = 0
@@ -270,7 +270,7 @@ CONTAINS
          ! Transfer evaporation surplus from impervious surfaces to pervious surfaces
          EvPart = MERGE( &
                   DOT_PRODUCT(SurplusEvap(PavSurf:BldgSurf), sfr(PavSurf:BldgSurf)/PervFraction), &
-                  0d0, &
+                  0D0, &
                   PervFraction /= 0)
 
          ! Add surplus evaporation to ev for pervious surfaces
@@ -410,8 +410,8 @@ CONTAINS
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: is
-      REAL(KIND(1d0)), INTENT(in) :: sfr(nsurf), runoff(nsurf), PipeCapacity, RunoffToWater
-      REAL(KIND(1d0)), INTENT(inout) :: runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes
+      REAL(KIND(1D0)), INTENT(in) :: sfr(nsurf), runoff(nsurf), PipeCapacity, RunoffToWater
+      REAL(KIND(1D0)), INTENT(inout) :: runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes
 
       ! Add runoff to pipes
       runoffPipes = runoffPipes + (runoff(is)*sfr(is))
@@ -462,12 +462,12 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(in)::snowUse!Snow part used (1) or not used (0)
 
-      REAL(KIND(1d0)), INTENT(in)::WaterDist(nsurf + 1, nsurf - 1) !Within-grid water distribution to other surfaces and runoff/soil store [-]
-      REAL(KIND(1d0)), INTENT(in)::sfr(nsurf)                !Surface fractions [-]
-      REAL(KIND(1d0)), INTENT(in)::Drain(nsurf)               !Drainage of each surface type [mm]
+      REAL(KIND(1D0)), INTENT(in)::WaterDist(nsurf + 1, nsurf - 1) !Within-grid water distribution to other surfaces and runoff/soil store [-]
+      REAL(KIND(1D0)), INTENT(in)::sfr(nsurf)                !Surface fractions [-]
+      REAL(KIND(1D0)), INTENT(in)::Drain(nsurf)               !Drainage of each surface type [mm]
 
-      REAL(KIND(1d0)), INTENT(out)::AddWaterRunoff(nsurf)!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-      REAL(KIND(1d0)), INTENT(out)::AddWater(nsurf)        !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+      REAL(KIND(1D0)), INTENT(out)::AddWaterRunoff(nsurf)!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      REAL(KIND(1D0)), INTENT(out)::AddWater(nsurf)        !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
 
       INTEGER::ii, jj
       INTEGER::NSurfDoNotReceiveDrainage = 0!Number of surfaces that do not receive drainage water (green roof)
@@ -512,11 +512,11 @@ CONTAINS
       IMPLICIT NONE
 
       ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
-      REAL(KIND(1d0)), INTENT(in)::NonWaterFraction
-      REAL(KIND(1d0)), INTENT(in), DIMENSION(nsurf)::SoilStoreCap, sfr, soilstore_id
+      REAL(KIND(1D0)), INTENT(in)::NonWaterFraction
+      REAL(KIND(1D0)), INTENT(in), DIMENSION(nsurf)::SoilStoreCap, sfr, soilstore_id
 
-      REAL(KIND(1d0)), INTENT(out)::SoilMoistCap, SoilState
-      REAL(KIND(1d0)), INTENT(out)::vsmd, smd
+      REAL(KIND(1D0)), INTENT(out)::SoilMoistCap, SoilState
+      REAL(KIND(1D0)), INTENT(out)::vsmd, smd
 
       INTEGER :: is
 
@@ -560,23 +560,23 @@ CONTAINS
       ! INTEGER, PARAMETER :: nsurf = 7
 
       INTEGER, INTENT(in) ::SMDMethod
-      REAL(KIND(1d0)), INTENT(in)::xsmd
-      REAL(KIND(1d0)), INTENT(in)::NonWaterFraction
-      REAL(KIND(1d0)), INTENT(in)::SoilMoistCap
+      REAL(KIND(1D0)), INTENT(in)::xsmd
+      REAL(KIND(1D0)), INTENT(in)::NonWaterFraction
+      REAL(KIND(1D0)), INTENT(in)::SoilMoistCap
 
-      REAL(KIND(1d0)), INTENT(in)::surf_chang_per_tstep
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::soilstore_id !Soil moisture of each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::soilstoreOld !Soil moisture of each surface type from previous timestep [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap        !Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), INTENT(in)::surf_chang_per_tstep
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::soilstore_id !Soil moisture of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::soilstoreOld !Soil moisture of each surface type from previous timestep [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::sfr
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap        !Capacity of soil store for each surface [mm]
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::smd_nsurf !smd for each surface
-      REAL(KIND(1d0)), INTENT(out)::SoilState !Area-averaged soil moisture [mm] for whole surface
-      REAL(KIND(1d0)), INTENT(out)::smd !One value for whole surface
-      REAL(KIND(1d0)), INTENT(out)::tot_chang_per_tstep !Change in surface state_id
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::smd_nsurf !smd for each surface
+      REAL(KIND(1D0)), INTENT(out)::SoilState !Area-averaged soil moisture [mm] for whole surface
+      REAL(KIND(1D0)), INTENT(out)::smd !One value for whole surface
+      REAL(KIND(1D0)), INTENT(out)::tot_chang_per_tstep !Change in surface state_id
 
-      REAL(KIND(1d0)), PARAMETER::NotUsed = -999
-      REAL(KIND(1d0)), PARAMETER::NAN = -999
+      REAL(KIND(1D0)), PARAMETER::NotUsed = -999
+      REAL(KIND(1D0)), PARAMETER::NAN = -999
       INTEGER :: is
 
       SoilState = 0       !Area-averaged soil moisture [mm] for whole surface
@@ -652,21 +652,21 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1d0)), INTENT(in) ::sfr(nsurf)! surface fractions
-      REAL(KIND(1d0)), INTENT(in) ::SoilStoreCap(nsurf)!Capacity of soil store for each surface [mm]
-      REAL(KIND(1d0)), INTENT(in) ::SoilDepth(nsurf)!Depth of sub-surface soil store for each surface [mm]
-      REAL(KIND(1d0)), INTENT(in) ::SatHydraulicConduct(nsurf)!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-      REAL(KIND(1d0)), INTENT(in) ::SurfaceArea!Surface area of the study area [m2]
-      REAL(KIND(1d0)), INTENT(in) ::NonWaterFraction! sum of surface cover fractions for all except water surfaces
-      REAL(KIND(1d0)), INTENT(in) ::tstep_real !tstep cast as a real for use in calculations
+      REAL(KIND(1D0)), INTENT(in) ::sfr(nsurf)! surface fractions
+      REAL(KIND(1D0)), INTENT(in) ::SoilStoreCap(nsurf)!Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), INTENT(in) ::SoilDepth(nsurf)!Depth of sub-surface soil store for each surface [mm]
+      REAL(KIND(1D0)), INTENT(in) ::SatHydraulicConduct(nsurf)!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+      REAL(KIND(1D0)), INTENT(in) ::SurfaceArea!Surface area of the study area [m2]
+      REAL(KIND(1D0)), INTENT(in) ::NonWaterFraction! sum of surface cover fractions for all except water surfaces
+      REAL(KIND(1D0)), INTENT(in) ::tstep_real !tstep cast as a real for use in calculations
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout) ::soilstore_id!Soil moisture of each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout) ::runoffSoil!Soil runoff from each soil sub-surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) ::soilstore_id!Soil moisture of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) ::runoffSoil!Soil runoff from each soil sub-surface [mm]
 
-      REAL(KIND(1d0)), INTENT(out) :: runoffSoil_per_tstep!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+      REAL(KIND(1D0)), INTENT(out) :: runoffSoil_per_tstep!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
 
       INTEGER::jj, is
-      REAL(KIND(1d0)):: &
+      REAL(KIND(1D0)):: &
          DimenWaterCon1, DimenWaterCon2, &
          SoilMoistCap_Vol1, &
          SoilMoist_vol1, &
@@ -677,7 +677,7 @@ CONTAINS
          Distance, KmWeight, dI, &
          dI_dt!Water flow between two stores
 
-      REAL(KIND(1d0)), PARAMETER:: &
+      REAL(KIND(1D0)), PARAMETER:: &
          alphavG = 0.0005, &  !Set alphavG to match value in van Genuchten (1980) [mm-1]
          NUnits = 1   !Can change to represent plot/base unit size
 
@@ -885,9 +885,9 @@ CONTAINS
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
 
-      REAL(KIND(1d0)), INTENT(in)::nsh_real
-      REAL(KIND(1d0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation)  [m3]
-      REAL(KIND(1d0)), INTENT(in)::SurfaceArea !Surface area of the study area [m2]
+      REAL(KIND(1D0)), INTENT(in)::nsh_real
+      REAL(KIND(1D0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation)  [m3]
+      REAL(KIND(1D0)), INTENT(in)::SurfaceArea !Surface area of the study area [m2]
       REAL(KIND(1D0)), INTENT(IN)::IrrFracPaved!Fraction of paved which are irrigated
       REAL(KIND(1D0)), INTENT(IN)::IrrFracBldgs!Fraction of buildings (e.g., green roofs) which are irrigated
       REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr!Fraction of evergreen trees which are irrigated
@@ -895,13 +895,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass!Fraction of grass which is irrigated
       REAL(KIND(1D0)), INTENT(IN)::IrrFracBSoil!Fraction of bare soil trees which are irrigated
       REAL(KIND(1D0)), INTENT(IN)::IrrFracWater!Fraction of water which are irrigated
-      REAL(KIND(1d0)), INTENT(in)::InternalWaterUse_h !Internal water use [mm h-1]
-      REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::WUProfA_24hr !Automatic water use profiles at hourly scales
-      REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::WUProfM_24hr !Manual water use profiles at hourly scales
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr!Surface fractions [-]
+      REAL(KIND(1D0)), INTENT(in)::InternalWaterUse_h !Internal water use [mm h-1]
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in)::WUProfA_24hr !Automatic water use profiles at hourly scales
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in)::WUProfM_24hr !Manual water use profiles at hourly scales
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::sfr!Surface fractions [-]
 
-      REAL(KIND(1d0)), DIMENSION(12), INTENT(in)::HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(9), INTENT(in)::WUDay_id!WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(12), INTENT(in)::HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(9), INTENT(in)::WUDay_id!WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
       INTEGER, INTENT(in)::DayofWeek_id(3)!DayofWeek(id) 1 - day of week; 2 - month; 3 - season
       INTEGER, INTENT(in)::WaterUseMethod !Use modelled (0) or observed (1) water use
@@ -910,37 +910,37 @@ CONTAINS
       INTEGER, INTENT(in)::imin !Minutes
       INTEGER, INTENT(in)::DLS !day lightsavings =1 + 1h) =0
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::wu_nsurf !external Water use for each surface [mm]
-      REAL(KIND(1d0)), INTENT(out)::wu_int !Internal water use for the model timestep [mm] (over whole study area)
-      REAL(KIND(1d0)), INTENT(out)::wu_ext !External water use for the model timestep [mm] (over whole study area)
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::wu_nsurf !external Water use for each surface [mm]
+      REAL(KIND(1D0)), INTENT(out)::wu_int !Internal water use for the model timestep [mm] (over whole study area)
+      REAL(KIND(1D0)), INTENT(out)::wu_ext !External water use for the model timestep [mm] (over whole study area)
 
-      REAL(KIND(1d0))::wu_EveTr !Water use for evergreen trees/shrubs [mm]
-      REAL(KIND(1d0))::wu_DecTr !Water use for deciduous trees/shrubs [mm]
-      REAL(KIND(1d0))::wu_Grass !Water use for grass [mm]
+      REAL(KIND(1D0))::wu_EveTr !Water use for evergreen trees/shrubs [mm]
+      REAL(KIND(1D0))::wu_DecTr !Water use for deciduous trees/shrubs [mm]
+      REAL(KIND(1D0))::wu_Grass !Water use for grass [mm]
 
-      REAL(KIND(1d0)), DIMENSION(nsurf)::WUDay_A_id!modelled Automatic Daily water use for each surface [mm] (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(nsurf)::WUDay_M_id!modelled Manual Daily water use for each surface [mm] (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(nsurf)::IrrFrac !faction of irrigated part in each surface [-]
-      REAL(KIND(1d0)), DIMENSION(nsurf)::WUArea !water use area [m2] for each surface type
+      REAL(KIND(1D0)), DIMENSION(nsurf)::WUDay_A_id!modelled Automatic Daily water use for each surface [mm] (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(nsurf)::WUDay_M_id!modelled Manual Daily water use for each surface [mm] (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(nsurf)::IrrFrac !faction of irrigated part in each surface [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf)::WUArea !water use area [m2] for each surface type
 
       ! REAL(KIND(1d0)):: WUAreaEveTr_m2
       ! REAL(KIND(1d0)):: WUAreaDecTr_m2
       ! REAL(KIND(1d0)):: WUAreaGrass_m2
-      REAL(KIND(1d0)):: WUAreaTotal_m2
-      REAL(KIND(1d0)):: InternalWaterUse    !Internal water use for the model timestep [mm]
-      REAL(KIND(1d0)):: flag_WuM = 1
-      REAL(KIND(1d0)):: wu !Water use for the model timestep [mm]
+      REAL(KIND(1D0)):: WUAreaTotal_m2
+      REAL(KIND(1D0)):: InternalWaterUse    !Internal water use for the model timestep [mm]
+      REAL(KIND(1D0)):: flag_WuM = 1
+      REAL(KIND(1D0)):: wu !Water use for the model timestep [mm]
       INTEGER:: ih   !Hour corrected for Daylight savings
       INTEGER:: iu   !1=weekday OR 2=weekend
       INTEGER :: tstep ! timestep in second
-      REAL(KIND(1d0)), PARAMETER::NAN = -999.
-      REAL(KIND(1d0)):: OverUse
-      REAL(KIND(1d0)):: rain_cum_daily ! accumulated daily rainfall
+      REAL(KIND(1D0)), PARAMETER::NAN = -999.
+      REAL(KIND(1D0)):: OverUse
+      REAL(KIND(1D0)):: rain_cum_daily ! accumulated daily rainfall
 
-      REAL(KIND(1d0)):: get_Prof_SpecTime_sum
+      REAL(KIND(1D0)):: get_Prof_SpecTime_sum
 
-      REAL(KIND(1d0)):: WUProfA_tstep ! automatic water use profile value at tstep
-      REAL(KIND(1d0)):: WUProfM_tstep ! mannual water use profile value at tstep
+      REAL(KIND(1D0)):: WUProfA_tstep ! automatic water use profile value at tstep
+      REAL(KIND(1D0)):: WUProfM_tstep ! mannual water use profile value at tstep
 
       ! NB: set OverUse as 0 as done module_constants, TS 22 Oct 2017
       ! and the logic for calculating OverUse to be determined
@@ -979,7 +979,7 @@ CONTAINS
          ! WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
          WUArea = IrrFrac*sfr*SurfaceArea
-         WUAreaTotal_m2 = sum(WUArea)
+         WUAreaTotal_m2 = SUM(WUArea)
 
          !Set water use [mm] for each surface type to zero initially
          wu_EveTr = 0
@@ -1092,7 +1092,7 @@ CONTAINS
 
          ! Total water use for the whole study area [mm]
          ! wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
-         wu = dot_product(wu_nsurf, sfr)
+         wu = DOT_PRODUCT(wu_nsurf, sfr)
 
       END IF   !End WU_choice
       ! --------------------------------------------------------------------------------

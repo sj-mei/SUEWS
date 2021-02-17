@@ -30,7 +30,7 @@ SUBROUTINE day2month(b, mb, md, seas, year, latitude)
    INTEGER::t1, t2, t3
    INTEGER::k ! k- accounts for leap year
 
-   REAL(KIND(1d0))::latitude
+   REAL(KIND(1D0))::latitude
 
    ! initialisation
    mb = 1
@@ -203,7 +203,7 @@ SUBROUTINE dectime_to_timevec(dectime, HOURS, MINS, SECS)
    !This subroutine converts dectime to individual
    !hours, minutes and seconds
    INTEGER :: HOURS, MINS, doy
-   REAL(KIND(1d0))    :: dectime, SECS, DH, DM, DS
+   REAL(KIND(1D0))    :: dectime, SECS, DH, DM, DS
    !INTEGER :: year
 
    doy = FLOOR(dectime)
@@ -231,10 +231,10 @@ SUBROUTINE DAYLEN(DOY, XLAT, DAYL, DEC, SNDN, SNUP)
    !-----------------------------------------------------------------------
    IMPLICIT NONE
    INTEGER :: DOY
-   REAL(KIND(1d0)), INTENT(IN) :: XLAT
-   REAL(KIND(1d0)), INTENT(OUT) ::  DEC, DAYL, SNDN, SNUP
-   REAL(KIND(1d0)):: SOC
-   REAL(KIND(1d0)), PARAMETER :: PI = 3.14159, RAD = PI/180.0
+   REAL(KIND(1D0)), INTENT(IN) :: XLAT
+   REAL(KIND(1D0)), INTENT(OUT) ::  DEC, DAYL, SNDN, SNUP
+   REAL(KIND(1D0)):: SOC
+   REAL(KIND(1D0)), PARAMETER :: PI = 3.14159, RAD = PI/180.0
 
    !-----------------------------------------------------------------------
    !     Calculation of declination of sun (Eqn. 16). Amplitude= +/-23.45
@@ -275,10 +275,10 @@ SUBROUTINE SUEWS_cal_dectime( &
 
    REAL(KIND(1D0)), INTENT(out)::dectime ! nsh in type real
 
-   dectime = REAL(id - 1, KIND(1d0)) &
-             + REAL(it, KIND(1d0))/24 &
-             + REAL(imin, KIND(1d0))/(60*24) &
-             + REAL(isec, KIND(1d0))/(60*60*24)
+   dectime = REAL(id - 1, KIND(1D0)) &
+             + REAL(it, KIND(1D0))/24 &
+             + REAL(imin, KIND(1D0))/(60*24) &
+             + REAL(isec, KIND(1D0))/(60*60*24)
 
 END SUBROUTINE SUEWS_cal_dectime
 
@@ -305,7 +305,7 @@ SUBROUTINE SUEWS_cal_weekday( &
 
    INTEGER, INTENT(in) :: iy  ! year
    INTEGER, INTENT(in) :: id  ! day of year
-   REAL(KIND(1d0)), INTENT(in):: lat
+   REAL(KIND(1D0)), INTENT(in):: lat
 
    INTEGER, DIMENSION(3), INTENT(OUT) ::dayofWeek_id
 

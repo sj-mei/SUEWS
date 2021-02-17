@@ -77,7 +77,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    INTEGER::iv, j, i
    !real (Kind(1d0)):: FCskip = -9   !NULL value used for output to FileChoices
-   REAL(KIND(1d0)):: FCskip = -999  !NULL value used for output to FileChoices        (changed by HCW 24 May 2016)
+   REAL(KIND(1D0)):: FCskip = -999  !NULL value used for output to FileChoices        (changed by HCW 24 May 2016)
 
    ! REAL(KIND(1d0)):: z0m_in, zdm_in  !Values of z0m and zdm provided in SiteSelect input file (do not get updated unlike z0d and z0m)
 
@@ -858,7 +858,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    !-----------------------------------------------------
    !-----------------------------------------------------
    ! load snow related properties for NARP
-   if (snowuse == 1) NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
+   IF (snowuse == 1) NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
    !NARP_CONFIGURATION if net radiation is to be modelled
    IF (NetRadiationMethod > 0) THEN
       NARP_LAT = SurfaceChar(Gridiv, c_lat)
@@ -1216,7 +1216,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       MetForcingData_grid = MetForcingData(:, :, Gridiv)
 
       ! Calculate dectime
-      dectime = REAL(id - 1, KIND(1d0)) + REAL(it, KIND(1d0))/24 + REAL(imin, KIND(1d0))/(60*24)
+      dectime = REAL(id - 1, KIND(1D0)) + REAL(it, KIND(1D0))/24 + REAL(imin, KIND(1D0))/(60*24)
       ! Create datetime stamp for error/warnings file
       WRITE (iy_text, '(i4)') iy
       WRITE (id_text, '(i3)') id
@@ -1277,233 +1277,233 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    ! ======================================================================
    ! write out initial conditions for debugging supy
-   if (ir == 1 .and. imb == 1) then
+   IF (ir == 1 .AND. imb == 1) THEN
       FileStateInit = TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(ADJUSTL(year_txt))//'_state_init.txt'
       OPEN (12, file=FileStateInit, position='rewind')
 
-      write (12, *) '&state_init'
-      write (12, *) 'aerodynamicresistancemethod=', aerodynamicresistancemethod
-      write (12, *) 'ah_min=', ah_min
-      write (12, *) 'ahprof_24hr=', ahprof_24hr
-      write (12, *) 'ah_slope_cooling=', ah_slope_cooling
-      write (12, *) 'ah_slope_heating=', ah_slope_heating
-      write (12, *) 'alb=', alb
-      write (12, *) 'albmax_dectr=', albmax_dectr
-      write (12, *) 'albmax_evetr=', albmax_evetr
-      write (12, *) 'albmax_grass=', albmax_grass
-      write (12, *) 'albmin_dectr=', albmin_dectr
-      write (12, *) 'albmin_evetr=', albmin_evetr
-      write (12, *) 'albmin_grass=', albmin_grass
-      write (12, *) 'alpha_bioco2=', alpha_bioco2
-      write (12, *) 'alpha_enh_bioco2=', alpha_enh_bioco2
-      write (12, *) 'alt=', alt
-      write (12, *) 'avkdn=', avkdn
-      write (12, *) 'avrh=', avrh
-      write (12, *) 'avu1=', avu1
-      write (12, *) 'baset=', baset
-      write (12, *) 'basete=', basete
-      write (12, *) 'BaseT_HC=', BaseT_HC
-      write (12, *) 'beta_bioco2=', beta_bioco2
-      write (12, *) 'beta_enh_bioco2=', beta_enh_bioco2
-      write (12, *) 'bldgh=', bldgh
-      write (12, *) 'capmax_dec=', capmax_dec
-      write (12, *) 'capmin_dec=', capmin_dec
-      write (12, *) 'chanohm=', chanohm
-      write (12, *) 'co2pointsource=', co2pointsource
-      write (12, *) 'cpanohm=', cpanohm
-      write (12, *) 'crwmax=', crwmax
-      write (12, *) 'crwmin=', crwmin
-      write (12, *) 'daywat=', daywat
-      write (12, *) 'daywatper=', daywatper
-      write (12, *) 'dectreeh=', dectreeh
-      write (12, *) 'diagnose=', diagnose
-      write (12, *) 'diagqn=', diagqn
-      write (12, *) 'diagqs=', diagqs
-      write (12, *) 'drainrt=', drainrt
-      write (12, *) 'dt_since_start=', dt_since_start
-      write (12, *) 'dqndt=', dqndt
-      write (12, *) 'qn1_av=', qn1_av
-      write (12, *) 'dqnsdt=', dqnsdt
-      write (12, *) 'qn1_s_av=', qn1_s_av
-      write (12, *) 'ef_umolco2perj=', ef_umolco2perj
-      write (12, *) 'emis=', emis
-      write (12, *) 'emissionsmethod=', emissionsmethod
-      write (12, *) 'enef_v_jkm=', enef_v_jkm
-      write (12, *) 'enddls=', enddls
-      write (12, *) 'evetreeh=', evetreeh
-      write (12, *) 'faibldg=', faibldg
-      write (12, *) 'faidectree=', faidectree
-      write (12, *) 'faievetree=', faievetree
-      write (12, *) 'faut=', faut
-      write (12, *) 'fcef_v_kgkm=', fcef_v_kgkm
-      write (12, *) 'fcld_obs=', fcld_obs
-      write (12, *) 'flowchange=', flowchange
-      write (12, *) 'frfossilfuel_heat=', frfossilfuel_heat
-      write (12, *) 'frfossilfuel_nonheat=', frfossilfuel_nonheat
-      write (12, *) 'g1=', g1
-      write (12, *) 'g2=', g2
-      write (12, *) 'g3=', g3
-      write (12, *) 'g4=', g4
-      write (12, *) 'g5=', g5
-      write (12, *) 'g6=', g6
-      write (12, *) 'gdd_id=', gdd_id
-      write (12, *) 'gddfull=', gddfull
-      write (12, *) 'gridiv=', gridiv
-      write (12, *) 'gsmodel=', gsmodel
-      write (12, *) 'hdd_id=', hdd_id
-      write (12, *) 'humactivity_24hr=', humactivity_24hr
-      write (12, *) 'icefrac=', icefrac
-      write (12, *) 'id=', id
-      write (12, *) 'ie_a=', ie_a
-      write (12, *) 'ie_end=', ie_end
-      write (12, *) 'ie_m=', ie_m
-      write (12, *) 'ie_start=', ie_start
-      write (12, *) 'imin=', imin
-      write (12, *) 'internalwateruse_h=', internalwateruse_h
-      write (12, *) 'IrrFracEveTr=', IrrFracEveTr
-      write (12, *) 'IrrFracDecTr=', IrrFracDecTr
-      write (12, *) 'irrfracgrass=', irrfracgrass
-      write (12, *) 'isec=', isec
-      write (12, *) 'it=', it
-      write (12, *) 'evapmethod=', evapmethod
-      write (12, *) 'iy=', iy
-      write (12, *) 'kkanohm=', kkanohm
-      write (12, *) 'kmax=', kmax
-      write (12, *) 'lai_id=', lai_id
-      write (12, *) 'laicalcyes=', laicalcyes
-      write (12, *) 'laimax=', laimax
-      write (12, *) 'laimin=', laimin
-      write (12, *) 'lai_obs=', lai_obs
-      write (12, *) 'laipower=', laipower
-      write (12, *) 'laitype=', laitype
-      write (12, *) 'lat=', lat
-      write (12, *) 'lenday_id=', lenday_id
-      write (12, *) 'ldown_obs=', ldown_obs
-      write (12, *) 'lng=', lng
-      write (12, *) 'maxconductance=', maxconductance
-      write (12, *) 'maxfcmetab=', maxfcmetab
-      write (12, *) 'maxqfmetab=', maxqfmetab
-      write (12, *) 'snowwater=', snowwater
+      WRITE (12, *) '&state_init'
+      WRITE (12, *) 'aerodynamicresistancemethod=', aerodynamicresistancemethod
+      WRITE (12, *) 'ah_min=', ah_min
+      WRITE (12, *) 'ahprof_24hr=', ahprof_24hr
+      WRITE (12, *) 'ah_slope_cooling=', ah_slope_cooling
+      WRITE (12, *) 'ah_slope_heating=', ah_slope_heating
+      WRITE (12, *) 'alb=', alb
+      WRITE (12, *) 'albmax_dectr=', albmax_dectr
+      WRITE (12, *) 'albmax_evetr=', albmax_evetr
+      WRITE (12, *) 'albmax_grass=', albmax_grass
+      WRITE (12, *) 'albmin_dectr=', albmin_dectr
+      WRITE (12, *) 'albmin_evetr=', albmin_evetr
+      WRITE (12, *) 'albmin_grass=', albmin_grass
+      WRITE (12, *) 'alpha_bioco2=', alpha_bioco2
+      WRITE (12, *) 'alpha_enh_bioco2=', alpha_enh_bioco2
+      WRITE (12, *) 'alt=', alt
+      WRITE (12, *) 'avkdn=', avkdn
+      WRITE (12, *) 'avrh=', avrh
+      WRITE (12, *) 'avu1=', avu1
+      WRITE (12, *) 'baset=', baset
+      WRITE (12, *) 'basete=', basete
+      WRITE (12, *) 'BaseT_HC=', BaseT_HC
+      WRITE (12, *) 'beta_bioco2=', beta_bioco2
+      WRITE (12, *) 'beta_enh_bioco2=', beta_enh_bioco2
+      WRITE (12, *) 'bldgh=', bldgh
+      WRITE (12, *) 'capmax_dec=', capmax_dec
+      WRITE (12, *) 'capmin_dec=', capmin_dec
+      WRITE (12, *) 'chanohm=', chanohm
+      WRITE (12, *) 'co2pointsource=', co2pointsource
+      WRITE (12, *) 'cpanohm=', cpanohm
+      WRITE (12, *) 'crwmax=', crwmax
+      WRITE (12, *) 'crwmin=', crwmin
+      WRITE (12, *) 'daywat=', daywat
+      WRITE (12, *) 'daywatper=', daywatper
+      WRITE (12, *) 'dectreeh=', dectreeh
+      WRITE (12, *) 'diagnose=', diagnose
+      WRITE (12, *) 'diagqn=', diagqn
+      WRITE (12, *) 'diagqs=', diagqs
+      WRITE (12, *) 'drainrt=', drainrt
+      WRITE (12, *) 'dt_since_start=', dt_since_start
+      WRITE (12, *) 'dqndt=', dqndt
+      WRITE (12, *) 'qn1_av=', qn1_av
+      WRITE (12, *) 'dqnsdt=', dqnsdt
+      WRITE (12, *) 'qn1_s_av=', qn1_s_av
+      WRITE (12, *) 'ef_umolco2perj=', ef_umolco2perj
+      WRITE (12, *) 'emis=', emis
+      WRITE (12, *) 'emissionsmethod=', emissionsmethod
+      WRITE (12, *) 'enef_v_jkm=', enef_v_jkm
+      WRITE (12, *) 'enddls=', enddls
+      WRITE (12, *) 'evetreeh=', evetreeh
+      WRITE (12, *) 'faibldg=', faibldg
+      WRITE (12, *) 'faidectree=', faidectree
+      WRITE (12, *) 'faievetree=', faievetree
+      WRITE (12, *) 'faut=', faut
+      WRITE (12, *) 'fcef_v_kgkm=', fcef_v_kgkm
+      WRITE (12, *) 'fcld_obs=', fcld_obs
+      WRITE (12, *) 'flowchange=', flowchange
+      WRITE (12, *) 'frfossilfuel_heat=', frfossilfuel_heat
+      WRITE (12, *) 'frfossilfuel_nonheat=', frfossilfuel_nonheat
+      WRITE (12, *) 'g1=', g1
+      WRITE (12, *) 'g2=', g2
+      WRITE (12, *) 'g3=', g3
+      WRITE (12, *) 'g4=', g4
+      WRITE (12, *) 'g5=', g5
+      WRITE (12, *) 'g6=', g6
+      WRITE (12, *) 'gdd_id=', gdd_id
+      WRITE (12, *) 'gddfull=', gddfull
+      WRITE (12, *) 'gridiv=', gridiv
+      WRITE (12, *) 'gsmodel=', gsmodel
+      WRITE (12, *) 'hdd_id=', hdd_id
+      WRITE (12, *) 'humactivity_24hr=', humactivity_24hr
+      WRITE (12, *) 'icefrac=', icefrac
+      WRITE (12, *) 'id=', id
+      WRITE (12, *) 'ie_a=', ie_a
+      WRITE (12, *) 'ie_end=', ie_end
+      WRITE (12, *) 'ie_m=', ie_m
+      WRITE (12, *) 'ie_start=', ie_start
+      WRITE (12, *) 'imin=', imin
+      WRITE (12, *) 'internalwateruse_h=', internalwateruse_h
+      WRITE (12, *) 'IrrFracEveTr=', IrrFracEveTr
+      WRITE (12, *) 'IrrFracDecTr=', IrrFracDecTr
+      WRITE (12, *) 'irrfracgrass=', irrfracgrass
+      WRITE (12, *) 'isec=', isec
+      WRITE (12, *) 'it=', it
+      WRITE (12, *) 'evapmethod=', evapmethod
+      WRITE (12, *) 'iy=', iy
+      WRITE (12, *) 'kkanohm=', kkanohm
+      WRITE (12, *) 'kmax=', kmax
+      WRITE (12, *) 'lai_id=', lai_id
+      WRITE (12, *) 'laicalcyes=', laicalcyes
+      WRITE (12, *) 'laimax=', laimax
+      WRITE (12, *) 'laimin=', laimin
+      WRITE (12, *) 'lai_obs=', lai_obs
+      WRITE (12, *) 'laipower=', laipower
+      WRITE (12, *) 'laitype=', laitype
+      WRITE (12, *) 'lat=', lat
+      WRITE (12, *) 'lenday_id=', lenday_id
+      WRITE (12, *) 'ldown_obs=', ldown_obs
+      WRITE (12, *) 'lng=', lng
+      WRITE (12, *) 'maxconductance=', maxconductance
+      WRITE (12, *) 'maxfcmetab=', maxfcmetab
+      WRITE (12, *) 'maxqfmetab=', maxqfmetab
+      WRITE (12, *) 'snowwater=', snowwater
       ! write (12, *) 'metforcingdata_grid=', metforcingdata_grid
-      write (12, *) 'minfcmetab=', minfcmetab
-      write (12, *) 'minqfmetab=', minqfmetab
-      write (12, *) 'min_res_bioco2=', min_res_bioco2
-      write (12, *) 'narp_emis_snow=', narp_emis_snow
-      write (12, *) 'narp_trans_site=', narp_trans_site
-      write (12, *) 'netradiationmethod=', netradiationmethod
-      write (12, *) 'ohm_coef=', ohm_coef
-      write (12, *) 'ohmincqf=', ohmincqf
-      write (12, *) 'ohm_threshsw=', ohm_threshsw
-      write (12, *) 'ohm_threshwd=', ohm_threshwd
-      write (12, *) 'pipecapacity=', pipecapacity
-      write (12, *) 'popdensdaytime=', popdensdaytime
-      write (12, *) 'popdensnighttime=', popdensnighttime
-      write (12, *) 'popprof_24hr=', popprof_24hr
-      write (12, *) 'pormax_dec=', pormax_dec
-      write (12, *) 'pormin_dec=', pormin_dec
-      write (12, *) 'precip=', precip
-      write (12, *) 'preciplimit=', preciplimit
-      write (12, *) 'preciplimitalb=', preciplimitalb
-      write (12, *) 'press_hpa=', press_hpa
-      write (12, *) 'qf0_beu=', qf0_beu
-      write (12, *) 'qf_a=', qf_a
-      write (12, *) 'qf_b=', qf_b
-      write (12, *) 'qf_c=', qf_c
-      write (12, *) 'qn1_obs=', qn1_obs
-      write (12, *) 'qh_obs=', qh_obs
-      write (12, *) 'qs_obs=', qs_obs
-      write (12, *) 'qf_obs=', qf_obs
-      write (12, *) 'radmeltfact=', radmeltfact
-      write (12, *) 'raincover=', raincover
-      write (12, *) 'rainmaxres=', rainmaxres
-      write (12, *) 'resp_a=', resp_a
-      write (12, *) 'resp_b=', resp_b
-      write (12, *) 'roughlenheatmethod=', roughlenheatmethod
-      write (12, *) 'roughlenmommethod=', roughlenmommethod
-      write (12, *) 'runofftowater=', runofftowater
-      write (12, *) 's1=', s1
-      write (12, *) 's2=', s2
-      write (12, *) 'sathydraulicconduct=', sathydraulicconduct
-      write (12, *) 'sddfull=', sddfull
-      write (12, *) 'sdd_id=', sdd_id
-      write (12, *) 'sfr=', sfr
-      write (12, *) 'smdmethod=', smdmethod
-      write (12, *) 'snowalb=', snowalb
-      write (12, *) 'snowalbmax=', snowalbmax
-      write (12, *) 'snowalbmin=', snowalbmin
-      write (12, *) 'snowpacklimit=', snowpacklimit
-      write (12, *) 'snowdens=', snowdens
-      write (12, *) 'snowdensmax=', snowdensmax
-      write (12, *) 'snowdensmin=', snowdensmin
-      write (12, *) 'snowfallcum=', snowfallcum
-      write (12, *) 'snowfrac=', snowfrac
-      write (12, *) 'snowlimbldg=', snowlimbldg
-      write (12, *) 'snowlimpaved=', snowlimpaved
-      write (12, *) 'snowfrac_obs=', snowfrac_obs
-      write (12, *) 'snowpack=', snowpack
-      write (12, *) 'snowprof_24hr=', snowprof_24hr
-      write (12, *) 'snowuse=', snowuse
-      write (12, *) 'soildepth=', soildepth
-      write (12, *) 'soilstore_id=', soilstore_id
-      write (12, *) 'soilstorecap=', soilstorecap
-      write (12, *) 'stabilitymethod=', stabilitymethod
-      write (12, *) 'startdls=', startdls
-      write (12, *) 'state_id=', state_id
-      write (12, *) 'statelimit=', statelimit
-      write (12, *) 'storageheatmethod=', storageheatmethod
-      write (12, *) 'storedrainprm=', storedrainprm
-      write (12, *) 'surfacearea=', surfacearea
-      write (12, *) 'tair_av=', tair_av
-      write (12, *) 'tau_a=', tau_a
-      write (12, *) 'tau_f=', tau_f
-      write (12, *) 'tau_r=', tau_r
-      write (12, *) 'tmax_id=', tmax_id
-      write (12, *) 'tmin_id=', tmin_id
-      write (12, *) 'BaseT_Cooling=', BaseT_Cooling
-      write (12, *) 'BaseT_Heating=', BaseT_Heating
-      write (12, *) 'temp_c=', temp_c
-      write (12, *) 'tempmeltfact=', tempmeltfact
-      write (12, *) 'th=', th
-      write (12, *) 'theta_bioco2=', theta_bioco2
-      write (12, *) 'timezone=', timezone
-      write (12, *) 'tl=', tl
-      write (12, *) 'trafficrate=', trafficrate
-      write (12, *) 'trafficunits=', trafficunits
-      write (12, *) 'traffprof_24hr=', traffprof_24hr
+      WRITE (12, *) 'minfcmetab=', minfcmetab
+      WRITE (12, *) 'minqfmetab=', minqfmetab
+      WRITE (12, *) 'min_res_bioco2=', min_res_bioco2
+      WRITE (12, *) 'narp_emis_snow=', narp_emis_snow
+      WRITE (12, *) 'narp_trans_site=', narp_trans_site
+      WRITE (12, *) 'netradiationmethod=', netradiationmethod
+      WRITE (12, *) 'ohm_coef=', ohm_coef
+      WRITE (12, *) 'ohmincqf=', ohmincqf
+      WRITE (12, *) 'ohm_threshsw=', ohm_threshsw
+      WRITE (12, *) 'ohm_threshwd=', ohm_threshwd
+      WRITE (12, *) 'pipecapacity=', pipecapacity
+      WRITE (12, *) 'popdensdaytime=', popdensdaytime
+      WRITE (12, *) 'popdensnighttime=', popdensnighttime
+      WRITE (12, *) 'popprof_24hr=', popprof_24hr
+      WRITE (12, *) 'pormax_dec=', pormax_dec
+      WRITE (12, *) 'pormin_dec=', pormin_dec
+      WRITE (12, *) 'precip=', precip
+      WRITE (12, *) 'preciplimit=', preciplimit
+      WRITE (12, *) 'preciplimitalb=', preciplimitalb
+      WRITE (12, *) 'press_hpa=', press_hpa
+      WRITE (12, *) 'qf0_beu=', qf0_beu
+      WRITE (12, *) 'qf_a=', qf_a
+      WRITE (12, *) 'qf_b=', qf_b
+      WRITE (12, *) 'qf_c=', qf_c
+      WRITE (12, *) 'qn1_obs=', qn1_obs
+      WRITE (12, *) 'qh_obs=', qh_obs
+      WRITE (12, *) 'qs_obs=', qs_obs
+      WRITE (12, *) 'qf_obs=', qf_obs
+      WRITE (12, *) 'radmeltfact=', radmeltfact
+      WRITE (12, *) 'raincover=', raincover
+      WRITE (12, *) 'rainmaxres=', rainmaxres
+      WRITE (12, *) 'resp_a=', resp_a
+      WRITE (12, *) 'resp_b=', resp_b
+      WRITE (12, *) 'roughlenheatmethod=', roughlenheatmethod
+      WRITE (12, *) 'roughlenmommethod=', roughlenmommethod
+      WRITE (12, *) 'runofftowater=', runofftowater
+      WRITE (12, *) 's1=', s1
+      WRITE (12, *) 's2=', s2
+      WRITE (12, *) 'sathydraulicconduct=', sathydraulicconduct
+      WRITE (12, *) 'sddfull=', sddfull
+      WRITE (12, *) 'sdd_id=', sdd_id
+      WRITE (12, *) 'sfr=', sfr
+      WRITE (12, *) 'smdmethod=', smdmethod
+      WRITE (12, *) 'snowalb=', snowalb
+      WRITE (12, *) 'snowalbmax=', snowalbmax
+      WRITE (12, *) 'snowalbmin=', snowalbmin
+      WRITE (12, *) 'snowpacklimit=', snowpacklimit
+      WRITE (12, *) 'snowdens=', snowdens
+      WRITE (12, *) 'snowdensmax=', snowdensmax
+      WRITE (12, *) 'snowdensmin=', snowdensmin
+      WRITE (12, *) 'snowfallcum=', snowfallcum
+      WRITE (12, *) 'snowfrac=', snowfrac
+      WRITE (12, *) 'snowlimbldg=', snowlimbldg
+      WRITE (12, *) 'snowlimpaved=', snowlimpaved
+      WRITE (12, *) 'snowfrac_obs=', snowfrac_obs
+      WRITE (12, *) 'snowpack=', snowpack
+      WRITE (12, *) 'snowprof_24hr=', snowprof_24hr
+      WRITE (12, *) 'snowuse=', snowuse
+      WRITE (12, *) 'soildepth=', soildepth
+      WRITE (12, *) 'soilstore_id=', soilstore_id
+      WRITE (12, *) 'soilstorecap=', soilstorecap
+      WRITE (12, *) 'stabilitymethod=', stabilitymethod
+      WRITE (12, *) 'startdls=', startdls
+      WRITE (12, *) 'state_id=', state_id
+      WRITE (12, *) 'statelimit=', statelimit
+      WRITE (12, *) 'storageheatmethod=', storageheatmethod
+      WRITE (12, *) 'storedrainprm=', storedrainprm
+      WRITE (12, *) 'surfacearea=', surfacearea
+      WRITE (12, *) 'tair_av=', tair_av
+      WRITE (12, *) 'tau_a=', tau_a
+      WRITE (12, *) 'tau_f=', tau_f
+      WRITE (12, *) 'tau_r=', tau_r
+      WRITE (12, *) 'tmax_id=', tmax_id
+      WRITE (12, *) 'tmin_id=', tmin_id
+      WRITE (12, *) 'BaseT_Cooling=', BaseT_Cooling
+      WRITE (12, *) 'BaseT_Heating=', BaseT_Heating
+      WRITE (12, *) 'temp_c=', temp_c
+      WRITE (12, *) 'tempmeltfact=', tempmeltfact
+      WRITE (12, *) 'th=', th
+      WRITE (12, *) 'theta_bioco2=', theta_bioco2
+      WRITE (12, *) 'timezone=', timezone
+      WRITE (12, *) 'tl=', tl
+      WRITE (12, *) 'trafficrate=', trafficrate
+      WRITE (12, *) 'trafficunits=', trafficunits
+      WRITE (12, *) 'traffprof_24hr=', traffprof_24hr
       ! write (12, *) 'ts5mindata_ir=', ts5mindata_ir
-      write (12, *) 'tstep=', tstep
-      write (12, *) 'tstep_prev=', tstep_prev
-      write (12, *) 'veg_type=', veg_type
-      write (12, *) 'waterdist=', waterdist
-      write (12, *) 'waterusemethod=', waterusemethod
-      write (12, *) 'wetthresh=', wetthresh
-      write (12, *) 'wu_m3=', wu_m3
-      write (12, *) 'wuday_id=', wuday_id
-      write (12, *) 'decidcap_id=', decidcap_id
-      write (12, *) 'albdectr_id=', albdectr_id
-      write (12, *) 'albevetr_id=', albevetr_id
-      write (12, *) 'albgrass_id=', albgrass_id
-      write (12, *) 'porosity_id=', porosity_id
-      write (12, *) 'wuprofa_24hr=', wuprofa_24hr
-      write (12, *) 'wuprofm_24hr=', wuprofm_24hr
-      write (12, *) 'xsmd=', xsmd
-      write (12, *) 'z=', z
-      write (12, *) 'z0m_in=', z0m_in
-      write (12, *) 'zdm_in=', zdm_in
-      write (12, *) '/'
+      WRITE (12, *) 'tstep=', tstep
+      WRITE (12, *) 'tstep_prev=', tstep_prev
+      WRITE (12, *) 'veg_type=', veg_type
+      WRITE (12, *) 'waterdist=', waterdist
+      WRITE (12, *) 'waterusemethod=', waterusemethod
+      WRITE (12, *) 'wetthresh=', wetthresh
+      WRITE (12, *) 'wu_m3=', wu_m3
+      WRITE (12, *) 'wuday_id=', wuday_id
+      WRITE (12, *) 'decidcap_id=', decidcap_id
+      WRITE (12, *) 'albdectr_id=', albdectr_id
+      WRITE (12, *) 'albevetr_id=', albevetr_id
+      WRITE (12, *) 'albgrass_id=', albgrass_id
+      WRITE (12, *) 'porosity_id=', porosity_id
+      WRITE (12, *) 'wuprofa_24hr=', wuprofa_24hr
+      WRITE (12, *) 'wuprofm_24hr=', wuprofm_24hr
+      WRITE (12, *) 'xsmd=', xsmd
+      WRITE (12, *) 'z=', z
+      WRITE (12, *) 'z0m_in=', z0m_in
+      WRITE (12, *) 'zdm_in=', zdm_in
+      WRITE (12, *) '/'
 
       WRITE (12, *) ''
 
       CLOSE (12)
 
-   end if
+   END IF
 
    ! ======================================================================
 
    RETURN
 
-120 FORMAT(8f10.3, a16)  !format (10g10.2)
-121 FORMAT(a12, 24f10.4, a20)
+120 FORMAT(8F10.3, a16)  !format (10g10.2)
+121 FORMAT(a12, 24F10.4, a20)
 
 END SUBROUTINE SUEWS_Translate
 !===================================================================================
@@ -1624,5 +1624,5 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    END IF
 
    RETURN
-end subroutine SUEWS_TranslateBack
+END SUBROUTINE SUEWS_TranslateBack
 !===================================================================================

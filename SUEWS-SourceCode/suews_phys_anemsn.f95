@@ -1,5 +1,5 @@
-module AnEmsn_module
-   implicit none
+MODULE AnEmsn_module
+   IMPLICIT NONE
 
    !===================================================================================
    !Simple Anthropogenic Heat and Carbon Dioxide Parameterization routines
@@ -24,7 +24,7 @@ module AnEmsn_module
    !
    !===================================================================================
 
-contains
+CONTAINS
 
    SUBROUTINE AnthropogenicEmissions( &
       CO2PointSource, EmissionsMethod, &
@@ -54,9 +54,9 @@ contains
 
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 
-      REAL(KIND(1d0)), DIMENSION(12), INTENT(in):: HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(12), INTENT(in):: HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
 
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in):: &
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in):: &
          Qf_A, Qf_B, Qf_C, &    !Qf coefficients
          AH_MIN, &            !Minimum anthropogenic heat flux
          AH_SLOPE_Heating, &  !Slope of the anthropogenic heat flux calculation
@@ -68,10 +68,10 @@ contains
          TrafficRate, &       !Traffic rate
          QF0_BEU
 
-      REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in):: AHProf_24hr
-      REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in):: HumActivity_24hr
-      REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in):: TraffProf_24hr
-      REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in):: PopProf_24hr
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in):: AHProf_24hr
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in):: HumActivity_24hr
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in):: TraffProf_24hr
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in):: PopProf_24hr
 
       REAL(KIND(1D0)), INTENT(in):: &
          CO2PointSource, &      !Point source [kgC day-1]
@@ -267,11 +267,11 @@ contains
          QF_traff = QF_SAHP_base*(1.0 - QF0_BEU(iu)) - QF_metab
 
          ! Divide QF by energy emission factor and multiply by CO2 factor
-         Fc_traff = QF_traff/EnEF_v_Jkm*FcEF_v_kgkm(iu)*1e3*1e6/44
+         Fc_traff = QF_traff/EnEF_v_Jkm*FcEF_v_kgkm(iu)*1E3*1E6/44
 
          !CO2 point source [kg C day-1] * 1e3 g kg-1 * 1e6 umol mol-1 /(12 g mol-1 * m-2)
          IF (CO2PointSource > 0) THEN
-            Fc_point = CO2PointSource*1e3*1e6/(12*60*60*24*SurfaceArea)
+            Fc_point = CO2PointSource*1E3*1E6/(12*60*60*24*SurfaceArea)
          ELSE
             Fc_point = 0
          END IF
@@ -291,17 +291,17 @@ contains
             ! Calculate using mean traffic rate [veh km m-2 day-1] * emission factor [J km-1]
             QF_traff = TrafficRate(iu)/(60*60*24)*EnEF_v_Jkm*TraffDorNorT
             ! Use mean traffic rate [veh km m-2 s-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
-            Fc_traff = TrafficRate(iu)/(60*60*24)*FcEF_v_kgkm(iu)*1e3*1e6/44*TraffDorNorT
+            Fc_traff = TrafficRate(iu)/(60*60*24)*FcEF_v_kgkm(iu)*1E3*1E6/44*TraffDorNorT
 
          ELSEIF (TrafficUnits == 2) THEN        ! [veh km cap-1 day-1]
             DP_x_RhoPop_traff = TraffDorNorT*NumCapita(iu)/10000   ! [cap m-2]
             ! Use mean traffic rate [veh km cap-1 day-1] * emission factor [J km-1]
             QF_traff = TrafficRate(iu)/(60*60*24)*EnEF_v_Jkm*DP_x_RhoPop_traff
             ! Use mean traffic rate [veh km cap-1 day-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
-            Fc_traff = TrafficRate(iu)/(60*60*24)*FcEF_v_kgkm(iu)*1e3*1e6/44*DP_x_RhoPop_traff
+            Fc_traff = TrafficRate(iu)/(60*60*24)*FcEF_v_kgkm(iu)*1E3*1E6/44*DP_x_RhoPop_traff
 
          ELSE ! If TrafficUnits doesn't match possible units
-            CALL ErrorHint(75, 'Check TrafficUnits', TrafficUnits, -999d1)
+            CALL ErrorHint(75, 'Check TrafficUnits', TrafficUnits, -999D1)
 
          END IF
 
@@ -317,7 +317,7 @@ contains
 
          !CO2 point source [kg C day-1] * 1e3 g kg-1 * 1e6 umol mol-1 /(12 g mol-1 * m-2)
          IF (CO2PointSource > 0) THEN
-            Fc_point = CO2PointSource*1e3*1e6/(12*60*60*24*SurfaceArea)
+            Fc_point = CO2PointSource*1E3*1E6/(12*60*60*24*SurfaceArea)
          ELSE
             Fc_point = 0
          END IF
@@ -336,5 +336,5 @@ contains
       RETURN
    END SUBROUTINE AnthropogenicEmissions
 
-end module AnEmsn_module
+END MODULE AnEmsn_module
 !========================================================================================

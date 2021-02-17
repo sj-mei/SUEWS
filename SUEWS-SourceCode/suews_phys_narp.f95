@@ -69,7 +69,7 @@ CONTAINS
          IF (NetRadiationMethod < 100) THEN
             AlbedoChoice = 0
             ! after the introduction of iteration-based tsurf, TS 20 Sep 2019
-            NetRadiationMethod_use = mod(NetRadiationMethod, 10)
+            NetRadiationMethod_use = MOD(NetRadiationMethod, 10)
             IF (NetRadiationMethod_use == 1) ldown_option = 1
             IF (NetRadiationMethod_use == 2) ldown_option = 2
             IF (NetRadiationMethod_use == 3) ldown_option = 3
@@ -92,7 +92,7 @@ CONTAINS
          END IF
 
          !If bad NetRadiationMethod value
-         IF (mod(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
+         IF (MOD(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
             WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
             WRITE (*, *) 'Value not usable'
             STOP
@@ -167,7 +167,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::SnowFrac
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::alb
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::emis
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::IceFrac
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::IceFrac
       ! REAL(KIND(1D0)),DIMENSION(365),INTENT(in) ::NARP_G
 
       REAL(KIND(1D0)), INTENT(in) ::DTIME
@@ -198,23 +198,23 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) ::fcld
       REAL(KIND(1D0)), INTENT(out) ::TSURFall
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::kup_ind_snow
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::kup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
 
-      REAL(KIND(1d0)), INTENT(out) ::albedo_snowfree
-      REAL(KIND(1d0)), INTENT(out) ::albedo_snow
+      REAL(KIND(1D0)), INTENT(out) ::albedo_snowfree
+      REAL(KIND(1D0)), INTENT(out) ::albedo_snow
 
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::qn1_ind
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::kup_ind
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::lup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind
 
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::qn1_ind_nosnow
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::kup_ind_nosnow
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::lup_ind_nosnow
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::Tsurf_ind_nosnow
-      REAL(KIND(1d0)), DIMENSION(nsurf) ::lup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::Tsurf_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_snow
 
       REAL(KIND(1D0)) ::tsurf_0_K
       REAL(KIND(1D0)) ::Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
@@ -272,8 +272,8 @@ CONTAINS
       lup_ind_snow = 0
       Tsurf_ind_snow = 0
       Tsurf_ind = 0
-      albedo_snowfree = 0
-      albedo_snow = 0
+      albedo_snowfree = 0.2 ! arbitrary non-zero value for initialisatoin
+      albedo_snow = SnowAlb
 
       !Total snowfree surface fraction
       SF_all = 0
@@ -290,7 +290,7 @@ CONTAINS
          !-------SNOW FREE SURFACE--------------------------
 
          IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
-            albedo_snowfree = ALB(is) + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
+            albedo_snowfree = ALB(is) + 0.5E-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
          ELSE
             albedo_snowfree = ALB(is)
          END IF
@@ -346,16 +346,16 @@ CONTAINS
 
          KUP = albedo_snowfree*KDOWN
 
-         if (NetRadiationMethod_use < 10) then
+         IF (NetRadiationMethod_use < 10) THEN
             ! NARP method
             TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
             LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
-         else
+         ELSE
             ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
             TSURF = tsurf_0_K
             LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
 
-         end if
+         END IF
 
          QSTAR = KDOWN - KUP + LDOWN - LUP
          TSURF = TSURF - 273.16
@@ -364,14 +364,14 @@ CONTAINS
          !Snow related parameters if snow pack existing
          IF (SnowFrac(is) > 0) THEN
             IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
-               albedo_snow = SnowAlb + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
+               albedo_snow = SnowAlb + 0.5E-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
             ELSE
                albedo_snow = SnowAlb
             END IF
 
             KUP_SNOW = (albedo_snow*(SnowFrac(is) - SnowFrac(is)*IceFrac(is)) + albedo_snowfree*SnowFrac(is)*IceFrac(is))*KDOWN
 
-            if (NetRadiationMethod_use < 10) then
+            IF (NetRadiationMethod_use < 10) THEN
                ! NARP method
                TSURF_SNOW = ((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
                !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)
@@ -379,11 +379,11 @@ CONTAINS
                !write(34,*) dectime,is,albedo_snow,albedo_snowfree,SnowFrac(is),IceFrac(is),KDOWN,KUP_snow
                !close(34)
                LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
-            else
+            ELSE
                ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
                TSURF_SNOW = tsurf_0_K
                LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
-            end if
+            END IF
 
             QSTAR_SNOW = KDOWN - KUP_SNOW + LDOWN - LUP_SNOW
             TSURF_SNOW = TSURF_SNOW - 273.16
@@ -514,7 +514,7 @@ CONTAINS
       ! Convert to timevectors from dectime and year
       CALL dectime_to_timevec(idectime, hour, min, sec)
       dayofyear = FLOOR(idectime)
-      year_int = int(year)
+      year_int = INT(year)
       CALL day2month(dayofyear, month, day, seas, year_int, locationlatitude)
 
       ! 1. Calculate the Julian Day, and Century. Julian Ephemeris day, century
@@ -714,7 +714,7 @@ CONTAINS
       !REAL(KIND(1D0)) :: R2_terms      !>
       !REAL(KIND(1D0)) :: R3_terms      !>
       !REAL(KIND(1D0)), dimension(3) :: R4_terms      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793d+0
+      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
 
       ! This function compute the earth position relative to the sun, using
       ! tabulated values.
@@ -771,7 +771,7 @@ CONTAINS
       L5 = A5*COS(B5 + (C5*JME))
 
       earth_heliocentric_positionlongitude = &
-           &(L0 + (L1*JME) + (L2*JME**2) + (L3*JME**3) + (L4*JME**4) + (L5*JME**5))/1e8
+           &(L0 + (L1*JME) + (L2*JME**2) + (L3*JME**3) + (L4*JME**4) + (L5*JME**5))/1E8
       ! Convert the longitude to degrees.
       earth_heliocentric_positionlongitude = earth_heliocentric_positionlongitude*180./pi
       ! Limit the range to [0,360[;
@@ -787,7 +787,7 @@ CONTAINS
       L0 = SUM(A0i*COS(B0i + (C0i*JME)))
       L1 = SUM(A1i*COS(B1i + (C1i*JME)))
 
-      earth_heliocentric_positionlatitude = (L0 + (L1*JME))/1e8
+      earth_heliocentric_positionlatitude = (L0 + (L1*JME))/1E8
       ! Convert the latitude to degrees.
       earth_heliocentric_positionlatitude = earth_heliocentric_positionlatitude*180/pi
       ! Limit the range to [0,360];
@@ -826,7 +826,7 @@ CONTAINS
 
       ! Units are in AU
       earth_heliocentric_positionradius = &
-           &(L0 + (L1*JME) + (L2*JME**2) + (L3*JME**3) + (L4*JME**4))/1e8
+           &(L0 + (L1*JME) + (L2*JME**2) + (L3*JME**3) + (L4*JME**4))/1E8
 
    END SUBROUTINE earth_heliocentric_position_calculation
 
@@ -873,7 +873,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(252) :: nutation_terms1     !>
       REAL(KIND(1D0)), DIMENSION(4, 63) ::nutation_terms
       INTEGER :: i
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793d+0
+      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
 
       ! This function compute the nutation in longtitude and in obliquity, in
       ! degrees.
@@ -1035,7 +1035,7 @@ CONTAINS
       REAL(KIND(1D0)) :: JC      !>
       REAL(KIND(1D0)) :: JD      !>
       REAL(KIND(1D0)) :: mean_stime      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.14159265358979d+0
+      REAL(KIND(1D0)), PARAMETER       :: pi = 3.14159265358979D+0
 
       ! This function compute the apparent sideral time at Greenwich.
 
@@ -1043,7 +1043,7 @@ CONTAINS
       JC = juliancentury
 
       ! Mean sideral time, in degrees
-      mean_stime = 280.46061837d+0 + (360.98564736629d+0*(JD - 2451545.0d+0)) + (0.000387933d+0*JC**2) - (JC**3/38710000.0d+0)
+      mean_stime = 280.46061837D+0 + (360.98564736629D+0*(JD - 2451545.0D+0)) + (0.000387933D+0*JC**2) - (JC**3/38710000.0D+0)
 
       ! Limit the range to [0-360];
       mean_stime = set_to_range(mean_stime)
@@ -1061,7 +1061,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: sun_rigth_ascension      !>
       REAL(KIND(1D0)) :: argument_denominator      !>
       REAL(KIND(1D0)) :: argument_numerator      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793d+0
+      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
 
       ! This function compute the sun rigth ascension.
 
@@ -1083,7 +1083,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: sun_geocentric_declination      !>
       REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_positionlatitude     !>
       REAL(KIND(1D0)) :: argument      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793d+0
+      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
 
       argument = (SIN(sun_geocentric_positionlatitude*pi/180.0)*COS(corr_obliquity*pi/180.0)) + &
                  (COS(sun_geocentric_positionlatitude*pi/180.0)*SIN(corr_obliquity*pi/180)*SIN(apparent_sun_longitude*pi/180.0))
@@ -1127,7 +1127,7 @@ CONTAINS
       REAL(KIND(1D0)) :: u      !>
       REAL(KIND(1D0)) :: x      !>
       REAL(KIND(1D0)) :: y      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793d+0
+      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
 
       ! topocentric_sun_positionrigth_ascension_parallax
       ! This function compute the sun position (rigth ascension and declination)
@@ -1143,7 +1143,7 @@ CONTAINS
       x = COS(u) + ((locationaltitude/6378140)*COS(locationaltitude*pi/180))
 
       ! Term y, used in the following calculations
-      y = (0.99664719d+0*SIN(u)) + ((locationaltitude/6378140)*SIN(locationlatitude*pi/180))
+      y = (0.99664719D+0*SIN(u)) + ((locationaltitude/6378140)*SIN(locationlatitude*pi/180))
 
       ! Parallax in the sun rigth ascension (in radians)
       nominator = -x*SIN(eq_horizontal_parallax*pi/180.0)*SIN(observer_local_hour*pi/180.0)
@@ -1192,7 +1192,7 @@ CONTAINS
       REAL(KIND(1D0)) :: refraction_corr      !>
       REAL(KIND(1D0)) :: sunazimuth      !>
       REAL(KIND(1D0)) :: sunzenith      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793d+0
+      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
       ! This function compute the sun zenith angle, taking into account the
       ! atmospheric refraction. A default temperature of 283K and a
       ! default pressure of 1010 mbar are used.
@@ -1255,7 +1255,7 @@ CONTAINS
       ! http://www.atd.ucar.edu/weather_fl/dewpoint.html
       ! dewpoint = (237.3 * ln(e_vp/6.1078)) / (17.27 - (ln(e_vp/6.1078)))
 
-      REAL(KIND(1d0))::rh, td, Temp_C, g
+      REAL(KIND(1D0))::rh, td, Temp_C, g
       !http://en.wikipedia.org/wiki/Dew_point
       g = ((17.27*Temp_C)/(237.7 + Temp_C)) + LOG(rh/100)
       Td = (237.7*g)/(17.27 - g)
@@ -1264,8 +1264,8 @@ CONTAINS
    !===============================================================================
    FUNCTION PRATA_EMIS(Temp_K, EA_hPa) RESULT(EMIS_A)
       ! clear sky emissivity function Prata 1996
-      REAL(KIND(1d0))::Temp_K, ea_hPa, EMIS_A
-      REAL(KIND(1d0))::W
+      REAL(KIND(1D0))::Temp_K, ea_hPa, EMIS_A
+      REAL(KIND(1D0))::W
 
       W = 46.5*(ea_hPa/Temp_K)
       EMIS_A = 1.-(1.+W)*EXP(-SQRT(1.2 + 3.*W))
@@ -1273,7 +1273,7 @@ CONTAINS
    !===============================================================================
    FUNCTION EMIS_CLOUD(EMIS_A, FCLD) RESULT(em_adj)
       !calculates adjusted emissivity due to clouds
-      REAL(KIND(1d0))::EMIS_A, FCLD, em_adj
+      REAL(KIND(1D0))::EMIS_A, FCLD, em_adj
       !T. Loridan, removing the square for FCLD in the emissivity correction
       !em_adj=EMIS_A+(1.-EMIS_A)*FCLD*FCLD
       em_adj = EMIS_A + (1.-EMIS_A)*FCLD
@@ -1281,12 +1281,12 @@ CONTAINS
    !===============================================================================
    FUNCTION EMIS_CLOUD_SQ(EMIS_A, FCLD) RESULT(em_adj)
       !calculates adjusted emissivity due to clouds
-      REAL(KIND(1d0))::EMIS_A, FCLD, em_adj
+      REAL(KIND(1D0))::EMIS_A, FCLD, em_adj
       em_adj = EMIS_A + (1.-EMIS_A)*FCLD*FCLD
    END FUNCTION EMIS_CLOUD_SQ
    !===============================================================================
    FUNCTION cloud_fraction(KDOWN, KCLEAR) RESULT(FCLD)
-      REAL(KIND(1d0))::KDOWN, KCLEAR, FCLD
+      REAL(KIND(1D0))::KDOWN, KCLEAR, FCLD
 
       FCLD = 1.-KDOWN/KCLEAR
       IF (FCLD > 1.) FCLD = 1.
@@ -1296,11 +1296,11 @@ CONTAINS
    FUNCTION WC_fraction(RH, Temp) RESULT(FWC)
       ! Thomas Loridan, King's College London: June 2009
       ! Parameterisation of fraction water content using the relative humidity
-      REAL(KIND(1d0)), INTENT(in)   :: RH      !Relative Humidity in %
-      REAL(KIND(1d0)), INTENT(in)   :: Temp    !Temperature in degre C
+      REAL(KIND(1D0)), INTENT(in)   :: RH      !Relative Humidity in %
+      REAL(KIND(1D0)), INTENT(in)   :: Temp    !Temperature in degre C
 
-      REAL(KIND(1d0))              :: FWC     !Fraction water content between 0 and 1
-      REAL(KIND(1d0))              :: A, B    !Parameters in the expo
+      REAL(KIND(1D0))              :: FWC     !Fraction water content between 0 and 1
+      REAL(KIND(1D0))              :: A, B    !Parameters in the expo
 
       !Parameters
       !A=0.078
@@ -1340,9 +1340,9 @@ CONTAINS
       ! Calculates ground level solar irradiance clear sky
       ! assuming transmissivity = 1
       ! let it report zero if zenith >= 90
-      REAL(KIND(1d0))::zenith, Isurf
+      REAL(KIND(1D0))::zenith, Isurf
       INTEGER::doy
-      REAL(KIND(1d0))::Rmean, Rse, cosZ, Itoa
+      REAL(KIND(1D0))::Rmean, Rse, cosZ, Itoa
       REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
 
       Rmean = 149.6                 !Stull 1998
@@ -1361,14 +1361,14 @@ CONTAINS
    FUNCTION solar_ESdist(doy) RESULT(Rse)
       !from Stull, 1998   Keep! called from SOLWEIG_clearnessindex_2013b
       INTEGER          ::doy
-      REAL(KIND(1d0))             ::Rse
-      REAL(KIND(1d0)) ::MA, nu, e, a
+      REAL(KIND(1D0))             ::Rse
+      REAL(KIND(1D0)) ::MA, nu, e, a
 
       e = 0.0167
       a = 146.457
 
       MA = 2.*3.141592654*(doy - 3)/365.25463 !Mean anomaly
-      nu = MA + 0.0333988*SIN(MA) + .0003486*SIN(2.*MA) + 5e-6*SIN(3.*MA) !true anomaly
+      nu = MA + 0.0333988*SIN(MA) + .0003486*SIN(2.*MA) + 5E-6*SIN(3.*MA) !true anomaly
       Rse = a*(1 - e*e)/(1 + e*COS(nu))
 
    END FUNCTION solar_ESdist
@@ -1382,7 +1382,7 @@ CONTAINS
       ! "Note on the relationship between total precipitable water and surface dew point."
       ! Journal of Applied Meteorology 5.5 (1966): 726-727.
       INTEGER :: lat, ios, ilat
-      REAL(KIND(1d0)), DIMENSION(365):: G
+      REAL(KIND(1D0)), DIMENSION(365):: G
 
       !open(99,file="Smith1966.grd",access="direct",action="read",recl=365*4,iostat=ios)
       !read(99,rec=lat+1,iostat=ios) G
@@ -1406,9 +1406,9 @@ CONTAINS
       ! zenith in radians
       ! if zenith > 80 use the value for 80.
 
-      REAL(KIND(1d0)) ::Press_hPa, TemP_C_dew, zenith, G, trans
-      REAL(KIND(1d0))::m, TrTpg, u, Tw, Ta, cosZ
-      REAL(KIND(1d0))::Tdf
+      REAL(KIND(1D0)) ::Press_hPa, TemP_C_dew, zenith, G, trans
+      REAL(KIND(1D0))::m, TrTpg, u, Tw, Ta, cosZ
+      REAL(KIND(1D0))::Tdf
       REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
 
       IF (zenith > 80.*DEG2RAD) THEN
