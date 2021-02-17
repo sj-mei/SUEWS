@@ -55,45 +55,45 @@ jobs:
         path: Test/BaseRun/**/*diff.csv
 
 
-  # wheels-manylinux:
-  #   needs: test-suews
+  wheels-manylinux:
+    needs: test-suews
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   strategy:
-  #     matrix:
-  #       manylinux-python-target:
-  #         # NOTE: Must be from this list:
-  #         # NOTE: $ docker run -it --rm \
-  #         # NOTE:   quay.io/pypa/manylinux1_x86_64 \
-  #         # NOTE:   ls -1 /opt/python
-  #         - cp39-cp39
-  #         - cp38-cp38
-  #         - cp37-cp37m
-  #         - cp36-cp36m
+    strategy:
+      matrix:
+        manylinux-python-target:
+          # NOTE: Must be from this list:
+          # NOTE: $ docker run -it --rm \
+          # NOTE:   quay.io/pypa/manylinux1_x86_64 \
+          # NOTE:   ls -1 /opt/python
+          - cp39-cp39
+          - cp38-cp38
+          - cp37-cp37m
+          - cp36-cp36m
 
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #       with:
-  #         submodules: true
-  #         token: ${{ secrets.PAT }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+          token: ${{ secrets.PAT }}
 
-  #     - name: build for ${{ matrix.manylinux-python-target }}
-  #       run: |
-  #         docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver; make suews"
-  #         docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c \
-  #         "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
-  #         which python;\
-  #         python -m pip install -U pip
-  #         cd /io/supy-driver; \
-  #         # export CRYPTOGRAPHY_DONT_BUILD_RUST=1;\
-  #         make test"
+      - name: build for ${{ matrix.manylinux-python-target }}
+        run: |
+          docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
+          "yum install glibc-static -y; cd /io/supy-driver; make suews"
+          docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
+          "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
+          which python;\
+          python -m pip install -U pip
+          cd /io/supy-driver; \
+          make test"
 
-  #     - name: Store ${{ matrix.manylinux-python-target }} binary wheel
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: python-package-distributions
-  #         path: supy-driver/wheelhouse/
+      - name: Store ${{ matrix.manylinux-python-target }} binary wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-package-distributions
+          path: supy-driver/wheelhouse/
 
   wheels-mac_win:
     needs: test-suews
