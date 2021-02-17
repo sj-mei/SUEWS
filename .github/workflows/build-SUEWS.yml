@@ -139,7 +139,7 @@ jobs:
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
-      - wheels-manylinux
+      # - wheels-manylinux
       - wheels-mac_win
     runs-on: ubuntu-latest
 
