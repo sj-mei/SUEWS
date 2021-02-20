@@ -367,7 +367,7 @@ CONTAINS
       idx_low = MAXLOC(dif, 1, dif < 0.)
       idx_high = MINLOC(dif, 1, dif > 0.)
 
-      IF (idx > 0) THEN
+      IF (idx_x > 0) THEN
          ! z_x is one of zarray elements
          v_x = v(idx_x)
       ELSE

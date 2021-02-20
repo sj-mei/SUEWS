@@ -19,10 +19,10 @@ SUEWS_test_dir = ../BenchmarkTest/code
 
 # target specific options
 # netCDF-related settings:
-netcdf: NETCDFINC = `nc-config --includedir` # ordinary path for netCDF directories
-netcdf:	NETCDFLIB = `nc-config --libdir` # ordinary path for netCDF directories
+netcdf: NETCDFINC = -I$(shell nf-config --fflags) # ordinary path for netCDF directories
+netcdf:	NETCDFLIB = $(shell nf-config --flibs) -lnetcdff # ordinary path for netCDF directories
 
-netcdf:	FFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
+netcdf:	FFLAGS += -Dnc=1 $(NETCDFINC) # options for netcdf build
 # WRF coupling (SuMin) related options
 sumin: FFLAGS += -Dwrf=1
 
@@ -62,8 +62,8 @@ MODULES =	suews_phys_narp.o \
 					suews_phys_biogenco2.o \
 					suews_phys_ohm.o \
 					suews_phys_solweig.o \
-					suews_phys_beers.o \
-					suews_ctrl_driver.o
+					suews_phys_beers.o
+
 
 # Rest of the files including modules and functions which are independent
 OTHERS =  suews_ctrl_translate.o \
@@ -71,17 +71,21 @@ OTHERS =  suews_ctrl_translate.o \
 					suews_ctrl_init.o
 
 # modules under rapid development
-TEST = suews_ctrl_calculations.o
+TEST = suews_ctrl_driver.o suews_ctrl_calculations.o
 
 # modules for WRF coupling
 WRF =  suews_ctrl_sumin.o
+
+# external libraries
+EXT_LIB = libraddriver.a libradsurf.a libradtool.a libutilities.a # SPARTACUS
 
 
 
 # Build main program - main uses MODULES and OTHERS
 main: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
 			$(FC) suews_program$(suffix_code)  -c
-			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) $(STATICLIB) \
+			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+			$(STATICLIB) $(EXT_LIB) \
 			-o $(TARGET)
 			rm -rf $(SUEWS_build_dir)
 			mkdir -p $(SUEWS_build_dir)
@@ -90,9 +94,10 @@ main: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(
 # Build main program with NETCDF support - main uses MODULES and OTHERS
 netcdf: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
 				$(FC) suews_program$(suffix_code)  -c ; \
-				$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+				$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)  \
+				$(EXT_LIB) \
 				$(STATICLIB) \
-				-L$(NETCDFLIB) -lnetcdf -lnetcdff \
+				$(NETCDFLIB) \
 				-o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
@@ -123,7 +128,7 @@ sumin: $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) $(WRF)
 	$(FC) -c $*$(suffix_code)
 
 $(C_MODULE): $(subst .o,.c, $(C_MODULE))
-						$(CC) -c $(subst .o,.c, $@)
+			$(CC) -c $(subst .o,.c, $@)
 
 # If UTILS have changed, compile them again
 $(UTILS): $(subst .o,$(suffix_code), $(UTILS))

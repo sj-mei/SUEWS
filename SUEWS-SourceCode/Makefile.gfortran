@@ -27,13 +27,14 @@ else
 			endif
 endif
 
-FCNOOPT = #-O0
+FCNOOPT = -O0
 FCDEBUG = #-g $(FCNOOPT) -fbacktrace -ggdb -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
 FCPROF = #-pg
 
 FFLAGS = -O3 $(STATIC) $(FCDEBUG) \
 		-Wall -Wtabs -fbounds-check -cpp \
-		-Wno-unused-dummy-argument -Wno-unused-variable
+		-Wno-unused-dummy-argument -Wno-unused-variable \
+		-J../../spartacus-surface/mod/
 CFLAGS =
 
 
