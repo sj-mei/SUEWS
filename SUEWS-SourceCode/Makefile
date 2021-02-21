@@ -111,7 +111,7 @@ endif
 export FC
 export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 	$(OPTFLAGS) $(DEBUGFLAGS) $(NETCDF_INCLUDE) $(OMPFLAG)
-export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) -L./lib -lsuewsutil -lsuewsphys -lsuewsdriver \
+export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) -L$(SUEWS_DIR_LIB) -lsuewsutil -lsuewsphys -lsuewsdriver \
 	$(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
 
 
@@ -211,10 +211,10 @@ libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS))
 	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBUTILS) $^
 
-libphys:  $(addprefix $(SUEWS_DIR_SRC), $(PHYS))
+libphys:  $(addprefix $(SUEWS_DIR_SRC), $(PHYS)) $(LIBUTILS)
 	ar r $(LIBPHYS) $^
 
-libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER))
+libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER)) $(LIBPHYS)
 	ar r $(LIBDRIVER) $^
 
 exe: $(SUEWS_DIR_SRC)/suews_program$(suffix_code) \
