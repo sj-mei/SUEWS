@@ -60,7 +60,7 @@ jobs:
     strategy:
       matrix:
         py: ["3.9"]
-        os: [macOS-latest, windows-latest, ubuntu-latest]
+        os: [macOS-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
