@@ -207,6 +207,7 @@ help:
 suews: libutil libphys libdriver exe
 
 libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS))
+	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBUTILS) $^
 
 libphys: $(addprefix $(SUEWS_DIR_SRC), $(PHYS))
