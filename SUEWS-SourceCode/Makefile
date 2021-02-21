@@ -219,9 +219,9 @@ exe: $(SUEWS_DIR_SRC)/suews_program$(suffix_code) \
 	$(addprefix $(SUEWS_DIR_SRC), $(OTHERS)) \
 	$(C_MODULE) $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
 	@echo $(TARGET) $(EXECUTABLE) $(OTHERS)
-	$(info Building SUEWS ...)
+	@echo Building SUEWS ...
 	$(FC) $(FCFLAGS) $^ -o $(SUEWS_DIR_BIN)/$(EXECUTABLE)
-	$(info $(TARGET) has been saved in $(SUEWS_DIR_BIN))
+	@echo $(TARGET) has been saved in $(SUEWS_DIR_BIN)
 	cd $(SUEWS_DIR_BIN) && ln -sf $(EXECUTABLE) $(TARGET)
 	mkdir -p $(SUEWS_DIR_RELEASE) && cp -f $(SUEWS_DIR_BIN)/$(EXECUTABLE) $(SUEWS_DIR_RELEASE)/$(TARGET)
 
@@ -253,7 +253,7 @@ clean: clean-obj clean-mods clean-lib clean-bin
 dist-clean: clean-tests clean-toplevel clean-utilities clean-mods dist-clean-doc
 
 clean-obj:
-	rm -rf $(SUEWS_DIR_SRC)/*.o
+	rm -rf $(SUEWS_DIR_SRC)/*.o $(SUEWS_DIR_SRC)/*.mod
 
 clean-lib:
 	rm -rf $(SUEWS_DIR_LIB)/lib*.a
