@@ -203,6 +203,7 @@ help:
 	@echo "Usage:"
 	@echo "  make PROFILE=<prof>"
 	@echo "where <prof> can be either 'gfortran' or 'ifort'."
+	@echo $(C_MODULE)
 
 suews: libutil libphys libdriver exe
 
@@ -210,15 +211,16 @@ libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS))
 	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBUTILS) $^
 
-libphys: $(addprefix $(SUEWS_DIR_SRC), $(PHYS))
+libphys:  $(addprefix $(SUEWS_DIR_SRC), $(PHYS))
 	ar r $(LIBPHYS) $^
 
-libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER)) $(LIBUTILS) $(LIBPHYS)
+libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER))
 	ar r $(LIBDRIVER) $^
 
 exe: $(SUEWS_DIR_SRC)/suews_program$(suffix_code) \
 	$(addprefix $(SUEWS_DIR_SRC), $(OTHERS)) \
 	$(C_MODULE) $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
+	@echo  $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
 	@echo $(TARGET) $(EXECUTABLE) $(OTHERS)
 	@echo Building SUEWS ...
 	$(FC) $(FCFLAGS) $^ -o $(SUEWS_DIR_BIN)/$(EXECUTABLE)
@@ -251,7 +253,7 @@ test_code:
 
 clean: clean-obj clean-mods clean-lib clean-bin
 
-dist-clean: clean-tests clean-toplevel clean-utilities clean-mods dist-clean-doc
+# dist-clean: clean-tests clean-toplevel clean-utilities clean-mods dist-clean-doc
 
 clean-obj:
 	rm -rf $(SUEWS_DIR_SRC)/*.o $(SUEWS_DIR_SRC)/*.mod
@@ -268,7 +270,7 @@ clean-bin:
 
 
 $(C_MODULE): $(subst .o,.c, $(C_MODULE))
-			$(CC) -c $(subst .o,.c, $@)
+	$(CC) -c $(subst .o,.c, $@)
 
 
 
@@ -285,4 +287,4 @@ $(WRF): $(subst .o,$(suffix_code), $(WRF))
 
 
 
-.PHONY: test libradsurf libradtool libutilities driver clean clean-toplevel test
+.PHONY: libutil libphys libdriver exe clean-toplevel test

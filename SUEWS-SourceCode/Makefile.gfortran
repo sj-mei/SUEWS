@@ -18,7 +18,8 @@ ifndef DEBUG
 OPTFLAGS = -O3
 
 # Warning flags: all except those that warn about unused stuff
-WARNFLAGS = -Wall -Wno-unused-label -Wno-unused-dummy-argument -Wno-unused-variable -Wimplicit-interface
+WARNFLAGS = -Wall -Wno-unused-label -Wno-unused-dummy-argument -Wno-unused-variable
+# WARNFLAGS = -Wall -Wno-unused-label -Wno-unused-dummy-argument -Wno-unused-variable -Wimplicit-interface
 
 # Debugging flags, such as "-g" to store debugging symbols, and
 # instructions to abort if certain floating-point exceptions occur
@@ -37,7 +38,7 @@ suffix_code = .f95
 
 # system specific settings
 ifeq ($(OS),Windows_NT)
-	C_MODULE = strptime.o # this is needed by datetime_module: mingw lacks `strptime`
+	C_MODULE = $(SUEWS_DIR_SRC)/strptime.o # this is needed by datetime_module: mingw lacks `strptime`
 	STATIC = -static -mcmodel=medium# mingw
 	STATICLIB =
 	SUEWS_build_dir = $(addprefix $(SUEWS_build_base), win64)
