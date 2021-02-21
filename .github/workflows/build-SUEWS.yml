@@ -54,6 +54,41 @@ jobs:
         name: diff csv
         path: Test/BaseRun/**/*diff.csv
 
+  binaries:
+    needs: test-suews
+
+    strategy:
+      matrix:
+        py: ["3.9"]
+        os: [macOS-latest, windows-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+          token: ${{ secrets.PAT }}
+
+      - name: fix gfortran on mac
+        if: startsWith(matrix.os, 'macOS')
+        run: |
+          echo $PATH
+          which gfortran-10
+          ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
+          which gfortran
+          gfortran --version
+
+      - name: set up py${{ matrix.py }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.py }} # Version range or exact version of a Python version to use, using semvers version range syntax.
+          architecture: "x64" # (x64 or x86)
+
+      - name: build binary
+        run: |
+          make release
+
+
 
   wheels-manylinux:
     needs: test-suews
