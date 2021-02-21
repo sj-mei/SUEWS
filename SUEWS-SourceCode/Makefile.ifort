@@ -1,9 +1,26 @@
 # compilers
-FC = ifort $(FFLAGS)
-CC = gcc $(CFLAGS)
+FC = ifort
+CPPFLAGS =
+
+ifndef DEBUG
+OPTFLAGS = -O3
+else
+OPTFLAGS = -O0
+endif
+
+WARNFLAGS = -warn all
+BASICFLAGS = -module ./mod -convert big_endian
+DEBUGFLAGS = -g
+OMPFLAG = -qopenmp
+
 
 # source code suffix: ifort only works with f90 files
 suffix_code = .f90
+
+# rules for f95-->f90: ifort only works with f90
+%.f90: %.f95
+	-rm -rf $*.f90
+	-ln -sf $*.f95 $*.f90
 
 ifeq ($(OS),Windows_NT)
 			C_MODULE = strptime.o # this is needed by datetime_module: mingw lacks `strptime`
@@ -25,18 +42,6 @@ else
 			endif
 endif
 
-FCNOOPT = #-O0
-FCDEBUG =  #-g -check all -fpe0 -warn -traceback -debug extended #-g $(FCNOOPT) -fbacktrace -ggdb -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
-FCPROF = #-pg
-
-FFLAGS = -O3 $(STATIC) $(FCDEBUG) -cpp
-CFLAGS =
 
 
-# rules for f95-->f90: ifort only works with f90
-%.f90: %.f95
-	-rm -rf $*.f90
-	-ln -sf $*.f95 $*.f90
 
-# include common settings
-include include.common

@@ -237,7 +237,7 @@ def run_sim(
     # copy SUEWS executable
     # name_exe = 'SUEWS_V2018a'
     path_exe = os.path.join(dir_exe, name_exe)
-    copyfile(path_exe, name_exe)
+    copyfile(path_exe, name_exe, follow_symlinks=True)
     os.chmod(name_exe, 755)
 
     # perform multi-grid run:
@@ -472,8 +472,8 @@ def test_samerun(
         list_file_dif = sorted(comp_files_test[1])
         print(list_file_dif)
         for file in list_file_dif:
-            df_test = pd.read_csv(path_res_test/file, sep="\s+")
-            df_sample = pd.read_csv(path_res_sample/file, sep="\s+")
+            df_test = pd.read_csv(path_res_test / file, sep="\s+")
+            df_sample = pd.read_csv(path_res_sample / file, sep="\s+")
             df_diff = (
                 pd.concat(
                     {"test": df_test, "sample": df_sample}, names=["file", "line"]
@@ -486,8 +486,8 @@ def test_samerun(
                 .unstack("file")
                 .droplevel(0, axis=1)
             )
-            if df_diff.size>0:
-                df_diff.to_csv(path_res_sample/(file+'.diff.csv'))
+            if df_diff.size > 0:
+                df_diff.to_csv(path_res_sample / (file + ".diff.csv"))
                 print(df_diff)
                 print(f"===  {path_res_sample/(file+'.diff.csv')} has been saved")
             else:

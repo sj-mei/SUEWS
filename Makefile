@@ -1,4 +1,5 @@
-# -*- makefile -*-
+# SUEWS Makefile - read the README file before editing
+
 .PHONY: main clean test pip supy docs
 
 # OS-specific configurations
@@ -42,8 +43,8 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 
 # make fortran exe
-main:
-	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
+suews:
+	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `main` recipe
 	# -rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 # make fortran exe and run test cases
@@ -57,8 +58,7 @@ release: pip
 	$(MAKE) -C $(release_dir) pack # pack binary and input files
 
 # make supy dist
-driver:
-	$(MAKE) main
+driver: suews
 	$(MAKE) -C $(SuPy_dir) test; # make and test supy_driver
 
 pip:

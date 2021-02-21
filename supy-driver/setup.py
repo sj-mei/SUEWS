@@ -25,12 +25,16 @@ if sysname == "Windows":
     shutil.copyfile("win-setup.cfg", "setup.cfg")
 
 # load SUEWS Fortran source files
-dir_f95 = "../SUEWS-SourceCode"
+dir_f95 = "../SUEWS-SourceCode/src"
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in [
         "suews_ctrl_const.f95",
         "suews_ctrl_error.f95",
+        "suews_util_stringmod.f95",
+        "suews_util_meteo.f95",
+        "suews_util_datetime.f95",
+        "suews_phys_waterdist.f95",
         "suews_phys_narp.f95",
         "suews_phys_atmmoiststab.f95",
         "suews_phys_resist.f95",
@@ -42,9 +46,12 @@ target_f95 = [
         "suews_phys_rslprof.f95",
         "suews_phys_biogenco2.f95",
         "suews_phys_ohm.f95",
+        "suews_phys_anohm.f95",
+        "suews_phys_estm.f95",
         "suews_phys_solweig.f95",
-        "suews_phys_waterdist.f95",
-        "suews_util_meteo.f95",
+        "suews_phys_bluews.f95",
+        "suews_phys_beers.f95",
+        "suews_ctrl_output.f95",
         "suews_ctrl_driver.f95",
     ]
 ]
@@ -93,15 +100,22 @@ def readme():
 
 def get_suews_version(ver_minor, dir_source=dir_f95):
     path_source = Path(dir_source)
-    path_makefile = path_source / "include.common"
+    path_makefile = path_source.parent / "Makefile"
+    print(path_makefile,path_makefile.exists())
     # identify `file` to retrieve version
     with open(str(path_makefile)) as fm:
         for line in fm:
             if "file " in line:
-                file = line.split(":=")[-1].split("#")[0].strip()
+                print(line)
+                print(line.split(r"/")[-1])
+                print(line.split(r"/")[-1].split(r"#")[0])
+                file = line.split(r"/")[-1].split(r"#")[0].strip()
+                return
 
+    print('file',file)
     # get version from `file`
     path_constfile = path_source / file
+    print(path_constfile)
     with open(str(path_constfile)) as fm:
         for line in fm:
             if "progname" in line:

@@ -1,5 +1,5 @@
 &file
-    dir_exe     = '../../SUEWS-SourceCode'
+    dir_exe     = '../../SUEWS-SourceCode/bin'
     dir_baserun = '../BaseRun'
 /
 

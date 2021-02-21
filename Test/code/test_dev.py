@@ -16,11 +16,12 @@ cfg_file = nml["file"]
 
 # load path
 path_dir_exe = Path(cfg_file["dir_exe"]).resolve()
+path_dir_src = path_dir_exe.parent / "src"
 
 # identify programme name from SUEWS source code
-path_suews_const = path_dir_exe / "suews_ctrl_const.f95"
+path_suews_const = path_dir_src / "suews_ctrl_const.f95"
 str_const = path_suews_const.read_text()
-for ln in str_const.split('\n'):
+for ln in str_const.split("\n"):
     if "progname" in ln:
         name_exe = ln.split("progname = ")[-1].replace("'", "")
         break
