@@ -63,8 +63,8 @@ main:
 
 # make fortran exe
 suews:
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran main; # make SUEWS with the `main` recipe
+	$(MAKE) -C $(SUEWS_dir) clean
+	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `suews` recipe
 
 show:
 	@echo $(info $$OSFLAG is [${OSFLAG}])
