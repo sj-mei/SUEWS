@@ -9,14 +9,14 @@ import f90nml
 # locate base path
 path_base = Path('.').resolve()
 
-# locate build exe
-path_build = path_base / 'build'
-if not path_build.exists():
-    print(f'{path_build} not existing! Packing stopped!')
+# locate exe
+path_bin = path_base / 'bin'
+if not path_bin.exists():
+    print(f'{path_bin} not existing! Packing stopped!')
     sys.exit()
 
 # load version
-path_sys = list(path_build.glob('*'))[0]
+path_sys = list(path_bin.glob('*'))[0]
 # system: macOS, Windows, or Linux
 name_sys = path_sys.stem
 # SUEWS release:

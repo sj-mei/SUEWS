@@ -51,10 +51,10 @@ suews:
 test:
 	$(MAKE) -C $(test_dir) test
 
-# make fortran exe, run test cases and pack release archive
+# make fortran exe and pack release archive
 release: pip
 	$(MAKE) -C $(release_dir) clean; # clean release directory
-	$(MAKE) main # build SUEWS binary
+	$(MAKE) suews # build SUEWS binary
 	$(MAKE) -C $(release_dir) pack # pack binary and input files
 
 # make supy dist

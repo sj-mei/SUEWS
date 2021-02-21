@@ -17,8 +17,20 @@ SUEWS_DIR_MOD = ./mod/
 SUEWS_DIR_BIN = ./bin/
 
 # where to store built binaries for release
-SUEWS_DIR_RELEASE = ../Release/build/
+SUEWS_DIR_RELEASE_BASE = ../Release/bin/
 
+# system specific settings
+ifeq ($(OS),Windows_NT)
+	SUEWS_DIR_RELEASE = $(addprefix $(SUEWS_DIR_RELEASE_BASE), win64)
+else
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Linux) # Linux
+		SUEWS_DIR_RELEASE = $(addprefix $(SUEWS_DIR_RELEASE_BASE), Linux)
+	endif
+	ifeq ($(UNAME_S),Darwin) # macOS
+		SUEWS_DIR_RELEASE = $(addprefix $(SUEWS_DIR_RELEASE_BASE), macOS)
+	endif
+endif
 
 
 
@@ -36,12 +48,12 @@ variable   := $(shell $(grep) progname ${file})
 TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
 TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 VERSION    := $(lastword $(subst _V, ,${TARGET}))
-# EXECUTABLE := $(SUEWS_DIR_BIN)/$(TARGET)
+
+timestamp := $(shell date +"%Y%m%dT%H%M")
+EXECUTABLE := $(strip $(TARGET))_$(strip $(timestamp))
 
 # where to test built version
 SUEWS_DIR_TEST := ../Test/BaseRun/$(VERSION)
-
-$(info $(TARGET) $(VERSION) $(SUEWS_DIR_TEST))
 
 
 #############################
@@ -203,16 +215,15 @@ libphys: $(addprefix $(SUEWS_DIR_SRC), $(PHYS))
 libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER)) $(LIBUTILS) $(LIBPHYS)
 	ar r $(LIBDRIVER) $^
 
-
-timestamp := $(shell date +"%Y%m%dT%H%M")
-EXECUTABLE := $(strip $(TARGET))_$(strip $(timestamp))
 exe: $(SUEWS_DIR_SRC)/suews_program$(suffix_code) \
 	$(addprefix $(SUEWS_DIR_SRC), $(OTHERS)) \
 	$(C_MODULE) $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
 	@echo $(TARGET) $(EXECUTABLE) $(OTHERS)
-	@echo $(timestamp)
+	$(info Building SUEWS ...)
 	$(FC) $(FCFLAGS) $^ -o $(SUEWS_DIR_BIN)/$(EXECUTABLE)
+	$(info $(TARGET) has been saved in $(SUEWS_DIR_BIN))
 	cd $(SUEWS_DIR_BIN) && ln -sf $(EXECUTABLE) $(TARGET)
+	mkdir -p $(SUEWS_DIR_RELEASE) && cp -f $(SUEWS_DIR_BIN)/$(EXECUTABLE) $(SUEWS_DIR_RELEASE)/$(TARGET)
 
 
 # rules for f95-->f90
