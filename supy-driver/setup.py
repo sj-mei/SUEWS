@@ -28,8 +28,8 @@ if sysname == "Windows":
 dir_f95 = "../SUEWS-SourceCode/src"
 path_src = Path(dir_f95)
 path_mod = (path_src.parent / "mod").resolve()
-target_f95 = [
-    (path_src / f).as_posix()
+path_target_f95 = [
+    (path_src / f)
     for f in [
         "suews_ctrl_const.f95",
         "suews_ctrl_error.f95",
@@ -50,21 +50,22 @@ target_f95 = [
         "suews_ctrl_driver.f95",
     ]
 ]
-all_f95 = glob.glob(os.path.join(dir_f95, "*.f95"))
-exclude_f95 = [
-    os.path.join(dir_f95, f)
+# all_f95 = glob.glob(os.path.join(dir_f95, "*.f95"))
+path_all_f95 = [f for f in path_src.glob("*.f95")]
+path_exclude_f95 = [
+    (path_src / f)
     for f in [
         "suews_c_wrapper.f95",
         "suews_ctrl_sumin.f95",
         "suews_program.f95",
     ]
 ]
-other_f95 = list(set(all_f95) - set(target_f95) - set(exclude_f95))
-other_obj = [f.replace(".f95", ".o") for f in other_f95]
+path_other_f95 = list(set(path_all_f95) - set(path_target_f95) - set(path_exclude_f95))
+fn_other_obj = [str(f).replace(".f95", ".o") for f in path_other_f95]
 if sysname == "Windows":
-    other_obj.append(os.path.join(dir_f95, "strptime.o"))
+    fn_other_obj.append(os.path.join(dir_f95, "strptime.o"))
 
-src_f95 = target_f95 + other_f95
+src_f95 = path_target_f95 + path_other_f95
 
 # # combine for files to use:
 # file_all_f95 = 'suews_all.f95'
@@ -144,15 +145,15 @@ class BinaryDistribution(Distribution):
 ext_modules = [
     Extension(
         "supy_driver.suews_driver",
-        target_f95,
+        [str(p) for p in path_target_f95],
         extra_compile_args=["-D_POSIX_C_SOURCE=200809L"],
-        extra_f90_compile_args=["-cpp", f"-I{path_mod.as_posix()}"],
+        extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
         f2py_options=[
             # '--quiet',
             #   '--debug-capi',
             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
         ],
-        extra_objects=other_obj,
+        extra_objects=fn_other_obj,
         # "-v" under Linux is necessary because it can avoid the blank variable issue
         # ref: https://github.com/metomi/fcm/issues/220
         extra_link_args=["-v" if sysname == "Linux" else "-static"],

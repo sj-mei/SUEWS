@@ -44,7 +44,7 @@ LIBDRIVER = $(SUEWS_DIR_LIB)/libsuewsdriver.a
 # determined from source code
 path       := $(SUEWS_DIR_SRC)suews_ctrl_const.f95 # get program name form source code
 file :=  $(if $(filter $(OS),Windows_NT),$(strip $(subst /,\,${path})),${path})
-$(info file is $(file))
+# $(info file is $(file))
 grep := $(if $(filter $(OS),Windows_NT),findstr,grep)
 variable   := $(shell $(grep) progname ${file})
 TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
@@ -217,7 +217,7 @@ libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS))
 	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBUTILS) $^
 
-libphys:  $(addprefix $(SUEWS_DIR_SRC), $(PHYS))
+libphys:  $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS) )
 	ar r $(LIBPHYS) $^
 
 libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER))
