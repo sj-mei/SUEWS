@@ -112,12 +112,13 @@ endif
 # Consolidate flags
 export FC
 export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
-	$(OPTFLAGS) $(DEBUGFLAGS) $(NETCDF_INCLUDE) $(OMPFLAG)
-export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) -L$(SUEWS_DIR_LIB) \
-	-lsuewsdriver \
-	-lsuewsphys \
-	-lsuewsutil \
-	$(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
+	$(STATIC)	\
+	$(OPTFLAGS) $(DEBUGFLAGS)
+	# $(NETCDF_INCLUDE) $(OMPFLAG)
+export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) \
+	-L$(SUEWS_DIR_LIB) -lsuewsdriver -lsuewsphys -lsuewsutil \
+	$(STATICLIB)
+	# $(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
 
 
 

@@ -53,7 +53,7 @@ jobs:
           path: Test/BaseRun/**/*diff.csv
 
   binaries:
-    # needs: test-suews
+    needs: test-suews
 
     strategy:
       matrix:
@@ -132,7 +132,7 @@ jobs:
     strategy:
       matrix:
         py: ["3.9", "3.8", "3.7"]
-        os: [macOS-latest, windows-latest, ubuntu-latest]
+        os: [macOS-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -169,7 +169,7 @@ jobs:
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
-      # - wheels-manylinux
+      - wheels-manylinux
       - wheels-mac_win
     runs-on: ubuntu-latest
 
