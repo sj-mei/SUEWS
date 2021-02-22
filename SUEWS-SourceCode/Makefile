@@ -211,19 +211,19 @@ libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS))
 	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBUTILS) $^
 
-libphys:  $(addprefix $(SUEWS_DIR_SRC), $(PHYS)) $(LIBUTILS)
+libphys:  $(addprefix $(SUEWS_DIR_SRC), $(PHYS))
 	ar r $(LIBPHYS) $^
 
-libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER)) $(LIBPHYS)
+libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER))
 	ar r $(LIBDRIVER) $^
 
 exe: $(SUEWS_DIR_SRC)/suews_program$(suffix_code) \
 	$(addprefix $(SUEWS_DIR_SRC), $(OTHERS)) \
-	$(C_MODULE) $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
+	$(C_MODULE)
 	@echo  $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
 	@echo $(TARGET) $(EXECUTABLE) $(OTHERS)
 	@echo Building SUEWS ...
-	$(FC) $(FCFLAGS) $^ -o $(SUEWS_DIR_BIN)/$(EXECUTABLE)
+	$(FC) $(FCFLAGS) $^ -o $(SUEWS_DIR_BIN)/$(EXECUTABLE) $(LIBS)
 	@echo $(TARGET) has been saved in $(SUEWS_DIR_BIN)
 	cd $(SUEWS_DIR_BIN) && ln -sf $(EXECUTABLE) $(TARGET)
 	mkdir -p $(SUEWS_DIR_RELEASE) && cp -f $(SUEWS_DIR_BIN)/$(EXECUTABLE) $(SUEWS_DIR_RELEASE)/$(TARGET)
@@ -270,7 +270,7 @@ clean-bin:
 
 
 $(C_MODULE): $(subst .o,.c, $(C_MODULE))
-	$(CC) -c $(subst .o,.c, $@)
+	$(CC) -c $^ -o $@
 
 
 
