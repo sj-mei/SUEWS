@@ -111,7 +111,10 @@ endif
 export FC
 export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 	$(OPTFLAGS) $(DEBUGFLAGS) $(NETCDF_INCLUDE) $(OMPFLAG)
-export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) -L$(SUEWS_DIR_LIB) -lsuewsutil -lsuewsphys -lsuewsdriver \
+export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) -L$(SUEWS_DIR_LIB) \
+	-lsuewsdriver \
+	-lsuewsphys \
+	-lsuewsutil \
 	$(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
 
 
