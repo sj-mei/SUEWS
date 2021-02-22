@@ -169,8 +169,8 @@ jobs:
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
-      - wheels-manylinux
-      - wheels-mac_win
+      - build-wheels-manylinux
+      - build-wheels-mac_win
     runs-on: ubuntu-latest
 
     steps:
