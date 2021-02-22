@@ -42,7 +42,8 @@ LIBDRIVER = $(SUEWS_DIR_LIB)/libsuewsdriver.a
 
 # version specific target name:
 # determined from source code
-file       := $(SUEWS_DIR_SRC)suews_ctrl_const.f95 # get program name form source code
+path       := $(SUEWS_DIR_SRC)suews_ctrl_const.f95 # get program name form source code
+file :=  $(if $(filter $(OS),Windows_NT),$(strip $(subst /,\,${path})),${path})
 $(info file is $(file))
 grep := $(if $(filter $(OS),Windows_NT),findstr,grep)
 variable   := $(shell $(grep) progname ${file})
