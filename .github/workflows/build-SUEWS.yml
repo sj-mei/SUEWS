@@ -52,8 +52,8 @@ jobs:
           name: diff csv
           path: Test/BaseRun/**/*diff.csv
 
-  binaries:
-    needs: test-suews
+  build-binaries:
+    # needs: test-suews
 
     strategy:
       matrix:
@@ -86,8 +86,8 @@ jobs:
         run: |
           make release
 
-  wheels-manylinux:
-    needs: test-suews
+  build-wheels-manylinux:
+    # needs: test-suews
 
     runs-on: ubuntu-latest
 
@@ -126,8 +126,8 @@ jobs:
           name: python-package-distributions
           path: supy-driver/wheelhouse/
 
-  wheels-mac_win:
-    needs: test-suews
+  build-wheels-mac_win:
+    # needs: test-suews
 
     strategy:
       matrix:
