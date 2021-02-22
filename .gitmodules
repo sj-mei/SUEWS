@@ -1,0 +1,3 @@
+[submodule "SUEWS-SourceCode/ext_lib/spartacus-surface"]
+	path = SUEWS-SourceCode/ext_lib/spartacus-surface
+	url = git@github.com:Urban-Meteorology-Reading/spartacus-surface.git
