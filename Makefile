@@ -40,7 +40,7 @@ SuPy_dir = supy-driver
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
-
+all: driver
 
 # make fortran exe
 suews:
