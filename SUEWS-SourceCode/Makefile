@@ -192,10 +192,7 @@ WRF =  suews_ctrl_sumin.o
 
 # external libraries
 # SPARTACUS
-EXT_LIB = libraddriver.a \
-	libradsurf.a \
-	libradtool.a \
-	libutilities.a \
+EXT_LIB = libradsurf.a
 
 
 #############################

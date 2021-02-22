@@ -42,7 +42,6 @@ jobs:
 
       - name: build and test
         run: |
-          make release
           make test
 
       - name: Upload diff results from test
