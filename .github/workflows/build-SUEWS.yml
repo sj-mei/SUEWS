@@ -86,114 +86,114 @@ jobs:
         run: |
           make release
 
-  # wheels-manylinux:
-  #   needs: test-suews
+  wheels-manylinux:
+    needs: test-suews
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   strategy:
-  #     matrix:
-  #       manylinux-python-target:
-  #         # NOTE: Must be from this list:
-  #         # NOTE: $ docker run -it --rm \
-  #         # NOTE:   quay.io/pypa/manylinux1_x86_64 \
-  #         # NOTE:   ls -1 /opt/python
-  #         - cp39-cp39
-  #         - cp38-cp38
-  #         - cp37-cp37m
-  #         - cp36-cp36m
+    strategy:
+      matrix:
+        manylinux-python-target:
+          # NOTE: Must be from this list:
+          # NOTE: $ docker run -it --rm \
+          # NOTE:   quay.io/pypa/manylinux1_x86_64 \
+          # NOTE:   ls -1 /opt/python
+          - cp39-cp39
+          - cp38-cp38
+          - cp37-cp37m
+          - cp36-cp36m
 
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #       with:
-  #         submodules: true
-  #         token: ${{ secrets.PAT }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+          token: ${{ secrets.PAT }}
 
-  #     - name: build for ${{ matrix.manylinux-python-target }}
-  #       run: |
-  #         docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
-  #         "yum install glibc-static -y; cd /io/supy-driver; make suews"
-  #         docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
-  #         "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
-  #         which python;\
-  #         python -m pip install -U pip
-  #         cd /io/supy-driver; \
-  #         make test"
+      - name: build for ${{ matrix.manylinux-python-target }}
+        run: |
+          docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
+          "yum install glibc-static -y; cd /io/supy-driver; make suews"
+          docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
+          "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
+          which python;\
+          python -m pip install -U pip
+          cd /io/supy-driver; \
+          make test"
 
-  #     - name: Store ${{ matrix.manylinux-python-target }} binary wheel
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: python-package-distributions
-  #         path: supy-driver/wheelhouse/
+      - name: Store ${{ matrix.manylinux-python-target }} binary wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-package-distributions
+          path: supy-driver/wheelhouse/
 
-  # wheels-mac_win:
-  #   needs: test-suews
+  wheels-mac_win:
+    needs: test-suews
 
-  #   strategy:
-  #     matrix:
-  #       py: ["3.9", "3.8", "3.7"]
-  #       os: [macOS-latest, windows-latest, ubuntu-latest]
+    strategy:
+      matrix:
+        py: ["3.9", "3.8", "3.7"]
+        os: [macOS-latest, windows-latest, ubuntu-latest]
 
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #       with:
-  #         submodules: true
-  #         token: ${{ secrets.PAT }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+          token: ${{ secrets.PAT }}
 
-  #     - name: fix gfortran on mac
-  #       if: startsWith(matrix.os, 'macOS')
-  #       run: |
-  #         echo $PATH
-  #         which gfortran-10
-  #         ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
-  #         which gfortran
-  #         gfortran --version
+      - name: fix gfortran on mac
+        if: startsWith(matrix.os, 'macOS')
+        run: |
+          echo $PATH
+          which gfortran-10
+          ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
+          which gfortran
+          gfortran --version
 
-  #     - name: set up py${{ matrix.py }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.py }} # Version range or exact version of a Python version to use, using semvers version range syntax.
-  #         architecture: "x64" # (x64 or x86)
+      - name: set up py${{ matrix.py }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.py }} # Version range or exact version of a Python version to use, using semvers version range syntax.
+          architecture: "x64" # (x64 or x86)
 
-  #     - name: build supy-driver
-  #       run: |
-  #         make driver
+      - name: build supy-driver
+        run: |
+          make driver
 
-  #     - name: Store the ${{ matrix.py }} wheel
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: python-package-distributions
-  #         path: supy-driver/dist/
+      - name: Store the ${{ matrix.py }} wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-package-distributions
+          path: supy-driver/dist/
 
-  # deploy:
-  #   name: Publish 🐍📦 to (Test)PyPI
-  #   needs:
-  #     # - wheels-manylinux
-  #     - wheels-mac_win
-  #   runs-on: ubuntu-latest
+  deploy:
+    name: Publish 🐍📦 to (Test)PyPI
+    needs:
+      # - wheels-manylinux
+      - wheels-mac_win
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Download all the dists
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: python-package-distributions
-  #         path: dist/
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v2
+        with:
+          name: python-package-distributions
+          path: dist/
 
-  #     - name: Publish distribution 📦 to Test PyPI
-  #       uses: pypa/gh-action-pypi-publish@master
-  #       with:
-  #         packages_dir: dist/
-  #         verbose: true
-  #         skip_existing: true
-  #         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-  #         repository_url: https://test.pypi.org/legacy/
+      - name: Publish distribution 📦 to Test PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          packages_dir: dist/
+          verbose: true
+          skip_existing: true
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
 
-  #     - name: Publish distribution 📦 to PyPI
-  #       if: startsWith(github.ref, 'refs/tags')
-  #       uses: pypa/gh-action-pypi-publish@master
-  #       with:
-  #         packages_dir: dist/
-  #         verbose: true
-  #         skip_existing: true
-  #         password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Publish distribution 📦 to PyPI
+        if: startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          packages_dir: dist/
+          verbose: true
+          skip_existing: true
+          password: ${{ secrets.PYPI_API_TOKEN }}
