@@ -44,7 +44,7 @@ endif
 PYTHON_ver:= $(shell $(PYTHON) --version)
 
 
-MODULE=supy_driver
+MODULE = supy_driver
 
 SUEWS_dir = ../SUEWS-SourceCode
 
