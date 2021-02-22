@@ -116,7 +116,7 @@ export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 	$(OPTFLAGS) $(DEBUGFLAGS)
 	# $(NETCDF_INCLUDE) $(OMPFLAG)
 export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) \
-	-L$(SUEWS_DIR_LIB) -lsuewsdriver -lsuewsphys -lsuewsutil \
+	-L$(SUEWS_DIR_LIB) -lsuewsdriver \
 	$(STATICLIB)
 	# $(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
 
@@ -202,7 +202,7 @@ EXT_LIB = libraddriver.a \
 ### --- BUILD TARGETS --- ###
 #############################
 
-all: suews
+all: libutil libphys suews
 
 help:
 	@echo ${HAVE_NFCONFIG} ${NETCDF_INCLUDE} ${NETCDF_LIB}
@@ -211,21 +211,21 @@ help:
 	@echo "where <prof> can be either 'gfortran' or 'ifort'."
 	@echo $(C_MODULE)
 
-suews: libutil libphys libdriver exe
 
-libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS))
+libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(C_MODULE))
 	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBUTILS) $^
 
-libphys:  $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS) )
+libphys:  $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS))
 	ar r $(LIBPHYS) $^
 
-libdriver: $(addprefix $(SUEWS_DIR_SRC), $(DRIVER))
+libdriver: $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS) $(DRIVER))
 	ar r $(LIBDRIVER) $^
 
-exe: $(SUEWS_DIR_SRC)/suews_program$(suffix_code) \
-	$(addprefix $(SUEWS_DIR_SRC), $(OTHERS)) \
-	$(C_MODULE)
+
+suews: libdriver exe
+
+exe: $(addprefix $(SUEWS_DIR_SRC), $(OTHERS) suews_program$(suffix_code))
 	@echo  $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
 	@echo $(TARGET) $(EXECUTABLE) $(OTHERS)
 	@echo Building SUEWS ...
