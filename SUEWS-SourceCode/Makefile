@@ -190,12 +190,18 @@ TEST =
 # modules for WRF coupling
 WRF =  suews_ctrl_sumin.o
 
-# external libraries
+#############################
+### --- EXTERNAL LIBS --- ###
+#############################
 # SPARTACUS
-DIR_SPTCS = ./ext_lib/spartacus-surface
+DIR_SPTCS = ./ext_lib/spartacus-surface/
 
-# libradsurf.a
+DIR_UTIL_SPTCS = $(addprefix $(DIR_SPTCS), utilities)
+DIR_TOOL_SPTCS = $(addprefix $(DIR_SPTCS), radtool)
+DIR_RAD_SPTCS = $(addprefix $(DIR_SPTCS), radsurf)
 
+
+spartacus:
 
 #############################
 ### --- BUILD TARGETS --- ###
@@ -232,7 +238,7 @@ exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	@echo Building SUEWS ...
 	$(FC) $(FCFLAGS) $^ -o $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(LIBS)
 	@echo $(TARGET) has been saved in $(DIR_BIN_SUEWS)
-	cd $(DIR_BIN_SUEWS =) && ln -sf $(EXECUTABLE) $(TARGET)
+	cd $(DIR_BIN_SUEWS) && ln -sf $(EXECUTABLE) $(TARGET)
 	mkdir -p $(SUEWS_DIR_RELEASE) && cp -f $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(SUEWS_DIR_RELEASE)/$(TARGET)
 
 
@@ -272,7 +278,7 @@ clean-mods:
 	rm -rf $(DIR_MOD_SUEWS)/*.mod
 
 clean-bin:
-	rm -rf $(DIR_BIN_SUEWS =)/SUEWS_*
+	rm -rf $(DIR_BIN_SUEWS)/SUEWS_*
 
 
 
