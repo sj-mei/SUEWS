@@ -215,9 +215,11 @@ libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(C_MODULE))
 	ar r $(LIBUTILS) $^
 
 libphys:  $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS))
+	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBPHYS) $^
 
 libdriver: $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS) $(DRIVER))
+	mkdir -p $(SUEWS_DIR_LIB)
 	ar r $(LIBDRIVER) $^
 
 
