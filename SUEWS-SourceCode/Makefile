@@ -116,7 +116,7 @@ export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 	$(OPTFLAGS) $(DEBUGFLAGS)
 	# $(NETCDF_INCLUDE) $(OMPFLAG)
 export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) \
-	-L$(DIR_LIB_SUEWS) -lsuewsdriver \
+	-L$(DIR_LIB_SUEWS) -lsuewsdriver -lspartacus \
 	$(STATICLIB)
 	# $(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
 
@@ -196,12 +196,52 @@ WRF =  suews_ctrl_sumin.o
 # SPARTACUS
 DIR_SPTCS = ./ext_lib/spartacus-surface/
 
-DIR_UTIL_SPTCS = $(addprefix $(DIR_SPTCS), utilities)
-DIR_TOOL_SPTCS = $(addprefix $(DIR_SPTCS), radtool)
-DIR_RAD_SPTCS = $(addprefix $(DIR_SPTCS), radsurf)
 
+# DIR_SRC_UTIL_SPTCS := $(foreach dir, utilities radtool, $(addprefix $(DIR_SPTCS), $(dir)/))
+DIR_SRC_UTIL_SPTCS := $(addprefix $(DIR_SPTCS),utilities/)
+FILE_SRC_UTIL_SPTCS := $(patsubst %.F90,%.o,\
+		$(filter-out $(addprefix $(DIR_SRC_UTIL_SPTCS),easy_netcdf.F90),\
+			$(wildcard $(addprefix $(DIR_SRC_UTIL_SPTCS), *.F90))\
+		)\
+	)
+# $(info $(FILE_SRC_UTIL_SPTCS))
 
-spartacus:
+DIR_SRC_RADTOOL_SPTCS := $(addprefix $(DIR_SPTCS),radtool/)
+FILE_SRC_RADTOOL_SPTCS := $(patsubst %.F90,%.o,\
+		$(addprefix $(DIR_SRC_RADTOOL_SPTCS),\
+		radiation_constants.F90 \
+		radtool_legendre_gauss.F90 \
+		radtool_matrix.F90 \
+		radtool_schur.F90 \
+		radtool_eigen_decomposition.F90 \
+		radtool_calc_matrices_lw_eig.F90 \
+		radtool_calc_matrices_sw_eig.F90 \
+		)\
+	)
+# $(info $(FILE_SRC_RADTOOL_SPTCS))
+
+DIR_SRC_RAD_SPTCS := $(addprefix $(DIR_SPTCS),radsurf/)
+FILE_SRC_RAD_SPTCS := $(patsubst %.F90,%.o,\
+		$(addprefix $(DIR_SRC_RAD_SPTCS),\
+		radsurf_config.F90 \
+		radsurf_canopy_properties.F90 \
+		radsurf_boundary_conds_out.F90 \
+		radsurf_canopy_flux.F90 \
+		radsurf_sw_spectral_properties.F90 \
+		radsurf_lw_spectral_properties.F90\
+		radsurf_overlap.F90 \
+		radsurf_forest_sw.F90 \
+		radsurf_forest_lw.F90 \
+		radsurf_urban_sw.F90 \
+		radsurf_urban_lw.F90 \
+		radsurf_simple_spectrum.F90 \
+		radsurf_interface.F90 \
+		)\
+	)
+# $(info $(FILE_SRC_RAD_SPTCS))
+
+LIBSPTCS = libspartacus.a
+
 
 #############################
 ### --- BUILD TARGETS --- ###
@@ -216,6 +256,14 @@ help:
 	@echo "where <prof> can be either 'gfortran' or 'ifort'."
 	@echo $(C_MODULE)
 
+libspartacus: $(FILE_SRC_UTIL_SPTCS) $(FILE_SRC_RADTOOL_SPTCS) $(FILE_SRC_RAD_SPTCS)
+	mkdir -p $(DIR_LIB_SUEWS)
+	ar r lib/$(LIBSPTCS) $^
+
+# rules for F90-->f95: SPARTACUS suffix .F90
+%.f95: %.F90
+	-rm -rf $*.f95
+	-ln -sf $(abspath $*.F90) $(abspath $*.f95)
 
 libutil: $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(C_MODULE))
 	mkdir -p $(DIR_LIB_SUEWS)
@@ -230,7 +278,7 @@ libdriver: $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(PHYS) $(DRIVER))
 	ar r $(LIBDRIVER) $^
 
 
-suews: libdriver exe
+suews: libspartacus libdriver exe
 
 exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	@echo  $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
@@ -247,24 +295,7 @@ exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	@echo $^
 	$(FC) $(FCFLAGS) -c $^ -o $@
 
-test: test_simple test_rami4pilps test_urban
-
-test_simple:
-	cd test/simple && $(MAKE) test
-
-test_rami4pilps:
-	cd test/rami4pilps && $(MAKE) test
-
-test_urban:
-	cd test/urban && $(MAKE) test
-
-test_urban_single:
-	cd test/urban && $(MAKE) test_single
-
-test_code:
-	cd driver && $(MAKE) test_code
-
-clean: clean-obj clean-mods clean-lib clean-bin
+clean: clean-obj clean-mods clean-lib clean-bin clean-ext
 
 # dist-clean: clean-tests clean-toplevel clean-utilities clean-mods dist-clean-doc
 
@@ -279,6 +310,10 @@ clean-mods:
 
 clean-bin:
 	rm -rf $(DIR_BIN_SUEWS)/SUEWS_*
+
+clean-ext:
+	$(MAKE) -C $(DIR_SPTCS) clean
+	rm -rf $(DIR_SPTCS)/*/*.mod
 
 
 
