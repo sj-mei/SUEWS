@@ -42,7 +42,7 @@ LIBDRIVER = $(addprefix $(DIR_LIB_SUEWS),libsuewsdriver.a)
 
 # version specific target name:
 # determined from source code
-path       := $(DIR_SRC_SUEWS =)suews_ctrl_const.f95 # get program name form source code
+path       := $(DIR_SRC_SUEWS)suews_ctrl_const.f95 # get program name form source code
 file :=  $(if $(filter $(OS),Windows_NT),$(strip $(subst /,\,${path})),${path})
 # $(info file is $(file))
 grep := $(if $(filter $(OS),Windows_NT),findstr,grep)
@@ -269,7 +269,7 @@ clean: clean-obj clean-mods clean-lib clean-bin
 # dist-clean: clean-tests clean-toplevel clean-utilities clean-mods dist-clean-doc
 
 clean-obj:
-	rm -rf $(DIR_SRC_SUEWS =)/*.o $(DIR_SRC_SUEWS =)/*.mod
+	rm -rf $(DIR_SRC_SUEWS)/*.o $(DIR_SRC_SUEWS)/*.mod
 
 clean-lib:
 	rm -rf $(DIR_LIB_SUEWS)/lib*.a
