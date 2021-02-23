@@ -34,9 +34,9 @@ endif
 
 
 
-LIBUTILS = $(SUEWS_DIR_LIB)/libsuewsutil.a
-LIBPHYS = $(SUEWS_DIR_LIB)/libsuewsphys.a
-LIBDRIVER = $(SUEWS_DIR_LIB)/libsuewsdriver.a
+LIBUTILS = $(addprefix $(SUEWS_DIR_LIB),libsuewsutil.a)
+LIBPHYS = $(addprefix $(SUEWS_DIR_LIB),libsuewsphys.a)
+LIBDRIVER = $(addprefix $(SUEWS_DIR_LIB),libsuewsdriver.a)
 
 
 
@@ -192,7 +192,8 @@ WRF =  suews_ctrl_sumin.o
 
 # external libraries
 # SPARTACUS
-EXT_LIB = libradsurf.a
+
+SPARTACUS = libradsurf.a
 
 
 #############################
