@@ -42,6 +42,8 @@ jobs:
 
       - name: build and test
         run: |
+          # `make release` is needed to install some python packages
+          make release
           make test
 
       - name: Upload diff results from test

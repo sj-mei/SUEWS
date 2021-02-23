@@ -5,44 +5,44 @@
 ##################################
 
 # where SUEWS source code is stored
-SUEWS_DIR_SRC = ./src/
+DIR_SRC_SUEWS = ./src/
 
 # where compiled libraries are stored
-SUEWS_DIR_LIB = ./lib/
+DIR_LIB_SUEWS = ./lib/
 
 # where intermediate `.mod` are stored
-SUEWS_DIR_MOD = ./mod/
+DIR_MOD_SUEWS = ./mod/
 
 # where to test built version
-SUEWS_DIR_BIN = ./bin/
+DIR_BIN_SUEWS = ./bin/
 
 # where to store built binaries for release
-SUEWS_DIR_RELEASE_BASE = ../Release/bin/
+DIR_RELEASE_BASE_SUEWS = ../Release/bin/
 
 # system specific settings
 ifeq ($(OS),Windows_NT)
-	SUEWS_DIR_RELEASE = $(addprefix $(SUEWS_DIR_RELEASE_BASE), win64)
+	SUEWS_DIR_RELEASE = $(addprefix $(DIR_RELEASE_BASE_SUEWS), win64)
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux) # Linux
-		SUEWS_DIR_RELEASE = $(addprefix $(SUEWS_DIR_RELEASE_BASE), Linux)
+		SUEWS_DIR_RELEASE = $(addprefix $(DIR_RELEASE_BASE_SUEWS), Linux)
 	endif
 	ifeq ($(UNAME_S),Darwin) # macOS
-		SUEWS_DIR_RELEASE = $(addprefix $(SUEWS_DIR_RELEASE_BASE), macOS)
+		SUEWS_DIR_RELEASE = $(addprefix $(DIR_RELEASE_BASE_SUEWS), macOS)
 	endif
 endif
 
 
 
-LIBUTILS = $(addprefix $(SUEWS_DIR_LIB),libsuewsutil.a)
-LIBPHYS = $(addprefix $(SUEWS_DIR_LIB),libsuewsphys.a)
-LIBDRIVER = $(addprefix $(SUEWS_DIR_LIB),libsuewsdriver.a)
+LIBUTILS = $(addprefix $(DIR_LIB_SUEWS),libsuewsutil.a)
+LIBPHYS = $(addprefix $(DIR_LIB_SUEWS),libsuewsphys.a)
+LIBDRIVER = $(addprefix $(DIR_LIB_SUEWS),libsuewsdriver.a)
 
 
 
 # version specific target name:
 # determined from source code
-path       := $(SUEWS_DIR_SRC)suews_ctrl_const.f95 # get program name form source code
+path       := $(DIR_SRC_SUEWS =)suews_ctrl_const.f95 # get program name form source code
 file :=  $(if $(filter $(OS),Windows_NT),$(strip $(subst /,\,${path})),${path})
 # $(info file is $(file))
 grep := $(if $(filter $(OS),Windows_NT),findstr,grep)
@@ -116,7 +116,7 @@ export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 	$(OPTFLAGS) $(DEBUGFLAGS)
 	# $(NETCDF_INCLUDE) $(OMPFLAG)
 export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) \
-	-L$(SUEWS_DIR_LIB) -lsuewsdriver \
+	-L$(DIR_LIB_SUEWS) -lsuewsdriver \
 	$(STATICLIB)
 	# $(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
 
@@ -192,8 +192,9 @@ WRF =  suews_ctrl_sumin.o
 
 # external libraries
 # SPARTACUS
+DIR_SPTCS = ./ext_lib/spartacus-surface
 
-SPARTACUS = libradsurf.a
+# libradsurf.a
 
 
 #############################
@@ -210,29 +211,29 @@ help:
 	@echo $(C_MODULE)
 
 
-libutil: $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(C_MODULE))
-	mkdir -p $(SUEWS_DIR_LIB)
+libutil: $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(C_MODULE))
+	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBUTILS) $^
 
-libphys:  $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS))
-	mkdir -p $(SUEWS_DIR_LIB)
+libphys:  $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(PHYS))
+	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBPHYS) $^
 
-libdriver: $(addprefix $(SUEWS_DIR_SRC), $(UTILS) $(PHYS) $(DRIVER))
-	mkdir -p $(SUEWS_DIR_LIB)
+libdriver: $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(PHYS) $(DRIVER))
+	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBDRIVER) $^
 
 
 suews: libdriver exe
 
-exe: $(addprefix $(SUEWS_DIR_SRC), $(OTHERS) suews_program$(suffix_code))
+exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	@echo  $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
 	@echo $(TARGET) $(EXECUTABLE) $(OTHERS)
 	@echo Building SUEWS ...
-	$(FC) $(FCFLAGS) $^ -o $(SUEWS_DIR_BIN)/$(EXECUTABLE) $(LIBS)
-	@echo $(TARGET) has been saved in $(SUEWS_DIR_BIN)
-	cd $(SUEWS_DIR_BIN) && ln -sf $(EXECUTABLE) $(TARGET)
-	mkdir -p $(SUEWS_DIR_RELEASE) && cp -f $(SUEWS_DIR_BIN)/$(EXECUTABLE) $(SUEWS_DIR_RELEASE)/$(TARGET)
+	$(FC) $(FCFLAGS) $^ -o $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(LIBS)
+	@echo $(TARGET) has been saved in $(DIR_BIN_SUEWS)
+	cd $(DIR_BIN_SUEWS =) && ln -sf $(EXECUTABLE) $(TARGET)
+	mkdir -p $(SUEWS_DIR_RELEASE) && cp -f $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(SUEWS_DIR_RELEASE)/$(TARGET)
 
 
 # rules for f95-->f90
@@ -262,16 +263,16 @@ clean: clean-obj clean-mods clean-lib clean-bin
 # dist-clean: clean-tests clean-toplevel clean-utilities clean-mods dist-clean-doc
 
 clean-obj:
-	rm -rf $(SUEWS_DIR_SRC)/*.o $(SUEWS_DIR_SRC)/*.mod
+	rm -rf $(DIR_SRC_SUEWS =)/*.o $(DIR_SRC_SUEWS =)/*.mod
 
 clean-lib:
-	rm -rf $(SUEWS_DIR_LIB)/lib*.a
+	rm -rf $(DIR_LIB_SUEWS)/lib*.a
 
 clean-mods:
-	rm -rf $(SUEWS_DIR_MOD)/*.mod
+	rm -rf $(DIR_MOD_SUEWS)/*.mod
 
 clean-bin:
-	rm -rf $(SUEWS_DIR_BIN)/SUEWS_*
+	rm -rf $(DIR_BIN_SUEWS =)/SUEWS_*
 
 
 
