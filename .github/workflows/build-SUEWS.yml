@@ -63,7 +63,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
           token: ${{ secrets.PAT }}
@@ -105,7 +105,7 @@ jobs:
           - cp36-cp36m
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
           token: ${{ secrets.PAT }}
@@ -137,7 +137,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
           token: ${{ secrets.PAT }}
