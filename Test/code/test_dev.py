@@ -46,11 +46,16 @@ path_input_ver.mkdir()
 
 
 # copy runcontrol
-path_runctrl_base = path_baserun / "RunControl.nml"
-print("path_runctrl_base:", path_runctrl_base)
-path_runctrl_input = path_input_ver / "RunControl.nml"
-print("path_runctrl_input:", path_runctrl_input)
-copyfile(path_runctrl_base, path_runctrl_input)
+# both SUEWS and SPARTACUS nml files
+for fn_nml in [
+    "config.nam",
+    "RunControl.nml",
+]:
+    path_runctrl_base = path_baserun / fn_nml
+    print("path_runctrl_base:", path_runctrl_base)
+    path_runctrl_input = path_input_ver / fn_nml
+    print("path_runctrl_input:", path_runctrl_input)
+    copyfile(path_runctrl_base, path_runctrl_input)
 dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)["runcontrol"]
 # copy other input tables and initial conditions
 path_base_input = path_baserun / dict_runcontrol["fileinputpath"]
