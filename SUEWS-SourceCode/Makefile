@@ -268,15 +268,16 @@ libspartacus: $(FILE_SRC_UTIL_SPTCS) $(FILE_SRC_RADTOOL_SPTCS) $(FILE_SRC_RAD_SP
 	-rm -rf $*.f95
 	-ln -sf $(abspath $*.F90) $(abspath $*.f95)
 
-libutil: $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(C_MODULE))
+libutil: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS))
+	@echo $(C_MODULE)
 	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBUTILS) $^
 
-libphys:  $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(PHYS))
+libphys:  $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS))
 	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBPHYS) $^
 
-libdriver: $(addprefix $(DIR_SRC_SUEWS), $(UTILS) $(PHYS) $(DRIVER))
+libdriver: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS) $(DRIVER))
 	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBDRIVER) $^
 
