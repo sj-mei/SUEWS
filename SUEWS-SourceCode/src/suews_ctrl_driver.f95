@@ -1069,10 +1069,10 @@ CONTAINS
       !==============translation end ================
 
       ! test SPARTACUS
-      PRINT *, 'test_rad_spc'
+      ! PRINT *, 'test_rad_spc'
       CALL test_rad_spc(out_spc)
-      PRINT *, 'test_rad_spc', out_spc
-
+      ! PRINT *, 'test_rad_spc', out_spc
+      out_spc=.1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
                           vpd_hPa, avdens, avcp, out_spc, s_hPa, psyc_hPa]
 
@@ -3621,6 +3621,14 @@ CONTAINS
    END FUNCTION cal_tsfc
 
    SUBROUTINE test_rad_spc(test_out)
+      ! TS 25 Feb 2021:
+      ! an initial working prototype subroutine to interact with SPARTACUS
+      ! TODO:
+      ! 1. incorporate SPARTACUS namelist into SUEWS
+      ! 2. to implement an interface for input/output variables
+      !    input: canopy parameters, canyon top radiation fluxes, surface temperatures of all facets
+      !    output: outgoing radiation fluxes, vertical profile
+      ! 3. to save profile output as an output group
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
       USE radsurf_config, ONLY: config_type
@@ -3656,18 +3664,23 @@ CONTAINS
            &  :: top_flux_dn_sw(:, :), &        ! Total shortwave (direct+diffuse)
            &     top_flux_dn_direct_sw(:, :), & ! ...diffuse only
            &     top_flux_dn_lw(:, :)           ! longwave
-      ! TYPE(netcdf_file):: file
+
+      ! layer height (ncol,ntotlay)
+      REAL(kind=jprb), ALLOCATABLE:: height(:, :)
+
       INTEGER(kind=jpim) :: istartcol, iendcol
       INTEGER(kind=jpim) :: ncol, ntotlay
 
-      REAL(KIND(1D0)) ::test_out
-      CHARACTER(len=512)::file_name
+      ! CHARACTER(len=512)::file_name
 
       ! Total canopy fluxes
       TYPE(canopy_flux_type)       :: lw_flux, sw_flux
-      INTEGER :: jblock, nblock ! Block loop index and number
+      ! INTEGER :: jblock, nblock ! Block loop index and number
 
-      INTEGER :: jrepeat
+      INTEGER :: jrepeat, ilay, jcol, nspec, nlay(4)
+
+      REAL(KIND(1D0)) ::test_out
+      test_out = 0.1
 
       !       ! Use namelist to configure the radiation calculation
       !   call get_command_argument(1, file_name, status=istatus)
@@ -3676,10 +3689,10 @@ CONTAINS
       !   end if
 
       ! hardcode this for now
-      PRINT *, 'config%READ'
+      ! PRINT *, 'config%READ'
       CALL config%READ(file_name='config.nam')
 
-      PRINT *, 'driver_config%READ'
+      ! PRINT *, 'driver_config%READ'
       ! CALL driver_config%READ(file_name='config.nam')
 
       ! CALL config%PRINT(driver_config%iverbose)
@@ -3694,10 +3707,10 @@ CONTAINS
       ! CALL bc_out%DEALLOCATE()
 
       ! just a test value
-      ! ncol = 10
-      PRINT *, 'open netcdf file'
+
+      ! PRINT *, 'open netcdf file'
       ! Open the file and configure the way it is read
-      file_name = 'test_surfaces_in.nc'
+      ! file_name = 'test_surfaces_in.nc'
       ! CALL file%OPEN(TRIM(file_name), iverbose=driver_config%iverbose)
 
       ! PRINT *, 'reading in netcdf file'
@@ -3718,9 +3731,80 @@ CONTAINS
       !    STOP 1
       ! END IF
 
-      PRINT *, 'allocate bc_out'
+      ! PRINT *, 'allocate canopy_props'
+      CALL canopy_props%DEALLOCATE()
+      ncol = 4
+      nlay = [1, 2, 2, 2]
+      ntotlay = SUM(nlay)
+
+      CALL canopy_props%ALLOCATE(config, ncol, ntotlay, [0, 1, 2, 3])
+      ! ALLOCATE (canopy_props%cos_sza(ncol))
+      canopy_props%cos_sza = 0.5
+      ! ALLOCATE (canopy_props%nlay(ncol))
+      canopy_props%nlay = nlay
+
+      ! PRINT *, 'set canopy_props'
+      canopy_props%ncol = ncol
+      canopy_props%ntotlay = SUM(canopy_props%nlay)
+      ! ntotlay = canopy_props%ntotlay
+
+      ! PRINT *, 'allocate canopy_props 2'
+      ! ALLOCATE (canopy_props%dz(canopy_props%ntotlay))
+      ! ALLOCATE (canopy_props%istartlay(ncol))
+
+      ! PRINT *, 'allocate height'
+      ALLOCATE (height(ntotlay + 1, ncol))
+      height = height*0 + 20.
+
+      ! PRINT *, 'cal canopy_props'
+      ilay = 1
+      DO jcol = 1, ncol
+         ! PRINT *, 'jcol', jcol
+         ! PRINT *, 'ilay', ilay
+         ! PRINT *, 'nlay', canopy_props%nlay(jcol)
+         ! PRINT *, 'shape of dz', SHAPE(canopy_props%dz)
+         ! PRINT *, 'dz', canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1)
+         canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1) &
+         &  = height(2:canopy_props%nlay(jcol) + 1, jcol) &
+         &   - height(1:canopy_props%nlay(jcol), jcol)
+         ! PRINT *, 'dz', canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1)
+         canopy_props%istartlay(jcol) = ilay
+         ! PRINT *, 'istartlay', canopy_props%istartlay(jcol)
+         ilay = ilay + canopy_props%nlay(jcol)
+      END DO
+
+      ! PRINT *, 'set canopy_props'
+      ! ==================================================================
+      ! TODO: dummy values: sensible values should be passed from SUEWS
+      canopy_props%ground_temperature = 300
+      canopy_props%roof_temperature = 300
+      canopy_props%wall_temperature = 300
+      canopy_props%clear_air_temperature = 300
+      canopy_props%veg_temperature = 300
+      canopy_props%veg_air_temperature = 300
+
+      canopy_props%building_fraction = .5
+      canopy_props%veg_fraction = .5
+      canopy_props%building_scale = 20
+      canopy_props%veg_scale = 20
+      canopy_props%veg_ext = .1
+      ! canopy_props%veg_fsd = .5
+      canopy_props%veg_contact_fraction = .1
+      canopy_props%i_representation = [0, 1, 2, 3]
+      ! ==================================================================
+
+      ! PRINT *, 'allocate bc_out'
       CALL bc_out%ALLOCATE(ncol, config%nsw, config%nlw)
 
+      nspec = 1
+      ! PRINT *, 'allocate sw_spectral_props'
+      CALL sw_spectral_props%DEALLOCATE()
+      CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
+      ! PRINT *, 'allocate lw_spectral_props'
+      CALL lw_spectral_props%DEALLOCATE()
+      CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
+
+      ! PRINT *, 'do_sw'
       IF (config%do_sw) THEN
          CALL sw_norm_dir%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
          CALL sw_norm_diff%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
@@ -3730,6 +3814,8 @@ CONTAINS
 
          CALL sw_flux%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
       END IF
+
+      ! PRINT *, 'do_lw'
       IF (config%do_lw) THEN
          CALL lw_internal%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
          CALL lw_norm%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
@@ -3740,63 +3826,27 @@ CONTAINS
          CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
       END IF
 
-      PRINT *, 'run lw_spectral_props'
+      ! PRINT *, 'run lw_spectral_props'
       CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
 
       istartcol = 1
       iendcol = 1
-      PRINT *, 'run radsurf', istartcol, iendcol
+      ! PRINT *, 'run radsurf', istartcol, iendcol
 
       ! Option of repeating calculation multiple time for more accurate
       ! profiling
+      ALLOCATE (top_flux_dn_sw(nspec, ncol))
+      ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
+      ALLOCATE (top_flux_dn_lw(nspec, ncol))
+      top_flux_dn_sw = 300
+      top_flux_dn_direct_sw = 200
+      top_flux_dn_lw = 300
+
       DO jrepeat = 1, 3
-
-         ! IF (driver_config%do_parallel) THEN
-         !    ! Run radiation scheme over blocks of columns in parallel
-
-         !    ! Compute number of blocks to process
-         !    nblock = (driver_config%iendcol - driver_config%istartcol &
-         !         &  + driver_config%nblocksize)/driver_config%nblocksize
-
-         !    !$OMP PARALLEL DO PRIVATE(istartcol, iendcol) SCHEDULE(RUNTIME)
-         !    DO jblock = 1, nblock
-         !       ! Specify the range of columns to process.
-         !       istartcol = (jblock - 1)*driver_config%nblocksize &
-         !            &    + driver_config%istartcol
-         !       iendcol = MIN(istartcol + driver_config%nblocksize - 1, &
-         !            &        driver_config%iendcol)
-
-         !       IF (config%do_lw) THEN
-         !          ! Gas optics and spectral emission
-         !          CALL calc_simple_spectrum_lw(config, canopy_props, lw_spectral_props, &
-         !               &                       istartcol, iendcol)
-         !       END IF
-
-         !       ! Call the SPARTACUS-Surface radiation scheme
-         !       CALL radsurf(config, canopy_props, &
-         !            &       sw_spectral_props, lw_spectral_props, bc_out, &
-         !            &       istartcol, iendcol, sw_norm_dir, sw_norm_diff, &
-         !            &       lw_internal, lw_norm)
-
-         !    END DO
-         !    !$OMP END PARALLEL DO
-
-         ! ELSE
-
-         !    ! Run radiation scheme serially
-         !    IF (driver_config%iverbose >= 3) THEN
-         !       WRITE (nulout, '(a,i0,a)') 'Processing ', ncol, ' columns'
-         !    END IF
-
-         !    ! Call the SPARTACUS-Surface radiation scheme
-         !    CALL radsurf(config, canopy_props, &
-         !         &       sw_spectral_props, lw_spectral_props, bc_out, &
-         !         &       istartcol, iendcol, sw_norm_dir, sw_norm_diff, &
-         !         &       lw_internal, lw_norm)
-
-         ! END IF
+         ! PRINT *, 'jrepeat', jrepeat
 
          ! Call the SPARTACUS-Surface radiation scheme
+         ! PRINT *, 'radsurf'
          CALL radsurf(config, canopy_props, &
               &       sw_spectral_props, lw_spectral_props, &
               &       bc_out, &
@@ -3805,20 +3855,43 @@ CONTAINS
               &       lw_internal, lw_norm)
          IF (config%do_sw) THEN
             ! Scale the normalized fluxes
-            CALL sw_norm_dir%SCALE(canopy_props%nlay, top_flux_dn_direct_sw)
-            CALL sw_norm_diff%SCALE(canopy_props%nlay, &
-                 &  top_flux_dn_sw - top_flux_dn_direct_sw)
+            ! PRINT *, 'sw_norm_dir', sw_norm_dir%ncol
+            CALL sw_norm_dir%SCALE(canopy_props%nlay, &
+                 &  top_flux_dn_direct_sw)
+            ! PRINT *, 'sw_norm_diff'
+            ! CALL sw_norm_diff%SCALE(canopy_props%nlay, &
+            ! &  top_flux_dn_sw - top_flux_dn_direct_sw)
+            ! PRINT *, 'sw_flux'
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
          END IF
 
          IF (config%do_lw) THEN
+            ! PRINT *, 'lw_norm'
             CALL lw_norm%SCALE(canopy_props%nlay, top_flux_dn_lw)
+            ! PRINT *, 'lw_flux'
             CALL lw_flux%SUM(lw_internal, lw_norm)
          END IF
 
       END DO
+      ! PRINT *, 'finish', bc_out%sw_albedo(1, 1)
 
-      test_out = bc_out%sw_albedo(1, 1)
+      test_out = bc_out%sw_albedo(1, 1)*1 + .1
+      CALL canopy_props%DEALLOCATE()
+      CALL sw_spectral_props%DEALLOCATE()
+      CALL lw_spectral_props%DEALLOCATE()
+      CALL bc_out%DEALLOCATE()
+      CALL sw_norm_dir%DEALLOCATE()
+      CALL sw_norm_diff%DEALLOCATE()
+      CALL lw_internal%DEALLOCATE()
+      CALL lw_norm%DEALLOCATE()
+      CALL sw_flux%DEALLOCATE()
+      CALL lw_flux%DEALLOCATE()
+
+      DEALLOCATE (height)
+      DEALLOCATE (top_flux_dn_sw)
+      DEALLOCATE (top_flux_dn_direct_sw)
+      DEALLOCATE (top_flux_dn_lw)
+      ! PRINT *, 'finish test_rad_spc'
 
       ! call save_canopy_fluxes(trim('test_rad.nc'), config, canopy_props, &
       !  &  sw_flux, lw_flux, iverbose=driver_config%iverbose)

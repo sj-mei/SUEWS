@@ -306,6 +306,7 @@ CONTAINS
       ELSE
          ! MOST approach:
          DO z = 1, idx_can
+            if ( zarray(z) <= zd_RSL ) zarray(z)=1.01*zd_RSL
             psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0)/kappa
