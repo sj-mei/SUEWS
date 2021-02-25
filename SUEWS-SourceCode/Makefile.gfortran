@@ -41,7 +41,7 @@ suffix_code = .f95
 
 # system specific settings
 ifeq ($(OS),Windows_NT)
-	C_MODULE = $(DIR_SRC_SUEWS)strptime.o # this is needed by datetime_module: mingw lacks `strptime`
+	C_MODULE = strptime.o # this is needed by datetime_module: mingw lacks `strptime`
 	STATIC = -static -mcmodel=medium# mingw
 	STATICLIB =
 	SUEWS_build_dir = $(addprefix $(SUEWS_build_base), win64)
