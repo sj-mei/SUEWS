@@ -21,14 +21,14 @@ DIR_RELEASE_BASE_SUEWS = ../Release/bin/
 
 # system specific settings
 ifeq ($(OS),Windows_NT)
-	SUEWS_DIR_RELEASE = $(addprefix $(DIR_RELEASE_BASE_SUEWS), win64)
+	DIR_RELEASE_SUEWS = $(addprefix $(DIR_RELEASE_BASE_SUEWS), win64)
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux) # Linux
-		SUEWS_DIR_RELEASE = $(addprefix $(DIR_RELEASE_BASE_SUEWS), Linux)
+		DIR_RELEASE_SUEWS = $(addprefix $(DIR_RELEASE_BASE_SUEWS), Linux)
 	endif
 	ifeq ($(UNAME_S),Darwin) # macOS
-		SUEWS_DIR_RELEASE = $(addprefix $(DIR_RELEASE_BASE_SUEWS), macOS)
+		DIR_RELEASE_SUEWS = $(addprefix $(DIR_RELEASE_BASE_SUEWS), macOS)
 	endif
 endif
 
@@ -290,7 +290,7 @@ exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	$(FC) $(FCFLAGS) $^ -o $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(LIBS)
 	@echo $(TARGET) has been saved in $(DIR_BIN_SUEWS)
 	cd $(DIR_BIN_SUEWS) && ln -sf $(EXECUTABLE) $(TARGET)
-	mkdir -p $(SUEWS_DIR_RELEASE) && cp -f $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(SUEWS_DIR_RELEASE)/$(TARGET)
+	mkdir -p $(DIR_RELEASE_SUEWS) && cp -f $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(DIR_RELEASE_SUEWS)/$(TARGET)
 
 
 # rules for f95-->f90
@@ -321,6 +321,7 @@ clean-ext:
 
 
 $(C_MODULE): $(subst .o,.c, $(C_MODULE))
+	$(info $^)
 	$(CC) -c $^ -o $@
 
 
