@@ -200,8 +200,11 @@ DIR_SPTCS = ./ext_lib/spartacus-surface/
 # DIR_SRC_UTIL_SPTCS := $(foreach dir, utilities radtool, $(addprefix $(DIR_SPTCS), $(dir)/))
 DIR_SRC_UTIL_SPTCS := $(addprefix $(DIR_SPTCS),utilities/)
 FILE_SRC_UTIL_SPTCS := $(patsubst %.F90,%.o,\
-		$(filter-out $(addprefix $(DIR_SRC_UTIL_SPTCS),easy_netcdf.F90),\
-			$(wildcard $(addprefix $(DIR_SRC_UTIL_SPTCS), *.F90))\
+		$(addprefix $(DIR_SRC_UTIL_SPTCS),\
+		parkind1.F90 \
+		radiation_io.F90 \
+		print_matrix.F90 \
+		yomhook.F90 \
 		)\
 	)
 # $(info $(FILE_SRC_UTIL_SPTCS))
