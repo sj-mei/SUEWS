@@ -28,6 +28,7 @@ if sysname == "Windows":
 dir_f95 = "../SUEWS-SourceCode/src"
 path_src = Path(dir_f95)
 path_mod = (path_src.parent / "mod").resolve()
+path_lib = (path_src.parent / "lib").resolve()
 path_target_f95 = [
     (path_src / f)
     for f in [
@@ -156,7 +157,8 @@ ext_modules = [
         extra_objects=fn_other_obj,
         # "-v" under Linux is necessary because it can avoid the blank variable issue
         # ref: https://github.com/metomi/fcm/issues/220
-        extra_link_args=["-v" if sysname == "Linux" else "-static"],
+        extra_link_args=["-v" if sysname == "Linux" else "-static"]
+        + [f"-L{str(path_lib)}", "-lspartacus"],
     )
 ]
 
