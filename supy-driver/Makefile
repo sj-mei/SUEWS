@@ -44,7 +44,7 @@ endif
 PYTHON_ver:= $(shell $(PYTHON) --version)
 
 
-MODULE=supy_driver
+MODULE = supy_driver
 
 SUEWS_dir = ../SUEWS-SourceCode
 
@@ -63,8 +63,8 @@ main:
 
 # make fortran exe
 suews:
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran main; # make SUEWS with the `main` recipe
+	$(MAKE) -C $(SUEWS_dir) clean
+	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `suews` recipe
 
 show:
 	@echo $(info $$OSFLAG is [${OSFLAG}])
@@ -74,7 +74,7 @@ show:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) show
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
+	$(MAKE) -C $(SUEWS_dir) clean
 	rm -rf ${MODULE}/*.so ${MODULE}/*.pyd ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	 -$(PYTHON) setup.py clean --all
 	rm -rf build *.mod *.o __pycache__

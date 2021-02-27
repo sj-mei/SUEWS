@@ -306,6 +306,7 @@ CONTAINS
       ELSE
          ! MOST approach:
          DO z = 1, idx_can
+            if ( zarray(z) <= zd_RSL ) zarray(z)=1.01*zd_RSL
             psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0)/kappa
@@ -367,7 +368,7 @@ CONTAINS
       idx_low = MAXLOC(dif, 1, dif < 0.)
       idx_high = MINLOC(dif, 1, dif > 0.)
 
-      IF (idx > 0) THEN
+      IF (idx_x > 0) THEN
          ! z_x is one of zarray elements
          v_x = v(idx_x)
       ELSE

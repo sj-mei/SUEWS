@@ -16,47 +16,80 @@ on:
       - "supy-driver/*"
       - ".github/workflows/build-SUEWS.yml"
 
+
 jobs:
   test-suews:
-
     runs-on: macos-latest
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          token: ${{ secrets.PAT }}
 
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-        token: ${{ secrets.PAT }}
+      - name: Setup Python for use with actions
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7" # Version range or exact version of a Python version to use, using semvers version range syntax.
+          architecture: "x64" # (x64 or x86)
 
-    - name: Setup Python for use with actions
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
-        architecture: 'x64' # (x64 or x86)
+      - name: fix gfortran on mac
+        run: |
+          echo $PATH
+          which gfortran-10
+          ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
+          which gfortran
+          gfortran --version
 
-    - name: fix gfortran on mac
-      run: |
-        echo $PATH
-        which gfortran-10
-        ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
-        which gfortran
-        gfortran --version
+      - name: build and test
+        run: |
+          # `make release` is needed to install some python packages
+          make release
+          make test
 
-    - name: build and test
-      run: |
-        make release
-        make test
+      - name: Upload diff results from test
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: diff csv
+          path: Test/BaseRun/**/*diff.csv
 
-    - name: Upload diff results from test
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: diff csv
-        path: Test/BaseRun/**/*diff.csv
+  build-binaries:
+    # needs: test-suews
 
+    strategy:
+      matrix:
+        py: ["3.9"]
+        os: [macOS-latest, windows-latest, ubuntu-latest]
 
-  wheels-manylinux:
-    needs: test-suews
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          token: ${{ secrets.PAT }}
+
+      - name: fix gfortran on mac
+        if: startsWith(matrix.os, 'macOS')
+        run: |
+          echo $PATH
+          which gfortran-10
+          ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
+          which gfortran
+          gfortran --version
+
+      - name: set up py${{ matrix.py }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.py }} # Version range or exact version of a Python version to use, using semvers version range syntax.
+          architecture: "x64" # (x64 or x86)
+
+      - name: build binary
+        run: |
+          make release
+
+  build-wheels-manylinux:
+    # needs: test-suews
 
     runs-on: ubuntu-latest
 
@@ -73,7 +106,7 @@ jobs:
           - cp36-cp36m
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
           token: ${{ secrets.PAT }}
@@ -95,8 +128,8 @@ jobs:
           name: python-package-distributions
           path: supy-driver/wheelhouse/
 
-  wheels-mac_win:
-    needs: test-suews
+  build-wheels-mac_win:
+    # needs: test-suews
 
     strategy:
       matrix:
@@ -105,7 +138,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
           token: ${{ secrets.PAT }}
@@ -135,12 +168,11 @@ jobs:
           name: python-package-distributions
           path: supy-driver/dist/
 
-
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
-      - wheels-manylinux
-      - wheels-mac_win
+      - build-wheels-manylinux
+      - build-wheels-mac_win
     runs-on: ubuntu-latest
 
     steps:

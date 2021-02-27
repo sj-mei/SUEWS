@@ -75,6 +75,7 @@ CONTAINS
          ev = qe/tlv !Ev [mm] (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])
          W = NAN    !W not needed for dry surfaces (set to -999)
          flag_dry = 1      !Set flag indicating dry surface(1)
+         RSS=RS
 
          ! Wet surface ---------------------------------------------------------------
       ELSE

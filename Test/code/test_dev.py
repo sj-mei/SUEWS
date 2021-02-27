@@ -16,11 +16,12 @@ cfg_file = nml["file"]
 
 # load path
 path_dir_exe = Path(cfg_file["dir_exe"]).resolve()
+path_dir_src = path_dir_exe.parent / "src"
 
 # identify programme name from SUEWS source code
-path_suews_const = path_dir_exe / "suews_ctrl_const.f95"
+path_suews_const = path_dir_src / "suews_ctrl_const.f95"
 str_const = path_suews_const.read_text()
-for ln in str_const.split('\n'):
+for ln in str_const.split("\n"):
     if "progname" in ln:
         name_exe = ln.split("progname = ")[-1].replace("'", "")
         break
@@ -45,11 +46,16 @@ path_input_ver.mkdir()
 
 
 # copy runcontrol
-path_runctrl_base = path_baserun / "RunControl.nml"
-print("path_runctrl_base:", path_runctrl_base)
-path_runctrl_input = path_input_ver / "RunControl.nml"
-print("path_runctrl_input:", path_runctrl_input)
-copyfile(path_runctrl_base, path_runctrl_input)
+# both SUEWS and SPARTACUS nml files
+for fn_nml in [
+    "config.nam",
+    "RunControl.nml",
+]:
+    path_runctrl_base = path_baserun / fn_nml
+    print("path_runctrl_base:", path_runctrl_base)
+    path_runctrl_input = path_input_ver / fn_nml
+    print("path_runctrl_input:", path_runctrl_input)
+    copyfile(path_runctrl_base, path_runctrl_input)
 dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)["runcontrol"]
 # copy other input tables and initial conditions
 path_base_input = path_baserun / dict_runcontrol["fileinputpath"]
