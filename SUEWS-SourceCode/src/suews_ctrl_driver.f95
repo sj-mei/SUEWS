@@ -1070,7 +1070,7 @@ CONTAINS
 
       ! test SPARTACUS
       ! PRINT *, 'test_rad_spc'
-      CALL test_rad_spc(out_spc)
+      CALL test_rad_spc(out_spc,FAIBldg)
       ! PRINT *, 'test_rad_spc', out_spc
       out_spc=.1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
@@ -3620,7 +3620,9 @@ CONTAINS
       tsfc_C = qh/(avdens*avcp)*RA + temp_C
    END FUNCTION cal_tsfc
 
-   SUBROUTINE test_rad_spc(test_out)
+   SUBROUTINE test_rad_spc(&! Outputs
+      test_out, &! Parameters from SUEWS
+      FAIBldg)
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
       ! TODO:
@@ -3644,6 +3646,11 @@ CONTAINS
       ! USE radsurf_save, ONLY: save_canopy_fluxes
 
       IMPLICIT NONE
+
+      !!!!      
+      ! Input parameters from SUEWS
+      REAL(KIND(1D0)), INTENT(IN)::FAIBldg
+      !!!!
 
       ! Derived types for the inputs to the radiation scheme
       TYPE(config_type)                 :: config
