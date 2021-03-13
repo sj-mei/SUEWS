@@ -165,7 +165,7 @@ ext_modules = [
 setup(
     name="supy_driver",
     # update version info here!
-    version=get_suews_version(ver_minor=14),
+    version=get_suews_version(ver_minor=15),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
     url="https://github.com/sunt05/SuPy",
@@ -182,7 +182,7 @@ setup(
     distclass=BinaryDistribution,
     ext_modules=ext_modules,
     python_requires=">=3.5",
-    install_requires=["numpy>=1.17.4"],
+    install_requires=["numpy>=1.20"],
     include_package_data=True,
     test_suite="nose.collector",
     tests_require=["nose"],
