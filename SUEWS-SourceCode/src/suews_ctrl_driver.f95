@@ -697,7 +697,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
          CALL NARP_cal_SunPosition( &
             REAL(iy, KIND(1D0)), &!input:
-            dectime - tstep/2, &! sun position at middle of timestep before
+            dectime - tstep/2/86400, &! sun position at middle of timestep before
             timezone, lat, lng, alt, &
             azimuth, zenith_deg)!output:
 
