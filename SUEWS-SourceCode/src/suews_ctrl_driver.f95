@@ -1781,7 +1781,7 @@ CONTAINS
       dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
       RAsnow, psyc_hPa, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
-      RS, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+      RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
@@ -1833,7 +1833,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::s_hPa
       REAL(KIND(1D0)), INTENT(in)::RS
       REAL(KIND(1D0)), INTENT(in)::RA
-      REAL(KIND(1D0)), INTENT(in)::rb
+      REAL(KIND(1D0)), INTENT(in)::RB
       REAL(KIND(1D0)), INTENT(in)::snowdensmin
       REAL(KIND(1D0)), INTENT(in)::precip
       REAL(KIND(1D0)), INTENT(in)::PipeCapacity
@@ -2013,7 +2013,7 @@ CONTAINS
                   EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
                   avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
                   PervFraction, vegfraction, addimpervious, &
-                  vpd_hPa, qn_e, s_hPa, RS, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
+                  vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, snowdensmin, SnowProf_24hr, precip, &
                   PipeCapacity, RunoffToWater, &
                   addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
                   WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
@@ -2049,7 +2049,7 @@ CONTAINS
             !Calculates ev [mm]
             CALL cal_evap( &
                EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
-               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, rb, tlv, &
+               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
                rss_nsurf(is), ev, qe_surf) !output
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
