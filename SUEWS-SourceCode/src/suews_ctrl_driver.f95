@@ -3657,11 +3657,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN):: FAIBldg, zenith_deg, bldgH, temp_c, VegFraction
 
       ! SPARTACUS configuration parameters
-      INTEGER(kind=jpim) :: iverbose, n_vegetation_region_urban, &
-                            n_stream_sw_urban, nsw, nlw, &
-                            ncol, ntotlay
-      LOGICAL :: do_parallel, do_sw, do_lw, use_sw_direct_albedo, &
-                 do_vegetation, do_urban, do_conservation_check
+      INTEGER(kind=jpim) :: ncol, ntotlay
       INTEGER(kind=jpim), ALLOCATABLE:: i_representation(:)
       INTEGER(kind=jpim), ALLOCATABLE:: nlay(:)
       INTEGER(kind=jpim) :: istartcol, iendcol
@@ -3681,7 +3677,9 @@ CONTAINS
          &  :: sw_norm_dir, &  ! SW fluxes normalized by top-of-canopy direct
          &     sw_norm_diff, & ! SW fluxes normalized by top-of-canopy diffuse
          &     lw_internal, &  ! LW fluxes from internal emission
-         &     lw_norm         ! LW fluxes normalized by top-of-canopy down
+         &     lw_norm, &      ! LW fluxes normalized by top-of-canopy down
+         &     lw_flux, &      ! Total lw canopy fluxes
+         &     sw_flux         ! Total sw canopy fluxes
 
       ! Top-of-canopy downward radiation, all dimensioned (nspec,ncol)
       REAL(kind=jprb), ALLOCATABLE &
@@ -3689,32 +3687,33 @@ CONTAINS
            &     top_flux_dn_direct_sw(:, :), & ! ...diffuse only
            &     top_flux_dn_lw(:, :)           ! longwave
 
-      ! layer height (.nc file in offline with dimension max(nlay):ncol)
+      ! layer height (comes from a .nc file in offline SPARTACUS with dimensions max(nlay):ncol)
       REAL(kind=jprb), ALLOCATABLE:: height(:, :)
-
-      ! Total canopy fluxes
-      TYPE(canopy_flux_type)       :: lw_flux, sw_flux
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
-      do_parallel = .FALSE.
-      do_sw = .TRUE.
-      do_lw = .FALSE.
-      use_sw_direct_albedo = .FALSE.
-      do_vegetation = .TRUE.
-      do_urban = .TRUE.
-      do_conservation_check = .FALSE.
-      iverbose = 3
-      n_vegetation_region_urban = 1
-      nsw = 1
-      nlw = 1
-      n_stream_sw_urban = 2
-      ncol = 4
+      !CALL config%READ(file_name='config.nam')
+      !CALL config%consolidate()
+      ! Previously came from config.nam:
+      config%do_sw = .TRUE.
+      config%do_lw = .TRUE.
+      config%use_sw_direct_albedo = .FALSE.
+      config%do_vegetation = .TRUE.
+      config%do_urban = .TRUE.
+      config%iverbose = 3
+      config%n_vegetation_region_urban = 1
+      config%nsw = 1
+      config%nlw = 1
+      config%n_stream_sw_urban = 2
+      config%n_stream_lw_urban = 2
+      ! Other model configurations that are hard coded for now
+      ncol = 3
       ALLOCATE (nlay(ncol))
-      nlay = [1, 2, 2, 2]
+      nlay = [2, 2, 2]
       ntotlay = SUM(nlay)
       ALLOCATE (i_representation(ncol))
-      i_representation = [0,3,3,3] ! choice of 4 tiles: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
+      i_representation = [3,3,3] ! choice of 4 tiles: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
+      nspec = 1 ! this assumes that nsw and nlw are the same in sw_spectral_props and lw_spectral_props
 
       !!!!!!!!!!!!!! canopy_props !!!!!!!!!!!!!!
 
@@ -3722,21 +3721,19 @@ CONTAINS
       CALL canopy_props%DEALLOCATE()
       CALL canopy_props%ALLOCATE(config, ncol, ntotlay, i_representation)
       
-      ! set
+      ! set cos_sza, nlay, ncol, ntotlay
       canopy_props%cos_sza = COS(zenith_deg*3.1415927/180)
       canopy_props%nlay = nlay
       canopy_props%ncol = ncol
       canopy_props%ntotlay = SUM(canopy_props%nlay)
 
-      ! height
+      ! calculate h then set dz and istartlay
       ALLOCATE (height(MAXVAL(nlay)+1, ncol))
       DO jcol = 1, ncol
          DO ilay = 1, MAXVAL(nlay)+1
             height(ilay,jcol) = bldgH/nlay(jcol)*(ilay-1)
          END DO
       END DO
-      
-      ! dz
       ilay = 1
       DO jcol = 1, ncol
          canopy_props%dz(ilay:ilay+canopy_props%nlay(jcol)-1) &
@@ -3746,24 +3743,21 @@ CONTAINS
          ilay = ilay + canopy_props%nlay(jcol)
       END DO
 
-      ! set
-      ! ==================================================================
-      ! TODO: dummy values: sensible values should be passed from SUEWS
+      ! set rest
       canopy_props%ground_temperature = temp_c + 273.15
       canopy_props%roof_temperature = temp_c + 273.15
       canopy_props%wall_temperature = temp_c + 273.15
       canopy_props%clear_air_temperature = temp_c + 273.15
       canopy_props%veg_temperature = temp_c + 273.15
       canopy_props%veg_air_temperature = temp_c + 273.15
-      canopy_props%building_fraction = FAIBldg !should have dimension ntotlay
+      canopy_props%building_fraction = FAIBldg
       canopy_props%veg_fraction = VegFraction
       canopy_props%building_scale = 20 !need to think about this
       canopy_props%veg_scale = 20 !need to think about this
       canopy_props%veg_ext = .1 !need to think about this
-      canopy_props%veg_fsd = [.5,.5,.5,.5] !need to think about this
+      canopy_props%veg_fsd = [.5,.5,.5] !need to think about this
       canopy_props%veg_contact_fraction = .1 !need to think about this
       canopy_props%i_representation = i_representation
-      ! ==================================================================
 
       !!!!!!!!!!!!!! allocate bc_out !!!!!!!!!!!!!!
 
@@ -3771,13 +3765,12 @@ CONTAINS
 
       !!!!!!!!!!!!!! allocate sw_spectral_props, lw_spectral_props !!!!!!!!!!!!!!
 
-      nspec = 1
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
       CALL lw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
 
-      !!!!!!!!!!!!!! do_sw !!!!!!!!!!!!!!
+      !!!!!!!!!!!!!! allocate sw !!!!!!!!!!!!!!
 
       IF (config%do_sw) THEN
          CALL sw_norm_dir%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
@@ -3789,7 +3782,7 @@ CONTAINS
          CALL sw_flux%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
       END IF
 
-      !!!!!!!!!!!!!! do_lw !!!!!!!!!!!!!!
+      !!!!!!!!!!!!!! allocate lw !!!!!!!!!!!!!!
 
       IF (config%do_lw) THEN
          CALL lw_internal%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
@@ -3801,7 +3794,7 @@ CONTAINS
          CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
       END IF
 
-      !!!!!!!!!!!!!! run lw_spectral_props !!!!!!!!!!!!!!
+      !!!!!!!!!!!!!! run calc_monochromatic_emission !!!!!!!!!!!!!!
 
       CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
 
@@ -3809,7 +3802,6 @@ CONTAINS
       
       istartcol = 1
       iendcol = 1
-
       ALLOCATE (top_flux_dn_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_lw(nspec, ncol))
@@ -3820,10 +3812,7 @@ CONTAINS
       ! Option of repeating calculation multiple time for more accurate
       ! profiling
       DO jrepeat = 1, 3
-         ! PRINT *, 'jrepeat', jrepeat
-
          ! Call the SPARTACUS-Surface radiation scheme
-         ! PRINT *, 'radsurf'
          CALL radsurf(config, canopy_props, &
               &       sw_spectral_props, lw_spectral_props, &
               &       bc_out, &
@@ -3832,28 +3821,23 @@ CONTAINS
               &       lw_internal, lw_norm)
          IF (config%do_sw) THEN
             ! Scale the normalized fluxes
-            ! PRINT *, 'sw_norm_dir', sw_norm_dir%ncol
             CALL sw_norm_dir%SCALE(canopy_props%nlay, &
                  &  top_flux_dn_direct_sw)
-            ! PRINT *, 'sw_norm_diff'
             ! CALL sw_norm_diff%SCALE(canopy_props%nlay, &
             ! &  top_flux_dn_sw - top_flux_dn_direct_sw)
-            ! PRINT *, 'sw_flux'
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
          END IF
 
          IF (config%do_lw) THEN
-            ! PRINT *, 'lw_norm'
             CALL lw_norm%SCALE(canopy_props%nlay, top_flux_dn_lw)
-            ! PRINT *, 'lw_flux'
             CALL lw_flux%SUM(lw_internal, lw_norm)
          END IF
 
       END DO
       ! PRINT *, 'finish', bc_out%sw_albedo(1, 1)
 
-      test_out = 0.1
-      test_out = bc_out%sw_albedo(1, 1)*1 + .1
+      !test_out = 0.1
+      !test_out = bc_out%sw_albedo(1, 1)*1 + .1
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 
@@ -3872,7 +3856,6 @@ CONTAINS
       DEALLOCATE (top_flux_dn_sw)
       DEALLOCATE (top_flux_dn_direct_sw)
       DEALLOCATE (top_flux_dn_lw)
-      !PRINT *, 'finish test_rad_spc'
 
       ! call save_canopy_fluxes(trim('test_rad.nc'), config, canopy_props, &
       !  &  sw_flux, lw_flux, iverbose=driver_config%iverbose)
