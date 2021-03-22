@@ -1070,7 +1070,7 @@ CONTAINS
 
       ! test SPARTACUS
       ! PRINT *, 'test_rad_spc'
-      CALL test_rad_spc(out_spc,FAIBldg,ZENITH_deg,bldgH,temp_c,VegFraction)
+      CALL test_rad_spc(out_spc,sfr,ZENITH_deg,bldgH,temp_c,VegFraction, avKdn,ldown_obs)
       ! PRINT *, 'test_rad_spc', out_spc
       out_spc=.1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
@@ -3626,7 +3626,7 @@ CONTAINS
 
    SUBROUTINE test_rad_spc(&! Outputs
       test_out, &! Parameters from SUEWS
-      FAIBldg,zenith_deg,bldgH,temp_c,VegFraction)
+      sfr,zenith_deg,bldgH,temp_c,VegFraction,avKdn,ldown_obs)
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
       ! TODO:
@@ -3654,14 +3654,16 @@ CONTAINS
       !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
      
       ! Input parameters and variables from SUEWS
-      REAL(KIND(1D0)), INTENT(IN):: FAIBldg, zenith_deg, bldgH, temp_c, VegFraction
+      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, temp_c, VegFraction, avKdn, ldown_obs
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)::sfr
 
       ! SPARTACUS configuration parameters
       INTEGER(kind=jpim) :: ncol, ntotlay
       INTEGER(kind=jpim), ALLOCATABLE:: i_representation(:)
       INTEGER(kind=jpim), ALLOCATABLE:: nlay(:)
-      INTEGER(kind=jpim) :: istartcol, iendcol
+      INTEGER :: istartcol, iendcol
       INTEGER :: jrepeat, ilay, jcol, nspec
+      REAL(KIND(1D0)) :: PAI
 
       ! dummy value to be able to output bc_out from radsurf
       REAL(KIND(1D0)) ::test_out
@@ -3707,20 +3709,20 @@ CONTAINS
       config%n_stream_sw_urban = 2
       config%n_stream_lw_urban = 2
       ! Other model configurations that are hard coded for now
-      ncol = 3
+      ncol = 4
       ALLOCATE (nlay(ncol))
-      nlay = [2, 2, 2]
+      nlay = [1,3,3,3]
       ntotlay = SUM(nlay)
       ALLOCATE (i_representation(ncol))
-      i_representation = [3,3,3] ! choice of 4 tiles: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
+      i_representation = [0,3,3,3] ! choice of 4 tiles: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
       nspec = 1 ! this assumes that nsw and nlw are the same in sw_spectral_props and lw_spectral_props
 
-      !!!!!!!!!!!!!! canopy_props !!!!!!!!!!!!!!
+      !!!!!!!!!!!!!! allocate and set canopy_props !!!!!!!!!!!!!!
 
       ! allocate
       CALL canopy_props%DEALLOCATE()
       CALL canopy_props%ALLOCATE(config, ncol, ntotlay, i_representation)
-      
+
       ! set cos_sza, nlay, ncol, ntotlay
       canopy_props%cos_sza = COS(zenith_deg*3.1415927/180)
       canopy_props%nlay = nlay
@@ -3743,32 +3745,67 @@ CONTAINS
          ilay = ilay + canopy_props%nlay(jcol)
       END DO
 
-      ! set rest
+      ! set temperature: are there more approporiate values available than temp_c?
       canopy_props%ground_temperature = temp_c + 273.15
       canopy_props%roof_temperature = temp_c + 273.15
       canopy_props%wall_temperature = temp_c + 273.15
       canopy_props%clear_air_temperature = temp_c + 273.15
       canopy_props%veg_temperature = temp_c + 273.15
       canopy_props%veg_air_temperature = temp_c + 273.15
-      canopy_props%building_fraction = FAIBldg
+
+      ! set building and vegetation properties
+      IF (sfr(BldgSurf) > 0) THEN
+         PAI = sfr(2)/SUM(sfr(1:2)) ! Copy and pasted from BEERS
+      ENDIF
+      canopy_props%building_fraction = PAI
       canopy_props%veg_fraction = VegFraction
-      canopy_props%building_scale = 20 !need to think about this
-      canopy_props%veg_scale = 20 !need to think about this
-      canopy_props%veg_ext = .1 !need to think about this
-      canopy_props%veg_fsd = [.5,.5,.5] !need to think about this
-      canopy_props%veg_contact_fraction = .1 !need to think about this
+      canopy_props%building_scale = 20 !need to think about appropriate value
+      canopy_props%veg_scale = 20 !need to think about appropriate value
+      canopy_props%veg_ext = .25 !need to think about appropriate value
+      canopy_props%veg_fsd = [.5,.5,.5,.5,.5,.5,.5,.5,.5,.5] !do we need the fractional stanard deviation of the extinction coefficient?
+      canopy_props%veg_contact_fraction = .1 !need to think about appropriate value
       canopy_props%i_representation = i_representation
 
-      !!!!!!!!!!!!!! allocate bc_out !!!!!!!!!!!!!!
+      !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
 
-      CALL bc_out%ALLOCATE(ncol, config%nsw, config%nlw)
+      ALLOCATE (top_flux_dn_sw(nspec, ncol))
+      ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
+      ALLOCATE (top_flux_dn_lw(nspec, ncol))
+      top_flux_dn_sw = 200 ! no df_forcing variable kdiff 
+      top_flux_dn_direct_sw = 300 !avKdn ! no df_forcing variable kdown
+      top_flux_dn_lw = 300 !ldown_obs ! df_forcing variable ldown is used as an ouput parameter elesewhere
 
-      !!!!!!!!!!!!!! allocate sw_spectral_props, lw_spectral_props !!!!!!!!!!!!!!
+      !!!!!!!!!!!!!! allocate and set sw_spectral_props !!!!!!!!!!!!!!
 
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
+
+      sw_spectral_props%air_ext =  0.01 ! what is the extinction coefficient of air?
+      sw_spectral_props%air_ssa = 0.01  ! what is the single scattering albedo of air?
+      sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc
+      sw_spectral_props%ground_albedo = 0.2 ! from test_surface_in.nc
+      sw_spectral_props%roof_albedo = 0.2 ! from test_surface_in.nc
+      sw_spectral_props%wall_albedo = 0.2 ! from test_surface_in.nc
+      sw_spectral_props%ground_albedo_dir = 0.2 ! direct same as diffuse? 
+      sw_spectral_props%wall_specular_frac = 0.5 ! how much of sw at wall remains direct (i.e. specular reflection) rather than diffuse?
+
+      !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
+
       CALL lw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
+
+      lw_spectral_props%air_ext = 0.0 ! what is the extinction coefficient of air?
+      lw_spectral_props%air_ssa = 0.0  ! what is the single scattering albedo of air?
+      lw_spectral_props%veg_ssa = 0.01 ! from test_surface_in.nc
+      lw_spectral_props%clear_air_planck = 0.0 ! requires finding the value of the planck function at the clear air temperature
+      lw_spectral_props%veg_planck =  0.0 ! requires finding the value of the planck function at the leave temperature
+      lw_spectral_props%veg_air_planck = 0.0 ! requires finding the value of the planck function at the vegetated air temperature
+      lw_spectral_props%ground_emissivity = 0.9 ! from test_surface_in.nc
+      lw_spectral_props%roof_emissivity = 0.9 ! from test_surface_in.nc
+      lw_spectral_props%wall_emissivity = 0.9 ! from test_surface_in.nc
+      lw_spectral_props%ground_emission = 0.0 ! what is this?
+      lw_spectral_props%roof_emission = 0.0 ! what is this?
+      lw_spectral_props%wall_emission = 0.0 ! what is this?
 
       !!!!!!!!!!!!!! allocate sw !!!!!!!!!!!!!!
 
@@ -3794,21 +3831,17 @@ CONTAINS
          CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
       END IF
 
+      !!!!!!!!!!!!!! allocate bc_out !!!!!!!!!!!!!!
+
+      CALL bc_out%ALLOCATE(ncol, config%nsw, config%nlw)
+
       !!!!!!!!!!!!!! run calc_monochromatic_emission !!!!!!!!!!!!!!
 
       CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
 
       !!!!!!!!!!!!!! CALL radsurf !!!!!!!!!!!!!!
-      
       istartcol = 1
-      iendcol = 1
-      ALLOCATE (top_flux_dn_sw(nspec, ncol))
-      ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
-      ALLOCATE (top_flux_dn_lw(nspec, ncol))
-      top_flux_dn_sw = 300
-      top_flux_dn_direct_sw = 200
-      top_flux_dn_lw = 300
-
+      iendcol = 1!ncol
       ! Option of repeating calculation multiple time for more accurate
       ! profiling
       DO jrepeat = 1, 3
@@ -3827,7 +3860,6 @@ CONTAINS
             ! &  top_flux_dn_sw - top_flux_dn_direct_sw)
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
          END IF
-
          IF (config%do_lw) THEN
             CALL lw_norm%SCALE(canopy_props%nlay, top_flux_dn_lw)
             CALL lw_flux%SUM(lw_internal, lw_norm)
@@ -3838,6 +3870,8 @@ CONTAINS
 
       !test_out = 0.1
       !test_out = bc_out%sw_albedo(1, 1)*1 + .1
+      !PRINT *,bc_out%sw_albedo
+      !PRINT *,bc_out%lw_emissivity
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 
