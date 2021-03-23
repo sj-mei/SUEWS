@@ -3694,28 +3694,28 @@ CONTAINS
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
-      !CALL config%READ(file_name='config.nam')
+      CALL config%READ(file_name='config.nam')
       !CALL config%consolidate()
-      ! Previously came from config.nam:
       config%do_sw = .TRUE.
       config%do_lw = .TRUE.
       config%use_sw_direct_albedo = .FALSE.
       config%do_vegetation = .TRUE.
       config%do_urban = .TRUE.
-      config%iverbose = 3
+      config%iverbose = 4
       config%n_vegetation_region_urban = 1
       config%nsw = 1
       config%nlw = 1
       config%n_stream_sw_urban = 2
       config%n_stream_lw_urban = 2
       ! Other model configurations that are hard coded for now
-      ncol = 4
+      ncol = 1
       ALLOCATE (nlay(ncol))
-      nlay = [1,3,3,3]
+      nlay = [3]
       ntotlay = SUM(nlay)
       ALLOCATE (i_representation(ncol))
-      i_representation = [0,3,3,3] ! choice of 4 tiles: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
+      i_representation = [3] ! choice of 4 tiles: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
       nspec = 1 ! this assumes that nsw and nlw are the same in sw_spectral_props and lw_spectral_props
+      CALL config%consolidate()
 
       !!!!!!!!!!!!!! allocate and set canopy_props !!!!!!!!!!!!!!
 
@@ -3762,7 +3762,7 @@ CONTAINS
       canopy_props%building_scale = 20 !need to think about appropriate value
       canopy_props%veg_scale = 20 !need to think about appropriate value
       canopy_props%veg_ext = .25 !need to think about appropriate value
-      canopy_props%veg_fsd = [.5,.5,.5,.5,.5,.5,.5,.5,.5,.5] !do we need the fractional stanard deviation of the extinction coefficient?
+      canopy_props%veg_fsd = [.5,.5,.5] !do we need the fractional stanard deviation of the extinction coefficient?
       canopy_props%veg_contact_fraction = .1 !need to think about appropriate value
       canopy_props%i_representation = i_representation
 
@@ -3841,7 +3841,7 @@ CONTAINS
 
       !!!!!!!!!!!!!! CALL radsurf !!!!!!!!!!!!!!
       istartcol = 1
-      iendcol = 1!ncol
+      iendcol = 1
       ! Option of repeating calculation multiple time for more accurate
       ! profiling
       DO jrepeat = 1, 3
@@ -3856,22 +3856,15 @@ CONTAINS
             ! Scale the normalized fluxes
             CALL sw_norm_dir%SCALE(canopy_props%nlay, &
                  &  top_flux_dn_direct_sw)
-            ! CALL sw_norm_diff%SCALE(canopy_props%nlay, &
-            ! &  top_flux_dn_sw - top_flux_dn_direct_sw)
+            CALL sw_norm_diff%SCALE(canopy_props%nlay, &
+                 &  top_flux_dn_sw - top_flux_dn_direct_sw)
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
          END IF
          IF (config%do_lw) THEN
             CALL lw_norm%SCALE(canopy_props%nlay, top_flux_dn_lw)
             CALL lw_flux%SUM(lw_internal, lw_norm)
          END IF
-
       END DO
-      ! PRINT *, 'finish', bc_out%sw_albedo(1, 1)
-
-      !test_out = 0.1
-      !test_out = bc_out%sw_albedo(1, 1)*1 + .1
-      !PRINT *,bc_out%sw_albedo
-      !PRINT *,bc_out%lw_emissivity
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 
