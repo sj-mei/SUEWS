@@ -1070,7 +1070,7 @@ CONTAINS
 
       ! test SPARTACUS
       ! PRINT *, 'test_rad_spc'
-      CALL test_rad_spc(out_spc)
+      ! CALL test_rad_spc(out_spc)
       ! PRINT *, 'test_rad_spc', out_spc
       out_spc=.1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
