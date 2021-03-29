@@ -1072,7 +1072,7 @@ CONTAINS
       ! PRINT *, 'test_rad_spc'
       ! CALL test_rad_spc(out_spc)
       ! PRINT *, 'test_rad_spc', out_spc
-      out_spc=.1
+      out_spc = .1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
                           vpd_hPa, avdens, avcp, out_spc, s_hPa, psyc_hPa]
 
@@ -1427,12 +1427,6 @@ CONTAINS
          ! IF (snowUse==0) SnowFrac=snowFrac_obs
          IF (snowUse == 0) SnowFrac = 0
 
-         IF (ldown_option == 1) THEN !Observed ldown provided as forcing
-            ldown = ldown_obs
-         ELSE
-            ldown = -9              !to be filled in NARP
-         END IF
-
          IF (ldown_option == 2) THEN !observed cloud fraction provided as forcing
             fcld = fcld_obs
          END IF
@@ -1453,7 +1447,7 @@ CONTAINS
          CALL NARP( &
             nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-            dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
+            dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, &! output:
