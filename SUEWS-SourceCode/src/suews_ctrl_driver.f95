@@ -1071,8 +1071,8 @@ CONTAINS
       ! test SPARTACUS
       ! PRINT *, 'test_rad_spc'
       CALL test_rad_spc(out_spc,sfr,ZENITH_deg,bldgH,temp_c,VegFraction, avKdn,ldown_obs)
-      ! PRINT *, 'test_rad_spc', out_spc
-      out_spc=.1
+      PRINT *, 'test_rad_spc', out_spc
+      !out_spc=.1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
                           vpd_hPa, avdens, avcp, out_spc, s_hPa, psyc_hPa]
 
@@ -3638,7 +3638,6 @@ CONTAINS
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
       USE radsurf_config, ONLY: config_type
-      ! USE easy_netcdf
       ! USE spartacus_surface_config, ONLY: read_config_from_namelist, driver_config_type
       USE radsurf_canopy_properties, ONLY: canopy_properties_type
       USE radsurf_sw_spectral_properties, ONLY: sw_spectral_properties_type
@@ -3647,7 +3646,6 @@ CONTAINS
       USE radsurf_canopy_flux, ONLY: canopy_flux_type
       USE radsurf_simple_spectrum, ONLY: calc_simple_spectrum_lw
       ! USE spartacus_surface_read_input, ONLY: read_input
-      ! USE radsurf_save, ONLY: save_canopy_fluxes
 
       IMPLICIT NONE
 
@@ -3838,12 +3836,10 @@ CONTAINS
       !!!!!!!!!!!!!! run calc_monochromatic_emission !!!!!!!!!!!!!!
 
       CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
-
       !!!!!!!!!!!!!! CALL radsurf !!!!!!!!!!!!!!
       istartcol = 1
       iendcol = 1
-      ! Option of repeating calculation multiple time for more accurate
-      ! profiling
+      ! Option of repeating calculation multiple time for more accurate profiling
       DO jrepeat = 1, 3
          ! Call the SPARTACUS-Surface radiation scheme
          CALL radsurf(config, canopy_props, &
@@ -3866,6 +3862,9 @@ CONTAINS
          END IF
       END DO
 
+      PRINT *,bc_out%sw_albedo
+      test_out = bc_out%sw_albedo(1, 1)
+
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 
       CALL canopy_props%DEALLOCATE()
@@ -3883,9 +3882,6 @@ CONTAINS
       DEALLOCATE (top_flux_dn_sw)
       DEALLOCATE (top_flux_dn_direct_sw)
       DEALLOCATE (top_flux_dn_lw)
-
-      ! call save_canopy_fluxes(trim('test_rad.nc'), config, canopy_props, &
-      !  &  sw_flux, lw_flux, iverbose=driver_config%iverbose)
 
    END SUBROUTINE test_rad_spc
 
