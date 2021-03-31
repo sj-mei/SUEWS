@@ -1070,7 +1070,7 @@ CONTAINS
 
       ! test SPARTACUS
       ! PRINT *, 'test_rad_spc'
-      CALL test_rad_spc(out_spc,sfr,ZENITH_deg,bldgH,temp_c,VegFraction, avKdn,ldown_obs)
+      CALL test_rad_spc(out_spc,sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
       PRINT *, 'test_rad_spc', out_spc
       !out_spc=.1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
@@ -3626,7 +3626,7 @@ CONTAINS
 
    SUBROUTINE test_rad_spc(&! Outputs
       test_out, &! Parameters from SUEWS
-      sfr,zenith_deg,bldgH,temp_c,VegFraction,avKdn,ldown_obs)
+      sfr,zenith_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
       ! TODO:
@@ -3652,7 +3652,7 @@ CONTAINS
       !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
      
       ! Input parameters and variables from SUEWS
-      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, temp_c, VegFraction, avKdn, ldown_obs
+      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, tsurf, VegFraction, avKdn, ldown
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)::sfr
 
       ! SPARTACUS configuration parameters
@@ -3663,7 +3663,7 @@ CONTAINS
       INTEGER :: jrepeat, ilay, jcol, nspec
       REAL(KIND(1D0)) :: PAI
 
-      ! dummy value to be able to output bc_out from radsurf
+      ! dummy variable to be able to output bc_out from radsurf
       REAL(KIND(1D0)) ::test_out
 
       ! Derived types for the inputs to the radiation scheme
@@ -3699,7 +3699,7 @@ CONTAINS
       config%use_sw_direct_albedo = .FALSE.
       config%do_vegetation = .TRUE.
       config%do_urban = .TRUE.
-      config%iverbose = 4
+      config%iverbose = 3 ! 4 to get info on the run configuration
       config%n_vegetation_region_urban = 1
       config%nsw = 1
       config%nlw = 1
@@ -3744,12 +3744,12 @@ CONTAINS
       END DO
 
       ! set temperature: are there more approporiate values available than temp_c?
-      canopy_props%ground_temperature = temp_c + 273.15
-      canopy_props%roof_temperature = temp_c + 273.15
-      canopy_props%wall_temperature = temp_c + 273.15
-      canopy_props%clear_air_temperature = temp_c + 273.15
-      canopy_props%veg_temperature = temp_c + 273.15
-      canopy_props%veg_air_temperature = temp_c + 273.15
+      canopy_props%ground_temperature = tsurf + 273.15
+      canopy_props%roof_temperature = tsurf + 273.15
+      canopy_props%wall_temperature = tsurf + 273.15
+      canopy_props%clear_air_temperature = tsurf + 273.15
+      canopy_props%veg_temperature = tsurf + 273.15
+      canopy_props%veg_air_temperature = tsurf + 273.15
 
       ! set building and vegetation properties
       IF (sfr(BldgSurf) > 0) THEN
@@ -3757,11 +3757,11 @@ CONTAINS
       ENDIF
       canopy_props%building_fraction = PAI
       canopy_props%veg_fraction = VegFraction
-      canopy_props%building_scale = 20 !need to think about appropriate value
-      canopy_props%veg_scale = 20 !need to think about appropriate value
-      canopy_props%veg_ext = .25 !need to think about appropriate value
-      canopy_props%veg_fsd = [.5,.5,.5] !do we need the fractional stanard deviation of the extinction coefficient?
-      canopy_props%veg_contact_fraction = .1 !need to think about appropriate value
+      canopy_props%building_scale = 20 ! need to think about appropriate value
+      canopy_props%veg_scale = 20 ! need to think about appropriate value
+      canopy_props%veg_ext = .25 ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25?
+      canopy_props%veg_fsd = [.5,.5,.5] ! do we need the fractional standard deviation of the extinction coefficient?
+      canopy_props%veg_contact_fraction = .1 ! need to think about appropriate value
       canopy_props%i_representation = i_representation
 
       !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
@@ -3771,7 +3771,7 @@ CONTAINS
       ALLOCATE (top_flux_dn_lw(nspec, ncol))
       top_flux_dn_sw = 200 ! no df_forcing variable kdiff 
       top_flux_dn_direct_sw = 300 !avKdn ! no df_forcing variable kdown
-      top_flux_dn_lw = 300 !ldown_obs ! df_forcing variable ldown is used as an ouput parameter elesewhere
+      top_flux_dn_lw = 300 !ldown ! df_forcing variable ldown is used as an ouput parameter elesewhere
 
       !!!!!!!!!!!!!! allocate and set sw_spectral_props !!!!!!!!!!!!!!
 
@@ -3780,11 +3780,11 @@ CONTAINS
 
       sw_spectral_props%air_ext =  0.01 ! what is the extinction coefficient of air?
       sw_spectral_props%air_ssa = 0.01  ! what is the single scattering albedo of air?
-      sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc
+      sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
       sw_spectral_props%ground_albedo = 0.2 ! from test_surface_in.nc
       sw_spectral_props%roof_albedo = 0.2 ! from test_surface_in.nc
       sw_spectral_props%wall_albedo = 0.2 ! from test_surface_in.nc
-      sw_spectral_props%ground_albedo_dir = 0.2 ! direct same as diffuse? 
+      sw_spectral_props%ground_albedo_dir = 0.2 ! should direct be the same as diffuse? 
       sw_spectral_props%wall_specular_frac = 0.5 ! how much of sw at wall remains direct (i.e. specular reflection) rather than diffuse?
 
       !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
@@ -3795,12 +3795,12 @@ CONTAINS
       lw_spectral_props%air_ext = 0.0 ! what is the extinction coefficient of air?
       lw_spectral_props%air_ssa = 0.0  ! what is the single scattering albedo of air?
       lw_spectral_props%veg_ssa = 0.01 ! from test_surface_in.nc
-      lw_spectral_props%clear_air_planck = 0.0 ! requires finding the value of the planck function at the clear air temperature
-      lw_spectral_props%veg_planck =  0.0 ! requires finding the value of the planck function at the leave temperature
-      lw_spectral_props%veg_air_planck = 0.0 ! requires finding the value of the planck function at the vegetated air temperature
       lw_spectral_props%ground_emissivity = 0.9 ! from test_surface_in.nc
       lw_spectral_props%roof_emissivity = 0.9 ! from test_surface_in.nc
       lw_spectral_props%wall_emissivity = 0.9 ! from test_surface_in.nc
+      lw_spectral_props%clear_air_planck = 0.9*5.67*10**-8*(tsurf + 273.15)**4
+      lw_spectral_props%veg_planck = 0.9*5.67*10**-8*(tsurf + 273.15)**4
+      lw_spectral_props%veg_air_planck = 0.9*5.67*10**-8*(tsurf + 273.15)**4
       lw_spectral_props%ground_emission = 0.0 ! what is this?
       lw_spectral_props%roof_emission = 0.0 ! what is this?
       lw_spectral_props%wall_emission = 0.0 ! what is this?
