@@ -574,7 +574,7 @@ CONTAINS
       INTEGER::i_iter
 
       ! SPARTACUS test out
-      REAL(KIND(1D0)):: out_spc
+      REAL(KIND(1D0)):: alb_spc, emiss_spc
       ! REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
       ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
 
@@ -1069,12 +1069,11 @@ CONTAINS
       !==============translation end ================
 
       ! test SPARTACUS
-      ! PRINT *, 'test_rad_spc'
-      CALL test_rad_spc(out_spc,sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
-      PRINT *, 'test_rad_spc', out_spc
-      !out_spc=.1
+      CALL test_rad_spc(alb_spc,emiss_spc,sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
+      PRINT *, 'alb_spc', alb_spc
+      PRINT *, 'emiss_spc', emiss_spc
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, avdens, avcp, out_spc, s_hPa, psyc_hPa]
+                          vpd_hPa, avdens, avcp, alb_spc, s_hPa, psyc_hPa] ! , emiss_spc
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -3625,7 +3624,7 @@ CONTAINS
    !!!!!!!!!!!!!! SPARTACUS !!!!!!!!!!!!!
 
    SUBROUTINE test_rad_spc(&! Outputs
-      test_out, &! Parameters from SUEWS
+      alb_spc,emiss_spc, &! Parameters from SUEWS
       sfr,zenith_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
@@ -3664,7 +3663,7 @@ CONTAINS
       REAL(KIND(1D0)) :: PAI
 
       ! dummy variable to be able to output bc_out from radsurf
-      REAL(KIND(1D0)) ::test_out
+      REAL(KIND(1D0)) ::alb_spc,emiss_spc
 
       ! Derived types for the inputs to the radiation scheme
       TYPE(config_type)                 :: config
@@ -3689,6 +3688,9 @@ CONTAINS
 
       ! layer height (comes from a .nc file in offline SPARTACUS with dimensions max(nlay):ncol)
       REAL(kind=jprb), ALLOCATABLE:: height(:, :)
+
+      ! variable to hold surface temperature in Kelvin
+      REAL(KIND(1D0)) ::tsurfK
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
@@ -3743,13 +3745,14 @@ CONTAINS
          ilay = ilay + canopy_props%nlay(jcol)
       END DO
 
-      ! set temperature: are there more approporiate values available than temp_c?
-      canopy_props%ground_temperature = tsurf + 273.15
-      canopy_props%roof_temperature = tsurf + 273.15
-      canopy_props%wall_temperature = tsurf + 273.15
-      canopy_props%clear_air_temperature = tsurf + 273.15
-      canopy_props%veg_temperature = tsurf + 273.15
-      canopy_props%veg_air_temperature = tsurf + 273.15
+      ! set temperature
+      tsurfK = tsurf + 273.15 ! convert to Kelvin
+      canopy_props%ground_temperature = tsurfK
+      canopy_props%roof_temperature = tsurfK
+      canopy_props%wall_temperature = tsurfK
+      canopy_props%clear_air_temperature = tsurfK
+      canopy_props%veg_temperature = tsurfK
+      canopy_props%veg_air_temperature = tsurfK
 
       ! set building and vegetation properties
       IF (sfr(BldgSurf) > 0) THEN
@@ -3769,9 +3772,9 @@ CONTAINS
       ALLOCATE (top_flux_dn_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_lw(nspec, ncol))
-      top_flux_dn_sw = 200 ! no df_forcing variable kdiff 
-      top_flux_dn_direct_sw = 300 !avKdn ! no df_forcing variable kdown
-      top_flux_dn_lw = 300 !ldown ! df_forcing variable ldown is used as an ouput parameter elesewhere
+      top_flux_dn_sw = 0.55*avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
+      top_flux_dn_direct_sw = 0.45*avKdn !avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
+      top_flux_dn_lw = ldown
 
       !!!!!!!!!!!!!! allocate and set sw_spectral_props !!!!!!!!!!!!!!
 
@@ -3798,9 +3801,9 @@ CONTAINS
       lw_spectral_props%ground_emissivity = 0.9 ! from test_surface_in.nc
       lw_spectral_props%roof_emissivity = 0.9 ! from test_surface_in.nc
       lw_spectral_props%wall_emissivity = 0.9 ! from test_surface_in.nc
-      lw_spectral_props%clear_air_planck = 0.9*5.67*10**-8*(tsurf + 273.15)**4
-      lw_spectral_props%veg_planck = 0.9*5.67*10**-8*(tsurf + 273.15)**4
-      lw_spectral_props%veg_air_planck = 0.9*5.67*10**-8*(tsurf + 273.15)**4
+      lw_spectral_props%clear_air_planck = 0.9*5.67*10**-8*tsurfK**4
+      lw_spectral_props%veg_planck = 0.9*5.67*10**-8*tsurfK**4
+      lw_spectral_props%veg_air_planck = 0.9*5.67*10**-8*tsurfK**4
       lw_spectral_props%ground_emission = 0.0 ! what is this?
       lw_spectral_props%roof_emission = 0.0 ! what is this?
       lw_spectral_props%wall_emission = 0.0 ! what is this?
@@ -3863,7 +3866,10 @@ CONTAINS
       END DO
 
       PRINT *,bc_out%sw_albedo
-      test_out = bc_out%sw_albedo(1, 1)
+      PRINT *,bc_out%sw_albedo_dir
+      PRINT *,bc_out%lw_emissivity
+      alb_spc = 0.55*bc_out%sw_albedo(1, 1) + 0.45*bc_out%sw_albedo_dir(1, 1)
+      emiss_spc = bc_out%lw_emissivity(1, 1)
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 
