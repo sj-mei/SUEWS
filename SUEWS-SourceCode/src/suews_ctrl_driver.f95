@@ -1070,10 +1070,10 @@ CONTAINS
 
       ! test SPARTACUS
       CALL test_rad_spc(alb_spc,emiss_spc,sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
-      PRINT *, 'alb_spc', alb_spc
-      PRINT *, 'emiss_spc', emiss_spc
+      !PRINT *, 'alb_spc', alb_spc
+      !PRINT *, 'emiss_spc', emiss_spc
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, avdens, avcp, alb_spc, s_hPa, psyc_hPa] ! , emiss_spc
+                          vpd_hPa, avdens, avcp, alb_spc, emiss_spc, s_hPa, psyc_hPa] ! qn_e -> alb_spc, emiss_spc
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -3865,9 +3865,9 @@ CONTAINS
          END IF
       END DO
 
-      PRINT *,bc_out%sw_albedo
-      PRINT *,bc_out%sw_albedo_dir
-      PRINT *,bc_out%lw_emissivity
+      !PRINT *,bc_out%sw_albedo
+      !PRINT *,bc_out%sw_albedo_dir
+      !PRINT *,bc_out%lw_emissivity
       alb_spc = 0.55*bc_out%sw_albedo(1, 1) + 0.45*bc_out%sw_albedo_dir(1, 1)
       emiss_spc = bc_out%lw_emissivity(1, 1)
 
