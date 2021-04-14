@@ -574,7 +574,7 @@ CONTAINS
       INTEGER::i_iter
 
       ! SPARTACUS test out
-      REAL(KIND(1D0)):: alb_spc, emiss_spc
+      REAL(KIND(1D0)):: alb_spc, emiss_spc, lw_up_spc, sw_up_spc, qn_spc
       ! REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
       ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
 
@@ -782,6 +782,22 @@ CONTAINS
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, snowFrac_next, SnowAlb_next)
+
+         CALL test_rad_spc(alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc, &
+            sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
+         !required output: alb_next, qn, kup, lup
+         !maybe required output: 
+         ! -ldown (SUEWS_cal_Qn does=ldown_obs or if no ldown_obs it calculates ldown from RH and T)
+         ! -fcld
+         ! -kclear
+         ! -tsurf
+         ! -Tsurf_ind
+         ! -emis (has dimensions NSURF and contains pre-defined emissivity for each land cover type)
+         ! snow in scope? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
+         alb_next = alb_spc
+         lup = lw_up_spc
+         kup = sw_up_spc
+         qn = qn_spc
 
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
@@ -1069,11 +1085,9 @@ CONTAINS
       !==============translation end ================
 
       ! test SPARTACUS
-      CALL test_rad_spc(alb_spc,emiss_spc,sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
-      !PRINT *, 'alb_spc', alb_spc
-      !PRINT *, 'emiss_spc', emiss_spc
+      !CALL test_rad_spc(alb_spc,emiss_spc,sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, avdens, avcp, alb_spc, emiss_spc, s_hPa, psyc_hPa] ! qn_e -> alb_spc, emiss_spc
+                          vpd_hPa, avdens, avcp, s_hPa, psyc_hPa, alb_spc, emiss_spc]
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -3624,7 +3638,7 @@ CONTAINS
    !!!!!!!!!!!!!! SPARTACUS !!!!!!!!!!!!!
 
    SUBROUTINE test_rad_spc(&! Outputs
-      alb_spc,emiss_spc, &! Parameters from SUEWS
+      alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc, &! Parameters from SUEWS
       sfr,zenith_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
@@ -3662,8 +3676,8 @@ CONTAINS
       INTEGER :: jrepeat, ilay, jcol, nspec
       REAL(KIND(1D0)) :: PAI
 
-      ! dummy variable to be able to output bc_out from radsurf
-      REAL(KIND(1D0)) ::alb_spc,emiss_spc
+      ! output variables
+      REAL(KIND(1D0)) ::alb_spc, emiss_spc, lw_up_spc, sw_up_spc, qn_spc
 
       ! Derived types for the inputs to the radiation scheme
       TYPE(config_type)                 :: config
@@ -3691,6 +3705,8 @@ CONTAINS
 
       ! variable to hold surface temperature in Kelvin
       REAL(KIND(1D0)) ::tsurfK
+      ! variable to hold top-of-canopy diffuse sw downward 
+      REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
@@ -3701,6 +3717,7 @@ CONTAINS
       config%use_sw_direct_albedo = .FALSE.
       config%do_vegetation = .TRUE.
       config%do_urban = .TRUE.
+      config%use_sw_direct_albedo = .TRUE. ! What happens if false?
       config%iverbose = 3 ! 4 to get info on the run configuration
       config%n_vegetation_region_urban = 1
       config%nsw = 1
@@ -3772,8 +3789,9 @@ CONTAINS
       ALLOCATE (top_flux_dn_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_lw(nspec, ncol))
-      top_flux_dn_sw = 0.55*avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
-      top_flux_dn_direct_sw = 0.45*avKdn !avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
+      top_flux_dn_sw = avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
+      top_flux_dn_direct_sw = 0.45*avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
+      top_flux_dn_diffuse_sw = top_flux_dn_sw(1,1) - top_flux_dn_direct_sw(1,1)
       top_flux_dn_lw = ldown
 
       !!!!!!!!!!!!!! allocate and set sw_spectral_props !!!!!!!!!!!!!!
@@ -3788,6 +3806,7 @@ CONTAINS
       sw_spectral_props%roof_albedo = 0.2 ! from test_surface_in.nc
       sw_spectral_props%wall_albedo = 0.2 ! from test_surface_in.nc
       sw_spectral_props%ground_albedo_dir = 0.2 ! should direct be the same as diffuse? 
+      sw_spectral_props%roof_albedo_dir = 0.2 ! should direct be the same as diffuse?
       sw_spectral_props%wall_specular_frac = 0.5 ! how much of sw at wall remains direct (i.e. specular reflection) rather than diffuse?
 
       !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
@@ -3839,6 +3858,7 @@ CONTAINS
       !!!!!!!!!!!!!! run calc_monochromatic_emission !!!!!!!!!!!!!!
 
       CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
+
       !!!!!!!!!!!!!! CALL radsurf !!!!!!!!!!!!!!
       istartcol = 1
       iendcol = 1
@@ -3865,11 +3885,25 @@ CONTAINS
          END IF
       END DO
 
-      !PRINT *,bc_out%sw_albedo
-      !PRINT *,bc_out%sw_albedo_dir
-      !PRINT *,bc_out%lw_emissivity
-      alb_spc = 0.55*bc_out%sw_albedo(1, 1) + 0.45*bc_out%sw_albedo_dir(1, 1)
-      emiss_spc = bc_out%lw_emissivity(1, 1)
+      ! albedo
+      alb_spc = ((top_flux_dn_diffuse_sw+10.**-10)*bc_out%sw_albedo(1,1) & ! the 0.000001's stop the equation blowing up when kdwn=0
+               + (top_flux_dn_direct_sw(1,1)+10.**-10)*bc_out%sw_albedo_dir(1,1)) &
+               / (top_flux_dn_diffuse_sw+10.**-10 + top_flux_dn_direct_sw(1,1)+10.**-10)
+      ! emissivity
+      emiss_spc = bc_out%lw_emissivity(1,1)
+      
+      ! lowngwave upward = emitted as blackbody - reflected
+      lw_up_spc = bc_out%lw_emission(1,1) + (1-emiss_spc)*ldown
+      PRINT*,'lw_flux%top_net(1,1)',lw_flux%top_net(1,1)
+      PRINT*,'ldown-lw_up_spc',ldown-lw_up_spc
+      ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
+      sw_up_spc = top_flux_dn_diffuse_sw*bc_out%sw_albedo(1,1) &
+                  + top_flux_dn_direct_sw(1,1)*bc_out%sw_albedo_dir(1,1) ! or alb_spc*avKdn
+      PRINT*,'sw_flux%top_net(1,1)',sw_flux%top_net(1,1)
+      PRINT*,'avKdn-sw_up_spc',avKdn-sw_up_spc
+      
+      ! net all = net sw + net lw
+      qn_spc = sw_flux%top_net(1,1) + lw_flux%top_net(1,1)
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 
