@@ -783,17 +783,19 @@ CONTAINS
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, snowFrac_next, SnowAlb_next)
 
-         CALL test_rad_spc(alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc, &
-            sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
+         CALL test_rad_spc(&!input
+         sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown,temp_C, &!output
+         alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)
+         !inputs that need updating: change from tsurf to some other surface temperature for the lw emissions
+         !(maybe diagnostic TSfc_C -> TSfc_K and use Tair for the first time step)
          !required output: alb_next, qn, kup, lup
          !maybe required output: 
-         ! -ldown (SUEWS_cal_Qn does=ldown_obs or if no ldown_obs it calculates ldown from RH and T)
-         ! -fcld
-         ! -kclear
-         ! -tsurf
-         ! -Tsurf_ind
+         ! -ldown (SUEWS_cal_Qn does ldown=ldown_obs or if no ldown_obs it calculates ldown from RH and T. What is the current setting?)
+         ! -fcld (maybe this is only required to calculate ldown if there is no ldown_obs)
+         ! -kclear (I think it is only used in NARP so is not required)
+         ! -Tsurf_ind (defined in suews_phys_narp.f95. I haven't worked out exactly what it is but seems like the temperature of individual surfaces.
          ! -emis (has dimensions NSURF and contains pre-defined emissivity for each land cover type)
-         ! snow in scope? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
+         ! snow in scope of current Spartacus implementation? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
          alb_next = alb_spc
          lup = lw_up_spc
          kup = sw_up_spc
@@ -1084,8 +1086,6 @@ CONTAINS
 
       !==============translation end ================
 
-      ! test SPARTACUS
-      !CALL test_rad_spc(alb_spc,emiss_spc,sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
                           vpd_hPa, avdens, avcp, s_hPa, psyc_hPa, alb_spc, emiss_spc]
 
@@ -3637,9 +3637,9 @@ CONTAINS
 
    !!!!!!!!!!!!!! SPARTACUS !!!!!!!!!!!!!
 
-   SUBROUTINE test_rad_spc(&! Outputs
-      alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc, &! Parameters from SUEWS
-      sfr,zenith_deg,bldgH,tsurf,VegFraction,avKdn,ldown)
+   SUBROUTINE test_rad_spc(&!input
+      sfr,zenith_deg,bldgH,tsurf,VegFraction,avKdn,ldown,temp_c, &!output
+      alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
       ! TODO:
@@ -3665,7 +3665,7 @@ CONTAINS
       !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
      
       ! Input parameters and variables from SUEWS
-      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, tsurf, VegFraction, avKdn, ldown
+      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, tsurf, VegFraction, avKdn, ldown, temp_C
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)::sfr
 
       ! SPARTACUS configuration parameters
@@ -3703,29 +3703,26 @@ CONTAINS
       ! layer height (comes from a .nc file in offline SPARTACUS with dimensions max(nlay):ncol)
       REAL(kind=jprb), ALLOCATABLE:: height(:, :)
 
-      ! variable to hold surface temperature in Kelvin
-      REAL(KIND(1D0)) ::tsurfK
+      ! variables to hold surface temperature and air temperature in Kelvin
+      REAL(KIND(1D0)) ::tsurfK, tairK
       ! variable to hold top-of-canopy diffuse sw downward 
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
       CALL config%READ(file_name='config.nam')
-      !CALL config%consolidate()
       config%do_sw = .TRUE.
       config%do_lw = .TRUE.
-      config%use_sw_direct_albedo = .FALSE.
+      config%use_sw_direct_albedo = .TRUE. ! if true then ground albedo =ground_albedo_dir, if false then =ground_albedo and the code breaks
       config%do_vegetation = .TRUE.
       config%do_urban = .TRUE.
-      config%use_sw_direct_albedo = .TRUE. ! What happens if false?
       config%iverbose = 3 ! 4 to get info on the run configuration
-      config%n_vegetation_region_urban = 1
+      config%n_vegetation_region_urban = 1 ! 2 for heterogeneity in vegetation
       config%nsw = 1
       config%nlw = 1
       config%n_stream_sw_urban = 2
       config%n_stream_lw_urban = 2
-      ! Other model configurations that are hard coded for now
-      ncol = 1
+      ncol = 1 ! is one for implmementation in SUEWS (as there are not multiple tiles)
       ALLOCATE (nlay(ncol))
       nlay = [3]
       ntotlay = SUM(nlay)
@@ -3764,12 +3761,13 @@ CONTAINS
 
       ! set temperature
       tsurfK = tsurf + 273.15 ! convert to Kelvin
+      tairK = temp_C + 273.15 ! convert to Kelvin
       canopy_props%ground_temperature = tsurfK
       canopy_props%roof_temperature = tsurfK
       canopy_props%wall_temperature = tsurfK
-      canopy_props%clear_air_temperature = tsurfK
+      canopy_props%clear_air_temperature = tairK
       canopy_props%veg_temperature = tsurfK
-      canopy_props%veg_air_temperature = tsurfK
+      canopy_props%veg_air_temperature = tairK
 
       ! set building and vegetation properties
       IF (sfr(BldgSurf) > 0) THEN
@@ -3780,7 +3778,7 @@ CONTAINS
       canopy_props%building_scale = 20 ! need to think about appropriate value
       canopy_props%veg_scale = 20 ! need to think about appropriate value
       canopy_props%veg_ext = .25 ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25?
-      canopy_props%veg_fsd = [.5,.5,.5] ! do we need the fractional standard deviation of the extinction coefficient?
+      canopy_props%veg_fsd = [.25,.25,.25] ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
       canopy_props%veg_contact_fraction = .1 ! need to think about appropriate value
       canopy_props%i_representation = i_representation
 
@@ -3789,7 +3787,7 @@ CONTAINS
       ALLOCATE (top_flux_dn_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_lw(nspec, ncol))
-      top_flux_dn_sw = avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
+      top_flux_dn_sw = avKdn ! diffuse + direct
       top_flux_dn_direct_sw = 0.45*avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
       top_flux_dn_diffuse_sw = top_flux_dn_sw(1,1) - top_flux_dn_direct_sw(1,1)
       top_flux_dn_lw = ldown
@@ -3886,7 +3884,7 @@ CONTAINS
       END DO
 
       ! albedo
-      alb_spc = ((top_flux_dn_diffuse_sw+10.**-10)*bc_out%sw_albedo(1,1) & ! the 0.000001's stop the equation blowing up when kdwn=0
+      alb_spc = ((top_flux_dn_diffuse_sw+10.**-10)*bc_out%sw_albedo(1,1) & ! the 10.**-10 stops the equation blowing up when kdwn=0
                + (top_flux_dn_direct_sw(1,1)+10.**-10)*bc_out%sw_albedo_dir(1,1)) &
                / (top_flux_dn_diffuse_sw+10.**-10 + top_flux_dn_direct_sw(1,1)+10.**-10)
       ! emissivity
@@ -3894,13 +3892,9 @@ CONTAINS
       
       ! lowngwave upward = emitted as blackbody - reflected
       lw_up_spc = bc_out%lw_emission(1,1) + (1-emiss_spc)*ldown
-      PRINT*,'lw_flux%top_net(1,1)',lw_flux%top_net(1,1)
-      PRINT*,'ldown-lw_up_spc',ldown-lw_up_spc
       ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
       sw_up_spc = top_flux_dn_diffuse_sw*bc_out%sw_albedo(1,1) &
-                  + top_flux_dn_direct_sw(1,1)*bc_out%sw_albedo_dir(1,1) ! or alb_spc*avKdn
-      PRINT*,'sw_flux%top_net(1,1)',sw_flux%top_net(1,1)
-      PRINT*,'avKdn-sw_up_spc',avKdn-sw_up_spc
+                  + top_flux_dn_direct_sw(1,1)*bc_out%sw_albedo_dir(1,1) ! or more simply: alb_spc*avKdn
       
       ! net all = net sw + net lw
       qn_spc = sw_flux%top_net(1,1) + lw_flux%top_net(1,1)
