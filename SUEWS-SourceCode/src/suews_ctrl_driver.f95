@@ -957,7 +957,6 @@ CONTAINS
       ! -Tsurf_ind (defined in suews_phys_narp.f95. I haven't worked out exactly what it is but seems like the temperature of individual surfaces.
       ! -emis (has dimensions NSURF and contains pre-defined emissivity for each land cover type)
       ! snow in scope of current Spartacus implementation? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
-      alb_next(1:4) = alb_spc ! update the building, paved, evergreen tree and deciduous tree albedos
       lup = lw_up_spc
       kup = sw_up_spc
       qn = qn_spc
