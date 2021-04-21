@@ -783,24 +783,6 @@ CONTAINS
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, snowFrac_next, SnowAlb_next)
 
-         CALL test_rad_spc(&!input
-         sfr,ZENITH_deg,bldgH,tsurf,VegFraction,avKdn,ldown,temp_C, &!output
-         alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)
-         !inputs that need updating: change from tsurf to some other surface temperature for the lw emissions
-         !(maybe diagnostic TSfc_C -> TSfc_K and use Tair for the first time step)
-         !required output: alb_next, qn, kup, lup
-         !maybe required output: 
-         ! -ldown (SUEWS_cal_Qn does ldown=ldown_obs or if no ldown_obs it calculates ldown from RH and T. What is the current setting?)
-         ! -fcld (maybe this is only required to calculate ldown if there is no ldown_obs)
-         ! -kclear (I think it is only used in NARP so is not required)
-         ! -Tsurf_ind (defined in suews_phys_narp.f95. I haven't worked out exactly what it is but seems like the temperature of individual surfaces.
-         ! -emis (has dimensions NSURF and contains pre-defined emissivity for each land cover type)
-         ! snow in scope of current Spartacus implementation? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
-         alb_next = alb_spc
-         lup = lw_up_spc
-         kup = sw_up_spc
-         qn = qn_spc
-
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
@@ -963,6 +945,22 @@ CONTAINS
 
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
+
+      CALL test_rad_spc(&
+      sfr,ZENITH_deg,bldgH,TSfc_C,VegFraction,avKdn,ldown,temp_C, &!input
+      alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)!output
+      !required output: alb_next, qn, kup, lup
+      !maybe required output: 
+      ! -ldown (SUEWS_cal_Qn does ldown=ldown_obs or if no ldown_obs it calculates ldown from RH and T. What is the current setting?)
+      ! -fcld (maybe this is only required to calculate ldown if there is no ldown_obs)
+      ! -kclear (I think it is only used in NARP so is not required)
+      ! -Tsurf_ind (defined in suews_phys_narp.f95. I haven't worked out exactly what it is but seems like the temperature of individual surfaces.
+      ! -emis (has dimensions NSURF and contains pre-defined emissivity for each land cover type)
+      ! snow in scope of current Spartacus implementation? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
+      alb_next = alb_spc
+      lup = lw_up_spc
+      kup = sw_up_spc
+      qn = qn_spc
 
       !==============================================================
       ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
@@ -3638,7 +3636,7 @@ CONTAINS
    !!!!!!!!!!!!!! SPARTACUS !!!!!!!!!!!!!
 
    SUBROUTINE test_rad_spc(&!input
-      sfr,zenith_deg,bldgH,tsurf,VegFraction,avKdn,ldown,temp_c, &!output
+      sfr,zenith_deg,bldgH,TSfc_C,VegFraction,avKdn,ldown,temp_c, &!output
       alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
@@ -3665,7 +3663,7 @@ CONTAINS
       !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
      
       ! Input parameters and variables from SUEWS
-      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, tsurf, VegFraction, avKdn, ldown, temp_C
+      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, TSfc_C, VegFraction, avKdn, ldown, temp_C
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)::sfr
 
       ! SPARTACUS configuration parameters
@@ -3704,7 +3702,7 @@ CONTAINS
       REAL(kind=jprb), ALLOCATABLE:: height(:, :)
 
       ! variables to hold surface temperature and air temperature in Kelvin
-      REAL(KIND(1D0)) ::tsurfK, tairK
+      REAL(KIND(1D0)) ::TSfc_K, tair_K
       ! variable to hold top-of-canopy diffuse sw downward 
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
 
@@ -3760,14 +3758,14 @@ CONTAINS
       END DO
 
       ! set temperature
-      tsurfK = tsurf + 273.15 ! convert to Kelvin
-      tairK = temp_C + 273.15 ! convert to Kelvin
-      canopy_props%ground_temperature = tsurfK
-      canopy_props%roof_temperature = tsurfK
-      canopy_props%wall_temperature = tsurfK
-      canopy_props%clear_air_temperature = tairK
-      canopy_props%veg_temperature = tsurfK
-      canopy_props%veg_air_temperature = tairK
+      TSfc_K = TSfc_C + 273.15 ! convert to Kelvin
+      tair_K = temp_C + 273.15 ! convert to Kelvin
+      canopy_props%ground_temperature = TSfc_K
+      canopy_props%roof_temperature = TSfc_K
+      canopy_props%wall_temperature = TSfc_K
+      canopy_props%clear_air_temperature = tair_K
+      canopy_props%veg_temperature = tair_K
+      canopy_props%veg_air_temperature = tair_K
 
       ! set building and vegetation properties
       IF (sfr(BldgSurf) > 0) THEN
@@ -3775,10 +3773,10 @@ CONTAINS
       ENDIF
       canopy_props%building_fraction = PAI
       canopy_props%veg_fraction = VegFraction
-      canopy_props%building_scale = 20 ! need to think about appropriate value
-      canopy_props%veg_scale = 20 ! need to think about appropriate value
+      canopy_props%building_scale = 20 ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
+      canopy_props%veg_scale = 5 ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
       canopy_props%veg_ext = .25 ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25?
-      canopy_props%veg_fsd = [.25,.25,.25] ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
+      canopy_props%veg_fsd = [.5,.5,.5] ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
       canopy_props%veg_contact_fraction = .1 ! need to think about appropriate value
       canopy_props%i_representation = i_representation
 
@@ -3818,9 +3816,9 @@ CONTAINS
       lw_spectral_props%ground_emissivity = 0.9 ! from test_surface_in.nc
       lw_spectral_props%roof_emissivity = 0.9 ! from test_surface_in.nc
       lw_spectral_props%wall_emissivity = 0.9 ! from test_surface_in.nc
-      lw_spectral_props%clear_air_planck = 0.9*5.67*10**-8*tsurfK**4
-      lw_spectral_props%veg_planck = 0.9*5.67*10**-8*tsurfK**4
-      lw_spectral_props%veg_air_planck = 0.9*5.67*10**-8*tsurfK**4
+      lw_spectral_props%clear_air_planck = 0.9*5.67*10**-8*TSfc_K**4 ! emissivity of air not 0.9
+      lw_spectral_props%veg_planck = 0.9*5.67*10**-8*TSfc_K**4
+      lw_spectral_props%veg_air_planck = 0.9*5.67*10**-8*TSfc_K**4 ! emissivity of air not 0.9
       lw_spectral_props%ground_emission = 0.0 ! what is this?
       lw_spectral_props%roof_emission = 0.0 ! what is this?
       lw_spectral_props%wall_emission = 0.0 ! what is this?
