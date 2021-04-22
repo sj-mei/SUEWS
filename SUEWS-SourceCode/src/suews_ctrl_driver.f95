@@ -3706,8 +3706,10 @@ CONTAINS
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
       ! variables to hold plan area weighted albedo and emissivity of surfaces not including buildings and trees
       REAL(KIND(1D0)) ::alb_no_tree_bldg,emis_no_tree_bldg
-      ! variable to hold the vegetation emissivty
-      REAL(KIND(1D0)) ::veg_emis
+      ! variable to hold the vegetation and air emissivities
+      REAL(KIND(1D0)) ::veg_emis, clear_air_emis, veg_air_emis
+      ! variable to hold the stefan-boltzmann constant
+      REAL(KIND(1D0)) ::stef_bolt
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
@@ -3797,7 +3799,7 @@ CONTAINS
 
       alb_no_tree_bldg = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
                            alb_next(6)*sfr(BSoilSurf)+alb_next(7)*sfr(WaterSurf))/&
-                           (alb_next(1)+alb_next(5)+alb_next(6)+alb_next(7))
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf))
       sw_spectral_props%air_ext =  0.01 ! what is the extinction coefficient of air?
       sw_spectral_props%air_ssa = 0.01  ! what is the single scattering albedo of air?
       sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
@@ -3815,17 +3817,20 @@ CONTAINS
 
       emis_no_tree_bldg = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
                            emis(6)*sfr(BSoilSurf)+emis(7)*sfr(WaterSurf))/&
-                           (emis(1)+emis(5)+emis(6)+emis(7))
-      veg_emis = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(emis(3)+emis(4))
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf))
+      veg_emis = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
+      stef_bolt = 5.67*10.**(-8)
+      clear_air_emis = 0.1 ! seems to make no difference to the spartacus output
+      veg_air_emis = 0.1 ! seems to make no difference to the spartacus output
       lw_spectral_props%air_ext = 0.0 ! what is the extinction coefficient of air?
       lw_spectral_props%air_ssa = 0.0  ! what is the single scattering albedo of air?
-      lw_spectral_props%veg_ssa = 0.01 ! from test_surface_in.nc
+      lw_spectral_props%veg_ssa = 0.01 ! from test_surface_in.nc .... suitable?
       lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
       lw_spectral_props%roof_emissivity = emis(2) ! emissivity of buildings
       lw_spectral_props%wall_emissivity = emis(2) ! emissivity of buildings
-      lw_spectral_props%clear_air_planck = 0.9*5.67*10**-8*TSfc_K**4 ! emissivity of air not 0.9
-      lw_spectral_props%veg_planck = veg_emis*5.67*10**-8*TSfc_K**4 ! emissivity weighted between evergreen and deciduous trees
-      lw_spectral_props%veg_air_planck = 0.9*5.67*10**-8*TSfc_K**4 ! emissivity of air not 0.9
+      lw_spectral_props%clear_air_planck = clear_air_emis*stef_bolt*TSfc_K**4 ! emissivity of air not 0.9
+      lw_spectral_props%veg_planck = veg_emis*stef_bolt*TSfc_K**4 ! emissivity weighted between evergreen and deciduous trees
+      lw_spectral_props%veg_air_planck = veg_air_emis*stef_bolt*TSfc_K**4 ! emissivity of air not 0.9
       lw_spectral_props%ground_emission = 0.0 ! what is this?
       lw_spectral_props%roof_emission = 0.0 ! what is this?
       lw_spectral_props%wall_emission = 0.0 ! what is this?
@@ -3845,13 +3850,13 @@ CONTAINS
       !!!!!!!!!!!!!! allocate lw !!!!!!!!!!!!!!
 
       IF (config%do_lw) THEN
-         CALL lw_internal%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
-         CALL lw_norm%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
+         CALL lw_internal%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
+         CALL lw_norm%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
 
          CALL lw_internal%zero_all()
          CALL lw_norm%zero_all()
 
-         CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
+         CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
       END IF
 
       !!!!!!!!!!!!!! allocate bc_out !!!!!!!!!!!!!!
@@ -3894,7 +3899,7 @@ CONTAINS
                / (top_flux_dn_diffuse_sw+10.**-10 + top_flux_dn_direct_sw(1,1)+10.**-10)
       ! emissivity
       emiss_spc = bc_out%lw_emissivity(1,1)
-      
+
       ! lowngwave upward = emitted as blackbody - reflected
       lw_up_spc = bc_out%lw_emission(1,1) + (1-emiss_spc)*ldown
       ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
