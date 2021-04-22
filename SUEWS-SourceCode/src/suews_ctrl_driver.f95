@@ -947,7 +947,7 @@ CONTAINS
       END DO ! end iteration for tsurf calculations
 
       CALL test_rad_spc(&
-      sfr,ZENITH_deg,bldgH,TSfc_C,VegFraction,avKdn,ldown,temp_C, &!input
+      sfr,ZENITH_deg,bldgH,TSfc_C,avKdn,ldown,temp_C,alb_next,emis, &!input
       alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)!output
       !required output: alb_next, qn, kup, lup
       !maybe required output: 
@@ -3634,9 +3634,9 @@ CONTAINS
 
    !!!!!!!!!!!!!! SPARTACUS !!!!!!!!!!!!!
 
-   SUBROUTINE test_rad_spc(&!input
-      sfr,zenith_deg,bldgH,TSfc_C,VegFraction,avKdn,ldown,temp_c, &!output
-      alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)
+   SUBROUTINE test_rad_spc(&
+      sfr,zenith_deg,bldgH,TSfc_C,avKdn,ldown,temp_c,alb_next,emis, &!input
+      alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)!output
       ! TS 25 Feb 2021:
       ! an initial working prototype subroutine to interact with SPARTACUS
       ! TODO:
@@ -3662,8 +3662,9 @@ CONTAINS
       !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
      
       ! Input parameters and variables from SUEWS
-      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, TSfc_C, VegFraction, avKdn, ldown, temp_C
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)::sfr
+      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, bldgH, TSfc_C,&
+                                     avKdn, ldown, temp_C
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)::sfr, alb_next, emis
 
       ! SPARTACUS configuration parameters
       INTEGER(kind=jpim) :: ncol, ntotlay
@@ -3671,7 +3672,6 @@ CONTAINS
       INTEGER(kind=jpim), ALLOCATABLE:: nlay(:)
       INTEGER :: istartcol, iendcol
       INTEGER :: jrepeat, ilay, jcol, nspec
-      REAL(KIND(1D0)) :: PAI
 
       ! output variables
       REAL(KIND(1D0)) ::alb_spc, emiss_spc, lw_up_spc, sw_up_spc, qn_spc
@@ -3704,6 +3704,10 @@ CONTAINS
       REAL(KIND(1D0)) ::TSfc_K, tair_K
       ! variable to hold top-of-canopy diffuse sw downward 
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
+      ! variables to hold plan area weighted albedo and emissivity of surfaces not including buildings and trees
+      REAL(KIND(1D0)) ::alb_no_tree_bldg,emis_no_tree_bldg
+      ! variable to hold the vegetation emissivty
+      REAL(KIND(1D0)) ::veg_emis
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
@@ -3757,8 +3761,8 @@ CONTAINS
       END DO
 
       ! set temperature
-      TSfc_K = TSfc_C + 273.15 ! convert to Kelvin
-      tair_K = temp_C + 273.15 ! convert to Kelvin
+      TSfc_K = TSfc_C + 273.15 ! convert surface temperature to Kelvin
+      tair_K = temp_C + 273.15 ! convert air temperature (2m?) to Kelvin
       canopy_props%ground_temperature = TSfc_K
       canopy_props%roof_temperature = TSfc_K
       canopy_props%wall_temperature = TSfc_K
@@ -3767,14 +3771,11 @@ CONTAINS
       canopy_props%veg_air_temperature = tair_K
 
       ! set building and vegetation properties
-      IF (sfr(BldgSurf) > 0) THEN
-         PAI = sfr(2)/SUM(sfr(1:2)) ! Copy and pasted from BEERS
-      ENDIF
-      canopy_props%building_fraction = PAI
-      canopy_props%veg_fraction = VegFraction
+      canopy_props%building_fraction = sfr(2) ! building fraction
+      canopy_props%veg_fraction = sfr(3) + sfr(4) ! evergreen + deciduous fractions
       canopy_props%building_scale = 20 ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
       canopy_props%veg_scale = 5 ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
-      canopy_props%veg_ext = .25 ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25?
+      canopy_props%veg_ext = .25 ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25? This replaces vegetation albedo.
       canopy_props%veg_fsd = [.5,.5,.5] ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
       canopy_props%veg_contact_fraction = .1 ! need to think about appropriate value
       canopy_props%i_representation = i_representation
@@ -3794,14 +3795,17 @@ CONTAINS
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
 
+      alb_no_tree_bldg = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
+                           alb_next(6)*sfr(BSoilSurf)+alb_next(7)*sfr(WaterSurf))/&
+                           (alb_next(1)+alb_next(5)+alb_next(6)+alb_next(7))
       sw_spectral_props%air_ext =  0.01 ! what is the extinction coefficient of air?
       sw_spectral_props%air_ssa = 0.01  ! what is the single scattering albedo of air?
       sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
-      sw_spectral_props%ground_albedo = 0.2 ! from test_surface_in.nc
-      sw_spectral_props%roof_albedo = 0.2 ! from test_surface_in.nc
-      sw_spectral_props%wall_albedo = 0.2 ! from test_surface_in.nc
-      sw_spectral_props%ground_albedo_dir = 0.2 ! should direct be the same as diffuse? 
-      sw_spectral_props%roof_albedo_dir = 0.2 ! should direct be the same as diffuse?
+      sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees 
+      sw_spectral_props%roof_albedo = alb_next(2) ! albedo of buildings
+      sw_spectral_props%wall_albedo = alb_next(2) ! albedo of buildings
+      sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg ! albedo excluding buildings and trees 
+      sw_spectral_props%roof_albedo_dir = alb_next(2) ! should direct be the same as diffuse?
       sw_spectral_props%wall_specular_frac = 0.5 ! how much of sw at wall remains direct (i.e. specular reflection) rather than diffuse?
 
       !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
@@ -3809,14 +3813,18 @@ CONTAINS
       CALL lw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
 
+      emis_no_tree_bldg = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
+                           emis(6)*sfr(BSoilSurf)+emis(7)*sfr(WaterSurf))/&
+                           (emis(1)+emis(5)+emis(6)+emis(7))
+      veg_emis = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(emis(3)+emis(4))
       lw_spectral_props%air_ext = 0.0 ! what is the extinction coefficient of air?
       lw_spectral_props%air_ssa = 0.0  ! what is the single scattering albedo of air?
       lw_spectral_props%veg_ssa = 0.01 ! from test_surface_in.nc
-      lw_spectral_props%ground_emissivity = 0.9 ! from test_surface_in.nc
-      lw_spectral_props%roof_emissivity = 0.9 ! from test_surface_in.nc
-      lw_spectral_props%wall_emissivity = 0.9 ! from test_surface_in.nc
+      lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
+      lw_spectral_props%roof_emissivity = emis(2) ! emissivity of buildings
+      lw_spectral_props%wall_emissivity = emis(2) ! emissivity of buildings
       lw_spectral_props%clear_air_planck = 0.9*5.67*10**-8*TSfc_K**4 ! emissivity of air not 0.9
-      lw_spectral_props%veg_planck = 0.9*5.67*10**-8*TSfc_K**4
+      lw_spectral_props%veg_planck = veg_emis*5.67*10**-8*TSfc_K**4 ! emissivity weighted between evergreen and deciduous trees
       lw_spectral_props%veg_air_planck = 0.9*5.67*10**-8*TSfc_K**4 ! emissivity of air not 0.9
       lw_spectral_props%ground_emission = 0.0 ! what is this?
       lw_spectral_props%roof_emission = 0.0 ! what is this?
