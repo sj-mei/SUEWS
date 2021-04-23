@@ -957,6 +957,7 @@ CONTAINS
       ! -Tsurf_ind (defined in suews_phys_narp.f95. I haven't worked out exactly what it is but seems like the temperature of individual surfaces.
       ! -emis (has dimensions NSURF and contains pre-defined emissivity for each land cover type)
       ! snow in scope of current Spartacus implementation? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
+      alb_next(1:6) = alb_spc ! use spartacus value for everything but water (i.e. everything that is likely to experience shadowing)
       lup = lw_up_spc
       kup = sw_up_spc
       qn = qn_spc
@@ -3705,7 +3706,7 @@ CONTAINS
       ! variable to hold top-of-canopy diffuse sw downward 
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
       ! variables to hold plan area weighted albedo and emissivity of surfaces not including buildings and trees
-      REAL(KIND(1D0)) ::alb_no_tree_bldg,emis_no_tree_bldg
+      REAL(KIND(1D0)) ::alb_no_tree_bldg_water,emis_no_tree_bldg_water
       ! variable to hold the vegetation and air emissivities
       REAL(KIND(1D0)) ::veg_emis, clear_air_emis, veg_air_emis
       ! variable to hold the stefan-boltzmann constant
@@ -3761,11 +3762,11 @@ CONTAINS
          canopy_props%istartlay(jcol) = ilay
          ilay = ilay + canopy_props%nlay(jcol)
       END DO
-
+      
       ! set temperature
       TSfc_K = TSfc_C + 273.15 ! convert surface temperature to Kelvin
       tair_K = temp_C + 273.15 ! convert air temperature (2m?) to Kelvin
-      canopy_props%ground_temperature = TSfc_K
+      canopy_props%ground_temperature = TSfc_K ! need to account for the surface being composed of many surfaces?
       canopy_props%roof_temperature = TSfc_K
       canopy_props%wall_temperature = TSfc_K
       canopy_props%clear_air_temperature = tair_K
@@ -3797,16 +3798,16 @@ CONTAINS
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
 
-      alb_no_tree_bldg = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
-                           alb_next(6)*sfr(BSoilSurf)+alb_next(7)*sfr(WaterSurf))/&
-                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf))
+      alb_no_tree_bldg_water = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
+                           alb_next(6)*sfr(BSoilSurf))/&
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
       sw_spectral_props%air_ext =  0.01 ! what is the extinction coefficient of air?
       sw_spectral_props%air_ssa = 0.01  ! what is the single scattering albedo of air?
       sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
-      sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees 
+      sw_spectral_props%ground_albedo = alb_no_tree_bldg_water ! albedo excluding buildings, trees and water 
       sw_spectral_props%roof_albedo = alb_next(2) ! albedo of buildings
       sw_spectral_props%wall_albedo = alb_next(2) ! albedo of buildings
-      sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg ! albedo excluding buildings and trees 
+      sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg_water ! albedo excluding buildings and trees 
       sw_spectral_props%roof_albedo_dir = alb_next(2) ! should direct be the same as diffuse?
       sw_spectral_props%wall_specular_frac = 0.5 ! how much of sw at wall remains direct (i.e. specular reflection) rather than diffuse?
 
@@ -3815,17 +3816,17 @@ CONTAINS
       CALL lw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
 
-      emis_no_tree_bldg = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
-                           emis(6)*sfr(BSoilSurf)+emis(7)*sfr(WaterSurf))/&
-                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf))
+      emis_no_tree_bldg_water = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
+                           emis(6)*sfr(BSoilSurf))/&
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
       veg_emis = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
-      stef_bolt = 5.67*10.**(-8)
-      clear_air_emis = 0.1 ! seems to make no difference to the spartacus output
-      veg_air_emis = 0.1 ! seems to make no difference to the spartacus output
+      stef_bolt = 5.67*10.**-8
+      clear_air_emis = 0.1 ! seems to make no difference to the spartacus output (not sure what values they should take)
+      veg_air_emis = 0.1 ! seems to make no difference to the spartacus output (not sure what values they should take)
       lw_spectral_props%air_ext = 0.0 ! what is the extinction coefficient of air?
       lw_spectral_props%air_ssa = 0.0  ! what is the single scattering albedo of air?
       lw_spectral_props%veg_ssa = 0.01 ! from test_surface_in.nc .... suitable?
-      lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
+      lw_spectral_props%ground_emissivity = emis_no_tree_bldg_water ! emissivity excluding buildings, trees and water
       lw_spectral_props%roof_emissivity = emis(2) ! emissivity of buildings
       lw_spectral_props%wall_emissivity = emis(2) ! emissivity of buildings
       lw_spectral_props%clear_air_planck = clear_air_emis*stef_bolt*TSfc_K**4 ! emissivity of air not 0.9
