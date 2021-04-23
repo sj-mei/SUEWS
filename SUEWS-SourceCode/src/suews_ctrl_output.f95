@@ -601,10 +601,10 @@ MODULE ctrl_output
       varAttr('vpd_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
       varAttr('avdens', 'm', f104, 'RA for snow', aA, 'debug', 0), &
       varAttr('avcp', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('alb_spc', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('emiss_spc', 'm', f104, 'RA for snow', aA, 'debug', 0), &
       varAttr('s_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('psyc_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0) &
+      varAttr('psyc_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('alb_spc', 'm', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('emiss_spc', 'm', f104, 'RA for snow', aA, 'debug', 0) &
       /
 
 CONTAINS
