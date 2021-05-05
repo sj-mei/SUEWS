@@ -87,7 +87,7 @@ CONTAINS
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
-      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, alb_timestep, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
@@ -324,6 +324,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(INOUT)::albDecTr_id
       REAL(KIND(1D0)), INTENT(INOUT)::albEveTr_id
       REAL(KIND(1D0)), INTENT(INOUT)::albGrass_id
+      REAL(KIND(1D0)), INTENT(INOUT)::alb_timestep
       REAL(KIND(1D0)), INTENT(INOUT)::porosity_id
 
       ! anthropogenic heat related:
@@ -548,7 +549,12 @@ CONTAINS
       REAL(KIND(1D0))::albDecTr_id_prev, albDecTr_id_next
       REAL(KIND(1D0))::albEveTr_id_prev, albEveTr_id_next
       REAL(KIND(1D0))::albGrass_id_prev, albGrass_id_next
+      REAL(KIND(1D0))::alb_timestep_prev, alb_timestep_next
       REAL(KIND(1D0))::porosity_id_prev, porosity_id_next
+
+      ! spartacus related albedo 
+      REAL(KIND(1D0)), DIMENSION(NSURF)   ::alb_narp_using_spc_is
+      REAL(KIND(1D0))::alb_narp_using_spc_eff
 
       REAL(KIND(1D0))::Tmin_id_prev, Tmin_id_next
       REAL(KIND(1D0))::Tmax_id_prev, Tmax_id_next
@@ -603,7 +609,12 @@ CONTAINS
       StoreDrainPrm_prev = StoreDrainPrm
       DecidCap_id_prev = DecidCap_id
       porosity_id_prev = porosity_id
+      !alb_prev(1:6) = alb_timestep
+      !alb_prev(7) = 0.1
       alb_prev = alb
+      PRINT *,'alb_prev before iter: ',alb_prev
+      alb_timestep_prev = alb_timestep
+      PRINT *,'alb_timestep_prev before iter: ',alb_timestep_prev
       albDecTr_id_prev = albDecTr_id
       albEveTr_id_prev = albEveTr_id
       albGrass_id_prev = albGrass_id
@@ -634,7 +645,13 @@ CONTAINS
       StoreDrainPrm_next = StoreDrainPrm
       DecidCap_id_next = DecidCap_id
       porosity_id_next = porosity_id
+      !alb_next(1:6) = alb_timestep
+      !alb_next(7) = 0.1
       alb_next = alb
+      PRINT *,'alb_next before iter:'
+      PRINT *,alb_next
+      alb_timestep_next = alb_timestep
+      PRINT *,'alb_timestep_next before iter: ',alb_timestep_next
       albDecTr_id_next = albDecTr_id
       albEveTr_id_next = albEveTr_id
       albGrass_id_next = albGrass_id
@@ -697,7 +714,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
          CALL NARP_cal_SunPosition( &
             REAL(iy, KIND(1D0)), &!input:
-            dectime - tstep/2, &! sun position at middle of timestep before
+            dectime - tstep/2/86400, &! sun position at middle of timestep before
             timezone, lat, lng, alt, &
             azimuth, zenith_deg)!output:
 
@@ -718,12 +735,12 @@ CONTAINS
             Ie_a, Ie_m, DayWatPer, DayWat, &
             BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
             DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
-            albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
+            albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, alb_timestep_prev, porosity_id_prev, &!input
             HDD_id_prev, &!input
             state_id_prev, soilstore_id_prev, SoilStoreCap, H_maintain, &!input
             HDD_id_next, &!output
             Tmin_id_next, Tmax_id_next, lenDay_id_next, &
-            albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
+            albDecTr_id_next, albEveTr_id_next, albGrass_id_next, alb_timestep_next, porosity_id_next, &!output
             DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id_next)!output
 
          !=================Calculation of density and other water related parameters=================
@@ -776,12 +793,15 @@ CONTAINS
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr, emis, &
-            alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &!input
-            alb_next, &!output
+            alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, alb_timestep_next, &!input
+            alb_next, alb_narp_using_spc_is, alb_narp_using_spc_eff, &!output
             ldown, fcld, &!output
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, snowFrac_next, SnowAlb_next)
+
+         PRINT *,"alb_narp_using_spc_is:"
+         PRINT *,alb_narp_using_spc_is
 
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
@@ -791,7 +811,7 @@ CONTAINS
             soilstore_id_prev, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
             HDD_id_next, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
             avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
-            bldgh, alb_next, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
+            bldgh, alb_narp_using_spc_is, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
             Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
             StoreDrainPrm_next, &
             qn_snow, dataOutLineESTM, qs, &!output
@@ -942,10 +962,16 @@ CONTAINS
          ! l_mod_iter = l_mod
 
          i_iter = i_iter + 1
-
+         PRINT *,'alb inside iter:'
+         PRINT *,alb
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
+      PRINT *,'alb_narp_using_spc_eff: ',alb_narp_using_spc_eff
+
+      PRINT *,'TSfc_C into Spartacus: ',TSfc_C
+      PRINT *,'alb_next into Spartacus: '
+      PRINT *,alb_next
       CALL test_rad_spc(&
       sfr,ZENITH_deg,bldgH,TSfc_C,avKdn,ldown,temp_C,alb_next,emis, &!input
       alb_spc,emiss_spc,lw_up_spc,sw_up_spc,qn_spc)!output
@@ -957,10 +983,6 @@ CONTAINS
       ! -Tsurf_ind (defined in suews_phys_narp.f95. I haven't worked out exactly what it is but seems like the temperature of individual surfaces.
       ! -emis (has dimensions NSURF and contains pre-defined emissivity for each land cover type)
       ! snow in scope of current Spartacus implementation? qn_snowfree, qn_snow, qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, albedo_snow, snowFrac_next, SnowAlb_next
-      alb_next(1:6) = alb_spc ! use spartacus value for everything but water (i.e. everything that is likely to experience shadowing)
-      lup = lw_up_spc
-      kup = sw_up_spc
-      qn = qn_spc
 
       !==============================================================
       ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
@@ -1001,9 +1023,20 @@ CONTAINS
       SnowFrac = SnowFrac_next
       SnowPack = SnowPack_next
 
+      ! spartacus
+      alb_timestep_next = alb_spc
+      alb_timestep = alb_timestep_next
+      PRINT *,'alb_timestep after iter: ',alb_timestep
+      !alb_next(1:6) = alb_timestep ! use spartacus value for everything but water (i.e. everything that is likely to experience shadowing)
+      lup = lw_up_spc
+      kup = sw_up_spc
+      qn = qn_spc
+
       soilstore_id = soilstore_id_next
       state_id = state_id_next
       alb = alb_next
+      PRINT *,'alb after iter:'
+      PRINT *,alb
       GDD_id = GDD_id_next
       SDD_id = SDD_id_next
       LAI_id = LAI_id_next
@@ -1075,6 +1108,7 @@ CONTAINS
          albDecTr_id, &
          albEveTr_id, &
          albGrass_id, &
+         alb_timestep, &
          porosity_id, &
          WUDay_id, &
          deltaLAI, VegPhenLumps, &
@@ -1085,7 +1119,7 @@ CONTAINS
       !==============translation end ================
 
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, avdens, avcp, s_hPa, psyc_hPa, alb_spc, emiss_spc]
+                          vpd_hPa, avdens, avcp, s_hPa, psyc_hPa, alb_narp_using_spc_eff, emiss_spc]
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -1337,8 +1371,8 @@ CONTAINS
       dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &!input
-      alb_next, &!output
+      alb_prev, albDecTr_id, albEveTr_id, albGrass_id, alb_timestep, &!input
+      alb_next, alb_narp_using_spc_is, alb_narp_using_spc_eff, &!output
       ldown, fcld, &!output
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
@@ -1380,10 +1414,13 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf)  ::alb
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)  ::alb_prev
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)  ::alb_next
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)  ::alb_narp_using_spc_is
+      REAL(KIND(1D0)), INTENT(out)  ::alb_narp_using_spc_eff
       REAL(KIND(1D0)), INTENT(in)  ::albDecTr_id
       ! REAL(KIND(1d0)), INTENT(in)  ::DecidCap_id
       REAL(KIND(1D0)), INTENT(in)  ::albEveTr_id
       REAL(KIND(1D0)), INTENT(in)  ::albGrass_id
+      REAL(KIND(1D0)), INTENT(in)  ::alb_timestep
 
       ! REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
@@ -1462,13 +1499,14 @@ CONTAINS
          IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:', AlbedoChoice
 
          CALL NARP( &
-            nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
+            nsurf, sfr, SnowFrac, alb, emis, IceFrac, alb_timestep, &! input:
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
             dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, &! output:
-            qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
+            qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, &
+            albedo_snow, alb_narp_using_spc_is,alb_narp_using_spc_eff)
 
       ELSE ! NetRadiationMethod==0
          SnowFrac = snowFrac_obs
@@ -2905,7 +2943,7 @@ CONTAINS
       Tmin_id, Tmax_id, lenday_id, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, &
-      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, alb_timestep, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, &!output
       dataOutBlockDebug, &
@@ -3135,6 +3173,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(INOUT)                    :: albDecTr_id
       REAL(KIND(1D0)), INTENT(INOUT)                    :: albEveTr_id
       REAL(KIND(1D0)), INTENT(INOUT)                    :: albGrass_id
+      REAL(KIND(1D0)), INTENT(INOUT)                    :: alb_timestep
       REAL(KIND(1D0)), INTENT(INOUT)                    :: porosity_id
       REAL(KIND(1D0)), INTENT(INOUT)                    :: Tmin_id
       REAL(KIND(1D0)), INTENT(INOUT)                    :: Tmax_id
@@ -3530,7 +3569,7 @@ CONTAINS
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
             TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
-            WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+            WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, alb_timestep, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
             datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &
             dataOutLineBEERS, &!output
@@ -3820,7 +3859,7 @@ CONTAINS
                            emis(6)*sfr(BSoilSurf))/&
                            (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
       veg_emis = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
-      stef_bolt = 5.67*10.**-8
+      stef_bolt = 5.67*10.**(-8)
       clear_air_emis = 0.1 ! seems to make no difference to the spartacus output (not sure what values they should take)
       veg_air_emis = 0.1 ! seems to make no difference to the spartacus output (not sure what values they should take)
       lw_spectral_props%air_ext = 0.0 ! what is the extinction coefficient of air?
@@ -3895,9 +3934,9 @@ CONTAINS
       END DO
 
       ! albedo
-      alb_spc = ((top_flux_dn_diffuse_sw+10.**-10)*bc_out%sw_albedo(1,1) & ! the 10.**-10 stops the equation blowing up when kdwn=0
-               + (top_flux_dn_direct_sw(1,1)+10.**-10)*bc_out%sw_albedo_dir(1,1)) &
-               / (top_flux_dn_diffuse_sw+10.**-10 + top_flux_dn_direct_sw(1,1)+10.**-10)
+      alb_spc = ((top_flux_dn_diffuse_sw+10.**(-10))*bc_out%sw_albedo(1,1) & ! the 10.**-10 stops the equation blowing up when kdwn=0
+               + (top_flux_dn_direct_sw(1,1)+10.**(-10))*bc_out%sw_albedo_dir(1,1)) &
+               / (top_flux_dn_diffuse_sw+10.**(-10) + top_flux_dn_direct_sw(1,1)+10.**(-10))
       ! emissivity
       emiss_spc = bc_out%lw_emissivity(1,1)
 
