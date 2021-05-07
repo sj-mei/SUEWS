@@ -103,7 +103,8 @@ CONTAINS
 
    !==============================================================================
    SUBROUTINE NARP( &
-      nsurf, sfr, SnowFrac, alb, emis, IceFrac, alb_timestep, &! input:
+      nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
+      alb_timestep, emis_timestep, lw_emission_timestep, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, &
       SnowAlb, &
@@ -111,7 +112,8 @@ CONTAINS
       NetRadiationMethod_use, DiagQN, &
       QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, &! output:
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      albedo_snowfree, albedo_snow, alb_narp_using_spc_is, alb_narp_using_spc_eff)
+      albedo_snowfree, albedo_snow, &
+      alb_narp_using_spc_is, alb_narp_using_spc_eff, emis_narp_using_spc_is, emis_narp_using_spc_eff)
       !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
       !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
       !,zenith_degnetRadiationChoice,
@@ -181,7 +183,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) ::SnowAlb
       REAL(KIND(1D0)), INTENT(in) ::NARP_TRANS_SITE
       REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
-      REAL(KIND(1D0)), INTENT(in) ::alb_timestep
+      REAL(KIND(1D0)), INTENT(in) ::alb_timestep, emis_timestep, lw_emission_timestep
 
       INTEGER, INTENT(in) ::nsurf
       INTEGER, INTENT(in) ::NetRadiationMethod_use ! the one processed by RadMethod
@@ -204,10 +206,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::alb_narp_using_spc_is
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::emis_narp_using_spc_is
 
       REAL(KIND(1D0)), INTENT(out) ::albedo_snowfree
       REAL(KIND(1D0)), INTENT(out) ::albedo_snow
       REAL(KIND(1D0)), INTENT(out) ::alb_narp_using_spc_eff
+      REAL(KIND(1D0)), INTENT(out) ::emis_narp_using_spc_eff
 
       REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind
       REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind
@@ -298,13 +302,13 @@ CONTAINS
          !ELSE
          !   albedo_snowfree = ALB(is)
          !END IF
-         !!!LB: set emissivity to the spartacus value unless water
          IF (is .LE. 6) THEN
             albedo_snowfree = alb_timestep
+            EMIS0 = emis_timestep
          ELSE
             albedo_snowfree = ALB(7)
+            EMIS0 = EMIS(7)
          END IF
-         EMIS0 = EMIS(is)
 
          !!!LB: Ldown does not depend on surface albedo or emissivity variables so can be left as is
          !Downward longwave radiation
@@ -369,8 +373,14 @@ CONTAINS
             ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
             TSURF = tsurf_0_K
             LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
-
          END IF
+
+         ! Use Spartacus emissions and emissivity unless water. In which case use narp.
+         !IF (is .LE. 6) THEN
+         !   LUP = lw_emission_timestep + (1 - EMIS0)*LDOWN
+         !ELSE
+         !   LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN ! water temperature would be more suitable
+         !END IF
 
          QSTAR = KDOWN - KUP + LDOWN - LUP
          TSURF = TSURF - 273.16
@@ -451,7 +461,7 @@ CONTAINS
 
          IF (DiagQN == 1) WRITE (*, *) 'QSTAR', QSTAR, 'QSTAR_SNOW', QSTAR_SNOW, 'SnowFrac', SnowFrac(is)
 
-         !!!LB: add up the radiations from each surface
+         !!!LB: add up the radiation from each surface
          qn1_cum = qn1_cum + (qn1_is*sfr(is))  !Calculate cumulative radiation components
          kup_cum = kup_cum + (kup_is*sfr(is))
          lup_cum = lup_cum + (lup_is*sfr(is))
@@ -495,6 +505,12 @@ CONTAINS
       alb_narp_using_spc_is(7) = ALB(7)
       ! create output albedo that contains effective albedo
       alb_narp_using_spc_eff = (1-sfr(7))*alb_timestep + sfr(7)*ALB(7)
+
+      ! create output emissivity that contains spartacus values for all surfaces but water
+      emis_narp_using_spc_is(1:6) = emis_timestep
+      emis_narp_using_spc_is(7) = EMIS(7)
+      ! create output emissivity that contains effective albedo
+      emis_narp_using_spc_eff = (1-sfr(7))*emis_timestep + sfr(7)*EMIS(7)
 
       IF (DiagQN == 1) WRITE (*, *) 'kdown: ', kdown, 'kup:', kup, 'LDOWN: ', LDOWN, 'LUP: ', LUP
       IF (DiagQN == 1) WRITE (*, *) 'Qn: ', QSTARall

@@ -52,7 +52,7 @@ MODULE allocateArray
                         ncolumnsDataOutBEERS = 34, &
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
-                        ncolumnsDataOutDailyState = 51, &
+                        ncolumnsDataOutDailyState = 53, &
                         ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                         ncolumnsDataOutDebug = 5 + 25
 
@@ -309,6 +309,8 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albEveTr_id_grids
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albGrass_id_grids
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: alb_timestep_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: emis_timestep_grids
+   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: lw_emission_timestep_grids
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: porosity_id_grids
 
    REAL(KIND(1D0)) :: DecidCap_id
@@ -316,6 +318,8 @@ MODULE allocateArray
    REAL(KIND(1D0)) :: albEveTr_id
    REAL(KIND(1D0)) :: albGrass_id
    REAL(KIND(1D0)) :: alb_timestep
+   REAL(KIND(1D0)) :: emis_timestep
+   REAL(KIND(1D0)) :: lw_emission_timestep
    REAL(KIND(1D0)) :: porosity_id
 
    ! AnOHM related: added by TS 01 Mar 2016

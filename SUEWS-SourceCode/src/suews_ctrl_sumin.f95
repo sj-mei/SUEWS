@@ -577,7 +577,8 @@ CONTAINS
          theta_bioCO2, timezone, TL, TrafficRate_id, TrafficUnits, &
          TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
          WaterDist, WaterUseMethod, WetThresh_id, wu_m3, &
-         WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+         WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, &
+         alb_timestep, emis_timestep, lw_emission_timestep, porosity_id, &
          WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
          datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output
          DailyStateLine)!output

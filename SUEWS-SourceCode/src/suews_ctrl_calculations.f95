@@ -61,7 +61,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       SDD_id, &
       HDD_id, &
       DecidCap_id, porosity_id, &
-      albDecTr_id, albEveTr_id, albGrass_id, alb_timestep, &
+      albDecTr_id, albEveTr_id, albGrass_id, &
+      alb_timestep, emis_timestep, lw_emission_timestep, &
       icefrac, kkanohm, &
       LAI_id, LAImax, LAImin, LAIpower, LAItype, maxconductance, &
       SnowWater, metforcingdata_grid, min_res_bioco2, &
@@ -120,17 +121,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
    !==================================================================
 
-   PRINT *,''
-   PRINT *,'alb before SUEWS_Translate:'
-   PRINT *,alb
-
    !Translate all data to the variables used in the model calculations
    IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Translate...'
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
-   PRINT *,'alb after SUEWS_Translate:'
-   PRINT *,alb
-
+   PRINT *,''
+   PRINT *,'Calling SUEWS_cal_Main'   
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
    CALL SUEWS_cal_Main( &
       AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
@@ -175,12 +171,21 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
-      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, alb_timestep, porosity_id, &
+      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, &
+      alb_timestep, emis_timestep, lw_emission_timestep, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
       dataOutLineDebug, &
       DailyStateLine)!output
+
+   PRINT *,'alb:'
+   PRINT *,alb
+   PRINT *,'emis:'
+   PRINT *,emis
+   PRINT *,'alb_timestep:',alb_timestep
+   PRINT *,'emis_timestep:',emis_timestep
+   PRINT *,'lw_emission_timestep:',lw_emission_timestep
 
    !============ update and write out SUEWS_cal_DailyState ===============
    ! only works at the last timestep of a day

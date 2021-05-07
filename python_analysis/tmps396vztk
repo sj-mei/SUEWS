@@ -111,7 +111,7 @@ plt.tight_layout()
 
 ## radiation daily composites by month
 
-print(df_suews)
+print()
 
 ## Create an Zenith column in obs interpolated from suews
 df_obs['Zenith'] = np.interp(df_obs["datetime"],df_suews["datetime"],df_suews["Zenith"])
