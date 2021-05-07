@@ -112,9 +112,11 @@ plt.tight_layout()
 
 ## radiation daily composites by month
 
-#print(df_obs)
-#df_obs.groupby(df_obs.index.Hour).mean()
-#print(df_obs.groupby(df_obs.datetime.dt.month).mean())
+df_obs["datetime"] = pd.to_datetime(df_obs["datetime"])
+df_obs['month'] = df_obs['datetime'].dt.month
+df_obs.groupby(pd.Grouper(key='Date',freq='M')).sum()
+print(df_obs)
+#print(df_obs["datetime"].dt.Hour.mean())
 
 ## Create an Zenith column in obs interpolated from suews
 df_obs['Zenith'] = np.interp(df_obs["datetime"],df_suews["datetime"],df_suews["Zenith"])

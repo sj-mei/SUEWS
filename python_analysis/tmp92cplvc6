@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import supy as sp
 import matplotlib.pyplot as plt
-from datetime import datetime
 from scipy import stats
 
 plt.close("all")
@@ -112,9 +111,8 @@ plt.tight_layout()
 
 ## radiation daily composites by month
 
-#print(df_obs)
-#df_obs.groupby(df_obs.index.Hour).mean()
-#print(df_obs.groupby(df_obs.datetime.dt.month).mean())
+print(df_obs)
+print(df_obs["datetime"].Hour.mean())
 
 ## Create an Zenith column in obs interpolated from suews
 df_obs['Zenith'] = np.interp(df_obs["datetime"],df_suews["datetime"],df_suews["Zenith"])
