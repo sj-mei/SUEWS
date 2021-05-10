@@ -312,8 +312,8 @@ CONTAINS
          !--------------------------------------------------
          !-------SNOW FREE SURFACE--------------------------
 
-         IF (NetRadiationMethod_use > 10 .AND. NetRadiationMethod_use < 20) THEN
-            !LB: set albedo snow free to the spartacus value unless water
+         IF (NetRadiationMethod_use > 20 .AND. NetRadiationMethod_use < 30) THEN
+            !set albedo snow free to the spartacus value unless water
             IF (is .LE. 6) THEN
                albedo_snowfree = alb_timestep
                EMIS0 = emis_timestep
@@ -328,6 +328,7 @@ CONTAINS
             ELSE
                albedo_snowfree = ALB(is)
             END IF
+            EMIS0 = EMIS(is)
          ENDIF
 
          !Downward longwave radiation
@@ -369,40 +370,49 @@ CONTAINS
             IF (DiagQN == 1) WRITE (*, *) 'EMIS_A: ', EMIS_A, 'SIGMATK4:', SIGMATK4, 'LDOWN: ', LDOWN
          END IF
 
-         !----------------------------------------------------------------------------
-         !Note that this is not averaged over the hour for cases where time step < 1hr
-         KDOWN_HR = KDOWN
-         !calculate Lup correction using Eq. 15 of Offerle et al.
-         IF (KDOWN_HR > 0) THEN
-            LUPCORR = (1 - albedo_snowfree)*(0.08*KDOWN_HR)
+         !Upward longwave radiation
+         IF (NetRadiationMethod_use > 20 .AND. NetRadiationMethod_use < 30) THEN
+            !Use Spartacus emissions and emissivity unless water.
+            TSURF = tsurf_0_K
+            IF (is .LE. 6) THEN
+               LUP = lw_emission_timestep + (1 - EMIS0)*LDOWN
+            ELSE
+               LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN ! water temperature would be more suitable
+            END IF
          ELSE
-            LUPCORR = 0.
-         END IF
+            !NARP
+            !Note that this is not averaged over the hour for cases where time step < 1hr
+            KDOWN_HR = KDOWN
+            !calculate Lup correction using Eq. 15 of Offerle et al.
+            IF (KDOWN_HR > 0) THEN
+               LUPCORR = (1 - albedo_snowfree)*(0.08*KDOWN_HR)
+            ELSE
+               LUPCORR = 0.
+            END IF
+            !calculate Lup
+            IF (NetRadiationMethod_use < 10) THEN
+               ! NARP method
+               TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
+               LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
+            ELSE
+               ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
+               TSURF = tsurf_0_K
+               LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
+            END IF
+         ENDIF
 
          !Upward shortwave radiation of the snowfree surface fractions
          KUP = albedo_snowfree*KDOWN
 
-         !!!LB: calculate Lup using Eq. 16 of Offerle et al.
-         !!!LB: Lup for each surface other than water should be replaced by the Spartacus value instead
-         IF (NetRadiationMethod_use < 10) THEN
-            ! NARP method
-            TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
-            LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
-         ELSE
-            ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
-            TSURF = tsurf_0_K
-            LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
-         END IF
-
-         ! Use Spartacus emissions and emissivity unless water. In which case use narp.
-         !IF (is .LE. 6) THEN
-         !   LUP = lw_emission_timestep + (1 - EMIS0)*LDOWN
-         !ELSE
-         !   LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN ! water temperature would be more suitable
-         !END IF
-
+         !Net all wave
          QSTAR = KDOWN - KUP + LDOWN - LUP
          TSURF = TSURF - 273.16
+
+         !Define sub-surface radiation components
+         qn1_ind_nosnow(is) = QSTAR          
+         kup_ind_nosnow(is) = KUP
+         lup_ind_nosnow(is) = LUP
+         Tsurf_ind_nosnow(is) = TSURF
 
          !!!!!!!!!!!!!!!! snow section !!!!!!!!!!!!!!!!!!!!!
          !======================================================================
@@ -441,13 +451,7 @@ CONTAINS
             !QSTAR_ICE = 0
             !KUP_ICE = 0
          END IF
-         !!!!!!!!!!!!!!!! end snow section !!!!!!!!!!!!!!!!!!!!!
-
-         !Define sub-surface radiation components
-         qn1_ind_nosnow(is) = QSTAR          
-         kup_ind_nosnow(is) = KUP
-         lup_ind_nosnow(is) = LUP
-         Tsurf_ind_nosnow(is) = TSURF
+         
          !Define snow sub-surface radiation components
          qn1_ind_snow(is) = QSTAR_SNOW        
          kup_ind_snow(is) = KUP_SNOW
@@ -465,6 +469,7 @@ CONTAINS
          ELSE
             QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*SnowFrac(is)
          END IF
+         !!!!!!!!!!!!!!!! end snow section !!!!!!!!!!!!!!!!!!!!!
 
          !---------------------------------------------------------------------
          !Calculate snow weighted variables for each subsurface
@@ -491,15 +496,12 @@ CONTAINS
 
       END DO !End of the surface types
 
-      !!!LB: set the final values to the cumulative ones
-
       !Set overall radiation components
       IF (NetRadiationMethod_use /= 3000) THEN !Observed Q* used and snow is modeled
          QSTARall = qn1_cum
       ELSE
          QSTARall = qn1_obs
       END IF
-
       KUPall = kup_cum
       LUPall = lup_cum
       TSURFall = tsurf_cum
@@ -515,16 +517,18 @@ CONTAINS
       !endif
 
       !!! Calculate effective albedos and emissivities using Spartacus for all surfaces but water which uses NARP !!!
-      ! create output albedo that contains spartacus values for all surfaces but water
-      alb_narp_using_spc_is(1:6) = alb_timestep
-      alb_narp_using_spc_is(7) = ALB(7)
-      ! create output albedo that contains effective albedo
-      alb_narp_using_spc_eff = (1-sfr(7))*alb_timestep + sfr(7)*ALB(7)
-      ! create output emissivity that contains spartacus values for all surfaces but water
-      emis_narp_using_spc_is(1:6) = emis_timestep
-      emis_narp_using_spc_is(7) = EMIS(7)
-      ! create output emissivity that contains effective albedo
-      emis_narp_using_spc_eff = (1-sfr(7))*emis_timestep + sfr(7)*EMIS(7)
+      IF (NetRadiationMethod_use > 20 .AND. NetRadiationMethod_use < 30) THEN
+         ! create output albedo that contains spartacus values for all surfaces but water
+         alb_narp_using_spc_is(1:6) = alb_timestep
+         alb_narp_using_spc_is(7) = ALB(7)
+         ! create output albedo that contains effective albedo
+         alb_narp_using_spc_eff = (1-sfr(7))*alb_timestep + sfr(7)*ALB(7)
+         ! create output emissivity that contains spartacus values for all surfaces but water
+         emis_narp_using_spc_is(1:6) = emis_timestep
+         emis_narp_using_spc_is(7) = EMIS(7)
+         ! create output emissivity that contains effective albedo
+         emis_narp_using_spc_eff = (1-sfr(7))*emis_timestep + sfr(7)*EMIS(7)
+      ENDIF
 
       IF (DiagQN == 1) WRITE (*, *) 'kdown: ', kdown, 'kup:', kup, 'LDOWN: ', LDOWN, 'LUP: ', LUP
       IF (DiagQN == 1) WRITE (*, *) 'Qn: ', QSTARall

@@ -974,9 +974,11 @@ CONTAINS
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
-      CALL test_rad_spc(&
-      sfr,ZENITH_deg,bldgH,TSfc_C,avKdn,ldown,temp_C,alb_next,emis, &!input
-      alb_spc,emis_spc,lw_emission_spc,lw_up_spc,sw_up_spc,qn_spc)!output
+      IF (NetRadiationMethod > 20 .AND. NetRadiationMethod < 30) THEN
+         CALL test_rad_spc(&
+         sfr,ZENITH_deg,bldgH,TSfc_C,avKdn,ldown,temp_C,alb_next,emis, &!input
+         alb_spc,emis_spc,lw_emission_spc,lw_up_spc,sw_up_spc,qn_spc)!output
+      ENDIF
 
       PRINT *,'alb_spc:',alb_spc
       PRINT *,'emis_spc:',emis_spc
@@ -1470,6 +1472,12 @@ CONTAINS
          NetRadiationMethod, &!input
          snowUse, &!input
          NetRadiationMethod_use, AlbedoChoice, ldown_option)!output
+      
+      PRINT *,'NetRadiationMethod:',NetRadiationMethod
+      PRINT *,'snowUse:',snowUse
+      PRINT *,'NetRadiationMethod_use:',NetRadiationMethod_use
+      PRINT *,'AlbedoChoice:',AlbedoChoice
+      PRINT *,'ldown_option:',ldown_option
 
       SnowFrac = snowFrac_prev
       IF (NetRadiationMethod_use > 0) THEN
@@ -3751,8 +3759,8 @@ CONTAINS
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
       ! variables to hold plan area weighted albedo and emissivity of surfaces not including buildings and trees
       REAL(KIND(1D0)) ::alb_no_tree_bldg_water,emis_no_tree_bldg_water
-      ! variable to hold the vegetation and air emissivities
-      REAL(KIND(1D0)) ::veg_emis, clear_air_emis, veg_air_emis
+      ! variable to hold the vegetation emissivity
+      REAL(KIND(1D0)) ::veg_emis
       ! variable to hold the stefan-boltzmann constant
       REAL(KIND(1D0)) ::stef_bolt
 
@@ -3761,10 +3769,10 @@ CONTAINS
       CALL config%READ(file_name='config.nam')
       config%do_sw = .TRUE.
       config%do_lw = .TRUE.
-      config%use_sw_direct_albedo = .TRUE. ! if true then ground albedo =ground_albedo_dir, if false then =ground_albedo and the code breaks
+      config%use_sw_direct_albedo = .FALSE.
       config%do_vegetation = .TRUE.
       config%do_urban = .TRUE.
-      config%iverbose = 3 ! 4 to get info on the run configuration
+      config%iverbose = 3
       config%n_vegetation_region_urban = 1 ! 2 for heterogeneity in vegetation
       config%nsw = 1
       config%nlw = 1
@@ -3772,10 +3780,10 @@ CONTAINS
       config%n_stream_lw_urban = 2
       ncol = 1 ! is one for implmementation in SUEWS (as there are not multiple tiles)
       ALLOCATE (nlay(ncol))
-      nlay = [3]
+      nlay = [1]
       ntotlay = SUM(nlay)
       ALLOCATE (i_representation(ncol))
-      i_representation = [3] ! choice of 4 tiles: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
+      i_representation = [3] ! choice of 4 surface types: 0Flat, 1Forest, 2Urban, 3VegetatedUrban
       nspec = 1 ! this assumes that nsw and nlw are the same in sw_spectral_props and lw_spectral_props
       CALL config%consolidate()
 
@@ -3824,7 +3832,7 @@ CONTAINS
       canopy_props%veg_scale = 5 ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
       canopy_props%veg_ext = .25 ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25? This replaces vegetation albedo.
       canopy_props%veg_fsd = [.5,.5,.5] ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
-      canopy_props%veg_contact_fraction = .1 ! need to think about appropriate value
+      canopy_props%veg_contact_fraction = 0.0
       canopy_props%i_representation = i_representation
 
       !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
@@ -3845,15 +3853,17 @@ CONTAINS
       alb_no_tree_bldg_water = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
                            alb_next(6)*sfr(BSoilSurf))/&
                            (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)) ! albedo of the ground
-      sw_spectral_props%air_ext =  0.01 ! what is the extinction coefficient of air?
-      sw_spectral_props%air_ssa = 0.01  ! what is the single scattering albedo of air?
+      sw_spectral_props%air_ext =  0.0 ! what is the extinction coefficient of air?
+      sw_spectral_props%air_ssa = 0.0  ! what is the single scattering albedo of air?
       sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
       sw_spectral_props%ground_albedo = alb_no_tree_bldg_water ! albedo excluding buildings, trees and water 
       sw_spectral_props%roof_albedo = alb_next(2) ! albedo of buildings
       sw_spectral_props%wall_albedo = alb_next(2) ! albedo of buildings
-      sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg_water ! albedo excluding buildings and trees 
-      sw_spectral_props%roof_albedo_dir = alb_next(2) ! should direct be the same as diffuse?
-      sw_spectral_props%wall_specular_frac = 0.5 ! how much of sw at wall remains direct (i.e. specular reflection) rather than diffuse?
+      sw_spectral_props%wall_specular_frac = 0.0
+
+      ! if decide that config%use_sw_direct_albedo = .FALSE. then the following are not required
+      !sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg_water ! albedo excluding buildings and trees 
+      !sw_spectral_props%roof_albedo_dir = alb_next(2) ! should direct be the same as diffuse?
 
       !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
 
@@ -3863,22 +3873,15 @@ CONTAINS
       emis_no_tree_bldg_water = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
                            emis(6)*sfr(BSoilSurf))/&
                            (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))  ! emissivity of the ground
-      veg_emis = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
-      stef_bolt = 5.67*10.**(-8)
-      clear_air_emis = 0.1 ! seems to make no difference to the spartacus output (not sure what values they should take)
-      veg_air_emis = 0.1 ! seems to make no difference to the spartacus output (not sure what values they should take)
       lw_spectral_props%air_ext = 0.0 ! what is the extinction coefficient of air?
       lw_spectral_props%air_ssa = 0.0  ! what is the single scattering albedo of air?
       lw_spectral_props%veg_ssa = 0.01 ! from test_surface_in.nc .... suitable?
       lw_spectral_props%ground_emissivity = emis_no_tree_bldg_water ! emissivity excluding buildings, trees and water
       lw_spectral_props%roof_emissivity = emis(2) ! emissivity of buildings
       lw_spectral_props%wall_emissivity = emis(2) ! emissivity of buildings
-      lw_spectral_props%clear_air_planck = clear_air_emis*stef_bolt*TSfc_K**4 ! emissivity of air not 0.9
-      lw_spectral_props%veg_planck = veg_emis*stef_bolt*TSfc_K**4 ! emissivity weighted between evergreen and deciduous trees
-      lw_spectral_props%veg_air_planck = veg_air_emis*stef_bolt*TSfc_K**4 ! emissivity of air not 0.9
-      lw_spectral_props%ground_emission = 0.0 ! what is this?
-      lw_spectral_props%roof_emission = 0.0 ! what is this?
-      lw_spectral_props%wall_emission = 0.0 ! what is this?
+
+      ! would be good to create a property veg_emissivity in lw_spectral_props then pass to calc_simple_spectrum_lw()
+      !veg_emissivity = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
 
       !!!!!!!!!!!!!! allocate sw !!!!!!!!!!!!!!
 
@@ -3917,6 +3920,11 @@ CONTAINS
       iendcol = 1
       ! Option of repeating calculation multiple time for more accurate profiling
       DO jrepeat = 1, 3
+         if (config%do_lw) then
+            ! Gas optics and spectral emission
+            call calc_simple_spectrum_lw(config, canopy_props, lw_spectral_props, &
+                 &                       istartcol, iendcol)
+          end if
          ! Call the SPARTACUS-Surface radiation scheme
          CALL radsurf(config, canopy_props, &
               &       sw_spectral_props, lw_spectral_props, &

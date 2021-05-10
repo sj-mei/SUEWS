@@ -1,7 +1,7 @@
 &RunControl
 CBLUse=0
 SnowUse=1
-NetRadiationMethod=13
+NetRadiationMethod=23
 BaseTMethod=1
 EmissionsMethod=1
 StorageHeatMethod=1
