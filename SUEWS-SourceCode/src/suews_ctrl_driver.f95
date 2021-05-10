@@ -3844,7 +3844,7 @@ CONTAINS
 
       alb_no_tree_bldg_water = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
                            alb_next(6)*sfr(BSoilSurf))/&
-                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)) ! albedo of the ground
       sw_spectral_props%air_ext =  0.01 ! what is the extinction coefficient of air?
       sw_spectral_props%air_ssa = 0.01  ! what is the single scattering albedo of air?
       sw_spectral_props%veg_ssa =  0.13 ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
@@ -3862,7 +3862,7 @@ CONTAINS
 
       emis_no_tree_bldg_water = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
                            emis(6)*sfr(BSoilSurf))/&
-                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))  ! emissivity of the ground
       veg_emis = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
       stef_bolt = 5.67*10.**(-8)
       clear_air_emis = 0.1 ! seems to make no difference to the spartacus output (not sure what values they should take)

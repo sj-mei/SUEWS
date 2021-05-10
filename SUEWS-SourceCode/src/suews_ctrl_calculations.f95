@@ -232,7 +232,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
                Temp_C, Press_hPa, avkdn, avu1, avrh, avcp, avdens, es_hPa, lv_J_kg, &
                nsh_real, tstep, UStar, psih, is, NumberOfGrids, &
                qhforCBL, qeforCBL, ReadLinesMetdata, dataOutBL)
-
    END IF
 
    ! NB: SOLWEIG can be treated as a separate part:

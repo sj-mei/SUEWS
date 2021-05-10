@@ -112,9 +112,34 @@ plt.tight_layout()
 
 ## radiation daily composites by month
 
-#print(df_obs)
-#df_obs.groupby(df_obs.index.Hour).mean()
-#print(df_obs.groupby(df_obs.datetime.dt.month).mean())
+month_choice = 5 # 1,2,...,12
+
+# create column called Month
+df_obs['Month'] = df_obs.datetime.dt.month
+df_suews['Month'] = df_suews.datetime.dt.month
+
+df_obs_day = df_obs[(df_obs['Month'] == 1)].groupby(df_obs.datetime.dt.hour).mean()
+df_suews_day = df_suews[(df_suews['Month'] == 1)].groupby(df_suews.datetime.dt.hour).mean()
+
+## radiation timeseries
+month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+plt.figure(figsize=(8,6))
+plt.plot(df_suews_day['Hour'],df_suews_day['QN'],linestyle=linestyle,marker=marker,color="black",label=r'$Q_N$')
+plt.plot(df_obs_day['Hour'],df_obs_day['QN'],linestyle=linestyle_obs,marker=marker_obs,color="black")
+plt.plot(df_suews_day['Hour'],df_suews_day['Lup'],linestyle=linestyle,marker=marker,color="blue",label=r'$L\uparrow$')
+plt.plot(df_obs_day['Hour'],df_obs_day['Lup'],linestyle=linestyle_obs,marker=marker_obs,color="blue")
+plt.plot(df_suews_day['Hour'],df_suews_day['Ldown'],linestyle=linestyle,marker=marker,color="red",label=r'$L\downarrow$')
+plt.plot(df_obs_day['Hour'],df_obs_day['Ldown'],linestyle=linestyle_obs,marker=marker_obs,color="red")
+plt.plot(df_suews_day['Hour'],df_suews_day['Kup'],linestyle=linestyle,marker=marker,color="purple",label=r'$K\uparrow$')
+plt.plot(df_obs_day['Hour'],df_obs_day['Kup'],linestyle=linestyle_obs,marker=marker_obs,color="purple")
+plt.plot(df_suews_day['Hour'],df_suews_day['Kdown'],linestyle=linestyle,marker=marker,color="orange",label=r'$K\downarrow$')
+plt.plot(df_obs_day['Hour'],df_obs_day['Kdown'],linestyle=linestyle_obs,marker=marker_obs,color="orange")
+plt.xlabel("Hours")
+plt.ylabel(r"Energy Flux Density (Wm$^{-2}$)")
+#plt.ylim(-100,900)
+plt.title(month[month_choice-1])
+plt.legend(loc=2)
+plt.tight_layout()
 
 ## Create an Zenith column in obs interpolated from suews
 df_obs['Zenith'] = np.interp(df_obs["datetime"],df_suews["datetime"],df_suews["Zenith"])
@@ -131,7 +156,7 @@ plt.tight_layout()
 fig, (ax1, ax2) = plt.subplots(1, 2)
 # obs
 # calculate linear regression: observed
-df_obs_daytime = df_obs[(df_obs['Zenith'] <= 80)]
+df_obs_daytime = df_obs[(df_obs['Zenith'] <= 80) & (df_obs['Kdown'] >= 10)]
 slope, intercept, r_value, p_value, std_err = stats.linregress(df_obs_daytime['Kdown'].dropna(),df_obs_daytime['Kup'].dropna())
 line_x = np.arange(df_obs_daytime['Kdown'].min(), df_obs_daytime['Kdown'].max())
 line_y = slope*line_x + intercept
@@ -146,7 +171,7 @@ ax1.legend(loc=2)
 ax1.set_title('Observed')
 # spartacus
 # calculate linear regression: spartacus
-df_suews_daytime = df_suews[(df_suews['Zenith'] <= 80)]
+df_suews_daytime = df_suews[(df_suews['Zenith'] <= 80) & (df_obs['Kdown'] >= 10)]
 slope, intercept, r_value, p_value, std_err = stats.linregress(df_suews_daytime['Kdown'].dropna(),df_suews_daytime['Kup'].dropna())
 line_x = np.arange(df_suews_daytime['Kdown'].min(), df_suews_daytime['Kdown'].max())
 line_y = slope*line_x + intercept
@@ -171,8 +196,7 @@ zenith_min = [20,40,60]
 for i in np.arange(len(zenith_max)):
     # obs
     # calculate linear regression: observed
-    df_obs_daytime = df_obs[(df_obs['Zenith'] <= zenith_max[i])]
-    df_obs_daytime = df_obs_daytime[(df_obs_daytime['Zenith'] >= zenith_min[i])]
+    df_obs_daytime = df_obs[(df_obs['Zenith'] <= zenith_max[i]) & (df_obs['Zenith'] >= zenith_min[i]) & (df_obs['Kdown'] >= 10)]
     slope, intercept, r_value, p_value, std_err = stats.linregress(df_obs_daytime['Kdown'].dropna(),df_obs_daytime['Kup'].dropna())
     line_x = np.arange(df_obs_daytime['Kdown'].min(), df_obs_daytime['Kdown'].max())
     line_y = slope*line_x + intercept
@@ -187,8 +211,7 @@ for i in np.arange(len(zenith_max)):
     axs[0,i].set_title(r'Observed (zenith: %s$^\circ$$-$ %s$^\circ$)' %(zenith_min[i],zenith_max[i]))
     # spartacus
     # calculate linear regression: spartacus
-    df_suews_daytime = df_suews[(df_suews['Zenith'] <= zenith_max[i])]
-    df_suews_daytime = df_suews_daytime[(df_suews_daytime['Zenith'] >= zenith_min[i])]
+    df_suews_daytime = df_suews[(df_suews['Zenith'] <= zenith_max[i]) & (df_suews['Zenith'] >= zenith_min[i]) & (df_obs['Kdown'] >= 10)]
     slope, intercept, r_value, p_value, std_err = stats.linregress(df_suews_daytime['Kdown'].dropna(),df_suews_daytime['Kup'].dropna())
     line_x = np.arange(df_suews_daytime['Kdown'].min(), df_suews_daytime['Kdown'].max())
     line_y = slope*line_x + intercept
