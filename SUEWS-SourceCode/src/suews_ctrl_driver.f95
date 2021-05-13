@@ -974,7 +974,7 @@ CONTAINS
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
-      IF (NetRadiationMethod > 20 .AND. NetRadiationMethod < 30) THEN
+      IF (NetRadiationMethod > 1000) THEN
          CALL test_rad_spc(&
          sfr,ZENITH_deg,bldgH,TSfc_C,avKdn,ldown,temp_C,alb_next,emis, &!input
          alb_spc,emis_spc,lw_emission_spc,lw_up_spc,sw_up_spc,qn_spc)!output
@@ -3709,6 +3709,7 @@ CONTAINS
       USE radsurf_canopy_flux, ONLY: canopy_flux_type
       USE radsurf_simple_spectrum, ONLY: calc_simple_spectrum_lw
       ! USE spartacus_surface_read_input, ONLY: read_input
+      USE data_in, ONLY: fileinputpath
 
       IMPLICIT NONE
 
@@ -3763,6 +3764,26 @@ CONTAINS
       REAL(KIND(1D0)) ::veg_emis
       ! variable to hold the stefan-boltzmann constant
       REAL(KIND(1D0)) ::stef_bolt
+
+      !!! Bring in Spartacus.nml and Spartacus_Profiles.nml !!!!!!!!!!!!!!!!!!!!!!
+
+      INTEGER :: TsurfChoice
+      real(kind=jprb), allocatable :: p(:, :)
+
+      NAMELIST /Spartacus/ TsurfChoice
+      NAMELIST /Spartacus_Profiles/ p
+               
+      allocate(p(2,2))
+
+      OPEN (511, file=TRIM(FileInputPath)//'Spartacus.nml', status='old')
+      READ (511, nml=Spartacus)
+      CLOSE (511)
+      OPEN (511, file=TRIM(FileInputPath)//'Spartacus_Profiles.nml', status='old')
+      READ (511, nml=Spartacus_Profiles)
+      CLOSE (511)
+
+      PRINT *,'TsurfChoice:',TsurfChoice
+      PRINT *,'p:',p
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 

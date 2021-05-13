@@ -63,21 +63,6 @@ CONTAINS
             ldown_option = 3              !LDOWN will be modelled
             !NetRadiationMethod=NetRadiationMethod/1000
          END IF
-
-      ELSEIF (NetRadiationMethod > 20 .AND. NetRadiationMethod < 30) THEN  !Modelled Q* is used (Spartacus)
-         AlbedoChoice = 0
-         NetRadiationMethod_use = MOD(NetRadiationMethod, 10)
-         IF (NetRadiationMethod_use == 1) ldown_option = 1
-         IF (NetRadiationMethod_use == 2) ldown_option = 2
-         IF (NetRadiationMethod_use == 3) ldown_option = 3
-         ! recover values before modulus calculation
-         NetRadiationMethod_use = NetRadiationMethod
-         !If bad NetRadiationMethod value
-         IF (MOD(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
-            WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
-            WRITE (*, *) 'Value not usable'
-            STOP
-         END IF
          
       ELSEIF (NetRadiationMethod > 0) THEN  !Modelled Q* is used (NARP)
          AlbedoChoice = -9
@@ -104,6 +89,23 @@ CONTAINS
             IF (NetRadiationMethod == 300) ldown_option = 3
             ! NetRadiationMethod=NetRadiationMethod/100
             NetRadiationMethod_use = NetRadiationMethod/100
+
+         !choose Ldown method for Spartacus
+         ELSEIF (NetRadiationMethod > 1000) THEN  
+            AlbedoChoice = 0
+            NetRadiationMethod_use = MOD(NetRadiationMethod, 10)
+            IF (NetRadiationMethod_use == 1) ldown_option = 1
+            IF (NetRadiationMethod_use == 2) ldown_option = 2
+            IF (NetRadiationMethod_use == 3) ldown_option = 3
+            ! recover values before modulus calculation
+            NetRadiationMethod_use = NetRadiationMethod
+            !If bad NetRadiationMethod value
+            IF (MOD(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
+               WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
+               WRITE (*, *) 'Value not usable'
+               STOP
+            END IF
+         
          END IF
 
          !If bad NetRadiationMethod value
@@ -312,7 +314,7 @@ CONTAINS
          !--------------------------------------------------
          !-------SNOW FREE SURFACE--------------------------
 
-         IF (NetRadiationMethod_use > 20 .AND. NetRadiationMethod_use < 30) THEN
+         IF (NetRadiationMethod_use > 1000) THEN
             !set albedo snow free to the spartacus value unless water
             IF (is .LE. 6) THEN
                albedo_snowfree = alb_timestep
@@ -371,7 +373,7 @@ CONTAINS
          END IF
 
          !Upward longwave radiation
-         IF (NetRadiationMethod_use > 20 .AND. NetRadiationMethod_use < 30) THEN
+         IF (NetRadiationMethod_use > 1000) THEN
             !Use Spartacus emissions and emissivity unless water.
             TSURF = tsurf_0_K
             IF (is .LE. 6) THEN
@@ -517,7 +519,7 @@ CONTAINS
       !endif
 
       !!! Calculate effective albedos and emissivities using Spartacus for all surfaces but water which uses NARP !!!
-      IF (NetRadiationMethod_use > 20 .AND. NetRadiationMethod_use < 30) THEN
+      IF (NetRadiationMethod_use > 1000) THEN
          ! create output albedo that contains spartacus values for all surfaces but water
          alb_narp_using_spc_is(1:6) = alb_timestep
          alb_narp_using_spc_is(7) = ALB(7)

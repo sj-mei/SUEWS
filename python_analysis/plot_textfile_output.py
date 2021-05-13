@@ -21,7 +21,6 @@ print("df_debug:\n",df_debug)
 df_obs = pd.read_csv("C:/Users/nx902220/Documents/GitHub_SUEWS/SUEWS/python_analysis/Obs_London_KCL_1h.txt",header=0,delimiter=r"\s+")
 print("df_obs:\n",df_obs)
 
-
 def compose_date(years, months=1, days=1, weeks=None, hours=None, minutes=None,
                  seconds=None, milliseconds=None, microseconds=None, nanoseconds=None):
     years = np.asarray(years) - 1970
@@ -187,7 +186,7 @@ ax2.set_title('Spartacus')
 #fig.suptitle('Horizontally stacked subplots')
 fig.set_figheight(5)
 fig.set_figwidth(10)
-plt.tight_layout()
+#plt.tight_layout()
 
 ## observed and suews panel albedo Kup:Kdown
 fig, axs = plt.subplots(2, 3)
