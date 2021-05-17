@@ -804,13 +804,6 @@ CONTAINS
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, snowFrac_next, SnowAlb_next)
 
-            PRINT *,'alb_narp_using_spc_is:'
-            PRINT *,alb_narp_using_spc_is
-            PRINT *,'alb_narp_using_spc_eff:',alb_narp_using_spc_eff
-            PRINT *,'emis_narp_using_spc_is:'
-            PRINT *,emis_narp_using_spc_is
-            PRINT *,'emis_narp_using_spc_eff:',emis_narp_using_spc_eff
-
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
@@ -974,15 +967,29 @@ CONTAINS
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
+      PRINT *,'alb:'
+      PRINT *,alb
+      PRINT *,'alb_spc:',alb_spc
+      PRINT *,'alb_narp_using_spc_is:'
+      PRINT *,alb_narp_using_spc_is
+      PRINT *,'alb_narp_using_spc_eff:',alb_narp_using_spc_eff
+      PRINT *,'weighted albedo from alb'
+      PRINT *,(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+ &
+               alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
+
+      PRINT *,'emis:'
+      PRINT *,emis
+      PRINT *,'emis_spc:',emis_spc
+      PRINT *,'emis_narp_using_spc_is:'
+      PRINT *,emis_narp_using_spc_is
+      PRINT *,'emis_narp_using_spc_eff:',emis_narp_using_spc_eff
+      PRINT *,'lw_emission_spc:',lw_emission_spc
+
       IF (NetRadiationMethod > 1000) THEN
          CALL test_rad_spc(&
          sfr,ZENITH_deg,TSfc_C,avKdn,ldown,temp_C,alb_next,emis, &!input
          alb_spc,emis_spc,lw_emission_spc,lw_up_spc,sw_up_spc,qn_spc)!output
       ENDIF
-
-      PRINT *,'alb_spc:',alb_spc
-      PRINT *,'emis_spc:',emis_spc
-      PRINT *,'lw_emission_spc:',lw_emission_spc
 
       !==============================================================
       ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
@@ -3781,21 +3788,21 @@ CONTAINS
       READ (511, nml=Spartacus)
       CLOSE (511)
 
-      ALLOCATE(height(nlayers+1,1))
-      ALLOCATE(building_frac(nlayers,1))
-      ALLOCATE(veg_frac(nlayers,1))
-      ALLOCATE(building_scale(nlayers,1))
-      ALLOCATE(veg_scale(nlayers,1))
-      ALLOCATE(veg_ext(nlayers,1))
-      ALLOCATE(veg_fsd(nlayers,1))
-      ALLOCATE(veg_contact_fraction(nlayers,1))
-      ALLOCATE(roof_albedo(nlayers,1))
-      ALLOCATE(wall_albedo(nlayers,1))
-      ALLOCATE(ground_albedo_dir_mult_fact(nlayers,1))
-      ALLOCATE(roof_albedo_dir_mult_fact(nlayers,1))
-      ALLOCATE(wall_specular_frac(nlayers,1))
-      ALLOCATE(roof_emissivity(nlayers,1,nlw))
-      ALLOCATE(wall_emissivity(nlayers,1,nlw))
+      ALLOCATE(height(1,nlayers+1))
+      ALLOCATE(building_frac(1,nlayers))
+      ALLOCATE(veg_frac(1,nlayers))
+      ALLOCATE(building_scale(1,nlayers))
+      ALLOCATE(veg_scale(1,nlayers))
+      ALLOCATE(veg_ext(1,nlayers))
+      ALLOCATE(veg_fsd(1,nlayers))
+      ALLOCATE(veg_contact_fraction(1,nlayers))
+      ALLOCATE(roof_albedo(1,nlayers))
+      ALLOCATE(wall_albedo(1,nlayers))
+      ALLOCATE(ground_albedo_dir_mult_fact(1,nlayers))
+      ALLOCATE(roof_albedo_dir_mult_fact(1,nlayers))
+      ALLOCATE(wall_specular_frac(1,nlayers))
+      ALLOCATE(roof_emissivity(1,nlayers,1))
+      ALLOCATE(wall_emissivity(1,nlayers,1))
       ! Bring in Spartacus_Profiles.nml
       OPEN (511, file=TRIM(FileInputPath)//'Spartacus_Profiles.nml', status='old')
       READ (511, nml=Spartacus_Profiles)
@@ -3856,13 +3863,13 @@ CONTAINS
       canopy_props%veg_air_temperature = tair_K
 
       ! set building and vegetation properties
-      canopy_props%building_fraction = building_frac(:,1) ! building fraction
-      canopy_props%veg_fraction = veg_frac(:,1) ! evergreen + deciduous fractions
-      canopy_props%building_scale = building_scale(:,1) ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
-      canopy_props%veg_scale = veg_scale(:,1) ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
-      canopy_props%veg_ext = veg_ext(:,1) ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25? This replaces vegetation albedo.
-      canopy_props%veg_fsd = veg_fsd(:,1) ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
-      canopy_props%veg_contact_fraction = veg_contact_fraction(:,1)
+      canopy_props%building_fraction = building_frac(1,:) ! building fraction
+      canopy_props%veg_fraction = veg_frac(1,:) ! evergreen + deciduous fractions
+      canopy_props%building_scale = building_scale(1,:) ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
+      canopy_props%veg_scale = veg_scale(1,:) ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
+      canopy_props%veg_ext = veg_ext(1,:) ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25? This replaces vegetation albedo.
+      canopy_props%veg_fsd = veg_fsd(1,:) ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
+      canopy_props%veg_contact_fraction = veg_contact_fraction(1,:)
       canopy_props%i_representation = i_representation
 
       !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
@@ -3907,8 +3914,8 @@ CONTAINS
       lw_spectral_props%air_ssa = air_ssa_lw  ! what is the single scattering albedo of air?
       lw_spectral_props%veg_ssa = veg_ssa_lw ! from test_surface_in.nc .... suitable?
       lw_spectral_props%ground_emissivity = emis_no_tree_bldg_water ! emissivity excluding buildings, trees and water
-      lw_spectral_props%roof_emissivity = roof_emissivity(:,1,:) ! emissivity of buildings
-      lw_spectral_props%wall_emissivity = wall_emissivity(:,1,:) ! emissivity of buildings
+      lw_spectral_props%roof_emissivity = roof_emissivity(:,:,1) ! emissivity of buildings
+      lw_spectral_props%wall_emissivity = wall_emissivity(:,:,1) ! emissivity of buildings
 
       ! would be good to create a property veg_emissivity in lw_spectral_props then pass to calc_simple_spectrum_lw()
       !veg_emissivity = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
@@ -3976,10 +3983,14 @@ CONTAINS
          END IF
       END DO
 
+      PRINT *,'bc_out%sw_albedo(1,1):',bc_out%sw_albedo(1,1)
+      PRINT *,'bc_out%sw_albedo_dir(1,1):',bc_out%sw_albedo_dir(1,1)
+
       ! albedo
       alb_spc = ((top_flux_dn_diffuse_sw+10.**(-10))*bc_out%sw_albedo(1,1) & ! the 10.**-10 stops the equation blowing up when kdwn=0
                + (top_flux_dn_direct_sw(1,1)+10.**(-10))*bc_out%sw_albedo_dir(1,1)) &
                / (top_flux_dn_diffuse_sw+10.**(-10) + top_flux_dn_direct_sw(1,1)+10.**(-10))
+
       ! emissivity
       emis_spc = bc_out%lw_emissivity(1,1)
       ! longwave emission

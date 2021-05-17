@@ -179,14 +179,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataOutLineDebug, &
       DailyStateLine)!output
 
-   PRINT *,'alb:'
-   PRINT *,alb
-   PRINT *,'emis:'
-   PRINT *,emis
-   PRINT *,'alb_timestep:',alb_timestep
-   PRINT *,'emis_timestep:',emis_timestep
-   PRINT *,'lw_emission_timestep:',lw_emission_timestep
-
    !============ update and write out SUEWS_cal_DailyState ===============
    ! only works at the last timestep of a day
    CALL SUEWS_update_DailyState( &
