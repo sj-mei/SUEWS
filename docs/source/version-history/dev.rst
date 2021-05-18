@@ -5,7 +5,7 @@
 
 **THIS RELEASE IS ONLY FOR VALIDATING THE SUEWS CI WORKFLOW.**
 
-Version 2020b (in development)
+Version 2021a (in development)
 ----------------------------------------------------
 
 - **Improvement**
@@ -20,7 +20,7 @@ Version 2020b (in development)
 
 - **Fix**
 
-  None.
+  #. fixed a bug in radiation scheme: observed incoming longwave radiation cannot be used.
 
 - **Known issues**
 
