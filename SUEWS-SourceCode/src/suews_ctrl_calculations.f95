@@ -81,10 +81,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
       dataoutlineestm, dataoutlineRSL, dataOutLineBEERS, &
-      dataOutLineDebug, dataOutLineDebug, &
+      dataOutLineDebug, dataOutLineDebug, dataOutLineSPARTACUS, &
       dailystateline, dataoutdailystate, &
       dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, &
-      dataoutBL, dataOutDebug
+      dataoutBL, dataOutDebug, dataOutSPARTACUS
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       H_maintain, &
@@ -176,7 +176,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
-      dataOutLineDebug, &
+      dataOutLineDebug, dataOutLineSPARTACUS, &
       DailyStateLine)!output
 
    !============ update and write out SUEWS_cal_DailyState ===============
@@ -193,9 +193,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &!input
-      dataOutLineDebug, &
+      dataOutLineDebug, dataOutLineSPARTACUS, &
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, &!inout
-      dataOutDebug)!inout
+      dataOutDebug, dataOutSPARTACUS)!inout
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018

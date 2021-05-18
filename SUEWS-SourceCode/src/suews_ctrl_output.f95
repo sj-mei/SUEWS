@@ -602,11 +602,28 @@ MODULE ctrl_output
       varAttr('avdens', 'm', f104, 'RA for snow', aA, 'debug', 0), &
       varAttr('avcp', 'm', f104, 'RA for snow', aA, 'debug', 0), &
       varAttr('s_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('psyc_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('alb_spc', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('emiss_spc', 'm', f104, 'RA for snow', aA, 'debug', 0) &
+      varAttr('psyc_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0) &
       /
 
+   ! SPARTACUS info
+   DATA(varListAll(n), &
+      n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+      + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+      + ncolumnsDataOutDailyState - 5 &
+      + ncolumnsDataOutRSL - 5 &
+      + ncolumnsDataOutDebug - 5 &
+      + 1, &
+      ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+      + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+      + ncolumnsDataOutDailyState - 5 &
+      + ncolumnsDataOutRSL - 5 &
+      + ncolumnsDataOutDebug - 5 &
+      + ncolumnsDataOutSPARTACUS - 5 &
+      )/ &
+      varAttr('alb_spc', '-', f104, 'bulk albedo', aA, 'SPARTACUS', 0), &
+      varAttr('emis_spc', '-', f104, 'bulk emissivity', aA, 'SPARTACUS', 0) &
+      /
+      
 CONTAINS
    ! main wrapper that handles both txt and nc files
    SUBROUTINE SUEWS_Output(irMax, iv, Gridiv, iyr)
@@ -620,9 +637,9 @@ CONTAINS
 
       INTEGER :: n_group_use, err, outLevel, i
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListX
-      CHARACTER(len=10) :: groupList0(8)
+      CHARACTER(len=10) :: groupList0(9)
       CHARACTER(len=10), DIMENSION(:), ALLOCATABLE :: grpList
-      LOGICAL :: groupCond(8)
+      LOGICAL :: groupCond(9)
 
       ! determine outLevel
       SELECT CASE (WriteOutOption)
@@ -644,12 +661,14 @@ CONTAINS
       groupList0(6) = 'DailyState'
       groupList0(7) = 'RSL'
       groupList0(8) = 'debug'
+      groupList0(9) = 'SPARTACUS'
       groupCond = [ &
                   .TRUE., &
                   .TRUE., &
                   CBLuse >= 1, &
                   SnowUse >= 1, &
                   StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
+                  .TRUE., &
                   .TRUE., &
                   .TRUE., &
                   .TRUE. &
@@ -744,6 +763,9 @@ CONTAINS
 
       CASE ('debug')    !debug
          dataOutX = dataOutDebug(1:irMax, 1:SIZE(varListX), Gridiv)
+
+      CASE ('SPARTACUS')    !SPARTACUS
+         dataOutX = dataOutSPARTACUS(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('DailyState')    !DailyState
          ! get correct day index

@@ -54,7 +54,8 @@ MODULE allocateArray
                         ncolumnsDataOutESTM = 32, &
                         ncolumnsDataOutDailyState = 53, &
                         ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
-                        ncolumnsDataOutDebug = 5 + 25
+                        ncolumnsDataOutDebug = 5 + 23, &
+                        ncolumnsDataOutSPARTACUS = 5 + 2
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -126,6 +127,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSOLWEIG           !SOLWEIG POI output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBEERS           ! BEERS output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDebug           !debugging info matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSPARTACUS           !SPARTACUS output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSnow          !Main data output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutESTM          !ESTM output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutDailyState    !DailyState output array
@@ -139,6 +141,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5)      ::dataOutLineSOLWEIG  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5)      ::dataOutLineBEERS  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug):: dataOutLineDebug ! output line for debugging info
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS):: dataOutLineSPARTACUS ! output line for SPARTACUS per each timestep (1hr?)
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine   ! output of DailyState results per each timestep
 
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)

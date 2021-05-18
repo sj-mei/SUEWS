@@ -35,7 +35,8 @@ MODULE SUEWS_Driver
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
-      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, ncolumnsDataOutDebug
+      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main
@@ -92,7 +93,7 @@ CONTAINS
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
-      dataOutLineDebug, &
+      dataOutLineDebug,dataOutLineSPARTACUS &
       DailyStateLine)!output
 
       IMPLICIT NONE
@@ -347,6 +348,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! RSL variable array
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT)     ::dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT)     ::dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) ::dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
       ! ########################################################################################
 
@@ -554,13 +556,6 @@ CONTAINS
       REAL(KIND(1D0))::emis_timestep_prev, emis_timestep_next      
       REAL(KIND(1D0))::lw_emission_timestep_prev, lw_emission_timestep_next
       REAL(KIND(1D0))::porosity_id_prev, porosity_id_next
-
-      ! spartacus related albedo 
-      REAL(KIND(1D0)), DIMENSION(NSURF)   ::alb_narp_using_spc_is
-      REAL(KIND(1D0))::alb_narp_using_spc_eff
-      ! spartacus related emissivity
-      REAL(KIND(1D0)), DIMENSION(NSURF)   ::emis_narp_using_spc_is
-      REAL(KIND(1D0))::emis_narp_using_spc_eff
 
       REAL(KIND(1D0))::Tmin_id_prev, Tmin_id_next
       REAL(KIND(1D0))::Tmax_id_prev, Tmax_id_next
@@ -796,9 +791,7 @@ CONTAINS
             SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr, emis, emis_spc, lw_emission_spc, &
             alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &!input
-            alb_timestep_next, emis_timestep_next, lw_emission_timestep_next, &
-            alb_next, alb_narp_using_spc_is, alb_narp_using_spc_eff, &!output
-            emis_narp_using_spc_is, emis_narp_using_spc_eff, &
+            alb_timestep_next, emis_timestep_next, lw_emission_timestep_next, alb_next, &!output
             ldown, fcld, &!output
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
@@ -812,7 +805,7 @@ CONTAINS
             soilstore_id_prev, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
             HDD_id_next, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
             avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
-            bldgh, alb_narp_using_spc_is, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
+            bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
             Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
             StoreDrainPrm_next, &
             qn_snow, dataOutLineESTM, qs, &!output
@@ -970,19 +963,12 @@ CONTAINS
       PRINT *,'alb:'
       PRINT *,alb
       PRINT *,'alb_spc:',alb_spc
-      PRINT *,'alb_narp_using_spc_is:'
-      PRINT *,alb_narp_using_spc_is
-      PRINT *,'alb_narp_using_spc_eff:',alb_narp_using_spc_eff
       PRINT *,'weighted albedo from alb'
       PRINT *,(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+ &
                alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
 
       PRINT *,'emis:'
       PRINT *,emis
-      PRINT *,'emis_spc:',emis_spc
-      PRINT *,'emis_narp_using_spc_is:'
-      PRINT *,emis_narp_using_spc_is
-      PRINT *,'emis_narp_using_spc_eff:',emis_narp_using_spc_eff
       PRINT *,'lw_emission_spc:',lw_emission_spc
 
       IF (NetRadiationMethod > 1000) THEN
@@ -1125,7 +1111,9 @@ CONTAINS
       !==============translation end ================
 
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, avdens, avcp, s_hPa, psyc_hPa, alb_narp_using_spc_eff, emis_narp_using_spc_eff]
+                          vpd_hPa, avdens, avcp, s_hPa, psyc_hPa]
+
+      dataOutLineSPARTACUS = [alb_spc, emis_spc]
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -1378,9 +1366,7 @@ CONTAINS
       SnowAlb_prev, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, emis_spc, lw_emission_spc, &
       alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &!input
-      alb_timestep, emis_timestep, lw_emission_timestep, &
-      alb_next, alb_narp_using_spc_is, alb_narp_using_spc_eff, &!output
-      emis_narp_using_spc_is, emis_narp_using_spc_eff, &
+      alb_timestep, emis_timestep, lw_emission_timestep, alb_next, &!output
       ldown, fcld, &!output
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
@@ -1423,10 +1409,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf)  ::alb
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)  ::alb_prev
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)  ::alb_next
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)  ::alb_narp_using_spc_is
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)  ::emis_narp_using_spc_is
-      REAL(KIND(1D0)), INTENT(out)  ::alb_narp_using_spc_eff
-      REAL(KIND(1D0)), INTENT(out)  ::emis_narp_using_spc_eff
       REAL(KIND(1D0)), INTENT(in)  ::albDecTr_id
       ! REAL(KIND(1d0)), INTENT(in)  ::DecidCap_id
       REAL(KIND(1D0)), INTENT(in)  ::albEveTr_id
@@ -1524,8 +1506,7 @@ CONTAINS
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, &! output:
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, &
-            albedo_snow, &
-            alb_narp_using_spc_is, alb_narp_using_spc_eff, emis_narp_using_spc_is, emis_narp_using_spc_eff)
+            albedo_snow)
 
       ELSE ! NetRadiationMethod==0
          SnowFrac = snowFrac_obs
@@ -2567,8 +2548,8 @@ CONTAINS
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
-      dataoutlineDebug, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug)!inout
+      dataoutlineDebug,dataoutlineSPARTACUS, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS)!inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::ReadLinesMetdata
@@ -2585,6 +2566,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS - 5), INTENT(in) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutDebug - 5), INTENT(in) :: dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSPARTACUS - 5), INTENT(in) :: dataOutLineSPARTACUS
 
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
@@ -2592,6 +2574,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutSPARTACUS(ReadLinesMetdata, ncolumnsDataOutSPARTACUS, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
@@ -2599,6 +2582,7 @@ CONTAINS
       ! dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
       dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, (dataoutLineRSL)]
       dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [datetimeLine, (dataOutLineDebug)]
+      dataOutSPARTACUS(ir, 1:ncolumnsDataOutSPARTACUS, Gridiv) = [datetimeLine, (dataOutLineSPARTACUS)]
       ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
       dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [datetimeLine, set_nan(dataOutLineBEERS)]
       ! ! set invalid values to NAN
@@ -2966,7 +2950,7 @@ CONTAINS
       alb_timestep, emis_timestep, lw_emission_timestep, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, &!output
-      dataOutBlockDebug, &
+      dataOutBlockDebug, dataOutBlockSPARTACUS, &
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -3218,6 +3202,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS), INTENT(OUT) ::dataOutBlockBEERS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug), INTENT(OUT) ::dataOutBlockDebug
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS), INTENT(OUT) ::dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
       ! ########################################################################################
 
@@ -3265,6 +3250,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) ::dataOutLineSOLWEIG
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) ::dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) ::dataOutLinedebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) ::dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
@@ -3273,6 +3259,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS, 1) ::dataOutBlockBEERS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) ::dataOutBlockDebug_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS, 1) ::dataOutBlockSPARTACUS_X
       ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
       REAL(KIND(1D0)), DIMENSION(10, 10)          ::MetForcingData_grid ! fake array as a placeholder
@@ -3594,7 +3581,7 @@ CONTAINS
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
             datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &
             dataOutLineBEERS, &!output
-            dataOutLineDebug, &
+            dataOutLineDebug, dataOutLineSPARTACUS, &
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -3609,9 +3596,9 @@ CONTAINS
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
             ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
-            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, &!input
+            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, dataOutLineSPARTACUS, &!input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, &!
-            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X)!inout
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X)!inout
 
       END DO
 
@@ -3754,7 +3741,7 @@ CONTAINS
       ! variable to hold top-of-canopy diffuse sw downward 
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
       ! variables to hold plan area weighted albedo and emissivity of surfaces not including buildings and trees
-      REAL(KIND(1D0)) ::alb_no_tree_bldg_water,emis_no_tree_bldg_water
+      REAL(KIND(1D0)) ::alb_no_tree_bldg,emis_no_tree_bldg
       ! variable to hold the vegetation emissivity
       REAL(KIND(1D0)) ::veg_emis
 
@@ -3887,18 +3874,18 @@ CONTAINS
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
 
-      alb_no_tree_bldg_water = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
-                           alb_next(6)*sfr(BSoilSurf))/&
-                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)) ! albedo of the ground
+      alb_no_tree_bldg = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
+                           alb_next(6)*sfr(BSoilSurf)+alb_next(7)*sfr(WaterSurf))/&
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf)) ! albedo of the ground
       sw_spectral_props%air_ext = air_ext_sw ! what is the extinction coefficient of air?
       sw_spectral_props%air_ssa = air_ssa_sw  ! what is the single scattering albedo of air?
       sw_spectral_props%veg_ssa = veg_ssa_sw ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
-      sw_spectral_props%ground_albedo = alb_no_tree_bldg_water ! albedo excluding buildings, trees and water 
+      sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees 
       sw_spectral_props%roof_albedo = roof_albedo ! albedo of buildings
       sw_spectral_props%wall_albedo = wall_albedo ! albedo of buildings
       sw_spectral_props%wall_specular_frac = wall_specular_frac
       IF (config%use_sw_direct_albedo) THEN
-         sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg_water*ground_albedo_dir_mult_fact
+         sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg*ground_albedo_dir_mult_fact
          sw_spectral_props%roof_albedo_dir = roof_albedo*roof_albedo_dir_mult_fact
       ENDIF
 
@@ -3907,13 +3894,13 @@ CONTAINS
       CALL lw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
 
-      emis_no_tree_bldg_water = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
-                           emis(6)*sfr(BSoilSurf))/&
-                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf))  ! emissivity of the ground
+      emis_no_tree_bldg = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
+                           emis(6)*sfr(BSoilSurf)+emis(7)*sfr(WaterSurf))/&
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf))  ! emissivity of the ground
       lw_spectral_props%air_ext = air_ext_lw ! what is the extinction coefficient of air?
       lw_spectral_props%air_ssa = air_ssa_lw  ! what is the single scattering albedo of air?
       lw_spectral_props%veg_ssa = veg_ssa_lw ! from test_surface_in.nc .... suitable?
-      lw_spectral_props%ground_emissivity = emis_no_tree_bldg_water ! emissivity excluding buildings, trees and water
+      lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
       lw_spectral_props%roof_emissivity = roof_emissivity(:,:,1) ! emissivity of buildings
       lw_spectral_props%wall_emissivity = wall_emissivity(:,:,1) ! emissivity of buildings
 
