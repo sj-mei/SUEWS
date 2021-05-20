@@ -4008,7 +4008,7 @@ CONTAINS
       top_net_lw_spc = lw_flux%top_net(1,1)
       ground_net_lw_spc = lw_flux%ground_net(1,1)
       top_dn_lw_spc = lw_flux%top_dn(1,1)
-
+      PRINT *,'ldown',ldown
       ! sw arrays
       clear_air_abs_sw_spc = 0.0
       clear_air_abs_sw_spc(:nlayers) = sw_flux%clear_air_abs(1,:)
