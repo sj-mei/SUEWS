@@ -121,7 +121,7 @@ CONTAINS
    !==============================================================================
    SUBROUTINE NARP( &
       nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
-      alb_timestep, emis_timestep, lw_emission_timestep, &
+      alb_spc, emis_spc, lw_emission_spc, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, &
       SnowAlb, &
@@ -199,7 +199,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) ::SnowAlb
       REAL(KIND(1D0)), INTENT(in) ::NARP_TRANS_SITE
       REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
-      REAL(KIND(1D0)), INTENT(in) ::alb_timestep, emis_timestep, lw_emission_timestep
+      REAL(KIND(1D0)), INTENT(in) ::alb_spc, emis_spc, lw_emission_spc
 
       INTEGER, INTENT(in) ::nsurf
       INTEGER, INTENT(in) ::NetRadiationMethod_use ! the one processed by RadMethod
@@ -311,8 +311,8 @@ CONTAINS
 
          IF (NetRadiationMethod_use > 1000) THEN
             !set albedo snow free and emissivity to the spartacus value
-            albedo_snowfree = alb_timestep
-            EMIS0 = emis_timestep
+            albedo_snowfree = alb_spc
+            EMIS0 = emis_spc
          ELSE
             !NARP
             IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
@@ -366,7 +366,7 @@ CONTAINS
          IF (NetRadiationMethod_use > 1000) THEN
             !Use Spartacus emissions and emissivity.
             TSURF = tsurf_0_K
-            LUP = lw_emission_timestep + (1 - EMIS0)*LDOWN
+            LUP = lw_emission_spc + (1 - EMIS0)*LDOWN
          ELSE
             !NARP
             !Note that this is not averaged over the hour for cases where time step < 1hr

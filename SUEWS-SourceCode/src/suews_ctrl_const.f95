@@ -52,10 +52,10 @@ MODULE allocateArray
                         ncolumnsDataOutBEERS = 34, &
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
-                        ncolumnsDataOutDailyState = 53, &
+                        ncolumnsDataOutDailyState = 50, &
                         ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                         ncolumnsDataOutDebug = 5 + 23, &
-                        ncolumnsDataOutSPARTACUS = 5 + 2
+                        ncolumnsDataOutSPARTACUS = 5 + 6 + 4*15 + 3 + 4*15 + 4
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -311,18 +311,12 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albDecTr_id_grids
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albEveTr_id_grids
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: albGrass_id_grids
-   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: alb_timestep_grids
-   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: emis_timestep_grids
-   REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: lw_emission_timestep_grids
    REAL(KIND(1D0)), DIMENSION(MaxNumberOfGrids):: porosity_id_grids
 
    REAL(KIND(1D0)) :: DecidCap_id
    REAL(KIND(1D0)) :: albDecTr_id
    REAL(KIND(1D0)) :: albEveTr_id
    REAL(KIND(1D0)) :: albGrass_id
-   REAL(KIND(1D0)) :: alb_timestep
-   REAL(KIND(1D0)) :: emis_timestep
-   REAL(KIND(1D0)) :: lw_emission_timestep
    REAL(KIND(1D0)) :: porosity_id
 
    ! AnOHM related: added by TS 01 Mar 2016
@@ -1640,8 +1634,7 @@ MODULE ColNamesModelDailyState
              cMDS_BoRatio = 30, & ! noontime Bowen ratio, added by TS
              cMDS_a1AnOHM = 31, & ! a1 of AnOHM, added by TS
              cMDS_a2AnOHM = 32, & ! a2 of AnOHM, added by TS
-             cMDS_a3AnOHM = 33, & ! a3 of AnOHM, added by TS
-             cMDS_alb = 34 ! added by LB
+             cMDS_a3AnOHM = 33 ! a3 of AnOHM, added by TS
 
 END MODULE ColNamesModelDailyState
 

@@ -69,14 +69,12 @@ CONTAINS
       Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
       DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
-      albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, &
-      alb_timestep_prev, emis_timestep_prev, lw_emission_timestep_prev, porosity_id_prev, &!input
+      albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
       state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
       HDD_id_next, &!output
       Tmin_id_next, Tmax_id_next, lenDay_id_next, &
-      albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
-      alb_timestep_next, emis_timestep_next, lw_emission_timestep_next, porosity_id_next, &!output
+      albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
       DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
@@ -236,9 +234,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN):: albEveTr_id_prev
       REAL(KIND(1D0)), INTENT(OUT):: albEveTr_id_next
       REAL(KIND(1D0)):: albGrass_id
-      REAL(KIND(1D0)), INTENT(IN):: alb_timestep_prev, emis_timestep_prev, lw_emission_timestep_prev
-      REAL(KIND(1D0)), INTENT(OUT):: alb_timestep_next, emis_timestep_next, lw_emission_timestep_next
-      REAL(KIND(1D0)):: alb_timestep, emis_timestep, lw_emission_timestep
       REAL(KIND(1D0)), INTENT(IN):: albGrass_id_prev
       REAL(KIND(1D0)), INTENT(OUT):: albGrass_id_next
       REAL(KIND(1D0)):: porosity_id
@@ -264,9 +259,6 @@ CONTAINS
       albDecTr_id = albDecTr_id_prev
       albEveTr_id = albEveTr_id_prev
       albGrass_id = albGrass_id_prev
-      alb_timestep = alb_timestep_prev
-      emis_timestep = emis_timestep_prev
-      lw_emission_timestep = lw_emission_timestep_prev
       porosity_id = porosity_id_prev
       HDD_id = HDD_id_prev
 
@@ -333,9 +325,6 @@ CONTAINS
             albDecTr_id, &
             albEveTr_id, &
             albGrass_id, &
-            alb_timestep, &
-            emis_timestep, &
-            lw_emission_timestep, &
             porosity_id, &
             StoreDrainPrm, &
             WUDay_id, deltaLAI)!output
@@ -353,9 +342,6 @@ CONTAINS
       albDecTr_id_next = albDecTr_id
       albEveTr_id_next = albEveTr_id
       albGrass_id_next = albGrass_id
-      alb_timestep_next = alb_timestep
-      emis_timestep_next = emis_timestep
-      lw_emission_timestep_next = lw_emission_timestep
       porosity_id_next = porosity_id
       HDD_id_next = HDD_id
       ! PRINT*, 'after_DailyState', iy,id,it,imin
@@ -382,9 +368,6 @@ CONTAINS
       albDecTr_id, &
       albEveTr_id, &
       albGrass_id, &
-      alb_timestep, &
-      emis_timestep, &
-      lw_emission_timestep, &
       porosity_id, &
       StoreDrainPrm, &
       WUDay_id, deltaLAI)!output
@@ -449,9 +432,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(INOUT):: albDecTr_id
       REAL(KIND(1D0)), INTENT(INOUT):: albEveTr_id
       REAL(KIND(1D0)), INTENT(INOUT):: albGrass_id
-      REAL(KIND(1D0)), INTENT(INOUT):: alb_timestep
-      REAL(KIND(1D0)), INTENT(INOUT):: emis_timestep
-      REAL(KIND(1D0)), INTENT(INOUT):: lw_emission_timestep
       REAL(KIND(1D0)), INTENT(INOUT):: porosity_id
 
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
@@ -1070,9 +1050,6 @@ CONTAINS
       albDecTr_id, &
       albEveTr_id, &
       albGrass_id, &
-      alb_timestep, &
-      emis_timestep, &
-      lw_emission_timestep, &
       porosity_id, &
       WUDay_id, &
       deltaLAI, VegPhenLumps, &
@@ -1097,9 +1074,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) ::albDecTr_id
       REAL(KIND(1D0)), INTENT(IN) ::albEveTr_id
       REAL(KIND(1D0)), INTENT(IN) ::albGrass_id
-      REAL(KIND(1D0)), INTENT(IN) ::alb_timestep
-      REAL(KIND(1D0)), INTENT(IN) ::emis_timestep
-      REAL(KIND(1D0)), INTENT(IN) ::lw_emission_timestep
       REAL(KIND(1D0)), INTENT(IN) ::porosity_id
       REAL(KIND(1D0)), INTENT(IN) ::Tmin_id
       REAL(KIND(1D0)), INTENT(IN) ::Tmax_id
@@ -1131,8 +1105,8 @@ CONTAINS
          ! DailyStateLine(30 + 1:30 + 8) = [SnowAlb, SnowDens(1:7)]
          ! DailyStateLine(38 + 1:38 + 3) = [a1, a2, a3]
          DailyStateLine = [HDD_id, GDD_id, SDD_id, Tmin_id, Tmax_id, lenday_id, LAI_id, DecidCap_id, Porosity_id, &
-                           AlbEveTr_id, AlbDecTr_id, AlbGrass_id, alb_timestep, emis_timestep, lw_emission_timestep, &
-                           WUDay_id, deltaLAI, VegPhenLumps, SnowAlb, SnowDens, a1, a2, a3]
+                           AlbEveTr_id, AlbDecTr_id, AlbGrass_id, WUDay_id, deltaLAI, VegPhenLumps, SnowAlb, SnowDens, &
+                           a1, a2, a3]
 
       END IF
 

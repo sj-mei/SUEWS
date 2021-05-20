@@ -901,14 +901,12 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       albDecTr_id = ModelDailyState(Gridiv, cMDS_albDecTr)
       albEveTr_id = ModelDailyState(Gridiv, cMDS_albEveTr)
       albGrass_id = ModelDailyState(Gridiv, cMDS_albGrass)
-      alb_timestep = ModelDailyState(Gridiv, cMDS_alb)
       DecidCap_id = ModelDailyState(Gridiv, cMDS_DecidCap)
 
       DecidCap_id_grids(Gridiv) = DecidCap_id
       albDecTr_id_grids(Gridiv) = albDecTr_id
       albEveTr_id_grids(Gridiv) = albEveTr_id
       albGrass_id_grids(Gridiv) = albGrass_id
-      alb_timestep_grids(Gridiv) = alb_timestep
       porosity_id_grids(Gridiv) = porosity_id
 
       ! ---- Phenology
@@ -1212,7 +1210,6 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       albDecTr_id = albDecTr_id_grids(Gridiv)
       albEveTr_id = albEveTr_id_grids(Gridiv)
       albGrass_id = albGrass_id_grids(Gridiv)
-      alb_timestep = alb_timestep_grids(Gridiv)
       porosity_id = porosity_id_grids(Gridiv)
 
       ! get met array for one grid used in AnOHM
@@ -1486,7 +1483,6 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) 'albdectr_id=', albdectr_id
       WRITE (12, *) 'albevetr_id=', albevetr_id
       WRITE (12, *) 'albgrass_id=', albgrass_id
-      WRITE (12, *) 'alb_timestep=', alb_timestep
       WRITE (12, *) 'porosity_id=', porosity_id
       WRITE (12, *) 'wuprofa_24hr=', wuprofa_24hr
       WRITE (12, *) 'wuprofm_24hr=', wuprofm_24hr
@@ -1557,7 +1553,6 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ModelDailyState(Gridiv, cMDS_albEveTr) = albEveTr_id
    ModelDailyState(Gridiv, cMDS_albGrass) = albGrass_id
    ModelDailyState(Gridiv, cMDS_DecidCap) = DecidCap_id
-   ModelDailyState(Gridiv, cMDS_alb) = alb_timestep
 
    ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
    ! HDD_grids(:,:,Gridiv)    = HDD(:,:)
@@ -1601,7 +1596,6 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    albDecTr_id_grids(Gridiv) = albDecTr_id
    albEveTr_id_grids(Gridiv) = albEveTr_id
    albGrass_id_grids(Gridiv) = albGrass_id
-   alb_timestep_grids(Gridiv) = alb_timestep
    porosity_id_grids(Gridiv) = porosity_id
 
    ! ---- Snow density of each surface
