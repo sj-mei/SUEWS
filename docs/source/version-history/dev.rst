@@ -10,7 +10,7 @@ Version 2021a (in development)
 
 - **Improvement**
 
-  1. TO ADD
+  1. Added a new RoughLenMomMethod (4) to calculate roughness and displacement height as a function of plan area index and effective height of roughness elements following the ensemble mean of Fig 1a in [GO99]_
 
 
 - **Changes**
