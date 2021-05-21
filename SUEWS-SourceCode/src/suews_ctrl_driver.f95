@@ -1084,32 +1084,37 @@ CONTAINS
          a1, a2, a3, &
          DailyStateLine)!out
 
-      PRINT *,'it:',it
+         !!! printing !!!
 
-      PRINT *,'sfr:',sfr
+         PRINT *,'it:',it
 
-      PRINT *,'alb:'
-      PRINT *,alb
-      PRINT *,'weighted albedo from alb:',(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+&
-                                          alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
-      PRINT *,'alb_spc:',alb_spc
-      
-      PRINT *,'emis:'
-      PRINT *,emis
-      PRINT *,'weighted emissivity from emis:',(emis(1)*sfr(PavSurf)+emis(2)*sfr(BldgSurf)+emis(3)*sfr(ConifSurf)+&
-                                                emis(4)*sfr(DecidSurf)+emis(5)*sfr(GrassSurf)+emis(6)*sfr(BSoilSurf)+&
-                                                emis(7)*sfr(WaterSurf))
-      PRINT *,'emis_spc:',emis_spc
+         PRINT *,'sfr:',sfr
+   
+         PRINT *,'alb:'
+         PRINT *,alb
+         PRINT *,'weighted albedo from alb:',(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+&
+                                             alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
+         PRINT *,'alb_spc:',alb_spc
+         
+         PRINT *,'emis:'
+         PRINT *,emis
+         PRINT *,'weighted emissivity from emis:',(emis(1)*sfr(PavSurf)+emis(2)*sfr(BldgSurf)+emis(3)*sfr(ConifSurf)+&
+                                                   emis(4)*sfr(DecidSurf)+emis(5)*sfr(GrassSurf)+emis(6)*sfr(BSoilSurf)+&
+                                                   emis(7)*sfr(WaterSurf))
+         PRINT *,'emis_spc:',emis_spc
+   
+         PRINT *,'kup:',kup
+         PRINT *,'sw_up_spc:',sw_up_spc
+   
+         PRINT *,'lup:',lup
+         PRINT *,'lw_up_spc:',lw_up_spc
+         PRINT *,'lw_emission_spc:',lw_emission_spc
 
-      PRINT *,'kup:',kup
-      PRINT *,'sw_up_spc:',sw_up_spc
-
-      PRINT *,'lup:',lup
-      PRINT *,'lw_up_spc:',lw_up_spc
-      PRINT *,'lw_emission_spc:',lw_emission_spc
-
-      PRINT *,'qn:',qn
-      PRINT *,'qn_spc:',qn_spc
+         PRINT *,'avkdn',avkdn
+         PRINT *,'ldown',ldown
+   
+         PRINT *,'qn:',qn
+         PRINT *,'qn_spc:',qn_spc
 
       !==============translation end ================
 
@@ -3809,10 +3814,18 @@ CONTAINS
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
       CALL config%READ(file_name='config.nam')
+      ncol = 1
       config%do_sw = .TRUE.
       config%do_lw = .TRUE.
       config%use_sw_direct_albedo = use_sw_direct_albedo
-      config%do_vegetation = .TRUE.
+      ALLOCATE (i_representation(ncol))
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         config%do_vegetation = .TRUE.
+         i_representation = [3]
+      ELSE
+         config%do_vegetation = .FALSE.
+         i_representation = [2]
+      ENDIF
       config%do_urban = .TRUE.
       config%iverbose = 3
       config%n_vegetation_region_urban = n_vegetation_region_urban
@@ -3820,18 +3833,10 @@ CONTAINS
       config%nlw = nlw
       config%n_stream_sw_urban = n_stream_sw_urban
       config%n_stream_lw_urban = n_stream_lw_urban
-      ncol = 1
       ALLOCATE (nlay(ncol))
       nlay = [nlayers]
       ntotlay = SUM(nlay)
-      ALLOCATE (i_representation(ncol))
-      i_representation = [3]
       CALL config%consolidate()
-
-      !!! To make all input parameters independent of SUEWS for Meg testing with offline version !!!
-      ! zenith_deg = ?
-      ! TSfc_C = ?
-      ! temp_C = ?
 
       !!!!!!!!!!!!!! allocate and set canopy_props !!!!!!!!!!!!!!    
 
@@ -3840,7 +3845,7 @@ CONTAINS
       CALL canopy_props%ALLOCATE(config, ncol, ntotlay, i_representation)
 
       ! set cos_sza, nlay, ncol, ntotlay
-      canopy_props%cos_sza = COS(zenith_deg*3.1415927/180)
+      canopy_props%cos_sza = COS(zenith_deg*3.1415927/180) ! Meg can just hard code: COS(45.*3.1415927/180)
       canopy_props%nlay = nlay
       canopy_props%ncol = ncol
       canopy_props%ntotlay = SUM(canopy_props%nlay)
@@ -3854,26 +3859,30 @@ CONTAINS
          canopy_props%istartlay(jcol) = ilay
          ilay = ilay + canopy_props%nlay(jcol)
       END DO
-      
+   
       ! set temperature
       TSfc_K = TSfc_C + 273.15 ! convert surface temperature to Kelvin
-      tair_K = temp_C + 273.15 ! convert air temperature (2m?) to Kelvin
-      canopy_props%ground_temperature = TSfc_K ! need to account for the surface being composed of many surfaces?
-      canopy_props%roof_temperature = TSfc_K
-      canopy_props%wall_temperature = TSfc_K
-      canopy_props%clear_air_temperature = tair_K
-      canopy_props%veg_temperature = tair_K
-      canopy_props%veg_air_temperature = tair_K
-
+      tair_K = temp_C + 273.15 ! convert air temperature to Kelvin
+      canopy_props%ground_temperature = TSfc_K ! Meg can just hard code: 307.
+      canopy_props%roof_temperature = TSfc_K ! Meg can just hard code: 319.
+      canopy_props%wall_temperature = TSfc_K ! Meg can just hard code: 303.
+      canopy_props%clear_air_temperature = tair_K ! Meg can just hard code: ?
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         canopy_props%veg_temperature = tair_K
+         canopy_props%veg_air_temperature = tair_K
+      ENDIF
+ 
       ! set building and vegetation properties
-      canopy_props%building_fraction = building_frac(1,:) ! building fraction
-      canopy_props%veg_fraction = veg_frac(1,:) ! evergreen + deciduous fractions
-      canopy_props%building_scale = building_scale(1,:) ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
-      canopy_props%veg_scale = veg_scale(1,:) ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
-      canopy_props%veg_ext = veg_ext(1,:) ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25? This replaces vegetation albedo.
-      canopy_props%veg_fsd = veg_fsd(1,:) ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
-      canopy_props%veg_contact_fraction = veg_contact_fraction(1,:)
       canopy_props%i_representation = i_representation
+      canopy_props%building_scale = building_scale(1,:) ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
+      canopy_props%building_fraction = building_frac(1,:) ! building fraction
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         canopy_props%veg_fraction = veg_frac(1,:) ! evergreen + deciduous fractions
+         canopy_props%veg_scale = veg_scale(1,:) ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
+         canopy_props%veg_ext = veg_ext(1,:) ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25? This replaces vegetation albedo.
+         canopy_props%veg_fsd = veg_fsd(1,:) ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
+         canopy_props%veg_contact_fraction = veg_contact_fraction(1,:)
+      ENDIF
 
       !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
 
@@ -3895,7 +3904,9 @@ CONTAINS
                            (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf)) ! albedo of the ground
       sw_spectral_props%air_ext = air_ext_sw ! what is the extinction coefficient of air?
       sw_spectral_props%air_ssa = air_ssa_sw  ! what is the single scattering albedo of air?
-      sw_spectral_props%veg_ssa = veg_ssa_sw ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         sw_spectral_props%veg_ssa = veg_ssa_sw ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
+      ENDIF
       sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees 
       sw_spectral_props%roof_albedo = roof_albedo ! albedo of buildings
       sw_spectral_props%wall_albedo = wall_albedo ! albedo of buildings
@@ -3915,7 +3926,9 @@ CONTAINS
                            (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf))  ! emissivity of the ground
       lw_spectral_props%air_ext = air_ext_lw ! what is the extinction coefficient of air?
       lw_spectral_props%air_ssa = air_ssa_lw  ! what is the single scattering albedo of air?
-      lw_spectral_props%veg_ssa = veg_ssa_lw ! from test_surface_in.nc .... suitable?
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         lw_spectral_props%veg_ssa = veg_ssa_lw ! from test_surface_in.nc .... suitable?
+      ENDIF
       lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
       lw_spectral_props%roof_emissivity = roof_emissivity(:,:,1) ! emissivity of buildings
       lw_spectral_props%wall_emissivity = wall_emissivity(:,:,1) ! emissivity of buildings
@@ -3956,6 +3969,7 @@ CONTAINS
       CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
 
       !!!!!!!!!!!!!! CALL radsurf !!!!!!!!!!!!!!
+
       istartcol = 1
       iendcol = 1
       ! Option of repeating calculation multiple time for more accurate profiling

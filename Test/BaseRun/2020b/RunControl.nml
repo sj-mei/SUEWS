@@ -1,7 +1,7 @@
 &RunControl
 CBLUse=0
 SnowUse=1
-NetRadiationMethod=13
+NetRadiationMethod=1003
 BaseTMethod=1
 EmissionsMethod=1
 StorageHeatMethod=1
@@ -11,7 +11,7 @@ RoughLenHeatMethod=2
 RoughLenMomMethod=2
 SMDMethod=0
 WaterUseMethod=0
-FileCode='SU'
+FileCode='SUorig'
 FileInputPath="./Input/"
 FileOutputPath="./Output/"
 MultipleMetFiles=0
