@@ -1,3 +1,4 @@
- --------------
- Run completed.
- 0
+ Problem: Problem in SUEWS_MetDisagg: timestamps in met forcing file inconsistent with ResolutionFilesIn
+ ERROR! Program stopped: Cannot perform disaggregation.
+  Values:          0      3600
+  2
