@@ -193,7 +193,7 @@ CONTAINS
       ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
       ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
       flag_RSL = (1.-PAI)/FAI <= 18 .AND. (1.-PAI)/FAI > .021 &
-                 .AND. zH_RSL > 6
+                 .AND. zH_RSL >= 6
       ! &
       ! .and. PAI>0.1 .and. PAI<0.61
 
