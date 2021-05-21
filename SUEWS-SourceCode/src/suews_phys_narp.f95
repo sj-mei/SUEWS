@@ -281,7 +281,9 @@ CONTAINS
       QSTAR_S = 0
       kclear = 0
       KUPall = 0
-      LDOWN = 0
+      IF (ldown_option .NE. 1) THEN
+         LDOWN = 0
+      ENDIF
       LUPall = 0
       fcld = 0
       TSURFall = 0
