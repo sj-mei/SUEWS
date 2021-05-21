@@ -1084,6 +1084,8 @@ CONTAINS
          a1, a2, a3, &
          DailyStateLine)!out
 
+      PRINT *,'it:',it
+
       PRINT *,'sfr:',sfr
 
       PRINT *,'alb:'
