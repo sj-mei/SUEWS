@@ -14,4 +14,5 @@ veg_ssa_sw = 0.13
 air_ext_lw = 0.0
 air_ssa_lw = 0.0
 veg_ssa_lw = 0.01
+ground_albedo_dir_mult_fact = 1.
 /

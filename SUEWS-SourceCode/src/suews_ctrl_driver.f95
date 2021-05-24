@@ -3764,25 +3764,24 @@ CONTAINS
       INTEGER :: nlayers,n_vegetation_region_urban,nsw,nlw,nspec,&
                   n_stream_sw_urban,n_stream_lw_urban
       REAL(KIND(1D0)) :: sw_dn_direct_frac,air_ext_sw,air_ssa_sw,&
-                        veg_ssa_sw,air_ext_lw,air_ssa_lw,veg_ssa_lw
+                        veg_ssa_sw,air_ext_lw,air_ssa_lw,veg_ssa_lw,&
+                        ground_albedo_dir_mult_fact
       LOGICAL :: use_sw_direct_albedo
       real(kind=jprb), allocatable :: height(:,:), building_frac(:,:), veg_frac(:,:),&
                                     building_scale(:,:), veg_scale(:,:), veg_ext(:,:),&
                                     veg_fsd(:,:), veg_contact_fraction(:,:),&
-                                    roof_albedo(:,:), wall_albedo(:,:),&
-                                    ground_albedo_dir_mult_fact(:,:), roof_albedo_dir_mult_fact(:,:),&
-                                    wall_specular_frac(:,:),roof_emissivity(:,:,:),&
+                                    roof_albedo(:,:), wall_albedo(:,:), roof_albedo_dir_mult_fact(:,:),&
+                                    wall_specular_frac(:,:), roof_emissivity(:,:,:),&
                                     wall_emissivity(:,:,:)
                                     
       NAMELIST /Spartacus/ nlayers,use_sw_direct_albedo,n_vegetation_region_urban,&
                nsw,nlw,nspec,n_stream_sw_urban,n_stream_lw_urban,sw_dn_direct_frac,&
                air_ext_sw,air_ssa_sw,veg_ssa_sw,air_ext_lw,air_ssa_lw,&
-               veg_ssa_lw
+               veg_ssa_lw,ground_albedo_dir_mult_fact
       NAMELIST /Spartacus_Profiles/ height, building_frac, veg_frac,&
                                     building_scale, veg_scale, veg_ext,&
                                     veg_fsd, veg_contact_fraction,&
-                                    roof_albedo, wall_albedo,&
-                                    ground_albedo_dir_mult_fact, roof_albedo_dir_mult_fact,&
+                                    roof_albedo, wall_albedo, roof_albedo_dir_mult_fact,&
                                     wall_specular_frac, roof_emissivity,&
                                     wall_emissivity
 
@@ -3801,7 +3800,6 @@ CONTAINS
       ALLOCATE(veg_contact_fraction(1,nlayers))
       ALLOCATE(roof_albedo(1,nlayers))
       ALLOCATE(wall_albedo(1,nlayers))
-      ALLOCATE(ground_albedo_dir_mult_fact(1,nlayers))
       ALLOCATE(roof_albedo_dir_mult_fact(1,nlayers))
       ALLOCATE(wall_specular_frac(1,nlayers))
       ALLOCATE(roof_emissivity(1,nlayers,1))
@@ -3819,14 +3817,23 @@ CONTAINS
       config%do_lw = .TRUE.
       config%use_sw_direct_albedo = use_sw_direct_albedo
       ALLOCATE (i_representation(ncol))
-      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0 .AND. sfr(BldgSurf) > 0.0)  THEN
          config%do_vegetation = .TRUE.
          i_representation = [3]
-      ELSE
+         config%do_urban = .TRUE.
+      ELSE IF (sfr(ConifSurf)+sfr(DecidSurf) == 0.0 .AND. sfr(BldgSurf) > 0.0)  THEN
          config%do_vegetation = .FALSE.
          i_representation = [2]
+         config%do_urban = .TRUE.
+      ELSE IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0 .AND. sfr(BldgSurf) == 0.0)  THEN
+         config%do_vegetation = .TRUE.
+         i_representation = [1]
+         config%do_urban = .FALSE.
+      ELSE
+         config%do_vegetation = .FALSE.
+         i_representation = [0]
+         config%do_urban = .FALSE.
       ENDIF
-      config%do_urban = .TRUE.
       config%iverbose = 3
       config%n_vegetation_region_urban = n_vegetation_region_urban
       config%nsw = nsw
@@ -4072,7 +4079,6 @@ CONTAINS
       DEALLOCATE (veg_contact_fraction)
       DEALLOCATE (roof_albedo)
       DEALLOCATE (wall_albedo)
-      DEALLOCATE (ground_albedo_dir_mult_fact)
       DEALLOCATE (roof_albedo_dir_mult_fact)
       DEALLOCATE (wall_specular_frac)
       DEALLOCATE (roof_emissivity)
