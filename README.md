@@ -38,6 +38,8 @@ git submodule update
 ```
 Then source code of SPARTACUS will be loaded into `SUEWS-SourceCode/ext_lib/spartacus-surface`
 
+*Note: if a `permission denied` error occurs, one usually needs to fix the SSH connection to GitHub by following the [official guide here](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh).*
+
 2. Compile SUEWS by:
 ```shell
 make
