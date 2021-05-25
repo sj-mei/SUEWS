@@ -5,9 +5,11 @@ This is a public repo for SUEWS source code and documentation.
 
 - [SUEWS](#suews)
   - [Documentation](#documentation)
+  - [Compilation](#compilation)
+  - [Sample Run](#sample-run)
   - [Developer Note](#developer-note)
     - [Branch](#branch)
-      - [Central curated branches](#central-curated-branches)
+      - [`master` branch](#master-branch)
     - [Manual](#manual)
     - [Test](#test)
       - [Tests and purposes](#tests-and-purposes)
@@ -25,19 +27,36 @@ This is a public repo for SUEWS source code and documentation.
 
 * Documentation source: `docs` folder in this repo
 
+
+## Compilation
+
+1. Since SUEWS includes a dependency package [SPARTACUS](https://github.com/Urban-Meteorology-Reading/spartacus-surface), one needs to initialise this submodule by:
+```shell
+git submodule init
+git submodule update
+
+```
+Then source code of SPARTACUS will be loaded into `SUEWS-SourceCode/ext_lib/spartacus-surface`
+
+2. Compile SUEWS by:
+```shell
+make
+```
+The compiled SUEWS binary executable can be found under `Release/bin/<system>` where `<system>` can be one of `Win`, `macOS` and `Linux`.
+
+## Sample Run
+Sample input and output files can be found under `Test/BaseRun/<version>`, where `<version>` is denoted by the ending part of compiled binary (e.g., `2020b`).
+
 ## Developer Note
 
 ### Branch
 
-#### Central curated branches
-These branches are regularly curated by admin members with specific purposes and set with triggers for automatic deployment (via MS Azure Pipeline) in the [*releases* page](https://github.com/UMEP-dev/SUEWS/releases) named **Latest Release Test**:
+#### `master` branch
 
-* `master`:
-  * the main branch that keeps milestone and stable features.
+`master` is the main branch that keeps milestone and stable features.
   * `push` is restricted to admin members.
-* `develop`:
-  * used for core developments.
-  * `push` is restricted to admin members.
+
+If one needs to fix a bug or implement a new feature, please open an issue with details and then submit a pull request with respect to that issue.
 
 
 ### Manual
