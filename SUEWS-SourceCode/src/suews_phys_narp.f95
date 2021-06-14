@@ -123,7 +123,7 @@ CONTAINS
       nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
       alb_spc, emis_spc, lw_emission_spc, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-      DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, &
+      DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &
       AlbedoChoice, ldown_option, &
       NetRadiationMethod_use, DiagQN, &
@@ -157,6 +157,7 @@ CONTAINS
       !RH (%)       = relative humidity near model height
       !PRESS (mb)   = station pressure, use estimate if unavailable
       !qn1_obs      = Observed Q*
+      !ldown_obs      = Observed Ldown
 
       !INTERNAL FIELDS
       ! TemP_K = air temperature in K
@@ -196,6 +197,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) ::RH
       REAL(KIND(1D0)), INTENT(in) ::Press_hPa
       REAL(KIND(1D0)), INTENT(in) ::qn1_obs
+      REAL(KIND(1D0)), INTENT(in) ::ldown_obs
       REAL(KIND(1D0)), INTENT(in) ::SnowAlb
       REAL(KIND(1D0)), INTENT(in) ::NARP_TRANS_SITE
       REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
@@ -281,9 +283,12 @@ CONTAINS
       QSTAR_S = 0
       kclear = 0
       KUPall = 0
+<<<<<<< HEAD
       IF (ldown_option .NE. 1) THEN
          LDOWN = 0
       ENDIF
+=======
+>>>>>>> origin/master
       LUPall = 0
       fcld = 0
       TSURFall = 0
@@ -295,6 +300,12 @@ CONTAINS
       Tsurf_ind = 0
       albedo_snowfree = 0.2 ! arbitrary non-zero value for initialisatoin
       albedo_snow = SnowAlb
+
+      IF (ldown_option == 1) THEN !Observed ldown provided as forcing
+         ldown = ldown_obs
+      ELSE
+         ldown = 0             !to be filled in NARP
+      END IF
 
       !Total snowfree surface fraction
       SF_all = 0

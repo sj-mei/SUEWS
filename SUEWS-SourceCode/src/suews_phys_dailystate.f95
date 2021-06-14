@@ -654,13 +654,13 @@ CONTAINS
       iv = ivConif
       IF ((LAI_id(iv) - LAI_id_prev(iv)) /= 0) THEN
          deltaLAIEveTr = (LAI_id(iv) - LAI_id_prev(iv))/(LAImax(iv) - LAIMin(iv))
-         albChangeEveTr = (AlbMax_EveTr - AlbMin_EveTr)*deltaLAIEveTr    !!N.B. Currently uses deltaLAI for deciduous trees only!!
+         albChangeEveTr = (AlbMax_EveTr - AlbMin_EveTr)*deltaLAIEveTr
       END IF
 
       iv = ivGrass
       IF ((LAI_id(iv) - LAI_id_prev(iv)) /= 0) THEN
          deltaLAIGrass = (LAI_id(iv) - LAI_id_prev(iv))/(LAImax(iv) - LAIMin(iv))
-         albChangeGrass = (AlbMax_Grass - AlbMin_Grass)*deltaLAIGrass    !!N.B. Currently uses deltaLAI for deciduous trees only!!
+         albChangeGrass = (AlbMax_Grass - AlbMin_Grass)*deltaLAIGrass
       END IF
 
       iv = ivDecid
@@ -724,8 +724,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(OUT):: LAI_id_next !LAI for each veg surface [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN)::LAI_id_prev ! LAI of previous day
 
-      REAL(KIND(1D0)):: no   !Switches and checks for GDD
-      REAL(KIND(1D0))::yes   !Switches and checks for GDD
+      REAL(KIND(1D0)):: delta_SDD   !Switches and checks for GDD
+      REAL(KIND(1D0))::delta_GDD   !Switches and checks for GDD
       REAL(KIND(1D0))::indHelp   !Switches and checks for GDD
       REAL(KIND(1D0)), DIMENSION(3)::GDD_id_prev ! GDD of previous day
       REAL(KIND(1D0)), DIMENSION(3)::SDD_id_prev ! SDD of previous day
@@ -743,21 +743,21 @@ CONTAINS
       ! Loop through vegetation types (iv)
       DO iv = 1, NVegSurf
          ! Calculate GDD for each day from the minimum and maximum air temperature
-         yes = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT(iv))    !Leaf on
-         no = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseTe(iv))   !Leaf off
+         delta_GDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT(iv))    !Leaf on
+         delta_SDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseTe(iv))   !Leaf off
 
          indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
 
-         IF (yes < 0) THEN   !GDD cannot be negative
-            indHelp = yes   !Amount of negative GDD
-            yes = 0
+         IF (delta_GDD < 0) THEN   !GDD cannot be negative
+            indHelp = delta_GDD   !Amount of negative GDD
+            delta_GDD = 0
          END IF
 
-         IF (no > 0) no = 0    !SDD cannot be positive
+         IF (delta_SDD > 0) delta_SDD = 0    !SDD cannot be positive
 
          ! Calculate cumulative growing and senescence degree days
-         GDD_id(iv) = GDD_id_prev(iv) + yes
-         SDD_id(iv) = SDD_id_prev(iv) + no
+         GDD_id(iv) = GDD_id_prev(iv) + delta_GDD
+         SDD_id(iv) = SDD_id_prev(iv) + delta_SDD
 
          ! Possibility for cold spring
          IF (SDD_id(iv) <= SDDFull(iv) .AND. indHelp < 0) THEN
