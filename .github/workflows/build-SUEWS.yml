@@ -55,7 +55,7 @@ jobs:
           path: Test/BaseRun/**/*diff.csv
 
   build-binaries:
-    needs: test-suews
+    # needs: test-suews
 
     strategy:
       matrix:
@@ -89,7 +89,7 @@ jobs:
           make release
 
   build-wheels-manylinux:
-    needs: test-suews
+    # needs: test-suews
 
     runs-on: ubuntu-latest
 
@@ -103,6 +103,7 @@ jobs:
           - cp39-cp39
           - cp38-cp38
           - cp37-cp37m
+          - cp36-cp36m
 
     steps:
       - uses: actions/checkout@v2
@@ -128,7 +129,7 @@ jobs:
           path: supy-driver/wheelhouse/
 
   build-wheels-mac_win:
-    needs: test-suews
+    # needs: test-suews
 
     strategy:
       matrix:

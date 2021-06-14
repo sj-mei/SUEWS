@@ -180,8 +180,6 @@ CONTAINS
       !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
       REAL(KIND(1D0)):: EvPart
       REAL(KIND(1D0)), PARAMETER:: NotUsed = -55.5
-
-      !Threshold for intense precipitation [mm hr-1]
       REAL(KIND(1D0)), PARAMETER:: IPThreshold_mmhr = 10 ! NB:this should be an input and can be specified. SG 25 Apr 2018
 
       !Initialise extra evaporation to zero

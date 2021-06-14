@@ -4,7 +4,7 @@ MODULE evap_module
 CONTAINS
    SUBROUTINE cal_evap( &
       EvapMethod, state_is, WetThresh_is, capStore_is, &!input
-      vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+      vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, rb, tlv, &
       RSS, ev, qe) !output
       !------------------------------------------------------------------------------
       !-Calculates evaporation for each surface from modified Penman-Monteith eqn
@@ -41,7 +41,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::RS!Surface resistance
       ! REAL(KIND(1d0)),INTENT(in)::sp!Term in calculation of E
       REAL(KIND(1D0)), INTENT(in)::RA!Aerodynamic resistance
-      REAL(KIND(1D0)), INTENT(in)::RB!Boundary layer resistance
+      REAL(KIND(1D0)), INTENT(in)::rb!Boundary layer resistance
       REAL(KIND(1D0)), INTENT(in)::tlv!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
 
       REAL(KIND(1D0)), INTENT(out)::RSS !Redefined surface resistance for wet
@@ -83,8 +83,8 @@ CONTAINS
 
          ! Evaporation calculated according to Rutter(EvapMethod=1) or Shuttleworth(EvapMethod=2).
          !Set in SUEWS_initial (so not an input to the model)
-         IF (EvapMethod == 2) THEN   !-- Shuttleworth (1978): https://doi.org/10.1007/bf00123986 --
-            RB_SG = RB*(s_hPa/psyc_hPa + 1)           !Boundary-layer resistance x (slope/psychro + 1)
+         IF (EvapMethod == 2) THEN   !-- Shuttleworth (1978) --
+            RB_SG = rb*(s_hPa/psyc_hPa + 1)           !Boundary-layer resistance x (slope/psychro + 1)
             rsrbsg = RS + RB_SG   !RS + rsbg
 
             ! If surface is completely wet, set RS to zero -------------------
@@ -93,7 +93,7 @@ CONTAINS
                W = 1                                            !So that RS=0 (Eq7, Jarvi et al. 2011)
                ! If surface is in transition, use rss ---------------------------
             ELSE   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then
-               r = (RS/RA)*(RA - RB)/rsrbsg
+               r = (RS/RA)*(RA - rb)/rsrbsg
                W = (r - 1)/(r - (WetThresh_is/state_is))
             END IF
 
