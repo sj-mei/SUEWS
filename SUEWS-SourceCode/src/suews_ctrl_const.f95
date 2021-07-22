@@ -2008,7 +2008,7 @@ MODULE ColNamesInputFiles
               cIr_IeEnd = 3, &
               cIr_IntWU = 4, &
               cIr_Faut = 5, &
-              cIr_H_ponding = 6, &
+              cIr_H_maintain = 6, &
               cIr_Ie_a1 = 7, &
               cIr_Ie_a2 = 8, &
               cIr_Ie_a3 = 9, &
