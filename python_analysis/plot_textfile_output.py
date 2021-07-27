@@ -13,9 +13,9 @@ plt.close("all")
 df_suews = pd.read_csv("C:/Users/nx902220/Documents/GitHub_SUEWS/SUEWS/Test/BaseRun/2020b/Output/Kc1_2011_SUEWS_60.txt",header=0,delimiter=r"\s+")
 print("df_suews:\n",df_suews)
 
-# debug output
-df_debug = pd.read_csv("C:/Users/nx902220/Documents/GitHub_SUEWS/SUEWS/Test/BaseRun/2020b/Output/Kc1_2011_debug_60.txt",header=0,delimiter=r"\s+")
-print("df_debug:\n",df_debug)
+# Spartacus output
+df_SU = pd.read_csv("C:/Users/nx902220/Documents/GitHub_SUEWS/SUEWS/Test/BaseRun/2020b/Output/Kc1_2011_SPARTACUS_60.txt",header=0,delimiter=r"\s+")
+print("df_SU:\n",df_SU)
 
 # KCL observations
 df_obs = pd.read_csv("C:/Users/nx902220/Documents/GitHub_SUEWS/SUEWS/python_analysis/Obs_London_KCL_1h.txt",header=0,delimiter=r"\s+")
@@ -39,8 +39,8 @@ def compose_date(years, months=1, days=1, weeks=None, hours=None, minutes=None,
 df_suews['datetime'] = compose_date(df_suews['Year'], days=df_suews['DOY'], hours=df_suews['Hour'], minutes=df_suews['Min'])
 print("df_suews:\n",df_suews.loc[:,'datetime'])
 # debug
-df_debug['datetime'] = compose_date(df_debug['Year'], days=df_debug['DOY'], hours=df_debug['Hour'], minutes=df_debug['Min'])
-print("df_debug:\n",df_debug.loc[:,'datetime'])
+df_SU['datetime'] = compose_date(df_SU['Year'], days=df_SU['DOY'], hours=df_SU['Hour'], minutes=df_SU['Min'])
+print("df_SU:\n",df_SU.loc[:,'datetime'])
 # obs
 df_obs['datetime'] = compose_date(df_obs['Year'], days=df_obs['DOY'], hours=df_obs['Hour'], minutes=df_obs['Min'])
 print("df_obs:\n",df_obs.loc[:,'datetime'])
@@ -48,10 +48,10 @@ print("df_obs:\n",df_obs.loc[:,'datetime'])
 ### time slice
 
 start = '2011-01-01'
-end = '2011-12-01'
+end = '2012-04-01'
 
-time_slice = np.logical_and(df_debug['datetime'] >= start, df_debug['datetime'] <= end)
-df_debug = df_debug[time_slice]
+time_slice = np.logical_and(df_SU['datetime'] >= start, df_SU['datetime'] <= end)
+df_SU = df_SU[time_slice]
 df_suews = df_suews[time_slice]
 time_slice = np.logical_and(df_obs['datetime'] >= start, df_obs['datetime'] <= end)
 df_obs = df_obs[time_slice]
@@ -98,10 +98,10 @@ plt.tight_layout()
 
 ## albedo and emissivity timeseries
 plt.figure(figsize=(12,8))
-plt.plot(df_debug['datetime'],df_debug['alb_spc'],linestyle=linestyle,marker=marker,label=r'$\alpha$')
-#plt.plot(df_debug['datetime'],df_debug['alb_spc'],linestyle=linestyle,marker=marker,label=r'$\alpha narp and spc$')
+plt.plot(df_SU['datetime'],df_SU['alb'],linestyle=linestyle,marker=marker,label=r'$\alpha$')
+#plt.plot(df_SU['datetime'],df_SU['alb'],linestyle=linestyle,marker=marker,label=r'$\alpha narp and spc$')
 plt.plot(df_obs['datetime'],df_obs['Kup']/df_obs['Kdown'],linestyle=linestyle,marker=marker,label=r'Observed $\alpha$')
-plt.plot(df_debug['datetime'],1-df_debug['emiss_spc'],linestyle=linestyle,marker=marker,label=r'$1-\epsilon$')
+plt.plot(df_SU['datetime'],1-df_SU['emis'],linestyle=linestyle,marker=marker,label=r'$1-\epsilon$')
 plt.xlabel("Time")
 plt.ylabel(r"Albedo and 1-Emissivity")
 plt.xticks(rotation='vertical')
