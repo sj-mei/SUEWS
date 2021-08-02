@@ -304,13 +304,14 @@ clean: clean-obj clean-mods clean-lib clean-bin clean-ext
 # dist-clean: clean-tests clean-toplevel clean-utilities clean-mods dist-clean-doc
 
 clean-obj:
-	rm -rf $(DIR_SRC_SUEWS)/*.o $(DIR_SRC_SUEWS)/*.mod
+	find . -name "*.o" -type f -delete
+
 
 clean-lib:
-	rm -rf $(DIR_LIB_SUEWS)/lib*.a
+	find . -name "lib*.a" -type f -delete
 
 clean-mods:
-	rm -rf $(DIR_MOD_SUEWS)/*.mod
+	find . -name "*.mod" -type f -delete
 
 clean-bin:
 	rm -rf $(DIR_BIN_SUEWS)/SUEWS_*
