@@ -124,8 +124,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Translate...'
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
-   PRINT *,''
-   PRINT *,'Calling SUEWS_cal_Main'   
+   !PRINT *,''
+   !PRINT *,'Calling SUEWS_cal_Main'   
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
    CALL SUEWS_cal_Main( &
       AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order

@@ -1086,35 +1086,35 @@ CONTAINS
 
          !!! printing !!!
 
-         PRINT *,'it:',it
+         !PRINT *,'it:',it
 
-         PRINT *,'sfr:',sfr
+         !PRINT *,'sfr:',sfr
    
-         PRINT *,'alb:'
-         PRINT *,alb
-         PRINT *,'weighted albedo from alb:',(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+&
-                                             alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
-         PRINT *,'alb_spc:',alb_spc
+         !PRINT *,'alb:'
+         !PRINT *,alb
+         !PRINT *,'weighted albedo from alb:',(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+&
+         !                                    alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
+         !PRINT *,'alb_spc:',alb_spc
          
-         PRINT *,'emis:'
-         PRINT *,emis
-         PRINT *,'weighted emissivity from emis:',(emis(1)*sfr(PavSurf)+emis(2)*sfr(BldgSurf)+emis(3)*sfr(ConifSurf)+&
-                                                   emis(4)*sfr(DecidSurf)+emis(5)*sfr(GrassSurf)+emis(6)*sfr(BSoilSurf)+&
-                                                   emis(7)*sfr(WaterSurf))
-         PRINT *,'emis_spc:',emis_spc
+         !PRINT *,'emis:'
+         !PRINT *,emis
+         !PRINT *,'weighted emissivity from emis:',(emis(1)*sfr(PavSurf)+emis(2)*sfr(BldgSurf)+emis(3)*sfr(ConifSurf)+&
+         !                                          emis(4)*sfr(DecidSurf)+emis(5)*sfr(GrassSurf)+emis(6)*sfr(BSoilSurf)+&
+         !                                          emis(7)*sfr(WaterSurf))
+         !PRINT *,'emis_spc:',emis_spc
    
-         PRINT *,'kup:',kup
-         PRINT *,'sw_up_spc:',sw_up_spc
+         !PRINT *,'kup:',kup
+         !PRINT *,'sw_up_spc:',sw_up_spc
    
-         PRINT *,'lup:',lup
-         PRINT *,'lw_up_spc:',lw_up_spc
-         PRINT *,'lw_emission_spc:',lw_emission_spc
+         !PRINT *,'lup:',lup
+         !PRINT *,'lw_up_spc:',lw_up_spc
+         !PRINT *,'lw_emission_spc:',lw_emission_spc
 
-         PRINT *,'avkdn',avkdn
-         PRINT *,'ldown',ldown
+         !PRINT *,'avkdn',avkdn
+         !PRINT *,'ldown',ldown
    
-         PRINT *,'qn:',qn
-         PRINT *,'qn_spc:',qn_spc
+         !PRINT *,'qn:',qn
+         !PRINT *,'qn_spc:',qn_spc
 
       !==============translation end ================
 
