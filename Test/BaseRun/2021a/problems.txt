@@ -1,3 +1,4 @@
- --------------
- Run completed.
- 0
+ Problem: Problem in SUEWS_Initial: multiple years found in met forcing file.
+ ERROR! Program stopped: Met forcing file should contain only 1 year of data.
+  Value: 2012.0000
+  3
