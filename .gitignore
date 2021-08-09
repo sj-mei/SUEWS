@@ -347,3 +347,6 @@ Test/BaseRun/2020b/Input/test_2004_data_60.txt
 # junk files during complilations
 fort.1
 problems.txt
+
+# local settings
+.vscode/
