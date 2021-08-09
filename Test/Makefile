@@ -34,11 +34,6 @@ test:
 	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `main` recipe
 	cd code; python test_dev.py
 
-# update sample run with the latest bin
-# !USE WITH CAUTION!
-update:
-	cd code; python update_samplerun.py
-
 clean:
 	rm -rf *.zip
 

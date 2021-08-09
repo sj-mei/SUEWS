@@ -35,7 +35,8 @@ MODULE SUEWS_Driver
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
-      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, ncolumnsDataOutDebug
+      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main
@@ -91,7 +92,7 @@ CONTAINS
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
-      dataOutLineDebug, &
+      dataOutLineDebug, dataOutLineSPARTACUS, &
       DailyStateLine)!output
 
       IMPLICIT NONE
@@ -345,6 +346,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! RSL variable array
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT)     ::dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT)     ::dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) ::dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
       ! ########################################################################################
 
@@ -574,7 +576,13 @@ CONTAINS
       INTEGER::i_iter
 
       ! SPARTACUS test out
-      REAL(KIND(1D0)):: out_spc
+      REAL(KIND(1D0)):: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
+      REAL(KIND(1D0)):: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15)::clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+                                       roof_in_lw_spc
+      REAL(KIND(1D0))::top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15)::clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+                                       roof_in_sw_spc
       ! REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
       ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
 
@@ -767,7 +775,6 @@ CONTAINS
 
          ! ========================================================================
          ! N.B.: the following parts involves snow-related calculations.
-
          ! ===================NET ALLWAVE RADIATION================================
          CALL SUEWS_cal_Qn( &
             NetRadiationMethod, snowUse, &!input
@@ -776,6 +783,7 @@ CONTAINS
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr, emis, &
+            alb_spc, emis_spc, lw_emission_spc, &
             alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &!input
             alb_next, &!output
             ldown, fcld, &!output
@@ -791,7 +799,7 @@ CONTAINS
             soilstore_id_prev, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
             HDD_id_next, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
             avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
-            bldgh, alb_next, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
+            bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
             Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
             StoreDrainPrm_next, &
             qn_snow, dataOutLineESTM, qs, &!output
@@ -946,6 +954,18 @@ CONTAINS
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
+      IF (NetRadiationMethod > 1000) THEN
+         CALL test_rad_spc(&
+         sfr,zenith_deg,TSfc_C,avKdn,ldown,temp_c,alb_next,emis, &!input
+         alb_spc,emis_spc,lw_emission_spc,lw_up_spc,sw_up_spc,qn_spc, &
+         clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+         roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
+         top_dn_lw_spc,&
+         clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+         roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
+         ground_dn_dir_sw_spc, ground_net_sw_spc)!output
+      ENDIF
+
       !==============================================================
       ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
 
@@ -1047,8 +1067,6 @@ CONTAINS
          z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS)!output
 
-      ! model state_id:
-
       ! daily state_id:
       CALL update_DailyStateLine( &
          it, imin, nsh_real, &!input
@@ -1066,15 +1084,50 @@ CONTAINS
          a1, a2, a3, &
          DailyStateLine)!out
 
+         !!! printing !!!
+
+         !PRINT *,'it:',it
+
+         !PRINT *,'sfr:',sfr
+   
+         !PRINT *,'alb:'
+         !PRINT *,alb
+         !PRINT *,'weighted albedo from alb:',(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+&
+         !                                    alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
+         !PRINT *,'alb_spc:',alb_spc
+         
+         !PRINT *,'emis:'
+         !PRINT *,emis
+         !PRINT *,'weighted emissivity from emis:',(emis(1)*sfr(PavSurf)+emis(2)*sfr(BldgSurf)+emis(3)*sfr(ConifSurf)+&
+         !                                          emis(4)*sfr(DecidSurf)+emis(5)*sfr(GrassSurf)+emis(6)*sfr(BSoilSurf)+&
+         !                                          emis(7)*sfr(WaterSurf))
+         !PRINT *,'emis_spc:',emis_spc
+   
+         !PRINT *,'kup:',kup
+         !PRINT *,'sw_up_spc:',sw_up_spc
+   
+         !PRINT *,'lup:',lup
+         !PRINT *,'lw_up_spc:',lw_up_spc
+         !PRINT *,'lw_emission_spc:',lw_emission_spc
+
+         !PRINT *,'avkdn',avkdn
+         !PRINT *,'ldown',ldown
+   
+         !PRINT *,'qn:',qn
+         !PRINT *,'qn_spc:',qn_spc
+
       !==============translation end ================
 
-      ! test SPARTACUS
-      ! PRINT *, 'test_rad_spc'
-      ! CALL test_rad_spc(out_spc)
-      ! PRINT *, 'test_rad_spc', out_spc
-      out_spc = .1
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, avdens, avcp, out_spc, s_hPa, psyc_hPa]
+                          vpd_hPa, avdens, avcp, s_hPa, psyc_hPa]
+
+      dataOutLineSPARTACUS = [alb_spc,emis_spc,lw_emission_spc,lw_up_spc,sw_up_spc,qn_spc, &
+                              clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+                              roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
+                              top_dn_lw_spc,&
+                              clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+                              roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
+                              ground_dn_dir_sw_spc, ground_net_sw_spc]
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -1326,6 +1379,7 @@ CONTAINS
       dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
+      alb_spc, emis_spc, lw_emission_spc, &
       alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &!input
       alb_next, &!output
       ldown, fcld, &!output
@@ -1361,6 +1415,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::NARP_EMIS_SNOW
       REAL(KIND(1D0)), INTENT(in)::NARP_TRANS_SITE
       REAL(KIND(1D0)), INTENT(in)::tau_a, tau_f, SnowAlbMax, SnowAlbMin
+      REAL(KIND(1D0)), INTENT(in)::alb_spc, emis_spc, lw_emission_spc
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in):: IceFrac
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in):: sfr
@@ -1427,6 +1482,12 @@ CONTAINS
          ! IF (snowUse==0) SnowFrac=snowFrac_obs
          IF (snowUse == 0) SnowFrac = 0
 
+         IF (ldown_option == 1) THEN !Observed ldown provided as forcing
+            ldown = ldown_obs
+         ELSE
+            ldown = -9              !to be filled in NARP
+         END IF
+
          IF (ldown_option == 2) THEN !observed cloud fraction provided as forcing
             fcld = fcld_obs
          END IF
@@ -1446,8 +1507,9 @@ CONTAINS
 
          CALL NARP( &
             nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
+            alb_spc, emis_spc, lw_emission_spc, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-            dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
+            dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, &! output:
@@ -1775,7 +1837,7 @@ CONTAINS
       dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
       RAsnow, psyc_hPa, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
-      RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+      RS, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
@@ -1827,7 +1889,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::s_hPa
       REAL(KIND(1D0)), INTENT(in)::RS
       REAL(KIND(1D0)), INTENT(in)::RA
-      REAL(KIND(1D0)), INTENT(in)::RB
+      REAL(KIND(1D0)), INTENT(in)::rb
       REAL(KIND(1D0)), INTENT(in)::snowdensmin
       REAL(KIND(1D0)), INTENT(in)::precip
       REAL(KIND(1D0)), INTENT(in)::PipeCapacity
@@ -2007,7 +2069,7 @@ CONTAINS
                   EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
                   avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
                   PervFraction, vegfraction, addimpervious, &
-                  vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, snowdensmin, SnowProf_24hr, precip, &
+                  vpd_hPa, qn_e, s_hPa, RS, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
                   PipeCapacity, RunoffToWater, &
                   addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
                   WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
@@ -2043,7 +2105,7 @@ CONTAINS
             !Calculates ev [mm]
             CALL cal_evap( &
                EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
-               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, rb, tlv, &
                rss_nsurf(is), ev, qe_surf) !output
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
@@ -2493,8 +2555,8 @@ CONTAINS
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
-      dataoutlineDebug, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug)!inout
+      dataoutlineDebug,dataoutlineSPARTACUS, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS)!inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::ReadLinesMetdata
@@ -2511,6 +2573,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS - 5), INTENT(in) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutDebug - 5), INTENT(in) :: dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSPARTACUS - 5), INTENT(in) :: dataOutLineSPARTACUS
 
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
@@ -2518,6 +2581,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutSPARTACUS(ReadLinesMetdata, ncolumnsDataOutSPARTACUS, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
@@ -2525,6 +2589,7 @@ CONTAINS
       ! dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
       dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, (dataoutLineRSL)]
       dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [datetimeLine, (dataOutLineDebug)]
+      dataOutSPARTACUS(ir, 1:ncolumnsDataOutSPARTACUS, Gridiv) = [datetimeLine, (dataOutLineSPARTACUS)]
       ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
       dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [datetimeLine, set_nan(dataOutLineBEERS)]
       ! ! set invalid values to NAN
@@ -2891,7 +2956,7 @@ CONTAINS
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, &!output
-      dataOutBlockDebug, &
+      dataOutBlockDebug, dataOutBlockSPARTACUS, &
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -3142,6 +3207,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS), INTENT(OUT) ::dataOutBlockBEERS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug), INTENT(OUT) ::dataOutBlockDebug
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS), INTENT(OUT) ::dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
       ! ########################################################################################
 
@@ -3189,6 +3255,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) ::dataOutLineSOLWEIG
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) ::dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) ::dataOutLinedebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) ::dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
@@ -3197,6 +3264,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS, 1) ::dataOutBlockBEERS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) ::dataOutBlockDebug_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS, 1) ::dataOutBlockSPARTACUS_X
       ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
       REAL(KIND(1D0)), DIMENSION(10, 10)          ::MetForcingData_grid ! fake array as a placeholder
@@ -3517,7 +3585,7 @@ CONTAINS
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
             datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &
             dataOutLineBEERS, &!output
-            dataOutLineDebug, &
+            dataOutLineDebug, dataOutLineSPARTACUS, &
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -3532,9 +3600,9 @@ CONTAINS
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
             ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
-            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, &!input
+            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, dataOutLineSPARTACUS, &!input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, &!
-            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X)!inout
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X)!inout
 
       END DO
 
@@ -3614,19 +3682,21 @@ CONTAINS
       tsfc_C = qh/(avdens*avcp)*RA + temp_C
    END FUNCTION cal_tsfc
 
-   SUBROUTINE test_rad_spc(test_out)
-      ! TS 25 Feb 2021:
-      ! an initial working prototype subroutine to interact with SPARTACUS
-      ! TODO:
-      ! 1. incorporate SPARTACUS namelist into SUEWS
-      ! 2. to implement an interface for input/output variables
-      !    input: canopy parameters, canyon top radiation fluxes, surface temperatures of all facets
-      !    output: outgoing radiation fluxes, vertical profile
-      ! 3. to save profile output as an output group
+
+   !!!!!!!!!!!!!! SPARTACUS !!!!!!!!!!!!!
+
+   SUBROUTINE test_rad_spc(&
+      sfr,zenith_deg,TSfc_C,avKdn,ldown,temp_c,alb_next,emis, &!input
+      alb_spc,emis_spc,lw_emission_spc,lw_up_spc,sw_up_spc,qn_spc, &
+      clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+      roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
+      top_dn_lw_spc, &
+      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+      roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
+      ground_dn_dir_sw_spc, ground_net_sw_spc)!output
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
       USE radsurf_config, ONLY: config_type
-      ! USE easy_netcdf
       ! USE spartacus_surface_config, ONLY: read_config_from_namelist, driver_config_type
       USE radsurf_canopy_properties, ONLY: canopy_properties_type
       USE radsurf_sw_spectral_properties, ONLY: sw_spectral_properties_type
@@ -3634,10 +3704,32 @@ CONTAINS
       USE radsurf_boundary_conds_out, ONLY: boundary_conds_out_type
       USE radsurf_canopy_flux, ONLY: canopy_flux_type
       USE radsurf_simple_spectrum, ONLY: calc_simple_spectrum_lw
-      ! USE spartacus_surface_read_input, ONLY: read_input
-      ! USE radsurf_save, ONLY: save_canopy_fluxes
+      USE data_in, ONLY: fileinputpath
 
       IMPLICIT NONE
+
+      !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
+     
+      ! Input parameters and variables from SUEWS
+      REAL(KIND(1D0)), INTENT(IN):: zenith_deg, TSfc_C,&
+                                     avKdn, ldown, temp_C
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)::sfr, alb_next, emis
+
+      ! SPARTACUS configuration parameters
+      INTEGER(kind=jpim) :: ncol, ntotlay
+      INTEGER(kind=jpim), ALLOCATABLE:: i_representation(:)
+      INTEGER(kind=jpim), ALLOCATABLE:: nlay(:)
+      INTEGER :: istartcol, iendcol
+      INTEGER :: jrepeat, ilay, jcol
+
+      ! output variables
+      REAL(KIND(1D0)), INTENT(OUT) ::alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
+      REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT)::clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+                                                   roof_in_lw_spc
+      REAL(KIND(1D0)), INTENT(OUT) ::top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT)::clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+                                                   roof_in_sw_spc
 
       ! Derived types for the inputs to the radiation scheme
       TYPE(config_type)                 :: config
@@ -3646,12 +3738,13 @@ CONTAINS
       TYPE(sw_spectral_properties_type) :: sw_spectral_props
       TYPE(lw_spectral_properties_type) :: lw_spectral_props
       TYPE(boundary_conds_out_type)     :: bc_out
-
       TYPE(canopy_flux_type) &
          &  :: sw_norm_dir, &  ! SW fluxes normalized by top-of-canopy direct
          &     sw_norm_diff, & ! SW fluxes normalized by top-of-canopy diffuse
          &     lw_internal, &  ! LW fluxes from internal emission
-         &     lw_norm         ! LW fluxes normalized by top-of-canopy down
+         &     lw_norm, &      ! LW fluxes normalized by top-of-canopy down
+         &     lw_flux, &      ! Total lw canopy fluxes
+         &     sw_flux         ! Total sw canopy fluxes
 
       ! Top-of-canopy downward radiation, all dimensioned (nspec,ncol)
       REAL(kind=jprb), ALLOCATABLE &
@@ -3659,146 +3752,199 @@ CONTAINS
            &     top_flux_dn_direct_sw(:, :), & ! ...diffuse only
            &     top_flux_dn_lw(:, :)           ! longwave
 
-      ! layer height (ncol,ntotlay)
-      REAL(kind=jprb), ALLOCATABLE:: height(:, :)
+      ! variables to hold surface temperature and air temperature in Kelvin
+      REAL(KIND(1D0)) ::TSfc_K, tair_K
+      ! variable to hold top-of-canopy diffuse sw downward 
+      REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
+      ! variables to hold plan area weighted albedo and emissivity of surfaces not including buildings and trees
+      REAL(KIND(1D0)) ::alb_no_tree_bldg,emis_no_tree_bldg
+      ! variable to hold the vegetation emissivity
+      REAL(KIND(1D0)) ::veg_emis
 
-      INTEGER(kind=jpim) :: istartcol, iendcol
-      INTEGER(kind=jpim) :: ncol, ntotlay
+      INTEGER :: nlayers,n_vegetation_region_urban,nsw,nlw,nspec,&
+                  n_stream_sw_urban,n_stream_lw_urban
+      REAL(KIND(1D0)) :: sw_dn_direct_frac,air_ext_sw,air_ssa_sw,&
+                        veg_ssa_sw,air_ext_lw,air_ssa_lw,veg_ssa_lw,&
+                        ground_albedo_dir_mult_fact
+      LOGICAL :: use_sw_direct_albedo
+      real(kind=jprb), allocatable :: height(:,:), building_frac(:,:), veg_frac(:,:),&
+                                    building_scale(:,:), veg_scale(:,:), veg_ext(:,:),&
+                                    veg_fsd(:,:), veg_contact_fraction(:,:),&
+                                    roof_albedo(:,:), wall_albedo(:,:), roof_albedo_dir_mult_fact(:,:),&
+                                    wall_specular_frac(:,:), roof_emissivity(:,:,:),&
+                                    wall_emissivity(:,:,:)
+                                    
+      NAMELIST /Spartacus/ nlayers,use_sw_direct_albedo,n_vegetation_region_urban,&
+               nsw,nlw,nspec,n_stream_sw_urban,n_stream_lw_urban,sw_dn_direct_frac,&
+               air_ext_sw,air_ssa_sw,veg_ssa_sw,air_ext_lw,air_ssa_lw,&
+               veg_ssa_lw,ground_albedo_dir_mult_fact
+      NAMELIST /Spartacus_Profiles/ height, building_frac, veg_frac,&
+                                    building_scale, veg_scale, veg_ext,&
+                                    veg_fsd, veg_contact_fraction,&
+                                    roof_albedo, wall_albedo, roof_albedo_dir_mult_fact,&
+                                    wall_specular_frac, roof_emissivity,&
+                                    wall_emissivity
 
-      ! CHARACTER(len=512)::file_name
+      ! Bring in Spartacus.nml
+      OPEN (511, file=TRIM(FileInputPath)//'Spartacus.nml', status='old')
+      READ (511, nml=Spartacus)
+      CLOSE (511)
 
-      ! Total canopy fluxes
-      TYPE(canopy_flux_type)       :: lw_flux, sw_flux
-      ! INTEGER :: jblock, nblock ! Block loop index and number
+      ALLOCATE(height(1,nlayers+1))
+      ALLOCATE(building_frac(1,nlayers))
+      ALLOCATE(veg_frac(1,nlayers))
+      ALLOCATE(building_scale(1,nlayers))
+      ALLOCATE(veg_scale(1,nlayers))
+      ALLOCATE(veg_ext(1,nlayers))
+      ALLOCATE(veg_fsd(1,nlayers))
+      ALLOCATE(veg_contact_fraction(1,nlayers))
+      ALLOCATE(roof_albedo(1,nlayers))
+      ALLOCATE(wall_albedo(1,nlayers))
+      ALLOCATE(roof_albedo_dir_mult_fact(1,nlayers))
+      ALLOCATE(wall_specular_frac(1,nlayers))
+      ALLOCATE(roof_emissivity(1,nlayers,1))
+      ALLOCATE(wall_emissivity(1,nlayers,1))
+      ! Bring in Spartacus_Profiles.nml
+      OPEN (511, file=TRIM(FileInputPath)//'Spartacus_Profiles.nml', status='old')
+      READ (511, nml=Spartacus_Profiles)
+      CLOSE (511)
 
-      INTEGER :: jrepeat, ilay, jcol, nspec, nlay(4)
+      !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
-      REAL(KIND(1D0)) ::test_out
-      test_out = 0.1
-
-      !       ! Use namelist to configure the radiation calculation
-      !   call get_command_argument(1, file_name, status=istatus)
-      !   if (istatus /= 0) then
-      !     stop 'Failed to read name of namelist file as string of length < 512'
-      !   end if
-
-      ! hardcode this for now
-      ! PRINT *, 'config%READ'
       CALL config%READ(file_name='config.nam')
-
-      ! PRINT *, 'driver_config%READ'
-      ! CALL driver_config%READ(file_name='config.nam')
-
-      ! CALL config%PRINT(driver_config%iverbose)
-
+      ncol = 1
+      config%do_sw = .TRUE.
+      config%do_lw = .TRUE.
+      config%use_sw_direct_albedo = use_sw_direct_albedo
+      ALLOCATE (i_representation(ncol))
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0 .AND. sfr(BldgSurf) > 0.0)  THEN
+         config%do_vegetation = .TRUE.
+         i_representation = [3]
+         config%do_urban = .TRUE.
+      ELSE IF (sfr(ConifSurf)+sfr(DecidSurf) == 0.0 .AND. sfr(BldgSurf) > 0.0)  THEN
+         config%do_vegetation = .FALSE.
+         i_representation = [2]
+         config%do_urban = .TRUE.
+      ELSE IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0 .AND. sfr(BldgSurf) == 0.0)  THEN
+         config%do_vegetation = .TRUE.
+         i_representation = [1]
+         config%do_urban = .FALSE.
+      ELSE
+         config%do_vegetation = .FALSE.
+         i_representation = [0]
+         config%do_urban = .FALSE.
+      ENDIF
+      config%iverbose = 3
+      config%n_vegetation_region_urban = n_vegetation_region_urban
+      config%nsw = nsw
+      config%nlw = nlw
+      config%n_stream_sw_urban = n_stream_sw_urban
+      config%n_stream_lw_urban = n_stream_lw_urban
+      ALLOCATE (nlay(ncol))
+      nlay = [nlayers]
+      ntotlay = SUM(nlay)
       CALL config%consolidate()
 
-      ! Read "radsurf_driver" namelist into radiation driver config type
-      !   call driver_config%read(file_name)
-      ! CALL canopy_props%DEALLOCATE()
-      ! CALL sw_spectral_props%DEALLOCATE()
-      ! CALL lw_spectral_props%DEALLOCATE()
-      ! CALL bc_out%DEALLOCATE()
+      !!!!!!!!!!!!!! allocate and set canopy_props !!!!!!!!!!!!!!    
 
-      ! just a test value
-
-      ! PRINT *, 'open netcdf file'
-      ! Open the file and configure the way it is read
-      ! file_name = 'test_surfaces_in.nc'
-      ! CALL file%OPEN(TRIM(file_name), iverbose=driver_config%iverbose)
-
-      ! PRINT *, 'reading in netcdf file'
-      ! CALL read_input(file, config, driver_config, ncol, ntotlay, &
-      !  &  canopy_props, sw_spectral_props, lw_spectral_props, &
-      !  &  top_flux_dn_sw, top_flux_dn_direct_sw, top_flux_dn_lw)
-
-      ! Set first and last columns to process
-      ! IF (driver_config%iendcol < 1 .OR. driver_config%iendcol > ncol) THEN
-      !    driver_config%iendcol = ncol
-      ! END IF
-
-      ! IF (driver_config%istartcol > driver_config%iendcol) THEN
-      !    WRITE (nulout, '(a,i0,a,i0,a,i0,a)') '*** Error: requested column range (', &
-      !         &  driver_config%istartcol, &
-      !         &  ' to ', driver_config%iendcol, ') is out of the range in the data (1 to ', &
-      !         &  ncol, ')'
-      !    STOP 1
-      ! END IF
-
-      ! PRINT *, 'allocate canopy_props'
+      ! allocate
       CALL canopy_props%DEALLOCATE()
-      ncol = 4
-      nlay = [1, 2, 2, 2]
-      ntotlay = SUM(nlay)
+      CALL canopy_props%ALLOCATE(config, ncol, ntotlay, i_representation)
 
-      CALL canopy_props%ALLOCATE(config, ncol, ntotlay, [0, 1, 2, 3])
-      ! ALLOCATE (canopy_props%cos_sza(ncol))
-      canopy_props%cos_sza = 0.5
-      ! ALLOCATE (canopy_props%nlay(ncol))
+      ! set cos_sza, nlay, ncol, ntotlay
+      canopy_props%cos_sza = COS(zenith_deg*3.1415927/180) ! Meg can just hard code: COS(45.*3.1415927/180)
       canopy_props%nlay = nlay
-
-      ! PRINT *, 'set canopy_props'
       canopy_props%ncol = ncol
       canopy_props%ntotlay = SUM(canopy_props%nlay)
-      ! ntotlay = canopy_props%ntotlay
 
-      ! PRINT *, 'allocate canopy_props 2'
-      ! ALLOCATE (canopy_props%dz(canopy_props%ntotlay))
-      ! ALLOCATE (canopy_props%istartlay(ncol))
-
-      ! PRINT *, 'allocate height'
-      ALLOCATE (height(ntotlay + 1, ncol))
-      height = height*0 + 20.
-
-      ! PRINT *, 'cal canopy_props'
+      ! calculate dz array
       ilay = 1
       DO jcol = 1, ncol
-         ! PRINT *, 'jcol', jcol
-         ! PRINT *, 'ilay', ilay
-         ! PRINT *, 'nlay', canopy_props%nlay(jcol)
-         ! PRINT *, 'shape of dz', SHAPE(canopy_props%dz)
-         ! PRINT *, 'dz', canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1)
-         canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1) &
-         &  = height(2:canopy_props%nlay(jcol) + 1, jcol) &
+         canopy_props%dz(ilay:ilay+canopy_props%nlay(jcol)-1) &
+         &  = height(2:canopy_props%nlay(jcol)+1, jcol) &
          &   - height(1:canopy_props%nlay(jcol), jcol)
-         ! PRINT *, 'dz', canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1)
          canopy_props%istartlay(jcol) = ilay
-         ! PRINT *, 'istartlay', canopy_props%istartlay(jcol)
          ilay = ilay + canopy_props%nlay(jcol)
       END DO
+   
+      ! set temperature
+      TSfc_K = TSfc_C + 273.15 ! convert surface temperature to Kelvin
+      tair_K = temp_C + 273.15 ! convert air temperature to Kelvin
+      canopy_props%ground_temperature = TSfc_K ! Meg can just hard code: 307.
+      canopy_props%roof_temperature = TSfc_K ! Meg can just hard code: 319.
+      canopy_props%wall_temperature = TSfc_K ! Meg can just hard code: 303.
+      canopy_props%clear_air_temperature = tair_K ! Meg can just hard code: ?
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         canopy_props%veg_temperature = tair_K
+         canopy_props%veg_air_temperature = tair_K
+      ENDIF
+ 
+      ! set building and vegetation properties
+      canopy_props%i_representation = i_representation
+      canopy_props%building_scale = building_scale(1,:) ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
+      canopy_props%building_fraction = building_frac(1,:) ! building fraction
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         canopy_props%veg_fraction = veg_frac(1,:) ! evergreen + deciduous fractions
+         canopy_props%veg_scale = veg_scale(1,:) ! scale of tree crowns (m) since using the default use_symmetric_vegetation_scale_urban=.TRUE. (so that Eq. 20 Hogan et al. 2018 is used for L)
+         canopy_props%veg_ext = veg_ext(1,:) ! 0.25 in test_surface_in.nc. In literature generally 0.5 is used so why 0.25? This replaces vegetation albedo.
+         canopy_props%veg_fsd = veg_fsd(1,:) ! do we need the fractional standard deviation of the extinction coefficient? Varying seems to make no difference.
+         canopy_props%veg_contact_fraction = veg_contact_fraction(1,:)
+      ENDIF
 
-      ! PRINT *, 'set canopy_props'
-      ! ==================================================================
-      ! TODO: dummy values: sensible values should be passed from SUEWS
-      canopy_props%ground_temperature = 300
-      canopy_props%roof_temperature = 300
-      canopy_props%wall_temperature = 300
-      canopy_props%clear_air_temperature = 300
-      canopy_props%veg_temperature = 300
-      canopy_props%veg_air_temperature = 300
+      !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
 
-      canopy_props%building_fraction = .5
-      canopy_props%veg_fraction = .5
-      canopy_props%building_scale = 20
-      canopy_props%veg_scale = 20
-      canopy_props%veg_ext = .1
-      ! canopy_props%veg_fsd = .5
-      canopy_props%veg_contact_fraction = .1
-      canopy_props%i_representation = [0, 1, 2, 3]
-      ! ==================================================================
+      ALLOCATE (top_flux_dn_sw(nspec, ncol))
+      ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
+      ALLOCATE (top_flux_dn_lw(nspec, ncol))
+      top_flux_dn_sw = avKdn ! diffuse + direct
+      top_flux_dn_direct_sw = sw_dn_direct_frac*avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
+      top_flux_dn_diffuse_sw = top_flux_dn_sw(1,1) - top_flux_dn_direct_sw(1,1)
+      top_flux_dn_lw = ldown
 
-      ! PRINT *, 'allocate bc_out'
-      CALL bc_out%ALLOCATE(ncol, config%nsw, config%nlw)
+      !!!!!!!!!!!!!! allocate and set sw_spectral_props !!!!!!!!!!!!!!
 
-      nspec = 1
-      ! PRINT *, 'allocate sw_spectral_props'
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
-      ! PRINT *, 'allocate lw_spectral_props'
+
+      alb_no_tree_bldg = (alb_next(1)*sfr(PavSurf)+alb_next(5)*sfr(GrassSurf)+&
+                           alb_next(6)*sfr(BSoilSurf)+alb_next(7)*sfr(WaterSurf))/&
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf)) ! albedo of the ground
+      sw_spectral_props%air_ext = air_ext_sw ! what is the extinction coefficient of air?
+      sw_spectral_props%air_ssa = air_ssa_sw  ! what is the single scattering albedo of air?
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         sw_spectral_props%veg_ssa = veg_ssa_sw ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
+      ENDIF
+      sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees 
+      sw_spectral_props%roof_albedo = roof_albedo ! albedo of buildings
+      sw_spectral_props%wall_albedo = wall_albedo ! albedo of buildings
+      sw_spectral_props%wall_specular_frac = wall_specular_frac
+      IF (config%use_sw_direct_albedo) THEN
+         sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg*ground_albedo_dir_mult_fact
+         sw_spectral_props%roof_albedo_dir = roof_albedo*roof_albedo_dir_mult_fact
+      ENDIF
+
+      !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
+
       CALL lw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
 
-      ! PRINT *, 'do_sw'
+      emis_no_tree_bldg = (emis(1)*sfr(PavSurf)+emis(5)*sfr(GrassSurf)+&
+                           emis(6)*sfr(BSoilSurf)+emis(7)*sfr(WaterSurf))/&
+                           (sfr(PavSurf)+sfr(GrassSurf)+sfr(BSoilSurf)+sfr(WaterSurf))  ! emissivity of the ground
+      lw_spectral_props%air_ext = air_ext_lw ! what is the extinction coefficient of air?
+      lw_spectral_props%air_ssa = air_ssa_lw  ! what is the single scattering albedo of air?
+      IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
+         lw_spectral_props%veg_ssa = veg_ssa_lw ! from test_surface_in.nc .... suitable?
+      ENDIF
+      lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
+      lw_spectral_props%roof_emissivity = roof_emissivity(:,:,1) ! emissivity of buildings
+      lw_spectral_props%wall_emissivity = wall_emissivity(:,:,1) ! emissivity of buildings
+
+      ! would be good to create a property veg_emissivity in lw_spectral_props then pass to calc_simple_spectrum_lw()
+      !veg_emissivity = (emis(3)*sfr(ConifSurf)+emis(4)*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))
+
+      !!!!!!!!!!!!!! allocate sw !!!!!!!!!!!!!!
+
       IF (config%do_sw) THEN
          CALL sw_norm_dir%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
          CALL sw_norm_diff%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
@@ -3809,38 +3955,38 @@ CONTAINS
          CALL sw_flux%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
       END IF
 
-      ! PRINT *, 'do_lw'
+      !!!!!!!!!!!!!! allocate lw !!!!!!!!!!!!!!
+
       IF (config%do_lw) THEN
-         CALL lw_internal%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
-         CALL lw_norm%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
+         CALL lw_internal%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
+         CALL lw_norm%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
 
          CALL lw_internal%zero_all()
          CALL lw_norm%zero_all()
 
-         CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.FALSE.)
+         CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
       END IF
 
-      ! PRINT *, 'run lw_spectral_props'
+      !!!!!!!!!!!!!! allocate bc_out !!!!!!!!!!!!!!
+
+      CALL bc_out%ALLOCATE(ncol, config%nsw, config%nlw)
+
+      !!!!!!!!!!!!!! run calc_monochromatic_emission !!!!!!!!!!!!!!
+
       CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
+
+      !!!!!!!!!!!!!! CALL radsurf !!!!!!!!!!!!!!
 
       istartcol = 1
       iendcol = 1
-      ! PRINT *, 'run radsurf', istartcol, iendcol
-
-      ! Option of repeating calculation multiple time for more accurate
-      ! profiling
-      ALLOCATE (top_flux_dn_sw(nspec, ncol))
-      ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
-      ALLOCATE (top_flux_dn_lw(nspec, ncol))
-      top_flux_dn_sw = 300
-      top_flux_dn_direct_sw = 200
-      top_flux_dn_lw = 300
-
+      ! Option of repeating calculation multiple time for more accurate profiling
       DO jrepeat = 1, 3
-         ! PRINT *, 'jrepeat', jrepeat
-
+         if (config%do_lw) then
+            ! Gas optics and spectral emission
+            call calc_simple_spectrum_lw(config, canopy_props, lw_spectral_props, &
+                 &                       istartcol, iendcol)
+          end if
          ! Call the SPARTACUS-Surface radiation scheme
-         ! PRINT *, 'radsurf'
          CALL radsurf(config, canopy_props, &
               &       sw_spectral_props, lw_spectral_props, &
               &       bc_out, &
@@ -3849,27 +3995,66 @@ CONTAINS
               &       lw_internal, lw_norm)
          IF (config%do_sw) THEN
             ! Scale the normalized fluxes
-            ! PRINT *, 'sw_norm_dir', sw_norm_dir%ncol
             CALL sw_norm_dir%SCALE(canopy_props%nlay, &
                  &  top_flux_dn_direct_sw)
-            ! PRINT *, 'sw_norm_diff'
-            ! CALL sw_norm_diff%SCALE(canopy_props%nlay, &
-            ! &  top_flux_dn_sw - top_flux_dn_direct_sw)
-            ! PRINT *, 'sw_flux'
+            CALL sw_norm_diff%SCALE(canopy_props%nlay, &
+                 &  top_flux_dn_sw - top_flux_dn_direct_sw)
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
          END IF
-
          IF (config%do_lw) THEN
-            ! PRINT *, 'lw_norm'
             CALL lw_norm%SCALE(canopy_props%nlay, top_flux_dn_lw)
-            ! PRINT *, 'lw_flux'
             CALL lw_flux%SUM(lw_internal, lw_norm)
          END IF
-
       END DO
-      ! PRINT *, 'finish', bc_out%sw_albedo(1, 1)
 
-      test_out = bc_out%sw_albedo(1, 1)*1 + .1
+      ! albedo
+      alb_spc = ((top_flux_dn_diffuse_sw+10.**(-10))*bc_out%sw_albedo(1,1) & ! the 10.**-10 stops the equation blowing up when kdwn=0
+               + (top_flux_dn_direct_sw(1,1)+10.**(-10))*bc_out%sw_albedo_dir(1,1)) &
+               / (top_flux_dn_diffuse_sw+10.**(-10) + top_flux_dn_direct_sw(1,1)+10.**(-10))
+
+      !!! Output arrays !!!
+
+      ! emissivity
+      emis_spc = bc_out%lw_emissivity(1,1)
+      ! longwave emission
+      lw_emission_spc = bc_out%lw_emission(1,1)
+      ! lowngwave upward = emitted as blackbody - reflected
+      lw_up_spc = lw_emission_spc + (1-emis_spc)*ldown
+      ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
+      sw_up_spc = top_flux_dn_diffuse_sw*bc_out%sw_albedo(1,1) &
+                  + top_flux_dn_direct_sw(1,1)*bc_out%sw_albedo_dir(1,1) ! or more simply: alb_spc*avKdn
+      ! net all = net sw + net lw
+      qn_spc = sw_flux%top_net(1,1) + lw_flux%top_net(1,1)
+
+      ! lw arrays 
+      clear_air_abs_lw_spc = 0.0
+      clear_air_abs_lw_spc(:nlayers) = lw_flux%clear_air_abs(1,:)
+      wall_net_lw_spc = 0.0
+      wall_net_lw_spc(:nlayers) = lw_flux%wall_net(1,:)
+      roof_net_lw_spc = 0.0
+      roof_net_lw_spc(:nlayers) = lw_flux%roof_net(1,:)
+      roof_in_lw_spc = 0.0
+      roof_in_lw_spc(:nlayers) = lw_flux%roof_in(1,:)
+      top_net_lw_spc = lw_flux%top_net(1,1)
+      ground_net_lw_spc = lw_flux%ground_net(1,1)
+      top_dn_lw_spc = lw_flux%top_dn(1,1)
+
+      ! sw arrays
+      clear_air_abs_sw_spc = 0.0
+      clear_air_abs_sw_spc(:nlayers) = sw_flux%clear_air_abs(1,:)
+      wall_net_sw_spc = 0.0
+      wall_net_sw_spc(:nlayers) = sw_flux%wall_net(1,:)
+      roof_net_sw_spc = 0.0
+      roof_net_sw_spc(:nlayers) = sw_flux%roof_net(1,:)
+      roof_in_sw_spc = 0.0
+      roof_in_sw_spc(:nlayers) = sw_flux%roof_in(1,:)
+      top_dn_dir_sw_spc = sw_flux%top_dn_dir(1,1)
+      top_net_sw_spc = sw_flux%top_net(1,1)
+      ground_dn_dir_sw_spc = sw_flux%ground_dn_dir(1,1)
+      ground_net_sw_spc = sw_flux%ground_net(1,1)
+
+      !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
+
       CALL canopy_props%DEALLOCATE()
       CALL sw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%DEALLOCATE()
@@ -3885,10 +4070,19 @@ CONTAINS
       DEALLOCATE (top_flux_dn_sw)
       DEALLOCATE (top_flux_dn_direct_sw)
       DEALLOCATE (top_flux_dn_lw)
-      ! PRINT *, 'finish test_rad_spc'
-
-      ! call save_canopy_fluxes(trim('test_rad.nc'), config, canopy_props, &
-      !  &  sw_flux, lw_flux, iverbose=driver_config%iverbose)
+      DEALLOCATE (building_frac)
+      DEALLOCATE (veg_frac)
+      DEALLOCATE (building_scale)
+      DEALLOCATE (veg_scale)
+      DEALLOCATE (veg_ext)
+      DEALLOCATE (veg_fsd)
+      DEALLOCATE (veg_contact_fraction)
+      DEALLOCATE (roof_albedo)
+      DEALLOCATE (wall_albedo)
+      DEALLOCATE (roof_albedo_dir_mult_fact)
+      DEALLOCATE (wall_specular_frac)
+      DEALLOCATE (roof_emissivity)
+      DEALLOCATE (wall_emissivity)
 
    END SUBROUTINE test_rad_spc
 

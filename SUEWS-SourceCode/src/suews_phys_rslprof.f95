@@ -193,10 +193,9 @@ CONTAINS
       ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
       ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
       flag_RSL = (1.-PAI)/FAI <= 18 .AND. (1.-PAI)/FAI > .021 &
-                 .AND. zH_RSL >= 5
+                 .AND. zH_RSL > 6
       ! &
       ! .and. PAI>0.1 .and. PAI<0.61
-
       IF (flag_RSL) THEN
          ! use RSL approach to calculate correction factors
          ! Step 3: calculate the stability dependent H&F constants
@@ -279,9 +278,12 @@ CONTAINS
          UStar_heat = 1/(kappa*RA_h)*(LOG((zMeas - zd_RSL)/z0v) - psihza + psihz0)
       END IF
       TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_heat
-      qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_heat
+      IF (qe == 0.0) THEN
+         qStar_RSL = 10.**(-10) ! avoid the situation where qe=0, qstar_RSL=0 and the code breaks LB 21 May 2021
+      ELSE
+         qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_heat
+      ENDIF
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
-
       DO z = idx_can, nz
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
@@ -314,7 +316,6 @@ CONTAINS
             dataoutLineqRSL(z) = dataoutLineTRSL(z)
          END DO
       END IF
-
       dataoutLineURSL = dataoutLineURSL*UStar_RSL
       dataoutLineTRSL = dataoutLineTRSL*TStar_RSL + Temp_C
       dataoutLineqRSL = (dataoutLineqRSL*qStar_RSL + qa_gkg/1000.)*1000.

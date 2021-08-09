@@ -1,7 +1,7 @@
 &RunControl
-CBLUse=1
+CBLUse=0
 SnowUse=1
-NetRadiationMethod=13
+NetRadiationMethod=1003
 BaseTMethod=1
 EmissionsMethod=1
 StorageHeatMethod=1
@@ -11,7 +11,7 @@ RoughLenHeatMethod=2
 RoughLenMomMethod=2
 SMDMethod=0
 WaterUseMethod=0
-FileCode='test'
+FileCode='Kc'
 FileInputPath="./Input/"
 FileOutputPath="./Output/"
 MultipleMetFiles=0
@@ -22,7 +22,7 @@ KeepTstepFilesOut=0
 WriteOutOption=1
 ResolutionFilesOut=3600
 Tstep=300
-ResolutionFilesIn=3600
+ResolutionFilesIn=300
 ResolutionFilesInESTM=3600  !NEW
 DisaggMethod=1          !NEW  (1 = default value, so don't actually need here)
 RainDisaggMethod=100    !NEW  (100 = default value, so don't actually need here)

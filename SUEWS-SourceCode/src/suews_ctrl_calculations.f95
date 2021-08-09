@@ -80,10 +80,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
       dataoutlineestm, dataoutlineRSL, dataOutLineBEERS, &
-      dataOutLineDebug, dataOutLineDebug, &
+      dataOutLineDebug, dataOutLineDebug, dataOutLineSPARTACUS, &
       dailystateline, dataoutdailystate, &
       dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, &
-      dataoutBL, dataOutDebug
+      dataoutBL, dataOutDebug, dataOutSPARTACUS
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       H_maintain, &
@@ -124,6 +124,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Translate...'
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
+   !PRINT *,''
+   !PRINT *,'Calling SUEWS_cal_Main'   
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
    CALL SUEWS_cal_Main( &
       AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
@@ -172,7 +174,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       dataOutLineBEERS, &!output
-      dataOutLineDebug, &
+      dataOutLineDebug, dataOutLineSPARTACUS, &
       DailyStateLine)!output
 
    !============ update and write out SUEWS_cal_DailyState ===============
@@ -189,9 +191,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &!input
-      dataOutLineDebug, &
+      dataOutLineDebug, dataOutLineSPARTACUS, &
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, &!inout
-      dataOutDebug)!inout
+      dataOutDebug, dataOutSPARTACUS)!inout
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
@@ -220,7 +222,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
                Temp_C, Press_hPa, avkdn, avu1, avrh, avcp, avdens, es_hPa, lv_J_kg, &
                nsh_real, tstep, UStar, psih, is, NumberOfGrids, &
                qhforCBL, qeforCBL, ReadLinesMetdata, dataOutBL)
-
    END IF
 
    ! NB: SOLWEIG can be treated as a separate part:
