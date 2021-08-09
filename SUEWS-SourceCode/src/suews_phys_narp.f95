@@ -63,7 +63,7 @@ CONTAINS
             ldown_option = 3              !LDOWN will be modelled
             !NetRadiationMethod=NetRadiationMethod/1000
          END IF
-         
+
       ELSEIF (NetRadiationMethod > 0) THEN  !Modelled Q* is used (NARP)
          AlbedoChoice = -9
          IF (NetRadiationMethod < 100) THEN
@@ -91,7 +91,7 @@ CONTAINS
             NetRadiationMethod_use = NetRadiationMethod/100
 
          !choose Ldown method for Spartacus
-         ELSEIF (NetRadiationMethod > 1000) THEN  
+         ELSEIF (NetRadiationMethod > 1000) THEN
             AlbedoChoice = 0
             NetRadiationMethod_use = MOD(NetRadiationMethod, 10)
             IF (NetRadiationMethod_use == 1) ldown_option = 1
@@ -105,7 +105,7 @@ CONTAINS
                WRITE (*, *) 'Value not usable'
                STOP
             END IF
-         
+
          END IF
 
          !If bad NetRadiationMethod value
@@ -283,12 +283,9 @@ CONTAINS
       QSTAR_S = 0
       kclear = 0
       KUPall = 0
-<<<<<<< HEAD
       IF (ldown_option .NE. 1) THEN
          LDOWN = 0
       ENDIF
-=======
->>>>>>> origin/master
       LUPall = 0
       fcld = 0
       TSURFall = 0
@@ -410,7 +407,7 @@ CONTAINS
          TSURF = TSURF - 273.16
 
          !Define sub-surface radiation components
-         qn1_ind_nosnow(is) = QSTAR          
+         qn1_ind_nosnow(is) = QSTAR
          kup_ind_nosnow(is) = KUP
          lup_ind_nosnow(is) = LUP
          Tsurf_ind_nosnow(is) = TSURF
@@ -452,9 +449,9 @@ CONTAINS
             !QSTAR_ICE = 0
             !KUP_ICE = 0
          END IF
-         
+
          !Define snow sub-surface radiation components
-         qn1_ind_snow(is) = QSTAR_SNOW        
+         qn1_ind_snow(is) = QSTAR_SNOW
          kup_ind_snow(is) = KUP_SNOW
          lup_ind_snow(is) = LUP_SNOW
          Tsurf_ind_snow(is) = TSURF_SNOW
@@ -488,7 +485,7 @@ CONTAINS
          tsurf_cum = tsurf_cum + (tsurf_is*sfr(is))
 
          !Define sub-surface radiation components
-         qn1_ind(is) = qn1_is      
+         qn1_ind(is) = qn1_is
          kup_ind(is) = kup_is
          lup_ind(is) = lup_is
          Tsurf_ind(is) = tsurf_is
