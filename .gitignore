@@ -343,3 +343,10 @@ Test/BaseRun/2019b/Input/test_2004_data_60.txt
 Test/BaseRun/2020a/Input/test_2004_data_60.txt
 Test/BaseRun/2020a/SUEWS_V2020a
 Test/BaseRun/2020b/Input/test_2004_data_60.txt
+
+# junk files during complilations
+fort.1
+problems.txt
+
+# local settings
+.vscode/

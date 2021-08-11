@@ -63,7 +63,7 @@ CONTAINS
             ldown_option = 3              !LDOWN will be modelled
             !NetRadiationMethod=NetRadiationMethod/1000
          END IF
-         
+
       ELSEIF (NetRadiationMethod > 0) THEN  !Modelled Q* is used (NARP)
          AlbedoChoice = -9
          IF (NetRadiationMethod < 100) THEN
@@ -91,7 +91,7 @@ CONTAINS
             NetRadiationMethod_use = NetRadiationMethod/100
 
          !choose Ldown method for Spartacus
-         ELSEIF (NetRadiationMethod > 1000) THEN  
+         ELSEIF (NetRadiationMethod > 1000) THEN
             AlbedoChoice = 0
             NetRadiationMethod_use = MOD(NetRadiationMethod, 10)
             IF (NetRadiationMethod_use == 1) ldown_option = 1
@@ -105,7 +105,7 @@ CONTAINS
                WRITE (*, *) 'Value not usable'
                STOP
             END IF
-         
+
          END IF
 
          !If bad NetRadiationMethod value
@@ -123,7 +123,7 @@ CONTAINS
       nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
       alb_spc, emis_spc, lw_emission_spc, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-      DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, &
+      DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &
       AlbedoChoice, ldown_option, &
       NetRadiationMethod_use, DiagQN, &
@@ -157,6 +157,7 @@ CONTAINS
       !RH (%)       = relative humidity near model height
       !PRESS (mb)   = station pressure, use estimate if unavailable
       !qn1_obs      = Observed Q*
+      !ldown_obs      = Observed Ldown
 
       !INTERNAL FIELDS
       ! TemP_K = air temperature in K
@@ -196,6 +197,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) ::RH
       REAL(KIND(1D0)), INTENT(in) ::Press_hPa
       REAL(KIND(1D0)), INTENT(in) ::qn1_obs
+      REAL(KIND(1D0)), INTENT(in) ::ldown_obs
       REAL(KIND(1D0)), INTENT(in) ::SnowAlb
       REAL(KIND(1D0)), INTENT(in) ::NARP_TRANS_SITE
       REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
@@ -295,6 +297,12 @@ CONTAINS
       Tsurf_ind = 0
       albedo_snowfree = 0.2 ! arbitrary non-zero value for initialisatoin
       albedo_snow = SnowAlb
+
+      IF (ldown_option == 1) THEN !Observed ldown provided as forcing
+         ldown = ldown_obs
+      ELSE
+         ldown = 0             !to be filled in NARP
+      END IF
 
       !Total snowfree surface fraction
       SF_all = 0
@@ -399,7 +407,7 @@ CONTAINS
          TSURF = TSURF - 273.16
 
          !Define sub-surface radiation components
-         qn1_ind_nosnow(is) = QSTAR          
+         qn1_ind_nosnow(is) = QSTAR
          kup_ind_nosnow(is) = KUP
          lup_ind_nosnow(is) = LUP
          Tsurf_ind_nosnow(is) = TSURF
@@ -441,9 +449,9 @@ CONTAINS
             !QSTAR_ICE = 0
             !KUP_ICE = 0
          END IF
-         
+
          !Define snow sub-surface radiation components
-         qn1_ind_snow(is) = QSTAR_SNOW        
+         qn1_ind_snow(is) = QSTAR_SNOW
          kup_ind_snow(is) = KUP_SNOW
          lup_ind_snow(is) = LUP_SNOW
          Tsurf_ind_snow(is) = TSURF_SNOW
@@ -477,7 +485,7 @@ CONTAINS
          tsurf_cum = tsurf_cum + (tsurf_is*sfr(is))
 
          !Define sub-surface radiation components
-         qn1_ind(is) = qn1_is      
+         qn1_ind(is) = qn1_is
          kup_ind(is) = kup_is
          lup_ind(is) = lup_is
          Tsurf_ind(is) = tsurf_is

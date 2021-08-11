@@ -1,3 +1,4 @@
+# %%
 from setuptools import Distribution
 from numpy.distutils.core import Extension, setup
 import platform
@@ -67,7 +68,7 @@ if sysname == "Windows":
     fn_other_obj.append(os.path.join(dir_f95, "strptime.o"))
 
 src_f95 = path_target_f95 + path_other_f95
-
+# %%
 # # combine for files to use:
 # file_all_f95 = 'suews_all.f95'
 # # with open(file_all_f95, 'wb') as wfd:
@@ -99,24 +100,19 @@ def readme():
 # str(path_source)
 
 
-def get_suews_version(ver_minor, dir_source=dir_f95):
-    path_source = Path(dir_source)
-    path_makefile = path_source.parent / "Makefile"
-    print(path_makefile, path_makefile.exists())
-    # identify `file` to retrieve version
-    with open(str(path_makefile)) as fm:
-        for line in fm:
-            if "file " in line:
-                print(line)
-                print(line.split(r"/")[-1])
-                print(line.split(r"/")[-1].split(r"#")[0])
-                file = line.split(r"/")[-1].split(r"#")[0].strip()
-                return
+def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"):
+    try:
+        path_source = Path(dir_source)
+        path_makefile = path_source.parent / "Makefile"
+        print(path_makefile, path_makefile.exists())
 
-    print("file", file)
-    # get version from `file`
-    path_constfile = path_source / file
-    print(path_constfile)
+        # get version from `file`
+        path_constfile = path_source / file
+        print(path_constfile,path_constfile.exists())
+        print(path_constfile)
+    except IOError:
+        raise IOError(f'{path_constfile} not existing!')
+
     with open(str(path_constfile)) as fm:
         for line in fm:
             if "progname" in line:
@@ -130,7 +126,7 @@ def get_suews_version(ver_minor, dir_source=dir_f95):
 
     return ver
 
-
+# %%
 class BinaryDistribution(Distribution):
     def has_ext_modules(self):
         return True
@@ -165,7 +161,7 @@ ext_modules = [
 setup(
     name="supy_driver",
     # update version info here!
-    version=get_suews_version(ver_minor=14),
+    version=get_suews_version(ver_minor=2),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
     url="https://github.com/sunt05/SuPy",
@@ -182,7 +178,7 @@ setup(
     distclass=BinaryDistribution,
     ext_modules=ext_modules,
     python_requires=">=3.5",
-    install_requires=["numpy>=1.17.4"],
+    install_requires=["numpy>=1.20"],
     include_package_data=True,
     test_suite="nose.collector",
     tests_require=["nose"],

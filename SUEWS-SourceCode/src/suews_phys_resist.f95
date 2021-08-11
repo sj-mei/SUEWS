@@ -483,6 +483,10 @@ CONTAINS
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
             zdm = (1 + 4.43**(-sfr(BldgSurf))*(sfr(BldgSurf) - 1))*Zh
             z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
+         ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
+            ! these are derived using digitalised points
+            zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*areaZh) + 0.493*sigmoid(-5.17 + 32.7*areaZh))*Zh
+            z0m = (0.00208 + 0.0165*areaZh + 2.52*areaZh**2 + 3.21*areaZh**3 - 43.6*areaZh**4 + 76.5*areaZh**5 - 40.*areaZh**6)*Zh
          END IF
       ELSEIF (Zh == 0) THEN   !If zh calculated to be zero, set default roughness length and displacement height
          IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)
@@ -552,5 +556,14 @@ CONTAINS
       END IF
 
    END FUNCTION cal_z0v
+
+   FUNCTION sigmoid(x) RESULT(res)
+      IMPLICIT NONE
+      REAL(KIND(1D0)), INTENT(in) :: x
+      REAL(KIND(1D0)) :: res
+
+      res = 1/(1 + EXP(-x))
+
+   END FUNCTION sigmoid
 
 END MODULE resist_module

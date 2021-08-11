@@ -581,7 +581,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(15)::clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
                                        roof_in_lw_spc
       REAL(KIND(1D0))::top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15)::clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+      REAL(KIND(1D0)), DIMENSION(15)::clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
                                        roof_in_sw_spc
       ! REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
       ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
@@ -961,7 +961,7 @@ CONTAINS
          clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
          roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
          top_dn_lw_spc,&
-         clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+         clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
          roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
          ground_dn_dir_sw_spc, ground_net_sw_spc)!output
       ENDIF
@@ -1125,7 +1125,7 @@ CONTAINS
                               clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
                               roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
                               top_dn_lw_spc,&
-                              clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+                              clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
                               roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
                               ground_dn_dir_sw_spc, ground_net_sw_spc]
 
@@ -1482,12 +1482,6 @@ CONTAINS
          ! IF (snowUse==0) SnowFrac=snowFrac_obs
          IF (snowUse == 0) SnowFrac = 0
 
-         IF (ldown_option == 1) THEN !Observed ldown provided as forcing
-            ldown = ldown_obs
-         ELSE
-            ldown = -9              !to be filled in NARP
-         END IF
-
          IF (ldown_option == 2) THEN !observed cloud fraction provided as forcing
             fcld = fcld_obs
          END IF
@@ -1509,7 +1503,7 @@ CONTAINS
             nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
             alb_spc, emis_spc, lw_emission_spc, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-            dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
+            dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, &! output:
@@ -1837,7 +1831,7 @@ CONTAINS
       dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
       RAsnow, psyc_hPa, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
-      RS, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+      RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
@@ -1889,7 +1883,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::s_hPa
       REAL(KIND(1D0)), INTENT(in)::RS
       REAL(KIND(1D0)), INTENT(in)::RA
-      REAL(KIND(1D0)), INTENT(in)::rb
+      REAL(KIND(1D0)), INTENT(in)::RB
       REAL(KIND(1D0)), INTENT(in)::snowdensmin
       REAL(KIND(1D0)), INTENT(in)::precip
       REAL(KIND(1D0)), INTENT(in)::PipeCapacity
@@ -2069,7 +2063,7 @@ CONTAINS
                   EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
                   avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
                   PervFraction, vegfraction, addimpervious, &
-                  vpd_hPa, qn_e, s_hPa, RS, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
+                  vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, snowdensmin, SnowProf_24hr, precip, &
                   PipeCapacity, RunoffToWater, &
                   addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
                   WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
@@ -2105,7 +2099,7 @@ CONTAINS
             !Calculates ev [mm]
             CALL cal_evap( &
                EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
-               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, rb, tlv, &
+               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
                rss_nsurf(is), ev, qe_surf) !output
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
@@ -3691,7 +3685,7 @@ CONTAINS
       clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
       roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
       top_dn_lw_spc, &
-      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
       roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
       ground_dn_dir_sw_spc, ground_net_sw_spc)!output
       USE parkind1, ONLY: jpim, jprb
@@ -3709,7 +3703,7 @@ CONTAINS
       IMPLICIT NONE
 
       !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
-     
+
       ! Input parameters and variables from SUEWS
       REAL(KIND(1D0)), INTENT(IN):: zenith_deg, TSfc_C,&
                                      avKdn, ldown, temp_C
@@ -3728,7 +3722,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT)::clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
                                                    roof_in_lw_spc
       REAL(KIND(1D0)), INTENT(OUT) ::top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT)::clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, & 
+      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT)::clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
                                                    roof_in_sw_spc
 
       ! Derived types for the inputs to the radiation scheme
@@ -3754,7 +3748,7 @@ CONTAINS
 
       ! variables to hold surface temperature and air temperature in Kelvin
       REAL(KIND(1D0)) ::TSfc_K, tair_K
-      ! variable to hold top-of-canopy diffuse sw downward 
+      ! variable to hold top-of-canopy diffuse sw downward
       REAL(KIND(1D0)) ::top_flux_dn_diffuse_sw
       ! variables to hold plan area weighted albedo and emissivity of surfaces not including buildings and trees
       REAL(KIND(1D0)) ::alb_no_tree_bldg,emis_no_tree_bldg
@@ -3773,7 +3767,7 @@ CONTAINS
                                     roof_albedo(:,:), wall_albedo(:,:), roof_albedo_dir_mult_fact(:,:),&
                                     wall_specular_frac(:,:), roof_emissivity(:,:,:),&
                                     wall_emissivity(:,:,:)
-                                    
+
       NAMELIST /Spartacus/ nlayers,use_sw_direct_albedo,n_vegetation_region_urban,&
                nsw,nlw,nspec,n_stream_sw_urban,n_stream_lw_urban,sw_dn_direct_frac,&
                air_ext_sw,air_ssa_sw,veg_ssa_sw,air_ext_lw,air_ssa_lw,&
@@ -3845,7 +3839,7 @@ CONTAINS
       ntotlay = SUM(nlay)
       CALL config%consolidate()
 
-      !!!!!!!!!!!!!! allocate and set canopy_props !!!!!!!!!!!!!!    
+      !!!!!!!!!!!!!! allocate and set canopy_props !!!!!!!!!!!!!!
 
       ! allocate
       CALL canopy_props%DEALLOCATE()
@@ -3866,7 +3860,7 @@ CONTAINS
          canopy_props%istartlay(jcol) = ilay
          ilay = ilay + canopy_props%nlay(jcol)
       END DO
-   
+
       ! set temperature
       TSfc_K = TSfc_C + 273.15 ! convert surface temperature to Kelvin
       tair_K = temp_C + 273.15 ! convert air temperature to Kelvin
@@ -3878,7 +3872,7 @@ CONTAINS
          canopy_props%veg_temperature = tair_K
          canopy_props%veg_air_temperature = tair_K
       ENDIF
- 
+
       ! set building and vegetation properties
       canopy_props%i_representation = i_representation
       canopy_props%building_scale = building_scale(1,:) ! diameter of buildings (m) (the only L method for buildings is Eq. 19 Hogan et al. 2018)
@@ -3914,7 +3908,7 @@ CONTAINS
       IF (sfr(ConifSurf)+sfr(DecidSurf) > 0.0) THEN
          sw_spectral_props%veg_ssa = veg_ssa_sw ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
       ENDIF
-      sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees 
+      sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees
       sw_spectral_props%roof_albedo = roof_albedo ! albedo of buildings
       sw_spectral_props%wall_albedo = wall_albedo ! albedo of buildings
       sw_spectral_props%wall_specular_frac = wall_specular_frac
@@ -4026,7 +4020,7 @@ CONTAINS
       ! net all = net sw + net lw
       qn_spc = sw_flux%top_net(1,1) + lw_flux%top_net(1,1)
 
-      ! lw arrays 
+      ! lw arrays
       clear_air_abs_lw_spc = 0.0
       clear_air_abs_lw_spc(:nlayers) = lw_flux%clear_air_abs(1,:)
       wall_net_lw_spc = 0.0
