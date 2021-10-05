@@ -119,7 +119,7 @@ def gen_csv_suews(path_csv):
 project = "SUEWS"
 doc_name = "SUEWS Documentation"
 # today = datetime.today()
-copyright = "2018 – 2020" + ", micromet@University of Reading, led by Prof Sue Grimmond"
+copyright = "2018 – 2021" + ", micromet@University of Reading, led by Prof Sue Grimmond"
 author = "micromet@University of Reading, led by Prof Sue Grimmond"
 
 
@@ -336,7 +336,11 @@ html_static_path = ["_static", "doxygenoutput"]
 #
 # html_sidebars = {}
 numfig = True
-# html_logo = 'assets/img/SUEWS_LOGO.png'
+html_logo = 'images/logo/SUEWS_LOGO-display.png'
+html_theme_options = {
+    'logo_only': True,
+    'display_version': True,
+}
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
