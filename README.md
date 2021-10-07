@@ -114,7 +114,7 @@ Here are some tips to debug SUEWS code:
 #### GDB on macOS
 
 Recent macOS (since High Sierra) introduces extra security procedures for system level operations that makes installation GDB more tedious than before.
-The best practice, in TS's option, to avoid hacking your macOS, is to use Linux docker images with gfortran&gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran).
+The best practice, in TS's option, to avoid hacking your macOS, is to use Linux docker images with gfortran & gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran).
 
 Once the docker image is installed, simply run this from the SUEWS root folder for debugging:
 
