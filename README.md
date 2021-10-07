@@ -50,6 +50,7 @@ The compiled SUEWS binary executable can be found under `Release/bin/<system>` w
 Sample input and output files can be found under `Test/BaseRun/<version>`, where `<version>` is denoted by the ending part of compiled binary (e.g., `2020b`).
 
 ## Developer Note
+- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.  
 
 ### Branch
 

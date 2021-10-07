@@ -266,7 +266,7 @@ libspartacus: $(FILE_SRC_UTIL_SPTCS) $(FILE_SRC_RADTOOL_SPTCS) $(FILE_SRC_RAD_SP
 # rules for F90-->f95: SPARTACUS suffix .F90
 %.f95: %.F90
 	-rm -rf $*.f95
-	-ln -sf $(abspath $*.F90) $(abspath $*.f95)
+	-ln -sf "$(abspath $*.F90)" "$(abspath $*.f95)"
 
 libutil: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS))
 	@echo $(C_MODULE)
