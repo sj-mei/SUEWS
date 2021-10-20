@@ -192,8 +192,8 @@ CONTAINS
 
       ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
       ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
-      flag_RSL = (1.-PAI)/FAI <= 18 .AND. (1.-PAI)/FAI > .021 &
-                 .AND. zH_RSL >= 5
+      flag_RSL = (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5 ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint (note: it seems worng anyway - should be 0.87 not 0.021 based G&O1991 numbers)
+                 
       ! &
       ! .and. PAI>0.1 .and. PAI<0.61
       IF (flag_RSL) THEN
@@ -826,7 +826,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) ::elm ! length scale used in RSL
       REAL(KIND(1D0)), INTENT(out) ::Scc ! parameter in RSL
       REAL(KIND(1D0)), INTENT(out) ::f ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(out) ::PAI ! plan area index inlcuding area of trees
+      REAL(KIND(1D0)), INTENT(out) ::PAI ! plan area index inlcuding area of trees 
 
       ! internal variables
       ! INTEGER ::it
@@ -865,10 +865,12 @@ CONTAINS
       ! Lc_tree = 1./(cd_tree*a_tree) ! not used? why?
 
       ! height scale for bluff bodies
-      Lc = (1.-PAI)/FAI*Zh_RSL
-      ! set a threshold of Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
+      Lc = (1.-sfr(BldgSurf))/FAI*Zh_RSL ! LB Oct2021 - replaced PAI with sfr(BldgSurf) since the parameter should represent the solid fraction (and trees have negligible solid fraction).
+      ! set a minimum threshold (of 0.5*Zh_RSL) for Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
       Lc = MERGE(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
-
+      ! LB Oct2021 - set a minimum threshold (of 15 m) based on the Lc required to ensure the horizontal length scale associated with changes in canopy geometry (Lg<3Lc) is greater than a typical street
+      Lc = MERGE(Lc, 15., Lc > 15.)
+      
       ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
       lc_over_L = Lc/L_MOD
       ! lc_over_L = lc/L_MOD_RSL_x
