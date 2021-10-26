@@ -836,6 +836,7 @@ CONTAINS
       REAL(KIND(1D0)) ::lc_over_L
       ! real(KIND(1D0)) ::betaHF
       ! real(KIND(1D0)) ::betaNL
+      REAL(KIND(1D0)) ::Lc_min! LB Oct2021 - minimum value of Lc
 
       REAL(KIND(1D0)), PARAMETER::planF_low = 1E-6
       REAL(KIND(1D0)), PARAMETER::kappa = 0.40
@@ -844,7 +845,6 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
       REAL(KIND(1D0)), PARAMETER::Zh_min = 0.4! limit for minimum canyon height used in RSL module
       REAL(KIND(1D0)), PARAMETER::Lb_av = 35.! LB Oct2021 - average building dimensions
-      REAL(KIND(1D0)), PARAMETER::Lc_min! LB Oct2021 - minimum value of Lc
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
       ! L_MOD = merge(L_MOD, 300.d1, L_MOD < 300.)
