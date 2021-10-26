@@ -843,7 +843,8 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER::r = 0.1
       REAL(KIND(1D0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
       REAL(KIND(1D0)), PARAMETER::Zh_min = 0.4! limit for minimum canyon height used in RSL module
-      REAL(KIND(1D0)), PARAMETER::Lc_min = 15.
+      REAL(KIND(1D0)), PARAMETER::Lb_av = 35.! LB Oct2021 - average building dimensions
+      REAL(KIND(1D0)), PARAMETER::Lc_min! LB Oct2021 - minimum value of Lc
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
       ! L_MOD = merge(L_MOD, 300.d1, L_MOD < 300.)
@@ -870,6 +871,7 @@ CONTAINS
       ! set a minimum threshold (of 0.5*Zh_RSL) for Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
       Lc = MERGE(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
       ! LB Oct2021 - set a minimum threshold (of 15 m) based on the Lc required to ensure the horizontal length scale associated with changes in canopy geometry (Lg<3Lc) is greater than a typical street
+      Lc_min = Lb_av*BldgSurf**-0.5/3.
       Lc = MERGE(Lc, Lc_min, Lc > Lc_min)
       
       ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
