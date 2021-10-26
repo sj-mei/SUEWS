@@ -871,7 +871,7 @@ CONTAINS
       ! set a minimum threshold (of 0.5*Zh_RSL) for Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
       Lc = MERGE(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
       ! LB Oct2021 - set a minimum threshold (of 15 m) based on the Lc required to ensure the horizontal length scale associated with changes in canopy geometry (Lg<3Lc) is greater than a typical street
-      Lc_min = Lb_av*BldgSurf**-0.5/3.
+      Lc_min = Lb_av*BldgSurf**(-0.5)/3.
       Lc = MERGE(Lc, Lc_min, Lc > Lc_min)
       
       ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
