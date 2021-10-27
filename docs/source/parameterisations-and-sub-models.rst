@@ -144,9 +144,9 @@ Surface Diagnostics
 
 A `MOST <https://en.wikipedia.org/wiki/Monin–Obukhov_similarity_theory>`_-based surface diagnostics module is implemented in 2017b for calculating the surface level diagnostics, including:
 
-  * T2: air temperature at 2 m agl
-  * Q2: air specific humidity at 2 m agl
-  * U10: wind speed at 10 m agl
+-  T2: air temperature at 2 m agl
+-  Q2: air specific humidity at 2 m agl
+-  U10: wind speed at 10 m agl
 
 The details for formulation of these diagnostics can be found in equations 2.54, 2.55 and 2.56 in Brutsaert (2005) [B05]_
 
