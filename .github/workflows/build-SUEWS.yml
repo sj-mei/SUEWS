@@ -97,9 +97,9 @@ jobs:
       matrix:
         manylinux-python-target:
           # NOTE: Must be from this list:
-          # NOTE: $ docker run -it --rm \
-          # NOTE:   quay.io/pypa/manylinux1_x86_64 \
+          # NOTE: $ docker run -it --rm quay.io/pypa/manylinux2014_x86_64
           # NOTE:   ls -1 /opt/python
+          - cp310-cp310
           - cp39-cp39
           - cp38-cp38
           - cp37-cp37m
