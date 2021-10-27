@@ -552,6 +552,9 @@ CONTAINS
       ! qa=0.622*ea/(pres_hPa-0.378*ea)*1000 ! eqn 2.2, 2.4 and 2.5.
       RH = ea/es ! Brutsaert (2005) section 2.1.2, eqn 2.3
 
+      ! set an upper limit
+      if ( RH>1 ) RH=1
+
    END FUNCTION qa2RH
 
 END MODULE METEO
