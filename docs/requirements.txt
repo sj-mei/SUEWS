@@ -1,4 +1,4 @@
-sphinx~=3.3
+sphinx
 pybtex
 f90nml
 pandas
@@ -10,3 +10,4 @@ sphinxcontrib.bibtex~=2.4
 sphinx_comments
 sphinx_rtd_theme
 recommonmark
+docutils < 0.17
