@@ -127,7 +127,7 @@ jobs:
           name: python-package-distributions
           path: supy-driver/wheelhouse/
 
-  build-wheels-mac+win:
+  build-wheels-mac_win:
     needs: test-suews
 
     strategy:
