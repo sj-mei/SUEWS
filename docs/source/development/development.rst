@@ -14,4 +14,3 @@ Please provide your feedbacks via `channels listed here <feedback>`.
 
    coding_guideline
 
-   .. feedback
