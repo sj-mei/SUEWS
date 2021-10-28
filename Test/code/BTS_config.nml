@@ -18,7 +18,7 @@
     stabilitymethod    = 2, 3
     netradiationmethod = 0, 1, 2, 3, 11, 12, 13, 100, 200, 300
     emissionsmethod    = 0, 1, 2, 3
-    storageheatmethod  = 1, 3, 4
+    storageheatmethod  = 1, 3
     ohmincqf           = 0, 1
     stabilitymethod    = 2, 3, 4
     roughlenheatmethod = 1, 2, 3, 4, 5
