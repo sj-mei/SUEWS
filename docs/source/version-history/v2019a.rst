@@ -7,9 +7,9 @@ Version 2019a (released on 15 November 2019)
 
 - **Improvement**
 
-  #. An anthropogenic emission module is added. Module details refer to Järvi et al. (2019) [J19]_.
+  #. An anthropogenic emission module is added. Module details refer to Järvi et al. (2019) :cite:`J19`.
 
-  #. A `canyon profile module <rsl_mod>`_ is added. Module details refer to Theeuwes et al. (2019) [T19]_.
+  #. A `canyon profile module <rsl_mod>`_ is added. Module details refer to Theeuwes et al. (2019) :cite:`T19`.
 
 
 

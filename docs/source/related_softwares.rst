@@ -58,7 +58,7 @@ model behaviour.
       - `Prepare Existing Data`_
          Transforms meteorological data into UMEP format
       - `Download data (WATCH)`_
-         Prepare meteorological dataset from `WATCH`
+         Prepare meteorological dataset from :term:`WATCH`
 
 
    - Spatial Data

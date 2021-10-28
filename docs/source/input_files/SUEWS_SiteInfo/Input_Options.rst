@@ -2578,7 +2578,7 @@ Input Options
 
 		Maximum value for human heat emission. [W |m^-2|]
 
-		Example values: 175 Sailor and Lu (2004) [SL04]_
+		Example values: 175 Sailor and Lu (2004) :cite:`SL04`
 
 	:Configuration:
 		.. csv-table::
@@ -2620,7 +2620,7 @@ Input Options
 
 		Minimum value for human heat emission. [W |m^-2|]
 
-		Example values: 75 Sailor and Lu (2004) [SL04]_
+		Example values: 75 Sailor and Lu (2004) :cite:`SL04`
 
 	:Configuration:
 		.. csv-table::

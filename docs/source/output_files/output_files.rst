@@ -104,7 +104,7 @@ grid, see `Initial_Conditions`
 SSss_YYYY_snow_TT.txt
 ~~~~~~~~~~~~~~~~~~~~~
 
-SUEWS produces a separate output file for snow (when :option:`snowUse` = 1 in
+SUEWS produces a separate output file for snow (when :option:`SnowUse` = 1 in
 `RunControl.nml`) with details for each surface type.
 
 File format of SSss_YYYY_snow_TT.txt

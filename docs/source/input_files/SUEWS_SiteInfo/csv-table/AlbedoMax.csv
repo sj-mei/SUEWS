@@ -2,13 +2,13 @@
 "`SUEWS_NonVeg.txt`","`MU`","Effective surface albedo (middle of the day value) for summertime. View factors should be taken into account."
 "`SUEWS_Veg.txt`","`MU`","Example values [-]
 
-- 0.1 EveTr Oke (1987) [Ok87]_
-- 0.18 DecTr Oke (1987) [Ok87]_
-- 0.21 Grass Oke (1987) [Ok87]_ "
+- 0.1 EveTr Oke (1987) :cite:`O87`
+- 0.18 DecTr Oke (1987) :cite:`O87`
+- 0.21 Grass Oke (1987) :cite:`O87` "
 "`SUEWS_Water.txt`","`MU`","Example values [-]
 
-- 0.1 Water Oke (1987) [Ok87]_ "
+- 0.1 Water Oke (1987) :cite:`O87` "
 "`SUEWS_Snow.txt`","`MU`","
 Example values [-]
 
-- 0.85 Järvi et al. (2014) [Leena2014]_ "
+- 0.85 Järvi et al. (2014) :cite:`Leena2014` "

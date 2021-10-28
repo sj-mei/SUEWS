@@ -2,7 +2,7 @@
 CBLUse=0
 SnowUse=0
 SOLWEIGUse=0
-NetRadiationMethod=3 
+NetRadiationMethod=3
 EmissionsMethod=2
 StorageHeatMethod=3
 OHMIncQF=0
@@ -23,11 +23,11 @@ WriteOutOption=2
 ResolutionFilesOut=3600
 Tstep=300
 ResolutionFilesIn=3600
-ResolutionFilesInESTM=3600 
-DisaggMethod=1         
-RainDisaggMethod=100  
-DisaggMethodESTM=1      
-SuppressWarnings=1     
+ResolutionFilesInESTM=3600
+DisaggMethod=1
+RainDisaggMethod=100
+DisaggMethodESTM=1
+SuppressWarnings=1
 KdownZen=0
 diagnose=0
 /

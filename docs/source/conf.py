@@ -262,6 +262,7 @@ rst_prolog = """
 .. |m^-1| replace:: m\ :sup:`-1`
 .. |m^-2| replace:: m\ :sup:`-2`
 .. |m^-3| replace:: m\ :sup:`-3`
+.. |m^2| replace:: m\ :sup:`2`
 .. |m^3| replace:: m\ :sup:`3`
 .. |s^-1| replace:: s\ :sup:`-1`
 .. |kg^-1| replace:: kg\ :sup:`-1`
@@ -336,10 +337,10 @@ html_static_path = ["_static", "doxygenoutput"]
 #
 # html_sidebars = {}
 numfig = True
-html_logo = 'images/logo/SUEWS_LOGO-display.png'
+html_logo = "images/logo/SUEWS_LOGO-display.png"
 html_theme_options = {
-    'logo_only': True,
-    'display_version': True,
+    "logo_only": True,
+    "display_version": True,
 }
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -498,10 +499,12 @@ intersphinx_mapping = {
 
 
 # -- sphinxcontrib.bibtex configuration -------------------------------------------------
-
 bibtex_bibfiles = [
     "assets/refs/refs-SUEWS.bib",
+    "assets/refs/refs-others.bib",
 ]
+bibtex_default_style = "mystyle"
+bibtex_reference_style = 'author_year_round'
 
 # Custom bibliography stuff for sphinxcontrib.bibtex
 class MySort(Sorter):
@@ -524,7 +527,11 @@ class MySort(Sorter):
         try:
             num_mon = strptime(name_mon, "%b").tm_mon
         except:
-            num_mon = strptime(name_mon, "%B").tm_mon
+            try:
+                num_mon = strptime(name_mon, "%B").tm_mon
+            except:
+                print(entry)
+                num_mon = 1
 
         return (
             entry.fields.get("year", ""),
@@ -535,8 +542,35 @@ class MySort(Sorter):
         )
 
 
-class MyStyle(UnsrtStyle):
-    # default_sorting_style = 'author_year_title'
+class MyStyle_author_year(UnsrtStyle):
+    default_sorting_style = 'author_year_title'
+    # default_sorting_style = "year_author_title"
+    default_name_style = "lastfirst"
+    default_label_style = "alpha"
+
+    def format_web_refs(self, e):
+        # based on urlbst output.web.refs
+        return sentence[
+            optional[self.format_doi(e)],
+        ]
+
+    def get_book_template(self, e):
+        template = toplevel[
+            self.format_author_or_editor(e),
+            self.format_btitle(e, "title"),
+            self.format_volume_and_series(e),
+            sentence[field("publisher"), self.format_edition(e), date],
+            optional[sentence[self.format_isbn(e)]],
+            self.format_web_refs(e),
+            # tag('strong')[optional_field('note')],
+        ]
+
+        return template
+
+register_plugin("pybtex.style.formatting", "refs", MyStyle_author_year)
+
+
+class MyStyle_year_author(UnsrtStyle):
     default_sorting_style = "year_author_title"
     default_name_style = "lastfirst"
     default_label_style = "alpha"
@@ -560,6 +594,7 @@ class MyStyle(UnsrtStyle):
 
         return template
 
+register_plugin("pybtex.style.formatting", "refs_recent", MyStyle_year_author)
 
 # reading list style
 class RLStyle(UnsrtStyle):
@@ -589,7 +624,49 @@ class RLStyle(UnsrtStyle):
     # format_online = format_article
     # format_book = format_article
 
-
-register_plugin("pybtex.style.formatting", "refs", MyStyle)
 register_plugin("pybtex.style.formatting", "rl", RLStyle)
 register_plugin("pybtex.style.sorting", "year_author_title", MySort)
+
+# https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#custom-inline-citation-references
+import dataclasses
+import sphinxcontrib.bibtex.plugin
+
+from sphinxcontrib.bibtex.style.referencing import BracketStyle
+from sphinxcontrib.bibtex.style.referencing.author_year import AuthorYearReferenceStyle
+
+my_bracket_style = BracketStyle(
+    left="(",
+    right=")",
+)
+
+
+@dataclasses.dataclass
+class MyReferenceStyle(AuthorYearReferenceStyle):
+    bracket_parenthetical: BracketStyle = my_bracket_style
+    bracket_textual: BracketStyle = my_bracket_style
+    bracket_author: BracketStyle = my_bracket_style
+    bracket_label: BracketStyle = my_bracket_style
+    bracket_year: BracketStyle = my_bracket_style
+
+
+sphinxcontrib.bibtex.plugin.register_plugin(
+    "sphinxcontrib.bibtex.style.referencing", "author_year_round", MyReferenceStyle
+)
+
+
+# https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/develop/test/roots/test-bibliography_style_label_2/conf.py
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.labels.alpha import LabelStyle as AlphaLabelStyle
+from pybtex.plugin import register_plugin
+
+class ApaLabelStyle(AlphaLabelStyle):
+    def format_label(self, entry):
+        return "APA"
+
+
+class ApaStyle(UnsrtStyle):
+    default_label_style = 'apa'
+
+
+register_plugin('pybtex.style.labels', 'apa', ApaLabelStyle)
+register_plugin('pybtex.style.formatting', 'apastyle', ApaStyle)

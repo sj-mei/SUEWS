@@ -155,16 +155,16 @@ It is particularly important to ensure the following input information
 is appropriate and representative of the site:
 
 -  Fractions of different land cover types and (less so) heights of
-   buildings [W16]_
+   buildings :cite:`W16`
 -  Accurate meteorological forcing data, particularly precipitation and
-   incoming shortwave radiation [Ko17]_
--  Initial soil moisture conditions [Best2014]_
+   incoming shortwave radiation :cite:`Ko17`
+-  Initial soil moisture conditions :cite:`Best2014`
 -  Anthropogenic heat flux parameters, particularly if there are
    considerable energy emissions from transport, buildings, metabolism,
-   etc [W16]_
+   etc :cite:`W16`
 -  External water use (if irrigation or street cleaning occurs)
 -  Snow clearing (if running the snow option)
--  Surface conductance parameterisation [J11]_ [W16]_
+-  Surface conductance parameterisation :cite:`J11` :cite:`W16`
 
 SUEWS can be run either for an individual area or for multiple areas.
 There is no requirement for the areas to be of any particular shape but
@@ -251,7 +251,7 @@ You can either model |QF| within SUEWS or provide it as an input.
 -  To model it population density is needed as an input for LUMPS and
    SUEWS to calculate |QF|.
 -  If you have no information about the population of the site we
-   recommend that you use the `LUCY`_ model [lucy]_  [lucy2]_ to estimate the
+   recommend that you use the `LUCY`_ model :cite:`A11`  :cite:`L13` to estimate the
    anthropogenic heat flux which can then be provided as input SUEWS
    along with the meteorological forcing data.
 
