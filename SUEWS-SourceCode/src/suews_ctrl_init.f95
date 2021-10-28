@@ -58,7 +58,7 @@ SUBROUTINE OverallRunControl
       ResolutionFilesOut, &
       ResolutionFilesInESTM, &
       CBLuse, &
-      SNOWuse, &
+      SnowUse, &
       ! SOLWEIGuse, &
       BaseTMethod, &
       EmissionsMethod, &
@@ -145,7 +145,7 @@ SUBROUTINE OverallRunControl
    ! AlbedoChoice=0
    ! ldown_option=0
    ! IF(NetRadiationMethod==0)THEN    !Observed Q* from the met input file will be used
-   !    IF(snowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
+   !    IF(SnowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
    !       NetRadiationMethod=3000
    !       ldown_option=3              !Ldown will be modelled
    !       !NetRadiationMethod=NetRadiationMethod/1000
@@ -2100,7 +2100,7 @@ SUBROUTINE NextInitial(GridName, year_int)
    WRITE (57, *) 'BSoilState=', state_id(BSoilSurf)
    WRITE (57, *) 'WaterState=', state_id(WaterSurf)
    ! Only write snow variables if snow part is running
-   IF (snowUse == 1) THEN
+   IF (SnowUse == 1) THEN
       WRITE (57, *) 'SnowWaterPavedState=', SnowWater(PavSurf)
       WRITE (57, *) 'SnowWaterBldgsState=', SnowWater(BldgSurf)
       WRITE (57, *) 'SnowWaterEveTrState=', SnowWater(ConifSurf)
@@ -2193,7 +2193,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
    !write(*,*) 'ReadlinesMetdata:',ReadlinesMetdata
    DO i = 1, ReadlinesMetdata
       CALL MetRead(lunit, MetArray, InputmetFormat, ldown_option, NetRadiationMethod, &
-                   snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
+                   SnowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
       !DO iv=1,NSH
       !    MetForcingData(NSHcounter,1:24,GridCounter) = MetArray
       !   NSHcounter = NSHcounter + 1
@@ -2326,7 +2326,7 @@ SUBROUTINE CheckInitial
    END IF
 
    !Snow stuff
-   IF (snowUse == 1) THEN
+   IF (SnowUse == 1) THEN
       IF (SnowWaterBldgsState > CRWmax*SnowPackBldgs) THEN
          CALL ErrorHint(37, 'InitialCond: SnowWaterBldgsState', SnowWaterBldgsState, SnowPackBldgs, notUsedI)
       END IF

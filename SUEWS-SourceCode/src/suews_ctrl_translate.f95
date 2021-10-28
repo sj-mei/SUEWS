@@ -858,7 +858,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    !-----------------------------------------------------
    !-----------------------------------------------------
    ! load snow related properties for NARP
-   IF (snowuse == 1) NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
+   IF (SnowUse == 1) NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
    !NARP_CONFIGURATION if net radiation is to be modelled
    IF (NetRadiationMethod > 0) THEN
       NARP_LAT = SurfaceChar(Gridiv, c_lat)
@@ -1442,7 +1442,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) 'snowfrac_obs=', snowfrac_obs
       WRITE (12, *) 'snowpack=', snowpack
       WRITE (12, *) 'snowprof_24hr=', snowprof_24hr
-      WRITE (12, *) 'snowuse=', snowuse
+      WRITE (12, *) 'SnowUse=', SnowUse
       WRITE (12, *) 'soildepth=', soildepth
       WRITE (12, *) 'soilstore_id=', soilstore_id
       WRITE (12, *) 'soilstorecap=', soilstorecap

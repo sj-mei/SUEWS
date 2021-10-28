@@ -4,7 +4,7 @@ MODULE lumps_module
 CONTAINS
    SUBROUTINE LUMPS_cal_QHQE( &
       veg_type, & !input
-      snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
+      SnowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
       tstep_real, DRAINRT, nsh_real, &
       Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_prev, LAImax, LAImin, &
       QH_LUMPS, & !output
@@ -31,7 +31,7 @@ CONTAINS
       INTEGER, PARAMETER::ivGrass = 3
 
       INTEGER, INTENT(in) :: veg_type  !Defines how vegetation is calculated for LUMPS
-      INTEGER, INTENT(in) :: snowUse ! option of snow module
+      INTEGER, INTENT(in) :: SnowUse ! option of snow module
 
       REAL(KIND(1D0)), INTENT(in) :: qn1! net all-wave radiation
       REAL(KIND(1D0)), INTENT(in) :: qf! anthropogenic heat flux
@@ -88,7 +88,7 @@ CONTAINS
 
       !Calculate also sublimation ones if snow calculations are made.
       !Used also for LUMPS
-      IF (snowUse == 1) THEN
+      IF (SnowUse == 1) THEN
          IF (Temp_C <= 0) THEN
             sIce_hpa = slopeIce_svp(Temp_C)
          ELSE

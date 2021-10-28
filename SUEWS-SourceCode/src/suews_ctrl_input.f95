@@ -11,7 +11,7 @@
 !       - Check observed SM calculation
 !---------------------------------------------------------------------------------------------------
 SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMethod, &
-                   snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
+                   SnowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
 
    USE defaultNotUsed
 
@@ -31,7 +31,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
              ldown_option, &       !Method of calculating Ldown
              NetRadiationMethod, & !Method of calculating Q*
              SMDMethod, &         !Method of measured soil moisture
-             snowUse
+             SnowUse
 
    ! Variables read in
    REAL(KIND(1D0))::avkdn, &     !Average downwelling shortwave radiation
@@ -156,7 +156,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
 
    IF (snowFrac_obs == NAN) snowFrac_obs = 0
 
-   IF (snowUse == 0 .AND. (snowFrac_obs < 0 .OR. snowFrac_obs > 1)) THEN
+   IF (SnowUse == 0 .AND. (snowFrac_obs < 0 .OR. snowFrac_obs > 1)) THEN
       CALL ErrorHint(27, 'Met Data: snow not between [0  1]', snowFrac_obs, dectime, notUsedI)
    END IF
 
@@ -1454,7 +1454,7 @@ CONTAINS
          END DO
          ! Read in last line of previous block
          CALL MetRead(lunit, MetArrayOrig, InputmetFormat, ldown_option, NetRadiationMethod, &
-                      snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
+                      SnowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
          MetForDisaggPrev(1:ncolumnsMetForcingData) = MetArrayOrig
       END IF
       ! print*, 'MetForDisagg',MetForDisagg(1:3,1:4)
@@ -1462,14 +1462,14 @@ CONTAINS
       ! Read in current block
       DO i = 1, ReadLinesOrigMetDataMax
          CALL MetRead(lunit, MetArrayOrig, InputmetFormat, ldown_option, NetRadiationMethod, &
-                      snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
+                      SnowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
          MetForDisagg(i, 1:ncolumnsMetForcingData) = MetArrayOrig
       END DO
       ! print*, 'MetForDisagg',MetForDisagg(1:3,1:4)
       ! Read in first line of next block (except for last block)
       IF (iBlock /= ReadBlocksOrigMetData) THEN
          CALL MetRead(lunit, MetArrayOrig, InputmetFormat, ldown_option, NetRadiationMethod, &
-                      snowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
+                      SnowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
          MetForDisaggNext(1:ncolumnsMetForcingData) = MetArrayOrig
       END IF
       CLOSE (lunit)

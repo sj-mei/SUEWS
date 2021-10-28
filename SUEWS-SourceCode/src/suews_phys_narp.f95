@@ -43,11 +43,11 @@ CONTAINS
    !==============================================================================
    SUBROUTINE RadMethod( &
       NetRadiationMethod, &!input
-      snowUse, &!input
+      SnowUse, &!input
       NetRadiationMethod_use, AlbedoChoice, ldown_option)!output
       IMPLICIT NONE
       INTEGER, INTENT(in) :: NetRadiationMethod ! the one from RunControl setting
-      INTEGER, INTENT(in) ::snowUse
+      INTEGER, INTENT(in) ::SnowUse
       INTEGER, INTENT(out)::NetRadiationMethod_use ! processed NetRadiationMethod to be used for other radiation calculations
       INTEGER, INTENT(out)::AlbedoChoice, ldown_option
       !Determine what should be done with respect to radiation
@@ -57,7 +57,7 @@ CONTAINS
          NetRadiationMethod_use = 0
          !  ldown_option is not required if NetRadiationMethodX=0 as LDOWN calculations are skipped
 
-         IF (snowUse == 1) THEN            !If snow is modelled, NARP is needed for surface temperature
+         IF (SnowUse == 1) THEN            !If snow is modelled, NARP is needed for surface temperature
             ! NetRadiationMethod=3000
             NetRadiationMethod_use = 3000
             ldown_option = 3              !LDOWN will be modelled

@@ -44,7 +44,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
                       precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
                       qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
                       raincover, rainmaxres, &
-                      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
+                      roughlenmommethod, smdmethod, snowFrac_obs, SnowUse, startdls, &
                       storageheatmethod, BaseT_Cooling, BaseT_Heating, temp_c, &
                       timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
    USE time, ONLY: iy, id, it, imin, isec, dectime, dt_since_start
@@ -125,7 +125,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
    !PRINT *,''
-   !PRINT *,'Calling SUEWS_cal_Main'   
+   !PRINT *,'Calling SUEWS_cal_Main'
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
    CALL SUEWS_cal_Main( &
       AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
@@ -162,7 +162,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
-      SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       Tmax_id, Tmin_id, &

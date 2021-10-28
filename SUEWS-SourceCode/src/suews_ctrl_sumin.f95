@@ -16,7 +16,7 @@ CONTAINS
 
    ! a mini version of SUEWS
    SUBROUTINE SuMin( &
-      snowUse, EmissionsMethod, NetRadiationMethod, RoughLenHeatMethod, &! model options
+      SnowUse, EmissionsMethod, NetRadiationMethod, RoughLenHeatMethod, &! model options
       RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod, LAIType, SnowPackLimit, &
       OHM_threshSW, OHM_threshWD, th, tl, Kmax, g1, g2, g3, g4, g5, g6, s1, s2, LaiPower, &
       CRWmax, &
@@ -111,7 +111,7 @@ CONTAINS
       tsurf_o, smd_o, glw1d, cldfra1d)!output
 
       ! model configurations
-      INTEGER, INTENT(in) ::snowUse
+      INTEGER, INTENT(in) ::SnowUse
       INTEGER, INTENT(in) ::EmissionsMethod
       INTEGER, INTENT(in) ::NetRadiationMethod
       INTEGER, INTENT(IN) ::RoughLenHeatMethod
@@ -570,7 +570,7 @@ CONTAINS
          RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater_id, S1, S2, &
          SatHydraulicConduct_id, SDDFull_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
          SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
-         SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth_id, &
+         SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth_id, &
          soilstore_id, SoilStoreCap_id, StabilityMethod, startDLS, state_id, StateLimit_id, &
          StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
          T_CRITIC_Cooling_id, T_CRITIC_Heating_id, Temp_C, TempMeltFact, TH, &

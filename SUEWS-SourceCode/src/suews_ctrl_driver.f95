@@ -80,7 +80,7 @@ CONTAINS
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
-      SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       Tmax_id, Tmin_id, &
@@ -123,7 +123,7 @@ CONTAINS
       INTEGER, INTENT(IN)::RoughLenHeatMethod
       INTEGER, INTENT(IN)::RoughLenMomMethod
       INTEGER, INTENT(IN)::SMDMethod
-      INTEGER, INTENT(IN)::snowUse
+      INTEGER, INTENT(IN)::SnowUse
       INTEGER, INTENT(IN)::StabilityMethod
       INTEGER, INTENT(IN)::StorageHeatMethod
       INTEGER, INTENT(IN)::tstep
@@ -777,7 +777,7 @@ CONTAINS
          ! N.B.: the following parts involves snow-related calculations.
          ! ===================NET ALLWAVE RADIATION================================
          CALL SUEWS_cal_Qn( &
-            NetRadiationMethod, snowUse, &!input
+            NetRadiationMethod, SnowUse, &!input
             tstep, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
             Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
@@ -810,7 +810,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
 
          CALL Snow_cal_MeltHeat( &
-            snowUse, &!input
+            SnowUse, &!input
             tstep, tau_r, SnowDensMax, &
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
             SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
@@ -829,7 +829,7 @@ CONTAINS
             !Calculate QH and QE from LUMPS in the first iteration of each time step
             CALL LUMPS_cal_QHQE( &
                veg_type, & !input
-               snowUse, qn, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
+               SnowUse, qn, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
                tstep_real, DRAINRT, nsh_real, &
                Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
                QH_LUMPS, & !output
@@ -845,7 +845,7 @@ CONTAINS
          !============= calculate water balance =============
          CALL SUEWS_cal_Water( &
             Diagnose, &!input
-            snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
+            SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
             state_id_prev, soilstore_id_prev, sfr, StoreDrainPrm_next, WaterDist, nsh_real, &
             drain_per_tstep, &  !output
             drain, frac_water2runoff, &
@@ -856,7 +856,7 @@ CONTAINS
          !===============Resistance Calculations=======================
          CALL SUEWS_cal_Resistance( &
             StabilityMethod, &!input:
-            Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
+            Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, SnowUse, &
             id, it, gsModel, SMDMethod, &
             avdens, avcp, QH_Init, zzd, z0m, zdm, &
             avU1, Temp_C, VegFraction, avkdn, &
@@ -870,7 +870,7 @@ CONTAINS
 
          !======== Evaporation and surface state_id ========
          CALL SUEWS_cal_QE( &
-            Diagnose, snowuse, &!input
+            Diagnose, SnowUse, &!input
             tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
             dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
             RAsnow, psyc_hPa, sIce_hPa, &
@@ -1089,30 +1089,30 @@ CONTAINS
          !PRINT *,'it:',it
 
          !PRINT *,'sfr:',sfr
-   
+
          !PRINT *,'alb:'
          !PRINT *,alb
          !PRINT *,'weighted albedo from alb:',(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+&
          !                                    alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
          !PRINT *,'alb_spc:',alb_spc
-         
+
          !PRINT *,'emis:'
          !PRINT *,emis
          !PRINT *,'weighted emissivity from emis:',(emis(1)*sfr(PavSurf)+emis(2)*sfr(BldgSurf)+emis(3)*sfr(ConifSurf)+&
          !                                          emis(4)*sfr(DecidSurf)+emis(5)*sfr(GrassSurf)+emis(6)*sfr(BSoilSurf)+&
          !                                          emis(7)*sfr(WaterSurf))
          !PRINT *,'emis_spc:',emis_spc
-   
+
          !PRINT *,'kup:',kup
          !PRINT *,'sw_up_spc:',sw_up_spc
-   
+
          !PRINT *,'lup:',lup
          !PRINT *,'lw_up_spc:',lw_up_spc
          !PRINT *,'lw_emission_spc:',lw_emission_spc
 
          !PRINT *,'avkdn',avkdn
          !PRINT *,'ldown',ldown
-   
+
          !PRINT *,'qn:',qn
          !PRINT *,'qn_spc:',qn_spc
 
@@ -1373,7 +1373,7 @@ CONTAINS
 
    !=============net all-wave radiation=====================================
    SUBROUTINE SUEWS_cal_Qn( &
-      NetRadiationMethod, snowUse, &!input
+      NetRadiationMethod, SnowUse, &!input
       tstep, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
       Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
@@ -1395,7 +1395,7 @@ CONTAINS
       ! INTEGER,PARAMETER ::GrassSurf = 5
 
       INTEGER, INTENT(in)::NetRadiationMethod
-      INTEGER, INTENT(in)::snowUse
+      INTEGER, INTENT(in)::SnowUse
       INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in)::DiagQN
       INTEGER, INTENT(in)::tstep
@@ -1473,14 +1473,14 @@ CONTAINS
 
       CALL RadMethod( &
          NetRadiationMethod, &!input
-         snowUse, &!input
+         SnowUse, &!input
          NetRadiationMethod_use, AlbedoChoice, ldown_option)!output
 
       SnowFrac = snowFrac_prev
       IF (NetRadiationMethod_use > 0) THEN
 
-         ! IF (snowUse==0) SnowFrac=snowFrac_obs
-         IF (snowUse == 0) SnowFrac = 0
+         ! IF (SnowUse==0) SnowFrac=snowFrac_obs
+         IF (SnowUse == 0) SnowFrac = 0
 
          IF (ldown_option == 2) THEN !observed cloud fraction provided as forcing
             fcld = fcld_obs
@@ -1697,7 +1697,7 @@ CONTAINS
    !==========================drainage and runoff================================
    SUBROUTINE SUEWS_cal_Water( &
       Diagnose, &!input
-      snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
+      SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
       state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
       drain_per_tstep, &  !output
       drain, frac_water2runoff, &
@@ -1708,7 +1708,7 @@ CONTAINS
       ! INTEGER,PARAMETER :: nsurf=7! number of surface types
       ! INTEGER,PARAMETER ::WaterSurf = 7
       INTEGER, INTENT(in) ::Diagnose
-      INTEGER, INTENT(in) ::snowUse
+      INTEGER, INTENT(in) ::SnowUse
 
       REAL(KIND(1D0)), INTENT(in)::NonWaterFraction
       REAL(KIND(1D0)), INTENT(in)::addPipes
@@ -1785,7 +1785,7 @@ CONTAINS
       ! CALL ReDistributeWater
       !Calculates AddWater(is)
       CALL ReDistributeWater( &
-         snowUse, WaterDist, sfr, Drain, &! input:
+         SnowUse, WaterDist, sfr, Drain, &! input:
          frac_water2runoff, AddWater)! output
 
    END SUBROUTINE SUEWS_cal_Water
@@ -1826,7 +1826,7 @@ CONTAINS
    !================latent heat flux and surface wetness===================
    ! TODO: optimise the structure of this function
    SUBROUTINE SUEWS_cal_QE( &
-      Diagnose, snowuse, &!input
+      Diagnose, SnowUse, &!input
       tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
       dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
       RAsnow, psyc_hPa, sIce_hPa, &
@@ -1851,7 +1851,7 @@ CONTAINS
       ! TODO: #140 several state/soilstore related variables need to be sorted out
 
       INTEGER, INTENT(in) ::Diagnose
-      INTEGER, INTENT(in) ::snowuse
+      INTEGER, INTENT(in) ::SnowUse
       INTEGER, INTENT(in) ::tstep
       INTEGER, INTENT(in) ::imin
       INTEGER, INTENT(in) ::it
@@ -2055,7 +2055,7 @@ CONTAINS
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
       DO is = 1, nsurf   !For each surface in turn
-         IF (snowuse == 1 .AND. snowCalcSwitch(is) == 1) THEN ! snow calculation
+         IF (SnowUse == 1 .AND. snowCalcSwitch(is) == 1) THEN ! snow calculation
             IF (sfr(is) /= 0) THEN
                ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
                CALL SnowCalc( &
@@ -2217,7 +2217,7 @@ CONTAINS
    !===============Resistance Calculations=======================
    SUBROUTINE SUEWS_cal_Resistance( &
       StabilityMethod, &!input:
-      Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
+      Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, SnowUse, &
       id, it, gsModel, SMDMethod, &
       avdens, avcp, QH_init, zzd, z0m, zdm, &
       avU1, Temp_C, VegFraction, &
@@ -2232,7 +2232,7 @@ CONTAINS
       INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in)::AerodynamicResistanceMethod
       INTEGER, INTENT(in)::RoughLenHeatMethod
-      INTEGER, INTENT(in)::snowUse
+      INTEGER, INTENT(in)::SnowUse
       INTEGER, INTENT(in)::id
       INTEGER, INTENT(in)::it       !time: day of year and hour
       INTEGER, INTENT(in)::gsModel  !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
@@ -2320,7 +2320,7 @@ CONTAINS
          RoughLenHeatMethod, &
          RA, z0v) ! output:
 
-      IF (snowUse == 1) THEN
+      IF (SnowUse == 1) THEN
          IF (Diagnose == 1) WRITE (*, *) 'Calling AerodynamicResistance for snow...'
          CALL AerodynamicResistance( &
             ZZD, &! input:
@@ -2589,7 +2589,7 @@ CONTAINS
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
 
-      IF (snowUse == 1) THEN
+      IF (SnowUse == 1) THEN
          dataOutSnow(ir, 1:ncolumnsDataOutSnow, Gridiv) = [datetimeLine, set_nan(dataOutLineSnow)]
       END IF
 
@@ -2939,7 +2939,7 @@ CONTAINS
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
-      SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       BaseT_Cooling, BaseT_Heating, TempMeltFact, TH, &
@@ -2978,7 +2978,7 @@ CONTAINS
       INTEGER, INTENT(IN)::RoughLenHeatMethod
       INTEGER, INTENT(IN)::RoughLenMomMethod
       INTEGER, INTENT(IN)::SMDMethod
-      INTEGER, INTENT(IN)::snowUse
+      INTEGER, INTENT(IN)::SnowUse
       INTEGER, INTENT(IN)::StabilityMethod
       INTEGER, INTENT(IN)::StorageHeatMethod
       INTEGER, INTENT(IN)::tstep
@@ -3477,7 +3477,7 @@ CONTAINS
          ! write (12, *) 'snowfrac_obs=', snowfrac_obs
          ! write (12, *) 'snowpack=', snowpack
          ! write (12, *) 'snowprof_24hr=', snowprof_24hr
-         ! write (12, *) 'snowuse=', snowuse
+         ! write (12, *) 'SnowUse=', SnowUse
          ! write (12, *) 'soildepth=', soildepth
          ! write (12, *) 'soilstore_id=', soilstore_id
          ! write (12, *) 'soilstorecap=', soilstorecap
@@ -3567,7 +3567,7 @@ CONTAINS
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
             SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
             SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
-            SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+            SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
             StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
             Tmax_id, Tmin_id, &

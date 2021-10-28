@@ -299,7 +299,7 @@ CONTAINS
          HDD_id)!inout
 
       ! Update snow density, albedo surface fraction
-      ! IF (snowUse == 1) CALL SnowUpdate( &
+      ! IF (SnowUse == 1) CALL SnowUpdate( &
       !    nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
       !    SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
       !    SnowAlb, SnowDens)!inout

@@ -454,7 +454,7 @@ CONTAINS
 
    !------------------------------------------------------------------------------
    SUBROUTINE ReDistributeWater( &
-      snowUse, WaterDist, sfr, Drain, &! input:
+      SnowUse, WaterDist, sfr, Drain, &! input:
       AddWaterRunoff, AddWater)! output:
       !Drainage moves into different parts defined by WaterDistSS_YYYY.txt. LJ 2010
       !AddWater(is) is that amount of water that is gained for each surface
@@ -462,7 +462,7 @@ CONTAINS
       !-------------------------------------------------------------------
 
       IMPLICIT NONE
-      INTEGER, INTENT(in)::snowUse!Snow part used (1) or not used (0)
+      INTEGER, INTENT(in)::SnowUse!Snow part used (1) or not used (0)
 
       REAL(KIND(1D0)), INTENT(in)::WaterDist(nsurf + 1, nsurf - 1) !Within-grid water distribution to other surfaces and runoff/soil store [-]
       REAL(KIND(1D0)), INTENT(in)::sfr(nsurf)                !Surface fractions [-]
@@ -487,7 +487,7 @@ CONTAINS
             IF (sfr(ii) /= 0) THEN !Water movement takes place only if surface fraction exists
 
                !No snow calculations!
-               IF (snowUse == 0) THEN
+               IF (SnowUse == 0) THEN
                   AddWater(ii) = AddWater(ii) + (Drain(jj)*sfr(jj)/sfr(ii))*WaterDist(ii, jj) !Original
 
                   !Snow included, This needs to be fixed at some point. LJ Mar 2013

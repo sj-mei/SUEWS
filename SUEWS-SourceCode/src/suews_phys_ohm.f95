@@ -163,7 +163,7 @@ SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
 
    ! Do snow calculations separately -----
    ! Added by LJ in August 2013
-   IF (snowUse == 1) THEN
+   IF (SnowUse == 1) THEN
       deltaQi = -999
       IF (qn1_S > -999) THEN
          ! Old OHM calculations (commented out HCW Dec 2016)

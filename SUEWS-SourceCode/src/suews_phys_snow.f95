@@ -31,7 +31,7 @@ CONTAINS
    !                        to use qn1_ind_snow(StoreDrainPrm)
    !=======================================================================================
    SUBROUTINE Snow_cal_MeltHeat( &
-      snowUse, &!input
+      SnowUse, &!input
       tstep, tau_r, SnowDensMax, &
       lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
@@ -53,7 +53,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER::waterDens = 999.8395 !Density of water in 0 cel deg
 
       !These are input to the module
-      INTEGER, INTENT(in)::snowUse
+      INTEGER, INTENT(in)::SnowUse
       INTEGER, INTENT(in)::tstep
       ! INTEGER,INTENT(in)::bldgsurf
       ! INTEGER,INTENT(in)::nsurf
@@ -133,7 +133,7 @@ CONTAINS
       SnowFrac = SnowFrac_in
       SnowDens = SnowDens_in
 
-      IF (snowUse == 1) THEN
+      IF (SnowUse == 1) THEN
          SnowDens = update_snow_dens( &
                     tstep, SnowFrac_in, SnowDens_in, &
                     tau_r, SnowDensMax, SnowDensMin)

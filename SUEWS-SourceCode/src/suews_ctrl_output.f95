@@ -753,7 +753,7 @@ MODULE ctrl_output
       varAttr('KTopNet', 'W m-2', f104, 'sw net radiation at top-of-canopy', aA, 'SPARTACUS', 0), &
       varAttr('KGrndDnDir', 'W m-2', f104, 'sw downwelling direct radiation at ground', aA, 'SPARTACUS', 0), &
       varAttr('KGrndNet', 'W m-2', f104, 'sw net radiation at ground', aA, 'SPARTACUS', 0) &
-      /     
+      /
 
 CONTAINS
    ! main wrapper that handles both txt and nc files
