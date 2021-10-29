@@ -53,9 +53,10 @@ Turbulent heat fluxes, Q\ :sub:`H` and Q\ :sub:`E`
 --------------------------------------------------
 
 #. **LUMPS** (Local-scale Urban Meteorological Parameterization Scheme) :cite:`GO02` provides a simple means of estimating sensible and latent heat fluxes based on the proportion of vegetation in the study area.
+
 #. **SUEWS** adopts a more biophysical approach to calculate the latent heat flux; the sensible heat flux is then calculated as the residual of the energy balance.
-The initial estimate of stability is based on the LUMPS calculations of sensible and latent heat flux.
-Future versions will have alternative sensible heat and storage heat flux options.
+   The initial estimate of stability is based on the LUMPS calculations of sensible and latent heat flux.
+   Future versions will have alternative sensible heat and storage heat flux options.
 
 Sensible and latent heat fluxes from both LUMPS and SUEWS are provided in the `output_files`.
 Whether the turbulent heat fluxes are calculated using LUMPS or SUEWS can have a major impact on the results.

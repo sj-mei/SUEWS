@@ -149,10 +149,8 @@ The information required to run SUEWS for your site consists of:
 It is particularly important to ensure the following input information
 is appropriate and representative of the site:
 
--  Fractions of different land cover types and (less so) heights of
-   buildings :cite:`W16`
--  Accurate meteorological forcing data, particularly precipitation and
-   incoming shortwave radiation :cite:`Ko17`
+-  Fractions of different land cover types and (less so) heights of buildings :cite:`W16`
+-  Accurate meteorological forcing data, particularly precipitation and incoming shortwave radiation :cite:`K18UC`
 -  Initial soil moisture conditions :cite:`BG14`
 -  Anthropogenic heat flux parameters, particularly if there are
    considerable energy emissions from transport, buildings, metabolism,
