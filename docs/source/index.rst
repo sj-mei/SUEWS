@@ -98,7 +98,7 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
    input_files/input_files
    output_files/output_files
    troubleshooting
-   recent-publications
+   related_publications
    related_softwares
    sub-tutorials/tutorials
    benchmark/benchmark_report
