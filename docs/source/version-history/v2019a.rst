@@ -5,6 +5,8 @@
 Version 2019a (released on 15 November 2019)
 ----------------------------------------------------
 
+ `Download page (under assets) <https://github.com/Urban-Meteorology-Reading/SUEWS/releases/tag/2019a>`_
+
 - **Improvement**
 
   #. An anthropogenic emission module is added. Module details refer to Järvi et al. (2019) :cite:`J19`.
