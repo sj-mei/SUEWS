@@ -504,8 +504,7 @@ bibtex_bibfiles = [
     "assets/refs/refs-others.bib",
 ]
 bibtex_default_style = "refs"
-bibtex_reference_style = 'author_year_round'
-
+bibtex_reference_style = "author_year_round"
 
 
 # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#custom-inline-citation-references
@@ -534,11 +533,102 @@ sphinxcontrib.bibtex.plugin.register_plugin(
     "sphinxcontrib.bibtex.style.referencing", "author_year_round", MyReferenceStyle
 )
 
+###############################################################################################
+# ref: https://titanwolf.org/Network/Articles/Article?AID=1463c485-6603-4a3c-ac34-d68c95e67f0a
+from collections import Counter
+from pybtex.style.labels import BaseLabelStyle
+import unicodedata
+
+
+def is_japanese(string):
+    for c in string:
+        name = unicodedata.name(c)
+        if "CJK UNIFIED" in name or "HIRAGANA" in name or "KATAKANA" in name:
+            return True
+    return False
+
+
+class AuthorYearLabelStyle(BaseLabelStyle):
+    def format_labels(self, sorted_entries):
+        labels = [self.format_label(entry) for entry in sorted_entries]
+
+        # Key to the same entry to the Unique
+        counter = Counter(labels)
+        counted = Counter()
+
+        for label in labels:
+            if counter[label] == 1:
+                yield label
+            else:
+                yield label + chr(ord("a") + counted[label])
+                counted.update([label])
+
+    def format_label(self, entry):
+        # Author also no year entry
+        if not "author" in entry.persons and not "year" in entry.fields:
+            return entry.key
+
+        # Label is first author of Last Name Tasu year
+        if "author" in entry.persons:
+            num_author = len(entry.persons["author"])
+            author_first = entry.persons["author"][0]
+            if num_author > 2:
+                if is_japanese(
+                    "".join(author_first.first_names + author_first.last_names)
+                ):
+                    author = "".join(author_first.first_names)
+                else:
+                    author = "".join(author_first.last_names) + " et al."
+            elif num_author == 2:
+                author_second = entry.persons["author"][1]
+                # print(author_first.last_names)
+                if is_japanese(
+                    "".join(author_first.first_names + author_first.last_names)
+                ):
+                    author = " and ".join(
+                        author_first.first_names + author_second.first_names
+                    )
+                else:
+                    author = " and ".join(
+                        author_first.last_names + author_second.last_names
+                    )
+            else:
+                if is_japanese(
+                    "".join(author_first.first_names + author_first.last_names)
+                ):
+                    author = "".join(author_first.first_names)
+                else:
+                    author = "".join(author_first.last_names)
+
+        else:
+            author = ""
+
+        if "year" in entry.fields:
+            yeartail = entry.fields["year"][-2:]
+            year = entry.fields["year"]
+        else:
+            yeartail = ""
+            year = ""
+
+        # return "%s %s" % (author, yeartail)
+        return f"{author} {year}"
+
+
+class JsaiStyle(UnsrtStyle):
+
+    default_label_style = "author_year_label"
+
+
+register_plugin("pybtex.style.labels", "author_year_label", AuthorYearLabelStyle)
+register_plugin("pybtex.style.formatting", "jsai", JsaiStyle)
+###############################################################################################
+
 
 # https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/develop/test/roots/test-bibliography_style_label_2/conf.py
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 from pybtex.style.labels.alpha import LabelStyle as AlphaLabelStyle
 from pybtex.plugin import register_plugin
+
 
 class LabelStyle_APA(AlphaLabelStyle):
     def format_label(self, entry):
@@ -546,20 +636,19 @@ class LabelStyle_APA(AlphaLabelStyle):
 
 
 class ApaStyle(UnsrtStyle):
-    default_label_style = 'apa'
+    default_label_style = "apa"
 
 
-register_plugin('pybtex.style.labels', 'apa', LabelStyle_APA)
-register_plugin('pybtex.style.formatting', 'apastyle', ApaStyle)
-
+register_plugin("pybtex.style.labels", "apa", LabelStyle_APA)
+register_plugin("pybtex.style.formatting", "apastyle", ApaStyle)
 
 
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 from pybtex.style.labels import BaseLabelStyle
 from pybtex.plugin import register_plugin
+
 # a simple label style which uses the bibtex keys for labels
 class LabelStyle_key(BaseLabelStyle):
-
     def format_labels(self, sorted_entries):
         for entry in sorted_entries:
             yield entry.key
@@ -570,12 +659,12 @@ class LabelStyle_key(UnsrtStyle):
     default_label_style = LabelStyle_key
 
 
-register_plugin('pybtex.style.formatting', 'style_key', LabelStyle_key)
-
+register_plugin("pybtex.style.formatting", "style_key", LabelStyle_key)
+register_plugin("pybtex.style.labels", "style_key", LabelStyle_key)
 
 
 # Custom bibliography stuff for sphinxcontrib.bibtex
-class MySort(Sorter):
+class MySort_year_author_title(Sorter):
     def sort(self, entries):
         entry_dict = dict((self.sorting_key(entry), entry) for entry in entries)
 
@@ -611,11 +700,12 @@ class MySort(Sorter):
 
 
 class MyStyle_author_year(UnsrtStyle):
-    default_sorting_style = 'author_year_title'
+    default_sorting_style = "author_year_title"
     # default_sorting_style = "year_author_title"
     default_name_style = "lastfirst"
     # default_label_style = "alpha"
-    default_label_style = LabelStyle_key
+    # default_label_style = 'style_key'
+    default_label_style = "author_year_label"
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
@@ -635,6 +725,7 @@ class MyStyle_author_year(UnsrtStyle):
         ]
 
         return template
+
 
 register_plugin("pybtex.style.formatting", "refs", MyStyle_author_year)
 
@@ -663,10 +754,11 @@ class MyStyle_year_author(UnsrtStyle):
 
         return template
 
+
 register_plugin("pybtex.style.formatting", "refs_recent", MyStyle_year_author)
 
 # reading list style
-class RLStyle(UnsrtStyle):
+class MyStyle_author_year_note(UnsrtStyle):
     default_sorting_style = "author_year_title"
     default_label_style = "number"
     default_name_style = "lastfirst"
@@ -693,5 +785,6 @@ class RLStyle(UnsrtStyle):
     # format_online = format_article
     # format_book = format_article
 
-register_plugin("pybtex.style.formatting", "rl", RLStyle)
-register_plugin("pybtex.style.sorting", "year_author_title", MySort)
+
+register_plugin("pybtex.style.formatting", "rl", MyStyle_author_year_note)
+register_plugin("pybtex.style.sorting", "year_author_title", MySort_year_author_title)
