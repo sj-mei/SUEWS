@@ -503,8 +503,76 @@ bibtex_bibfiles = [
     "assets/refs/refs-SUEWS.bib",
     "assets/refs/refs-others.bib",
 ]
-bibtex_default_style = "mystyle"
+bibtex_default_style = "refs"
 bibtex_reference_style = 'author_year_round'
+
+
+
+# https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#custom-inline-citation-references
+import dataclasses
+import sphinxcontrib.bibtex.plugin
+
+from sphinxcontrib.bibtex.style.referencing import BracketStyle
+from sphinxcontrib.bibtex.style.referencing.author_year import AuthorYearReferenceStyle
+
+my_bracket_style = BracketStyle(
+    left="(",
+    right=")",
+)
+
+
+@dataclasses.dataclass
+class MyReferenceStyle(AuthorYearReferenceStyle):
+    bracket_parenthetical: BracketStyle = my_bracket_style
+    bracket_textual: BracketStyle = my_bracket_style
+    bracket_author: BracketStyle = my_bracket_style
+    bracket_label: BracketStyle = my_bracket_style
+    bracket_year: BracketStyle = my_bracket_style
+
+
+sphinxcontrib.bibtex.plugin.register_plugin(
+    "sphinxcontrib.bibtex.style.referencing", "author_year_round", MyReferenceStyle
+)
+
+
+# https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/develop/test/roots/test-bibliography_style_label_2/conf.py
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.labels.alpha import LabelStyle as AlphaLabelStyle
+from pybtex.plugin import register_plugin
+
+class LabelStyle_APA(AlphaLabelStyle):
+    def format_label(self, entry):
+        return "APA"
+
+
+class ApaStyle(UnsrtStyle):
+    default_label_style = 'apa'
+
+
+register_plugin('pybtex.style.labels', 'apa', LabelStyle_APA)
+register_plugin('pybtex.style.formatting', 'apastyle', ApaStyle)
+
+
+
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.labels import BaseLabelStyle
+from pybtex.plugin import register_plugin
+# a simple label style which uses the bibtex keys for labels
+class LabelStyle_key(BaseLabelStyle):
+
+    def format_labels(self, sorted_entries):
+        for entry in sorted_entries:
+            yield entry.key
+
+
+class LabelStyle_key(UnsrtStyle):
+
+    default_label_style = LabelStyle_key
+
+
+register_plugin('pybtex.style.formatting', 'style_key', LabelStyle_key)
+
+
 
 # Custom bibliography stuff for sphinxcontrib.bibtex
 class MySort(Sorter):
@@ -546,7 +614,8 @@ class MyStyle_author_year(UnsrtStyle):
     default_sorting_style = 'author_year_title'
     # default_sorting_style = "year_author_title"
     default_name_style = "lastfirst"
-    default_label_style = "alpha"
+    # default_label_style = "alpha"
+    default_label_style = LabelStyle_key
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
@@ -626,47 +695,3 @@ class RLStyle(UnsrtStyle):
 
 register_plugin("pybtex.style.formatting", "rl", RLStyle)
 register_plugin("pybtex.style.sorting", "year_author_title", MySort)
-
-# https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#custom-inline-citation-references
-import dataclasses
-import sphinxcontrib.bibtex.plugin
-
-from sphinxcontrib.bibtex.style.referencing import BracketStyle
-from sphinxcontrib.bibtex.style.referencing.author_year import AuthorYearReferenceStyle
-
-my_bracket_style = BracketStyle(
-    left="(",
-    right=")",
-)
-
-
-@dataclasses.dataclass
-class MyReferenceStyle(AuthorYearReferenceStyle):
-    bracket_parenthetical: BracketStyle = my_bracket_style
-    bracket_textual: BracketStyle = my_bracket_style
-    bracket_author: BracketStyle = my_bracket_style
-    bracket_label: BracketStyle = my_bracket_style
-    bracket_year: BracketStyle = my_bracket_style
-
-
-sphinxcontrib.bibtex.plugin.register_plugin(
-    "sphinxcontrib.bibtex.style.referencing", "author_year_round", MyReferenceStyle
-)
-
-
-# https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/develop/test/roots/test-bibliography_style_label_2/conf.py
-from pybtex.style.formatting.unsrt import Style as UnsrtStyle
-from pybtex.style.labels.alpha import LabelStyle as AlphaLabelStyle
-from pybtex.plugin import register_plugin
-
-class ApaLabelStyle(AlphaLabelStyle):
-    def format_label(self, entry):
-        return "APA"
-
-
-class ApaStyle(UnsrtStyle):
-    default_label_style = 'apa'
-
-
-register_plugin('pybtex.style.labels', 'apa', ApaLabelStyle)
-register_plugin('pybtex.style.formatting', 'apastyle', ApaStyle)

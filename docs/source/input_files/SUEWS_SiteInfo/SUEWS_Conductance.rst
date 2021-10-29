@@ -4,7 +4,7 @@ SUEWS_Conductance.txt
 ~~~~~~~~~~~~~~~~~~~~~
 
 SUEWS_Conductance.txt contains the parameters needed for the Jarvis
-(1976) :cite:`Ja76` surface conductance model used in the modelling of evaporation in
+(1976) :cite:`J76` surface conductance model used in the modelling of evaporation in
 SUEWS. These values should **not** be changed independently of each
 other. The suggested values below have been derived using datasets for
 Los Angeles and Vancouver (see Järvi et al. (2011) :cite:`J11`) and should be

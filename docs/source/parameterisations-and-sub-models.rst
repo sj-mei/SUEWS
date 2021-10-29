@@ -53,7 +53,7 @@ Storage heat flux, ΔQ\ :sub:`S`
 
 #. Three sub-models are available to estimate the storage heat flux:
 
-   -  **OHM** (Objective Hysteresis Model, Grimmond et al. 1991 :cite:`G91OHM`,
+   -  **OHM** (Objective Hysteresis Model, Grimmond et al. 1991 :cite:`G91`,
       Grimmond & Oke 1999a :cite:`GO99`, 2002 :cite:`GO02`). Storage heat heat flux is
       calculated using empirically-fitted relations with net all-wave
       radiation and the rate of change in net all-wave radiation.
@@ -61,7 +61,7 @@ Storage heat flux, ΔQ\ :sub:`S`
       2017 :cite:`S17`). OHM approach using analytically-derived coefficients.
       |NotRecmd|
    -  **ESTM** (Element Surface Temperature Method, Offerle et al.
-      2005 [OGF2005]_). Heat transfer through urban facets (roof, wall, road,
+      2005 :cite:`O05`). Heat transfer through urban facets (roof, wall, road,
       interior) is calculated from surface temperature measurements and
       knowledge of material properties. |NotRecmd|
 
@@ -91,7 +91,7 @@ Water balance
 -------------
 
 The running water balance at each time step is based on the urban water
-balance model of Grimmond et al. (1986) [G86]_ and urban
+balance model of Grimmond et al. (1986) :cite:`G86` and urban
 evaporation-interception scheme of Grimmond and Oke (1991) :cite:`GO91`.
 
 -  Precipitation is a required variable in the meteorological forcing
@@ -111,7 +111,7 @@ evaporation-interception scheme of Grimmond and Oke (1991) :cite:`GO91`.
 Snowmelt
 --------
 
-The snowmelt model is described in Järvi et al. (2014) :cite:`Leena2014`.
+The snowmelt model is described in Järvi et al. (2014) :cite:`L14`.
 Changes since v2016a:
 1) previously all surface states could freeze in 1-h time step, now the freezing surface state is
 calculated similarly as melt water and can freeze within the snow pack.
@@ -122,8 +122,8 @@ Convective boundary layer
 -------------------------
 
 A convective boundary layer (CBL) slab model (Cleugh and Grimmond
-2001 :cite:`CG2001`) calculates the CBL height, temperature and humidity during
-daytime (Onomura et al. 2015 :cite:`Shiho2015`).
+2001 :cite:`CG01`) calculates the CBL height, temperature and humidity during
+daytime (Onomura et al. 2015 :cite:`O15`).
 
 .. SOLWEIG is fully removed since 2019a
 
@@ -131,13 +131,13 @@ daytime (Onomura et al. 2015 :cite:`Shiho2015`).
 .. ---------------
 
 .. **SOLWEIG** (Solar and longwave environmental irradiance geometry model,
-.. Lindberg et al. 2008 :cite:`FL2008`, Lindberg and Grimmond 2011 :cite:`FL2011`) is a 2D
+.. Lindberg et al. 2008 :cite:`F08`, Lindberg and Grimmond 2011 :cite:`FG11`) is a 2D
 .. radiation model to estimate mean radiant temperature.
 
 .. .. figure:: /assets/img/Bluews_2.jpg
-..     :alt:  Overview of scales. Source: Onomura et al. (2015) :cite:`Shiho2015`
+..     :alt:  Overview of scales. Source: Onomura et al. (2015) :cite:`O15`
 
-..     Overview of scales. Source: Onomura et al. (2015) :cite:`Shiho2015`
+..     Overview of scales. Source: Onomura et al. (2015) :cite:`O15`
 
 Surface Diagnostics
 -------------------

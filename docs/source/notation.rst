@@ -40,7 +40,7 @@ Notation
      Digital Terrain Model
 
    ESTM
-     Element Surface Temperature Method (Offerle et al.,2005 [OGF2005]_)
+     Element Surface Temperature Method (Offerle et al.,2005 :cite:`O05`)
 
    L↓
      Incoming longwave radiation
@@ -55,7 +55,7 @@ Notation
      Net All-wave Radiation Parameterization (Offerle et al. 2003 :cite:`O03`, Loridan et al. 2011 :cite:`L11`)
 
    OHM
-     Objective Hysteresis Model (Grimmond et al. 1991 :cite:`G91OHM`, Grimmond & Oke 1999a :cite:`GO99`, 2002 :cite:`GO02`)
+     Objective Hysteresis Model (Grimmond et al. 1991 :cite:`G91`, Grimmond & Oke 1999a :cite:`GO99`, 2002 :cite:`GO02`)
 
    |Qstar|
      Net all-wave radiation
@@ -70,7 +70,7 @@ Notation
      Sensible heat  flux
 
    SOLWEIG
-     The solar and longwave environmental irradiance geometry model (Lindberg et al. 2008 :cite:`FL2008`,   Lindberg and Grimmond 2011 :cite:`FL2011`)
+     The solar and longwave environmental irradiance geometry model (Lindberg et al. 2008 :cite:`F08`,   Lindberg and Grimmond 2011 :cite:`FG11`)
 
    SVF
      Sky view factor

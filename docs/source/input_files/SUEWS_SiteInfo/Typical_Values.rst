@@ -352,7 +352,7 @@ Generic Properties
      - Snow
      - 2.2
      - Temperature limit when precipitation falls as snow [°C]
-     - Auer (1974) :cite:`Au74`
+     - Auer (1974) :cite:`A74`
    * - SoilDepth
      - Snow
      - 350

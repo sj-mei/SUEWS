@@ -158,7 +158,7 @@ is appropriate and representative of the site:
    buildings :cite:`W16`
 -  Accurate meteorological forcing data, particularly precipitation and
    incoming shortwave radiation :cite:`Ko17`
--  Initial soil moisture conditions :cite:`Best2014`
+-  Initial soil moisture conditions :cite:`BG14`
 -  Anthropogenic heat flux parameters, particularly if there are
    considerable energy emissions from transport, buildings, metabolism,
    etc :cite:`W16`

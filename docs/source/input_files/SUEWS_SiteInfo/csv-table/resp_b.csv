@@ -1,2 +1,2 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_BiogenCO2.txt`","`MU` `O`","Example values: 0.0064 Schmid et al. (2000) :cite:`S2000`, 0.0329 Järvi et al. (2012) :cite:`J12`."
+"`SUEWS_BiogenCO2.txt`","`MU` `O`","Example values: 0.0064 Schmid et al. (2000) :cite:`S00`, 0.0329 Järvi et al. (2012) :cite:`J12`."

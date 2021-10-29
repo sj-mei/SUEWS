@@ -57,7 +57,7 @@ Testing
   #. Year-grid looping logic
   #. Identity of output results with internal test dataset
 
-Please use pre-defined `make test` option to check if your code can pass all tests or not.
+Please use pre-defined ``make test`` option to check if your code can pass all tests or not.
 If not, the correctness of added code should be justified with caution.
 
 

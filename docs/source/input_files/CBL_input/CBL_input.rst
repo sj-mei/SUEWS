@@ -1,7 +1,7 @@
 CBL input files
 ---------------
 
-Main references for this part of the model: Onomura et al. (2015) :cite:`Shiho2015` and Cleugh and Grimmond (2001) :cite:t:`CG2001`.
+Main references for this part of the model: Onomura et al. (2015) :cite:`O15` and Cleugh and Grimmond (2001) :cite:t:`CG01`.
 
 If CBL slab model is used (:option:`CBLuse = 1 <CBLuse>` in :ref:`RunControl.nml <RunControl>`) the following files are needed.
 
@@ -66,7 +66,7 @@ Definitions and example file of initial values prepared for Sacramento.
      - Specific humidiy in CBL (g kg\ :sup:`-1`)
 
 -  gamt_Km and gamq_gkgm written to two significant figures are required
-   for the model performance in appropriate ranges :cite:`Shiho2015`.
+   for the model performance in appropriate ranges :cite:`O15`.
 
 .. list-table::
    :widths: auto

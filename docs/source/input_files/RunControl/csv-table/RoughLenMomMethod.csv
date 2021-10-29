@@ -2,9 +2,9 @@
 1,"Values specified in `SUEWS_SiteSelect.txt` are used.
 
   .. tip::
-      Note that UMEP provides tools to calculate these. See Kent et al. (2017a) :cite:`Kent2017a` for recommendations on methods.
-      Kent et al. (2017b) :cite:`Kent2017b` have developed a method to include vegetation which is also avaialble within UMEP."
+      Note that UMEP provides tools to calculate these. See Kent et al. (2017a) :cite:`K17BLM` for recommendations on methods.
+      Kent et al. (2017b) :cite:`K17JWE` have developed a method to include vegetation which is also avaialble within UMEP."
 2,"z0m and zd are calculated using 'rule of thumb' (Grimmond and Oke 1999 :cite:`GO99`) using mean building and tree height specified in `SUEWS_SiteSelect.txt`.
 z0m and zd are adjusted with time to account for seasonal variation in porosity of deciduous trees."
-3,"z0m and zd are calculated based on the MacDonald et al. (1998) :cite:`Mc98` method using mean building and tree heights, plan area fraction and frontal areal index specified in `SUEWS_SiteSelect.txt`.
+3,"z0m and zd are calculated based on the MacDonald et al. (1998) :cite:`M98` method using mean building and tree heights, plan area fraction and frontal areal index specified in `SUEWS_SiteSelect.txt`.
 z0m and zd are adjusted with time to account for seasonal variation in porosity of deciduous trees."

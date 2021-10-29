@@ -207,7 +207,7 @@ FRAISE Flux Ratio – Active Index Surface Exchange
 FRAISE provides an estimate of mean midday (±3 h around solar noon)
 energy partitioning from information on the surface characteristics and
 estimates of the mean midday incoming radiative energy and anthropogenic
-heat release. Please refer to Loridan and Grimmond (2012) :cite:`LG2012` for
+heat release. Please refer to Loridan and Grimmond (2012) :cite:`LG12` for
 further details.
 
 +----------------+----------------+-----------------+-----------------+

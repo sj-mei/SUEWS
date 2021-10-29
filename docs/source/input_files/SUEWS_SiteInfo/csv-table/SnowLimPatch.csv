@@ -3,19 +3,19 @@
 
 Example values:
 
-- 190: Paved Järvi et al. (2014) :cite:`Leena2014`
+- 190: Paved Järvi et al. (2014) :cite:`L14`
 
-- 190: Bldgs Järvi et al. (2014) :cite:`Leena2014`
+- 190: Bldgs Järvi et al. (2014) :cite:`L14`
 
-- 190: BSoil Järvi et al. (2014) :cite:`Leena2014`
+- 190: BSoil Järvi et al. (2014) :cite:`L14`
 "
 "`SUEWS_Veg.txt`","`O`","Limit of snow water equivalent when the surface is fully covered with snow. Not needed if `SnowUse` = 0 in `RunControl.nml` .
 
 Example values:
 
-- 190: EveTr Järvi et al. (2014) :cite:`Leena2014`
+- 190: EveTr Järvi et al. (2014) :cite:`L14`
 
-- 190: DecTr Järvi et al. (2014) :cite:`Leena2014`
+- 190: DecTr Järvi et al. (2014) :cite:`L14`
 
-- 190: Grass Järvi et al. (2014) :cite:`Leena2014`
+- 190: Grass Järvi et al. (2014) :cite:`L14`
 "
