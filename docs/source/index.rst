@@ -74,7 +74,7 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
 
   #. `Cite SUEWS <cite_suews>` appropriately in your work.
   #. Contribute to the `development <Development_Suggestions_Support>`.
-  #. Report issues via the `GitHub page`_.
+  #. Report issues via the `GitHub page <https://github.com/UMEP-dev/SUEWS/issues/new/choose>`_.
   #. Provide `suggestions and feedback <Development_Suggestions_Support>`.
 
 
