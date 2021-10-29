@@ -8,7 +8,7 @@ SUEWS_Snow.txt specifies the characteristics for snow surfaces when
 the model is not run, fill this table with ‘-999’ except for the first
 (Code) column and set `SnowUse=0 <SnowUse>` in `RunControl.nml`.
 For a detailed description of the variables, see Järvi et al.
-(2014) :cite:`L14`.
+(2014) :cite:`J14`.
 
 
 .. DON'T manually modify the csv file below

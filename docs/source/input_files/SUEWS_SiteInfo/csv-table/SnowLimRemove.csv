@@ -5,5 +5,5 @@ Not needed if `SnowUse` = 0 in `RunControl.nml` .
 
 Example values [mm]
 
-- 40: `Paved` Järvi et al. (2014) :cite:`L14`
-- 100: `Bldgs` Järvi et al. (2014) :cite:`L14` "
+- 40: `Paved` Järvi et al. (2014) :cite:`J14`
+- 100: `Bldgs` Järvi et al. (2014) :cite:`J14` "

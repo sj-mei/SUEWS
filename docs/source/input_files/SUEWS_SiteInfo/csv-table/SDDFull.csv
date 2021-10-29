@@ -1,5 +1,5 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_Veg.txt`","`MU`","This should be checked carefully for your study area using modelled LAI from the DailyState output file compared to known behaviour in the study area. See section 2.2 Järvi et al. (2011) :cite:`J11` ; Appendix A Järvi et al. (2014) :cite:`L14` for more details.
+"`SUEWS_Veg.txt`","`MU`","This should be checked carefully for your study area using modelled LAI from the DailyState output file compared to known behaviour in the study area. See section 2.2 Järvi et al. (2011) :cite:`J11` ; Appendix A Järvi et al. (2014) :cite:`J14` for more details.
 
 Example values:
 

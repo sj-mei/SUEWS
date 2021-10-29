@@ -15,19 +15,14 @@ Preparatory reading
 
 Read the manual and relevant papers (and references therein):
 
--  Järvi L, Grimmond CSB & Christen A (2011) The Surface Urban Energy
-   and Water Balance Scheme (SUEWS): Evaluation in Los Angeles and
-   Vancouver. J. Hydrol. 411, 219-237.
-   `doi:10.1016/j.jhydrol.2011.10.00 <http://www.sciencedirect.com/science/article/pii/S0022169411006937>`__
--  Järvi L, Grimmond CSB, Taka M, Nordbo A, Setälä H & Strachan IB
-   (2014) Development of the Surface Urban Energy and Water balance
-   Scheme (SUEWS) for cold climate cities. Geosci. Model Dev. 7,
-   1691-1711.
-   `doi:10.5194/gmd-7-1691-2014 <http://www.geosci-model-dev.net/7/1691/2014/>`__
--  Ward HC, Kotthaus S, Järvi L and Grimmond CSB (2016) Surface Urban
-   Energy and Water Balance Scheme (SUEWS): development and evaluation
-   at two UK sites. Urban Climate 18, 1-32.
-   `doi:10.1016/j.uclim.2016.05.001 <http://www.sciencedirect.com/science/article/pii/S2212095516300256/>`__
+.. bibliography:: assets/refs/refs-SUEWS.bib
+   :filter: False
+   :list: bullet
+
+   J11
+   J14
+   W16
+
 
 `See other publications with example applications <Recent_publications>`
 
