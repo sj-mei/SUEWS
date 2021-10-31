@@ -13,3 +13,4 @@ recommonmark
 docutils < 0.17
 sphinx-book-theme
 sphinx-panels
+sphinxcontrib.email
