@@ -3,7 +3,7 @@
 Scheme options
 ~~~~~~~~~~~~~~~~~
 
-.. option:: CBLuse
+.. option:: CBLUse
 
 		.. warning:: |NotAvail|
 
@@ -13,7 +13,7 @@ Scheme options
 		Determines whether a CBL slab model is used to calculate temperature and humidity.
 	:Configuration:
 		.. csv-table::
-			:file: csv-table/CBLuse.csv
+			:file: csv-table/CBLUse.csv
 			:header-rows: 1
 			:widths: 10 80
 

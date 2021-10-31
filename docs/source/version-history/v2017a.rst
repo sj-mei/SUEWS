@@ -1,6 +1,6 @@
 .. _new_2017a:
 
-Version 2017a (Feb 2017)
+Version 2017a (released on 1 Feb 2017)
 -------------------------------------
 
 #. Changes to input file formats (including RunControl.nml and

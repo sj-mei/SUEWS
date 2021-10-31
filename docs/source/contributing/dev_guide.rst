@@ -1,7 +1,27 @@
-.. _coding_guideline:
+.. _dev_guide:
 
-Coding Guidelines
+
+Development Guide
 -------------------------
+
+.. note:: If you are interested in contributing to the code please open a new discussion in the `UMEP Community`_ to illustrate your proposal: we are happy to collaborate in an open development mode.
+
+
+
+
+
+Essential pre-requisites
+************************
+
+compliation
+
+git
+
+testing
+
+Code guidelines
+************************
+
 
 If you are interested in contributing to the code please contact Sue
 Grimmond.

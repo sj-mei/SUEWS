@@ -11,3 +11,5 @@ sphinx_comments
 sphinx_rtd_theme
 recommonmark
 docutils < 0.17
+sphinx-book-theme
+sphinx-panels

@@ -3,7 +3,7 @@ CBL input files
 
 Main references for this part of the model: Onomura et al. (2015) :cite:`O15` and Cleugh and Grimmond (2001) :cite:t:`CG01`.
 
-If CBL slab model is used (:option:`CBLuse = 1 <CBLuse>` in :ref:`RunControl.nml <RunControl>`) the following files are needed.
+If CBL slab model is used (:option:`CBLUse = 1 <CBLUse>` in :ref:`RunControl.nml <RunControl>`) the following files are needed.
 
 
 .. list-table::

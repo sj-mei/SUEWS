@@ -1,7 +1,7 @@
 "Name","R/O","Description","Possible Settings"
-"CBLuse","R","Determines whether a CBL slab model is used to calculate temperature and humidity.","
+"CBLUse","R","Determines whether a CBL slab model is used to calculate temperature and humidity.","
 .. csv-table::
-  :file: CBLuse.csv
+  :file: CBLUse.csv
   :header-rows: 1
   :widths: auto
 "

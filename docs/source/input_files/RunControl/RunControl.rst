@@ -24,7 +24,7 @@ The parameters and their setting instructions are provided through the links bel
 * :ref:`scheme_options`
 
       .. hlist::
-        + :option:`CBLuse`
+        + :option:`CBLUse`
         + :option:`SnowUse`
         + :option:`NetRadiationMethod`
         + :option:`BaseTMethod`
