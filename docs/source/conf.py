@@ -169,11 +169,15 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.mathjax",
     "breathe",
+    "sphinx_last_updated_by_git",
     # 'exhale'
 ]
 
 breathe_projects = {"SUEWS": "./doxygenoutput/xml"}
 breathe_default_project = "SUEWS"
+
+# sphinx_last_updated_by_git options
+git_last_updated_metatags = False
 
 # sphinx comments
 # https://sphinx-comments.readthedocs.io/
