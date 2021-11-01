@@ -1,4 +1,3 @@
-.. _CBLinput:
 
 CBLinput
 ~~~~~~~~

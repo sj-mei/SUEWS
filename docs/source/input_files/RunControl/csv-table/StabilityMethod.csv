@@ -4,22 +4,22 @@
 2,"
 - Momentum:
 
-  - unstable: Dyer (1974) :cite:`D74` modified by Högstrom (1988) :cite:`H88`
-  - stable: Van Ulden and Holtslag (1985) :cite:`VUH85`
-- Heat: Dyer (1974) :cite:`D74` modified by Högstrom (1988) :cite:`H88`
+  - unstable: :cite:t:`D74` modified by :cite:t:`H88`
+  - stable: :cite:t:`VUH85`
+- Heat: :cite:t:`D74` modified by :cite:t:`H88`
 
 |NotRecmd|"
 3,"
-- Momentum: Campbell and Norman (Eq 7.27, Pg97) :cite:`CN88`
+- Momentum: :cite:t:`CN88` (Eq 7.27, Pg97)
 
 - Heat
 
-  - unstable: Campbell and Norman :cite:`CN88`
-  - stable: Campbell and Norman :cite:`CN88`
+  - unstable: :cite:t:`CN88`
+  - stable: :cite:t:`CN88`
 
 |Recmd|"
 4,"
-- Momentum: Businger et al. (1971) :cite:`B71` modified by Högstrom (1988) :cite:`H88`
-- Heat: Businger et al. (1971) :cite:`B71` modified by Högstrom (1988) :cite:`H88`
+- Momentum: :cite:t:`B71` modified by :cite:t:`H88`
+- Heat: :cite:t:`B71` modified by :cite:t:`H88`
 
 |NotRecmd|"

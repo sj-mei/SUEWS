@@ -316,12 +316,16 @@ rst_prolog = """
 html_theme = "sphinx_book_theme"
 # html_theme_path = ["_themes"]
 html_context = {
+    "repository_url": "https://github.com/{your-docs-url}",
     "display_github": True,  # Integrate GitHub
     "github_user": "UMEP-dev",  # Username
     "github_repo": "SUEWS",  # Repo name
     "github_version": "master",  # Version
     "conf_py_path": "/source/",  # Path in the checkout to the docs root
 }
+
+# check every link in this project is working
+nitpicky=True
 
 
 # There are two options for replacing |today|: either, you set today to some
@@ -348,6 +352,7 @@ html_theme_options = dict(
     home_page_in_toc=False,
     extra_navbar="",
     navbar_footer_text="",
+    logo_only= True,
     # twitter_url="https://twitter.com/xarray_devs",
 )
 
@@ -375,10 +380,10 @@ html_static_path = ["_static", "doxygenoutput"]
 # html_sidebars = {}
 numfig = True
 html_logo = "images/logo/SUEWS_LOGO-display.png"
-html_theme_options = {
-    "logo_only": True,
-    "display_version": True,
-}
+# html_theme_options = {
+    # "logo_only": True,
+#     "display_version": True,
+# }
 
 
 
@@ -532,8 +537,9 @@ def setup(app):
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+    "xarray": ("http://xarray.pydata.org/en/stable/", None),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "supy": ("https://supy.readthedocs.io/en/latest/", None),
+    "supy": ("https://supy.readthedocs.io/en/stable/", None),
 }
 
 

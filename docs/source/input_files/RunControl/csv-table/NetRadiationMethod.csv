@@ -2,9 +2,9 @@
 0,"Uses observed values of Q* supplied in meteorological forcing file. "
 1,"Q* modelled with L↓ observations supplied in meteorological forcing file.
 Zenith angle not accounted for in albedo calculation."
-2,"Q* modelled with L↓ modelled using cloud cover fraction supplied in meteorological forcing file (Loridan et al. 2011 :cite:`L11`).
+2,"Q* modelled with L↓ modelled using cloud cover fraction supplied in meteorological forcing file :cite:`L11`.
 Zenith angle not accounted for in albedo calculation."
-3,"Q* modelled with L↓ modelled using air temperature and relative humidity supplied in meteorological forcing file (Loridan et al. 2011 :cite:`L11`).
+3,"Q* modelled with L↓ modelled using air temperature and relative humidity supplied in meteorological forcing file :cite:`L11`.
 Zenith angle not accounted for in albedo calculation."
 11,"Same as ``1`` but with L↑ modelled using surface temperature |NotRecmd|"
 12,"Same as ``2`` but with L↑ modelled using surface temperature |NotRecmd|"
@@ -13,11 +13,11 @@ Zenith angle not accounted for in albedo calculation."
 Zenith angle accounted for in albedo calculation.
 SSss_YYYY_NARPOut.txt file produced.
 |NotRecmd|"
-200,"Q* modelled with L↓ modelled using cloud cover fraction supplied in meteorological forcing file (Loridan et al. 2011 :cite:`L11`).
+200,"Q* modelled with L↓ modelled using cloud cover fraction supplied in meteorological forcing file :cite:`L11`.
 Zenith angle accounted for in albedo calculation.
 SSss_YYYY_NARPOut.txt file produced.
 |NotRecmd|"
-300,"Q* modelled with L↓ modelled using air temperature and relative humidity supplied in meteorological forcing file (Loridan et al. 2011 :cite:`L11`).
+300,"Q* modelled with L↓ modelled using air temperature and relative humidity supplied in meteorological forcing file :cite:`L11`.
 Zenith angle accounted for in albedo calculation.
 SSss_YYYY_NARPOut.txt file produced.
 |NotRecmd|"

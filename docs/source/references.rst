@@ -13,8 +13,3 @@ References
 
 .. bibliography::
    :style: refs
-
-
-
-   .. :list: bullet
-

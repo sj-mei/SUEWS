@@ -1,7 +1,7 @@
 .. _new_2017a:
 
 Version 2017a (released on 1 Feb 2017)
--------------------------------------
+--------------------------------------
 
 #. Changes to input file formats (including RunControl.nml and
    InitialConditions files) to facilitate setting up and running the
