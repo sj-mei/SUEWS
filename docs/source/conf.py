@@ -177,7 +177,7 @@ breathe_projects = {"SUEWS": "./doxygenoutput/xml"}
 breathe_default_project = "SUEWS"
 
 # sphinx_last_updated_by_git options
-git_last_updated_metatags = False
+git_last_updated_metatags = True
 
 # sphinx comments
 # https://sphinx-comments.readthedocs.io/
@@ -311,6 +311,14 @@ html_context = {
     "conf_py_path": "/source/",  # Path in the checkout to the docs root
 }
 
+
+# There are two options for replacing |today|: either, you set today to some
+# non-false value, then it is used:
+# today = ''
+# Else, today_fmt is used as the format for a strftime call.
+today_fmt = "%Y-%m-%d"
+
+html_last_updated_fmt = today_fmt
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
