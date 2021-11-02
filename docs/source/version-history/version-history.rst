@@ -7,6 +7,7 @@ Version History
 .. toctree::
    :maxdepth: 1
 
+   dev
    v2020a
    v2019a
    v2018c
