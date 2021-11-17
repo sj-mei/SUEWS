@@ -3,18 +3,18 @@ No.,Use,Column Name,Description
 2,`MU`,id,Day of year [DOY]
 3,`MU`,it,Hour [H]
 4,`MU`,imin,Minute [M]
-5,`O`,qn,Net all-wave radiation [W |m^-2|] Required if `NetRadiationMethod` = 0.
+5,`O`,qn,Net all-wave radiation [W |m^-2|] (Required if `NetRadiationMethod` = 0.)
 6,`O`,qh,Sensible heat flux [W |m^-2|]
 7,`O`,qe,Latent heat flux [W |m^-2|]
 8,`O`,qs,Storage heat flux [W |m^-2|]
 9,`O`,qf,Anthropogenic heat flux [W |m^-2|]
-10,`MU`,U,Wind speed [m s-1] Height of the wind speed measurement (z) is needed in `SUEWS_SiteSelect.txt`.
-11,`MU`,RH,Relative Humidity [%]
-12,`MU`,Tair,Air temperature [°C]
-13,`MU`,pres,Barometric pressure [kPa]
-14,`MU`,rain,Rainfall [mm]
+10,`MU`,U,Wind speed [m s-1] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+11,`MU`,RH,Relative Humidity [%] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+12,`MU`,Tair,Air temperature [°C] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+13,`MU`,pres,Barometric pressure [kPa] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+14,`MU`,rain,Rainfall [mm] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
 15,`MU`,kdown,Incoming shortwave radiation [W |m^-2|] Must be > 0 W |m^-2|.
-16,`O`,snow,Snow cover fraction (0 – 1) [-] Required if `SnowUse` = 1
+16,`O`,snow,Snow cover fraction (0 – 1) [-] (Required if `SnowUse` = 1)
 17,`O`,ldown,Incoming longwave radiation [W |m^-2|]
 18,`O`,fcld,Cloud fraction [tenths]
 19,`O`,Wuh,External water use [|m^3|]
