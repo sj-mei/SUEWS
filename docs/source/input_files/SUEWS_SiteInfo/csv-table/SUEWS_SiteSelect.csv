@@ -8,7 +8,7 @@ No.,Column Name,Use,Description
 7,`Timezone`,`MU`,Time zone [h] for site relative to UTC (east is positive). This should be set according to the times given in the meteorological forcing file(s).
 8,`SurfaceArea`,`MU`,Area of the grid [ha].
 9,`Alt`,`MU`,Altitude of grids [m].
-10,`z`,`MU`,Measurement height [m].
+10,`z`,`MU`,Measurement height [m] for all atmospheric forcing variables set in `SSss_YYYY_data_tt.txt`.
 11,`id`,`MD`,Day of year [DOY]
 12,`ih`,`MD`,Hour [H]
 13,`imin`,`MD`,Minute [M]
