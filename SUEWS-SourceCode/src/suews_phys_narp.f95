@@ -87,7 +87,6 @@ CONTAINS
             IF (NetRadiationMethod == 100) ldown_option = 1
             IF (NetRadiationMethod == 200) ldown_option = 2
             IF (NetRadiationMethod == 300) ldown_option = 3
-            ! NetRadiationMethod=NetRadiationMethod/100
             NetRadiationMethod_use = NetRadiationMethod/100
 
          !choose Ldown method for Spartacus
@@ -205,8 +204,8 @@ CONTAINS
 
       INTEGER, INTENT(in) ::nsurf
       INTEGER, INTENT(in) ::NetRadiationMethod_use ! the one processed by RadMethod
-      INTEGER, INTENT(in) ::AlbedoChoice
-      INTEGER, INTENT(in) ::ldown_option
+      INTEGER, INTENT(in) ::AlbedoChoice ! flag if correction to albedo of snow cover should be applied
+      INTEGER, INTENT(in) ::ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
       INTEGER, INTENT(in) ::DiagQN
 
       REAL(KIND(1D0)), INTENT(out) ::QSTARall
