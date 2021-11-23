@@ -4526,7 +4526,7 @@ Input Options
 .. option:: z
 
 	:Description:
-		Measurement height [m].
+		Measurement height [m] for all atmospheric forcing variables.
 
 	:Configuration:
 		.. csv-table::
