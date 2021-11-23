@@ -150,7 +150,7 @@ jobs:
           docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
           "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
           which python;\
-          python -m pip install -U pip
+          python -m pip install -U pip pytest
           cd /io/supy-driver; \
           make test"
 
