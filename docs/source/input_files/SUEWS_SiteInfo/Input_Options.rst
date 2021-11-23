@@ -4526,7 +4526,7 @@ Input Options
 .. option:: z
 
 	:Description:
-		Measurement height [m] for all atmospheric forcing variables.
+		Measurement height [m] for all atmospheric forcing variables set in `SSss_YYYY_data_tt.txt`.
 
 	:Configuration:
 		.. csv-table::
