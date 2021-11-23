@@ -195,7 +195,7 @@ def run_sim(
         os.mkdir(name_sim)
         os.chdir(name_sim)
         os.mkdir("Output")
-        p_sim=(Path(dir_save)/name_sim).resolve()
+        p_sim = (Path(dir_save) / name_sim).resolve()
     except OSError as e:
         if e.errno == errno.EEXIST:
             print("Directory not created.")
@@ -203,8 +203,8 @@ def run_sim(
             raise
     # copy base input files
     copytree(dir_input, "Input")
-    p_input=(Path(dir_input))
-    copyfile(p_input/'config.nam', p_sim/'config.nam')
+    p_input = Path(dir_input)
+    copyfile(p_input / "config.nam", p_sim / "config.nam")
 
     # get sim info
     yr_sim = df_siteselect.loc[:, "Year"].unique().astype(int)
@@ -236,7 +236,6 @@ def run_sim(
 
     # save RunControl to file
     f90nml.write(RunControl, "RunControl.nml")
-
 
     # copy SUEWS executable
     # name_exe = 'SUEWS_V2018a'
@@ -456,8 +455,15 @@ def test_samerun(
     common_files = [
         x.name
         for x in path_res_sample.glob("*")
-        # exclude certain files
-        if not any(excl in x.name for excl in ["FileChoices.txt", "state_init.txt"])
+        # exclude certain files from testing
+        if not any(
+            excl in x.name
+            for excl in [
+                "FileChoices.txt",
+                "state_init.txt",
+                '_SPARTACUS_', # SPARTACUS is still experimental
+            ]
+        )
     ]
     comp_files_test = filecmp.cmpfiles(
         path_res_sample, path_res_test, common_files, shallow=False
