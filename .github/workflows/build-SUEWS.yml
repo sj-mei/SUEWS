@@ -59,7 +59,7 @@ jobs:
 
     strategy:
       matrix:
-        py: ["3.9"]
+        py: ["3.10"]
         os: [macOS-latest, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
@@ -88,17 +88,36 @@ jobs:
         run: |
           make release
 
+      - name: Store the ${{ matrix.os }} release
+        uses: actions/upload-artifact@v2
+        with:
+          name: SUEWS-release
+          path: Release/SUEWS_*_*.zip
 
-      # - name: Automatic Releases
-      #   uses: marvinpinto/action-automatic-releases@v1.2.1
-      #   with:
-      #     repo_token: "${{ secrets.PAT }}"
-      #     automatic_release_tag: "latest-dev"
-      #     prerelease: true
-      #     title: "Development Build"
-      #     files: |
-      #       LICENSE.txt
-      #       Release/SUEWS_*_*.zip
+
+
+  release-github:
+    name: Release on GitHub
+    needs:
+      - test-suews
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v2
+        with:
+          name: SUEWS-release
+          path: SUEWS-release/
+
+      - name: Automatic Releases
+        uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+          repo_token: "${{ secrets.PAT }}"
+          automatic_release_tag: "latest-dev"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            SUEWS-release/SUEWS_*_*.zip
 
 
 
