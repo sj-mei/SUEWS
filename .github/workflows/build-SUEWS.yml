@@ -37,8 +37,7 @@ jobs:
         run: |
           echo $PATH
           which gfortran-11
-          which gfortran-10
-          ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran
+          ln -sf "$(which gfortran-11)" /usr/local/bin/gfortran
           which gfortran
           gfortran --version
 
