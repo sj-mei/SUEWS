@@ -92,7 +92,7 @@ written for each grid so it may contain multiple years.
   :header-rows: 1
   :widths: auto
 
-.. _initialconditionsssss_yyyy.nml:
+
 
 InitialConditionsSSss_YYYY.nml
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,7 +1,6 @@
 ESTM-related files
 -----------------------------
 
-.. _SUEWS_ESTMCoefficients.txt:
 
 SUEWS_ESTMCoefficients.txt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,7 +49,6 @@ The following input files are required if ESTM is used to calculate the
 storage heat flux.
 
 
-.. _ESTMinput.nml:
 
 ESTMinput.nml
 ~~~~~~~~~~~~~
@@ -82,7 +80,6 @@ are provided through :ref:`the links below <ESTMinput>`:
    ESTMinput
 
 
-.. _SSss_YYYY_ESTM_Ts_data_tt.txt:
 
 SSss_YYYY_ESTM_Ts_data_tt.txt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

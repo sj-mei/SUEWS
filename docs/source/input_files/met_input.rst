@@ -47,7 +47,6 @@ variables.
      2012   1   0   0 …
 
 
-.. _SSss_YYYY_data_tt.txt:
 
 SSss_YYYY_data_tt.txt
 ~~~~~~~~~~~~~~~~~~~~~

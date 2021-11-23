@@ -164,7 +164,7 @@ From,To,Action,File,Variable,Column,Value
 2016a,2017a,Add,SUEWS_SiteSelect.txt,Code_ESTMClass_Bldgs4,102,804
 2016a,2017a,Add,SUEWS_SiteSelect.txt,Code_ESTMClass_Bldgs5,103,805
 2016a,2017a,Rename,RunControl.nml,AnthropHeatChoice,-999,AnthropHeatMethod
-2016a,2017a,Rename,RunControl.nml,CBLuse,-999,CBLUse
+2016a,2017a,Rename,RunControl.nml,CBLUse,-999,CBLUse
 2016a,2017a,Rename,RunControl.nml,NetRadiationChoice,-999,NetRadiationMethod
 2016a,2017a,Rename,RunControl.nml,RoughLen_heat,-999,RoughLenHeatMethod
 2016a,2017a,Rename,RunControl.nml,smd_choice,-999,SMDMethod

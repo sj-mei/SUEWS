@@ -1,6 +1,6 @@
 .. _new_2017b:
 
-Version 2017b (released 2 August 2017)
+Version 2017b (released on 2 August 2017)
 ---------------------------------------------------
 
 :download:`PDF Manual for v2017b </assets/doc/SUEWS_V2017b_Manual.pdf>`

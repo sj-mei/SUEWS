@@ -1,6 +1,6 @@
 .. _Preparing_to_run_the_model:
 
-Preparing to run the model
+Workflow of using SUEWS
 ==========================
 
 The following is to help with the model setup. Note that there are also
@@ -45,10 +45,6 @@ Decide what type of model run you are interested in
      - Yes
    * - SUEWS with snow
      - Yes
-   * - SUEWS with SOLWEIG
-     - No
-   * - SUEWS with SOLWEIG and BL
-     - No
 
 Download the program and example data files
 -------------------------------------------
@@ -418,7 +414,7 @@ Get in contact
 --------------
 For issues met in using SUEWS, we recommend the following ways to get in contact with the developers and the SUEWS community:
 
-#. Report issues on `our GitHub page <https://github.com/UMEP-dev/UMEP-dev.github.io/issues>`_.
+#. Report issues on `our GitHub page <https://github.com/UMEP-dev/SUEWS/issues>`_.
 
 #. Ask for help by joining `the Email-list for SUEWS <https://www.lists.reading.ac.uk/mailman/listinfo/met-suews>`_.
 

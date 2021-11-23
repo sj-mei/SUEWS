@@ -1,9 +1,6 @@
 
-**NOTE:**
+.. warning:: Information here is ONLY for developers.
 
-**THIS IS WORK IN PROGRESS AND SHOULD NOT BE USED FOR PRODUCTION/RESEARCH.**
-
-**THIS RELEASE IS ONLY FOR VALIDATING THE SUEWS CI WORKFLOW.**
 
 Version 2021a (in development)
 ----------------------------------------------------
@@ -11,6 +8,7 @@ Version 2021a (in development)
 - **Improvement**
 
   1. Added a new RoughLenMomMethod (4) to calculate roughness and displacement height as a function of plan area index and effective height of roughness elements following the ensemble mean of Fig 1a in :cite:`GO99`
+  2. Coupled `SPARCATUS <https://github.com/Urban-Meteorology-Reading/spartacus-surface>`_ into SUEWS for detailed modelling of radiation balance.
 
 
 - **Changes**

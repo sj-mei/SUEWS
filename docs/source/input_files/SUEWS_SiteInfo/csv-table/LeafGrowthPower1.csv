@@ -1,5 +1,5 @@
 "Referencing Table","Requirement","Comment"
 "`SUEWS_Veg.txt`","`MD`","Example values
 
-- `LAIEq` = 0: 0.03 Järvi et al. (2011) :cite:`J11`
-- `LAIEq` = 1: 0.04 Järvi et al. (2014) :cite:`J14`"
+- `LAIEq` = 0: 0.03 :cite:t:`J11`
+- `LAIEq` = 1: 0.04 :cite:t:`J14`"

@@ -1,10 +1,6 @@
-.. _introduction:
 
 Introduction
 ============
-
-
-
 
 
 Surface Urban Energy and Water Balance Scheme (**SUEWS**) :cite:`J11,W16` is able to simulate the urban radiation, energy and water balances using only commonly measured meteorological variables and information about the surface cover.

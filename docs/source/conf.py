@@ -8,6 +8,9 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import os
+import platform
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -16,36 +19,34 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 import subprocess
-import os
-import platform
 import sys
+from datetime import datetime
+from pathlib import Path
 from time import strptime
 
-# from datetime import datetime
-from pathlib import Path
-
-import pandas as pd
-import nbsphinx
 import exhale
-
+import nbsphinx
+import pandas as pd
 import sphinxcontrib.bibtex
+from pybtex.plugin import register_plugin
+from pybtex.style.formatting import BaseStyle, toplevel
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.formatting.unsrt import Text, date, pages
 from pybtex.style.sorting.author_year_title import SortingStyle as Sorter
 from pybtex.style.template import (
-    join,
-    words,
     field,
-    optional,
     first_of,
+    href,
+    join,
     names,
+    optional,
+    optional_field,
     sentence,
     tag,
-    optional_field,
-    href,
+    words,
 )
-from pybtex.style.formatting import toplevel, BaseStyle
-from pybtex.plugin import register_plugin
-from pybtex.style.formatting.unsrt import Style as UnsrtStyle, pages, date, Text
 
+today = datetime.today()
 
 # -- processing code --------------------------------------------------------
 # load all csv as a whole df
@@ -118,9 +119,8 @@ def gen_csv_suews(path_csv):
 # -- Project information ----------------------------------------------------
 project = "SUEWS"
 doc_name = "SUEWS Documentation"
-# today = datetime.today()
-copyright = "2018 – 2021" + ", micromet@University of Reading, led by Prof Sue Grimmond"
-author = "micromet@University of Reading, led by Prof Sue Grimmond"
+copyright = f"2018 – {today.year}"
+author = "SUEWS dev team led by Prof Sue Grimmond"
 
 
 # determine latest version and release
@@ -138,6 +138,14 @@ list_ver = sorted(
 version = list_ver[-1]
 # The full version, including alpha/beta/rc tags
 release = list_ver[-1]
+
+# There are two options for replacing |today|: either, you set today to some
+# non-false value, then it is used:
+# today = ''
+# Else, today_fmt is used as the format for a strftime call.
+today_fmt = "%Y-%m-%d"
+
+html_last_updated_fmt = today_fmt
 
 path_csv = path_source / "input_files/SUEWS_SiteInfo/csv-table"
 gen_csv_suews(path_csv)
@@ -159,6 +167,7 @@ extensions = [
     # 'sphinxfortran.fortran_autodoc',
     # 'sphinxfortran.fortran_domain',
     "sphinxcontrib.bibtex",
+    "sphinxcontrib.email",
     "sphinx.ext.githubpages",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -169,9 +178,12 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.mathjax",
     "breathe",
+    'sphinx_panels',
     "sphinx_last_updated_by_git",
     # 'exhale'
 ]
+
+email_automode = True
 
 breathe_projects = {"SUEWS": "./doxygenoutput/xml"}
 breathe_default_project = "SUEWS"
@@ -195,29 +207,28 @@ comments_config = {
 read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
 
 if read_the_docs_build:
-
     subprocess.call("doxygen", shell=True)
 else:
     # subprocess.call("doxygen", shell=True)
     pass
 
 
-# exhale_args = {
-#     # These arguments are required
-#     "containmentFolder":     "./api",
-#     "rootFileName":          "library_root.rst",
-#     "rootFileTitle":         "API",
-#     "doxygenStripFromPath":  "..",
-#     # Suggested optional arguments
-#     "createTreeView":        True,
-#     # TIP: if using the sphinx-bootstrap-theme, you need
-#     # "treeViewIsBootstrap": True,
-#     "exhaleExecutesDoxygen": True,
-#     "exhaleUseDoxyfile" :    True,
-#     #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
-#     #                            GENERATE_HTML  = YES
-#     #                            '''
-# }
+exhale_args = {
+    # These arguments are required
+    "containmentFolder":     "./api",
+    "rootFileName":          "library_root.rst",
+    "rootFileTitle":         "API",
+    "doxygenStripFromPath":  "..",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": True,
+    "exhaleUseDoxyfile" :    True,
+    #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+    #                            GENERATE_HTML  = YES
+    #                            '''
+}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -294,22 +305,27 @@ rst_prolog = """
       2. Please report issues with the manual on the `GitHub Issues`_.
       3. Please cite SUEWS with proper information from our `Zenodo page`_.
 
-.. _UMEP Community : https://github.com/UMEP-dev/UMEP/discussions/225
+.. _UMEP Community : https://github.com/UMEP-dev/UMEP/discussions/
 
 """
 # -- Options for HTML output -------------------------------------------------
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+# html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
 # html_theme_path = ["_themes"]
 html_context = {
+    "repository_url": "https://github.com/{your-docs-url}",
     "display_github": True,  # Integrate GitHub
     "github_user": "UMEP-dev",  # Username
     "github_repo": "SUEWS",  # Repo name
     "github_version": "master",  # Version
     "conf_py_path": "/source/",  # Path in the checkout to the docs root
 }
+
+# check every link in this project is working
+nitpicky=True
 
 
 # There are two options for replacing |today|: either, you set today to some
@@ -324,7 +340,21 @@ html_last_updated_fmt = today_fmt
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = dict(
+    # analytics_id=''  this is configured in rtfd.io
+    # canonical_url="",
+    repository_url="https://github.com/UMEP-dev/SUEWS",
+    repository_branch="master",
+    path_to_docs="docs",
+    use_edit_page_button=True,
+    use_repository_button=True,
+    use_issues_button=True,
+    home_page_in_toc=False,
+    extra_navbar="",
+    navbar_footer_text="",
+    logo_only= True,
+    # twitter_url="https://twitter.com/xarray_devs",
+)
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -350,10 +380,12 @@ html_static_path = ["_static", "doxygenoutput"]
 # html_sidebars = {}
 numfig = True
 html_logo = "images/logo/SUEWS_LOGO-display.png"
-html_theme_options = {
-    "logo_only": True,
-    "display_version": True,
-}
+# html_theme_options = {
+    # "logo_only": True,
+#     "display_version": True,
+# }
+
+
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -505,8 +537,9 @@ def setup(app):
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+    "xarray": ("http://xarray.pydata.org/en/stable/", None),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "supy": ("https://supy.readthedocs.io/en/latest/", None),
+    "supy": ("https://supy.readthedocs.io/en/stable/", None),
 }
 
 
@@ -521,8 +554,8 @@ bibtex_reference_style = "author_year_round"
 
 # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#custom-inline-citation-references
 import dataclasses
-import sphinxcontrib.bibtex.plugin
 
+import sphinxcontrib.bibtex.plugin
 from sphinxcontrib.bibtex.style.referencing import BracketStyle
 from sphinxcontrib.bibtex.style.referencing.author_year import AuthorYearReferenceStyle
 
@@ -545,11 +578,13 @@ sphinxcontrib.bibtex.plugin.register_plugin(
     "sphinxcontrib.bibtex.style.referencing", "author_year_round", MyReferenceStyle
 )
 
+import unicodedata
+
 ###############################################################################################
 # ref: https://titanwolf.org/Network/Articles/Article?AID=1463c485-6603-4a3c-ac34-d68c95e67f0a
 from collections import Counter
+
 from pybtex.style.labels import BaseLabelStyle
-import unicodedata
 
 
 def is_japanese(string):
@@ -636,10 +671,11 @@ register_plugin("pybtex.style.formatting", "jsai", JsaiStyle)
 ###############################################################################################
 
 
+from pybtex.plugin import register_plugin
+
 # https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/develop/test/roots/test-bibliography_style_label_2/conf.py
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 from pybtex.style.labels.alpha import LabelStyle as AlphaLabelStyle
-from pybtex.plugin import register_plugin
 
 
 class LabelStyle_APA(AlphaLabelStyle):
@@ -655,9 +691,10 @@ register_plugin("pybtex.style.labels", "apa", LabelStyle_APA)
 register_plugin("pybtex.style.formatting", "apastyle", ApaStyle)
 
 
+from pybtex.plugin import register_plugin
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 from pybtex.style.labels import BaseLabelStyle
-from pybtex.plugin import register_plugin
+
 
 # a simple label style which uses the bibtex keys for labels
 class LabelStyle_key(BaseLabelStyle):

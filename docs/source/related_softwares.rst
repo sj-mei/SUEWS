@@ -3,7 +3,6 @@
 SUEWS-related Software
 ================================
 
-.. _supy:
 
 SuPy
 ----

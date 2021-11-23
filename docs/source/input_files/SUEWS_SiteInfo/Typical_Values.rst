@@ -21,17 +21,17 @@ Generic Properties
      - Non Vegetated
      - 0.09
      - Paved Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo
      - Non Vegetated
      - 0.15
      - Buildings Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo
      - Non Vegetated
      - 0.19
      - Bare Soil, Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo
      - Non Vegetated
      - 0.12
@@ -91,17 +91,17 @@ Generic Properties
      - Vegetated
      - 0.10
      - EveTr Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo
      - Vegetated
      - 0.16
      - DecTr Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo
      - Vegetated
      - 0.19
      - Grass Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo
      - Vegetated
      - 0.10
@@ -176,17 +176,17 @@ Generic Properties
      - Vegetated
      - 0.10
      - EveTr Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo Max(leaf on)
      - Vegetated
      - 0.16
      - DecTr Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo Max(leaf on)
      - Vegetated
      - 0.19
      - Grass Helsinki
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Albedo Max(leaf on)
      - Vegetated
      - 0.10
@@ -297,27 +297,27 @@ Generic Properties
      - 0-1
      - Minimum snow albedo [-]
        - 0.18
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - AlbedoMax \*Maximum snow albedo (fresh snow) [-]
      - Snow
      - 0.85
      -
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - Emissivity \*Effective surface emissivity. \*View factors should be taken into account
      - Snow
      - 0.99
      - Snow
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - tau\_a \*Time constant for snow albedo aging in cold snow [-]
      - Snow
      - 0.018
      -
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - tau\_f \*Time constant for snow albedo aging in melting snow [-]
      - Snow
      - 0.11
      -
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - PrecipiLimAlb
      - Snow
      - 2
@@ -337,17 +337,17 @@ Generic Properties
      - Snow
      - 0.043
      -
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - CRWMin \*Minimum water holding capacity of snow [mm]
      - Snow
      - 0.05
      -
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - CRWMax \*Maximum water holding capacity of snow [mm]
      - Snow
      - 0.20
      -
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
    * - PrecipLimSnow
      - Snow
      - 2.2
@@ -551,19 +551,19 @@ OHM Coefficients
      - 0.0
    * -
      - Helsinki – Suburban
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
      - 0.19
      - 0.54
      - -15.1
    * -
      - Montreal – Suburban
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
      - 0.12
      - 0.24
      - -4.5
    * -
      - Montreal – Urban
-     - Järvi et al. (2014)
+     - :cite:t:`J14`
      - 0.26
      - 0.85
      - -21.4
