@@ -81,7 +81,7 @@ clean:
 	rm -rf *.f95
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
-test:
+test: main
 	pip install -e .
 	pytest -s ${MODULE}/test
 
