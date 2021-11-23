@@ -89,16 +89,16 @@ jobs:
           make release
 
 
-      - name: Automatic Releases
-        uses: marvinpinto/action-automatic-releases@v1.2.1
-        with:
-          repo_token: "${{ secrets.PAT }}"
-          automatic_release_tag: "latest-dev"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            LICENSE.txt
-            Release/SUEWS_*_*.zip
+      # - name: Automatic Releases
+      #   uses: marvinpinto/action-automatic-releases@v1.2.1
+      #   with:
+      #     repo_token: "${{ secrets.PAT }}"
+      #     automatic_release_tag: "latest-dev"
+      #     prerelease: true
+      #     title: "Development Build"
+      #     files: |
+      #       LICENSE.txt
+      #       Release/SUEWS_*_*.zip
 
 
 

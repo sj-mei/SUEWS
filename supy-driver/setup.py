@@ -177,7 +177,7 @@ setup(
     },
     distclass=BinaryDistribution,
     ext_modules=ext_modules,
-    python_requires=">=3.5",
+    python_requires=">=3.7",
     install_requires=["numpy>=1.20"],
     include_package_data=True,
     test_suite="nose.collector",
