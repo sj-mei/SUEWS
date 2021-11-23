@@ -7,6 +7,29 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
     :target: https://suews.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+What is SUEWS?
+=================
+
+Surface Urban Energy and Water Balance Scheme (**SUEWS**) :cite:`J11,W16` is a neighbourhood/local-scale urban land surface model to simulate the urban radiation, energy and water balances using only commonly measured meteorological variables and information about the surface cover.
+SUEWS utilizes an evaporation-interception approach :cite:`GO91`, similar to that used in forests, to model evaporation from urban surfaces.
+
+
+.. figure:: /assets/img/SUEWS_Overview_s.png
+	:alt: Overview of SUEWS
+
+	Overview of SUEWS
+
+The model uses seven surface types: paved, buildings, evergreen trees/shrubs, deciduous trees/shrubs, grass, bare soil and water.
+The surface state for each surface type at each time step is calculated from the running water balance of the canopy where the evaporation is calculated from the Penman-Monteith equation.
+The soil moisture below each surface type (excluding water) is taken into account.
+Horizontal movement of water above and below ground level is allowed.
+
+
+.. figure:: /assets/img/SUEWS_SurfaceWaterBalance_v2_xxs.jpg
+	:alt: The seven surface types considered in SUEWS
+
+	The seven surface types considered in SUEWS
+
 
 How to get SUEWS?
 =================
@@ -95,7 +118,6 @@ How to support SUEWS?
    :numbered:
    :hidden:
 
-   introduction
    prepare-to-run-the-model
    input_files/input_files
    output_files/output_files
