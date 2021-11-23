@@ -598,11 +598,12 @@ MODULE ctrl_output
       varAttr('RA', 'm', f104, 'RA', aA, 'debug', 0), &
       varAttr('RB', 'm', f104, 'RB', aA, 'debug', 0), &
       varAttr('RAsnow', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('vpd_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('avdens', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('avcp', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('s_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('psyc_hPa', 'm', f104, 'RA for snow', aA, 'debug', 0) &
+      varAttr('vpd_hPa', 'm', f104, 'vapour pressure deficit', aA, 'debug', 0), &
+      varAttr('lv_J_kg', 'm', f104, 'latent heat of vaporisation', aA, 'debug', 0), &
+      varAttr('avdens', 'm', f104, 'air density', aA, 'debug', 0), &
+      varAttr('avcp', 'm', f104, 'air heat capacity at constant pressure', aA, 'debug', 0), &
+      varAttr('s_hPa', 'm', f104, 'Vapour pressure versus temperature slope in PM', aA, 'debug', 0), &
+      varAttr('psyc_hPa', 'm', f104, 'Psychometric constant', aA, 'debug', 0) &
       /
 
    ! SPARTACUS info

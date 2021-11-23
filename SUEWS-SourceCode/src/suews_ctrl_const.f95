@@ -54,7 +54,7 @@ MODULE allocateArray
                         ncolumnsDataOutESTM = 32, &
                         ncolumnsDataOutDailyState = 50, &
                         ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
-                        ncolumnsDataOutDebug = 5 + 23, &
+                        ncolumnsDataOutDebug = 5 + 24, &
                         ncolumnsDataOutSPARTACUS = 5 + 6 + 4*15 + 3 + 4*15 + 4
 
    ! ---- Define input file headers ---------------------------------------------------------------
