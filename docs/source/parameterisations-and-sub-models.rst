@@ -107,16 +107,7 @@ A convective boundary layer (CBL) slab model :cite:`CG01` calculates the CBL hei
 
 ..     Overview of scales. Source: Onomura et al. (2015) :cite:`O15`
 
-Surface Diagnostics
--------------------
 
-A `MOST <https://en.wikipedia.org/wiki/Monin–Obukhov_similarity_theory>`_-based surface diagnostics module is implemented in 2017b for calculating the surface level diagnostics, including:
-
--  T2: air temperature at 2 m agl
--  Q2: air specific humidity at 2 m agl
--  U10: wind speed at 10 m agl
-
-The details for formulation of these diagnostics can be found in equations 2.54, 2.55 and 2.56 in :cite:t:`B05`
 
 
 .. _LQF: http://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html
@@ -126,21 +117,28 @@ The details for formulation of these diagnostics can be found in equations 2.54,
 
 Wind, Temperature and Humidity Profiles in the Roughness Sublayer
 ----------------------------------------------------------------------------
-Wind, temperature and humidity profiles are derived at 30 levels in the surface layer.
-In order to account for the roughness sublayer and canopy layer,
-we follow :cite:t:`HF07, HF08`, and :cite:t:`T19`.
+A dignostic RSL scheme for calculating the wind, temperature and humidity profiles in the roughness sublayer is implemented in 2020a following :cite:t:`HF07, HF08` and :cite:t:`T19`.
+An recent application of this RSL scheme can be found in :cite:t:`T21`.
 
-The 30 levels have a step of 0.1 times the canopy height ``zh``
-(should still output zh somewhere) ``dz = 0.1 * zh``.
-However. if 3 x canopy height is less the 10 m steps of 0.3333 m are used:
+The diagnostic profiles are outputed in 30 uneven levels between the ground and forcing height, which are divided into two groups:
 
-.. code-block:: fortran
+- One group of levels are evenly distributed within the urban canopy layer characterised by mean height of roughness elements (e.g. buildings, trees, etc.) :math:`z_H`, which determines the number of layers within urban canopy :math:`n_{can}`:
 
-   IF ((3.*Zh) < 10.) THEN
-   dz = 1./3.
-   zarray = (/(I, I=1, nz)/)*dz...
+.. math::
+   :nowrap:
 
-Here ``nz = 30``.
+   \[
+         n_{can} =
+   \begin{cases}
+      3 & \text{if } z_H \leq \text{2 m} \\
+      10 & \text{if } \text{2 m} \lt z_H \leq \text{10 m} \\
+      15 & \text{if } z_H \gt \text{10 m} \\
+
+   \end{cases}
+   \]
+
+- The other levels are evenly distributed between the urban canopy layer top and forcing height.
+
 
 .. note::
 
@@ -148,3 +146,14 @@ Here ``nz = 30``.
    from the forcing data down into the canopy.
    Therefore it is assumed that the forcing temperature and humidity
    are above the blending height.
+
+
+
+Common near-surface diagnostics:
+
+   -  T2: air temperature at 2 m agl
+   -  Q2: air specific humidity at 2 m agl
+   -  RH2: air relative humidity at 2 m agl
+   -  U10: wind speed at 10 m agl
+
+are calculated by the `RSL scheme <rsl_mod>` by interpolating RSL profile results to the corresonding diagnostic heights.
