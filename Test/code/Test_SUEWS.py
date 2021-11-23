@@ -497,9 +497,10 @@ def test_samerun(
                 .droplevel(0, axis=1)
             )
             if df_diff.size > 0:
-                df_diff.to_csv(path_res_sample / (file + ".diff.csv"))
+                p_csv_diff=path_res_sample / (file + ".diff.csv")
+                df_diff.to_csv(p_csv_diff)
                 print(df_diff)
-                print(f"===  {path_res_sample/(file+'.diff.csv')} has been saved")
+                print(f"===  {p_csv_diff.as_posix()} has been saved")
             else:
                 res_test = True
 
