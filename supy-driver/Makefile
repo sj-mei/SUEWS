@@ -82,8 +82,8 @@ clean:
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
 test:
-	$(MAKE) main
-	$(PYTHON) setup.py test
+	pip install -e .
+	pytest -s ${MODULE}/test
 
 # clean all existing builds, rebuild f2py libs, build wheels and install in dev mode
 dev:
