@@ -1,6 +1,11 @@
 name: build and check
 
 on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # * the cron syntax is: https://en.wikipedia.org/wiki/Cron#CRON_expression
+    # latest-dev of SUEWS is a weekly build
+    - cron:  '30 5 * * 6'
   # File paths to consider in the event. Optional; defaults to all
   push:
     # branches:    # Array of patterns that match refs/heads

@@ -295,7 +295,7 @@ rst_prolog = """
 .. |NotAvail| replace:: **Not available in this version.**
 .. |NotUsed| replace:: **Not used in this version.**
 
-.. _Zenodo page: https://doi.org/10.5281/zenodo.3267305
+.. _Zenodo page: https://doi.org/10.5281/zenodo.5723970
 
 .. only:: html
 
@@ -306,6 +306,7 @@ rst_prolog = """
       3. Please cite SUEWS with proper information from our `Zenodo page`_.
 
 .. _UMEP Community : https://github.com/UMEP-dev/UMEP/discussions/
+.. _SUEWS download page: https://forms.office.com/r/4qGfYu8LaR
 
 """
 # -- Options for HTML output -------------------------------------------------
