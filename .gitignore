@@ -329,7 +329,8 @@ dmypy.json
 .idea/
 _build/
 doxygenoutput/
-Release/
+Release/bin/
+Release/*.zip
 supy-driver/wheelhouse/
 test-dev/
 Test/BaseRun/*/SUEWS_V2*
@@ -338,11 +339,6 @@ SUEWS-SourceCode/bin/*
 
 # test diff files
 *.diff.csv
-Test/BaseRun/2019a/Input/test_2004_data_60.txt
-Test/BaseRun/2019b/Input/test_2004_data_60.txt
-Test/BaseRun/2020a/Input/test_2004_data_60.txt
-Test/BaseRun/2020a/SUEWS_V2020a
-Test/BaseRun/2020b/Input/test_2004_data_60.txt
 
 # junk files during complilations
 fort.1
