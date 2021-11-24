@@ -1,14 +1,14 @@
 .. _index_page:
 
 SUEWS: Surface Urban Energy and Water Balance Scheme
-----------------------------------------------------
+====================================================
 
 .. image:: http://readthedocs.org/projects/suews/badge/?version=latest
     :target: https://suews.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 What is SUEWS?
-=================
+---------------
 
 Surface Urban Energy and Water Balance Scheme (**SUEWS**) :cite:`J11,W16` is a neighbourhood/local-scale urban land surface model to simulate the urban radiation, energy and water balances using only commonly measured meteorological variables and information about the surface cover.
 SUEWS utilizes an evaporation-interception approach :cite:`GO91`, similar to that used in forests, to model evaporation from urban surfaces.
@@ -32,7 +32,7 @@ Horizontal movement of water above and below ground level is allowed.
 
 
 How to get SUEWS?
-=================
+------------------------------
 
 - **Latest release:**
 
@@ -45,7 +45,7 @@ How to get SUEWS?
 
 
 How to use SUEWS?
-=================
+------------------------------
 
 - **For existing users:**
 
@@ -68,14 +68,14 @@ How to use SUEWS?
 
 
 How to get help in using SUEWS?
-==================================
+---------------------------------------------
 
 Please let us know in the `UMEP Community`_.
 The developers and other users are willing to help you :)
 
 
 How has SUEWS been used?
-==================================
+------------------------------
 
 The scientific details and application examples of SUEWS can be found in `Recent_publications`.
 
@@ -83,7 +83,7 @@ The scientific details and application examples of SUEWS can be found in `Recent
 
 
 How to cite SUEWS?
-==================================
+-----------------------------
 
 Please go to `our Zenodo repository`_ for a proper citation of SUEWS.
 
@@ -95,7 +95,7 @@ Please go to `our Zenodo repository`_ for a proper citation of SUEWS.
 
 
 How to support SUEWS?
-==================================
+-----------------------------
 
 #. `Cite SUEWS <cite_suews>` appropriately in your work.
 #. Contribute to the `development <Development_Suggestions_Support>`.

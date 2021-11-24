@@ -4500,7 +4500,7 @@ Input Options
 .. option:: xsmd
 
 	:Description:
-		Observed soil moisture [|m^3| |m^-3| or kg |kg^-1|]
+		Observed soil moisture; can be provided either as volumetric ([|m^3| |m^-3|] when `SMDMethod`=1) or gravimetric quantity ([kg |kg^-1|] when `SMDMethod`=2). This should be used in conjunction with other soil properties in `SUEWS_Soil`.
 
 	:Configuration:
 		.. csv-table::
