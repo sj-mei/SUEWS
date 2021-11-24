@@ -26,7 +26,7 @@ the details so we can hopefully provide better error messages in future.
 
 See `Troubleshooting` section for help solving
 problems. If the file paths are not correct the program will return an
-error when run (see `Preparing_to_run_the_model`).
+error when run (see `Workflow`).
 
 .. _warnings.txt:
 
@@ -47,6 +47,8 @@ Warning messages: warnings.txt
    and error count. If the problem occurs in the initial stages (i.e.
    before grid numbers and timestamps are assigned, these are printed as
    00000).
+
+.. _file_choices:
 
 Summary of model parameters: SS_FileChoices.txt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

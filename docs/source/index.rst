@@ -34,13 +34,17 @@ Horizontal movement of water above and below ground level is allowed.
 How to get SUEWS?
 ------------------------------
 
-- **Latest release:**
+- **Formal releases**
 
-  The **latest formal** release of SUEWS is `new_latest` and can be downloaded via `our Zenodo repository`_ (a sample input dataset is included in the release archive).
+  Please visit the `SUEWS download page`_.
 
-- **Previous releases:**
 
-  Previous releases can be downloaded via `our GitHub page`_.
+- **Development build**
+
+  .. warning:: The development build can be highly unstable and is not recommended for production use. However, it is automatically constructed every week for testing purposes and we are happy to receive feedback on the development build.
+
+  Download the development build of SUEWS from `the GitHub Release page <https://github.com/UMEP-dev/SUEWS/releases/tag/latest-dev>`_.
+
 
 
 
@@ -62,9 +66,9 @@ How to use SUEWS?
 - **For new users:**
 
 
-  Before performing SUEWS simulations, new users should read the overview :ref:`introduction`, then follow the steps in `Preparing_to_run_the_model` to prepare `input files <input_files>` for SUEWS.
+  Before performing SUEWS simulations, new users should read the overview :ref:`introduction`, then follow the steps in `Workflow` to prepare `input files <input_files>` for SUEWS.
 
-  Note there are tutorials learning about running SUEWS available :ref:`the tutorial. <tutorials_suews>`
+  Note there are tutorials learning about running SUEWS available :ref:`the tutorial <tutorials_suews>`.
 
 
 How to get help in using SUEWS?
@@ -105,11 +109,9 @@ How to support SUEWS?
 
 .. _our GitHub page: https://github.com/UMEP-dev/SUEWS
 .. _our Zenodo repository: `Zenodo page`_
-.. _this form: `dowload form`_
-.. _dowload form: https://github.com/UMEP-dev/SUEWS/releases
 
-.. |doi_software| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3533450.svg
-    :target: http://doi.org/10.5281/zenodo.3533450
+.. |doi_software| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5723970.svg
+   :target: https://doi.org/10.5281/zenodo.5723970
 
 
 .. toctree::
@@ -118,7 +120,7 @@ How to support SUEWS?
    :numbered:
    :hidden:
 
-   prepare-to-run-the-model
+   workflow
    input_files/input_files
    output_files/output_files
    troubleshooting
