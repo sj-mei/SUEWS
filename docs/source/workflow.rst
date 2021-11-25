@@ -113,25 +113,38 @@ Please see `Troubleshooting` if you have problems running the model.
 Preparation of data
 -------------------
 
+.. tip:: If you need help preparing the data you can use some of the `UMEP`_ tools.
+
+
 The information required to run SUEWS for your site consists of:
 
-#. Continuous *meteorological forcing data* for the entire period to be modelled without gaps.
-If you need help preparing the data you can use some of the `UMEP`_ tools.
-#. Knowledge of the *surface and soil conditions immediately prior to the first model timestep*. If these initial conditions are unknown, model spinup can help; i.e. run the model and use the output at the end of the run to infer the conditions at the start of the main run).
-#. The *location of the site* (latitude, longitude, altitude).
-#. Information about the *characteristics of the surface*, including land cover, heights of buildings and trees, radiative characteristics (e.g. albedo, emissivity), drainage characteristics, soil characteristics, snow characteristics, phenological characteristics (e.g. seasonal cycle of LAI).
-For guidance on how to derive parameters related to LAI, albedo, surface conductance and surface roughness, the reader is referred to this `link <https://gmd.copernicus.org/preprints/gmd-2020-148/>`_.
-#. Information about *human behaviour*, including energy use and water use (e.g. for irrigation or street cleaning) and snow clearing (if applicable).
-The anthropogenic energy use and water use may be provided as a time series in the meteorological forcing file if these data are available or modelled based on parameters provided to the model, including population density, hourly and weekly profiles of energy and water use, information about the proportion of properties using irrigation and the type of irrigation (automatic or manual).
+- Continuous *meteorological forcing data* for the entire period to be modelled without gaps.
+
+- Knowledge of the *surface and soil conditions immediately prior to the first model timestep*.
+
+  .. note::
+    If these initial conditions are unknown, model spin-up can help; i.e. run the model and use the output at the end of the run to infer the conditions at the start of the main run).
+    Spin-up is important for getting appropriate initial conditions for the model.
+    An example of a spin-up can be found in :cite:t:`K18WRR`.
+
+- The *location of the site* (latitude, longitude, altitude).
+
+- Information about the *characteristics of the surface*, including land cover, heights of buildings and trees, radiative characteristics (e.g. albedo, emissivity), drainage characteristics, soil characteristics, snow characteristics, phenological characteristics (e.g. seasonal cycle of LAI).
+
+  .. note::
+   For guidance on how to derive parameters related to LAI, albedo, surface conductance and surface roughness, the reader is referred to this `link <https://gmd.copernicus.org/preprints/gmd-2020-148/>`_.
+
+- Information about *human behaviour*, including energy use and water use (e.g. for irrigation or street cleaning) and snow clearing (if applicable).
+
+  .. note::
+    The anthropogenic energy use and water use may be provided as a time series in the meteorological forcing file (by setting `EmissionsMethod` = 0) if these data are available or modelled based on parameters provided to the model, including population density, hourly and weekly profiles of energy and water use, information about the proportion of properties using irrigation and the type of irrigation (automatic or manual).
 
 It is particularly important to ensure the following input information is appropriate and representative of the site:
 
 -  Fractions of different land cover types and (less so) heights of buildings :cite:`W16`
 -  Accurate meteorological forcing data, particularly precipitation and incoming shortwave radiation :cite:`K18UC`
 -  Initial soil moisture conditions :cite:`BG14`
--  Anthropogenic heat flux parameters, particularly if there are
-   considerable energy emissions from transport, buildings, metabolism,
-   etc :cite:`W16`
+-  Anthropogenic heat flux parameters, particularly if there are considerable energy emissions from transport, buildings, metabolism, etc :cite:`W16`.
 -  External water use (if irrigation or street cleaning occurs)
 -  Snow clearing (if running the snow option)
 -  Surface conductance parameterisation :cite:`J11` :cite:`W16`
@@ -291,7 +304,6 @@ To run the model you can use **Command Prompt** (in the directory where the prog
 
 Please see `Troubleshooting` if you have problems running the model.
 
-.. note:: Spin-up is important for getting appropriate initial conditions for the model. An example of a spin-up can be found in :cite:t:`K18WRR`.
 
 
 Analyse the output
