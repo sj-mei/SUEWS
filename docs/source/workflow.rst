@@ -137,7 +137,7 @@ The information required to run SUEWS for your site consists of:
 - Information about *human behaviour*, including energy use and water use (e.g. for irrigation or street cleaning) and snow clearing (if applicable).
 
   .. note::
-    The anthropogenic energy use and water use may be provided as a time series in the meteorological forcing file (by setting `EmissionsMethod`=0) if these data are available or modelled based on parameters provided to the model, including population density, hourly and weekly profiles of energy and water use, information about the proportion of properties using irrigation and the type of irrigation (automatic or manual).
+    The anthropogenic energy use and water use may be provided as a time series in the meteorological forcing file (by setting `EmissionsMethod` = 0) if these data are available or modelled based on parameters provided to the model, including population density, hourly and weekly profiles of energy and water use, information about the proportion of properties using irrigation and the type of irrigation (automatic or manual).
 
 It is particularly important to ensure the following input information is appropriate and representative of the site:
 
