@@ -152,10 +152,10 @@ if read_the_docs_build:
     gen_csv_suews(path_csv)
 
     # update `today`
-    today = datetime.today()
+    dt_today = datetime.today()
 else:
 
-    today = datetime(2021, 11, 11)
+    dt_today = datetime(2021, 11, 11)
     # subprocess.call("doxygen", shell=True)
     pass
 
@@ -163,7 +163,7 @@ else:
 # -- Project information ----------------------------------------------------
 project = "SUEWS"
 doc_name = "SUEWS Documentation"
-copyright = f"2018 – {today.year}"
+copyright = f"2018 – {dt_today.year}"
 author = "SUEWS dev team led by Prof Sue Grimmond"
 
 # -- General configuration ---------------------------------------------------
