@@ -1,0 +1,5 @@
+Topic,FRAISE,LUMPS,SUEWS
+Complexity,Simplest, Moderate,More complex
+Software provided,R code,Windows exe (written in Fortran),Windows exe (written in Fortran) - other versions available
+Applicable period,Midday (within 3 h of solar noon) Calculates active surface,hourly,5 min-hourly-annu al
+Unique features,Calculates active surface and fluxes,Radiation and energy balances,"Radiation, energy and water balance (includes LUMPS)"

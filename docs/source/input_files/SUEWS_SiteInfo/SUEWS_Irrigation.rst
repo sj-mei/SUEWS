@@ -15,7 +15,7 @@ SUEWS has two options for External Water use (if non-zero):
 
    b) surface that the water can be applied to is specified by XX.
 
-   c) water can pond
+   c) water can pond.
 
 
 
