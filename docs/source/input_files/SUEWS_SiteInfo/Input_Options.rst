@@ -971,7 +971,7 @@ Input Options
 .. option:: EnEF_v_Jkm
 
 	:Description:
-		Emission factor for heat [J k|m^-1|].
+		Emission factor for heat [J k |m^-1| ].
 
 	:Configuration:
 		.. csv-table::
@@ -4500,7 +4500,9 @@ Input Options
 .. option:: xsmd
 
 	:Description:
-		Observed soil moisture; can be provided either as volumetric ([|m^3| |m^-3|] when `SMDMethod`=1) or gravimetric quantity ([kg |kg^-1|] when `SMDMethod`=2). This should be used in conjunction with other soil properties in `SUEWS_Soil`.
+		Observed soil moisture;
+		can be provided either as volumetric ([|m^3| |m^-3|] when `SMDMethod` = 1) or gravimetric quantity ([kg |kg^-1|] when `SMDMethod` = 2).
+		This should be used in conjunction with other soil properties in `SUEWS_Soil`.
 
 	:Configuration:
 		.. csv-table::

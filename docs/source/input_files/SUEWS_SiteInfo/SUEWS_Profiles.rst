@@ -3,20 +3,64 @@
 SUEWS_Profiles.txt
 ~~~~~~~~~~~~~~~~~~
 
-SUEWS_Profiles.txt specifies the daily cycle of variables related to
-human behaviour (energy use, water use and snow clearing). Different
-profiles can be specified for weekdays and weekends. The profiles are
-provided at hourly resolution here; the model will then interpolate the
-hourly energy and water use profiles to the resolution of the model time
-step and normalize the values provided. Thus it does not matter whether
-columns 2-25 add up to, say 1, 24, or another number, because the model
-will handle this. Currently, the snow clearing profiles are not
-interpolated as these are effectively a switch (0 or 1).
+`SUEWS_Profiles.txt` specifies the daily cycle of variables related to human behaviour (energy use, water use and snow clearing).
+Different profiles can be specified for weekdays and weekends.
+The profiles are provided at hourly resolution here;
+the model will then linearly interpolate the profiles to the resolution of the model time step; some profiles may be normalized either by ``sum`` or by ``mean`` depending on the activity type while others not(see ``Normalisation method`` column of `table below`_).
+Thus it does not matter whether columns 2-25 add up to, say 1, 24, or another number, because the model will eventually use the normalised values to rescale the results.
 
-If the anthropogenic heat flux and water use are specified in the met
-forcing file, the energy and water use profiles are not used.
+.. note::
+  #. Currently, the snow clearing profiles are not interpolated as these are effectively a switch (0 for off and 1 for on).
+  #. If the anthropogenic heat flux and water use are specified in the met forcing file, the energy and water use profiles are ignored.
 
-Profiles are specified for the following
+
+.. _table below:
+
+.. list-table::
+    :widths: auto
+    :header-rows: 1
+
+    * - Activity
+      - Description
+      - Normalisation method
+      - Weekday option
+      - Weekend option
+    * - Energy use
+      - This profile, in junction with population density (`PopDensDay` and `PopDensNight`), determines the overall anthropogenic heat.
+      - ``mean``
+      - `EnergyUseProfWD`
+      - `EnergyUseProfWE`
+    * - Population density
+      - This profile, in junction with human activity (`ActivityProfWD` and `ActivityProfWE`), determines the anthropogenic heat due to metabolism.
+      - None
+      - `PopProfWD`
+      - `PopProfWE`
+    * - Human activity
+      - This profile, in junction with population density (`PopProfWD` and `PopProfWE`), determines the anthropogenic heat due to metabolism.
+      - None
+      - `ActivityProfWD`
+      - `ActivityProfWE`
+    * - Traffic
+      - This profile determines the anthropogenic heat due to traffic.
+      - ``mean``
+      - `TraffProfWD`
+      - `TraffProfWE`
+    * - Water use (manual)
+      - This profile determines the irrigation under manual operation.
+      - ``sum``
+      - `WaterUseProfManuWD`
+      - `WaterUseProfManuWE`
+    * - Water use (automatic)
+      - This profile determines the irrigation under automatic operation.
+      - ``sum``
+      - `WaterUseProfAutoWD`
+      - `WaterUseProfAutoWE`
+    * - Snow removal
+      - This profile determines if snow removal is conducted at the end of each hour.
+      - None
+      - `SnowClearingProfWD`
+      - `SnowClearingProfWE`
+
 
 -  Anthropogenic heat flux (weekday and weekend)
 -  Water use (weekday and weekend; manual and automatic irrigation)

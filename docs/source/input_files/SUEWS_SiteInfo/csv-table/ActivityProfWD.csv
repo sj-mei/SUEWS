@@ -1,4 +1,2 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_AnthropogenicEmission.txt`","`L`","Code for human activity profile (weekdays) Provides the link to column 1 of `SUEWS_Profiles.txt`. Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_Profiles.txt`. Used for CO2 flux calculation.
-
-|NotUsed| "
+"`SUEWS_AnthropogenicEmission.txt`","`L`","Code for human activity profile (weekdays) Provides the link to column 1 of `SUEWS_Profiles.txt`. Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_Profiles.txt`. Used for CO2 flux calculation."
