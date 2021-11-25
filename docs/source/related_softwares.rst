@@ -26,13 +26,13 @@ Meanwhile, the data analysis ability of SuPy is greatly enhanced by `the Python-
 
   .. code-block:: shell
 
-    python3 -m pip install supy --upgrade
+    python3 -m pip install supy --upgrade --user
 
 - **How to use SuPy?**
 
-    * Please follow :ref:`Quickstart of SuPy` and :ref:`other tutorials <tutorial_index>`.
+  * Please follow :ref:`Quickstart of SuPy` and :ref:`other tutorials <tutorial_index>`.
 
-    * Please see :ref:`SuPy API <supy:api_ref>` for usage details of SuPy functions.
+  * Please see :ref:`SuPy API <supy:api_ref>` for usage details of SuPy functions.
 
 
 .. _suews_umep:
@@ -160,74 +160,25 @@ with both models as an output.
 
 Similarities and differences between LUMPS and SUEWS.
 
-+--------------------+----------------------+-----------------------+
-|                    | LUMPS                | SUEWS                 |
-+====================+======================+=======================+
-| Net all-wave       | Input or NARP        | Input or NARP         |
-| radiation (Q*)     |                      |                       |
-+--------------------+----------------------+-----------------------+
-| Storage heat flux  | Input or from OHM    | Input or from OHM     |
-| (ΔQS)              |                      |                       |
-+--------------------+----------------------+-----------------------+
-| Anthropogenic heat | Input or calculated  | Input or calculated   |
-| flux (QF)          |                      |                       |
-+--------------------+----------------------+-----------------------+
-| Latent heat (QE)   | DeBruin and Holtslag | Penman-Monteith       |
-|                    | (1982)               | equation2             |
-+--------------------+----------------------+-----------------------+
-| Sensible heat flux | DeBruin and Holtslag | Residual from         |
-| (QH)               | (1982)               | available energy      |
-|                    |                      | minus QE              |
-+--------------------+----------------------+-----------------------+
-| Water balance      | No water balance     | Running water balance |
-|                    | included             | of canopy and water   |
-|                    |                      | balance of soil       |
-+--------------------+----------------------+-----------------------+
-| Soil moisture      | Not considered       | Modelled              |
-+--------------------+----------------------+-----------------------+
-| Surface wetness    | Simple water bucket  | Running water balance |
-|                    | model                |                       |
-+--------------------+----------------------+-----------------------+
-| Irrigation         | Only fraction of     | Input or calculated   |
-|                    | surface area that is | with a simple model   |
-|                    | irrigated            |                       |
-+--------------------+----------------------+-----------------------+
-| Surface cover      | Buildings, paved,    | Buildings, paved,     |
-|                    | vegetation           | coniferous and        |
-|                    |                      | deciduous             |
-|                    |                      | trees/shrubs,         |
-|                    |                      | irrigated and         |
-|                    |                      | unirrigated grass     |
-+--------------------+----------------------+-----------------------+
+.. csv-table::
+   :file: assets/csv/comp-lumps-suews.csv
+   :header-rows: 1
+   :stub-columns: 1
+   :widths: auto
+
+
+
+
 
 FRAISE Flux Ratio – Active Index Surface Exchange
 -------------------------------------------------
 
-FRAISE provides an estimate of mean midday (±3 h around solar noon)
-energy partitioning from information on the surface characteristics and
-estimates of the mean midday incoming radiative energy and anthropogenic
-heat release. Please refer to Loridan and Grimmond (2012) :cite:`LG12` for
-further details.
+FRAISE provides an estimate of mean midday (±3 h around solar noon) energy partitioning from information on the surface characteristics and estimates of the mean midday incoming radiative energy and anthropogenic heat release.
+Please refer to :cite:t:`LG12` for further details.
 
-+----------------+----------------+-----------------+-----------------+
-| Topic          | FRAISE         | LUMPS           | SUEWS           |
-+================+================+=================+=================+
-| **Complexity** | Simplest:      |                 | More complex:   |
-|                | FRAISE         |                 | SUEWS           |
-+----------------+----------------+-----------------+-----------------+
-| **Software     | R code         | Windows exe     | Windows exe     |
-| provided:**    |                | (written in     | (written in     |
-|                |                | Fortran)        | Fortran) -      |
-|                |                |                 | other versions  |
-|                |                |                 | available       |
-+----------------+----------------+-----------------+-----------------+
-| Applicable     | Midday (within | hourly          | 5               |
-| period:        | 3 h of solar   |                 | min-hourly-annu |
-|                | noon)          |                 | al              |
-+----------------+----------------+-----------------+-----------------+
-| Unique         | Calculates     | Radiation and   | Radiation,      |
-| features:      | active surface | energy balances | energy and      |
-|                |  and fluxes    |                 | water balance   |
-|                |                |                 | (includes       |
-|                |                |                 | LUMPS)          |
-+----------------+----------------+-----------------+-----------------+
+
+.. csv-table::
+   :file: assets/csv/comp-fraise-lumps-suews.csv
+   :header-rows: 1
+   :stub-columns: 1
+   :widths: auto

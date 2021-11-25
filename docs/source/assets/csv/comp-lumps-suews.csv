@@ -1,0 +1,11 @@
+,LUMPS,SUEWS,
+Net all-wave radiation (Q*),Input or NARP,Input or NARP
+Storage heat flux (ΔQS),Input or from OHM,Input or from OHM
+Anthropogenic heat flux (QF),Input or calculated,Input or calculated
+Latent heat (QE),DeBruin and Holtslag (1982),Penman-Monteith equation2
+Sensible heat flux (QH),DeBruin and Holtslag (1982),Residual from available energy minus QE
+Water balance,No water balance included,Running water balance of canopy and water balance of soil
+Soil moisture,Not considered,Modelled
+Surface wetness,Simple water bucket model,Running water balance
+Irrigation,Only fraction of surface area that is irrigated,Input or calculated with a simple model
+Surface cover,"Buildings, paved, vegetation","Buildings, paved, coniferous and deciduous trees/shrubs, irrigated and unirrigated grass"
