@@ -839,7 +839,7 @@ CONTAINS
       ! real(KIND(1D0)) ::betaHF
       ! real(KIND(1D0)) ::betaNL
       REAL(KIND(1D0)) ::Lc_min! LB Oct2021 - minimum value of Lc
-      REAL(KIND(1D0)), PARAMETER::lb_av! LB Oct2021 - horizontal building dimensions
+      REAL(KIND(1D0)) ::bldg_dim! LB Oct2021 - horizontal building dimensions
 
       REAL(KIND(1D0)), PARAMETER::planF_low = 1E-6
       REAL(KIND(1D0)), PARAMETER::kappa = 0.40
@@ -874,8 +874,8 @@ CONTAINS
       Lc = MERGE(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
       ! LB Oct2021 - set a minimum Lc threshold based on the Lc required to ensure the horizontal length scale associated with changes in canopy geometry (i.e. 3Lc) is greater than a typical street+building unit
       ! Note: the horizontal building size and street+building unit size is calculated assuming a regular array of cuboids with the same x and y dimension but with height that can be different 
-      lb_av = Zh_RSL*sfr(BldgSurf)/FAIBldg
-      Lc_min = lb_av*sfr(BldgSurf)**(-0.5)/3.
+      bldg_dim = Zh_RSL*sfr(BldgSurf)/FAIBldg
+      Lc_min = bldg_dim*sfr(BldgSurf)**(-0.5)/3.
       Lc = MERGE(Lc, Lc_min, Lc > Lc_min)
       
       ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
