@@ -4,9 +4,9 @@
 
   - 1: :cite:t:`FN78`
 
-  - 2: Halldin et al. (1979) :cite:`H79` (Rutter eqn corrected for c=0, see :cite:t:`CW86`)
+  - 2: :cite:t:`H79` (Rutter eqn corrected for c=0, see :cite:t:`CW86`)
 
-  - 3: for `BSoil` :cite:t:`FN78` ; for `Paved` and `Bldgs` Coefficients are specified in the following two columns. |Recmd|
+  - 3: for `BSoil` :cite:`FN78` ; for `Paved` and `Bldgs` Coefficients are specified in the following two columns. |Recmd|
 
 "
 "`SUEWS_Veg.txt`","`MD`","
@@ -14,9 +14,9 @@
 
   - 1: :cite:t:`FN78`
 
-  - 2: Halldin et al. (1979) :cite:`H79` (Rutter eqn corrected for c=0, see Calder & Wright (1986) :cite:`CW86` )
+  - 2: :cite:t:`H79` (Rutter eqn corrected for c=0, see Calder & Wright (1986) :cite:`CW86` )
 
-  - 3: for `EveTr`, `DecTr`, `Grass` (unirrigated) :cite:t:`FN78`  Coefficients are specified in the following two columns. |Recmd|
+  - 3: for `EveTr`, `DecTr`, `Grass` (unirrigated) see :cite:t:`FN78`. Coefficients are specified in the following two columns. |Recmd|
 
   "
 "`SUEWS_Water.txt`","`MD`","Not currently used for water surface."

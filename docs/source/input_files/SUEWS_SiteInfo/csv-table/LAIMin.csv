@@ -1,6 +1,6 @@
 "Referencing Table","Requirement","Comment"
 "`SUEWS_Veg.txt`","`MD`","leaf-off wintertime value
 Example values:
-- 4. EveTr :cite:t:`J11`
-- 1. DecTr :cite:t:`J11`
+- 4. EveTr :cite:`J11`
+- 1. DecTr :cite:`J11`
 - 1.6 Grass :cite:`GO91` "

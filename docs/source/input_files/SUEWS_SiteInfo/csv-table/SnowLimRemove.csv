@@ -5,5 +5,5 @@ Not needed if `SnowUse` = 0 in `RunControl.nml` .
 
 Example values [mm]
 
-- 40: `Paved` :cite:t:`J14`
-- 100: `Bldgs` :cite:t:`J14` "
+- 40: `Paved` :cite:`J14`
+- 100: `Bldgs` :cite:`J14` "
