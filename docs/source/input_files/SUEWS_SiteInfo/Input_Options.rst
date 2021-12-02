@@ -4502,7 +4502,7 @@ Input Options
 	:Description:
 		Observed soil moisture;
 		can be provided either as volumetric ([|m^3| |m^-3|] when `SMDMethod` = 1) or gravimetric quantity ([kg |kg^-1|] when `SMDMethod` = 2).
-		This should be used in conjunction with other soil properties in `SUEWS_Soil`.
+		This should be used in conjunction with other soil properties in `SUEWS_Soil.txt`.
 
 	:Configuration:
 		.. csv-table::

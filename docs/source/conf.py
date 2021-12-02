@@ -640,11 +640,11 @@ class AuthorYearLabelStyle(BaseLabelStyle):
                     "".join(author_first.first_names + author_first.last_names)
                 ):
                     author = " and ".join(
-                        author_first.first_names + author_second.first_names
+                        [" ".join(author_first.first_names)] + author_second.first_names
                     )
                 else:
                     author = " and ".join(
-                        author_first.last_names + author_second.last_names
+                        [" ".join(author_first.last_names)] + author_second.last_names
                     )
             else:
                 if is_japanese(
