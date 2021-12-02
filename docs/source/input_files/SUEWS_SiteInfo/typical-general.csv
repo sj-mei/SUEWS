@@ -1,0 +1,88 @@
+﻿Property,General Type,Value,Description,Reference
+Albedo,Non Vegetated,0.09,Paved Helsinki,:cite:t:`J14`
+,Non Vegetated,0.15,Buildings Helsinki,:cite:t:`J14`
+,Non Vegetated,0.19,"Bare Soil, Helsinki",:cite:t:`J14`
+,Non Vegetated,0.12,Paved,:cite:t:`O02`
+,Non Vegetated,0.15,Buildings,:cite:t:`O02`
+,Non Vegetated,0.21,Bare Soil,:cite:t:`O02`
+Emissivity,Non Vegetated,0.95,Paved,:cite:t:`O02`
+,Non Vegetated,0.91,Buildings,:cite:t:`O02`
+,Non Vegetated,0.93,Bare Soil,:cite:t:`O02`
+Surface Water storage capacity,Non Vegetated,0.48,Paved,:cite:t:`DH81`
+,Non Vegetated,0.25,Buildings,:cite:t:`FN78`
+Albedo,Vegetation,0.1,EveTr,
+,Vegetation,0.12,DecTr,
+,Vegetation,0.18,Grass,
+,Vegetated,0.1,EveTr Helsinki,:cite:t:`J14`
+,Vegetated,0.16,DecTr Helsinki,:cite:t:`J14`
+,Vegetated,0.19,Grass Helsinki,:cite:t:`J14`
+,Vegetated,0.1,EveTr,:cite:t:`O02`
+,Vegetated,0.18,DecTr,:cite:t:`O02`
+,Vegetated,0.21,Grass,:cite:t:`O02`
+Emissivity,Vegetated,0.98,EveTr,:cite:t:`O02`
+,Vegetated,0.98,DecTr,:cite:t:`O02`
+,Vegetated,0.93,Grass,:cite:t:`O02`
+water Storage Minimum capacity (mm),Vegetated,1.3,EveTr,:cite:t:`B03`
+,Vegetated,0.3,DecTr,:cite:t:`B03`
+,Vegetated,1.9,Grass,:cite:t:`B03`
+Maximum water storage capacity of this surface [mm],Vegetated,1.3,EveTr,:cite:t:`B03`
+,Vegetated,0.8,DecTr,Grimmond and Oke (1991)
+,Vegetated,1.9,Grass,:cite:t:`B03`
+Albedo Max (leaf on),Vegetated,0.12,DecTr,
+,Vegetated,0.18,Grass,
+,Vegetated,0.1,EveTr Helsinki,:cite:t:`J14`
+,Vegetated,0.16,DecTr Helsinki,:cite:t:`J14`
+,Vegetated,0.19,Grass Helsinki,:cite:t:`J14`
+,Vegetated,0.1,EveTr,:cite:t:`O02`
+,Vegetated,0.18,DecTr,:cite:t:`O02`
+,Vegetated,0.21,Grass,:cite:t:`O02`
+Emissivity *View factors should be taken into account,Vegetated,0.98,EveTr,:cite:t:`O02`
+Emissivity *View factors should be taken into account,Vegetated,0.98,DecTr,:cite:t:`O02`
+Emissivity *View factors should be taken into account,Vegetated,0.93,Grass,:cite:t:`O02`
+"Minimum water storage capacity of this surface [mm]
+
+* Min & max values are to account for seasonal variation (e.g. leaf-on/leaf-off differences for vegetated surfaces).",Vegetated,1.3,EveTr,:cite:t:`B03`
+,Vegetated,0.3,DecTr,:cite:t:`B03`
+,Vegetated,1.9,Grass,:cite:t:`B03`
+,Vegetated,1.3,EveTr,:cite:t:`B03`
+,Vegetated,0.8,DecTr,Grimmond and Oke (1991)
+,Vegetated,1.9,Grass,:cite:t:`B03`
+AlbedoMin,Water,0.1,Water,:cite:t:`O02`
+AlbedoMax,Water,0.1,Water,:cite:t:`O02`
+Emissivity,Water,0.95,Water,:cite:t:`O02`
+Minimum water storage capacity of this surface [mm],Water,0.5,Water,
+Maximum water storage capacity for upper surfaces (i.e. canopy),Water,0.5,Water,
+WetThreshold,water,0.5,Water,
+"StateLimit
+
+* Upper limit to the surface state [mm]
+* State cannot exceed this value.
+* Set to a large value (e.g. 20000 mm = 20 m) if the water body is substantial (lake| river| etc) or a small value (e.g. 10 mm) if water bodies are very shallow (e.g. fountains).",Water,20000,Water,
+RadMeltFactor,Snow,0.0016,Hourly radiation melt factor of snow [mm W-1 h-1],
+TempMeltFactor,Snow,0.12,Hourly temperature melt factor of snow [mm °C -1 h-1],
+AlbedoMin,Snow,0-1,Minimum snow albedo [-] - 0.18,:cite:t:`J14`
+"AlbedoMax
+* Maximum snow albedo (fresh snow) [-]",Snow,0.85,,:cite:t:`J14`
+"Emissivity
+* Effective surface emissivity.
+* View factors should be taken into account",Snow,0.99,Snow,:cite:t:`J14`
+"tau_a * Time constant for snow albedo aging in cold snow [-]",Snow,0.018,,:cite:t:`J14`
+tau_f *Time constant for snow albedo aging in melting snow [-],Snow,0.11,,:cite:t:`J14`
+PrecipiLimAlb,Snow,2,Limit for hourly precipitation when the ground is fully covered with snow. Then snow albedo is reset to AlbedoMax [mm],
+snowDensMin,Snow,100,Fresh snow density [kg m-3],
+snowDensMax,Snow,400,Maximum snow density [kg m-3],
+tau_r *Time constant for snow density ageing [-],Snow,0.043,,:cite:t:`J14`
+CRWMin *Minimum water holding capacity of snow [mm],Snow,0.05,,:cite:t:`J14`
+CRWMax *Maximum water holding capacity of snow [mm],Snow,0.2,,:cite:t:`J14`
+PrecipLimSnow,Snow,2.2,Temperature limit when precipitation falls as snow [°C],":cite:t:`A74`"
+SoilDepth,Snow,350,Depth of sub-surface soil store [mm] *depth of soil beneath the surface,
+SoilStoreCap,Soil,150,Capacity of sub-surface soil store [mm],
+,,,how much water can be stored in the sub-surface soil when at maximum capacity.,
+,,,(SoilStoreCap must not be greater than SoilDepth.),
+,,,,
+SatHydraulicCond,Soil,0.0005,Hydraulic conductivity for saturated soil [mm s-1],
+SoilDensity,Soil,1.16,Soil density [kg m-3],
+InfiltrationRate,Soil,,Infiltration rate [mm h-1],
+OBS_SMDepth,Soil,,Depth of soil moisture measurements [mm],
+OBS_SMCap,Soil,,Maxiumum observed soil moisture [m3 m-3 or kg kg-1],
+OBS_SoilNotRocks,Soil,,Fraction of soil without rocks [-],
