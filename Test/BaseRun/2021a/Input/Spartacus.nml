@@ -1,5 +1,5 @@
 &Spartacus
-nlayers = 1
+nlayers = 15
 use_sw_direct_albedo = false
 n_vegetation_region_urban = 1
 nsw = 1
@@ -16,3 +16,4 @@ air_ssa_lw = 0.0
 veg_ssa_lw = 0.01
 ground_albedo_dir_mult_fact = 1.
 /
+
