@@ -1084,38 +1084,6 @@ CONTAINS
          a1, a2, a3, &
          DailyStateLine)!out
 
-         !!! printing !!!
-
-      !PRINT *,'it:',it
-
-      !PRINT *,'sfr:',sfr
-
-      !PRINT *,'alb:'
-      !PRINT *,alb
-      !PRINT *,'weighted albedo from alb:',(alb(1)*sfr(PavSurf)+alb(2)*sfr(BldgSurf)+alb(3)*sfr(ConifSurf)+alb(4)*sfr(DecidSurf)+&
-      !                                    alb(5)*sfr(GrassSurf)+alb(6)*sfr(BSoilSurf)+alb(7)*sfr(WaterSurf))
-      !PRINT *,'alb_spc:',alb_spc
-
-      !PRINT *,'emis:'
-      !PRINT *,emis
-      !PRINT *,'weighted emissivity from emis:',(emis(1)*sfr(PavSurf)+emis(2)*sfr(BldgSurf)+emis(3)*sfr(ConifSurf)+&
-      !                                          emis(4)*sfr(DecidSurf)+emis(5)*sfr(GrassSurf)+emis(6)*sfr(BSoilSurf)+&
-      !                                          emis(7)*sfr(WaterSurf))
-      !PRINT *,'emis_spc:',emis_spc
-
-      !PRINT *,'kup:',kup
-      !PRINT *,'sw_up_spc:',sw_up_spc
-
-      !PRINT *,'lup:',lup
-      !PRINT *,'lw_up_spc:',lw_up_spc
-      !PRINT *,'lw_emission_spc:',lw_emission_spc
-
-      !PRINT *,'avkdn',avkdn
-      !PRINT *,'ldown',ldown
-
-      !PRINT *,'qn:',qn
-      !PRINT *,'qn_spc:',qn_spc
-
       !==============translation end ================
 
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
@@ -3676,8 +3644,6 @@ CONTAINS
       tsfc_C = qh/(avdens*avcp)*RA + temp_C
    END FUNCTION cal_tsfc
 
-   !!!!!!!!!!!!!! SPARTACUS !!!!!!!!!!!!!
-
    SUBROUTINE test_rad_spc( &
       sfr, zenith_deg, TSfc_C, avKdn, ldown, temp_c, alb_next, emis, &!input
       alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
@@ -3767,22 +3733,21 @@ CONTAINS
                                       wall_specular_frac(:, :), roof_emissivity(:, :, :), &
                                       wall_emissivity(:, :, :)
 
-      NAMELIST /Spartacus/ nlayers, use_sw_direct_albedo, n_vegetation_region_urban, &
+      NAMELIST /Spartacus_Parameters/ nlayers, use_sw_direct_albedo, n_vegetation_region_urban, &
          nsw, nlw, nspec, n_stream_sw_urban, n_stream_lw_urban, sw_dn_direct_frac, &
          air_ext_sw, air_ssa_sw, veg_ssa_sw, air_ext_lw, air_ssa_lw, &
-         veg_ssa_lw, ground_albedo_dir_mult_fact
-      NAMELIST /Spartacus_Profiles/ height, building_frac, veg_frac, &
+         veg_ssa_lw, ground_albedo_dir_mult_fact &
+         /Spartacus_Profiles/ height, building_frac, veg_frac, &
          building_scale, veg_scale, veg_ext, &
          veg_fsd, veg_contact_fraction, &
          roof_albedo, wall_albedo, roof_albedo_dir_mult_fact, &
          wall_specular_frac, roof_emissivity, &
          wall_emissivity
 
-      ! Bring in Spartacus.nml
-      OPEN (511, file=TRIM(FileInputPath)//'Spartacus.nml', status='old')
-      READ (511, nml=Spartacus)
+      ! Bring in Spartacus_In.nml parameters and profiles
+      OPEN (511, file=TRIM(FileInputPath)//'Spartacus_In.nml', status='old')
+      READ (511, nml=Spartacus_Parameters)
       CLOSE (511)
-
       ALLOCATE (height(1, nlayers + 1))
       ALLOCATE (building_frac(1, nlayers))
       ALLOCATE (veg_frac(1, nlayers))
@@ -3797,14 +3762,13 @@ CONTAINS
       ALLOCATE (wall_specular_frac(1, nlayers))
       ALLOCATE (roof_emissivity(1, nlayers, 1))
       ALLOCATE (wall_emissivity(1, nlayers, 1))
-      ! Bring in Spartacus_Profiles.nml
-      OPEN (511, file=TRIM(FileInputPath)//'Spartacus_Profiles.nml', status='old')
+      OPEN (511, file=TRIM(FileInputPath)//'Spartacus_In.nml', status='old')
       READ (511, nml=Spartacus_Profiles)
       CLOSE (511)
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
-      CALL config%READ(file_name='config.nam')
+      CALL config%READ(file_name=TRIM(FileInputPath)//'Spartacus_In.nml')
       ncol = 1
       config%do_sw = .TRUE.
       config%do_lw = .TRUE.
