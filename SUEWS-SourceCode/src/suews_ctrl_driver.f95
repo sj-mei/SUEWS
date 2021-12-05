@@ -955,7 +955,7 @@ CONTAINS
       END DO ! end iteration for tsurf calculations
 
       IF (NetRadiationMethod > 1000) THEN
-         CALL test_rad_spc( &
+         CALL SPARTACUS( &
             sfr, zenith_deg, TSfc_C, avKdn, ldown, temp_c, alb_next, emis, &!input
             alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
             clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
@@ -3644,15 +3644,15 @@ CONTAINS
       tsfc_C = qh/(avdens*avcp)*RA + temp_C
    END FUNCTION cal_tsfc
 
-   SUBROUTINE test_rad_spc( &
-      sfr, zenith_deg, TSfc_C, avKdn, ldown, temp_c, alb_next, emis, &!input
-      alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
+   SUBROUTINE SPARTACUS( &
+      sfr, zenith_deg, TSfc_C, avKdn, ldown, temp_c, alb_next, emis, &!input:
+      alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &!output:
       clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
       roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
       top_dn_lw_spc, &
       clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
       roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-      ground_dn_dir_sw_spc, ground_net_sw_spc)!output
+      ground_dn_dir_sw_spc, ground_net_sw_spc)
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
       USE radsurf_config, ONLY: config_type
@@ -3733,20 +3733,18 @@ CONTAINS
                                       wall_specular_frac(:, :), roof_emissivity(:, :, :), &
                                       wall_emissivity(:, :, :)
 
-      NAMELIST /Spartacus_Parameters/ nlayers, use_sw_direct_albedo, n_vegetation_region_urban, &
-         nsw, nlw, nspec, n_stream_sw_urban, n_stream_lw_urban, sw_dn_direct_frac, &
-         air_ext_sw, air_ssa_sw, veg_ssa_sw, air_ext_lw, air_ssa_lw, &
-         veg_ssa_lw, ground_albedo_dir_mult_fact &
-         /Spartacus_Profiles/ height, building_frac, veg_frac, &
-         building_scale, veg_scale, veg_ext, &
-         veg_fsd, veg_contact_fraction, &
-         roof_albedo, wall_albedo, roof_albedo_dir_mult_fact, &
-         wall_specular_frac, roof_emissivity, &
-         wall_emissivity
+      NAMELIST /Spartacus_Settings/ nlayers, use_sw_direct_albedo, n_vegetation_region_urban, &
+         nsw, nlw, nspec, n_stream_sw_urban, n_stream_lw_urban &
+         /Spartacus_Constant_Parameters/ sw_dn_direct_frac, air_ext_sw, air_ssa_sw, veg_ssa_sw, air_ext_lw, &
+         air_ssa_lw, veg_ssa_lw, ground_albedo_dir_mult_fact &
+         /Spartacus_Profile_Parameters/ height, building_frac, veg_frac, building_scale, veg_scale, veg_ext, &
+         veg_fsd, veg_contact_fraction, roof_albedo, wall_albedo, roof_albedo_dir_mult_fact, &
+         wall_specular_frac, roof_emissivity, wall_emissivity
 
-      ! Bring in Spartacus_In.nml parameters and profiles
+      ! Bring in Spartacus_In.nml settings and parameters
       OPEN (511, file=TRIM(FileInputPath)//'Spartacus_In.nml', status='old')
-      READ (511, nml=Spartacus_Parameters)
+      READ (511, nml=Spartacus_Settings)
+      READ (511, nml=Spartacus_Constant_Parameters)
       CLOSE (511)
       ALLOCATE (height(1, nlayers + 1))
       ALLOCATE (building_frac(1, nlayers))
@@ -3763,7 +3761,7 @@ CONTAINS
       ALLOCATE (roof_emissivity(1, nlayers, 1))
       ALLOCATE (wall_emissivity(1, nlayers, 1))
       OPEN (511, file=TRIM(FileInputPath)//'Spartacus_In.nml', status='old')
-      READ (511, nml=Spartacus_Profiles)
+      READ (511, nml=Spartacus_Profile_Parameters)
       CLOSE (511)
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
@@ -3827,10 +3825,10 @@ CONTAINS
       ! set temperature
       TSfc_K = TSfc_C + 273.15 ! convert surface temperature to Kelvin
       tair_K = temp_C + 273.15 ! convert air temperature to Kelvin
-      canopy_props%ground_temperature = TSfc_K ! Meg can just hard code: 307.
-      canopy_props%roof_temperature = TSfc_K ! Meg can just hard code: 319.
-      canopy_props%wall_temperature = TSfc_K ! Meg can just hard code: 303.
-      canopy_props%clear_air_temperature = tair_K ! Meg can just hard code: ?
+      canopy_props%ground_temperature = TSfc_K
+      canopy_props%roof_temperature = TSfc_K
+      canopy_props%wall_temperature = TSfc_K
+      canopy_props%clear_air_temperature = tair_K
       IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
          canopy_props%veg_temperature = tair_K
          canopy_props%veg_air_temperature = tair_K
@@ -3866,10 +3864,10 @@ CONTAINS
       alb_no_tree_bldg = (alb_next(1)*sfr(PavSurf) + alb_next(5)*sfr(GrassSurf) + &
                           alb_next(6)*sfr(BSoilSurf) + alb_next(7)*sfr(WaterSurf))/ &
                          (sfr(PavSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf)) ! albedo of the ground
-      sw_spectral_props%air_ext = air_ext_sw ! what is the extinction coefficient of air?
-      sw_spectral_props%air_ssa = air_ssa_sw  ! what is the single scattering albedo of air?
+      sw_spectral_props%air_ext = air_ext_sw ! what is the shortwave extinction coefficient of air?
+      sw_spectral_props%air_ssa = air_ssa_sw  ! what is the shortwave single scattering albedo of air?
       IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
-         sw_spectral_props%veg_ssa = veg_ssa_sw ! from test_surface_in.nc and was used in Hogan 2019 "flexible"
+         sw_spectral_props%veg_ssa = veg_ssa_sw ! what is the shortwave single scattering albedo of vegetation?
       END IF
       sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees
       sw_spectral_props%roof_albedo = roof_albedo ! albedo of buildings
@@ -3888,10 +3886,10 @@ CONTAINS
       emis_no_tree_bldg = (emis(1)*sfr(PavSurf) + emis(5)*sfr(GrassSurf) + &
                            emis(6)*sfr(BSoilSurf) + emis(7)*sfr(WaterSurf))/ &
                           (sfr(PavSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))  ! emissivity of the ground
-      lw_spectral_props%air_ext = air_ext_lw ! what is the extinction coefficient of air?
-      lw_spectral_props%air_ssa = air_ssa_lw  ! what is the single scattering albedo of air?
+      lw_spectral_props%air_ext = air_ext_lw ! what is the longwave extinction coefficient of air?
+      lw_spectral_props%air_ssa = air_ssa_lw  ! what is the longwave single scattering albedo of air?
       IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
-         lw_spectral_props%veg_ssa = veg_ssa_lw ! from test_surface_in.nc .... suitable?
+         lw_spectral_props%veg_ssa = veg_ssa_lw ! what is the longwave single scattering albedo of vegetation?
       END IF
       lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
       lw_spectral_props%roof_emissivity = roof_emissivity(:, :, 1) ! emissivity of buildings
@@ -4041,6 +4039,6 @@ CONTAINS
       DEALLOCATE (roof_emissivity)
       DEALLOCATE (wall_emissivity)
 
-   END SUBROUTINE test_rad_spc
+   END SUBROUTINE SPARTACUS
 
 END MODULE SUEWS_Driver
