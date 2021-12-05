@@ -3734,13 +3734,15 @@ CONTAINS
                                       wall_emissivity(:, :, :)
 
       NAMELIST /Spartacus_Settings/ nlayers, use_sw_direct_albedo, n_vegetation_region_urban, &
-         nsw, nlw, nspec, n_stream_sw_urban, n_stream_lw_urban &
+         nsw, nlw, n_stream_sw_urban, n_stream_lw_urban &
          /Spartacus_Constant_Parameters/ sw_dn_direct_frac, air_ext_sw, air_ssa_sw, veg_ssa_sw, air_ext_lw, &
          air_ssa_lw, veg_ssa_lw, ground_albedo_dir_mult_fact &
          /Spartacus_Profile_Parameters/ height, building_frac, veg_frac, building_scale, veg_scale, veg_ext, &
          veg_fsd, veg_contact_fraction, roof_albedo, wall_albedo, roof_albedo_dir_mult_fact, &
          wall_specular_frac, roof_emissivity, wall_emissivity
 
+      ! Set nspec = 1 since SU is currently single band
+      nspec = 1
       ! Bring in Spartacus_In.nml settings and parameters
       OPEN (511, file=TRIM(FileInputPath)//'Spartacus_In.nml', status='old')
       READ (511, nml=Spartacus_Settings)
