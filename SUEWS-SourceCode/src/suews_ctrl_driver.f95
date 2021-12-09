@@ -3915,7 +3915,6 @@ CONTAINS
       IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
          sw_spectral_props%veg_ssa = veg_ssa_sw
       END IF
-      PRINT*, 'sw_spectral_props%air_ext: ',sw_spectral_props%air_ext
       sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees
       sw_spectral_props%roof_albedo = roof_albedo(nspec, ncol) ! albedo of buildings
       sw_spectral_props%wall_albedo = wall_albedo(nspec, ncol) ! albedo of buildings
@@ -3924,7 +3923,6 @@ CONTAINS
          sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg*ground_albedo_dir_mult_fact
          sw_spectral_props%roof_albedo_dir = roof_albedo(nspec, ncol)*roof_albedo_dir_mult_fact(nspec, ncol)
       END IF
-      PRINT*, 'sw_spectral_props%roof_albedo_dir: ',sw_spectral_props%roof_albedo_dir
 
       !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
 
@@ -3942,7 +3940,6 @@ CONTAINS
       lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
       lw_spectral_props%roof_emissivity = roof_emissivity(nspec, ncol) ! emissivity of buildings
       lw_spectral_props%wall_emissivity = wall_emissivity(nspec, ncol) ! emissivity of buildings
-      PRINT*, 'sw_spectral_props%roof_albedo: ',sw_spectral_props%roof_albedo
 
       !!!!!!!!!!!!!! allocate sw !!!!!!!!!!!!!!
 
@@ -4026,7 +4023,6 @@ CONTAINS
                   + top_flux_dn_direct_sw(nspec, ncol)*bc_out%sw_albedo_dir(nspec, ncol) ! or more simply: alb_spc*avKdn
       ! net all = net sw + net lw
       qn_spc = sw_flux%top_net(nspec, ncol) + lw_flux%top_net(nspec, ncol)
-      PRINT*, 'qn_spc: ',qn_spc
 
       ! lw arrays
       clear_air_abs_lw_spc = 0.0
@@ -4035,15 +4031,11 @@ CONTAINS
       wall_net_lw_spc(:ntotlay) = lw_flux%wall_net(nspec, :)
       roof_net_lw_spc = 0.0
       roof_net_lw_spc(:ntotlay) = lw_flux%roof_net(nspec, :)
-      PRINT*, 'lw_flux%roof_net(:, :): ',lw_flux%roof_net(:, :)
-      PRINT*, 'roof_net_lw_spc: ',roof_net_lw_spc
       roof_in_lw_spc = 0.0
       roof_in_lw_spc(:ntotlay) = lw_flux%roof_in(nspec, :)
       top_net_lw_spc = lw_flux%top_net(nspec, ncol)
       ground_net_lw_spc = lw_flux%ground_net(nspec, ncol)
       top_dn_lw_spc = lw_flux%top_dn(nspec, ncol)
-      PRINT*, 'lw_flux%top_dn(:, :): ',lw_flux%top_dn(:, :)
-      PRINT*, 'top_dn_lw_spc: ',top_dn_lw_spc
       ! sw arrays
       clear_air_abs_sw_spc = 0.0
       clear_air_abs_sw_spc(:ntotlay) = sw_flux%clear_air_abs(nspec, :)
