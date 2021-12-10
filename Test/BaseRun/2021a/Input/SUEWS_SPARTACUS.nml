@@ -6,10 +6,10 @@ n_stream_sw_urban = 8
 n_stream_lw_urban = 8
 /
 &Spartacus_Constant_Parameters
-sw_dn_direct_frac = 0.0
+sw_dn_direct_frac = 0.45
 air_ext_sw = 0.0
 air_ssa_sw = 0.95
-veg_ssa_sw = 0.13
+veg_ssa_sw = 0.46
 air_ext_lw = 0.0
 air_ssa_lw = 0.0
 veg_ssa_lw = 0.06
