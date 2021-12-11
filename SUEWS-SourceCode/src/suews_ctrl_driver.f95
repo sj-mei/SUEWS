@@ -4016,7 +4016,7 @@ CONTAINS
       emis_spc = bc_out%lw_emissivity(nspec, ncol)
       ! longwave emission
       lw_emission_spc = bc_out%lw_emission(nspec, ncol)
-      ! lowngwave upward = emitted as blackbody - reflected
+      ! lowngwave upward = emitted as blackbody + reflected
       lw_up_spc = lw_emission_spc + (1 - emis_spc)*ldown
       ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
       sw_up_spc = top_flux_dn_diffuse_sw*bc_out%sw_albedo(nspec, ncol) &
