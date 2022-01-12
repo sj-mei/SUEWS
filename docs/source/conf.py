@@ -46,7 +46,6 @@ from pybtex.style.template import (
     words,
 )
 
-today = datetime.today()
 
 # -- processing code --------------------------------------------------------
 # load all csv as a whole df
@@ -116,13 +115,6 @@ def gen_csv_suews(path_csv):
     return list_csv_suews
 
 
-# -- Project information ----------------------------------------------------
-project = "SUEWS"
-doc_name = "SUEWS Documentation"
-copyright = f"2018 – {today.year}"
-author = "SUEWS dev team led by Prof Sue Grimmond"
-
-
 # determine latest version and release
 path_source = Path(".").resolve()
 list_ver = sorted(
@@ -147,8 +139,33 @@ today_fmt = "%Y-%m-%d"
 
 html_last_updated_fmt = today_fmt
 
-path_csv = path_source / "input_files/SUEWS_SiteInfo/csv-table"
-gen_csv_suews(path_csv)
+# determine if in RTD environment
+read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
+
+
+if read_the_docs_build:
+    # run doxygen
+    subprocess.call("doxygen", shell=True)
+
+    # generate summary tables using info in `Input_Options.rst`
+    path_csv = path_source / "input_files/SUEWS_SiteInfo/csv-table"
+    gen_csv_suews(path_csv)
+
+    # update `today`
+    dt_today = datetime.today()
+else:
+
+    dt_today = datetime(2021, 11, 11)
+    # subprocess.call("doxygen", shell=True)
+    pass
+
+
+# -- Project information ----------------------------------------------------
+project = "SUEWS"
+doc_name = "SUEWS Documentation"
+copyright = f"2018 – {dt_today.year}"
+author = "SUEWS dev team led by Prof Sue Grimmond"
+
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -178,7 +195,7 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.mathjax",
     "breathe",
-    'sphinx_panels',
+    "sphinx_panels",
     "sphinx_last_updated_by_git",
     # 'exhale'
 ]
@@ -203,29 +220,19 @@ comments_config = {
 }
 
 
-# run doxygen
-read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
-
-if read_the_docs_build:
-    subprocess.call("doxygen", shell=True)
-else:
-    # subprocess.call("doxygen", shell=True)
-    pass
-
-
 exhale_args = {
     # These arguments are required
-    "containmentFolder":     "./api",
-    "rootFileName":          "library_root.rst",
-    "rootFileTitle":         "API",
-    "doxygenStripFromPath":  "..",
+    "containmentFolder": "./api",
+    "rootFileName": "library_root.rst",
+    "rootFileTitle": "API",
+    "doxygenStripFromPath": "..",
     # Suggested optional arguments
-    "createTreeView":        True,
+    "createTreeView": True,
     # TIP: if using the sphinx-bootstrap-theme, you need
     # "treeViewIsBootstrap": True,
     "exhaleExecutesDoxygen": True,
-    "exhaleUseDoxyfile" :    True,
-    #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+    "exhaleUseDoxyfile": True,
+    # "exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
     #                            GENERATE_HTML  = YES
     #                            '''
 }
@@ -326,7 +333,7 @@ html_context = {
 }
 
 # check every link in this project is working
-nitpicky=True
+nitpicky = True
 
 
 # There are two options for replacing |today|: either, you set today to some
@@ -353,7 +360,7 @@ html_theme_options = dict(
     home_page_in_toc=False,
     extra_navbar="",
     navbar_footer_text="",
-    logo_only= True,
+    logo_only=True,
     # twitter_url="https://twitter.com/xarray_devs",
 )
 
@@ -382,10 +389,9 @@ html_static_path = ["_static", "doxygenoutput"]
 numfig = True
 html_logo = "images/logo/SUEWS_LOGO-display.png"
 # html_theme_options = {
-    # "logo_only": True,
+# "logo_only": True,
 #     "display_version": True,
 # }
-
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -634,11 +640,11 @@ class AuthorYearLabelStyle(BaseLabelStyle):
                     "".join(author_first.first_names + author_first.last_names)
                 ):
                     author = " and ".join(
-                        author_first.first_names + author_second.first_names
+                        [" ".join(author_first.first_names)] + author_second.first_names
                     )
                 else:
                     author = " and ".join(
-                        author_first.last_names + author_second.last_names
+                        [" ".join(author_first.last_names)] + author_second.last_names
                     )
             else:
                 if is_japanese(

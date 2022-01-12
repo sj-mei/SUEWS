@@ -2,12 +2,12 @@
 "`SUEWS_NonVeg.txt`","`MU`","Effective surface emissivity. View factors should be taken into account."
 "`SUEWS_Veg.txt`","`MU`","Example values [-]
 
-- 0.98 EveTr Oke (1987) :cite:`O87`
-- 0.98 DecTr Oke (1987) :cite:`O87`
-- 0.93 Grass Oke (1987) :cite:`O87` "
+- 0.98 EveTr :cite:`O02`
+- 0.98 DecTr :cite:`O02`
+- 0.93 Grass :cite:`O02` "
 "`SUEWS_Water.txt`","`MU`","Example values [-]
 
-- 0.95 Water Oke (1987) :cite:`O87` "
+- 0.95 Water :cite:`O02` "
 "`SUEWS_Snow.txt`","`MU`","Example values [-]
 
-- 0.99 :cite:t:`J14` "
+- 0.99 :cite:`J14` "

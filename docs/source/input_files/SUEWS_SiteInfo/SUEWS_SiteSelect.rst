@@ -50,26 +50,27 @@ check http://www.timeanddate.com/time/dst/ for your city.
 
 
 .. tip::
-    If DLS does not occur give a start and end day immediately after it.
-    Make certain the dummy dates are correct for the hemisphere
+  If DLS does not occur give a start and end day immediately after it.
+  Make certain the dummy dates are correct for the hemisphere
 
-     - For northern hemisphere, use: 180 181
-     - For southern hemisphere, use:  365 1
+  - For northern hemisphere, use: 180 181
+  - For southern hemisphere, use:  365 1
 
 Example when running  multiple years (in this case 2008 and 2009 in Canada):
-    .. list-table::
-      :widths: auto
-      :header-rows: 1
 
-      * - Year
-        - start of daylight savings
-        - end of daylight savings
-      * - 2008
-        - 170
-        - 240
-      * - 2009
-        - 172
-        - 242
+.. list-table::
+  :widths: auto
+  :header-rows: 1
+
+  * - Year
+    - start of daylight savings
+    - end of daylight savings
+  * - 2008
+    - 170
+    - 240
+  * - 2009
+    - 172
+    - 242
 
 
 

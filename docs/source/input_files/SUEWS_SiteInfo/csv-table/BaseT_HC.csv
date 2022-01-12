@@ -1,2 +1,2 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_AnthropogenicEmission.txt`","`MU`","Base temperature for heating degree days [°C] e.g. Sailor and Vasireddy (2006) :cite:`SV06` "
+"`SUEWS_AnthropogenicEmission.txt`","`MU`","Base temperature for heating degree days [°C] e.g. :cite:t:`SV06` "

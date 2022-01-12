@@ -147,7 +147,7 @@ It is particularly important to ensure the following input information is approp
 -  Anthropogenic heat flux parameters, particularly if there are considerable energy emissions from transport, buildings, metabolism, etc :cite:`W16`.
 -  External water use (if irrigation or street cleaning occurs)
 -  Snow clearing (if running the snow option)
--  Surface conductance parameterisation :cite:`J11` :cite:`W16`
+-  Surface conductance parameterisation :cite:`J11, W16`
 
 SUEWS can be run either for an individual area or for multiple areas.
 There is no requirement for the areas to be of any particular shape but here we refer to them as model 'grids'.

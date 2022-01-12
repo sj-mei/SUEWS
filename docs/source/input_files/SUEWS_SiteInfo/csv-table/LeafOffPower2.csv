@@ -2,5 +2,5 @@
 "`SUEWS_Veg.txt`","`MD`","
 Example values
 
-- `LAIEq` = 0: 0.0005 :cite:t:`J11`
-- `LAIEq` = 1: 0.0015 :cite:t:`J14`"
+- `LAIEq` = 0: 0.0005 :cite:`J11`
+- `LAIEq` = 1: 0.0015 :cite:`J14`"

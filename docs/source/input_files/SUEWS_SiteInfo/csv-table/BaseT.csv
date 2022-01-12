@@ -1,5 +1,5 @@
 "Referencing Table","Requirement","Comment"
 "`SUEWS_Veg.txt`","`MU`","
-See section 2.2 Järvi et al. (2011); Appendix A :cite:t:`J14`.
-Example values: 5 for EveTr :cite:t:`J11`
+See section 2.2 Järvi et al. (2011); Appendix A of :cite:t:`J14`.
+Example values: 5 for EveTr :cite:`J11`
 "
