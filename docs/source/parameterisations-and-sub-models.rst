@@ -247,8 +247,8 @@ RSL and SS Canopy Representation Comparison
 
 
 -  The RSL has 30 levels but when the average building height is <2 m, < 12 m and > 12 m there are 3, 10 and 15 evenly spaced layers in the canopy.
-  The remaining levels are evenly spaced up to the forcing level (Fig, 3).
-  The buildings are assumed to be uniform height.
+-  The remaining levels are evenly spaced up to the forcing level (Fig, 3).
+-  The buildings are assumed to be uniform height.
 
 
 
@@ -264,8 +264,8 @@ The buildings are allowed to vary in height.
 
 
 
-.. figure:: /assets/img/SUEWS004.png
-	:alt: Overview of SUEWS
+.. figure:: /assets/img/SUEWS005.png
+   :alt: Vertical layers used by SS
 
    Vertical layers used by SS
 
