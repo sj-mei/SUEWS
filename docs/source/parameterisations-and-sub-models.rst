@@ -229,14 +229,20 @@ SUEWS-SS Implementation
 
 -  Vegetation extinction coefficients (calculated from leaf area index, LAI) are assumed to be the same in all vegetated layers.
 
--  Building facet and ground temperatures are equal to SUEWS TSfc_C (i.e.surface temperature)
+.. margin::
 
-.. note:: Confirming the ESTM coupling will allow this to be modified
+  .. [#estm_coupling] Confirming the ESTM coupling will allow this to be modified
 
 
--  Leaf temperatures are equal to SUEWS temp_C (i.e. air temperature within the canopy)
 
-.. note:: This is from the RSL model (XX) and varies with layer
+-  Building facet and ground temperatures are equal to SUEWS TSfc_C (i.e.surface temperature) [#estm_coupling]_
+
+
+.. margin::
+
+  .. [#rsl_layers] This is from the RSL model (XX) and varies with layer
+
+-  Leaf temperatures are equal to SUEWS temp_C (i.e. air temperature within the canopy) [#rsl_layers]_
 
 
 -  Ground albedo and emissivity are an area weighted average of SUEWS paved, grass, bare soil and water values
@@ -257,9 +263,13 @@ SUEWS-SS Implementation
 
    -  that are used by SUEWS.
 
-- Output variables (including multi-layer ones) are in SUEWS-SS output file `SSss_YYYY_SPARTACUS.txt`.
+.. margin::
 
-.. note:: this will be updated but requires other updates first as of December 2021
+  .. [#ss_output] this will be updated but requires other updates first as of December 2021
+
+
+- Output variables (including multi-layer ones) are in SUEWS-SS output file `SSss_YYYY_SPARTACUS.txt`. [#ss_output]_
+
 
 
 RSL and SS Canopy Representation Comparison
