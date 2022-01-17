@@ -298,6 +298,7 @@ rst_prolog = """
 .. |d^-2| replace:: d\ :sup:`-2`
 .. |)^-1| replace:: )\ :sup:`-1`
 .. |Recmd| replace:: **Recommended in this version.**
+.. |EXP| replace:: **Experimental in this version.**
 .. |NotRecmd| replace:: **Not recommended in this version.**
 .. |NotAvail| replace:: **Not available in this version.**
 .. |NotUsed| replace:: **Not used in this version.**
@@ -546,7 +547,7 @@ intersphinx_mapping = {
     "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
     "xarray": ("http://xarray.pydata.org/en/stable/", None),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "supy": ("https://supy.readthedocs.io/en/stable/", None),
+    "supy": ("https://supy.readthedocs.io/en/latest/", None),
 }
 
 
