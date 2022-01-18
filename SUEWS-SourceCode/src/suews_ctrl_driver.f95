@@ -3744,7 +3744,7 @@ CONTAINS
       NAMELIST /Spartacus_Settings/ nlayers, use_sw_direct_albedo, n_vegetation_region_urban, &
          n_stream_sw_urban, n_stream_lw_urban &
          /Spartacus_Constant_Parameters/ sw_dn_direct_frac, air_ext_sw, air_ssa_sw, veg_ssa_sw, air_ext_lw, &
-         air_ssa_lw, veg_ssa_lw, veg_fsd_const, veg_contact_fraction_const, ground_albedo_dir_mult_fact  &
+         air_ssa_lw, veg_ssa_lw, veg_fsd_const, veg_contact_fraction_const, ground_albedo_dir_mult_fact &
          /Spartacus_Profile_Parameters/ height, building_frac, veg_frac, building_scale, veg_scale, &
          roof_albedo, wall_albedo, roof_emissivity, wall_emissivity, roof_albedo_dir_mult_fact, wall_specular_frac
 
@@ -3762,7 +3762,7 @@ CONTAINS
       ALLOCATE (nlay(ncol))
       nlay = [nlayers]
       ntotlay = SUM(nlay)
-      ALLOCATE (height(ntotlay+ncol))
+      ALLOCATE (height(ntotlay + ncol))
       ALLOCATE (building_frac(ntotlay))
       ALLOCATE (veg_frac(ntotlay))
       ALLOCATE (building_scale(ntotlay))
@@ -3770,12 +3770,12 @@ CONTAINS
       ALLOCATE (veg_ext(ntotlay))
       ALLOCATE (veg_fsd(ntotlay))
       ALLOCATE (veg_contact_fraction(ntotlay))
-      ALLOCATE (roof_albedo(nspec,ntotlay))
-      ALLOCATE (wall_albedo(nspec,ntotlay))
-      ALLOCATE (roof_albedo_dir_mult_fact(nspec,ntotlay))
-      ALLOCATE (wall_specular_frac(nspec,ntotlay))
-      ALLOCATE (roof_emissivity(nspec,ntotlay))
-      ALLOCATE (wall_emissivity(nspec,ntotlay))
+      ALLOCATE (roof_albedo(nspec, ntotlay))
+      ALLOCATE (wall_albedo(nspec, ntotlay))
+      ALLOCATE (roof_albedo_dir_mult_fact(nspec, ntotlay))
+      ALLOCATE (wall_specular_frac(nspec, ntotlay))
+      ALLOCATE (roof_emissivity(nspec, ntotlay))
+      ALLOCATE (wall_emissivity(nspec, ntotlay))
       OPEN (511, file=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml', status='old')
       READ (511, nml=Spartacus_Profile_Parameters)
       CLOSE (511)
@@ -3832,38 +3832,38 @@ CONTAINS
 
       ! calculate dz array
       ilay = 1
-      DO jcol = 1,ncol
-        canopy_props%dz(ilay:ilay+canopy_props%nlay(jcol)-1) &
-             &  = height(ilay+1:ilay+canopy_props%nlay(jcol)) &
-             &   -height(ilay:ilay+canopy_props%nlay(jcol)-1)
-        canopy_props%istartlay(jcol) = ilay
-        ilay = ilay + canopy_props%nlay(jcol)
+      DO jcol = 1, ncol
+         canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1) &
+              &  = height(ilay + 1:ilay + canopy_props%nlay(jcol)) &
+              &   - height(ilay:ilay + canopy_props%nlay(jcol) - 1)
+         canopy_props%istartlay(jcol) = ilay
+         ilay = ilay + canopy_props%nlay(jcol)
       END DO
 
       ALLOCATE (LAI_av(ncol))
       ALLOCATE (veg_depth(ncol))
       ALLOCATE (LAI_av_z(ntotlay))
       !Calculate the area weighted LAI of trees
-      DO jcol = 1,ncol
-         LAI_av(jcol) = (sfr(ConifSurf)*LAI_id(1)+sfr(DecidSurf)*LAI_id(2))/(sfr(ConifSurf)+sfr(DecidSurf)+10.**(-10)) ! the 10.**-10 stops the equation blowing up when there are no trees
+      DO jcol = 1, ncol
+         LAI_av(jcol) = (sfr(ConifSurf)*LAI_id(1) + sfr(DecidSurf)*LAI_id(2))/(sfr(ConifSurf) + sfr(DecidSurf) + 10.**(-10)) ! the 10.**-10 stops the equation blowing up when there are no trees
       END DO
       ! find veg_depth
-      DO jcol = 1,ncol
+      DO jcol = 1, ncol
          ilay = canopy_props%istartlay(jcol)
          veg_depth(jcol) = 0.
-         DO jlay = 0,nlay(jcol)-1
-            IF (veg_frac(ilay+jlay) > 0.) THEN
-               veg_depth(jcol) = veg_depth(jcol) + canopy_props%dz(ilay+jlay)
+         DO jlay = 0, nlay(jcol) - 1
+            IF (veg_frac(ilay + jlay) > 0.) THEN
+               veg_depth(jcol) = veg_depth(jcol) + canopy_props%dz(ilay + jlay)
             END IF
          END DO
       END DO
       ! find LAV_av_z and veg_ext. Assume the LAI is uniform with height within the vegetation layer.
-      DO jcol = 1,ncol
+      DO jcol = 1, ncol
          ilay = canopy_props%istartlay(jcol)
-         DO jlay = 0,nlay(jcol)-1
-            IF (veg_frac(ilay+jlay) > 0.) THEN
-               LAI_av_z(ilay+jlay) = LAI_av(jcol) * canopy_props%dz(ilay+jlay) / veg_depth(jcol)
-               veg_ext(ilay+jlay) = LAI_av_z(ilay+jlay) / (2 * canopy_props%dz(ilay))
+         DO jlay = 0, nlay(jcol) - 1
+            IF (veg_frac(ilay + jlay) > 0.) THEN
+               LAI_av_z(ilay + jlay) = LAI_av(jcol)*canopy_props%dz(ilay + jlay)/veg_depth(jcol)
+               veg_ext(ilay + jlay) = LAI_av_z(ilay + jlay)/(2*canopy_props%dz(ilay))
             END IF
          END DO
       END DO
