@@ -1,5 +1,5 @@
 
-Version 2016a (released 21 June 2016)
+Version 2016a (released on 21 June 2016)
 --------------------------------------------------
 
 :download:`PDF Manual for v2016a </assets/doc/SUEWS_V2016a_Manual.pdf>`

@@ -1,11 +1,9 @@
 CBL input files
 ---------------
 
-Main references for this part of the model: Onomura et al. (2015) [Shiho2015]_
-and Cleugh and Grimmond (2001) [CG2001]_.
+Main references for this part of the model: :cite:t:`O15` and :cite:t:`CG01`.
 
-If CBL slab model is used (:option:`CBLuse = 1 <CBLuse>` in
-:ref:`RunControl.nml <RunControl>`) the following files are needed.
+If CBL slab model is used (:option:`CBLUse = 1 <CBLUse>` in :ref:`RunControl.nml <RunControl>`) the following files are needed.
 
 
 .. list-table::
@@ -24,14 +22,12 @@ If CBL slab model is used (:option:`CBLuse = 1 <CBLuse>` in
        * Can be in any order
 
 
-.. _CBL_initial_data.txt:
 
 CBL_initial_data.txt
 ~~~~~~~~~~~~~~~~~~~~
 
-This file should give initial data every morning when CBL slab model
-starts running. The file name should match the InitialData_FileName in
-CBLInput.nml.
+This file should give initial data every morning when CBL slab model starts running.
+The file name should match the InitialData_FileName in CBLInput.nml.
 
 Definitions and example file of initial values prepared for Sacramento.
 
@@ -68,7 +64,7 @@ Definitions and example file of initial values prepared for Sacramento.
      - Specific humidiy in CBL (g kg\ :sup:`-1`)
 
 -  gamt_Km and gamq_gkgm written to two significant figures are required
-   for the model performance in appropriate ranges [Shiho2015]_.
+   for the model performance in appropriate ranges :cite:`O15`.
 
 .. list-table::
    :widths: auto
@@ -124,12 +120,11 @@ Definitions and example file of initial values prepared for Sacramento.
      -
 
 
-.. _CBLInput.nml:
 
 CBLInput.nml
 ~~~~~~~~~~~~~
 
- sample file of **CBLInput.nml** looks like
+sample file of **CBLInput.nml** looks like
 
 .. literalinclude:: CBLInput.nml
 
@@ -138,16 +133,16 @@ CBLInput.nml
 The parameters and their setting instructions
 are provided through :ref:`the links below <CBLinput>`:
 
-  .. hlist::
-    + :option:`EntrainmentType`
-    + :option:`QH_Choice`
-    + :option:`InitialData_use`
-    + :option:`Sondeflag`
-    + :option:`CBLday(id)`
-    + :option:`CO2_included`
-    + :option:`FileSonde(id)`
-    + :option:`InitialDataFileName`
-    + :option:`Wsb`
+.. hlist::
+  + :option:`EntrainmentType`
+  + :option:`QH_Choice`
+  + :option:`InitialData_use`
+  + :option:`Sondeflag`
+  + :option:`CBLday(id)`
+  + :option:`CO2_included`
+  + :option:`FileSonde(id)`
+  + :option:`InitialDataFileName`
+  + :option:`Wsb`
 
 .. toctree::
    :maxdepth: 1

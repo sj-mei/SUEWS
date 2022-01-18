@@ -12,12 +12,12 @@ on:
   #   tags:        # Array of patterns that match refs/tags.
   #     - v1         # Push events to v1 tag
     paths:       # Push events containing matching files
-      - 'SUEWS-SourceCode/*'
+      - 'SUEWS-SourceCode/src/*'
       - 'supy-driver/*'
       - '.github/workflows/f-prettify.yml'
 
 jobs:
-  build:
+  fprettify:
 
     runs-on: ubuntu-latest
 
@@ -51,7 +51,7 @@ jobs:
     - name: Setup Python for use with actions
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7' # Version range or exact version of a Python version to use, using semvers version range syntax.
+        python-version: '3.9' # Version range or exact version of a Python version to use, using semvers version range syntax.
         architecture: 'x64' # (x64 or x86)
 
     - name: install fprettify
@@ -60,7 +60,7 @@ jobs:
         make pip
 
     - name: format Fortran code
-      run: fprettify SUEWS-SourceCode/*f95
+      run: fprettify SUEWS-SourceCode/*f95 -i 3 --case 2 2 2 2
 
     # - name: Commit changes
     #   uses: elstudio/actions-js-build/commit@v3
@@ -81,7 +81,7 @@ jobs:
     - name: Add & Commit
       uses: EndBug/add-and-commit@v6.2.0
       with:
-        add: 'SUEWS-SourceCode/*f95'
+        add: 'SUEWS-SourceCode/src/*f95'
         message: "[GH Actions] fprettify source code"
 
 

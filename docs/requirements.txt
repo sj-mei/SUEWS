@@ -1,4 +1,4 @@
-sphinx
+sphinx~=3.3
 pybtex
 f90nml
 pandas
@@ -6,6 +6,13 @@ numpy
 nbsphinx
 exhale
 sphinxcontrib_programoutput
-sphinxcontrib.bibtex
+sphinxcontrib.bibtex~=2.4
+sphinx_comments
 sphinx_rtd_theme
 recommonmark
+docutils < 0.17
+sphinx-book-theme==0.1.6
+sphinx-panels
+sphinxcontrib.email
+sphinx-last-updated-by-git
+sphinx_rtd_theme>=0.5

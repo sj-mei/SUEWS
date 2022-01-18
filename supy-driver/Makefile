@@ -1,13 +1,16 @@
 # -*- makefile -*-
 .PHONY: main clean test pip supy
 
+FC = gfortran $(FFLAGS)
+
 # OS-specific configurations
-OSFLAG 				:=
+OSFLAG 	:= ""
 ifeq ($(OS),Windows_NT)
 	OSFLAG += -D WIN32
 	# pyver := 3.6
 	# PYTHON:= py -${pyver}
 	PYTHON:=python
+	FC = gfortran $(FFLAGS)
 	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
 		OSFLAG += -D AMD64
 	endif
@@ -18,7 +21,7 @@ else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
 		OSFLAG += -D LINUX
-		pyver := 37
+		# pyver := 37
 		# PYTHON:=/opt/python/cp${pyver}-cp${pyver}m/bin/python
 		PYTHON:=python
 	endif
@@ -41,7 +44,7 @@ endif
 PYTHON_ver:= $(shell $(PYTHON) --version)
 
 
-MODULE=supy_driver
+MODULE = supy_driver
 
 SUEWS_dir = ../SUEWS-SourceCode
 
@@ -52,7 +55,7 @@ SUEWS_dir = ../SUEWS-SourceCode
 # $(info $$UNAME_S is ${UNAME_S})
 # make suews_driver
 main:
-	$(MAKE) show
+	# $(MAKE) show
 	$(PYTHON) -m pip install -r requirements.txt
 	$(PYTHON) -m pip install auditwheel
 	$(PYTHON) setup.py bdist_wheel
@@ -60,8 +63,8 @@ main:
 
 # make fortran exe
 suews:
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran main; # make SUEWS with the `main` recipe
-	-rm -rf *.o *.mod *.f95 *.a *.dSYM
+	$(MAKE) -C $(SUEWS_dir) clean
+	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `suews` recipe
 
 show:
 	@echo $(info $$OSFLAG is [${OSFLAG}])
@@ -71,16 +74,16 @@ show:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) show
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
+	$(MAKE) -C $(SUEWS_dir) clean
 	rm -rf ${MODULE}/*.so ${MODULE}/*.pyd ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	 -$(PYTHON) setup.py clean --all
 	rm -rf build *.mod *.o __pycache__
 	rm -rf *.f95
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
-test:
-	$(MAKE) main
-	$(PYTHON) setup.py test
+test: main
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m pytest -s ${MODULE}/test
 
 # clean all existing builds, rebuild f2py libs, build wheels and install in dev mode
 dev:

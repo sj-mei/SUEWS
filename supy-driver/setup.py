@@ -1,3 +1,4 @@
+# %%
 from setuptools import Distribution
 from numpy.distutils.core import Extension, setup
 import platform
@@ -25,12 +26,17 @@ if sysname == "Windows":
     shutil.copyfile("win-setup.cfg", "setup.cfg")
 
 # load SUEWS Fortran source files
-dir_f95 = "../SUEWS-SourceCode"
-target_f95 = [
-    os.path.join(dir_f95, f)
+dir_f95 = "../SUEWS-SourceCode/src"
+path_src = Path(dir_f95)
+path_mod = (path_src.parent / "mod").resolve()
+path_lib = (path_src.parent / "lib").resolve()
+path_target_f95 = [
+    (path_src / f)
     for f in [
         "suews_ctrl_const.f95",
         "suews_ctrl_error.f95",
+        "suews_util_meteo.f95",
+        "suews_phys_waterdist.f95",
         "suews_phys_narp.f95",
         "suews_phys_atmmoiststab.f95",
         "suews_phys_resist.f95",
@@ -42,24 +48,27 @@ target_f95 = [
         "suews_phys_rslprof.f95",
         "suews_phys_biogenco2.f95",
         "suews_phys_ohm.f95",
-        "suews_phys_solweig.f95",
-        "suews_phys_waterdist.f95",
-        "suews_util_meteo.f95",
+        "suews_phys_estm.f95",
         "suews_ctrl_driver.f95",
     ]
 ]
-all_f95 = glob.glob(os.path.join(dir_f95, "*.f95"))
-exclude_f95 = [
-    os.path.join(dir_f95, f)
-    for f in ["suews_c_wrapper.f95", "suews_ctrl_sumin.f95", "suews_program.f95",]
+# all_f95 = glob.glob(os.path.join(dir_f95, "*.f95"))
+path_all_f95 = [f for f in path_src.glob("*.f95")]
+path_exclude_f95 = [
+    (path_src / f)
+    for f in [
+        "suews_c_wrapper.f95",
+        "suews_ctrl_sumin.f95",
+        "suews_program.f95",
+    ]
 ]
-other_f95 = list(set(all_f95) - set(target_f95) - set(exclude_f95))
-other_obj = [f.replace(".f95", ".o") for f in other_f95]
+path_other_f95 = list(set(path_all_f95) - set(path_target_f95) - set(path_exclude_f95))
+fn_other_obj = [str(f).replace(".f95", ".o") for f in path_other_f95]
 if sysname == "Windows":
-    other_obj.append(os.path.join(dir_f95, "strptime.o"))
+    fn_other_obj.append(os.path.join(dir_f95, "strptime.o"))
 
-src_f95 = target_f95 + other_f95
-
+src_f95 = path_target_f95 + path_other_f95
+# %%
 # # combine for files to use:
 # file_all_f95 = 'suews_all.f95'
 # # with open(file_all_f95, 'wb') as wfd:
@@ -91,17 +100,19 @@ def readme():
 # str(path_source)
 
 
-def get_suews_version(ver_minor, dir_source=dir_f95):
-    path_source = Path(dir_source)
-    path_makefile = path_source / "include.common"
-    # identify `file` to retrieve version
-    with open(str(path_makefile)) as fm:
-        for line in fm:
-            if "file " in line:
-                file = line.split(":=")[-1].split("#")[0].strip()
+def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"):
+    try:
+        path_source = Path(dir_source)
+        path_makefile = path_source.parent / "Makefile"
+        print(path_makefile, path_makefile.exists())
 
-    # get version from `file`
-    path_constfile = path_source / file
+        # get version from `file`
+        path_constfile = path_source / file
+        print(path_constfile,path_constfile.exists())
+        print(path_constfile)
+    except IOError:
+        raise IOError(f'{path_constfile} not existing!')
+
     with open(str(path_constfile)) as fm:
         for line in fm:
             if "progname" in line:
@@ -115,7 +126,7 @@ def get_suews_version(ver_minor, dir_source=dir_f95):
 
     return ver
 
-
+# %%
 class BinaryDistribution(Distribution):
     def has_ext_modules(self):
         return True
@@ -131,23 +142,26 @@ class BinaryDistribution(Distribution):
 ext_modules = [
     Extension(
         "supy_driver.suews_driver",
-        target_f95,
+        [str(p) for p in path_target_f95],
         extra_compile_args=["-D_POSIX_C_SOURCE=200809L"],
-        extra_f90_compile_args=["-cpp"],
+        extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
         f2py_options=[
             # '--quiet',
             #   '--debug-capi',
             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
         ],
-        extra_objects=other_obj,
-        extra_link_args=[("" if sysname == "Linux" else "-static")],
+        extra_objects=fn_other_obj,
+        # "-v" under Linux is necessary because it can avoid the blank variable issue
+        # ref: https://github.com/metomi/fcm/issues/220
+        extra_link_args=["-v" if sysname == "Linux" else "-static"]
+        + [f"-L{str(path_lib)}", "-lspartacus"],
     )
 ]
 
 setup(
     name="supy_driver",
     # update version info here!
-    version=get_suews_version(ver_minor=13),
+    version=get_suews_version(ver_minor=3),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
     url="https://github.com/sunt05/SuPy",
@@ -163,11 +177,9 @@ setup(
     },
     distclass=BinaryDistribution,
     ext_modules=ext_modules,
-    python_requires=">=3.5",
-    install_requires=["numpy>=1.17.4"],
+    python_requires=">=3.7",
+    install_requires=["numpy>=1.20"],
     include_package_data=True,
-    test_suite="nose.collector",
-    tests_require=["nose"],
     zip_safe=False,
 )
 

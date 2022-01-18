@@ -1,4 +1,3 @@
-.. _acknowledgements:
 
 Acknowledgements
 ================
@@ -40,6 +39,11 @@ Contributors
     - UMEP-related work, NARP, ESTM
     - v2011b – owards
     - Lead Developer of UMEP
+  * - Dr Lewis Blunn
+    - University of Reading, UK
+    - SUEWS-SPARTACUS coupling; RSL improvement
+    - v2021a
+    - Major contributor to SUEWS-SPARTACUS coupling
   * - Dr Hamidreza Omidvar
     - University of Reading, UK
     - WRF-SUEWS coupling; Documentation system

@@ -48,7 +48,10 @@ def load_SUEWS_table(fileX):
     # remove case issues
     fileX = path_insensitive(fileX)
     rawdata = pd.read_csv(
-        fileX, delim_whitespace=True, comment="!", error_bad_lines=True, skiprows=1
+        fileX,
+        delim_whitespace=True,
+        comment="!",
+        skiprows=1,
     ).dropna()
     return rawdata
 
@@ -73,9 +76,8 @@ def load_SUEWS_results(n_grid, n_year):
 
 # load results as pandas dataframe
 def load_df_SUEWS(dir_out="Output", fn_pattern="*SUEWS_60.txt"):
-    fl_res = list(Path(dir_out).glob(fn_pattern))
     # re-order results into [year, grid] layout
-    fl_res = sorted(list(Path(dir_out).glob(fn_pattern)))
+    fl_res = sorted(Path(dir_out).glob(fn_pattern))
     list_grid = [fn.stem.split("_")[0] for fn in fl_res]
     # load individual files with extra level named by grid
     list_df = [
@@ -195,6 +197,7 @@ def run_sim(
         os.mkdir(name_sim)
         os.chdir(name_sim)
         os.mkdir("Output")
+        p_sim = (Path(dir_save) / name_sim).resolve()
     except OSError as e:
         if e.errno == errno.EEXIST:
             print("Directory not created.")
@@ -202,6 +205,8 @@ def run_sim(
             raise
     # copy base input files
     copytree(dir_input, "Input")
+    p_input = Path(dir_input)
+    # copyfile(p_input / "config.nam", p_sim / "config.nam")
 
     # get sim info
     yr_sim = df_siteselect.loc[:, "Year"].unique().astype(int)
@@ -237,7 +242,7 @@ def run_sim(
     # copy SUEWS executable
     # name_exe = 'SUEWS_V2018a'
     path_exe = os.path.join(dir_exe, name_exe)
-    copyfile(path_exe, name_exe)
+    copyfile(path_exe, name_exe, follow_symlinks=True)
     os.chmod(name_exe, 755)
 
     # perform multi-grid run:
@@ -376,7 +381,6 @@ def test_multigrid(
         res_sim_singlegrid.append(res_sim_grid)
 
     # combine `res_sim_singlegrid`
-    # res_sim_singlegrid = np.concatenate(tuple(res_sim_singlegrid))
     res_sim_singlegrid = pd.concat(res_sim_singlegrid).sort_index()
 
     # test equality
@@ -403,7 +407,7 @@ def test_samerun(
     from pathlib import Path
 
     path_dir_sys = Path.cwd()
-    path_dir_baserun=Path(path_dir_baserun)
+    path_dir_baserun = Path(path_dir_baserun)
     # load RunControl
     path_runcontrol = path_dir_baserun / "RunControl.nml"
     dict_runcontrol = load_SUEWS_RunControl(path_runcontrol)["runcontrol"]
@@ -434,7 +438,7 @@ def test_samerun(
     if os.path.exists(name_exe):
         os.remove(name_exe)
     # copy SUEWS
-    path_exe = path_dir_exe/name_exe
+    path_exe = path_dir_exe / name_exe
     copyfile(path_exe, name_exe)
     os.chmod(name_exe, 755)
 
@@ -443,8 +447,8 @@ def test_samerun(
     os.system("./" + name_exe + " &>/dev/null")
 
     # compare results
-    path_res_sample = path_dir_baserun/path_dir_output.name
-    path_res_test = path_dir_test/path_dir_output.name
+    path_res_sample = path_dir_baserun / path_dir_output.name
+    path_res_test = path_dir_test / path_dir_output.name
     # print('thse folders will be compared:')
     # print(dir_res_sample)
     # print(dir_res_test)
@@ -452,8 +456,15 @@ def test_samerun(
     common_files = [
         x.name
         for x in path_res_sample.glob("*")
-        # exclude certain files
-        if not any(excl in x.name for excl in ["FileChoices.txt", "state_init.txt"])
+        # exclude certain files from testing
+        if not any(
+            excl in x.name
+            for excl in [
+                "FileChoices.txt",
+                "state_init.txt",
+                "_SPARTACUS_",  # SPARTACUS is still experimental
+            ]
+        )
     ]
     comp_files_test = filecmp.cmpfiles(
         path_res_sample, path_res_test, common_files, shallow=False
@@ -472,13 +483,27 @@ def test_samerun(
         list_file_dif = sorted(comp_files_test[1])
         print(list_file_dif)
         for file in list_file_dif:
-            print(f"======={file}=======")
-            text_sample = (path_res_sample/file).read_text()
-            text_test = (path_res_test/file).read_text()
-            for line in difflib.unified_diff(
-                text_sample, text_test, fromfile="sample", tofile="test"
-            ):
-                print(line)
+            df_test = pd.read_csv(path_res_test / file, sep="\s+")
+            df_sample = pd.read_csv(path_res_sample / file, sep="\s+")
+            df_diff = (
+                pd.concat(
+                    {"test": df_test, "sample": df_sample}, names=["file", "line"]
+                )
+                .drop_duplicates(keep=False)
+                .reset_index()
+                .melt(id_vars=["file", "line"])
+                .drop_duplicates(keep=False, subset=["line", "variable", "value"])
+                .set_index(["file", "line", "variable"])
+                .unstack("file")
+                .droplevel(0, axis=1)
+            )
+            if df_diff.size > 0:
+                p_csv_diff = path_res_sample / (file + ".diff.csv")
+                df_diff.to_csv(p_csv_diff)
+                print(df_diff)
+                print(f"===  {p_csv_diff.as_posix()} has been saved")
+            else:
+                res_test = True
 
     # res_test = (set(comp_files_test[0]) == set(common_files))
     # print res_test

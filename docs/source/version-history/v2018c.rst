@@ -4,6 +4,8 @@
 Version 2018c (released on 21 February 2019)
 ----------------------------------------------------
 
+`Download page (under assets) <https://github.com/Urban-Meteorology-Reading/SUEWS/releases/tag/2018c>`_
+
 - **Improvement**
 
   #. SuPy (SUEWS in Python): a Python-enhanced wrapper of SUEWS, which can facilitate a more fluent workflow of SUEWS-centred urban climate research. More details refer to `SuPy documentation site <https://supy.readthedocs.io>`_.

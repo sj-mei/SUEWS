@@ -971,7 +971,7 @@ Input Options
 .. option:: EnEF_v_Jkm
 
 	:Description:
-		Emission factor for heat [J k|m^-1|].
+		Emission factor for heat [J k |m^-1| ].
 
 	:Configuration:
 		.. csv-table::
@@ -2578,7 +2578,7 @@ Input Options
 
 		Maximum value for human heat emission. [W |m^-2|]
 
-		Example values: 175 Sailor and Lu (2004) [SL04]_
+		Example values: 175 Sailor and Lu (2004) :cite:`SL04`
 
 	:Configuration:
 		.. csv-table::
@@ -2620,7 +2620,7 @@ Input Options
 
 		Minimum value for human heat emission. [W |m^-2|]
 
-		Example values: 75 Sailor and Lu (2004) [SL04]_
+		Example values: 75 Sailor and Lu (2004) :cite:`SL04`
 
 	:Configuration:
 		.. csv-table::
@@ -4500,7 +4500,9 @@ Input Options
 .. option:: xsmd
 
 	:Description:
-		Observed soil moisture [|m^3| |m^-3| or kg |kg^-1|]
+		Observed soil moisture;
+		can be provided either as volumetric ([|m^3| |m^-3|] when `SMDMethod` = 1) or gravimetric quantity ([kg |kg^-1|] when `SMDMethod` = 2).
+		This should be used in conjunction with other soil properties in `SUEWS_Soil.txt`.
 
 	:Configuration:
 		.. csv-table::
@@ -4526,7 +4528,7 @@ Input Options
 .. option:: z
 
 	:Description:
-		Measurement height [m].
+		Measurement height [m] for all atmospheric forcing variables set in `SSss_YYYY_data_tt.txt`.
 
 	:Configuration:
 		.. csv-table::

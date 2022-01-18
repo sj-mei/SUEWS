@@ -1,5 +1,5 @@
 
-Version 2014b (released 8 October 2014)
+Version 2014b (released on 8 October 2014)
 ----------------------------------------------------
 
 :download:`PDF Manual for v2014b </assets/doc/SUEWS_V2014b_Manual.pdf>`

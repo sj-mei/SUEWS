@@ -329,7 +329,20 @@ dmypy.json
 .idea/
 _build/
 doxygenoutput/
-Release/
+Release/bin/
+Release/*.zip
 supy-driver/wheelhouse/
 test-dev/
 Test/BaseRun/*/SUEWS_V2*
+SUEWS-SourceCode/SUEWS_V20*
+SUEWS-SourceCode/bin/*
+
+# test diff files
+*.diff.csv
+
+# junk files during complilations
+fort.1
+problems.txt
+
+# local settings
+.vscode/

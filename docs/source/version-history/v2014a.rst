@@ -1,4 +1,4 @@
-Version 2014a (released 21 February 2014)
+Version 2014a (released on 21 February 2014)
 ------------------------------------------------------
 
 #. Bug fix: External irrigation is calculated as combined from automatic

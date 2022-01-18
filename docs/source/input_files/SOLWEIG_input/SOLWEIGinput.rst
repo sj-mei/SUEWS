@@ -1,4 +1,4 @@
-.. _SOLWEIGinput:
+
 
 SOLWEIGinput
 ~~~~~~~~~~~~
@@ -308,7 +308,7 @@ SOLWEIGinput
 		Required
 
 	:Description:
-		Recommended value: 0.50 (Konarska et al. 2014 [Ko14]_)
+		Recommended value: 0.50 (Konarska et al. 2014 :cite:`K14`)
 	:Configuration:
 		to fill
 
@@ -319,6 +319,6 @@ SOLWEIGinput
 		Required
 
 	:Description:
-		Recommended value: 0.02 (Konarska et al. 2014 [Ko14]_ )
+		Recommended value: 0.02 (Konarska et al. 2014 :cite:`K14` )
 	:Configuration:
 		to fill

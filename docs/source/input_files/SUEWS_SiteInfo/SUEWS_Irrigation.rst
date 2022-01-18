@@ -5,15 +5,17 @@ SUEWS_Irrigation.txt
 
 External water use may be used for a wide range of reasons (e.g. cleaning roads, irrigating plants, fountains, washing cars).
 
-SUEWS has two options for External Water use (if non- zero)
-1) provide observed data in meteorological forcing file in the `Wuh` column with valid values
-  set `WaterUseMethod` = 1 in `RunControl.nml`
-  
-2) a simple model that calculates daily water use from the mean daily air temperature, number of days since rain and fraction of
-irrigated area using automatic/manual irrigation. The user needs to supply coefficients (XXX) for these relations. 
- a) sub-daily pattern of water use is detemined from the daily cycles specified in `SUEWS_Profiles.txt`.
- b) surface that the water can be applied to is specified by XX.
- c) water can pond
+SUEWS has two options for External Water use (if non-zero):
+
+1) provide observed data in meteorological forcing file in the `Wuh` column with valid values by setting `WaterUseMethod` = 1 in `RunControl.nml`
+
+2) a simple model that calculates daily water use from the mean daily air temperature, number of days since rain and fraction of irrigated area using automatic/manual irrigation. The user needs to supply coefficients (XXX) for these relations.
+
+   a) sub-daily pattern of water use is detemined from the daily cycles specified in `SUEWS_Profiles.txt`.
+
+   b) surface that the water can be applied to is specified by XX.
+
+   c) water can pond.
 
 
 

@@ -1,8 +1,10 @@
 
 .. _new_2018b:
 
-Version 2018b (released 17 December 2018)
+Version 2018b (released on 17 December 2018)
 ----------------------------------------------------
+
+`Download page (under assets) <https://github.com/Urban-Meteorology-Reading/SUEWS/releases/tag/2018b>`_
 
 - **Improvement**
 

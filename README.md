@@ -5,9 +5,11 @@ This is a public repo for SUEWS source code and documentation.
 
 - [SUEWS](#suews)
   - [Documentation](#documentation)
+  - [Compilation](#compilation)
+  - [Sample Run](#sample-run)
   - [Developer Note](#developer-note)
     - [Branch](#branch)
-      - [Central curated branches](#central-curated-branches)
+      - [`master` branch](#master-branch)
     - [Manual](#manual)
     - [Test](#test)
       - [Tests and purposes](#tests-and-purposes)
@@ -21,23 +23,43 @@ This is a public repo for SUEWS source code and documentation.
 
 ## Documentation
 
-* Documentation site: <https://suews-docs.readthedocs.io/>
+* Documentation site: <https://suews.readthedocs.io/>
 
 * Documentation source: `docs` folder in this repo
 
+
+## Compilation
+
+1. Since SUEWS includes a dependency package [SPARTACUS](https://github.com/Urban-Meteorology-Reading/spartacus-surface), one needs to initialise this submodule by:
+```shell
+git submodule init
+git submodule update
+
+```
+Then source code of SPARTACUS will be loaded into `SUEWS-SourceCode/ext_lib/spartacus-surface`
+
+*Note: if a `permission denied` error occurs, one usually needs to fix the SSH connection to GitHub by following the [official guide here](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh).*
+
+2. Compile SUEWS by:
+```shell
+make
+```
+The compiled SUEWS binary executable can be found under `Release/bin/<system>` where `<system>` can be one of `Win`, `macOS` and `Linux`.
+
+## Sample Run
+Sample input and output files can be found under `Test/BaseRun/<version>`, where `<version>` is denoted by the ending part of compiled binary (e.g., `2020b`).
+
 ## Developer Note
+- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.  
 
 ### Branch
 
-#### Central curated branches
-These branches are regularly curated by admin members with specific purposes and set with triggers for automatic deployment (via MS Azure Pipeline) in the [*releases* page](https://github.com/UMEP-dev/SUEWS/releases) named **Latest Release Test**:
+#### `master` branch
 
-* `master`:
-  * the main branch that keeps milestone and stable features.
+`master` is the main branch that keeps milestone and stable features.
   * `push` is restricted to admin members.
-* `develop`:
-  * used for core developments.
-  * `push` is restricted to admin members.
+
+If one needs to fix a bug or implement a new feature, please open an issue with details and then submit a pull request with respect to that issue.
 
 
 ### Manual
@@ -92,7 +114,7 @@ Here are some tips to debug SUEWS code:
 #### GDB on macOS
 
 Recent macOS (since High Sierra) introduces extra security procedures for system level operations that makes installation GDB more tedious than before.
-The best practice, in TS's option, to avoid hacking your macOS, is to use Linux docker images with gfortran&gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran).
+The best practice, in TS's option, to avoid hacking your macOS, is to use Linux docker images with gfortran & gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran).
 
 Once the docker image is installed, simply run this from the SUEWS root folder for debugging:
 

@@ -3,7 +3,7 @@
 SUEWS_OHMCoefficients.txt
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-OHM, the Objective Hysteresis Model (Grimmond et al. 1991) [G91OHM]_
+OHM, the Objective Hysteresis Model  :cite:`G91`
 calculates the storage heat flux as a function of net all-wave radiation
 and surface characteristics.
 

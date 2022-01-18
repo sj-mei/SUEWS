@@ -1,10 +1,15 @@
-.. _Troubleshooting:
 
 Troubleshooting
 ===============
 
 How to report an issue of this manual?
 --------------------------------------
+
+.. only:: html
+
+    Please click the link in the top banner of each page to report page-specific issues.
+
+.. only:: latex
 
     Please submit your issue via `our GitHub page. <https://github.com/UMEP-dev/SUEWS/issues>`_
 

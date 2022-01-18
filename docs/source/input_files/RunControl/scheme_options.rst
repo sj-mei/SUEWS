@@ -3,9 +3,7 @@
 Scheme options
 ~~~~~~~~~~~~~~~~~
 
-.. option:: CBLuse
-
-		.. warning:: |NotAvail|
+.. option:: CBLUse
 
 	:Requirement:
 		Required
@@ -13,7 +11,7 @@ Scheme options
 		Determines whether a CBL slab model is used to calculate temperature and humidity.
 	:Configuration:
 		.. csv-table::
-			:file: csv-table/CBLuse.csv
+			:file: csv-table/CBLUse.csv
 			:header-rows: 1
 			:widths: 10 80
 
@@ -147,6 +145,19 @@ Scheme options
 			:header-rows: 1
 			:widths: 10 80
 
+.. option:: SOLWEIGUse
+
+	.. deprecated:: v2020a
+
+	:Requirement:
+		Required
+	:Description:
+		Determines whether SOLWEIG is used to calculate detailed radiation balance of all facets.
+	:Configuration:
+		.. csv-table::
+			:file: csv-table/SOLWEIGUse.csv
+			:header-rows: 1
+			:widths: 10 80
 
 .. option:: WaterUseMethod
 

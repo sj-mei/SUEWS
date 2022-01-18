@@ -1,4 +1,5 @@
-# -*- makefile -*-
+# SUEWS Makefile - read the README file before editing
+
 .PHONY: main clean test pip supy docs
 
 # OS-specific configurations
@@ -39,25 +40,25 @@ SuPy_dir = supy-driver
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
-
+all: driver
 
 # make fortran exe
-main:
-	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
+suews:
+	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `main` recipe
 	# -rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 # make fortran exe and run test cases
 test:
 	$(MAKE) -C $(test_dir) test
 
-# make fortran exe, run test cases and pack release archive
+# make fortran exe and pack release archive
 release: pip
 	$(MAKE) -C $(release_dir) clean; # clean release directory
-	$(MAKE) main # build SUEWS binary
+	$(MAKE) suews # build SUEWS binary
 	$(MAKE) -C $(release_dir) pack # pack binary and input files
 
 # make supy dist
-driver:
+driver: suews
 	$(MAKE) -C $(SuPy_dir) test; # make and test supy_driver
 
 pip:

@@ -1,12 +1,12 @@
 &file
-    dir_exe     = '../../SUEWS-SourceCode'
+    dir_exe     = '../../SUEWS-SourceCode/bin'
     dir_baserun = '../BaseRun'
 /
 
 &test
     multi_grid = 1
     multi_year = 0
-    same_run = 1
+    same_run = 0
     test_phys = 1
     test_complete = 0
     test_number=100
@@ -16,13 +16,13 @@
     cbluse             = 0, 1
     snowuse            = 0, 1
     stabilitymethod    = 2, 3
-    netradiationmethod = 0, 1, 2, 3, 11, 12, 13, 100, 200, 300
+    netradiationmethod = 0, 1, 2, 3, 11, 12, 13, 100, 200, 300,1001, 1002, 1003
     emissionsmethod    = 0, 1, 2, 3
-    storageheatmethod  = 1, 3, 4
+    storageheatmethod  = 1, 3
     ohmincqf           = 0, 1
     stabilitymethod    = 2, 3, 4
     roughlenheatmethod = 1, 2, 3, 4, 5
-    roughlenmommethod  = 1, 2, 3
+    roughlenmommethod  = 1, 2, 3, 4
     smdmethod          = 0, 1, 2
     waterusemethod     = 0, 1
 /

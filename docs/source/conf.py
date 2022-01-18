@@ -8,6 +8,9 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import os
+import platform
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -16,35 +19,32 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 import subprocess
-import os
-import platform
 import sys
+from datetime import datetime
+from pathlib import Path
 from time import strptime
 
-# from datetime import datetime
-from pathlib import Path
-
-import pandas as pd
-import nbsphinx
 import exhale
-
+import nbsphinx
+import pandas as pd
 import sphinxcontrib.bibtex
+from pybtex.plugin import register_plugin
+from pybtex.style.formatting import BaseStyle, toplevel
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.formatting.unsrt import Text, date, pages
 from pybtex.style.sorting.author_year_title import SortingStyle as Sorter
 from pybtex.style.template import (
-    join,
-    words,
     field,
-    optional,
     first_of,
+    href,
+    join,
     names,
+    optional,
+    optional_field,
     sentence,
     tag,
-    optional_field,
-    href,
+    words,
 )
-from pybtex.style.formatting import toplevel, BaseStyle
-from pybtex.plugin import register_plugin
-from pybtex.style.formatting.unsrt import Style as UnsrtStyle, pages, date, Text
 
 
 # -- processing code --------------------------------------------------------
@@ -115,14 +115,6 @@ def gen_csv_suews(path_csv):
     return list_csv_suews
 
 
-# -- Project information ----------------------------------------------------
-project = "SUEWS"
-doc_name = "SUEWS Documentation"
-# today = datetime.today()
-copyright = "2018 – 2020" + ", micromet@University of Reading, led by Prof Sue Grimmond"
-author = "micromet@University of Reading, led by Prof Sue Grimmond"
-
-
 # determine latest version and release
 path_source = Path(".").resolve()
 list_ver = sorted(
@@ -139,8 +131,41 @@ version = list_ver[-1]
 # The full version, including alpha/beta/rc tags
 release = list_ver[-1]
 
-path_csv = path_source / "input_files/SUEWS_SiteInfo/csv-table"
-gen_csv_suews(path_csv)
+# There are two options for replacing |today|: either, you set today to some
+# non-false value, then it is used:
+# today = ''
+# Else, today_fmt is used as the format for a strftime call.
+today_fmt = "%Y-%m-%d"
+
+html_last_updated_fmt = today_fmt
+
+# determine if in RTD environment
+read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
+
+
+if read_the_docs_build:
+    # run doxygen
+    subprocess.call("doxygen", shell=True)
+
+    # generate summary tables using info in `Input_Options.rst`
+    path_csv = path_source / "input_files/SUEWS_SiteInfo/csv-table"
+    gen_csv_suews(path_csv)
+
+    # update `today`
+    dt_today = datetime.today()
+else:
+
+    dt_today = datetime(2021, 11, 11)
+    # subprocess.call("doxygen", shell=True)
+    pass
+
+
+# -- Project information ----------------------------------------------------
+project = "SUEWS"
+doc_name = "SUEWS Documentation"
+copyright = f"2018 – {dt_today.year}"
+author = "SUEWS dev team led by Prof Sue Grimmond"
+
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -159,48 +184,58 @@ extensions = [
     # 'sphinxfortran.fortran_autodoc',
     # 'sphinxfortran.fortran_domain',
     "sphinxcontrib.bibtex",
+    "sphinxcontrib.email",
     "sphinx.ext.githubpages",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
+    "sphinx_comments",
     "recommonmark",
     "nbsphinx",
     "sphinx.ext.mathjax",
     "breathe",
+    "sphinx_panels",
+    "sphinx_last_updated_by_git",
     # 'exhale'
 ]
+
+email_automode = True
 
 breathe_projects = {"SUEWS": "./doxygenoutput/xml"}
 breathe_default_project = "SUEWS"
 
-# run doxygen
-read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
+# sphinx_last_updated_by_git options
+git_last_updated_metatags = True
 
-if read_the_docs_build:
+# sphinx comments
+# https://sphinx-comments.readthedocs.io/
+comments_config = {
+    "hypothesis": True,
+    "utterances": {
+        "repo": "UMEP-dev/SUEWS",
+        "issue-term": "title",
+        #   "optional": "config",
+    },
+}
 
-    subprocess.call("doxygen", shell=True)
-else:
-    # subprocess.call("doxygen", shell=True)
-    pass
 
-
-# exhale_args = {
-#     # These arguments are required
-#     "containmentFolder":     "./api",
-#     "rootFileName":          "library_root.rst",
-#     "rootFileTitle":         "API",
-#     "doxygenStripFromPath":  "..",
-#     # Suggested optional arguments
-#     "createTreeView":        True,
-#     # TIP: if using the sphinx-bootstrap-theme, you need
-#     # "treeViewIsBootstrap": True,
-#     "exhaleExecutesDoxygen": True,
-#     "exhaleUseDoxyfile" :    True,
-#     #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
-#     #                            GENERATE_HTML  = YES
-#     #                            '''
-# }
+exhale_args = {
+    # These arguments are required
+    "containmentFolder": "./api",
+    "rootFileName": "library_root.rst",
+    "rootFileTitle": "API",
+    "doxygenStripFromPath": "..",
+    # Suggested optional arguments
+    "createTreeView": True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": True,
+    "exhaleUseDoxyfile": True,
+    # "exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+    #                            GENERATE_HTML  = YES
+    #                            '''
+}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -249,6 +284,7 @@ rst_prolog = """
 .. |m^-1| replace:: m\ :sup:`-1`
 .. |m^-2| replace:: m\ :sup:`-2`
 .. |m^-3| replace:: m\ :sup:`-3`
+.. |m^2| replace:: m\ :sup:`2`
 .. |m^3| replace:: m\ :sup:`3`
 .. |s^-1| replace:: s\ :sup:`-1`
 .. |kg^-1| replace:: kg\ :sup:`-1`
@@ -262,26 +298,34 @@ rst_prolog = """
 .. |d^-2| replace:: d\ :sup:`-2`
 .. |)^-1| replace:: )\ :sup:`-1`
 .. |Recmd| replace:: **Recommended in this version.**
+.. |EXP| replace:: **Experimental in this version.**
 .. |NotRecmd| replace:: **Not recommended in this version.**
 .. |NotAvail| replace:: **Not available in this version.**
 .. |NotUsed| replace:: **Not used in this version.**
 
-.. _Zenodo page: https://doi.org/10.5281/zenodo.3267305
+.. _Zenodo page: https://doi.org/10.5281/zenodo.5723970
 
 .. only:: html
 
-    .. note::
+    .. tip::
 
-      1. Please report issues with the manual on the `GitHub page`_.
-      2. Please cite SUEWS with proper information from our `Zenodo page`_.
+      1. Need help? Please let us know in the `UMEP Community`_.
+      2. Please report issues with the manual on the `GitHub Issues`_.
+      3. Please cite SUEWS with proper information from our `Zenodo page`_.
+
+.. _UMEP Community : https://github.com/UMEP-dev/UMEP/discussions/
+.. _SUEWS download page: https://forms.office.com/r/4qGfYu8LaR
+
 """
 # -- Options for HTML output -------------------------------------------------
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+# html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
 # html_theme_path = ["_themes"]
 html_context = {
+    "repository_url": "https://github.com/{your-docs-url}",
     "display_github": True,  # Integrate GitHub
     "github_user": "UMEP-dev",  # Username
     "github_repo": "SUEWS",  # Repo name
@@ -289,12 +333,37 @@ html_context = {
     "conf_py_path": "/source/",  # Path in the checkout to the docs root
 }
 
+# check every link in this project is working
+nitpicky = True
+
+
+# There are two options for replacing |today|: either, you set today to some
+# non-false value, then it is used:
+# today = ''
+# Else, today_fmt is used as the format for a strftime call.
+today_fmt = "%Y-%m-%d"
+
+html_last_updated_fmt = today_fmt
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = dict(
+    # analytics_id=''  this is configured in rtfd.io
+    # canonical_url="",
+    repository_url="https://github.com/UMEP-dev/SUEWS",
+    repository_branch="master",
+    path_to_docs="docs/source",
+    use_edit_page_button=True,
+    use_repository_button=True,
+    use_issues_button=True,
+    home_page_in_toc=False,
+    extra_navbar="",
+    navbar_footer_text="",
+    logo_only=True,
+    # twitter_url="https://twitter.com/xarray_devs",
+)
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -319,7 +388,12 @@ html_static_path = ["_static", "doxygenoutput"]
 #
 # html_sidebars = {}
 numfig = True
-# html_logo = 'assets/img/SUEWS_LOGO.png'
+html_logo = "images/logo/SUEWS_LOGO-display.png"
+# html_theme_options = {
+# "logo_only": True,
+#     "display_version": True,
+# }
+
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -452,7 +526,7 @@ def source_read_handler(app, docname, source):
     str_query_body = urllib.parse.urlencode({"body": str_body})
     str_url = f"https://github.com/UMEP-dev/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&{str_query_body}&title=[Docs]{docname}"
     str_GHPage = f"""
-.. _GitHub page: {str_url}
+.. _GitHub Issues: {str_url}
 """
     rendered = "\n".join([str_GHPage, src])
     source[0] = rendered.rstrip("\n")
@@ -471,19 +545,183 @@ def setup(app):
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+    "xarray": ("http://xarray.pydata.org/en/stable/", None),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "supy": ("https://supy.readthedocs.io/en/latest/", None),
 }
 
 
 # -- sphinxcontrib.bibtex configuration -------------------------------------------------
-
 bibtex_bibfiles = [
     "assets/refs/refs-SUEWS.bib",
+    "assets/refs/refs-others.bib",
 ]
+bibtex_default_style = "refs"
+bibtex_reference_style = "author_year_round"
+
+
+# https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#custom-inline-citation-references
+import dataclasses
+
+import sphinxcontrib.bibtex.plugin
+from sphinxcontrib.bibtex.style.referencing import BracketStyle
+from sphinxcontrib.bibtex.style.referencing.author_year import AuthorYearReferenceStyle
+
+my_bracket_style = BracketStyle(
+    left="(",
+    right=")",
+)
+
+
+@dataclasses.dataclass
+class MyReferenceStyle(AuthorYearReferenceStyle):
+    bracket_parenthetical: BracketStyle = my_bracket_style
+    bracket_textual: BracketStyle = my_bracket_style
+    bracket_author: BracketStyle = my_bracket_style
+    bracket_label: BracketStyle = my_bracket_style
+    bracket_year: BracketStyle = my_bracket_style
+
+
+sphinxcontrib.bibtex.plugin.register_plugin(
+    "sphinxcontrib.bibtex.style.referencing", "author_year_round", MyReferenceStyle
+)
+
+import unicodedata
+
+###############################################################################################
+# ref: https://titanwolf.org/Network/Articles/Article?AID=1463c485-6603-4a3c-ac34-d68c95e67f0a
+from collections import Counter
+
+from pybtex.style.labels import BaseLabelStyle
+
+
+def is_japanese(string):
+    for c in string:
+        name = unicodedata.name(c)
+        if "CJK UNIFIED" in name or "HIRAGANA" in name or "KATAKANA" in name:
+            return True
+    return False
+
+
+class AuthorYearLabelStyle(BaseLabelStyle):
+    def format_labels(self, sorted_entries):
+        labels = [self.format_label(entry) for entry in sorted_entries]
+
+        # Key to the same entry to the Unique
+        counter = Counter(labels)
+        counted = Counter()
+
+        for label in labels:
+            if counter[label] == 1:
+                yield label
+            else:
+                yield label + chr(ord("a") + counted[label])
+                counted.update([label])
+
+    def format_label(self, entry):
+        # Author also no year entry
+        if not "author" in entry.persons and not "year" in entry.fields:
+            return entry.key
+
+        # Label is first author of Last Name Tasu year
+        if "author" in entry.persons:
+            num_author = len(entry.persons["author"])
+            author_first = entry.persons["author"][0]
+            if num_author > 2:
+                if is_japanese(
+                    "".join(author_first.first_names + author_first.last_names)
+                ):
+                    author = "".join(author_first.first_names)
+                else:
+                    author = "".join(author_first.last_names) + " et al."
+            elif num_author == 2:
+                author_second = entry.persons["author"][1]
+                # print(author_first.last_names)
+                if is_japanese(
+                    "".join(author_first.first_names + author_first.last_names)
+                ):
+                    author = " and ".join(
+                        [" ".join(author_first.first_names)] + author_second.first_names
+                    )
+                else:
+                    author = " and ".join(
+                        [" ".join(author_first.last_names)] + author_second.last_names
+                    )
+            else:
+                if is_japanese(
+                    "".join(author_first.first_names + author_first.last_names)
+                ):
+                    author = "".join(author_first.first_names)
+                else:
+                    author = "".join(author_first.last_names)
+
+        else:
+            author = ""
+
+        if "year" in entry.fields:
+            yeartail = entry.fields["year"][-2:]
+            year = entry.fields["year"]
+        else:
+            yeartail = ""
+            year = ""
+
+        # return "%s %s" % (author, yeartail)
+        return f"{author} {year}"
+
+
+class JsaiStyle(UnsrtStyle):
+
+    default_label_style = "author_year_label"
+
+
+register_plugin("pybtex.style.labels", "author_year_label", AuthorYearLabelStyle)
+register_plugin("pybtex.style.formatting", "jsai", JsaiStyle)
+###############################################################################################
+
+
+from pybtex.plugin import register_plugin
+
+# https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/develop/test/roots/test-bibliography_style_label_2/conf.py
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.labels.alpha import LabelStyle as AlphaLabelStyle
+
+
+class LabelStyle_APA(AlphaLabelStyle):
+    def format_label(self, entry):
+        return "APA"
+
+
+class ApaStyle(UnsrtStyle):
+    default_label_style = "apa"
+
+
+register_plugin("pybtex.style.labels", "apa", LabelStyle_APA)
+register_plugin("pybtex.style.formatting", "apastyle", ApaStyle)
+
+
+from pybtex.plugin import register_plugin
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.labels import BaseLabelStyle
+
+
+# a simple label style which uses the bibtex keys for labels
+class LabelStyle_key(BaseLabelStyle):
+    def format_labels(self, sorted_entries):
+        for entry in sorted_entries:
+            yield entry.key
+
+
+class LabelStyle_key(UnsrtStyle):
+
+    default_label_style = LabelStyle_key
+
+
+register_plugin("pybtex.style.formatting", "style_key", LabelStyle_key)
+register_plugin("pybtex.style.labels", "style_key", LabelStyle_key)
+
 
 # Custom bibliography stuff for sphinxcontrib.bibtex
-class MySort(Sorter):
+class MySort_year_author_title(Sorter):
     def sort(self, entries):
         entry_dict = dict((self.sorting_key(entry), entry) for entry in entries)
 
@@ -503,7 +741,11 @@ class MySort(Sorter):
         try:
             num_mon = strptime(name_mon, "%b").tm_mon
         except:
-            num_mon = strptime(name_mon, "%B").tm_mon
+            try:
+                num_mon = strptime(name_mon, "%B").tm_mon
+            except:
+                print(entry)
+                num_mon = 1
 
         return (
             entry.fields.get("year", ""),
@@ -514,8 +756,38 @@ class MySort(Sorter):
         )
 
 
-class MyStyle(UnsrtStyle):
-    # default_sorting_style = 'author_year_title'
+class MyStyle_author_year(UnsrtStyle):
+    default_sorting_style = "author_year_title"
+    # default_sorting_style = "year_author_title"
+    default_name_style = "lastfirst"
+    # default_label_style = "alpha"
+    # default_label_style = 'style_key'
+    default_label_style = "author_year_label"
+
+    def format_web_refs(self, e):
+        # based on urlbst output.web.refs
+        return sentence[
+            optional[self.format_doi(e)],
+        ]
+
+    def get_book_template(self, e):
+        template = toplevel[
+            self.format_author_or_editor(e),
+            self.format_btitle(e, "title"),
+            self.format_volume_and_series(e),
+            sentence[field("publisher"), self.format_edition(e), date],
+            optional[sentence[self.format_isbn(e)]],
+            self.format_web_refs(e),
+            # tag('strong')[optional_field('note')],
+        ]
+
+        return template
+
+
+register_plugin("pybtex.style.formatting", "refs", MyStyle_author_year)
+
+
+class MyStyle_year_author(UnsrtStyle):
     default_sorting_style = "year_author_title"
     default_name_style = "lastfirst"
     default_label_style = "alpha"
@@ -540,8 +812,10 @@ class MyStyle(UnsrtStyle):
         return template
 
 
+register_plugin("pybtex.style.formatting", "refs_recent", MyStyle_year_author)
+
 # reading list style
-class RLStyle(UnsrtStyle):
+class MyStyle_author_year_note(UnsrtStyle):
     default_sorting_style = "author_year_title"
     default_label_style = "number"
     default_name_style = "lastfirst"
@@ -569,6 +843,5 @@ class RLStyle(UnsrtStyle):
     # format_book = format_article
 
 
-register_plugin("pybtex.style.formatting", "refs", MyStyle)
-register_plugin("pybtex.style.formatting", "rl", RLStyle)
-register_plugin("pybtex.style.sorting", "year_author_title", MySort)
+register_plugin("pybtex.style.formatting", "rl", MyStyle_author_year_note)
+register_plugin("pybtex.style.sorting", "year_author_title", MySort_year_author_title)

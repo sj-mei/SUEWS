@@ -23,8 +23,8 @@ store.
      is currently no flow permitted from the water surface to other
      surfaces by the model.
   -  Currently water **CANNOT** go to both runoff and soil store (i.e. it
-     must go to one or the other – `runoff` for impervious surfaces;
-     `soilstore` for pervious surfaces).
+     must go to one or the other – `Runoff` for impervious surfaces;
+     `SoilStore` for pervious surfaces).
 
 In the table below, for example,
 
