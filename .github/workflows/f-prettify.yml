@@ -56,11 +56,11 @@ jobs:
 
     - name: install fprettify
       run: |
-        pip install fprettify
+        pip install fprettify -U
         make pip
 
     - name: format Fortran code
-      run: fprettify SUEWS-SourceCode/*f95 -i 3 --case 2 2 2 2
+      run: fprettify SUEWS-SourceCode/src/*f95 -c .fprettify.yml
 
     # - name: Commit changes
     #   uses: elstudio/actions-js-build/commit@v3

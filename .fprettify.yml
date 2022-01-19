@@ -1,0 +1,5 @@
+indent: 3
+case: [2, 2, 2, 2]
+enable-decl: true
+strict-indent: true
+c-relations: true
