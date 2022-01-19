@@ -42,29 +42,29 @@ MODULE NARP_MODULE
 CONTAINS
    !==============================================================================
    SUBROUTINE RadMethod( &
-      NetRadiationMethod, &!input
-      SnowUse, &!input
-      NetRadiationMethod_use, AlbedoChoice, ldown_option)!output
+      NetRadiationMethod, & !input
+      SnowUse, & !input
+      NetRadiationMethod_use, AlbedoChoice, ldown_option) !output
       IMPLICIT NONE
       INTEGER, INTENT(in) :: NetRadiationMethod ! the one from RunControl setting
-      INTEGER, INTENT(in) ::SnowUse
-      INTEGER, INTENT(out)::NetRadiationMethod_use ! processed NetRadiationMethod to be used for other radiation calculations
-      INTEGER, INTENT(out)::AlbedoChoice, ldown_option
+      INTEGER, INTENT(in) :: SnowUse
+      INTEGER, INTENT(out) :: NetRadiationMethod_use ! processed NetRadiationMethod to be used for other radiation calculations
+      INTEGER, INTENT(out) :: AlbedoChoice, ldown_option
       !Determine what should be done with respect to radiation
       AlbedoChoice = 0
       ldown_option = 0
-      IF (NetRadiationMethod == 0) THEN    !Observed Q* from the met input file will be used
+      IF (NetRadiationMethod == 0) THEN !Observed Q* from the met input file will be used
          NetRadiationMethod_use = 0
          !  ldown_option is not required if NetRadiationMethodX=0 as LDOWN calculations are skipped
 
-         IF (SnowUse == 1) THEN            !If snow is modelled, NARP is needed for surface temperature
+         IF (SnowUse == 1) THEN !If snow is modelled, NARP is needed for surface temperature
             ! NetRadiationMethod=3000
             NetRadiationMethod_use = 3000
-            ldown_option = 3              !LDOWN will be modelled
+            ldown_option = 3 !LDOWN will be modelled
             !NetRadiationMethod=NetRadiationMethod/1000
          END IF
 
-      ELSEIF (NetRadiationMethod > 0) THEN  !Modelled Q* is used (NARP)
+      ELSEIF (NetRadiationMethod > 0) THEN !Modelled Q* is used (NARP)
          AlbedoChoice = -9
          IF (NetRadiationMethod < 100) THEN
             AlbedoChoice = 0
@@ -89,7 +89,7 @@ CONTAINS
             IF (NetRadiationMethod == 300) ldown_option = 3
             NetRadiationMethod_use = NetRadiationMethod/100
 
-         !choose Ldown method for Spartacus
+            !choose Ldown method for Spartacus
          ELSEIF (NetRadiationMethod > 1000) THEN
             AlbedoChoice = 0
             NetRadiationMethod_use = MOD(NetRadiationMethod, 10)
@@ -119,14 +119,14 @@ CONTAINS
 
    !==============================================================================
    SUBROUTINE NARP( &
-      nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
+      nsurf, sfr, SnowFrac, alb, emis, IceFrac, & ! input:
       alb_spc, emis_spc, lw_emission_spc, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &
       AlbedoChoice, ldown_option, &
       NetRadiationMethod_use, DiagQN, &
-      QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, &! output:
+      QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, & ! output:
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
       albedo_snowfree, albedo_snow)
       !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
@@ -181,78 +181,78 @@ CONTAINS
       ! use data_in ! Included 20140701, FL
       ! use moist   ! Included 20140701, FL
       ! use time    ! Included 20140701, FL
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::sfr
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::SnowFrac
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::alb
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::emis
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::IceFrac
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: alb
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac
       ! REAL(KIND(1D0)),DIMENSION(365),INTENT(in) ::NARP_G
 
-      REAL(KIND(1D0)), INTENT(in) ::DTIME
-      REAL(KIND(1D0)), INTENT(in) ::ZENITH_deg
-      REAL(KIND(1D0)), INTENT(in) ::tsurf_0
-      REAL(KIND(1D0)), INTENT(in) ::kdown
-      REAL(KIND(1D0)), INTENT(in) ::Temp_C
-      REAL(KIND(1D0)), INTENT(in) ::RH
-      REAL(KIND(1D0)), INTENT(in) ::Press_hPa
-      REAL(KIND(1D0)), INTENT(in) ::qn1_obs
-      REAL(KIND(1D0)), INTENT(in) ::ldown_obs
-      REAL(KIND(1D0)), INTENT(in) ::SnowAlb
-      REAL(KIND(1D0)), INTENT(in) ::NARP_TRANS_SITE
-      REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
-      REAL(KIND(1D0)), INTENT(in) ::alb_spc, emis_spc, lw_emission_spc
+      REAL(KIND(1D0)), INTENT(in) :: DTIME
+      REAL(KIND(1D0)), INTENT(in) :: ZENITH_deg
+      REAL(KIND(1D0)), INTENT(in) :: tsurf_0
+      REAL(KIND(1D0)), INTENT(in) :: kdown
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      REAL(KIND(1D0)), INTENT(in) :: RH
+      REAL(KIND(1D0)), INTENT(in) :: Press_hPa
+      REAL(KIND(1D0)), INTENT(in) :: qn1_obs
+      REAL(KIND(1D0)), INTENT(in) :: ldown_obs
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlb
+      REAL(KIND(1D0)), INTENT(in) :: NARP_TRANS_SITE
+      REAL(KIND(1D0)), INTENT(in) :: NARP_EMIS_SNOW
+      REAL(KIND(1D0)), INTENT(in) :: alb_spc, emis_spc, lw_emission_spc
 
-      INTEGER, INTENT(in) ::nsurf
-      INTEGER, INTENT(in) ::NetRadiationMethod_use ! the one processed by RadMethod
-      INTEGER, INTENT(in) ::AlbedoChoice ! flag if correction to albedo of snow cover should be applied
-      INTEGER, INTENT(in) ::ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
-      INTEGER, INTENT(in) ::DiagQN
+      INTEGER, INTENT(in) :: nsurf
+      INTEGER, INTENT(in) :: NetRadiationMethod_use ! the one processed by RadMethod
+      INTEGER, INTENT(in) :: AlbedoChoice ! flag if correction to albedo of snow cover should be applied
+      INTEGER, INTENT(in) :: ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
+      INTEGER, INTENT(in) :: DiagQN
 
-      REAL(KIND(1D0)), INTENT(out) ::QSTARall
-      REAL(KIND(1D0)), INTENT(out) ::QSTAR_SF
-      REAL(KIND(1D0)), INTENT(out) ::QSTAR_S
-      REAL(KIND(1D0)), INTENT(out) ::kclear
-      REAL(KIND(1D0)), INTENT(out) ::KUPall
-      REAL(KIND(1D0)), INTENT(out) ::LDOWN
-      REAL(KIND(1D0)), INTENT(out) ::LUPall
-      REAL(KIND(1D0)), INTENT(out) ::fcld
-      REAL(KIND(1D0)), INTENT(out) ::TSURFall
+      REAL(KIND(1D0)), INTENT(out) :: QSTARall
+      REAL(KIND(1D0)), INTENT(out) :: QSTAR_SF
+      REAL(KIND(1D0)), INTENT(out) :: QSTAR_S
+      REAL(KIND(1D0)), INTENT(out) :: kclear
+      REAL(KIND(1D0)), INTENT(out) :: KUPall
+      REAL(KIND(1D0)), INTENT(out) :: LDOWN
+      REAL(KIND(1D0)), INTENT(out) :: LUPall
+      REAL(KIND(1D0)), INTENT(out) :: fcld
+      REAL(KIND(1D0)), INTENT(out) :: TSURFall
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::kup_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn1_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: kup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind
 
-      REAL(KIND(1D0)), INTENT(out) ::albedo_snowfree
-      REAL(KIND(1D0)), INTENT(out) ::albedo_snow
+      REAL(KIND(1D0)), INTENT(out) :: albedo_snowfree
+      REAL(KIND(1D0)), INTENT(out) :: albedo_snow
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::Tsurf_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind_snow
 
-      REAL(KIND(1D0)) ::tsurf_0_K
-      REAL(KIND(1D0)) ::Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
-      REAL(KIND(1D0)) ::EMIS0, EMIS_A, TRANS!,RH,DTIME,KDOWN
-      REAL(KIND(1D0)) ::LUPCORR, SIGMATK4, KDOWN_HR = 0.
-      INTEGER         ::DOY, is
+      REAL(KIND(1D0)) :: tsurf_0_K
+      REAL(KIND(1D0)) :: Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
+      REAL(KIND(1D0)) :: EMIS0, EMIS_A, TRANS !,RH,DTIME,KDOWN
+      REAL(KIND(1D0)) :: LUPCORR, SIGMATK4, KDOWN_HR = 0.
+      INTEGER :: DOY, is
 
-      REAL(KIND(1D0))::qn1_cum, kup_cum, lup_cum, tsurf_cum, &   !Cumulative radiation components
-                        qn1_is, kup_is, lup_is, tsurf_is, &       !Sub-surface radiation components
-                        SF_all
+      REAL(KIND(1D0)) :: qn1_cum, kup_cum, lup_cum, tsurf_cum, & !Cumulative radiation components
+                         qn1_is, kup_is, lup_is, tsurf_is, & !Sub-surface radiation components
+                         SF_all
 
-      REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
+      REAL(KIND(1D0)), PARAMETER :: DEG2RAD = 0.017453292
       ! REAL(KIND(1D0)),PARAMETER   ::RAD2DEG=57.29577951
-      REAL(KIND(1D0)), PARAMETER   :: SIGMA_SB = 5.67E-8
+      REAL(KIND(1D0)), PARAMETER :: SIGMA_SB = 5.67E-8
 
       ! NB: NARP_G is not assigned with a value in SUEWS_translate.
       ! 3.0 is used here as annual average for mid-latitude areas. TS 24 Oct 2017
-      REAL(KIND(1D0)), DIMENSION(365), PARAMETER ::  NARP_G = 3.0
+      REAL(KIND(1D0)), DIMENSION(365), PARAMETER :: NARP_G = 3.0
       !Initialize variables
       ! RH=avrh
       ! DTIME=dectime
@@ -284,7 +284,7 @@ CONTAINS
       KUPall = 0
       IF (ldown_option .NE. 1) THEN
          LDOWN = 0
-      ENDIF
+      END IF
       LUPall = 0
       fcld = 0
       TSURFall = 0
@@ -300,7 +300,7 @@ CONTAINS
       IF (ldown_option == 1) THEN !Observed ldown provided as forcing
          ldown = ldown_obs
       ELSE
-         ldown = 0             !to be filled in NARP
+         ldown = 0 !to be filled in NARP
       END IF
 
       !Total snowfree surface fraction
@@ -330,7 +330,7 @@ CONTAINS
                albedo_snowfree = ALB(is)
             END IF
             EMIS0 = EMIS(is)
-         ENDIF
+         END IF
 
          !Downward longwave radiation
          IF ((ldown_option == 4) .OR. (ldown_option == 5)) THEN !Estimate FCLD from Kdown (Offerle et al. 2003)
@@ -390,13 +390,13 @@ CONTAINS
             IF (NetRadiationMethod_use < 10) THEN
                ! NARP method
                TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
-               LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
+               LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN !Eq (16) in Offerle et al. (2002)
             ELSE
                ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
                TSURF = tsurf_0_K
                LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
             END IF
-         ENDIF
+         END IF
 
          !Upward shortwave radiation of the snowfree surface fractions
          KUP = albedo_snowfree*KDOWN
@@ -525,9 +525,9 @@ CONTAINS
       IMPLICIT NONE
 
       REAL(KIND(1D0)), INTENT(in) :: year, idectime, UTC, locationlatitude, locationlongitude, locationaltitude
-      REAL(KIND(1D0)), INTENT(out) ::sunazimuth, sunzenith
+      REAL(KIND(1D0)), INTENT(out) :: sunazimuth, sunzenith
 
-      REAL(KIND(1D0)):: sec
+      REAL(KIND(1D0)) :: sec
       INTEGER :: month, day, hour, min, seas, dayofyear, year_int
 
       REAL(KIND(1D0)) :: juliancentury, julianday, julianephemeris_century, julianephemeris_day, &
@@ -702,69 +702,69 @@ CONTAINS
         &, earth_heliocentric_positionlongitude, earth_heliocentric_positionradius)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)) :: julianephemeris_millenium      !>
+      REAL(KIND(1D0)) :: julianephemeris_millenium !>
 
-      REAL(KIND(1D0)), DIMENSION(64) :: A0      !>
-      REAL(KIND(1D0)), DIMENSION(34) :: A1      !>
-      REAL(KIND(1D0)), DIMENSION(20) :: A2      !>
-      REAL(KIND(1D0)), DIMENSION(7) :: A3      !>
-      REAL(KIND(1D0)), DIMENSION(3) :: A4      !>
-      REAL(KIND(1D0)) :: A5      !>
-      REAL(KIND(1D0)), DIMENSION(64) :: B0      !>
-      REAL(KIND(1D0)), DIMENSION(34) :: B1      !>
-      REAL(KIND(1D0)), DIMENSION(20) :: B2      !>
-      REAL(KIND(1D0)), DIMENSION(7) :: B3      !>
-      REAL(KIND(1D0)), DIMENSION(3) :: B4      !>
-      REAL(KIND(1D0)) :: B5      !>
-      REAL(KIND(1D0)), DIMENSION(64) :: C0      !>
-      REAL(KIND(1D0)), DIMENSION(34) :: C1      !>
-      REAL(KIND(1D0)), DIMENSION(20) :: C2      !>
-      REAL(KIND(1D0)), DIMENSION(7) :: C3      !>
-      REAL(KIND(1D0)), DIMENSION(3) :: C4      !>
+      REAL(KIND(1D0)), DIMENSION(64) :: A0 !>
+      REAL(KIND(1D0)), DIMENSION(34) :: A1 !>
+      REAL(KIND(1D0)), DIMENSION(20) :: A2 !>
+      REAL(KIND(1D0)), DIMENSION(7) :: A3 !>
+      REAL(KIND(1D0)), DIMENSION(3) :: A4 !>
+      REAL(KIND(1D0)) :: A5 !>
+      REAL(KIND(1D0)), DIMENSION(64) :: B0 !>
+      REAL(KIND(1D0)), DIMENSION(34) :: B1 !>
+      REAL(KIND(1D0)), DIMENSION(20) :: B2 !>
+      REAL(KIND(1D0)), DIMENSION(7) :: B3 !>
+      REAL(KIND(1D0)), DIMENSION(3) :: B4 !>
+      REAL(KIND(1D0)) :: B5 !>
+      REAL(KIND(1D0)), DIMENSION(64) :: C0 !>
+      REAL(KIND(1D0)), DIMENSION(34) :: C1 !>
+      REAL(KIND(1D0)), DIMENSION(20) :: C2 !>
+      REAL(KIND(1D0)), DIMENSION(7) :: C3 !>
+      REAL(KIND(1D0)), DIMENSION(3) :: C4 !>
       REAL(KIND(1D0)) :: C5
-      REAL(KIND(1D0)), DIMENSION(40) :: A0j      !>
-      REAL(KIND(1D0)), DIMENSION(10) :: A1j     !>
-      REAL(KIND(1D0)), DIMENSION(6) :: A2j      !>
-      REAL(KIND(1D0)), DIMENSION(2) :: A3j      !>
-      REAL(KIND(1D0)) :: A4j      !>
-      REAL(KIND(1D0)), DIMENSION(40) :: B0j      !>
-      REAL(KIND(1D0)), DIMENSION(10) :: B1j      !>
-      REAL(KIND(1D0)), DIMENSION(6) :: B2j      !>
-      REAL(KIND(1D0)), DIMENSION(2) :: B3j      !>
-      REAL(KIND(1D0)) :: B4j      !>
-      REAL(KIND(1D0)), DIMENSION(40) :: C0j      !>
-      REAL(KIND(1D0)), DIMENSION(10) :: C1j      !>
-      REAL(KIND(1D0)), DIMENSION(6) :: C2j      !>
-      REAL(KIND(1D0)), DIMENSION(2) :: C3j      !>
-      REAL(KIND(1D0)) :: C4j      !>
-      REAL(KIND(1D0)), DIMENSION(5) ::  A0i
-      REAL(KIND(1D0)), DIMENSION(5) ::  B0i
-      REAL(KIND(1D0)), DIMENSION(5) ::  C0i
-      REAL(KIND(1D0)), DIMENSION(2) ::  A1i
-      REAL(KIND(1D0)), DIMENSION(2) ::  B1i
-      REAL(KIND(1D0)), DIMENSION(2) ::   C1i
-      REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude      !>
-      REAL(KIND(1D0)) :: earth_heliocentric_positionlongitude      !>
-      REAL(KIND(1D0)) :: earth_heliocentric_positionradius      !>
-      REAL(KIND(1D0)) :: JME      !>
-      REAL(KIND(1D0)) :: L0      !>
+      REAL(KIND(1D0)), DIMENSION(40) :: A0j !>
+      REAL(KIND(1D0)), DIMENSION(10) :: A1j !>
+      REAL(KIND(1D0)), DIMENSION(6) :: A2j !>
+      REAL(KIND(1D0)), DIMENSION(2) :: A3j !>
+      REAL(KIND(1D0)) :: A4j !>
+      REAL(KIND(1D0)), DIMENSION(40) :: B0j !>
+      REAL(KIND(1D0)), DIMENSION(10) :: B1j !>
+      REAL(KIND(1D0)), DIMENSION(6) :: B2j !>
+      REAL(KIND(1D0)), DIMENSION(2) :: B3j !>
+      REAL(KIND(1D0)) :: B4j !>
+      REAL(KIND(1D0)), DIMENSION(40) :: C0j !>
+      REAL(KIND(1D0)), DIMENSION(10) :: C1j !>
+      REAL(KIND(1D0)), DIMENSION(6) :: C2j !>
+      REAL(KIND(1D0)), DIMENSION(2) :: C3j !>
+      REAL(KIND(1D0)) :: C4j !>
+      REAL(KIND(1D0)), DIMENSION(5) :: A0i
+      REAL(KIND(1D0)), DIMENSION(5) :: B0i
+      REAL(KIND(1D0)), DIMENSION(5) :: C0i
+      REAL(KIND(1D0)), DIMENSION(2) :: A1i
+      REAL(KIND(1D0)), DIMENSION(2) :: B1i
+      REAL(KIND(1D0)), DIMENSION(2) :: C1i
+      REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude !>
+      REAL(KIND(1D0)) :: earth_heliocentric_positionlongitude !>
+      REAL(KIND(1D0)) :: earth_heliocentric_positionradius !>
+      REAL(KIND(1D0)) :: JME !>
+      REAL(KIND(1D0)) :: L0 !>
       !REAL(KIND(1D0)) :: L0_terms      !>
-      REAL(KIND(1D0)) :: L1      !>
+      REAL(KIND(1D0)) :: L1 !>
       !REAL(KIND(1D0)) :: L1_terms      !>
-      REAL(KIND(1D0)) :: L2      !>
+      REAL(KIND(1D0)) :: L2 !>
       !REAL(KIND(1D0)) :: L2_terms      !>
-      REAL(KIND(1D0)) :: L3      !>
+      REAL(KIND(1D0)) :: L3 !>
       !REAL(KIND(1D0)) :: L3_terms      !>
-      REAL(KIND(1D0)) :: L4      !>
+      REAL(KIND(1D0)) :: L4 !>
       !REAL(KIND(1D0)) :: L4_terms      !>
-      REAL(KIND(1D0)) :: L5      !>
+      REAL(KIND(1D0)) :: L5 !>
       !REAL(KIND(1D0)), dimension(3) :: L5_terms      !>
       !REAL(KIND(1D0)) :: R0_terms      !>
       !REAL(KIND(1D0)) :: R1_terms      !>
       !REAL(KIND(1D0)) :: R2_terms      !>
       !REAL(KIND(1D0)) :: R3_terms      !>
       !REAL(KIND(1D0)), dimension(3) :: R4_terms      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
+      REAL(KIND(1D0)), PARAMETER :: pi = 3.141592653589793D+0
 
       ! This function compute the earth position relative to the sun, using
       ! tabulated values.
@@ -885,10 +885,10 @@ CONTAINS
         &sun_geocentric_positionlongitude)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: earth_heliocentric_positionlongitude      !>
-      REAL(KIND(1D0)), INTENT(in) :: earth_heliocentric_positionlatitude      !>
-      REAL(KIND(1D0)) :: sun_geocentric_positionlatitude      !>
-      REAL(KIND(1D0)) :: sun_geocentric_positionlongitude      !>
+      REAL(KIND(1D0)), INTENT(in) :: earth_heliocentric_positionlongitude !>
+      REAL(KIND(1D0)), INTENT(in) :: earth_heliocentric_positionlatitude !>
+      REAL(KIND(1D0)) :: sun_geocentric_positionlatitude !>
+      REAL(KIND(1D0)) :: sun_geocentric_positionlongitude !>
 
       ! This function compute the sun position relative to the earth.
 
@@ -904,26 +904,26 @@ CONTAINS
    SUBROUTINE nutation_calculation(julianephemeris_century, nutationlongitude, nutationobliquity)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: julianephemeris_century      !>
-      REAL(KIND(1D0)), DIMENSION(63) :: delta_longitude      !>
-      REAL(KIND(1D0)), DIMENSION(63) :: delta_obliquity      !>
-      REAL(KIND(1D0)) :: JCE      !>
-      REAL(KIND(1D0)) :: nutationlongitude      !>
-      REAL(KIND(1D0)) :: nutationobliquity      !>
+      REAL(KIND(1D0)), INTENT(in) :: julianephemeris_century !>
+      REAL(KIND(1D0)), DIMENSION(63) :: delta_longitude !>
+      REAL(KIND(1D0)), DIMENSION(63) :: delta_obliquity !>
+      REAL(KIND(1D0)) :: JCE !>
+      REAL(KIND(1D0)) :: nutationlongitude !>
+      REAL(KIND(1D0)) :: nutationobliquity !>
       REAL(KIND(1D0)), DIMENSION(4) :: p0, p1, p2, p3, p4
-      REAL(KIND(1D0)), DIMENSION(63) ::tabulated_argument      !>
-      REAL(KIND(1D0)) :: X0      !>
-      REAL(KIND(1D0)) :: X1      !>
-      REAL(KIND(1D0)) :: X2      !>
-      REAL(KIND(1D0)) :: X3      !>
-      REAL(KIND(1D0)) :: X4      !>
-      REAL(KIND(1D0)), DIMENSION(5) :: Xi      !>
-      INTEGER, DIMENSION(315) :: Y_terms1     !>
-      INTEGER, DIMENSION(5, 63) ::Y_terms
-      REAL(KIND(1D0)), DIMENSION(252) :: nutation_terms1     !>
-      REAL(KIND(1D0)), DIMENSION(4, 63) ::nutation_terms
+      REAL(KIND(1D0)), DIMENSION(63) :: tabulated_argument !>
+      REAL(KIND(1D0)) :: X0 !>
+      REAL(KIND(1D0)) :: X1 !>
+      REAL(KIND(1D0)) :: X2 !>
+      REAL(KIND(1D0)) :: X3 !>
+      REAL(KIND(1D0)) :: X4 !>
+      REAL(KIND(1D0)), DIMENSION(5) :: Xi !>
+      INTEGER, DIMENSION(315) :: Y_terms1 !>
+      INTEGER, DIMENSION(5, 63) :: Y_terms
+      REAL(KIND(1D0)), DIMENSION(252) :: nutation_terms1 !>
+      REAL(KIND(1D0)), DIMENSION(4, 63) :: nutation_terms
       INTEGER :: i
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
+      REAL(KIND(1D0)), PARAMETER :: pi = 3.141592653589793D+0
 
       ! This function compute the nutation in longtitude and in obliquity, in
       ! degrees.
@@ -1025,12 +1025,12 @@ CONTAINS
    SUBROUTINE corr_obliquity_calculation(julianephemeris_millenium, nutationobliquity, corr_obliquity)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(out) :: corr_obliquity      !>
-      REAL(KIND(1D0)), INTENT(in) :: julianephemeris_millenium     !>
-      REAL(KIND(1D0)), INTENT(in) :: nutationobliquity     !>
-      REAL(KIND(1D0)) :: mean_obliquity      !>
-      REAL(KIND(1D0)), DIMENSION(11) :: p      !>
-      REAL(KIND(1D0)) :: U      !>
+      REAL(KIND(1D0)), INTENT(out) :: corr_obliquity !>
+      REAL(KIND(1D0)), INTENT(in) :: julianephemeris_millenium !>
+      REAL(KIND(1D0)), INTENT(in) :: nutationobliquity !>
+      REAL(KIND(1D0)) :: mean_obliquity !>
+      REAL(KIND(1D0)), DIMENSION(11) :: p !>
+      REAL(KIND(1D0)) :: U !>
 
       ! This function compute the true obliquity of the ecliptic.
 
@@ -1048,8 +1048,8 @@ CONTAINS
    SUBROUTINE abberation_correction_calculation(earth_heliocentric_positionradius, aberration_correction)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(out) :: aberration_correction      !>
-      REAL(KIND(1D0)), INTENT(in) :: earth_heliocentric_positionradius     !>
+      REAL(KIND(1D0)), INTENT(out) :: aberration_correction !>
+      REAL(KIND(1D0)), INTENT(in) :: earth_heliocentric_positionradius !>
 
       ! This function compute the aberration_correction, as a function of the
       ! earth-sun distance.
@@ -1062,10 +1062,10 @@ CONTAINS
         & aberration_correction, apparent_sun_longitude)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: aberration_correction      !>
-      REAL(KIND(1D0)), INTENT(out) :: apparent_sun_longitude      !>
-      REAL(KIND(1D0)), INTENT(in) :: nutationlongitude      !>
-      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_positionlongitude      !>
+      REAL(KIND(1D0)), INTENT(in) :: aberration_correction !>
+      REAL(KIND(1D0)), INTENT(out) :: apparent_sun_longitude !>
+      REAL(KIND(1D0)), INTENT(in) :: nutationlongitude !>
+      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_positionlongitude !>
 
       ! This function compute the sun apparent longitude
 
@@ -1077,15 +1077,15 @@ CONTAINS
         & corr_obliquity, apparent_stime_at_greenwich)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(out) :: apparent_stime_at_greenwich      !>
-      REAL(KIND(1D0)), INTENT(in) :: corr_obliquity      !>
-      REAL(KIND(1D0)), INTENT(in) :: julianday     !>
-      REAL(KIND(1D0)), INTENT(in) :: juliancentury     !>
-      REAL(KIND(1D0)), INTENT(in) :: nutationlongitude      !>
-      REAL(KIND(1D0)) :: JC      !>
-      REAL(KIND(1D0)) :: JD      !>
-      REAL(KIND(1D0)) :: mean_stime      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.14159265358979D+0
+      REAL(KIND(1D0)), INTENT(out) :: apparent_stime_at_greenwich !>
+      REAL(KIND(1D0)), INTENT(in) :: corr_obliquity !>
+      REAL(KIND(1D0)), INTENT(in) :: julianday !>
+      REAL(KIND(1D0)), INTENT(in) :: juliancentury !>
+      REAL(KIND(1D0)), INTENT(in) :: nutationlongitude !>
+      REAL(KIND(1D0)) :: JC !>
+      REAL(KIND(1D0)) :: JD !>
+      REAL(KIND(1D0)) :: mean_stime !>
+      REAL(KIND(1D0)), PARAMETER :: pi = 3.14159265358979D+0
 
       ! This function compute the apparent sideral time at Greenwich.
 
@@ -1105,13 +1105,13 @@ CONTAINS
         &sun_geocentric_positionlatitude, sun_rigth_ascension)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: apparent_sun_longitude      !>
-      REAL(KIND(1D0)), INTENT(in) :: corr_obliquity      !>
-      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_positionlatitude      !>
-      REAL(KIND(1D0)), INTENT(out) :: sun_rigth_ascension      !>
-      REAL(KIND(1D0)) :: argument_denominator      !>
-      REAL(KIND(1D0)) :: argument_numerator      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
+      REAL(KIND(1D0)), INTENT(in) :: apparent_sun_longitude !>
+      REAL(KIND(1D0)), INTENT(in) :: corr_obliquity !>
+      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_positionlatitude !>
+      REAL(KIND(1D0)), INTENT(out) :: sun_rigth_ascension !>
+      REAL(KIND(1D0)) :: argument_denominator !>
+      REAL(KIND(1D0)) :: argument_numerator !>
+      REAL(KIND(1D0)), PARAMETER :: pi = 3.141592653589793D+0
 
       ! This function compute the sun rigth ascension.
 
@@ -1128,12 +1128,12 @@ CONTAINS
         &sun_geocentric_positionlatitude, sun_geocentric_declination)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: apparent_sun_longitude      !>
-      REAL(KIND(1D0)), INTENT(in) :: corr_obliquity      !>
-      REAL(KIND(1D0)), INTENT(out) :: sun_geocentric_declination      !>
-      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_positionlatitude     !>
-      REAL(KIND(1D0)) :: argument      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
+      REAL(KIND(1D0)), INTENT(in) :: apparent_sun_longitude !>
+      REAL(KIND(1D0)), INTENT(in) :: corr_obliquity !>
+      REAL(KIND(1D0)), INTENT(out) :: sun_geocentric_declination !>
+      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_positionlatitude !>
+      REAL(KIND(1D0)) :: argument !>
+      REAL(KIND(1D0)), PARAMETER :: pi = 3.141592653589793D+0
 
       argument = (SIN(sun_geocentric_positionlatitude*pi/180.0)*COS(corr_obliquity*pi/180.0)) + &
                  (COS(sun_geocentric_positionlatitude*pi/180.0)*SIN(corr_obliquity*pi/180)*SIN(apparent_sun_longitude*pi/180.0))
@@ -1145,10 +1145,10 @@ CONTAINS
         &sun_rigth_ascension, observer_local_hour)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: apparent_stime_at_greenwich      !>
-      REAL(KIND(1D0)), INTENT(in) :: locationlongitude     !>
-      REAL(KIND(1D0)), INTENT(out) :: observer_local_hour      !>
-      REAL(KIND(1D0)), INTENT(in) :: sun_rigth_ascension      !>
+      REAL(KIND(1D0)), INTENT(in) :: apparent_stime_at_greenwich !>
+      REAL(KIND(1D0)), INTENT(in) :: locationlongitude !>
+      REAL(KIND(1D0)), INTENT(out) :: observer_local_hour !>
+      REAL(KIND(1D0)), INTENT(in) :: sun_rigth_ascension !>
 
       observer_local_hour = apparent_stime_at_greenwich + locationlongitude - sun_rigth_ascension
       ! Set the range to [0-360]
@@ -1162,22 +1162,22 @@ CONTAINS
       IMPLICIT NONE
 
       REAL(KIND(1D0)), INTENT(in) :: earth_heliocentric_positionradius
-      REAL(KIND(1D0)), INTENT(in) :: locationlatitude      !>
+      REAL(KIND(1D0)), INTENT(in) :: locationlatitude !>
       REAL(KIND(1D0)), INTENT(in) :: locationaltitude
-      REAL(KIND(1D0)), INTENT(in) :: observer_local_hour      !>
-      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_declination      !>
-      REAL(KIND(1D0)), INTENT(in) :: sun_rigth_ascension      !>
-      REAL(KIND(1D0)) :: denominator      !>
-      REAL(KIND(1D0)) :: eq_horizontal_parallax      !>
-      REAL(KIND(1D0)) :: nominator      !>
-      REAL(KIND(1D0)) :: sun_rigth_ascension_parallax      !>
-      REAL(KIND(1D0)) :: topocentric_sun_positiondeclination      !>
-      REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension      !>
-      REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension_parallax      !>
-      REAL(KIND(1D0)) :: u      !>
-      REAL(KIND(1D0)) :: x      !>
-      REAL(KIND(1D0)) :: y      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
+      REAL(KIND(1D0)), INTENT(in) :: observer_local_hour !>
+      REAL(KIND(1D0)), INTENT(in) :: sun_geocentric_declination !>
+      REAL(KIND(1D0)), INTENT(in) :: sun_rigth_ascension !>
+      REAL(KIND(1D0)) :: denominator !>
+      REAL(KIND(1D0)) :: eq_horizontal_parallax !>
+      REAL(KIND(1D0)) :: nominator !>
+      REAL(KIND(1D0)) :: sun_rigth_ascension_parallax !>
+      REAL(KIND(1D0)) :: topocentric_sun_positiondeclination !>
+      REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension !>
+      REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension_parallax !>
+      REAL(KIND(1D0)) :: u !>
+      REAL(KIND(1D0)) :: x !>
+      REAL(KIND(1D0)) :: y !>
+      REAL(KIND(1D0)), PARAMETER :: pi = 3.141592653589793D+0
 
       ! topocentric_sun_positionrigth_ascension_parallax
       ! This function compute the sun position (rigth ascension and declination)
@@ -1218,9 +1218,9 @@ CONTAINS
         & topocentric_local_hour)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: observer_local_hour      !>
-      REAL(KIND(1D0)), INTENT(out) :: topocentric_local_hour      !>
-      REAL(KIND(1D0)), INTENT(in) :: topocentric_sun_positionrigth_ascension_parallax     !>
+      REAL(KIND(1D0)), INTENT(in) :: observer_local_hour !>
+      REAL(KIND(1D0)), INTENT(out) :: topocentric_local_hour !>
+      REAL(KIND(1D0)), INTENT(in) :: topocentric_sun_positionrigth_ascension_parallax !>
 
       ! This function compute the topocentric local jour angle in degrees
 
@@ -1231,18 +1231,18 @@ CONTAINS
         &topocentric_local_hour, sunazimuth, sunzenith)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: locationlatitude     !>
-      REAL(KIND(1D0)), INTENT(in) :: topocentric_local_hour      !>
+      REAL(KIND(1D0)), INTENT(in) :: locationlatitude !>
+      REAL(KIND(1D0)), INTENT(in) :: topocentric_local_hour !>
       REAL(KIND(1D0)), INTENT(in) :: topocentric_sun_positiondeclination
-      REAL(KIND(1D0)) :: corr_elevation      !>
-      REAL(KIND(1D0)) :: apparent_elevation      !>
-      REAL(KIND(1D0)) :: argument      !>
-      REAL(KIND(1D0)) :: denominator      !>
-      REAL(KIND(1D0)) :: nominator      !>
-      REAL(KIND(1D0)) :: refraction_corr      !>
-      REAL(KIND(1D0)) :: sunazimuth      !>
-      REAL(KIND(1D0)) :: sunzenith      !>
-      REAL(KIND(1D0)), PARAMETER       :: pi = 3.141592653589793D+0
+      REAL(KIND(1D0)) :: corr_elevation !>
+      REAL(KIND(1D0)) :: apparent_elevation !>
+      REAL(KIND(1D0)) :: argument !>
+      REAL(KIND(1D0)) :: denominator !>
+      REAL(KIND(1D0)) :: nominator !>
+      REAL(KIND(1D0)) :: refraction_corr !>
+      REAL(KIND(1D0)) :: sunazimuth !>
+      REAL(KIND(1D0)) :: sunzenith !>
+      REAL(KIND(1D0)), PARAMETER :: pi = 3.141592653589793D+0
       ! This function compute the sun zenith angle, taking into account the
       ! atmospheric refraction. A default temperature of 283K and a
       ! default pressure of 1010 mbar are used.
@@ -1281,8 +1281,8 @@ CONTAINS
    FUNCTION set_to_range(var) RESULT(vari)
       ! This function make sure the variable is in the specified range.
 
-      REAL(KIND(1D0)) :: max_interval      !>
-      REAL(KIND(1D0)) :: min_interval      !>
+      REAL(KIND(1D0)) :: max_interval !>
+      REAL(KIND(1D0)) :: min_interval !>
       REAL(KIND(1D0)) :: var
       REAL(KIND(1D0)) :: vari
       !
@@ -1305,7 +1305,7 @@ CONTAINS
       ! http://www.atd.ucar.edu/weather_fl/dewpoint.html
       ! dewpoint = (237.3 * ln(e_vp/6.1078)) / (17.27 - (ln(e_vp/6.1078)))
 
-      REAL(KIND(1D0))::rh, td, Temp_C, g
+      REAL(KIND(1D0)) :: rh, td, Temp_C, g
       !http://en.wikipedia.org/wiki/Dew_point
       g = ((17.27*Temp_C)/(237.7 + Temp_C)) + LOG(rh/100)
       Td = (237.7*g)/(17.27 - g)
@@ -1314,8 +1314,8 @@ CONTAINS
    !===============================================================================
    FUNCTION PRATA_EMIS(Temp_K, EA_hPa) RESULT(EMIS_A)
       ! clear sky emissivity function Prata 1996
-      REAL(KIND(1D0))::Temp_K, ea_hPa, EMIS_A
-      REAL(KIND(1D0))::W
+      REAL(KIND(1D0)) :: Temp_K, ea_hPa, EMIS_A
+      REAL(KIND(1D0)) :: W
 
       W = 46.5*(ea_hPa/Temp_K)
       EMIS_A = 1.-(1.+W)*EXP(-SQRT(1.2 + 3.*W))
@@ -1323,7 +1323,7 @@ CONTAINS
    !===============================================================================
    FUNCTION EMIS_CLOUD(EMIS_A, FCLD) RESULT(em_adj)
       !calculates adjusted emissivity due to clouds
-      REAL(KIND(1D0))::EMIS_A, FCLD, em_adj
+      REAL(KIND(1D0)) :: EMIS_A, FCLD, em_adj
       !T. Loridan, removing the square for FCLD in the emissivity correction
       !em_adj=EMIS_A+(1.-EMIS_A)*FCLD*FCLD
       em_adj = EMIS_A + (1.-EMIS_A)*FCLD
@@ -1331,12 +1331,12 @@ CONTAINS
    !===============================================================================
    FUNCTION EMIS_CLOUD_SQ(EMIS_A, FCLD) RESULT(em_adj)
       !calculates adjusted emissivity due to clouds
-      REAL(KIND(1D0))::EMIS_A, FCLD, em_adj
+      REAL(KIND(1D0)) :: EMIS_A, FCLD, em_adj
       em_adj = EMIS_A + (1.-EMIS_A)*FCLD*FCLD
    END FUNCTION EMIS_CLOUD_SQ
    !===============================================================================
    FUNCTION cloud_fraction(KDOWN, KCLEAR) RESULT(FCLD)
-      REAL(KIND(1D0))::KDOWN, KCLEAR, FCLD
+      REAL(KIND(1D0)) :: KDOWN, KCLEAR, FCLD
 
       FCLD = 1.-KDOWN/KCLEAR
       IF (FCLD > 1.) FCLD = 1.
@@ -1346,11 +1346,11 @@ CONTAINS
    FUNCTION WC_fraction(RH, Temp) RESULT(FWC)
       ! Thomas Loridan, King's College London: June 2009
       ! Parameterisation of fraction water content using the relative humidity
-      REAL(KIND(1D0)), INTENT(in)   :: RH      !Relative Humidity in %
-      REAL(KIND(1D0)), INTENT(in)   :: Temp    !Temperature in degre C
+      REAL(KIND(1D0)), INTENT(in) :: RH !Relative Humidity in %
+      REAL(KIND(1D0)), INTENT(in) :: Temp !Temperature in degre C
 
-      REAL(KIND(1D0))              :: FWC     !Fraction water content between 0 and 1
-      REAL(KIND(1D0))              :: A, B    !Parameters in the expo
+      REAL(KIND(1D0)) :: FWC !Fraction water content between 0 and 1
+      REAL(KIND(1D0)) :: A, B !Parameters in the expo
 
       !Parameters
       !A=0.078
@@ -1390,17 +1390,17 @@ CONTAINS
       ! Calculates ground level solar irradiance clear sky
       ! assuming transmissivity = 1
       ! let it report zero if zenith >= 90
-      REAL(KIND(1D0))::zenith, Isurf
-      INTEGER::doy
-      REAL(KIND(1D0))::Rmean, Rse, cosZ, Itoa
-      REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
+      REAL(KIND(1D0)) :: zenith, Isurf
+      INTEGER :: doy
+      REAL(KIND(1D0)) :: Rmean, Rse, cosZ, Itoa
+      REAL(KIND(1D0)), PARAMETER :: DEG2RAD = 0.017453292
 
-      Rmean = 149.6                 !Stull 1998
+      Rmean = 149.6 !Stull 1998
       Rse = solar_ESdist(doy)
       IF (zenith < 90.*DEG2RAD) THEN
          cosZ = COS(zenith)
-         Itoa = 1370.*(Rmean/Rse)**2  !top of the atmosphere
-         Isurf = Itoa*cosZ            !ground level solar irradiance in W/m2
+         Itoa = 1370.*(Rmean/Rse)**2 !top of the atmosphere
+         Isurf = Itoa*cosZ !ground level solar irradiance in W/m2
       ELSE
          Isurf = 0.
       END IF
@@ -1410,9 +1410,9 @@ CONTAINS
    !===============================================================================
    FUNCTION solar_ESdist(doy) RESULT(Rse)
       !from Stull, 1998   Keep! called from SOLWEIG_clearnessindex_2013b
-      INTEGER          ::doy
-      REAL(KIND(1D0))             ::Rse
-      REAL(KIND(1D0)) ::MA, nu, e, a
+      INTEGER :: doy
+      REAL(KIND(1D0)) :: Rse
+      REAL(KIND(1D0)) :: MA, nu, e, a
 
       e = 0.0167
       a = 146.457
@@ -1432,7 +1432,7 @@ CONTAINS
       ! "Note on the relationship between total precipitable water and surface dew point."
       ! Journal of Applied Meteorology 5.5 (1966): 726-727.
       INTEGER :: lat, ios, ilat
-      REAL(KIND(1D0)), DIMENSION(365):: G
+      REAL(KIND(1D0)), DIMENSION(365) :: G
 
       !open(99,file="Smith1966.grd",access="direct",action="read",recl=365*4,iostat=ios)
       !read(99,rec=lat+1,iostat=ios) G
@@ -1456,10 +1456,10 @@ CONTAINS
       ! zenith in radians
       ! if zenith > 80 use the value for 80.
 
-      REAL(KIND(1D0)) ::Press_hPa, TemP_C_dew, zenith, G, trans
-      REAL(KIND(1D0))::m, TrTpg, u, Tw, Ta, cosZ
-      REAL(KIND(1D0))::Tdf
-      REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
+      REAL(KIND(1D0)) :: Press_hPa, TemP_C_dew, zenith, G, trans
+      REAL(KIND(1D0)) :: m, TrTpg, u, Tw, Ta, cosZ
+      REAL(KIND(1D0)) :: Tdf
+      REAL(KIND(1D0)), PARAMETER :: DEG2RAD = 0.017453292
 
       IF (zenith > 80.*DEG2RAD) THEN
          cosZ = COS(80.*DEG2RAD)
@@ -1469,13 +1469,13 @@ CONTAINS
 
       Tdf = TemP_C_dew*1.8 + 32. !celsius to fahrenheit
       !        Transmission coefficients
-      m = 35*cosZ/SQRT(1224.*cosZ*cosZ + 1)            !optical air mass at p=1013 mb
+      m = 35*cosZ/SQRT(1224.*cosZ*cosZ + 1) !optical air mass at p=1013 mb
       !Rayleigh & permanent gases
       TrTpg = 1.021 - 0.084*SQRT(m*(0.000949*Press_hPa + 0.051)) !first two trans coeff
-      u = EXP(0.113 - LOG(G + 1) + 0.0393*Tdf)             !precipitable water
-      Tw = 1 - 0.077*(u*m)**0.3             !vapor transmission coe3ff.
-      Ta = 0.935**m                       !4th trans coeff
-      trans = TrTpg*Tw*Ta                 !bulk atmospheric transmissivity
+      u = EXP(0.113 - LOG(G + 1) + 0.0393*Tdf) !precipitable water
+      Tw = 1 - 0.077*(u*m)**0.3 !vapor transmission coe3ff.
+      Ta = 0.935**m !4th trans coeff
+      trans = TrTpg*Tw*Ta !bulk atmospheric transmissivity
    END FUNCTION transmissivity
    !===============================================================================
 END MODULE NARP_MODULE

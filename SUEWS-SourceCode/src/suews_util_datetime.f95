@@ -32,14 +32,14 @@ MODULE mod_strftime
       !! Allows for calling strftime and strptime procedures through the
       !! iso_c_binding.
 
-      INTEGER(kind=C_INT) :: tm_sec   !! Seconds      [0-60] (1 leap second)
-      INTEGER(kind=C_INT) :: tm_min   !! Minutes      [0-59]
-      INTEGER(kind=C_INT) :: tm_hour  !! Hours        [0-23]
-      INTEGER(kind=C_INT) :: tm_mday  !! Day          [1-31]
-      INTEGER(kind=C_INT) :: tm_mon   !! Month        [0-11]
-      INTEGER(kind=C_INT) :: tm_year  !! Year - 1900
-      INTEGER(kind=C_INT) :: tm_wday  !! Day of week  [0-6]
-      INTEGER(kind=C_INT) :: tm_yday  !! Days in year [0-365]
+      INTEGER(kind=C_INT) :: tm_sec !! Seconds      [0-60] (1 leap second)
+      INTEGER(kind=C_INT) :: tm_min !! Minutes      [0-59]
+      INTEGER(kind=C_INT) :: tm_hour !! Hours        [0-23]
+      INTEGER(kind=C_INT) :: tm_mday !! Day          [1-31]
+      INTEGER(kind=C_INT) :: tm_mon !! Month        [0-11]
+      INTEGER(kind=C_INT) :: tm_year !! Year - 1900
+      INTEGER(kind=C_INT) :: tm_wday !! Day of week  [0-6]
+      INTEGER(kind=C_INT) :: tm_yday !! Days in year [0-365]
       INTEGER(kind=C_INT) :: tm_isdst !! DST          [-1/0/1]
 
    END TYPE tm_struct
@@ -63,11 +63,11 @@ MODULE mod_strftime
          IMPLICIT NONE
 
          ! Arguments
-         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(out) :: str    !! result string
-         INTEGER(kind=C_INT), VALUE, INTENT(in)  :: slen   !! string length
-         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(in)  :: FORMAT !! time format
-         TYPE(tm_struct), INTENT(in)  :: tm     !! tm_struct instance
-         INTEGER(kind=C_INT)                             :: rc     !! return code
+         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(out) :: str !! result string
+         INTEGER(kind=C_INT), VALUE, INTENT(in) :: slen !! string length
+         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(in) :: FORMAT !! time format
+         TYPE(tm_struct), INTENT(in) :: tm !! tm_struct instance
+         INTEGER(kind=C_INT) :: rc !! return code
 
       END FUNCTION c_strftime
 
@@ -83,10 +83,10 @@ MODULE mod_strftime
          IMPLICIT NONE
 
          ! Arguments
-         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(in)  :: str    !! input string
-         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(in)  :: FORMAT !! time format
-         TYPE(tm_struct), INTENT(out) :: tm     !! result tm_struct
-         INTEGER(kind=C_INT)                             :: rc     !! return code
+         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(in) :: str !! input string
+         CHARACTER(kind=C_CHAR), DIMENSION(*), INTENT(in) :: FORMAT !! time format
+         TYPE(tm_struct), INTENT(out) :: tm !! result tm_struct
+         INTEGER(kind=C_INT) :: rc !! return code
 
       END FUNCTION c_strptime
 
@@ -121,17 +121,17 @@ MODULE mod_constants
 
 ! Constant multipliers that transform a number
 ! of some time unit to another:
-   REAL(kind=REAL64), PARAMETER :: d2h = 24_REAL64     !! day    -> hour
-   REAL(kind=REAL64), PARAMETER :: h2d = one/d2h       !! hour   -> day
+   REAL(kind=REAL64), PARAMETER :: d2h = 24_REAL64 !! day    -> hour
+   REAL(kind=REAL64), PARAMETER :: h2d = one/d2h !! hour   -> day
    REAL(kind=REAL64), PARAMETER :: d2m = d2h*60_REAL64 !! day    -> minute
-   REAL(kind=REAL64), PARAMETER :: m2d = one/d2m       !! minute -> day
+   REAL(kind=REAL64), PARAMETER :: m2d = one/d2m !! minute -> day
    REAL(kind=REAL64), PARAMETER :: m2h = one/60_REAL64 !! minute -> hour
    REAL(kind=REAL64), PARAMETER :: s2d = m2d/60_REAL64 !! second -> day
-   REAL(kind=REAL64), PARAMETER :: d2s = 86400_REAL64  !! day    -> second
-   REAL(kind=REAL64), PARAMETER :: h2s = 3600_REAL64   !! hour   -> second
-   REAL(kind=REAL64), PARAMETER :: s2h = one/h2s       !! second -> hour
-   REAL(kind=REAL64), PARAMETER :: m2s = 60_REAL64     !! minute -> second
-   REAL(kind=REAL64), PARAMETER :: s2m = one/m2s       !! second -> minute
+   REAL(kind=REAL64), PARAMETER :: d2s = 86400_REAL64 !! day    -> second
+   REAL(kind=REAL64), PARAMETER :: h2s = 3600_REAL64 !! hour   -> second
+   REAL(kind=REAL64), PARAMETER :: s2h = one/h2s !! second -> hour
+   REAL(kind=REAL64), PARAMETER :: m2s = 60_REAL64 !! minute -> second
+   REAL(kind=REAL64), PARAMETER :: s2m = one/m2s !! second -> minute
 
 ! Maximum string length for strftime.
 ! Constant for now; may become a preprocessor macro later.
@@ -223,10 +223,10 @@ CONTAINS
 
       !! Constructor function for the `timedelta` class.
 
-      INTEGER, INTENT(in), OPTIONAL :: days         !! number of days
-      INTEGER, INTENT(in), OPTIONAL :: hours        !! number of hours
-      INTEGER, INTENT(in), OPTIONAL :: minutes      !! number of minutes
-      INTEGER, INTENT(in), OPTIONAL :: seconds      !! number of seconds
+      INTEGER, INTENT(in), OPTIONAL :: days !! number of days
+      INTEGER, INTENT(in), OPTIONAL :: hours !! number of hours
+      INTEGER, INTENT(in), OPTIONAL :: minutes !! number of minutes
+      INTEGER, INTENT(in), OPTIONAL :: seconds !! number of seconds
       INTEGER, INTENT(in), OPTIONAL :: milliseconds !! number of milliseconds
 
       IF (PRESENT(days)) THEN
@@ -316,7 +316,7 @@ CONTAINS
 
       CLASS(timedelta), INTENT(in) :: t0 !! lhs `timedelta` instance
       TYPE(timedelta), INTENT(in) :: t1 !! rhs `timedelta` instance
-      TYPE(timedelta)             :: t  !! result
+      TYPE(timedelta) :: t !! result
 
       t = timedelta(days=t0%days + t1%days, &
                     hours=t0%hours + t1%hours, &
@@ -333,7 +333,7 @@ CONTAINS
 
       CLASS(timedelta), INTENT(in) :: t0 !! lhs `timedelta` instance
       TYPE(timedelta), INTENT(in) :: t1 !! lhs `timedelta` instance
-      TYPE(timedelta)             :: t  !! result
+      TYPE(timedelta) :: t !! result
 
       t = t0 + (-t1)
 
@@ -345,7 +345,7 @@ CONTAINS
       !! `-`.
 
       CLASS(timedelta), INTENT(in) :: t0 !! `timedelta` instance
-      TYPE(timedelta)             :: t  !! result
+      TYPE(timedelta) :: t !! result
 
       t%days = -t0%days
       t%hours = -t0%hours
@@ -562,14 +562,14 @@ CONTAINS
 
       !! Constructor function for the `datetime` class.
 
-      INTEGER, INTENT(in), OPTIONAL :: year        !! year
-      INTEGER, INTENT(in), OPTIONAL :: month       !! month
-      INTEGER, INTENT(in), OPTIONAL :: day         !! day
-      INTEGER, INTENT(in), OPTIONAL :: hour        !! hour
-      INTEGER, INTENT(in), OPTIONAL :: minute      !! minute
-      INTEGER, INTENT(in), OPTIONAL :: second      !! second
+      INTEGER, INTENT(in), OPTIONAL :: year !! year
+      INTEGER, INTENT(in), OPTIONAL :: month !! month
+      INTEGER, INTENT(in), OPTIONAL :: day !! day
+      INTEGER, INTENT(in), OPTIONAL :: hour !! hour
+      INTEGER, INTENT(in), OPTIONAL :: minute !! minute
+      INTEGER, INTENT(in), OPTIONAL :: second !! second
       INTEGER, INTENT(in), OPTIONAL :: millisecond !! millisecond
-      REAL(kind=REAL64), INTENT(in), OPTIONAL :: tz          !! timezone offset in hours
+      REAL(kind=REAL64), INTENT(in), OPTIONAL :: tz !! timezone offset in hours
 
       IF (PRESENT(year)) THEN
          datetime_constructor%year = year
@@ -678,7 +678,7 @@ CONTAINS
       !! addition (`+`) and subtraction (`-`) operators.
 
       CLASS(datetime), INTENT(inout) :: self !! `datetime` instance
-      INTEGER, INTENT(in)    :: ms   !! number of milliseconds to add
+      INTEGER, INTENT(in) :: ms !! number of milliseconds to add
 
       self%millisecond = self%millisecond + ms
 
@@ -705,7 +705,7 @@ CONTAINS
       !! addition (`+`) and subtraction (`-`) operators.
 
       CLASS(datetime), INTENT(inout) :: self !! `datetime` instance
-      INTEGER, INTENT(in)    :: s    !! number of seconds to add
+      INTEGER, INTENT(in) :: s !! number of seconds to add
 
       self%second = self%second + s
 
@@ -729,7 +729,7 @@ CONTAINS
       !! addition (`+`) and subtraction (`-`) operators.
 
       CLASS(datetime), INTENT(inout) :: self !! `datetime` instance
-      INTEGER, INTENT(in)    :: m    !! number of minutes to add
+      INTEGER, INTENT(in) :: m !! number of minutes to add
 
       self%minute = self%minute + m
 
@@ -753,7 +753,7 @@ CONTAINS
       !! addition (`+`) and subtraction (`-`) operators.
 
       CLASS(datetime), INTENT(inout) :: self !! `datetime` instance
-      INTEGER, INTENT(in)    :: h    !! number of hours to add
+      INTEGER, INTENT(in) :: h !! number of hours to add
 
       self%hour = self%hour + h
 
@@ -777,7 +777,7 @@ CONTAINS
       !! addition (`+`) and subtraction (`-`) operators.
 
       CLASS(datetime), INTENT(inout) :: self !! `datetime` instance
-      INTEGER, INTENT(in)    :: d    !! number of days to add
+      INTEGER, INTENT(in) :: d !! number of days to add
 
       INTEGER :: daysInCurrentMonth
 
@@ -809,7 +809,7 @@ CONTAINS
 
       !! Returns character string with time in ISO 8601 format.
 
-      CLASS(datetime), INTENT(in)          :: self !! `datetime instance`
+      CLASS(datetime), INTENT(in) :: self !! `datetime instance`
       CHARACTER(len=1), INTENT(in), OPTIONAL :: sep
       !! separator character, 'T' is default
 
@@ -891,7 +891,7 @@ CONTAINS
       !! Returns a `datetime` instance with current time.
       !! No input arguments.
 
-      CHARACTER(len=5)     :: zone
+      CHARACTER(len=5) :: zone
       INTEGER, DIMENSION(8) :: values
 
       INTEGER :: hour, minute
@@ -1037,9 +1037,9 @@ CONTAINS
       CLASS(datetime), INTENT(in) :: self !! `datetime` instance
 
       INTEGER, DIMENSION(3) :: isocalendar
-      INTEGER              :: year, week, wday
-      INTEGER              :: rc
-      CHARACTER(len=20)    :: string
+      INTEGER :: year, week, wday
+      INTEGER :: rc
+      CHARACTER(len=20) :: string
 
       rc = c_strftime(string, LEN(string), '%G %V %u'//C_NULL_CHAR, &
                       self%tm())
@@ -1072,12 +1072,12 @@ CONTAINS
 
       !! Wrapper around C/C++ `strftime` function.
 
-      CLASS(datetime), INTENT(in)  :: self   !! `datetime` instance
-      CHARACTER(len=*), INTENT(in)  :: FORMAT !! format string
+      CLASS(datetime), INTENT(in) :: self !! `datetime` instance
+      CHARACTER(len=*), INTENT(in) :: FORMAT !! format string
 
       CHARACTER(len=:), ALLOCATABLE :: strftime
 
-      INTEGER                  :: n, rc
+      INTEGER :: n, rc
       CHARACTER(len=MAXSTRLEN) :: resultString
 
       resultString = ""
@@ -1176,8 +1176,8 @@ CONTAINS
       !! new `datetime` instance. Overloads the operator `+`.
 
       CLASS(datetime), INTENT(in) :: d0 !! `datetime` instance
-      CLASS(timedelta), INTENT(in) :: t  !! `timedelta` instance
-      TYPE(datetime)              :: d
+      CLASS(timedelta), INTENT(in) :: t !! `timedelta` instance
+      TYPE(datetime) :: d
 
       INTEGER :: milliseconds, seconds, minutes, hours, days
 
@@ -1209,9 +1209,9 @@ CONTAINS
       !! Adds a `timedelta` instance to a `datetime` instance, and returns a
       !! new `datetime` instance. Overloads the operator `+`.
 
-      CLASS(timedelta), INTENT(in) :: t  !! `timedelta` instance
+      CLASS(timedelta), INTENT(in) :: t !! `timedelta` instance
       CLASS(datetime), INTENT(in) :: d0 !! `datetime` instance
-      TYPE(datetime)              :: d
+      TYPE(datetime) :: d
 
       d = d0 + t
 
@@ -1223,8 +1223,8 @@ CONTAINS
       !! returns a new `datetime` instance. Overloads the operator `-`.
 
       CLASS(datetime), INTENT(in) :: d0 !! `datetime` instance
-      CLASS(timedelta), INTENT(in) :: t  !! `timedelta` instance
-      TYPE(datetime)              :: d
+      CLASS(timedelta), INTENT(in) :: t !! `timedelta` instance
+      TYPE(datetime) :: d
 
       d = d0 + (-t)
 
@@ -1237,7 +1237,7 @@ CONTAINS
 
       CLASS(datetime), INTENT(in) :: d0 !! lhs `datetime` instance
       CLASS(datetime), INTENT(in) :: d1 !! rhs `datetime` instance
-      TYPE(timedelta)            :: t
+      TYPE(timedelta) :: t
 
       REAL(kind=REAL64) :: daysDiff
       INTEGER :: days, hours, minutes, seconds, milliseconds
@@ -1434,7 +1434,7 @@ CONTAINS
 
       TYPE(datetime), INTENT(in) :: d0 !! start time
       TYPE(datetime), INTENT(in) :: d1 !! end time
-      TYPE(timedelta), INTENT(in) :: t  !! time increment
+      TYPE(timedelta), INTENT(in) :: t !! time increment
 
       REAL(kind=REAL64) :: datenum0, datenum1, increment
       REAL(kind=REAL64) :: eps
@@ -1466,7 +1466,7 @@ CONTAINS
       !! of days in that particular month.
 
       INTEGER, INTENT(in) :: month !! month
-      INTEGER, INTENT(in) :: year  !! year
+      INTEGER, INTENT(in) :: year !! year
 
       INTEGER, PARAMETER, DIMENSION(12) :: &
          days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -1601,10 +1601,10 @@ CONTAINS
       !! A wrapper function around C/C++ strptime function.
       !! Returns a `datetime` instance.
 
-      CHARACTER(len=*), INTENT(in) :: str    !! time string
+      CHARACTER(len=*), INTENT(in) :: str !! time string
       CHARACTER(len=*), INTENT(in) :: FORMAT !! time format
 
-      INTEGER         :: rc
+      INTEGER :: rc
       TYPE(tm_struct) :: tm
 
       rc = c_strptime(TRIM(str)//C_NULL_CHAR, TRIM(FORMAT)//C_NULL_CHAR, tm)
@@ -1638,11 +1638,11 @@ CONTAINS
       !! Converts an integer `i` into a character string of requested length,
       !! pre-pending zeros if necessary.
 
-      INTEGER, INTENT(in) :: i      !! integer to convert to string
+      INTEGER, INTENT(in) :: i !! integer to convert to string
       INTEGER, INTENT(in) :: length !! desired length of string
 
       CHARACTER(len=length) :: int2str
-      CHARACTER(len=2)      :: string
+      CHARACTER(len=2) :: string
 
       WRITE (unit=string, fmt='(I2)') length
       WRITE (unit=int2str, fmt='(I'//string//'.'//string//')') i
