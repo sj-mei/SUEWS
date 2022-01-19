@@ -172,42 +172,42 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
-      dataOutLineBEERS, &!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
+      dataOutLineBEERS, & !output
       dataOutLineDebug, dataOutLineSPARTACUS, &
-      DailyStateLine)!output
+      DailyStateLine) !output
 
    !============ update and write out SUEWS_cal_DailyState ===============
    ! only works at the last timestep of a day
    CALL SUEWS_update_DailyState( &
-      id, datetimeLine, &!input
+      id, datetimeLine, & !input
       Gridiv, NumberOfGrids, &
       DailyStateLine, &
-      dataOutDailyState)!inout
+      dataOutDailyState) !inout
 
    !============ write out results ===============
    ! works at each timestep
    CALL SUEWS_update_output( &
-      SnowUse, storageheatmethod, &!input
+      SnowUse, storageheatmethod, & !input
       ReadLinesMetdata, NumberOfGrids, &
-      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &!input
+      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, & !input
       dataOutLineDebug, dataOutLineSPARTACUS, &
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, &!inout
-      dataOutDebug, dataOutSPARTACUS)!inout
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, & !inout
+      dataOutDebug, dataOutSPARTACUS) !inout
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
 
-   IF (Qh_choice == 1) THEN   !use QH and QE from SUEWS
+   IF (Qh_choice == 1) THEN !use QH and QE from SUEWS
       qhforCBL(Gridiv) = dataOutLineSUEWS(9)
       qeforCBL(Gridiv) = dataOutLineSUEWS(10)
-   ELSEIF (Qh_choice == 2) THEN   !use QH and QE from LUMPS
+   ELSEIF (Qh_choice == 2) THEN !use QH and QE from LUMPS
       qhforCBL(Gridiv) = dataOutLineSUEWS(11)
       qeforCBL(Gridiv) = dataOutLineSUEWS(12)
-   ELSEIF (qh_choice == 3) THEN  !use QH and QE from OBS
+   ELSEIF (qh_choice == 3) THEN !use QH and QE from OBS
       qhforCBL(Gridiv) = qh_obs
       qeforCBL(Gridiv) = qe_obs
-      IF (qh_obs < -900 .OR. qe_obs < -900) THEN  ! observed data has a problem
+      IF (qh_obs < -900 .OR. qe_obs < -900) THEN ! observed data has a problem
 
          CALL ErrorHint(22, 'Unrealistic observed qh or qe_value for CBL.', qh_obs, qe_obs, qh_choice)
 

@@ -20,13 +20,13 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
 
    IMPLICIT NONE
 
-   REAL(KIND(1D0)):: VALUE, value2
+   REAL(KIND(1D0)) :: VALUE, value2
 
-   CHARACTER(len=*)::ProblemFile                 ! Name of the problem file
-   CHARACTER(len=150)::text1                      ! Initialization of text
+   CHARACTER(len=*) :: ProblemFile ! Name of the problem file
+   CHARACTER(len=150) :: text1 ! Initialization of text
    ! CHARACTER(len=20)::filename                  !file name for writting out error info
-   INTEGER:: errh, ValueI, ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
-   INTEGER, DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
+   INTEGER :: errh, ValueI, ValueI2 ! v7,v8 initialised as false, HCW 28/10/2014
+   INTEGER, DIMENSION(80) :: ErrhCount = 0 ! Counts each time a error hint is called. Initialise to zero
    ! INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
 #ifdef wrf
    CHARACTER(len=1024) :: message ! Used to pass through function wrf_debug() by Zhenkun Li, 10/08/2018
@@ -37,8 +37,8 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ! TS 16 Jul 2018:
    ! these LOGICAL values should NOT be initialised as  is implied
    ! which will cause cross-assignment in parallel mode and thus subsequent unintentional STOP
-   LOGICAL:: v1, v2, v3, v4, v5, v6, v7, v8
-   LOGICAL:: returnTrue
+   LOGICAL :: v1, v2, v3, v4, v5, v6, v7, v8
+   LOGICAL :: returnTrue
 
    text1 = 'unknown problem' ! Initialization of text
    ! WhichFile = 0 ! Initialization of file code
@@ -143,50 +143,50 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v8 = .TRUE.
    ELSEIF (errh == 27) THEN
       text1 = 'Problems with Met data -forcing data: variable value, dectime'
-      v2 = .TRUE.  ! 2 real
+      v2 = .TRUE. ! 2 real
    ELSEIF (errh == 28) THEN
       text1 = 'Processing in subroutine indicated has a problem, variables'
       returntrue = .TRUE.
-      v3 = .TRUE.  ! 1 integer
+      v3 = .TRUE. ! 1 integer
    ELSEIF (errh == 29) THEN
       text1 = 'Processing in subroutine indicated has a problem, time, variables'
       returntrue = .TRUE.
-      v7 = .TRUE.  ! 1 real, 2 integers
+      v7 = .TRUE. ! 1 real, 2 integers
    ELSEIF (errh == 30) THEN
       text1 = 'Processing in subroutine indicated has a problem, time, variables'
       ! returntrue=.TRUE.
-      v2 = .TRUE.  ! 2 real
+      v2 = .TRUE. ! 2 real
    ELSEIF (errh == 31) THEN
       text1 = 'Processing in subroutine indicated has a problem, time, variables'
       returntrue = .TRUE.
-      v1 = .TRUE.  ! 1 real
+      v1 = .TRUE. ! 1 real
    ELSEIF (errh == 32) THEN
       text1 = 'Model applicable to local scale, z<z0d'
-      v2 = .TRUE.  ! 2 real
+      v2 = .TRUE. ! 2 real
    ELSEIF (errh == 33) THEN
       text1 = 'Number of snow layers too large.'
-      v1 = .TRUE.  ! 1 real
+      v1 = .TRUE. ! 1 real
    ELSEIF (errh == 34) THEN
       text1 = 'Air temperature > 55 C -- will keep running'
-      v1 = .TRUE.  ! 1 real
+      v1 = .TRUE. ! 1 real
       returntrue = .TRUE.
    ELSEIF (errh == 35) THEN
       text1 = 'Problems with Met data -forcing data: doy, dectime'
-      v2 = .TRUE.  ! 2 real
+      v2 = .TRUE. ! 2 real
    ELSEIF (errh == 36) THEN
       text1 = 'Problem found in InitialConditions file!'
       v8 = .TRUE.
    ELSEIF (errh == 37) THEN
       text1 = 'Check inputs in InitialConditions file!'
       returntrue = .TRUE.
-      v2 = .TRUE.  !2 real
+      v2 = .TRUE. !2 real
    ELSEIF (errh == 38) THEN
       text1 = 'H=(qn*0.2)/(avdens*avcp)'
       returntrue = .TRUE.
-      v1 = .TRUE.  !2 real
+      v1 = .TRUE. !2 real
    ELSEIF (errh == 39) THEN
       text1 = 'Different value of TSTEP needed (300 s recommended). Resolution of forcing data must match TSTEP set in RunControl.'
-      v4 = .TRUE.  !2 real, 1 int
+      v4 = .TRUE. !2 real, 1 int
    ELSEIF (errh == 40) THEN
       text1 = 'SOLWEIG file problem - opening'
       v8 = .TRUE.
@@ -272,7 +272,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 65) THEN
       text1 = 'Negative gs calculated! Check suitability of parameters in SUEWS_Conductance.txt.'
       returntrue = .TRUE.
-      v7 = .TRUE.  ! 1 real, 2 integers
+      v7 = .TRUE. ! 1 real, 2 integers
    ELSEIF (errh == 66) THEN
       text1 = 'Different number of lines in ESTM forcing and Met forcing files.'
       v6 = .TRUE.
@@ -315,7 +315,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v4 = .TRUE.
    END IF
 
-   ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
+   ErrhCount(errh) = ErrhCount(errh) + 1 ! Increase error count by 1
    ! PRINT*, 'returnTrue',returnTrue
 
    !---------------------------------------------------------------------
@@ -405,8 +405,8 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       ! write error codes
       WRITE (500, *) TRIM(Errmessage)
 
-      WRITE (500, '(i3)') errh  !Add error code to problems.txt
-      WRITE (*, *) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
+      WRITE (500, '(i3)') errh !Add error code to problems.txt
+      WRITE (*, *) 'ERROR! SUEWS run stopped.' !Print message to screen if program stopped
       CLOSE (500)
 
       WRITE (*, *) 'problem: ', TRIM(ProblemFile)

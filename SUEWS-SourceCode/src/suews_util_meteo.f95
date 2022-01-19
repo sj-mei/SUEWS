@@ -5,20 +5,20 @@ MODULE METEO
    IMPLICIT NONE
 
    ! REAL (KIND(1d0)),PARAMETER ::  PI=3.141592654
-   REAL(KIND(1D0)), PARAMETER ::  RAD2DEG = 57.29577951
-   REAL(KIND(1D0)), PARAMETER ::  DEG2RAD = 0.017453292
+   REAL(KIND(1D0)), PARAMETER :: RAD2DEG = 57.29577951
+   REAL(KIND(1D0)), PARAMETER :: DEG2RAD = 0.017453292
 
-   REAL(KIND(1D0)), PARAMETER ::  MOLMASS_AIR = 0.028965             ! kg for 1 mol dry air
-   REAL(KIND(1D0)), PARAMETER ::  MOLMASS_CO2 = 0.04401              ! kg for 1 mol CO2
-   REAL(KIND(1D0)), PARAMETER ::  MOLMASS_H2O = 0.0180153            ! kg for 1 mol water vapor
-   REAL(KIND(1D0)), PARAMETER ::  MU_H2O = MOLMASS_AIR/MOLMASS_H2O   ! mol air/mol H2O
-   REAL(KIND(1D0)), PARAMETER ::  MU_CO2 = MOLMASS_AIR/MOLMASS_CO2   ! mol air/mol CO2
-   REAL(KIND(1D0)), PARAMETER ::  R_DRY_MOL = 8.31451                ! J/K/mol gas constant
-   REAL(KIND(1D0)), PARAMETER ::  R_DRY_MASS = R_DRY_MOL/MOLMASS_AIR ! J/K/kg GAS CONSTANT
+   REAL(KIND(1D0)), PARAMETER :: MOLMASS_AIR = 0.028965 ! kg for 1 mol dry air
+   REAL(KIND(1D0)), PARAMETER :: MOLMASS_CO2 = 0.04401 ! kg for 1 mol CO2
+   REAL(KIND(1D0)), PARAMETER :: MOLMASS_H2O = 0.0180153 ! kg for 1 mol water vapor
+   REAL(KIND(1D0)), PARAMETER :: MU_H2O = MOLMASS_AIR/MOLMASS_H2O ! mol air/mol H2O
+   REAL(KIND(1D0)), PARAMETER :: MU_CO2 = MOLMASS_AIR/MOLMASS_CO2 ! mol air/mol CO2
+   REAL(KIND(1D0)), PARAMETER :: R_DRY_MOL = 8.31451 ! J/K/mol gas constant
+   REAL(KIND(1D0)), PARAMETER :: R_DRY_MASS = R_DRY_MOL/MOLMASS_AIR ! J/K/kg GAS CONSTANT
    !REAL (KIND(1d0)),PARAMETER ::  SIGMA_SB=5.67051e-8              ! Stefan-Boltzmann constant
-   REAL(KIND(1D0)), PARAMETER ::  EPSIL = 0.62197
-   REAL(KIND(1D0)), PARAMETER ::  KB = 1.3807E-25                    ! BOLTZMANN'S CONSTANT (m^3 MB K^-1)=R/A
-   REAL(KIND(1D0)), PARAMETER ::  AVOGADRO = 6.02252E23              ! AVOGADRO'S NUMBER (molecules/mol)
+   REAL(KIND(1D0)), PARAMETER :: EPSIL = 0.62197
+   REAL(KIND(1D0)), PARAMETER :: KB = 1.3807E-25 ! BOLTZMANN'S CONSTANT (m^3 MB K^-1)=R/A
+   REAL(KIND(1D0)), PARAMETER :: AVOGADRO = 6.02252E23 ! AVOGADRO'S NUMBER (molecules/mol)
 
 CONTAINS
 
@@ -28,7 +28,7 @@ CONTAINS
       !c     This uses eqns from Buck (1981) JAM 20, 1527-1532
       !c     units T (K) e (mb) P (mb)
       !c     f corrects for the fact that we are not dealing with pure water
-      REAL(KIND(1D0))    :: TK, P, TC, es, e, f
+      REAL(KIND(1D0)) :: TK, P, TC, es, e, f
       TC = TK - 273.15
       IF (TC == 0) THEN
          TC = 0.001
@@ -41,50 +41,50 @@ CONTAINS
 
    REAL(KIND(1D0)) FUNCTION SOS_DRYAIR(TK)
       !SPEED OF SOUND IN DRY AIR, BEER (1991)
-      REAL(KIND(1D0)) ::TK
+      REAL(KIND(1D0)) :: TK
       SOS_DRYAIR = SQRT(1.4*R_DRY_MOL*TK/(MOLMASS_AIR*1000.))
    END FUNCTION SOS_DRYAIR
    !============================================================================
    REAL(KIND(1D0)) FUNCTION POTENTIAL_TEMP(TK, P)
       !TK = ABSOLUTE TEMPERATURE
       !P  = PRESS (hPa)
-      REAL(KIND(1D0))    ::TK, P
+      REAL(KIND(1D0)) :: TK, P
       POTENTIAL_TEMP = TK*(1000./P)**0.286
    END FUNCTION POTENTIAL_TEMP
 
    REAL(KIND(1D0)) FUNCTION LATENTHEAT_V(TK)
       !LATENT HEAT OF VAPORIZATION (J/kg) BOLTON(1980)
       !TK = ABSOLUTE TEMPERATURE
-      REAL(KIND(1D0)) ::TK
+      REAL(KIND(1D0)) :: TK
       LATENTHEAT_V = 2.501E6 - 2370.*(TK - 273.15)
    END FUNCTION LATENTHEAT_V
 
    REAL(KIND(1D0)) FUNCTION LATENTHEAT_M(TK)
       !LATENT HEAT OF MELTING (J/kg) VALID BELOW 0C BOLTON(1980)
       !TK = ABSOLUTE TEMPERATURE
-      REAL(KIND(1D0)) ::TK, TC
+      REAL(KIND(1D0)) :: TK, TC
       TC = TK - 273.15
       LATENTHEAT_M = 3.3358E5 + TC*(2030.-10.46*TC)
    END FUNCTION LATENTHEAT_M
 
    REAL(KIND(1D0)) FUNCTION SPEC_HEAT_DRYAIR(TK)
       ! BEER (1991) APPLIED ENVIRONMETRICS METEOROLOGICAL TABLES
-      REAL(KIND(1D0)) ::TK, TC
+      REAL(KIND(1D0)) :: TK, TC
       TC = TK - 273.15
       SPEC_HEAT_DRYAIR = 1005.+((TC + 23.15)**2)/3364.
    END FUNCTION SPEC_HEAT_DRYAIR
 
    REAL(KIND(1D0)) FUNCTION SPEC_HEAT_VAPOR(TK, RH)
       ! BEER (1991) APPLIED ENVIRONMETRICS METEOROLOGICAL TABLES
-      REAL(KIND(1D0)) ::TK, TC_100, RH
+      REAL(KIND(1D0)) :: TK, TC_100, RH
       TC_100 = (TK - 273.15)/100.
       SPEC_HEAT_VAPOR = 1859.+0.13*RH + (19.3 + 0.569*RH)*TC_100 + (10.+0.5*RH)*TC_100**2
    END FUNCTION SPEC_HEAT_VAPOR
 
    REAL(KIND(1D0)) FUNCTION HEATCAPACITY_AIR(TK, RH, P)
-      REAL(KIND(1D0)) ::TK, RH, P
-      REAL(KIND(1D0)) ::RHO_D, RHO_V
-      REAL(KIND(1D0)) ::CPD, CPV
+      REAL(KIND(1D0)) :: TK, RH, P
+      REAL(KIND(1D0)) :: RHO_D, RHO_V
+      REAL(KIND(1D0)) :: CPD, CPV
       RHO_D = DENSITY_DRYAIR(TK, P)
       RHO_V = DENSITY_VAPOR(TK, RH, P)
       CPD = SPEC_HEAT_DRYAIR(TK)
@@ -96,43 +96,43 @@ CONTAINS
       ! density of moist air FROM VIRTUAL TEMPERATURE
       !TVK = VIRTUAL TEMPERATURE (K)
       != = PRESSURE (hPa)
-      REAL(KIND(1D0)) ::TVK, P
+      REAL(KIND(1D0)) :: TVK, P
       DENSITY_MOIST = P*100./(R_DRY_MASS*TVK)
    END FUNCTION DENSITY_MOIST
 
    REAL(KIND(1D0)) FUNCTION DENSITY_VAPOR(TK, RH, P)
       !WATER VAPOR DENSITY
-      REAL(KIND(1D0))    ::TK, P, RH, EA
+      REAL(KIND(1D0)) :: TK, P, RH, EA
       EA = SAT_VAP_PRESS(TK, P)*RH/100.
       DENSITY_VAPOR = (EA*100.*EPSIL)/(R_DRY_MASS*TK)
    END FUNCTION DENSITY_VAPOR
 
    REAL(KIND(1D0)) FUNCTION DENSITY_DRYAIR(TK, P)
-      REAL(KIND(1D0)) ::TK, P
+      REAL(KIND(1D0)) :: TK, P
       DENSITY_DRYAIR = P*100./(R_DRY_MASS*TK)
    END FUNCTION DENSITY_DRYAIR
 
    REAL(KIND(1D0)) FUNCTION DENSITY_GAS(TK, PP, MOLMASS)
       !DENSITY FOR IDEAL GAS SPECIES GIVEN ITS PARTIAL PRESSURE (hPa) AND MOLAR MASS (kg)
-      REAL(KIND(1D0)) ::TK, PP, MOLMASS
+      REAL(KIND(1D0)) :: TK, PP, MOLMASS
       DENSITY_GAS = PP*MOLMASS/(R_DRY_MOL*TK)
    END FUNCTION DENSITY_GAS
 
    REAL(KIND(1D0)) FUNCTION PARTIAL_PRESSURE(TK, N)
       !PARTIAL PRESSURE OF IDEAL GAS (hPa)
-      REAL(KIND(1D0)) ::TK, N !N IS THE NUMBER DENSITY IN mol/m3
+      REAL(KIND(1D0)) :: TK, N !N IS THE NUMBER DENSITY IN mol/m3
       PARTIAL_PRESSURE = N*KB*TK
    END FUNCTION PARTIAL_PRESSURE
 
    REAL(KIND(1D0)) FUNCTION SCALE_HEIGHT(TK)
-      REAL(KIND(1D0)) ::TK
+      REAL(KIND(1D0)) :: TK
       !SCALE HEIGHT FOR DRY ATMOSPHERE IN km BEER (1991)
       SCALE_HEIGHT = R_DRY_MOL*TK/(MOLMASS_AIR*9.81)
    END FUNCTION SCALE_HEIGHT
 
    REAL(KIND(1D0)) FUNCTION VAISALA_BRUNT_F(TK)
       !BEER (1991)
-      REAL(KIND(1D0)) ::TK
+      REAL(KIND(1D0)) :: TK
       VAISALA_BRUNT_F = SQRT(0.4/1.4*9.81/SCALE_HEIGHT(TK))
    END FUNCTION VAISALA_BRUNT_F
 
@@ -150,16 +150,16 @@ CONTAINS
       ! USE defaultnotUsed
       IMPLICIT NONE
 
-      REAL(KIND(1D0))::temp_C, press_hpa, dectime!,pw
-      REAL(KIND(1D0))::e_mb, f, press_kpa, es_hPA
-      INTEGER:: from, iv
-      INTEGER, PARAMETER::notUsedI = -55
+      REAL(KIND(1D0)) :: temp_C, press_hpa, dectime !,pw
+      REAL(KIND(1D0)) :: e_mb, f, press_kpa, es_hPA
+      INTEGER :: from, iv
+      INTEGER, PARAMETER :: notUsedI = -55
 
       es_hPa = 1000 ! initialise as 1000
 
       !If air temperature between -0.001 -
       IF (ABS(temp_C) < 0.001000) THEN
-         IF (from == 1) THEN  ! not from determining Tw
+         IF (from == 1) THEN ! not from determining Tw
             iv = INT(press_Hpa)
             CALL errorHint(29, 'Function sat_vap_press: temp_C, dectime,press_Hpa = ', temp_C, dectime, iv)
 
@@ -197,16 +197,16 @@ CONTAINS
       ! USE defaultnotUsed
       IMPLICIT NONE
 
-      REAL(KIND(1D0))::e_mb, f, temp_C, press_hpa, press_kpa, es_hPA, dectime!,pw
-      INTEGER:: from, iv
-      INTEGER, PARAMETER::notUsedI = -55
+      REAL(KIND(1D0)) :: e_mb, f, temp_C, press_hpa, press_kpa, es_hPA, dectime !,pw
+      INTEGER :: from, iv
+      INTEGER, PARAMETER :: notUsedI = -55
 
       ! initialisation
       es_hPa = 10
 
       !If air temperature between -0.001 -
       IF (ABS(temp_C) < 0.001000) THEN
-         IF (from == 1) THEN  ! not from determining Tw
+         IF (from == 1) THEN ! not from determining Tw
             iv = INT(press_Hpa)
             CALL errorHint(29, 'Function sat_vap_press: temp_C, dectime,press_Hpa = ', temp_C, dectime, iv)
 
@@ -235,7 +235,7 @@ CONTAINS
    FUNCTION spec_hum_def(vpd_hPa, press_hPa) RESULT(dq)
       ! USE gas
       IMPLICIT NONE
-      REAL(KIND(1D0))           :: press_hPa, vpd_hPa, dq
+      REAL(KIND(1D0)) :: press_hPa, vpd_hPa, dq
       REAL(KIND(1D0)), PARAMETER :: epsil_gkg = 621.97 !ratio molecular weight of water vapor/dry air in g/kg
       dq = epsil_gkg*vpd_hPa/press_hPa ! Phd Thesis II.13 p 196
    END FUNCTION spec_hum_def
@@ -251,7 +251,7 @@ CONTAINS
       ! USE defaultnotUsed
       IMPLICIT NONE
 
-      REAL(KIND(1D0))::cp, cpd, cpm, rho_v, rho_d, rh, temp_C
+      REAL(KIND(1D0)) :: cp, cpd, cpm, rho_v, rho_d, rh, temp_C
 
       !Garratt equation a20 (1992)
       CPd = 1005.0 + ((Temp_C + 23.16)**2)/3364.0 !Changed from 23.15 to 23.16
@@ -283,13 +283,13 @@ CONTAINS
       ! USE defaultnotUsed
 
       IMPLICIT NONE
-      REAL(KIND(1D0))::cp, lv_J_kg, ea_fix, tw, &
-                        incr, es_tw, psyc, ea_est, press_hPa, ea_HPa, temp_C, dectime!,Temp_K
+      REAL(KIND(1D0)) :: cp, lv_J_kg, ea_fix, tw, &
+                         incr, es_tw, psyc, ea_est, press_hPa, ea_HPa, temp_C, dectime !,Temp_K
       ! REAL(KIND(1d0))::sat_vap_press,psyc_const ! functions
 
-      LOGICAL:: switch1 = .FALSE., switch2 = .FALSE.!,debug=.true.
-      INTEGER:: ii, from = 2
-      REAL(KIND(1D0)), PARAMETER::notUsed = -55.55
+      LOGICAL :: switch1 = .FALSE., switch2 = .FALSE. !,debug=.true.
+      INTEGER :: ii, from = 2
+      REAL(KIND(1D0)), PARAMETER :: notUsed = -55.55
 
       ea_fix = ea_hPa
       !if(debug) write(*,*)Temp_C, 'LV'
@@ -297,9 +297,9 @@ CONTAINS
 
       !lv=1.91846E6*(Temp_K/(Temp_K-33.91))**2
 
-      lv_J_kg = (2500.25 - 2.365*temp_C)*1000  !First guess for lv in units J/kg
+      lv_J_kg = (2500.25 - 2.365*temp_C)*1000 !First guess for lv in units J/kg
 
-      tw = Temp_C/2.  !First estimate for wet bulb temperature
+      tw = Temp_C/2. !First estimate for wet bulb temperature
       incr = 3.
       DO ii = 1, 100
          IF (Press_hPa < 900) THEN
@@ -308,7 +308,7 @@ CONTAINS
 
          ! if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'% 1',Tw
 
-         es_tw = sat_vap_press_x(Tw, Press_hPa, from, dectime)  !Calculate saturation vapour pressure in hPa
+         es_tw = sat_vap_press_x(Tw, Press_hPa, from, dectime) !Calculate saturation vapour pressure in hPa
 
          !if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'% 2',Tw
 
@@ -353,7 +353,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0))::lvS_J_kg, temp_C, tw, incr, Ea_hPa, Press_hPa, cp
+      REAL(KIND(1D0)) :: lvS_J_kg, temp_C, tw, incr, Ea_hPa, Press_hPa, cp
       ! REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
       ! REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
       ! LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
@@ -366,7 +366,7 @@ CONTAINS
 
       lvS_J_kg = (2834.1 - 0.29*temp_C)*1E3 !First guess for Ls in J/kg
 
-      tw = Temp_C/2.  !First estimate for wet bulb temperature
+      tw = Temp_C/2. !First estimate for wet bulb temperature
       incr = 3.
       Press_hPa = Press_hPa
       Ea_hPa = Ea_hPa
@@ -410,7 +410,7 @@ CONTAINS
       USE gas
 
       IMPLICIT NONE
-      REAL(KIND(1D0))::cp, lv_J_kg, press_hPa, psyc_hpa
+      REAL(KIND(1D0)) :: cp, lv_J_kg, press_hPa, psyc_hpa
 
       ! cp for moist air (shuttleworth p 4.13)
       IF (cp*press_hPa < 900 .OR. lv_J_kg < 10000) THEN
@@ -437,7 +437,7 @@ CONTAINS
       ! http://www.atd.ucar.edu/weather_fl/dewpoint.html
       !     dewpoint = (237.3 * ln(e_vp/6.1078)) / (17.27 - (ln(e_vp/6.1078)))
 
-      REAL(KIND(1D0))::ea_hPa, temp_C_dew
+      REAL(KIND(1D0)) :: ea_hPa, temp_C_dew
       Temp_C_dew = (237.3*LOG(ea_hPa/6.1078))/(17.27 - (LOG(ea_hPa/6.1078)))
    END FUNCTION dewpoint
    !===============================================================================
@@ -447,7 +447,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)):: b1, b2, b3, b4, b5, b6, b7, S_hPa, temp_C
+      REAL(KIND(1D0)) :: b1, b2, b3, b4, b5, b6, b7, S_hPa, temp_C
       B1 = 4.438099984D-1
       B2 = 2.857002636D-2
       B3 = 7.938054040D-4
@@ -474,7 +474,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)):: b1, b2, b3, b4, b5, b6, b7, S_hPa, temp_C
+      REAL(KIND(1D0)) :: b1, b2, b3, b4, b5, b6, b7, S_hPa, temp_C
 
       B1 = 5.030305237D-1
       B2 = 3.773255020D-2
@@ -497,9 +497,9 @@ CONTAINS
       ! AT TEMPERATURE T (DEG C) AND PRESSURE PMB (MB), GET SATURATION SPECIFIC
       !       HUMIDITY (KG/KG) FROM TETEN FORMULA
 
-      REAL(KIND(1D0))::T, es, qsat, PMB
+      REAL(KIND(1D0)) :: T, es, qsat, PMB
 
-      REAL(KIND(1D0)), PARAMETER:: &
+      REAL(KIND(1D0)), PARAMETER :: &
          !Teten coefficients
          A = 6.106, &
          B = 17.27, &
@@ -512,7 +512,7 @@ CONTAINS
       END IF
 
       ES = A*dEXP(B*T/(C + T))
-      qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
+      qsat = (molar_wat_vap/molar)*ES/PMB !(rmh2o/rmair)*ES/PMB
    END FUNCTION qsatf
 
    FUNCTION RH2qa(RH_dec, pres_hPa, Ta_degC) RESULT(qa_gkg)
@@ -523,9 +523,9 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: pres_hPa ! atmospheric pressure in hPa
       REAL(KIND(1D0)), INTENT(in) :: Ta_degC ! air temperature in degC
 
-      REAL(KIND(1D0)) ::es ! saturation vapour pressure in hPa
-      REAL(KIND(1D0)) ::ea ! vapour pressure in hPa
-      REAL(KIND(1D0)) ::qa_gkg ! specific humidity in (g kg-1)
+      REAL(KIND(1D0)) :: es ! saturation vapour pressure in hPa
+      REAL(KIND(1D0)) :: ea ! vapour pressure in hPa
+      REAL(KIND(1D0)) :: qa_gkg ! specific humidity in (g kg-1)
 
       es = sat_vap_press(Ta_degC + 273.15, pres_hPa)
       ea = es*RH_dec ! Brutsaert (2005) section 2.1.2, eqn 2.3
@@ -537,14 +537,14 @@ CONTAINS
       ! convert specific humidity to relative humidity
       ! TS 31 Jul 2018: initial version
       ! Brutsaert (2005) section 2.1.2, eqn 2.2, 2.4 and 2.5.
-      REAL(KIND(1D0)), INTENT(in) :: qa_gkg       ! specific humidity in (g kg-1)
+      REAL(KIND(1D0)), INTENT(in) :: qa_gkg ! specific humidity in (g kg-1)
       REAL(KIND(1D0)), INTENT(in) :: pres_hPa ! atmospheric pressure in hPa
-      REAL(KIND(1D0)), INTENT(in) :: Ta_degC  ! air temperature in degC
-      REAL(KIND(1D0))             :: RH       ! relative humidity in decimal
+      REAL(KIND(1D0)), INTENT(in) :: Ta_degC ! air temperature in degC
+      REAL(KIND(1D0)) :: RH ! relative humidity in decimal
 
-      REAL(KIND(1D0))    ::es ! saturation vapour pressure in hPa
-      REAL(KIND(1D0))    ::ea ! vapour pressure in hPa
-      REAL(KIND(1D0))    ::qa_kgkg !specific humidity in (kg kg-1)
+      REAL(KIND(1D0)) :: es ! saturation vapour pressure in hPa
+      REAL(KIND(1D0)) :: ea ! vapour pressure in hPa
+      REAL(KIND(1D0)) :: qa_kgkg !specific humidity in (kg kg-1)
 
       qa_kgkg = qa_gkg/1000
       es = sat_vap_press(Ta_degC + 273.15, pres_hPa)
@@ -553,7 +553,7 @@ CONTAINS
       RH = ea/es ! Brutsaert (2005) section 2.1.2, eqn 2.3
 
       ! set an upper limit
-      if ( RH>1 ) RH=1
+      IF (RH > 1) RH = 1
 
    END FUNCTION qa2RH
 

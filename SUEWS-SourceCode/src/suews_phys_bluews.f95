@@ -1,55 +1,55 @@
 !======================================================================================================
 MODULE cbl_MODULE
 
-   INTEGER::EntrainmentType, &  ! Entrainment type choice
-             CO2_included, &     ! CO2 included
-             InitialData_use, &  ! 1 read initial data, 0 do not
-             !  qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_data
-             sondeflag, &      ! 1 read sonde or vertical profile data in 0 do not
-             isubs          ! 1 include subsidence in equations
+   INTEGER :: EntrainmentType, & ! Entrainment type choice
+              CO2_included, & ! CO2 included
+              InitialData_use, & ! 1 read initial data, 0 do not
+              !  qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_data
+              sondeflag, & ! 1 read sonde or vertical profile data in 0 do not
+              isubs ! 1 include subsidence in equations
 
-   INTEGER, DIMENSION(366)::cblday = 0
+   INTEGER, DIMENSION(366) :: cblday = 0
 
-   CHARACTER(len=200), DIMENSION(366)::FileSonde = ""
-   CHARACTER(len=200)::InitialDataFileName
-   REAL(KIND(1D0)):: wsb       ! subsidence velocity
-   REAL(KIND(1D0)), DIMENSION(1:10):: cbldata
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::IniCBLdata
+   CHARACTER(len=200), DIMENSION(366) :: FileSonde = ""
+   CHARACTER(len=200) :: InitialDataFileName
+   REAL(KIND(1D0)) :: wsb ! subsidence velocity
+   REAL(KIND(1D0)), DIMENSION(1:10) :: cbldata
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: IniCBLdata
 
    !Parameters in CBL code
-   INTEGER::zmax, &
-             nEqn = 6, &  !NT changed from 4 to 6
-             iCBLcount, &
-             nlineInData
-   REAL(KIND(1D0))::C2K = 273.16
+   INTEGER :: zmax, &
+              nEqn = 6, & !NT changed from 4 to 6
+              iCBLcount, &
+              nlineInData
+   REAL(KIND(1D0)) :: C2K = 273.16
 
-   REAL(KIND(1D0)):: usbl, ftbl, fqbl, fcbl, gamt, gamq, gamc, tpp, qpp, cp0!,tk
+   REAL(KIND(1D0)) :: usbl, ftbl, fqbl, fcbl, gamt, gamq, gamc, tpp, qpp, cp0 !,tk
 
-   REAL(KIND(1D0))::alpha3, &
-                     blh_m, &    ! Boundary layer height(m)
-                     blh1_m, &
-                     cm, &       ! CO2 concentration in CBL
-                     !cp0,gamc,& !
-                     gamt_Km, &  ! Vertical gradient of theta (K/m)
-                     gamq_gkgm, &! Vertical gradient of specific humidity (g/kg/m)
-                     gamq_kgkgm, &! Vertical gradient of specific humidity (kg/kg/m)
-                     !fcbl,&
-                     tm_C, &     ! Potential temperature in CBL (degree Celsius)
-                     tm_K, &     ! Potential temperature in CBL (K)
-                     tmp_K, &
-                     tp_C, &     ! Potential temperature just above Boundary layer height(degree Celsius)
-                     tp_K, &     ! Potential temperature just above Boundary layer height(K)
-                     tpp_K, &
-                     febl_kgkgms, &! Kinematic latent heat flux((kg/kg)*m/s)
-                     fhbl_Kms, &   ! Kinematic sensible heat flux(K*m/s)
-                     qm_gkg, &   ! Specific humidity in CBL(g/kg)
-                     qm_kgkg, &  ! Specific humidity in CBL(kg/kg)
-                     qp_gkg, &   ! Specific humidity above Boundary layer height(g/kg)
-                     qp_kgkg, &  ! Specific humidity above Boundary layer height(kg/kg)
-                     qpp_kgkg
+   REAL(KIND(1D0)) :: alpha3, &
+                      blh_m, & ! Boundary layer height(m)
+                      blh1_m, &
+                      cm, & ! CO2 concentration in CBL
+                      !cp0,gamc,& !
+                      gamt_Km, & ! Vertical gradient of theta (K/m)
+                      gamq_gkgm, & ! Vertical gradient of specific humidity (g/kg/m)
+                      gamq_kgkgm, & ! Vertical gradient of specific humidity (kg/kg/m)
+                      !fcbl,&
+                      tm_C, & ! Potential temperature in CBL (degree Celsius)
+                      tm_K, & ! Potential temperature in CBL (K)
+                      tmp_K, &
+                      tp_C, & ! Potential temperature just above Boundary layer height(degree Celsius)
+                      tp_K, & ! Potential temperature just above Boundary layer height(K)
+                      tpp_K, &
+                      febl_kgkgms, & ! Kinematic latent heat flux((kg/kg)*m/s)
+                      fhbl_Kms, & ! Kinematic sensible heat flux(K*m/s)
+                      qm_gkg, & ! Specific humidity in CBL(g/kg)
+                      qm_kgkg, & ! Specific humidity in CBL(kg/kg)
+                      qp_gkg, & ! Specific humidity above Boundary layer height(g/kg)
+                      qp_kgkg, & ! Specific humidity above Boundary layer height(kg/kg)
+                      qpp_kgkg
 
-   REAL(KIND(1D0)), DIMENSION(0:500, 2):: gtheta, ghum ! Vertical gradient of theta and specific humidity from sonde data
-   REAL(KIND(1D0)), DIMENSION(6)::y  ! NT set from 4 to 6
+   REAL(KIND(1D0)), DIMENSION(0:500, 2) :: gtheta, ghum ! Vertical gradient of theta and specific humidity from sonde data
+   REAL(KIND(1D0)), DIMENSION(6) :: y ! NT set from 4 to 6
 
 END MODULE cbl_MODULE
 !===================================================================================
@@ -70,23 +70,23 @@ CONTAINS
                   avcp, avdens, es_hPa, lv_J_kg, nsh_real, tstep, UStar, psih, is, NumberOfGrids, qhforCBL, qeforCBL, &
                   ReadLinesMetdata, dataOutBL)
       IMPLICIT NONE
-      INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
+      INTEGER, PARAMETER :: ncolumnsdataOutBL = 22
 
-      INTEGER, INTENT(IN):: tstep, is, NumberOfGrids, Gridiv, ReadLinesMetdata, ir
-      REAL(KIND(1D0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
-      REAL(KIND(1D0)), INTENT(IN):: avkdn, nsh_real, UStar, psih
+      INTEGER, INTENT(IN) :: tstep, is, NumberOfGrids, Gridiv, ReadLinesMetdata, ir
+      REAL(KIND(1D0)), INTENT(IN), DIMENSION(NumberOfGrids) :: qhforCBL, qeforCBL
+      REAL(KIND(1D0)), INTENT(IN) :: avkdn, nsh_real, UStar, psih
       INTEGER, INTENT(INOUT) :: qh_choice, iy, id, it, imin
-      REAL(KIND(1D0)), INTENT(INOUT):: dectime, Press_hPa, avu1, avrh, es_hPa, avcp, avdens, lv_J_kg
-      REAL(KIND(1D0)), INTENT(OUT):: Temp_C
-      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
+      REAL(KIND(1D0)), INTENT(INOUT) :: dectime, Press_hPa, avu1, avrh, es_hPa, avcp, avdens, lv_J_kg
+      REAL(KIND(1D0)), INTENT(OUT) :: Temp_C
+      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) :: dataOutBL
 
-      REAL(KIND(1D0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
+      REAL(KIND(1D0)) :: gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
       ! REAL(KIND(1d0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
-      REAL(KIND(1D0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
-      REAL(KIND(1D0))::Temp_C1, avrh1, es_hPa1
-      REAL(KIND(1D0))::secs0, secs1, Lv
-      REAL(KIND(1D0))::NAN = -999
-      INTEGER::idoy, startflag
+      REAL(KIND(1D0)) :: qh_use, qe_use, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1D0)) :: Temp_C1, avrh1, es_hPa1
+      REAL(KIND(1D0)) :: secs0, secs1, Lv
+      REAL(KIND(1D0)) :: NAN = -999
+      INTEGER :: idoy, startflag
 
       ! initialise startflag
       startflag = 0
@@ -146,9 +146,9 @@ CONTAINS
          startflag = 1
       END IF
 
-      qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
+      qh_use = qhforCBL(Gridiv) !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
-      IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
+      IF (qh_use < -900 .OR. qe_use < -900) THEN ! observed data has a problem
          CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL in CBL.', qh_use, qe_use, qh_choice)
       END IF
       !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
@@ -190,10 +190,10 @@ CONTAINS
       secs0 = cbldata(1)*3600.
       secs1 = secs0 + float(tstep) ! time in seconds
       ! Kinematic fluxes
-      fhbl_Kms = cbldata(2)/(cbldata(4)*cbldata(6))  !qh_use/(avdens*avcp)      ! units: degK * m/s
-      febl_kgkgms = cbldata(3)/(cbldata(4)*cbldata(5))  !qe_use/(avdens*lv_J_kg)   ! units: kg/kg * m/s
+      fhbl_Kms = cbldata(2)/(cbldata(4)*cbldata(6)) !qh_use/(avdens*avcp)      ! units: degK * m/s
+      febl_kgkgms = cbldata(3)/(cbldata(4)*cbldata(5)) !qe_use/(avdens*lv_J_kg)   ! units: kg/kg * m/s
       IF (CO2_included == 1) THEN
-         fcbl = 0!fc(i)/(rmco2/volm)      ! units: mol/mol * m/s
+         fcbl = 0 !fc(i)/(rmco2/volm)      ! units: mol/mol * m/s
       ELSE
          cm = NAN
       END IF
@@ -207,8 +207,8 @@ CONTAINS
       !             set up array for Runge-Kutta call
       blh1_m = blh_m
       y(1) = blh_m ! integrate h, t, q, c from time s(i-1)
-      y(2) = tm_K  ! to time s(i) using runge-kutta solution
-      y(3) = qm_kgkg   ! of slab CBL equations
+      y(2) = tm_K ! to time s(i) using runge-kutta solution
+      y(3) = qm_kgkg ! of slab CBL equations
       y(4) = cm
       y(5) = tp_K
       y(6) = qp_kgkg
@@ -217,11 +217,11 @@ CONTAINS
       CALL rkutta(neqn, secs0, secs1, y, 1)
       !++++++++++++++++++++++++++++++++++++++++++++++++++++++
       blh_m = y(1)
-      tm_K = y(2)  ! potential temperature, units: K
-      qm_kgkg = y(3)  ! specific humidity, units: kg/kg
-      cm = y(4)  ! co2 concentration,units: mol/mol
-      tp_K = y(5)  ! potential temperature top of CBL: K
-      qp_kgkg = y(6)  ! specific humidity top of CBL: kg/kg
+      tm_K = y(2) ! potential temperature, units: K
+      qm_kgkg = y(3) ! specific humidity, units: kg/kg
+      cm = y(4) ! co2 concentration,units: mol/mol
+      tp_K = y(5) ! potential temperature top of CBL: K
+      qp_kgkg = y(6) ! specific humidity top of CBL: kg/kg
       !             compute derived quantities for this time step
 
       !NT: now included in rkutta
@@ -247,7 +247,7 @@ CONTAINS
       !Output time correction
       idoy = id
       !If(it==0 .and. imin==55) idoy=id-1
-      IF (it == 0 .AND. imin == (nsh_real - 1)/nsh_real*60) idoy = id - 1  !Modified by HCW 04 Mar 2015 in case model timestep is not 5-min
+      IF (it == 0 .AND. imin == (nsh_real - 1)/nsh_real*60) idoy = id - 1 !Modified by HCW 04 Mar 2015 in case model timestep is not 5-min
 
       ! QUESTION: any difference between the two options? code looks the same in the two branches.
       IF ((qh_choice == 1) .OR. (qh_choice == 2)) THEN !BLUEWS or BLUMPS
@@ -300,11 +300,11 @@ CONTAINS
    SUBROUTINE CBL_ReadInputData(FileInputPath, qh_choice)
 
       IMPLICIT NONE
-      INTEGER, INTENT(INOUT)::qh_choice
-      CHARACTER(len=150), INTENT(IN):: FileInputPath
+      INTEGER, INTENT(INOUT) :: qh_choice
+      CHARACTER(len=150), INTENT(IN) :: FileInputPath
 
-      INTEGER::i, ios
-      REAL(KIND(1D0))::l
+      INTEGER :: i, ios
+      REAL(KIND(1D0)) :: l
 
       NAMELIST /CBLInput/ EntrainmentType, &
          QH_choice, &
@@ -325,10 +325,10 @@ CONTAINS
       IF (InitialData_use == 1 .OR. InitialData_use == 2) THEN
          OPEN (52, file=TRIM(FileInputPath)//TRIM(InitialDataFileName), status='old', err=25)
          READ (52, *)
-         nlineInData = 0   !Initialise nlines
+         nlineInData = 0 !Initialise nlines
          DO
             READ (52, *, iostat=ios) l
-            IF (ios < 0 .OR. l == -9) EXIT   !IF (l == -9) EXIT
+            IF (ios < 0 .OR. l == -9) EXIT !IF (l == -9) EXIT
             nlineInData = nlineInData + 1
          END DO
          CLOSE (52)
@@ -344,7 +344,7 @@ CONTAINS
       END IF
 
       IF (CO2_included == 0) THEN
-         fcbl = 0       ! hard-wire no CO2
+         fcbl = 0 ! hard-wire no CO2
       END IF
 
       ! iCBLcount = 1
@@ -376,13 +376,13 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
-      REAL(KIND(1D0))::lv
-      INTEGER::i, nLineDay, ir, Gridiv, startflag
+      REAL(KIND(1D0)) :: qh_use, qe_use, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1D0)) :: lv
+      INTEGER :: i, nLineDay, ir, Gridiv, startflag
 
-      qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
+      qh_use = qhforCBL(Gridiv) !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
-      IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
+      IF (qh_use < -900 .OR. qe_use < -900) THEN ! observed data has a problem
          CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL in CBL_initial.', qh_use, qe_use, qh_choice)
       END IF
       !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
@@ -423,7 +423,7 @@ CONTAINS
          qp_gkg = IniCBLdata(nLineDay, 6)
          tm_K = IniCBLdata(nLineDay, 7)
          qm_gkg = IniCBLdata(nLineDay, 8)
-      ELSEIF (InitialData_use == 1 .AND. IniCBLdata(nlineDay, 1) == id) THEN   ! Changed from i to nlineDay, HCW 29 March 2017
+      ELSEIF (InitialData_use == 1 .AND. IniCBLdata(nlineDay, 1) == id) THEN ! Changed from i to nlineDay, HCW 29 March 2017
          blh_m = IniCBLdata(nLineDay, 2)
          gamt_Km = IniCBLdata(nLineDay, 3)
          gamq_gkgm = IniCBLdata(nLineDay, 4)
@@ -450,8 +450,8 @@ CONTAINS
       END IF
 
       gamq_kgkgm = gamq_gkgm/1000.
-      qp_kgkg = qp_gkg/1000    !humidities: g/kg -> kg/kg   q+
-      qm_kgkg = qm_gkg/1000    !conc at mixing layer height h
+      qp_kgkg = qp_gkg/1000 !humidities: g/kg -> kg/kg   q+
+      qm_kgkg = qm_gkg/1000 !conc at mixing layer height h
       tp_C = tp_K - C2K
       tm_C = tm_K - C2K
 
@@ -486,25 +486,25 @@ CONTAINS
                   avcp, avdens, es_hPa, lv_J_kg)
 
       IMPLICIT NONE
-      INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
+      INTEGER, PARAMETER :: ncolumnsdataOutBL = 22
 
       INTEGER, INTENT(IN) :: qh_choice, iy, id, it, imin, NumberOfGrids, ReadLinesMetdata, ir
-      REAL(KIND(1D0)), INTENT(IN)::  Press_hPa, psih, UStar
-      REAL(KIND(1D0)), INTENT(OUT):: Temp_C, tm_K_zm, qm_gkg_zm
-      REAL(KIND(1D0)), INTENT(INOUT):: dectime, avu1, avRH, avcp, avdens, es_hPa, lv_J_kg
-      REAL(KIND(1D0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
-      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
+      REAL(KIND(1D0)), INTENT(IN) :: Press_hPa, psih, UStar
+      REAL(KIND(1D0)), INTENT(OUT) :: Temp_C, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1D0)), INTENT(INOUT) :: dectime, avu1, avRH, avcp, avdens, es_hPa, lv_J_kg
+      REAL(KIND(1D0)), INTENT(IN), DIMENSION(NumberOfGrids) :: qhforCBL, qeforCBL
+      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) :: dataOutBL
 
       REAL(KIND(1D0)) :: &
-         k = 0.4, &       !Von Karman's contant
-         gas_ct_dry = 8.31451/0.028965  !j/kg/k=dry_gas/molar
-      REAL(KIND(1D0))::qh_use, qe_use
-      REAL(KIND(1D0))::lv
-      INTEGER::i, nLineDay, Gridiv, startflag
+         k = 0.4, & !Von Karman's contant
+         gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
+      REAL(KIND(1D0)) :: qh_use, qe_use
+      REAL(KIND(1D0)) :: lv
+      INTEGER :: i, nLineDay, Gridiv, startflag
 
-      qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
+      qh_use = qhforCBL(Gridiv) !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
-      IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
+      IF (qh_use < -900 .OR. qe_use < -900) THEN ! observed data has a problem
          CALL ErrorHint(22, 'Unrealistic qh or qe value for CBL in NBL.', qh_use, qe_use, qh_choice)
       END IF
 
@@ -567,7 +567,7 @@ CONTAINS
          qp_gkg = IniCBLdata(nLineDay, 6)
          tm_K = IniCBLdata(nLineDay, 7)
          qm_gkg = IniCBLdata(nLineDay, 8)
-      ELSEIF (InitialData_use == 1 .AND. IniCBLdata(nlineDay, 1) == id) THEN   ! Changed from i to nlineDay, HCW 29 March 2017
+      ELSEIF (InitialData_use == 1 .AND. IniCBLdata(nlineDay, 1) == id) THEN ! Changed from i to nlineDay, HCW 29 March 2017
          blh_m = IniCBLdata(nLineDay, 2)
          gamt_Km = IniCBLdata(nLineDay, 3)
          gamq_gkgm = IniCBLdata(nLineDay, 4)
@@ -594,8 +594,8 @@ CONTAINS
       END IF
 
       gamq_kgkgm = gamq_gkgm/1000.
-      qp_kgkg = qp_gkg/1000    !humidities: g/kg -> kg/kg   q+
-      qm_kgkg = qm_gkg/1000    !conc at mixing layer height h
+      qp_kgkg = qp_gkg/1000 !humidities: g/kg -> kg/kg   q+
+      qm_kgkg = qm_gkg/1000 !conc at mixing layer height h
       tp_C = tp_K - C2K
       tm_C = tm_K - C2K
 
@@ -656,12 +656,12 @@ CONTAINS
       !       DYDX = ON EXIT, ARRAY (LENGTH NE) OF VALUES OF DERIVATIVES
       !        IMPLICIT real*8 (A-H,O-Z)
       IMPLICIT NONE
-      INTEGER::ns, nsteps, nj, n, neqn_use
-      REAL(KIND(1D0)), DIMENSION(neqn_use):: y_use
-      REAL(KIND(1D0)), DIMENSION(21):: dydx, arg
-      REAL(KIND(1D0)), DIMENSION(21, 5):: rk
-      REAL(KIND(1D0)), DIMENSION(4):: coef
-      REAL(KIND(1D0)):: XA, XB, step, X, xx
+      INTEGER :: ns, nsteps, nj, n, neqn_use
+      REAL(KIND(1D0)), DIMENSION(neqn_use) :: y_use
+      REAL(KIND(1D0)), DIMENSION(21) :: dydx, arg
+      REAL(KIND(1D0)), DIMENSION(21, 5) :: rk
+      REAL(KIND(1D0)), DIMENSION(4) :: coef
+      REAL(KIND(1D0)) :: XA, XB, step, X, xx
 
       coef(1) = 1.0
       coef(2) = 0.5
@@ -723,25 +723,25 @@ CONTAINS
       USE mod_grav
 
       IMPLICIT NONE
-      REAL(KIND(1D0)), DIMENSION(neqn)::dyds, y1
+      REAL(KIND(1D0)), DIMENSION(neqn) :: dyds, y1
       REAL(KIND(1D0)) :: zero = 0.0
       REAL(KIND(1D0)) :: h1, t_K, q_kgkg, c, cp, ws, s, foo
       !     real(kind(1D0)) :: tp_K,qp_kgkg
-      REAL(KIND(1D0)):: delt_K, delq_kgkg, delc
-      REAL(KIND(1D0)):: gamtv_Km, deltv_K, ftv_Kms
-      REAL(KIND(1D0)):: ftva_Kms, delb, qs2, qs3
-      REAL(KIND(1D0)):: dhds, dtds, dqds, dcds, dtpds, dqpds
-      REAL(KIND(1D0)):: conk, conn, cona, conc, cont
+      REAL(KIND(1D0)) :: delt_K, delq_kgkg, delc
+      REAL(KIND(1D0)) :: gamtv_Km, deltv_K, ftv_Kms
+      REAL(KIND(1D0)) :: ftva_Kms, delb, qs2, qs3
+      REAL(KIND(1D0)) :: dhds, dtds, dqds, dcds, dtpds, dqpds
+      REAL(KIND(1D0)) :: conk, conn, cona, conc, cont
 
       !    print*,"diff: timestamp:",s
       foo = s
       !    pause
-      h1 = y1(1)!m
-      t_K = y1(2)!K
-      q_kgkg = y1(3)!kg/kg
+      h1 = y1(1) !m
+      t_K = y1(2) !K
+      q_kgkg = y1(3) !kg/kg
       c = y1(4)
-      tp_K = y1(5)!K
-      qp_kgkg = y1(6)!kg/kg
+      tp_K = y1(5) !K
+      qp_kgkg = y1(6) !kg/kg
 
       !       find t, q, c above inversion, and jumps across inversion
       !       tp = tp + gamt*h
@@ -755,7 +755,7 @@ CONTAINS
 
       !       find potential virtual temperature flux, gradient and jump
       ftv_Kms = fhbl_Kms + 0.61*tm_K*febl_kgkgms
-      gamtv_Km = gamt_Km + 0.61*tm_K*gamq_kgkgm!/1000
+      gamtv_Km = gamt_Km + 0.61*tm_K*gamq_kgkgm !/1000
       deltv_K = delt_K + 0.61*tm_K*delq_kgkg
 
       !       find velocity scale ws
@@ -783,7 +783,7 @@ CONTAINS
 
       ELSE IF (EntrainmentType == 4) THEN
          !       EntrainmentType=3: Tennekes 1973 (as in R 1991 eqs 3,4)
-         alpha3 = 0.2   ! alpha changed back to original Tennekes 1973 value
+         alpha3 = 0.2 ! alpha changed back to original Tennekes 1973 value
          IF (deltv_K <= 0.01) THEN
             dhds = ftva_Kms/(h1*gamtv_Km)
             CALL ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=4],deltv_K', &
@@ -856,10 +856,10 @@ CONTAINS
       USE data_in
       USE cbl_module
       IMPLICIT NONE
-      INTEGER::i, fn = 101, izm = 500, notUsedI = -9999, id
-      CHARACTER(len=200)::FileN
-      REAL(KIND(1D0)):: dxx
-      REAL(KIND(1D0)), PARAMETER::notUsed = -9999.99
+      INTEGER :: i, fn = 101, izm = 500, notUsedI = -9999, id
+      CHARACTER(len=200) :: FileN
+      REAL(KIND(1D0)) :: dxx
+      REAL(KIND(1D0)), PARAMETER :: notUsed = -9999.99
 
       FileN = TRIM(FileInputPath)//TRIM(FileSonde(id))
       OPEN (fn, file=FileN, status="old", err=24)
@@ -889,8 +889,8 @@ CONTAINS
       !use allocateArray
 
       IMPLICIT NONE
-      REAL(KIND(1D0))::gamtt, gamqq
-      INTEGER::j
+      REAL(KIND(1D0)) :: gamtt, gamqq
+      INTEGER :: j
       ! gtheta(i,1),dxx,gtheta(i,2),ghum(i,1),dxx,ghum(i,2)
       !search for correct gamma theta, depends on h(i-1),
       !               ie current value for mixed layer depth

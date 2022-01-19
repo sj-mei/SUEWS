@@ -4,18 +4,18 @@ MODULE PRECISION
 
 ! Real kinds
 
-   INTEGER, PARAMETER :: kr4 = SELECTED_REAL_KIND(6, 37)       ! single precision real
-   INTEGER, PARAMETER :: kr8 = SELECTED_REAL_KIND(15, 307)     ! double precision real
+   INTEGER, PARAMETER :: kr4 = SELECTED_REAL_KIND(6, 37) ! single precision real
+   INTEGER, PARAMETER :: kr8 = SELECTED_REAL_KIND(15, 307) ! double precision real
 
 ! Integer kinds
 
-   INTEGER, PARAMETER :: ki4 = SELECTED_INT_KIND(9)           ! single precision integer
-   INTEGER, PARAMETER :: ki8 = SELECTED_INT_KIND(18)          ! double precision integer
+   INTEGER, PARAMETER :: ki4 = SELECTED_INT_KIND(9) ! single precision integer
+   INTEGER, PARAMETER :: ki8 = SELECTED_INT_KIND(18) ! double precision integer
 
 !Complex kinds
 
-   INTEGER, PARAMETER :: kc4 = kr4                            ! single precision complex
-   INTEGER, PARAMETER :: kc8 = kr8                            ! double precision complex
+   INTEGER, PARAMETER :: kc4 = kr4 ! single precision complex
+   INTEGER, PARAMETER :: kc8 = kr8 ! double precision complex
 
 END MODULE PRECISION
 
@@ -27,7 +27,7 @@ MODULE strings
    PRIVATE :: write_dr, write_sr, write_di, write_si
    PRIVATE :: writeq_dr, writeq_sr, writeq_di, writeq_si
 
-   INTERFACE VALUE  ! Generic operator for converting a number string to a
+   INTERFACE VALUE ! Generic operator for converting a number string to a
       ! number. Calling syntax is 'call value(numstring,number,ios)'
       ! where 'numstring' is a number string and 'number' is a
       ! real number or an integer (single or double precision).
@@ -37,7 +37,7 @@ MODULE strings
       MODULE PROCEDURE value_si
    END INTERFACE
 
-   INTERFACE writenum  ! Generic  interface for writing a number to a string. The
+   INTERFACE writenum ! Generic  interface for writing a number to a string. The
       ! number is left justified in the string. The calling syntax
       ! is 'call writenum(number,string,format)' where 'number' is
       ! a real number or an integer, 'string' is a character string
@@ -49,7 +49,7 @@ MODULE strings
       MODULE PROCEDURE write_si
    END INTERFACE
 
-   INTERFACE writeq  ! Generic interface equating a name to a numerical value. The
+   INTERFACE writeq ! Generic interface equating a name to a numerical value. The
       ! calling syntax is 'call writeq(unit,name,value,format)' where
       ! unit is the integer output unit number, 'name' is the variable
       ! name, 'value' is the real or integer value of the variable,
@@ -106,9 +106,9 @@ CONTAINS
 ! Converts multiple spaces and tabs to single spaces; deletes control characters;
 ! removes initial spaces.
 
-      CHARACTER(len=*):: str
-      CHARACTER(len=1):: ch
-      CHARACTER(len=LEN_TRIM(str)):: outstr
+      CHARACTER(len=*) :: str
+      CHARACTER(len=1) :: ch
+      CHARACTER(len=LEN_TRIM(str)) :: outstr
 
       str = ADJUSTL(str)
       lenstr = LEN_TRIM(str)
@@ -122,14 +122,14 @@ CONTAINS
 
          SELECT CASE (ich)
 
-         CASE (9, 32)     ! space or tab character
+         CASE (9, 32) ! space or tab character
             IF (isp == 0) THEN
                k = k + 1
                outstr(k:k) = ' '
             END IF
             isp = 1
 
-         CASE (33:)      ! not a space, quote, or control character
+         CASE (33:) ! not a space, quote, or control character
             k = k + 1
             outstr(k:k) = ch
             isp = 0
@@ -148,9 +148,9 @@ CONTAINS
 
 ! Removes spaces, tabs, and control characters in string str
 
-      CHARACTER(len=*):: str
-      CHARACTER(len=1):: ch
-      CHARACTER(len=LEN_TRIM(str))::outstr
+      CHARACTER(len=*) :: str
+      CHARACTER(len=1) :: ch
+      CHARACTER(len=LEN_TRIM(str)) :: outstr
 
       str = ADJUSTL(str)
       lenstr = LEN_TRIM(str)
@@ -161,7 +161,7 @@ CONTAINS
          ch = str(i:i)
          ich = IACHAR(ch)
          SELECT CASE (ich)
-         CASE (0:32)  ! space, tab, or control character
+         CASE (0:32) ! space, tab, or control character
             CYCLE
          CASE (33:)
             k = k + 1
@@ -179,8 +179,8 @@ CONTAINS
 
 ! Converts number string to a double precision real number
 
-      CHARACTER(len=*)::str
-      REAL(kr8)::rnum
+      CHARACTER(len=*) :: str
+      REAL(kr8) :: rnum
       INTEGER :: ios
 
       ilen = LEN_TRIM(str)
@@ -199,7 +199,7 @@ CONTAINS
 
 ! Converts number string to a single precision real number
 
-      CHARACTER(len=*)::str
+      CHARACTER(len=*) :: str
       REAL(kr4) :: rnum
       REAL(kr8) :: rnumd
 
@@ -219,7 +219,7 @@ CONTAINS
 
 ! Converts number string to a double precision integer value
 
-      CHARACTER(len=*)::str
+      CHARACTER(len=*) :: str
       INTEGER(ki8) :: inum
       REAL(kr8) :: rnum
 
@@ -238,7 +238,7 @@ CONTAINS
 
 ! Converts number string to a single precision integer value
 
-      CHARACTER(len=*)::str
+      CHARACTER(len=*) :: str
       INTEGER(ki4) :: inum
       REAL(kr8) :: rnum
 
@@ -260,7 +260,7 @@ CONTAINS
 ! that are shifted off the end are lost. Positions opened up by the shift
 ! are replaced by spaces.
 
-      CHARACTER(len=*):: str
+      CHARACTER(len=*) :: str
 
       lenstr = LEN(str)
       nabs = iabs(n)
@@ -268,8 +268,8 @@ CONTAINS
          str = REPEAT(' ', lenstr)
          RETURN
       END IF
-      IF (n < 0) str = str(nabs + 1:)//REPEAT(' ', nabs)  ! shift left
-      IF (n > 0) str = REPEAT(' ', nabs)//str(:lenstr - nabs)  ! shift right
+      IF (n < 0) str = str(nabs + 1:)//REPEAT(' ', nabs) ! shift left
+      IF (n > 0) str = REPEAT(' ', nabs)//str(:lenstr - nabs) ! shift right
       RETURN
 
    END SUBROUTINE shiftstr
@@ -283,8 +283,8 @@ CONTAINS
 ! make room for the inserted string. Trailing spaces of 'strins' are
 ! removed prior to insertion
 
-      CHARACTER(len=*):: str, strins
-      CHARACTER(len=LEN(str))::tempstr
+      CHARACTER(len=*) :: str, strins
+      CHARACTER(len=LEN(str)) :: tempstr
 
       lenstrins = LEN_TRIM(strins)
       tempstr = str(loc:)
@@ -303,7 +303,7 @@ CONTAINS
 ! shifts characters left to fill hole. Trailing spaces or blanks are
 ! not considered part of 'substr'.
 
-      CHARACTER(len=*):: str, substr
+      CHARACTER(len=*) :: str, substr
 
       lensubstr = LEN_TRIM(substr)
       ipos = INDEX(str, substr)
@@ -324,7 +324,7 @@ CONTAINS
 ! Deletes all occurrences of substring 'substr' from string 'str' and
 ! shifts characters left to fill holes.
 
-      CHARACTER(len=*):: str, substr
+      CHARACTER(len=*) :: str, substr
 
       lensubstr = LEN_TRIM(substr)
       DO
@@ -346,8 +346,8 @@ CONTAINS
 
 ! convert string to upper case
 
-      CHARACTER(len=*):: str
-      CHARACTER(len=LEN_TRIM(str)):: ucstr
+      CHARACTER(len=*) :: str
+      CHARACTER(len=LEN_TRIM(str)) :: ucstr
 
       ilen = LEN_TRIM(str)
       ioffset = IACHAR('A') - IACHAR('a')
@@ -381,8 +381,8 @@ CONTAINS
 
 ! convert string to lower case
 
-      CHARACTER(len=*):: str
-      CHARACTER(len=LEN_TRIM(str)):: lcstr
+      CHARACTER(len=*) :: str
+      CHARACTER(len=LEN_TRIM(str)) :: lcstr
 
       ilen = LEN_TRIM(str)
       ioffset = IACHAR('A') - IACHAR('a')
@@ -417,10 +417,10 @@ CONTAINS
 ! Reads line from unit=nunitr, ignoring blank lines
 ! and deleting comments beginning with an exclamation point(!)
 
-      CHARACTER(len=*):: line
+      CHARACTER(len=*) :: line
 
       DO
-         READ (nunitr, '(a)', iostat=ios) line      ! read input line
+         READ (nunitr, '(a)', iostat=ios) line ! read input line
          IF (ios /= 0) RETURN
          line = ADJUSTL(line)
          ipos = INDEX(line, '!')
@@ -714,38 +714,38 @@ CONTAINS
       str = ADJUSTL(str)
       CALL compact(str)
       lenstr = LEN_TRIM(str)
-      IF (lenstr == 0) RETURN        ! string str is empty
+      IF (lenstr == 0) RETURN ! string str is empty
       k = 0
-      ibsl = 0                        ! backslash initially inactive
+      ibsl = 0 ! backslash initially inactive
       before = ' '
       DO i = 1, lenstr
          ch = str(i:i)
-         IF (ibsl == 1) THEN          ! backslash active
+         IF (ibsl == 1) THEN ! backslash active
             k = k + 1
             before(k:k) = ch
             ibsl = 0
             CYCLE
          END IF
-         IF (ch == '\') THEN          ! backslash with backslash inactive
+         IF (ch == '\') THEN ! backslash with backslash inactive
             k = k + 1
             before(k:k) = ch
             ibsl = 1
             CYCLE
          END IF
          ipos = INDEX(delims, ch)
-         IF (ipos == 0) THEN          ! character is not a delimiter
+         IF (ipos == 0) THEN ! character is not a delimiter
             k = k + 1
             before(k:k) = ch
             CYCLE
          END IF
-         IF (ch /= ' ') THEN          ! character is a delimiter that is not a space
+         IF (ch /= ' ') THEN ! character is a delimiter that is not a space
             str = str(i + 1:)
             IF (pres) sep = ch
             EXIT
          END IF
-         cha = str(i + 1:i + 1)            ! character is a space delimiter
+         cha = str(i + 1:i + 1) ! character is a space delimiter
          iposa = INDEX(delims, cha)
-         IF (iposa > 0) THEN          ! next character is a delimiter
+         IF (iposa > 0) THEN ! next character is a delimiter
             str = str(i + 2:)
             IF (pres) sep = cha
             EXIT
@@ -756,7 +756,7 @@ CONTAINS
          END IF
       END DO
       IF (i >= lenstr) str = ''
-      str = ADJUSTL(str)              ! remove initial spaces
+      str = ADJUSTL(str) ! remove initial spaces
       RETURN
 
    END SUBROUTINE split
@@ -768,30 +768,30 @@ CONTAINS
 ! Removes backslash (\) characters. Double backslashes (\\) are replaced
 ! by a single backslash.
 
-      CHARACTER(len=*):: str
-      CHARACTER(len=1):: ch
-      CHARACTER(len=LEN_TRIM(str))::outstr
+      CHARACTER(len=*) :: str
+      CHARACTER(len=1) :: ch
+      CHARACTER(len=LEN_TRIM(str)) :: outstr
 
       str = ADJUSTL(str)
       lenstr = LEN_TRIM(str)
       outstr = ' '
       k = 0
-      ibsl = 0                        ! backslash initially inactive
+      ibsl = 0 ! backslash initially inactive
 
       DO i = 1, lenstr
          ch = str(i:i)
-         IF (ibsl == 1) THEN          ! backslash active
+         IF (ibsl == 1) THEN ! backslash active
             k = k + 1
             outstr(k:k) = ch
             ibsl = 0
             CYCLE
          END IF
-         IF (ch == '\') THEN          ! backslash with backslash inactive
+         IF (ch == '\') THEN ! backslash with backslash inactive
             ibsl = 1
             CYCLE
          END IF
          k = k + 1
-         outstr(k:k) = ch              ! non-backslash with backslash inactive
+         outstr(k:k) = ch ! non-backslash with backslash inactive
       END DO
 
       str = ADJUSTL(outstr)

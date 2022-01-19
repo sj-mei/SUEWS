@@ -3,7 +3,7 @@ MODULE resist_module
 
 CONTAINS
    SUBROUTINE AerodynamicResistance( &
-      ZZD, &! input:
+      ZZD, & ! input:
       z0m, &
       AVU1, &
       L_mod, &
@@ -12,7 +12,7 @@ CONTAINS
       AerodynamicResistanceMethod, &
       StabilityMethod, &
       RoughLenHeatMethod, &
-      RA_h, z0V)! output:
+      RA_h, z0V) ! output:
 
       ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
       ! All RA equations reported in Thom & Oliver (1977)
@@ -41,19 +41,19 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in)::ZZD!Active measurement height (meas. height-displac. height)
-      REAL(KIND(1D0)), INTENT(in)::z0m!Aerodynamic roughness length
-      REAL(KIND(1D0)), INTENT(in)::AVU1!Average wind speed
-      REAL(KIND(1D0)), INTENT(in)::L_mod!Monin-Obukhov length (either measured or modelled)
-      REAL(KIND(1D0)), INTENT(in)::UStar!Friction velocity
-      REAL(KIND(1D0)), INTENT(in)::VegFraction!Fraction of vegetation
+      REAL(KIND(1D0)), INTENT(in) :: ZZD !Active measurement height (meas. height-displac. height)
+      REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length
+      REAL(KIND(1D0)), INTENT(in) :: AVU1 !Average wind speed
+      REAL(KIND(1D0)), INTENT(in) :: L_mod !Monin-Obukhov length (either measured or modelled)
+      REAL(KIND(1D0)), INTENT(in) :: UStar !Friction velocity
+      REAL(KIND(1D0)), INTENT(in) :: VegFraction !Fraction of vegetation
 
-      INTEGER, INTENT(in)::AerodynamicResistanceMethod
-      INTEGER, INTENT(in)::StabilityMethod
-      INTEGER, INTENT(in)::RoughLenHeatMethod
+      INTEGER, INTENT(in) :: AerodynamicResistanceMethod
+      INTEGER, INTENT(in) :: StabilityMethod
+      INTEGER, INTENT(in) :: RoughLenHeatMethod
 
-      REAL(KIND(1D0)), INTENT(out)::RA_h !Aerodynamic resistance for heat/vapour [s m^-1]
-      REAL(KIND(1D0)), INTENT(out)::  z0V
+      REAL(KIND(1D0)), INTENT(out) :: RA_h !Aerodynamic resistance for heat/vapour [s m^-1]
+      REAL(KIND(1D0)), INTENT(out) :: z0V
 
       INTEGER, PARAMETER :: notUsedI = -55
 
@@ -61,7 +61,7 @@ CONTAINS
          notUsed = -55.5, &
          k2 = 0.16, & !Power of Van Karman's constant (= 0.16 = 0.4^2)
          muu = 1.46E-5 !molecular viscosity
-      REAL(KIND(1D0)):: psim
+      REAL(KIND(1D0)) :: psim
       ! REAL(KIND(1d0)):: psih
 
       !Z0V roughness length for vapour
@@ -75,7 +75,7 @@ CONTAINS
          !    PSIM - stability function for momentum
          !     psih - stability function for heat
          !    assuming stability functions the same for heat and water
-      ELSEIF (AerodynamicResistanceMethod == 2) THEN  !Dyer (1974)
+      ELSEIF (AerodynamicResistanceMethod == 2) THEN !Dyer (1974)
 
          ! psim = stab_psi_mom(StabilityMethod, zzd/L_mod)
          ! psih = stab_psi_heat(StabilityMethod, ZZD/L_mod)
@@ -95,10 +95,10 @@ CONTAINS
       END IF
 
       !If RA outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
-      IF (RA_h > 200) THEN   !was 175
+      IF (RA_h > 200) THEN !was 175
          CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA > 200 s m-1; RA set to 200 s m-1', RA_h, notUsed, notUsedI)
          RA_h = 200
-      ELSEIF (RA_h < 10) THEN   !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
+      ELSEIF (RA_h < 10) THEN !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
          CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA < 10 s m-1; RA set to 10 s m-1', RA_h, notUsed, notUsedI)
          RA_h = 10
          ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
@@ -109,11 +109,11 @@ CONTAINS
    END SUBROUTINE AerodynamicResistance
 
    SUBROUTINE SurfaceResistance( &
-      id, it, &! input:
+      id, it, & ! input:
       SMDMethod, SnowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
       LAIMax, LAI_id, gsModel, Kmax, &
       G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
-      gfunc, gsc, ResistSurf)! output:
+      gfunc, gsc, ResistSurf) ! output:
       ! Calculates bulk surface resistance (ResistSurf [s m-1]) based on Jarvis 1976 approach
       ! Last modified -----------------------------------------------------
       ! MH  01 Feb 2019: gsModel choices to model with air temperature or 2 meter temperature. Added gfunc for photosynthesis calculations
@@ -136,68 +136,68 @@ CONTAINS
 
       IMPLICIT NONE
       ! INTEGER,PARAMETER::BldgSurf=2
-      INTEGER, PARAMETER::ConifSurf = 3
-      INTEGER, PARAMETER::DecidSurf = 4
-      INTEGER, PARAMETER::GrassSurf = 5
+      INTEGER, PARAMETER :: ConifSurf = 3
+      INTEGER, PARAMETER :: DecidSurf = 4
+      INTEGER, PARAMETER :: GrassSurf = 5
       ! INTEGER,PARAMETER::ivConif=1
       ! INTEGER,PARAMETER::ivGrass=3
       ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
       ! INTEGER,PARAMETER::ndays=366
-      INTEGER, PARAMETER::nsurf = 7
+      INTEGER, PARAMETER :: nsurf = 7
       ! INTEGER,PARAMETER::NVegSurf=3
       ! INTEGER,PARAMETER::PavSurf=1
-      INTEGER, PARAMETER::WaterSurf = 7
+      INTEGER, PARAMETER :: WaterSurf = 7
 
-      INTEGER, INTENT(in)::id
-      INTEGER, INTENT(in)::it ! time: day of year and hour
-      INTEGER, INTENT(in)::gsModel!Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
-      INTEGER, INTENT(in)::SMDMethod!Method of measured soil moisture
+      INTEGER, INTENT(in) :: id
+      INTEGER, INTENT(in) :: it ! time: day of year and hour
+      INTEGER, INTENT(in) :: gsModel !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
+      INTEGER, INTENT(in) :: SMDMethod !Method of measured soil moisture
       ! INTEGER,INTENT(in)::ConifSurf!= 3, surface code
       ! INTEGER,INTENT(in)::DecidSurf!= 4, surface code
       ! INTEGER,INTENT(in)::GrassSurf!= 5, surface code
       ! INTEGER,INTENT(in)::WaterSurf!= 7, surface code
       ! INTEGER,INTENT(in)::nsurf!= 7, Total number of surfaces
 
-      REAL(KIND(1D0)), INTENT(in)::avkdn!Average downwelling shortwave radiation
-      REAL(KIND(1D0)), INTENT(in)::Temp_C!Air temperature
-      REAL(KIND(1D0)), INTENT(in)::Kmax!Annual maximum hourly solar radiation
-      REAL(KIND(1D0)), INTENT(in)::G1!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::G2!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::G3!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::G4!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::G5!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::G6!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::S1!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::S2!Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in)::TH!Maximum temperature limit
-      REAL(KIND(1D0)), INTENT(in)::TL!Minimum temperature limit
-      REAL(KIND(1D0)), INTENT(in)::dq!Specific humidity deficit
-      REAL(KIND(1D0)), INTENT(in)::xsmd!Measured soil moisture deficit
-      REAL(KIND(1D0)), INTENT(in)::vsmd!QUESTION: Soil moisture deficit for vegetated surfaces only (what about BSoil?)
+      REAL(KIND(1D0)), INTENT(in) :: avkdn !Average downwelling shortwave radiation
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C !Air temperature
+      REAL(KIND(1D0)), INTENT(in) :: Kmax !Annual maximum hourly solar radiation
+      REAL(KIND(1D0)), INTENT(in) :: G1 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G2 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G3 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G4 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G5 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G6 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: S1 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: S2 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: TH !Maximum temperature limit
+      REAL(KIND(1D0)), INTENT(in) :: TL !Minimum temperature limit
+      REAL(KIND(1D0)), INTENT(in) :: dq !Specific humidity deficit
+      REAL(KIND(1D0)), INTENT(in) :: xsmd !Measured soil moisture deficit
+      REAL(KIND(1D0)), INTENT(in) :: vsmd !QUESTION: Soil moisture deficit for vegetated surfaces only (what about BSoil?)
 
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(in)    ::MaxConductance!Max conductance [mm s-1]
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(in)    ::LAIMax        !Max LAI [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(in)    ::LAI_id        !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowFrac      !Surface fraction of snow cover
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::sfr           !Surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: MaxConductance !Max conductance [mm s-1]
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAIMax !Max LAI [m2 m-2]
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAI_id !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac !Surface fraction of snow cover
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr !Surface fractions [-]
 
-      REAL(KIND(1D0)), INTENT(out)::gfunc!gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)), INTENT(out)::gsc!Surface Layer Conductance
-      REAL(KIND(1D0)), INTENT(out)::ResistSurf!Surface resistance
+      REAL(KIND(1D0)), INTENT(out) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: gsc !Surface Layer Conductance
+      REAL(KIND(1D0)), INTENT(out) :: ResistSurf !Surface resistance
 
-      REAL(KIND(1D0)):: &
-         gl, &!G(LAI)
-         QNM, &!QMAX/(QMAX+G2)
-         gq, &!G(Q*)
-         gdq, &!G(dq)
-         TC, &!Temperature parameter 1
-         TC2, &!Temperature parameter 2
-         gtemp, &!G(T)
-         sdp, &!S1/G6+S2
-         gs!G(Soil moisture deficit)
+      REAL(KIND(1D0)) :: &
+         gl, & !G(LAI)
+         QNM, & !QMAX/(QMAX+G2)
+         gq, & !G(Q*)
+         gdq, & !G(dq)
+         TC, & !Temperature parameter 1
+         TC2, & !Temperature parameter 2
+         gtemp, & !G(T)
+         sdp, & !S1/G6+S2
+         gs !G(Soil moisture deficit)
 
-      INTEGER:: iv
-      REAL(KIND(1D0)):: id_real
+      INTEGER :: iv
+      REAL(KIND(1D0)) :: id_real
 
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55
       ! REAL(KIND(1d0)),PARAMETER :: notUsedi=-55.5
@@ -248,12 +248,12 @@ CONTAINS
 
          ! soil moisture deficit ----
          sdp = S1/G6 + S2
-         IF (SMDMethod > 0) THEN         !Modified from ==1 to > 0 by HCW 31/07/2014
-            gs = 1 - EXP(g6*(xsmd - sdp))  !Measured soil moisture deficit is used
+         IF (SMDMethod > 0) THEN !Modified from ==1 to > 0 by HCW 31/07/2014
+            gs = 1 - EXP(g6*(xsmd - sdp)) !Measured soil moisture deficit is used
          ELSE
-            gs = 1 - EXP(g6*(vsmd - sdp))   !Modelled is used
+            gs = 1 - EXP(g6*(vsmd - sdp)) !Modelled is used
             IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf) == 1) THEN
-               gs = 0   !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
+               gs = 0 !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
             END IF
          END IF
          !gs = gs*(1 - SUM(SnowFrac(1:6))/6)
@@ -268,7 +268,7 @@ CONTAINS
          !Original way
          !gl=((LAI(id,2)*areaunir/lm)+areair)/(areair+areaunir)
          !New way
-         gl = 0    !First initialize
+         gl = 0 !First initialize
          ! vegetated surfaces
          ! check basis for values koe - maximum surface conductance
          !  print*,id,it,sfr
@@ -278,7 +278,7 @@ CONTAINS
             gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
          END DO
 
-         IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
+         IF (avkdn <= 0) THEN !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
             gsc = 0.1
          ELSE
             ! Multiply parts together
@@ -295,13 +295,13 @@ CONTAINS
          ! ---- g(kdown)----
          QNM = Kmax/(Kmax + G2)
          gq = (avkdn/(avkdn + G2))/QNM
-         IF (avkdn >= Kmax) THEN   !! Add proper error handling later - HCW!!
+         IF (avkdn >= Kmax) THEN !! Add proper error handling later - HCW!!
             WRITE (*, *) 'Kmax exceeds Kdn setting to g(Kdn) to 1'
             gq = 1
          END IF
 
          ! ---- g(delq) ----
-         gdq = G3 + (1 - G3)*(G4**dq)   !Ogink-Hendriks (1995) Eq 12 (using G3 as Kshd and G4 as r)
+         gdq = G3 + (1 - G3)*(G4**dq) !Ogink-Hendriks (1995) Eq 12 (using G3 as Kshd and G4 as r)
 
          ! ---- g(Tair) ----
          Tc = (TH - G5)/(G5 - TL)
@@ -323,13 +323,13 @@ CONTAINS
          END IF
          ! ---- g(smd) ----
          sdp = S1/G6 + S2
-         IF (SMDMethod > 0) THEN   !Modified from ==1 to > 0 by HCW 31/07/2014
-            gs = (1 - EXP(g6*(xsmd - sdp)))/(1 - EXP(g6*(-sdp)))   !Use measured smd
+         IF (SMDMethod > 0) THEN !Modified from ==1 to > 0 by HCW 31/07/2014
+            gs = (1 - EXP(g6*(xsmd - sdp)))/(1 - EXP(g6*(-sdp))) !Use measured smd
          ELSE
             !gs=1-EXP(g6*(vsmd-sdp))   !Use modelled smd
             gs = (1 - EXP(g6*(vsmd - sdp)))/(1 - EXP(g6*(-sdp)))
             IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf) == 1) THEN
-               gs = 0   !If no veg so no vsmd, or all water so no smd, set gs=0 HCW 21 Jul 2016
+               gs = 0 !If no veg so no vsmd, or all water so no smd, set gs=0 HCW 21 Jul 2016
             END IF
          END IF
 
@@ -343,14 +343,14 @@ CONTAINS
          END IF
 
          ! ---- g(LAI) ----
-         gl = 0    !Initialise
+         gl = 0 !Initialise
          ! DO iv=ivConif,ivGrass   !For vegetated surfaces
-         DO iv = 1, 3   !For vegetated surfaces
+         DO iv = 1, 3 !For vegetated surfaces
             !  gl=gl+(sfr(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
             gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
          END DO
 
-         IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
+         IF (avkdn <= 0) THEN !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
             gsc = 0.1
          ELSE
             ! Multiply parts together
@@ -366,7 +366,7 @@ CONTAINS
          CALL errorHint(71, 'Value of gsModel not recognised.', notUsed, NotUsed, gsModel)
       END IF
 
-      ResistSurf = 1/(gsc/1000)  ![s m-1]
+      ResistSurf = 1/(gsc/1000) ![s m-1]
       gfunc = gdq*gtemp*gs*gq
 
       RETURN
@@ -374,20 +374,20 @@ CONTAINS
 
    SUBROUTINE BoundaryLayerResistance( &
       zzd, & ! input:    !Active measurement height (meas. height-displac. height)
-      z0m, &     !Aerodynamic roughness length
-      avU1, &    !Average wind speed
-      UStar, &! input/output:
-      rb)! output:
+      z0m, & !Aerodynamic roughness length
+      avU1, & !Average wind speed
+      UStar, & ! input/output:
+      rb) ! output:
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
-      REAL(KIND(1D0)), INTENT(in)::z0m     !Aerodynamic roughness length
-      REAL(KIND(1D0)), INTENT(in)::avU1    !Average wind speed
+      REAL(KIND(1D0)), INTENT(in) :: zzd !Active measurement height (meas. height-displac. height)
+      REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length
+      REAL(KIND(1D0)), INTENT(in) :: avU1 !Average wind speed
 
-      REAL(KIND(1D0)), INTENT(inout)::UStar!Friction velocity
+      REAL(KIND(1D0)), INTENT(inout) :: UStar !Friction velocity
 
-      REAL(KIND(1D0)), INTENT(out)::rb   !boundary layer resistance shuttleworth
+      REAL(KIND(1D0)), INTENT(out) :: rb !boundary layer resistance shuttleworth
 
       REAL(KIND(1D0)), PARAMETER :: k = 0.4
 
@@ -395,18 +395,18 @@ CONTAINS
          UStar = avu1/LOG(zzd/z0m)*k
       END IF
 
-      rb = (1.1/UStar) + (5.6*(UStar**0.333333))!rb - boundary layer resistance shuttleworth
+      rb = (1.1/UStar) + (5.6*(UStar**0.333333)) !rb - boundary layer resistance shuttleworth
 
       RETURN
    END SUBROUTINE BoundaryLayerResistance
 
    SUBROUTINE SUEWS_cal_RoughnessParameters( &
-      RoughLenMomMethod, &! input:
-      sfr, &! surface fractions
+      RoughLenMomMethod, & ! input:
+      sfr, & ! surface fractions
       bldgH, EveTreeH, DecTreeH, &
       porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
-      FAI, &! output:
+      FAI, & ! output:
       Zh, z0m, zdm, ZZD)
       ! Get surface covers and frontal area fractions (LJ 11/2010)
       ! Last modified:
@@ -418,40 +418,40 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER, PARAMETER:: nsurf = 7 ! number of surface types
-      INTEGER, PARAMETER:: PavSurf = 1 !When all surfaces considered together (1-7)
-      INTEGER, PARAMETER:: BldgSurf = 2
-      INTEGER, PARAMETER:: ConifSurf = 3
-      INTEGER, PARAMETER:: DecidSurf = 4
-      INTEGER, PARAMETER:: GrassSurf = 5 !New surface classes: Grass = 5th/7 surfaces
-      INTEGER, PARAMETER:: BSoilSurf = 6 !New surface classes: Bare soil = 6th/7 surfaces
-      INTEGER, PARAMETER:: WaterSurf = 7
+      INTEGER, PARAMETER :: nsurf = 7 ! number of surface types
+      INTEGER, PARAMETER :: PavSurf = 1 !When all surfaces considered together (1-7)
+      INTEGER, PARAMETER :: BldgSurf = 2
+      INTEGER, PARAMETER :: ConifSurf = 3
+      INTEGER, PARAMETER :: DecidSurf = 4
+      INTEGER, PARAMETER :: GrassSurf = 5 !New surface classes: Grass = 5th/7 surfaces
+      INTEGER, PARAMETER :: BSoilSurf = 6 !New surface classes: Bare soil = 6th/7 surfaces
+      INTEGER, PARAMETER :: WaterSurf = 7
 
-      INTEGER, INTENT(in) ::RoughLenMomMethod
+      INTEGER, INTENT(in) :: RoughLenMomMethod
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::sfr! surface fractions
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! surface fractions
 
-      REAL(KIND(1D0)), INTENT(in) ::bldgH
-      REAL(KIND(1D0)), INTENT(in) ::EveTreeH
-      REAL(KIND(1D0)), INTENT(in) ::DecTreeH
-      REAL(KIND(1D0)), INTENT(in) ::porosity_id
-      REAL(KIND(1D0)), INTENT(in) ::FAIBldg
-      REAL(KIND(1D0)), INTENT(in) ::FAIEveTree
-      REAL(KIND(1D0)), INTENT(in) ::FAIDecTree
-      REAL(KIND(1D0)), INTENT(in) ::z0m_in ! z0m set in SiteSelect
-      REAL(KIND(1D0)), INTENT(in) ::zdm_in ! zdm set in SiteSelect
-      REAL(KIND(1D0)), INTENT(in) ::Z
+      REAL(KIND(1D0)), INTENT(in) :: bldgH
+      REAL(KIND(1D0)), INTENT(in) :: EveTreeH
+      REAL(KIND(1D0)), INTENT(in) :: DecTreeH
+      REAL(KIND(1D0)), INTENT(in) :: porosity_id
+      REAL(KIND(1D0)), INTENT(in) :: FAIBldg
+      REAL(KIND(1D0)), INTENT(in) :: FAIEveTree
+      REAL(KIND(1D0)), INTENT(in) :: FAIDecTree
+      REAL(KIND(1D0)), INTENT(in) :: z0m_in ! z0m set in SiteSelect
+      REAL(KIND(1D0)), INTENT(in) :: zdm_in ! zdm set in SiteSelect
+      REAL(KIND(1D0)), INTENT(in) :: Z
 
-      REAL(KIND(1D0)), INTENT(out) ::FAI
-      REAL(KIND(1D0)), INTENT(out) ::Zh  ! effective height of bluff bodies
-      REAL(KIND(1D0)), INTENT(out) ::z0m ! aerodynamic roughness length
-      REAL(KIND(1D0)), INTENT(out) ::zdm ! zero-plance displacement
-      REAL(KIND(1D0)), INTENT(out) ::ZZD ! z-zdm
+      REAL(KIND(1D0)), INTENT(out) :: FAI
+      REAL(KIND(1D0)), INTENT(out) :: Zh ! effective height of bluff bodies
+      REAL(KIND(1D0)), INTENT(out) :: z0m ! aerodynamic roughness length
+      REAL(KIND(1D0)), INTENT(out) :: zdm ! zero-plance displacement
+      REAL(KIND(1D0)), INTENT(out) :: ZZD ! z-zdm
 
-      REAL(KIND(1D0)) ::areaZh
+      REAL(KIND(1D0)) :: areaZh
       INTEGER, PARAMETER :: notUsedI = -55
-      REAL(KIND(1D0)), PARAMETER:: notUsed = -55.5
-      REAL(KIND(1D0)):: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water   !Default values for roughness lengths [m]
+      REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
+      REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
 
       !Total area of buildings and trees
       areaZh = (sfr(BldgSurf) + sfr(ConifSurf) + sfr(DecidSurf))
@@ -471,13 +471,13 @@ CONTAINS
          ! `1e-5` set to avoid numerical difficulty
          FAI = MAX(FAI, 1E-5)
       ELSE
-         Zh = 0   !Set Zh to zero if areaZh = 0
+         Zh = 0 !Set Zh to zero if areaZh = 0
          FAI = 1E-5
       END IF
 
       IF (Zh /= 0) THEN
          !Calculate z0m and zdm depending on the Z0 method
-         IF (RoughLenMomMethod == 2) THEN  !Rule of thumb (G&O 1999)
+         IF (RoughLenMomMethod == 2) THEN !Rule of thumb (G&O 1999)
             z0m = 0.1*Zh
             zdm = 0.7*Zh
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
@@ -488,7 +488,7 @@ CONTAINS
             zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*areaZh) + 0.493*sigmoid(-5.17 + 32.7*areaZh))*Zh
             z0m = (0.00208 + 0.0165*areaZh + 2.52*areaZh**2 + 3.21*areaZh**3 - 43.6*areaZh**4 + 76.5*areaZh**5 - 40.*areaZh**6)*Zh
          END IF
-      ELSEIF (Zh == 0) THEN   !If zh calculated to be zero, set default roughness length and displacement height
+      ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
          IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)
          !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
          IF (areaZh /= 1) THEN
@@ -498,14 +498,14 @@ CONTAINS
                    + z0m4Water*sfr(WaterSurf))/(1 - areaZh)
             zdm = 0
             CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
-         ELSEIF (areaZh == 1) THEN  !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
+         ELSEIF (areaZh == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
             z0m = 1
             zdm = 7
             CALL ErrorHint(15, 'Assuming mean height = 10 m, Setting z0m and zdm to default value', z0m, zdm, notUsedI)
          END IF
       END IF
 
-      IF (RoughLenMomMethod == 1) THEN  !use values set in SiteSelect
+      IF (RoughLenMomMethod == 1) THEN !use values set in SiteSelect
          z0m = z0m_in
          zdm = zdm_in
       END IF
@@ -522,14 +522,14 @@ CONTAINS
       ! TS 31 Jul 2018: make this a separate funciton for reuse
       !Z0V roughness length for vapour
       IMPLICIT NONE
-      INTEGER, INTENT(in)::RoughLenHeatMethod
-      REAL(KIND(1D0)), INTENT(in)::z0m!Aerodynamic roughness length
-      REAL(KIND(1D0)), INTENT(in)::VegFraction!Fraction of vegetation
-      REAL(KIND(1D0)), INTENT(in)::UStar!Friction velocity
+      INTEGER, INTENT(in) :: RoughLenHeatMethod
+      REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length
+      REAL(KIND(1D0)), INTENT(in) :: VegFraction !Fraction of vegetation
+      REAL(KIND(1D0)), INTENT(in) :: UStar !Friction velocity
 
-      REAL(KIND(1D0))::z0V!roughness length for vapor/heat
+      REAL(KIND(1D0)) :: z0V !roughness length for vapor/heat
 
-      REAL(KIND(1D0)), PARAMETER:: muu = 1.46E-5 !molecular viscosity
+      REAL(KIND(1D0)), PARAMETER :: muu = 1.46E-5 !molecular viscosity
 
       z0V = 0.01 ! initialise as 0.01
 

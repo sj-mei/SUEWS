@@ -18,55 +18,55 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
    IMPLICIT NONE
 
    !INPUT
-   REAL(KIND(1D0)), DIMENSION(24)::MetArray !Array leaving the subroutine within
+   REAL(KIND(1D0)), DIMENSION(24) :: MetArray !Array leaving the subroutine within
    !each INTERVAL (defined in RunControl.nml)
    ! - Met data now provided at a resolution of tstep, HCW Jan 2015
 
-   REAL(KIND(1D0))::SmCap, & !Volumetric/gravimetric soil moisture capacity
-                     SoilDepthMeas, &        !Measured soil depth
-                     SoilRocks, &            !Rocks on ground
-                     SoilDensity            !Density of soil
+   REAL(KIND(1D0)) :: SmCap, & !Volumetric/gravimetric soil moisture capacity
+                      SoilDepthMeas, & !Measured soil depth
+                      SoilRocks, & !Rocks on ground
+                      SoilDensity !Density of soil
 
-   INTEGER::InputmetFormat, &     !Format of the meteorological forcing file
-             ldown_option, &       !Method of calculating Ldown
-             NetRadiationMethod, & !Method of calculating Q*
-             SMDMethod, &         !Method of measured soil moisture
-             SnowUse
+   INTEGER :: InputmetFormat, & !Format of the meteorological forcing file
+              ldown_option, & !Method of calculating Ldown
+              NetRadiationMethod, & !Method of calculating Q*
+              SMDMethod, & !Method of measured soil moisture
+              SnowUse
 
    ! Variables read in
-   REAL(KIND(1D0))::avkdn, &     !Average downwelling shortwave radiation
-                     avrh, &      !Average relative humidity
-                     avu1, &      !Average wind speed
-                     dectime, &   !Decimal time
-                     fcld_obs, &  !Cloud fraction observed
-                     iy, &        !Year
-                     id, &        !Day
-                     it, &        !Hour
-                     imin, &      !Minute
-                     kdiff, &     !Diffuse shortwave radiation
-                     kdir, &      !Direct shortwave radiation
-                     LAI_obs, &   !Overall LAI of the study area
-                     ldown_obs, & !Downwelling longwave radiation
-                     Precip, & !Rainfall [mm]
-                     Pres_hPa, &  !Station air pressure in hPa
-                     Pres_kPa, &  !Station air pressure in kPa
-                     snowFrac_obs, &  !Observed surface fraction of snow (between 0 and 1)
-                     qe_obs, &    !Observed latent heat flux
-                     qf_obs, &    !Observed antrhropogeni heat flux
-                     qh_obs, &    !Observed sensible heat flux
-                     qn1_obs, &   !Observed net all-wave radiation
-                     qs_obs, &    !Observed storage heat flux
-                     Temp_C, &    !Air temperature
-                     wdir, &      !Wind direction
-                     wu_m3, &     !Water use provided in met forcing file [m3]
-                     xsmd        !Measured soil moisture deficit
+   REAL(KIND(1D0)) :: avkdn, & !Average downwelling shortwave radiation
+                      avrh, & !Average relative humidity
+                      avu1, & !Average wind speed
+                      dectime, & !Decimal time
+                      fcld_obs, & !Cloud fraction observed
+                      iy, & !Year
+                      id, & !Day
+                      it, & !Hour
+                      imin, & !Minute
+                      kdiff, & !Diffuse shortwave radiation
+                      kdir, & !Direct shortwave radiation
+                      LAI_obs, & !Overall LAI of the study area
+                      ldown_obs, & !Downwelling longwave radiation
+                      Precip, & !Rainfall [mm]
+                      Pres_hPa, & !Station air pressure in hPa
+                      Pres_kPa, & !Station air pressure in kPa
+                      snowFrac_obs, & !Observed surface fraction of snow (between 0 and 1)
+                      qe_obs, & !Observed latent heat flux
+                      qf_obs, & !Observed antrhropogeni heat flux
+                      qh_obs, & !Observed sensible heat flux
+                      qn1_obs, & !Observed net all-wave radiation
+                      qs_obs, & !Observed storage heat flux
+                      Temp_C, & !Air temperature
+                      wdir, & !Wind direction
+                      wu_m3, & !Water use provided in met forcing file [m3]
+                      xsmd !Measured soil moisture deficit
 
-   INTEGER::iostat_var, lfn
+   INTEGER :: iostat_var, lfn
 
    !-----------------------------------------------------------------------------------
    !-----------------------------------------------------------------------------------
 
-   IF (InputMetFormat == 0) THEN   !Default format using LUMPS only
+   IF (InputMetFormat == 0) THEN !Default format using LUMPS only
 
       READ (lfn, *, iostat=iostat_var) iy, id, it, imin, qn1_obs, avu1, avrh, &
          Temp_C, wdir, Pres_kPa, Precip, avkdn, snowFrac_obs, ldown_obs, fcld_obs
@@ -130,7 +130,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
       END IF
    END IF
 
-   IF (qn1_obs == -999 .AND. NetRadiationMethod == 0) THEN  !If measured Q* is used and it is -999
+   IF (qn1_obs == -999 .AND. NetRadiationMethod == 0) THEN !If measured Q* is used and it is -999
       CALL ErrorHint(27, 'Met Data: Q* - will impact everything', qn1_obs, dectime, notUsedI)
    END IF
 
@@ -146,11 +146,11 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
       CALL ErrorHint(27, 'Met Data: avRH - beyond what is expected', avRH, dectime, notUsedI)
    END IF
 
-   IF (Pres_kPa < 80) THEN  !If pressure too low
+   IF (Pres_kPa < 80) THEN !If pressure too low
       CALL ErrorHint(27, 'Met Data: Pres_kPa - too low - this could be fixed in model', Pres_kPa, dectime, notUsedI)
    END IF
 
-   IF (Precip < 0) THEN  !If rain in negative, set it to zero
+   IF (Precip < 0) THEN !If rain in negative, set it to zero
       CALL ErrorHint(27, 'Met Data: Precip - less than 0', Precip, dectime, notUsedI)
    END IF
 
@@ -160,7 +160,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
       CALL ErrorHint(27, 'Met Data: snow not between [0  1]', snowFrac_obs, dectime, notUsedI)
    END IF
 
-   IF (xsmd < 0 .AND. SMDMethod == 1) THEN  !If soil moisture deficit is zero
+   IF (xsmd < 0 .AND. SMDMethod == 1) THEN !If soil moisture deficit is zero
       CALL ErrorHint(27, 'Met Data: xsmd - less than 0', xsmd, dectime, notUsedI)
    END IF
 
@@ -189,9 +189,9 @@ END SUBROUTINE MetRead
 !Information for the run
 MODULE run_info
    IMPLICIT NONE
-   CHARACTER(len=90), DIMENSION(14)::text
-   INTEGER::lim0 = 0, lim1 = 1, lim2 = 2, lim4 = 4, lim3 = 3, lim6 = 6, lim8 = 8, lim12 = 12, lfn_us
-   LOGICAL ::file_qs
+   CHARACTER(len=90), DIMENSION(14) :: text
+   INTEGER :: lim0 = 0, lim1 = 1, lim2 = 2, lim4 = 4, lim3 = 3, lim6 = 6, lim8 = 8, lim12 = 12, lfn_us
+   LOGICAL :: file_qs
 END MODULE run_info
 
 ! run_control
@@ -202,8 +202,8 @@ SUBROUTINE run_control(eval, LowerLimit, Upperlimit)
    ! if ver=-9 - then use integer
    USE run_info
    IMPLICIT NONE
-   INTEGER::eval, i, lowerlimit, upperlimit
-   CHARACTER(len=4)::check
+   INTEGER :: eval, i, lowerlimit, upperlimit
+   CHARACTER(len=4) :: check
 
    IF (file_qs) THEN
 101   READ (lfn_us, *) check
@@ -240,7 +240,7 @@ SUBROUTINE SkipHeader(lfn, skip)
    USE defaultnotUsed
    IMPLICIT NONE
 
-   INTEGER::skip, lfn, i
+   INTEGER :: skip, lfn, i
    DO I = 1, skip
       READ (lfn, *, err=201, iostat=ios_out)
    END DO
@@ -270,7 +270,7 @@ SUBROUTINE InputHeaderCheck(FileName)
 
    IMPLICIT NONE
 
-   CHARACTER(len=50):: FileName
+   CHARACTER(len=50) :: FileName
 
    ! ========== Define expected column names here ==========
    ! =======================================================
@@ -388,9 +388,9 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderSnow_Reqd(cs_OHMThresh_SW) = "OHMThresh_SW"
    HeaderSnow_Reqd(cs_OHMThresh_WD) = "OHMThresh_WD"
    HeaderSnow_Reqd(cs_ESTMCode) = "ESTMCode"
-   HeaderSnow_Reqd(cs_cpAnOHM) = "AnOHM_Cp"    ! AnOHM TS
-   HeaderSnow_Reqd(cs_kkAnOHM) = "AnOHM_Kk"    ! AnOHM TS
-   HeaderSnow_Reqd(cs_chAnOHM) = "AnOHM_Ch"    ! AnOHM TS
+   HeaderSnow_Reqd(cs_cpAnOHM) = "AnOHM_Cp" ! AnOHM TS
+   HeaderSnow_Reqd(cs_kkAnOHM) = "AnOHM_Kk" ! AnOHM TS
+   HeaderSnow_Reqd(cs_chAnOHM) = "AnOHM_Ch" ! AnOHM TS
 
    ! ========== SUEWS_Soil.txt ===================
    HeaderSoil_Reqd(cSo_Code) = "Code"
@@ -744,11 +744,11 @@ FUNCTION get_Prof_SpecTime_inst(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
 
    IMPLICIT NONE
 
-   INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
+   INTEGER :: i, j !Used to count over hours and sub-hourly timesteps
    INTEGER, INTENT(IN) :: Hour, Min, Sec
    INTEGER :: total_sec, SecPerHour
    REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
-   REAL(KIND(1D0)):: deltaProf   !Change in hourly profiles per model timestep
+   REAL(KIND(1D0)) :: deltaProf !Change in hourly profiles per model timestep
    REAL(KIND(1D0)) :: Prof_CurrTime
 
    total_sec = Min*60 + Sec
@@ -770,12 +770,12 @@ FUNCTION get_Prof_SpecTime_mean(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
 
    IMPLICIT NONE
 
-   INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
+   INTEGER :: i, j !Used to count over hours and sub-hourly timesteps
    INTEGER, INTENT(IN) :: Hour, Min, Sec
    INTEGER :: total_sec, SecPerHour
    REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
-   REAL(KIND(1D0)), DIMENSION(0:23):: Prof_24h_mean
-   REAL(KIND(1D0)):: deltaProf   !Change in hourly profiles per model timestep
+   REAL(KIND(1D0)), DIMENSION(0:23) :: Prof_24h_mean
+   REAL(KIND(1D0)) :: deltaProf !Change in hourly profiles per model timestep
    REAL(KIND(1D0)) :: Prof_CurrTime
 
    total_sec = Min*60 + Sec
@@ -802,12 +802,12 @@ FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTim
 
    IMPLICIT NONE
 
-   INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
+   INTEGER :: i, j !Used to count over hours and sub-hourly timesteps
    INTEGER, INTENT(IN) :: Hour, Min, Sec, dt
    INTEGER :: total_sec, SecPerHour
    REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
-   REAL(KIND(1D0)), DIMENSION(0:23):: Prof_24h_sum
-   REAL(KIND(1D0)):: deltaProf   !Change in hourly profiles per model timestep
+   REAL(KIND(1D0)), DIMENSION(0:23) :: Prof_24h_sum
+   REAL(KIND(1D0)) :: deltaProf !Change in hourly profiles per model timestep
    REAL(KIND(1D0)) :: Prof_CurrTime
 
    total_sec = Min*60 + Sec
@@ -842,9 +842,9 @@ SUBROUTINE CodeMatchOHM(Gridiv, is, SWWD)
 
    IMPLICIT NONE
 
-   INTEGER:: gridiv
-   INTEGER:: is
-   CHARACTER(len=4):: SWWD
+   INTEGER :: gridiv
+   INTEGER :: is
+   CHARACTER(len=4) :: SWWD
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -920,8 +920,8 @@ SUBROUTINE CodeMatchESTM(Gridiv, is)
 
    IMPLICIT NONE
 
-   INTEGER:: gridiv
-   INTEGER:: is
+   INTEGER :: gridiv
+   INTEGER :: is
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -951,8 +951,8 @@ SUBROUTINE CodeMatchESTM_Class(Gridiv, is, ii)
 
    IMPLICIT NONE
 
-   INTEGER:: gridiv
-   INTEGER:: is, ii
+   INTEGER :: gridiv
+   INTEGER :: is, ii
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -998,8 +998,8 @@ SUBROUTINE CodeMatchProf(Gridiv, SurfaceCharCodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: Gridiv
-   INTEGER:: SurfaceCharCodeCol
+   INTEGER :: Gridiv
+   INTEGER :: SurfaceCharCodeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1030,8 +1030,8 @@ SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol, codeColSameSurf
+   INTEGER :: rr
+   INTEGER :: codeCol, codeColSameSurf
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1062,7 +1062,7 @@ SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
    END IF
 
    !! Also do for water surface once implemented
-   IF (codeCol /= c_WGWaterCode) THEN   ! Except for Water surface
+   IF (codeCol /= c_WGWaterCode) THEN ! Except for Water surface
       ! Check total water distribution from each surface adds up to 1
       IF (SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001 &
           .OR. SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999) THEN
@@ -1087,8 +1087,8 @@ SUBROUTINE CodeMatchNonVeg(rr, CodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol
+   INTEGER :: rr
+   INTEGER :: codeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1117,8 +1117,8 @@ SUBROUTINE CodeMatchVeg(rr, CodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol
+   INTEGER :: rr
+   INTEGER :: codeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1147,8 +1147,8 @@ SUBROUTINE CodeMatchWater(rr, CodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol
+   INTEGER :: rr
+   INTEGER :: codeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1177,8 +1177,8 @@ SUBROUTINE CodeMatchSnow(rr, CodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol
+   INTEGER :: rr
+   INTEGER :: codeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1207,8 +1207,8 @@ SUBROUTINE CodeMatchConductance(rr, CodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol
+   INTEGER :: rr
+   INTEGER :: codeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1238,8 +1238,8 @@ SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol
+   INTEGER :: rr
+   INTEGER :: codeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1270,8 +1270,8 @@ SUBROUTINE CodeMatchIrrigation(rr, CodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: rr
-   INTEGER:: codeCol
+   INTEGER :: rr
+   INTEGER :: codeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1300,8 +1300,8 @@ SUBROUTINE CodeMatchSoil(Gridiv, SurfaceCharCodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: Gridiv
-   INTEGER:: SurfaceCharCodeCol
+   INTEGER :: Gridiv
+   INTEGER :: SurfaceCharCodeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1330,8 +1330,8 @@ SUBROUTINE CodeMatchBiogen(Gridiv, SurfaceCharCodeCol)
 
    IMPLICIT NONE
 
-   INTEGER:: Gridiv
-   INTEGER:: SurfaceCharCodeCol
+   INTEGER :: Gridiv
+   INTEGER :: SurfaceCharCodeCol
 
    iv5 = 0 ! Reset iv5 to zero
 
@@ -1387,22 +1387,22 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER:: lunit = 100
-      INTEGER:: tdiff   !Time difference (in minutes) between first and second rows of original met forcing file
-      INTEGER:: i, ii  !counter
-      INTEGER:: iBlock, igrid
-      INTEGER, DIMENSION(Nper):: seq1Nper
-      INTEGER, DIMENSION(nsd):: seq1nsd
-      INTEGER, DIMENSION(nColumnsMetForcingData):: MetDisaggMethod   ! Stores method to use for disaggregating met data
-      REAL(KIND(1D0)), DIMENSION(nColumnsMetForcingData):: MetArrayOrig
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper, ncolumnsMetForcingData):: Met_tt
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper):: Met_tt_kdownAdj
-      CHARACTER(LEN=9), DIMENSION(ncolumnsMetForcingData):: HeaderMet
-      CHARACTER(LEN=10*ncolumnsMetForcingData):: HeaderMetOut
+      INTEGER :: lunit = 100
+      INTEGER :: tdiff !Time difference (in minutes) between first and second rows of original met forcing file
+      INTEGER :: i, ii !counter
+      INTEGER :: iBlock, igrid
+      INTEGER, DIMENSION(Nper) :: seq1Nper
+      INTEGER, DIMENSION(nsd) :: seq1nsd
+      INTEGER, DIMENSION(nColumnsMetForcingData) :: MetDisaggMethod ! Stores method to use for disaggregating met data
+      REAL(KIND(1D0)), DIMENSION(nColumnsMetForcingData) :: MetArrayOrig
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper, ncolumnsMetForcingData) :: Met_tt
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper) :: Met_tt_kdownAdj
+      CHARACTER(LEN=9), DIMENSION(ncolumnsMetForcingData) :: HeaderMet
+      CHARACTER(LEN=10*ncolumnsMetForcingData) :: HeaderMetOut
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData):: dectimeOrig
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData*Nper):: dectimeDscd, dectimeFast
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper):: dectimeFast
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper):: idectime ! sun position at middle of time-step before
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper) :: dectimeFast
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper) :: idectime ! sun position at middle of time-step before
 
       ! INTEGER, DIMENSION(Nper):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm ! temorary varaibles for disaggragation
       ! REAL(KIND(1d0)), DIMENSION(Nper):: temp_dectime ! temorary varaibles for disaggragation
@@ -1428,12 +1428,12 @@ CONTAINS
       ! Get methods to use for disaggregation from RunControl
       IF (DiagnoseDisagg == 1) WRITE (*, *) 'DisaggMethod: ', DisaggMethod, 'RainDisaggMethod:', RainDisaggMethod
       IF (DisaggMethod == 1) THEN
-         MetDisaggMethod(:) = 10   !linear disaggregation of averages
+         MetDisaggMethod(:) = 10 !linear disaggregation of averages
       ELSEIF (DisaggMethod == 2) THEN
-         MetDisaggMethod(:) = 20   !linear disaggregation of instantaneous values
-      ELSEIF (DisaggMethod == 3) THEN   !WFDEI set up, where T, Q, pres, U are instantaneous
-         MetDisaggMethod(:) = 10   !linear disaggregation of averages
-         MetDisaggMethod(10:13) = 20   !linear disagg instantaneous values for U, RH, Tair, pres
+         MetDisaggMethod(:) = 20 !linear disaggregation of instantaneous values
+      ELSEIF (DisaggMethod == 3) THEN !WFDEI set up, where T, Q, pres, U are instantaneous
+         MetDisaggMethod(:) = 10 !linear disaggregation of averages
+         MetDisaggMethod(10:13) = 20 !linear disagg instantaneous values for U, RH, Tair, pres
       ELSE
          CALL errorHint(2, 'Problem in SUEWS_MetDisagg: DisaggMethod value should be 1, 2, or 3', &
                         NotUsed, NotUsed, DisaggMethod)
@@ -1449,7 +1449,7 @@ CONTAINS
       !write(*,*) HeaderMet
       ! Skip over lines that have already been read and downscaled
       IF (SkippedLinesOrig > 0) THEN
-         DO i = 1, skippedLinesOrig - 1   ! minus 1 here because last line of last block needs to be read again
+         DO i = 1, skippedLinesOrig - 1 ! minus 1 here because last line of last block needs to be read again
             READ (lunit, *)
          END DO
          ! Read in last line of previous block
@@ -1476,11 +1476,11 @@ CONTAINS
 
       ! Check resolution of original met forcing data -------------------------------------
       ! Find time difference (in minutes) between first and second row
-      tdiff = INT(MetForDisagg(2, 4) - MetForDisagg(1, 4))   !Try using minutes
-      IF (tdiff == 0) tdiff = INT(MetForDisagg(2, 3) - MetForDisagg(1, 3))*60   !If no difference in minutes, try using hours
-      IF (tdiff < 0) THEN   !If time difference is negative (e.g. change of day), instead use second and third row
+      tdiff = INT(MetForDisagg(2, 4) - MetForDisagg(1, 4)) !Try using minutes
+      IF (tdiff == 0) tdiff = INT(MetForDisagg(2, 3) - MetForDisagg(1, 3))*60 !If no difference in minutes, try using hours
+      IF (tdiff < 0) THEN !If time difference is negative (e.g. change of day), instead use second and third row
          tdiff = INT(MetForDisagg(3, 4) - MetForDisagg(2, 4))
-         IF (tdiff == 0) tdiff = INT(MetForDisagg(3, 3) - MetForDisagg(2, 3))*60   !If no difference in minutes, try using hours
+         IF (tdiff == 0) tdiff = INT(MetForDisagg(3, 3) - MetForDisagg(2, 3))*60 !If no difference in minutes, try using hours
       END IF
       ! Check actual resolution matches specified input resolution
       IF (tdiff /= ResolutionFilesIn/60) THEN
@@ -1502,7 +1502,7 @@ CONTAINS
 
       ! Disaggregate other columns --------------------------------------------------------
       DO ii = 5, ncolumnsMetForcingData
-         IF (ii == 14) THEN  !Do something different for rainfall and snowfall (if present)
+         IF (ii == 14) THEN !Do something different for rainfall and snowfall (if present)
             IF (MetDisaggMethod(14) == 100) THEN
                Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), Nper, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                IF (ALL(MetForDisagg(:, 16) == -999)) THEN
@@ -1549,7 +1549,7 @@ CONTAINS
             ELSE
                WRITE (*, *) 'Disaggregation code for rain not recognised'
             END IF
-         ELSEIF (ii == 24) THEN  !wind direction disaggregation not coded yet...
+         ELSEIF (ii == 24) THEN !wind direction disaggregation not coded yet...
             IF (ANY(MetForDisagg(:, ii) /= -999)) THEN
                WRITE (*, *) 'Disaggregation of wind direction not currently implemented!'
             END IF
@@ -1575,7 +1575,7 @@ CONTAINS
          alt = SurfaceChar(igrid, c_Alt)
          ! Calculate dectime at downscaled time-step
          dectimeFast(:) = Met_tt(:, 2) + Met_tt(:, 3)/24.0 + Met_tt(:, 4)/(60.0*24.0)
-         idectime = dectimeFast - halftimestep! sun position at middle of timestep before
+         idectime = dectimeFast - halftimestep ! sun position at middle of timestep before
          DO i = 1, (ReadLinesOrigMetDataMax*Nper)
             CALL NARP_cal_SunPosition(Met_tt(i, 2), idectime(i), timezone, lat, lng, alt, azimuth, zenith_deg)
             ! If sun below horizon, set disaggregated kdown to zero
@@ -1619,7 +1619,7 @@ CONTAINS
             OPEN (78, file=TRIM(FileDscdMet), err=112)
             WRITE (78, '(a)') HeaderMetOut
          ELSE
-            OPEN (78, file=TRIM(FileDscdMet), position='append')!,err=112)
+            OPEN (78, file=TRIM(FileDscdMet), position='append') !,err=112)
          END IF
          ! Write out data
          DO i = 1, (ReadLinesOrigMetDataMax*Nper)
@@ -1629,10 +1629,10 @@ CONTAINS
          !   WRITE(78,'(i2)') -9
          !   WRITE(78,'(i2)') -9
          !ENDIF
-         CLOSE (78)   !Close output file
+         CLOSE (78) !Close output file
       END IF
 
-303   FORMAT((i4, 1X), 3(i3, 1X), 9(f12.6, 1X), (f9.4, 1X), 10(f9.4, 1X))  !Allows 4 dp for rainfall
+303   FORMAT((i4, 1X), 3(i3, 1X), 9(f12.6, 1X), (f9.4, 1X), 10(f9.4, 1X)) !Allows 4 dp for rainfall
 
       ! Deallocate arrays -----------------------------------------------------------------
       DEALLOCATE (MetForDisagg)
@@ -1657,20 +1657,20 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER:: lunit = 101
-      INTEGER:: tdiff   !Time difference (in minutes) between first and second rows of original met forcing file
-      INTEGER:: i, ii  !counter
-      INTEGER:: iBlock
-      INTEGER, DIMENSION(NperESTM):: seq1NperESTM
-      INTEGER, DIMENSION(nsd):: seq1nsd
-      INTEGER, DIMENSION(ncolsESTMdata):: ESTMDisaggMethod   ! Stores method to use for disaggregating met data
-      REAL(KIND(1D0)), DIMENSION(ncolsESTMdata):: ESTMArrayOrig
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigESTMData*NperESTM, ncolsESTMdata):: ESTM_tt
-      CHARACTER(LEN=9), DIMENSION(ncolsESTMdata):: HeaderESTM
-      CHARACTER(LEN=10*ncolsESTMdata):: HeaderESTMOut
+      INTEGER :: lunit = 101
+      INTEGER :: tdiff !Time difference (in minutes) between first and second rows of original met forcing file
+      INTEGER :: i, ii !counter
+      INTEGER :: iBlock
+      INTEGER, DIMENSION(NperESTM) :: seq1NperESTM
+      INTEGER, DIMENSION(nsd) :: seq1nsd
+      INTEGER, DIMENSION(ncolsESTMdata) :: ESTMDisaggMethod ! Stores method to use for disaggregating met data
+      REAL(KIND(1D0)), DIMENSION(ncolsESTMdata) :: ESTMArrayOrig
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigESTMData*NperESTM, ncolsESTMdata) :: ESTM_tt
+      CHARACTER(LEN=9), DIMENSION(ncolsESTMdata) :: HeaderESTM
+      CHARACTER(LEN=10*ncolsESTMdata) :: HeaderESTMOut
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData):: dectimeOrig
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData*NperESTM):: dectimeDscd
-      INTEGER::iostat_var
+      INTEGER :: iostat_var
 
       ! INTEGER, DIMENSION(NperESTM):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm
 
@@ -1693,9 +1693,9 @@ CONTAINS
       ! Get methods to use for disaggregation from RunControl
       ! (N.B.DisaggMethodESTM is set as 1 or 2 in RunControl; ESTMDisaggMethod is array of ncolsESTMdata used here)
       IF (DisaggMethodESTM == 1) THEN
-         ESTMDisaggMethod(:) = 10   !linear disaggregation of averages
+         ESTMDisaggMethod(:) = 10 !linear disaggregation of averages
       ELSEIF (DisaggMethodESTM == 2) THEN
-         ESTMDisaggMethod(:) = 20   !linear disaggregation of instantaneous values
+         ESTMDisaggMethod(:) = 20 !linear disaggregation of instantaneous values
       ELSE
          CALL errorHint(2, 'Problem in SUEWS_ESTMDisagg: DisaggMethodESTM value should be 1 or 2', &
                         NotUsed, NotUsed, DisaggMethodESTM)
@@ -1709,7 +1709,7 @@ CONTAINS
       !write(*,*) HeaderMet
       ! Skip over lines that have already been read and downscaled
       IF (SkippedLinesOrigESTM > 0) THEN
-         DO i = 1, skippedLinesOrigESTM - 1   ! minus 1 here because last line of last block needs to be read again
+         DO i = 1, skippedLinesOrigESTM - 1 ! minus 1 here because last line of last block needs to be read again
             READ (lunit, *)
          END DO
          ! Read in last line of previous block
@@ -1730,11 +1730,11 @@ CONTAINS
 
       ! Check resolution of original met forcing data -------------------------------------
       ! Find time difference (in minutes) between first and second row
-      tdiff = INT(ESTMForDisagg(2, 4) - ESTMForDisagg(1, 4))   !Try using minutes
-      IF (tdiff == 0) tdiff = INT(ESTMForDisagg(2, 3) - ESTMForDisagg(1, 3))*60   !If no difference in minutes, try using hours
-      IF (tdiff < 0) THEN   !If time difference is negative (e.g. change of day), instead use second and third row
+      tdiff = INT(ESTMForDisagg(2, 4) - ESTMForDisagg(1, 4)) !Try using minutes
+      IF (tdiff == 0) tdiff = INT(ESTMForDisagg(2, 3) - ESTMForDisagg(1, 3))*60 !If no difference in minutes, try using hours
+      IF (tdiff < 0) THEN !If time difference is negative (e.g. change of day), instead use second and third row
          tdiff = INT(ESTMForDisagg(3, 4) - ESTMForDisagg(2, 4))
-         IF (tdiff == 0) tdiff = INT(ESTMForDisagg(3, 3) - ESTMForDisagg(2, 3))*60   !If no difference in minutes, try using hours
+         IF (tdiff == 0) tdiff = INT(ESTMForDisagg(3, 3) - ESTMForDisagg(2, 3))*60 !If no difference in minutes, try using hours
       END IF
       ! Check actual resolution matches specified input resolution
       IF (tdiff /= ResolutionFilesInESTM/60) THEN
@@ -1823,7 +1823,7 @@ CONTAINS
             OPEN (78, file=TRIM(FileDscdESTM), err=113)
             WRITE (78, '(a)') HeaderESTMOut
          ELSE
-            OPEN (78, file=TRIM(FileDscdESTM), position='append')!,err=113)
+            OPEN (78, file=TRIM(FileDscdESTM), position='append') !,err=113)
          END IF
          ! Write out data
          DO i = 1, (ReadLinesOrigESTMDataMax*NperESTM)
@@ -1833,7 +1833,7 @@ CONTAINS
          !   WRITE(78,'(i2)') -9
          !   WRITE(78,'(i2)') -9
          !ENDIF
-         CLOSE (78)   !Close output file
+         CLOSE (78) !Close output file
       END IF
 
 304   FORMAT((i4, 1X), 3(i3, 1X), 9(f9.4, 1X))
@@ -1855,16 +1855,16 @@ CONTAINS
       USE datetime_module, ONLY: daysInYear
       IMPLICIT NONE
       INTEGER, INTENT(in) :: tstep, Nper, ReadLinesOrigMetDataMax
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData, 4), INTENT(in):: DateTimeForDisagg
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper, 4), INTENT(out):: DateTimeDscd
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData, 4), INTENT(in) :: DateTimeForDisagg
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper, 4), INTENT(out) :: DateTimeDscd
 
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData):: dectimeOrig
-      REAL(KIND(1D0)), DIMENSION(Nper) :: temp_dectime  !temorary varaibles for disaggragation
-      INTEGER, DIMENSION(Nper):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm ! temorary varaibles for disaggragation
-      INTEGER, DIMENSION(Nper)::ndays_iy ! number of days in iy
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData) :: dectimeOrig
+      REAL(KIND(1D0)), DIMENSION(Nper) :: temp_dectime !temorary varaibles for disaggragation
+      INTEGER, DIMENSION(Nper) :: temp_iy, temp_id, temp_ih, temp_im, temp_ihm ! temorary varaibles for disaggragation
+      INTEGER, DIMENSION(Nper) :: ndays_iy ! number of days in iy
 
       INTEGER :: i, ii
-      INTEGER, DIMENSION(Nper):: seq1Nper
+      INTEGER, DIMENSION(Nper) :: seq1Nper
 
       ! Generate useful sequences
       seq1Nper = (/(i, i=1, Nper, 1)/)
@@ -1888,10 +1888,10 @@ CONTAINS
          temp_dectime = MERGE(temp_dectime + ndays_iy, temp_dectime, temp_dectime < 0) ! correct minus temp_dectime to positive values
          temp_id = FLOOR(temp_dectime) + 1 !DOY
 
-         temp_ihm = NINT((temp_dectime + 1 - temp_id/1.0)*60.0*24.0)  !Minutes of the day (1440 max)
-         temp_ih = (temp_ihm - MOD(temp_ihm, 60))/60   !Hours
+         temp_ihm = NINT((temp_dectime + 1 - temp_id/1.0)*60.0*24.0) !Minutes of the day (1440 max)
+         temp_ih = (temp_ihm - MOD(temp_ihm, 60))/60 !Hours
          temp_ih = MERGE(temp_ih, 0, mask=(temp_ih < 24))
-         temp_im = MOD(temp_ihm, 60)   !Minutes
+         temp_im = MOD(temp_ihm, 60) !Minutes
 
          ! Copy to Met_tt array
          DateTimeDscd(Nper*(i - 1) + Seq1Nper, 1) = temp_iy
@@ -1912,20 +1912,20 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER:: DisaggType   !Type of disaggregation: 10 for averaged variables; 20 for instantaneous variables
-      INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
-      INTEGER:: ReadLinesOrig_loc, ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-      INTEGER:: iBlock
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
-      REAL(KIND(1D0)):: SlowPrev, SlowNext
-      INTEGER, DIMENSION(Nper_loc):: FastRows   !Group of rows that are filled with each iteration
-      INTEGER, DIMENSION(FLOOR(Nper_loc/2.0)):: FirstRows10   !Rows at the beginning that are not filled during iteration (for averages)
-      INTEGER, DIMENSION(Nper_loc - FLOOR(Nper_loc/2.0)):: LastRows10    !Rows at the end that are not filled during iteration
-      INTEGER, DIMENSION(Nper_loc):: FirstRows20   !Rows at the beginning that are not filled during iteration (for instantaneous)
-      INTEGER, DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
-      INTEGER:: XNper_loc   !XNper_loc = 2 for even Nper_loc; XNper_loc=1 for odd Nper_loc
-      INTEGER:: i, ii   !counters
+      INTEGER :: DisaggType !Type of disaggregation: 10 for averaged variables; 20 for instantaneous variables
+      INTEGER :: Nper_loc !Number of subintervals per interval (local Nper)
+      INTEGER :: ReadLinesOrig_loc, ReadLinesOrigMax_loc !Number of lines to read in original file (local)
+      INTEGER :: iBlock
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc) :: Fast !Array to receive disaggregated data
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc) :: Slow !Array to disaggregate
+      REAL(KIND(1D0)) :: SlowPrev, SlowNext
+      INTEGER, DIMENSION(Nper_loc) :: FastRows !Group of rows that are filled with each iteration
+      INTEGER, DIMENSION(FLOOR(Nper_loc/2.0)) :: FirstRows10 !Rows at the beginning that are not filled during iteration (for averages)
+      INTEGER, DIMENSION(Nper_loc - FLOOR(Nper_loc/2.0)) :: LastRows10 !Rows at the end that are not filled during iteration
+      INTEGER, DIMENSION(Nper_loc) :: FirstRows20 !Rows at the beginning that are not filled during iteration (for instantaneous)
+      INTEGER, DIMENSION(Nper_loc) :: seq1Nper_loc !1 to Nper_loc
+      INTEGER :: XNper_loc !XNper_loc = 2 for even Nper_loc; XNper_loc=1 for odd Nper_loc
+      INTEGER :: i, ii !counters
 
       ! Calculate XNper_loc (differentiates between disaggregations with odd and even Nper_loc)
       IF (MOD(Nper_loc, 2) == 0) XNper_loc = 2
@@ -1935,20 +1935,20 @@ CONTAINS
 
       ! Setup counters for iteration
       IF (DisaggType == 10) THEN
-         FastRows = FLOOR(Nper_loc/2.0) + seq1Nper_loc  ! Rows to create at model time-step
-         FirstRows10 = (/(i, i=1, (FastRows(1) - 1), 1)/)   !For start of dataset
+         FastRows = FLOOR(Nper_loc/2.0) + seq1Nper_loc ! Rows to create at model time-step
+         FirstRows10 = (/(i, i=1, (FastRows(1) - 1), 1)/) !For start of dataset
          LastRows10 = &
             (/(i, i=Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc) + 1, &
-               (ReadLinesOrigMax_loc*Nper_loc), 1)/)  ! For end of dataset
+               (ReadLinesOrigMax_loc*Nper_loc), 1)/) ! For end of dataset
       ELSEIF (DisaggType == 20) THEN
-         FastRows = Nper_loc + seq1Nper_loc   !Rows to create at model time-step
-         FirstRows20 = (/(i, i=1, (FastRows(1) - 1), 1)/)   !For start of dataset
+         FastRows = Nper_loc + seq1Nper_loc !Rows to create at model time-step
+         FirstRows20 = (/(i, i=1, (FastRows(1) - 1), 1)/) !For start of dataset
       END IF
 
       ! Initialise fast array to -999
       Fast = -999
       ! Linearly disaggregate
-      IF (DisaggType == 10) THEN   !Averaged variables
+      IF (DisaggType == 10) THEN !Averaged variables
          IF (DiagnoseDisagg == 1) WRITE (*, *) 'Linearly disaggregating averaged variable'
          DO i = 1, (ReadLinesOrigMax_loc - 1)
             Fast(Nper_loc*(i - 1) + FastRows) = Slow(i) - &
@@ -1958,7 +1958,7 @@ CONTAINS
 
          ! For first few rows, use previous met block
          IF (iBlock == 1) THEN
-            Fast(FirstRows10) = Fast(FastRows(1))   !Use repeat values at the start of the year
+            Fast(FirstRows10) = Fast(FastRows(1)) !Use repeat values at the start of the year
          ELSE
             Fast(FirstRows10) = SlowPrev - &
                                 (Slow(1) - SlowPrev)/(XNper_loc*Nper_loc) + &
@@ -1967,14 +1967,14 @@ CONTAINS
          END IF
          ! For last few rows, use next met block
          IF (iBlock == ReadBlocksOrigMetData) THEN
-            Fast(LastRows10) = Fast(Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc))   !Use repeat values at the end of the year
+            Fast(LastRows10) = Fast(Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc)) !Use repeat values at the end of the year
          ELSE
             Fast(LastRows10) = Slow(ReadLinesOrigMax_loc) - &
                                (SlowNext - Slow(ReadLinesOrigMax_loc))/(XNper_loc*Nper_loc) + &
                                (SlowNext - Slow(ReadLinesOrigMax_loc))/Nper_loc* &
                                (/(ii, ii=1, SIZE(LastRows10), 1)/)
          END IF
-      ELSEIF (DisaggType == 20) THEN   !Instantaneous variables
+      ELSEIF (DisaggType == 20) THEN !Instantaneous variables
          IF (DiagnoseDisagg == 1) WRITE (*, *) 'Linearly disaggregating instantaneous variable'
          DO i = 1, (ReadLinesOrigMax_loc - 1)
             Fast(Nper_loc*(i - 1) + FastRows) = (Slow(i) + &
@@ -1983,7 +1983,7 @@ CONTAINS
          END DO
          ! For first few rows, use previous met block
          IF (iBlock == 1) THEN
-            Fast(FirstRows20) = Fast(FastRows(1))   !Use repeat values at the start of the year
+            Fast(FirstRows20) = Fast(FastRows(1)) !Use repeat values at the start of the year
          ELSE
             Fast(FirstRows20) = (SlowPrev + &
                                  (Slow(1) - SlowPrev)/Nper_loc*2* &
@@ -2022,14 +2022,14 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER:: amongN       !Number of subintervals over which rain will be distributed
-      INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
-      INTEGER:: ReadLinesOrig_loc, ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
-      INTEGER, DIMENSION(:), ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
-      INTEGER, DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
-      INTEGER:: i
+      INTEGER :: amongN !Number of subintervals over which rain will be distributed
+      INTEGER :: Nper_loc !Number of subintervals per interval (local Nper)
+      INTEGER :: ReadLinesOrig_loc, ReadLinesOrigMax_loc !Number of lines to read in original file (local)
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc) :: Fast !Array to receive disaggregated data
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc) :: Slow !Array to disaggregate
+      INTEGER, DIMENSION(:), ALLOCATABLE :: Subintervals !Array of subintervals that contain rain
+      INTEGER, DIMENSION(Nper_loc) :: seq1Nper_loc !1 to Nper_loc
+      INTEGER :: i
 
       ! For each averaging period, get subintervals which will receive rain
       ALLOCATE (Subintervals(amongN))
@@ -2049,8 +2049,8 @@ CONTAINS
       ! Initialise fast array to -999
       Fast = -999
       DO i = 1, ReadLinesOrigMax_loc
-         Fast(Nper_loc*(i - 1) + seq1Nper_loc) = 0   !Fill all subintervals with zeros initially
-         IF (Slow(i) > 0) THEN   !If there is some rainfall during this interval...
+         Fast(Nper_loc*(i - 1) + seq1Nper_loc) = 0 !Fill all subintervals with zeros initially
+         IF (Slow(i) > 0) THEN !If there is some rainfall during this interval...
             IF (amongN < Nper_loc) THEN
                Subintervals(:) = -999
                Subintervals = RandomSamples(amongN, Nper_loc)
@@ -2080,16 +2080,16 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), DIMENSION(5):: multupperI     !Upper bound of intensity bin
-      INTEGER, DIMENSION(5):: multamongN       !Number of subintervals over which rain will be distributed (array)
-      INTEGER:: thisamongN       !Number of subintervals over which rain will be distributed
-      INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
-      INTEGER:: ReadLinesOrig_loc, ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
-      INTEGER, DIMENSION(:), ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
-      INTEGER, DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
-      INTEGER:: i
+      REAL(KIND(1D0)), DIMENSION(5) :: multupperI !Upper bound of intensity bin
+      INTEGER, DIMENSION(5) :: multamongN !Number of subintervals over which rain will be distributed (array)
+      INTEGER :: thisamongN !Number of subintervals over which rain will be distributed
+      INTEGER :: Nper_loc !Number of subintervals per interval (local Nper)
+      INTEGER :: ReadLinesOrig_loc, ReadLinesOrigMax_loc !Number of lines to read in original file (local)
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc*Nper_loc) :: Fast !Array to receive disaggregated data
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrig_loc) :: Slow !Array to disaggregate
+      INTEGER, DIMENSION(:), ALLOCATABLE :: Subintervals !Array of subintervals that contain rain
+      INTEGER, DIMENSION(Nper_loc) :: seq1Nper_loc !1 to Nper_loc
+      INTEGER :: i
 
       seq1Nper_loc = (/(i, i=1, Nper_loc, 1)/)
 
@@ -2098,8 +2098,8 @@ CONTAINS
       ! Initialise fast array to -999
       Fast = -999
       DO i = 1, ReadLinesOrigMax_loc
-         Fast(Nper_loc*(i - 1) + seq1Nper_loc) = 0   !Fill all subintervals with zeros initially
-         IF (Slow(i) > 0) THEN   !If there is some rainfall during this interval...
+         Fast(Nper_loc*(i - 1) + seq1Nper_loc) = 0 !Fill all subintervals with zeros initially
+         IF (Slow(i) > 0) THEN !If there is some rainfall during this interval...
             !Use intensity in this interval to decide number of subintervals to fill with rain
             IF (Slow(i) <= multupperI(1)) THEN
                thisamongN = multamongN(1)
@@ -2124,7 +2124,7 @@ CONTAINS
             IF (thisamongN > Nper_loc) CALL errorHint(2, 'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed '// &
                                                       'number of subintervals', REAL(Nper_loc, KIND(1D0)), NotUsed, thisamongN)
 
-            IF (thisamongN == Nper_loc) THEN   ! If all subintervals are to contain rain, don't need to generate random numbers
+            IF (thisamongN == Nper_loc) THEN ! If all subintervals are to contain rain, don't need to generate random numbers
                Subintervals(:) = seq1Nper_loc
             ELSEIF (thisamongN < Nper_loc) THEN
                Subintervals = RandomSamples(thisamongN, Nper_loc)
@@ -2152,12 +2152,12 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER:: i   !counter
-      INTEGER:: N   !number of samples to return
-      INTEGER:: OutOf   !number to sample from
-      INTEGER:: X   !next sample to be added
-      REAL(KIND(1D0)):: r   !random number
-      INTEGER, DIMENSION(:), ALLOCATABLE:: Samples   !Array to receive random samples
+      INTEGER :: i !counter
+      INTEGER :: N !number of samples to return
+      INTEGER :: OutOf !number to sample from
+      INTEGER :: X !next sample to be added
+      REAL(KIND(1D0)) :: r !random number
+      INTEGER, DIMENSION(:), ALLOCATABLE :: Samples !Array to receive random samples
 
       ! Allocate and initialise Samples
       ALLOCATE (Samples(N))

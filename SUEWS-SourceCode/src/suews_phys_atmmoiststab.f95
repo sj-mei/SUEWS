@@ -1,8 +1,8 @@
 MODULE AtmMoistStab_module
    IMPLICIT NONE
    REAL(KIND(1D0)), PARAMETER :: neut_limit = 1.E-2 !Limit for neutral stability
-   REAL(KIND(1D0)), PARAMETER :: k = 0.4         !Von Karman's contant
-   REAL(KIND(1D0)), PARAMETER :: grav = 9.80665  !g - gravity - physics today august 1987
+   REAL(KIND(1D0)), PARAMETER :: k = 0.4 !Von Karman's contant
+   REAL(KIND(1D0)), PARAMETER :: grav = 9.80665 !g - gravity - physics today august 1987
 
    ! scheme code
    INTEGER, PARAMETER :: J12 = 2 ! Cheng and Brutsaert (2005)
@@ -14,8 +14,8 @@ CONTAINS
    ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
    ! explict interface added to all subroutines, TS 08 Aug 2017
    SUBROUTINE cal_AtmMoist( &
-      Temp_C, Press_hPa, avRh, dectime, &! input:
-      lv_J_kg, lvS_J_kg, &! output:
+      Temp_C, Press_hPa, avRh, dectime, & ! input:
+      lv_J_kg, lvS_J_kg, & ! output:
       es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, air_dens)
 
       USE meteo, ONLY: &
@@ -23,25 +23,25 @@ CONTAINS
          lat_vap, lat_vapSublim, spec_hum_def
 
       IMPLICIT NONE
-      REAL(KIND(1D0))::vap_dens
+      REAL(KIND(1D0)) :: vap_dens
 
-      REAL(KIND(1D0)), INTENT(in):: &
+      REAL(KIND(1D0)), INTENT(in) :: &
          Temp_C, &
          Press_hPa, &
          avRh, dectime
-      REAL(KIND(1D0)), INTENT(out):: &
-         lv_J_kg, &!Latent heat of vaporization in [J kg-1]
-         lvS_J_kg, &!Latent heat of sublimation in J/kg
-         es_hPa, &!Saturation vapour pressure over water in hPa
-         Ea_hPa, &!Vapour pressure of water in hPa
+      REAL(KIND(1D0)), INTENT(out) :: &
+         lv_J_kg, & !Latent heat of vaporization in [J kg-1]
+         lvS_J_kg, & !Latent heat of sublimation in J/kg
+         es_hPa, & !Saturation vapour pressure over water in hPa
+         Ea_hPa, & !Vapour pressure of water in hPa
          VPd_hpa, & !vapour pressure deficit in hPa
          VPD_Pa, & !vapour pressure deficit in Pa
-         dq, &!Specific humidity deficit in g/kg
+         dq, & !Specific humidity deficit in g/kg
          dens_dry, & !Vap density or absolute humidity         (kg/m3)
-         avcp, &!specific heat capacity in J kg-1 K-1
-         air_dens!Air density in kg/m3
+         avcp, & !specific heat capacity in J kg-1 K-1
+         air_dens !Air density in kg/m3
 
-      REAL(KIND(1D0)), PARAMETER:: &
+      REAL(KIND(1D0)), PARAMETER :: &
          !  comp          = 0.9995, &
          !  epsil         = 0.62197,&           !ratio molecular weight of water vapor/dry air (kg/mol/kg/mol)
          !  epsil_gkg     = 621.97, &           !ratio molecular weight of water vapor/dry air in g/kg
@@ -49,10 +49,10 @@ CONTAINS
          !  gas_ct_wat    = 461.05,&            !Gas constant for water (J/kg/K)
          !  molar         = 0.028965,&          !Dry air molar fraction in kg/mol
          !  molar_wat_vap = 0.0180153,&         !Molar fraction of water vapor in kg/mol
-         gas_ct_dry = 8.31451/0.028965, &  !j/kg/k=dry_gas/molar
+         gas_ct_dry = 8.31451/0.028965, & !j/kg/k=dry_gas/molar
          gas_ct_wv = 8.31451/0.0180153 !j/kg/k=dry_gas/molar_wat_vap
       !  waterDens     = 999.8395            !Density of water in 0 cel deg
-      INTEGER::from = 1
+      INTEGER :: from = 1
 
       !Saturation vapour pressure over water in hPa
       es_hPa = sat_vap_press_x(Temp_C, Press_hPa, from, dectime) ! dectime is more or less unnecessary here
@@ -62,8 +62,8 @@ CONTAINS
 
       ! if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'%',Temp_C
 
-      VPd_hpa = es_hPa - ea_hpa           !vapour pressure deficit in hPa
-      VPD_Pa = (es_hPa*100) - (Ea_hPa*100)!vapour pressure deficit in Pa
+      VPd_hpa = es_hPa - ea_hpa !vapour pressure deficit in hPa
+      VPD_Pa = (es_hPa*100) - (Ea_hPa*100) !vapour pressure deficit in Pa
 
       dq = spec_hum_def(vpd_hPa, Press_hPa) !Specific humidity deficit in g/kg
 
@@ -109,47 +109,47 @@ CONTAINS
    !       Van Ulden & Holtslag (1985) JCAM: 24: 1196-1207
 
    SUBROUTINE cal_Stab( &
-      StabilityMethod, &! input
-      zzd, &     !Active measurement height (meas. height-displac. height)
-      z0m, &     !Aerodynamic roughness length
-      zdm, &     !Displacement height
-      avU1, &    !Average wind speed
-      Temp_C, &  !Air temperature
+      StabilityMethod, & ! input
+      zzd, & !Active measurement height (meas. height-displac. height)
+      z0m, & !Aerodynamic roughness length
+      zdm, & !Displacement height
+      avU1, & !Average wind speed
+      Temp_C, & !Air temperature
       QH_init, & !sensible heat flux [W m-2]
       avdens, & ! air density
       avcp, & ! heat capacity of air
       L_MOD, & !Obukhov length! output:
       TStar, & !T*
       UStar, & !Friction velocity
-      zL)!Stability scale
+      zL) !Stability scale
 
       IMPLICIT NONE
-      INTEGER, INTENT(in):: StabilityMethod
+      INTEGER, INTENT(in) :: StabilityMethod
 
-      REAL(KIND(1D0)), INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
-      REAL(KIND(1D0)), INTENT(in)::z0m     !Aerodynamic roughness length
-      REAL(KIND(1D0)), INTENT(in)::zdm     !Displacement height
-      REAL(KIND(1D0)), INTENT(in)::avU1    !Average wind speed
-      REAL(KIND(1D0)), INTENT(in)::Temp_C    !Air temperature
-      REAL(KIND(1D0)), INTENT(in)::QH_init    !sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in)::avdens ! air density [kg m-3]
-      REAL(KIND(1D0)), INTENT(in)::avcp ! volumetric heat capacity [J m-3 K-1]
+      REAL(KIND(1D0)), INTENT(in) :: zzd !Active measurement height (meas. height-displac. height)
+      REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length
+      REAL(KIND(1D0)), INTENT(in) :: zdm !Displacement height
+      REAL(KIND(1D0)), INTENT(in) :: avU1 !Average wind speed
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C !Air temperature
+      REAL(KIND(1D0)), INTENT(in) :: QH_init !sensible heat flux [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: avdens ! air density [kg m-3]
+      REAL(KIND(1D0)), INTENT(in) :: avcp ! volumetric heat capacity [J m-3 K-1]
 
-      REAL(KIND(1D0)), INTENT(out)::L_MOD!Obukhov length
-      REAL(KIND(1D0)), INTENT(out)::TStar!T*
-      REAL(KIND(1D0)), INTENT(out)::UStar!Friction velocity
-      REAL(KIND(1D0)), INTENT(out)::zL ! Stability scale
+      REAL(KIND(1D0)), INTENT(out) :: L_MOD !Obukhov length
+      REAL(KIND(1D0)), INTENT(out) :: TStar !T*
+      REAL(KIND(1D0)), INTENT(out) :: UStar !Friction velocity
+      REAL(KIND(1D0)), INTENT(out) :: zL ! Stability scale
       ! REAL(KIND(1d0)),INTENT(out)::psim   !Stability function of momentum
 
-      REAL(KIND(1D0))::G_T_K, &
-                        KUZ, &
-                        LOLD, &
-                        psim, &
-                        z0l, &
-                        psimz0, &
-                        H_init, &
-                        h
-      INTEGER, PARAMETER ::   notUsedI = -55
+      REAL(KIND(1D0)) :: G_T_K, &
+                         KUZ, &
+                         LOLD, &
+                         psim, &
+                         z0l, &
+                         psimz0, &
+                         H_init, &
+                         h
+      INTEGER, PARAMETER :: notUsedI = -55
 
       INTEGER :: i
 
@@ -160,13 +160,13 @@ CONTAINS
 
       IF (debug) WRITE (*, *) StabilityMethod, z0m, avU1, H_init, UStar, L_MOD
       G_T_K = (Grav/(Temp_C + 273.16))*k !gravity constant/(Temperature*Von Karman Constant)
-      KUZ = k*AvU1                     !Von Karman constant*mean wind speed
+      KUZ = k*AvU1 !Von Karman constant*mean wind speed
       IF (zzd < 0) CALL ErrorHint(32, &
                                   'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]', &
                                   Zzd, zdm, notUsedI)
 
-      UStar = KUZ/LOG(Zzd/z0m)      !Initial setting of u* and calc. of L_MOD (neutral situation)
-      IF (ABS(H_init) < 0.001) THEN    ! prevent zero TStar
+      UStar = KUZ/LOG(Zzd/z0m) !Initial setting of u* and calc. of L_MOD (neutral situation)
+      IF (ABS(H_init) < 0.001) THEN ! prevent zero TStar
          h = 0.001
       ELSE
          h = H_init
@@ -183,7 +183,7 @@ CONTAINS
       DO WHILE ((ABS(LOLD - L_MOD) > 0.01) .AND. (i < 330)) !NT: add error threshold !Iteration starts
          LOLD = L_MOD
          zL = zzd/L_MOD
-         z0L = z0m/L_MOD  !z0m roughness length
+         z0L = z0m/L_MOD !z0m roughness length
 
          ! IF (zL>2)THEN
          !    CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability scale (z/L), UStar',zL,UStar,notUsedI)
@@ -270,7 +270,7 @@ CONTAINS
    FUNCTION stab_psi_mom(StabilityMethod, ZL) RESULT(psim)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)):: zl, psim
+      REAL(KIND(1D0)) :: zl, psim
       INTEGER :: StabilityMethod
 
       SELECT CASE (StabilityMethod)
@@ -291,7 +291,7 @@ CONTAINS
    FUNCTION stab_psi_heat(StabilityMethod, ZL) RESULT(psih)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)):: zl, psih
+      REAL(KIND(1D0)) :: zl, psih
       INTEGER :: StabilityMethod
 
       SELECT CASE (StabilityMethod)
@@ -312,7 +312,7 @@ CONTAINS
    FUNCTION stab_phi_mom(StabilityMethod, ZL) RESULT(phim)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)):: zl, phim
+      REAL(KIND(1D0)) :: zl, phim
       INTEGER :: StabilityMethod
 
       SELECT CASE (StabilityMethod)
@@ -333,7 +333,7 @@ CONTAINS
    FUNCTION stab_phi_heat(StabilityMethod, ZL) RESULT(phih)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)):: zl, phih
+      REAL(KIND(1D0)) :: zl, phih
       INTEGER :: StabilityMethod
 
       SELECT CASE (StabilityMethod)
@@ -355,9 +355,9 @@ CONTAINS
    ! https://doi.org/10.1175/mwr-d-11-00056.1
    FUNCTION psi_mom_J12(ZL) RESULT(psim)
       ! Jimenez et al. (2012), eqn 17 and 18
-      REAL(KIND(1D0)), PARAMETER ::a = 6.1
-      REAL(KIND(1D0)), PARAMETER ::b = 2.5
-      REAL(KIND(1D0)):: zl, psim
+      REAL(KIND(1D0)), PARAMETER :: a = 6.1
+      REAL(KIND(1D0)), PARAMETER :: b = 2.5
+      REAL(KIND(1D0)) :: zl, psim
 
       IF (ABS(zL) < neut_limit) THEN
          psim = 0
@@ -375,7 +375,7 @@ CONTAINS
    FUNCTION phi_mom_J12(ZL) RESULT(phim)
       ! not directly provided by J12
       ! equations below are derived from related original formulations
-      REAL(KIND(1D0)):: zl, phim
+      REAL(KIND(1D0)) :: zl, phim
 
       IF (ABS(zL) < neut_limit) THEN
          phim = 1
@@ -391,7 +391,7 @@ CONTAINS
 
    FUNCTION psi_heat_J12(ZL) RESULT(psih)
       ! Jimenez et al. (2012), eqn 17 and 19
-      REAL(KIND(1D0)):: zl, psih
+      REAL(KIND(1D0)) :: zl, psih
 
       IF (ABS(zL) < neut_limit) THEN
          psih = 0
@@ -407,7 +407,7 @@ CONTAINS
    END FUNCTION
 
    FUNCTION phi_heat_J12(ZL) RESULT(phih)
-      REAL(KIND(1D0)):: zl, phih
+      REAL(KIND(1D0)) :: zl, phih
 
       IF (ABS(zL) < neut_limit) THEN
          phih = 1
@@ -428,10 +428,10 @@ CONTAINS
    FUNCTION psi_mom_G00(ZL) RESULT(psim)
       ! Grachev et al. (2000), eqn 18
       ! determination of `am` see sect. 4.1 of G00
-      REAL(KIND(1D0)), PARAMETER ::am = 10
-      REAL(KIND(1D0)):: zl, psim
-      REAL(KIND(1D0)):: psim_k
-      REAL(KIND(1D0)):: psim_c
+      REAL(KIND(1D0)), PARAMETER :: am = 10
+      REAL(KIND(1D0)) :: zl, psim
+      REAL(KIND(1D0)) :: psim_k
+      REAL(KIND(1D0)) :: psim_c
 
       IF (ABS(zL) < neut_limit) THEN
          psim = 0
@@ -450,11 +450,11 @@ CONTAINS
    FUNCTION psi_heat_G00(ZL) RESULT(psih)
       ! Grachev et al. (2000), eqn 18
       ! determination of `ah` see sect. 4.1 of G00
-      REAL(KIND(1D0)), PARAMETER ::ah = 34
+      REAL(KIND(1D0)), PARAMETER :: ah = 34
 
-      REAL(KIND(1D0)):: zl, psih
-      REAL(KIND(1D0)):: psih_k
-      REAL(KIND(1D0)):: psih_c
+      REAL(KIND(1D0)) :: zl, psih
+      REAL(KIND(1D0)) :: psih_k
+      REAL(KIND(1D0)) :: psih_c
 
       IF (ABS(zL) < neut_limit) THEN
          psih = 0
@@ -479,11 +479,11 @@ CONTAINS
    ! instead the following formulations phi_m/phi_h similar to the weighted psi_hm are used:
 
    FUNCTION phi_mom_G00(ZL) RESULT(phim)
-      REAL(KIND(1D0)), PARAMETER ::am = 10
-      REAL(KIND(1D0)):: zl, phim
-      REAL(KIND(1D0)):: phim_K ! Kansas part
+      REAL(KIND(1D0)), PARAMETER :: am = 10
+      REAL(KIND(1D0)) :: zl, phim
+      REAL(KIND(1D0)) :: phim_K ! Kansas part
       ! REAL(KIND(1D0)):: psim_K ! Kansas part
-      REAL(KIND(1D0)):: phim_C ! convective part
+      REAL(KIND(1D0)) :: phim_C ! convective part
       ! REAL(KIND(1D0)):: psim_C ! convective part
 
       IF (ABS(zL) < neut_limit) THEN
@@ -509,11 +509,11 @@ CONTAINS
    END FUNCTION
 
    FUNCTION phi_heat_G00(ZL) RESULT(phih)
-      REAL(KIND(1D0)), PARAMETER ::ah = 34
-      REAL(KIND(1D0)):: zl, phih
-      REAL(KIND(1D0)):: phih_K ! Kansas part
+      REAL(KIND(1D0)), PARAMETER :: ah = 34
+      REAL(KIND(1D0)) :: zl, phih
+      REAL(KIND(1D0)) :: phih_K ! Kansas part
       ! REAL(KIND(1D0)):: psih_K ! Kansas part
-      REAL(KIND(1D0)):: phih_C ! convective part
+      REAL(KIND(1D0)) :: phih_C ! convective part
       ! REAL(KIND(1D0)):: psih_C ! convective part
 
       IF (ABS(zL) < neut_limit) THEN
@@ -536,8 +536,8 @@ CONTAINS
 
    FUNCTION psi_conv(ZL, ax) RESULT(psiC)
       ! Grachev et al. (2000), eqn 12
-      REAL(KIND(1D0)):: zl, psiC, y, ax
-      REAL(KIND(1D0)), PARAMETER::pi = ACOS(-1.)
+      REAL(KIND(1D0)) :: zl, psiC, y, ax
+      REAL(KIND(1D0)), PARAMETER :: pi = ACOS(-1.)
 
       y = (1 - ax*zl)**(1/3.)
       psiC = 3./2*LOG(y**2 + y + 1/3.) - SQRT(3.)*ATAN(2*y + 1/SQRT(3.)) + pi/SQRT(3.)
@@ -546,8 +546,8 @@ CONTAINS
 
    FUNCTION phi_conv(ZL, ax) RESULT(phiC)
       ! Grachev et al. (2000), eqn 15
-      REAL(KIND(1D0)):: zl, phiC, ax, dPsi_dzL
-      REAL(KIND(1D0)), PARAMETER::pi = ACOS(-1.)
+      REAL(KIND(1D0)) :: zl, phiC, ax, dPsi_dzL
+      REAL(KIND(1D0)), PARAMETER :: pi = ACOS(-1.)
 
       ! d(psi_conv)/d(zL)
       dPsi_dzL = (9 + 4*(-3 + SQRT(3.))*ax*zL - 9*(1 - ax*zL)**(1/3.))/ &
@@ -563,8 +563,8 @@ CONTAINS
       ! note: Psi is a zL-weighted sum of Kansas and convective components
       ! derived from d(Psi)/d(zL)=d((psiK+zL**2*psiC)/(1+zL**2))/d(zL)
 
-      REAL(KIND(1D0)):: zl, dPsi, psiC, phiC, psiK, phiK
-      REAL(KIND(1D0)):: x_zl, x_psiC, x_phiC, x_psiK, x_phiK
+      REAL(KIND(1D0)) :: zl, dPsi, psiC, phiC, psiK, phiK
+      REAL(KIND(1D0)) :: x_zl, x_psiC, x_phiC, x_psiK, x_phiK
 
       ! Kansas part
       x_psiK = -(2*psiK*zL)/(1 + zL**2)**2
@@ -590,15 +590,15 @@ CONTAINS
    ! !ONLY DEFINED FOR STABLE CONDITIONS!
    FUNCTION psi_CB05(ZL, k1, k2) RESULT(psi)
       ! Cheng and Brutsaert (2005), eqn 21/23
-      REAL(KIND(1D0)):: zl, psi, k1, k2
+      REAL(KIND(1D0)) :: zl, psi, k1, k2
       psi = -k1*LOG(zl + (1 + zl**k2)**(1/k2))
    END FUNCTION
 
    FUNCTION psi_mom_CB05(ZL) RESULT(psim)
       ! Cheng and Brutsaert (2005), eqn 21
-      REAL(KIND(1D0)), PARAMETER ::a = 6.1
-      REAL(KIND(1D0)), PARAMETER ::b = 2.5
-      REAL(KIND(1D0)):: zl, psim
+      REAL(KIND(1D0)), PARAMETER :: a = 6.1
+      REAL(KIND(1D0)), PARAMETER :: b = 2.5
+      REAL(KIND(1D0)) :: zl, psim
 
       IF (ABS(zL) < neut_limit) THEN
          psim = 0
@@ -610,9 +610,9 @@ CONTAINS
 
    FUNCTION psi_heat_CB05(ZL) RESULT(psih)
       ! Cheng and Brutsaert (2005), eqn 23
-      REAL(KIND(1D0)), PARAMETER ::c = 5.3
-      REAL(KIND(1D0)), PARAMETER ::d = 1.1
-      REAL(KIND(1D0)):: zl, psih
+      REAL(KIND(1D0)), PARAMETER :: c = 5.3
+      REAL(KIND(1D0)), PARAMETER :: d = 1.1
+      REAL(KIND(1D0)) :: zl, psih
 
       IF (ABS(zL) < neut_limit) THEN
          psih = 0
@@ -624,7 +624,7 @@ CONTAINS
 
    FUNCTION phi_CB05(ZL, k1, k2) RESULT(phi)
       ! Cheng and Brutsaert (2005), eqn 22/24
-      REAL(KIND(1D0)):: zl, phi, k1, k2, zlk2
+      REAL(KIND(1D0)) :: zl, phi, k1, k2, zlk2
       zlk2 = zl**k2
       phi = 1 + k1*( &
             (zl + zlk2*(1 + zlk2)**((1 - k2)/k2)) &
@@ -634,9 +634,9 @@ CONTAINS
 
    FUNCTION phi_mom_CB05(ZL) RESULT(phim)
       ! Cheng and Brutsaert (2005), eqn 22
-      REAL(KIND(1D0)), PARAMETER ::a = 6.1
-      REAL(KIND(1D0)), PARAMETER ::b = 2.5
-      REAL(KIND(1D0)):: zl, phim
+      REAL(KIND(1D0)), PARAMETER :: a = 6.1
+      REAL(KIND(1D0)), PARAMETER :: b = 2.5
+      REAL(KIND(1D0)) :: zl, phim
 
       IF (ABS(zL) < neut_limit) THEN
          phim = 1
@@ -648,9 +648,9 @@ CONTAINS
 
    FUNCTION phi_heat_CB05(ZL) RESULT(phih)
       ! Cheng and Brutsaert (2005), eqn 24
-      REAL(KIND(1D0)), PARAMETER ::c = 5.3
-      REAL(KIND(1D0)), PARAMETER ::d = 1.1
-      REAL(KIND(1D0)):: zl, phih, zld
+      REAL(KIND(1D0)), PARAMETER :: c = 5.3
+      REAL(KIND(1D0)), PARAMETER :: d = 1.1
+      REAL(KIND(1D0)) :: zl, phih, zld
 
       IF (ABS(zL) < neut_limit) THEN
          phih = 1
@@ -667,7 +667,7 @@ CONTAINS
    ! https://doi.org/10.1007/bf00232256
    FUNCTION phi_mom_K75(ZL) RESULT(phim)
       ! Kondo (1975) adopted by Campbell & Norman eqn 7.22 and 7.23 p 97
-      REAL(KIND(1D0)):: zl, phim
+      REAL(KIND(1D0)) :: zl, phim
 
       IF (ABS(zL) < neut_limit) THEN
          phim = 1
@@ -681,7 +681,7 @@ CONTAINS
 
    FUNCTION phi_heat_K75(ZL) RESULT(phih)
       ! Kondo (1975) adopted by Campbell & Norman eqn 7.22 and 7.23 p 97
-      REAL(KIND(1D0)):: zl, phih
+      REAL(KIND(1D0)) :: zl, phih
 
       IF (ABS(zL) < neut_limit) THEN
          phih = 1
@@ -695,7 +695,7 @@ CONTAINS
 
    FUNCTION psi_mom_K75(ZL) RESULT(psim)
       ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 and 7.27 p 97
-      REAL(KIND(1D0)):: zl, psim
+      REAL(KIND(1D0)) :: zl, psim
 
       IF (ABS(zL) < neut_limit) THEN
          psim = 0
@@ -709,7 +709,7 @@ CONTAINS
 
    FUNCTION psi_heat_K75(ZL) RESULT(psih)
       ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 and 7.27 p 97
-      REAL(KIND(1D0)):: zl, psih
+      REAL(KIND(1D0)) :: zl, psih
 
       IF (ABS(zL) < neut_limit) THEN
          psih = 0
@@ -728,7 +728,7 @@ CONTAINS
    FUNCTION phi_mom_B71(ZL) RESULT(phim)
       ! Businger et al. (1971)
       ! modified by Hogstrom (1988): see Table VI
-      REAL(KIND(1D0)):: zl, phim
+      REAL(KIND(1D0)) :: zl, phim
 
       IF (ABS(zL) < neut_limit) THEN
          phim = 1
@@ -743,7 +743,7 @@ CONTAINS
    FUNCTION phi_heat_B71(ZL) RESULT(phih)
       ! Businger et al. (1971)
       ! modified by Hogstrom (1988): see Table VII
-      REAL(KIND(1D0)):: zl, phih
+      REAL(KIND(1D0)) :: zl, phih
 
       IF (ABS(zL) < neut_limit) THEN
          phih = 1
@@ -757,8 +757,8 @@ CONTAINS
 
    FUNCTION psi_mom_B71(ZL) RESULT(psim)
       ! integral form of phi_mom_B71
-      REAL(KIND(1D0)), PARAMETER::PIOVER2 = ACOS(-1.)/2.
-      REAL(KIND(1D0)):: zl, psim, x, x2
+      REAL(KIND(1D0)), PARAMETER :: PIOVER2 = ACOS(-1.)/2.
+      REAL(KIND(1D0)) :: zl, psim, x, x2
 
       IF (ABS(zL) < neut_limit) THEN
          psim = 0
@@ -775,7 +775,7 @@ CONTAINS
 
    FUNCTION psi_heat_B71(ZL) RESULT(psih)
       ! integral form of phi_heat_B71
-      REAL(KIND(1D0)):: zl, psih, x
+      REAL(KIND(1D0)) :: zl, psih, x
 
       IF (ABS(zL) < neut_limit) THEN
          psih = 0

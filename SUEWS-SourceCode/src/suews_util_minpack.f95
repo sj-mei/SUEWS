@@ -3571,7 +3571,7 @@ SUBROUTINE lmdif1(fcn, m, n, x, xdat, ydat, fvec, tol, info)
    EXTERNAL fcn
    REAL(kind=8) fjac(m, n)
    REAL(kind=8) ftol
-   REAL(kind=8) ::fvec(m), xdat(m), ydat(m)
+   REAL(kind=8) :: fvec(m), xdat(m), ydat(m)
    REAL(kind=8) gtol
    INTEGER(kind=4) info
    INTEGER(kind=4) ipvt(n)

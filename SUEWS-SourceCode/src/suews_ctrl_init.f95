@@ -33,8 +33,8 @@ SUBROUTINE OverallRunControl
 
    IMPLICIT NONE
 
-   INTEGER:: iv, i, SkipCounter, iFile            !iv and i, ii are integers used in do loops
-   CHARACTER(len=50):: FileN
+   INTEGER :: iv, i, SkipCounter, iFile !iv and i, ii are integers used in do loops
+   CHARACTER(len=50) :: FileN
    INTEGER, PARAMETER :: nFile = 13
    CHARACTER(len=50), DIMENSION(nFile) :: &
       FileNames = [CHARACTER(len=50) :: &
@@ -93,16 +93,16 @@ SUBROUTINE OverallRunControl
    KeepTstepFilesIn = 0
    KeepTstepFilesOut = 0
    WriteOutOption = 0
-   DisaggMethod = 1    ! linear disaggregation of averages
-   DisaggMethodESTM = 1    ! linear disaggregation of averages
-   RainDisaggMethod = 100  ! even distribution among all subintervals
+   DisaggMethod = 1 ! linear disaggregation of averages
+   DisaggMethodESTM = 1 ! linear disaggregation of averages
+   RainDisaggMethod = 100 ! even distribution among all subintervals
    RainAmongN = -999 ! no default setting for number of rainy subintervals
    MultRainAmongN = -999 ! no default setting for number of rainy subintervals
    MultRainAmongNUpperI = -999 ! no default setting for rain intensity upper bound
-   KdownZen = 1    ! use zenith angle by default
+   KdownZen = 1 ! use zenith angle by default
 
-   SuppressWarnings = 0        ! write warnings file
-   ResolutionFilesIn = 0       ! Set to zero so that if not found, automatically set to Tstep below
+   SuppressWarnings = 0 ! write warnings file
+   ResolutionFilesIn = 0 ! Set to zero so that if not found, automatically set to Tstep below
 
    ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
    Diagnose = 0
@@ -129,7 +129,7 @@ SUBROUTINE OverallRunControl
    !Check for problems with FileCode
    IF (FileCode == 'none') CALL ErrorHint(26, TRIM("RunControl.nml FileCode is missing"), notUsed, notUsed, notUsedI)
 
-   IF (ResolutionFilesIn == 0) ResolutionFilesIn = Tstep   !If ResolutionFilesIn not found, automatically set to Tstep
+   IF (ResolutionFilesIn == 0) ResolutionFilesIn = Tstep !If ResolutionFilesIn not found, automatically set to Tstep
 
    !-----------------------------------------------------------------------
 
@@ -205,13 +205,13 @@ SUBROUTINE OverallRunControl
 
    !=======================SUEWS_SiteSelect.txt============================
    FileN = 'SUEWS_SiteSelect.txt'
-   CALL NumberRows(FileN, SkipHeaderSiteInfo)     !Find number of rows in input file
+   CALL NumberRows(FileN, SkipHeaderSiteInfo) !Find number of rows in input file
    nlinesSiteSelect = nlines
    ALLOCATE (SiteSelect(nlinesSiteSelect, ncolumnsSiteSelect))
    !Read input file
    OPEN (21, file=TRIM(FileInputPath)//TRIM(FileN), err=300, status='old')
    DO SkipCounter = 1, (SkipHeaderSiteInfo - 1)
-      READ (21, *)   !Skip lines before header
+      READ (21, *) !Skip lines before header
    END DO
    READ (21, *) (HeaderSiteSelect_File(iv), iv=1, ncolumnsSiteSelect) !Get header
 
@@ -229,7 +229,7 @@ SUBROUTINE OverallRunControl
    !      'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt'/)
 
    DO iFile = 1, nFile
-      CALL NumberRows(FileNames(iFile), SkipHeaderSiteInfo)     !Find number of rows in input file
+      CALL NumberRows(FileNames(iFile), SkipHeaderSiteInfo) !Find number of rows in input file
       SELECT CASE (iFile)
       CASE (1)
          nlinesNonVeg = nlines
@@ -293,13 +293,13 @@ SUBROUTINE OverallRunControl
 
    !-----------------------------------------------------------------------
    !SUEWS run information
-   InputMetFormat = 10    !Input met data file in LUMPS format(1) or SUEWS format(10)
-   LAICalcYes = 1         !Use observed(0) or modelled(1) LAI
-   EvapMethod = 2                !Evaporation calculated according to Rutter(1) or Shuttleworth(2)
-   WriteDailyState = 1  !Daily state file written
+   InputMetFormat = 10 !Input met data file in LUMPS format(1) or SUEWS format(10)
+   LAICalcYes = 1 !Use observed(0) or modelled(1) LAI
+   EvapMethod = 2 !Evaporation calculated according to Rutter(1) or Shuttleworth(2)
+   WriteDailyState = 1 !Daily state file written
    tstepcount = 0
 
-   t_INTERVAL = 3600   !Number of seconds in an hour
+   t_INTERVAL = 3600 !Number of seconds in an hour
 
    !Calculate nsh (number of steps per hour) from model timestep (tstep) set in in RunControl
    nsh_real = t_INTERVAL/REAL(tstep, KIND(1D0))
@@ -325,7 +325,7 @@ SUBROUTINE OverallRunControl
    nsd = 24*nsh
 
    !! Check this is still valid for v2016a
-   HalfTimeStep = REAL(tstep_real)/2/(24*3600)   !Used in NARP_cal_SunPosition to get sunpos in the middle of timestep
+   HalfTimeStep = REAL(tstep_real)/2/(24*3600) !Used in NARP_cal_SunPosition to get sunpos in the middle of timestep
 
    RETURN
 
@@ -352,21 +352,21 @@ SUBROUTINE ReadCoeff(FileName, nlines, ncolumns, HeaderFile, Coeff)
    !----------------------------------------------------------------------
    ! dummy arguments
    !----------------------------------------------------------------------
-   CHARACTER(len=*), INTENT(in)  :: FileName
-   INTEGER, INTENT(in)           :: nlines, ncolumns
+   CHARACTER(len=*), INTENT(in) :: FileName
+   INTEGER, INTENT(in) :: nlines, ncolumns
    CHARACTER(len=*), INTENT(out) :: HeaderFile(ncolumns)
-   REAL(KIND(1D0)), INTENT(out)  :: Coeff(nlines, ncolumns)
+   REAL(KIND(1D0)), INTENT(out) :: Coeff(nlines, ncolumns)
 
    !----------------------------------------------------------------------
    ! local variables
    !----------------------------------------------------------------------
-   INTEGER ::  SkipCounter, iv, i, ii
+   INTEGER :: SkipCounter, iv, i, ii
 
    !Read input file
    OPEN (22, file=TRIM(FileInputPath)//TRIM(FileName), err=301, status='old')
 
    DO SkipCounter = 1, SkipHeaderSiteInfo - 1
-      READ (22, *)   !Skip lines before header
+      READ (22, *) !Skip lines before header
    END DO
    READ (22, *) (HeaderFile(iv), iv=1, ncolumns) !Get header
 
@@ -408,10 +408,10 @@ SUBROUTINE NumberRows(FileN, SkipHeaderLines)
 
    IMPLICIT NONE
 
-   CHARACTER(len=50):: FileN
-   INTEGER:: SkipHeaderLines, RunNumber
-   INTEGER:: SkipCounter
-   INTEGER:: ios
+   CHARACTER(len=50) :: FileN
+   INTEGER :: SkipHeaderLines, RunNumber
+   INTEGER :: SkipCounter
+   INTEGER :: ios
 
    WRITE (*, *) FileN
    OPEN (39, file=TRIM(FileInputPath)//TRIM(FileN), err=204, status='old')
@@ -426,7 +426,7 @@ SUBROUTINE NumberRows(FileN, SkipHeaderLines)
    nlines = 0 !Initialize nlines
    DO
       READ (39, *, iostat=ios) RunNumber
-      IF (ios < 0 .OR. RunNumber == -9) EXIT   !IF(RunNumber==-9) EXIT
+      IF (ios < 0 .OR. RunNumber == -9) EXIT !IF(RunNumber==-9) EXIT
       nlines = nlines + 1
    END DO
    !write(*,*) 'nlines read: ',nlines
@@ -462,10 +462,10 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
 
    IMPLICIT NONE
 
-   INTEGER:: Gridiv, &    !Row of SurfaceChar where input information will be stored
-             rr          !Row of SiteSelect that matches current grid and year
-   INTEGER:: iii, &
-             ii
+   INTEGER :: Gridiv, & !Row of SurfaceChar where input information will be stored
+              rr !Row of SiteSelect that matches current grid and year
+   INTEGER :: iii, &
+              ii
 
    !-------------------------------------------------------------------------------------------
 
@@ -500,9 +500,9 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_OHMThresh_SW(PavSurf)) = NonVeg_Coeff(iv5, ci_OHMThresh_SW)
    SurfaceChar(gridiv, c_OHMThresh_WD(PavSurf)) = NonVeg_Coeff(iv5, ci_OHMThresh_WD)
    SurfaceChar(gridiv, c_ESTMCode(PavSurf)) = NonVeg_Coeff(iv5, ci_ESTMCode)
-   SurfaceChar(Gridiv, c_CpAnOHM(PavSurf)) = NonVeg_Coeff(iv5, ci_CpAnOHM)   ! heat capacity, AnOHM TS
-   SurfaceChar(Gridiv, c_KkAnOHM(PavSurf)) = NonVeg_Coeff(iv5, ci_KkAnOHM)  ! heat conductivity, AnOHM TS
-   SurfaceChar(Gridiv, c_ChAnOHM(PavSurf)) = NonVeg_Coeff(iv5, ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+   SurfaceChar(Gridiv, c_CpAnOHM(PavSurf)) = NonVeg_Coeff(iv5, ci_CpAnOHM) ! heat capacity, AnOHM TS
+   SurfaceChar(Gridiv, c_KkAnOHM(PavSurf)) = NonVeg_Coeff(iv5, ci_KkAnOHM) ! heat conductivity, AnOHM TS
+   SurfaceChar(Gridiv, c_ChAnOHM(PavSurf)) = NonVeg_Coeff(iv5, ci_ChAnOHM) ! bulk transfer coef., AnOHM TS
 
    ! Use SoilCode for Paved to find code for soil characteristics
    CALL CodeMatchSoil(Gridiv, c_SoilTCode(PavSurf))
@@ -517,22 +517,22 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ObsSNRFrac(PavSurf)) = Soil_Coeff(iv5, cSo_ObsSNRFrac)
 
    ! Get OHM characteristics for Paved
-   CALL CodeMatchOHM(Gridiv, PavSurf, 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, PavSurf, 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, PavSurf, 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, PavSurf, 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, PavSurf, 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, PavSurf, 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, PavSurf, 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, PavSurf, 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(PavSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -574,9 +574,9 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_OHMThresh_SW(BldgSurf)) = NonVeg_Coeff(iv5, ci_OHMThresh_SW)
    SurfaceChar(gridiv, c_OHMThresh_WD(Bldgsurf)) = NonVeg_Coeff(iv5, ci_OHMThresh_WD)
    SurfaceChar(gridiv, c_ESTMCode(BldgSurf)) = NonVeg_Coeff(iv5, ci_ESTMCode)
-   SurfaceChar(Gridiv, c_CpAnOHM(BldgSurf)) = NonVeg_Coeff(iv5, ci_CpAnOHM)   ! heat capacity, AnOHM TS
-   SurfaceChar(Gridiv, c_KkAnOHM(BldgSurf)) = NonVeg_Coeff(iv5, ci_KkAnOHM)  ! heat conductivity, AnOHM TS
-   SurfaceChar(Gridiv, c_ChAnOHM(BldgSurf)) = NonVeg_Coeff(iv5, ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+   SurfaceChar(Gridiv, c_CpAnOHM(BldgSurf)) = NonVeg_Coeff(iv5, ci_CpAnOHM) ! heat capacity, AnOHM TS
+   SurfaceChar(Gridiv, c_KkAnOHM(BldgSurf)) = NonVeg_Coeff(iv5, ci_KkAnOHM) ! heat conductivity, AnOHM TS
+   SurfaceChar(Gridiv, c_ChAnOHM(BldgSurf)) = NonVeg_Coeff(iv5, ci_ChAnOHM) ! bulk transfer coef., AnOHM TS
 
    ! Use SoilCode for Bldgs to find code for soil characteristics
    CALL CodeMatchSoil(Gridiv, c_SoilTCode(BldgSurf))
@@ -590,22 +590,22 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ObsSMMax(BldgSurf)) = Soil_Coeff(iv5, cSo_ObsSMMax)
    SurfaceChar(gridiv, c_ObsSNRFrac(BldgSurf)) = Soil_Coeff(iv5, cSo_ObsSNRFrac)
    !Get OHM characteristics for Bldgs
-   CALL CodeMatchOHM(Gridiv, BldgSurf, 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, BldgSurf, 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, BldgSurf, 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, BldgSurf, 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, BldgSurf, 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, BldgSurf, 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, BldgSurf, 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, BldgSurf, 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(BldgSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -666,8 +666,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ESTMCode(ConifSurf)) = Veg_Coeff(iv5, cp_ESTMCode)
    ! AnOHM TS
    SurfaceChar(Gridiv, c_CpAnOHM(ConifSurf)) = Veg_Coeff(iv5, cp_CpAnOHM) ! heat capacity, AnOHM TS
-   SurfaceChar(Gridiv, c_KkAnOHM(ConifSurf)) = Veg_Coeff(iv5, cp_KkAnOHM)  ! heat conductivity, AnOHM TS
-   SurfaceChar(Gridiv, c_ChAnOHM(ConifSurf)) = Veg_Coeff(iv5, cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+   SurfaceChar(Gridiv, c_KkAnOHM(ConifSurf)) = Veg_Coeff(iv5, cp_KkAnOHM) ! heat conductivity, AnOHM TS
+   SurfaceChar(Gridiv, c_ChAnOHM(ConifSurf)) = Veg_Coeff(iv5, cp_ChAnOHM) ! bulk transfer coef., AnOHM TS
 
    SurfaceChar(Gridiv, c_BiogenCO2Code(ivConif)) = Veg_Coeff(iv5, cp_BiogenCO2Code)
 
@@ -695,22 +695,22 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ObsSMMax(ConifSurf)) = Soil_Coeff(iv5, cSo_ObsSMMax)
    SurfaceChar(gridiv, c_ObsSNRFrac(ConifSurf)) = Soil_Coeff(iv5, cSo_ObsSNRFrac)
    !Get OHM characteristics for Conif
-   CALL CodeMatchOHM(Gridiv, ConifSurf, 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, ConifSurf, 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, ConifSurf, 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, ConifSurf, 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, ConifSurf, 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, ConifSurf, 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, ConifSurf, 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, ConifSurf, 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(ConifSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -771,8 +771,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ESTMCode(DecidSurf)) = Veg_Coeff(iv5, cp_ESTMCode)
    ! AnOHM TS
    SurfaceChar(Gridiv, c_CpAnOHM(DecidSurf)) = Veg_Coeff(iv5, cp_CpAnOHM) ! heat capacity, AnOHM TS
-   SurfaceChar(Gridiv, c_KkAnOHM(DecidSurf)) = Veg_Coeff(iv5, cp_KkAnOHM)  ! heat conductivity, AnOHM TS
-   SurfaceChar(Gridiv, c_ChAnOHM(DecidSurf)) = Veg_Coeff(iv5, cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+   SurfaceChar(Gridiv, c_KkAnOHM(DecidSurf)) = Veg_Coeff(iv5, cp_KkAnOHM) ! heat conductivity, AnOHM TS
+   SurfaceChar(Gridiv, c_ChAnOHM(DecidSurf)) = Veg_Coeff(iv5, cp_ChAnOHM) ! bulk transfer coef., AnOHM TS
 
    SurfaceChar(Gridiv, c_BiogenCO2Code(ivDecid)) = Veg_Coeff(iv5, cp_BiogenCO2Code)
 
@@ -800,22 +800,22 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ObsSMMax(DecidSurf)) = Soil_Coeff(iv5, cSo_ObsSMMax)
    SurfaceChar(gridiv, c_ObsSNRFrac(DecidSurf)) = Soil_Coeff(iv5, cSo_ObsSNRFrac)
    !Get OHM characteristics for Decid
-   CALL CodeMatchOHM(Gridiv, DecidSurf, 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, DecidSurf, 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, DecidSurf, 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, DecidSurf, 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, DecidSurf, 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, DecidSurf, 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, DecidSurf, 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, DecidSurf, 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(DecidSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -876,8 +876,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ESTMCode(GrassSurf)) = Veg_Coeff(iv5, cp_ESTMCode)
    ! AnOHM TS
    SurfaceChar(Gridiv, c_CpAnOHM(GrassSurf)) = Veg_Coeff(iv5, cp_CpAnOHM) ! heat capacity, AnOHM TS
-   SurfaceChar(Gridiv, c_KkAnOHM(GrassSurf)) = Veg_Coeff(iv5, cp_KkAnOHM)  ! heat conductivity, AnOHM TS
-   SurfaceChar(Gridiv, c_ChAnOHM(GrassSurf)) = Veg_Coeff(iv5, cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+   SurfaceChar(Gridiv, c_KkAnOHM(GrassSurf)) = Veg_Coeff(iv5, cp_KkAnOHM) ! heat conductivity, AnOHM TS
+   SurfaceChar(Gridiv, c_ChAnOHM(GrassSurf)) = Veg_Coeff(iv5, cp_ChAnOHM) ! bulk transfer coef., AnOHM TS
 
    SurfaceChar(Gridiv, c_BiogenCO2Code(ivGrass)) = Veg_Coeff(iv5, cp_BiogenCO2Code)
 
@@ -905,22 +905,22 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ObsSMMax(GrassSurf)) = Soil_Coeff(iv5, cSo_ObsSMMax)
    SurfaceChar(gridiv, c_ObsSNRFrac(GrassSurf)) = Soil_Coeff(iv5, cSo_ObsSNRFrac)
    !Get OHM characteristics for Grass
-   CALL CodeMatchOHM(Gridiv, GrassSurf, 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, GrassSurf, 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, GrassSurf, 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, GrassSurf, 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, GrassSurf, 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, GrassSurf, 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, GrassSurf, 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, GrassSurf, 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(GrassSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -964,8 +964,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_OHMThresh_WD(BSoilSurf)) = NonVeg_Coeff(iv5, ci_OHMThresh_WD)
    SurfaceChar(gridiv, c_ESTMCode(BSoilSurf)) = NonVeg_Coeff(iv5, ci_ESTMCode)
    SurfaceChar(Gridiv, c_CpAnOHM(BSoilSurf)) = NonVeg_Coeff(iv5, ci_CpAnOHM) ! heat capacity, AnOHM TS
-   SurfaceChar(Gridiv, c_KkAnOHM(BSoilSurf)) = NonVeg_Coeff(iv5, ci_KkAnOHM)  ! heat conductivity, AnOHM TS
-   SurfaceChar(Gridiv, c_ChAnOHM(BSoilSurf)) = NonVeg_Coeff(iv5, ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+   SurfaceChar(Gridiv, c_KkAnOHM(BSoilSurf)) = NonVeg_Coeff(iv5, ci_KkAnOHM) ! heat conductivity, AnOHM TS
+   SurfaceChar(Gridiv, c_ChAnOHM(BSoilSurf)) = NonVeg_Coeff(iv5, ci_ChAnOHM) ! bulk transfer coef., AnOHM TS
 
    ! Use SoilCode for BSoil to find code for soil characteristics
    CALL CodeMatchSoil(Gridiv, c_SoilTCode(BSoilSurf))
@@ -980,22 +980,22 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ObsSNRFrac(BSoilSurf)) = Soil_Coeff(iv5, cSo_ObsSNRFrac)
 
    ! Get OHM characteristics for BSoil
-   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, BSoilSurf, 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(BSoilSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -1041,25 +1041,25 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_ESTMCode(WaterSurf)) = Water_Coeff(iv5, cw_ESTMCode)
    ! AnOHM TS
    SurfaceChar(Gridiv, c_CpAnOHM(WaterSurf)) = Water_Coeff(iv5, cw_CpAnOHM) ! heat capacity, AnOHM TS
-   SurfaceChar(Gridiv, c_KkAnOHM(WaterSurf)) = Water_Coeff(iv5, cw_KkAnOHM)  ! heat conductivity, AnOHM TS
-   SurfaceChar(Gridiv, c_ChAnOHM(WaterSurf)) = Water_Coeff(iv5, cw_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+   SurfaceChar(Gridiv, c_KkAnOHM(WaterSurf)) = Water_Coeff(iv5, cw_KkAnOHM) ! heat conductivity, AnOHM TS
+   SurfaceChar(Gridiv, c_ChAnOHM(WaterSurf)) = Water_Coeff(iv5, cw_ChAnOHM) ! bulk transfer coef., AnOHM TS
    ! Get OHM characteristics for Water
-   CALL CodeMatchOHM(Gridiv, WaterSurf, 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, WaterSurf, 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, WaterSurf, 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, WaterSurf, 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, WaterSurf, 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, WaterSurf, 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, WaterSurf, 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, WaterSurf, 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(WaterSurf)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -1109,22 +1109,22 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    !    SurfaceChar(Gridiv,c_KkAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_KkAnOHM)  ! heat conductivity, AnOHM TS
    !    SurfaceChar(Gridiv,c_ChAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_ChAnOHM)  ! bulk transfer coef., AnOHM TS
    ! Get OHM characteristics for Snow
-   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'SWet')  !Summer wet
+   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'SWet') !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SWet(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SWet(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SWet(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'SDry')  !Summer dry
+   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'SDry') !Summer dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_SDry(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_SDry(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_SDry(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'WWet')  !Winter wet
+   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'WWet') !Winter wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WWet(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WWet(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a2)
    SurfaceChar(Gridiv, c_a3_WWet(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a3)
-   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'WDry')  !Winter dry
+   CALL CodeMatchOHM(Gridiv, (nsurf + 1), 'WDry') !Winter dry
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv, c_a1_WDry(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a1)
    SurfaceChar(Gridiv, c_a2_WDry(nsurf + 1)) = OHMCoefficients_Coeff(iv5, cO_a2)
@@ -1190,7 +1190,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
          END IF
          !If ESTM Code equals zero, use codes and surface fractions from SiteSelect.txt for Paved and Bldgs
       ELSEIF (iii == PavSurf .AND. SurfaceChar(Gridiv, c_ESTMCode(iii)) == 0) THEN
-         DO ii = 1, 3   !for the 3x Paved ESTM classes
+         DO ii = 1, 3 !for the 3x Paved ESTM classes
             CALL CodeMatchESTM_Class(Gridiv, iii, ii)
             SurfaceChar(Gridiv, c_Surf_thick1_Paved(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_thick1)
             SurfaceChar(Gridiv, c_Surf_thick2_Paved(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_thick2)
@@ -1209,7 +1209,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
             SurfaceChar(Gridiv, c_Surf_rhoCp5_Paved(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_rhoCp5)
          END DO
       ELSEIF (iii == BldgSurf .AND. SurfaceChar(Gridiv, c_ESTMCode(iii)) == 0) THEN
-         DO ii = 1, 5   !for the 5x Bldgs ESTM classes
+         DO ii = 1, 5 !for the 5x Bldgs ESTM classes
             CALL CodeMatchESTM_Class(Gridiv, iii, ii)
             SurfaceChar(Gridiv, c_Surf_thick1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_thick1)
             SurfaceChar(Gridiv, c_Surf_thick2_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5, cE_Surf_thick2)
@@ -1465,30 +1465,30 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    IMPLICIT NONE
 
-   CHARACTER(len=20):: GridName    !Name of the evaluated grid
-   CHARACTER(len=4)::  year_txt
-   INTEGER:: NumberOfGrids
+   CHARACTER(len=20) :: GridName !Name of the evaluated grid
+   CHARACTER(len=4) :: year_txt
+   INTEGER :: NumberOfGrids
 
-   CHARACTER(len=150):: fileInit   !Initial conditions filename
-   INTEGER::DaysSinceRain, Gridiv, & !number of days since rain, grid number,
-             gamma1, gamma2          !switches related to cooling and heating degree days
-   INTEGER::wd, seas, date, mb, &      !weekday information, season, date, month
-             year_int, switch = 0, &    !year as an integer, switch related to previous day
-             id_next           !next day,counter in irrigation calculations
+   CHARACTER(len=150) :: fileInit !Initial conditions filename
+   INTEGER :: DaysSinceRain, Gridiv, & !number of days since rain, grid number,
+              gamma1, gamma2 !switches related to cooling and heating degree days
+   INTEGER :: wd, seas, date, mb, & !weekday information, season, date, month
+              year_int, switch = 0, & !year as an integer, switch related to previous day
+              id_next !next day,counter in irrigation calculations
 
-   REAL(KIND(1D0))::PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState, &
-                     SnowFracPaved, SnowFracBldgs, SnowFracEveTr, SnowFracDecTr, &
-                     SnowFracGrass, SnowFracBSoil, SnowFracWater, &
-                     SnowDensPaved, SnowDensBldgs, SnowDensEveTr, SnowDensDecTr, &
-                     SnowDensGrass, SnowDensBSoil, SnowDensWater
+   REAL(KIND(1D0)) :: PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState, &
+                      SnowFracPaved, SnowFracBldgs, SnowFracEveTr, SnowFracDecTr, &
+                      SnowFracGrass, SnowFracBSoil, SnowFracWater, &
+                      SnowDensPaved, SnowDensBldgs, SnowDensEveTr, SnowDensDecTr, &
+                      SnowDensGrass, SnowDensBSoil, SnowDensWater
 
-   INTEGER:: LeavesOutInitially   !Allows for quick setting of veg-related initial conditions for full leaf-out (1) or leaf-off (0)
-   INTEGER:: SnowInitially        !Allows for quick setting of snow-related initial conditions for no snow initially (0)
+   INTEGER :: LeavesOutInitially !Allows for quick setting of veg-related initial conditions for full leaf-out (1) or leaf-off (0)
+   INTEGER :: SnowInitially !Allows for quick setting of snow-related initial conditions for no snow initially (0)
 
-   INTEGER:: GridsInitialised = 0   ! Number of grids initialised at start of model run
-   INTEGER:: YearsInitialised = 0   ! Number of years initialised at start of model run
-   INTEGER:: dayofWeek_id(3)
-   REAL(KIND(1D0)):: NormalizeVegChar  !Function
+   INTEGER :: GridsInitialised = 0 ! Number of grids initialised at start of model run
+   INTEGER :: YearsInitialised = 0 ! Number of years initialised at start of model run
+   INTEGER :: dayofWeek_id(3)
+   REAL(KIND(1D0)) :: NormalizeVegChar !Function
 
    ! Define InitialConditions namelist ---------------------------------------
    NAMELIST /InitialConditions/ DaysSinceRain, &
@@ -1547,7 +1547,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       SnowDensGrass, &
       SnowDensBSoil, &
       SnowDensWater, &
-      SnowAlb0!,&
+      SnowAlb0 !,&
    ! BoInit ! removed as no longer needed by AnOHM
 
    ! Initialise namelist to NAN ----------------------------------------------
@@ -1609,7 +1609,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    SnowAlb0 = NAN
    ! BoInit=NAN
 
-   WRITE (year_txt, '(I4)') year_int  !Get year as a text string
+   WRITE (year_txt, '(I4)') year_int !Get year as a text string
 
    ! Define InitialConditions file -------------------------------------------
    FileInit = TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'.nml'
@@ -1619,7 +1619,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       GridsInitialised = GridsInitialised + 1
       IF (GridsInitialised == NumberOfGrids) THEN
          YearsInitialised = YearsInitialised + 1
-         GridsInitialised = 0   !reset GridsInitialised
+         GridsInitialised = 0 !reset GridsInitialised
       END IF
    END IF
    !write(*,*) TRIM(FileInit)
@@ -1666,28 +1666,28 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       IF (Porosity0 == NAN) THEN
          CALL ErrorHint(36, 'Specify Porosity0.', notUsed, notUsed, notUsedI)
       END IF
-   ELSEIF (LeavesOutInitially == 1) THEN   !If leaves out, set to summertime values using SUEWS_Veg.txt
+   ELSEIF (LeavesOutInitially == 1) THEN !If leaves out, set to summertime values using SUEWS_Veg.txt
       GDD_1_0 = NormalizeVegChar(c_GDDFull, Gridiv)
       GDD_2_0 = 0
-      LAIinitialEveTr = SurfaceChar(Gridiv, c_LAIMax(ivConif))   !Max LAI
+      LAIinitialEveTr = SurfaceChar(Gridiv, c_LAIMax(ivConif)) !Max LAI
       LAIinitialDecTr = SurfaceChar(Gridiv, c_LAIMax(ivDecid))
       LAIinitialGrass = SurfaceChar(Gridiv, c_LAIMax(ivGrass))
-      AlbEveTr0 = SurfaceChar(Gridiv, c_AlbMax(ConifSurf))       !Max albedo
+      AlbEveTr0 = SurfaceChar(Gridiv, c_AlbMax(ConifSurf)) !Max albedo
       AlbDecTr0 = SurfaceChar(Gridiv, c_AlbMax(DecidSurf))
       AlbGrass0 = SurfaceChar(Gridiv, c_AlbMax(GrassSurf))
-      DecidCap0 = SurfaceChar(Gridiv, c_StorMax(DecidSurf))      !Max storage capacity (DecTr only)
-      Porosity0 = SurfaceChar(Gridiv, c_PorosityMin(ivDecid))  !Min porosity (DecTr only)
-   ELSEIF (LeavesOutInitially == 0) THEN   !If leaves off, set to wintertime values using SUEWS_Veg.txt
+      DecidCap0 = SurfaceChar(Gridiv, c_StorMax(DecidSurf)) !Max storage capacity (DecTr only)
+      Porosity0 = SurfaceChar(Gridiv, c_PorosityMin(ivDecid)) !Min porosity (DecTr only)
+   ELSEIF (LeavesOutInitially == 0) THEN !If leaves off, set to wintertime values using SUEWS_Veg.txt
       GDD_1_0 = 0
       GDD_2_0 = NormalizeVegChar(c_SDDFull, Gridiv)
-      LAIinitialEveTr = SurfaceChar(Gridiv, c_LAIMin(ivConif))   !Min LAI
+      LAIinitialEveTr = SurfaceChar(Gridiv, c_LAIMin(ivConif)) !Min LAI
       LAIinitialDecTr = SurfaceChar(Gridiv, c_LAIMin(ivDecid))
       LAIinitialGrass = SurfaceChar(Gridiv, c_LAIMin(ivGrass))
-      AlbEveTr0 = SurfaceChar(Gridiv, c_AlbMin(ConifSurf))       !Min albedo
+      AlbEveTr0 = SurfaceChar(Gridiv, c_AlbMin(ConifSurf)) !Min albedo
       AlbDecTr0 = SurfaceChar(Gridiv, c_AlbMin(DecidSurf))
       AlbGrass0 = SurfaceChar(Gridiv, c_AlbMin(GrassSurf))
-      DecidCap0 = SurfaceChar(Gridiv, c_StorMin(DecidSurf))      !Min storage capacity (DecTr only)
-      Porosity0 = SurfaceChar(Gridiv, c_PorosityMax(ivDecid))  !Max porosity (DecTr only)
+      DecidCap0 = SurfaceChar(Gridiv, c_StorMin(DecidSurf)) !Min storage capacity (DecTr only)
+      Porosity0 = SurfaceChar(Gridiv, c_PorosityMax(ivDecid)) !Max porosity (DecTr only)
    ELSE
       CALL ErrorHint(36, 'LeavesOutInitially must be 0, 1, or -999 (or omitted from InitialConditions namelist)', &
                      notUsed, notUsed, notUsedI)
@@ -1741,7 +1741,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       SnowDensBSoil = 0
       SnowDensWater = 0
       SnowAlb0 = 0
-   ELSEIF (SnowInitially == INT(NAN)) THEN   !Check all required snow-related conditions are provided
+   ELSEIF (SnowInitially == INT(NAN)) THEN !Check all required snow-related conditions are provided
       IF (SnowWaterPavedState == NAN .OR. SnowWaterBldgsState == NAN .OR. SnowWaterEveTrState == NAN .OR. &
           SnowWaterDecTrState == NAN .OR. SnowWaterGrassState == NAN .OR. SnowWaterBSoilState == NAN .OR. &
           SnowWaterWaterState == NAN) THEN
@@ -1780,7 +1780,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ! -------------------------------------------------------------------------
 
    ! Previous day DOY number (needed in file allocations)
-   IF (id_prev >= 364) id_prev = 0  !If previous day is larger than 364, set this to zero
+   IF (id_prev >= 364) id_prev = 0 !If previous day is larger than 364, set this to zero
 
    ! Save initial conditions to ModelDailyState array ------------------------
    ModelDailyState(Gridiv, cMDS_id_prev) = id_prev
@@ -1789,8 +1789,8 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ModelDailyState(Gridiv, cMDS_LAIInitialGrass) = LAIInitialGrass
    ModelDailyState(Gridiv, cMDS_GDD1_0) = GDD_1_0
    ModelDailyState(Gridiv, cMDS_GDD2_0) = GDD_2_0
-   ModelDailyState(Gridiv, cMDS_GDDMin) = 90   !QUESTION: Going to check for minimum GDD
-   ModelDailyState(Gridiv, cMDS_GDDMax) = -90   !QUESTION: Going to check for maximum GDD
+   ModelDailyState(Gridiv, cMDS_GDDMin) = 90 !QUESTION: Going to check for minimum GDD
+   ModelDailyState(Gridiv, cMDS_GDDMax) = -90 !QUESTION: Going to check for maximum GDD
    ModelDailyState(Gridiv, cMDS_albEveTr) = AlbEveTr0
    ModelDailyState(Gridiv, cMDS_albDecTr) = AlbDecTr0
    ModelDailyState(Gridiv, cMDS_albGrass) = AlbGrass0
@@ -1812,12 +1812,12 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    IF (EmissionsMethod >= 0) THEN
       !Calculations related to heating and cooling degree days (BaseT_HC is used always)
-      IF ((Temp_C0 - BaseT_HC) >= 0) THEN   !Cooling
+      IF ((Temp_C0 - BaseT_HC) >= 0) THEN !Cooling
          gamma2 = 1
       ELSE
          gamma2 = 0
       END IF
-      IF ((BaseT_HC - Temp_C0) >= 0) THEN   !Heating
+      IF ((BaseT_HC - Temp_C0) >= 0) THEN !Heating
          gamma1 = 1
       ELSE
          gamma1 = 0
@@ -1886,7 +1886,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ModelOutputData(0, cMOD_SnowFrac(BSoilSurf), Gridiv) = SnowFracBSoil
    ModelOutputData(0, cMOD_SnowFrac(WaterSurf), Gridiv) = SnowFracWater
 
-   IceFrac = 0.2   !Estimated fraction of ice. Should be improved in the future
+   IceFrac = 0.2 !Estimated fraction of ice. Should be improved in the future
 
    ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)
    CALL SUEWS_Translate(Gridiv, 0, 0)
@@ -1894,11 +1894,11 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    !Calculation of roughness parameters (N.B. uses porosity)
    IF (Diagnose == 1) PRINT *, 'calling in initial state: SUEWS_cal_RoughnessParameters'
    CALL SUEWS_cal_RoughnessParameters( &
-      RoughLenMomMethod, sfr, &!input
+      RoughLenMomMethod, sfr, & !input
       bldgH, EveTreeH, DecTreeH, &
       porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
-      FAI, &!output
+      FAI, & !output
       Zh, z0m, zdm, ZZD)
 
    !=============================================================================
@@ -1908,14 +1908,14 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    !First we need to know if the previous day given in initial conditions (id_prev) is
    !on previous year as this is needed in the initialization of DayofWeek matrix.
    !In this case switch is set to one for date calculations.
-   IF (id_prev == 0) THEN                     !If id_prev = 0, means that the first modelled day is 1 Jan
-      year_int = year_int - 1                  !1) find the number of days on that year
+   IF (id_prev == 0) THEN !If id_prev = 0, means that the first modelled day is 1 Jan
+      year_int = year_int - 1 !1) find the number of days on that year
       CALL LeapYearCalc(year_int, id_prev) !2) set switch to 1 so that the code knows to change back to current year (switch=0)
       switch = 1
    END IF
 
    CALL day2month(id_prev, mb, date, seas, year_int, lat) !Calculate date information (mb = month, date = day,...)
-   CALL Day_of_Week(date, mb, year_int, wd)             !Calculate weekday of the previous day (wd) (1=Sun, ..., 7=Sat)
+   CALL Day_of_Week(date, mb, year_int, wd) !Calculate weekday of the previous day (wd) (1=Sun, ..., 7=Sat)
 
    !After the day in previous year switch is changed back to zero:
    !    ie not previous day anymore
@@ -1941,7 +1941,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    END IF
 
    CALL day2month(id_next, mb, date, seas, year_int, lat) !Calculate real date from doy
-   CALL Day_of_Week(date, mb, year_int, wd)             !Calculate weekday (1=Sun, ..., 7=Sat)
+   CALL Day_of_Week(date, mb, year_int, wd) !Calculate weekday (1=Sun, ..., 7=Sat)
 
    IF (switch == 1) THEN
       iy = iy - 1
@@ -1956,7 +1956,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    !id=id_prev
    !it= 23 !!LastTimeOfDay
-   IF (id_prev >= startDLS .AND. id_prev <= endDLS) THEN  !Summertime
+   IF (id_prev >= startDLS .AND. id_prev <= endDLS) THEN !Summertime
       DLS = 1
    ELSE
       DLS = 0
@@ -1973,8 +1973,8 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    soilstore_id = [SoilStorePavedState, SoilStoreBldgsState, SoilStoreEveTrstate, SoilStoreDecTrState, &
                    SoilStoreGrassState, SoilStoreBSoilState, 0D0]
    CALL update_WaterUse( &
-      id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
-      state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
+      id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, & !input
+      state_id, soilstore_id, SoilStoreCap, H_maintain, & !input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
@@ -2000,9 +2000,9 @@ FUNCTION NormalizeVegChar(VegCol, Gridiv) RESULT(NormVegResult)
 
    IMPLICIT NONE
 
-   INTEGER, DIMENSION(nvegsurf):: VegCol  !Must be column numbers defined for veg surfaces only
-   INTEGER:: Gridiv
-   REAL(KIND(1D0)):: NormVegResult
+   INTEGER, DIMENSION(nvegsurf) :: VegCol !Must be column numbers defined for veg surfaces only
+   INTEGER :: Gridiv
+   REAL(KIND(1D0)) :: NormVegResult
    IF (SurfaceChar(Gridiv, c_FrEveTr) + &
        SurfaceChar(Gridiv, c_FrDecTr) + &
        SurfaceChar(Gridiv, c_FrGrass) == 0.) THEN ! prevent arithmetic error under a full impervious scenario
@@ -2044,23 +2044,23 @@ SUBROUTINE NextInitial(GridName, year_int)
 
    IMPLICIT NONE
 
-   CHARACTER(len=15)::GridName
-   CHARACTER(len=4)::year_txt2
-   INTEGER:: year_int2
-   INTEGER:: year_int
-   INTEGER:: ID_Prev_Out ! ID_Prev written to next Initial Conditions file
-   INTEGER:: nofDaysThisYear_ForOutput  !Added HCW 13 Jan 2017
+   CHARACTER(len=15) :: GridName
+   CHARACTER(len=4) :: year_txt2
+   INTEGER :: year_int2
+   INTEGER :: year_int
+   INTEGER :: ID_Prev_Out ! ID_Prev written to next Initial Conditions file
+   INTEGER :: nofDaysThisYear_ForOutput !Added HCW 13 Jan 2017
 
-   year = year_int   !HCW added 21 Nov 2014
+   year = year_int !HCW added 21 Nov 2014
 
    ! Modified by HCW 24 May 2016
-   IF (id == 1 .AND. iy == (year + 1)) THEN   !if id = 1 and this is the first row of next year
+   IF (id == 1 .AND. iy == (year + 1)) THEN !if id = 1 and this is the first row of next year
       year_int2 = INT(year + 1)
       WRITE (year_txt2, '(I4)') year_int2
       OPEN (57, File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))//'.nml', err=200)
       nofDaysThisYear_ForOutput = nofdaysthisyear
    ELSE
-      year_int2 = INT(year)  !End of Run but not end of year
+      year_int2 = INT(year) !End of Run but not end of year
       WRITE (year_txt2, '(I4)') year_int2
       OPEN (57, File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))// &
             '_EndofRun.nml', err=201)
@@ -2164,9 +2164,9 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
 
    IMPLICIT NONE
 
-   INTEGER::lunit, i, iyy !,RunNumber,NSHcounter
-   REAL(KIND(1D0)), DIMENSION(24)::MetArray
-   REAL(KIND(1D0)):: imin_prev, ih_prev, iday_prev, tstep_met, iy_only   !For checks on temporal resolution of met data
+   INTEGER :: lunit, i, iyy !,RunNumber,NSHcounter
+   REAL(KIND(1D0)), DIMENSION(24) :: MetArray
+   REAL(KIND(1D0)) :: imin_prev, ih_prev, iday_prev, tstep_met, iy_only !For checks on temporal resolution of met data
 
    ! initialisation
    iy_only = 1
@@ -2206,7 +2206,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
          iday_prev = MetArray(2)
          iy_only = MetArray(1)
       ELSEIF (i == 2) THEN
-         tstep_met = ((MetArray(4) + 60*MetArray(3)) - (imin_prev + 60*ih_prev))*60   !tstep in seconds
+         tstep_met = ((MetArray(4) + 60*MetArray(3)) - (imin_prev + 60*ih_prev))*60 !tstep in seconds
          IF (tstep_met /= tstep_real .AND. MetArray(2) == iday_prev) THEN
             CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of met data (DOY).', REAL(tstep, KIND(1D0)), tstep_met, &
                            INT(MetArray(2)))

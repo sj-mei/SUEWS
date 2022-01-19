@@ -6,7 +6,7 @@ MODULE rsl_module
       nsurf, BldgSurf, ConifSurf, DecidSurf, ncolumnsDataOutRSL
    IMPLICIT NONE
 
-   INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
+   INTEGER, PARAMETER :: nz = 30 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
 CONTAINS
 
@@ -14,8 +14,8 @@ CONTAINS
       Zh, z0m, zdm, z0v, &
       L_MOD, sfr, FAI, StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
-      avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
-      T2_C, q2_gkg, U10_ms, RH2, &!output
+      avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, & ! input
+      T2_C, q2_gkg, U10_ms, RH2, & !output
       dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
@@ -30,91 +30,91 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::sfr! surface fractions [-]
-      REAL(KIND(1D0)), INTENT(in):: zMeas  ! height of atmospheric forcing [m]
-      REAL(KIND(1D0)), INTENT(in):: avU1   ! Wind speed at forcing height [m s-1]
-      REAL(KIND(1D0)), INTENT(in):: Temp_C ! Air temperature at forcing height [C]
-      REAL(KIND(1D0)), INTENT(in):: avRH   ! relative humidity at forcing height [-]
-      REAL(KIND(1D0)), INTENT(in):: Press_hPa ! pressure at forcing height [hPa]
-      REAL(KIND(1D0)), INTENT(in):: L_MOD  ! Obukhov length [m]
-      REAL(KIND(1D0)), INTENT(in):: RA_h  ! aerodynamic resistance for heat [s m-1]
-      REAL(KIND(1D0)), INTENT(in):: avcp  ! specific heat capacity [J kg-1 K-1]
-      REAL(KIND(1D0)), INTENT(in):: lv_J_kg  ! Latent heat of vaporization in [J kg-1]
-      REAL(KIND(1D0)), INTENT(in):: avdens  ! air density [kg m-3]
-      REAL(KIND(1D0)), INTENT(in):: qh  ! sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in):: qe     ! Latent heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in):: Zh     ! Mean building height [m]
-      REAL(KIND(1D0)), INTENT(in):: z0m     ! roughness for momentum [m]
-      REAL(KIND(1D0)), INTENT(in):: z0v  ! roughnesslength for heat [s m-1]
-      REAL(KIND(1D0)), INTENT(in):: zdm     ! zero-plane displacement [m]
-      REAL(KIND(1D0)), INTENT(in):: FAI  ! Frontal area index [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! surface fractions [-]
+      REAL(KIND(1D0)), INTENT(in) :: zMeas ! height of atmospheric forcing [m]
+      REAL(KIND(1D0)), INTENT(in) :: avU1 ! Wind speed at forcing height [m s-1]
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C ! Air temperature at forcing height [C]
+      REAL(KIND(1D0)), INTENT(in) :: avRH ! relative humidity at forcing height [-]
+      REAL(KIND(1D0)), INTENT(in) :: Press_hPa ! pressure at forcing height [hPa]
+      REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
+      REAL(KIND(1D0)), INTENT(in) :: RA_h ! aerodynamic resistance for heat [s m-1]
+      REAL(KIND(1D0)), INTENT(in) :: avcp ! specific heat capacity [J kg-1 K-1]
+      REAL(KIND(1D0)), INTENT(in) :: lv_J_kg ! Latent heat of vaporization in [J kg-1]
+      REAL(KIND(1D0)), INTENT(in) :: avdens ! air density [kg m-3]
+      REAL(KIND(1D0)), INTENT(in) :: qh ! sensible heat flux [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: qe ! Latent heat flux [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: Zh ! Mean building height [m]
+      REAL(KIND(1D0)), INTENT(in) :: z0m ! roughness for momentum [m]
+      REAL(KIND(1D0)), INTENT(in) :: z0v ! roughnesslength for heat [s m-1]
+      REAL(KIND(1D0)), INTENT(in) :: zdm ! zero-plane displacement [m]
+      REAL(KIND(1D0)), INTENT(in) :: FAI ! Frontal area index [-]
 
-      INTEGER, INTENT(in)::StabilityMethod
+      INTEGER, INTENT(in) :: StabilityMethod
 
-      REAL(KIND(1D0)), INTENT(out):: T2_C ! Air temperature at 2 m [C]
-      REAL(KIND(1D0)), INTENT(out):: q2_gkg ! Air specific humidity at 2 m [g kg-1]
-      REAL(KIND(1D0)), INTENT(out):: U10_ms ! wind speed at 10 m [m s-1]
-      REAL(KIND(1D0)), INTENT(out):: RH2 ! Air relative humidity [-]
+      REAL(KIND(1D0)), INTENT(out) :: T2_C ! Air temperature at 2 m [C]
+      REAL(KIND(1D0)), INTENT(out) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
+      REAL(KIND(1D0)), INTENT(out) :: U10_ms ! wind speed at 10 m [m s-1]
+      REAL(KIND(1D0)), INTENT(out) :: RH2 ! Air relative humidity [-]
 
-      INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
+      INTEGER, PARAMETER :: nz = 30 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
-      REAL(KIND(1D0)), PARAMETER:: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
-                                   a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
-                                   kappa = 0.40, &! von karman constant
-                                   !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
-                                   beta_N = 0.40, &  ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
-                                   pi = 4.*ATAN(1.0), r = 0.1, &
-                                   a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
+      REAL(KIND(1D0)), PARAMETER :: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
+                                    a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
+                                    kappa = 0.40, & ! von karman constant
+                                    !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
+                                    beta_N = 0.40, & ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
+                                    pi = 4.*ATAN(1.0), r = 0.1, &
+                                    a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
 
       ! Variables array [z,U,T,q, 12 debug vars]
       ! z: height array
       ! U,T,q: wind speed, air temp, specific humidity at z;
       ! debug vars: see dataoutLineRSL
-      REAL(KIND(1D0)), INTENT(out), DIMENSION(ncolumnsDataOutRSL - 5):: dataoutLineRSL
-      REAL(KIND(1D0)), DIMENSION(nz):: psihatm_z
-      REAL(KIND(1D0)), DIMENSION(nz):: psihath_z
-      REAL(KIND(1D0)), DIMENSION(nz):: dif
+      REAL(KIND(1D0)), INTENT(out), DIMENSION(ncolumnsDataOutRSL - 5) :: dataoutLineRSL
+      REAL(KIND(1D0)), DIMENSION(nz) :: psihatm_z
+      REAL(KIND(1D0)), DIMENSION(nz) :: psihath_z
+      REAL(KIND(1D0)), DIMENSION(nz) :: dif
       ! REAL(KIND(1d0)), DIMENSION(nz):: psihatm_z, psihath_z
-      REAL(KIND(1D0)), DIMENSION(nz):: zarray
-      REAL(KIND(1D0)), DIMENSION(nz):: dataoutLineURSL ! wind speed array [m s-1]
-      REAL(KIND(1D0)), DIMENSION(nz):: dataoutLineTRSL ! Temperature array [C]
-      REAL(KIND(1D0)), DIMENSION(nz):: dataoutLineqRSL ! Specific humidity array [g kg-1]
+      REAL(KIND(1D0)), DIMENSION(nz) :: zarray
+      REAL(KIND(1D0)), DIMENSION(nz) :: dataoutLineURSL ! wind speed array [m s-1]
+      REAL(KIND(1D0)), DIMENSION(nz) :: dataoutLineTRSL ! Temperature array [C]
+      REAL(KIND(1D0)), DIMENSION(nz) :: dataoutLineqRSL ! Specific humidity array [g kg-1]
 
-      REAL(KIND(1D0))::z0_RSL  ! roughness length from H&F
-      REAL(KIND(1D0))::zd_RSL ! zero-plane displacement
+      REAL(KIND(1D0)) :: z0_RSL ! roughness length from H&F
+      REAL(KIND(1D0)) :: zd_RSL ! zero-plane displacement
 
       ! REAL(KIND(1d0))::Lc_build, Lc_tree, Lc ! canopy drag length scale
-      REAL(KIND(1D0))::Lc ! canopy drag length scale
+      REAL(KIND(1D0)) :: Lc ! canopy drag length scale
       ! REAL(KIND(1d0))::Lc_stab ! threshold of canopy drag length scale under stable conditions
       ! REAL(KIND(1d0))::Lc_unstab ! threshold of canopy drag length scale under unstable conditions
-      REAL(KIND(1D0))::Scc ! Schmidt number for temperature and humidity
-      REAL(KIND(1D0))::psimz, psimz0, psimza, phimzp, phimz, phihzp, phihz, psihz, psihz0, psihza  ! stability function for momentum
+      REAL(KIND(1D0)) :: Scc ! Schmidt number for temperature and humidity
+      REAL(KIND(1D0)) :: psimz, psimz0, psimza, phimzp, phimz, phihzp, phihz, psihz, psihz0, psihza ! stability function for momentum
       ! REAL(KIND(1d0))::betaHF, betaNL, beta, betaN2  ! beta coefficient from Harman 2012
-      REAL(KIND(1D0))::beta  ! beta coefficient from Harman 2012
-      REAL(KIND(1D0))::elm ! mixing length
+      REAL(KIND(1D0)) :: beta ! beta coefficient from Harman 2012
+      REAL(KIND(1D0)) :: elm ! mixing length
       ! REAL(KIND(1d0))::xxm1, xxm1_2, xxh1, xxh1_2, dphi, dphih ! dummy variables for stability functions
-      REAL(KIND(1D0))::f, cm, c2, ch, c2h ! H&F'07 and H&F'08 'constants'
-      REAL(KIND(1D0))::t_h, q_h ! H&F'08 canopy corrections
-      REAL(KIND(1D0))::TStar_RSL ! temperature scale
-      REAL(KIND(1D0))::UStar_RSL ! friction velocity used in RSL
-      REAL(KIND(1D0))::UStar_heat ! friction velocity derived from RA_h with correction/restriction
-      REAL(KIND(1D0))::PAI ! plan area index, including areas of roughness elements: buildings and trees
+      REAL(KIND(1D0)) :: f, cm, c2, ch, c2h ! H&F'07 and H&F'08 'constants'
+      REAL(KIND(1D0)) :: t_h, q_h ! H&F'08 canopy corrections
+      REAL(KIND(1D0)) :: TStar_RSL ! temperature scale
+      REAL(KIND(1D0)) :: UStar_RSL ! friction velocity used in RSL
+      REAL(KIND(1D0)) :: UStar_heat ! friction velocity derived from RA_h with correction/restriction
+      REAL(KIND(1D0)) :: PAI ! plan area index, including areas of roughness elements: buildings and trees
       ! REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
-      REAL(KIND(1D0))::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
+      REAL(KIND(1D0)) :: L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
       ! real(KIND(1D0))::L_stab ! threshold for Obukhov length under stable conditions
       ! real(KIND(1D0))::L_unstab ! threshold for Obukhov length under unstable conditions
 
-      REAL(KIND(1D0))::zH_RSL ! mean canyon height used in RSL module with thresholds applied
-      REAL(KIND(1D0))::dz! initial height step
-      REAL(KIND(1D0))::phi_hatmZh, phim_zh
+      REAL(KIND(1D0)) :: zH_RSL ! mean canyon height used in RSL module with thresholds applied
+      REAL(KIND(1D0)) :: dz ! initial height step
+      REAL(KIND(1D0)) :: phi_hatmZh, phim_zh
       ! REAL(KIND(1d0)), parameter::zH_min = 8! limit for minimum canyon height used in RSL module
-      REAL(KIND(1D0)), PARAMETER::ratio_dz = 1.618! ratio between neighbouring height steps
+      REAL(KIND(1D0)), PARAMETER :: ratio_dz = 1.618 ! ratio between neighbouring height steps
 
-      REAL(KIND(1D0))::qa_gkg, qStar_RSL ! specific humidity scale
+      REAL(KIND(1D0)) :: qa_gkg, qStar_RSL ! specific humidity scale
       INTEGER :: I, z, idx_can, idx_za, idx_2m, idx_10m
       INTEGER :: nz_can ! number of heights in canyon
 
-      LOGICAL:: flag_RSL ! whether RSL correction is used
+      LOGICAL :: flag_RSL ! whether RSL correction is used
 
       ! CHARACTER(len=1024) :: Errmessage
       !
@@ -130,8 +130,8 @@ CONTAINS
       ! ! Start setting up the parameters
 
       CALL RSL_cal_prms( &
-         StabilityMethod, &!input
-         zh, L_MOD, sfr, FAI, &!input
+         StabilityMethod, & !input
+         zh, L_MOD, sfr, FAI, & !input
          zH_RSL, L_MOD_RSL, &
          Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, PAI)
 
@@ -212,11 +212,11 @@ CONTAINS
             phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
 
-            psihatm_z(z) = psihatm_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd_RSL)/elm)) &  !Taylor's approximation for integral
+            psihatm_z(z) = psihatm_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
                            /(zarray(z + 1) - zd_RSL)
             psihatm_z(z) = psihatm_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd_RSL)/elm)) &
                            /(zarray(z) - zd_RSL)
-            psihath_z(z) = psihath_z(z + 1) + dz/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd_RSL)/elm)) &  !Taylor's approximation for integral
+            psihath_z(z) = psihath_z(z + 1) + dz/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
                            /(zarray(z + 1) - zd_RSL)
             psihath_z(z) = psihath_z(z) + dz/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
                            /(zarray(z) - zd_RSL)
@@ -282,7 +282,7 @@ CONTAINS
          qStar_RSL = 10.**(-10) ! avoid the situation where qe=0, qstar_RSL=0 and the code breaks LB 21 May 2021
       ELSE
          qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_heat
-      ENDIF
+      END IF
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
       DO z = idx_can, nz
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
@@ -308,7 +308,7 @@ CONTAINS
       ELSE
          ! MOST approach:
          DO z = 1, idx_can
-            if ( zarray(z) <= zd_RSL ) zarray(z)=1.01*zd_RSL
+            IF (zarray(z) <= zd_RSL) zarray(z) = 1.01*zd_RSL
             psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0)/kappa
@@ -344,22 +344,22 @@ CONTAINS
 
    FUNCTION interp_z(z_x, z, v) RESULT(v_x)
 
-      REAL(KIND(1D0)), INTENT(in) ::  z_x ! height to interpolate at
-      REAL(KIND(1D0)), DIMENSION(nz), INTENT(in) ::  z ! heights
-      REAL(KIND(1D0)), DIMENSION(nz), INTENT(in) ::  v ! values associated with heights
+      REAL(KIND(1D0)), INTENT(in) :: z_x ! height to interpolate at
+      REAL(KIND(1D0)), DIMENSION(nz), INTENT(in) :: z ! heights
+      REAL(KIND(1D0)), DIMENSION(nz), INTENT(in) :: v ! values associated with heights
 
       ! output
-      REAL(KIND(1D0)) ::v_x ! zd used in RSL
+      REAL(KIND(1D0)) :: v_x ! zd used in RSL
 
       ! local variables
-      REAL(KIND(1D0)) ::slope! slope
-      REAL(KIND(1D0)) ::dz! slope
-      REAL(KIND(1D0)), DIMENSION(nz) ::dif! slope
-      INTEGER :: idx_low! vertical index lower than z_x
-      INTEGER :: idx_x! vertical index lower than z_x
-      INTEGER :: idx_high! vertical index higher than z_x
-      INTEGER :: idx! vertical index higher than z_x
-      INTEGER, PARAMETER::nz = 30! vertical index higher than z_x
+      REAL(KIND(1D0)) :: slope ! slope
+      REAL(KIND(1D0)) :: dz ! slope
+      REAL(KIND(1D0)), DIMENSION(nz) :: dif ! slope
+      INTEGER :: idx_low ! vertical index lower than z_x
+      INTEGER :: idx_x ! vertical index lower than z_x
+      INTEGER :: idx_high ! vertical index higher than z_x
+      INTEGER :: idx ! vertical index higher than z_x
+      INTEGER, PARAMETER :: nz = 30 ! vertical index higher than z_x
 
       ! initialise variables
       idx_x = 0
@@ -383,11 +383,11 @@ CONTAINS
 
    FUNCTION cal_elm_RSL(beta, Lc) RESULT(elm)
 
-      REAL(KIND(1D0)), INTENT(in) ::  Lc ! height scale for bluff bodies [m]
-      REAL(KIND(1D0)), INTENT(in) ::  beta ! parameter in RSL
+      REAL(KIND(1D0)), INTENT(in) :: Lc ! height scale for bluff bodies [m]
+      REAL(KIND(1D0)), INTENT(in) :: beta ! parameter in RSL
 
       ! output
-      REAL(KIND(1D0)) ::elm ! zd used in RSL
+      REAL(KIND(1D0)) :: elm ! zd used in RSL
 
       elm = 2.*beta**3*Lc
 
@@ -399,24 +399,24 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
       REAL(KIND(1D0)), INTENT(in) :: z ! height of interest [m]
-      REAL(KIND(1D0)), INTENT(in) ::  zh_RSL ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  Lc ! height scale for bluff bodies [m]
-      REAL(KIND(1D0)), INTENT(in) ::  beta ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(in) ::  L_MOD ! Obukhov length [m]
+      REAL(KIND(1D0)), INTENT(in) :: zh_RSL ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: Lc ! height scale for bluff bodies [m]
+      REAL(KIND(1D0)), INTENT(in) :: beta ! parameter in RSL
+      REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
 
       ! output
-      REAL(KIND(1D0)) ::psim_hat_z ! psim_hat at height of interest
+      REAL(KIND(1D0)) :: psim_hat_z ! psim_hat at height of interest
 
       ! internal variables
-      REAL(KIND(1D0)) ::zp ! a height above z used for iterative calculations
-      REAL(KIND(1D0)) ::zd_RSL ! displacement height used in RSL
-      REAL(KIND(1D0)) ::phim_lc ! displacement height used in RSL
-      REAL(KIND(1D0)) ::phim_z ! displacement height used in RSL
-      REAL(KIND(1D0)) ::phim_zp ! displacement height used in RSL
-      REAL(KIND(1D0)) ::phim_hat_zp ! displacement height used in RSL
-      REAL(KIND(1D0)) ::phim_hat_z ! displacement height used in RSL
-      REAL(KIND(1D0)) ::psim_hat_zp ! displacement height used in RSL
-      REAL(KIND(1D0)) ::elm ! displacement height used in RSL
+      REAL(KIND(1D0)) :: zp ! a height above z used for iterative calculations
+      REAL(KIND(1D0)) :: zd_RSL ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phim_lc ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phim_z ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phim_zp ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phim_hat_zp ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phim_hat_z ! displacement height used in RSL
+      REAL(KIND(1D0)) :: psim_hat_zp ! displacement height used in RSL
+      REAL(KIND(1D0)) :: elm ! displacement height used in RSL
       ! real(KIND(1D0)) ::xxm1 ! displacement height used in RSL
       ! real(KIND(1D0)) ::xxm1_2 ! displacement height used in RSL
       ! real(KIND(1D0)) ::dphi ! displacement height used in RSL
@@ -425,8 +425,8 @@ CONTAINS
       ! real(KIND(1D0)) ::c2
       ! real(KIND(1D0)) ::phi_hatmZh, phim_zh
 
-      REAL(KIND(1D0)), PARAMETER::kappa = 0.40
-      REAL(KIND(1D0)), PARAMETER::dz = 0.1 !height step
+      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40
+      REAL(KIND(1D0)), PARAMETER :: dz = 0.1 !height step
 
       IF (z > 100) THEN
          psim_hat_z = 0.
@@ -487,26 +487,26 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
       ! real(KIND(1D0)), intent(in) :: z ! height of interest [m]
-      REAL(KIND(1D0)), INTENT(in) ::  zh_RSL ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  zd_RSL ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  Lc ! height scale for bluff bodies [m]
-      REAL(KIND(1D0)), INTENT(in) ::  beta ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(in) ::  L_MOD ! Obukhov length [m]
+      REAL(KIND(1D0)), INTENT(in) :: zh_RSL ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: zd_RSL ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: Lc ! height scale for bluff bodies [m]
+      REAL(KIND(1D0)), INTENT(in) :: beta ! parameter in RSL
+      REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
 
       ! output
-      REAL(KIND(1D0)), INTENT(out) ::c2
-      REAL(KIND(1D0)), INTENT(out) ::cm
-      REAL(KIND(1D0)), INTENT(out) ::phi_hatmZh
-      REAL(KIND(1D0)), INTENT(out) ::phim_zh
+      REAL(KIND(1D0)), INTENT(out) :: c2
+      REAL(KIND(1D0)), INTENT(out) :: cm
+      REAL(KIND(1D0)), INTENT(out) :: phi_hatmZh
+      REAL(KIND(1D0)), INTENT(out) :: phim_zh
 
       ! internal variables
       ! real(KIND(1D0)) ::phim_zh
-      REAL(KIND(1D0)) ::phim_zhdz
-      REAL(KIND(1D0)) ::dphi
+      REAL(KIND(1D0)) :: phim_zhdz
+      REAL(KIND(1D0)) :: dphi
       ! real(KIND(1D0)) ::phi_hatmZh
 
-      REAL(KIND(1D0)), PARAMETER::kappa = 0.40
-      REAL(KIND(1D0)), PARAMETER::dz = 0.1 !height step
+      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40
+      REAL(KIND(1D0)), PARAMETER :: dz = 0.1 !height step
 
       phim_zh = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD)
       phim_zhdz = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL + dz)/L_MOD)
@@ -540,26 +540,26 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
       ! real(KIND(1D0)), intent(in) :: z ! height of interest [m]
-      REAL(KIND(1D0)), INTENT(in) ::  zh_RSL ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  zd_RSL ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  Scc !
-      REAL(KIND(1D0)), INTENT(in) ::  f !
-      REAL(KIND(1D0)), INTENT(in) ::  Lc ! height scale for bluff bodies [m]
-      REAL(KIND(1D0)), INTENT(in) ::  beta ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(in) ::  L_MOD ! Obukhov length [m]
+      REAL(KIND(1D0)), INTENT(in) :: zh_RSL ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: zd_RSL ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: Scc !
+      REAL(KIND(1D0)), INTENT(in) :: f !
+      REAL(KIND(1D0)), INTENT(in) :: Lc ! height scale for bluff bodies [m]
+      REAL(KIND(1D0)), INTENT(in) :: beta ! parameter in RSL
+      REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
 
       ! output
-      REAL(KIND(1D0)), INTENT(out) ::ch
-      REAL(KIND(1D0)), INTENT(out) ::c2h ! displacement height used in RSL
+      REAL(KIND(1D0)), INTENT(out) :: ch
+      REAL(KIND(1D0)), INTENT(out) :: c2h ! displacement height used in RSL
 
       ! internal variables
-      REAL(KIND(1D0)) ::phih_zh ! displacement height used in RSL
-      REAL(KIND(1D0)) ::phih_zhdz ! displacement height used in RSL
-      REAL(KIND(1D0)) ::dphih ! displacement height used in RSL
-      REAL(KIND(1D0)) ::phi_hathZh ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phih_zh ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phih_zhdz ! displacement height used in RSL
+      REAL(KIND(1D0)) :: dphih ! displacement height used in RSL
+      REAL(KIND(1D0)) :: phi_hathZh ! displacement height used in RSL
 
-      REAL(KIND(1D0)), PARAMETER::kappa = 0.40
-      REAL(KIND(1D0)), PARAMETER::dz = 0.1 !height step
+      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40
+      REAL(KIND(1D0)), PARAMETER :: dz = 0.1 !height step
 
       phih_zh = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD)
       phih_zhdz = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL + 1.)/L_MOD)
@@ -744,12 +744,12 @@ CONTAINS
 
    FUNCTION cal_zd_RSL(zh_RSL, beta, Lc) RESULT(zd_RSL)
 
-      REAL(KIND(1D0)), INTENT(in) ::  zh_RSL ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  Lc ! height scale for bluff bodies [m]
-      REAL(KIND(1D0)), INTENT(in) ::  beta ! parameter in RSL
+      REAL(KIND(1D0)), INTENT(in) :: zh_RSL ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: Lc ! height scale for bluff bodies [m]
+      REAL(KIND(1D0)), INTENT(in) :: beta ! parameter in RSL
 
       ! output
-      REAL(KIND(1D0)) ::zd_RSL ! zd used in RSL
+      REAL(KIND(1D0)) :: zd_RSL ! zd used in RSL
 
       zd_RSL = Zh_RSL - (beta**2.)*Lc
       !correct negative values using rule of thumb, TS 24 Jun 2020
@@ -761,22 +761,22 @@ CONTAINS
       ! calculate z0 iteratively
       ! TS, 23 Oct 2019
       IMPLICIT NONE
-      INTEGER, INTENT(in) ::StabilityMethod
-      REAL(KIND(1D0)), INTENT(in) ::  zH_RSL ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  zd_RSL ! displacement height [m]
-      REAL(KIND(1D0)), INTENT(in) ::  L_MOD_RSL ! Monin Obukhov length[m]
-      REAL(KIND(1D0)), INTENT(in) ::  Lc ! canyon length scale [m]
-      REAL(KIND(1D0)), INTENT(in) ::  beta ! height scale for bluff bodies [m]
+      INTEGER, INTENT(in) :: StabilityMethod
+      REAL(KIND(1D0)), INTENT(in) :: zH_RSL ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: zd_RSL ! displacement height [m]
+      REAL(KIND(1D0)), INTENT(in) :: L_MOD_RSL ! Monin Obukhov length[m]
+      REAL(KIND(1D0)), INTENT(in) :: Lc ! canyon length scale [m]
+      REAL(KIND(1D0)), INTENT(in) :: beta ! height scale for bluff bodies [m]
 
       ! output
-      REAL(KIND(1D0)) ::z0_RSL
+      REAL(KIND(1D0)) :: z0_RSL
 
       ! internal variables
-      REAL(KIND(1D0)) ::psimZh, psimz0, z0_RSL_x, psihatm_Zh
-      REAL(KIND(1D0)) ::err
-      INTEGER ::it
+      REAL(KIND(1D0)) :: psimZh, psimz0, z0_RSL_x, psihatm_Zh
+      REAL(KIND(1D0)) :: err
+      INTEGER :: it
 
-      REAL(KIND(1D0)), PARAMETER::kappa = 0.40
+      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40
       ! REAL(KIND(1d0)), PARAMETER::r = 0.1
       ! REAL(KIND(1d0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
 
@@ -802,47 +802,47 @@ CONTAINS
    END FUNCTION cal_z0_RSL
 
    SUBROUTINE RSL_cal_prms( &
-      StabilityMethod, zh, L_MOD, sfr, FAI, &!input
-      zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, PAI)!output
+      StabilityMethod, zh, L_MOD, sfr, FAI, & !input
+      zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, PAI) !output
 
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
-      REAL(KIND(1D0)), INTENT(in) ::  zh ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) ::  FAI ! frontal area index
-      REAL(KIND(1D0)), INTENT(in) ::  L_MOD ! Obukhov length [m]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::  sfr ! land cover fractions
+      REAL(KIND(1D0)), INTENT(in) :: zh ! canyon depth [m]
+      REAL(KIND(1D0)), INTENT(in) :: FAI ! frontal area index
+      REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! land cover fractions
 
       ! output
       ! real(KIND(1D0)), intent(out) ::L_stab ! threshold for Obukhov length under stable conditions
       ! real(KIND(1D0)), intent(out) ::L_unstab ! threshold for Obukhov length under unstable conditions
-      REAL(KIND(1D0)), INTENT(out) ::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
-      REAL(KIND(1D0)), INTENT(out) ::zH_RSL ! mean canyon height used in RSL module with thresholds applied
+      REAL(KIND(1D0)), INTENT(out) :: L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
+      REAL(KIND(1D0)), INTENT(out) :: zH_RSL ! mean canyon height used in RSL module with thresholds applied
       ! real(KIND(1D0)), intent(out) ::Lc_stab ! threshold for penetration distance scale under stable conditions
       ! real(KIND(1D0)), intent(out) ::Lc_unstab ! threshold for penetration distance scale under unstable conditions
-      REAL(KIND(1D0)), INTENT(out) ::Lc ! penetration distance scale for bluff bodies [m]
-      REAL(KIND(1D0)), INTENT(out) ::beta ! psim_hat at height of interest
-      REAL(KIND(1D0)), INTENT(out) ::zd_RSL ! displacement height to prescribe if necessary [m]
-      REAL(KIND(1D0)), INTENT(out) ::z0_RSL ! roughness length [m]
-      REAL(KIND(1D0)), INTENT(out) ::elm ! length scale used in RSL
-      REAL(KIND(1D0)), INTENT(out) ::Scc ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(out) ::f ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(out) ::PAI ! plan area index inlcuding area of trees
+      REAL(KIND(1D0)), INTENT(out) :: Lc ! penetration distance scale for bluff bodies [m]
+      REAL(KIND(1D0)), INTENT(out) :: beta ! psim_hat at height of interest
+      REAL(KIND(1D0)), INTENT(out) :: zd_RSL ! displacement height to prescribe if necessary [m]
+      REAL(KIND(1D0)), INTENT(out) :: z0_RSL ! roughness length [m]
+      REAL(KIND(1D0)), INTENT(out) :: elm ! length scale used in RSL
+      REAL(KIND(1D0)), INTENT(out) :: Scc ! parameter in RSL
+      REAL(KIND(1D0)), INTENT(out) :: f ! parameter in RSL
+      REAL(KIND(1D0)), INTENT(out) :: PAI ! plan area index inlcuding area of trees
 
       ! internal variables
       ! INTEGER ::it
-      REAL(KIND(1D0)) ::sfr_tr
+      REAL(KIND(1D0)) :: sfr_tr
       ! real(KIND(1D0)) ::L_MOD_RSL_x
       ! real(KIND(1D0)) ::lc_x
-      REAL(KIND(1D0)) ::lc_over_L
+      REAL(KIND(1D0)) :: lc_over_L
       ! real(KIND(1D0)) ::betaHF
       ! real(KIND(1D0)) ::betaNL
 
-      REAL(KIND(1D0)), PARAMETER::planF_low = 1E-6
-      REAL(KIND(1D0)), PARAMETER::kappa = 0.40
+      REAL(KIND(1D0)), PARAMETER :: planF_low = 1E-6
+      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40
       ! REAL(KIND(1d0)), PARAMETER::z0m= 0.40
-      REAL(KIND(1D0)), PARAMETER::r = 0.1
-      REAL(KIND(1D0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
-      REAL(KIND(1D0)), PARAMETER::Zh_min = 0.4! limit for minimum canyon height used in RSL module
+      REAL(KIND(1D0)), PARAMETER :: r = 0.1
+      REAL(KIND(1D0)), PARAMETER :: a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
+      REAL(KIND(1D0)), PARAMETER :: Zh_min = 0.4 ! limit for minimum canyon height used in RSL module
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
       ! L_MOD = merge(L_MOD, 300.d1, L_MOD < 300.)
@@ -908,14 +908,14 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: lc_over_L
 
       ! output
-      REAL(KIND(1D0)):: beta
+      REAL(KIND(1D0)) :: beta
 
       ! internal use
-      REAL(KIND(1D0)):: betaHF
-      REAL(KIND(1D0)):: betaNL
+      REAL(KIND(1D0)) :: betaHF
+      REAL(KIND(1D0)) :: betaNL
 
       REAL(KIND(1D0)), PARAMETER :: kappa = 0.4
-      REAL(KIND(1D0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
+      REAL(KIND(1D0)), PARAMETER :: a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
       ! real(KIND(1D0)) :: phim_hat
       ! real(KIND(1D0)) :: zd_RSL
 
@@ -955,12 +955,12 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod
       REAL(KIND(1D0)), INTENT(in) :: beta0
-      REAL(KIND(1D0)), INTENT(in) ::lc_over_l
+      REAL(KIND(1D0)), INTENT(in) :: lc_over_l
       REAL(KIND(1D0)) :: beta_x
 
       REAL(KIND(1D0)) :: phim, err, beta_x0
 
-      INTEGER::it
+      INTEGER :: it
 
       it = 1
       phim = 1
