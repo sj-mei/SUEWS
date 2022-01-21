@@ -14,7 +14,7 @@ MODULE SUEWS_Driver
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             cal_z0V, SUEWS_cal_RoughnessParameters
-   USE ESTM_module, ONLY: ESTM
+   USE ESTM_module, ONLY: ESTM, ESTM_ext
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, cal_water_storage, &
@@ -30,7 +30,7 @@ MODULE SUEWS_Driver
    USE CO2_module, ONLY: CO2_biogen
    USE evap_module, ONLY: cal_evap
    USE allocateArray, ONLY: &
-      nsurf, nvegsurf, &
+      nsurf, nvegsurf, nsurf_ext, ndepth, &
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
@@ -587,6 +587,17 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
 
       ! ########################################################################################
+      !  ! extended for ESTM_ext, TS 20 Jan 2022
+      ! input arrays: standard suews surfaces + extended building facets (roof, walls, etc.)
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext) :: tsurf_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth) :: k_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth) :: cp_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth) :: dz_facet
+      ! output arrays
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth) :: QS_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth) :: temp_facet !interface temperature between depth layers
+
+      ! ########################################################################################
       ! save initial values of inout variables
       qn1_av_prev = qn1_av
       dqndt_prev = dqndt
@@ -792,6 +803,11 @@ CONTAINS
             albedo_snow, snowFrac_next, SnowAlb_next)
 
          ! =================STORAGE HEAT FLUX=======================================
+         ! temporarily assign uniform surface temperature to all facets
+         tsurf_facet = Ts_iter
+         k_facet = 1.2 ! thermal conductivity
+         cp_facet = 2E6 ! volumetric heat capacity
+         dz_facet = 0.1 ! thickness of facet
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
             id, tstep, dt_since_start, Diagnose, sfr, &
@@ -802,9 +818,11 @@ CONTAINS
             bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
             Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
             StoreDrainPrm_next, &
+            tsurf_facet, k_facet, cp_facet, dz_facet, &
             qn_snow, dataOutLineESTM, qs, & !output
             qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
-            deltaQi, a1, a2, a3)
+            deltaQi, a1, a2, a3, &
+            QS_facet, temp_facet)
 
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -1516,9 +1534,11 @@ CONTAINS
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
       Tair_av, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
       StoreDrainPrm, &
+      tsurf_facet, k_facet, cp_facet, dz_facet, &
       qn1_S, dataOutLineESTM, qs, & !output
       qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
-      deltaQi, a1, a2, a3)
+      deltaQi, a1, a2, a3, &
+      QS_facet, temp_facet)
 
       IMPLICIT NONE
 
@@ -1585,6 +1605,17 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: a2 !< AnOHM coefficients of grid [h]
       REAL(KIND(1D0)), INTENT(out) :: a3 !< AnOHM coefficients of grid [W m-2]
 
+      ! extended for ESTM_ext
+      ! input arrays: standard suews surfaces + extended building facets (roof, walls, etc.)
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext), INTENT(in) :: tsurf_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth), INTENT(in) :: k_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth), INTENT(in) :: cp_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth), INTENT(in) :: dz_facet
+      ! output arrays
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth), INTENT(out) :: QS_facet
+      REAL(KIND(1D0)), DIMENSION(nsurf + nsurf_ext, ndepth), INTENT(out) :: temp_facet !interface temperature between depth layers
+
+      ! internal use arrays
       REAL(KIND(1D0)) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
       REAL(KIND(1D0)) :: qn1_use ! qn used in OHM calculations
 
@@ -1657,6 +1688,15 @@ CONTAINS
             dataOutLineESTM, QS) !output
          !    CALL ESTM(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
          !    QS=QSestm   ! Use ESTM qs
+      ELSEIF (StorageHeatMethod == 5) THEN
+         !    !CALL ESTM(QSestm,iMB)
+         IF (Diagnose == 1) WRITE (*, *) 'Calling extended ESTM...'
+         ! facets: seven suews standard facets + extra for buildings [roof, wall] (can be extended for heterogeneous buildings)
+         !
+         ! CALL ESTM_ext( &
+         !    tstep, &
+         !    tsurf_facet, k_facet, cp_facet, dz_facet, & !input
+         !    temp_facet, QS_facet, QS) !output
       END IF
 
    END SUBROUTINE SUEWS_cal_Qs
