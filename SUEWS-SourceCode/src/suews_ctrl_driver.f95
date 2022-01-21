@@ -794,13 +794,17 @@ CONTAINS
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr, emis, &
-            alb_spc, emis_spc, lw_emission_spc, &
-            alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, & !input
-            alb_next, & !output
-            ldown, fcld, & !output
+            alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
+            LAI_id, & !input
+            alb_next, ldown, fcld, & !output
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            albedo_snow, snowFrac_next, SnowAlb_next)
+            albedo_snow, snowFrac_next, SnowAlb_next, &
+            alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
+            top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
+            clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
+            top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
+            clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc)
 
          ! =================STORAGE HEAT FLUX=======================================
          ! temporarily assign uniform surface temperature to all facets
@@ -972,18 +976,6 @@ CONTAINS
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
-      IF (NetRadiationMethod > 1000) THEN
-         CALL SPARTACUS( &
-            sfr, zenith_deg, TSfc_C, avKdn, ldown, temp_c, alb_next, emis, LAI_id, & !input
-            alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
-            clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-            roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
-            top_dn_lw_spc, &
-            clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-            roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-            ground_dn_dir_sw_spc, ground_net_sw_spc) !output
-      END IF
-
       !==============================================================
       ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
 
@@ -1107,13 +1099,27 @@ CONTAINS
       dataoutlineDebug = [RSS_nsurf, state_id_prev, RS, RA_h, RB, RAsnow, &
                           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa]
 
-      dataOutLineSPARTACUS = [alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
-                              clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-                              roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
+      dataOutLineSPARTACUS = [alb_spc, emis_spc, &
+                              top_dn_dir_sw_spc, &
+                              sw_up_spc, &
                               top_dn_lw_spc, &
-                              clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-                              roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-                              ground_dn_dir_sw_spc, ground_net_sw_spc]
+                              lw_up_spc, &
+                              qn_spc, &
+                              top_net_sw_spc, &
+                              top_net_lw_spc, &
+                              lw_emission_spc, &
+                              ground_dn_dir_sw_spc, &
+                              ground_net_sw_spc,&
+                              ground_net_lw_spc, &
+                              roof_in_sw_spc, &
+                              roof_net_sw_spc, &
+                              wall_net_sw_spc, &
+                              clear_air_abs_sw_spc, &
+                              roof_in_lw_spc, &
+                              roof_net_lw_spc, &
+                              wall_net_lw_spc, &
+                              clear_air_abs_lw_spc &
+                              ]
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -1365,13 +1371,17 @@ CONTAINS
       dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb_spc, emis_spc, lw_emission_spc, &
-      alb_prev, albDecTr_id, albEveTr_id, albGrass_id, & !input
-      alb_next, & !output
-      ldown, fcld, & !output
+      alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &
+      LAI_id, & !input
+      alb_next, ldown, fcld, & !output
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      albedo_snow, snowFrac_next, SnowAlb_next)
+      albedo_snow, snowFrac_next, SnowAlb_next, &
+      alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
+      top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
+      clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
+      top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
+      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
       IMPLICIT NONE
@@ -1401,7 +1411,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: NARP_EMIS_SNOW
       REAL(KIND(1D0)), INTENT(in) :: NARP_TRANS_SITE
       REAL(KIND(1D0)), INTENT(in) :: tau_a, tau_f, SnowAlbMax, SnowAlbMin
-      REAL(KIND(1D0)), INTENT(in) :: alb_spc, emis_spc, lw_emission_spc
+
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAI_id
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
@@ -1449,6 +1460,15 @@ CONTAINS
       INTEGER :: NetRadiationMethod_use
       INTEGER :: AlbedoChoice, ldown_option
 
+      ! SPARTACUS output variables
+      REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
+      REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+                                                     roof_in_lw_spc
+      REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
+                                                     roof_in_sw_spc
+
       ! translate values
       alb = alb_prev
 
@@ -1487,13 +1507,25 @@ CONTAINS
 
          CALL NARP( &
             nsurf, sfr, SnowFrac, alb, emis, IceFrac, & ! input:
-            alb_spc, emis_spc, lw_emission_spc, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
             dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, & ! output:
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
+
+         IF (NetRadiationMethod > 1000) THEN
+            CALL SPARTACUS( &
+               sfr, zenith_deg, tsurf_0, avKdn, ldown, temp_c, alb, emis, LAI_id, & !input
+               alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output
+               clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+               roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
+               top_dn_lw_spc, &
+               clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
+               roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
+               ground_dn_dir_sw_spc, ground_net_sw_spc, &
+               qn, kup, lup)
+         END IF
 
       ELSE ! NetRadiationMethod==0
          SnowFrac = snowFrac_obs
@@ -3685,14 +3717,15 @@ CONTAINS
    END FUNCTION cal_tsfc
 
    SUBROUTINE SPARTACUS( &
-      sfr, zenith_deg, TSfc_C, avKdn, ldown, temp_c, alb_next, emis, LAI_id, & !input:
+      sfr, zenith_deg, tsurf_0, avKdn, ldown, temp_c, alb, emis, LAI_id, & !input:
       alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output:
       clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
       roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
       top_dn_lw_spc, &
       clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
       roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-      ground_dn_dir_sw_spc, ground_net_sw_spc)
+      ground_dn_dir_sw_spc, ground_net_sw_spc, &
+      qn, kup, lup)
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
       USE radsurf_config, ONLY: config_type
@@ -3710,9 +3743,9 @@ CONTAINS
       !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
 
       ! Input parameters and variables from SUEWS
-      REAL(KIND(1D0)), INTENT(IN) :: zenith_deg, TSfc_C, &
+      REAL(KIND(1D0)), INTENT(IN) :: zenith_deg, tsurf_0, & ! tsurf_0 and temp_C need to be made vertically distributed
                                      avKdn, ldown, temp_C
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr, alb_next, emis
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr, alb, emis
       REAL(KIND(1D0)), DIMENSION(NVegSurf), INTENT(IN) :: LAI_id
 
       ! SPARTACUS configuration parameters
@@ -3725,6 +3758,7 @@ CONTAINS
       ! output variables
       REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
       REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      REAL(KIND(1D0)), INTENT(OUT) :: qn, kup, lup
       REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
                                                      roof_in_lw_spc
       REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
@@ -3753,7 +3787,7 @@ CONTAINS
            &     top_flux_dn_lw(:, :) ! longwave
 
       ! surface temperature and air temperature in Kelvin
-      REAL(KIND(1D0)) :: TSfc_K, tair_K
+      REAL(KIND(1D0)) :: tsurf_0_K, tair_K
       ! top-of-canopy diffuse sw downward
       REAL(KIND(1D0)) :: top_flux_dn_diffuse_sw
       ! plan area weighted albedo and emissivity of surfaces not including buildings and trees
@@ -3909,11 +3943,11 @@ CONTAINS
       END DO
 
       ! set temperature
-      TSfc_K = TSfc_C + 273.15 ! convert surface temperature to Kelvin
+      tsurf_0_K = tsurf_0 + 273.15 ! convert surface temperature to Kelvin
       tair_K = temp_C + 273.15 ! convert air temperature to Kelvin
-      canopy_props%ground_temperature = TSfc_K
-      canopy_props%roof_temperature = TSfc_K
-      canopy_props%wall_temperature = TSfc_K
+      canopy_props%ground_temperature = tsurf_0_K ! TODO: tsurf_0_K needs to be made vertically distributed
+      canopy_props%roof_temperature = tsurf_0_K
+      canopy_props%wall_temperature = tsurf_0_K
       canopy_props%clear_air_temperature = tair_K
       IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
          canopy_props%veg_temperature = tair_K
@@ -3947,8 +3981,8 @@ CONTAINS
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
 
-      alb_no_tree_bldg = (alb_next(1)*sfr(PavSurf) + alb_next(5)*sfr(GrassSurf) + &
-                          alb_next(6)*sfr(BSoilSurf) + alb_next(7)*sfr(WaterSurf))/ &
+      alb_no_tree_bldg = (alb(1)*sfr(PavSurf) + alb(5)*sfr(GrassSurf) + &
+                          alb(6)*sfr(BSoilSurf) + alb(7)*sfr(WaterSurf))/ &
                          (sfr(PavSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf)) ! albedo of the ground
       sw_spectral_props%air_ext = air_ext_sw
       sw_spectral_props%air_ssa = air_ssa_sw
@@ -4089,6 +4123,12 @@ CONTAINS
       top_net_sw_spc = sw_flux%top_net(nspec, ncol)
       ground_dn_dir_sw_spc = sw_flux%ground_dn_dir(nspec, ncol)
       ground_net_sw_spc = sw_flux%ground_net(nspec, ncol)
+
+      !!!!!!!!!!!!!! Bulk KUP, LUP, QSTAR for SUEWS !!!!!!!!!!!!!!
+
+      lup = lw_up_spc
+      kup = sw_up_spc
+      qn = qn_spc
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 

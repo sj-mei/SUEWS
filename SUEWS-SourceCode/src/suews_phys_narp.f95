@@ -119,8 +119,7 @@ CONTAINS
 
    !==============================================================================
    SUBROUTINE NARP( &
-      nsurf, sfr, SnowFrac, alb, emis, IceFrac, & ! input:
-      alb_spc, emis_spc, lw_emission_spc, &
+      nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &
@@ -188,65 +187,64 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac
       ! REAL(KIND(1D0)),DIMENSION(365),INTENT(in) ::NARP_G
 
-      REAL(KIND(1D0)), INTENT(in) :: DTIME
-      REAL(KIND(1D0)), INTENT(in) :: ZENITH_deg
-      REAL(KIND(1D0)), INTENT(in) :: tsurf_0
-      REAL(KIND(1D0)), INTENT(in) :: kdown
-      REAL(KIND(1D0)), INTENT(in) :: Temp_C
-      REAL(KIND(1D0)), INTENT(in) :: RH
-      REAL(KIND(1D0)), INTENT(in) :: Press_hPa
-      REAL(KIND(1D0)), INTENT(in) :: qn1_obs
-      REAL(KIND(1D0)), INTENT(in) :: ldown_obs
-      REAL(KIND(1D0)), INTENT(in) :: SnowAlb
-      REAL(KIND(1D0)), INTENT(in) :: NARP_TRANS_SITE
-      REAL(KIND(1D0)), INTENT(in) :: NARP_EMIS_SNOW
-      REAL(KIND(1D0)), INTENT(in) :: alb_spc, emis_spc, lw_emission_spc
+      REAL(KIND(1D0)), INTENT(in) ::DTIME
+      REAL(KIND(1D0)), INTENT(in) ::ZENITH_deg
+      REAL(KIND(1D0)), INTENT(in) ::tsurf_0
+      REAL(KIND(1D0)), INTENT(in) ::kdown
+      REAL(KIND(1D0)), INTENT(in) ::Temp_C
+      REAL(KIND(1D0)), INTENT(in) ::RH
+      REAL(KIND(1D0)), INTENT(in) ::Press_hPa
+      REAL(KIND(1D0)), INTENT(in) ::qn1_obs
+      REAL(KIND(1D0)), INTENT(in) ::ldown_obs
+      REAL(KIND(1D0)), INTENT(in) ::SnowAlb
+      REAL(KIND(1D0)), INTENT(in) ::NARP_TRANS_SITE
+      REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
 
-      INTEGER, INTENT(in) :: nsurf
-      INTEGER, INTENT(in) :: NetRadiationMethod_use ! the one processed by RadMethod
-      INTEGER, INTENT(in) :: AlbedoChoice ! flag if correction to albedo of snow cover should be applied
-      INTEGER, INTENT(in) :: ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
-      INTEGER, INTENT(in) :: DiagQN
+      INTEGER, INTENT(in) ::nsurf
+      INTEGER, INTENT(in) ::NetRadiationMethod_use ! the one processed by RadMethod
+      INTEGER, INTENT(in) ::AlbedoChoice ! flag if correction to albedo of snow cover should be applied
+      INTEGER, INTENT(in) ::ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
+      INTEGER, INTENT(in) ::DiagQN
 
-      REAL(KIND(1D0)), INTENT(out) :: QSTARall
-      REAL(KIND(1D0)), INTENT(out) :: QSTAR_SF
-      REAL(KIND(1D0)), INTENT(out) :: QSTAR_S
-      REAL(KIND(1D0)), INTENT(out) :: kclear
-      REAL(KIND(1D0)), INTENT(out) :: KUPall
-      REAL(KIND(1D0)), INTENT(out) :: LDOWN
-      REAL(KIND(1D0)), INTENT(out) :: LUPall
-      REAL(KIND(1D0)), INTENT(out) :: fcld
-      REAL(KIND(1D0)), INTENT(out) :: TSURFall
+      REAL(KIND(1D0)), INTENT(out) ::QSTARall
+      REAL(KIND(1D0)), INTENT(out) ::QSTAR_SF
+      REAL(KIND(1D0)), INTENT(out) ::QSTAR_S
+      REAL(KIND(1D0)), INTENT(out) ::kclear
+      REAL(KIND(1D0)), INTENT(out) ::KUPall
+      REAL(KIND(1D0)), INTENT(out) ::LDOWN
+      REAL(KIND(1D0)), INTENT(out) ::LUPall
+      REAL(KIND(1D0)), INTENT(out) ::fcld
+      REAL(KIND(1D0)), INTENT(out) ::TSURFall
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn1_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: kup_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::kup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
 
-      REAL(KIND(1D0)), INTENT(out) :: albedo_snowfree
-      REAL(KIND(1D0)), INTENT(out) :: albedo_snow
+      REAL(KIND(1D0)), INTENT(out) ::albedo_snowfree
+      REAL(KIND(1D0)), INTENT(out) ::albedo_snow
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::Tsurf_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_snow
 
-      REAL(KIND(1D0)) :: tsurf_0_K
-      REAL(KIND(1D0)) :: Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
-      REAL(KIND(1D0)) :: EMIS0, EMIS_A, TRANS !,RH,DTIME,KDOWN
-      REAL(KIND(1D0)) :: LUPCORR, SIGMATK4, KDOWN_HR = 0.
-      INTEGER :: DOY, is
+      REAL(KIND(1D0)) ::tsurf_0_K
+      REAL(KIND(1D0)) ::Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
+      REAL(KIND(1D0)) ::EMIS0, EMIS_A, TRANS!,RH,DTIME,KDOWN
+      REAL(KIND(1D0)) ::LUPCORR, SIGMATK4, KDOWN_HR = 0.
+      INTEGER         ::DOY, is
 
-      REAL(KIND(1D0)) :: qn1_cum, kup_cum, lup_cum, tsurf_cum, & !Cumulative radiation components
-                         qn1_is, kup_is, lup_is, tsurf_is, & !Sub-surface radiation components
-                         SF_all
+      REAL(KIND(1D0))::qn1_cum, kup_cum, lup_cum, tsurf_cum, &   !Cumulative radiation components
+                        qn1_is, kup_is, lup_is, tsurf_is, &       !Sub-surface radiation components
+                        SF_all
 
-      REAL(KIND(1D0)), PARAMETER :: DEG2RAD = 0.017453292
+      REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
       ! REAL(KIND(1D0)),PARAMETER   ::RAD2DEG=57.29577951
       REAL(KIND(1D0)), PARAMETER :: SIGMA_SB = 5.67E-8
 
@@ -318,19 +316,13 @@ CONTAINS
          !--------------------------------------------------
          !-------SNOW FREE SURFACE--------------------------
 
-         IF (NetRadiationMethod_use > 1000) THEN
-            !set albedo snow free and emissivity to the spartacus value
-            albedo_snowfree = alb_spc
-            EMIS0 = emis_spc
+         !NARP
+         IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
+            albedo_snowfree = ALB(is) + 0.5E-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
          ELSE
-            !NARP
-            IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
-               albedo_snowfree = ALB(is) + 0.5E-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
-            ELSE
-               albedo_snowfree = ALB(is)
-            END IF
-            EMIS0 = EMIS(is)
+            albedo_snowfree = ALB(is)
          END IF
+         EMIS0 = EMIS(is)
 
          !Downward longwave radiation
          IF ((ldown_option == 4) .OR. (ldown_option == 5)) THEN !Estimate FCLD from Kdown (Offerle et al. 2003)
@@ -372,30 +364,24 @@ CONTAINS
          END IF
 
          !Upward longwave radiation
-         IF (NetRadiationMethod_use > 1000) THEN
-            !Use Spartacus emissions and emissivity.
-            TSURF = tsurf_0_K
-            LUP = lw_emission_spc + (1 - EMIS0)*LDOWN
+         !NARP
+         !Note that this is not averaged over the hour for cases where time step < 1hr
+         KDOWN_HR = KDOWN
+         !calculate Lup correction using Eq. 15 of Offerle et al.
+         IF (KDOWN_HR > 0) THEN
+            LUPCORR = (1 - albedo_snowfree)*(0.08*KDOWN_HR)
          ELSE
-            !NARP
-            !Note that this is not averaged over the hour for cases where time step < 1hr
-            KDOWN_HR = KDOWN
-            !calculate Lup correction using Eq. 15 of Offerle et al.
-            IF (KDOWN_HR > 0) THEN
-               LUPCORR = (1 - albedo_snowfree)*(0.08*KDOWN_HR)
-            ELSE
-               LUPCORR = 0.
-            END IF
-            !calculate Lup
-            IF (NetRadiationMethod_use < 10) THEN
-               ! NARP method
-               TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
-               LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN !Eq (16) in Offerle et al. (2002)
-            ELSE
-               ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
-               TSURF = tsurf_0_K
-               LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
-            END IF
+            LUPCORR = 0.
+         END IF
+         !calculate Lup
+         IF (NetRadiationMethod_use < 10) THEN
+            ! NARP method
+            TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
+            LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
+         ELSE
+            ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
+            TSURF = tsurf_0_K
+            LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
          END IF
 
          !Upward shortwave radiation of the snowfree surface fractions
