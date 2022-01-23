@@ -825,6 +825,7 @@ FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTim
 
 END FUNCTION get_Prof_SpecTime_sum
 !===================================================================================
+! TODO: all the parameter tables can be stored using a custom dictionary for easier and more consistent access:
 
 ! Subroutines for matching codes in the input files
 !  could re-write as a generic function later...
