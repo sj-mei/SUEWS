@@ -110,7 +110,7 @@ CONTAINS
 
    SUBROUTINE SurfaceResistance( &
       id, it, & ! input:
-      SMDMethod, SnowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+      SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
       LAIMax, LAI_id, gsModel, Kmax, &
       G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
       gfunc, gsc, ResistSurf) ! output:
@@ -179,7 +179,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAIMax !Max LAI [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAI_id !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac !Surface fraction of snow cover
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr !Surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !Surface fractions [-]
 
       REAL(KIND(1D0)), INTENT(out) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
       REAL(KIND(1D0)), INTENT(out) :: gsc !Surface Layer Conductance
@@ -252,7 +252,7 @@ CONTAINS
             gs = 1 - EXP(g6*(xsmd - sdp)) !Measured soil moisture deficit is used
          ELSE
             gs = 1 - EXP(g6*(vsmd - sdp)) !Modelled is used
-            IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf) == 1) THEN
+            IF (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) == 0 .OR. sfr_surf(WaterSurf) == 1) THEN
                gs = 0 !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
             END IF
          END IF
@@ -271,11 +271,11 @@ CONTAINS
          gl = 0 !First initialize
          ! vegetated surfaces
          ! check basis for values koe - maximum surface conductance
-         !  print*,id,it,sfr
+         !  print*,id,it,sfr_surf
          ! DO iv=ivConif,ivGrass
          DO iv = 1, 3
-            ! gl=gl+(sfr(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
-            gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
+            ! gl=gl+(sfr_surf(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
+            gl = gl + (sfr_surf(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
          END DO
 
          IF (avkdn <= 0) THEN !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
@@ -328,7 +328,7 @@ CONTAINS
          ELSE
             !gs=1-EXP(g6*(vsmd-sdp))   !Use modelled smd
             gs = (1 - EXP(g6*(vsmd - sdp)))/(1 - EXP(g6*(-sdp)))
-            IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf) == 1) THEN
+            IF (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) == 0 .OR. sfr_surf(WaterSurf) == 1) THEN
                gs = 0 !If no veg so no vsmd, or all water so no smd, set gs=0 HCW 21 Jul 2016
             END IF
          END IF
@@ -346,8 +346,8 @@ CONTAINS
          gl = 0 !Initialise
          ! DO iv=ivConif,ivGrass   !For vegetated surfaces
          DO iv = 1, 3 !For vegetated surfaces
-            !  gl=gl+(sfr(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
-            gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
+            !  gl=gl+(sfr_surf(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
+            gl = gl + (sfr_surf(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
          END DO
 
          IF (avkdn <= 0) THEN !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
@@ -402,7 +402,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_RoughnessParameters( &
       RoughLenMomMethod, & ! input:
-      sfr, & ! surface fractions
+      sfr_surf, & ! surface fractions
       bldgH, EveTreeH, DecTreeH, &
       porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
@@ -429,7 +429,7 @@ CONTAINS
 
       INTEGER, INTENT(in) :: RoughLenMomMethod
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! surface fractions
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions
 
       REAL(KIND(1D0)), INTENT(in) :: bldgH
       REAL(KIND(1D0)), INTENT(in) :: EveTreeH
@@ -454,7 +454,7 @@ CONTAINS
       REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
 
       !Total area of buildings and trees
-      areaZh = (sfr(BldgSurf) + sfr(ConifSurf) + sfr(DecidSurf))
+      areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
 
       ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
       Z0m4Paved = 0.003 !estimate
@@ -465,8 +465,8 @@ CONTAINS
       !------------------------------------------------------------------------------
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
       IF (areaZh /= 0) THEN
-         Zh = DOT_PRODUCT([bldgH, EveTreeH, DecTreeH*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))/areaZh
-         FAI = DOT_PRODUCT([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))
+         Zh = DOT_PRODUCT([bldgH, EveTreeH, DecTreeH*(1 - porosity_id)], sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/areaZh
+         FAI = DOT_PRODUCT([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr_surf([BldgSurf, ConifSurf, DecidSurf]))
 
          ! `1e-5` set to avoid numerical difficulty
          FAI = MAX(FAI, 1E-5)
@@ -481,7 +481,7 @@ CONTAINS
             z0m = 0.1*Zh
             zdm = 0.7*Zh
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
-            zdm = (1 + 4.43**(-sfr(BldgSurf))*(sfr(BldgSurf) - 1))*Zh
+            zdm = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
             z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
          ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
             ! these are derived using digitalised points
@@ -492,10 +492,10 @@ CONTAINS
          IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)
          !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
          IF (areaZh /= 1) THEN
-            z0m = (z0m4Paved*sfr(PavSurf) &
-                   + z0m4Grass*sfr(GrassSurf) &
-                   + z0m4BSoil*sfr(BSoilSurf) &
-                   + z0m4Water*sfr(WaterSurf))/(1 - areaZh)
+            z0m = (z0m4Paved*sfr_surf(PavSurf) &
+                   + z0m4Grass*sfr_surf(GrassSurf) &
+                   + z0m4BSoil*sfr_surf(BSoilSurf) &
+                   + z0m4Water*sfr_surf(WaterSurf))/(1 - areaZh)
             zdm = 0
             CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
          ELSEIF (areaZh == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb

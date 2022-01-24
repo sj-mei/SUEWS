@@ -119,7 +119,7 @@ CONTAINS
 
    !==============================================================================
    SUBROUTINE NARP( &
-      nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
+      nsurf, sfr_surf, SnowFrac, alb, emis, IceFrac, & ! input:
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &
@@ -180,71 +180,71 @@ CONTAINS
       ! use data_in ! Included 20140701, FL
       ! use moist   ! Included 20140701, FL
       ! use time    ! Included 20140701, FL
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: alb
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac
       ! REAL(KIND(1D0)),DIMENSION(365),INTENT(in) ::NARP_G
 
-      REAL(KIND(1D0)), INTENT(in) ::DTIME
-      REAL(KIND(1D0)), INTENT(in) ::ZENITH_deg
-      REAL(KIND(1D0)), INTENT(in) ::tsurf_0
-      REAL(KIND(1D0)), INTENT(in) ::kdown
-      REAL(KIND(1D0)), INTENT(in) ::Temp_C
-      REAL(KIND(1D0)), INTENT(in) ::RH
-      REAL(KIND(1D0)), INTENT(in) ::Press_hPa
-      REAL(KIND(1D0)), INTENT(in) ::qn1_obs
-      REAL(KIND(1D0)), INTENT(in) ::ldown_obs
-      REAL(KIND(1D0)), INTENT(in) ::SnowAlb
-      REAL(KIND(1D0)), INTENT(in) ::NARP_TRANS_SITE
-      REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
+      REAL(KIND(1D0)), INTENT(in) :: DTIME
+      REAL(KIND(1D0)), INTENT(in) :: ZENITH_deg
+      REAL(KIND(1D0)), INTENT(in) :: tsurf_0
+      REAL(KIND(1D0)), INTENT(in) :: kdown
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      REAL(KIND(1D0)), INTENT(in) :: RH
+      REAL(KIND(1D0)), INTENT(in) :: Press_hPa
+      REAL(KIND(1D0)), INTENT(in) :: qn1_obs
+      REAL(KIND(1D0)), INTENT(in) :: ldown_obs
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlb
+      REAL(KIND(1D0)), INTENT(in) :: NARP_TRANS_SITE
+      REAL(KIND(1D0)), INTENT(in) :: NARP_EMIS_SNOW
 
-      INTEGER, INTENT(in) ::nsurf
-      INTEGER, INTENT(in) ::NetRadiationMethod_use ! the one processed by RadMethod
-      INTEGER, INTENT(in) ::AlbedoChoice ! flag if correction to albedo of snow cover should be applied
-      INTEGER, INTENT(in) ::ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
-      INTEGER, INTENT(in) ::DiagQN
+      INTEGER, INTENT(in) :: nsurf
+      INTEGER, INTENT(in) :: NetRadiationMethod_use ! the one processed by RadMethod
+      INTEGER, INTENT(in) :: AlbedoChoice ! flag if correction to albedo of snow cover should be applied
+      INTEGER, INTENT(in) :: ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
+      INTEGER, INTENT(in) :: DiagQN
 
-      REAL(KIND(1D0)), INTENT(out) ::QSTARall
-      REAL(KIND(1D0)), INTENT(out) ::QSTAR_SF
-      REAL(KIND(1D0)), INTENT(out) ::QSTAR_S
-      REAL(KIND(1D0)), INTENT(out) ::kclear
-      REAL(KIND(1D0)), INTENT(out) ::KUPall
-      REAL(KIND(1D0)), INTENT(out) ::LDOWN
-      REAL(KIND(1D0)), INTENT(out) ::LUPall
-      REAL(KIND(1D0)), INTENT(out) ::fcld
-      REAL(KIND(1D0)), INTENT(out) ::TSURFall
+      REAL(KIND(1D0)), INTENT(out) :: QSTARall
+      REAL(KIND(1D0)), INTENT(out) :: QSTAR_SF
+      REAL(KIND(1D0)), INTENT(out) :: QSTAR_S
+      REAL(KIND(1D0)), INTENT(out) :: kclear
+      REAL(KIND(1D0)), INTENT(out) :: KUPall
+      REAL(KIND(1D0)), INTENT(out) :: LDOWN
+      REAL(KIND(1D0)), INTENT(out) :: LUPall
+      REAL(KIND(1D0)), INTENT(out) :: fcld
+      REAL(KIND(1D0)), INTENT(out) :: TSURFall
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::kup_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn1_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: kup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind
 
-      REAL(KIND(1D0)), INTENT(out) ::albedo_snowfree
-      REAL(KIND(1D0)), INTENT(out) ::albedo_snow
+      REAL(KIND(1D0)), INTENT(out) :: albedo_snowfree
+      REAL(KIND(1D0)), INTENT(out) :: albedo_snow
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::qn1_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::kup_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::Tsurf_ind_nosnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) ::lup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_nosnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind_snow
 
-      REAL(KIND(1D0)) ::tsurf_0_K
-      REAL(KIND(1D0)) ::Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
-      REAL(KIND(1D0)) ::EMIS0, EMIS_A, TRANS!,RH,DTIME,KDOWN
-      REAL(KIND(1D0)) ::LUPCORR, SIGMATK4, KDOWN_HR = 0.
-      INTEGER         ::DOY, is
+      REAL(KIND(1D0)) :: tsurf_0_K
+      REAL(KIND(1D0)) :: Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
+      REAL(KIND(1D0)) :: EMIS0, EMIS_A, TRANS !,RH,DTIME,KDOWN
+      REAL(KIND(1D0)) :: LUPCORR, SIGMATK4, KDOWN_HR = 0.
+      INTEGER :: DOY, is
 
-      REAL(KIND(1D0))::qn1_cum, kup_cum, lup_cum, tsurf_cum, &   !Cumulative radiation components
-                        qn1_is, kup_is, lup_is, tsurf_is, &       !Sub-surface radiation components
-                        SF_all
+      REAL(KIND(1D0)) :: qn1_cum, kup_cum, lup_cum, tsurf_cum, & !Cumulative radiation components
+                         qn1_is, kup_is, lup_is, tsurf_is, & !Sub-surface radiation components
+                         SF_all
 
-      REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
+      REAL(KIND(1D0)), PARAMETER :: DEG2RAD = 0.017453292
       ! REAL(KIND(1D0)),PARAMETER   ::RAD2DEG=57.29577951
       REAL(KIND(1D0)), PARAMETER :: SIGMA_SB = 5.67E-8
 
@@ -304,7 +304,7 @@ CONTAINS
       !Total snowfree surface fraction
       SF_all = 0
       DO is = 1, nsurf
-         IF (sfr(is) /= 0) SF_all = SF_all + sfr(is)*(1 - SnowFrac(is))
+         IF (sfr_surf(is) /= 0) SF_all = SF_all + sfr_surf(is)*(1 - SnowFrac(is))
       END DO
 
       !looping over the surfaces
@@ -377,7 +377,7 @@ CONTAINS
          IF (NetRadiationMethod_use < 10) THEN
             ! NARP method
             TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
-            LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
+            LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN !Eq (16) in Offerle et al. (2002)
          ELSE
             ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
             TSURF = tsurf_0_K
@@ -442,15 +442,15 @@ CONTAINS
          Tsurf_ind_snow(is) = TSURF_SNOW
 
          IF (SF_all /= 0) THEN
-            QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - SnowFrac(is))/SF_all
+            QSTAR_SF = QSTAR_SF + QSTAR*sfr_surf(is)*(1 - SnowFrac(is))/SF_all
          ELSE
-            QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - SnowFrac(is))
+            QSTAR_SF = QSTAR_SF + QSTAR*sfr_surf(is)*(1 - SnowFrac(is))
          END IF
 
          IF ((1 - SF_all) /= 0) THEN
-            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*SnowFrac(is)/(1 - SF_all)
+            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr_surf(is)*SnowFrac(is)/(1 - SF_all)
          ELSE
-            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*SnowFrac(is)
+            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr_surf(is)*SnowFrac(is)
          END IF
          !!!!!!!!!!!!!!!! end snow section !!!!!!!!!!!!!!!!!!!!!
 
@@ -464,10 +464,10 @@ CONTAINS
          IF (DiagQN == 1) WRITE (*, *) 'QSTAR', QSTAR, 'QSTAR_SNOW', QSTAR_SNOW, 'SnowFrac', SnowFrac(is)
 
          !Add up the radiation from each surface
-         qn1_cum = qn1_cum + (qn1_is*sfr(is))
-         kup_cum = kup_cum + (kup_is*sfr(is))
-         lup_cum = lup_cum + (lup_is*sfr(is))
-         tsurf_cum = tsurf_cum + (tsurf_is*sfr(is))
+         qn1_cum = qn1_cum + (qn1_is*sfr_surf(is))
+         kup_cum = kup_cum + (kup_is*sfr_surf(is))
+         lup_cum = lup_cum + (lup_is*sfr_surf(is))
+         tsurf_cum = tsurf_cum + (tsurf_is*sfr_surf(is))
 
          !Define sub-surface radiation components
          qn1_ind(is) = qn1_is

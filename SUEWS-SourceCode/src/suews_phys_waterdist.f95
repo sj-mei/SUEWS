@@ -90,7 +90,7 @@ CONTAINS
 
    !--------------Calculation of water storage change of specific land cover------------------------------
    SUBROUTINE cal_water_storage( &
-      is, sfr, PipeCapacity, RunoffToWater, pin, & ! input:
+      is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
       WU_nsurf, &
       drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
@@ -133,7 +133,7 @@ CONTAINS
       !  - Decide upon and correct storage capacities here & in evap subroutine
       !  - FlowChange units should be mm hr-1 - need to update everywhere
       !   - Add SurfaceFlood(is)?
-      !   - What happens if sfr(is) = 0 or 1?
+      !   - What happens if sfr_surf(is) = 0 or 1?
       !   - Consider how irrigated trees actually works...
       !------------------------------------------------------------------------------
 
@@ -142,7 +142,7 @@ CONTAINS
       !Stores flood water when surface state_id exceeds storage capacity [mm]
       INTEGER, INTENT(in) :: is ! surface type
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! surface fractions
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld !Wetness status of each surface type from previous timestep [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
@@ -223,8 +223,8 @@ CONTAINS
          ! Add water from neighbouring grids (RG2G)
          ! Add to PavSurf only, as water cannot flow onto buildings
          IF (is == PavSurf) THEN
-            IF (sfr(PavSurf) /= 0) THEN ! If loop added HCW 08 Dec 2015
-               p_mm = p_mm + addImpervious/sfr(PavSurf)
+            IF (sfr_surf(PavSurf) /= 0) THEN ! If loop added HCW 08 Dec 2015
+               p_mm = p_mm + addImpervious/sfr_surf(PavSurf)
             END IF
          END IF
 
@@ -271,7 +271,7 @@ CONTAINS
          !==== For Conif, Decid, Grass, BSoil surfaces ==================
          ! Transfer evaporation surplus from impervious surfaces to pervious surfaces
          EvPart = MERGE( &
-                  DOT_PRODUCT(SurplusEvap(PavSurf:BldgSurf), sfr(PavSurf:BldgSurf)/PervFraction), &
+                  DOT_PRODUCT(SurplusEvap(PavSurf:BldgSurf), sfr_surf(PavSurf:BldgSurf)/PervFraction), &
                   0D0, &
                   PervFraction /= 0)
 
@@ -281,8 +281,8 @@ CONTAINS
          ! ---- Add water from neighbouring grids (RG2G) ----
          ! Add to Grass and BSoil only, as water cannot flow onto trees
          IF (is == GrassSurf .OR. is == BSoilSurf) THEN
-            IF ((sfr(GrassSurf) + sfr(BSoilSurf)) /= 0) THEN
-               p_mm = p_mm + addVeg/(sfr(GrassSurf) + sfr(BSoilSurf))
+            IF ((sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) /= 0) THEN
+               p_mm = p_mm + addVeg/(sfr_surf(GrassSurf) + sfr_surf(BSoilSurf))
             END IF
          END IF
 
@@ -339,10 +339,10 @@ CONTAINS
          END IF
 
       CASE (WaterSurf)
-         IF (sfr(WaterSurf) /= 0) THEN
+         IF (sfr_surf(WaterSurf) /= 0) THEN
 
             ! ---- Add water from neighbouring grids (RG2G) ----
-            p_mm = p_mm + addWaterBody/sfr(WaterSurf)
+            p_mm = p_mm + addWaterBody/sfr_surf(WaterSurf)
 
             ! Calculate change in surface state_id (inputs - outputs)
             ! No drainage for water surface
@@ -371,11 +371,11 @@ CONTAINS
             IF (state_id(WaterSurf) > StateLimit(WaterSurf)) THEN
                runoff(WaterSurf) = runoff(WaterSurf) + (state_id(WaterSurf) - StateLimit(WaterSurf))
                state_id(WaterSurf) = StateLimit(WaterSurf)
-               runoffWaterBody = runoffWaterBody + runoff(WaterSurf)*sfr(WaterSurf)
+               runoffWaterBody = runoffWaterBody + runoff(WaterSurf)*sfr_surf(WaterSurf)
             ELSE
                state_id(WaterSurf) = state_id(WaterSurf) + surplusWaterBody
                IF (state_id(WaterSurf) > StateLimit(WaterSurf)) THEN
-                  runoffWaterBody = runoffWaterBody + (state_id(WaterSurf) - StateLimit(WaterSurf))*sfr(WaterSurf)
+                  runoffWaterBody = runoffWaterBody + (state_id(WaterSurf) - StateLimit(WaterSurf))*sfr_surf(WaterSurf)
                   state_id(WaterSurf) = StateLimit(WaterSurf)
                END IF
             END IF
@@ -396,7 +396,7 @@ CONTAINS
          !  CALL updateFlood
          CALL updateFlood( &
             is, runoff, & ! input:
-            sfr, PipeCapacity, RunoffToWater, &
+            sfr_surf, PipeCapacity, RunoffToWater, &
             runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes) ! inout:
       END IF
 
@@ -406,17 +406,17 @@ CONTAINS
    !------------------------------------------------------------------------------
    SUBROUTINE updateFlood( &
       is, runoff, & ! input:
-      sfr, PipeCapacity, RunoffToWater, &
+      sfr_surf, PipeCapacity, RunoffToWater, &
       runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes) ! inout:
 
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: is
-      REAL(KIND(1D0)), INTENT(in) :: sfr(nsurf), runoff(nsurf), PipeCapacity, RunoffToWater
+      REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf), runoff(nsurf), PipeCapacity, RunoffToWater
       REAL(KIND(1D0)), INTENT(inout) :: runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes
 
       ! Add runoff to pipes
-      runoffPipes = runoffPipes + (runoff(is)*sfr(is))
+      runoffPipes = runoffPipes + (runoff(is)*sfr_surf(is))
 
       ! If pipe capacity is full, surface runoff occurs
       ! N.B. this will happen each loop (replicates pipes filling up)
@@ -424,7 +424,7 @@ CONTAINS
 
          !------Paved and building surface
          IF (is == PavSurf .OR. is == BldgSurf) THEN
-            IF (sfr(WaterSurf) > 0.0000001) THEN
+            IF (sfr_surf(WaterSurf) > 0.0000001) THEN
                ! If there is some water present, the water surface will take some of the flood water (fraction RunoffToWater)
                ! RunoffToWater is specified in SUEWS_SiteSelect.txt
                runoffAGimpervious = runoffAGimpervious + (runoffPipes - PipeCapacity)*(1 - RunoffToWater)
@@ -435,7 +435,7 @@ CONTAINS
             END IF
             !------other surfaces
          ELSEIF (is >= ConifSurf .AND. is <= BSoilSurf) THEN
-            IF (sfr(WaterSurf) > 0.0000001) THEN
+            IF (sfr_surf(WaterSurf) > 0.0000001) THEN
                ! If there is some water present, the water surface will take some of the flood water (fraction RunoffToWater)
                runoffAGveg = runoffAGveg + (runoffPipes - PipeCapacity)*(1 - RunoffToWater)
                surplusWaterBody = surplusWaterBody + (runoffPipes - PipeCapacity)*RunoffToWater
@@ -454,7 +454,7 @@ CONTAINS
 
    !------------------------------------------------------------------------------
    SUBROUTINE ReDistributeWater( &
-      SnowUse, WaterDist, sfr, Drain, & ! input:
+      SnowUse, WaterDist, sfr_surf, Drain, & ! input:
       AddWaterRunoff, AddWater) ! output:
       !Drainage moves into different parts defined by WaterDistSS_YYYY.txt. LJ 2010
       !AddWater(is) is that amount of water that is gained for each surface
@@ -465,7 +465,7 @@ CONTAINS
       INTEGER, INTENT(in) :: SnowUse !Snow part used (1) or not used (0)
 
       REAL(KIND(1D0)), INTENT(in) :: WaterDist(nsurf + 1, nsurf - 1) !Within-grid water distribution to other surfaces and runoff/soil store [-]
-      REAL(KIND(1D0)), INTENT(in) :: sfr(nsurf) !Surface fractions [-]
+      REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf) !Surface fractions [-]
       REAL(KIND(1D0)), INTENT(in) :: Drain(nsurf) !Drainage of each surface type [mm]
 
       REAL(KIND(1D0)), INTENT(out) :: AddWaterRunoff(nsurf) !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
@@ -484,11 +484,11 @@ CONTAINS
       DO ii = 1, nsurf - NSurfDoNotReceiveDrainage !go through surfaces from 1 to 7. These gain water through drainage
          DO jj = 1, nsurf - (NSurfDoNotReceiveDrainage + 1) !From where surface ii can gain water - can't gain water from itself
 
-            IF (sfr(ii) /= 0) THEN !Water movement takes place only if surface fraction exists
+            IF (sfr_surf(ii) /= 0) THEN !Water movement takes place only if surface fraction exists
 
                !No snow calculations!
                IF (SnowUse == 0) THEN
-                  AddWater(ii) = AddWater(ii) + (Drain(jj)*sfr(jj)/sfr(ii))*WaterDist(ii, jj) !Original
+                  AddWater(ii) = AddWater(ii) + (Drain(jj)*sfr_surf(jj)/sfr_surf(ii))*WaterDist(ii, jj) !Original
 
                   !Snow included, This needs to be fixed at some point. LJ Mar 2013
                ELSE
@@ -508,27 +508,28 @@ CONTAINS
    !------------------------------------------------------------------------------
    SUBROUTINE SUEWS_update_SoilMoist( &
       NonWaterFraction, & !input
-      SoilStoreCap, sfr, soilstore_id, &
+      SoilStoreCap, sfr_surf, soilstore_id, &
       SoilMoistCap, SoilState, & !output
       vsmd, smd)
       IMPLICIT NONE
 
       ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
       REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
-      REAL(KIND(1D0)), INTENT(in), DIMENSION(nsurf) :: SoilStoreCap, sfr, soilstore_id
+      REAL(KIND(1D0)), INTENT(in), DIMENSION(nsurf) :: SoilStoreCap, sfr_surf, soilstore_id
 
       REAL(KIND(1D0)), INTENT(out) :: SoilMoistCap, SoilState
       REAL(KIND(1D0)), INTENT(out) :: vsmd, smd
 
       INTEGER :: is
+      REAL(KIND(1D0)) :: fveg
 
       SoilMoistCap = 0 !Maximum capacity of soil store [mm] for whole surface
       SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
 
       IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
          DO is = 1, nsurf - 1 !No water body included
-            SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr(is)/NonWaterFraction)
-            SoilState = SoilState + (soilstore_id(is)*sfr(is)/NonWaterFraction)
+            SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr_surf(is)/NonWaterFraction)
+            SoilState = SoilState + (soilstore_id(is)*sfr_surf(is)/NonWaterFraction)
          END DO
       END IF
 
@@ -539,11 +540,12 @@ CONTAINS
 
       ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
       vsmd = 0
+      fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
       DO is = ConifSurf, GrassSurf !Vegetated surfaces only
-         IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0) THEN
+         IF (fveg == 0) THEN
             vsmd = 0
          ELSE
-            vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+            vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
          END IF
          !write(*,*) is, vsmd, smd
       END DO
@@ -555,7 +557,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_SoilState( &
       SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
       SoilStoreCap, surf_chang_per_tstep, &
-      soilstore_id, soilstoreOld, sfr, &
+      soilstore_id, soilstoreOld, sfr_surf, &
       smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
       IMPLICIT NONE
@@ -569,7 +571,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: surf_chang_per_tstep
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id !Soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstoreOld !Soil moisture of each surface type from previous timestep [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: smd_nsurf !smd for each surface
@@ -584,7 +586,7 @@ CONTAINS
       SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
       IF (NonWaterFraction /= 0) THEN !Fixed for water surfaces only
          DO is = 1, nsurf - 1 !No water body included
-            SoilState = SoilState + (soilstore_id(is)*sfr(is)/NonWaterFraction)
+            SoilState = SoilState + (soilstore_id(is)*sfr_surf(is)/NonWaterFraction)
             IF (SoilState < 0) THEN
                CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
             ELSEIF (SoilState > SoilMoistCap) THEN
@@ -592,7 +594,7 @@ CONTAINS
                !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
             END IF
          END DO !end loop over surfaces
-         ! SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr(1:nsurf - 1))/NonWaterFraction
+         ! SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
          ! IF (SoilState < 0) THEN
          !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
          ! ELSEIF (SoilState > SoilMoistCap) THEN
@@ -609,7 +611,7 @@ CONTAINS
       ! Calculate total change in surface and soil state_id
       tot_chang_per_tstep = surf_chang_per_tstep !Change in surface state_id
       DO is = 1, (nsurf - 1) !No soil for water surface (so change in soil moisture is zero)
-         tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilstoreOld(is))*sfr(is)) !Add change in soil state_id
+         tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilstoreOld(is))*sfr_surf(is)) !Add change in soil state_id
       END DO
 
       IF (SMDMethod > 0) THEN ! use observed value
@@ -622,7 +624,7 @@ CONTAINS
    !===================================================================================
 
    SUBROUTINE SUEWS_cal_HorizontalSoilWater( &
-      sfr, & ! input: ! surface fractions
+      sfr_surf, & ! input: ! surface fractions
       SoilStoreCap, & !Capacity of soil store for each surface [mm]
       SoilDepth, & !Depth of sub-surface soil store for each surface [mm]
       SatHydraulicConduct, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
@@ -654,7 +656,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in) :: sfr(nsurf) ! surface fractions
+      REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf) ! surface fractions
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap(nsurf) !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), INTENT(in) :: SoilDepth(nsurf) !Depth of sub-surface soil store for each surface [mm]
       REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct(nsurf) !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
@@ -700,11 +702,11 @@ CONTAINS
 
       DO is = 1, nsurf - 1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)
 
-         IF (sfr(is) /= 0 .AND. SoilStoreCap(is) > 0) THEN !If particular surface area exists
+         IF (sfr_surf(is) /= 0 .AND. SoilStoreCap(is) > 0) THEN !If particular surface area exists
             ! and is capable of storing water (SoilStoreCap [mm])
             DO jj = is + 1, nsurf - 1 !is-1,1,-1  !Sub-loop through remaining surfaces (runs backwards as of 13/08/2014, HCW)
 
-               IF (sfr(jj) /= 0 .AND. SoilStoreCap(jj) > 0) THEN !If other surface area exists
+               IF (sfr_surf(jj) /= 0 .AND. SoilStoreCap(jj) > 0) THEN !If other surface area exists
                   ! and is capable of storing water
 
                   ! ---- For surface 1 -----------------------------------------------------
@@ -793,10 +795,10 @@ CONTAINS
 
                   !Find distance between the two stores (see Jarvi et al. 2011)
                   !SurfaceArea in m2 (changed from ha to m2 n SUEWS_Initial), so Distance in m
-                  Distance = (SQRT(sfr(is)*SurfaceArea/NUnits) + SQRT(sfr(jj)*SurfaceArea/NUnits))/2
+                  Distance = (SQRT(sfr_surf(is)*SurfaceArea/NUnits) + SQRT(sfr_surf(jj)*SurfaceArea/NUnits))/2
 
                   !Calculate areally-weighted hydraulic conductivity [mm s-1]
-                  KmWeight = (sfr(is)*Km1 + sfr(jj)*Km2)/(sfr(is) + sfr(jj))
+                  KmWeight = (sfr_surf(is)*Km1 + sfr_surf(jj)*Km2)/(sfr_surf(is) + sfr_surf(jj))
 
                   !Find water flow between the two stores [mm s-1] (Green-Ampt equation, Hillel 1971)
                   !Multiply Distance by 1000 to convert m to mm (HCW 12/08/2014)
@@ -810,18 +812,18 @@ CONTAINS
                   !Water moves only if (i) there is sufficient water to move and (ii) there is space to move it
 
                   ! If there is sufficient water in both surfaces, allow movement of dI to occur
-                  IF ((soilstore_id(jj) >= dI*sfr(is)/sfr(jj)) .AND. ((soilstore_id(is) + dI) >= 0)) THEN
+                  IF ((soilstore_id(jj) >= dI*sfr_surf(is)/sfr_surf(jj)) .AND. ((soilstore_id(is) + dI) >= 0)) THEN
                      soilstore_id(is) = soilstore_id(is) + dI
-                     soilstore_id(jj) = soilstore_id(jj) - dI*sfr(is)/sfr(jj) !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
+                     soilstore_id(jj) = soilstore_id(jj) - dI*sfr_surf(is)/sfr_surf(jj) !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
 
                      ! If insufficient water in first surface to move dI, instead move as much as possible
                   ELSEIF ((soilstore_id(is) + dI) < 0) THEN
-                     soilstore_id(jj) = soilstore_id(jj) + soilstore_id(is)*sfr(is)/sfr(jj) !HCW 12/08/2014 switched order of these two lines
+                     soilstore_id(jj) = soilstore_id(jj) + soilstore_id(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
                      soilstore_id(is) = 0 !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
 
                      ! If insufficient water in second surface to move dI, instead move as much as possible
                   ELSE
-                     soilstore_id(is) = soilstore_id(is) + soilstore_id(jj)*sfr(jj)/sfr(is)
+                     soilstore_id(is) = soilstore_id(is) + soilstore_id(jj)*sfr_surf(jj)/sfr_surf(is)
                      soilstore_id(jj) = 0
                   END IF
 
@@ -845,11 +847,11 @@ CONTAINS
 
             END DO !end jj loop over second surface
 
-            runoffSoil_per_tstep = runoffSoil_per_tstep + (runoffSoil(is)*sfr(is)/NonWaterFraction) !Excludes water body. Moved here as otherwise code crashed when NonWaterFraction=0
+            runoffSoil_per_tstep = runoffSoil_per_tstep + (runoffSoil(is)*sfr_surf(is)/NonWaterFraction) !Excludes water body. Moved here as otherwise code crashed when NonWaterFraction=0
 
          END IF !end if first surface exists and is capable of storing water
 
-         !runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr(is)/NonWaterFraction)  !Excludes water body
+         !runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr_surf(is)/NonWaterFraction)  !Excludes water body
 
       END DO !is loop over first surface
 
@@ -859,7 +861,7 @@ CONTAINS
    !===================================================================================
    SUBROUTINE SUEWS_cal_WaterUse( &
       nsh_real, & ! input:
-      wu_m3, SurfaceArea, sfr, &
+      wu_m3, SurfaceArea, sfr_surf, &
       IrrFracPaved, IrrFracBldgs, &
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       IrrFracBSoil, IrrFracWater, &
@@ -900,7 +902,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: InternalWaterUse_h !Internal water use [mm h-1]
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: WUProfA_24hr !Automatic water use profiles at hourly scales
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: WUProfM_24hr !Manual water use profiles at hourly scales
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr !Surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !Surface fractions [-]
 
       REAL(KIND(1D0)), DIMENSION(12), INTENT(in) :: HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1D0)), DIMENSION(9), INTENT(in) :: WUDay_id !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
@@ -975,12 +977,12 @@ CONTAINS
       ! Divide observed water use (in m3) by water use area to find water use (in mm)
       IF (WaterUseMethod == 1) THEN !If water use is observed
          ! Calculate water use area [m2] for each surface type
-         ! WUAreaEveTr_m2 = IrrFracEveTr*sfr(ConifSurf)*SurfaceArea
-         ! WUAreaDecTr_m2 = IrrFracDecTr*sfr(DecidSurf)*SurfaceArea
-         ! WUAreaGrass_m2 = IrrFracGrass*sfr(GrassSurf)*SurfaceArea
+         ! WUAreaEveTr_m2 = IrrFracEveTr*sfr_surf(ConifSurf)*SurfaceArea
+         ! WUAreaDecTr_m2 = IrrFracDecTr*sfr_surf(DecidSurf)*SurfaceArea
+         ! WUAreaGrass_m2 = IrrFracGrass*sfr_surf(GrassSurf)*SurfaceArea
          ! WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
-         WUArea = IrrFrac*sfr*SurfaceArea
+         WUArea = IrrFrac*sfr_surf*SurfaceArea
          WUAreaTotal_m2 = SUM(WUArea)
 
          !Set water use [mm] for each surface type to zero initially
@@ -1080,9 +1082,9 @@ CONTAINS
          ! PRINT*, 'wu_DecTr',wu_DecTr
          ! PRINT*, 'wu_Grass',wu_Grass
          ! Added HCW 12 Feb 2015.
-         !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracEveTr        !Water use for EveTr [mm]
-         !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecTr        !Water use for DecTr [mm]
-         !wu_Grass=wu_Grass*sfr(GrassSurf)*IrrFracGrass        !Water use for Grass [mm]
+         !wu_EveTr=wu_EveTr*sfr_surf(ConifSurf)*IrrFracEveTr        !Water use for EveTr [mm]
+         !wu_DecTr=wu_DecTr*sfr_surf(DecidSurf)*IrrFracDecTr        !Water use for DecTr [mm]
+         !wu_Grass=wu_Grass*sfr_surf(GrassSurf)*IrrFracGrass        !Water use for Grass [mm]
          ! wu_EveTr = wu_EveTr*IrrFracEveTr  !Water use for EveTr [mm]
          ! wu_DecTr = wu_DecTr*IrrFracDecTr  !Water use for DecTr [mm]
          ! wu_Grass = wu_Grass*IrrFracGrass  !Water use for Grass [mm]
@@ -1093,8 +1095,8 @@ CONTAINS
          ! PRINT*, 'IrrFracGrass',IrrFracGrass
 
          ! Total water use for the whole study area [mm]
-         ! wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
-         wu = DOT_PRODUCT(wu_nsurf, sfr)
+         ! wu = wu_EveTr*sfr_surf(ConifSurf) + wu_DecTr*sfr_surf(DecidSurf) + wu_Grass*sfr_surf(GrassSurf)
+         wu = DOT_PRODUCT(wu_nsurf, sfr_surf)
 
       END IF !End WU_choice
       ! --------------------------------------------------------------------------------

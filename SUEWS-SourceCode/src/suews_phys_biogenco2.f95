@@ -34,7 +34,7 @@ CONTAINS
       alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
       ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
       id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
-      NVegSurf, resp_a, resp_b, sfr, SnowFrac, t2, Temp_C, theta_bioCO2, &
+      NVegSurf, resp_a, resp_b, sfr_surf, SnowFrac, t2, Temp_C, theta_bioCO2, &
       Fc_biogen, Fc_photo, Fc_respi) ! output:
 
       IMPLICIT NONE
@@ -52,7 +52,7 @@ CONTAINS
          t2
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: &
-         sfr, & !Surface fractions [-]
+         sfr_surf, & !Surface fractions [-]
          SnowFrac
 
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: &
@@ -96,7 +96,7 @@ CONTAINS
       !-----------------------------------------------------------------------
       ! Calculate PAR from Kdown ----------------------------------
       PAR_umolm2s1 = JtoumolPAR*KdntoPAR*avKdn
-      VegFracSum = sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf)
+      VegFracSum = sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)
 
       ! Calculate active vegetation surface -----------------------
       !Now this is zero always when LAI in its minimum values. This needs to vary between the summer time maximum and some minimum value
@@ -104,8 +104,8 @@ CONTAINS
       !such that uptake can take place)
       DO iv = ivConif, ivGrass !For vegetated surfaces. Snow included although quite often LAI will be in its minimum when snow on ground
 
-         active_veg_fr(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
-         active_veg_fr0(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)
+         active_veg_fr(iv) = (sfr_surf(iv + 2)*(1 - SnowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
+         active_veg_fr0(iv) = (sfr_surf(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)
 
       END DO
 
@@ -143,9 +143,9 @@ CONTAINS
 
             !Because different alpha, beta and theta values are same - only one vegetation type is needed.
             alpha_bioCO2_v2(ivConif) = alpha_bioCO2(ivConif) + alpha_enh_bioCO2(ivConif)* &
-                                       (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf)) !umol CO2 umol photons-1
+                                       (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol CO2 umol photons-1
             beta_bioCO2_v2(ivConif) = -beta_bioCO2(ivConif) + beta_enh_bioCO2(ivConif)* &
-                                      (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf)) !umol m^-2 s^-1
+                                      (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol m^-2 s^-1
 
             !Photosynthesis
             Bellucco2017_Pho = -(1/(2*theta_bioCO2(ivConif)) &
@@ -158,24 +158,24 @@ CONTAINS
             ! CALL ErrorHint(74, 'Check values in SUEWS_BiogenCO2.txt: ', notUsed, notUsed, notUsedI)
 
             ! Weighted averages
-            alpha_bioCO2_v2(ivConif) = (alpha_bioCO2(ivConif)*sfr(ConifSurf)/VegFracSum + &
-                                        alpha_bioCO2(ivDecid)*sfr(DecidSurf)/VegFracSum &
-                                        + alpha_bioCO2(ivGrass)*sfr(GrassSurf)/VegFracSum) &
+            alpha_bioCO2_v2(ivConif) = (alpha_bioCO2(ivConif)*sfr_surf(ConifSurf)/VegFracSum + &
+                                        alpha_bioCO2(ivDecid)*sfr_surf(DecidSurf)/VegFracSum &
+                                        + alpha_bioCO2(ivGrass)*sfr_surf(GrassSurf)/VegFracSum) &
                                        /(alpha_bioCO2(ivConif) + alpha_bioCO2(ivDecid) + alpha_bioCO2(ivGrass))
-            beta_bioCO2_v2(ivConif) = (beta_bioCO2(ivConif)*sfr(ConifSurf)/VegFracSum + &
-                                       beta_bioCO2(ivDecid)*sfr(DecidSurf)/VegFracSum &
-                                       + beta_bioCO2(ivGrass)*sfr(GrassSurf)/VegFracSum) &
+            beta_bioCO2_v2(ivConif) = (beta_bioCO2(ivConif)*sfr_surf(ConifSurf)/VegFracSum + &
+                                       beta_bioCO2(ivDecid)*sfr_surf(DecidSurf)/VegFracSum &
+                                       + beta_bioCO2(ivGrass)*sfr_surf(GrassSurf)/VegFracSum) &
                                       /(beta_bioCO2(ivConif) + beta_bioCO2(ivDecid) + beta_bioCO2(ivGrass))
-            theta_bioCO2_v2(ivConif) = (theta_bioCO2(ivConif)*sfr(ConifSurf)/VegFracSum + &
-                                        theta_bioCO2(ivDecid)*sfr(DecidSurf)/VegFracSum &
-                                        + theta_bioCO2(ivGrass)*sfr(GrassSurf)/VegFracSum) &
+            theta_bioCO2_v2(ivConif) = (theta_bioCO2(ivConif)*sfr_surf(ConifSurf)/VegFracSum + &
+                                        theta_bioCO2(ivDecid)*sfr_surf(DecidSurf)/VegFracSum &
+                                        + theta_bioCO2(ivGrass)*sfr_surf(GrassSurf)/VegFracSum) &
                                        /(theta_bioCO2(ivConif) + theta_bioCO2(ivDecid) + theta_bioCO2(ivGrass))
 
             ! Using weighted average values to calculate alpha and beta as a function of vegetation cover fraction
             alpha_bioCO2_v2(ivConif) = alpha_bioCO2_v2(ivConif) + alpha_enh_bioCO2(ivConif)* &
-                                       (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf)) !umol CO2 umol photons-1
+                                       (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol CO2 umol photons-1
             beta_bioCO2_v2(ivConif) = -beta_bioCO2_v2(ivConif) + beta_enh_bioCO2(ivConif)* &
-                                      (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf)) !umol m^-2 s^-1
+                                      (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol m^-2 s^-1
 
             !Photosynthesis
             Bellucco2017_Pho = -(1/(2*theta_bioCO2_v2(ivConif))*( &
@@ -210,18 +210,18 @@ CONTAINS
       Bellucco2017_Res_surf = 0.0
       IF (VegFracSum > 0.01) THEN
          DO iv = ivConif, ivGrass
-            IF (sfr(2 + iv) > 0.005) THEN
+            IF (sfr_surf(2 + iv) > 0.005) THEN
                IF (gsmodel == 1 .OR. gsmodel == 2) THEN !With air temperature
                   Bellucco2017_Res_surf = MAX(min_res_bioCO2(iv), resp_a(iv)*EXP(resp_b(iv)*Temp_C))
                ELSEIF (gsmodel == 3 .OR. gsmodel == 4) THEN !With modelled 2 meter temperature
                   Bellucco2017_Res_surf = MAX(min_res_bioCO2(iv), resp_a(iv)*EXP(resp_b(iv)*t2))
                END IF
                ! Only for vegetation fraction
-               Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf*sfr(2 + iv)/VegFracSum
+               Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf*sfr_surf(2 + iv)/VegFracSum
             END IF
          END DO
       END IF
-      Fc_respi = Bellucco2017_Res*(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))
+      Fc_respi = Bellucco2017_Res*(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf))
       ! Combine to find biogenic CO2 flux
       Fc_biogen = Fc_photo + Fc_respi
 

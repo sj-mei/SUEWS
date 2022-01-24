@@ -429,9 +429,12 @@ CONTAINS
       !        Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), svf_blgd_veg(row, col), Ta, Tg]
       ! END IF
       dataOutLineSOLWEIG = [azimuth, altitude, radG, radI, radD, &
-                         Kdown2d(row, col), Kup2d(row, col), Ksouth(row, col), Kwest(row, col), Knorth(row, col), Keast(row, col), &
-                         Ldown2d(row, col), Lup2d(row, col), Lsouth(row, col), Lwest(row, col), Lnorth(row, col), Least(row, col), &
-                            Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), svf_blgd_veg(row, col), Ta, Tg]
+                            Kdown2d(row, col), Kup2d(row, col), &
+                            Ksouth(row, col), Kwest(row, col), Knorth(row, col), Keast(row, col), &
+                            Ldown2d(row, col), Lup2d(row, col), &
+                            Lsouth(row, col), Lwest(row, col), Lnorth(row, col), Least(row, col), &
+                            Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), &
+                            svf_blgd_veg(row, col), Ta, Tg]
 
       ! CALL SaveGrids
 

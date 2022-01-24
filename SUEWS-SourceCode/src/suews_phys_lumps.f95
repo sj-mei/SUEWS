@@ -6,7 +6,7 @@ CONTAINS
       veg_type, & !input
       SnowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
       tstep_real, DRAINRT, nsh_real, &
-      Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_prev, LAImax, LAImin, &
+      Precip, RainMaxRes, RAINCOVER, sfr_surf, LAI_id_prev, LAImax, LAImin, &
       QH_LUMPS, & !output
       QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, Veg_Fr_temp, VegPhenLumps)
       !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
@@ -49,7 +49,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: RainMaxRes !Maximum water bucket reservoir [mm]
       REAL(KIND(1D0)), INTENT(in) :: RAINCOVER ! LUMPS Limit when surface totally wet [mm]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! veg surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! veg surface fractions [-]
       REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(in) :: LAI_id_prev ! LAI(id-1,iv), LAI at the beginning of today
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAImax !Max LAI [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAImin !Min LAI [m2 m-2]
@@ -79,7 +79,7 @@ CONTAINS
       RainBucket = 0.
 
       ! surface fractions fro veg surfaces
-      sfrVeg = sfr(ivConif + 2:ivGrass + 2)
+      sfrVeg = sfr_surf(ivConif + 2:ivGrass + 2)
 
       ! Calculate slope of the saturation vapour pressure vs air temp.
       s_hPa = slope_svp(Temp_C)
@@ -122,9 +122,9 @@ CONTAINS
       VegMin = DOT_PRODUCT(sfrVeg, LAImin)
 
       ! DO iv=ivConif,ivGrass   !Normalized LAI for vegetation
-      !    VegPhen = sfr(iv+2)*LAI(id-1,iv) + VegPhen
-      !    VegMax  = sfr(iv+2)*LAImax(iv) + VegMax
-      !    VegMin  = sfr(iv+2)*LAImax(iv) + VegMin
+      !    VegPhen = sfr_surf(iv+2)*LAI(id-1,iv) + VegPhen
+      !    VegMax  = sfr_surf(iv+2)*LAImax(iv) + VegMax
+      !    VegMin  = sfr_surf(iv+2)*LAImax(iv) + VegMin
       ! ENDDO
 
       IF (VegMax <= 0.01000) THEN !If max vegetation is very small, TempVeg = 0;

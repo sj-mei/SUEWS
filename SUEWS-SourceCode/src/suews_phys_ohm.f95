@@ -12,7 +12,7 @@
 SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
                qn1_S, qn1_s_av_prev, dqnsdt_prev, qn1_s_av_next, dqnsdt_next, &
                tstep, dt_since_start, &
-               sfr, nsurf, &
+               sfr_surf, nsurf, &
                Tair_mav_5d, &
                OHM_coef, &
                OHM_threshSW, OHM_threshWD, &
@@ -51,7 +51,7 @@ SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
 
    REAL(KIND(1D0)), INTENT(in) :: qn1 ! net all-wave radiation
    REAL(KIND(1D0)), INTENT(in) :: qn1_S ! net all-wave radiation over snow
-   REAL(KIND(1D0)), INTENT(in) :: sfr(nsurf) ! surface fractions
+   REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf) ! surface fractions
    REAL(KIND(1D0)), INTENT(in) :: SnowFrac(nsurf) ! snow fractions of each surface
    REAL(KIND(1D0)), INTENT(in) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
    REAL(KIND(1D0)), INTENT(in) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients
@@ -108,7 +108,7 @@ SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
    !real(kind(1d0)):: OHM_TForSummer = 10  !Use summer coefficients if 5-day Tair >= 10 degC - modified for UK HCW 14 Dec 2015
    !real(kind(1d0)):: OHM_SMForWet = 0.9  !Use wet coefficients if SM close to soil capacity
 
-   CALL OHM_coef_cal(sfr, nsurf, &
+   CALL OHM_coef_cal(sfr_surf, nsurf, &
                      Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
                      soilstore_id, SoilStoreCap, state_id, &
                      BldgSurf, WaterSurf, &
@@ -199,7 +199,7 @@ SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
 END SUBROUTINE OHM
 !========================================================================================
 
-SUBROUTINE OHM_coef_cal(sfr, nsurf, &
+SUBROUTINE OHM_coef_cal(sfr_surf, nsurf, &
                         Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
                         soilstore_id, SoilStoreCap, state_id, &
                         BldgSurf, WaterSurf, &
@@ -211,7 +211,7 @@ SUBROUTINE OHM_coef_cal(sfr, nsurf, &
       SnowUse, & ! option for snow related calculations
       BldgSurf, WaterSurf ! code for specific surfaces
    REAL(KIND(1D0)), INTENT(in) :: &
-      sfr(nsurf), & ! surface cover fractions
+      sfr_surf(nsurf), & ! surface cover fractions
       SnowFrac(nsurf), & ! snow fractions of each surface
       Tair_mav_5d, & ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
       OHM_coef(nsurf + 1, 4, 3), &
@@ -233,7 +233,7 @@ SUBROUTINE OHM_coef_cal(sfr, nsurf, &
 
    ! Loop through surface types ----------------------------------------------------------
    DO is = 1, nsurf
-      surfrac = sfr(is)
+      surfrac = sfr_surf(is)
 
       ! Use 5-day running mean Tair to decide whether it is summer or winter ----------------
       IF (Tair_mav_5d >= OHM_threshSW(is)) THEN !Summer

@@ -51,6 +51,7 @@ SUBROUTINE OverallRunControl
       MultipleMetFiles, &
       MultipleInitFiles, &
       MultipleESTMFiles, &
+      MultipleLayoutFiles, &
       KeepTstepFilesIn, &
       KeepTstepFilesOut, &
       WriteOutOption, &
@@ -1894,7 +1895,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    !Calculation of roughness parameters (N.B. uses porosity)
    IF (Diagnose == 1) PRINT *, 'calling in initial state: SUEWS_cal_RoughnessParameters'
    CALL SUEWS_cal_RoughnessParameters( &
-      RoughLenMomMethod, sfr, & !input
+      RoughLenMomMethod, sfr_surf, & !input
       bldgH, EveTreeH, DecTreeH, &
       porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
@@ -1984,6 +1985,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ! mAH_grids(0,:)=25.
 
    ! -----------------------------------
+   call SUEWS_TranslateBack(Gridiv, 0, 0)
 
    RETURN
 

@@ -39,7 +39,7 @@ CONTAINS
    !  Updated and corrected SUEWS_cal_DailyState output file
    !  LJ 05 Feb 2015  - SUEWS_cal_DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
    ! N.B. Bug in daily Precip - needs fixing!!! - HCW thinks this is fixed 20 Feb 2015
-   !  HCW 26 Jan 2015 - sfr and IrrFracs deleted from WUDay calculations, so that WUDay is not spread over
+   !  HCW 26 Jan 2015 - sfr_surf and IrrFracs deleted from WUDay calculations, so that WUDay is not spread over
    !  the total area
    !  HCW 23 Jan 2015 - WUDay now has 9 columns (EveTr, DecTr, Grass; automatic, manual, total)
    !  HCW 27 Nov 2014 - Handles values for different grids (Gridiv & ir arguments)

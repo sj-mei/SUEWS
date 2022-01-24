@@ -72,7 +72,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dqndt, qn1_av, &
       dqnsdt, qn1_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
-      sfr, SnowPackLimit, snowdens, SnowFrac, snowpack, &
+      sfr_surf, SnowPackLimit, snowdens, SnowFrac, snowpack, &
       soildepth, soilstore_id, SoilStoreCap, state_id, statelimit, &
       StoreDrainPrm, theta_bioco2, ts5mindata_ir, &
       waterdist, wetthresh, &
@@ -83,7 +83,14 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataOutLineDebug, dataOutLineDebug, dataOutLineSPARTACUS, &
       dailystateline, dataoutdailystate, &
       dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, &
-      dataoutBL, dataOutDebug, dataOutSPARTACUS
+      dataoutBL, dataOutDebug, dataOutSPARTACUS, &
+      nroof, nwall, &
+      sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_in_roof, temp_in_wall, temp_in_surf, &
+      k_roof, k_wall, k_surf, &
+      cp_roof, cp_wall, cp_surf, &
+      dz_roof, dz_wall, dz_surf
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       H_maintain, &
@@ -124,6 +131,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Translate...'
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
+   ! ASSOCIATE (v => dz_roof(1, 1:5))
+   !    PRINT *, 'dz_roof before driver', v, SIZE(v)
+   ! END ASSOCIATE
    !PRINT *,''
    !PRINT *,'Calling SUEWS_cal_Main'
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
@@ -152,6 +162,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+      nroof, nwall, &
       OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
@@ -160,7 +171,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       qn1_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-      SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+      SatHydraulicConduct, SDDFull, SDD_id, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
@@ -168,6 +179,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       Tmax_id, Tmin_id, &
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+      sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_in_roof, temp_in_wall, temp_in_surf, &
+      k_roof, k_wall, k_surf, &
+      cp_roof, cp_wall, cp_surf, &
+      dz_roof, dz_wall, dz_surf, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &

@@ -30,7 +30,7 @@ CONTAINS
       qn1, qn1_av_prev, dqndt_prev, qf, &
       MetForcingData_grid, moist_surf, &
       alb, emis, cpAnOHM, kkAnOHM, chAnOHM, & ! input
-      sfr, nsurf, EmissionsMethod, id, Gridiv, &
+      sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
       qn1_av_next, dqndt_next, &
       a1, a2, a3, qs, deltaQi) ! output
 
@@ -42,7 +42,7 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) :: qn1 !< net all-wave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: qf !< anthropogenic heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: sfr(nsurf) !< surface fraction (0-1) [-]
+      REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf) !< surface fraction (0-1) [-]
       REAL(KIND(1D0)), INTENT(in) :: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
       REAL(KIND(1D0)), INTENT(in), DIMENSION(:) :: alb !< albedo [-]
@@ -117,9 +117,9 @@ CONTAINS
       END DO
 
       !   calculate the areally-weighted OHM coefficients
-      a1 = DOT_PRODUCT(xa1, sfr)
-      a2 = DOT_PRODUCT(xa2, sfr)
-      a3 = DOT_PRODUCT(xa3, sfr)
+      a1 = DOT_PRODUCT(xa1, sfr_surf)
+      a2 = DOT_PRODUCT(xa2, sfr_surf)
+      a3 = DOT_PRODUCT(xa3, sfr_surf)
 
       !   Calculate radiation part ------------------------------------------------------------
       qs = -999 !qs  = Net storage heat flux  [W m-2]

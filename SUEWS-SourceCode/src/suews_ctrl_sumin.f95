@@ -36,7 +36,7 @@ CONTAINS
       TempMeltFact, &
       OHMIncQF, & ! model options
       iy, id, it, imin, isec, dt_since_start, tstep, tstep_prev, startDLS, endDLS, & ! time-related input
-      alt, lat, lng, Z, timezone, SurfaceArea, sfr, & ! site-specific geographical settings
+      alt, lat, lng, Z, timezone, SurfaceArea, sfr_surf, & ! site-specific geographical settings
       z0m_in, zdm_in, & ! roughness related settings
       alb, emis, SnowAlb, OHM_coef, WaterDist, & ! surface properties
       AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, snowProf_24hr, & ! hourly profile values
@@ -171,7 +171,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: Z
       REAL(KIND(1D0)), INTENT(IN) :: timezone
       REAL(KIND(1D0)), INTENT(IN) :: SurfaceArea
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN) :: sfr
+      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN) :: sfr_surf
 
       ! roughness related settings
       REAL(KIND(1D0)), INTENT(in) :: z0m_in
@@ -568,7 +568,7 @@ CONTAINS
          qn1_obs, qh_obs, qs_obs, qf_obs, &
          RadMeltFact, RAINCOVER_id, RainMaxRes_id, resp_a, resp_b, &
          RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater_id, S1, S2, &
-         SatHydraulicConduct_id, SDDFull_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+         SatHydraulicConduct_id, SDDFull_id, sfr_surf, SMDMethod, SnowAlb, SnowAlbMax, &
          SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
          SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth_id, &
          soilstore_id, SoilStoreCap_id, StabilityMethod, startDLS, state_id, StateLimit_id, &

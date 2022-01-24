@@ -193,6 +193,11 @@ MODULE allocateArray
    INTEGER, PARAMETER :: nsurf = 7 !Total number of surfaces
    INTEGER, PARAMETER :: NVegSurf = 3 !Number of surfaces that are vegetated
    INTEGER, PARAMETER :: nsurfIncSnow = nsurf + 1 !Number of surfaces + snow
+   ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_roof_grid !Number of extra roof facets (e.g., green roofs, etc.)
+   ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_wall_grid !Number of extra building facets (e.g., green walls, etc.)
+   INTEGER, PARAMETER :: ndepth = 5 !Number of depth levels for facets
+   INTEGER, PARAMETER :: nroof_max = 5 !max Number of allowed roof types
+   INTEGER, PARAMETER :: nwall_max = 100 !max Number of allowed roof types
 
    INTEGER, PARAMETER :: PavSurf = 1, & !When all surfaces considered together (1-7)
                          BldgSurf = 2, &
@@ -207,10 +212,10 @@ MODULE allocateArray
                          ivDecid = 2, &
                          ivGrass = 3
 
-   REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr !Surface fractions [-]
+   REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
 
    ! ---- Water balance for each surface  ---------------------------------------------------------
-   !These variables are expressed as depths [mm] over each surface(is); the depth therefore varies with sfr(is)
+   !These variables are expressed as depths [mm] over each surface(is); the depth therefore varies with sfr_surf(is)
    REAL(KIND(1D0)), DIMENSION(nsurf) :: AddWater !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
    ! N.B. this is not an amount; drain(is)*AddWaterRunoff(is) is the amount [mm]
@@ -471,12 +476,64 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(nsurf) :: chAnOHM ! bulk transfer coef. [-]
    !-----------------------------------------------------------------------------------------------
 
-   ! ESTM variables for SUEWS surfaces
+   !------------------- ESTM variables for SUEWS surfaces---------------------------------------------------------
+   ! roof
+   INTEGER :: nroof !Number of roof facets
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_roof
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_roof
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_in_roof
+   ! larger container arrays for different grids
+   INTEGER, DIMENSION(:), ALLOCATABLE :: nroof_grids !Number of roof_grids facets
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_in_roof_grids
+
+   ! wall
+   INTEGER :: nwall !Number of wall facets
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_wall
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_wall
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_in_wall
+   INTEGER, DIMENSION(:), ALLOCATABLE :: nwall_grids !Number of wall_grids facets
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_in_wall_grids
+
+   ! standard suews surfaces
+   ! INTEGER :: nsurf !Number of surf facets
+   ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_surf
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_surf
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_in_surf
+   ! INTEGER :: nsurf_grids !Number of surf_grids facets
+   ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_in_surf_grids
+   !-----------------------------------------------------------------------------------------------
+
+   !------------------- ESTM_ext variables for heterogeneous  facets---------------------------------------------------------
    REAL(KIND(1D0)), DIMENSION(5, nsurfIncSnow) :: zSurf_SUEWSsurfs, &
                                                   kSurf_SUEWSsurfs, &
                                                   rSurf_SUEWSsurfs
 
    !-----------------------------------------------------------------------------------------------
+
    !---------------------------------- Column numbers ---------------------------------------------
 
    ! ---- Set column numbering for SurfaceChar ----------------------------------------------------
@@ -985,12 +1042,13 @@ MODULE data_in
    INTEGER :: SkipHeaderMet = 1 !Number of header lines to skip in met forcing file
 
    ! ---- Model options set in RunControl --------------------------------------------------------
-   INTEGER :: EmissionsMethod, & !
-              BaseTMethod, & !
+   INTEGER :: EmissionsMethod, & ! anthropogenic emissions method
+              BaseTMethod, & ! base temperature method for HDD/CDD calculations used in QF module
               CBLuse, & !CBL slab model used (1) or not used (0)
               MultipleMetFiles, & !Indicates whether a single met file is used for all grids (0) or one for each grid (1)
               MultipleInitFiles, & !Indicates whether a single initial conditions file is used for all grids (0) or one for each grid (1)
               MultipleESTMFiles, & !Indicates whether a single ESTM input data file is used for all grids (0) or one for each grid (1)
+              MultipleLayoutFiles, & !Indicates whether a single grid layout input data file is used for all grids (0) or one for each grid (1)
               KeepTstepFilesIn, & !Delete (0) or keep (1) input met files at resolution of tstep (used by python, not fortran)
               KeepTstepFilesOut, & !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
               ResolutionFilesIn, & !Specify resolution of input file  [s]
@@ -1375,7 +1433,7 @@ MODULE gis_data
                       ImpervFraction, & ! sum of surface cover fractions for impervious surfaces
                       PervFraction, & ! sum of surface cover fractions for pervious surfaces
                       NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
-                      areaZh !=(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees
+                      areaZh !=(sfr_surf(BldgSurf)+sfr_surf(ConifSurf)+sfr_surf(DecidSurf)) !Total area of buildings and trees
 
    INTEGER :: idgis, & !Time integers used in the code
               itgis, & !

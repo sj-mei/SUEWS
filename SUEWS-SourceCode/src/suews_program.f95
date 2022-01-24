@@ -41,7 +41,9 @@ PROGRAM SUEWS_Program
    USE Time
    USE WhereWhen
    USE ctrl_output
-   USE ESTM_module, ONLY: SUEWS_GetESTMData, ESTM_initials
+   USE ESTM_module, ONLY: &
+      SUEWS_GetESTMData, ESTM_initials, &
+      ESTM_ext_initialise, estm_ext_finalise
    USE BLUEWS_module, ONLY: CBL_ReadInputData
 
    IMPLICIT NONE
@@ -154,6 +156,13 @@ PROGRAM SUEWS_Program
    IF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
       IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_initials...'
       CALL ESTM_initials
+   END IF
+
+   ! -------------------------------------------------------------------------
+   ! Initialise ESTM (reads ESTM nml, should only run once)
+   IF (StorageHeatMethod == 5) THEN
+      IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_initials...'
+      CALL ESTM_ext_initialise
    END IF
 
    !==========================================================================
@@ -713,6 +722,7 @@ PROGRAM SUEWS_Program
       DEALLOCATE (tair_av_grids)
       DEALLOCATE (qn1_av_grids)
       DEALLOCATE (dqndt_grids)
+      CALL estm_ext_finalise
       IF (CBLuse >= 1) THEN
          DEALLOCATE (dataOutBL)
       END IF
