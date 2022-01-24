@@ -60,11 +60,7 @@ jobs:
         make pip
 
     - name: format Fortran code
-<<<<<<< HEAD
       run: fprettify SUEWS-SourceCode/src/*f95 -c .fprettify.yml
-=======
-      run: fprettify SUEWS-SourceCode/*f95 -c .fprettify.yml
->>>>>>> origin/master
 
     # - name: Commit changes
     #   uses: elstudio/actions-js-build/commit@v3
