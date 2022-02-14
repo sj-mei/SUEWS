@@ -87,7 +87,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       nroof, nwall, &
       sfr_roof, sfr_wall, sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
-      temp_in_roof, temp_in_wall, temp_in_surf, &
+      tin_roof, tin_wall, tin_surf, &
       k_roof, k_wall, k_surf, &
       cp_roof, cp_wall, cp_surf, &
       dz_roof, dz_wall, dz_surf
@@ -181,7 +181,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       sfr_roof, sfr_wall, sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
-      temp_in_roof, temp_in_wall, temp_in_surf, &
+      tin_roof, tin_wall, tin_surf, &
       k_roof, k_wall, k_surf, &
       cp_roof, cp_wall, cp_surf, &
       dz_roof, dz_wall, dz_surf, &

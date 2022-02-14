@@ -484,7 +484,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_in_roof
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_roof
    ! larger container arrays for different grids
    INTEGER, DIMENSION(:), ALLOCATABLE :: nroof_grids !Number of roof_grids facets
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_roof_grids
@@ -492,7 +492,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_roof_grids
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_in_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: tin_roof_grids
 
    ! wall
    INTEGER :: nwall !Number of wall facets
@@ -501,14 +501,14 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_in_wall
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_wall
    INTEGER, DIMENSION(:), ALLOCATABLE :: nwall_grids !Number of wall_grids facets
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_wall_grids
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_in_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: tin_wall_grids
 
    ! standard suews surfaces
    ! INTEGER :: nsurf !Number of surf facets
@@ -517,14 +517,14 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_in_surf
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_surf
    ! INTEGER :: nsurf_grids !Number of surf_grids facets
    ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_surf_grids
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_in_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: tin_surf_grids
    !-----------------------------------------------------------------------------------------------
 
    !------------------- ESTM_ext variables for heterogeneous  facets---------------------------------------------------------

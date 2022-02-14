@@ -722,7 +722,6 @@ PROGRAM SUEWS_Program
       DEALLOCATE (tair_av_grids)
       DEALLOCATE (qn1_av_grids)
       DEALLOCATE (dqndt_grids)
-      CALL estm_ext_finalise
       IF (CBLuse >= 1) THEN
          DEALLOCATE (dataOutBL)
       END IF
@@ -735,6 +734,8 @@ PROGRAM SUEWS_Program
    IF (ALLOCATED(ModelDailyState)) DEALLOCATE (ModelDailyState)
    ! Also needs to happen at the end of the run
    IF (ALLOCATED(UseColumnsDataOut)) DEALLOCATE (UseColumnsDataOut)
+
+   CALL estm_ext_finalise
    ! -------------------------------------------------------------------------
 
    ! get cpu time consumed

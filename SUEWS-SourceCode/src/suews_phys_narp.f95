@@ -119,7 +119,7 @@ CONTAINS
 
    !==============================================================================
    SUBROUTINE NARP( &
-      nsurf, sfr_surf, SnowFrac, alb, emis, IceFrac, & ! input:
+      nsurf, sfr_surf, tsfc_surf, SnowFrac, alb, emis, IceFrac, & ! input:
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &
@@ -181,6 +181,7 @@ CONTAINS
       ! use moist   ! Included 20140701, FL
       ! use time    ! Included 20140701, FL
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: alb
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis

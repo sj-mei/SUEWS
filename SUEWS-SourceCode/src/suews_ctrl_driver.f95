@@ -89,7 +89,7 @@ CONTAINS
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       sfr_roof, sfr_wall, sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
-      temp_in_roof, temp_in_wall, temp_in_surf, &
+      tin_roof, tin_wall, tin_surf, &
       k_roof, k_wall, k_surf, &
       cp_roof, cp_wall, cp_surf, &
       dz_roof, dz_wall, dz_surf, &
@@ -600,21 +600,21 @@ CONTAINS
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: temp_in_roof
+      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: temp_in_wall
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
@@ -708,7 +708,8 @@ CONTAINS
 
       ! iteration is used below to get results converge
       flag_converge = .FALSE.
-      Ts_iter = TEMP_C
+      ! Ts_iter = TEMP_C
+      Ts_iter = DOT_PRODUCT(tsfc_surf, sfr_surf)
       ! L_mod_iter = 10
       i_iter = 1
       DO WHILE ((.NOT. flag_converge) .AND. i_iter < 100)
@@ -835,7 +836,7 @@ CONTAINS
             Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
-            NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr_surf, emis, &
+            NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr_surf, tsfc_surf, emis, &
             alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
             LAI_id, & !input
             alb_next, ldown, fcld, & !output
@@ -864,9 +865,9 @@ CONTAINS
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
             id, tstep, dt_since_start, Diagnose, &
             nroof, nwall, &
-            tsfc_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-            tsfc_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-            tsfc_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+            tsfc_roof, tin_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tsfc_wall, tin_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tsfc_surf, tin_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
             OHM_coef, OHM_threshSW, OHM_threshWD, &
             soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
             HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
@@ -1423,7 +1424,7 @@ CONTAINS
       Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
-      NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr_surf, emis, &
+      NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr_surf, tsfc_surf, emis, &
       alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &
       LAI_id, & !input
       alb_next, ldown, fcld, & !output
@@ -1469,6 +1470,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: alb
@@ -1558,8 +1560,11 @@ CONTAINS
          IF (Diagqn == 1) WRITE (*, *) 'NetRadiationMethodX:', NetRadiationMethod_use
          IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:', AlbedoChoice
 
+         ! TODO: TS 14 Feb 2022, ESTM development:
+         ! here we use uniform `tsurf_0` for all land covers, which should be distinguished in future developments
+
          CALL NARP( &
-            nsurf, sfr_surf, SnowFrac, alb, emis, IceFrac, & ! input:
+            nsurf, sfr_surf, tsfc_surf,SnowFrac, alb, emis, IceFrac, & ! input:
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
             dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
             SnowAlb, &
@@ -1613,9 +1618,9 @@ CONTAINS
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
       id, tstep, dt_since_start, Diagnose, &
       nroof, nwall, &
-      tsfc_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-      tsfc_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-      tsfc_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+      tsfc_roof, tin_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+      tsfc_wall, tin_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+      tsfc_surf, tin_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
       OHM_coef, OHM_threshSW, OHM_threshWD, &
       soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
@@ -1700,21 +1705,21 @@ CONTAINS
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: temp_in_roof
+      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: temp_in_wall
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
@@ -1816,18 +1821,18 @@ CONTAINS
          CALL ESTM_ext( &
             tstep, & !input
             nroof, nwall, &
-            tsfc_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-            tsfc_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-            tsfc_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+            tsfc_roof, tin_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tsfc_wall, tin_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tsfc_surf, tin_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
             temp_out_roof, QS_roof, & !output
             temp_out_wall, QS_wall, & !output
             temp_out_surf, QS_surf, & !output
             QS) !output
 
-            print *, 'QS after ESTM_ext', QS
-            print *, 'QS_roof after ESTM_ext', QS_roof
-            print *, 'QS_wall after ESTM_ext', QS_wall
-            print *, 'QS_surf after ESTM_ext', QS_surf
+         PRINT *, 'QS after ESTM_ext', QS
+         PRINT *, 'QS_roof after ESTM_ext', QS_roof
+         PRINT *, 'QS_wall after ESTM_ext', QS_wall
+         PRINT *, 'QS_surf after ESTM_ext', QS_surf
       END IF
 
    END SUBROUTINE SUEWS_cal_Qs
@@ -3086,7 +3091,7 @@ CONTAINS
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       sfr_roof, sfr_wall, sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
-      temp_in_roof, temp_in_wall, temp_in_surf, &
+      tin_roof, tin_wall, tin_surf, &
       k_wall, k_roof, k_surf, &
       cp_wall, cp_roof, cp_surf, &
       dz_wall, dz_roof, dz_surf, &
@@ -3343,21 +3348,21 @@ CONTAINS
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: temp_in_roof
+      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: temp_in_wall
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
@@ -3747,7 +3752,7 @@ CONTAINS
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
             sfr_roof, sfr_wall, sfr_surf, &
             tsfc_roof, tsfc_wall, tsfc_surf, &
-            temp_in_roof, temp_in_wall, temp_in_surf, &
+            tin_roof, tin_wall, tin_surf, &
             k_roof, k_wall, k_surf, &
             cp_roof, cp_wall, cp_surf, &
             dz_roof, dz_wall, dz_surf, &

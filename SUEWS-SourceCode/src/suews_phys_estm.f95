@@ -653,7 +653,7 @@ CONTAINS
          nroof, &
          sfr_roof, &
          tsfc_roof, &
-         temp_in_roof, &
+         tin_roof, &
          k_roof, &
          cp_roof, &
          dz_roof, &
@@ -663,11 +663,11 @@ CONTAINS
          cp_roof_grids, &
          dz_roof_grids, &
          tsfc_roof_grids, &
-         temp_in_roof_grids, &
+         tin_roof_grids, &
          nwall, &
          sfr_wall, &
          tsfc_wall, &
-         temp_in_wall, &
+         tin_wall, &
          k_wall, &
          cp_wall, &
          dz_wall, &
@@ -677,7 +677,7 @@ CONTAINS
          cp_wall_grids, &
          dz_wall_grids, &
          tsfc_wall_grids, &
-         temp_in_wall_grids
+         tin_wall_grids
       USE data_in, ONLY: FileInputPath
       USE strings, ONLY: writenum
       IMPLICIT NONE
@@ -767,7 +767,7 @@ CONTAINS
       sfr_roof_grids(gridIV, 1:nroof) = sfr_roof
       tsfc_roof_grids(gridIV, 1:nroof) = tsfc_roof
       DO i = 1, nroof
-         temp_in_roof_grids(gridIV, i, :) = tsfc_roof(i)
+         tin_roof_grids(gridIV, i, :) = tsfc_roof(i)
       END DO
       k_roof_grids(Gridiv, 1:nroof, 1:ndepth) = k_roof(1:nroof, 1:ndepth)
       cp_roof_grids(Gridiv, 1:nroof, 1:ndepth) = cp_roof(1:nroof, 1:ndepth)
@@ -775,12 +775,12 @@ CONTAINS
       ! PRINT *, 'dz_roof_grids in loading', dz_roof_grids(Gridiv, 1:nroof, 1:ndepth)
       ! PRINT *, 'dz_roof_grids(1,1) in loading', dz_roof_grids(Gridiv, 1, 1:ndepth)
       ! tsfc_roof_grids(gridIV) = tsfc_roof
-      ! temp_in_roof_grids(gridIV) = temp_in_roof
+      ! tin_roof_grids(gridIV) = tin_roof
       nwall_grids(gridIV) = nwall
       sfr_wall_grids(gridIV, 1:nwall) = sfr_wall
       tsfc_wall_grids(gridIV, 1:nwall) = tsfc_wall
       DO i = 1, nwall
-         temp_in_wall_grids(gridIV, i, :) = tsfc_wall(i)
+         tin_wall_grids(gridIV, i, :) = tsfc_wall(i)
       END DO
       k_wall_grids(gridIV, 1:nwall, 1:ndepth) = k_wall(1:nwall, 1:ndepth)
       cp_wall_grids(gridIV, 1:nwall, 1:ndepth) = cp_wall(1:nwall, 1:ndepth)
@@ -788,7 +788,7 @@ CONTAINS
       ! PRINT *, 'dz_wall_grids in loading', dz_wall_grids(Gridiv, 1:nwall, 1:ndepth)
       ! PRINT *, 'dz_wall_grids(1,1) in loading', dz_wall_grids(Gridiv, 1, 1:ndepth)
       ! tsfc_wall_grids(gridIV) = tsfc_wall
-      ! temp_in_wall_grids(gridIV) = temp_in_wall
+      ! tin_wall_grids(gridIV) = tin_wall
 
       DEALLOCATE (sfr_roof)
       DEALLOCATE (k_roof)
@@ -834,7 +834,7 @@ CONTAINS
       ALLOCATE (cp_roof_grids(NumberOfGrids, nroof_max, ndepth))
       ALLOCATE (dz_roof_grids(NumberOfGrids, nroof_max, ndepth))
       ALLOCATE (tsfc_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (temp_in_roof_grids(NumberOfGrids, nroof_max, ndepth))
+      ALLOCATE (tin_roof_grids(NumberOfGrids, nroof_max, ndepth))
 
       ! allocate wall variables
       ALLOCATE (nwall_grids(NumberOfGrids))
@@ -843,14 +843,14 @@ CONTAINS
       ALLOCATE (cp_wall_grids(NumberOfGrids, nwall_max, ndepth))
       ALLOCATE (dz_wall_grids(NumberOfGrids, nwall_max, ndepth))
       ALLOCATE (tsfc_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (temp_in_wall_grids(NumberOfGrids, nwall_max, ndepth))
+      ALLOCATE (tin_wall_grids(NumberOfGrids, nwall_max, ndepth))
 
       ! allocate surf variables
       ALLOCATE (k_surf_grids(NumberOfGrids, nsurf, ndepth))
       ALLOCATE (cp_surf_grids(NumberOfGrids, nsurf, ndepth))
       ALLOCATE (dz_surf_grids(NumberOfGrids, nsurf, ndepth))
       ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
-      ALLOCATE (temp_in_surf_grids(NumberOfGrids, nsurf, ndepth))
+      ALLOCATE (tin_surf_grids(NumberOfGrids, nsurf, ndepth))
 
       DO i_grid = 1, NumberOfGrids
          PRINT *, 'Reading layout data for grid ', i_grid
@@ -869,7 +869,7 @@ CONTAINS
       IF (ALLOCATED(cp_roof_grids)) DEALLOCATE (cp_roof_grids)
       IF (ALLOCATED(dz_roof_grids)) DEALLOCATE (dz_roof_grids)
       IF (ALLOCATED(tsfc_roof_grids)) DEALLOCATE (tsfc_roof_grids)
-      IF (ALLOCATED(temp_in_roof_grids)) DEALLOCATE (temp_in_roof_grids)
+      IF (ALLOCATED(tin_roof_grids)) DEALLOCATE (tin_roof_grids)
 
       IF (ALLOCATED(nwall_grids)) DEALLOCATE (nwall_grids)
       IF (ALLOCATED(sfr_wall_grids)) DEALLOCATE (sfr_wall_grids)
@@ -877,13 +877,13 @@ CONTAINS
       IF (ALLOCATED(cp_wall_grids)) DEALLOCATE (cp_wall_grids)
       IF (ALLOCATED(dz_wall_grids)) DEALLOCATE (dz_wall_grids)
       IF (ALLOCATED(tsfc_wall_grids)) DEALLOCATE (tsfc_wall_grids)
-      IF (ALLOCATED(temp_in_wall_grids)) DEALLOCATE (temp_in_wall_grids)
+      IF (ALLOCATED(tin_wall_grids)) DEALLOCATE (tin_wall_grids)
 
       IF (ALLOCATED(k_surf_grids)) DEALLOCATE (k_surf_grids)
       IF (ALLOCATED(cp_surf_grids)) DEALLOCATE (cp_surf_grids)
       IF (ALLOCATED(dz_surf_grids)) DEALLOCATE (dz_surf_grids)
       IF (ALLOCATED(tsfc_surf_grids)) DEALLOCATE (tsfc_surf_grids)
-      IF (ALLOCATED(temp_in_surf_grids)) DEALLOCATE (temp_in_surf_grids)
+      IF (ALLOCATED(tin_surf_grids)) DEALLOCATE (tin_surf_grids)
 
    END SUBROUTINE ESTM_ext_finalise
    !======================================================================================
@@ -1875,9 +1875,9 @@ CONTAINS
    SUBROUTINE ESTM_ext( &
       tstep, & !input
       nroof, nwall, &
-      tsfc_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-      tsfc_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-      tsfc_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+      tsfc_roof, tin_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+      tsfc_wall, tin_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+      tsfc_surf, tin_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
       temp_out_roof, QS_roof, & !output
       temp_out_wall, QS_wall, & !output
       temp_out_surf, QS_surf, & !output
@@ -1895,21 +1895,21 @@ CONTAINS
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: temp_in_roof
+      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: temp_in_wall
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
@@ -1932,7 +1932,7 @@ CONTAINS
       ! temporary arrays in calculations
       ! note: nsurf is used as the maximum number of surfaces
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_cal
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_in_cal
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_cal
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_cal
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_cal
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_cal
@@ -1963,10 +1963,10 @@ CONTAINS
          IF (i_group == 1) THEN
             nfacet = nroof
             ALLOCATE ( &
-               tsfc_cal(nfacet), temp_in_cal(nfacet, ndepth), k_cal(nfacet, ndepth), &
+               tsfc_cal(nfacet), tin_cal(nfacet, ndepth), k_cal(nfacet, ndepth), &
                cp_cal(nfacet, ndepth), dz_cal(nfacet, ndepth), qs_cal(nfacet))
             tsfc_cal(1:nfacet) = tsfc_roof(1:nfacet)
-            temp_in_cal(1:nfacet, 1:ndepth) = temp_in_roof(1:nfacet, 1:ndepth)
+            tin_cal(1:nfacet, 1:ndepth) = tin_roof(1:nfacet, 1:ndepth)
             k_cal(1:nfacet, 1:ndepth) = k_roof(1:nfacet, 1:ndepth)
             cp_cal(1:nfacet, 1:ndepth) = cp_roof(1:nfacet, 1:ndepth)
             dz_cal(1:nfacet, 1:ndepth) = dz_roof(1:nfacet, 1:ndepth)
@@ -1974,10 +1974,10 @@ CONTAINS
          ELSE IF (i_group == 2) THEN
             nfacet = nwall
             ALLOCATE ( &
-               tsfc_cal(nfacet), temp_in_cal(nfacet, ndepth), k_cal(nfacet, ndepth), &
+               tsfc_cal(nfacet), tin_cal(nfacet, ndepth), k_cal(nfacet, ndepth), &
                cp_cal(nfacet, ndepth), dz_cal(nfacet, ndepth), qs_cal(nfacet))
             tsfc_cal(1:nfacet) = tsfc_wall(1:nfacet)
-            temp_in_cal(1:nfacet, 1:ndepth) = temp_in_wall(1:nfacet, 1:ndepth)
+            tin_cal(1:nfacet, 1:ndepth) = tin_wall(1:nfacet, 1:ndepth)
             k_cal(1:nfacet, 1:ndepth) = k_wall(1:nfacet, 1:ndepth)
             cp_cal(1:nfacet, 1:ndepth) = cp_wall(1:nfacet, 1:ndepth)
             dz_cal(1:nfacet, 1:ndepth) = dz_wall(1:nfacet, 1:ndepth)
@@ -1985,10 +1985,10 @@ CONTAINS
          ELSE IF (i_group == 3) THEN
             nfacet = nsurf
             ALLOCATE ( &
-               tsfc_cal(nfacet), temp_in_cal(nfacet, ndepth), k_cal(nfacet, ndepth), &
+               tsfc_cal(nfacet), tin_cal(nfacet, ndepth), k_cal(nfacet, ndepth), &
                cp_cal(nfacet, ndepth), dz_cal(nfacet, ndepth), qs_cal(nfacet))
             tsfc_cal(1:nfacet) = tsfc_surf(1:nfacet)
-            temp_in_cal(1:nfacet, 1:ndepth) = temp_in_surf(1:nfacet, 1:ndepth)
+            tin_cal(1:nfacet, 1:ndepth) = tin_surf(1:nfacet, 1:ndepth)
             ! TODO: to update with actual values from input files
             ! k_cal(1:nfacet, 1:ndepth) = k_surf(1:nfacet, 1:ndepth)
             ! cp_cal(1:nfacet, 1:ndepth) = cp_surf(1:nfacet, 1:ndepth)
@@ -2000,7 +2000,7 @@ CONTAINS
          END IF
 
          ! todo: temporarily set this for testing
-         temp_in_cal = tsfc_cal(1)
+         tin_cal = tsfc_cal(1)
 
          PRINT *, 'nfacet: ', nfacet
          DO i_facet = 1, nfacet
@@ -2026,13 +2026,13 @@ CONTAINS
             IF (dz_cal(i_facet, 1) /= -999.0 .AND. use_heatcond1d) THEN
                ! temperatures at all interfaces, including the outmost surface
                ! temp_all_cal(1) = tsfc_cal(i_facet)
-               temp_all_cal = temp_in_cal(i_facet, :)
+               temp_all_cal = tin_cal(i_facet, :)
 
                ! outermost surface temperature
                bc(1) = tsfc_cal(i_facet)
 
                !TODO: should be a prescribed temperature of the innermost boundary
-               bc(2) = temp_in_cal(i_facet, ndepth)
+               bc(2) = tin_cal(i_facet, ndepth)
 
                ! 1D heat conduction for finite depth layers
                CALL heatcond1d( &
@@ -2046,20 +2046,20 @@ CONTAINS
                   bctype)
 
                ! update temperature at all inner interfaces
-               temp_in_cal(i_facet, :) = temp_all_cal(2:)
+               tin_cal(i_facet, :) = temp_all_cal(2:)
                tsfc_cal(i_facet) = temp_all_cal(1)
             END IF
 
             IF (dz_cal(i_facet, 1) /= -999.0 .AND. use_heatcond1d_water) THEN
                ! temperatures at all interfaces, including the outmost surface
                temp_all_cal(1) = tsfc_cal(i_facet)
-               temp_all_cal(2:) = temp_in_cal(i_facet, :)
+               temp_all_cal(2:) = tin_cal(i_facet, :)
 
                ! outermost surface temperature
                bc(1) = tsfc_cal(i_facet)
 
                !TODO: should be a prescribed temperature of the innermost boundary
-               bc(2) = temp_in_cal(i_facet, ndepth)
+               bc(2) = tin_cal(i_facet, ndepth)
 
                ! 1D heat conduction for finite depth layers
                ! TODO: this should be a water specific heat conduction solver: to implement
@@ -2074,7 +2074,7 @@ CONTAINS
                   bctype)
 
                ! update temperature at all inner interfaces
-               temp_in_cal(i_facet, :) = temp_all_cal(2:)
+               tin_cal(i_facet, :) = temp_all_cal(2:)
                tsfc_cal(i_facet) = temp_all_cal(1)
             END IF
 
@@ -2082,16 +2082,16 @@ CONTAINS
          ! translate results to back to the output arrays of facet groups
          IF (i_group == 1) THEN
             QS_roof = QS_cal(1:nfacet)
-            temp_out_roof = temp_in_cal(:nfacet, :)
+            temp_out_roof = tin_cal(:nfacet, :)
          ELSE IF (i_group == 2) THEN
             QS_wall = QS_cal(1:nfacet)
-            temp_out_wall = temp_in_cal(:nfacet, :)
+            temp_out_wall = tin_cal(:nfacet, :)
          ELSE IF (i_group == 3) THEN
             QS_surf = QS_cal(1:nfacet)
-            temp_out_surf = temp_in_cal(:nfacet, :)
+            temp_out_surf = tin_cal(:nfacet, :)
          END IF
          DEALLOCATE ( &
-            tsfc_cal, temp_in_cal, k_cal, &
+            tsfc_cal, tin_cal, k_cal, &
             cp_cal, dz_cal, qs_cal)
 
       END DO
@@ -2099,6 +2099,8 @@ CONTAINS
       ! aggregated results
       ! building surface
       QS_surf(BldgSurf) = DOT_PRODUCT(QS_roof, sfr_roof) + DOT_PRODUCT(QS_wall, sfr_wall)
+      ! TODO: TS 14 Feb 2022, ESTM development:
+      ! the building surface temperature should be aggregated based on longwave radiation
       DO i_depth = 1, ndepth
          temp_out_surf(BldgSurf, i_depth) = &
             DOT_PRODUCT(temp_out_roof(:, i_depth), sfr_roof) &
