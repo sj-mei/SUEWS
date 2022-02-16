@@ -299,7 +299,8 @@ PROGRAM SUEWS_Program
       dqnsdt_grids = 0 ! Initialise to 0
       ! ENDIF
       ! IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-      IF (.NOT. ALLOCATED(dataOutESTM)) ALLOCATE (dataOutESTM(ReadlinesMetdata, 32, NumberOfGrids)) !ESTM output
+      IF (.NOT. ALLOCATED(dataOutESTM)) ALLOCATE (dataOutESTM(ReadlinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)) !ESTM output
+      IF (.NOT. ALLOCATED(dataOutESTMExt)) ALLOCATE (dataOutESTMExt(ReadlinesMetdata, ncolumnsDataOutESTMExt, NumberOfGrids)) !ESTM output
       ! ENDIF
       ! ALLOCATE(TstepProfiles(NumberOfGrids,14,24*NSH))   !Hourly profiles interpolated to model timestep
       ! ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
@@ -617,6 +618,11 @@ PROGRAM SUEWS_Program
 
          DO ir = 1, irMax !Loop through rows of current block of met data
             GridCounter = 1 !Initialise counter for grids in each year
+            write(*,*) 'ir', ir, 'of', irMax
+            ! if ( ir>200 ) then
+            !    STOP 'testing finished'
+
+            ! end if
 
             DO igrid = 1, NumberOfGrids !Loop through grids
                IF (Diagnose == 1) WRITE (*, *) 'Row (ir):', ir, '/', irMax, 'of block (iblock):', iblock, '/', ReadBlocksMetData, &
@@ -703,6 +709,7 @@ PROGRAM SUEWS_Program
       DEALLOCATE (dataOutRSL)
       DEALLOCATE (dataOutDebug)
       DEALLOCATE (dataOutSPARTACUS)
+      DEALLOCATE (dataOutESTMExt)
       DEALLOCATE (dataOutBEERS)
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN

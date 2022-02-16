@@ -65,7 +65,7 @@ MODULE ctrl_output
    END TYPE varAttr
 
    ! initialise valist
-   TYPE(varAttr) :: varListAll(600)
+   TYPE(varAttr) :: varListAll(800)
 
    ! datetime:
    DATA(varListAll(n), n=1, 5)/ &
@@ -755,6 +755,42 @@ MODULE ctrl_output
       varAttr('LCAAbs14', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 14', aA, 'SPARTACUS', 0), &
       varAttr('LCAAbs15', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 15', aA, 'SPARTACUS', 0) &
       /
+   ! SPARTACUS info
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 &
+        + ncolumnsDataOutSnow - 5 &
+        + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + ncolumnsDataOutESTMExt - 5 &
+        )/ &
+      varAttr('Ts_Paved', 'degC', f104, 'surface temperature of paved surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_Bldgs', 'degC', f104, 'surface temperature of building surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_EveTr', 'degC', f104, 'surface temperature of evergreen tree surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_DecTr', 'degC', f104, 'surface temperature of deciduous tree surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_Grass', 'degC', f104, 'surface temperature of grass surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_BSoil', 'degC', f104, 'surface temperature of bare soil surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_Water', 'degC', f104, 'surface temperature of water surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts', 'degC', f104, 'bulk surface temperature', aA, 'ESTMExt', 0), &
+      varAttr('QS_Paved', 'W m-2', f104, 'storage heat flux of paved surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_Bldgs', 'W m-2', f104, 'storage heat flux of building surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_EveTr', 'W m-2', f104, 'storage heat flux of evergreen tree surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_DecTr', 'W m-2', f104, 'storage heat flux of deciduous tree surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_Grass', 'W m-2', f104, 'storage heat flux of grass surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_BSoil', 'W m-2', f104, 'storage heat flux of bare soil surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_Water', 'W m-2', f104, 'storage heat flux of water surface', aA, 'ESTMExt', 0), &
+      varAttr('QS', 'W m-2', f104, 'bulk storage heat flux', aA, 'ESTMExt', 0) &
+      /
 
 CONTAINS
    ! main wrapper that handles both txt and nc files
@@ -769,9 +805,9 @@ CONTAINS
 
       INTEGER :: n_group_use, err, outLevel, i
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE :: varListX
-      CHARACTER(len=10) :: groupList0(9)
+      CHARACTER(len=10) :: groupList0(10)
       CHARACTER(len=10), DIMENSION(:), ALLOCATABLE :: grpList
-      LOGICAL :: groupCond(9)
+      LOGICAL :: groupCond(10)
 
       ! determine outLevel
       SELECT CASE (WriteOutOption)
@@ -794,6 +830,7 @@ CONTAINS
       groupList0(7) = 'RSL'
       groupList0(8) = 'debug'
       groupList0(9) = 'SPARTACUS'
+      groupList0(10) = 'ESTMExt'
       groupCond = [ &
                   .TRUE., &
                   .TRUE., &
@@ -803,7 +840,8 @@ CONTAINS
                   .TRUE., &
                   .TRUE., &
                   .TRUE., &
-                  .TRUE. &
+                  .TRUE., &
+                  StorageHeatMethod == 5&
                   ]
       n_group_use = COUNT(groupCond)
 
@@ -842,7 +880,6 @@ CONTAINS
             END IF
          ELSE
             !  DailyState array, which does not need aggregation
-
             CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
 
          END IF
@@ -862,42 +899,53 @@ CONTAINS
       INTEGER, INTENT(in) :: iv, irMax, iyr, Gridiv, outLevel, outFreq_s
 
       INTEGER :: err
+      INTEGER :: n_var
+
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: id_seq ! id sequence as in the dataOutX/dataOutX_agg
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutX
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutX_agg
 
+      ! number of varialbes for output
+      n_var=SIZE(varListX)
+
       IF (.NOT. ALLOCATED(dataOutX)) THEN
-         ALLOCATE (dataOutX(irMax, SIZE(varListX)), stat=err)
+         ALLOCATE (dataOutX(irMax, n_var), stat=err)
          IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
       END IF
 
       ! determine dataOutX array according to variable group
-      SELECT CASE (TRIM(varListX(SIZE(varListX))%group))
+      SELECT CASE (TRIM(varListX(n_var)%group))
       CASE ('SUEWS') !default
-         dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutSUEWS(1:irMax, 1:n_var, Gridiv)
 
       CASE ('BEERS') !SOLWEIG
-         dataOutX = dataOutBEERS(1:irMax, 1:SIZE(varListX), Gridiv)
-         ! dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutBEERS(1:irMax, 1:n_var, Gridiv)
+         ! dataOutX = dataOutSOLWEIG(1:irMax, 1:n_var, Gridiv)
 
       CASE ('BL') !BL
-         dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutBL(1:irMax, 1:n_var, Gridiv)
 
       CASE ('snow') !snow
-         dataOutX = dataOutSnow(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutSnow(1:irMax, 1:n_var, Gridiv)
 
       CASE ('ESTM') !ESTM
-         dataOutX = dataOutESTM(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutESTM(1:irMax, 1:n_var, Gridiv)
 
       CASE ('RSL') !RSL
-         dataOutX = dataOutRSL(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutRSL(1:irMax, 1:n_var, Gridiv)
 
       CASE ('debug') !debug
-         dataOutX = dataOutDebug(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutDebug(1:irMax, 1:n_var, Gridiv)
 
       CASE ('SPARTACUS') !SPARTACUS
-         dataOutX = dataOutSPARTACUS(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutSPARTACUS(1:irMax, 1:n_var, Gridiv)
+
+      CASE ('ESTMExt') !ESTMExt
+         dataOutX = dataOutESTMExt(1:irMax, 1:n_var, Gridiv)
+         if (dataOutESTMExt(1,1,1) == 2005) then
+            print*, 'first several dataOutESTMExt',dataOutESTMExt(1,1:10,1)
+         endif
 
       CASE ('DailyState') !DailyState
          ! get correct day index
@@ -912,11 +960,11 @@ CONTAINS
          END IF
 
          IF (.NOT. ALLOCATED(dataOutX)) THEN
-            ALLOCATE (dataOutX(SIZE(id_seq), SIZE(varListX)), stat=err)
+            ALLOCATE (dataOutX(SIZE(id_seq), n_var), stat=err)
             IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
          END IF
 
-         dataOutX = dataOutDailyState(id_seq, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutDailyState(id_seq, 1:n_var, Gridiv)
          ! print*, id_seq
          ! print*, dataOutDailyState(id_seq,1:SIZE(varListX),Gridiv)
          ! print*, 1/(nsh-nsh)
@@ -1195,6 +1243,10 @@ CONTAINS
       ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
       ! print*, irMax,shape(dataOutX)
       dataOutSel = dataOutX(:, PACK((/(i, i=1, SIZE(varList%level))/), varList%level <= outLevel))
+      ! do i = 1, 5
+      !    print*, 'first several lines of dataOutX:', i, dataOutX(i,:)
+
+      ! end do
 
       ! create format string:
       DO i = 1, sizeVarListSel
@@ -1229,8 +1281,8 @@ CONTAINS
       fn = 50
       OPEN (fn, file=TRIM(FileOutX), position='append') !,err=112)
       DO i = 1, sizedataOutX
-         ! PRINT*, 'Writting',i
-         ! PRINT*, 'FormatOut',FormatOut
+         ! PRINT*, 'Writting line',i
+         ! PRINT*, 'FormatOut in writing',FormatOut
          ! PRINT*, dataOutSel(i,1:sizeVarListSel)
          WRITE (fn, FormatOut) &
             (INT(dataOutSel(i, xx)), xx=1, 4), &

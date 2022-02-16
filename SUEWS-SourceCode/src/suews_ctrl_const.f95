@@ -27,6 +27,31 @@ MODULE allocateArray
 ! #endif
    INTEGER, PARAMETER :: MaxLinesMet = 8640 !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
+   ! ---- Surface types ---------------------------------------------------------------------------
+   INTEGER, PARAMETER :: nsurf = 7 !Total number of surfaces
+   INTEGER, PARAMETER :: NVegSurf = 3 !Number of surfaces that are vegetated
+   INTEGER, PARAMETER :: nsurfIncSnow = nsurf + 1 !Number of surfaces + snow
+   ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_roof_grid !Number of extra roof facets (e.g., green roofs, etc.)
+   ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_wall_grid !Number of extra building facets (e.g., green walls, etc.)
+   INTEGER, PARAMETER :: ndepth = 5 !Number of depth levels for facets
+   INTEGER, PARAMETER :: nroof_max = 5 !max Number of allowed roof types
+   INTEGER, PARAMETER :: nwall_max = 100 !max Number of allowed roof types
+
+   INTEGER, PARAMETER :: PavSurf = 1, & !When all surfaces considered together (1-7)
+                         BldgSurf = 2, &
+                         ConifSurf = 3, &
+                         DecidSurf = 4, &
+                         GrassSurf = 5, & !New surface classes: Grass = 5th/7 surfaces
+                         BSoilSurf = 6, & !New surface classes: Bare soil = 6th/7 surfaces
+                         WaterSurf = 7, &
+                         ExcessSurf = 8, & !Runoff or subsurface soil in WGWaterDist
+                         NSurfDoNotReceiveDrainage = 0, & !Number of surfaces that do not receive drainage water (green roof)
+                         ivConif = 1, & !When only vegetated surfaces considered (1-3)
+                         ivDecid = 2, &
+                         ivGrass = 3
+
+   REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
+
    ! ---- Set number of columns in input files ----------------------------------------------------
    INTEGER, PARAMETER :: ncolumnsSiteSelect = 105 !SUEWS_SiteSelect.txt
    INTEGER, PARAMETER :: ncolumnsNonVeg = 24 !SUEWS_NonVeg.txt
@@ -51,7 +76,13 @@ MODULE allocateArray
                          ncolumnsdataOutSOLWEIG = 31, &
                          ncolumnsDataOutBEERS = 34, &
                          ncolumnsdataOutBL = 22, &
-                         ncolumnsDataOutESTM = 32, &
+                         ncolumnsDataOutESTM = 5 + 27, &
+                         ncolumnsDataOutESTMExt = 5 &
+                        !  + nroof_max*ndepth & ! roof
+                        !  + nwall_max*ndepth & ! wall
+                        !  + nsurf*ndepth & ! surface
+                        !  + nroof_max + nwall_max + nsurf & ! heat fluxes
+                         + nsurf*2+ 2, & !bulk heat flux and surface temperature
                          ncolumnsDataOutDailyState = 50, &
                          ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                          ncolumnsDataOutDebug = 5 + 24, &
@@ -130,6 +161,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSPARTACUS !SPARTACUS output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSnow !Main data output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTM !ESTM output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTMExt !ESTM output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutDailyState !DailyState output array
 
    ! -------- output per each timestep ----------------------------------------------------------------
@@ -170,7 +202,10 @@ MODULE allocateArray
    REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:, :) :: Ts5mindata !surface temperature input data
    REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:) :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
    REAL(KIND(1D0)), ALLOCATABLE, DIMENSION(:) :: Tair24HR
-   REAL(KIND(1D0)), DIMENSION(27) :: dataOutLineESTM !ESTM output for the current timestep and grid
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM !ESTM output for the current timestep and grid
+
+   ! ---- For ESTM_ext
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt !ESTM output for the current timestep and grid
 
    ! Column numbers for TstepProfiles
    INTEGER :: cTP_EnUseWD = 1, &
@@ -188,31 +223,6 @@ MODULE allocateArray
               cTP_PopProfWD = 13, &
               cTP_PopProfWE = 14
    !-----------------------------------------------------------------------------------------------
-
-   ! ---- Surface types ---------------------------------------------------------------------------
-   INTEGER, PARAMETER :: nsurf = 7 !Total number of surfaces
-   INTEGER, PARAMETER :: NVegSurf = 3 !Number of surfaces that are vegetated
-   INTEGER, PARAMETER :: nsurfIncSnow = nsurf + 1 !Number of surfaces + snow
-   ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_roof_grid !Number of extra roof facets (e.g., green roofs, etc.)
-   ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_wall_grid !Number of extra building facets (e.g., green walls, etc.)
-   INTEGER, PARAMETER :: ndepth = 5 !Number of depth levels for facets
-   INTEGER, PARAMETER :: nroof_max = 5 !max Number of allowed roof types
-   INTEGER, PARAMETER :: nwall_max = 100 !max Number of allowed roof types
-
-   INTEGER, PARAMETER :: PavSurf = 1, & !When all surfaces considered together (1-7)
-                         BldgSurf = 2, &
-                         ConifSurf = 3, &
-                         DecidSurf = 4, &
-                         GrassSurf = 5, & !New surface classes: Grass = 5th/7 surfaces
-                         BSoilSurf = 6, & !New surface classes: Bare soil = 6th/7 surfaces
-                         WaterSurf = 7, &
-                         ExcessSurf = 8, & !Runoff or subsurface soil in WGWaterDist
-                         NSurfDoNotReceiveDrainage = 0, & !Number of surfaces that do not receive drainage water (green roof)
-                         ivConif = 1, & !When only vegetated surfaces considered (1-3)
-                         ivDecid = 2, &
-                         ivGrass = 3
-
-   REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
 
    ! ---- Water balance for each surface  ---------------------------------------------------------
    !These variables are expressed as depths [mm] over each surface(is); the depth therefore varies with sfr_surf(is)
@@ -483,16 +493,16 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof
-   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_roof
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof
    ! larger container arrays for different grids
    INTEGER, DIMENSION(:), ALLOCATABLE :: nroof_grids !Number of roof_grids facets
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_roof_grids
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_roof_grids
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: tin_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_roof_grids
 
    ! wall
    INTEGER :: nwall !Number of wall facets
@@ -500,15 +510,15 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall
-   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_wall
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall
    INTEGER, DIMENSION(:), ALLOCATABLE :: nwall_grids !Number of wall_grids facets
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_wall_grids
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_wall_grids
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: tin_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_wall_grids
 
    ! standard suews surfaces
    ! INTEGER :: nsurf !Number of surf facets
@@ -516,15 +526,15 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf
-   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_surf
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_surf
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf
    ! INTEGER :: nsurf_grids !Number of surf_grids facets
    ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_surf_grids
-   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_surf_grids
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: tin_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_surf_grids
    !-----------------------------------------------------------------------------------------------
 
    !------------------- ESTM_ext variables for heterogeneous  facets---------------------------------------------------------

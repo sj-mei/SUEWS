@@ -672,6 +672,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       END DO
    END IF ! ESTM related translation finished here.
 
+
    ! ---- AnOHM related ------------------------------
    IF (StorageHeatMethod == 3) THEN
       cpAnOHM(1:nsurf) = SurfaceChar(Gridiv, c_cpAnOHM) ! AnOHM TS
@@ -735,16 +736,16 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ALLOCATE (k_roof(nroof, ndepth))
    ALLOCATE (cp_roof(nroof, ndepth))
    ALLOCATE (dz_roof(nroof, ndepth))
-   ALLOCATE (tsfc_roof(nroof))
-   ALLOCATE (tin_roof(nroof,ndepth))
+   ALLOCATE (tin_roof(nroof))
+   ALLOCATE (temp_roof(nroof, ndepth))
 
-
+   sfr_roof = sfr_roof_grids(Gridiv, :)
    k_roof(1:nroof, 1:ndepth) = k_roof_grids(Gridiv, 1:nroof, 1:ndepth)
    dz_roof(1:nroof, 1:ndepth) = dz_roof_grids(Gridiv, 1:nroof, 1:ndepth)
    ! PRINT *, 'dz_roof in translate:', dz_roof(1:nroof, 1:ndepth)
    cp_roof(1:nroof, 1:ndepth) = cp_roof_grids(Gridiv, 1:nroof, 1:ndepth)
-   tsfc_roof(:nroof) = tsfc_roof_grids(Gridiv, :nroof)
-   tin_roof(1:nroof, 1:ndepth) = tin_roof_grids(Gridiv, 1:nroof, 1:ndepth)
+   tin_roof(1:nroof) = tin_roof_grids(Gridiv, 1:nroof)
+   temp_roof(1:nroof, 1:ndepth) = temp_roof_grids(Gridiv, 1:nroof, 1:ndepth)
 
    ! wall
    nwall = nwall_grids(Gridiv)
@@ -752,14 +753,16 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ALLOCATE (k_wall(nwall, ndepth))
    ALLOCATE (cp_wall(nwall, ndepth))
    ALLOCATE (dz_wall(nwall, ndepth))
-   ALLOCATE (tsfc_wall(nwall))
-   ALLOCATE (tin_wall(nwall,ndepth))
+   ALLOCATE (tin_wall(nwall))
+   ALLOCATE (temp_wall(nwall, ndepth))
+
+   sfr_wall = sfr_wall_grids(Gridiv, :)
    k_wall(1:nwall, 1:ndepth) = k_wall_grids(Gridiv, 1:nwall, 1:ndepth)
    dz_wall(1:nwall, 1:ndepth) = dz_wall_grids(Gridiv, 1:nwall, 1:ndepth)
    ! PRINT *, 'dz_wall in translate:', dz_wall(1:nwall, 1:ndepth)
    cp_wall(1:nwall, 1:ndepth) = cp_wall_grids(Gridiv, 1:nwall, 1:ndepth)
-   tsfc_wall(1:nwall) = tsfc_wall_grids(Gridiv, 1:nwall)
-   tin_wall(1:nwall, 1:ndepth) = tin_wall_grids(Gridiv, 1:nwall, 1:ndepth)
+   tin_wall(1:nwall) = tin_wall_grids(Gridiv, 1:nwall)
+   temp_wall(1:nwall, 1:ndepth) = temp_wall_grids(Gridiv, 1:nwall, 1:ndepth)
 
    ! TODO: these need to be updated
    ! standard suews surfaces
@@ -768,15 +771,15 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ! PRINT *, 'dz_surf in translate:', dz_surf(1:nsurf, 1:ndepth)
    ! cp_surf(1:nsurf, 1:ndepth) = cp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
 
-   if ( ir==0 ) then
-      ! TODO: to update
-      tsfc_surf_grids(Gridiv, 1:nsurf)=280.0
-      tin_surf_grids(Gridiv, 1:nsurf, 1:ndepth)=280.0
-   end if
-   ALLOCATE (tsfc_surf(nsurf))
-   ALLOCATE (tin_surf(nsurf,ndepth))
-   tsfc_surf(1:nsurf) = tsfc_surf_grids(Gridiv, 1:nsurf)
-   tin_surf(1:nsurf, 1:ndepth) = tin_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
+   ! IF (ir == 0) THEN
+   !    ! TODO: ESTM coupling work
+   !    ! tsfc_surf_grids(Gridiv, 1:nsurf) = 10
+   !    temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth) = 10.0 - 6.0
+   ! END IF
+   ALLOCATE (tin_surf(nsurf))
+   ALLOCATE (temp_surf(nsurf, ndepth))
+   tin_surf(1:nsurf) = tin_surf_grids(Gridiv, 1:nsurf)
+   temp_surf(1:nsurf, 1:ndepth) = temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
 
    ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
    BaseT_HC = -999 ! Initialise QF coeffs
@@ -1662,14 +1665,14 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! dz_roof(1:nroof, 1:ndepth) = dz_roof_grids(Gridiv, 1:nroof, 1:ndepth)
    ! PRINT *, 'dz_roof in translate:', dz_roof(1:nroof, 1:ndepth)
    ! cp_roof(1:nroof, 1:ndepth) = cp_roof_grids(Gridiv, 1:nroof, 1:ndepth)
-   tsfc_roof_grids(Gridiv, :nroof) = tsfc_roof(:nroof)
-   tin_roof_grids(Gridiv, 1:nroof, 1:ndepth) = tin_roof(1:nroof, 1:ndepth)
+
+   temp_roof_grids(Gridiv, 1:nroof, 1:ndepth) = temp_roof(1:nroof, 1:ndepth)
    DEALLOCATE (sfr_roof)
+   DEALLOCATE (tin_roof)
    DEALLOCATE (k_roof)
    DEALLOCATE (cp_roof)
    DEALLOCATE (dz_roof)
-   DEALLOCATE (tsfc_roof)
-   DEALLOCATE (tin_roof)
+   DEALLOCATE (temp_roof)
 
    ! wall
    ! nwall = nwall_grids(Gridiv)
@@ -1682,21 +1685,21 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! dz_wall(1:nwall, 1:ndepth) = dz_wall_grids(Gridiv, 1:nwall, 1:ndepth)
    ! PRINT *, 'dz_wall in translate:', dz_wall(1:nwall, 1:ndepth)
    ! cp_wall(1:nwall, 1:ndepth) = cp_wall_grids(Gridiv, 1:nwall, 1:ndepth)
-   tsfc_wall_grids(Gridiv, 1:nwall) = tsfc_wall(1:nwall)
-   tin_wall_grids(Gridiv, 1:nwall, 1:ndepth) = tin_wall(1:nwall, 1:ndepth)
+   ! tsfc_wall_grids(Gridiv, 1:nwall) = tsfc_wall(1:nwall)
+   temp_wall_grids(Gridiv, 1:nwall, 1:ndepth) = temp_wall(1:nwall, 1:ndepth)
 
    DEALLOCATE (sfr_wall)
    DEALLOCATE (k_wall)
    DEALLOCATE (cp_wall)
    DEALLOCATE (dz_wall)
-   DEALLOCATE (tsfc_wall)
    DEALLOCATE (tin_wall)
+   DEALLOCATE (temp_wall)
 
    ! surf
-   tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
-   tin_surf_grids(Gridiv, 1:nsurf, 1:ndepth) = tin_surf(1:nsurf, 1:ndepth)
-   DEALLOCATE (tsfc_surf)
+   ! tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
+   temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth) = temp_surf(1:nsurf, 1:ndepth)
    DEALLOCATE (tin_surf)
+   DEALLOCATE (temp_surf)
 
    ! =============================================================================
    ! === Translate values from variable names used in model to ModelOutputData ===

@@ -82,12 +82,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataoutlineestm, dataoutlineRSL, dataOutLineBEERS, &
       dataOutLineDebug, dataOutLineDebug, dataOutLineSPARTACUS, &
       dailystateline, dataoutdailystate, &
-      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, &
-      dataoutBL, dataOutDebug, dataOutSPARTACUS, &
+      dataoutsuews, dataoutsnow, dataoutestm, dataOutESTMExt, dataoutRSL, dataOutBEERS, &
+      dataoutBL, dataOutDebug, dataOutSPARTACUS, dataOutLineESTMExt, &
       nroof, nwall, &
       sfr_roof, sfr_wall, sfr_surf, &
-      tsfc_roof, tsfc_wall, tsfc_surf, &
       tin_roof, tin_wall, tin_surf, &
+      temp_roof, temp_wall, temp_surf, &
       k_roof, k_wall, k_surf, &
       cp_roof, cp_wall, cp_surf, &
       dz_roof, dz_wall, dz_surf
@@ -180,7 +180,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       sfr_roof, sfr_wall, sfr_surf, &
-      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_roof, temp_wall, temp_surf, &
       tin_roof, tin_wall, tin_surf, &
       k_roof, k_wall, k_surf, &
       cp_roof, cp_wall, cp_surf, &
@@ -192,6 +192,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
       dataOutLineBEERS, & !output
       dataOutLineDebug, dataOutLineSPARTACUS, &
+      dataOutLineESTMExt, &
       DailyStateLine) !output
 
    !============ update and write out SUEWS_cal_DailyState ===============
@@ -204,13 +205,17 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
    !============ write out results ===============
    ! works at each timestep
+   ! print *, 'writing out results',dataOutLineESTMExt
+   ! PRINT *, '=====writing out results====='
    CALL SUEWS_update_output( &
       SnowUse, storageheatmethod, & !input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, & !input
-      dataOutLineDebug, dataOutLineSPARTACUS, &
+      dataOutLineDebug, dataOutLineSPARTACUS, dataOutLineESTMExt, &
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, & !inout
-      dataOutDebug, dataOutSPARTACUS) !inout
+      dataOutDebug, dataOutSPARTACUS, dataOutESTMExt) !inout
+
+
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018

@@ -225,6 +225,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: albedo_snowfree
       REAL(KIND(1D0)), INTENT(out) :: albedo_snow
 
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf_K
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind
       REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind
@@ -256,6 +257,7 @@ CONTAINS
       ! RH=avrh
       ! DTIME=dectime
       ! KDOWN=avkdn
+      tsfc_surf_K = tsfc_surf + 273.16
       tsurf_0_K = tsurf_0 + 273.16
       Temp_K = Temp_C + 273.16
       SIGMATK4 = SIGMA_SB*Temp_K**4
@@ -382,6 +384,7 @@ CONTAINS
          ELSE
             ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
             TSURF = tsurf_0_K
+            ! TSURF = tsfc_surf_K(is)
             LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
          END IF
 

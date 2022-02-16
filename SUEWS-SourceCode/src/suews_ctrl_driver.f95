@@ -36,7 +36,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
-      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutESTMExt
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main
@@ -88,7 +88,7 @@ CONTAINS
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       sfr_roof, sfr_wall, sfr_surf, &
-      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_roof, temp_wall, temp_surf, &
       tin_roof, tin_wall, tin_surf, &
       k_roof, k_wall, k_surf, &
       cp_roof, cp_wall, cp_surf, &
@@ -100,6 +100,7 @@ CONTAINS
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
       dataOutLineBEERS, & !output
       dataOutLineDebug, dataOutLineSPARTACUS, &
+      dataOutLineESTMExt, &
       DailyStateLine) !output
 
       IMPLICIT NONE
@@ -344,6 +345,12 @@ CONTAINS
 
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av
+
+      ! ESTM_ext related:
+      REAL(KIND(1D0)), DIMENSION(Nroof, ndepth), INTENT(INOUT) :: temp_roof
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(INOUT) :: temp_wall
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(INOUT) :: temp_surf
+
       ! ########################################################################################
 
       ! ########################################################################################
@@ -352,7 +359,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(OUT) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT) :: dataoutLineRSL ! RSL variable array
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(OUT) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
@@ -598,23 +606,25 @@ CONTAINS
       ! ########################################################################################
       !  ! extended for ESTM_ext, TS 20 Jan 2022
       ! input arrays: standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tsfc_roof
-      REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nroof) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nroof),INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nroof) :: sfr_roof
+      REAL(KIND(1D0)), DIMENSION(nroof, ndepth) :: temp_in_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nwall) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nwall),INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth) :: temp_in_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
-      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf),INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_in_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
@@ -671,6 +681,16 @@ CONTAINS
       HDD_id_prev = HDD_id
       WUDay_id_prev = WUDay_id
 
+      ! ESTM_ext related
+      ! save initial values of inout variables
+      temp_in_roof = temp_roof
+      temp_in_wall = temp_wall
+      temp_in_surf = temp_surf
+      ! initialise indoor/bottom boundary temperature arrays
+      ! tin_roof = 10.
+      ! tin_wall = 10.
+      ! tin_surf = 3.
+
       ! initialise  variables
       qn_av_next = qn1_av
       dqndt_next = dqndt
@@ -702,17 +722,33 @@ CONTAINS
       HDD_id_next = HDD_id
       WUDay_id_next = WUDay_id
 
+      ! initialise output variables
+      dataOutLineSnow = -999.
+      dataOutLineESTM = -999.
+      dataOutLineESTMExt = -999.
+      dataoutLineRSL = -999.
+      dataOutLineBEERS = -999.
+      dataOutLineDebug = -999.
+      dataOutLineSPARTACUS = -999.
+      DailyStateLine = -999.
+
       !########################################################################################
       !           main calculation starts here
       !########################################################################################
 
       ! iteration is used below to get results converge
       flag_converge = .FALSE.
-      ! Ts_iter = TEMP_C
-      Ts_iter = DOT_PRODUCT(tsfc_surf, sfr_surf)
+      Ts_iter = TEMP_C
+
+      ! TODO: ESTM work: to allow heterogeneous surface temperatures
+      tsfc_surf = Ts_iter
+      tsfc_roof = tsfc_surf(BldgSurf)
+      tsfc_wall = tsfc_surf(BldgSurf)
+      PRINT *, 'before iteration Ts_iter = ', Ts_iter
       ! L_mod_iter = 10
       i_iter = 1
       DO WHILE ((.NOT. flag_converge) .AND. i_iter < 100)
+         PRINT *, 'Ts_iter of ', i_iter, ' is:', Ts_iter
 
          ! calculate dectime
          CALL SUEWS_cal_dectime( &
@@ -861,13 +897,15 @@ CONTAINS
          ! ASSOCIATE (v => dz_wall(1, 1:ndepth))
          !    PRINT *, 'dz_wall in driver', v, SIZE(v)
          ! END ASSOCIATE
+
+         ! PRINT *, 'temp_in_surf before cal_qs', temp_in_surf(3, :)
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
             id, tstep, dt_since_start, Diagnose, &
             nroof, nwall, &
-            tsfc_roof, tin_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-            tsfc_wall, tin_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-            tsfc_surf, tin_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+            tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
             OHM_coef, OHM_threshSW, OHM_threshWD, &
             soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
             HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
@@ -881,6 +919,13 @@ CONTAINS
             temp_out_roof, QS_roof, & !output
             temp_out_wall, QS_wall, & !output
             temp_out_surf, QS_surf) !output
+
+         ! update iteration variables
+         temp_in_roof = temp_out_roof
+         temp_in_wall = temp_out_wall
+         temp_in_surf = temp_out_surf
+         ! PRINT *, 'temp_out_surf after cal_qs', temp_out_surf(3, :)
+         ! Ts_iter = DOT_PRODUCT(temp_out_surf(:, 1), sfr_surf)
 
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -1017,7 +1062,11 @@ CONTAINS
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
+            PRINT *, 'Iteration done in', i_iter, ' iterations'
+            PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
          END IF
+         PRINT *, '========================='
+         PRINT *, ''
 
          ! ! force quit do-while loop if not convergent after 100 iterations
          ! if (i_iter > 100) exit
@@ -1087,6 +1136,11 @@ CONTAINS
       lenday_id = lenday_id_next
       HDD_id = HDD_id_next
       WUDay_id = WUDay_id_next
+
+      ! ESTM_ext related
+      temp_roof = temp_out_roof
+      temp_wall = temp_out_wall
+      temp_surf = temp_out_surf
 
       !==============use SOLWEIG to get localised radiation flux==================
       ! if (sfr_surf(BldgSurf) > 0) then
@@ -1174,6 +1228,15 @@ CONTAINS
                               wall_net_lw_spc, &
                               clear_air_abs_lw_spc &
                               ]
+      ! write out ESTM_ext output
+      ! dataoutlineESTMExt=-999
+      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
+      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
+      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
+
+      dataoutlineESTMExt = [tsfc_surf, TSfc_C, & !output
+                            qs_surf, QS]
+      ! PRINT *, 'dataoutlineESTMExt = ', dataoutlineESTMExt
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -1564,7 +1627,7 @@ CONTAINS
          ! here we use uniform `tsurf_0` for all land covers, which should be distinguished in future developments
 
          CALL NARP( &
-            nsurf, sfr_surf, tsfc_surf,SnowFrac, alb, emis, IceFrac, & ! input:
+            nsurf, sfr_surf, tsfc_surf, SnowFrac, alb, emis, IceFrac, & ! input:
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
             dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
             SnowAlb, &
@@ -1573,6 +1636,7 @@ CONTAINS
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
 
          IF (NetRadiationMethod > 1000) THEN
+            ! TODO: TS 14 Feb 2022, ESTM development: introduce facet surface temperatures
             CALL SPARTACUS( &
                sfr_surf, zenith_deg, tsurf_0, avKdn, ldown, temp_c, alb, emis, LAI_id, & !input
                alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output
@@ -1618,9 +1682,9 @@ CONTAINS
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
       id, tstep, dt_since_start, Diagnose, &
       nroof, nwall, &
-      tsfc_roof, tin_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-      tsfc_wall, tin_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-      tsfc_surf, tin_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+      tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+      tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+      tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
       OHM_coef, OHM_threshSW, OHM_threshWD, &
       soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
@@ -1704,22 +1768,25 @@ CONTAINS
       ! extended for ESTM_ext
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: temp_in_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: temp_in_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
@@ -1821,9 +1888,9 @@ CONTAINS
          CALL ESTM_ext( &
             tstep, & !input
             nroof, nwall, &
-            tsfc_roof, tin_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-            tsfc_wall, tin_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-            tsfc_surf, tin_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+            tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
             temp_out_roof, QS_roof, & !output
             temp_out_wall, QS_wall, & !output
             temp_out_surf, QS_surf, & !output
@@ -1833,6 +1900,8 @@ CONTAINS
          PRINT *, 'QS_roof after ESTM_ext', QS_roof
          PRINT *, 'QS_wall after ESTM_ext', QS_wall
          PRINT *, 'QS_surf after ESTM_ext', QS_surf
+         PRINT *, '------------------------------------'
+         PRINT *, ''
       END IF
 
    END SUBROUTINE SUEWS_cal_Qs
@@ -2693,8 +2762,9 @@ CONTAINS
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
-      dataoutlineDebug, dataoutlineSPARTACUS, & !input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS) !inout
+      dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineESTMExt, & !input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS, &
+      dataOutESTMExt) !inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: ReadLinesMetdata
@@ -2707,6 +2777,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(5), INTENT(in) :: datetimeLine
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(in) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(in) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(in) :: dataOutLineESTMExt
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(in) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS - 5), INTENT(in) :: dataOutLineBEERS
@@ -2716,6 +2787,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutESTM(ReadLinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutESTMExt(ReadLinesMetdata, ncolumnsDataOutESTMExt, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
@@ -2739,6 +2811,10 @@ CONTAINS
 
       IF (storageheatmethod == 4) THEN
          dataOutESTM(ir, 1:ncolumnsDataOutESTM, Gridiv) = [datetimeLine, set_nan(dataOutLineESTM)]
+      END IF
+
+      IF (storageheatmethod == 5) THEN
+         dataOutESTMExt(ir, 1:ncolumnsDataOutESTMExt, Gridiv) = [datetimeLine, set_nan(dataOutLineESTMExt)]
       END IF
 
       !====================update output arrays end==============================
@@ -3090,7 +3166,7 @@ CONTAINS
       BaseT_Cooling, BaseT_Heating, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       sfr_roof, sfr_wall, sfr_surf, &
-      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_roof, temp_wall, temp_surf, &
       tin_roof, tin_wall, tin_surf, &
       k_wall, k_roof, k_surf, &
       cp_wall, cp_roof, cp_surf, &
@@ -3101,7 +3177,7 @@ CONTAINS
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, & !output
-      dataOutBlockDebug, dataOutBlockSPARTACUS, &
+      dataOutBlockDebug, dataOutBlockSPARTACUS, dataOutBlockESTMExt, &
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -3346,23 +3422,25 @@ CONTAINS
 
       !  ! extended for ESTM_ext, TS 20 Jan 2022
       ! input arrays: standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tsfc_roof
+      ! REAL(KIND(1D0)), DIMENSION(nroof) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(inout) :: temp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tsfc_wall
+      ! REAL(KIND(1D0)), DIMENSION(nwall) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(inout) :: temp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
-      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: tin_surf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(inout) :: temp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
@@ -3374,6 +3452,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS), INTENT(OUT) :: dataOutBlockSUEWS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) :: dataOutBlockSnow
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) :: dataOutBlockESTM
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt), INTENT(OUT) :: dataOutBlockESTMExt
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) :: dataOutBlockRSL
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS), INTENT(OUT) :: dataOutBlockBEERS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug), INTENT(OUT) :: dataOutBlockDebug
@@ -3421,6 +3500,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataOutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) :: dataOutLineSOLWEIG
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
@@ -3431,6 +3511,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) :: dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) :: dataOutBlockSnow_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) :: dataOutBlockESTM_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt, 1) :: dataOutBlockESTMExt_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) :: dataOutBlockRSL_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS, 1) :: dataOutBlockBEERS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) :: dataOutBlockDebug_X
@@ -3751,7 +3832,7 @@ CONTAINS
             BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
             sfr_roof, sfr_wall, sfr_surf, &
-            tsfc_roof, tsfc_wall, tsfc_surf, &
+            temp_roof, temp_wall, temp_surf, &
             tin_roof, tin_wall, tin_surf, &
             k_roof, k_wall, k_surf, &
             cp_roof, cp_wall, cp_surf, &
@@ -3763,6 +3844,7 @@ CONTAINS
             datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
             dataOutLineBEERS, & !output
             dataOutLineDebug, dataOutLineSPARTACUS, &
+            dataOutLineESTMExt, &
             DailyStateLine) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -3777,15 +3859,16 @@ CONTAINS
             SnowUse, storageheatmethod, & !input
             len_sim, 1, &
             ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, & !input
-            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, dataOutLineSPARTACUS, & !input
+            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, dataOutLineSPARTACUS, dataOutLineESTMExt, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
-            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X) !inout
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockESTMExt_X) !inout
 
       END DO
 
       dataOutBlockSUEWS = dataOutBlockSUEWS_X(:, :, 1)
       dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
+      dataOutBlockESTMExt = dataOutBlockESTMExt_X(:, :, 1)
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
       dataOutBlockBEERS = dataOutBlockBEERS_X(:, :, 1)
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
