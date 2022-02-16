@@ -78,11 +78,11 @@ MODULE allocateArray
                          ncolumnsdataOutBL = 22, &
                          ncolumnsDataOutESTM = 5 + 27, &
                          ncolumnsDataOutESTMExt = 5 &
-                        !  + nroof_max*ndepth & ! roof
-                        !  + nwall_max*ndepth & ! wall
-                        !  + nsurf*ndepth & ! surface
-                        !  + nroof_max + nwall_max + nsurf & ! heat fluxes
-                         + nsurf*2+ 2, & !bulk heat flux and surface temperature
+                         !  + nroof_max*ndepth & ! roof
+                         !  + nwall_max*ndepth & ! wall
+                         !  + nsurf*ndepth & ! surface
+                         !  + nroof_max + nwall_max + nsurf & ! heat fluxes
+                         + nsurf*2 + 2, & !bulk heat flux and surface temperature
                          ncolumnsDataOutDailyState = 50, &
                          ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                          ncolumnsDataOutDebug = 5 + 24, &

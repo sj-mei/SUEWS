@@ -841,7 +841,7 @@ CONTAINS
                   .TRUE., &
                   .TRUE., &
                   .TRUE., &
-                  StorageHeatMethod == 5&
+                  StorageHeatMethod == 5 &
                   ]
       n_group_use = COUNT(groupCond)
 
@@ -901,13 +901,12 @@ CONTAINS
       INTEGER :: err
       INTEGER :: n_var
 
-
       INTEGER, DIMENSION(:), ALLOCATABLE :: id_seq ! id sequence as in the dataOutX/dataOutX_agg
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutX
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutX_agg
 
       ! number of varialbes for output
-      n_var=SIZE(varListX)
+      n_var = SIZE(varListX)
 
       IF (.NOT. ALLOCATED(dataOutX)) THEN
          ALLOCATE (dataOutX(irMax, n_var), stat=err)
@@ -943,9 +942,9 @@ CONTAINS
 
       CASE ('ESTMExt') !ESTMExt
          dataOutX = dataOutESTMExt(1:irMax, 1:n_var, Gridiv)
-         if (dataOutESTMExt(1,1,1) == 2005) then
-            print*, 'first several dataOutESTMExt',dataOutESTMExt(1,1:10,1)
-         endif
+         IF (dataOutESTMExt(1, 1, 1) == 2005) THEN
+            PRINT *, 'first several dataOutESTMExt', dataOutESTMExt(1, 1:10, 1)
+         END IF
 
       CASE ('DailyState') !DailyState
          ! get correct day index

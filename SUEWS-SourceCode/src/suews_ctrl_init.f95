@@ -1985,7 +1985,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ! mAH_grids(0,:)=25.
 
    ! -----------------------------------
-   call SUEWS_TranslateBack(Gridiv, 0, 0)
+   CALL SUEWS_TranslateBack(Gridiv, 0, 0)
 
    RETURN
 

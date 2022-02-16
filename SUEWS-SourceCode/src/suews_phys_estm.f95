@@ -677,11 +677,11 @@ CONTAINS
          k_wall_grids, &
          cp_wall_grids, &
          dz_wall_grids, &
-         temp_wall_grids,&
+         temp_wall_grids, &
          nsurf, &
          dz_surf, &
-         dz_surf_grids,&
-         temp_surf_grids,&
+         dz_surf_grids, &
+         temp_surf_grids, &
          tin_surf, &
          tin_surf_grids
       USE data_in, ONLY: FileInputPath
@@ -711,7 +711,7 @@ CONTAINS
          tin_wall, &
          dz_wall, &
          k_wall, &
-         cp_wall,&
+         cp_wall, &
          /surf/ &
          tin_surf, &
          dz_surf
@@ -752,7 +752,7 @@ CONTAINS
       ALLOCATE (tin_wall(nwall))
 
       ALLOCATE (tin_surf(nsurf))
-      ALLOCATE (dz_surf(nsurf,ndepth))
+      ALLOCATE (dz_surf(nsurf, ndepth))
 
       OPEN (iunit, file=TRIM(FileInputPath)//TRIM(FileLayout), status='old')
       PRINT *, 'Read roof part of GridLayout'
@@ -2003,7 +2003,7 @@ CONTAINS
             PRINT *, 'group: ', 'surf'
             nfacet = nsurf
          END IF
-         print *, 'nfacet here: ', nfacet
+         PRINT *, 'nfacet here: ', nfacet
          ALLOCATE (tsfc_cal(nfacet))
          ALLOCATE (tin_cal(nfacet))
          ALLOCATE (qs_cal(nfacet))
@@ -2011,24 +2011,24 @@ CONTAINS
          ALLOCATE (k_cal(nfacet, ndepth))
          ALLOCATE (cp_cal(nfacet, ndepth))
          ALLOCATE (dz_cal(nfacet, ndepth))
-         print *, 'allocation done! '
+         PRINT *, 'allocation done! '
 
          ! translate input arrays of facet groups to internal use arrays
          IF (i_group == 1) THEN
-            print *, 'translation for roof! '
+            PRINT *, 'translation for roof! '
             ! TODO: to update with actual values from input files
             tsfc_cal(1:nfacet) = tsfc_roof(1:nfacet)
-            print *, 'tsfc_cal for roof! ',tsfc_cal
+            PRINT *, 'tsfc_cal for roof! ', tsfc_cal
             tin_cal(1:nfacet) = tin_roof(1:nfacet)
-            print *, 'tin_cal for roof! ',tin_cal
+            PRINT *, 'tin_cal for roof! ', tin_cal
             temp_cal(1:nfacet, 1:ndepth) = temp_in_roof(1:nfacet, 1:ndepth)
-            print *, 'temp_cal for roof! '
+            PRINT *, 'temp_cal for roof! '
             ! k_cal(1:nfacet, 1:ndepth) = k_roof(1:nfacet, 1:ndepth)
             ! cp_cal(1:nfacet, 1:ndepth) = cp_roof(1:nfacet, 1:ndepth)
             ! dz_cal(1:nfacet, 1:ndepth) = dz_roof(1:nfacet, 1:ndepth)
             ! qs_cal(1:nfacet) = qs_roof(1:nfacet)
          ELSE IF (i_group == 2) THEN
-            print *, 'translation for wall! '
+            PRINT *, 'translation for wall! '
             ! TODO: to update with actual values from input files
             tsfc_cal(1:nfacet) = tsfc_wall(1:nfacet)
             tin_cal(1:nfacet) = tin_wall(1:nfacet)
@@ -2040,7 +2040,7 @@ CONTAINS
             ! qs_cal(1:nfacet) = qs_wall(1:nfacet)
 
          ELSE IF (i_group == 3) THEN
-            print *, 'translation for surf! '
+            PRINT *, 'translation for surf! '
             ! nfacet = nsurf
             tsfc_cal(1:nfacet) = tsfc_surf(1:nfacet)
             tin_cal(1:nfacet) = tin_surf(1:nfacet)
@@ -2054,7 +2054,7 @@ CONTAINS
             ! dz_cal(1:nfacet, 1:ndepth) = 0.1
             ! qs_cal(1:nfacet) = QS_surf(1:nfacet)
          END IF
-         print *, 'translation done! '
+         PRINT *, 'translation done! '
          ! TODO: temporary setting
          k_cal(1:nfacet, 1:ndepth) = 1.2
          cp_cal(1:nfacet, 1:ndepth) = 2E6
@@ -2092,11 +2092,11 @@ CONTAINS
                bc(2) = tin_cal(i_facet)
 
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
-                  PRINT *, 'temp_cal before: ', temp_cal(i_facet, :)
-                  ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
-                  ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
-                  ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
-                  PRINT *, 'bc: ', bc
+               PRINT *, 'temp_cal before: ', temp_cal(i_facet, :)
+               ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
+               ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
+               ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
+               PRINT *, 'bc: ', bc
 
                ! END IF
 
@@ -2114,12 +2114,12 @@ CONTAINS
                ! update temperature at all inner interfaces
                ! tin_cal(i_facet, :) = temp_all_cal
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
-                  PRINT *, 'temp_cal after: ', temp_cal(i_facet, :)
-                  PRINT *, 'QS_cal after: ', QS_cal(i_facet)
-                  ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
-                  ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
-                  ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
-                  ! PRINT *, 'bc: ', bc
+               PRINT *, 'temp_cal after: ', temp_cal(i_facet, :)
+               PRINT *, 'QS_cal after: ', QS_cal(i_facet)
+               ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
+               ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
+               ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
+               ! PRINT *, 'bc: ', bc
 
                ! END IF
             END IF
@@ -2177,8 +2177,8 @@ CONTAINS
 
       ! aggregated results
       ! building surface
-      PRINT *, 'QS_roof in estm_ext', DOT_PRODUCT(QS_roof, sfr_roof),'for',sfr_roof
-      PRINT *, 'QS_wall in estm_ext', DOT_PRODUCT(QS_wall, sfr_wall),'for',sfr_wall
+      PRINT *, 'QS_roof in estm_ext', DOT_PRODUCT(QS_roof, sfr_roof), 'for', sfr_roof
+      PRINT *, 'QS_wall in estm_ext', DOT_PRODUCT(QS_wall, sfr_wall), 'for', sfr_wall
       QS_surf(BldgSurf) = DOT_PRODUCT(QS_roof, sfr_roof) + DOT_PRODUCT(QS_wall, sfr_wall)
       ! TODO: TS 14 Feb 2022, ESTM development:
       ! the building surface temperature should be aggregated based on longwave radiation

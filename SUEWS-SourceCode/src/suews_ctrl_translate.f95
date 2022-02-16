@@ -672,7 +672,6 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       END DO
    END IF ! ESTM related translation finished here.
 
-
    ! ---- AnOHM related ------------------------------
    IF (StorageHeatMethod == 3) THEN
       cpAnOHM(1:nsurf) = SurfaceChar(Gridiv, c_cpAnOHM) ! AnOHM TS

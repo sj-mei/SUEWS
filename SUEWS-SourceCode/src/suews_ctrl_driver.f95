@@ -607,7 +607,7 @@ CONTAINS
       !  ! extended for ESTM_ext, TS 20 Jan 2022
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nroof) :: tsfc_roof
-      REAL(KIND(1D0)), DIMENSION(nroof),INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nroof), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nroof) :: sfr_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth) :: temp_in_roof
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: k_roof
@@ -615,7 +615,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nroof, ndepth), INTENT(in) :: dz_roof
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nwall) :: tsfc_wall
-      REAL(KIND(1D0)), DIMENSION(nwall),INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nwall), INTENT(in) :: sfr_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth) :: temp_in_wall
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: k_wall
@@ -623,7 +623,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nwall, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf),INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_in_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf

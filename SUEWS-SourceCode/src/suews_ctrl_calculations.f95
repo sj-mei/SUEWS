@@ -215,8 +215,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, & !inout
       dataOutDebug, dataOutSPARTACUS, dataOutESTMExt) !inout
 
-
-
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
 

@@ -618,7 +618,7 @@ PROGRAM SUEWS_Program
 
          DO ir = 1, irMax !Loop through rows of current block of met data
             GridCounter = 1 !Initialise counter for grids in each year
-            write(*,*) 'ir', ir, 'of', irMax
+            WRITE (*, *) 'ir', ir, 'of', irMax
             ! if ( ir>200 ) then
             !    STOP 'testing finished'
 
