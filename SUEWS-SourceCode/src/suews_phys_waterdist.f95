@@ -540,12 +540,12 @@ CONTAINS
 
       ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
       vsmd = 0
-      if ( (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))>0 ) then
+      IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
 
          fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
-      else
+      ELSE
          fveg = 0
-      end if
+      END IF
       DO is = ConifSurf, GrassSurf !Vegetated surfaces only
          IF (fveg == 0) THEN
             vsmd = 0

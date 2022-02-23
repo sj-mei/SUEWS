@@ -2155,12 +2155,12 @@ CONTAINS
             IF (dz_cal(i_facet, 1) /= -999.0 .AND. use_heatcond1d) THEN
 
                ! outermost surface temperature
-               if ( i_group<3 ) then
+               IF (i_group < 3) THEN
                   ! use aggregated building QG as boundary condition
                   bc(1) = QG_surf(2)
-               else
+               ELSE
                   bc(1) = QG_surf(i_facet)
-               end if
+               END IF
                bctype(1) = .TRUE.
                ! bc(1) = tsfc_cal(i_facet)
 
