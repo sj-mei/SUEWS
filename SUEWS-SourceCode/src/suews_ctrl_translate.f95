@@ -739,8 +739,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ALLOCATE (temp_roof(nroof, ndepth))
 
    sfr_roof = sfr_roof_grids(Gridiv, :)
-   k_roof(1:nroof, 1:ndepth) = k_roof_grids(Gridiv, 1:nroof, 1:ndepth)
    dz_roof(1:nroof, 1:ndepth) = dz_roof_grids(Gridiv, 1:nroof, 1:ndepth)
+   k_roof(1:nroof, 1:ndepth) = k_roof_grids(Gridiv, 1:nroof, 1:ndepth)
    ! PRINT *, 'dz_roof in translate:', dz_roof(1:nroof, 1:ndepth)
    cp_roof(1:nroof, 1:ndepth) = cp_roof_grids(Gridiv, 1:nroof, 1:ndepth)
    tin_roof(1:nroof) = tin_roof_grids(Gridiv, 1:nroof)
@@ -756,27 +756,22 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ALLOCATE (temp_wall(nwall, ndepth))
 
    sfr_wall = sfr_wall_grids(Gridiv, :)
-   k_wall(1:nwall, 1:ndepth) = k_wall_grids(Gridiv, 1:nwall, 1:ndepth)
    dz_wall(1:nwall, 1:ndepth) = dz_wall_grids(Gridiv, 1:nwall, 1:ndepth)
-   ! PRINT *, 'dz_wall in translate:', dz_wall(1:nwall, 1:ndepth)
+   k_wall(1:nwall, 1:ndepth) = k_wall_grids(Gridiv, 1:nwall, 1:ndepth)
    cp_wall(1:nwall, 1:ndepth) = cp_wall_grids(Gridiv, 1:nwall, 1:ndepth)
    tin_wall(1:nwall) = tin_wall_grids(Gridiv, 1:nwall)
    temp_wall(1:nwall, 1:ndepth) = temp_wall_grids(Gridiv, 1:nwall, 1:ndepth)
 
-   ! TODO: these need to be updated
+   ! TODO: these need to be updated; ESTM coupling work
    ! standard suews surfaces
-   ! k_surf(1:nsurf, 1:ndepth) = k_surf_grids(Gridiv, 1:nwall, 1:ndepth)
-   ! dz_surf(1:nsurf, 1:ndepth) = dz_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
-   ! PRINT *, 'dz_surf in translate:', dz_surf(1:nsurf, 1:ndepth)
-   ! cp_surf(1:nsurf, 1:ndepth) = cp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
-
-   ! IF (ir == 0) THEN
-   !    ! TODO: ESTM coupling work
-   !    ! tsfc_surf_grids(Gridiv, 1:nsurf) = 10
-   !    temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth) = 10.0 - 6.0
-   ! END IF
+   ALLOCATE (dz_surf(nsurf, ndepth))
+   ALLOCATE (k_surf(nsurf, ndepth))
+   ALLOCATE (cp_surf(nsurf, ndepth))
    ALLOCATE (tin_surf(nsurf))
    ALLOCATE (temp_surf(nsurf, ndepth))
+   dz_surf(1:nsurf, 1:ndepth) = dz_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
+   k_surf(1:nsurf, 1:ndepth) = k_surf_grids(Gridiv, 1:nwall, 1:ndepth)
+   cp_surf(1:nsurf, 1:ndepth) = cp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
    tin_surf(1:nsurf) = tin_surf_grids(Gridiv, 1:nsurf)
    temp_surf(1:nsurf, 1:ndepth) = temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
 
@@ -1697,6 +1692,9 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! surf
    ! tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
    temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth) = temp_surf(1:nsurf, 1:ndepth)
+   DEALLOCATE (k_surf)
+   DEALLOCATE (cp_surf)
+   DEALLOCATE (dz_surf)
    DEALLOCATE (tin_surf)
    DEALLOCATE (temp_surf)
 

@@ -942,9 +942,6 @@ CONTAINS
 
       CASE ('ESTMExt') !ESTMExt
          dataOutX = dataOutESTMExt(1:irMax, 1:n_var, Gridiv)
-         IF (dataOutESTMExt(1, 1, 1) == 2005) THEN
-            PRINT *, 'first several dataOutESTMExt', dataOutESTMExt(1, 1:10, 1)
-         END IF
 
       CASE ('DailyState') !DailyState
          ! get correct day index
