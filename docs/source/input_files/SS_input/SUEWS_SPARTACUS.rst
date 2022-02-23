@@ -256,7 +256,7 @@ SUEWS-SPARTACUS input options
   :Description:
     Building horizontal scale [m]
   :Configuration:
-    Effective building diameter. Values can be estimated from inspecting buildings using Google Maps or GIS. It is used along with `building_frac` to calculate the average building perimeter length following Eq. 8 of Spartacus_surface_documentation.pdf.
+    Effective building diameter. Values can be estimated from inspecting buildings using Google Maps or GIS. It is used along with `building_frac` to calculate the average building perimeter length following Eq. 8 of `Spartacus surface documentation <https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf>`_.
 
 
 .. option:: veg_scale
