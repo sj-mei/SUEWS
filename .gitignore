@@ -346,3 +346,5 @@ problems.txt
 
 # local settings
 .vscode/
+SUEWS-SourceCode/log.test
+Test/fortran-notebook/test-fortran.ipynb
