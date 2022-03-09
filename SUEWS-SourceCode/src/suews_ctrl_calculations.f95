@@ -84,13 +84,22 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dailystateline, dataoutdailystate, &
       dataoutsuews, dataoutsnow, dataoutestm, dataOutESTMExt, dataoutRSL, dataOutBEERS, &
       dataoutBL, dataOutDebug, dataOutSPARTACUS, dataOutLineESTMExt, &
-      nroof, nwall, &
+      nlayer,n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, &
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact,use_sw_direct_albedo, &
       sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf,&
       tin_roof, tin_wall, tin_surf, &
       temp_roof, temp_wall, temp_surf, &
       k_roof, k_wall, k_surf, &
       cp_roof, cp_wall, cp_surf, &
-      dz_roof, dz_wall, dz_surf
+      dz_roof, dz_wall, dz_surf,&
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       H_maintain, &
@@ -162,7 +171,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-      nroof, nwall, &
+      nlayer, &
+      n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, &
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact,use_sw_direct_albedo, &!input
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac, &
       OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
@@ -180,6 +198,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf, &
       temp_roof, temp_wall, temp_surf, &
       tin_roof, tin_wall, tin_surf, &
       k_roof, k_wall, k_surf, &

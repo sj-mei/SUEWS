@@ -45,6 +45,7 @@ PROGRAM SUEWS_Program
       SUEWS_GetESTMData, ESTM_initials, &
       ESTM_ext_initialise, estm_ext_finalise
    USE BLUEWS_module, ONLY: CBL_ReadInputData
+   use SPARTACUS_MODULE, only: SPARTACUS_Initialise
 
    IMPLICIT NONE
 
@@ -163,6 +164,13 @@ PROGRAM SUEWS_Program
    IF (StorageHeatMethod == 5) THEN
       IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_initials...'
       CALL ESTM_ext_initialise
+   END IF
+
+    ! -------------------------------------------------------------------------
+   ! Initialise SPARTACUS (reads SPARTACUS nml, should only run once)
+   IF (NetRadiationMethod >1000) THEN
+      IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_initials...'
+      CALL SPARTACUS_Initialise
    END IF
 
    !==========================================================================
@@ -621,7 +629,9 @@ PROGRAM SUEWS_Program
             PRINT *, '*****************************************'
             WRITE (*, *) 'ir here', ir, 'of', irMax
             PRINT *, ''
-            ! if ( ir>200 ) then
+
+            ! quick stop : for testing
+            ! if ( ir>10 ) then
             !    STOP 'testing finished'
 
             ! end if
@@ -745,6 +755,7 @@ PROGRAM SUEWS_Program
    IF (ALLOCATED(UseColumnsDataOut)) DEALLOCATE (UseColumnsDataOut)
 
    CALL estm_ext_finalise
+   ! CALL spartacus_finalise
    ! -------------------------------------------------------------------------
 
    ! get cpu time consumed

@@ -25,7 +25,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    CHARACTER(len=*) :: ProblemFile ! Name of the problem file
    CHARACTER(len=150) :: text1 ! Initialization of text
    ! CHARACTER(len=20)::filename                  !file name for writting out error info
-   INTEGER :: errh, ValueI, ValueI2 ! v7,v8 initialised as false, HCW 28/10/2014
+   INTEGER :: errh, ValueI, ValueI2,ValueI3 ! v7,v8 initialised as false, HCW 28/10/2014
    INTEGER, DIMENSION(80) :: ErrhCount = 0 ! Counts each time a error hint is called. Initialise to zero
    ! INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
 #ifdef wrf
@@ -37,8 +37,8 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ! TS 16 Jul 2018:
    ! these LOGICAL values should NOT be initialised as  is implied
    ! which will cause cross-assignment in parallel mode and thus subsequent unintentional STOP
-   LOGICAL :: v1, v2, v3, v4, v5, v6, v7, v8
-   LOGICAL :: returnTrue
+   LOGICAL :: v1, v2, v3, v4, v5, v6, v7, v8, v9
+   LOGICAL :: flag_continue_on_error
 
    text1 = 'unknown problem' ! Initialization of text
    ! WhichFile = 0 ! Initialization of file code
@@ -46,7 +46,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ! Initialise returnTrue as false (HCW 29/10/2014)
    ! - need to do this in Fortran as values assigned in declarations are not applied
    ! on subsequent calling of the subroutine
-   returnTrue = .FALSE.
+   flag_continue_on_error = .FALSE.
    ! Initialise v1-v8 as false
    v1 = .FALSE.
    v2 = .FALSE.
@@ -56,13 +56,14 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    v6 = .FALSE.
    v7 = .FALSE.
    v8 = .FALSE.
+   v9 = .FALSE.
 
    !CALL gen_ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved below, HCW 17 Feb 2017
 
    !The list of knows possible problems of the code:
    !  text1 is the error message written to the ProblemFile.
    !  v1 -v7 are different possibilities for what numbers will be written out
-   !  ReturnTrue is true if the model run can continue. (Comment modified by HCW 17/10/2014)
+   !  flag_continue_on_error is true if the model run can continue. (Comment modified by HCW 17/10/2014)
    IF (errh == 1) THEN
       text1 = 'Check value in SUEWS_SiteSelect.txt.'
       v5 = .TRUE.
@@ -75,16 +76,16 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 4) THEN
       text1 = 'Rainfall in original met forcing file exceeds intensity threshold.'
       v2 = .TRUE.
-      returnTrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       !5
    ELSEIF (errh == 6) THEN
       text1 = 'Value obtained exceeds permitted range, setting to +/-9999 in output file.'
       v1 = .TRUE.
-      returnTrue = .TRUE.
+      flag_continue_on_error = .TRUE.
    ELSEIF (errh == 7) THEN
       text1 = 'RA value obtained exceeds permitted range.'
       v1 = .TRUE.
-      returnTrue = .TRUE.
+      flag_continue_on_error = .TRUE.
    ELSEIF (errh == 8) THEN
       text1 = 'Check values in SUEWS_WithinGridWaterDist.txt.'
       v1 = .TRUE.
@@ -107,7 +108,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 15) THEN
       text1 = 'Check H_Bldgs, H_EveTr and H_DecTr in SUEWS_SiteSelect.txt'
       v2 = .TRUE.
-      returnTrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       ! 16
    ELSEIF (errh == 17) THEN
       text1 = 'Problem with (z-zd) and/or z0.'
@@ -118,7 +119,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 19) THEN
       text1 = 'Caution - check range.'
       v4 = .TRUE.
-      returnTrue = .TRUE.
+      flag_continue_on_error = .TRUE.
    ELSEIF (errh == 20) THEN
       text1 = ' skip lines, ios_out.'
       v5 = .TRUE.
@@ -128,7 +129,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 22) THEN
       text1 = ' QH_observed, QE_observed, QH_choice: '
       v4 = .TRUE.
-      returnTrue = .TRUE.
+      flag_continue_on_error = .TRUE.
    ELSEIF (errh == 23) THEN
       text1 = 'CBL-sonde -need to increase size of izm:zmax,izm'
       v5 = .TRUE.
@@ -146,11 +147,11 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v2 = .TRUE. ! 2 real
    ELSEIF (errh == 28) THEN
       text1 = 'Processing in subroutine indicated has a problem, variables'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v3 = .TRUE. ! 1 integer
    ELSEIF (errh == 29) THEN
       text1 = 'Processing in subroutine indicated has a problem, time, variables'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v7 = .TRUE. ! 1 real, 2 integers
    ELSEIF (errh == 30) THEN
       text1 = 'Processing in subroutine indicated has a problem, time, variables'
@@ -158,7 +159,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v2 = .TRUE. ! 2 real
    ELSEIF (errh == 31) THEN
       text1 = 'Processing in subroutine indicated has a problem, time, variables'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v1 = .TRUE. ! 1 real
    ELSEIF (errh == 32) THEN
       text1 = 'Model applicable to local scale, z<z0d'
@@ -169,7 +170,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 34) THEN
       text1 = 'Air temperature > 55 C -- will keep running'
       v1 = .TRUE. ! 1 real
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
    ELSEIF (errh == 35) THEN
       text1 = 'Problems with Met data -forcing data: doy, dectime'
       v2 = .TRUE. ! 2 real
@@ -178,11 +179,11 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v8 = .TRUE.
    ELSEIF (errh == 37) THEN
       text1 = 'Check inputs in InitialConditions file!'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v2 = .TRUE. !2 real
    ELSEIF (errh == 38) THEN
       text1 = 'H=(qn*0.2)/(avdens*avcp)'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v1 = .TRUE. !2 real
    ELSEIF (errh == 39) THEN
       text1 = 'Different value of TSTEP needed (300 s recommended). Resolution of forcing data must match TSTEP set in RunControl.'
@@ -195,23 +196,23 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v2 = .TRUE. !2 real
    ELSEIF (errh == 42) THEN
       text1 = 'abs(rho_d)<0.001000.OR.abs(rho_v)<0.001000.OR.abs(rho_d+rho_v)<0.001000) rho_v,rho_d, T'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v4 = .TRUE. !2 real, temperature as an integer
    ELSEIF (errh == 43) THEN
       text1 = 'Switching Years - will keep running'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v8 = .TRUE.
    ELSEIF (errh == 44) THEN
       text1 = 'Initial File Name - will keep going'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v8 = .TRUE.
    ELSEIF (errh == 45) THEN
       text1 = 'Pressure < 900 hPa, Loop Number'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v5 = .TRUE.
    ELSEIF (errh == 46) THEN
       text1 = 'Pressure < 900 hPa'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v1 = .TRUE.
    ELSEIF (errh == 47) THEN
       text1 = 'File missing'
@@ -231,15 +232,15 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       text1 = 'Problems opening the output file.'
    ELSEIF (errh == 53) THEN
       text1 = 'AH_min=0.and.Ah_slope=0.and.T_Critic=0, AnthropHeatMethod='
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v3 = .TRUE.
    ELSEIF (errh == 54) THEN
       text1 = 'QF_A=0.and.QF_B=0.and.QF_C=0, AnthropHeatMethod='
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v3 = .TRUE.
    ELSEIF (errh == 55) THEN
       text1 = 'InputmetFormat='
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v3 = .TRUE.
    ELSEIF (errh == 56) THEN
       text1 = 'Check input files against manual (N.B. Case sensitive).'
@@ -259,7 +260,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 61) THEN
       text1 = 'Check coefficients and drainage equation specified in input files.'
       v4 = .TRUE.
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
    ELSEIF (errh == 62) THEN
       text1 = 'Problem with soil moisture calculation.'
       v5 = .TRUE.
@@ -271,22 +272,22 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v6 = .TRUE.
    ELSEIF (errh == 65) THEN
       text1 = 'Negative gs calculated! Check suitability of parameters in SUEWS_Conductance.txt.'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v7 = .TRUE. ! 1 real, 2 integers
    ELSEIF (errh == 66) THEN
       text1 = 'Different number of lines in ESTM forcing and Met forcing files.'
       v6 = .TRUE.
    ELSEIF (errh == 67) THEN
       text1 = 'ESTMClass1 automatically set to 100%.'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v1 = .TRUE.
    ELSEIF (errh == 68) THEN
       text1 = 'Initial Bowen ratio automatically set to 1.'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v1 = .TRUE.
    ELSEIF (errh == 69) THEN
       text1 = 'Setting QF_traff to zero. Check input data.'
-      returntrue = .TRUE.
+      flag_continue_on_error = .TRUE.
       v2 = .TRUE.
    ELSEIF (errh == 70) THEN
       text1 = 'Specify profile values between 1 (night) and 2 (day).'
@@ -311,8 +312,15 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       v2 = .TRUE.
    ELSEIF (errh == 76) THEN
       text1 = 'erroneous T2 by RSL!'
-      returnTrue = .FALSE.
+      flag_continue_on_error = .FALSE.
       v4 = .TRUE.
+   ELSEIF (errh == 77) THEN
+      text1 = 'CFL failure in ESTM_ext!'&
+      //' dz/k should be < 0.1; '&
+      //'current value dz/k for facet i of surf j in group k is '
+
+      flag_continue_on_error = .FALSE.
+      v7= .TRUE.
    END IF
 
    ErrhCount(errh) = ErrhCount(errh) + 1 ! Increase error count by 1
@@ -341,7 +349,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    END IF
 
    ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
-   IF (returnTrue) THEN
+   IF (flag_continue_on_error) THEN
       IF (SuppressWarnings == 0) THEN
 #ifdef wrf
          WRITE (message, *) 'Warning: ', TRIM(ProblemFile)

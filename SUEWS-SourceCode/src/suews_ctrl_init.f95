@@ -1889,6 +1889,11 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    IceFrac = 0.2 !Estimated fraction of ice. Should be improved in the future
 
+   ! initialise surface temperatures for ESTM_ext
+   tsfc_roof_grids(Gridiv, :) = Temp_C0
+   tsfc_wall_grids(Gridiv, :) = Temp_C0
+   tsfc_surf_grids(Gridiv, :) = Temp_C0
+
    ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)
    CALL SUEWS_Translate(Gridiv, 0, 0)
 

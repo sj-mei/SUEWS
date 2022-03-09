@@ -37,6 +37,12 @@ MODULE allocateArray
    INTEGER, PARAMETER :: nroof_max = 5 !max Number of allowed roof types
    INTEGER, PARAMETER :: nwall_max = 100 !max Number of allowed roof types
 
+   ! SPARTACUS related
+   INTEGER, PARAMETER :: nspec = 1 !Number of spectral bands
+   INTEGER, PARAMETER :: nsw = 1 !Number of shortwave bands
+   INTEGER, PARAMETER :: nlw = 1 !Number of longwave bands
+   INTEGER, PARAMETER :: ncol = 1 !Number of tiles used: SUEWS does not have multiple tiles so ncol=1
+
    INTEGER, PARAMETER :: PavSurf = 1, & !When all surfaces considered together (1-7)
                          BldgSurf = 2, &
                          ConifSurf = 3, &
@@ -487,49 +493,62 @@ MODULE allocateArray
    !-----------------------------------------------------------------------------------------------
 
    !------------------- ESTM variables for SUEWS surfaces---------------------------------------------------------
+   INTEGER :: nlayer !Number of vertical layers
+   INTEGER, DIMENSION(:), ALLOCATABLE :: nlayer_grids !Number of vertical layers for each grid
+
    ! roof
-   INTEGER :: nroof !Number of roof facets
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof
    ! larger container arrays for different grids
-   INTEGER, DIMENSION(:), ALLOCATABLE :: nroof_grids !Number of roof_grids facets
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_roof_grids
 
    ! wall
-   INTEGER :: nwall !Number of wall facets
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall
-   INTEGER, DIMENSION(:), ALLOCATABLE :: nwall_grids !Number of wall_grids facets
+   ! larger container arrays for different grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: sfr_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_wall_grids
 
    ! standard suews surfaces
    ! INTEGER :: nsurf !Number of surf facets
    ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_surf
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf
    ! INTEGER :: nsurf_grids !Number of surf_grids facets
-   ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:,:), ALLOCATABLE :: tsfc_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_surf_grids
@@ -537,6 +556,42 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_surf_grids
    !-----------------------------------------------------------------------------------------------
 
+   !------------------- SPARTACUS variables for SUEWS subsurfaces----------------------------------------------
+   ! INTEGER, PARAMETER :: JPRD = SELECTED_REAL_KIND(13,300) ! same as kind(1d0)
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: height
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: building_frac
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_frac
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: building_scale
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_scale
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_ext
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_fsd
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_contact_fraction
+   ! REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_roof
+   ! REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_wall
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: roof_albedo_dir_mult_fact
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wall_specular_frac
+   ! REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_roof
+   ! REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_wall
+
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: height_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: building_frac_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: veg_frac_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: building_scale_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: veg_scale_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: veg_ext_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: veg_fsd_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: veg_contact_fraction_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: roof_albedo_dir_mult_fact_grids
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: wall_specular_frac_grids
+
+   ! SPARTACUS input variables
+   INTEGER :: n_vegetation_region_urban, &
+              n_stream_sw_urban, n_stream_lw_urban
+   REAL(KIND(1D0)) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+                      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+                      veg_fsd_const, veg_contact_fraction_const, &
+                      ground_albedo_dir_mult_fact
+   LOGICAL :: use_sw_direct_albedo
    !------------------- ESTM_ext variables for heterogeneous  facets---------------------------------------------------------
    REAL(KIND(1D0)), DIMENSION(5, nsurfIncSnow) :: zSurf_SUEWSsurfs, &
                                                   kSurf_SUEWSsurfs, &
