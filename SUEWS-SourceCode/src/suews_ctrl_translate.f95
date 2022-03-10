@@ -1729,7 +1729,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    DEALLOCATE (sfr_wall)
    DEALLOCATE (alb_wall)
    DEALLOCATE (emis_wall)
-    DEALLOCATE (wall_specular_frac)
+   DEALLOCATE (wall_specular_frac)
    DEALLOCATE (k_wall)
    DEALLOCATE (cp_wall)
    DEALLOCATE (dz_wall)
@@ -1757,7 +1757,6 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! DEALLOCATE (veg_contact_fraction)
    ! DEALLOCATE (alb_roof)
    ! DEALLOCATE (alb_wall)
-
 
    ! =============================================================================
    ! === Translate values from variable names used in model to ModelOutputData ===

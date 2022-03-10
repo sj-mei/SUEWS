@@ -25,7 +25,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    CHARACTER(len=*) :: ProblemFile ! Name of the problem file
    CHARACTER(len=150) :: text1 ! Initialization of text
    ! CHARACTER(len=20)::filename                  !file name for writting out error info
-   INTEGER :: errh, ValueI, ValueI2,ValueI3 ! v7,v8 initialised as false, HCW 28/10/2014
+   INTEGER :: errh, ValueI, ValueI2, ValueI3 ! v7,v8 initialised as false, HCW 28/10/2014
    INTEGER, DIMENSION(80) :: ErrhCount = 0 ! Counts each time a error hint is called. Initialise to zero
    ! INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
 #ifdef wrf
@@ -315,12 +315,12 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       flag_continue_on_error = .FALSE.
       v4 = .TRUE.
    ELSEIF (errh == 77) THEN
-      text1 = 'CFL failure in ESTM_ext!'&
-      //' dz/k should be < 0.1; '&
-      //'current value dz/k for facet i of surf j in group k is '
+      text1 = 'CFL failure in ESTM_ext!' &
+              //' dz/k should be < 0.1; ' &
+              //'current value dz/k for facet i of surf j in group k is '
 
       flag_continue_on_error = .FALSE.
-      v7= .TRUE.
+      v7 = .TRUE.
    END IF
 
    ErrhCount(errh) = ErrhCount(errh) + 1 ! Increase error count by 1

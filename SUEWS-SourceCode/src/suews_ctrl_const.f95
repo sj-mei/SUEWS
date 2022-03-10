@@ -548,7 +548,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_surf
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf
    ! INTEGER :: nsurf_grids !Number of surf_grids facets
-   REAL(KIND(1D0)), DIMENSION(:,:), ALLOCATABLE :: tsfc_surf_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: k_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: cp_surf_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dz_surf_grids

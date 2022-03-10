@@ -361,10 +361,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(INOUT) :: temp_wall
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(INOUT) :: temp_surf
 
-      REAL(KIND(1D0)), dimension(nlayer) ,INTENT(INOUT) :: tsfc_roof
-      REAL(KIND(1D0)), dimension(nlayer) ,INTENT(INOUT) :: tsfc_wall
-      REAL(KIND(1D0)), dimension(nsurf) ,INTENT(INOUT) :: tsfc_surf
-
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(INOUT) :: tsfc_surf
 
       ! SPARTACUS input variables
       INTEGER, INTENT(IN) :: n_vegetation_region_urban, &
@@ -1018,26 +1017,22 @@ CONTAINS
          ! PRINT *, 'QS_roof after cal_qs', QS_roof
          ! PRINT *, 'QS_wall after cal_qs', QS_wall
 
-         print *,''
+         PRINT *, ''
 
          PRINT *, 'tsfc_surf after cal_qs', tsfc_out_surf
          PRINT *, 'tsfc_roof after cal_qs', tsfc_out_roof
          PRINT *, 'tsfc_wall after cal_qs', tsfc_out_wall
          PRINT *, ''
-         print *,'tsfc_surf abs. diff.:',maxval(abs(tsfc_out_surf-tsfc0_out_surf)),maxloc(abs(tsfc_out_surf-tsfc0_out_surf))
-         dif_tsfc_iter=maxval(abs(tsfc_out_surf-tsfc0_out_surf))
-         print *,'tsfc_roof abs. diff.:',maxval(abs(tsfc_out_roof-tsfc0_out_roof)),maxloc(abs(tsfc_out_roof-tsfc0_out_roof))
-         dif_tsfc_iter=max(maxval(abs(tsfc_out_roof-tsfc0_out_roof)),dif_tsfc_iter)
-         print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
-         dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
+         PRINT *, 'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf)), MAXLOC(ABS(tsfc_out_surf - tsfc0_out_surf))
+         dif_tsfc_iter = MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf))
+         PRINT *, 'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
+         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), dif_tsfc_iter)
+         PRINT *, 'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
+         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_out_wall)), dif_tsfc_iter)
 
-
-
-         tsfc0_out_surf=tsfc_out_surf
-         tsfc0_out_roof=tsfc_out_roof
-         tsfc0_out_wall=tsfc_out_wall
-
-
+         tsfc0_out_surf = tsfc_out_surf
+         tsfc0_out_roof = tsfc_out_roof
+         tsfc0_out_wall = tsfc_out_wall
 
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -1215,7 +1210,7 @@ CONTAINS
          ! END IF
          ! IF (MINVAL(ABS(TSfc_QH_surf - tsfc_surf)) > 0.1) THEN
          ! IF (ABS(qh_residual - qh_resist) > .2) THEN
-         IF (dif_tsfc_iter> .1) THEN
+         IF (dif_tsfc_iter > .1) THEN
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
@@ -3704,7 +3699,7 @@ CONTAINS
       !  ! extended for ESTM_ext, TS 20 Jan 2022
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nroof) :: tsfc_roof
-      REAL(KIND(1D0)),DIMENSION(nlayer), INTENT(INOUT) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(inout) :: temp_roof
@@ -3722,13 +3717,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf
-      REAL(KIND(1D0)),  DIMENSION(nsurf), INTENT(INOUT) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(INOUT) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(inout) :: temp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
-
 
       ! SPARTACUS input variables
       INTEGER, INTENT(IN) :: n_vegetation_region_urban, &
