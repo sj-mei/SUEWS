@@ -12,7 +12,7 @@ CONTAINS
 
    SUBROUTINE RSLProfile( &
       Zh, z0m, zdm, z0v, &
-      L_MOD, sfr, FAI, StabilityMethod, RA_h, &
+      L_MOD, sfr, FAI, FAIBldg, StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
       avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       T2_C, q2_gkg, U10_ms, RH2, &!output
@@ -48,6 +48,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in):: z0v  ! roughnesslength for heat [s m-1]
       REAL(KIND(1D0)), INTENT(in):: zdm     ! zero-plane displacement [m]
       REAL(KIND(1D0)), INTENT(in):: FAI  ! Frontal area index [-]
+      REAL(KIND(1D0)), INTENT(in):: FAIBldg   ! Frontal area index of buildings [-]
 
       INTEGER, INTENT(in)::StabilityMethod
 
@@ -131,7 +132,7 @@ CONTAINS
 
       CALL RSL_cal_prms( &
          StabilityMethod, &!input
-         zh, L_MOD, sfr, FAI, &!input
+         zh, L_MOD, sfr, FAI, FAIBldg, &!input
          zH_RSL, L_MOD_RSL, &
          Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, PAI)
 
@@ -192,8 +193,8 @@ CONTAINS
 
       ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
       ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
-      flag_RSL = (1.-PAI)/FAI <= 18 .AND. (1.-PAI)/FAI > .021 &
-                 .AND. zH_RSL >= 5
+      flag_RSL = (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5 ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint (note: it seems wrong anyway - should be 0.87 not 0.021 based on G&O1991 numbers)
+                 
       ! &
       ! .and. PAI>0.1 .and. PAI<0.61
       IF (flag_RSL) THEN
@@ -802,13 +803,14 @@ CONTAINS
    END FUNCTION cal_z0_RSL
 
    SUBROUTINE RSL_cal_prms( &
-      StabilityMethod, zh, L_MOD, sfr, FAI, &!input
+      StabilityMethod, zh, L_MOD, sfr, FAI, FAIBldg, &!input
       zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, PAI)!output
 
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
       REAL(KIND(1D0)), INTENT(in) ::  zh ! canyon depth [m]
       REAL(KIND(1D0)), INTENT(in) ::  FAI ! frontal area index
+      REAL(KIND(1D0)), INTENT(in) ::  FAIBldg ! frontal area index of buildings
       REAL(KIND(1D0)), INTENT(in) ::  L_MOD ! Obukhov length [m]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::  sfr ! land cover fractions
 
@@ -826,7 +828,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) ::elm ! length scale used in RSL
       REAL(KIND(1D0)), INTENT(out) ::Scc ! parameter in RSL
       REAL(KIND(1D0)), INTENT(out) ::f ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(out) ::PAI ! plan area index inlcuding area of trees
+      REAL(KIND(1D0)), INTENT(out) ::PAI ! plan area index inlcuding area of trees 
 
       ! internal variables
       ! INTEGER ::it
@@ -836,6 +838,8 @@ CONTAINS
       REAL(KIND(1D0)) ::lc_over_L
       ! real(KIND(1D0)) ::betaHF
       ! real(KIND(1D0)) ::betaNL
+      REAL(KIND(1D0)) ::Lc_min! LB Oct2021 - minimum value of Lc
+      REAL(KIND(1D0)) ::bldg_dim! LB Oct2021 - horizontal building dimensions
 
       REAL(KIND(1D0)), PARAMETER::planF_low = 1E-6
       REAL(KIND(1D0)), PARAMETER::kappa = 0.40
@@ -865,10 +869,15 @@ CONTAINS
       ! Lc_tree = 1./(cd_tree*a_tree) ! not used? why?
 
       ! height scale for bluff bodies
-      Lc = (1.-PAI)/FAI*Zh_RSL
-      ! set a threshold of Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
+      Lc = (1.-sfr(BldgSurf))/FAI*Zh_RSL ! LB Oct2021 - replaced PAI with sfr(BldgSurf) since the parameter should represent the solid fraction (and trees have negligible solid fraction).
+      ! set a minimum threshold (of 0.5*Zh_RSL) for Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
       Lc = MERGE(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
-
+      ! LB Oct2021 - set a minimum Lc threshold based on the Lc required to ensure the horizontal length scale associated with changes in canopy geometry (i.e. 3Lc) is greater than a typical street+building unit
+      ! Note: the horizontal building size and street+building unit size is calculated assuming a regular array of cuboids with the same x and y dimension but with height that can be different 
+      bldg_dim = Zh_RSL*sfr(BldgSurf)/FAIBldg
+      Lc_min = bldg_dim*sfr(BldgSurf)**(-0.5)/3.
+      Lc = MERGE(Lc, Lc_min, Lc > Lc_min)
+      
       ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
       lc_over_L = Lc/L_MOD
       ! lc_over_L = lc/L_MOD_RSL_x

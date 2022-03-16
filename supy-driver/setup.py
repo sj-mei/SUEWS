@@ -23,7 +23,8 @@ elif sysname == "Linux":
 
 # change compiler settings
 if sysname == "Windows":
-    shutil.copyfile("win-setup.cfg", "setup.cfg")
+    pfn=Path.cwd()/"setup.cfg"
+    shutil.copyfile("win-setup.cfg", pfn)
 
 # load SUEWS Fortran source files
 dir_f95 = "../SUEWS-SourceCode/src"
