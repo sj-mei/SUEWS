@@ -23,7 +23,7 @@ elif sysname == "Linux":
 
 # change compiler settings
 if sysname == "Windows":
-    pfn=Path.cwd()/"setup.cfg"
+    pfn = Path.cwd() / "setup.cfg"
     shutil.copyfile("win-setup.cfg", pfn)
 
 # load SUEWS Fortran source files
@@ -109,10 +109,10 @@ def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"
 
         # get version from `file`
         path_constfile = path_source / file
-        print(path_constfile,path_constfile.exists())
+        print(path_constfile, path_constfile.exists())
         print(path_constfile)
     except IOError:
-        raise IOError(f'{path_constfile} not existing!')
+        raise IOError(f"{path_constfile} not existing!")
 
     with open(str(path_constfile)) as fm:
         for line in fm:
@@ -126,6 +126,7 @@ def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"
         fm.write("__version__='{ver}'".format(ver=ver))
 
     return ver
+
 
 # %%
 class BinaryDistribution(Distribution):
@@ -148,7 +149,9 @@ ext_modules = [
         extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
         f2py_options=[
             # '--quiet',
-            #   '--debug-capi',
+            # "--verbose",
+            # "--debug-capi",  # this is for debugging data types
+            # '--f2cmap="f2py_f2cmap"',
             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
         ],
         extra_objects=fn_other_obj,
@@ -162,7 +165,7 @@ ext_modules = [
 setup(
     name="supy_driver",
     # update version info here!
-    version=get_suews_version(ver_minor=3),
+    version=get_suews_version(ver_minor=4),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
     url="https://github.com/sunt05/SuPy",
