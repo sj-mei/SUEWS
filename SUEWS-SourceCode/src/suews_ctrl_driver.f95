@@ -695,6 +695,10 @@ CONTAINS
       ! iterator for surfaces
       INTEGER :: i_surf
 
+      ! used in iteration
+      INTEGER :: max_iter
+      REAL(KIND(1D0))::ratio_iter
+
       LOGICAL, INTENT(IN) :: use_sw_direct_albedo
 
       REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height
@@ -811,7 +815,8 @@ CONTAINS
       PRINT *, 'before iteration Ts_iter = ', Ts_iter
       ! L_mod_iter = 10
       i_iter = 1
-      DO WHILE ((.NOT. flag_converge) .AND. i_iter < 100)
+      max_iter=30
+      DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
          PRINT *, '=========================== '
          PRINT *, 'Ts_iter of ', i_iter, ' is:', Ts_iter
 
@@ -982,9 +987,10 @@ CONTAINS
          ! PRINT *, 'Qg_wall before cal_qs', Qg_wall
          ! print *,''
 
-         PRINT *, 'tsfc0_surf before cal_qs', tsfc0_out_surf
-         PRINT *, 'tsfc0_roof before cal_qs', tsfc0_out_roof
-         PRINT *, 'tsfc0_wall before cal_qs', tsfc0_out_wall
+         PRINT *, 'tsfc_surf before cal_qs', tsfc_out_surf
+         PRINT *, 'tsfc_out_roof before cal_qs', tsfc_out_roof
+         PRINT *, 'tsfc_wall before cal_qs', tsfc_out_wall
+         print *,''
 
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
@@ -1012,23 +1018,30 @@ CONTAINS
          ! temp_in_roof = temp_out_roof
          ! temp_in_wall = temp_out_wall
          ! temp_in_surf = temp_out_surf
-         Ts_iter = DOT_PRODUCT(tsfc_out_surf, sfr_surf)
+         ! Ts_iter = DOT_PRODUCT(tsfc_out_surf, sfr_surf)
          ! PRINT *, 'QS_surf after cal_qs', QS_surf
          ! PRINT *, 'QS_roof after cal_qs', QS_roof
          ! PRINT *, 'QS_wall after cal_qs', QS_wall
 
          PRINT *, ''
 
-         PRINT *, 'tsfc_surf after cal_qs', tsfc_out_surf
-         PRINT *, 'tsfc_roof after cal_qs', tsfc_out_roof
-         PRINT *, 'tsfc_wall after cal_qs', tsfc_out_wall
-         PRINT *, ''
-         PRINT *, 'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf)), MAXLOC(ABS(tsfc_out_surf - tsfc0_out_surf))
-         dif_tsfc_iter = MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf))
-         PRINT *, 'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
-         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), dif_tsfc_iter)
-         PRINT *, 'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
-         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_out_wall)), dif_tsfc_iter)
+         ! PRINT *, 'tsfc_surf after cal_qs', tsfc_out_surf
+         ! PRINT *, 'tsfc_roof after cal_qs', tsfc_out_roof
+         ! PRINT *, 'tsfc_wall after cal_qs', tsfc_out_wall
+         ! PRINT *, ''
+         ! print *,'tsfc_surf abs. diff.:',maxval(abs(tsfc_out_surf-tsfc0_out_surf)),maxloc(abs(tsfc_out_surf-tsfc0_out_surf))
+         ! dif_tsfc_iter=maxval(abs(tsfc_out_surf-tsfc0_out_surf))
+         ! print *,'tsfc_roof abs. diff.:',maxval(abs(tsfc_out_roof-tsfc0_out_roof)),maxloc(abs(tsfc_out_roof-tsfc0_out_roof))
+         ! dif_tsfc_iter=max(maxval(abs(tsfc_out_roof-tsfc0_out_roof)),dif_tsfc_iter)
+         ! print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
+         ! dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
+
+
+
+         ! tsfc0_out_surf=tsfc_out_surf
+         ! tsfc0_out_roof=tsfc_out_roof
+         ! tsfc0_out_wall=tsfc_out_wall
+
 
          tsfc0_out_surf = tsfc_out_surf
          tsfc0_out_roof = tsfc_out_roof
@@ -1110,6 +1123,7 @@ CONTAINS
             StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
             runoff_per_interval, state_id_prev, soilstore_id_prev, & ! input:
+            qn_surf,qs_surf,&
             state_id_next, soilstore_id_next, & ! output:
             SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
             runoffSoil, & ! output:
@@ -1124,13 +1138,13 @@ CONTAINS
          !============ Sensible heat flux ===============
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
          CALL SUEWS_cal_QH( &
-            1, nlayer, &
+            1, nlayer, & !input
             qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
             sfr_surf, sfr_roof, sfr_wall, &
             tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
             tsurf, Temp_C, &
             RA_h, &
-            qh, qh_residual, qh_resist, &
+            qh, qh_residual, qh_resist, & !output
             qh_surf, qh_roof, qh_wall)
          ! PRINT *, 'qn_surf after SUEWS_cal_QH', qn_surf
          ! PRINT *, 'qs_surf after SUEWS_cal_QH', qs_surf
@@ -1149,9 +1163,9 @@ CONTAINS
          !============ Sensible heat flux end ===============
 
          ! residual heat flux
-         PRINT *, 'residual surf: ', qn_surf + qf - qs_surf - qe_surf - qh_surf
-         PRINT *, 'residual roof: ', qn_roof + qf - qs_roof - qe_roof - qh_roof
-         PRINT *, 'residual wall: ', qn_wall + qf - qs_wall - qe_wall - qh_wall
+         ! PRINT *, 'residual surf: ', qn_surf + qf - qs_surf - qe_surf - qh_surf
+         ! PRINT *, 'residual roof: ', qn_roof + qf - qs_roof - qe_roof - qh_roof
+         ! PRINT *, 'residual wall: ', qn_wall + qf - qs_wall - qe_wall - qh_wall
 
          !============ Sensible heat flux end===============
 
@@ -1186,11 +1200,55 @@ CONTAINS
          TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
 
          !============= calculate surface specific QH and Tsfc ===============
-         ! qh_surf = qn_surf + qf - qs_surf - qe_surf
 
-         ! DO i_surf = 1, nsurf
-         !    TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
-         ! END DO
+         tsfc0_out_surf=tsfc_out_surf
+         tsfc0_out_roof=tsfc_out_roof
+         tsfc0_out_wall=tsfc_out_wall
+
+         qh_surf = qn_surf + qf - qs_surf - qe_surf
+         qh_roof = qn_roof + qf - qs_roof - qe_roof
+         qh_wall = qn_wall + qf - qs_wall - qe_wall
+
+         print *,'qn_surf before QH back env.:',qn_surf
+         print *,'qf before QH back env.:',qf
+         print *,'qs_surf before QH back env.:',qs_surf
+         print *,'qe_surf before QH back env.:',qe_surf
+         print *,'qh_surf before QH back env.:',qh_surf
+         DO i_surf = 1, nsurf
+            ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
+            ! if ( i_surf==1 ) then
+            !    tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
+            ! else
+            !    tsfc_out_surf(i_surf)=tsfc0_out_surf(i_surf)
+            ! end if
+            ! restrict calculated heat storage to a sensible range
+            ! tsfc_out_surf(i_surf) = MAX(MIN(tsfc_out_surf(i_surf), 100.0), -100.0)
+         END DO
+
+         do i_surf =1, nlayer
+            tsfc_out_roof(i_surf) = cal_tsfc(qh_roof(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_out_wall(i_surf) = cal_tsfc(qh_wall(i_surf), avdens, avcp, RA_h, temp_c)
+         end do
+
+         print *,'tsfc_surf after QH back env.:',tsfc_out_surf
+         ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
+         print *,'tsfc_surf abs. diff.:',maxval(abs(tsfc_out_surf-tsfc0_out_surf)),maxloc(abs(tsfc_out_surf-tsfc0_out_surf))
+         dif_tsfc_iter=maxval(abs(tsfc_out_surf-tsfc0_out_surf))
+         print *,'tsfc_roof abs. diff.:',maxval(abs(tsfc_out_roof-tsfc0_out_roof)),maxloc(abs(tsfc_out_roof-tsfc0_out_roof))
+         dif_tsfc_iter=max(maxval(abs(tsfc_out_roof-tsfc0_out_roof)),dif_tsfc_iter)
+         print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
+         dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
+
+         ! ====test===
+         ! see if this converges better
+         ratio_iter=.4
+         tsfc_out_surf=(tsfc0_out_surf*(1-ratio_iter)+tsfc_out_surf*ratio_iter)
+         tsfc_out_roof=(tsfc0_out_roof*(1-ratio_iter)+tsfc_out_roof*ratio_iter)
+         tsfc_out_wall=(tsfc0_out_wall*(1-ratio_iter)+tsfc_out_wall*ratio_iter)
+         ! =======test end=======
+
+
 
          ! PRINT *, 'tsfc_surf after qh_cal', TSfc_QH_surf
 
@@ -1223,7 +1281,7 @@ CONTAINS
 
          i_iter = i_iter + 1
          ! force quit do-while loop if not convergent after 100 iterations
-         IF (i_iter == 100) THEN
+         IF (i_iter == max_iter) THEN
             PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
@@ -2008,15 +2066,15 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
       ! output arrays
       ! roof facets
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_roof !interface temperature between depth layers
       ! wall facets
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_wall
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_wall !interface temperature between depth layers
       ! standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: QS_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(out) :: temp_out_surf !interface temperature between depth layers
 
@@ -2271,6 +2329,7 @@ CONTAINS
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, & ! input:
       runoff_per_interval_in, state_id_in, soilstore_id_in, & ! input:
+      qn_surf,qs_surf,&
       state_id_out, soilstore_id_out, & ! output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, & ! output
       runoffSoil, & ! output:
@@ -2389,6 +2448,8 @@ CONTAINS
 
       REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_roof ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_wall ! latent heat flux of individual surface [W m-2]
@@ -2421,6 +2482,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowWater
       REAL(KIND(1D0)), DIMENSION(nsurf) :: iceFrac
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_e_surf
 
       REAL(KIND(1D0)), DIMENSION(2) :: SurplusEvap !Surplus for evaporation in 5 min timestep
       REAL(KIND(1D0)) :: surplusWaterBody
@@ -2495,6 +2557,7 @@ CONTAINS
 
       ! net available energy for evaporation
       qn_e = qn1_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
+      qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
       DO is = 1, nsurf !For each surface in turn
@@ -2542,7 +2605,7 @@ CONTAINS
             !Calculates ev [mm]
             CALL cal_evap( &
                EvapMethod, state_id(is), WetThresh(is), capStore(is), & !input
-               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+               vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA, RB, tlv, &
                rss_surf(is), ev, qe_surf(is)) !output
             ! print *, 'qe_surf for', is , qe_surf(is)
 
