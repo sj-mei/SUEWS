@@ -11,6 +11,7 @@ MODULE rsl_module
 CONTAINS
 
    SUBROUTINE RSLProfile( &
+      DiagMethod, &
       Zh, z0m, zdm, z0v, &
       L_MOD, sfr, FAI, FAIBldg, StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
@@ -51,6 +52,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! Frontal area index of buildings [-]
 
       INTEGER, INTENT(in) :: StabilityMethod
+      INTEGER, INTENT(in) :: DiagMethod
 
       REAL(KIND(1D0)), INTENT(out) :: T2_C ! Air temperature at 2 m [C]
       REAL(KIND(1D0)), INTENT(out) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
@@ -117,9 +119,6 @@ CONTAINS
 
       LOGICAL :: flag_RSL ! whether RSL correction is used
 
-      ! initialize flag_RSL as false
-      flag_RSL = .FALSE.
-
       ! CHARACTER(len=1024) :: Errmessage
       ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
       ! Step 1: determine if RSL should be used
@@ -138,24 +137,34 @@ CONTAINS
          Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx, PAI)
 
       ! Step 1: determine if RSL should be used
-      ! IF (zdm > 2 .OR. z0m > 0.3) THEN
-      !    ! for the SUEWS-wide values:
-      !    ! if zdm or z0m satisfies the above criteria, use RSL
-      !    flag_RSL = .TRUE.
-      ! ELSE
-      ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
-      ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
-      flag_RSL = &
-         ! zd>0 subject to FAI > beta**2*(1-sfr(bldg)); also beta<0.5;
-         ! hence the lower limit of FAI below
-         FAI > 0.25*(1 - sfr(BldgSurf)) .AND. FAI < 0.45 .AND. & ! FAI
-         PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
-         zH > 2 ! effective canopy height
-      ! (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5
-      ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint
-      !(note: it seems wrong anyway - should be 0.87 not 0.021 based on G&O1991 numbers)
 
-      ! END IF
+      IF (DiagMethod == 0) THEN
+         ! force MOST to be used
+         flag_RSL = .FALSE.
+      ELSEIF (DiagMethod == 1) THEN
+         ! force RSL to be used
+         flag_RSL = .TRUE.
+      ELSEIF (DiagMethod == 2) THEN
+         ! IF (zdm > 2 .OR. z0m > 0.3) THEN
+         !    ! for the SUEWS-wide values:
+         !    ! if zdm or z0m satisfies the above criteria, use RSL
+         !    flag_RSL = .TRUE.
+         ! ELSE
+         ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
+         ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
+         flag_RSL = &
+            ! zd>0 subject to FAI > beta**2*(1-sfr(bldg)); also beta<0.5;
+            ! hence the lower limit of FAI below
+            FAIBldg > 0.25*(1 - sfr(BldgSurf)) .AND. FAIBldg < 0.45 .AND. & ! FAI
+            sfr(BldgSurf) > 0.1 .AND. sfr(BldgSurf) < 0.61 .AND. & ! PAI
+            zH > 2 ! effective canopy height
+         ! (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5
+         ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint
+         !(note: it seems wrong anyway - should be 0.87 not 0.021 based on G&O1991 numbers)
+      ELSE
+         ! default is to use MOST
+         flag_RSL = .FALSE.
+      END IF
 
       !
       ! ! Step 2
@@ -308,7 +317,7 @@ CONTAINS
          ! MOST approach:
          DO z = 1, idx_can
             ! when using MOST, all vertical levels should larger than zd_RSL
-            IF (zarray(z) <= zd_RSL) zarray(z) = 1.01*(zd_RSL+z0_RSL)
+            IF (zarray(z) <= zd_RSL) zarray(z) = 1.01*(zd_RSL + z0_RSL)
             psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0)/kappa
@@ -338,17 +347,17 @@ CONTAINS
       ! Step 8
       ! retrieve the diagnostics at key heights
       !
-      IF (flag_RSL) THEN
-         ! RSL approach: diagnostics within canopy, heights are above ground level
-         T2_C = interp_z(2D0, zarray, dataoutLineTRSL)
-         q2_gkg = interp_z(2D0, zarray, dataoutLineqRSL)
-         U10_ms = interp_z(10D0, zarray, dataoutLineURSL)
-      ELSE
-         ! MOST approach: diagnostics at heights above zdm+z0m to avoid insane values
-         T2_C = interp_z(2D0 + zdm + z0m, zarray, dataoutLineTRSL)
-         q2_gkg = interp_z(2D0 + zdm + z0m, zarray, dataoutLineqRSL)
-         U10_ms = interp_z(10D0 + zdm + z0m, zarray, dataoutLineURSL)
-      END IF
+      ! IF (flag_RSL) THEN
+      !    ! RSL approach: diagnostics within canopy, heights are above ground level
+      !    T2_C = interp_z(2D0, zarray, dataoutLineTRSL)
+      !    q2_gkg = interp_z(2D0, zarray, dataoutLineqRSL)
+      !    U10_ms = interp_z(10D0, zarray, dataoutLineURSL)
+      ! ELSE
+      ! MOST approach: diagnostics at heights above zdm+z0m to avoid insane values
+      T2_C = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineTRSL)
+      q2_gkg = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineqRSL)
+      U10_ms = interp_z(10D0 + zd_rsl + z0_rsl, zarray, dataoutLineURSL)
+      ! END IF
       ! get relative humidity:
       RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
 
@@ -852,11 +861,17 @@ CONTAINS
       REAL(KIND(1D0)) :: Lc_min ! LB Oct2021 - minimum value of Lc
       REAL(KIND(1D0)) :: bldg_dim ! LB Oct2021 - horizontal building dimensions
 
+      REAL(KIND(1D0)), PARAMETER :: cd_tree = 1.2 ! drag coefficient tree canopy !!!!needs adjusting!!!
+      REAL(KIND(1D0)), PARAMETER :: a_tree = 0.05 ! the foliage area per unit volume !!!!needs adjusting!!!
+      !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
+      REAL(KIND(1D0)), PARAMETER :: beta_N = 0.40 ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
+      REAL(KIND(1D0)), PARAMETER :: pi = 4.*ATAN(1.0)
+
       REAL(KIND(1D0)), PARAMETER :: planF_low = 1E-6
-      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40
+      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40 ! von karman constant
       ! REAL(KIND(1d0)), PARAMETER::z0m= 0.40
       REAL(KIND(1D0)), PARAMETER :: r = 0.1
-      REAL(KIND(1D0)), PARAMETER :: a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
+      REAL(KIND(1D0)), PARAMETER :: a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
       REAL(KIND(1D0)), PARAMETER :: Zh_min = 0.4 ! limit for minimum canyon height used in RSL module
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
