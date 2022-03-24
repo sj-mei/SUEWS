@@ -96,11 +96,6 @@ def readme():
     return f
 
 
-# dir_source='SUEWS-SourceCode'
-# path_source = Path(dir_source)
-# str(path_source)
-
-
 def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"):
     try:
         path_source = Path(dir_source)
