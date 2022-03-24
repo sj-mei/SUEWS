@@ -36,6 +36,7 @@ The parameters and their setting instructions are provided through the links bel
         + :option:`RoughLenMomMethod`
         + :option:`SMDMethod`
         + :option:`WaterUseMethod`
+        + :option:`DiagMethod`
 
 
 * :ref:`File_related_options`
