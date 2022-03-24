@@ -25,7 +25,6 @@ on:
       - ".github/workflows/build-SUEWS.yml"
 
 
-
 jobs:
   test-suews:
     runs-on: macos-latest
