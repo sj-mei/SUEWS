@@ -145,18 +145,12 @@ CONTAINS
          ! force RSL to be used
          flag_RSL = .TRUE.
       ELSEIF (DiagMethod == 2) THEN
-         ! IF (zdm > 2 .OR. z0m > 0.3) THEN
-         !    ! for the SUEWS-wide values:
-         !    ! if zdm or z0m satisfies the above criteria, use RSL
-         !    flag_RSL = .TRUE.
-         ! ELSE
-         ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
-         ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
+
          flag_RSL = &
             ! zd>0 subject to FAI > beta**2*(1-sfr(bldg)); also beta<0.5;
             ! hence the lower limit of FAI below
-            FAIBldg > 0.25*(1 - sfr(BldgSurf)) .AND. FAIBldg < 0.45 .AND. & ! FAI
-            sfr(BldgSurf) > 0.1 .AND. sfr(BldgSurf) < 0.61 .AND. & ! PAI
+            FAI > 0.25*(1 - sfr(BldgSurf)) .AND. FAI < 0.45 .AND. & ! FAI
+            PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
             zH > 2 ! effective canopy height
          ! (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5
          ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint
