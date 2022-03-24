@@ -8,14 +8,14 @@ on:
     - cron:  '30 5 * * 6'
   # File paths to consider in the event. Optional; defaults to all
   push:
-    # branches:    # Array of patterns that match refs/heads
-    #   - '**'
+    branches:    # Array of patterns that match refs/heads
+      - '**'
     #   - master     # Push events on master branch
     #   - test-dev
     #     - 'releases/*' # Push events to branches matching refs/heads/releases/*
     #     - '!refs/pull/*'
-    # tags-ignore:
-    #   - latest-dev # ignore this tag as it is created by this workflow
+    tags-ignore:
+      - latest-dev # ignore this tag as it is created by this workflow
 #     tags:        # Array of patterns that match refs/tags.
     #   - supy_v*    # Push events to supy-driver
     #   - v*         # Push events to SUEWS
