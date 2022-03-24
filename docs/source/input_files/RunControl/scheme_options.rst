@@ -170,3 +170,17 @@ Scheme options
 			:file: csv-table/WaterUseMethod.csv
 			:header-rows: 1
 			:widths: 10 80
+
+
+
+.. option:: DiagMethod
+
+	:Requirement:
+		Required
+	:Description:
+		Defines how near surface diagnostics are calculated.
+	:Configuration:
+		.. csv-table::
+			:file: csv-table/DiagMethod.csv
+			:header-rows: 1
+			:widths: 10 80

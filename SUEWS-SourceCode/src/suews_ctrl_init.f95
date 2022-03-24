@@ -60,6 +60,7 @@ SUBROUTINE OverallRunControl
       CBLuse, &
       SnowUse, &
       ! SOLWEIGuse, &
+      DiagMethod,&
       BaseTMethod, &
       EmissionsMethod, &
       NetRadiationMethod, &
