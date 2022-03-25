@@ -341,17 +341,17 @@ CONTAINS
       ! Step 8
       ! retrieve the diagnostics at key heights
       !
-      ! IF (flag_RSL) THEN
-      !    ! RSL approach: diagnostics within canopy, heights are above ground level
-      !    T2_C = interp_z(2D0, zarray, dataoutLineTRSL)
-      !    q2_gkg = interp_z(2D0, zarray, dataoutLineqRSL)
-      !    U10_ms = interp_z(10D0, zarray, dataoutLineURSL)
-      ! ELSE
-      ! MOST approach: diagnostics at heights above zdm+z0m to avoid insane values
-      T2_C = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineTRSL)
-      q2_gkg = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineqRSL)
-      U10_ms = interp_z(10D0 + zd_rsl + z0_rsl, zarray, dataoutLineURSL)
-      ! END IF
+      IF (flag_RSL) THEN
+         ! RSL approach: diagnostics within canopy, heights are above ground level
+         T2_C = interp_z(2D0, zarray, dataoutLineTRSL)
+         q2_gkg = interp_z(2D0, zarray, dataoutLineqRSL)
+         U10_ms = interp_z(10D0, zarray, dataoutLineURSL)
+      ELSE
+         ! MOST approach: diagnostics at heights above zdm+z0m to avoid insane values
+         T2_C = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineTRSL)
+         q2_gkg = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineqRSL)
+         U10_ms = interp_z(10D0 + zd_rsl + z0_rsl, zarray, dataoutLineURSL)
+      END IF
       ! get relative humidity:
       RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
 
