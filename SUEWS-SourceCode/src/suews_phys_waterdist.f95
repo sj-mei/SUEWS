@@ -702,7 +702,7 @@ CONTAINS
       ! dI                   = Water flow between stores [mm] dI = dI_dt * no. secs in each timestep
       !                         if dI > 0, first surface gains water, second surface loses water
       ! NUnits               = Number of repeating units (e.g. properties, blocks) for distance calculation [-]
-      runoffSoil=0
+      runoffSoil = 0
       runoffSoil_per_tstep = 0
 
       DO is = 1, nsurf - 1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)

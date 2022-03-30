@@ -2328,7 +2328,7 @@ CONTAINS
       qn_surf, qs_surf, &
       state_id_out, soilstore_id_out, & ! output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, & ! output
-      SnowRemoval, &! output:
+      SnowRemoval, & ! output:
       state_per_tstep, NWstate_per_tstep, &
       qe, qe_surf, qe_roof, qe_wall, &
       swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
