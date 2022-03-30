@@ -1,7 +1,7 @@
 &RunControl
 CBLUse=0
 SnowUse=1
-NetRadiationMethod=1003 ! anything larger than 1000 for SU
+NetRadiationMethod=3 ! anything larger than 1000 for SU
 BaseTMethod=1
 EmissionsMethod=1
 StorageHeatMethod=1
@@ -17,6 +17,7 @@ FileOutputPath="./Output/"
 MultipleMetFiles=0
 MultipleInitFiles=0
 MultipleESTMFiles=1
+MultipleLayoutFiles=1
 KeepTstepFilesIn=1
 KeepTstepFilesOut=0
 WriteOutOption=1
