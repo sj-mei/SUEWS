@@ -2578,7 +2578,6 @@ CONTAINS
                   runoffAGimpervious, runoffAGveg, surplusWaterBody, &
                   ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
                   rss_surf, &
-                  ! runoffSnow_surf, &
                   runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
                   SnowDepth, SnowRemoval, swe, ev, &
                   runoffPipes, mwstore, runoffwaterbody)

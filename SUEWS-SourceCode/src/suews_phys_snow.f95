@@ -491,7 +491,6 @@ CONTAINS
       runoffAGimpervious, runoffAGveg, surplusWaterBody, &
       ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot,&! output
       rss_surf, & ! output
-      ! runoffSnow_surf, &
       runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
       SnowDepth, SnowRemoval, swe, ev_snowfree,  &
       runoffPipes, mwstore, runoffwaterbody)
