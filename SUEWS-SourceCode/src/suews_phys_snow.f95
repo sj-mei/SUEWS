@@ -493,7 +493,7 @@ CONTAINS
       rss_surf, & ! output
       runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
       SnowRemoval, swe, &
-      ev_snowfree, &
+      ! ev_snowfree, &
       runoffPipes, mwstore, runoffwaterbody)
 
       !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered

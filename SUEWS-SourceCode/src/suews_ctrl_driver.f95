@@ -2580,7 +2580,7 @@ CONTAINS
                   rss_surf, &
                   runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
                   SnowRemoval, swe, &
-                  ev, &
+                  ! ev, &
                   runoffPipes, mwstore, runoffwaterbody)
 
                !Actual updates here as xx_tstep variables not taken as input to snowcalc
