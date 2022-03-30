@@ -2540,7 +2540,7 @@ CONTAINS
       qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
-      IF (SnowUse == 1 ) THEN ! snow calculation
+      IF (SnowUse == 1) THEN ! snow calculation
          ! net available energy for evaporation
          qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
          ev = 0
