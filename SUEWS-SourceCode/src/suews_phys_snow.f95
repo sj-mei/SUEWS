@@ -492,7 +492,7 @@ CONTAINS
       ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot,&! output
       rss_surf, & ! output
       runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
-      SnowDepth, SnowRemoval, swe, ev_snowfree,  &
+      SnowDepth, SnowRemoval, swe, ev_snowfree, &
       runoffPipes, mwstore, runoffwaterbody)
 
       !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
