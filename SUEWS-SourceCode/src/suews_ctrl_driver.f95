@@ -2578,8 +2578,8 @@ CONTAINS
                   runoffAGimpervious, runoffAGveg, surplusWaterBody, &
                   rss_surf, runoffSnow_surf, & ! output
                   runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
-                  SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
-                  ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
+                  SnowDepth, SnowRemoval, swe, ev,  &
+                  ev_tot, qe_tot, runoff_tot, surf_chang_tot,chSnow_tot, &
                   runoffPipes, mwstore, runoffwaterbody)
 
                !Actual updates here as xx_tstep variables not taken as input to snowcalc
@@ -2649,13 +2649,14 @@ CONTAINS
       ! Calculate volume of water that will move between grids
       ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
       ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
-      runoffAGimpervious_m3 = runoffAGimpervious/1000*SurfaceArea
-      runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
-      runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
-      runoffPipes_m3 = runoffPipes/1000*SurfaceArea
+      ! runoffAGimpervious_m3 = runoffAGimpervious/1000*SurfaceArea
+      ! runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
+      ! runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
+      ! runoffPipes_m3 = runoffPipes/1000*SurfaceArea
 
       state_id_out = state_id_surf
       soilstore_id_out = soilstore_id
+
       SnowPack_out = SnowPack
       SnowFrac_out = SnowFrac
       SnowWater_out = SnowWater

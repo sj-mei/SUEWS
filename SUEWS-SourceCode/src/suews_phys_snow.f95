@@ -489,10 +489,10 @@ CONTAINS
       soilstore_id, SnowPack, SurplusEvap, & !inout
       SnowFrac, SnowWater, iceFrac, SnowDens, &
       runoffAGimpervious, runoffAGveg, surplusWaterBody, &
-      rss_nsurf, runoffSnow, & ! output
+      rss_nsurf, runoffSnow_surf, & ! output
       runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
-      SnowDepth, SnowRemoval, swe, ev_snowfree, chSnow_tot, &
-      ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
+      SnowDepth, SnowRemoval, swe, ev_snowfree,  &
+      ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot,&
       runoffPipes, mwstore, runoffwaterbody)
 
       !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
@@ -601,7 +601,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(inout) :: SurplusEvap
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_nsurf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSnow !Initialize for runoff caused by snowmelting
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff_snowfree
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang
@@ -667,7 +667,7 @@ CONTAINS
       IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) iu = 2 !Set to 2=weekend
 
       !write(*,*) is
-      runoffSnow(is) = 0 !Initialize for runoff caused by snowmelting
+      runoffSnow_surf(is) = 0 !Initialize for runoff caused by snowmelting
       runoff_snowfree(is) = 0
       ! runoffSoil(is) = 0
       chang(is) = 0
@@ -752,7 +752,7 @@ CONTAINS
                MeltExcess = 0 !Initialize the excess meltwater
                MeltExcess = SnowWater(is) - FWC !Calculate the exceess water
                SnowWater(is) = FWC !Update the SnowWater to the maximum it can hold
-               runoffSnow(is) = runoffSnow(is) + MeltExcess
+               runoffSnow_surf(is) = runoffSnow_surf(is) + MeltExcess
             END IF
 
             !At the end of the hour calculate possible snow removal
@@ -879,7 +879,7 @@ CONTAINS
                !the excess water will directly go to runoff. Otherwise it will flow to the
                !snow free area via SnowToSurf(is)
                IF ((SnowFrac(is) > 0.9 .AND. is /= BldgSurf) .OR. (is == BldgSurf)) THEN
-                  runoffSnow(is) = runoffSnow(is) + MeltExcess
+                  runoffSnow_surf(is) = runoffSnow_surf(is) + MeltExcess
                ELSE
                   SnowToSurf(is) = SnowToSurf(is) + MeltExcess*SnowFrac(is)/(1 - SnowFrac(is))
                END IF
@@ -1024,7 +1024,7 @@ CONTAINS
 
       !Add runoff to pipes
       runoffPipes = runoffPipes &
-                    + runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
+                    + runoffSnow_surf(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
                     + runoff_snowfree(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
                     + runoffTest*sfr_surf(is)
       CALL updateFlood( &
@@ -1032,7 +1032,7 @@ CONTAINS
          sfr_surf, PipeCapacity, RunoffToWater, &
          runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes) ! inout:
 
-      runoff_tot = runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
+      runoff_tot = runoffSnow_surf(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
                    + runoff_snowfree(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
                    + runoffTest*sfr_surf(is)
 
