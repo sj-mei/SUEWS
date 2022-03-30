@@ -960,7 +960,7 @@ CONTAINS
             qn_surf, qn_roof, qn_wall, &
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            albedo_snow, snowFrac_next, SnowAlb_next, &
+            albedo_snow, SnowAlb_next, &
             alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
             top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
             clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
@@ -1055,7 +1055,7 @@ CONTAINS
             SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
             nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn_ind_snow, &
             kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
-            SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, & !input
+            SnowPack_prev, snowFrac_prev, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, & !input
             SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, & !output
             mwh, Qm, QmFreez, QmRain, & ! output
             veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
@@ -1751,7 +1751,7 @@ CONTAINS
       qn_surf, qn_roof, qn_wall, &
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      albedo_snow, snowFrac_next, SnowAlb_next, &
+      albedo_snow, SnowAlb_next, &
       alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
       top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
       clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
@@ -1811,7 +1811,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_prev
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: snowFrac_prev
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: snowFrac_next
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: snowFrac_next
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
 
       REAL(KIND(1D0)), INTENT(out) :: ldown
@@ -1964,7 +1964,7 @@ CONTAINS
          qn1_ind = NAN
          Fcld = NAN
       END IF
-      snowFrac_next = SnowFrac
+      ! snowFrac_next = SnowFrac
 
       IF (ldown_option == 1) THEN
          Fcld = NAN
