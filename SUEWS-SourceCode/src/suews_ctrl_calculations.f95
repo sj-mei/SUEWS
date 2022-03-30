@@ -36,7 +36,7 @@
 SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
                       alt, avkdn, avrh, avu1, BaseT_HC, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
-                      ef_umolco2perj, BaseTMethod, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
+                      ef_umolco2perj, DiagMethod,BaseTMethod, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
                       frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
                       LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
                       minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
@@ -155,7 +155,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       BaseTMethod, &
       BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-      DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+      DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &

@@ -466,7 +466,7 @@ CONTAINS
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
       IF (areaZh /= 0) THEN
          Zh = DOT_PRODUCT([bldgH, EveTreeH, DecTreeH*(1 - porosity_id)], sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/areaZh
-         FAI = DOT_PRODUCT([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr_surf([BldgSurf, ConifSurf, DecidSurf]))
+         FAI = SUM([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)])
 
          ! `1e-5` set to avoid numerical difficulty
          FAI = MAX(FAI, 1E-5)

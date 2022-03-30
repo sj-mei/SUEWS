@@ -55,7 +55,7 @@ CONTAINS
       BaseTMethod, &
       BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-      DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+      DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
@@ -146,6 +146,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: SnowUse
       INTEGER, INTENT(IN) :: StabilityMethod
       INTEGER, INTENT(IN) :: StorageHeatMethod
+      INTEGER, INTENT(in) :: DiagMethod
       INTEGER, INTENT(IN) :: tstep
       INTEGER, INTENT(IN) :: tstep_prev ! tstep size of the previous step
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
@@ -1303,8 +1304,9 @@ CONTAINS
       !============ roughness sub-layer diagonostics ===============
       IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
       CALL RSLProfile( &
+      DiagMethod, &
          zH, z0m, zdm, z0v, &
-         L_MOD, sfr_surf, FAI, StabilityMethod, RA_h, &
+         L_MOD, sfr_surf, FAI, FAIBldg, StabilityMethod, RA_h, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, & ! input
          T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -3464,7 +3466,7 @@ CONTAINS
       BaseTMethod, &
       BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-      DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+      DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
@@ -3541,6 +3543,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: Ie_start
       INTEGER, INTENT(IN) :: EvapMethod
       INTEGER, INTENT(IN) :: LAICalcYes
+      INTEGER, INTENT(in) :: DiagMethod
       INTEGER, INTENT(IN) :: NetRadiationMethod
       INTEGER, INTENT(IN) :: OHMIncQF
       INTEGER, INTENT(IN) :: RoughLenHeatMethod
@@ -4160,7 +4163,7 @@ CONTAINS
             BaseTMethod, &
             BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-            DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+            DecTreeH, DiagMethod,Diagnose, DiagQN, DiagQS, DRAINRT, &
             dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
