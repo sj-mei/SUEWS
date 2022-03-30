@@ -2320,7 +2320,7 @@ CONTAINS
       PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
       RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-      SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+      SurfaceArea, FlowChange, drain, WetThresh_surf, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, & ! input:
@@ -2390,7 +2390,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_nsurf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: mw_ind
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap
@@ -2496,7 +2496,7 @@ CONTAINS
       REAL(KIND(1D0)) :: runoff_tot
       REAL(KIND(1D0)) :: chSnow_tot
 
-      REAL(KIND(1D0)), DIMENSION(7) :: capStore ! current storage capacity [mm]
+      REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
       runoff_per_interval = runoff_per_interval_in
       state_id_surf = state_id_in
@@ -2505,7 +2505,7 @@ CONTAINS
       ! tstep_real = tstep*1.D0
       nsh_real = 3600/tstep*1.D0
 
-      capStore = 0 !initialise capStore
+      capStore_surf = 0 !initialise capStore
 
       tlv = lv_J_kg/tstep*1.D0 !Latent heat of vapourisation per timestep
 
@@ -2513,8 +2513,6 @@ CONTAINS
 
       ! Initialize the output variables
       qe_surf = 0
-
-      ev = 0
 
       ev_per_tstep = 0
       qe_per_tstep = 0
@@ -2529,7 +2527,6 @@ CONTAINS
       runoffAGveg = 0
       runoffAGimpervious = 0
       surplusWaterBody = 0
-      ! runoffSoil = 0
       runoff_surf = 0
       chang = 0
       SurplusEvap = 0
@@ -2546,6 +2543,7 @@ CONTAINS
       IF (SnowUse == 1 .AND. snowCalcSwitch(is) == 1) THEN ! snow calculation
          ! net available energy for evaporation
          qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
+         ev = 0
 
          mwstore = 0
 
@@ -2571,7 +2569,7 @@ CONTAINS
                   vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, snowdensmin, SnowProf_24hr, precip, &
                   PipeCapacity, RunoffToWater, &
                   addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
-                  WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+                  WetThresh_surf, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
                   freezmelt, freezstate, freezstatevol, &
                   Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
                   AddWater, addwaterrunoff, &
@@ -2603,10 +2601,10 @@ CONTAINS
          ChangSnow_surf = 0
          runoffSnow_surf = 0
          DO is = 1, nsurf !For each surface in turn
-            capStore(is) = StoreDrainPrm(6, is)
+            capStore_surf(is) = StoreDrainPrm(6, is)
             !Calculates ev [mm]
             CALL cal_evap( &
-               EvapMethod, state_id_surf(is), WetThresh(is), capStore(is), & !input
+               EvapMethod, state_id_surf(is), WetThresh_surf(is), capStore_surf(is), & !input
                vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA, RB, tlv, &
                rss_surf(is), ev_surf(is), qe_surf(is)) !output
             ! print *, 'qe_surf for', is , qe_surf(is)
@@ -2621,60 +2619,30 @@ CONTAINS
                runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, &
                p_mm, chang, runoff_surf, state_id_surf) !output:
 
-            ! Store ev for each surface
-            ! ev_surf(is) = ev
-
-            ! Sum evaporation from different surfaces to find total evaporation [mm]
-            ev_per_tstep = ev_per_tstep + ev_surf(is)*sfr_surf(is)
-
-            ! Sum latent heat flux from different surfaces to find total latent heat flux
-            qe_per_tstep = qe_per_tstep + qe_surf(is)*sfr_surf(is)
-
-            ! Sum change from different surfaces to find total change to surface state_id
-            surf_chang_per_tstep = surf_chang_per_tstep + (state_id_surf(is) - stateOld(is))*sfr_surf(is)
-
-            ! Sum runoff from different surfaces to find total runoff
-            runoff_per_tstep = runoff_per_tstep + runoff_surf(is)*sfr_surf(is)
-
-            ! Calculate total state_id (including water body)
-            state_per_tstep = state_per_tstep + state_id_surf(is)*sfr_surf(is)
-
-            ! sum The total runoff from the area !!Check (HCW)
-            runoff_per_interval = runoff_per_interval + (runoff_surf(is)*sfr_surf(is))
-
-            IF (NonWaterFraction /= 0 .AND. is /= WaterSurf) THEN
-               NWstate_per_tstep = NWstate_per_tstep + (state_id_surf(is)*sfr_surf(is)/NonWaterFraction)
-            END IF
 
          END DO !end loop over surfaces
 
-         !  ! Sum evaporation from different surfaces to find total evaporation [mm]
-         !    ev_per_tstep = DOT_PRODUCT(ev_surf,sfr_surf)
+         ! Sum evaporation from different surfaces to find total evaporation [mm]
+         ev_per_tstep = DOT_PRODUCT(ev_surf, sfr_surf)
 
-         !    ! Sum latent heat flux from different surfaces to find total latent heat flux
-         !    ! qe_per_tstep = qe_per_tstep + qe_surf(is)*sfr_surf(is)
-         !    qe_per_tstep=DOT_PRODUCT(qe_surf,sfr_surf)
+         ! Sum latent heat flux from different surfaces to find total latent heat flux
+         qe_per_tstep = DOT_PRODUCT(qe_surf, sfr_surf)
 
-         !    ! Sum change from different surfaces to find total change to surface state_id
-         !    surf_chang_per_tstep = DOT_PRODUCT(state_id_surf-stateOld,sfr_surf)
-         !    ! surf_chang_per_tstep = surf_chang_per_tstep + (state_id_surf(is) - stateOld(is))*sfr_surf(is)
+         ! Sum change from different surfaces to find total change to surface state_id
+         surf_chang_per_tstep = DOT_PRODUCT(state_id_surf - stateOld, sfr_surf)
 
-         !    ! Sum runoff from different surfaces to find total runoff
-         !    runoff_per_tstep = DOT_PRODUCT(runoff_surf,sfr_surf)
-         !    ! runoff_per_tstep = runoff_per_tstep + runoff_surf(is)*sfr_surf(is)
+         ! Sum runoff from different surfaces to find total runoff
+         runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
 
-         !    ! Calculate total state_id (including water body)
-         !    state_per_tstep = DOT_PRODUCT(state_id_surf,sfr_surf)
-         !    ! state_per_tstep = state_per_tstep + state_id_surf(is)*sfr_surf(is)
+         ! Calculate total state_id (including water body)
+         state_per_tstep = DOT_PRODUCT(state_id_surf, sfr_surf)
 
-         !    ! sum The total runoff from the area !!Check (HCW)
-         !    runoff_per_interval = DOT_PRODUCT(runoff_surf,sfr_surf)
-         !    ! runoff_per_interval = runoff_per_interval + (runoff_surf(is)*sfr_surf(is))
+         ! sum The total runoff from the area !!Check (HCW)
+         runoff_per_interval = DOT_PRODUCT(runoff_surf, sfr_surf)
 
-         !    IF (NonWaterFraction /= 0) THEN
-         !       NWstate_per_tstep = DOT_PRODUCT(state_id_surf(1:nsurf-1),sfr_surf(1:nsurf-1))/NonWaterFraction
-         !       ! NWstate_per_tstep = NWstate_per_tstep + (state_id_surf(is)*sfr_surf(is)/NonWaterFraction)
-         !    END IF
+         IF (NonWaterFraction /= 0) THEN
+            NWstate_per_tstep = DOT_PRODUCT(state_id_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+         END IF
       END IF
 
       qe = qe_per_tstep
