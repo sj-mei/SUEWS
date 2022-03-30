@@ -1124,7 +1124,6 @@ CONTAINS
             qn_surf, qs_surf, &
             state_id_next, soilstore_id_next, & ! output:
             SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
-            runoffSoil, & ! output:
             SnowRemoval, &
             state_per_tstep, NWstate_per_tstep, &
             qe, qe_surf, qe_roof, qe_wall, &
@@ -2329,8 +2328,7 @@ CONTAINS
       qn_surf, qs_surf, &
       state_id_out, soilstore_id_out, & ! output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, & ! output
-      runoffSoil, & ! output:
-      SnowRemoval, &
+      SnowRemoval, &! output:
       state_per_tstep, NWstate_per_tstep, &
       qe, qe_surf, qe_roof, qe_wall, &
       swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
@@ -2433,7 +2431,6 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow !Initialize for runoff caused by snowmelting
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
       REAL(KIND(1D0)), DIMENSION(nsurf) :: changSnow
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowDepth
@@ -2541,7 +2538,7 @@ CONTAINS
       runoffAGveg = 0
       runoffAGimpervious = 0
       surplusWaterBody = 0
-      runoffSoil = 0
+      ! runoffSoil = 0
       runoff = 0
       chang = 0
       SurplusEvap = 0
@@ -2577,7 +2574,7 @@ CONTAINS
                   SnowFrac, SnowWater, iceFrac, SnowDens, &
                   runoffAGimpervious, runoffAGveg, surplusWaterBody, &
                   rss_surf, runoffSnow, & ! output
-                  runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, &
+                  runoff, chang, changSnow, SnowToSurf, state_id, ev_snow, &
                   SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
                   ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
                   runoffPipes, mwstore, runoffwaterbody)
