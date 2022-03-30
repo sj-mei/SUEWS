@@ -1120,7 +1120,7 @@ CONTAINS
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
             StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
-            runoff_per_interval, state_id_prev, soilstore_id_prev, & ! input:
+            state_id_prev, soilstore_id_prev, & ! input:
             qn_surf, qs_surf, &
             SnowRemoval, & ! snow specific output
             SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
@@ -2324,7 +2324,7 @@ CONTAINS
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, & ! input:
-      runoff_per_interval_in, state_id_in, soilstore_id_in, & ! input:
+      state_id_in, soilstore_id_in, & ! input:
       qn_surf, qs_surf, &
       SnowRemoval, & ! snow specific output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, & ! output
@@ -2410,7 +2410,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr
 
       ! Total water transported to each grid for grid-to-grid connectivity
-      REAL(KIND(1D0)), INTENT(in) :: runoff_per_interval_in
+      ! REAL(KIND(1D0)), INTENT(in) :: runoff_per_interval_in
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_id_in
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id_in
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_in
@@ -2498,7 +2498,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
-      runoff_per_interval = runoff_per_interval_in
+      ! runoff_per_interval = runoff_per_interval_in
       state_id_surf = state_id_in
       soilstore_id = soilstore_id_in
 
@@ -2637,7 +2637,7 @@ CONTAINS
          state_per_tstep = DOT_PRODUCT(state_id_surf, sfr_surf)
 
          ! sum The total runoff from the area !!Check (HCW)
-         runoff_per_interval = DOT_PRODUCT(runoff_surf, sfr_surf)
+         ! runoff_per_interval = DOT_PRODUCT(runoff_surf, sfr_surf)
 
          IF (NonWaterFraction /= 0) THEN
             NWstate_per_tstep = DOT_PRODUCT(state_id_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
