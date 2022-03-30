@@ -42,10 +42,10 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(in) ::iy
-      INTEGER, INTENT(in) ::id
-      REAL(KIND(1D0)), INTENT(in)::lamdaP ! plan area fraction
-      REAL(KIND(1D0)), INTENT(in)::lamdaF ! frontal area fraction
+      INTEGER, INTENT(in) :: iy
+      INTEGER, INTENT(in) :: id
+      REAL(KIND(1D0)), INTENT(in) :: lamdaP ! plan area fraction
+      REAL(KIND(1D0)), INTENT(in) :: lamdaF ! frontal area fraction
       !REAL(KIND(1d0)), INTENT(in)::tilt ! Tilt of building in degrees. Could be included FL
       ! REAL(KIND(1d0)), intent(in) ::lai_id_dectr
       ! REAL(KIND(1d0)), intent(in) ::LAImax_dectr
@@ -67,24 +67,24 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: emis_wall
       REAL(KIND(1D0)), INTENT(in) :: emis_ground
 
-      REAL(KIND(1D0)), PARAMETER :: absL = 0.97     ! Absorption coefficient of longwave radiation of a person
-      REAL(KIND(1D0)), PARAMETER :: absK = 0.7      ! Absorption coefficient of shortwave radiation of a person
-      REAL(KIND(1D0)), PARAMETER :: Fside = 0.22    ! Standing human shape factor
-      REAL(KIND(1D0)), PARAMETER :: Fup = 0.06      ! Standing human shape factor
+      REAL(KIND(1D0)), PARAMETER :: absL = 0.97 ! Absorption coefficient of longwave radiation of a person
+      REAL(KIND(1D0)), PARAMETER :: absK = 0.7 ! Absorption coefficient of shortwave radiation of a person
+      REAL(KIND(1D0)), PARAMETER :: Fside = 0.22 ! Standing human shape factor
+      REAL(KIND(1D0)), PARAMETER :: Fup = 0.06 ! Standing human shape factor
 
       ! integer, parameter :: ncolumnsDataOutSol = 34      ! Standing human shape factor
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT) ::dataOutLineBEERS   ! 26 columns of output at the moment
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT) :: dataOutLineBEERS ! 26 columns of output at the moment
 
       REAL(KIND(1D0)) :: t, psi
-      REAL(KIND(1D0)) :: altitude, zen!azimuth,zenith
+      REAL(KIND(1D0)) :: altitude, zen !azimuth,zenith
       REAL(KIND(1D0)) :: CI, c, I0, Kt, Tw, Tg
-      REAL(KIND(1D0)) :: Ta, RH, P, radG, radD, radI!,idectime,tdectime!dectime,
-      REAL(KIND(1D0)) :: I0et, CIuncorr!,lati
-      REAL(KIND(1D0)) :: SNDN, SNUP, DEC, DAYL!,timestepdec,YEAR
+      REAL(KIND(1D0)) :: Ta, RH, P, radG, radD, radI !,idectime,tdectime!dectime,
+      REAL(KIND(1D0)) :: I0et, CIuncorr !,lati
+      REAL(KIND(1D0)) :: SNDN, SNUP, DEC, DAYL !,timestepdec,YEAR
       REAL(KIND(1D0)) :: msteg, emis_sky, ea
       REAL(KIND(1D0)) :: shadowground, shadowwalls, shadowroof
       ! REAL(KIND(1d0)),intent(in) ::lai_id
-      INTEGER         :: DOY!,ith!onlyglobal,usevegdem,x,y,i,  first, second,
+      INTEGER :: DOY !,ith!onlyglobal,usevegdem,x,y,i,  first, second,
       REAL(KIND(1D0)) :: CIlatenight
       REAL(KIND(1D0)) :: dectime_sunrise, zen_sunrise, I0_sunrise
       ! REAL(KIND(1d0)) :: Fside ! fraction of a person seen from each cardinal point
@@ -97,28 +97,28 @@ CONTAINS
       !REAL(KIND(1d0))  :: vegsh
       REAL(KIND(1D0)) :: tmp, altmax
       REAL(KIND(1D0)) :: svf_bldg_veg
-      REAL(KIND(1D0))  :: svf_ground, svf_roof
-      REAL(KIND(1D0))  :: svf_veg
-      REAL(KIND(1D0))  :: svf_aveg
-      REAL(KIND(1D0))  :: Kdown, Keast, Knorth, Ksouth, Kup2d, Kwest
-      REAL(KIND(1D0))  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+      REAL(KIND(1D0)) :: svf_ground, svf_roof
+      REAL(KIND(1D0)) :: svf_veg
+      REAL(KIND(1D0)) :: svf_aveg
+      REAL(KIND(1D0)) :: Kdown, Keast, Knorth, Ksouth, Kup2d, Kwest
+      REAL(KIND(1D0)) :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
 
       ! Internal grids
       !Search directions for Ground View Factors (GVF)
       !REAL(KIND(1d0)), PARAMETER :: azimuthA(1:18) = [(j*(360.0/18.0), j=0, 17)]
       ! temporary parameters and variables for testing
       ! REAL(KIND(1d0)), PARAMETER   :: pi = 3.141592653589793
-      REAL(KIND(1D0)), PARAMETER   :: SBC = 5.67051E-8
+      REAL(KIND(1D0)), PARAMETER :: SBC = 5.67051E-8
 
-      INTEGER, PARAMETER:: onlyglobal = 1  !! force to calculate direct and diffuse components, TS 13 Dec 2019 !TODO: should be input parameter FL
+      INTEGER, PARAMETER :: onlyglobal = 1 !! force to calculate direct and diffuse components, TS 13 Dec 2019 !TODO: should be input parameter FL
       !INTEGER, PARAMETER:: usevegdem = 0  !! force not to use vegetation DEM based calculations, TS 13 Dec 2019
       !INTEGER, PARAMETER:: row = 1  !! force to 1, TS 13 Dec 2019
       !INTEGER, PARAMETER:: col = 1  !! force to 1, TS 13 Dec 2019
       !INTEGER, PARAMETER:: Posture = 1  !! force to 1, TS 13 Dec 2019 ! Not used FL
       ! INTEGER, PARAMETER:: SOLWEIG_ldown = 0  !! force to 0, TS 13 Dec 2019 !TODO: should be input parameter FL
       ! this is just for testing
-      INTEGER, PARAMETER:: SOLWEIG_ldown = 1  !! force to 0, TS 13 Dec 2019 !TODO: should be input parameter FL
-      INTEGER, PARAMETER:: BEERS_tsurf = 1  !TODO: should be input parameter FL
+      INTEGER, PARAMETER :: SOLWEIG_ldown = 1 !! force to 0, TS 13 Dec 2019 !TODO: should be input parameter FL
+      INTEGER, PARAMETER :: BEERS_tsurf = 1 !TODO: should be input parameter FL
 
 !!!!!! Begin program !!!!!!
       ! internal grids
@@ -149,7 +149,7 @@ CONTAINS
       ! emis_ground = emis(1) ! taken from Paved (FunctionalTypes)
 
       ! Building azimuth offset from cardinal points in degrees
-      t = 0  !tilt
+      t = 0 !tilt
 
       HW = cal_ratio_height2width(lamdaP, lamdaF)
 
@@ -160,7 +160,7 @@ CONTAINS
       svf_roof = hwToSVF_roof(hw) !TODO: Should change based on Oke equation???
 
       svf_veg = 1 ! svfveg: SVF based on vegetation blocking the sky (1 = no vegetation)
-      svf_aveg = 1  ! view factor where vegetation is in view before buildings.
+      svf_aveg = 1 ! view factor where vegetation is in view before buildings.
 
       tmp = 1 - (svf_ground + svf_veg - 1)
       IF (tmp <= 1.E-6) tmp = 1.E-6 ! avoiding log(0)
@@ -175,7 +175,7 @@ CONTAINS
       altitude = 90 - zenith_deg
 
       !Determination of clear-sky emissivity from Prata (1996) !TODO: Is this calcualted in NARP?
-      ea = 6.107*10**((7.5*Ta)/(237.3 + Ta))*(RH/100)!Vapor pressure
+      ea = 6.107*10**((7.5*Ta)/(237.3 + Ta))*(RH/100) !Vapor pressure
       msteg = 46.5*(ea/(Ta + 273.15))
       emis_sky = (1 - (1 + msteg)*EXP(-((1.2 + 3.0*msteg)**0.5)))
 
@@ -251,7 +251,7 @@ CONTAINS
          F_sh = 1
 
          !Nocturnal cloud fraction from Offerle et al. 2003
-         IF (dectime < (DOY + 0.5) .AND. dectime > DOY .AND. altitude < 1.0) THEN  !TODO: THIS (STILL, 20201117) NEED SOME THOUGHT 20150211
+         IF (dectime < (DOY + 0.5) .AND. dectime > DOY .AND. altitude < 1.0) THEN !TODO: THIS (STILL, 20201117) NEED SOME THOUGHT 20150211
             !j=0
             !do while (dectime<(DOY+SNUP/24))
             !!    call ConvertMetData(ith+j) ! read data at sunrise ??
@@ -290,7 +290,7 @@ CONTAINS
       END IF
 
       !!! Ldown !!!
-      IF (SOLWEIG_ldown == 1) THEN   ! Third
+      IF (SOLWEIG_ldown == 1) THEN ! Third
          Ldown2d = (svf_roof + svf_veg - 1)*emis_sky*SBC*((Ta + 273.15)**4) &
                    + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
                    + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
@@ -346,32 +346,32 @@ CONTAINS
       INTEGER, INTENT(in) :: iy
       INTEGER, INTENT(in) :: DOY
       ! INTEGER, intent(in)           :: timezone
-      REAL(KIND(1D0)), INTENT(in)   :: Ta_degC
-      REAL(KIND(1D0)), INTENT(in)   :: RH_frac
-      REAL(KIND(1D0)), INTENT(in)   :: P_kPa
-      REAL(KIND(1D0)), INTENT(in)   :: radG
-      REAL(KIND(1D0)), INTENT(in)   :: lat
-      REAL(KIND(1D0)), INTENT(out)  :: CIlatenight
-      REAL(KIND(1D0)), INTENT(out)  :: dectime_sunrise
-      REAL(KIND(1D0)), INTENT(out)  :: zen_sunrise
-      REAL(KIND(1D0)), INTENT(out)  :: I0_sunrise
-      REAL(KIND(1D0))  :: I0et
-      REAL(KIND(1D0))  :: CIuncorr
-      REAL(KIND(1D0))  :: Kt
-      REAL(KIND(1D0))  :: DAYL, DEC, SNDN, SNUP, azimuth
+      REAL(KIND(1D0)), INTENT(in) :: Ta_degC
+      REAL(KIND(1D0)), INTENT(in) :: RH_frac
+      REAL(KIND(1D0)), INTENT(in) :: P_kPa
+      REAL(KIND(1D0)), INTENT(in) :: radG
+      REAL(KIND(1D0)), INTENT(in) :: lat
+      REAL(KIND(1D0)), INTENT(out) :: CIlatenight
+      REAL(KIND(1D0)), INTENT(out) :: dectime_sunrise
+      REAL(KIND(1D0)), INTENT(out) :: zen_sunrise
+      REAL(KIND(1D0)), INTENT(out) :: I0_sunrise
+      REAL(KIND(1D0)) :: I0et
+      REAL(KIND(1D0)) :: CIuncorr
+      REAL(KIND(1D0)) :: Kt
+      REAL(KIND(1D0)) :: DAYL, DEC, SNDN, SNUP, azimuth
 
       CALL DAYLEN(DOY, lat, DAYL, DEC, SNDN, SNUP)
       dectime_sunrise = DOY + (SNUP + .5)/24.
       CALL NARP_cal_SunPosition( &
-         REAL(iy, KIND(1D0)), &!input:
-         dectime_sunrise, &! sun position at middle of timestep before
+         REAL(iy, KIND(1D0)), & !input:
+         dectime_sunrise, & ! sun position at middle of timestep before
          0.D0, lat, 0.D0, 100.D0, &
-         azimuth, zen_sunrise)!output:
+         azimuth, zen_sunrise) !output:
 
       zen_sunrise = zen_sunrise/180.*pi
 
       CALL clearnessindex_2013b(zen_sunrise, DOY, Ta_degC, RH_frac, radG, lat, P_kPa, & !input
-                                I0_sunrise, CIlatenight, Kt, I0et, CIuncorr)!output
+                                I0_sunrise, CIlatenight, Kt, I0et, CIuncorr) !output
 
    END SUBROUTINE cal_CI_latenight
 
@@ -381,17 +381,17 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in)   :: radI
-      REAL(KIND(1D0)), INTENT(in)   :: radG
-      REAL(KIND(1D0)), INTENT(in)   :: radD
+      REAL(KIND(1D0)), INTENT(in) :: radI
+      REAL(KIND(1D0)), INTENT(in) :: radG
+      REAL(KIND(1D0)), INTENT(in) :: radD
       ! REAL(KIND(1D0)), intent(in)   :: zen
-      REAL(KIND(1D0)), INTENT(in)   :: altitude
-      REAL(KIND(1D0)), INTENT(in)   :: svfr
-      REAL(KIND(1D0)), INTENT(in)   :: psi
-      REAL(KIND(1D0)), INTENT(in)   :: alb_bldg
-      REAL(KIND(1D0)), INTENT(in)   :: shadow, svfveg
-      REAL(KIND(1D0)), INTENT(in)   :: F_sh
-      REAL(KIND(1D0)), INTENT(out)  :: Kdown
+      REAL(KIND(1D0)), INTENT(in) :: altitude
+      REAL(KIND(1D0)), INTENT(in) :: svfr
+      REAL(KIND(1D0)), INTENT(in) :: psi
+      REAL(KIND(1D0)), INTENT(in) :: alb_bldg
+      REAL(KIND(1D0)), INTENT(in) :: shadow, svfveg
+      REAL(KIND(1D0)), INTENT(in) :: F_sh
+      REAL(KIND(1D0)), INTENT(out) :: Kdown
 
       ! REAL(KIND(1D0)) :: svfalfa, tmp
       REAL(KIND(1D0)) :: svfrbuveg
@@ -422,10 +422,10 @@ CONTAINS
    SUBROUTINE cal_svfalfa(svfr, svfveg, svfalfa, tmp)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in)::svfr ! svf of roof
-      REAL(KIND(1D0)), INTENT(in)::svfveg ! svf of vegetation
-      REAL(KIND(1D0)), INTENT(out)::svfalfa ! Building height angle from svfr
-      REAL(KIND(1D0)), INTENT(out)::tmp
+      REAL(KIND(1D0)), INTENT(in) :: svfr ! svf of roof
+      REAL(KIND(1D0)), INTENT(in) :: svfveg ! svf of vegetation
+      REAL(KIND(1D0)), INTENT(out) :: svfalfa ! Building height angle from svfr
+      REAL(KIND(1D0)), INTENT(out) :: tmp
 
       ! TODO: we need to use wall area directly to get this
       !Building height angle from svfr
@@ -437,15 +437,15 @@ CONTAINS
 
    FUNCTION cal_ratio_height2width(lamdaP, lamdaF) RESULT(HW)
       IMPLICIT NONE
-      REAL(KIND(1D0)), PARAMETER::a = 0.5598
-      REAL(KIND(1D0)), PARAMETER::b = -0.2485
-      REAL(KIND(1D0)), PARAMETER::c = 0.4112
-      REAL(KIND(1D0)), PARAMETER::d = -0.02528
+      REAL(KIND(1D0)), PARAMETER :: a = 0.5598
+      REAL(KIND(1D0)), PARAMETER :: b = -0.2485
+      REAL(KIND(1D0)), PARAMETER :: c = 0.4112
+      REAL(KIND(1D0)), PARAMETER :: d = -0.02528
 
-      REAL(KIND(1D0)), INTENT(in)::lamdaP ! plan area fraction
-      REAL(KIND(1D0)), INTENT(in)::lamdaF ! frontal area fraction
-      REAL(KIND(1D0))            ::HW
-      REAL(KIND(1D0))            ::lamdaW !wall area fraction (wallarea / total area)
+      REAL(KIND(1D0)), INTENT(in) :: lamdaP ! plan area fraction
+      REAL(KIND(1D0)), INTENT(in) :: lamdaF ! frontal area fraction
+      REAL(KIND(1D0)) :: HW
+      REAL(KIND(1D0)) :: lamdaW !wall area fraction (wallarea / total area)
 
       ! TODO: we need to use wall area directly to get this
       lamdaW = 4*lamdaF ! assuming square shaped buildings
@@ -456,13 +456,13 @@ CONTAINS
 
    FUNCTION hwToSVF_ground(hw) RESULT(svfGround)
       IMPLICIT NONE
-      REAL(KIND(1D0)), PARAMETER::a = 0.5598
-      REAL(KIND(1D0)), PARAMETER::b = -0.2485
-      REAL(KIND(1D0)), PARAMETER::c = 0.4112
-      REAL(KIND(1D0)), PARAMETER::d = -0.02528
+      REAL(KIND(1D0)), PARAMETER :: a = 0.5598
+      REAL(KIND(1D0)), PARAMETER :: b = -0.2485
+      REAL(KIND(1D0)), PARAMETER :: c = 0.4112
+      REAL(KIND(1D0)), PARAMETER :: d = -0.02528
 
-      REAL(KIND(1D0)), INTENT(in)::hw
-      REAL(KIND(1D0))::svfGround
+      REAL(KIND(1D0)), INTENT(in) :: hw
+      REAL(KIND(1D0)) :: svfGround
 
       ! SvfGround: Parameterisation based on NYC data (500x500 meter grid)
       svfGround = a*EXP(b*hw) + c*EXP(d*hw)
@@ -471,12 +471,12 @@ CONTAINS
 
    FUNCTION hwToSVF_roof(hw) RESULT(svfRoof)
       IMPLICIT NONE
-      REAL(KIND(1D0)), PARAMETER::e = 0.5572
-      REAL(KIND(1D0)), PARAMETER::f = 0.0589
-      REAL(KIND(1D0)), PARAMETER::g = 0.4143
+      REAL(KIND(1D0)), PARAMETER :: e = 0.5572
+      REAL(KIND(1D0)), PARAMETER :: f = 0.0589
+      REAL(KIND(1D0)), PARAMETER :: g = 0.4143
 
-      REAL(KIND(1D0)), INTENT(in)::hw
-      REAL(KIND(1D0))::svfRoof
+      REAL(KIND(1D0)), INTENT(in) :: hw
+      REAL(KIND(1D0)) :: svfRoof
 
       ! SvfGround: Parameterisation based on NYC data (500x500 meter grid)
       svfRoof = e*EXP(-f*hw) + g
@@ -489,17 +489,17 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(in)  :: iy
-      REAL(KIND(1D0)), INTENT(in)  :: Ta, RH, radI, I0
-      REAL(KIND(1D0)), INTENT(in)  :: dectime, SNUP, altitude, zen
-      REAL(KIND(1D0)), INTENT(in)  :: timezone, lat, lng, alt
+      INTEGER, INTENT(in) :: iy
+      REAL(KIND(1D0)), INTENT(in) :: Ta, RH, radI, I0
+      REAL(KIND(1D0)), INTENT(in) :: dectime, SNUP, altitude, zen
+      REAL(KIND(1D0)), INTENT(in) :: timezone, lat, lng, alt
       REAL(KIND(1D0)), INTENT(out) :: Tg, Tgwall, altmax
-      REAL(KIND(1D0)), PARAMETER   :: TgK = 0.37
-      REAL(KIND(1D0)), PARAMETER   :: Tstart = 3.41
-      REAL(KIND(1D0)), PARAMETER   :: TgK_wall = 0.37
-      REAL(KIND(1D0)), PARAMETER   :: Tstart_wall = -3.41
-      REAL(KIND(1D0)), PARAMETER   :: TmaxLST = 15.
-      REAL(KIND(1D0)), PARAMETER   :: TmaxLST_wall = 15.
+      REAL(KIND(1D0)), PARAMETER :: TgK = 0.37
+      REAL(KIND(1D0)), PARAMETER :: Tstart = 3.41
+      REAL(KIND(1D0)), PARAMETER :: TgK_wall = 0.37
+      REAL(KIND(1D0)), PARAMETER :: Tstart_wall = -3.41
+      REAL(KIND(1D0)), PARAMETER :: TmaxLST = 15.
+      REAL(KIND(1D0)), PARAMETER :: TmaxLST_wall = 15.
 
       REAL(KIND(1D0)) :: Ktc, notU, Tgamp, Tgampwall, radI0, corr, CI_Tg
       REAL(KIND(1D0)) :: fifteen, sunmaximum, zen_sunmax, dectimemax, azimuth
@@ -513,10 +513,10 @@ CONTAINS
          fifteen = fifteen + 15./1440.
          dectimemax = FLOOR(dectime) + 10/24.+fifteen
          CALL NARP_cal_SunPosition( &
-            REAL(iy, KIND(1D0)), &!input:
-            dectimemax, &! sun position at middle of timestep before
+            REAL(iy, KIND(1D0)), & !input:
+            dectimemax, & ! sun position at middle of timestep before
             timezone, lat, lng, alt, &
-            azimuth, zen_sunmax)!output:
+            azimuth, zen_sunmax) !output:
       END DO
 
       altmax = sunmaximum
@@ -550,30 +550,30 @@ CONTAINS
       IMPLICIT NONE
 
       REAL(KIND(1D0)), INTENT(in) :: HW, azimuth, zen
-      REAL(KIND(1D0)), INTENT(out):: shadowground, shadowwalls
+      REAL(KIND(1D0)), INTENT(out) :: shadowground, shadowwalls
       ! REAL(KIND(1d0)), PARAMETER   :: pi = 3.141592653589793
       REAL(KIND(1D0)) :: ROOF_HEIGHT, ROAD_WIDTH, THETA_Z, THETA_S, THETA_S180, ndir, wx
       REAL(KIND(1D0)) :: LshadowRoad(1:8), Wallsun(1:8)
-      INTEGER::idir
+      INTEGER :: idir
 
       ROOF_HEIGHT = hw
       ROAD_WIDTH = 1.
-      THETA_Z = zen  ! Solar Zenith Angle (radians)
+      THETA_Z = zen ! Solar Zenith Angle (radians)
       THETA_S = azimuth*DEG2RAD ! Solar azimuth Angle (radians)
-      THETA_S180 = ABS(pi - THETA_S)  ! deviation from south acc. Kusaka 2001
+      THETA_S180 = ABS(pi - THETA_S) ! deviation from south acc. Kusaka 2001
       ndir = 8.
       !LshadowRoad = np.zeros(int(ndir))
       !Wallsun = np.zeros(int(ndir))
 
       DO idir = 1, 8 ! Looping through 8 canyon directions. In Python 1 to 9. Here 1 to 8 Correct???
-         wx = 1./SIN(ABS((float(idir)*pi/ndir) - THETA_S180))  ! sun azimuth length in canyon
+         wx = 1./SIN(ABS((float(idir)*pi/ndir) - THETA_S180)) ! sun azimuth length in canyon
          LshadowRoad(idir) = (ROOF_HEIGHT/ROAD_WIDTH)*TAN(THETA_Z)*SIN(ABS((float(idir)*pi/ndir) - THETA_S180))
          Wallsun(idir) = (wx/TAN(THETA_Z))/(ROOF_HEIGHT/ROAD_WIDTH)
       END DO
 
       ! shadow fraction ground
       WHERE (LshadowRoad >= 1.) LshadowRoad = 1.
-      LshadowRoad = -1*LshadowRoad + 1.  ! Getting sunlit instead of shadow
+      LshadowRoad = -1*LshadowRoad + 1. ! Getting sunlit instead of shadow
       shadowground = SUM(LshadowRoad)/ndir
 
       ! shadow fraction walls
@@ -587,34 +587,34 @@ CONTAINS
       ! Clearness Index at the Earth's surface calculated from Crawford and Duchon 1999
       IMPLICIT NONE
 
-      INTEGER, INTENT(in)           :: DOY
-      REAL(KIND(1D0)), INTENT(in)   :: zen
-      REAL(KIND(1D0)), INTENT(in)   :: Ta_degC
-      REAL(KIND(1D0)), INTENT(in)   :: RH_frac
-      REAL(KIND(1D0)), INTENT(in)   :: P_kPa
-      REAL(KIND(1D0)), INTENT(in)   :: radG
-      REAL(KIND(1D0)), INTENT(in)   :: lat
-      REAL(KIND(1D0)), INTENT(out)  :: I0
-      REAL(KIND(1D0)), INTENT(out)  :: CI
-      REAL(KIND(1D0)), INTENT(out)  :: Kt
-      REAL(KIND(1D0)), INTENT(out)  :: I0et
-      REAL(KIND(1D0)), INTENT(out)  :: CIuncorr
-      REAL(KIND(1D0))               :: iG, Itoa, p
+      INTEGER, INTENT(in) :: DOY
+      REAL(KIND(1D0)), INTENT(in) :: zen
+      REAL(KIND(1D0)), INTENT(in) :: Ta_degC
+      REAL(KIND(1D0)), INTENT(in) :: RH_frac
+      REAL(KIND(1D0)), INTENT(in) :: P_kPa
+      REAL(KIND(1D0)), INTENT(in) :: radG
+      REAL(KIND(1D0)), INTENT(in) :: lat
+      REAL(KIND(1D0)), INTENT(out) :: I0
+      REAL(KIND(1D0)), INTENT(out) :: CI
+      REAL(KIND(1D0)), INTENT(out) :: Kt
+      REAL(KIND(1D0)), INTENT(out) :: I0et
+      REAL(KIND(1D0)), INTENT(out) :: CIuncorr
+      REAL(KIND(1D0)) :: iG, Itoa, p
       REAL(KIND(1D0)), DIMENSION(4) :: G
       ! REAL(KIND(1d0)), PARAMETER    :: pi = 3.141592653589793
 
       ! Variable declarations
-      REAL*8 :: a2      !>
+      REAL*8 :: a2 !>
       !logical :: b      !>
-      REAL*8 :: b2      !>
-      REAL*8 :: corr      !>
-      REAL*8 :: D      !>
-      REAL*8 :: m      !>
-      REAL*8 :: Tar      !>
-      REAL*8 :: Td      !>
-      REAL*8 :: Trpg      !>
-      REAL*8 :: Tw      !>
-      REAL*8 :: u      !>
+      REAL*8 :: b2 !>
+      REAL*8 :: corr !>
+      REAL*8 :: D !>
+      REAL*8 :: m !>
+      REAL*8 :: Tar !>
+      REAL*8 :: Td !>
+      REAL*8 :: Trpg !>
+      REAL*8 :: Tw !>
+      REAL*8 :: u !>
 
       IF (P_kPa == -999) THEN
          p = 1013 !Pressure in millibars
@@ -695,8 +695,8 @@ CONTAINS
       ! with day of year as input.
       ! Partridge and Platt, 1975
 
-      INTEGER          ::jday
-      REAL(KIND(1D0))  ::b, D
+      INTEGER :: jday
+      REAL(KIND(1D0)) :: b, D
 
       b = 2*3.141592654*jday/365
       D = SQRT(1.00011 + 0.034221*COS(b) + 0.001280*SIN(b) + 0.000719*COS(2*b) + 0.000077*SIN(2*b))
@@ -709,10 +709,10 @@ CONTAINS
       IMPLICIT NONE
 
       ! REAL(KIND(1d0)), PARAMETER                    :: pi = 3.141592653589793
-      REAL(KIND(1D0)), INTENT(in)                   :: zen
-      REAL(KIND(1D0)), INTENT(in)  :: svfalfa     !>
+      REAL(KIND(1D0)), INTENT(in) :: zen
+      REAL(KIND(1D0)), INTENT(in) :: svfalfa !>
       REAL(KIND(1D0)), INTENT(out) :: F_sh
-      REAL(KIND(1D0))                               :: beta      !>
+      REAL(KIND(1D0)) :: beta !>
       REAL(KIND(1D0)) :: alfa, xa, ha, hkil, ba
       REAL(KIND(1D0)) :: Ai, phi, qa, Za
       REAL(KIND(1D0)) :: ukil, Ssurf
@@ -778,13 +778,13 @@ CONTAINS
       IMPLICIT NONE
 
       REAL(KIND(1D0)), INTENT(in) :: radG
-      REAL(KIND(1D0)), INTENT(in) ::altitude
+      REAL(KIND(1D0)), INTENT(in) :: altitude
       REAL(KIND(1D0)), INTENT(in) :: Kt
       REAL(KIND(1D0)), INTENT(in) :: Ta
       REAL(KIND(1D0)), INTENT(in) :: RH
-      REAL(KIND(1D0)), INTENT(out)::radD ! direct radiation
-      REAL(KIND(1D0)), INTENT(out)::radI ! diffusive radiation
-      REAL(KIND(1D0))::alfa
+      REAL(KIND(1D0)), INTENT(out) :: radD ! direct radiation
+      REAL(KIND(1D0)), INTENT(out) :: radI ! diffusive radiation
+      REAL(KIND(1D0)) :: alfa
 
       alfa = altitude*DEG2RAD
 
@@ -827,19 +827,19 @@ CONTAINS
       IMPLICIT NONE
 
       ! REAL(KIND(1d0)), PARAMETER :: pi = 3.141592653589793
-      REAL(KIND(1D0)), INTENT(in):: radI
-      REAL(KIND(1D0)), INTENT(in):: radG
-      REAL(KIND(1D0)), INTENT(in):: radD
-      REAL(KIND(1D0)), INTENT(in):: azimuth
-      REAL(KIND(1D0)), INTENT(in):: altitude
-      REAL(KIND(1D0)), INTENT(in):: psi
-      REAL(KIND(1D0)), INTENT(in):: t
-      REAL(KIND(1D0)), INTENT(in):: alb_bldg
-      REAL(KIND(1D0)), INTENT(in):: alb_ground
+      REAL(KIND(1D0)), INTENT(in) :: radI
+      REAL(KIND(1D0)), INTENT(in) :: radG
+      REAL(KIND(1D0)), INTENT(in) :: radD
+      REAL(KIND(1D0)), INTENT(in) :: azimuth
+      REAL(KIND(1D0)), INTENT(in) :: altitude
+      REAL(KIND(1D0)), INTENT(in) :: psi
+      REAL(KIND(1D0)), INTENT(in) :: t
+      REAL(KIND(1D0)), INTENT(in) :: alb_bldg
+      REAL(KIND(1D0)), INTENT(in) :: alb_ground
 
       ! REAL(KIND(1d0)),  intent(in)   :: shadow, F_sh, svfalfa, svf, svfveg, svfaveg
-      REAL(KIND(1D0)), INTENT(in)   :: shadow, F_sh, svf, svfveg
-      REAL(KIND(1D0)), INTENT(out)  :: Keast, Knorth, Ksouth, Kwest
+      REAL(KIND(1D0)), INTENT(in) :: shadow, F_sh, svf, svfveg
+      REAL(KIND(1D0)), INTENT(out) :: Keast, Knorth, Ksouth, Kwest
 
       REAL(KIND(1D0)) :: vikttot, aziE, aziN, aziS, aziW
       REAL(KIND(1D0)) :: viktveg, viktwall
@@ -923,10 +923,10 @@ CONTAINS
                         viktveg, viktwall) ! output
 
       IMPLICIT NONE
-      REAL(KIND(1D0)), INTENT(in):: vikttot
-      REAL(KIND(1D0)), INTENT(in):: svf
-      REAL(KIND(1D0)), INTENT(in):: svfveg
-      REAL(KIND(1D0)), INTENT(out)  :: viktveg, viktwall
+      REAL(KIND(1D0)), INTENT(in) :: vikttot
+      REAL(KIND(1D0)), INTENT(in) :: svf
+      REAL(KIND(1D0)), INTENT(in) :: svfveg
+      REAL(KIND(1D0)), INTENT(out) :: viktveg, viktwall
       REAL(KIND(1D0)) :: svfvegbu
 
       !! Least
@@ -948,7 +948,7 @@ CONTAINS
 
    FUNCTION cal_vikt(svf_x, vikttot) RESULT(vikt)
       IMPLICIT NONE
-      REAL(KIND(1D0)), INTENT(in):: svf_x, vikttot
+      REAL(KIND(1D0)), INTENT(in) :: svf_x, vikttot
       REAL(KIND(1D0)) :: vikt
 
       vikt = (vikttot &
@@ -964,13 +964,13 @@ CONTAINS
                      Least, Lnorth, Lsouth, Lwest)
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in)::altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, ldown
+      REAL(KIND(1D0)), INTENT(in) :: altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, ldown
 
       REAL(KIND(1D0)), INTENT(in) :: svfalfa, svf, svfveg, svfaveg, F_sh_in
       REAL(KIND(1D0)), INTENT(in) :: Ldown2d, Lup2d
-      REAL(KIND(1D0)), INTENT(out):: Least, Lnorth, Lsouth, Lwest
+      REAL(KIND(1D0)), INTENT(out) :: Least, Lnorth, Lsouth, Lwest
 
-      REAL(KIND(1D0))::vikttot, aziE, aziN, aziS, aziW, c
+      REAL(KIND(1D0)) :: vikttot, aziE, aziN, aziS, aziW, c
 
       REAL(KIND(1D0)) :: svfalfaE, svfalfaS, svfalfaW, svfalfaN
       REAL(KIND(1D0)) :: alfaB, betaB, betasun
@@ -981,11 +981,11 @@ CONTAINS
       ! INTEGER, PARAMETER:: SOLWEIG_ldown = 0  !! force to 0, TS 13 Dec 2019
 
       ! set as 1 for testing
-      INTEGER, PARAMETER:: SOLWEIG_ldown = 1  !! force to 0, TS 13 Dec 2019
+      INTEGER, PARAMETER :: SOLWEIG_ldown = 1 !! force to 0, TS 13 Dec 2019
 
       REAL(KIND(1D0)) :: viktveg, viktsky, viktrefl, viktwall
-      REAL(KIND(1D0)):: svfE, svfS, svfW, svfN, svfEveg, svfSveg, svfWveg, svfNveg
-      REAL(KIND(1D0)):: svfEaveg, svfSaveg, svfWaveg, svfNaveg, F_sh
+      REAL(KIND(1D0)) :: svfE, svfS, svfW, svfN, svfEveg, svfSveg, svfWveg, svfNveg
+      REAL(KIND(1D0)) :: svfEaveg, svfSaveg, svfWaveg, svfNaveg, F_sh
 
       ! ALLOCATE (oneminussvfE(1, 1))
       ! ALLOCATE (oneminussvfS(1, 1))
@@ -1191,14 +1191,14 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), INTENT(in):: vikttot
+      REAL(KIND(1D0)), INTENT(in) :: vikttot
       REAL(KIND(1D0)), INTENT(in) :: isvf
       REAL(KIND(1D0)), INTENT(in) :: isvfveg
       REAL(KIND(1D0)), INTENT(in) :: isvfaveg
-      REAL(KIND(1D0)), INTENT(out)  :: viktveg
-      REAL(KIND(1D0)), INTENT(out)  ::viktsky
-      REAL(KIND(1D0)), INTENT(out)  :: viktrefl
-      REAL(KIND(1D0)), INTENT(out)  :: viktwall
+      REAL(KIND(1D0)), INTENT(out) :: viktveg
+      REAL(KIND(1D0)), INTENT(out) :: viktsky
+      REAL(KIND(1D0)), INTENT(out) :: viktrefl
+      REAL(KIND(1D0)), INTENT(out) :: viktwall
 
       REAL(KIND(1D0)) :: viktonlywall
       REAL(KIND(1D0)) :: viktaveg
@@ -1265,15 +1265,15 @@ CONTAINS
 
    SUBROUTINE day2month(b, mb, md, seas, year, latitude)
       IMPLICIT NONE
-      INTEGER, INTENT(in) ::b  !b=doy   --IN
-      INTEGER, INTENT(out) ::mb !month=mb  --OUT
-      INTEGER, INTENT(out) ::md !date=md --OUT
-      INTEGER, INTENT(out) ::seas
-      INTEGER, INTENT(in) ::year
-      INTEGER::t1, t2, t3
-      INTEGER::k ! k- accounts for leap year
+      INTEGER, INTENT(in) :: b !b=doy   --IN
+      INTEGER, INTENT(out) :: mb !month=mb  --OUT
+      INTEGER, INTENT(out) :: md !date=md --OUT
+      INTEGER, INTENT(out) :: seas
+      INTEGER, INTENT(in) :: year
+      INTEGER :: t1, t2, t3
+      INTEGER :: k ! k- accounts for leap year
 
-      REAL(KIND(1D0))::latitude
+      REAL(KIND(1D0)) :: latitude
 
       ! initialisation
       mb = 1
@@ -1329,13 +1329,13 @@ CONTAINS
       END IF
 
       !
-      IF (latitude > 0) THEN  ! Northern Hemisphere
+      IF (latitude > 0) THEN ! Northern Hemisphere
          IF (mb > 3 .AND. mb < 10) THEN !Summer is from Apr to Sep
             seas = 1
          ELSE
             seas = 2 !Winter rest of the months
          END IF
-      ELSE  ! southern hemisphere
+      ELSE ! southern hemisphere
          IF (mb < 4 .OR. mb > 9) THEN !Summer is from Oct to Mar
             seas = 1
          ELSE
@@ -1347,7 +1347,7 @@ CONTAINS
 !===============================================================================
    SUBROUTINE month2day(mon, ne, k, b)
       IMPLICIT NONE
-      INTEGER:: mon, ne, k, b
+      INTEGER :: mon, ne, k, b
 
       IF (mon == 1) THEN
          NE = 32 - B
@@ -1446,7 +1446,7 @@ CONTAINS
       !This subroutine converts dectime to individual
       !hours, minutes and seconds
       INTEGER :: HOURS, MINS, doy
-      REAL(KIND(1D0))    :: dectime, SECS, DH, DM, DS
+      REAL(KIND(1D0)) :: dectime, SECS, DH, DM, DS
       !INTEGER :: year
 
       doy = FLOOR(dectime)
@@ -1475,8 +1475,8 @@ CONTAINS
       IMPLICIT NONE
       INTEGER :: DOY
       REAL(KIND(1D0)), INTENT(IN) :: XLAT
-      REAL(KIND(1D0)), INTENT(OUT) ::  DEC, DAYL, SNDN, SNUP
-      REAL(KIND(1D0)):: SOC
+      REAL(KIND(1D0)), INTENT(OUT) :: DEC, DAYL, SNDN, SNUP
+      REAL(KIND(1D0)) :: SOC
       REAL(KIND(1D0)), PARAMETER :: RAD = PI/180.0
 
       !-----------------------------------------------------------------------
@@ -1514,9 +1514,9 @@ CONTAINS
       id, it, imin, isec, & ! input
       dectime) ! output
       IMPLICIT NONE
-      INTEGER, INTENT(in)::id, it, imin, isec
+      INTEGER, INTENT(in) :: id, it, imin, isec
 
-      REAL(KIND(1D0)), INTENT(out)::dectime ! nsh in type real
+      REAL(KIND(1D0)), INTENT(out) :: dectime ! nsh in type real
 
       dectime = REAL(id - 1, KIND(1D0)) &
                 + REAL(it, KIND(1D0))/24 &
@@ -1530,11 +1530,11 @@ CONTAINS
       tstep, & ! input
       nsh, nsh_real, tstep_real) ! output
       IMPLICIT NONE
-      INTEGER, INTENT(in)::tstep ! number of timesteps per hour
+      INTEGER, INTENT(in) :: tstep ! number of timesteps per hour
       ! values that are derived from tstep
-      INTEGER, INTENT(out)::nsh ! number of timesteps per hour
-      REAL(KIND(1D0)), INTENT(out)::nsh_real ! nsh in type real
-      REAL(KIND(1D0)), INTENT(out)::tstep_real ! tstep in type real
+      INTEGER, INTENT(out) :: nsh ! number of timesteps per hour
+      REAL(KIND(1D0)), INTENT(out) :: nsh_real ! nsh in type real
+      REAL(KIND(1D0)), INTENT(out) :: tstep_real ! tstep in type real
       nsh = 3600/tstep
       nsh_real = nsh*1.0
       tstep_real = tstep*1.0
@@ -1546,23 +1546,23 @@ CONTAINS
       dayofWeek_id) !output
       IMPLICIT NONE
 
-      INTEGER, INTENT(in) :: iy  ! year
-      INTEGER, INTENT(in) :: id  ! day of year
-      REAL(KIND(1D0)), INTENT(in):: lat
+      INTEGER, INTENT(in) :: iy ! year
+      INTEGER, INTENT(in) :: id ! day of year
+      REAL(KIND(1D0)), INTENT(in) :: lat
 
-      INTEGER, DIMENSION(3), INTENT(OUT) ::dayofWeek_id
+      INTEGER, DIMENSION(3), INTENT(OUT) :: dayofWeek_id
 
-      INTEGER::wd
-      INTEGER::mb
-      INTEGER::date
-      INTEGER::seas
+      INTEGER :: wd
+      INTEGER :: mb
+      INTEGER :: date
+      INTEGER :: seas
 
       CALL day2month(id, mb, date, seas, iy, lat) !Calculate real date from doy
-      CALL Day_of_Week(date, mb, iy, wd)        !Calculate weekday (1=Sun, ..., 7=Sat)
+      CALL Day_of_Week(date, mb, iy, wd) !Calculate weekday (1=Sun, ..., 7=Sat)
 
-      dayofWeek_id(1) = wd      !Day of week
-      dayofWeek_id(2) = mb      !Month
-      dayofweek_id(3) = seas    !Season
+      dayofWeek_id(1) = wd !Day of week
+      dayofWeek_id(2) = mb !Month
+      dayofweek_id(3) = seas !Season
 
    END SUBROUTINE SUEWS_cal_weekday
 

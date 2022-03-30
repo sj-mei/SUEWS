@@ -31,19 +31,19 @@ CONTAINS
 !  41-46 - Rectangular hyperbola, calculated with conductance parameters (Järvi et al., 2019)
 !========================================================================================
    SUBROUTINE CO2_biogen( &
-      alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
+      alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
       ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
       id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
-      NVegSurf, resp_a, resp_b, sfr, SnowFrac, t2, Temp_C, theta_bioCO2, &
-      Fc_biogen, Fc_photo, Fc_respi)! output:
+      NVegSurf, resp_a, resp_b, sfr_surf, SnowFrac, t2, Temp_C, theta_bioCO2, &
+      Fc_biogen, Fc_photo, Fc_respi) ! output:
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(in):: &
+      INTEGER, INTENT(in) :: &
          EmissionsMethod, id, it, ivConif, ivDecid, ivGrass, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, &
          nsurf, nvegSurf, gsmodel
 
-      REAL(KIND(1D0)), INTENT(in):: &
+      REAL(KIND(1D0)), INTENT(in) :: &
          avkdn, &
          dectime, &
          gfunc, &
@@ -51,12 +51,12 @@ CONTAINS
          Temp_C, &
          t2
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in):: &
-         sfr, &   !Surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: &
+         sfr_surf, & !Surface fractions [-]
          SnowFrac
 
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in):: &
-         LAIMin, LAIMax, &      ! [m2 m-2]
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: &
+         LAIMin, LAIMax, & ! [m2 m-2]
          alpha_bioCO2, &
          beta_bioCO2, &
          theta_bioCO2, &
@@ -67,24 +67,24 @@ CONTAINS
          min_res_bioCO2, &
          LAI_id
 
-      REAL(KIND(1D0)), INTENT(out):: &
+      REAL(KIND(1D0)), INTENT(out) :: &
          Fc_biogen, &
          Fc_respi, Fc_photo
 
-      INTEGER:: iv ! counter
+      INTEGER :: iv ! counter
 
-      REAL(KIND(1D0)):: &
+      REAL(KIND(1D0)) :: &
          PAR_umolm2s1, &
-         Bellucco2017_Pho, &     ! Photosynthesis (Bellucco et al. 2016)
-         Bellucco2017_Res, &     ! Respiration (Bellucco et al. 2016)
-         Bellucco2017_Res_surf, &! Respiration for each vegetated surface
-         VegFracSum              ! Sum of vegetation fractions without water. Could be moved elsewhere later.
+         Bellucco2017_Pho, & ! Photosynthesis (Bellucco et al. 2016)
+         Bellucco2017_Res, & ! Respiration (Bellucco et al. 2016)
+         Bellucco2017_Res_surf, & ! Respiration for each vegetated surface
+         VegFracSum ! Sum of vegetation fractions without water. Could be moved elsewhere later.
 
-      REAL(KIND(1D0)), DIMENSION(nvegsurf):: &
-         active_veg_fr, &        ! Active vegetation fraction
-         active_veg_fr0, &       ! Active vegetation fraction without LAI
-         Fc_photo_surf, &        ! Photosynthesis for each vegetated surface
-         Bellucco2017_Pho_surf, &   ! Photosynthesis for each vegetated surface
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: &
+         active_veg_fr, & ! Active vegetation fraction
+         active_veg_fr0, & ! Active vegetation fraction without LAI
+         Fc_photo_surf, & ! Photosynthesis for each vegetated surface
+         Bellucco2017_Pho_surf, & ! Photosynthesis for each vegetated surface
          alpha_bioCO2_v2, &
          beta_bioCO2_v2, &
          theta_bioCO2_v2
@@ -96,29 +96,29 @@ CONTAINS
       !-----------------------------------------------------------------------
       ! Calculate PAR from Kdown ----------------------------------
       PAR_umolm2s1 = JtoumolPAR*KdntoPAR*avKdn
-      VegFracSum = sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf)
+      VegFracSum = sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)
 
       ! Calculate active vegetation surface -----------------------
       !Now this is zero always when LAI in its minimum values. This needs to vary between the summer time maximum and some minimum value
       !especially in the case of evergreen trees (i.e. in early March LAI can be in its minimum value, but air temperature and radiation
       !such that uptake can take place)
-      DO iv = ivConif, ivGrass   !For vegetated surfaces. Snow included although quite often LAI will be in its minimum when snow on ground
+      DO iv = ivConif, ivGrass !For vegetated surfaces. Snow included although quite often LAI will be in its minimum when snow on ground
 
-         active_veg_fr(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
-         active_veg_fr0(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)
+         active_veg_fr(iv) = (sfr_surf(iv + 2)*(1 - SnowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
+         active_veg_fr0(iv) = (sfr_surf(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)
 
       END DO
 
-      IF (EmissionsMethod >= 11 .AND. EmissionsMethod <= 16) THEN   ! Rectangular hyperbola
+      IF (EmissionsMethod >= 11 .AND. EmissionsMethod <= 16) THEN ! Rectangular hyperbola
          ! Calculate carbon uptake due to photosynthesis -------------
          Fc_photo = 0
          DO iv = ivConif, ivGrass
             Fc_photo_surf(iv) = -beta_bioCO2(iv)*alpha_bioCO2(iv)*PAR_umolm2s1/(alpha_bioCO2(iv)*PAR_umolm2s1 + beta_bioCO2(iv))
             ! For active vegetation fraction only
-            Fc_photo = Fc_photo + Fc_photo_surf(iv)*active_veg_fr(iv)  !umol m-2 s-1
+            Fc_photo = Fc_photo + Fc_photo_surf(iv)*active_veg_fr(iv) !umol m-2 s-1
          END DO
 
-      ELSEIF (EmissionsMethod >= 21 .AND. EmissionsMethod <= 26) THEN  !Local model, Bellucco et al. (2017)
+      ELSEIF (EmissionsMethod >= 21 .AND. EmissionsMethod <= 26) THEN !Local model, Bellucco et al. (2017)
          ! Calculate carbon uptake due to photosynthesis -------------
          Bellucco2017_Pho = 0
          DO iv = ivConif, ivGrass
@@ -132,7 +132,7 @@ CONTAINS
          END DO
          Fc_photo = Bellucco2017_Pho
 
-      ELSEIF (EmissionsMethod >= 31 .AND. EmissionsMethod <= 36) THEN  !General model, Bellucco et al. (2017)
+      ELSEIF (EmissionsMethod >= 31 .AND. EmissionsMethod <= 36) THEN !General model, Bellucco et al. (2017)
          ! Not currently recommended as includes also some anthropogenic impacts. Should maybe be separate from other biogen choices?
          ! Alpha and beta calculated as a function of vegetation cover fraction
 
@@ -143,9 +143,9 @@ CONTAINS
 
             !Because different alpha, beta and theta values are same - only one vegetation type is needed.
             alpha_bioCO2_v2(ivConif) = alpha_bioCO2(ivConif) + alpha_enh_bioCO2(ivConif)* &
-                                       (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))      !umol CO2 umol photons-1
+                                       (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol CO2 umol photons-1
             beta_bioCO2_v2(ivConif) = -beta_bioCO2(ivConif) + beta_enh_bioCO2(ivConif)* &
-                                      (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))     !umol m^-2 s^-1
+                                      (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol m^-2 s^-1
 
             !Photosynthesis
             Bellucco2017_Pho = -(1/(2*theta_bioCO2(ivConif)) &
@@ -158,24 +158,24 @@ CONTAINS
             ! CALL ErrorHint(74, 'Check values in SUEWS_BiogenCO2.txt: ', notUsed, notUsed, notUsedI)
 
             ! Weighted averages
-            alpha_bioCO2_v2(ivConif) = (alpha_bioCO2(ivConif)*sfr(ConifSurf)/VegFracSum + &
-                                        alpha_bioCO2(ivDecid)*sfr(DecidSurf)/VegFracSum &
-                                        + alpha_bioCO2(ivGrass)*sfr(GrassSurf)/VegFracSum) &
+            alpha_bioCO2_v2(ivConif) = (alpha_bioCO2(ivConif)*sfr_surf(ConifSurf)/VegFracSum + &
+                                        alpha_bioCO2(ivDecid)*sfr_surf(DecidSurf)/VegFracSum &
+                                        + alpha_bioCO2(ivGrass)*sfr_surf(GrassSurf)/VegFracSum) &
                                        /(alpha_bioCO2(ivConif) + alpha_bioCO2(ivDecid) + alpha_bioCO2(ivGrass))
-            beta_bioCO2_v2(ivConif) = (beta_bioCO2(ivConif)*sfr(ConifSurf)/VegFracSum + &
-                                       beta_bioCO2(ivDecid)*sfr(DecidSurf)/VegFracSum &
-                                       + beta_bioCO2(ivGrass)*sfr(GrassSurf)/VegFracSum) &
+            beta_bioCO2_v2(ivConif) = (beta_bioCO2(ivConif)*sfr_surf(ConifSurf)/VegFracSum + &
+                                       beta_bioCO2(ivDecid)*sfr_surf(DecidSurf)/VegFracSum &
+                                       + beta_bioCO2(ivGrass)*sfr_surf(GrassSurf)/VegFracSum) &
                                       /(beta_bioCO2(ivConif) + beta_bioCO2(ivDecid) + beta_bioCO2(ivGrass))
-            theta_bioCO2_v2(ivConif) = (theta_bioCO2(ivConif)*sfr(ConifSurf)/VegFracSum + &
-                                        theta_bioCO2(ivDecid)*sfr(DecidSurf)/VegFracSum &
-                                        + theta_bioCO2(ivGrass)*sfr(GrassSurf)/VegFracSum) &
+            theta_bioCO2_v2(ivConif) = (theta_bioCO2(ivConif)*sfr_surf(ConifSurf)/VegFracSum + &
+                                        theta_bioCO2(ivDecid)*sfr_surf(DecidSurf)/VegFracSum &
+                                        + theta_bioCO2(ivGrass)*sfr_surf(GrassSurf)/VegFracSum) &
                                        /(theta_bioCO2(ivConif) + theta_bioCO2(ivDecid) + theta_bioCO2(ivGrass))
 
             ! Using weighted average values to calculate alpha and beta as a function of vegetation cover fraction
             alpha_bioCO2_v2(ivConif) = alpha_bioCO2_v2(ivConif) + alpha_enh_bioCO2(ivConif)* &
-                                       (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))     !umol CO2 umol photons-1
+                                       (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol CO2 umol photons-1
             beta_bioCO2_v2(ivConif) = -beta_bioCO2_v2(ivConif) + beta_enh_bioCO2(ivConif)* &
-                                      (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))     !umol m^-2 s^-1
+                                      (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf)) !umol m^-2 s^-1
 
             !Photosynthesis
             Bellucco2017_Pho = -(1/(2*theta_bioCO2_v2(ivConif))*( &
@@ -190,14 +190,14 @@ CONTAINS
                     Bellucco2017_Pho*active_veg_fr(DecidSurf - 2) + &
                     Bellucco2017_Pho*active_veg_fr(GrassSurf - 2)
 
-      ELSEIF (EmissionsMethod >= 41 .AND. EmissionsMethod <= 46) THEN  ! Conductance parameters
+      ELSEIF (EmissionsMethod >= 41 .AND. EmissionsMethod <= 46) THEN ! Conductance parameters
          !Dependance to incoming shortwave radiation, specific humidity deficit, air temperature and soil moisture deficit
          Fc_photo = 0
          DO iv = ivConif, ivGrass
             Fc_photo = Fc_photo + active_veg_fr0(iv)*beta_bioCO2(iv)
          END DO
 
-         IF (gsmodel == 1 .OR. gsmodel == 2) THEN     !With air temperature
+         IF (gsmodel == 1 .OR. gsmodel == 2) THEN !With air temperature
             Fc_photo = -Fc_Photo*gfunc
          ELSEIF (gsmodel == 3 .OR. gsmodel == 4) THEN !With modelled 2 meter temperature
             Fc_photo = -Fc_Photo*gfunc2
@@ -210,18 +210,18 @@ CONTAINS
       Bellucco2017_Res_surf = 0.0
       IF (VegFracSum > 0.01) THEN
          DO iv = ivConif, ivGrass
-            IF (sfr(2 + iv) > 0.005) THEN
-               IF (gsmodel == 1 .OR. gsmodel == 2) THEN     !With air temperature
+            IF (sfr_surf(2 + iv) > 0.005) THEN
+               IF (gsmodel == 1 .OR. gsmodel == 2) THEN !With air temperature
                   Bellucco2017_Res_surf = MAX(min_res_bioCO2(iv), resp_a(iv)*EXP(resp_b(iv)*Temp_C))
                ELSEIF (gsmodel == 3 .OR. gsmodel == 4) THEN !With modelled 2 meter temperature
                   Bellucco2017_Res_surf = MAX(min_res_bioCO2(iv), resp_a(iv)*EXP(resp_b(iv)*t2))
                END IF
                ! Only for vegetation fraction
-               Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf*sfr(2 + iv)/VegFracSum
+               Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf*sfr_surf(2 + iv)/VegFracSum
             END IF
          END DO
       END IF
-      Fc_respi = Bellucco2017_Res*(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))
+      Fc_respi = Bellucco2017_Res*(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf))
       ! Combine to find biogenic CO2 flux
       Fc_biogen = Fc_photo + Fc_respi
 

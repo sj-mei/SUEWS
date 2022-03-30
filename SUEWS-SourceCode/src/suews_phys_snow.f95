@@ -31,99 +31,99 @@ CONTAINS
    !                        to use qn1_ind_snow(StoreDrainPrm)
    !=======================================================================================
    SUBROUTINE Snow_cal_MeltHeat( &
-      SnowUse, &!input
+      SnowUse, & !input
       tstep, tau_r, SnowDensMax, &
       lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-      nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
+      nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
       kup_ind_snow, SnowWater, deltaQi, albedo_snow, &
-      SnowPack_in, SnowFrac_in, SnowAlb_in, SnowDens_in, SnowfallCum_in, &!input
-      SnowPack_out, SnowFrac_out, SnowAlb_out, SnowDens_out, SnowfallCum_out, &!output
-      mwh, Qm, QmFreez, QmRain, &! output
+      SnowPack_in, SnowFrac_in, SnowAlb_in, SnowDens_in, SnowfallCum_in, & !input
+      SnowPack_out, SnowFrac_out, SnowAlb_out, SnowDens_out, SnowfallCum_out, & !output
+      mwh, Qm, QmFreez, QmRain, & ! output
       veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
       FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
-      dataOutLineSnow)!output
+      dataOutLineSnow) !output
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER::nsurf = 7
       ! INTEGER, PARAMETER::PavSurf = 1
       ! INTEGER, PARAMETER::BldgSurf = 2
       ! INTEGER, PARAMETER::WaterSurf = 7
-      INTEGER, PARAMETER::ncolumnsDataOutSnow_notime = ncolumnsDataOutSnow - 5
-      REAL(KIND(1D0)), PARAMETER::waterDens = 999.8395 !Density of water in 0 cel deg
+      INTEGER, PARAMETER :: ncolumnsDataOutSnow_notime = ncolumnsDataOutSnow - 5
+      REAL(KIND(1D0)), PARAMETER :: waterDens = 999.8395 !Density of water in 0 cel deg
 
       !These are input to the module
-      INTEGER, INTENT(in)::SnowUse
-      INTEGER, INTENT(in)::tstep
+      INTEGER, INTENT(in) :: SnowUse
+      INTEGER, INTENT(in) :: tstep
       ! INTEGER,INTENT(in)::bldgsurf
       ! INTEGER,INTENT(in)::nsurf
       ! INTEGER,INTENT(in)::PavSurf
       ! INTEGER,INTENT(in)::WaterSurf
 
-      REAL(KIND(1D0)), INTENT(in)::lvS_J_kg
-      REAL(KIND(1D0)), INTENT(in)::lv_J_kg
-      REAL(KIND(1D0)), INTENT(in)::tstep_real
-      REAL(KIND(1D0)), INTENT(in)::RadMeltFact
-      REAL(KIND(1D0)), INTENT(in)::TempMeltFact
-      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
-      REAL(KIND(1D0)), INTENT(in)::SnowDensMax
-      REAL(KIND(1D0)), INTENT(in)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(in)::Temp_C
-      REAL(KIND(1D0)), INTENT(in)::Precip
-      REAL(KIND(1D0)), INTENT(in)::PrecipLimit
-      REAL(KIND(1D0)), INTENT(in)::PrecipLimitAlb
-      REAL(KIND(1D0)), INTENT(in)::nsh_real
-      REAL(KIND(1D0)), INTENT(in)::albedo_snow
-      REAL(KIND(1D0)), INTENT(in)::tau_r
+      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg
+      REAL(KIND(1D0)), INTENT(in) :: lv_J_kg
+      REAL(KIND(1D0)), INTENT(in) :: tstep_real
+      REAL(KIND(1D0)), INTENT(in) :: RadMeltFact
+      REAL(KIND(1D0)), INTENT(in) :: TempMeltFact
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlbMax
+      REAL(KIND(1D0)), INTENT(in) :: SnowDensMax
+      REAL(KIND(1D0)), INTENT(in) :: SnowDensMin
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      REAL(KIND(1D0)), INTENT(in) :: Precip
+      REAL(KIND(1D0)), INTENT(in) :: PrecipLimit
+      REAL(KIND(1D0)), INTENT(in) :: PrecipLimitAlb
+      REAL(KIND(1D0)), INTENT(in) :: nsh_real
+      REAL(KIND(1D0)), INTENT(in) :: albedo_snow
+      REAL(KIND(1D0)), INTENT(in) :: tau_r
       ! REAL(KIND(1d0)),INTENT(in)::waterdens
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::state_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::qn1_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::kup_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowWater
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::deltaQi
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_id
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn1_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: kup_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowWater
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: deltaQi
 
       !Input and output as this is updated in this subroutine
-      REAL(KIND(1D0)), INTENT(in)::SnowAlb_in
-      REAL(KIND(1D0)), INTENT(in)::SnowfallCum_in
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowPack_in
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowFrac_in
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowDens_in
-      REAL(KIND(1D0)), INTENT(out)::SnowAlb_out
-      REAL(KIND(1D0)), INTENT(out)::SnowfallCum_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowPack_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowFrac_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowDens_out
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlb_in
+      REAL(KIND(1D0)), INTENT(in) :: SnowfallCum_in
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_in
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_in
+      REAL(KIND(1D0)), INTENT(out) :: SnowAlb_out
+      REAL(KIND(1D0)), INTENT(out) :: SnowfallCum_out
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out
 
-      REAL(KIND(1D0))::SnowAlb
-      REAL(KIND(1D0))::SnowfallCum
-      REAL(KIND(1D0)), DIMENSION(nsurf)::SnowPack
-      REAL(KIND(1D0)), DIMENSION(nsurf)::SnowFrac
-      REAL(KIND(1D0)), DIMENSION(nsurf)::SnowDens
+      REAL(KIND(1D0)) :: SnowAlb
+      REAL(KIND(1D0)) :: SnowfallCum
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowPack
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
 
       !Output:
-      REAL(KIND(1D0)), INTENT(out)::mwh
-      REAL(KIND(1D0))::fwh
-      REAL(KIND(1D0)), INTENT(out)::Qm
-      REAL(KIND(1D0)), INTENT(out)::QmFreez
-      REAL(KIND(1D0)), INTENT(out)::QmRain
+      REAL(KIND(1D0)), INTENT(out) :: mwh
+      REAL(KIND(1D0)) :: fwh
+      REAL(KIND(1D0)), INTENT(out) :: Qm
+      REAL(KIND(1D0)), INTENT(out) :: QmFreez
+      REAL(KIND(1D0)), INTENT(out) :: QmRain
 
-      REAL(KIND(1D0)), INTENT(out)::veg_fr
+      REAL(KIND(1D0)), INTENT(out) :: veg_fr
 
-      INTEGER, DIMENSION(nsurf), INTENT(out)::snowCalcSwitch
+      INTEGER, DIMENSION(nsurf), INTENT(out) :: snowCalcSwitch
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::Qm_melt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::Qm_freezState
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::Qm_rain
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::FreezMelt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::FreezState
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::FreezStateVol
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::rainOnSnow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowDepth
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::mw_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_melt
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_freezState
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_rain
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezMelt
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezState
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezStateVol
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rainOnSnow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDepth
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: mw_ind
 
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow_notime), INTENT(out) :: dataOutLineSnow
 
@@ -141,7 +141,7 @@ CONTAINS
          CALL MeltHeat( &
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, &
             SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-            nsh_real, waterdens, sfr, Tsurf_ind, state_id, qn1_ind_snow, &
+            nsh_real, waterdens, sfr_surf, Tsurf_ind, state_id, qn1_ind_snow, &
             SnowWater, deltaQi, SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, &
             mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, &
             Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
@@ -170,8 +170,8 @@ CONTAINS
 
       ! update veg_fr
       CALL veg_fr_snow( &
-         sfr, SnowFrac, &!input
-         veg_fr)!output
+         sfr_surf, SnowFrac, & !input
+         veg_fr) !output
 
       SnowAlb_out = SnowAlb
       SnowfallCum_out = SnowfallCum
@@ -193,7 +193,7 @@ CONTAINS
    END SUBROUTINE Snow_cal_MeltHeat
 
    SUBROUTINE MeltHeat( &
-      lvS_J_kg, &!input
+      lvS_J_kg, & !input
       lv_J_kg, &
       tstep_real, &
       RadMeltFact, &
@@ -206,18 +206,18 @@ CONTAINS
       PrecipLimitAlb, &
       nsh_real, &
       waterdens, &
-      sfr, &
+      sfr_surf, &
       Tsurf_ind, &
       state_id, &
       qn1_ind_snow, &
       SnowWater, &
       deltaQi, &
-      SnowPack, &!inoout
+      SnowPack, & !inoout
       SnowFrac, &
       SnowAlb, &
       SnowDens, &
       SnowfallCum, &
-      mwh, &!output
+      mwh, & !output
       fwh, &
       Qm, &
       QmFreez, &
@@ -241,61 +241,61 @@ CONTAINS
       ! INTEGER, INTENT(in)::PavSurf
       ! INTEGER, INTENT(in)::WaterSurf
 
-      REAL(KIND(1D0)), INTENT(in)::lvS_J_kg
-      REAL(KIND(1D0)), INTENT(in)::lv_J_kg
-      REAL(KIND(1D0)), INTENT(in)::tstep_real
-      REAL(KIND(1D0)), INTENT(in)::RadMeltFact
-      REAL(KIND(1D0)), INTENT(in)::TempMeltFact
-      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
-      REAL(KIND(1D0)), INTENT(in)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(in)::Temp_C
-      REAL(KIND(1D0)), INTENT(in)::Precip
-      REAL(KIND(1D0)), INTENT(in)::PrecipLimit
-      REAL(KIND(1D0)), INTENT(in)::PrecipLimitAlb
-      REAL(KIND(1D0)), INTENT(in)::nsh_real
-      REAL(KIND(1D0)), INTENT(in)::waterdens
+      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg
+      REAL(KIND(1D0)), INTENT(in) :: lv_J_kg
+      REAL(KIND(1D0)), INTENT(in) :: tstep_real
+      REAL(KIND(1D0)), INTENT(in) :: RadMeltFact
+      REAL(KIND(1D0)), INTENT(in) :: TempMeltFact
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlbMax
+      REAL(KIND(1D0)), INTENT(in) :: SnowDensMin
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      REAL(KIND(1D0)), INTENT(in) :: Precip
+      REAL(KIND(1D0)), INTENT(in) :: PrecipLimit
+      REAL(KIND(1D0)), INTENT(in) :: PrecipLimitAlb
+      REAL(KIND(1D0)), INTENT(in) :: nsh_real
+      REAL(KIND(1D0)), INTENT(in) :: waterdens
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::state_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::qn1_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowWater
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::deltaQi
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_id
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn1_ind_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowWater
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: deltaQi
 
       !Input and output as this is updated in this subroutine
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::SnowPack
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::SnowFrac
-      REAL(KIND(1D0)), INTENT(inout)::SnowAlb
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::SnowDens
-      REAL(KIND(1D0)), INTENT(inout)::SnowfallCum
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowPack
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowFrac
+      REAL(KIND(1D0)), INTENT(inout) :: SnowAlb
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowDens
+      REAL(KIND(1D0)), INTENT(inout) :: SnowfallCum
 
       !Output:
-      REAL(KIND(1D0)), INTENT(out)::mwh
-      REAL(KIND(1D0)), INTENT(out)::fwh
-      REAL(KIND(1D0)), INTENT(out)::Qm
-      REAL(KIND(1D0)), INTENT(out)::QmFreez
-      REAL(KIND(1D0)), INTENT(out)::QmRain
+      REAL(KIND(1D0)), INTENT(out) :: mwh
+      REAL(KIND(1D0)), INTENT(out) :: fwh
+      REAL(KIND(1D0)), INTENT(out) :: Qm
+      REAL(KIND(1D0)), INTENT(out) :: QmFreez
+      REAL(KIND(1D0)), INTENT(out) :: QmRain
 
       !Output, dimension nsurf
-      INTEGER, DIMENSION(nsurf), INTENT(out)::snowCalcSwitch
+      INTEGER, DIMENSION(nsurf), INTENT(out) :: snowCalcSwitch
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::Qm_melt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::Qm_freezState
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::Qm_rain
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::FreezMelt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::FreezState
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::FreezStateVol
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::rainOnSnow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowDepth
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::mw_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_melt
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_freezState
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_rain
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezMelt
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezState
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezStateVol
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rainOnSnow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDepth
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: mw_ind
 
       ! local variables:
-      REAL(KIND(1D0))::AdjMeltFact
-      REAL(KIND(1D0))::Watfreeze
+      REAL(KIND(1D0)) :: AdjMeltFact
+      REAL(KIND(1D0)) :: Watfreeze
 
-      REAL(KIND(1D0)), PARAMETER::cw = 4190  !,ci=2090   !Specific heat capacity of water
+      REAL(KIND(1D0)), PARAMETER :: cw = 4190 !,ci=2090   !Specific heat capacity of water
 
-      INTEGER::is, xx
+      INTEGER :: is, xx
 
       !Initialize snow variables
       mwh = 0 !Initialize snow melt and heat related to snowmelt
@@ -320,10 +320,10 @@ CONTAINS
       !===dummy calculations end===
 
       !=========================================================================================
-      DO is = 1, nsurf  !Go each surface type through
-         IF (sfr(is) /= 0) THEN  !If surface type existing,
+      DO is = 1, nsurf !Go each surface type through
+         IF (sfr_surf(is) /= 0) THEN !If surface type existing,
 
-            IF (SnowPack(is) > 0) THEN  !If SnowPack existing, calculate meltwater related water flows
+            IF (SnowPack(is) > 0) THEN !If SnowPack existing, calculate meltwater related water flows
 
                SnowDepth(is) = (SnowPack(is)/1000)*waterDens/SnowDens(is) !Snow depth in m
 
@@ -332,19 +332,19 @@ CONTAINS
                !These are for snow melting
                IF (Temp_C >= 0) THEN
                   IF (qn1_ind_snow(is) < 0) THEN
-                     mw_ind(is) = TempMeltFact*Temp_C             !(mm C−1 h−1)*(C) = in mm h-1
+                     mw_ind(is) = TempMeltFact*Temp_C !(mm C−1 h−1)*(C) = in mm h-1
                   ELSE
-                     mw_ind(is) = RadMeltFact*(qn1_ind_snow(is))  !(mm m2 W−1 h−1)*(W m-2)= mm h-1 ??
+                     mw_ind(is) = RadMeltFact*(qn1_ind_snow(is)) !(mm m2 W−1 h−1)*(W m-2)= mm h-1 ??
                   END IF
 
-               ELSE  !Freezing equations
-                  AdjMeltFact = 1  !Relationship between the temperature melt and freezing factors
+               ELSE !Freezing equations
+                  AdjMeltFact = 1 !Relationship between the temperature melt and freezing factors
                   mw_ind(is) = TempMeltFact*Temp_C*AdjMeltFact ! in mm h-1
                END IF
                !Previous equation give the hourly values, divide these with the timestep number
                mw_ind(is) = mw_ind(is)/nsh_real
 
-               IF (mw_ind(is) > SnowPack(is)) mw_ind(is) = SnowPack(is)!Limited by the previous timestep SnowPack
+               IF (mw_ind(is) > SnowPack(is)) mw_ind(is) = SnowPack(is) !Limited by the previous timestep SnowPack
 
                !-----------------------------------------------------
                ! Heat consumed to snowmelt/refreezing within Tstep.
@@ -369,7 +369,7 @@ CONTAINS
                ! SnowPack. Eq (23) in Sun et al., 1999
                ! Calculation done at resolution of the model timestep
                IF (Temp_C >= PrecipLimit .AND. Precip > 0) THEN
-                  Qm_rain(is) = waterDens*cw*(Temp_C - PrecipLimit)*(Precip*0.001/tstep_real)  !in W m-2
+                  Qm_rain(is) = waterDens*cw*(Temp_C - PrecipLimit)*(Precip*0.001/tstep_real) !in W m-2
                   IF (Qm_rain(is) < 0) THEN !Can only be positive
                      Qm_rain(is) = 0
                   ELSE
@@ -399,7 +399,7 @@ CONTAINS
 
                   IF (SnowPack(is) == 0 .OR. SnowFrac(is) == 0) THEN !SnowPack forms
                      FreezStateVol(is) = FreezState(is)
-                  ELSE                                         !There is snow already on ground
+                  ELSE !There is snow already on ground
                      FreezStateVol(is) = FreezState(is)*(1 - SnowFrac(is))/SnowFrac(is)
                   END IF
 
@@ -434,7 +434,7 @@ CONTAINS
                IF (SnowPack(is) > 0 .OR. (Precip > 0 .AND. Tsurf_ind(is) < 0)) THEN
                   snowCalcSwitch(is) = 1
                END IF
-            ELSE       !Water surface separately
+            ELSE !Water surface separately
                IF (SnowPack(WaterSurf) > 0 .OR. FreezState(WaterSurf) > 0) THEN
                   snowCalcSwitch(WaterSurf) = 1
                END IF
@@ -446,11 +446,11 @@ CONTAINS
             END IF
 
             !Weighted variables for the whole area
-            mwh = mwh + mw_ind(is)*sfr(is)*SnowFrac(is)        !Snowmelt
-            fwh = fwh + FreezMelt(is)*sfr(is)*SnowFrac(is)     !Freezing water
-            Qm = Qm + Qm_melt(is)*sfr(is)*SnowFrac(is)         !Energy consumed to the melt/freezing.
-            QmRain = QmRain + Qm_rain(is)*sfr(is)*SnowFrac(is) !Rain on snow
-            QmFreez = QmFreez + deltaQi(is)*sfr(is)*SnowFrac(is) + Qm_freezState(is)*sfr(is)*(1 - SnowFrac(is)) !Freezing water
+            mwh = mwh + mw_ind(is)*sfr_surf(is)*SnowFrac(is) !Snowmelt
+            fwh = fwh + FreezMelt(is)*sfr_surf(is)*SnowFrac(is) !Freezing water
+            Qm = Qm + Qm_melt(is)*sfr_surf(is)*SnowFrac(is) !Energy consumed to the melt/freezing.
+            QmRain = QmRain + Qm_rain(is)*sfr_surf(is)*SnowFrac(is) !Rain on snow
+            QmFreez = QmFreez + deltaQi(is)*sfr_surf(is)*SnowFrac(is) + Qm_freezState(is)*sfr_surf(is)*(1 - SnowFrac(is)) !Freezing water
          END IF
 
       END DO !End surface type
@@ -475,7 +475,7 @@ CONTAINS
    !===============================================================================================
    !===============================================================================================
    SUBROUTINE SnowCalc( &
-      tstep, imin, it, dectime, is, &!input
+      tstep, imin, it, dectime, is, & !input
       EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
       avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, &
@@ -484,9 +484,9 @@ CONTAINS
       addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
       WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, &
-      Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
+      Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
       AddWater, addwaterrunoff, &
-      soilstore_id, SnowPack, SurplusEvap, &!inout
+      soilstore_id, SnowPack, SurplusEvap, & !inout
       SnowFrac, SnowWater, iceFrac, SnowDens, &
       runoffAGimpervious, runoffAGveg, surplusWaterBody, &
       rss_nsurf, runoffSnow, & ! output
@@ -515,133 +515,133 @@ CONTAINS
       ! INTEGER, PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
       ! INTEGER, PARAMETER::WaterSurf = 7
 
-      INTEGER, PARAMETER::snowfractionchoice = 2 ! this PARAMETER is used all through the model
-      REAL(KIND(1D0)), PARAMETER::waterDens = 999.8395 !Density of water in 0 cel deg
+      INTEGER, PARAMETER :: snowfractionchoice = 2 ! this PARAMETER is used all through the model
+      REAL(KIND(1D0)), PARAMETER :: waterDens = 999.8395 !Density of water in 0 cel deg
 
       ! INTEGER,INTENT(in)::id
       ! INTEGER,INTENT(in)::nsurf
-      INTEGER, INTENT(in)::tstep
-      INTEGER, INTENT(in)::imin
-      INTEGER, INTENT(in)::it
-      INTEGER, INTENT(in)::is
+      INTEGER, INTENT(in) :: tstep
+      INTEGER, INTENT(in) :: imin
+      INTEGER, INTENT(in) :: it
+      INTEGER, INTENT(in) :: is
 
       ! INTEGER,INTENT(in)::ConifSurf
       ! INTEGER,INTENT(in)::BSoilSurf
       ! INTEGER,INTENT(in)::BldgSurf
       ! INTEGER,INTENT(in)::PavSurf
       ! INTEGER,INTENT(in)::WaterSurf
-      INTEGER, INTENT(in)::EvapMethod!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-      INTEGER, DIMENSION(3), INTENT(in)  ::DayofWeek_id
+      INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+      INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
 
-      REAL(KIND(1D0)), INTENT(in)::dectime
-      REAL(KIND(1D0)), INTENT(in)::CRWmin
-      REAL(KIND(1D0)), INTENT(in)::CRWmax
-      REAL(KIND(1D0)), INTENT(in)::nsh_real
-      REAL(KIND(1D0)), INTENT(in)::lvS_J_kg
+      REAL(KIND(1D0)), INTENT(in) :: dectime
+      REAL(KIND(1D0)), INTENT(in) :: CRWmin
+      REAL(KIND(1D0)), INTENT(in) :: CRWmax
+      REAL(KIND(1D0)), INTENT(in) :: nsh_real
+      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg
       ! REAL(KIND(1d0)), INTENT(in)::lv_j_kg
-      REAL(KIND(1D0)), INTENT(in)::avdens
-      REAL(KIND(1D0)), INTENT(in)::vpd_hPa ! vapour pressure deficit [hPa]
-      REAL(KIND(1D0)), INTENT(in)::qn_e !net available energy for evaporation
-      REAL(KIND(1D0)), INTENT(in)::avRh
-      REAL(KIND(1D0)), INTENT(in)::Press_hPa
-      REAL(KIND(1D0)), INTENT(in)::Temp_C
-      REAL(KIND(1D0)), INTENT(in)::RAsnow
-      REAL(KIND(1D0)), INTENT(in)::psyc_hPa
-      REAL(KIND(1D0)), INTENT(in)::avcp
-      REAL(KIND(1D0)), INTENT(in)::sIce_hPa
-      REAL(KIND(1D0)), INTENT(in)::PervFraction
-      REAL(KIND(1D0)), INTENT(in)::vegfraction
-      REAL(KIND(1D0)), INTENT(in)::addimpervious
+      REAL(KIND(1D0)), INTENT(in) :: avdens
+      REAL(KIND(1D0)), INTENT(in) :: vpd_hPa ! vapour pressure deficit [hPa]
+      REAL(KIND(1D0)), INTENT(in) :: qn_e !net available energy for evaporation
+      REAL(KIND(1D0)), INTENT(in) :: avRh
+      REAL(KIND(1D0)), INTENT(in) :: Press_hPa
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      REAL(KIND(1D0)), INTENT(in) :: RAsnow
+      REAL(KIND(1D0)), INTENT(in) :: psyc_hPa
+      REAL(KIND(1D0)), INTENT(in) :: avcp
+      REAL(KIND(1D0)), INTENT(in) :: sIce_hPa
+      REAL(KIND(1D0)), INTENT(in) :: PervFraction
+      REAL(KIND(1D0)), INTENT(in) :: vegfraction
+      REAL(KIND(1D0)), INTENT(in) :: addimpervious
       ! REAL(KIND(1d0)),INTENT(in)::numPM
-      REAL(KIND(1D0)), INTENT(in)::s_hPa
-      REAL(KIND(1D0)), INTENT(in)::ResistSurf
+      REAL(KIND(1D0)), INTENT(in) :: s_hPa
+      REAL(KIND(1D0)), INTENT(in) :: ResistSurf
       ! REAL(KIND(1d0)),INTENT(in)::sp
-      REAL(KIND(1D0)), INTENT(in)::RA
-      REAL(KIND(1D0)), INTENT(in)::rb
-      REAL(KIND(1D0)), INTENT(in)::tlv
-      REAL(KIND(1D0)), INTENT(in)::snowdensmin
-      REAL(KIND(1D0)), INTENT(in)::precip
-      REAL(KIND(1D0)), INTENT(in)::PipeCapacity
-      REAL(KIND(1D0)), INTENT(in)::RunoffToWater
-      REAL(KIND(1D0)), INTENT(in)::addVeg
-      REAL(KIND(1D0)), INTENT(in)::SnowLimPaved
-      REAL(KIND(1D0)), INTENT(in)::SnowLimBldg
-      REAL(KIND(1D0)), INTENT(in)::FlowChange
+      REAL(KIND(1D0)), INTENT(in) :: RA
+      REAL(KIND(1D0)), INTENT(in) :: rb
+      REAL(KIND(1D0)), INTENT(in) :: tlv
+      REAL(KIND(1D0)), INTENT(in) :: snowdensmin
+      REAL(KIND(1D0)), INTENT(in) :: precip
+      REAL(KIND(1D0)), INTENT(in) :: PipeCapacity
+      REAL(KIND(1D0)), INTENT(in) :: RunoffToWater
+      REAL(KIND(1D0)), INTENT(in) :: addVeg
+      REAL(KIND(1D0)), INTENT(in) :: SnowLimPaved
+      REAL(KIND(1D0)), INTENT(in) :: SnowLimBldg
+      REAL(KIND(1D0)), INTENT(in) :: FlowChange
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::drain
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::WetThresh
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::stateOld
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::mw_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::rainonsnow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::freezmelt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::freezstate
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::freezstatevol
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::Qm_Melt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::Qm_rain
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowPackLimit
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::AddWater
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::addwaterrunoff
-      REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in)::StoreDrainPrm
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in)::SnowProf_24hr
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: mw_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: rainonsnow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: freezmelt
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: freezstate
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: freezstatevol
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Qm_Melt
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Qm_rain
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPackLimit
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: addwaterrunoff
+      REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr
 
       !Updated status: input and output
-      REAL(KIND(1D0)), INTENT(inout)::runoffAGveg
-      REAL(KIND(1D0)), INTENT(inout)::runoffAGimpervious
-      REAL(KIND(1D0)), INTENT(inout)::surplusWaterBody
+      REAL(KIND(1D0)), INTENT(inout) :: runoffAGveg
+      REAL(KIND(1D0)), INTENT(inout) :: runoffAGimpervious
+      REAL(KIND(1D0)), INTENT(inout) :: surplusWaterBody
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::soilstore_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::SnowPack
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::SnowFrac
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::SnowWater
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::iceFrac
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout)::SnowDens
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(inout):: SurplusEvap
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: soilstore_id
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowPack
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowFrac
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowWater
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: iceFrac
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowDens
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(inout) :: SurplusEvap
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::rss_nsurf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::runoff
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::runoffSoil
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::chang
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::changSnow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowToSurf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::state_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowDepth
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::ev_snow
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(out)::SnowRemoval
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_nsurf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSnow !Initialize for runoff caused by snowmelting
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: changSnow
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowToSurf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDepth
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev_snow
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
 
-      REAL(KIND(1D0)), INTENT(out)::swe
-      REAL(KIND(1D0)), INTENT(out)::ev
-      REAL(KIND(1D0)), INTENT(out)::ev_tot
-      REAL(KIND(1D0)), INTENT(out)::chSnow_tot
-      REAL(KIND(1D0)), INTENT(out)::qe_tot
-      REAL(KIND(1D0)), INTENT(out)::runoff_tot
-      REAL(KIND(1D0)), INTENT(out)::surf_chang_tot
-      REAL(KIND(1D0)), INTENT(out)::runoffPipes
-      REAL(KIND(1D0)), INTENT(out)::mwstore
-      REAL(KIND(1D0)), INTENT(out)::runoffwaterbody
+      REAL(KIND(1D0)), INTENT(out) :: swe
+      REAL(KIND(1D0)), INTENT(out) :: ev
+      REAL(KIND(1D0)), INTENT(out) :: ev_tot
+      REAL(KIND(1D0)), INTENT(out) :: chSnow_tot
+      REAL(KIND(1D0)), INTENT(out) :: qe_tot
+      REAL(KIND(1D0)), INTENT(out) :: runoff_tot
+      REAL(KIND(1D0)), INTENT(out) :: surf_chang_tot
+      REAL(KIND(1D0)), INTENT(out) :: runoffPipes
+      REAL(KIND(1D0)), INTENT(out) :: mwstore
+      REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody
 
-      REAL(KIND(1D0))::qe
+      REAL(KIND(1D0)) :: qe
 
       ! REAL(KIND(1d0))::Evap_SUEWS_Snow
-      REAL(KIND(1D0))::MeltExcess      !Excess melt water that needs to leave SnowPack
-      REAL(KIND(1D0))::snowTotInit
-      REAL(KIND(1D0))::EvPart
-      REAL(KIND(1D0))::runoffTest
-      REAL(KIND(1D0))::snowFracFresh1   !Snow fraction for newly formed SnowPack
-      REAL(KIND(1D0))::snowFracFresh2   !Snow fraction for newly formed SnowPack from state_id only
-      REAL(KIND(1D0))::snowFracOld
-      REAL(KIND(1D0))::WaterHoldCapFrac
-      REAL(KIND(1D0))::FWC                !Water holding capacity of snow in mm
-      REAL(KIND(1D0))::tlv_sub
+      REAL(KIND(1D0)) :: MeltExcess !Excess melt water that needs to leave SnowPack
+      REAL(KIND(1D0)) :: snowTotInit
+      REAL(KIND(1D0)) :: EvPart
+      REAL(KIND(1D0)) :: runoffTest
+      REAL(KIND(1D0)) :: snowFracFresh1 !Snow fraction for newly formed SnowPack
+      REAL(KIND(1D0)) :: snowFracFresh2 !Snow fraction for newly formed SnowPack from state_id only
+      REAL(KIND(1D0)) :: snowFracOld
+      REAL(KIND(1D0)) :: WaterHoldCapFrac
+      REAL(KIND(1D0)) :: FWC !Water holding capacity of snow in mm
+      REAL(KIND(1D0)) :: tlv_sub
       ! REAL(KIND(1d0)):: SnowDepletionCurve
 
-      INTEGER:: iu                        !1=weekday OR 2=weekend
-      REAL(KIND(1D0)), PARAMETER :: IPThreshold_mmhr = 10   !Threshold for intense precipitation [mm hr-1]
+      INTEGER :: iu !1=weekday OR 2=weekend
+      REAL(KIND(1D0)), PARAMETER :: IPThreshold_mmhr = 10 !Threshold for intense precipitation [mm hr-1]
 
-      REAL(KIND(1D0)), DIMENSION(7)::capStore ! current storage capacity [mm]
+      REAL(KIND(1D0)), DIMENSION(7) :: capStore ! current storage capacity [mm]
 
       !========================================================================
       !Initialize variables for the calculation of water storages and evaporation
@@ -663,8 +663,8 @@ CONTAINS
       tlv_sub = 0
 
       ! Use weekday or weekend snow clearing profile
-      iu = 1     !Set to 1=weekday
-      IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) iu = 2  !Set to 2=weekend
+      iu = 1 !Set to 1=weekday
+      IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) iu = 2 !Set to 2=weekend
 
       !write(*,*) is
       runoffSnow(is) = 0 !Initialize for runoff caused by snowmelting
@@ -695,7 +695,7 @@ CONTAINS
       ! IF (SnowFrac(is)<1) CALL Evap_SUEWS !ev and qe for snow free surface out
       capStore(is) = StoreDrainPrm(6, is)
       IF (SnowFrac(is) < 1) CALL cal_evap( &
-         EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
+         EvapMethod, state_id(is), WetThresh(is), capStore(is), & !input
          vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
          rss_nsurf(is), ev, qe) !output
 
@@ -708,13 +708,13 @@ CONTAINS
       !evaporation is taken from pervious surfaces
       IF (is > 2) THEN
          IF (PervFraction /= 0) THEN
-            EvPart = (SurplusEvap(PavSurf)*sfr(PavSurf) + SurplusEvap(BldgSurf)*sfr(BldgSurf))/PervFraction
+            EvPart = (SurplusEvap(PavSurf)*sfr_surf(PavSurf) + SurplusEvap(BldgSurf)*sfr_surf(BldgSurf))/PervFraction
          END IF
       END IF
 
       !============================================================================
       !Water surface is treated separately
-      IF (is == WaterSurf .AND. sfr(WaterSurf) > 0) GO TO 606
+      IF (is == WaterSurf .AND. sfr_surf(WaterSurf) > 0) GO TO 606
 
       !The calculations are divided into 2 main parts
       ! 1) Surface is fully covered with snow at the beginning of the time step
@@ -736,7 +736,7 @@ CONTAINS
             SnowWater(is) = SnowWater(is) + rainOnSnow(is)
          END IF
 
-         SnowPack(is) = SnowPack(is) + changSnow(is)  !Update SnowPack
+         SnowPack(is) = SnowPack(is) + changSnow(is) !Update SnowPack
 
          !---------If SnowPack exists after the state_id calculations
          IF (SnowPack(is) > 0) THEN
@@ -749,9 +749,9 @@ CONTAINS
 
             !If FWC is exceeded, excess meltwater (MeltExcess) will leave from the SnowPack
             IF (SnowWater(is) >= FWC) THEN
-               MeltExcess = 0                      !Initialize the excess meltwater
+               MeltExcess = 0 !Initialize the excess meltwater
                MeltExcess = SnowWater(is) - FWC !Calculate the exceess water
-               SnowWater(is) = FWC            !Update the SnowWater to the maximum it can hold
+               SnowWater(is) = FWC !Update the SnowWater to the maximum it can hold
                runoffSnow(is) = runoffSnow(is) + MeltExcess
             END IF
 
@@ -759,7 +759,7 @@ CONTAINS
             IF (SnowProf_24hr(it, iu) == 1 .AND. is < 3 .AND. (imin == (nsh_real - 1)/nsh_real*60)) &
                CALL snowRem( &
                is, PavSurf, BldgSurf, nsurf, &
-               SnowFrac, sfr, &
+               SnowFrac, sfr_surf, &
                SnowPack, SnowRemoval, &
                SnowLimPaved, SnowLimBldg)
             !----------If SnowPack is negative, it melts at this timestep
@@ -767,7 +767,7 @@ CONTAINS
 
             !If freezing meltwater inside this timestep, remove it from the SnowWater
             SnowWater(is) = SnowWater(is) - freezMelt(is) + mw_ind(is) + SnowPack(is)
-            SnowPack(is) = 0.0   !Set the snow pack and snow
+            SnowPack(is) = 0.0 !Set the snow pack and snow
             snowFracOld = 1
             SnowFrac(is) = 0
             snowDens(is) = 0
@@ -778,7 +778,7 @@ CONTAINS
                changSnow(is) = changSnow(is) + SnowWater(is)
                SnowWater(is) = 0
             ELSE
-               chang(is) = SnowWater(is)  !Meltwater goes to surface state_id as no snow exists anymore
+               chang(is) = SnowWater(is) !Meltwater goes to surface state_id as no snow exists anymore
                state_id(is) = state_id(is) + chang(is)
                SnowWater(is) = 0
             END IF
@@ -837,7 +837,7 @@ CONTAINS
 
                !ev=ev+EvPart
                changSnow(is) = Precip + FreezStateVol(is)
-               SnowPack(is) = SnowPack(is) + changSnow(is)  !Update SnowPack
+               SnowPack(is) = SnowPack(is) + changSnow(is) !Update SnowPack
 
                snowFracFresh1 = 1
                iceFrac(is) = FreezState(is)/(FreezState(is) + Precip)
@@ -847,7 +847,7 @@ CONTAINS
             IF (FreezState(is) > 0 .AND. FreezState(is) < state_id(is)) THEN
 
                changSnow(is) = Precip + freezStateVol(is)
-               SnowPack(is) = SnowPack(is) + changSnow(is)  !Update SnowPack
+               SnowPack(is) = SnowPack(is) + changSnow(is) !Update SnowPack
                snowFracFresh2 = 0.95 !Now this fraction set to something close to one. Should be improved in the future at some point
 
                !snowFracFresh2=SnowDepletionCurve(is,SnowPack(is),SnowPackLimit(is))
@@ -871,9 +871,9 @@ CONTAINS
 
             !If FWC is exceeded, excess meltwater (MeltExcess) will leave from the SnowPack
             IF (SnowWater(is) >= FWC) THEN
-               MeltExcess = 0                      !Initialize the excess meltwater
+               MeltExcess = 0 !Initialize the excess meltwater
                MeltExcess = SnowWater(is) - FWC !Calculate the exceess water
-               SnowWater(is) = FWC            !Update the SnowWater to the maximum it can hold
+               SnowWater(is) = FWC !Update the SnowWater to the maximum it can hold
 
                !If the fraction of snow is greater than 0.8 or if the surface is is buildings,
                !the excess water will directly go to runoff. Otherwise it will flow to the
@@ -889,7 +889,7 @@ CONTAINS
             IF (SnowProf_24hr(it, iu) == 1 .AND. is < 3 .AND. (imin == (nsh_real - 1)/nsh_real*60)) &
                CALL snowRem( &
                is, PavSurf, BldgSurf, nsurf, &
-               SnowFrac, sfr, &
+               SnowFrac, sfr_surf, &
                SnowPack, SnowRemoval, &
                SnowLimPaved, SnowLimBldg)
 
@@ -899,7 +899,7 @@ CONTAINS
             !If freezing meltwater inside this timestep, remove it from the SnowWater
             SnowWater(is) = SnowWater(is) - freezMelt(is) + mw_ind(is) + SnowPack(is)
 
-            SnowPack(is) = 0.0   !Set the snow pack and snow
+            SnowPack(is) = 0.0 !Set the snow pack and snow
             snowFracFresh1 = 0
             snowFracFresh2 = 0
             snowDens(is) = 0
@@ -917,7 +917,7 @@ CONTAINS
 
          !--------
          !Next the snow free surface (3). Calculations only done if snowfraction is smaller than 1
-         IF ((is == PavSurf .OR. is == BldgSurf) .AND. SnowFrac(is) < 1) THEN  !Impervious surfaces (paved, buildings)
+         IF ((is == PavSurf .OR. is == BldgSurf) .AND. SnowFrac(is) < 1) THEN !Impervious surfaces (paved, buildings)
 
             !Surface store update. If precipitation is greater than the threshold, the exceeding water
             !goes directly to runoff
@@ -933,12 +933,12 @@ CONTAINS
             state_id(is) = state_id(is) + chang(is) !Change in state_id (for whole surface area areasfr(is))
 
             !Add water from impervious grids
-            ! Check sfr/=0 added HCW 08 Dec 2015
-            IF (is == PavSurf .AND. sfr(PavSurf) > 0) state_id(is) = state_id(is) + (addImpervious)/sfr(PavSurf)
+            ! Check sfr_surf/=0 added HCW 08 Dec 2015
+            IF (is == PavSurf .AND. sfr_surf(PavSurf) > 0) state_id(is) = state_id(is) + (addImpervious)/sfr_surf(PavSurf)
 
             runoff(is) = runoff(is) + drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
 
-            IF (state_id(is) < 0.0) THEN  !Surface state_id cannot be negative
+            IF (state_id(is) < 0.0) THEN !Surface state_id cannot be negative
                SurplusEvap(is) = ABS(state_id(is)) !take evaporation from other surfaces in mm
                ev = ev - SurplusEvap(is)
                state_id(is) = 0.0
@@ -950,12 +950,12 @@ CONTAINS
 
             !Change in water stores
             IF (VegFraction > 0) THEN
-               IF (Precip + addVeg*(sfr(is)/VegFraction) > (IPThreshold_mmhr/nsh_real)) THEN !if 5min precipitation is larger than 10 mm
-                  runoff(is) = runoff(is) + (Precip + addVeg*(sfr(is)/VegFraction) + &
+               IF (Precip + addVeg*(sfr_surf(is)/VegFraction) > (IPThreshold_mmhr/nsh_real)) THEN !if 5min precipitation is larger than 10 mm
+                  runoff(is) = runoff(is) + (Precip + addVeg*(sfr_surf(is)/VegFraction) + &
                                              SnowToSurf(is) + AddWater(is) - (IPThreshold_mmhr/nsh_real))
                   chang(is) = (IPThreshold_mmhr/nsh_real) - (drain(is) + ev + freezState(is))
                ELSE
-                  chang(is) = Precip + addVeg*(sfr(is)/VegFraction) + SnowToSurf(is) + &
+                  chang(is) = Precip + addVeg*(sfr_surf(is)/VegFraction) + SnowToSurf(is) + &
                               AddWater(is) - (drain(is) + ev + freezState(is))
                END IF
             ELSE
@@ -1003,34 +1003,38 @@ CONTAINS
       !Calculate change in SnowPack and state_id for the respective surface areas
       !Here the case where not all surface state_id freezes is handled
       IF (snowFracFresh2 > 0) THEN
-         surf_chang_tot = (state_id(is) - stateOld(is))*sfr(is)*(1 - SnowFrac(is)) - Precip*sfr(is)*(1 - snowFracFresh2)
-         chSnow_tot = ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*(1 - SnowFrac(is)) - Precip*sfr(is)*snowFracFresh2
+         surf_chang_tot = (state_id(is) - stateOld(is))*sfr_surf(is)*(1 - SnowFrac(is)) - Precip*sfr_surf(is)*(1 - snowFracFresh2)
+         chSnow_tot = ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr_surf(is)*(1 - SnowFrac(is)) &
+                      - Precip*sfr_surf(is)*snowFracFresh2
       ELSE
-         surf_chang_tot = (state_id(is) - stateOld(is))*sfr(is)*(1 - SnowFrac(is))
-         chSnow_tot = ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
+         surf_chang_tot = (state_id(is) - stateOld(is))*sfr_surf(is)*(1 - SnowFrac(is))
+         chSnow_tot = ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
       END IF
 
       !Add evaporation to total
       IF (is == BldgSurf .OR. is == PavSurf) THEN
-         ev_tot = ev*sfr(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
-         qe_tot = ev_snow(is)*tlv_sub*sfr(is)*SnowFrac(is) + ev*tlv*sfr(is)*(1 - SnowFrac(is))
+         ev_tot = ev*sfr_surf(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
+         qe_tot = ev_snow(is)*tlv_sub*sfr_surf(is)*SnowFrac(is) + ev*tlv*sfr_surf(is)*(1 - SnowFrac(is))
       ELSE
-         ev_tot = ev*sfr(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
-         qe_tot = ev_snow(is)*tlv_sub*sfr(is)*MAX(SnowFrac(is), snowfracOld) + ev*tlv*sfr(is)*(1 - SnowFrac(is))
+         ev_tot = ev*sfr_surf(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
+         qe_tot = ev_snow(is)*tlv_sub*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) + ev*tlv*sfr_surf(is)*(1 - SnowFrac(is))
       END IF
 
       !========RUNOFF=======================
 
       !Add runoff to pipes
-      runoffPipes = runoffPipes + runoffSnow(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld) + runoff(is)*sfr(is)*(1 - SnowFrac(is)) &
-                    + runoffTest*sfr(is)
+      runoffPipes = runoffPipes &
+                    + runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
+                    + runoff(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
+                    + runoffTest*sfr_surf(is)
       CALL updateFlood( &
-         is, runoff, &! input:
-         sfr, PipeCapacity, RunoffToWater, &
-         runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes)! inout:
+         is, runoff, & ! input:
+         sfr_surf, PipeCapacity, RunoffToWater, &
+         runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes) ! inout:
 
-      runoff_tot = runoffSnow(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld) + runoff(is)*sfr(is)*(1 - SnowFrac(is)) &
-                   + runoffTest*sfr(is)
+      runoff_tot = runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
+                   + runoff(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
+                   + runoffTest*sfr_surf(is)
 
       !===Update snow depth, weighted SWE, and Mwstore
       IF (SnowDens(is) /= 0) THEN
@@ -1038,20 +1042,20 @@ CONTAINS
       END IF
 
       ! Calculate overall snow water equivalent
-      swe = swe + SnowPack(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
-      MwStore = MwStore + SnowWater(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld)
+      swe = swe + SnowPack(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
+      MwStore = MwStore + SnowWater(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
 
       !if (id==6.and.it==13.and.imin==20) then!
       !if (id==85.and.it==3.and.imin==10) then!
       ! if (id==92.and.it==21.and.imin==35) then!
-      !  write(*,*)  ((SnowPack(is)+SnowWater(is))-snowTotInit)*sfr(is)*(1-SnowFrac(is)),&
-      !              runoff(is)*sfr(is)*(1-SnowFrac(is)),&
-      !              ev*sfr(is)*(1-SnowFrac(is)),&
-      !              (state_id(is)-stateOld(is))*sfr(is)*(1-SnowFrac(is)),Precip*sfr(is)
+      !  write(*,*)  ((SnowPack(is)+SnowWater(is))-snowTotInit)*sfr_surf(is)*(1-SnowFrac(is)),&
+      !              runoff(is)*sfr_surf(is)*(1-SnowFrac(is)),&
+      !              ev*sfr_surf(is)*(1-SnowFrac(is)),&
+      !              (state_id(is)-stateOld(is))*sfr_surf(is)*(1-SnowFrac(is)),Precip*sfr_surf(is)
       !  write(*,*)  changSnow(is),runoff(is),ev,chang(is),runoffTest,FreezState(is) !changSnow(is)-freezMelt(is)
       !  write(*,*)  is,Precip,runoff_per_tstep,ev_per_tstep,surf_chang_per_tstep,chSnow_per_interval
       !  write(*,*)  is,Precip-runoff_per_tstep-ev_per_tstep,surf_chang_per_tstep+chSnow_per_interval
-      !  write(*,*)  is,SnowFrac(is),sfr(is),sfr(is)*ev_snow(is)
+      !  write(*,*)  is,SnowFrac(is),sfr_surf(is),sfr_surf(is)*ev_snow(is)
       !  pause
       ! endif
 
@@ -1069,7 +1073,7 @@ CONTAINS
       IF (SnowFractionChoice == 2) THEN
          IF (SnowPack(is) > 0 .AND. mw_ind(is) > 0) THEN
             SnowFrac(is) = SnowDepletionCurve(is, SnowPack(is), SnowPackLimit(is))
-            IF (SnowFrac(is) < 0.001) SnowFrac(is) = 0.001  !The snow fraction minimum is 1% of the surface
+            IF (SnowFrac(is) < 0.001) SnowFrac(is) = 0.001 !The snow fraction minimum is 1% of the surface
          ELSEIF (SnowPack(is) == 0) THEN
             SnowFrac(is) = 0
          END IF
@@ -1084,7 +1088,7 @@ CONTAINS
                              (mw_ind(WaterSurf) + ev_snow(WaterSurf))
 
       SnowPack(WaterSurf) = SnowPack(WaterSurf) + changSnow(WaterSurf) !Update SnowPack
-      state_id(WaterSurf) = state_id(WaterSurf) + FlowChange - freezState(WaterSurf)  !Update state_id below ice
+      state_id(WaterSurf) = state_id(WaterSurf) + FlowChange - freezState(WaterSurf) !Update state_id below ice
 
       !If SnowPack exists
       IF (SnowPack(WaterSurf) > 0) THEN
@@ -1119,27 +1123,27 @@ CONTAINS
       IF (state_id(WaterSurf) > StoreDrainPrm(5, WaterSurf)) THEN
          runoff(WaterSurf) = runoff(WaterSurf) + (state_id(WaterSurf) - StoreDrainPrm(5, WaterSurf))
          state_id(WaterSurf) = StoreDrainPrm(5, WaterSurf)
-         runoffWaterBody = runoffWaterBody + runoff(WaterSurf)*sfr(WaterSurf)
+         runoffWaterBody = runoffWaterBody + runoff(WaterSurf)*sfr_surf(WaterSurf)
       ELSE
          state_id(WaterSurf) = state_id(WaterSurf) + surplusWaterBody
 
          IF (state_id(WaterSurf) > StoreDrainPrm(5, WaterSurf)) THEN
-            runoffWaterBody = runoffWaterBody + (state_id(WaterSurf) - StoreDrainPrm(5, WaterSurf))*sfr(WaterSurf)
+            runoffWaterBody = runoffWaterBody + (state_id(WaterSurf) - StoreDrainPrm(5, WaterSurf))*sfr_surf(WaterSurf)
             state_id(WaterSurf) = StoreDrainPrm(5, WaterSurf)
          END IF
       END IF
 
       !Change state_id of snow and surface
-      chSnow_tot = ((SnowPack(WaterSurf) + SnowWater(WaterSurf)) - snowTotInit)*sfr(WaterSurf)
-      !ch_per_interval=ch_per_interval+(state_id(WaterSurf)-stateOld(WaterSurf))*sfr(WaterSurf)
-      surf_chang_tot = (state_id(WaterSurf) - stateOld(WaterSurf))*sfr(WaterSurf)
+      chSnow_tot = ((SnowPack(WaterSurf) + SnowWater(WaterSurf)) - snowTotInit)*sfr_surf(WaterSurf)
+      !ch_per_interval=ch_per_interval+(state_id(WaterSurf)-stateOld(WaterSurf))*sfr_surf(WaterSurf)
+      surf_chang_tot = (state_id(WaterSurf) - stateOld(WaterSurf))*sfr_surf(WaterSurf)
 
       !Evaporation
-      ev_tot = ev*sfr(WaterSurf) + ev_snow(WaterSurf)*sfr(WaterSurf)
-      qe_tot = ev_snow(WaterSurf)*tlv_sub*sfr(WaterSurf) + ev*tlv*sfr(WaterSurf)
+      ev_tot = ev*sfr_surf(WaterSurf) + ev_snow(WaterSurf)*sfr_surf(WaterSurf)
+      qe_tot = ev_snow(WaterSurf)*tlv_sub*sfr_surf(WaterSurf) + ev*tlv*sfr_surf(WaterSurf)
       runoff_tot = runoff(is) !The total runoff from the area
 
-      IF (SnowPack(WaterSurf) > 0) THEN     !Fraction only 1 or 0
+      IF (SnowPack(WaterSurf) > 0) THEN !Fraction only 1 or 0
          SnowFrac(WaterSurf) = 1
       ELSE
          SnowFrac(WaterSurf) = 0
@@ -1159,46 +1163,46 @@ CONTAINS
       IMPLICIT NONE
 
       !INPUT
-      REAL(KIND(1D0)), INTENT(in)::Qm        !melt heat,
-      REAL(KIND(1D0)), INTENT(in)::QP        !advect. heat
-      REAL(KIND(1D0)), INTENT(in)::lvS_J_kg  !latent heat of sublimation
-      REAL(KIND(1D0)), INTENT(in)::avdens    !air density
-      REAL(KIND(1D0)), INTENT(in)::avRh      !relative humidity
-      REAL(KIND(1D0)), INTENT(in)::Press_hPa !air pressure
-      REAL(KIND(1D0)), INTENT(in)::Temp_C    !air temperature
-      REAL(KIND(1D0)), INTENT(in)::RAsnow    !aerodyn res snow
-      REAL(KIND(1D0)), INTENT(in)::psyc_hPa  !psychometric constant
-      REAL(KIND(1D0)), INTENT(in)::avcp      !spec. heat,
-      REAL(KIND(1D0)), INTENT(in)::sIce_hPa  !satured curve on snow
-      REAL(KIND(1D0)), INTENT(in)::dectime
-      INTEGER, INTENT(in):: tstep
+      REAL(KIND(1D0)), INTENT(in) :: Qm !melt heat,
+      REAL(KIND(1D0)), INTENT(in) :: QP !advect. heat
+      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg !latent heat of sublimation
+      REAL(KIND(1D0)), INTENT(in) :: avdens !air density
+      REAL(KIND(1D0)), INTENT(in) :: avRh !relative humidity
+      REAL(KIND(1D0)), INTENT(in) :: Press_hPa !air pressure
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C !air temperature
+      REAL(KIND(1D0)), INTENT(in) :: RAsnow !aerodyn res snow
+      REAL(KIND(1D0)), INTENT(in) :: psyc_hPa !psychometric constant
+      REAL(KIND(1D0)), INTENT(in) :: avcp !spec. heat,
+      REAL(KIND(1D0)), INTENT(in) :: sIce_hPa !satured curve on snow
+      REAL(KIND(1D0)), INTENT(in) :: dectime
+      INTEGER, INTENT(in) :: tstep
 
-      REAL(KIND(1D0)), INTENT(out)::ev_snow    !Evaporation
-      REAL(KIND(1D0)), INTENT(out)::tlv_sub    !Latent heat for sublimation
+      REAL(KIND(1D0)), INTENT(out) :: ev_snow !Evaporation
+      REAL(KIND(1D0)), INTENT(out) :: tlv_sub !Latent heat for sublimation
 
       !OTHER VARIABLES
-      REAL(KIND(1D0))::e_snow, &     !PM equation obe line
-                        sae_snow, &   !s * (Available energy)
-                        qe_snow, &    !Latent heat flux
-                        vdrcIce, &    !Vapour pressure deficit
-                        esIce_hPa, &  !Saturation vapor pressure over ice
-                        EaIce_hPa, &  !Vapour pressure
-                        tstep_real   !timestep as real
+      REAL(KIND(1D0)) :: e_snow, & !PM equation obe line
+                         sae_snow, & !s * (Available energy)
+                         qe_snow, & !Latent heat flux
+                         vdrcIce, & !Vapour pressure deficit
+                         esIce_hPa, & !Saturation vapor pressure over ice
+                         EaIce_hPa, & !Vapour pressure
+                         tstep_real !timestep as real
 
-      INTEGER::from = 1
+      INTEGER :: from = 1
       !-----------------------------------------------------
 
       tstep_real = REAL(tstep, KIND(1D0))
 
-      sae_snow = sIce_hPa*(Qp - Qm)   !Calculate the driving parameter in calculation of evaporation. Järvi et al. (2015)
+      sae_snow = sIce_hPa*(Qp - Qm) !Calculate the driving parameter in calculation of evaporation. Järvi et al. (2015)
 
       esIce_hPa = sat_vap_pressIce(Temp_C, Press_hPa, from, dectime) !Saturation vapor pressure over ice
-      EaIce_hPa = avRh/100*esIce_hPa                       !Vapour pressure of water
-      vdrcIce = (esIce_hPa - eaIce_hpa)*avdens*avcp          !Vapour pressure deficit
-      tlv_sub = lvS_J_kg/tstep_real                        !Latent heat for sublimation
-      e_snow = sae_snow + vdrcIce/RAsnow                     !PM equation
-      qe_snow = e_snow/(sIce_hPa + psyc_hPa)                 !Latent heat (W/m^2)
-      ev_snow = qe_snow/tlv_sub                            !Evaporation (in mm)
+      EaIce_hPa = avRh/100*esIce_hPa !Vapour pressure of water
+      vdrcIce = (esIce_hPa - eaIce_hpa)*avdens*avcp !Vapour pressure deficit
+      tlv_sub = lvS_J_kg/tstep_real !Latent heat for sublimation
+      e_snow = sae_snow + vdrcIce/RAsnow !PM equation
+      qe_snow = e_snow/(sIce_hPa + psyc_hPa) !Latent heat (W/m^2)
+      ev_snow = qe_snow/tlv_sub !Evaporation (in mm)
 
       RETURN
 
@@ -1209,27 +1213,27 @@ CONTAINS
    ! Calculates mechanical removal of snow from roofs ans roads
    SUBROUTINE snowRem( &
       is, PavSurf, BldgSurf, nsurf, &
-      SnowFrac, sfr, &
+      SnowFrac, sfr_surf, &
       SnowPack, SnowRemoval, &
       SnowLimPaved, SnowLimBldg)
 
       IMPLICIT NONE
-      INTEGER, INTENT(in)                          :: is, PavSurf, BldgSurf, nsurf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac, sfr
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out):: SnowPack, SnowRemoval
-      REAL(KIND(1D0)), INTENT(in)                  :: SnowLimPaved, SnowLimBldg
+      INTEGER, INTENT(in) :: is, PavSurf, BldgSurf, nsurf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac, sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack, SnowRemoval
+      REAL(KIND(1D0)), INTENT(in) :: SnowLimPaved, SnowLimBldg
       !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBldg
 
       IF (is == PavSurf) THEN
          IF (SnowPack(PavSurf) > SnowLimPaved) THEN
-            SnowRemoval(PavSurf) = (SnowPack(PavSurf) - SnowLimPaved)*sfr(PavSurf)*SnowFrac(PavSurf)
+            SnowRemoval(PavSurf) = (SnowPack(PavSurf) - SnowLimPaved)*sfr_surf(PavSurf)*SnowFrac(PavSurf)
             SnowPack(PavSurf) = SnowLimPaved
             !SnowPack(PavSurf)=SnowPack(PavSurf)/SnowFrac(PavSurf)
          END IF
       END IF
       IF (is == BldgSurf) THEN
          IF (SnowPack(BldgSurf) > SnowLimBldg) THEN
-            SnowRemoval(2) = (SnowPack(BldgSurf) - SnowLimBldg)*sfr(BldgSurf)*SnowFrac(BldgSurf)
+            SnowRemoval(2) = (SnowPack(BldgSurf) - SnowLimBldg)*sfr_surf(BldgSurf)*SnowFrac(BldgSurf)
             SnowPack(BldgSurf) = SnowLimBldg
             !SnowPack(BldgSurf)=SnowPack(BldgSurf)/SnowFrac(BldgSurf)
          END IF
@@ -1251,15 +1255,15 @@ CONTAINS
 
       IMPLICIT NONE
 
-      INTEGER::is
-      REAL(KIND(1D0))::asc, sweD, swe
+      INTEGER :: is
+      REAL(KIND(1D0)) :: asc, sweD, swe
 
       ! initialisation
       asc = 1
       !Impervious surface
       IF (is == PavSurf) THEN
 
-         IF (swe <= sweD) THEN      !Snow water equivalent below threshold
+         IF (swe <= sweD) THEN !Snow water equivalent below threshold
             asc = ((swe/sweD))**2
          ELSE
             asc = 1
@@ -1297,17 +1301,17 @@ CONTAINS
    END FUNCTION SnowDepletionCurve
 
    SUBROUTINE veg_fr_snow( &
-      sfr, SnowFrac, &!input
-      veg_fr)!output
+      sfr_surf, SnowFrac, & !input
+      veg_fr) !output
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr      !< surface fractions
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !< surface fractions
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac !< snowy surface fractions [-]
 
-      REAL(KIND(1D0)), INTENT(out) :: veg_fr   !< vegetated surface fractions [-]
+      REAL(KIND(1D0)), INTENT(out) :: veg_fr !< vegetated surface fractions [-]
 
-      veg_fr = DOT_PRODUCT(sfr(3:7), 1 - SnowFrac(3:7))
+      veg_fr = DOT_PRODUCT(sfr_surf(3:7), 1 - SnowFrac(3:7))
 
    END SUBROUTINE veg_fr_snow
 
@@ -1322,7 +1326,7 @@ CONTAINS
    !========================================================================
 
    SUBROUTINE SnowUpdate( &
-      tstep, &!input
+      tstep, & !input
       Temp_C, &
       tau_a, &
       tau_f, &
@@ -1338,29 +1342,29 @@ CONTAINS
       IMPLICIT NONE
 
       ! INTEGER, INTENT(in)::nsurf
-      INTEGER, INTENT(in)::tstep
+      INTEGER, INTENT(in) :: tstep
 
-      REAL(KIND(1D0)), INTENT(in)::Temp_C        !Air temperature
-      REAL(KIND(1D0)), INTENT(in)::tau_a
-      REAL(KIND(1D0)), INTENT(in)::tau_f
-      REAL(KIND(1D0)), INTENT(in)::tau_r
-      REAL(KIND(1D0)), INTENT(in)::SnowDensMax
-      REAL(KIND(1D0)), INTENT(in)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
-      REAL(KIND(1D0)), INTENT(in)::SnowAlbMin
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C !Air temperature
+      REAL(KIND(1D0)), INTENT(in) :: tau_a
+      REAL(KIND(1D0)), INTENT(in) :: tau_f
+      REAL(KIND(1D0)), INTENT(in) :: tau_r
+      REAL(KIND(1D0)), INTENT(in) :: SnowDensMax
+      REAL(KIND(1D0)), INTENT(in) :: SnowDensMin
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlbMax
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlbMin
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowPack_prev
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_prev
 
-      REAL(KIND(1D0)), INTENT(in)::SnowAlb_prev
-      REAL(KIND(1D0)), INTENT(out)::SnowAlb_next
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlb_prev
+      REAL(KIND(1D0)), INTENT(out) :: SnowAlb_next
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowDens_prev
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out)::SnowDens_next
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_prev
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_next
 
       ! INTEGER::is
-      REAL(KIND(1D0))::alb_change    !Change in snow albedo
-      REAL(KIND(1D0))::dens_change    !Change in snow density
-      REAL(KIND(1D0)), PARAMETER::  tau_1 = 24*60*60         !Number of seconds in a day
+      REAL(KIND(1D0)) :: alb_change !Change in snow albedo
+      REAL(KIND(1D0)) :: dens_change !Change in snow density
+      REAL(KIND(1D0)), PARAMETER :: tau_1 = 24*60*60 !Number of seconds in a day
 
       !Initialize
       alb_change = 0
@@ -1413,20 +1417,20 @@ CONTAINS
       tau_a, tau_f, SnowAlbMax, SnowAlbMin) &
       RESULT(SnowAlb_next)
       IMPLICIT NONE
-      INTEGER, INTENT(in)::tstep
+      INTEGER, INTENT(in) :: tstep
 
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(in)::SnowPack_prev
-      REAL(KIND(1D0)), INTENT(in) ::Temp_C
-      REAL(KIND(1D0)), INTENT(in)::SnowAlb_prev
-      REAL(KIND(1D0)), INTENT(in)::tau_a
-      REAL(KIND(1D0)), INTENT(in)::tau_f
-      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
-      REAL(KIND(1D0)), INTENT(in)::SnowAlbMin
+      REAL(KIND(1D0)), DIMENSION(7), INTENT(in) :: SnowPack_prev
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlb_prev
+      REAL(KIND(1D0)), INTENT(in) :: tau_a
+      REAL(KIND(1D0)), INTENT(in) :: tau_f
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlbMax
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlbMin
 
       REAL(KIND(1D0)) :: SnowAlb_next
 
-      REAL(KIND(1D0))::alb_change    !Change in snow albedo
-      REAL(KIND(1D0)), PARAMETER::  tau_1 = 24*60*60         !Number of seconds in a day
+      REAL(KIND(1D0)) :: alb_change !Change in snow albedo
+      REAL(KIND(1D0)), PARAMETER :: tau_1 = 24*60*60 !Number of seconds in a day
 
       !==========================================================
       !Calculation of snow albedo by Lemonsu et al. 2010
@@ -1456,21 +1460,21 @@ CONTAINS
       tau_r, SnowDensMax, SnowDensMin) &
       RESULT(SnowDens_next)
       IMPLICIT NONE
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowPack_prev
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in)::SnowDens_prev
-      REAL(KIND(1D0)), INTENT(in)::SnowDensMax
-      REAL(KIND(1D0)), INTENT(in)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(in)::tau_r
-      INTEGER, INTENT(in)::tstep
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_prev
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_prev
+      REAL(KIND(1D0)), INTENT(in) :: SnowDensMax
+      REAL(KIND(1D0)), INTENT(in) :: SnowDensMin
+      REAL(KIND(1D0)), INTENT(in) :: tau_r
+      INTEGER, INTENT(in) :: tstep
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDens_next
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens_next
       REAL(KIND(1D0)) :: dens_change
 
-      INTEGER::is
+      INTEGER :: is
 
-      REAL(KIND(1D0)), PARAMETER::  tau_1 = 24*60*60
+      REAL(KIND(1D0)), PARAMETER :: tau_1 = 24*60*60
       ! INTEGER,parameter::nsurf=7
 
       !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1

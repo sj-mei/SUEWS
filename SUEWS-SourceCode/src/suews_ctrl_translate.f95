@@ -70,24 +70,24 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    IMPLICIT NONE
 
-   INTEGER::Gridiv, &   !Index of the analysed grid (Gridcounter)
-             ir, &       !Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
-             iMB, &      !Chunk of met data
-             id_prev
+   INTEGER :: Gridiv, & !Index of the analysed grid (Gridcounter)
+              ir, & !Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
+              iMB, & !Chunk of met data
+              id_prev
 
-   INTEGER::iv, j, i
+   INTEGER :: iv, j, i
    !real (Kind(1d0)):: FCskip = -9   !NULL value used for output to FileChoices
-   REAL(KIND(1D0)):: FCskip = -999  !NULL value used for output to FileChoices        (changed by HCW 24 May 2016)
+   REAL(KIND(1D0)) :: FCskip = -999 !NULL value used for output to FileChoices        (changed by HCW 24 May 2016)
 
    ! REAL(KIND(1d0)):: z0m_in, zdm_in  !Values of z0m and zdm provided in SiteSelect input file (do not get updated unlike z0d and z0m)
 
-   CHARACTER(len=20):: grid_txt
-   CHARACTER(len=4):: year_txt
-   CHARACTER(len=12)::SsG_YYYY !Site, grid, year string
+   CHARACTER(len=20) :: grid_txt
+   CHARACTER(len=4) :: year_txt
+   CHARACTER(len=12) :: SsG_YYYY !Site, grid, year string
 
-   CHARACTER(len=4):: iy_text
-   CHARACTER(len=3):: id_text
-   CHARACTER(len=2):: it_text, imin_text
+   CHARACTER(len=4) :: iy_text
+   CHARACTER(len=3) :: id_text
+   CHARACTER(len=2) :: it_text, imin_text
 
    !write(*,*) '---- SUEWS_Translate ----'
    !write(*,*) 'Year:', SurfaceChar(Gridiv,c_Year)
@@ -116,81 +116,81 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    SurfaceArea = SurfaceArea_ha*10000 !Change surface area from ha to m^2
 
    ! ---- Surface fractions (previously in LUMPS_gis_read)
-   sfr(PavSurf) = SurfaceChar(Gridiv, c_FrPaved)  ! Paved
-   sfr(BldgSurf) = SurfaceChar(Gridiv, c_FrBldgs)  ! Bldgs
-   sfr(ConifSurf) = SurfaceChar(Gridiv, c_FrEveTr)  ! Everg
-   sfr(DecidSurf) = SurfaceChar(Gridiv, c_FrDecTr)  ! Decid
-   sfr(GrassSurf) = SurfaceChar(Gridiv, c_FrGrass)  ! Grass
-   sfr(BSoilSurf) = SurfaceChar(Gridiv, c_FrBSoil)  ! BSoil
-   sfr(WaterSurf) = SurfaceChar(Gridiv, c_FrWater)  ! Water
+   sfr_surf(PavSurf) = SurfaceChar(Gridiv, c_FrPaved) ! Paved
+   sfr_surf(BldgSurf) = SurfaceChar(Gridiv, c_FrBldgs) ! Bldgs
+   sfr_surf(ConifSurf) = SurfaceChar(Gridiv, c_FrEveTr) ! Everg
+   sfr_surf(DecidSurf) = SurfaceChar(Gridiv, c_FrDecTr) ! Decid
+   sfr_surf(GrassSurf) = SurfaceChar(Gridiv, c_FrGrass) ! Grass
+   sfr_surf(BSoilSurf) = SurfaceChar(Gridiv, c_FrBSoil) ! BSoil
+   sfr_surf(WaterSurf) = SurfaceChar(Gridiv, c_FrWater) ! Water
 
    ! Check the surface fractions add up to 1 (or close to 1)
-   IF (SUM(sfr) > 1.001 .OR. SUM(sfr) < 0.999) &
-      CALL ErrorHint(10, 'Surface fractions (Fr_) should add up to 1.', SUM(sfr), notUsed, notUsedI)
+   IF (SUM(sfr_surf) > 1.001 .OR. SUM(sfr_surf) < 0.999) &
+      CALL ErrorHint(10, 'Surface fractions (Fr_) should add up to 1.', SUM(sfr_surf), notUsed, notUsedI)
 
    ! ---- Irrigated fractions
-   IrrFracPaved = SurfaceChar(Gridiv, c_IrrPavedFrac)  ! Paved
-   IrrFracBldgs = SurfaceChar(Gridiv, c_IrrBldgsFrac)  ! Bldgs
-   IrrFracEveTr = SurfaceChar(Gridiv, c_IrrEveTrFrac)  ! Everg
-   IrrFracDecTr = SurfaceChar(Gridiv, c_IrrDecTrFrac)  ! Decid
-   IrrFracGrass = SurfaceChar(Gridiv, c_IrrGrassFrac)  ! Grass
-   IrrFracBSoil = SurfaceChar(Gridiv, c_IrrBSoilFrac)  ! BSoil
-   IrrFracWater = SurfaceChar(Gridiv, c_IrrWaterFrac)  ! Water
+   IrrFracPaved = SurfaceChar(Gridiv, c_IrrPavedFrac) ! Paved
+   IrrFracBldgs = SurfaceChar(Gridiv, c_IrrBldgsFrac) ! Bldgs
+   IrrFracEveTr = SurfaceChar(Gridiv, c_IrrEveTrFrac) ! Everg
+   IrrFracDecTr = SurfaceChar(Gridiv, c_IrrDecTrFrac) ! Decid
+   IrrFracGrass = SurfaceChar(Gridiv, c_IrrGrassFrac) ! Grass
+   IrrFracBSoil = SurfaceChar(Gridiv, c_IrrBSoilFrac) ! BSoil
+   IrrFracWater = SurfaceChar(Gridiv, c_IrrWaterFrac) ! Water
 
    ! ---------------------------------------------------------------------------------
    ! --------- Surface cover calculations (previously in LUMPS_gis_read) -------------
 
    ! ---- Buildings and trees fraction ----
-   areaZh = (sfr(BldgSurf) + sfr(ConifSurf) + sfr(DecidSurf))
+   areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
 
    ! ---- Vegetated fraction ----
-   VegFraction = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))
-   !VegFraction = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+   VegFraction = (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf))
+   !VegFraction = (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
 
    ! ---- Vegetated fraction (for LUMPS) ----
    ! For LUMPS, vegetated fraction includes Water and Bare soil surfaces
-   IF (veg_type == 1) THEN          ! area vegetated
-      veg_fr = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
-   ELSEIF (veg_type == 2) THEN      ! area irrigated
-      veg_fr = (IrrFracEveTr*sfr(ConifSurf) + IrrFracDecTr*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
+   IF (veg_type == 1) THEN ! area vegetated
+      veg_fr = (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf) + sfr_surf(WaterSurf))
+   ELSEIF (veg_type == 2) THEN ! area irrigated
+      veg_fr = (IrrFracEveTr*sfr_surf(ConifSurf) + IrrFracDecTr*sfr_surf(DecidSurf) + IrrFracGrass*sfr_surf(GrassSurf))
    END IF
 
-   ImpervFraction = (sfr(PavSurf) + sfr(BldgSurf))
-   PervFraction = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
-   NonWaterFraction = (sfr(PavSurf) + sfr(BldgSurf) + sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf))
+   ImpervFraction = (sfr_surf(PavSurf) + sfr_surf(BldgSurf))
+   PervFraction = 1.0D0 - ImpervFraction
+   NonWaterFraction = 1.0D0 - sfr_surf(WaterSurf)
    ! ---------------------------------------------------------------------------------
 
    ! ---- Heights & frontal areas
-   BldgH = SurfaceChar(Gridiv, c_HBldgs)                                                            ! Building height [m]
-   EveTreeH = SurfaceChar(Gridiv, c_HEveTr)                                                            ! Evergreen tree height [m]
-   DecTreeH = SurfaceChar(Gridiv, c_HDecTr)                                                            ! Deciduous tree height [m]
-   IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.) THEN ! avoid arithmetic error
-      TreeH = (EveTreeH*sfr(ConifSurf) + DecTreeH*sfr(DecidSurf))/(sfr(ConifSurf) + sfr(DecidSurf))     ! Average tree height [m]
+   BldgH = SurfaceChar(Gridiv, c_HBldgs) ! Building height [m]
+   EveTreeH = SurfaceChar(Gridiv, c_HEveTr) ! Evergreen tree height [m]
+   DecTreeH = SurfaceChar(Gridiv, c_HDecTr) ! Deciduous tree height [m]
+   IF (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) > 0.) THEN ! avoid arithmetic error
+      TreeH = (EveTreeH*sfr_surf(ConifSurf) + DecTreeH*sfr_surf(DecidSurf))/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf)) ! Average tree height [m]
    ELSE
       TreeH = 1.
    END IF
 
-   FAIBldg = SurfaceChar(Gridiv, c_FAIBldgs)                                                          ! Frontal area index for buildings
-   FAIEveTree = SurfaceChar(Gridiv, c_FAIEveTr)                                                          ! Frontal area index for evergreen trees
-   FAIDecTree = SurfaceChar(Gridiv, c_FAIDecTr)                                                          ! Frontal area index for deciduous trees
-   IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.) THEN ! avoid arithmetic error
-      FAITree = (FAIEveTree*sfr(ConifSurf) + FAIDecTree*sfr(DecidSurf))/(sfr(ConifSurf) + sfr(DecidSurf)) ! Frontal area index for trees
+   FAIBldg = SurfaceChar(Gridiv, c_FAIBldgs) ! Frontal area index for buildings
+   FAIEveTree = SurfaceChar(Gridiv, c_FAIEveTr) ! Frontal area index for evergreen trees
+   FAIDecTree = SurfaceChar(Gridiv, c_FAIDecTr) ! Frontal area index for deciduous trees
+   IF (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) > 0.) THEN ! avoid arithmetic error
+      FAITree = (FAIEveTree*sfr_surf(ConifSurf) + FAIDecTree*sfr_surf(DecidSurf))/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf)) ! Frontal area index for trees
    ELSE
       FAITree = 1.
    END IF
 
-   z0m = SurfaceChar(Gridiv, c_z0m)                                                               ! Roughness length [m]
-   zdm = SurfaceChar(Gridiv, c_zdm)                                                               ! Displacement height [m]
+   z0m = SurfaceChar(Gridiv, c_z0m) ! Roughness length [m]
+   zdm = SurfaceChar(Gridiv, c_zdm) ! Displacement height [m]
    ! z0m and zdm can vary in time depending on z0method selected. Save the input values here
    z0m_in = z0m
    zdm_in = zdm
 
    ! ---- Population density [ha-1]
    ! Weekend fraction added to daytime population density
-   PopDensDaytime = SurfaceChar(Gridiv, (/c_PopDensDay, c_PopDensDay/))   ! Daytime population density [ha-1]
+   PopDensDaytime = SurfaceChar(Gridiv, (/c_PopDensDay, c_PopDensDay/)) ! Daytime population density [ha-1]
    PopDensNighttime = SurfaceChar(Gridiv, c_PopDensNight) ! Night-time population density [ha-1]
-   IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime(1)  !If only daytime data provided, use them
-   IF (PopDensDaytime(1) < 0 .AND. PopDensNighttime >= 0) PopDensDaytime(1) = PopDensNighttime  !If only night-time data provided, use them
+   IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime(1) !If only daytime data provided, use them
+   IF (PopDensDaytime(1) < 0 .AND. PopDensNighttime >= 0) PopDensDaytime(1) = PopDensNighttime !If only night-time data provided, use them
    PopDensDaytime(2) = PopDensNighttime + (PopDensDaytime(1) - PopDensNighttime)*SurfaceChar(Gridiv, c_FrPDDwe) !Use weekend fraction to daytime population
    ! the following part has been moved into  as  can be derived there
    ! IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
@@ -201,10 +201,10 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ! ---- Traffic rate
    TrafficRate = SurfaceChar(Gridiv, (/c_TrafficRate_WD, c_TrafficRate_WE/)) ! Mean traffic rate within modelled area
    ! ---- Building energy use
-   QF0_BEU = SurfaceChar(Gridiv, (/c_QF0_BEU_WD, c_QF0_BEU_WE/))   ! Building energy use within modelled area
+   QF0_BEU = SurfaceChar(Gridiv, (/c_QF0_BEU_WD, c_QF0_BEU_WE/)) ! Building energy use within modelled area
 
    ! ---- Albedo [-]
-   alb(1:nsurf) = SurfaceChar(Gridiv, c_AlbMax)   !Use maximum albedos as default value (AlbMin for veg surfaces handled below)
+   alb(1:nsurf) = SurfaceChar(Gridiv, c_AlbMax) !Use maximum albedos as default value (AlbMin for veg surfaces handled below)
 
    ! ---- Set min & max albedo for vegetated surfaces (min albedo not currently used for NonVeg or Water surfaces)
    AlbMin_EveTr = SurfaceChar(Gridiv, c_AlbMin(ConifSurf))
@@ -219,16 +219,16 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    emis_snow = SurfaceChar(Gridiv, c_SnowEmis)
 
    ! ---- Storage capacities [mm]
-   StoreDrainPrm(1, 1:nsurf) = SurfaceChar(Gridiv, c_StorMin)   ! Minimum
-   StoreDrainPrm(5, 1:nsurf) = SurfaceChar(Gridiv, c_StorMax)   ! Maximum
-   StoreDrainPrm(6, 1:nsurf) = StoreDrainPrm(1, 1:nsurf)  !Set storage capacities for all surface to minimum (DecTr changes with time in Calculations).
+   StoreDrainPrm(1, 1:nsurf) = SurfaceChar(Gridiv, c_StorMin) ! Minimum
+   StoreDrainPrm(5, 1:nsurf) = SurfaceChar(Gridiv, c_StorMax) ! Maximum
+   StoreDrainPrm(6, 1:nsurf) = StoreDrainPrm(1, 1:nsurf) !Set storage capacities for all surface to minimum (DecTr changes with time in Calculations).
 
    ! ---- Set min & max storage capacities for DecTr
    CapMin_dec = StoreDrainPrm(1, DecidSurf)
    CapMax_dec = StoreDrainPrm(5, DecidSurf)
    ! ---- Set min & max porosity for DecTr
-   PorMin_dec = SurfaceChar(Gridiv, c_PorosityMin(ivDecid))   ! Minimum
-   PorMax_dec = SurfaceChar(Gridiv, c_PorosityMax(ivDecid))   ! Minimum
+   PorMin_dec = SurfaceChar(Gridiv, c_PorosityMin(ivDecid)) ! Minimum
+   PorMax_dec = SurfaceChar(Gridiv, c_PorosityMax(ivDecid)) ! Minimum
 
    ! ---- Threshold for wet evaporation [mm]
    WetThresh(1:nsurf) = SurfaceChar(Gridiv, c_WetThresh)
@@ -240,9 +240,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    WaterDepth = SurfaceChar(Gridiv, c_WaterDepth)
 
    ! ---- Drainage
-   StoreDrainPrm(2, 1:nsurf) = SurfaceChar(Gridiv, c_DrEq)      ! Drainage equation
-   StoreDrainPrm(3, 1:nsurf) = SurfaceChar(Gridiv, c_DrCoef1)   ! Drainage coef 1
-   StoreDrainPrm(4, 1:nsurf) = SurfaceChar(Gridiv, c_DrCoef2)   ! Drainage coef 2
+   StoreDrainPrm(2, 1:nsurf) = SurfaceChar(Gridiv, c_DrEq) ! Drainage equation
+   StoreDrainPrm(3, 1:nsurf) = SurfaceChar(Gridiv, c_DrCoef1) ! Drainage coef 1
+   StoreDrainPrm(4, 1:nsurf) = SurfaceChar(Gridiv, c_DrCoef2) ! Drainage coef 2
 
    ! ---- Limit of SWE (each surface except Water)
    SnowPackLimit(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SnowLimPat(1:(nsurf - 1)))
@@ -255,7 +255,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ! ---- Soil characteristics (each surface except Water)
    SoilDepth(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SoilDepth(1:(nsurf - 1))) ! Depth of sub-surface soil store [mm]
    SoilStoreCap(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SoilStCap(1:(nsurf - 1))) ! Soil store capacity [mm]
-   SatHydraulicConduct(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_KSat(1:(nsurf - 1)))      ! Hydraulic conductivity of saturated soil [mm s-1]
+   SatHydraulicConduct(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_KSat(1:(nsurf - 1))) ! Hydraulic conductivity of saturated soil [mm s-1]
    !SoilDensity(1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilDens(1:(nsurf-1))) ! Soil density [kg m-3]
    ! Not yet implemented in model
    !InfiltrationRate  (1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilInfRate(1:(nsurf-1))) ! Infiltration rate [mm h-1]
@@ -298,12 +298,12 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    LAIPower(4, 1:nvegsurf) = SurfaceChar(Gridiv, c_LeafOP2(1:nvegsurf))
 
    ! ---- LUMPS-related parameters
-   DRAINRT = SurfaceChar(Gridiv, c_LUMPSDr)      ! LUMPS Drainage rate [mm h-1]
-   RAINCOVER = SurfaceChar(Gridiv, c_LUMPSCover)   ! LUMPS Limit when surface totally wet [mm]
-   RAINMAXRES = SurfaceChar(Gridiv, c_LUMPSMaxRes)  ! LUMPS Maximum water bucket reservoir [mm]
+   DRAINRT = SurfaceChar(Gridiv, c_LUMPSDr) ! LUMPS Drainage rate [mm h-1]
+   RAINCOVER = SurfaceChar(Gridiv, c_LUMPSCover) ! LUMPS Limit when surface totally wet [mm]
+   RAINMAXRES = SurfaceChar(Gridiv, c_LUMPSMaxRes) ! LUMPS Maximum water bucket reservoir [mm]
 
    ! ---- NARP-related parameters
-   TRANS_SITE = SurfaceChar(Gridiv, c_NARPTrans)    ! NARP atmospheric transmissivity
+   TRANS_SITE = SurfaceChar(Gridiv, c_NARPTrans) ! NARP atmospheric transmissivity
 
    ! ---- Snow-related characteristics
    RadMeltFact = SurfaceChar(Gridiv, c_SnowRMFactor)
@@ -394,27 +394,27 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       fwall = AreaWall/SurfaceArea
 
       ! Get surface fractions for ESTM classes for Bldgs and Paved surfaces
-      ESTMsfr_Paved = SurfaceChar(Gridiv, c_Fr_ESTMClass_Paved)   !Dim 3
-      ESTMsfr_Bldgs = SurfaceChar(Gridiv, c_Fr_ESTMClass_Bldgs)   !Dim 5
-      !Check these sum to 1 and are consistent with sfr of Paved and Bldgs surface types
-      IF (sfr(PavSurf) > 0) THEN  !If surface exists, ESTM fractions must be correct
+      ESTMsfr_Paved = SurfaceChar(Gridiv, c_Fr_ESTMClass_Paved) !Dim 3
+      ESTMsfr_Bldgs = SurfaceChar(Gridiv, c_Fr_ESTMClass_Bldgs) !Dim 5
+      !Check these sum to 1 and are consistent with sfr_surf of Paved and Bldgs surface types
+      IF (sfr_surf(PavSurf) > 0) THEN !If surface exists, ESTM fractions must be correct
          IF (SUM(ESTMsfr_Paved) > 1.001 .OR. SUM(ESTMsfr_Paved) < 0.999) THEN
             CALL ErrorHint(10, 'Surface fractions (Fr_ESTMClass_Paved) should sum to 1.', SUM(ESTMsfr_Paved), notUsed, notUsedI)
          END IF
-      ELSEIF (sfr(PavSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
-         IF (SUM(ESTMsfr_Paved) > 1.001 .OR. SUM(ESTMsfr_Paved) < 0.999) THEN   !If ESTM fractions do not sum to 1, set here
+      ELSEIF (sfr_surf(PavSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
+         IF (SUM(ESTMsfr_Paved) > 1.001 .OR. SUM(ESTMsfr_Paved) < 0.999) THEN !If ESTM fractions do not sum to 1, set here
             ESTMsfr_Paved(1) = 1.000
             ESTMsfr_Paved(2:3) = 0.000
             CALL ErrorHint(67, 'ESTM Paved classes do not sum to 1 (but no Paved surface present).', &
                            SUM(ESTMsfr_Paved), notUsed, notUsedI)
          END IF
       END IF
-      IF (sfr(BldgSurf) > 0) THEN
+      IF (sfr_surf(BldgSurf) > 0) THEN
          IF (SUM(ESTMsfr_Bldgs) > 1.001 .OR. SUM(ESTMsfr_Bldgs) < 0.999) THEN
             CALL ErrorHint(10, 'Surface fractions (Fr_ESTMClass_Bldgs) should sum to 1.', SUM(ESTMsfr_Bldgs), notUsed, notUsedI)
          END IF
-      ELSEIF (sfr(BldgSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
-         IF (SUM(ESTMsfr_Bldgs) > 1.001 .OR. SUM(ESTMsfr_Bldgs) < 0.999) THEN   !If ESTM fractions do not sum to 1, set here
+      ELSEIF (sfr_surf(BldgSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
+         IF (SUM(ESTMsfr_Bldgs) > 1.001 .OR. SUM(ESTMsfr_Bldgs) < 0.999) THEN !If ESTM fractions do not sum to 1, set here
             ESTMsfr_Bldgs(1) = 1.000
             ESTMsfr_Bldgs(2:5) = 0.000
             CALL ErrorHint(67, 'ESTM Bldgs classes do not sum to 1 (but no Bldgs surface present).', &
@@ -424,7 +424,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! ===== PAVED =====
       ! First combine characteristics of the 3x Paved classes
-      IF (SurfaceChar(Gridiv, c_ESTMCode(PavSurf)) == 0) THEN   ! If Code = 0, use multiple classes
+      IF (SurfaceChar(Gridiv, c_ESTMCode(PavSurf)) == 0) THEN ! If Code = 0, use multiple classes
          ! Get characteristics of each Paved class
          DO i = 1, 3
             zSurf_Paved(:, i) = SurfaceChar(Gridiv, (/c_Surf_thick1_Paved(i), c_Surf_thick2_Paved(i), c_Surf_thick3_Paved(i), &
@@ -444,7 +444,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          rSurf_SUEWSsurfs(:, PavSurf) = rSurf_Paved(:, 1)*ESTMsfr_Paved(1) &
                                         + rSurf_Paved(:, 2)*ESTMsfr_Paved(2) &
                                         + rSurf_Paved(:, 3)*ESTMsfr_Paved(3)
-      ELSEIF (SurfaceChar(Gridiv, c_ESTMCode(PavSurf)) /= 0) THEN   !Otherwise use single values
+      ELSEIF (SurfaceChar(Gridiv, c_ESTMCode(PavSurf)) /= 0) THEN !Otherwise use single values
          zSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, &
                                                     (/c_Surf_thick1(PavSurf), c_Surf_thick2(PavSurf), c_Surf_thick3(PavSurf), &
                                                       c_Surf_thick4(PavSurf), c_Surf_thick5(PavSurf)/))
@@ -458,7 +458,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! ===== BLDGS =====
       ! Combine characteristics of 5x Bldgs classes into one
-      IF (SurfaceChar(Gridiv, c_ESTMCode(BldgSurf)) == 0) THEN   ! If Code = 0, use multiple classes
+      IF (SurfaceChar(Gridiv, c_ESTMCode(BldgSurf)) == 0) THEN ! If Code = 0, use multiple classes
          ! Get characteristics of each Bldgs class
          DO i = 1, 5
             zSurf_Bldgs(:, i) = SurfaceChar(Gridiv, (/c_Surf_thick1_Bldgs(i), c_Surf_thick2_Bldgs(i), c_Surf_thick3_Bldgs(i), &
@@ -568,7 +568,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
                    + CH_ibld_Bldgs(4)*ESTMsfr_Bldgs(4) &
                    + CH_ibld_Bldgs(5)*ESTMsfr_Bldgs(5)
 
-      ELSEIF (SurfaceChar(Gridiv, c_ESTMCode(BldgSurf)) /= 0) THEN   !Otherwise use single values
+      ELSEIF (SurfaceChar(Gridiv, c_ESTMCode(BldgSurf)) /= 0) THEN !Otherwise use single values
          zSurf_SUEWSsurfs(:, BldgSurf) = SurfaceChar(Gridiv, (/c_Surf_thick1(BldgSurf), c_Surf_thick2(BldgSurf), &
                                                                c_Surf_thick3(BldgSurf), &
                                                                c_Surf_thick4(BldgSurf), c_Surf_thick5(BldgSurf)/))
@@ -607,21 +607,24 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! Now combine SUEWS surfaces into ESTM facets
       !Surface fractions for ESTM facets (moved from SUEWS_ESTM_initials HCW 16 Jun 2016)
       !roof = Bldgs
-      froof = sfr(BldgSurf)
+      froof = sfr_surf(BldgSurf)
       !ground = all except Bldgs
-      fground = sfr(PavSurf) + sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BsoilSurf) + sfr(WaterSurf)
+      ! TODO: surface heterogeneity in ESTM: all surfaces on ground are lumped into one;
+      ! when coupled with SUEWS framework #34, we may need to split them into individual ones in SUEWS
+
+      fground = SUM(sfr_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BsoilSurf, WaterSurf]))
       !veg = EveTr, DecTr, Grass
-      fveg = sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf)
+      fveg = SUM(sfr_surf([ConifSurf, DecidSurf, GrassSurf]))
 
       ! Ground = all except buildings (exclude snow at the moment)
       zground = 0
       kground = 0
       rground = 0
       DO iv = 1, nsurf
-         IF (iv /= BldgSurf .AND. fground /= 0) THEN   !Bldgs surface excluded from ground facet
-            zground = zground + zSurf_SUEWSsurfs(:, iv)*sfr(iv)/fground   !Normalised by ground fraction
-            kground = kground + kSurf_SUEWSsurfs(:, iv)*sfr(iv)/fground   !Normalised by ground fraction
-            rground = rground + rSurf_SUEWSsurfs(:, iv)*sfr(iv)/fground   !Normalised by ground fraction
+         IF (iv /= BldgSurf .AND. fground /= 0) THEN !Bldgs surface excluded from ground facet
+            zground = zground + zSurf_SUEWSsurfs(:, iv)*sfr_surf(iv)/fground !Normalised by ground fraction
+            kground = kground + kSurf_SUEWSsurfs(:, iv)*sfr_surf(iv)/fground !Normalised by ground fraction
+            rground = rground + rSurf_SUEWSsurfs(:, iv)*sfr_surf(iv)/fground !Normalised by ground fraction
          ELSEIF (fground == 0.) THEN !check fground==0 (or HW==0) scenario to avoid division-by-zero error, TS 21 Jul 2016
             zground = zground + 0.01
             kground = kground + 0.01
@@ -639,31 +642,31 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! the following initialisation is problematic: TS 01 Mar 2019
       ! what would happen if zground(5)>0? Nground is initialised NOWHERE!
       ! initialise these variables as 5 so if z_sfc(5)>0 happens, the numbers are still correct, TS 06 Aug 2019
-      Nground = 5
-      Nroof = 5
-      Nwall = 5
-      Nibld = 5
+      Ndepth_ground = 5
+      Ndepth_roof = 5
+      Ndepth_wall = 5
+      Ndepth_ibld = 5
       DO i = 1, 5
          IF (zground(i) <= 0) THEN
-            Nground = i - 1
+            Ndepth_ground = i - 1
             EXIT
          END IF
       END DO
       DO i = 1, 5
          IF (zroof(i) <= 0) THEN
-            Nroof = i - 1
+            Ndepth_roof = i - 1
             EXIT
          END IF
       END DO
       DO i = 1, 5
          IF (zwall(i) <= 0) THEN
-            Nwall = i - 1
+            Ndepth_wall = i - 1
             EXIT
          END IF
       END DO
       DO i = 1, 5
          IF (zibld(i) <= 0) THEN
-            Nibld = i - 1
+            Ndepth_ibld = i - 1
             EXIT
          END IF
       END DO
@@ -710,7 +713,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       !   !     PRINT'(a10,x,5es10.2)', 'avg_k',kkAnOHM(i)
       !   !     PRINT'(a10,x,5es10.2)', 'avg_Ch',chAnOHM(i)
       !    !
-      !   !     PRINT'(a10,x,7f10.2)', 'fractions:',sfr
+      !   !     PRINT'(a10,x,7f10.2)', 'fractions:',sfr_surf
       !    !
       !   !  END IF
       !
@@ -724,6 +727,90 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       !
       ! END DO
    END IF
+
+! ---- ESTM_ext related ------------------------------
+   nlayer = nlayer_grids(Gridiv)
+
+   ALLOCATE (height(nlayer + 1)) ! why such dimension? why plus ncol?
+   ALLOCATE (building_frac(nlayer))
+   ALLOCATE (veg_frac(nlayer))
+   ALLOCATE (building_scale(nlayer))
+   ALLOCATE (veg_scale(nlayer))
+   ! ALLOCATE (veg_ext(nlayer))
+   ! ALLOCATE (veg_fsd(nlayer))
+   ! ALLOCATE (veg_contact_fraction(nlayer))
+   height = height_grids(Gridiv, :)
+   building_frac = building_frac_grids(Gridiv, :)
+   veg_frac = veg_frac_grids(Gridiv, :)
+   building_scale = building_scale_grids(Gridiv, :)
+   veg_scale = veg_scale_grids(Gridiv, :)
+   ! veg_ext = veg_ext_grids(Gridiv, :)
+   ! veg_fsd = veg_fsd_grids(Gridiv, :)
+
+   ! roof
+   ALLOCATE (sfr_roof(nlayer))
+   ALLOCATE (tsfc_roof(nlayer))
+   ALLOCATE (alb_roof(nlayer))
+   ALLOCATE (emis_roof(nlayer))
+   ALLOCATE (roof_albedo_dir_mult_fact(nspec, nlayer))
+   ALLOCATE (k_roof(nlayer, ndepth))
+   ALLOCATE (cp_roof(nlayer, ndepth))
+   ALLOCATE (dz_roof(nlayer, ndepth))
+   ALLOCATE (tin_roof(nlayer))
+   ALLOCATE (temp_roof(nlayer, ndepth))
+
+   sfr_roof = sfr_roof_grids(Gridiv, :)
+   tsfc_roof = tsfc_roof_grids(Gridiv, :)
+   alb_roof = alb_roof_grids(Gridiv, :)
+   emis_roof = emis_roof_grids(Gridiv, :)
+
+   dz_roof(1:nlayer, 1:ndepth) = dz_roof_grids(Gridiv, 1:nlayer, 1:ndepth)
+   k_roof(1:nlayer, 1:ndepth) = k_roof_grids(Gridiv, 1:nlayer, 1:ndepth)
+   ! PRINT *, 'dz_roof in translate:', dz_roof(1:nroof, 1:ndepth)
+   cp_roof(1:nlayer, 1:ndepth) = cp_roof_grids(Gridiv, 1:nlayer, 1:ndepth)
+   tin_roof(1:nlayer) = tin_roof_grids(Gridiv, 1:nlayer)
+   temp_roof(1:nlayer, 1:ndepth) = temp_roof_grids(Gridiv, 1:nlayer, 1:ndepth)
+
+   ! wall
+   ALLOCATE (sfr_wall(nlayer))
+   ALLOCATE (tsfc_wall(nlayer))
+   ALLOCATE (k_wall(nlayer, ndepth))
+   ALLOCATE (cp_wall(nlayer, ndepth))
+   ALLOCATE (dz_wall(nlayer, ndepth))
+   ALLOCATE (tin_wall(nlayer))
+   ALLOCATE (temp_wall(nlayer, ndepth))
+   ALLOCATE (alb_wall(nlayer))
+   ALLOCATE (emis_wall(nlayer))
+   ALLOCATE (wall_specular_frac(nspec, nlayer))
+
+   ! veg_contact_fraction = veg_contact_fraction_grids(Gridiv, :)
+
+   sfr_wall = sfr_wall_grids(Gridiv, :)
+   tsfc_wall = tsfc_wall_grids(Gridiv, :)
+   alb_wall = alb_wall_grids(Gridiv, :)
+   emis_wall = emis_wall_grids(Gridiv, :)
+   wall_specular_frac = wall_specular_frac_grids(Gridiv, :, :)
+
+   dz_wall(1:nlayer, 1:ndepth) = dz_wall_grids(Gridiv, 1:nlayer, 1:ndepth)
+   k_wall(1:nlayer, 1:ndepth) = k_wall_grids(Gridiv, 1:nlayer, 1:ndepth)
+   cp_wall(1:nlayer, 1:ndepth) = cp_wall_grids(Gridiv, 1:nlayer, 1:ndepth)
+   tin_wall(1:nlayer) = tin_wall_grids(Gridiv, 1:nlayer)
+   temp_wall(1:nlayer, 1:ndepth) = temp_wall_grids(Gridiv, 1:nlayer, 1:ndepth)
+
+   ! TODO: these need to be updated; ESTM coupling work
+   ! standard suews surfaces
+   ALLOCATE (dz_surf(nsurf, ndepth))
+   ALLOCATE (k_surf(nsurf, ndepth))
+   ALLOCATE (cp_surf(nsurf, ndepth))
+   ALLOCATE (tsfc_surf(nsurf))
+   ALLOCATE (tin_surf(nsurf))
+   ALLOCATE (temp_surf(nsurf, ndepth))
+   dz_surf(1:nsurf, 1:ndepth) = dz_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
+   k_surf(1:nsurf, 1:ndepth) = k_surf_grids(Gridiv, 1:nlayer, 1:ndepth)
+   cp_surf(1:nsurf, 1:ndepth) = cp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
+   tsfc_surf(1:nsurf) = tsfc_surf_grids(Gridiv, 1:nsurf)
+   tin_surf(1:nsurf) = tin_surf_grids(Gridiv, 1:nsurf)
+   temp_surf(1:nsurf, 1:ndepth) = temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
 
    ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
    BaseT_HC = -999 ! Initialise QF coeffs
@@ -770,27 +857,27 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    Ie_end = INT(SurfaceChar(Gridiv, c_IeEnd))
    InternalWaterUse_h = SurfaceChar(Gridiv, c_IntWU)
    Faut = SurfaceChar(Gridiv, c_Faut)
-   H_maintain = SurfaceChar(Gridiv, c_h_maintain)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
-   Ie_a = SurfaceChar(Gridiv, c_Ie_a)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
-   Ie_m = SurfaceChar(Gridiv, c_Ie_m)   !Manual irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+   H_maintain = SurfaceChar(Gridiv, c_h_maintain) !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+   Ie_a = SurfaceChar(Gridiv, c_Ie_a) !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+   Ie_m = SurfaceChar(Gridiv, c_Ie_m) !Manual irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
    DayWat = SurfaceChar(Gridiv, c_DayWat)
    DayWatPer = SurfaceChar(Gridiv, c_DayWatPer)
 
    ! ---- Hourly profiles
-   AHProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfEnUseWD)       ! Anthropogenic heat, weekdays
-   AHProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfEnUseWE)       ! Anthropogenic heat, weekends
-   WUProfM_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfWUManuWD)      ! Water use, manual, weekdays
-   WUProfM_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfWUManuWE)      ! Water use, manual, weekends
-   WUProfA_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfWUAutoWD)      ! Water use, automatic, weekdays
-   WUProfA_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfWUAutoWE)      ! Water use, automatic, weekends
-   SnowProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfSnowCWD)       ! Snow clearing, weekdays
-   SnowProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfSnowCWE)       ! Snow clearing, weekends
+   AHProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfEnUseWD) ! Anthropogenic heat, weekdays
+   AHProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfEnUseWE) ! Anthropogenic heat, weekends
+   WUProfM_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfWUManuWD) ! Water use, manual, weekdays
+   WUProfM_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfWUManuWE) ! Water use, manual, weekends
+   WUProfA_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfWUAutoWD) ! Water use, automatic, weekdays
+   WUProfA_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfWUAutoWE) ! Water use, automatic, weekends
+   SnowProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfSnowCWD) ! Snow clearing, weekdays
+   SnowProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfSnowCWE) ! Snow clearing, weekends
    HumActivity_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfHumActivityWD) ! Human activity, weekdays
    HumActivity_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HrProfHumActivityWE) ! Human activity, weekends
-   TraffProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfTraffWD)       ! Traffic, weekdays
-   TraffProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HRProfTraffWE)       ! Traffic, weekends
-   PopProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HRProfPopWD)         ! Population, weekdays
-   PopProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HRProfPopWE)         ! Population, weekends
+   TraffProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HrProfTraffWD) ! Traffic, weekdays
+   TraffProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HRProfTraffWE) ! Traffic, weekends
+   PopProf_24hr(0:23, 1) = SurfaceChar(Gridiv, c_HRProfPopWD) ! Population, weekdays
+   PopProf_24hr(0:23, 2) = SurfaceChar(Gridiv, c_HRProfPopWE) ! Population, weekends
 
    ! ---- Profiles at the resolution of model time step
    ! AHProf_tstep(:,1)      = TstepProfiles(Gridiv,cTP_EnUseWD,:)       ! Anthropogenic heat, weekdays
@@ -862,9 +949,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    !NARP_CONFIGURATION if net radiation is to be modelled
    IF (NetRadiationMethod > 0) THEN
       NARP_LAT = SurfaceChar(Gridiv, c_lat)
-      NARP_LONG = SurfaceChar(Gridiv, c_lng)    ! New sun_position_v2 use degrees FL
+      NARP_LONG = SurfaceChar(Gridiv, c_lng) ! New sun_position_v2 use degrees FL
       NARP_YEAR = INT(SurfaceChar(Gridiv, c_Year))
-      NARP_TZ = TIMEZONE                           !not every 5-min
+      NARP_TZ = TIMEZONE !not every 5-min
       NARP_TRANS_SITE = TRANS_SITE
       !INTERVAL IS ONLY RELEVANT TO LUPCORR
       !ALL OTHER CALCULATIONS ARE INTERVAL INDEPENDENT
@@ -986,13 +1073,13 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! ---- Liquid (melted) water in SnowPack
       SnowWater(1:nsurf) = ModelOutputData(0, cMOD_SnowWaterState(1:nsurf), Gridiv)
 
-   END IF  !ir = 0
+   END IF !ir = 0
    !=================================================================================
 
    !=========================== Write FileChoices.txt ===============================
    !=================================================================================
    ! Do once per grid per year (was in SUEWS_Initial.f95)
-   IF (ir == 1 .AND. iMB == 1) THEN   !For first row of first block only
+   IF (ir == 1 .AND. iMB == 1) THEN !For first row of first block only
       !write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
       FileChoices = TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
       OPEN (12, file=FileChoices, position='append')
@@ -1005,7 +1092,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Surface characteristics'//' -----'
       ! Characteristics that apply to some or all surface types
       WRITE (12, '(8a10,a16)') 'Paved', 'Bldgs', 'EveTr', 'DecTr', 'Grass', 'BSoil', 'Water', 'Snow', ' SurfType'
-      WRITE (12, 120) (sfr(iv), iv=1, nsurf), FCskip, ' SurfFr'
+      WRITE (12, 120) (sfr_surf(iv), iv=1, nsurf), FCskip, ' SurfFr'
       WRITE (12, 120) FCskip, FCskip, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, FCskip, FCskip, FCskip, ' IrrFr'
       WRITE (12, 120) FCskip, FCskip, WUAreaEveTr_m2, WUAreaDecTr_m2, WUAreaGrass_m2, FCskip, FCskip, FCskip, ' WaterUseArea'
       WRITE (12, 120) FCskip, BldgH, EveTreeH, DecTreeH, FCskip, FCskip, FCskip, FCskip, ' H'
@@ -1020,7 +1107,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, 120) (StoreDrainPrm(5, iv), iv=1, nsurf), FCskip, ' StorageMax'
       WRITE (12, 120) (WetThresh(iv), iv=1, nsurf), FCskip, ' WetThreshold'
       WRITE (12, 120) (StateLimit(iv), iv=1, nsurf), FCskip, ' StateLimit'
-      WRITE (12, 120) (StoreDrainPrm(2, iv), iv=1, nsurf), FCskip, ' DrainageEq'    !real
+      WRITE (12, 120) (StoreDrainPrm(2, iv), iv=1, nsurf), FCskip, ' DrainageEq' !real
       WRITE (12, 120) (StoreDrainPrm(3, iv), iv=1, nsurf), FCskip, ' DrainageCoef1'
       WRITE (12, 120) (StoreDrainPrm(4, iv), iv=1, nsurf), FCskip, ' DrainageCoef2'
       WRITE (12, 120) FCskip, FCskip, (GDDFull(iv), iv=1, nvegsurf), FCskip, FCskip, FCskip, ' GDDFull'
@@ -1029,7 +1116,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, 120) FCskip, FCskip, (LAImax(iv), iv=1, nvegsurf), FCskip, FCskip, FCskip, ' LAIMax'
       WRITE (12, 120) FCskip, FCskip, FCskip, PorMin_dec, FCSkip, FCskip, FCskip, FCskip, ' PorosityMin'
       WRITE (12, 120) FCskip, FCskip, FCskip, PorMax_dec, FCSkip, FCskip, FCskip, FCskip, ' PorosityMax'
-      WRITE (12, '(2f10.3,3i10,  3f10.3,a16)') FCskip, FCskip, LAItype(1:nvegsurf), FCskip, FCskip, FCskip, ' LAIEq'   !integer
+      WRITE (12, '(2f10.3,3i10,  3f10.3,a16)') FCskip, FCskip, LAItype(1:nvegsurf), FCskip, FCskip, FCskip, ' LAIEq' !integer
       WRITE (12, '(2f10.3,3f10.5,3f10.3,a16)') FCskip, FCskip, LAIPower(1, 1:nvegsurf), FCskip, FCskip, FCskip, ' LAI_LeafGP1'
       WRITE (12, '(2f10.3,3f10.5,3f10.3,a16)') FCskip, FCskip, LAIPower(2, 1:nvegsurf), FCskip, FCskip, FCskip, ' LAI_LeafGP2'
       WRITE (12, '(2f10.3,3f10.5,3f10.3,a16)') FCskip, FCskip, LAIPower(3, 1:nvegsurf), FCskip, FCskip, FCskip, ' LAI_LeafOP1'
@@ -1102,9 +1189,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       END DO
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Other parameters'//' -----'
-      WRITE (12, '(a12,7a10)') 'Grid', 'FlowChange', 'ROToWater', 'PipeCap', &   ! Water-related
-         'DrRate', 'Cover', 'MaxRes', &   ! LUMPS-related
-         'Trans'   ! NARP-related
+      WRITE (12, '(a12,7a10)') 'Grid', 'FlowChange', 'ROToWater', 'PipeCap', & ! Water-related
+         'DrRate', 'Cover', 'MaxRes', & ! LUMPS-related
+         'Trans' ! NARP-related
       WRITE (12, '(a12,7f10.3)') SsG_YYYY, FlowChange, RunoffToWater, PipeCapacity, &
          DRAINRT, RAINCOVER, RAINMAXRES, &
          Trans_Site
@@ -1114,7 +1201,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          'Grid', 'lat', 'lon', 'tz', 'alt', 'SurfA_ha', 'z', 'PopDensNighttime', 'z0_input', 'zd_input', 'StartDLS', 'EndDLS'
       WRITE (12, '(a12,4f10.4,f10.2,4f10.4,2i10)') &
          SsG_YYYY, lat, lng*(-1.0), timezone, alt, SurfaceArea_ha, z, PopDensNighttime, z0m_in, zdm_in, &
-         startDLS, endDLS! DayLightSavingDay(1:2)
+         startDLS, endDLS ! DayLightSavingDay(1:2)
 
       WRITE (12, *) ''
 
@@ -1124,24 +1211,24 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! Check input values are reasonable ===========================================
 
       ! Coefficients for anthropogenic heat models ----------------------------------
-      IF (EmissionsMethod == 1) THEN   !Loridan et al. (2011) calculation
+      IF (EmissionsMethod == 1) THEN !Loridan et al. (2011) calculation
          IF (AH_min(1) == 0 .AND. Ah_slope_Heating(1) == 0 .AND. BaseT_Heating(1) == 0) THEN
             CALL ErrorHint(53, 'Check QF calculation coefficients.', notUsed, notUsed, EmissionsMethod)
          END IF
 
-      ELSEIF (EmissionsMethod == 2) THEN   !Jarvi et al. (2011) calculation
+      ELSEIF (EmissionsMethod == 2) THEN !Jarvi et al. (2011) calculation
          IF (SUM(QF_A) == 0 .AND. SUM(QF_B) == 0 .AND. SUM(QF_C) == 0) THEN
             CALL ErrorHint(54, 'Check QF calculation coefficients.', notUsed, notUsed, EmissionsMethod)
          END IF
       END IF
 
       ! Morphometric parameters -----------------------------------------------------
-      IF (RoughLenMomMethod == 1) THEN   !z0, zd values provided in input file
+      IF (RoughLenMomMethod == 1) THEN !z0, zd values provided in input file
          ! Check z0m and zd are reasonable
          IF (z0m < 0.00001) CALL ErrorHint(1, 'z0 value provided is very small (RoughLenMomMethod=1).', z0m, notUsed, GridID)
          IF (zdm < 0.00001) CALL ErrorHint(1, 'zd value provided is very small (RoughLenMomMethod=1).', zdm, notUsed, GridID)
          zzd = z - zdm
-      ELSEIF (RoughLenMomMethod == 3) THEN   !z0, zd calculated using FAI provided in input file
+      ELSEIF (RoughLenMomMethod == 3) THEN !z0, zd calculated using FAI provided in input file
          ! Check FAIs reasonable
          IF (FAIBLdg < 0) CALL ErrorHint(1, &
                                          'FAI_Bldgs value provided is very small (RoughLenMomMethod=3)', &
@@ -1151,7 +1238,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
                                          FAITree, notUsed, GridID)
       END IF
 
-   END IF   !End for first row of first block only ===================================
+   END IF !End for first row of first block only ===================================
 
    !=================================================================================
    !For each row of the met forcing file (ir), translate correct info for each grid
@@ -1165,7 +1252,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       it = INT(MetForcingData(ir, 3, Gridiv))
       imin = INT(MetForcingData(ir, 4, Gridiv))
       isec = 0 ! NOT used by SUEWS but by WRF-SUEWS via the cal_main interface
-      qn1_obs = MetForcingData(ir, 5, Gridiv)      !Real values (kind(1d0))
+      qn1_obs = MetForcingData(ir, 5, Gridiv) !Real values (kind(1d0))
       qh_obs = MetForcingData(ir, 6, Gridiv)
       qe_obs = MetForcingData(ir, 7, Gridiv)
       qs_obs = MetForcingData(ir, 8, Gridiv)
@@ -1270,7 +1357,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    ! --------------------------------------------------------------------------------
    ! Check Initial Conditions are reasonable ----------------------------------------
-   IF (ir == 1 .AND. iMB == 1) THEN   !For first row of first block only
+   IF (ir == 1 .AND. iMB == 1) THEN !For first row of first block only
       CALL CheckInitial
    END IF
    ! --------------------------------------------------------------------------------
@@ -1426,7 +1513,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) 'sathydraulicconduct=', sathydraulicconduct
       WRITE (12, *) 'sddfull=', sddfull
       WRITE (12, *) 'sdd_id=', sdd_id
-      WRITE (12, *) 'sfr=', sfr
+      WRITE (12, *) 'sfr_surf=', sfr_surf
       WRITE (12, *) 'smdmethod=', smdmethod
       WRITE (12, *) 'snowalb=', snowalb
       WRITE (12, *) 'snowalbmax=', snowalbmax
@@ -1502,7 +1589,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    RETURN
 
-120 FORMAT(8F10.3, a16)  !format (10g10.2)
+120 FORMAT(8F10.3, a16) !format (10g10.2)
 121 FORMAT(a12, 24F10.4, a20)
 
 END SUBROUTINE SUEWS_Translate
@@ -1533,9 +1620,9 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
 
    IMPLICIT NONE
 
-   INTEGER::Gridiv, & ! Index of the analysed grid (Gridcounter)
-             ir, & ! Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
-             irMax        ! Last row in current chunk of met data
+   INTEGER :: Gridiv, & ! Index of the analysed grid (Gridcounter)
+              ir, & ! Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
+              irMax ! Last row in current chunk of met data
 
    ! =============================================================================
    ! === Translate values from variable names used in model to ModelDailyState ===
@@ -1602,6 +1689,75 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ModelDailyState(Gridiv, cMDS_SnowDens(1:nsurf)) = SnowDens(1:nsurf)
    ModelDailyState(Gridiv, cMDS_SnowAlb) = SnowAlb
 
+   ! ---- ESTM_ext related ------------------------------
+   ! roof
+
+   ! k_roof(1:nroof, 1:ndepth) = k_roof_grids(Gridiv, 1:nroof, 1:ndepth)
+   ! dz_roof(1:nroof, 1:ndepth) = dz_roof_grids(Gridiv, 1:nroof, 1:ndepth)
+   ! PRINT *, 'dz_roof in translate:', dz_roof(1:nroof, 1:ndepth)
+   ! cp_roof(1:nroof, 1:ndepth) = cp_roof_grids(Gridiv, 1:nroof, 1:ndepth)
+
+   temp_roof_grids(Gridiv, 1:nlayer, 1:ndepth) = temp_roof(1:nlayer, 1:ndepth)
+   tsfc_roof_grids(Gridiv, 1:nlayer) = tsfc_roof(1:nlayer)
+   DEALLOCATE (tsfc_roof)
+   DEALLOCATE (sfr_roof)
+   DEALLOCATE (alb_roof)
+   DEALLOCATE (emis_roof)
+   DEALLOCATE (roof_albedo_dir_mult_fact)
+   DEALLOCATE (tin_roof)
+   DEALLOCATE (k_roof)
+   DEALLOCATE (cp_roof)
+   DEALLOCATE (dz_roof)
+   DEALLOCATE (temp_roof)
+
+   ! wall
+   ! nwall = nwall_grids(Gridiv)
+   ! ALLOCATE (sfr_wall(nwall))
+   !    ALLOCATE (k_wall(nwall, ndepth))
+   !    ALLOCATE (cp_wall(nwall, ndepth))
+   !    ALLOCATE (dz_wall(nwall, ndepth))
+   !    ALLOCATE (tsfc_wall(nwall))
+   ! k_wall(1:nwall, 1:ndepth) = k_wall_grids(Gridiv, 1:nwall, 1:ndepth)
+   ! dz_wall(1:nwall, 1:ndepth) = dz_wall_grids(Gridiv, 1:nwall, 1:ndepth)
+   ! PRINT *, 'dz_wall in translate:', dz_wall(1:nwall, 1:ndepth)
+   ! cp_wall(1:nwall, 1:ndepth) = cp_wall_grids(Gridiv, 1:nwall, 1:ndepth)
+   ! tsfc_wall_grids(Gridiv, 1:nwall) = tsfc_wall(1:nwall)
+   temp_wall_grids(Gridiv, 1:nlayer, 1:ndepth) = temp_wall(1:nlayer, 1:ndepth)
+   tsfc_wall_grids(Gridiv, 1:nlayer) = tsfc_wall(1:nlayer)
+
+   DEALLOCATE (tsfc_wall)
+   DEALLOCATE (sfr_wall)
+   DEALLOCATE (alb_wall)
+   DEALLOCATE (emis_wall)
+   DEALLOCATE (wall_specular_frac)
+   DEALLOCATE (k_wall)
+   DEALLOCATE (cp_wall)
+   DEALLOCATE (dz_wall)
+   DEALLOCATE (tin_wall)
+   DEALLOCATE (temp_wall)
+
+   ! surf
+   ! tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
+   temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth) = temp_surf(1:nsurf, 1:ndepth)
+   tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
+   DEALLOCATE (tsfc_surf)
+   DEALLOCATE (k_surf)
+   DEALLOCATE (cp_surf)
+   DEALLOCATE (dz_surf)
+   DEALLOCATE (tin_surf)
+   DEALLOCATE (temp_surf)
+
+   DEALLOCATE (height)
+   DEALLOCATE (building_frac)
+   DEALLOCATE (veg_frac)
+   DEALLOCATE (building_scale)
+   DEALLOCATE (veg_scale)
+   ! DEALLOCATE (veg_ext)
+   ! DEALLOCATE (veg_fsd)
+   ! DEALLOCATE (veg_contact_fraction)
+   ! DEALLOCATE (alb_roof)
+   ! DEALLOCATE (alb_wall)
+
    ! =============================================================================
    ! === Translate values from variable names used in model to ModelOutputData ===
    ! =============================================================================
@@ -1615,7 +1771,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! ---- ice fraction
    IceFrac_grids(:, Gridiv) = IceFrac
 
-   IF (ir == irMax) THEN   !Store variables ready for next chunk of met data
+   IF (ir == irMax) THEN !Store variables ready for next chunk of met data
       ModelOutputData(0, cMOD_State(1:nsurf), Gridiv) = state_id(1:nsurf)
       ModelOutputData(0, cMOD_SoilState(1:nsurf), Gridiv) = soilstore_id(1:nsurf)
       ModelOutputData(0, cMOD_SnowFrac(1:nsurf), Gridiv) = SnowFrac(1:nsurf)

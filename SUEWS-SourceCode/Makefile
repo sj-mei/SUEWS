@@ -156,6 +156,7 @@ UTILS = suews_ctrl_const.o \
 
 # SUEWS physics modules
 PHYS =	suews_phys_narp.o \
+	suews_phys_spartacus.o \
 	suews_phys_atmmoiststab.o \
 	suews_phys_resist.o \
 	suews_ctrl_input.o  \
@@ -269,20 +270,24 @@ libspartacus: $(FILE_SRC_UTIL_SPTCS) $(FILE_SRC_RADTOOL_SPTCS) $(FILE_SRC_RAD_SP
 	-ln -sf "$(abspath $*.F90)" "$(abspath $*.f95)"
 
 libutil: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS))
+	@echo "Compiling SUEWS utilities..."
 	@echo $(C_MODULE)
 	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBUTILS) $^
 
-libphys:  $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS))
+libphys: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS))
+	@echo "Compiling SUEWS physics modules..."
 	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBPHYS) $^
 
 libdriver: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS) $(DRIVER))
+	@echo "Compiling SUEWS driver module..."
 	mkdir -p $(DIR_LIB_SUEWS)
 	ar r $(LIBDRIVER) $^
 
 
 suews: libspartacus libdriver exe
+
 
 exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	@echo  $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
@@ -293,6 +298,9 @@ exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	cd $(DIR_BIN_SUEWS) && ln -sf $(EXECUTABLE) $(TARGET)
 	mkdir -p $(DIR_RELEASE_SUEWS) && cp -f $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(DIR_RELEASE_SUEWS)/$(TARGET)
 
+# special rule for the spartacus wrapper
+src/suews_phys_spartacus.o: src/suews_phys_spartacus.f95 libspartacus
+	$(FC) $(FCFLAGS) -c $< -o $@
 
 # rules for f95-->f90
 %.o: %$(suffix_code)

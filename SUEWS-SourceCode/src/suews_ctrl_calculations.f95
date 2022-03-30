@@ -72,7 +72,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dqndt, qn1_av, &
       dqnsdt, qn1_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
-      sfr, SnowPackLimit, snowdens, SnowFrac, snowpack, &
+      sfr_surf, SnowPackLimit, snowdens, SnowFrac, snowpack, &
       soildepth, soilstore_id, SoilStoreCap, state_id, statelimit, &
       StoreDrainPrm, theta_bioco2, ts5mindata_ir, &
       waterdist, wetthresh, &
@@ -82,8 +82,24 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataoutlineestm, dataoutlineRSL, dataOutLineBEERS, &
       dataOutLineDebug, dataOutLineDebug, dataOutLineSPARTACUS, &
       dailystateline, dataoutdailystate, &
-      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutBEERS, &
-      dataoutBL, dataOutDebug, dataOutSPARTACUS
+      dataoutsuews, dataoutsnow, dataoutestm, dataOutESTMExt, dataoutRSL, dataOutBEERS, &
+      dataoutBL, dataOutDebug, dataOutSPARTACUS, dataOutLineESTMExt, &
+      nlayer, n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, &
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
+      sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf, &
+      tin_roof, tin_wall, tin_surf, &
+      temp_roof, temp_wall, temp_surf, &
+      k_roof, k_wall, k_surf, &
+      cp_roof, cp_wall, cp_surf, &
+      dz_roof, dz_wall, dz_surf, &
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       H_maintain, &
@@ -124,6 +140,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Translate...'
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
+   ! ASSOCIATE (v => dz_roof(1, 1:5))
+   !    PRINT *, 'dz_roof before driver', v, SIZE(v)
+   ! END ASSOCIATE
    !PRINT *,''
    !PRINT *,'Calling SUEWS_cal_Main'
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
@@ -152,6 +171,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+      nlayer, &
+      n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, &
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac, &
       OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
@@ -160,7 +189,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       qn1_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-      SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+      SatHydraulicConduct, SDDFull, SDD_id, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
@@ -168,46 +197,56 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       Tmax_id, Tmin_id, &
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+      sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_roof, temp_wall, temp_surf, &
+      tin_roof, tin_wall, tin_surf, &
+      k_roof, k_wall, k_surf, &
+      cp_roof, cp_wall, cp_surf, &
+      dz_roof, dz_wall, dz_surf, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
-      dataOutLineBEERS, &!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
+      dataOutLineBEERS, & !output
       dataOutLineDebug, dataOutLineSPARTACUS, &
-      DailyStateLine)!output
+      dataOutLineESTMExt, &
+      DailyStateLine) !output
 
    !============ update and write out SUEWS_cal_DailyState ===============
    ! only works at the last timestep of a day
    CALL SUEWS_update_DailyState( &
-      id, datetimeLine, &!input
+      id, datetimeLine, & !input
       Gridiv, NumberOfGrids, &
       DailyStateLine, &
-      dataOutDailyState)!inout
+      dataOutDailyState) !inout
 
    !============ write out results ===============
    ! works at each timestep
+   ! print *, 'writing out results',dataOutLineESTMExt
+   ! PRINT *, '=====writing out results====='
    CALL SUEWS_update_output( &
-      SnowUse, storageheatmethod, &!input
+      SnowUse, storageheatmethod, & !input
       ReadLinesMetdata, NumberOfGrids, &
-      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &!input
-      dataOutLineDebug, dataOutLineSPARTACUS, &
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, &!inout
-      dataOutDebug, dataOutSPARTACUS)!inout
+      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, & !input
+      dataOutLineDebug, dataOutLineSPARTACUS, dataOutLineESTMExt, &
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, & !inout
+      dataOutDebug, dataOutSPARTACUS, dataOutESTMExt) !inout
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
 
-   IF (Qh_choice == 1) THEN   !use QH and QE from SUEWS
+   IF (Qh_choice == 1) THEN !use QH and QE from SUEWS
       qhforCBL(Gridiv) = dataOutLineSUEWS(9)
       qeforCBL(Gridiv) = dataOutLineSUEWS(10)
-   ELSEIF (Qh_choice == 2) THEN   !use QH and QE from LUMPS
+   ELSEIF (Qh_choice == 2) THEN !use QH and QE from LUMPS
       qhforCBL(Gridiv) = dataOutLineSUEWS(11)
       qeforCBL(Gridiv) = dataOutLineSUEWS(12)
-   ELSEIF (qh_choice == 3) THEN  !use QH and QE from OBS
+   ELSEIF (qh_choice == 3) THEN !use QH and QE from OBS
       qhforCBL(Gridiv) = qh_obs
       qeforCBL(Gridiv) = qe_obs
-      IF (qh_obs < -900 .OR. qe_obs < -900) THEN  ! observed data has a problem
+      IF (qh_obs < -900 .OR. qe_obs < -900) THEN ! observed data has a problem
 
          CALL ErrorHint(22, 'Unrealistic observed qh or qe_value for CBL.', qh_obs, qe_obs, qh_choice)
 
