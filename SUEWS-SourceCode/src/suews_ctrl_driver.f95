@@ -691,7 +691,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! latent heat flux of individual surface [W m-2]
       ! surface temperature
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_qh_surf ! latent heat flux of individual surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_qh_surf ! latent heat flux of individual surface [W m-2]
 
       ! iterator for surfaces
       INTEGER :: i_surf
@@ -928,7 +928,7 @@ CONTAINS
             AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
             dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
             FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
-            id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
+            imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
             PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
             QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
             Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
@@ -1116,7 +1116,7 @@ CONTAINS
             PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
             RS, RA_h, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
             NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-            SurfaceArea, FlowChange, drain, WetThresh, state_id_updated, mw_ind, SoilStoreCap, rainonsnow, &
+            FlowChange, drain, WetThresh, state_id_updated, mw_ind, SoilStoreCap, rainonsnow, &
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
             StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
@@ -1139,7 +1139,7 @@ CONTAINS
             qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
             sfr_surf, sfr_roof, sfr_wall, &
             tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
-            tsurf, Temp_C, &
+            Temp_C, &
             RA_h, &
             qh, qh_residual, qh_resist, & !output
             qh_surf, qh_roof, qh_wall)
@@ -1463,7 +1463,7 @@ CONTAINS
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
       dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
       FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
-      id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
+      imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
       PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
       QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
       Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
@@ -1474,10 +1474,10 @@ CONTAINS
       ! INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in) :: DLS
       INTEGER, INTENT(in) :: EmissionsMethod
-      INTEGER, INTENT(in) :: id
+      ! INTEGER, INTENT(in) :: id
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-      INTEGER, INTENT(in) :: nsh
+      ! INTEGER, INTENT(in) :: nsh
       INTEGER, DIMENSION(3), INTENT(in) :: dayofWeek_id
 
       REAL(KIND(1D0)), DIMENSION(6, 2), INTENT(in) :: HDD_id
@@ -2320,7 +2320,7 @@ CONTAINS
       PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
       RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-      SurfaceArea, FlowChange, drain, WetThresh_surf, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+      FlowChange, drain, WetThresh_surf, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, & ! input:
@@ -2385,7 +2385,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: addWaterBody !Water from water surface of other grids [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(in) :: SnowLimPaved
       REAL(KIND(1D0)), INTENT(in) :: SnowLimBldg
-      REAL(KIND(1D0)), INTENT(in) :: SurfaceArea
+      ! REAL(KIND(1D0)), INTENT(in) :: SurfaceArea
       REAL(KIND(1D0)), INTENT(in) :: FlowChange
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_nsurf
@@ -2428,7 +2428,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: iceFrac_out
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
       REAL(KIND(1D0)), DIMENSION(nsurf) :: ChangSnow_surf
@@ -2459,8 +2459,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: runoffPipes
       REAL(KIND(1D0)), INTENT(out) :: mwstore
       REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody
-      REAL(KIND(1D0)) :: runoffWaterBody_m3
-      REAL(KIND(1D0)) :: runoffPipes_m3
+      ! REAL(KIND(1D0)) :: runoffWaterBody_m3
+      ! REAL(KIND(1D0)) :: runoffPipes_m3
       REAL(KIND(1D0)), INTENT(out) :: runoffAGveg
       REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious
 
@@ -2672,7 +2672,7 @@ CONTAINS
       qn, qf, QmRain, qeOut, qs, QmFreez, qm, avdens, avcp, &
       sfr_surf, sfr_roof, sfr_wall, &
       tsfc_surf, tsfc_roof, tsfc_wall, &
-      tsurf, Temp_C, &
+      Temp_C, &
       RA, &
       qh, qh_residual, qh_resist, & !output
       qh_surf, qh_roof, qh_wall)
@@ -2690,7 +2690,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: qm
       REAL(KIND(1D0)), INTENT(in) :: avdens
       REAL(KIND(1D0)), INTENT(in) :: avcp
-      REAL(KIND(1D0)), INTENT(in) :: tsurf
+      ! REAL(KIND(1D0)), INTENT(in) :: tsurf
       REAL(KIND(1D0)), INTENT(in) :: Temp_C
       REAL(KIND(1D0)), INTENT(in) :: RA
 
@@ -3860,7 +3860,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataOutLineRSL
-      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) :: dataOutLineSOLWEIG
+      ! REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) :: dataOutLineSOLWEIG
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLinedebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
@@ -4240,6 +4240,7 @@ CONTAINS
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
       dataOutBlockBEERS = dataOutBlockBEERS_X(:, :, 1)
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
+      dataOutBlockSPARTACUS = dataOutBlockSPARTACUS_X(:, :, 1)
       ! DailyStateBlock=DailyStateBlock_X(:,:,1)
 
    END SUBROUTINE SUEWS_cal_multitsteps
