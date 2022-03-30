@@ -1032,7 +1032,8 @@ CONTAINS
          sfr_surf, PipeCapacity, RunoffToWater, &
          runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes) ! inout:
 
-      runoff_tot = runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) + runoff(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
+      runoff_tot = runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
+                   + runoff(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
                    + runoffTest*sfr_surf(is)
 
       !===Update snow depth, weighted SWE, and Mwstore
