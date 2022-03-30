@@ -1122,9 +1122,9 @@ CONTAINS
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
             runoff_per_interval, state_id_prev, soilstore_id_prev, & ! input:
             qn_surf, qs_surf, &
-            state_id_next, soilstore_id_next, & ! output:
+            SnowRemoval, & ! snow specific output
             SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
-            SnowRemoval, &
+            state_id_next, soilstore_id_next, & ! general output:
             state_per_tstep, NWstate_per_tstep, &
             qe, qe_surf, qe_roof, qe_wall, &
             swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
@@ -2326,9 +2326,9 @@ CONTAINS
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, & ! input:
       runoff_per_interval_in, state_id_in, soilstore_id_in, & ! input:
       qn_surf, qs_surf, &
-      state_id_out, soilstore_id_out, & ! output:
+      SnowRemoval, & ! snow specific output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, & ! output
-      SnowRemoval, & ! output:
+      state_id_out, soilstore_id_out, & ! general output:
       state_per_tstep, NWstate_per_tstep, &
       qe, qe_surf, qe_roof, qe_wall, &
       swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
@@ -2522,7 +2522,6 @@ CONTAINS
       NWstate_per_tstep = 0
       qe = 0
       runoffwaterbody = 0
-      chSnow_per_interval = 0
 
       runoffAGveg = 0
       runoffAGimpervious = 0
@@ -2547,6 +2546,7 @@ CONTAINS
 
          mwstore = 0
 
+         chSnow_per_interval = 0
          qe_tot = 0
          ev_tot = 0
          swe = 0

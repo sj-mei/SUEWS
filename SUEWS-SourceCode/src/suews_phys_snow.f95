@@ -490,8 +490,8 @@ CONTAINS
       SnowFrac, SnowWater, iceFrac, SnowDens, &
       runoffAGimpervious, runoffAGveg, surplusWaterBody, &
       rss_nsurf, runoffSnow, & ! output
-      runoff, chang, changSnow, SnowToSurf, state_id, ev_snow, &
-      SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
+      runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
+      SnowDepth, SnowRemoval, swe, ev_snowfree, chSnow_tot, &
       ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
       runoffPipes, mwstore, runoffwaterbody)
 
@@ -602,7 +602,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_nsurf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSnow !Initialize for runoff caused by snowmelting
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff_snowfree
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: changSnow
@@ -613,7 +613,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
 
       REAL(KIND(1D0)), INTENT(out) :: swe
-      REAL(KIND(1D0)), INTENT(out) :: ev
+      REAL(KIND(1D0)), INTENT(out) :: ev_snowfree
       REAL(KIND(1D0)), INTENT(out) :: ev_tot
       REAL(KIND(1D0)), INTENT(out) :: chSnow_tot
       REAL(KIND(1D0)), INTENT(out) :: qe_tot
@@ -668,14 +668,14 @@ CONTAINS
 
       !write(*,*) is
       runoffSnow(is) = 0 !Initialize for runoff caused by snowmelting
-      runoff(is) = 0
+      runoff_snowfree(is) = 0
       ! runoffSoil(is) = 0
       chang(is) = 0
       changSnow(is) = 0
       runoffTest = 0
       SnowToSurf(is) = 0
       EvPart = 0
-      ev = 0
+      ev_snowfree = 0
       snowFracFresh1 = 0
       snowFracFresh2 = 0
       snowFracOld = 0
@@ -697,7 +697,7 @@ CONTAINS
       IF (SnowFrac(is) < 1) CALL cal_evap( &
          EvapMethod, state_id(is), WetThresh(is), capStore(is), & !input
          vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
-         rss_nsurf(is), ev, qe) !output
+         rss_nsurf(is), ev_snowfree, qe) !output
 
       IF (SnowFrac(is) > 0) THEN
          CALL Evap_SUEWS_Snow(Qm_Melt(is), Qm_rain(is), lvS_J_kg, avdens, avRh, Press_hPa, Temp_C, RAsnow, &
@@ -757,8 +757,8 @@ CONTAINS
 
             !At the end of the hour calculate possible snow removal
             IF (SnowProf_24hr(it, iu) == 1 .AND. is < 3 .AND. (imin == (nsh_real - 1)/nsh_real*60)) &
-               CALL snowRem( &
-               is, PavSurf, BldgSurf, nsurf, &
+               CALL snow_removal( &
+               is, &
                SnowFrac, sfr_surf, &
                SnowPack, SnowRemoval, &
                SnowLimPaved, SnowLimBldg)
@@ -887,8 +887,8 @@ CONTAINS
 
             !At the end of the hour calculate possible snow removal
             IF (SnowProf_24hr(it, iu) == 1 .AND. is < 3 .AND. (imin == (nsh_real - 1)/nsh_real*60)) &
-               CALL snowRem( &
-               is, PavSurf, BldgSurf, nsurf, &
+               CALL snow_removal( &
+               is, &
                SnowFrac, sfr_surf, &
                SnowPack, SnowRemoval, &
                SnowLimPaved, SnowLimBldg)
@@ -923,11 +923,11 @@ CONTAINS
             !goes directly to runoff
             IF (precip > IPThreshold_mmhr/nsh_real) THEN
                !runoff = runoff + (precipitation+water from the snow surface+water from other surfaces-the thereshold limit)
-               runoff(is) = runoff(is) + (Precip + SnowToSurf(is) + AddWater(is) - IPThreshold_mmhr/nsh_real)
-               chang(is) = IPThreshold_mmhr/nsh_real - (drain(is) + ev + freezState(is))
+               runoff_snowfree(is) = runoff_snowfree(is) + (Precip + SnowToSurf(is) + AddWater(is) - IPThreshold_mmhr/nsh_real)
+               chang(is) = IPThreshold_mmhr/nsh_real - (drain(is) + ev_snowfree + freezState(is))
             ELSE
                !Add precip and water from other surfaces and remove drainage, evap and freezing of state_id
-               chang(is) = Precip + SnowToSurf(is) + AddWater(is) - (drain(is) + ev + freezState(is))
+               chang(is) = Precip + SnowToSurf(is) + AddWater(is) - (drain(is) + ev_snowfree + freezState(is))
             END IF
 
             state_id(is) = state_id(is) + chang(is) !Change in state_id (for whole surface area areasfr(is))
@@ -936,30 +936,30 @@ CONTAINS
             ! Check sfr_surf/=0 added HCW 08 Dec 2015
             IF (is == PavSurf .AND. sfr_surf(PavSurf) > 0) state_id(is) = state_id(is) + (addImpervious)/sfr_surf(PavSurf)
 
-            runoff(is) = runoff(is) + drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
+            runoff_snowfree(is) = runoff_snowfree(is) + drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
 
             IF (state_id(is) < 0.0) THEN !Surface state_id cannot be negative
                SurplusEvap(is) = ABS(state_id(is)) !take evaporation from other surfaces in mm
-               ev = ev - SurplusEvap(is)
+               ev_snowfree = ev_snowfree - SurplusEvap(is)
                state_id(is) = 0.0
             END IF
 
          ELSEIF (is >= 3 .AND. SnowFrac(is) < 1) THEN ! Pervious surfaces (conif, decid, grass unirr, grass irr)
 
-            ev = ev + EvPart
+            ev_snowfree = ev_snowfree + EvPart
 
             !Change in water stores
             IF (VegFraction > 0) THEN
                IF (Precip + addVeg*(sfr_surf(is)/VegFraction) > (IPThreshold_mmhr/nsh_real)) THEN !if 5min precipitation is larger than 10 mm
-                  runoff(is) = runoff(is) + (Precip + addVeg*(sfr_surf(is)/VegFraction) + &
+                  runoff_snowfree(is) = runoff_snowfree(is) + (Precip + addVeg*(sfr_surf(is)/VegFraction) + &
                                              SnowToSurf(is) + AddWater(is) - (IPThreshold_mmhr/nsh_real))
-                  chang(is) = (IPThreshold_mmhr/nsh_real) - (drain(is) + ev + freezState(is))
+                  chang(is) = (IPThreshold_mmhr/nsh_real) - (drain(is) + ev_snowfree + freezState(is))
                ELSE
                   chang(is) = Precip + addVeg*(sfr_surf(is)/VegFraction) + SnowToSurf(is) + &
-                              AddWater(is) - (drain(is) + ev + freezState(is))
+                              AddWater(is) - (drain(is) + ev_snowfree + freezState(is))
                END IF
             ELSE
-               chang(is) = Precip + SnowToSurf(is) + AddWater(is) - (drain(is) + ev + freezState(is))
+               chang(is) = Precip + SnowToSurf(is) + AddWater(is) - (drain(is) + ev_snowfree + freezState(is))
             END IF
 
             state_id(is) = state_id(is) + chang(is)
@@ -968,7 +968,7 @@ CONTAINS
             IF (Temp_C > 0) THEN
                soilstore_id(is) = soilstore_id(is) + Drain(is)*AddWaterRunoff(is)*(1 - SnowFrac(is))
             ELSE
-               runoff(is) = runoff(is) + Drain(is)*AddWaterRunoff(is)
+               runoff_snowfree(is) = runoff_snowfree(is) + Drain(is)*AddWaterRunoff(is)
             END IF
 
             !If state_id of the surface is negative, remove water from soilstore
@@ -981,7 +981,7 @@ CONTAINS
 
                ELSE !If not water in the soilstore evaporation does not occur
                   chang(is) = chang(is) + state_id(is)
-                  ev = ev + state_id(is)
+                  ev_snowfree = ev_snowfree + state_id(is)
                   state_id(is) = 0.0
                END IF
             END IF !state_id is negative
@@ -1013,11 +1013,11 @@ CONTAINS
 
       !Add evaporation to total
       IF (is == BldgSurf .OR. is == PavSurf) THEN
-         ev_tot = ev*sfr_surf(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
-         qe_tot = ev_snow(is)*tlv_sub*sfr_surf(is)*SnowFrac(is) + ev*tlv*sfr_surf(is)*(1 - SnowFrac(is))
+         ev_tot = ev_snowfree*sfr_surf(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
+         qe_tot = ev_snow(is)*tlv_sub*sfr_surf(is)*SnowFrac(is) + ev_snowfree*tlv*sfr_surf(is)*(1 - SnowFrac(is))
       ELSE
-         ev_tot = ev*sfr_surf(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
-         qe_tot = ev_snow(is)*tlv_sub*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) + ev*tlv*sfr_surf(is)*(1 - SnowFrac(is))
+         ev_tot = ev_snowfree*sfr_surf(is)*(1 - SnowFrac(is)) + ev_snow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
+         qe_tot = ev_snow(is)*tlv_sub*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) + ev_snowfree*tlv*sfr_surf(is)*(1 - SnowFrac(is))
       END IF
 
       !========RUNOFF=======================
@@ -1025,15 +1025,15 @@ CONTAINS
       !Add runoff to pipes
       runoffPipes = runoffPipes &
                     + runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
-                    + runoff(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
+                    + runoff_snowfree(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
                     + runoffTest*sfr_surf(is)
       CALL updateFlood( &
-         is, runoff, & ! input:
+         is, runoff_snowfree, & ! input:
          sfr_surf, PipeCapacity, RunoffToWater, &
          runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes) ! inout:
 
       runoff_tot = runoffSnow(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld) &
-                   + runoff(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
+                   + runoff_snowfree(is)*sfr_surf(is)*(1 - SnowFrac(is)) &
                    + runoffTest*sfr_surf(is)
 
       !===Update snow depth, weighted SWE, and Mwstore
@@ -1121,9 +1121,9 @@ CONTAINS
 
       !Check water state_id separately
       IF (state_id(WaterSurf) > StoreDrainPrm(5, WaterSurf)) THEN
-         runoff(WaterSurf) = runoff(WaterSurf) + (state_id(WaterSurf) - StoreDrainPrm(5, WaterSurf))
+         runoff_snowfree(WaterSurf) = runoff_snowfree(WaterSurf) + (state_id(WaterSurf) - StoreDrainPrm(5, WaterSurf))
          state_id(WaterSurf) = StoreDrainPrm(5, WaterSurf)
-         runoffWaterBody = runoffWaterBody + runoff(WaterSurf)*sfr_surf(WaterSurf)
+         runoffWaterBody = runoffWaterBody + runoff_snowfree(WaterSurf)*sfr_surf(WaterSurf)
       ELSE
          state_id(WaterSurf) = state_id(WaterSurf) + surplusWaterBody
 
@@ -1139,9 +1139,9 @@ CONTAINS
       surf_chang_tot = (state_id(WaterSurf) - stateOld(WaterSurf))*sfr_surf(WaterSurf)
 
       !Evaporation
-      ev_tot = ev*sfr_surf(WaterSurf) + ev_snow(WaterSurf)*sfr_surf(WaterSurf)
-      qe_tot = ev_snow(WaterSurf)*tlv_sub*sfr_surf(WaterSurf) + ev*tlv*sfr_surf(WaterSurf)
-      runoff_tot = runoff(is) !The total runoff from the area
+      ev_tot = ev_snowfree*sfr_surf(WaterSurf) + ev_snow(WaterSurf)*sfr_surf(WaterSurf)
+      qe_tot = ev_snow(WaterSurf)*tlv_sub*sfr_surf(WaterSurf) + ev_snowfree*tlv*sfr_surf(WaterSurf)
+      runoff_tot = runoff_snowfree(is) !The total runoff from the area
 
       IF (SnowPack(WaterSurf) > 0) THEN !Fraction only 1 or 0
          SnowFrac(WaterSurf) = 1
@@ -1211,16 +1211,17 @@ CONTAINS
    !==========================================================================
    !==========================================================================
    ! Calculates mechanical removal of snow from roofs ans roads
-   SUBROUTINE snowRem( &
-      is, PavSurf, BldgSurf, nsurf, &
+   SUBROUTINE snow_removal( &
+      is, &
       SnowFrac, sfr_surf, &
       SnowPack, SnowRemoval, &
       SnowLimPaved, SnowLimBldg)
 
       IMPLICIT NONE
-      INTEGER, INTENT(in) :: is, PavSurf, BldgSurf, nsurf
+      INTEGER, INTENT(in) :: is
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac, sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack, SnowRemoval
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
       REAL(KIND(1D0)), INTENT(in) :: SnowLimPaved, SnowLimBldg
       !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBldg
 
@@ -1240,7 +1241,7 @@ CONTAINS
       END IF
       !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBldg
       !pause
-   END SUBROUTINE snowRem
+   END SUBROUTINE snow_removal
 
    !----------------------------------------------------------------------------
    !----------------------------------------------------------------------------
