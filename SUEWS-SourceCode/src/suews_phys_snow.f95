@@ -489,7 +489,7 @@ CONTAINS
       soilstore_id, SnowPack, SurplusEvap, & !inout
       SnowFrac, SnowWater, iceFrac, SnowDens, &
       runoffAGimpervious, runoffAGveg, surplusWaterBody, &
-      ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot,&! output
+      ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
       rss_surf, & ! output
       runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
       SnowRemoval, swe, &
@@ -602,7 +602,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
-      REAL(KIND(1D0)), DIMENSION(nsurf):: runoff_snowfree
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_snowfree
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
       REAL(KIND(1D0)), DIMENSION(nsurf) :: changSnow
