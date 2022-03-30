@@ -2619,7 +2619,6 @@ CONTAINS
                runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, &
                p_mm, chang, runoff_surf, state_id_surf) !output:
 
-
          END DO !end loop over surfaces
 
          ! Sum evaporation from different surfaces to find total evaporation [mm]
