@@ -2579,7 +2579,8 @@ CONTAINS
                   ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
                   rss_surf, &
                   runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
-                  SnowDepth, SnowRemoval, swe, ev, &
+                  SnowRemoval, swe, &
+                  ev, &
                   runoffPipes, mwstore, runoffwaterbody)
 
                !Actual updates here as xx_tstep variables not taken as input to snowcalc

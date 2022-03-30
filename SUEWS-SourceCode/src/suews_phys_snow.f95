@@ -492,7 +492,8 @@ CONTAINS
       ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot,&! output
       rss_surf, & ! output
       runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
-      SnowDepth, SnowRemoval, swe, ev_snowfree, &
+      SnowRemoval, swe, &
+      ev_snowfree, &
       runoffPipes, mwstore, runoffwaterbody)
 
       !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
@@ -608,12 +609,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: changSnow
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
       REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDepth
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDepth
       REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
       REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
 
       REAL(KIND(1D0)), INTENT(out) :: swe
-      REAL(KIND(1D0)), INTENT(out) :: ev_snowfree
+      REAL(KIND(1D0)) :: ev_snowfree
       REAL(KIND(1D0)), INTENT(out) :: ev_tot
       REAL(KIND(1D0)), INTENT(out) :: chSnow_tot
       REAL(KIND(1D0)), INTENT(out) :: qe_tot
