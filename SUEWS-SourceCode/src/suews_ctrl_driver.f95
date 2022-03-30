@@ -725,7 +725,7 @@ CONTAINS
       IceFrac_prev = IceFrac
       SnowWater_prev = SnowWater
       SnowDens_prev = SnowDens
-      SnowFrac_prev = SnowFrac
+      SnowFrac_prev = MERGE(SnowFrac_obs, SnowFrac, NetRadiationMethod == 0)
       SnowPack_prev = SnowPack
       soilstore_id_prev = soilstore_id
       state_id_prev = state_id
@@ -766,7 +766,7 @@ CONTAINS
       IceFrac_next = IceFrac
       SnowWater_next = SnowWater
       SnowDens_next = SnowDens
-      SnowFrac_next = SnowFrac
+      SnowFrac_next = SnowFrac_prev
       SnowPack_next = SnowPack
       soilstore_id_next = soilstore_id
       state_id_next = state_id
@@ -940,7 +940,7 @@ CONTAINS
          CALL SUEWS_cal_Qn( &
             StorageHeatMethod, NetRadiationMethod, SnowUse, & !input
             tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
-            Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
+            Diagnose, ldown_obs, fcld_obs, &
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, &
@@ -1338,10 +1338,10 @@ CONTAINS
 
       ! ============ BIOGENIC CO2 FLUX =======================
       CALL SUEWS_cal_BiogenCO2( &
-         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
-         ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-         G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id_next, LAIMin, &
-         LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
+         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
+         dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+         G5, G6, gfunc, gsmodel, id, it, Kmax, LAI_id_next, LAIMin, &
+         LAIMax, MaxConductance, min_res_bioCO2, Press_hPa, resp_a, &
          resp_b, S1, S2, sfr_surf, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
          Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
@@ -1597,10 +1597,10 @@ CONTAINS
 
    !==============BIOGENIC CO2 flux==================================================
    SUBROUTINE SUEWS_cal_BiogenCO2( &
-      alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
-      ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-      G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
-      LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
+      alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
+      dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+      G5, G6, gfunc, gsmodel, id, it, Kmax, LAI_id, LAIMin, &
+      LAIMax, MaxConductance, min_res_bioCO2, Press_hPa, resp_a, &
       resp_b, S1, S2, sfr_surf, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
       Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
@@ -1623,20 +1623,20 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: MaxConductance
 
-      INTEGER, INTENT(in) :: BSoilSurf
-      INTEGER, INTENT(in) :: ConifSurf
-      INTEGER, INTENT(in) :: DecidSurf
+      ! INTEGER, INTENT(in) :: BSoilSurf
+      ! INTEGER, INTENT(in) :: ConifSurf
+      ! INTEGER, INTENT(in) :: DecidSurf
       INTEGER, INTENT(in) :: Diagnose
       INTEGER, INTENT(in) :: EmissionsMethod
-      INTEGER, INTENT(in) :: GrassSurf
+      ! INTEGER, INTENT(in) :: GrassSurf
       INTEGER, INTENT(in) :: gsmodel
       INTEGER, INTENT(in) :: id
       INTEGER, INTENT(in) :: it
-      INTEGER, INTENT(in) :: ivConif
-      INTEGER, INTENT(in) :: ivDecid
-      INTEGER, INTENT(in) :: ivGrass
-      INTEGER, INTENT(in) :: nsurf
-      INTEGER, INTENT(in) :: NVegSurf
+      ! INTEGER, INTENT(in) :: ivConif
+      ! INTEGER, INTENT(in) :: ivDecid
+      ! INTEGER, INTENT(in) :: ivGrass
+      ! INTEGER, INTENT(in) :: nsurf
+      ! INTEGER, INTENT(in) :: NVegSurf
       INTEGER, INTENT(in) :: SMDMethod
 
       REAL(KIND(1D0)), INTENT(in) :: avkdn
@@ -1731,7 +1731,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Qn( &
       storageheatmethod, NetRadiationMethod, SnowUse, & !input
       tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
-      Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
+      Diagnose, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, Tsurf_0, kdown, Tair_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, &
@@ -1774,7 +1774,7 @@ CONTAINS
       INTEGER, INTENT(in) :: tstep
       INTEGER, INTENT(in) :: nlayer
 
-      REAL(KIND(1D0)), INTENT(in) :: snowFrac_obs
+      ! REAL(KIND(1D0)), INTENT(in) :: snowFrac_obs
       REAL(KIND(1D0)), INTENT(in) :: ldown_obs
       REAL(KIND(1D0)), INTENT(in) :: fcld_obs
       REAL(KIND(1D0)), INTENT(in) :: dectime
@@ -1950,7 +1950,7 @@ CONTAINS
          END IF
 
       ELSE ! NetRadiationMethod==0
-         SnowFrac = snowFrac_obs
+         ! SnowFrac = snowFrac_obs
          qn = qn1_obs
          qn_snowfree = qn1_obs
          qn_snow = qn1_obs
@@ -2464,7 +2464,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf
 
-      REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
+      ! REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! latent heat flux of individual surface [W m-2]
@@ -2810,8 +2810,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
       REAL(KIND(1D0)), DIMENSION(nsurf) :: ChangSnow_surf
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: snowDepth
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
       ! REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
       REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf
@@ -2827,7 +2827,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep
       REAL(KIND(1D0)), INTENT(out) :: qe
       ! REAL(KIND(1D0)), INTENT(out) :: swe
-      REAL(KIND(1D0)) :: ev
+      ! REAL(KIND(1D0)) :: ev
       ! REAL(KIND(1D0)), INTENT(out) :: chSnow_per_interval
       REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep
       REAL(KIND(1D0)) :: qe_per_tstep
