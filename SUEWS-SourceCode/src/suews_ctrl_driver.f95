@@ -1109,9 +1109,10 @@ CONTAINS
 
          !===================Resistance Calculations End=======================
 
-         ! ===================Calculate snow related hydrology=======================
+         !===================Calculate surface hydrology and related soil water=======================
          IF (SnowUse == 1) THEN
 
+            ! ===================Calculate snow related hydrology=======================
             CALL SUEWS_cal_snow( &
                Diagnose, nlayer, & !input
                tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
@@ -1134,8 +1135,10 @@ CONTAINS
                swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
                surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
                runoffAGveg, runoffAGimpervious, rss_nsurf)
+            ! N.B.: snow-related calculations end here.
+            !===================================================
          ELSE
-            !======== Evaporation and surface state_id ========
+            !======== Evaporation and surface state_id for snow-free conditions ========
             CALL SUEWS_cal_QE( &
                Diagnose, nlayer, & !input
                tstep, &
@@ -1161,6 +1164,30 @@ CONTAINS
                runoffAGveg, runoffAGimpervious, rss_nsurf)
             !======== Evaporation and surface state_id end========
          END IF
+
+         !=== Horizontal movement between soil stores ===
+         ! Now water is allowed to move horizontally between the soil stores
+         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
+         CALL SUEWS_cal_HorizontalSoilWater( &
+            sfr_surf, & ! input: ! surface fractions
+            SoilStoreCap, & !Capacity of soil store for each surface [mm]
+            SoilDepth, & !Depth of sub-surface soil store for each surface [mm]
+            SatHydraulicConduct, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+            SurfaceArea, & !Surface area of the study area [m2]
+            NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
+            tstep_real, & !tstep cast as a real for use in calculations
+            soilstore_id_next, & ! inout:!Soil moisture of each surface type [mm]
+            runoffSoil, & !Soil runoff from each soil sub-surface [mm]
+            runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+            )
+
+         !========== Calculate soil moisture ============
+         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
+         CALL SUEWS_cal_SoilState( &
+            SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
+            SoilStoreCap, surf_chang_per_tstep, &
+            soilstore_id_next, soilstore_updated, sfr_surf, &
+            smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
          !============ Sensible heat flux ===============
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
@@ -1195,33 +1222,6 @@ CONTAINS
          ! PRINT *, 'residual wall: ', qn_wall + qf - qs_wall - qe_wall - qh_wall
 
          !============ Sensible heat flux end===============
-
-         ! N.B.: snow-related calculations end here.
-         !===================================================
-
-         !=== Horizontal movement between soil stores ===
-         ! Now water is allowed to move horizontally between the soil stores
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
-         CALL SUEWS_cal_HorizontalSoilWater( &
-            sfr_surf, & ! input: ! surface fractions
-            SoilStoreCap, & !Capacity of soil store for each surface [mm]
-            SoilDepth, & !Depth of sub-surface soil store for each surface [mm]
-            SatHydraulicConduct, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-            SurfaceArea, & !Surface area of the study area [m2]
-            NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
-            tstep_real, & !tstep cast as a real for use in calculations
-            soilstore_id_next, & ! inout:!Soil moisture of each surface type [mm]
-            runoffSoil, & !Soil runoff from each soil sub-surface [mm]
-            runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-            )
-
-         !========== Calculate soil moisture ============
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
-         CALL SUEWS_cal_SoilState( &
-            SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
-            SoilStoreCap, surf_chang_per_tstep, &
-            soilstore_id_next, soilstore_updated, sfr_surf, &
-            smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
          !============ calculate surface temperature ===============
          TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
