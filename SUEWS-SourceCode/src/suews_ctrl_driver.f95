@@ -698,7 +698,7 @@ CONTAINS
 
       ! used in iteration
       INTEGER :: max_iter
-      REAL(KIND(1D0))::ratio_iter
+      REAL(KIND(1D0)) :: ratio_iter
 
       LOGICAL, INTENT(IN) :: use_sw_direct_albedo
 
@@ -816,7 +816,7 @@ CONTAINS
       PRINT *, 'before iteration Ts_iter = ', Ts_iter
       ! L_mod_iter = 10
       i_iter = 1
-      max_iter=30
+      max_iter = 30
       DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
          PRINT *, '=========================== '
          PRINT *, 'Ts_iter of ', i_iter, ' is:', Ts_iter
@@ -991,7 +991,7 @@ CONTAINS
          PRINT *, 'tsfc_surf before cal_qs', tsfc_out_surf
          PRINT *, 'tsfc_out_roof before cal_qs', tsfc_out_roof
          PRINT *, 'tsfc_wall before cal_qs', tsfc_out_wall
-         print *,''
+         PRINT *, ''
 
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
@@ -1037,12 +1037,9 @@ CONTAINS
          ! print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
          ! dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
 
-
-
          ! tsfc0_out_surf=tsfc_out_surf
          ! tsfc0_out_roof=tsfc_out_roof
          ! tsfc0_out_wall=tsfc_out_wall
-
 
          tsfc0_out_surf = tsfc_out_surf
          tsfc0_out_roof = tsfc_out_roof
@@ -1124,7 +1121,7 @@ CONTAINS
             StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
             runoff_per_interval, state_id_prev, soilstore_id_prev, & ! input:
-            qn_surf,qs_surf,&
+            qn_surf, qs_surf, &
             state_id_next, soilstore_id_next, & ! output:
             SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
             runoffSoil, & ! output:
@@ -1202,19 +1199,19 @@ CONTAINS
 
          !============= calculate surface specific QH and Tsfc ===============
 
-         tsfc0_out_surf=tsfc_out_surf
-         tsfc0_out_roof=tsfc_out_roof
-         tsfc0_out_wall=tsfc_out_wall
+         tsfc0_out_surf = tsfc_out_surf
+         tsfc0_out_roof = tsfc_out_roof
+         tsfc0_out_wall = tsfc_out_wall
 
          qh_surf = qn_surf + qf - qs_surf - qe_surf
          qh_roof = qn_roof + qf - qs_roof - qe_roof
          qh_wall = qn_wall + qf - qs_wall - qe_wall
 
-         print *,'qn_surf before QH back env.:',qn_surf
-         print *,'qf before QH back env.:',qf
-         print *,'qs_surf before QH back env.:',qs_surf
-         print *,'qe_surf before QH back env.:',qe_surf
-         print *,'qh_surf before QH back env.:',qh_surf
+         PRINT *, 'qn_surf before QH back env.:', qn_surf
+         PRINT *, 'qf before QH back env.:', qf
+         PRINT *, 'qs_surf before QH back env.:', qs_surf
+         PRINT *, 'qe_surf before QH back env.:', qe_surf
+         PRINT *, 'qh_surf before QH back env.:', qh_surf
          DO i_surf = 1, nsurf
             ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
             tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
@@ -1227,29 +1224,27 @@ CONTAINS
             ! tsfc_out_surf(i_surf) = MAX(MIN(tsfc_out_surf(i_surf), 100.0), -100.0)
          END DO
 
-         do i_surf =1, nlayer
+         DO i_surf = 1, nlayer
             tsfc_out_roof(i_surf) = cal_tsfc(qh_roof(i_surf), avdens, avcp, RA_h, temp_c)
             tsfc_out_wall(i_surf) = cal_tsfc(qh_wall(i_surf), avdens, avcp, RA_h, temp_c)
-         end do
+         END DO
 
-         print *,'tsfc_surf after QH back env.:',tsfc_out_surf
+         PRINT *, 'tsfc_surf after QH back env.:', tsfc_out_surf
          ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
-         print *,'tsfc_surf abs. diff.:',maxval(abs(tsfc_out_surf-tsfc0_out_surf)),maxloc(abs(tsfc_out_surf-tsfc0_out_surf))
-         dif_tsfc_iter=maxval(abs(tsfc_out_surf-tsfc0_out_surf))
-         print *,'tsfc_roof abs. diff.:',maxval(abs(tsfc_out_roof-tsfc0_out_roof)),maxloc(abs(tsfc_out_roof-tsfc0_out_roof))
-         dif_tsfc_iter=max(maxval(abs(tsfc_out_roof-tsfc0_out_roof)),dif_tsfc_iter)
-         print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
-         dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
+         PRINT *, 'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf)), MAXLOC(ABS(tsfc_out_surf - tsfc0_out_surf))
+         dif_tsfc_iter = MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf))
+         PRINT *, 'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
+         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), dif_tsfc_iter)
+         PRINT *, 'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
+         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_out_wall)), dif_tsfc_iter)
 
          ! ====test===
          ! see if this converges better
-         ratio_iter=.4
-         tsfc_out_surf=(tsfc0_out_surf*(1-ratio_iter)+tsfc_out_surf*ratio_iter)
-         tsfc_out_roof=(tsfc0_out_roof*(1-ratio_iter)+tsfc_out_roof*ratio_iter)
-         tsfc_out_wall=(tsfc0_out_wall*(1-ratio_iter)+tsfc_out_wall*ratio_iter)
+         ratio_iter = .4
+         tsfc_out_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_out_surf*ratio_iter)
+         tsfc_out_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_out_roof*ratio_iter)
+         tsfc_out_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_out_wall*ratio_iter)
          ! =======test end=======
-
-
 
          ! PRINT *, 'tsfc_surf after qh_cal', TSfc_QH_surf
 
@@ -2331,7 +2326,7 @@ CONTAINS
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, & ! input:
       runoff_per_interval_in, state_id_in, soilstore_id_in, & ! input:
-      qn_surf,qs_surf,&
+      qn_surf, qs_surf, &
       state_id_out, soilstore_id_out, & ! output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, & ! output
       runoffSoil, & ! output:
