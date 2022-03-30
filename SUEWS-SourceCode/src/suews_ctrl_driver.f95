@@ -2486,10 +2486,10 @@ CONTAINS
       ! REAL(KIND(1d0))::numPM
       REAL(KIND(1D0)) :: qn_e
       REAL(KIND(1D0)) :: tlv
-      REAL(KIND(1D0)) :: runoffAGimpervious_m3
-      REAL(KIND(1D0)) :: runoffAGveg_m3
+      ! REAL(KIND(1D0)) :: runoffAGimpervious_m3
+      ! REAL(KIND(1D0)) :: runoffAGveg_m3
       REAL(KIND(1D0)) :: nsh_real
-      REAL(KIND(1D0)) :: tstep_real
+      ! REAL(KIND(1D0)) :: tstep_real
       REAL(KIND(1D0)) :: ev_tot
       REAL(KIND(1D0)) :: qe_tot
       REAL(KIND(1D0)) :: surf_chang_tot
@@ -2576,10 +2576,11 @@ CONTAINS
                   soilstore_id, SnowPack, SurplusEvap, & !inout
                   SnowFrac, SnowWater, iceFrac, SnowDens, &
                   runoffAGimpervious, runoffAGveg, surplusWaterBody, &
-                  rss_surf, runoffSnow_surf, & ! output
+                  ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
+                  rss_surf, &
+                  ! runoffSnow_surf, &
                   runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
-                  SnowDepth, SnowRemoval, swe, ev,  &
-                  ev_tot, qe_tot, runoff_tot, surf_chang_tot,chSnow_tot, &
+                  SnowDepth, SnowRemoval, swe, ev, &
                   runoffPipes, mwstore, runoffwaterbody)
 
                !Actual updates here as xx_tstep variables not taken as input to snowcalc
@@ -2599,7 +2600,7 @@ CONTAINS
          END DO
       ELSE ! snow-free calculation
          ChangSnow_surf = 0
-         runoffSnow_surf = 0
+         ! runoffSnow_surf = 0
          DO is = 1, nsurf !For each surface in turn
             capStore_surf(is) = StoreDrainPrm(6, is)
             !Calculates ev [mm]

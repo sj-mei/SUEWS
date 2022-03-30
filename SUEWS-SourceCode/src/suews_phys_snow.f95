@@ -489,10 +489,11 @@ CONTAINS
       soilstore_id, SnowPack, SurplusEvap, & !inout
       SnowFrac, SnowWater, iceFrac, SnowDens, &
       runoffAGimpervious, runoffAGveg, surplusWaterBody, &
-      rss_nsurf, runoffSnow_surf, & ! output
+      ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot,&! output
+      rss_surf, & ! output
+      ! runoffSnow_surf, &
       runoff_snowfree, chang, changSnow, SnowToSurf, state_id, ev_snow, &
       SnowDepth, SnowRemoval, swe, ev_snowfree,  &
-      ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot,&
       runoffPipes, mwstore, runoffwaterbody)
 
       !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
@@ -600,16 +601,16 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: SnowDens
       REAL(KIND(1D0)), DIMENSION(2), INTENT(inout) :: SurplusEvap
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_nsurf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff_snowfree
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
+      REAL(KIND(1D0)), DIMENSION(nsurf):: runoff_snowfree
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: changSnow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowToSurf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: changSnow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDepth
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev_snow
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
       REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
 
       REAL(KIND(1D0)), INTENT(out) :: swe
@@ -655,7 +656,7 @@ CONTAINS
       !runoffPipes = 0
       !mwstore = 0
       !runoffwaterbody = 0
-      rss_nsurf = 0
+      rss_surf = 0
       !state_id = 0
       SnowDepth = 0
       ev_snow = 0
@@ -697,7 +698,7 @@ CONTAINS
       IF (SnowFrac(is) < 1) CALL cal_evap( &
          EvapMethod, state_id(is), WetThresh(is), capStore(is), & !input
          vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
-         rss_nsurf(is), ev_snowfree, qe) !output
+         rss_surf(is), ev_snowfree, qe) !output
 
       IF (SnowFrac(is) > 0) THEN
          CALL Evap_SUEWS_Snow(Qm_Melt(is), Qm_rain(is), lvS_J_kg, avdens, avRh, Press_hPa, Temp_C, RAsnow, &
