@@ -2578,8 +2578,8 @@ CONTAINS
                   runoffAGimpervious, runoffAGveg, surplusWaterBody, &
                   rss_surf, runoffSnow_surf, & ! output
                   runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
-                  SnowDepth, SnowRemoval, swe, ev,  &
-                  ev_tot, qe_tot, runoff_tot, surf_chang_tot,chSnow_tot, &
+                  SnowDepth, SnowRemoval, swe, ev, &
+                  ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, &
                   runoffPipes, mwstore, runoffwaterbody)
 
                !Actual updates here as xx_tstep variables not taken as input to snowcalc
