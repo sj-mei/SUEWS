@@ -952,7 +952,7 @@ CONTAINS
             IF (VegFraction > 0) THEN
                IF (Precip + addVeg*(sfr_surf(is)/VegFraction) > (IPThreshold_mmhr/nsh_real)) THEN !if 5min precipitation is larger than 10 mm
                   runoff_snowfree(is) = runoff_snowfree(is) + (Precip + addVeg*(sfr_surf(is)/VegFraction) + &
-                                             SnowToSurf(is) + AddWater(is) - (IPThreshold_mmhr/nsh_real))
+                                                               SnowToSurf(is) + AddWater(is) - (IPThreshold_mmhr/nsh_real))
                   chang(is) = (IPThreshold_mmhr/nsh_real) - (drain(is) + ev_snowfree + freezState(is))
                ELSE
                   chang(is) = Precip + addVeg*(sfr_surf(is)/VegFraction) + SnowToSurf(is) + &
