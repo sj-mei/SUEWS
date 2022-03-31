@@ -3031,12 +3031,6 @@ CONTAINS
       state_id_out = state_id_surf
       soilstore_id_out = soilstore_id
 
-      ! SnowPack_out = SnowPack
-      ! SnowFrac_out = SnowFrac
-      ! SnowWater_out = SnowWater
-      ! iceFrac_out = iceFrac
-      ! SnowDens_out = SnowDens
-
    END SUBROUTINE SUEWS_cal_QE
    !========================================================================
 
