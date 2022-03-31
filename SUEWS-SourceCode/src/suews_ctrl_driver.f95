@@ -1186,7 +1186,7 @@ CONTAINS
          CALL SUEWS_cal_SoilState( &
             SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
             SoilStoreCap, surf_chang_per_tstep, &
-            soilstore_id_next, soilstore_updated, sfr_surf, &
+            soilstore_id_next, soilstore_id_prev, sfr_surf, &
             smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
          !============ Sensible heat flux ===============
