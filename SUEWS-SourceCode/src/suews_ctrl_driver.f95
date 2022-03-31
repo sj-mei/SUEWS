@@ -1089,7 +1089,7 @@ CONTAINS
             drain_per_tstep, & !output
             drain, frac_water2runoff, &
             AdditionalWater, runoffPipes, runoff_per_interval, &
-            AddWater, state_id_updated, soilstore_updated)
+            AddWater, soilstore_updated)
          !============= calculate water balance end =============
 
          !===============Resistance Calculations=======================
@@ -1121,7 +1121,7 @@ CONTAINS
                PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
                RS, RA_h, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
                addVeg, SnowLimPaved, SnowLimBldg, &
-               FlowChange, drain, WetThresh, state_id_updated, mw_ind, SoilStoreCap, rainonsnow, &
+               FlowChange, drain, WetThresh, state_id_prev, mw_ind, SoilStoreCap, rainonsnow, &
                freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
                AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
                SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
@@ -1150,7 +1150,7 @@ CONTAINS
                qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
                precip, PipeCapacity, RunoffToWater, &
                NonWaterFraction, wu_nsurf, addVeg, addWaterBody, &
-               FlowChange, drain, WetThresh, state_id_updated, &
+               FlowChange, drain, WetThresh, state_id_prev, &
                SoilStoreCap, &
                sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, &
                state_id_prev, soilstore_id_prev, & ! input:
@@ -2219,7 +2219,7 @@ CONTAINS
       drain_per_tstep, & !output
       drain, frac_water2runoff, &
       AdditionalWater, runoffPipes, runoff_per_interval, &
-      AddWater, stateOld, soilstoreOld)
+      AddWater, soilstoreOld)
 
       IMPLICIT NONE
       ! INTEGER,PARAMETER :: nsurf=7! number of surface types
@@ -2243,7 +2243,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: drain !Drainage of surface type "is" [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: AddWater !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: stateOld
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: stateOld
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstoreOld
 
       REAL(KIND(1D0)), INTENT(out) :: drain_per_tstep
@@ -2253,7 +2253,7 @@ CONTAINS
       INTEGER :: is
 
       ! Retain previous surface state_id and soil moisture state_id
-      stateOld = state_id !state_id of each surface [mm] for the previous timestep
+      ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
       soilstoreOld = soilstore_id !Soil moisture of each surface [mm] for the previous timestep
 
       !============= Grid-to-grid runoff =============
