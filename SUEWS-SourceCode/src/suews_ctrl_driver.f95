@@ -2857,21 +2857,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2) :: SurplusEvap !Surplus for evaporation in 5 min timestep
       REAL(KIND(1D0)) :: surplusWaterBody
       REAL(KIND(1D0)) :: pin !Rain per time interval
-      ! REAL(KIND(1d0))::sae
-      ! REAL(KIND(1d0))::vdrc
-      ! REAL(KIND(1d0))::sp
-      ! REAL(KIND(1d0))::numPM
-      ! REAL(KIND(1D0)) :: qn_e
       REAL(KIND(1D0)) :: tlv
-      ! REAL(KIND(1D0)) :: runoffAGimpervious_m3
-      ! REAL(KIND(1D0)) :: runoffAGveg_m3
       REAL(KIND(1D0)) :: nsh_real
-      ! REAL(KIND(1D0)) :: tstep_real
-      ! REAL(KIND(1D0)) :: ev_tot
-      ! REAL(KIND(1D0)) :: qe_tot
-      ! REAL(KIND(1D0)) :: surf_chang_tot
-      ! REAL(KIND(1D0)) :: runoff_tot
-      ! REAL(KIND(1D0)) :: chSnow_tot
 
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
@@ -2916,67 +2903,9 @@ CONTAINS
       qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
-      ! IF (SnowUse == 1) THEN ! snow calculation
-      !    ! net available energy for evaporation
-      !    qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
-      !    ev = 0
 
-      !    mwstore = 0
-
-      !    chSnow_per_interval = 0
-      !    qe_tot = 0
-      !    ev_tot = 0
-      !    swe = 0
-      !    ev_snow = 0
-
-      !    SnowRemoval = 0
-      !    SnowPack = SnowPack_in
-      !    SnowFrac = SnowFrac_in
-      !    SnowWater = SnowWater_in
-      !    iceFrac = iceFrac_in
-      !    SnowDens = SnowDens_in
-      !    DO is = 1, nsurf !For each surface in turn
-      !       IF (sfr_surf(is) /= 0 .AND. snowCalcSwitch(is) == 1) THEN
-      !          ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
-      !          CALL SnowCalc( &
-      !             tstep, imin, it, dectime, is, & !input
-      !             EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
-      !             avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
-      !             PervFraction, vegfraction, addimpervious, &
-      !             vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, snowdensmin, SnowProf_24hr, precip, &
-      !             PipeCapacity, RunoffToWater, &
-      !             addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
-      !             WetThresh_surf, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
-      !             freezmelt, freezstate, freezstatevol, &
-      !             Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
-      !             AddWater, addwaterrunoff, &
-      !             soilstore_id, SnowPack, SurplusEvap, & !inout
-      !             SnowFrac, SnowWater, iceFrac, SnowDens, &
-      !             runoffAGimpervious, runoffAGveg, surplusWaterBody, &
-      !             ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
-      !             rss_surf, &
-      !             runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
-      !             SnowRemoval, swe, &
-      !             runoffPipes, mwstore, runoffwaterbody)
-
-      !          !Actual updates here as xx_tstep variables not taken as input to snowcalc
-      !          ev_per_tstep = ev_per_tstep + ev_tot
-      !          qe_per_tstep = qe_per_tstep + qe_tot
-      !          runoff_per_tstep = runoff_per_tstep + runoff_tot
-      !          surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
-      !          chSnow_per_interval = chSnow_per_interval + chSnow_tot
-      !       ELSE
-      !          SnowFrac(is) = 0
-      !          SnowDens(is) = 0
-      !          SnowPack(is) = 0
-      !       END IF
-
-      !       !Store ev_tot for each surface
-      !       ev_surf(is) = ev_tot
-      !    END DO
-      ! ELSE ! snow-free calculation
       ChangSnow_surf = 0
-      ! runoffSnow_surf = 0
+
       DO is = 1, nsurf !For each surface in turn
          capStore_surf(is) = StoreDrainPrm(6, is)
          !Calculates ev [mm]
@@ -3272,7 +3201,7 @@ CONTAINS
       MwStore, &
       nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
       qeOut, qf, qh, qh_resist, Qm, QmFreez, &
-      QmRain, qn1, qn1_S, qn_snowfree, qs, RA, &
+      QmRain, qn, qn_snow, qn_snowfree, qs, RA, &
       resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
       runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
       runoffWaterBody, sfr_surf, smd, smd_nsurf, SnowAlb, SnowRemoval, &
@@ -3285,12 +3214,9 @@ CONTAINS
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER, INTENT(in) :: iy
-      ! INTEGER,INTENT(in) :: iy_prev_t
       INTEGER, INTENT(in) :: id
-      ! INTEGER,INTENT(in) :: id_prev_t
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-      !  INTEGER, INTENT(in) :: Gridiv
       REAL(KIND(1D0)), INTENT(in) :: AdditionalWater
       REAL(KIND(1D0)), INTENT(in) :: alb(nsurf)
       REAL(KIND(1D0)), INTENT(in) :: avkdn
@@ -3331,8 +3257,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: Qm
       REAL(KIND(1D0)), INTENT(in) :: QmFreez
       REAL(KIND(1D0)), INTENT(in) :: QmRain
-      REAL(KIND(1D0)), INTENT(in) :: qn1
-      REAL(KIND(1D0)), INTENT(in) :: qn1_S
+      REAL(KIND(1D0)), INTENT(in) :: qn
+      REAL(KIND(1D0)), INTENT(in) :: qn_snow
       REAL(KIND(1D0)), INTENT(in) :: qn_snowfree
       REAL(KIND(1D0)), INTENT(in) :: qs
       REAL(KIND(1D0)), INTENT(in) :: RA
@@ -3422,7 +3348,7 @@ CONTAINS
       !Define the overall output matrix to be printed out step by step
       dataOutLineSUEWS = [ &
                          avkdn, kup, ldown, lup, tsurf, &
-                         qn1, qf, qs, qh, qeOut, &
+                         qn, qf, qs, qh, qeOut, &
                          h_mod, e_mod, qh_resist, &
                          precip, ext_wu, ev_per_tstep, runoff_per_tstep, tot_chang_per_tstep, &
                          surf_chang_per_tstep, state_per_tstep, NWstate_per_tstep, drain_per_tstep, smd, &
@@ -3436,7 +3362,7 @@ CONTAINS
                          UStar, l_mod, RA, ResistSurf, &
                          Fc, &
                          Fc_photo, Fc_respi, Fc_metab, Fc_traff, Fc_build, Fc_point, &
-                         qn_snowfree, qn1_S, SnowAlb, &
+                         qn_snowfree, qn_snow, SnowAlb, &
                          Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
                          SnowRemoval(1:2), &
                          tskin_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
