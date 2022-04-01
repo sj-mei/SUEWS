@@ -505,6 +505,10 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_roof
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_roof
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wetthresh_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: capstore_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof
    ! larger container arrays for different grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_roof_grids
@@ -515,6 +519,10 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: state_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wetthresh_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: soilstore_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: capstore_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_roof_grids
 
    ! wall
@@ -526,6 +534,10 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_wall
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_wall
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wetthresh_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: capstore_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall
    ! larger container arrays for different grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_wall_grids
@@ -536,6 +548,10 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: state_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wetthresh_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: soilstore_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: capstore_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_wall_grids
 
    ! standard suews surfaces
