@@ -11,6 +11,50 @@
  AlbGrass0=  0.24999999999999978     
  DecidCap0=  0.30000000000000027     
  Porosity0=   1.0000000000000000     
+<<<<<<< HEAD
+ SoilStorePavedState=   149.93615697982770     
+ SoilStoreBldgsState=   149.93620986719270     
+ SoilStoreEveTrState=   149.90982074877962     
+ SoilStoreDecTrState=   149.92265984356683     
+ SoilStoreGrassState=   149.92262903056567     
+ SoilStoreBSoilState=   149.92259826816488     
+ PavedState=   8.3383130249265990E-003
+ BldgsState=   8.3383130249265990E-003
+ EveTrState=   8.3383130249265990E-003
+ DecTrState=   8.3383130249265990E-003
+ GrassState=   8.3383130249265990E-003
+ BSoilState=   8.3383130249265990E-003
+ WaterState=  0.21218951416119206     
+ SnowWaterPavedState=   5.6770236708142180E-004
+ SnowWaterBldgsState=   5.6770236708142180E-004
+ SnowWaterEveTrState=   5.6770236708142180E-004
+ SnowWaterDecTrState=   5.6770236708142180E-004
+ SnowWaterGrassState=   5.6770236708142180E-004
+ SnowWaterBSoilState=   5.6770236708142180E-004
+ SnowWaterWaterState=   5.6770222057476191E-004
+ SnowPackPaved=   8.7458968919065169E-003
+ SnowPackBldgs=   8.7458968919065169E-003
+ SnowPackEveTr=   8.7458968919065169E-003
+ SnowPackDecTr=   8.7458968919065169E-003
+ SnowPackGrass=   8.7458968919065169E-003
+ SnowPackBSoil=   8.7458968919065169E-003
+ SnowPackWater=   8.7458937596953529E-003
+ SnowFracPaved=   1.0000000000000000     
+ SnowFracBldgs=   1.0000000000000000     
+ SnowFracEveTr=   1.0000000000000000     
+ SnowFracDecTr=   1.0000000000000000     
+ SnowFracGrass=   1.0000000000000000     
+ SnowFracBSoil=   1.0000000000000000     
+ SnowFracWater=   1.0000000000000000     
+ SnowDensPaved=   100.25511747382922     
+ SnowDensBldgs=   100.25511747382922     
+ SnowDensEveTr=   100.25511747382922     
+ SnowDensDecTr=   100.25511747382922     
+ SnowDensGrass=   100.25511747382922     
+ SnowDensBSoil=   100.25511747382922     
+ SnowDensWater=   100.25509891576928     
+ SnowAlb0=  0.17999999999999999     
+=======
  SoilStorePavedState=   148.93278549193184     
  SoilStoreBldgsState=   148.93280195389232     
  SoilStoreEveTrState=   148.89922712504881     
@@ -53,4 +97,5 @@
  SnowDensBSoil=   100.00000000000000     
  SnowDensWater=   100.00000000000000     
  SnowAlb0=   0.0000000000000000     
+>>>>>>> origin/master
  /

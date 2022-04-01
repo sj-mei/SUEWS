@@ -13,7 +13,7 @@ CONTAINS
    SUBROUTINE RSLProfile( &
       DiagMethod, &
       Zh, z0m, zdm, z0v, &
-      L_MOD, sfr, FAI, FAIBldg, StabilityMethod, RA_h, &
+      L_MOD, sfr_surf, FAI, FAIBldg, StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
       avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, & ! input
       T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -31,7 +31,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions [-]
       REAL(KIND(1D0)), INTENT(in) :: zMeas ! height of atmospheric forcing [m]
       REAL(KIND(1D0)), INTENT(in) :: avU1 ! Wind speed at forcing height [m s-1]
       REAL(KIND(1D0)), INTENT(in) :: Temp_C ! Air temperature at forcing height [C]
@@ -132,7 +132,7 @@ CONTAINS
       ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
       CALL RSL_cal_prms( &
          StabilityMethod, & !input
-         zh, L_MOD, sfr, FAI, FAIBldg, & !input
+         zh, L_MOD, sfr_surf, FAI, FAIBldg, & !input
          zH_RSL, L_MOD_RSL, &
          Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx, PAI)
 
@@ -149,7 +149,7 @@ CONTAINS
          flag_RSL = &
             ! zd>0 subject to FAI > beta**2*(1-sfr(bldg)); also beta<0.5;
             ! hence the lower limit of FAI below
-            FAI > 0.25*(1 - sfr(BldgSurf)) .AND. FAI < 0.45 .AND. & ! FAI
+            FAI > 0.25*(1 - sfr_surf(BldgSurf)) .AND. FAI < 0.45 .AND. & ! FAI
             PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
             zH > 2 ! effective canopy height
          ! (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5
@@ -817,7 +817,7 @@ CONTAINS
    END FUNCTION cal_z0_RSL
 
    SUBROUTINE RSL_cal_prms( &
-      StabilityMethod, zh, L_MOD, sfr, FAI, FAIBldg, & !input
+      StabilityMethod, zh, L_MOD, sfr_surf, FAI, FAIBldg, & !input
       zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx, PAI) !output
 
       IMPLICIT NONE
@@ -826,7 +826,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: FAI ! frontal area index
       REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! frontal area index of buildings
       REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr ! land cover fractions
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! land cover fractions
 
       ! output
       ! real(KIND(1D0)), intent(out) ::L_stab ! threshold for Obukhov length under stable conditions
@@ -875,27 +875,27 @@ CONTAINS
       zH_RSL = MAX(zh, Zh_min)
 
       ! land cover fraction of bluff bodies
-      PAI = SUM(sfr([BldgSurf, ConifSurf, DecidSurf]))
+      PAI = SUM(sfr_surf([BldgSurf, ConifSurf, DecidSurf]))
       ! set a threshold for sfr_zh to avoid numerical difficulties
       ! PAI = min(PAI, 0.8)
 
       ! land cover fraction of trees
-      sfr_tr = SUM(sfr([ConifSurf, DecidSurf]))
+      sfr_tr = SUM(sfr_surf([ConifSurf, DecidSurf]))
 
       ! height scale for buildings !not used? why?
-      ! Lc_build = (1.-sfr(BldgSurf))/FAI*Zh_RSL  ! Coceal and Belcher 2004 assuming Cd = 2
+      ! Lc_build = (1.-sfr_surf(BldgSurf))/FAI*Zh_RSL  ! Coceal and Belcher 2004 assuming Cd = 2
 
       ! height scale for tress
       ! Lc_tree = 1./(cd_tree*a_tree) ! not used? why?
 
       ! height scale for bluff bodies
-      Lc = (1.-sfr(BldgSurf))/FAI*Zh_RSL ! LB Oct2021 - replaced PAI with sfr(BldgSurf) since the parameter should represent the solid fraction (and trees have negligible solid fraction).
+      Lc = (1.-sfr_surf(BldgSurf))/FAI*Zh_RSL ! LB Oct2021 - replaced PAI with sfr(BldgSurf) since the parameter should represent the solid fraction (and trees have negligible solid fraction).
       ! set a minimum threshold (of 0.5*Zh_RSL) for Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
       ! Lc = MERGE(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
       ! LB Oct2021 - set a minimum Lc threshold based on the Lc required to ensure the horizontal length scale associated with changes in canopy geometry (i.e. 3Lc) is greater than a typical street+building unit
       ! Note: the horizontal building size and street+building unit size is calculated assuming a regular array of cuboids with the same x and y dimension but with height that can be different
-      bldg_dim = Zh_RSL*sfr(BldgSurf)/FAIBldg
-      Lc_min = bldg_dim*sfr(BldgSurf)**(-0.5)/3.
+      bldg_dim = Zh_RSL*sfr_surf(BldgSurf)/FAIBldg
+      Lc_min = bldg_dim*sfr_surf(BldgSurf)**(-0.5)/3.
       Lc = MERGE(Lc, Lc_min, Lc > Lc_min)
 
       ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
@@ -956,7 +956,7 @@ CONTAINS
       ! real(KIND(1D0)) :: phim
 
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
-      ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
+      ! betaN2 = 0.30 + (1.-sfr_surf(ConifSurf) - sfr_surf(ConifSurf))*0.1
       IF (PAI > 0) THEN
          betaN2 = 0.30*sfr_tr/PAI + (PAI - sfr_tr)/PAI*0.4
       ELSE

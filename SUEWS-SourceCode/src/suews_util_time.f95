@@ -22,15 +22,15 @@
 
 SUBROUTINE day2month(b, mb, md, seas, year, latitude)
    IMPLICIT NONE
-   INTEGER, INTENT(in) ::b  !b=doy   --IN
-   INTEGER, INTENT(out) ::mb !month=mb  --OUT
-   INTEGER, INTENT(out) ::md !date=md --OUT
-   INTEGER, INTENT(out) ::seas
-   INTEGER, INTENT(in) ::year
-   INTEGER::t1, t2, t3
-   INTEGER::k ! k- accounts for leap year
+   INTEGER, INTENT(in) :: b !b=doy   --IN
+   INTEGER, INTENT(out) :: mb !month=mb  --OUT
+   INTEGER, INTENT(out) :: md !date=md --OUT
+   INTEGER, INTENT(out) :: seas
+   INTEGER, INTENT(in) :: year
+   INTEGER :: t1, t2, t3
+   INTEGER :: k ! k- accounts for leap year
 
-   REAL(KIND(1D0))::latitude
+   REAL(KIND(1D0)) :: latitude
 
    ! initialisation
    mb = 1
@@ -86,13 +86,13 @@ SUBROUTINE day2month(b, mb, md, seas, year, latitude)
    END IF
 
    !
-   IF (latitude > 0) THEN  ! Northern Hemisphere
+   IF (latitude > 0) THEN ! Northern Hemisphere
       IF (mb > 3 .AND. mb < 10) THEN !Summer is from Apr to Sep
          seas = 1
       ELSE
          seas = 2 !Winter rest of the months
       END IF
-   ELSE  ! southern hemisphere
+   ELSE ! southern hemisphere
       IF (mb < 4 .OR. mb > 9) THEN !Summer is from Oct to Mar
          seas = 1
       ELSE
@@ -104,7 +104,7 @@ END SUBROUTINE day2month
 !===============================================================================
 SUBROUTINE month2day(mon, ne, k, b)
    IMPLICIT NONE
-   INTEGER:: mon, ne, k, b
+   INTEGER :: mon, ne, k, b
 
    IF (mon == 1) THEN
       NE = 32 - B
@@ -203,7 +203,7 @@ SUBROUTINE dectime_to_timevec(dectime, HOURS, MINS, SECS)
    !This subroutine converts dectime to individual
    !hours, minutes and seconds
    INTEGER :: HOURS, MINS, doy
-   REAL(KIND(1D0))    :: dectime, SECS, DH, DM, DS
+   REAL(KIND(1D0)) :: dectime, SECS, DH, DM, DS
    !INTEGER :: year
 
    doy = FLOOR(dectime)
@@ -232,8 +232,8 @@ SUBROUTINE DAYLEN(DOY, XLAT, DAYL, DEC, SNDN, SNUP)
    IMPLICIT NONE
    INTEGER :: DOY
    REAL(KIND(1D0)), INTENT(IN) :: XLAT
-   REAL(KIND(1D0)), INTENT(OUT) ::  DEC, DAYL, SNDN, SNUP
-   REAL(KIND(1D0)):: SOC
+   REAL(KIND(1D0)), INTENT(OUT) :: DEC, DAYL, SNDN, SNUP
+   REAL(KIND(1D0)) :: SOC
    REAL(KIND(1D0)), PARAMETER :: PI = 3.14159, RAD = PI/180.0
 
    !-----------------------------------------------------------------------
@@ -271,9 +271,9 @@ SUBROUTINE SUEWS_cal_dectime( &
    id, it, imin, isec, & ! input
    dectime) ! output
    IMPLICIT NONE
-   INTEGER, INTENT(in)::id, it, imin, isec
+   INTEGER, INTENT(in) :: id, it, imin, isec
 
-   REAL(KIND(1D0)), INTENT(out)::dectime ! nsh in type real
+   REAL(KIND(1D0)), INTENT(out) :: dectime ! nsh in type real
 
    dectime = REAL(id - 1, KIND(1D0)) &
              + REAL(it, KIND(1D0))/24 &
@@ -287,11 +287,11 @@ SUBROUTINE SUEWS_cal_tstep( &
    tstep, & ! input
    nsh, nsh_real, tstep_real) ! output
    IMPLICIT NONE
-   INTEGER, INTENT(in)::tstep ! number of timesteps per hour
+   INTEGER, INTENT(in) :: tstep ! number of timesteps per hour
    ! values that are derived from tstep
-   INTEGER, INTENT(out)::nsh ! number of timesteps per hour
-   REAL(KIND(1D0)), INTENT(out)::nsh_real ! nsh in type real
-   REAL(KIND(1D0)), INTENT(out)::tstep_real ! tstep in type real
+   INTEGER, INTENT(out) :: nsh ! number of timesteps per hour
+   REAL(KIND(1D0)), INTENT(out) :: nsh_real ! nsh in type real
+   REAL(KIND(1D0)), INTENT(out) :: tstep_real ! tstep in type real
    nsh = 3600/tstep
    nsh_real = nsh*1.0
    tstep_real = tstep*1.0
@@ -303,23 +303,23 @@ SUBROUTINE SUEWS_cal_weekday( &
    dayofWeek_id) !output
    IMPLICIT NONE
 
-   INTEGER, INTENT(in) :: iy  ! year
-   INTEGER, INTENT(in) :: id  ! day of year
-   REAL(KIND(1D0)), INTENT(in):: lat
+   INTEGER, INTENT(in) :: iy ! year
+   INTEGER, INTENT(in) :: id ! day of year
+   REAL(KIND(1D0)), INTENT(in) :: lat
 
-   INTEGER, DIMENSION(3), INTENT(OUT) ::dayofWeek_id
+   INTEGER, DIMENSION(3), INTENT(OUT) :: dayofWeek_id
 
-   INTEGER::wd
-   INTEGER::mb
-   INTEGER::date
-   INTEGER::seas
+   INTEGER :: wd
+   INTEGER :: mb
+   INTEGER :: date
+   INTEGER :: seas
 
    CALL day2month(id, mb, date, seas, iy, lat) !Calculate real date from doy
-   CALL Day_of_Week(date, mb, iy, wd)        !Calculate weekday (1=Sun, ..., 7=Sat)
+   CALL Day_of_Week(date, mb, iy, wd) !Calculate weekday (1=Sun, ..., 7=Sat)
 
-   dayofWeek_id(1) = wd      !Day of week
-   dayofWeek_id(2) = mb      !Month
-   dayofweek_id(3) = seas    !Season
+   dayofWeek_id(1) = wd !Day of week
+   dayofWeek_id(2) = mb !Month
+   dayofweek_id(3) = seas !Season
 
 END SUBROUTINE SUEWS_cal_weekday
 

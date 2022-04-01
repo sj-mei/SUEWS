@@ -36,36 +36,36 @@ MODULE ctrl_output
 
    INTEGER :: n
 
-   CHARACTER(len=10), PARAMETER:: & !Define useful formats here
+   CHARACTER(len=10), PARAMETER :: & !Define useful formats here
       fy = 'i0004,1X', & !4 digit integer for year
       ft = 'i0004,1X', & !3 digit integer for id, it, imin
       fd = 'f08.4,1X', & !3 digits + 4 dp for dectime
       f94 = 'f09.4,1X', & !standard output format: 4 dp + 4 digits
       f104 = 'f10.4,1X', & !standard output format: 4 dp + 5 digits
       f106 = 'f10.6,1X', & !standard output format: 6 dp + 3 digits
-      f146 = 'f14.6,1X'   !standard output format: 6 dp + 7 digits
+      f146 = 'f14.6,1X' !standard output format: 6 dp + 7 digits
 
-   CHARACTER(len=1), PARAMETER:: & ! Define aggregation methods here
-      aT = 'T', &   !time columns
-      aA = 'A', &   !average
-      aS = 'S', &   !sum
-      aL = 'L'     !last value
+   CHARACTER(len=1), PARAMETER :: & ! Define aggregation methods here
+      aT = 'T', & !time columns
+      aA = 'A', & !average
+      aS = 'S', & !sum
+      aL = 'L' !last value
 
-   CHARACTER(len=3):: itext
+   CHARACTER(len=3) :: itext
 
    ! define type: variable attributes
    TYPE varAttr
       CHARACTER(len=20) :: header ! short name in headers
-      CHARACTER(len=12) :: unit   ! unit
-      CHARACTER(len=10) :: fmt    ! output format
+      CHARACTER(len=12) :: unit ! unit
+      CHARACTER(len=10) :: fmt ! output format
       CHARACTER(len=100) :: longNm ! long name for detailed description
-      CHARACTER(len=1)  :: aggreg ! aggregation method
-      CHARACTER(len=10) :: group  ! group: datetime, default, ESTM, Snow, etc.
-      INTEGER             :: level  ! output priority level: 0 for highest (defualt output)
+      CHARACTER(len=1) :: aggreg ! aggregation method
+      CHARACTER(len=10) :: group ! group: datetime, default, ESTM, Snow, etc.
+      INTEGER :: level ! output priority level: 0 for highest (defualt output)
    END TYPE varAttr
 
    ! initialise valist
-   TYPE(varAttr) :: varListAll(600)
+   TYPE(varAttr) :: varListAll(800)
 
    ! datetime:
    DATA(varListAll(n), n=1, 5)/ &
@@ -608,19 +608,19 @@ MODULE ctrl_output
 
    ! SPARTACUS info
    DATA(varListAll(n), &
-      n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
-      + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
-      + ncolumnsDataOutDailyState - 5 &
-      + ncolumnsDataOutRSL - 5 &
-      + ncolumnsDataOutDebug - 5 &
-      + 1, &
-      ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
-      + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
-      + ncolumnsDataOutDailyState - 5 &
-      + ncolumnsDataOutRSL - 5 &
-      + ncolumnsDataOutDebug - 5 &
-      + ncolumnsDataOutSPARTACUS - 5 &
-      )/ &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        )/ &
       varAttr('alb', '-', f104, 'bulk albedo from spartacus', aA, 'SPARTACUS', 0), &
       varAttr('emis', '-', f104, 'bulk emissivity from spartacus', aA, 'SPARTACUS', 0), &
       varAttr('KTopDnDir', 'W m-2', f104, 'sw downwelling direct radiation at top-of-canopy', aA, 'SPARTACUS', 0), &
@@ -755,6 +755,42 @@ MODULE ctrl_output
       varAttr('LCAAbs14', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 14', aA, 'SPARTACUS', 0), &
       varAttr('LCAAbs15', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 15', aA, 'SPARTACUS', 0) &
       /
+   ! SPARTACUS info
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 &
+        + ncolumnsDataOutSnow - 5 &
+        + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + ncolumnsDataOutESTMExt - 5 &
+        )/ &
+      varAttr('Ts_Paved', 'degC', f104, 'surface temperature of paved surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_Bldgs', 'degC', f104, 'surface temperature of building surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_EveTr', 'degC', f104, 'surface temperature of evergreen tree surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_DecTr', 'degC', f104, 'surface temperature of deciduous tree surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_Grass', 'degC', f104, 'surface temperature of grass surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_BSoil', 'degC', f104, 'surface temperature of bare soil surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts_Water', 'degC', f104, 'surface temperature of water surface', aA, 'ESTMExt', 0), &
+      varAttr('Ts', 'degC', f104, 'bulk surface temperature', aA, 'ESTMExt', 0), &
+      varAttr('QS_Paved', 'W m-2', f104, 'storage heat flux of paved surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_Bldgs', 'W m-2', f104, 'storage heat flux of building surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_EveTr', 'W m-2', f104, 'storage heat flux of evergreen tree surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_DecTr', 'W m-2', f104, 'storage heat flux of deciduous tree surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_Grass', 'W m-2', f104, 'storage heat flux of grass surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_BSoil', 'W m-2', f104, 'storage heat flux of bare soil surface', aA, 'ESTMExt', 0), &
+      varAttr('QS_Water', 'W m-2', f104, 'storage heat flux of water surface', aA, 'ESTMExt', 0), &
+      varAttr('QS', 'W m-2', f104, 'bulk storage heat flux', aA, 'ESTMExt', 0) &
+      /
 
 CONTAINS
    ! main wrapper that handles both txt and nc files
@@ -764,14 +800,14 @@ CONTAINS
 ! #ifdef nc
 !       INTEGER, INTENT(in), OPTIONAL ::iv, Gridiv, iyr
 ! #else
-      INTEGER, INTENT(in) ::iv, Gridiv, iyr
+      INTEGER, INTENT(in) :: iv, Gridiv, iyr
 ! #endif
 
       INTEGER :: n_group_use, err, outLevel, i
-      TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListX
-      CHARACTER(len=10) :: groupList0(9)
+      TYPE(varAttr), DIMENSION(:), ALLOCATABLE :: varListX
+      CHARACTER(len=10) :: groupList0(10)
       CHARACTER(len=10), DIMENSION(:), ALLOCATABLE :: grpList
-      LOGICAL :: groupCond(9)
+      LOGICAL :: groupCond(10)
 
       ! determine outLevel
       SELECT CASE (WriteOutOption)
@@ -794,6 +830,7 @@ CONTAINS
       groupList0(7) = 'RSL'
       groupList0(8) = 'debug'
       groupList0(9) = 'SPARTACUS'
+      groupList0(10) = 'ESTMExt'
       groupCond = [ &
                   .TRUE., &
                   .TRUE., &
@@ -803,7 +840,8 @@ CONTAINS
                   .TRUE., &
                   .TRUE., &
                   .TRUE., &
-                  .TRUE. &
+                  .TRUE., &
+                  StorageHeatMethod == 5 &
                   ]
       n_group_use = COUNT(groupCond)
 
@@ -842,7 +880,6 @@ CONTAINS
             END IF
          ELSE
             !  DailyState array, which does not need aggregation
-
             CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
 
          END IF
@@ -858,48 +895,55 @@ CONTAINS
    SUBROUTINE SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, outFreq_s)
       IMPLICIT NONE
 
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varListX
+      TYPE(varAttr), DIMENSION(:), INTENT(in) :: varListX
       INTEGER, INTENT(in) :: iv, irMax, iyr, Gridiv, outLevel, outFreq_s
 
       INTEGER :: err
+      INTEGER :: n_var
 
-      INTEGER, DIMENSION(:), ALLOCATABLE  ::id_seq ! id sequence as in the dataOutX/dataOutX_agg
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOutX
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOutX_agg
+      INTEGER, DIMENSION(:), ALLOCATABLE :: id_seq ! id sequence as in the dataOutX/dataOutX_agg
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutX
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutX_agg
+
+      ! number of varialbes for output
+      n_var = SIZE(varListX)
 
       IF (.NOT. ALLOCATED(dataOutX)) THEN
-         ALLOCATE (dataOutX(irMax, SIZE(varListX)), stat=err)
+         ALLOCATE (dataOutX(irMax, n_var), stat=err)
          IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
       END IF
 
       ! determine dataOutX array according to variable group
-      SELECT CASE (TRIM(varListX(SIZE(varListX))%group))
+      SELECT CASE (TRIM(varListX(n_var)%group))
       CASE ('SUEWS') !default
-         dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutSUEWS(1:irMax, 1:n_var, Gridiv)
 
       CASE ('BEERS') !SOLWEIG
-         dataOutX = dataOutBEERS(1:irMax, 1:SIZE(varListX), Gridiv)
-         ! dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutBEERS(1:irMax, 1:n_var, Gridiv)
+         ! dataOutX = dataOutSOLWEIG(1:irMax, 1:n_var, Gridiv)
 
       CASE ('BL') !BL
-         dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutBL(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('snow')    !snow
-         dataOutX = dataOutSnow(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('snow') !snow
+         dataOutX = dataOutSnow(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('ESTM')    !ESTM
-         dataOutX = dataOutESTM(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('ESTM') !ESTM
+         dataOutX = dataOutESTM(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('RSL')    !RSL
-         dataOutX = dataOutRSL(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('RSL') !RSL
+         dataOutX = dataOutRSL(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('debug')    !debug
-         dataOutX = dataOutDebug(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('debug') !debug
+         dataOutX = dataOutDebug(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('SPARTACUS')    !SPARTACUS
-         dataOutX = dataOutSPARTACUS(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('SPARTACUS') !SPARTACUS
+         dataOutX = dataOutSPARTACUS(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('DailyState')    !DailyState
+      CASE ('ESTMExt') !ESTMExt
+         dataOutX = dataOutESTMExt(1:irMax, 1:n_var, Gridiv)
+
+      CASE ('DailyState') !DailyState
          ! get correct day index
          CALL unique(INT(PACK(dataOutSUEWS(1:irMax, 2, Gridiv), &
                               mask=(dataOutSUEWS(1:irMax, 3, Gridiv) == 23 &
@@ -912,11 +956,11 @@ CONTAINS
          END IF
 
          IF (.NOT. ALLOCATED(dataOutX)) THEN
-            ALLOCATE (dataOutX(SIZE(id_seq), SIZE(varListX)), stat=err)
+            ALLOCATE (dataOutX(SIZE(id_seq), n_var), stat=err)
             IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
          END IF
 
-         dataOutX = dataOutDailyState(id_seq, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutDailyState(id_seq, 1:n_var, Gridiv)
          ! print*, id_seq
          ! print*, dataOutDailyState(id_seq,1:SIZE(varListX),Gridiv)
          ! print*, 1/(nsh-nsh)
@@ -947,18 +991,18 @@ CONTAINS
    ! initialise an output file with file name and headers
    SUBROUTINE SUEWS_Output_Init(dataOutX, varList, iyr, Gridiv, outLevel)
       IMPLICIT NONE
-      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in) :: dataOutX
+      TYPE(varAttr), DIMENSION(:), INTENT(in) :: varList
       INTEGER, INTENT(in) :: iyr, Gridiv, outLevel
 
-      TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
+      TYPE(varAttr), DIMENSION(:), ALLOCATABLE :: varListSel
       INTEGER :: xx, err, fn, i, nargs
       CHARACTER(len=365) :: FileOutX
       CHARACTER(len=3) :: itextX
       CHARACTER(len=6) :: args(5)
       CHARACTER(len=16*SIZE(varList)) :: FormatOut
       CHARACTER(len=16) :: formatX
-      CHARACTER(len=16), DIMENSION(:), ALLOCATABLE:: headerOut
+      CHARACTER(len=16), DIMENSION(:), ALLOCATABLE :: headerOut
 
       ! select variables to output
       xx = COUNT((varList%level <= outLevel), dim=1)
@@ -1011,11 +1055,11 @@ CONTAINS
    ! generate output format file
    SUBROUTINE formatFile_gen(dataOutX, varList, iyr, Gridiv, outLevel)
       IMPLICIT NONE
-      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in) :: dataOutX
+      TYPE(varAttr), DIMENSION(:), INTENT(in) :: varList
       INTEGER, INTENT(in) :: iyr, Gridiv, outLevel
 
-      TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
+      TYPE(varAttr), DIMENSION(:), ALLOCATABLE :: varListSel
       INTEGER :: xx, err, fn, i
       CHARACTER(len=365) :: FileOutX
       CHARACTER(len=100*300) :: str_cat
@@ -1120,14 +1164,14 @@ CONTAINS
    ! aggregate data to specified resolution
    SUBROUTINE SUEWS_Output_Agg(dataOut_agg, dataOutX, varList, irMax, outFreq_s)
       IMPLICIT NONE
-      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in) :: dataOutX
+      TYPE(varAttr), DIMENSION(:), INTENT(in) :: varList
       INTEGER, INTENT(in) :: irMax, outFreq_s
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE, INTENT(out)::dataOut_agg
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE, INTENT(out) :: dataOut_agg
 
-      INTEGER ::  nlinesOut, i, j, x
-      REAL(KIND(1D0))::dataOut_aggX(1:SIZE(varList))
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOut_agg0
+      INTEGER :: nlinesOut, i, j, x
+      REAL(KIND(1D0)) :: dataOut_aggX(1:SIZE(varList))
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOut_agg0
       nlinesOut = INT(nsh/(60.*60/outFreq_s))
       ! nGrid=SIZE(dataOutX, dim=3)
 
@@ -1167,12 +1211,12 @@ CONTAINS
    ! append output data to the specific file at the specified outLevel
    SUBROUTINE SUEWS_Write_txt(dataOutX, varList, iyr, Gridiv, outLevel)
       IMPLICIT NONE
-      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in) :: dataOutX
+      TYPE(varAttr), DIMENSION(:), INTENT(in) :: varList
       INTEGER, INTENT(in) :: iyr, Gridiv, outLevel
 
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE::dataOutSel
-      TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutSel
+      TYPE(varAttr), DIMENSION(:), ALLOCATABLE :: varListSel
       CHARACTER(len=365) :: FileOutX
       INTEGER :: fn, i, xx, err
       INTEGER :: sizeVarListSel, sizedataOutX
@@ -1195,6 +1239,10 @@ CONTAINS
       ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
       ! print*, irMax,shape(dataOutX)
       dataOutSel = dataOutX(:, PACK((/(i, i=1, SIZE(varList%level))/), varList%level <= outLevel))
+      ! do i = 1, 5
+      !    print*, 'first several lines of dataOutX:', i, dataOutX(i,:)
+
+      ! end do
 
       ! create format string:
       DO i = 1, sizeVarListSel
@@ -1227,10 +1275,10 @@ CONTAINS
 
       ! write out data
       fn = 50
-      OPEN (fn, file=TRIM(FileOutX), position='append')!,err=112)
+      OPEN (fn, file=TRIM(FileOutX), position='append') !,err=112)
       DO i = 1, sizedataOutX
-         ! PRINT*, 'Writting',i
-         ! PRINT*, 'FormatOut',FormatOut
+         ! PRINT*, 'Writting line',i
+         ! PRINT*, 'FormatOut in writing',FormatOut
          ! PRINT*, dataOutSel(i,1:sizeVarListSel)
          WRITE (fn, FormatOut) &
             (INT(dataOutSel(i, xx)), xx=1, 4), &
@@ -1250,15 +1298,15 @@ CONTAINS
       USE datetime_module
 
       IMPLICIT NONE
-      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in)::dataOutX ! to determine year & output frequency
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList ! to determine output group
+      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in) :: dataOutX ! to determine year & output frequency
+      TYPE(varAttr), DIMENSION(:), INTENT(in) :: varList ! to determine output group
       INTEGER, INTENT(in) :: iyr ! to determine year
       INTEGER, INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
       INTEGER, INTENT(in), OPTIONAL :: opt_fmt ! to determine if a format file
       CHARACTER(len=365), INTENT(out) :: FileOutX ! the output file name
 
-      CHARACTER(len=20):: str_out_min, str_grid, &
-                          str_date, str_year, str_DOY, str_grp, str_sfx
+      CHARACTER(len=20) :: str_out_min, str_grid, &
+                           str_date, str_year, str_DOY, str_grp, str_sfx
       INTEGER :: year_int, DOY_int, val_fmt, delta_t_min
       TYPE(datetime) :: dt1, dt2
       TYPE(timedelta) :: dt_x
@@ -1411,9 +1459,9 @@ CONTAINS
 
       !========================================================================================
       IMPLICIT NONE
-      CHARACTER(len=*)    :: filename
-      INTEGER             :: nlines
-      INTEGER             :: io, iv
+      CHARACTER(len=*) :: filename
+      INTEGER :: nlines
+      INTEGER :: io, iv
 
       OPEN (10, file=filename, iostat=io, status='old')
 

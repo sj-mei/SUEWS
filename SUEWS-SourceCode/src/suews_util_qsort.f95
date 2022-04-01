@@ -30,7 +30,7 @@ CONTAINS
       INTEGER, INTENT(out) :: marker
       INTEGER :: i, j
       REAL :: temp
-      REAL :: x      ! pivot point
+      REAL :: x ! pivot point
       x = A(1)
       i = 0
       j = SIZE(A) + 1

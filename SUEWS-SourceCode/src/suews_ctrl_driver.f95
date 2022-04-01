@@ -11,10 +11,11 @@ MODULE SUEWS_Driver
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
+   USE SPARTACUS_MODULE, ONLY: SPARTACUS
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             cal_z0V, SUEWS_cal_RoughnessParameters
-   USE ESTM_module, ONLY: ESTM
+   USE ESTM_module, ONLY: ESTM, ESTM_ext
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, cal_water_storage, &
@@ -30,13 +31,13 @@ MODULE SUEWS_Driver
    USE CO2_module, ONLY: CO2_biogen
    USE evap_module, ONLY: cal_evap
    USE allocateArray, ONLY: &
-      nsurf, nvegsurf, &
+      nsurf, nvegsurf, ndepth, nspec, &
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
-      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutESTMExt
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main
@@ -70,6 +71,16 @@ CONTAINS
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+      nlayer, &
+      n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, &
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac, &
       OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
@@ -78,7 +89,7 @@ CONTAINS
       qn1_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-      SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+      SatHydraulicConduct, SDDFull, SDD_id, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
@@ -86,6 +97,13 @@ CONTAINS
       Tmax_id, Tmin_id, &
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+      sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_roof, temp_wall, temp_surf, &
+      tin_roof, tin_wall, tin_surf, &
+      k_roof, k_wall, k_surf, &
+      cp_roof, cp_wall, cp_surf, &
+      dz_roof, dz_wall, dz_surf, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
@@ -93,6 +111,7 @@ CONTAINS
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
       dataOutLineBEERS, & !output
       dataOutLineDebug, dataOutLineSPARTACUS, &
+      dataOutLineESTMExt, &
       DailyStateLine) !output
 
       IMPLICIT NONE
@@ -108,6 +127,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: endDLS
       INTEGER, INTENT(IN) :: EmissionsMethod
       INTEGER, INTENT(IN) :: Gridiv
+      INTEGER, INTENT(IN) :: nlayer ! number of vertical layers in urban canyon
       INTEGER, INTENT(IN) :: gsModel
       INTEGER, INTENT(IN) :: id
       INTEGER, INTENT(IN) :: Ie_end
@@ -255,7 +275,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: emis
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: kkAnOHM
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SatHydraulicConduct
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SnowPackLimit
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SoilDepth
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SoilStoreCap
@@ -336,6 +356,24 @@ CONTAINS
 
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av
+
+      ! ESTM_ext related:
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(INOUT) :: temp_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(INOUT) :: temp_wall
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(INOUT) :: temp_surf
+
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(INOUT) :: tsfc_surf
+
+      ! SPARTACUS input variables
+      INTEGER, INTENT(IN) :: n_vegetation_region_urban, &
+                             n_stream_sw_urban, n_stream_lw_urban
+      REAL(KIND(1D0)), INTENT(IN) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+                                     veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+                                     veg_fsd_const, veg_contact_fraction_const, &
+                                     ground_albedo_dir_mult_fact
+
       ! ########################################################################################
 
       ! ########################################################################################
@@ -344,7 +382,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(OUT) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT) :: dataoutLineRSL ! RSL variable array
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(OUT) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
@@ -483,8 +522,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: drain
       REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezState
       REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezStateVol
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: soilstore_updated
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: state_id_updated
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: soilstore_updated
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: state_id_updated
       REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind
 
       ! TODO: TS 25 Oct 2017
@@ -503,7 +542,7 @@ CONTAINS
       REAL(KIND(1D0)) :: tstep_real ! tstep in type real
       REAL(KIND(1D0)) :: dectime
 
-      ! values that are derived from sfr (surface fractions)
+      ! values that are derived from sfr_surf (surface fractions)
       REAL(KIND(1D0)) :: VegFraction
       REAL(KIND(1D0)) :: ImpervFraction
       REAL(KIND(1D0)) :: PervFraction
@@ -521,9 +560,9 @@ CONTAINS
       ! so that these values won't updated in unexpectedly many times
 
       ! OHM related:
-      REAL(KIND(1D0)) :: qn1_av_prev, qn1_av_next
+      REAL(KIND(1D0)) :: qn_av_prev, qn_av_next
       REAL(KIND(1D0)) :: dqndt_prev, dqndt_next
-      REAL(KIND(1D0)) :: qn1_s_av_prev, qn1_s_av_next
+      REAL(KIND(1D0)) :: qn_s_av_prev, qn_s_av_next
       REAL(KIND(1D0)) :: dqnsdt_prev, dqnsdt_next
 
       ! snow related:
@@ -572,6 +611,7 @@ CONTAINS
       ! flag for Tsurf convergence
       LOGICAL :: flag_converge
       REAL(KIND(1D0)) :: Ts_iter
+      REAL(KIND(1D0)) :: dif_tsfc_iter
       ! REAL(KIND(1D0)):: L_mod_iter
       REAL(KIND(1D0)) :: QH_Init
       INTEGER :: i_iter
@@ -588,17 +628,104 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
 
       ! ########################################################################################
+      !  ! extended for ESTM_ext, TS 20 Jan 2022
+      !
+      ! input arrays: standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_out_roof, tsfc0_out_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_roof
+      ! input arrays: standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_out_wall, tsfc0_out_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
+      ! input arrays: standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_out_surf, tsfc0_out_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_in_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
+
+      ! output arrays:
+
+      ! roof facets
+      ! aggregated heat storage of all roof facets
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QS_roof
+      !interface temperature between depth layers
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_roof
+
+      ! energy fluxes of individual surfaces
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_roof ! heat flux used in ESTM_ext as forcing of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_roof ! net all-wave radiation of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_roof ! latent heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_roof ! latent heat flux of roof surface [W m-2]
+
+      ! wall facets
+      ! aggregated heat storage of all wall facets
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QS_wall
+      !interface temperature between depth layers
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_wall
+
+      ! energy fluxes of individual surfaces
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_wall ! heat flux used in ESTM_ext as forcing of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_wall ! net all-wave radiation of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_wall ! latent heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_wall ! latent heat flux of wall surface [W m-2]
+
+      ! standard suews surfaces
+      !interface temperature between depth layers
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_out_surf !interface temperature between depth layers
+
+      ! energy fluxes of individual surfaces
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: QG_surf ! heat flux used in ESTM_ext as forcing of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_surf ! net all-wave radiation of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! latent heat flux of individual surface [W m-2]
+      ! surface temperature
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_qh_surf ! latent heat flux of individual surface [W m-2]
+
+      ! iterator for surfaces
+      INTEGER :: i_surf
+
+      ! used in iteration
+      INTEGER :: max_iter
+      REAL(KIND(1D0)) :: ratio_iter
+
+      LOGICAL, INTENT(IN) :: use_sw_direct_albedo
+
+      REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_scale
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_wall
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: roof_albedo_dir_mult_fact
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac
+
+      ! ########################################################################################
       ! save initial values of inout variables
-      qn1_av_prev = qn1_av
+      qn_av_prev = qn1_av
       dqndt_prev = dqndt
-      qn1_s_av_prev = qn1_s_av
+      qn_s_av_prev = qn1_s_av
       dqnsdt_prev = dqnsdt
       SnowfallCum_prev = SnowfallCum
       SnowAlb_prev = SnowAlb
       IceFrac_prev = IceFrac
       SnowWater_prev = SnowWater
       SnowDens_prev = SnowDens
-      SnowFrac_prev = SnowFrac
+      SnowFrac_prev = MERGE(SnowFrac_obs, SnowFrac, NetRadiationMethod == 0)
       SnowPack_prev = SnowPack
       soilstore_id_prev = soilstore_id
       state_id_prev = state_id
@@ -619,17 +746,27 @@ CONTAINS
       HDD_id_prev = HDD_id
       WUDay_id_prev = WUDay_id
 
+      ! ESTM_ext related
+      ! save initial values of inout variables
+      temp_in_roof = temp_roof
+      temp_in_wall = temp_wall
+      temp_in_surf = temp_surf
+      ! initialise indoor/bottom boundary temperature arrays
+      ! tin_roof = 10.
+      ! tin_wall = 10.
+      ! tin_surf = 3.
+
       ! initialise  variables
-      qn1_av_next = qn1_av
+      qn_av_next = qn1_av
       dqndt_next = dqndt
-      qn1_s_av_next = qn1_s_av
+      qn_s_av_next = qn1_s_av
       dqnsdt_next = dqnsdt
       SnowfallCum_next = SnowfallCum
       SnowAlb_next = SnowAlb
       IceFrac_next = IceFrac
       SnowWater_next = SnowWater
       SnowDens_next = SnowDens
-      SnowFrac_next = SnowFrac
+      SnowFrac_next = SnowFrac_prev
       SnowPack_next = SnowPack
       soilstore_id_next = soilstore_id
       state_id_next = state_id
@@ -650,6 +787,16 @@ CONTAINS
       HDD_id_next = HDD_id
       WUDay_id_next = WUDay_id
 
+      ! initialise output variables
+      dataOutLineSnow = -999.
+      dataOutLineESTM = -999.
+      dataOutLineESTMExt = -999.
+      dataoutLineRSL = -999.
+      dataOutLineBEERS = -999.
+      dataOutLineDebug = -999.
+      dataOutLineSPARTACUS = -999.
+      DailyStateLine = -999.
+
       !########################################################################################
       !           main calculation starts here
       !########################################################################################
@@ -657,9 +804,22 @@ CONTAINS
       ! iteration is used below to get results converge
       flag_converge = .FALSE.
       Ts_iter = TEMP_C
+
+      ! TODO: ESTM work: to allow heterogeneous surface temperatures
+      tsfc_out_surf = tsfc_surf
+      tsfc0_out_surf = tsfc_surf
+      tsfc_out_roof = tsfc_roof
+      tsfc0_out_roof = tsfc_roof
+      tsfc_out_wall = tsfc_wall
+      tsfc0_out_wall = tsfc_wall
+      PRINT *, 'sfr_surf for this grid ', sfr_surf
+      PRINT *, 'before iteration Ts_iter = ', Ts_iter
       ! L_mod_iter = 10
       i_iter = 1
-      DO WHILE ((.NOT. flag_converge) .AND. i_iter < 100)
+      max_iter = 30
+      DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
+         PRINT *, '=========================== '
+         PRINT *, 'Ts_iter of ', i_iter, ' is:', Ts_iter
 
          ! calculate dectime
          CALL SUEWS_cal_dectime( &
@@ -673,7 +833,7 @@ CONTAINS
 
          ! calculate surface fraction related VARIABLES
          CALL SUEWS_cal_surf( &
-            sfr, & !input
+            sfr_surf, & !input
             VegFraction, ImpervFraction, PervFraction, NonWaterFraction) ! output
 
          ! calculate dayofweek information
@@ -695,7 +855,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
          IF (Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
          CALL SUEWS_cal_RoughnessParameters( &
-            RoughLenMomMethod, sfr, & !input
+            RoughLenMomMethod, sfr_surf, & !input
             bldgH, EveTreeH, DecTreeH, &
             porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
@@ -746,7 +906,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
          CALL SUEWS_update_SoilMoist( &
             NonWaterFraction, & !input
-            SoilStoreCap, sfr, soilstore_id_prev, &
+            SoilStoreCap, sfr_surf, soilstore_id_prev, &
             SoilMoistCap, SoilState, & !output
             vsmd, smd)
 
@@ -754,7 +914,7 @@ CONTAINS
          !=================Gives the external and internal water uses per timestep=================
          CALL SUEWS_cal_WaterUse( &
             nsh_real, & ! input:
-            wu_m3, SurfaceArea, sfr, &
+            wu_m3, SurfaceArea, sfr_surf, &
             IrrFracPaved, IrrFracBldgs, &
             IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
             IrrFracBSoil, IrrFracWater, &
@@ -768,7 +928,7 @@ CONTAINS
             AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
             dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
             FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
-            id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
+            imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
             PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
             QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
             Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
@@ -778,38 +938,112 @@ CONTAINS
          ! N.B.: the following parts involves snow-related calculations.
          ! ===================NET ALLWAVE RADIATION================================
          CALL SUEWS_cal_Qn( &
-            NetRadiationMethod, SnowUse, & !input
-            tstep, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
-            Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
+            StorageHeatMethod, NetRadiationMethod, SnowUse, & !input
+            tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
+            Diagnose, ldown_obs, fcld_obs, &
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
-            NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr, emis, &
-            alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
+            NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, &
+            sfr_surf, tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
+            emis, alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
             LAI_id, & !input
+            n_vegetation_region_urban, &
+            n_stream_sw_urban, n_stream_lw_urban, &
+            sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+            veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+            veg_fsd_const, veg_contact_fraction_const, &
+            ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+            height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+            alb_roof, emis_roof, alb_wall, emis_wall, &
+            roof_albedo_dir_mult_fact, wall_specular_frac, &
             alb_next, ldown, fcld, & !output
+            qn_surf, qn_roof, qn_wall, &
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            albedo_snow, snowFrac_next, SnowAlb_next, &
+            albedo_snow, SnowAlb_next, &
             alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
             top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
             clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
             top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
             clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc)
 
+         ! PRINT *, 'Qn_surf after SUEWS_cal_Qn ', qn_surf
+         ! PRINT *, 'qn_roof after SUEWS_cal_Qn ', qn_roof
+         ! PRINT *, 'qn_wall after SUEWS_cal_Qn ', qn_wall
+         ! PRINT *, ''
+
          ! =================STORAGE HEAT FLUX=======================================
+         IF (i_iter == 1) THEN
+            Qg_surf = 0.1*qn_surf
+            Qg_roof = 0.1*qn_roof
+            Qg_wall = 0.1*qn_wall
+         ELSE
+            Qg_surf = qn_surf + QF - (qh_surf + QE_surf)
+            Qg_roof = qn_roof + QF - (qh_roof + QE_roof)
+            Qg_wall = qn_wall + QF - (qh_wall + QE_wall)
+         END IF
+
+         ! PRINT *, 'Qg_surf before cal_qs', Qg_surf
+         ! PRINT *, 'Qg_roof before cal_qs', Qg_roof
+         ! PRINT *, 'Qg_wall before cal_qs', Qg_wall
+         ! print *,''
+
+         PRINT *, 'tsfc_surf before cal_qs', tsfc_out_surf
+         PRINT *, 'tsfc_out_roof before cal_qs', tsfc_out_roof
+         PRINT *, 'tsfc_wall before cal_qs', tsfc_out_wall
+         PRINT *, ''
+
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
-            id, tstep, dt_since_start, Diagnose, sfr, &
+            id, tstep, dt_since_start, Diagnose, &
+            nlayer, &
+            Qg_surf, Qg_roof, Qg_wall, &
+            tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
             OHM_coef, OHM_threshSW, OHM_threshWD, &
-            soilstore_id_prev, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
-            HDD_id_next, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
+            soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
+            HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
             avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
             bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
-            Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
-            StoreDrainPrm_next, &
+            Tair_av, qn_av_prev, dqndt_prev, qn_s_av_prev, dqnsdt_prev, &
+            StoreDrainPrm, &
             qn_snow, dataOutLineESTM, qs, & !output
-            qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
-            deltaQi, a1, a2, a3)
+            qn_av_next, dqndt_next, qn_s_av_next, dqnsdt_next, &
+            deltaQi, a1, a2, a3, &
+            tsfc_out_roof, temp_out_roof, QS_roof, & !output
+            tsfc_out_wall, temp_out_wall, QS_wall, & !output
+            tsfc_out_surf, temp_out_surf, QS_surf) !output
+
+         ! update iteration variables
+         ! temp_in_roof = temp_out_roof
+         ! temp_in_wall = temp_out_wall
+         ! temp_in_surf = temp_out_surf
+         ! Ts_iter = DOT_PRODUCT(tsfc_out_surf, sfr_surf)
+         ! PRINT *, 'QS_surf after cal_qs', QS_surf
+         ! PRINT *, 'QS_roof after cal_qs', QS_roof
+         ! PRINT *, 'QS_wall after cal_qs', QS_wall
+
+         PRINT *, ''
+
+         ! PRINT *, 'tsfc_surf after cal_qs', tsfc_out_surf
+         ! PRINT *, 'tsfc_roof after cal_qs', tsfc_out_roof
+         ! PRINT *, 'tsfc_wall after cal_qs', tsfc_out_wall
+         ! PRINT *, ''
+         ! print *,'tsfc_surf abs. diff.:',maxval(abs(tsfc_out_surf-tsfc0_out_surf)),maxloc(abs(tsfc_out_surf-tsfc0_out_surf))
+         ! dif_tsfc_iter=maxval(abs(tsfc_out_surf-tsfc0_out_surf))
+         ! print *,'tsfc_roof abs. diff.:',maxval(abs(tsfc_out_roof-tsfc0_out_roof)),maxloc(abs(tsfc_out_roof-tsfc0_out_roof))
+         ! dif_tsfc_iter=max(maxval(abs(tsfc_out_roof-tsfc0_out_roof)),dif_tsfc_iter)
+         ! print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
+         ! dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
+
+         ! tsfc0_out_surf=tsfc_out_surf
+         ! tsfc0_out_roof=tsfc_out_roof
+         ! tsfc0_out_wall=tsfc_out_wall
+
+         tsfc0_out_surf = tsfc_out_surf
+         tsfc0_out_roof = tsfc_out_roof
+         tsfc0_out_wall = tsfc_out_wall
 
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -819,9 +1053,9 @@ CONTAINS
             tstep, tau_r, SnowDensMax, &
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
             SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-            nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn_ind_snow, &
+            nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn_ind_snow, &
             kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
-            SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, & !input
+            SnowPack_prev, snowFrac_prev, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, & !input
             SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, & !output
             mwh, Qm, QmFreez, QmRain, & ! output
             veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
@@ -836,7 +1070,7 @@ CONTAINS
                veg_type, & !input
                SnowUse, qn, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
                tstep_real, DRAINRT, nsh_real, &
-               Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
+               Precip, RainMaxRes, RAINCOVER, sfr_surf, LAI_id_next, LAImax, LAImin, &
                QH_LUMPS, & !output
                QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
 
@@ -851,11 +1085,11 @@ CONTAINS
          CALL SUEWS_cal_Water( &
             Diagnose, & !input
             SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-            state_id_prev, soilstore_id_prev, sfr, StoreDrainPrm_next, WaterDist, nsh_real, &
+            state_id_prev, sfr_surf, StoreDrainPrm_next, WaterDist, nsh_real, &
             drain_per_tstep, & !output
             drain, frac_water2runoff, &
             AdditionalWater, runoffPipes, runoff_per_interval, &
-            AddWater, state_id_updated, soilstore_updated)
+            AddWater)
          !============= calculate water balance end =============
 
          !===============Resistance Calculations=======================
@@ -869,50 +1103,73 @@ CONTAINS
             g1, g2, g3, g4, &
             g5, g6, s1, s2, &
             th, tl, &
-            dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_next, sfr, &
+            dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_next, sfr_surf, &
             UStar, TStar, L_mod, & !output
             zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
 
-         !======== Evaporation and surface state_id ========
-         CALL SUEWS_cal_QE( &
-            Diagnose, SnowUse, & !input
-            tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
-            dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
-            RAsnow, psyc_hPa, sIce_hPa, &
-            PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
-            RS, RA_h, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-            NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-            SurfaceArea, FlowChange, drain, WetThresh, state_id_updated, mw_ind, SoilStoreCap, rainonsnow, &
-            freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-            StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
-            SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
-            runoff_per_interval, state_id_prev, soilstore_id_prev, & ! input:
-            state_id_next, soilstore_id_next, & ! output:
-            SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
-            runoffSoil, & ! output:
-            SnowRemoval, &
-            state_per_tstep, NWstate_per_tstep, qe, &
-            swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
-            surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-            runoffAGveg, runoffAGimpervious, rss_nsurf)
-         !======== Evaporation and surface state_id end========
+         !===================Resistance Calculations End=======================
 
-         !============ Sensible heat flux ===============
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
-         CALL SUEWS_cal_QH( &
-            1, &
-            qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, tsurf, Temp_C, RA_h, &
-            qh, qh_residual, qh_resist) !output
-         !============ Sensible heat flux end===============
+         !===================Calculate surface hydrology and related soil water=======================
+         IF (SnowUse == 1) THEN
 
-         ! N.B.: snow-related calculations end here.
-         !===================================================
+            ! ===================Calculate snow related hydrology=======================
+            CALL SUEWS_cal_snow( &
+               Diagnose, nlayer, & !input
+               tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
+               dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
+               RAsnow, psyc_hPa, sIce_hPa, &
+               PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
+               RS, RA_h, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+               addVeg, SnowLimPaved, SnowLimBldg, &
+               FlowChange, drain, WetThresh, state_id_prev, mw_ind, SoilStoreCap, rainonsnow, &
+               freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
+               AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
+               SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
+               state_id_prev, soilstore_id_prev, & ! input:
+               qn_surf, qs_surf, &
+               SnowRemoval, & ! snow specific output
+               SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
+               state_id_next, soilstore_id_next, & ! general output:
+               state_per_tstep, NWstate_per_tstep, &
+               qe, qe_surf, qe_roof, qe_wall, &
+               swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
+               surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
+               runoffAGveg, runoffAGimpervious, rss_nsurf)
+            ! N.B.: snow-related calculations end here.
+            !===================================================
+         ELSE
+            !======== Evaporation and surface state_id for snow-free conditions ========
+            CALL SUEWS_cal_QE( &
+               Diagnose, nlayer, & !input
+               tstep, &
+               EvapMethod, &
+               avdens, avcp, lv_J_kg, &
+               psyc_hPa, &
+               PervFraction, &
+               addimpervious, &
+               qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
+               precip, PipeCapacity, RunoffToWater, &
+               NonWaterFraction, wu_nsurf, addVeg, addWaterBody, &
+               FlowChange, drain, WetThresh, state_id_prev, &
+               SoilStoreCap, &
+               sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, &
+               state_id_prev, soilstore_id_prev, & ! input:
+               qn_surf, qs_surf, &
+               state_id_next, soilstore_id_next, & ! general output:
+               state_per_tstep, NWstate_per_tstep, &
+               qe, qe_surf, qe_roof, qe_wall, &
+               ev_per_tstep, runoff_per_tstep, &
+               surf_chang_per_tstep, runoffPipes, &
+               runoffwaterbody, &
+               runoffAGveg, runoffAGimpervious, rss_nsurf)
+            !======== Evaporation and surface state_id end========
+         END IF
 
          !=== Horizontal movement between soil stores ===
          ! Now water is allowed to move horizontally between the soil stores
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
          CALL SUEWS_cal_HorizontalSoilWater( &
-            sfr, & ! input: ! surface fractions
+            sfr_surf, & ! input: ! surface fractions
             SoilStoreCap, & !Capacity of soil store for each surface [mm]
             SoilDepth, & !Depth of sub-surface soil store for each surface [mm]
             SatHydraulicConduct, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
@@ -929,11 +1186,96 @@ CONTAINS
          CALL SUEWS_cal_SoilState( &
             SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
             SoilStoreCap, surf_chang_per_tstep, &
-            soilstore_id_next, soilstore_updated, sfr, &
+            soilstore_id_next, soilstore_id_prev, sfr_surf, &
             smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
+
+         !============ Sensible heat flux ===============
+         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
+         CALL SUEWS_cal_QH( &
+            1, nlayer, & !input
+            qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
+            sfr_surf, sfr_roof, sfr_wall, &
+            tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
+            Temp_C, &
+            RA_h, &
+            qh, qh_residual, qh_resist, & !output
+            qh_surf, qh_roof, qh_wall)
+         ! PRINT *, 'qn_surf after SUEWS_cal_QH', qn_surf
+         ! PRINT *, 'qs_surf after SUEWS_cal_QH', qs_surf
+         ! PRINT *, 'qe_surf after SUEWS_cal_QH', qe_surf
+         ! PRINT *, 'qh_surf after SUEWS_cal_QH (resist)', qh_surf
+         ! PRINT *, 'qh_roof after SUEWS_cal_QH (resist)', qh_roof
+         ! PRINT *, 'qh_wall after SUEWS_cal_QH (resist)', qh_wall
+         ! PRINT *, ''
+
+         ! PRINT *, 'tsfc_surf after SUEWS_cal_QH (resist)', tsfc_out_surf
+         ! PRINT *, 'tsfc_roof after SUEWS_cal_QH (resist)', tsfc_out_roof
+         ! PRINT *, 'tsfc_wall after SUEWS_cal_QH (resist)', tsfc_out_wall
+         PRINT *, ''
+         ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
+         ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
+         !============ Sensible heat flux end ===============
+
+         ! residual heat flux
+         ! PRINT *, 'residual surf: ', qn_surf + qf - qs_surf - qe_surf - qh_surf
+         ! PRINT *, 'residual roof: ', qn_roof + qf - qs_roof - qe_roof - qh_roof
+         ! PRINT *, 'residual wall: ', qn_wall + qf - qs_wall - qe_wall - qh_wall
+
+         !============ Sensible heat flux end===============
 
          !============ calculate surface temperature ===============
          TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
+
+         !============= calculate surface specific QH and Tsfc ===============
+
+         tsfc0_out_surf = tsfc_out_surf
+         tsfc0_out_roof = tsfc_out_roof
+         tsfc0_out_wall = tsfc_out_wall
+
+         qh_surf = qn_surf + qf - qs_surf - qe_surf
+         qh_roof = qn_roof + qf - qs_roof - qe_roof
+         qh_wall = qn_wall + qf - qs_wall - qe_wall
+
+         PRINT *, 'qn_surf before QH back env.:', qn_surf
+         PRINT *, 'qf before QH back env.:', qf
+         PRINT *, 'qs_surf before QH back env.:', qs_surf
+         PRINT *, 'qe_surf before QH back env.:', qe_surf
+         PRINT *, 'qh_surf before QH back env.:', qh_surf
+         DO i_surf = 1, nsurf
+            ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
+            ! if ( i_surf==1 ) then
+            !    tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
+            ! else
+            !    tsfc_out_surf(i_surf)=tsfc0_out_surf(i_surf)
+            ! end if
+            ! restrict calculated heat storage to a sensible range
+            ! tsfc_out_surf(i_surf) = MAX(MIN(tsfc_out_surf(i_surf), 100.0), -100.0)
+         END DO
+
+         DO i_surf = 1, nlayer
+            tsfc_out_roof(i_surf) = cal_tsfc(qh_roof(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_out_wall(i_surf) = cal_tsfc(qh_wall(i_surf), avdens, avcp, RA_h, temp_c)
+         END DO
+
+         PRINT *, 'tsfc_surf after QH back env.:', tsfc_out_surf
+         ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
+         PRINT *, 'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf)), MAXLOC(ABS(tsfc_out_surf - tsfc0_out_surf))
+         dif_tsfc_iter = MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf))
+         PRINT *, 'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
+         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), dif_tsfc_iter)
+         PRINT *, 'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
+         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_out_wall)), dif_tsfc_iter)
+
+         ! ====test===
+         ! see if this converges better
+         ratio_iter = .4
+         tsfc_out_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_out_surf*ratio_iter)
+         tsfc_out_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_out_roof*ratio_iter)
+         tsfc_out_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_out_wall*ratio_iter)
+         ! =======test end=======
+
+         ! PRINT *, 'tsfc_surf after qh_cal', TSfc_QH_surf
 
          !============ surface-level diagonostics end ===============
 
@@ -942,20 +1284,41 @@ CONTAINS
 
          ! Test if sensible heat fluxes converge in iterations
          ! if (abs(QH - QH_Init) > 0.1) then
-         IF (ABS(Ts_iter - TSfc_C) > 0.1) THEN
+         ! IF (ABS(Ts_iter - TSfc_C) > 0.1) THEN
+         !    flag_converge = .FALSE.
+         ! ELSE
+         !    flag_converge = .TRUE.
+         !    PRINT *, 'Iteration done in', i_iter, ' iterations'
+         !    PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
+         ! END IF
+         ! IF (MINVAL(ABS(TSfc_QH_surf - tsfc_surf)) > 0.1) THEN
+         ! IF (ABS(qh_residual - qh_resist) > .2) THEN
+         IF (dif_tsfc_iter > .1) THEN
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
+            PRINT *, 'Iteration done in', i_iter, ' iterations'
+            ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
+            ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
+            PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
+
          END IF
 
-         ! ! force quit do-while loop if not convergent after 100 iterations
-         ! if (i_iter > 100) exit
-
-         Ts_iter = TSfc_C
-         ! l_mod_iter = l_mod
-
          i_iter = i_iter + 1
+         ! force quit do-while loop if not convergent after 100 iterations
+         IF (i_iter == max_iter) THEN
+            PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
+            ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
+            ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
+            ! PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
+            PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
+            ! exit
+         END IF
 
+         ! Ts_iter = TSfc_C
+         ! l_mod_iter = l_mod
+         PRINT *, '========================='
+         PRINT *, ''
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
@@ -965,9 +1328,9 @@ CONTAINS
       !============ roughness sub-layer diagonostics ===============
       IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
       CALL RSLProfile( &
-      DiagMethod, &
+         DiagMethod, &
          zH, z0m, zdm, z0v, &
-         L_MOD, sfr, FAI, FAIBldg, StabilityMethod, RA_h, &
+         L_MOD, sfr_surf, FAI, FAIBldg, StabilityMethod, RA_h, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, & ! input
          T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -975,11 +1338,11 @@ CONTAINS
 
       ! ============ BIOGENIC CO2 FLUX =======================
       CALL SUEWS_cal_BiogenCO2( &
-         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
-         ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-         G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id_next, LAIMin, &
-         LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
-         resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
+         dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+         G5, G6, gfunc, gsmodel, id, it, Kmax, LAI_id_next, LAIMin, &
+         LAIMax, MaxConductance, min_res_bioCO2, Press_hPa, resp_a, &
+         resp_b, S1, S2, sfr_surf, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
          Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
       ! calculations of diagnostics end
@@ -987,9 +1350,9 @@ CONTAINS
 
       !==============================================================
       ! update inout variables with new values
-      qn1_av = qn1_av_next
+      qn1_av = qn_av_next
       dqndt = dqndt_next
-      qn1_s_av = qn1_s_av_next
+      qn1_s_av = qn_s_av_next
       dqnsdt = dqnsdt_next
       SnowfallCum = SnowfallCum_next
       SnowAlb = SnowAlb_next
@@ -1018,8 +1381,16 @@ CONTAINS
       HDD_id = HDD_id_next
       WUDay_id = WUDay_id_next
 
+      ! ESTM_ext related
+      temp_roof = temp_out_roof
+      temp_wall = temp_out_wall
+      temp_surf = temp_out_surf
+      tsfc_roof = tsfc_out_roof
+      tsfc_wall = tsfc_out_wall
+      tsfc_surf = tsfc_out_surf
+
       !==============use SOLWEIG to get localised radiation flux==================
-      ! if (sfr(BldgSurf) > 0) then
+      ! if (sfr_surf(BldgSurf) > 0) then
       !    CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
       !    lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
       ! else
@@ -1028,8 +1399,8 @@ CONTAINS
 
       !==============use BEERS to get localised radiation flux==================
       ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
-      IF (sfr(BldgSurf) > 0) THEN
-         PAI = sfr(2)/SUM(sfr(1:2))
+      IF (sfr_surf(BldgSurf) > 0) THEN
+         PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
          CALL BEERS_cal_main(iy, id, dectime, PAI, FAI, avkdn, ldown, Temp_C, avrh, &
                              Press_hPa, TSfc_C, lat, lng, alt, timezone, zenith_deg, azimuth, &
                              alb(1), alb(2), emis(1), emis(2), &
@@ -1054,7 +1425,7 @@ CONTAINS
          QmRain, qn, qn_snow, qn_snowfree, qs, RA_h, &
          RS, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
-         runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
+         runoffWaterBody, sfr_surf, smd, smd_nsurf, SnowAlb, SnowRemoval, &
          state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
          tot_chang_per_tstep, tsurf, UStar, &
          wu_nsurf, &
@@ -1093,7 +1464,7 @@ CONTAINS
                               top_net_lw_spc, &
                               lw_emission_spc, &
                               ground_dn_dir_sw_spc, &
-                              ground_net_sw_spc,&
+                              ground_net_sw_spc, &
                               ground_net_lw_spc, &
                               roof_in_sw_spc, &
                               roof_net_sw_spc, &
@@ -1104,6 +1475,15 @@ CONTAINS
                               wall_net_lw_spc, &
                               clear_air_abs_lw_spc &
                               ]
+      ! write out ESTM_ext output
+      ! dataoutlineESTMExt=-999
+      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
+      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
+      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
+
+      dataoutlineESTMExt = [tsfc_out_surf, TSfc_C, & !output
+                            qs_surf, QS]
+      ! PRINT *, 'dataoutlineESTMExt = ', dataoutlineESTMExt
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -1113,7 +1493,7 @@ CONTAINS
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
       dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
       FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
-      id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
+      imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
       PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
       QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
       Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
@@ -1124,10 +1504,10 @@ CONTAINS
       ! INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in) :: DLS
       INTEGER, INTENT(in) :: EmissionsMethod
-      INTEGER, INTENT(in) :: id
+      ! INTEGER, INTENT(in) :: id
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-      INTEGER, INTENT(in) :: nsh
+      ! INTEGER, INTENT(in) :: nsh
       INTEGER, DIMENSION(3), INTENT(in) :: dayofWeek_id
 
       REAL(KIND(1D0)), DIMENSION(6, 2), INTENT(in) :: HDD_id
@@ -1165,7 +1545,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: Temp_C
       REAL(KIND(1D0)), INTENT(in) :: TrafficUnits
 
-      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
+      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr_surf
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac
       REAL(KIND(1D0)), INTENT(IN) :: SurfaceArea
 
@@ -1217,11 +1597,11 @@ CONTAINS
 
    !==============BIOGENIC CO2 flux==================================================
    SUBROUTINE SUEWS_cal_BiogenCO2( &
-      alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
-      ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-      G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
-      LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
-      resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+      alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
+      dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+      G5, G6, gfunc, gsmodel, id, it, Kmax, LAI_id, LAIMin, &
+      LAIMax, MaxConductance, min_res_bioCO2, Press_hPa, resp_a, &
+      resp_b, S1, S2, sfr_surf, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
       Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
       IMPLICIT NONE
@@ -1238,25 +1618,25 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: resp_b
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: theta_bioCO2
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac
 
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: MaxConductance
 
-      INTEGER, INTENT(in) :: BSoilSurf
-      INTEGER, INTENT(in) :: ConifSurf
-      INTEGER, INTENT(in) :: DecidSurf
+      ! INTEGER, INTENT(in) :: BSoilSurf
+      ! INTEGER, INTENT(in) :: ConifSurf
+      ! INTEGER, INTENT(in) :: DecidSurf
       INTEGER, INTENT(in) :: Diagnose
       INTEGER, INTENT(in) :: EmissionsMethod
-      INTEGER, INTENT(in) :: GrassSurf
+      ! INTEGER, INTENT(in) :: GrassSurf
       INTEGER, INTENT(in) :: gsmodel
       INTEGER, INTENT(in) :: id
       INTEGER, INTENT(in) :: it
-      INTEGER, INTENT(in) :: ivConif
-      INTEGER, INTENT(in) :: ivDecid
-      INTEGER, INTENT(in) :: ivGrass
-      INTEGER, INTENT(in) :: nsurf
-      INTEGER, INTENT(in) :: NVegSurf
+      ! INTEGER, INTENT(in) :: ivConif
+      ! INTEGER, INTENT(in) :: ivDecid
+      ! INTEGER, INTENT(in) :: ivGrass
+      ! INTEGER, INTENT(in) :: nsurf
+      ! INTEGER, INTENT(in) :: NVegSurf
       INTEGER, INTENT(in) :: SMDMethod
 
       REAL(KIND(1D0)), INTENT(in) :: avkdn
@@ -1320,7 +1700,7 @@ CONTAINS
 
             CALL SurfaceResistance( &
                id, it, & ! input:
-               SMDMethod, SnowFrac, sfr, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
+               SMDMethod, SnowFrac, sfr_surf, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
                LAIMax, LAI_id, gsModel, Kmax, &
                G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
                gfunc2, dummy10, dummy11) ! output:
@@ -1332,7 +1712,7 @@ CONTAINS
             alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
             ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
             id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
-            NVegSurf, resp_a, resp_b, sfr, SnowFrac, t2, Temp_C, theta_bioCO2, &
+            NVegSurf, resp_a, resp_b, sfr_surf, SnowFrac, t2, Temp_C, theta_bioCO2, &
             Fc_biogen, Fc_photo, Fc_respi) ! output:
       END IF
 
@@ -1349,24 +1729,36 @@ CONTAINS
 
    !=============net all-wave radiation=====================================
    SUBROUTINE SUEWS_cal_Qn( &
-      NetRadiationMethod, SnowUse, & !input
-      tstep, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
-      Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
-      dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
+      storageheatmethod, NetRadiationMethod, SnowUse, & !input
+      tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
+      Diagnose, ldown_obs, fcld_obs, &
+      dectime, ZENITH_deg, Tsurf_0, kdown, Tair_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
-      NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &
+      NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, &
+      sfr_surf, tsfc_surf, tsfc_roof, tsfc_wall, &
+      emis, alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &
       LAI_id, & !input
+      n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, & !input: SPARTACUS
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input: SPARTACUS
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac, &
       alb_next, ldown, fcld, & !output
+      qn_surf, qn_roof, qn_wall, &
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      albedo_snow, snowFrac_next, SnowAlb_next, &
+      albedo_snow, SnowAlb_next, &
       alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
       top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
       clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
       top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
       clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc)
       USE NARP_MODULE, ONLY: RadMethod, NARP
+      USE SPARTACUS_MODULE, ONLY: SPARTACUS
 
       IMPLICIT NONE
       ! INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
@@ -1374,20 +1766,22 @@ CONTAINS
       ! INTEGER,PARAMETER ::DecidSurf = 4 !New surface classes: Grass = 5th/7 surfaces
       ! INTEGER,PARAMETER ::GrassSurf = 5
 
+      INTEGER, INTENT(in) :: storageheatmethod
       INTEGER, INTENT(in) :: NetRadiationMethod
       INTEGER, INTENT(in) :: SnowUse
       INTEGER, INTENT(in) :: Diagnose
       INTEGER, INTENT(in) :: DiagQN
       INTEGER, INTENT(in) :: tstep
+      INTEGER, INTENT(in) :: nlayer
 
-      REAL(KIND(1D0)), INTENT(in) :: snowFrac_obs
+      ! REAL(KIND(1D0)), INTENT(in) :: snowFrac_obs
       REAL(KIND(1D0)), INTENT(in) :: ldown_obs
       REAL(KIND(1D0)), INTENT(in) :: fcld_obs
       REAL(KIND(1D0)), INTENT(in) :: dectime
       REAL(KIND(1D0)), INTENT(in) :: ZENITH_deg
       REAL(KIND(1D0)), INTENT(in) :: Tsurf_0
-      REAL(KIND(1D0)), INTENT(in) :: avKdn
-      REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      REAL(KIND(1D0)), INTENT(in) :: kdown
+      REAL(KIND(1D0)), INTENT(in) :: Tair_C
       REAL(KIND(1D0)), INTENT(in) :: avRH
       REAL(KIND(1D0)), INTENT(in) :: ea_hPa
       REAL(KIND(1D0)), INTENT(in) :: qn1_obs
@@ -1399,9 +1793,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAI_id
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
 
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis
       REAL(KIND(1D0)), DIMENSION(nsurf) :: alb
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: alb_prev
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: alb_next
@@ -1414,7 +1811,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_prev
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: snowFrac_prev
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: snowFrac_next
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: snowFrac_next
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
 
       REAL(KIND(1D0)), INTENT(out) :: ldown
@@ -1431,6 +1828,7 @@ CONTAINS
       REAL(KIND(1D0)) :: albedo_snowfree
       REAL(KIND(1D0)) :: SnowAlb
 
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_ind_snow
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: kup_ind_snow
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind_snow
@@ -1453,12 +1851,35 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
                                                      roof_in_sw_spc
 
+      ! SPARTACUS input variables
+      INTEGER, INTENT(IN) :: n_vegetation_region_urban, &
+                             n_stream_sw_urban, n_stream_lw_urban
+      REAL(KIND(1D0)), INTENT(IN) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+                                     veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+                                     veg_fsd_const, veg_contact_fraction_const, &
+                                     ground_albedo_dir_mult_fact
+      LOGICAL, INTENT(IN) :: use_sw_direct_albedo
+
+      REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_scale
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_wall
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: roof_albedo_dir_mult_fact
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_roof
+
       ! translate values
       alb = alb_prev
 
       ! update snow albedo
       SnowAlb = update_snow_albedo( &
-                tstep, SnowPack_prev, SnowAlb_prev, Temp_C, &
+                tstep, SnowPack_prev, SnowAlb_prev, Tair_C, &
                 tau_a, tau_f, SnowAlbMax, SnowAlbMin)
 
       CALL RadMethod( &
@@ -1489,30 +1910,47 @@ CONTAINS
          IF (Diagqn == 1) WRITE (*, *) 'NetRadiationMethodX:', NetRadiationMethod_use
          IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:', AlbedoChoice
 
+         ! TODO: TS 14 Feb 2022, ESTM development:
+         ! here we use uniform `tsurf_0` for all land covers, which should be distinguished in future developments
+
          CALL NARP( &
-            nsurf, sfr, SnowFrac, alb, emis, IceFrac, & ! input:
+            storageheatmethod, & !input:
+            nsurf, sfr_surf, tsfc_surf, SnowFrac, alb, emis, IceFrac, & !
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-            dectime, ZENITH_deg, tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
+            dectime, ZENITH_deg, tsurf_0, kdown, Tair_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
+            qn_surf, & ! output:
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, & ! output:
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
 
          IF (NetRadiationMethod > 1000) THEN
+            ! TODO: TS 14 Feb 2022, ESTM development: introduce facet surface temperatures
             CALL SPARTACUS( &
-               sfr, zenith_deg, tsurf_0, avKdn, ldown, temp_c, alb, emis, LAI_id, & !input
-               alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output
+               sfr_surf, zenith_deg, nlayer, & !input:
+               tsfc_surf, tsfc_roof, tsfc_wall, &
+               kdown, ldown, Tair_C, alb, emis, LAI_id, &
+               n_vegetation_region_urban, &
+               n_stream_sw_urban, n_stream_lw_urban, &
+               sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+               veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+               veg_fsd_const, veg_contact_fraction_const, &
+               ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
+               height, building_frac, veg_frac, building_scale, veg_scale, & !input:
+               alb_roof, emis_roof, alb_wall, emis_wall, &
+               roof_albedo_dir_mult_fact, wall_specular_frac, &
+               alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output:
                clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
                roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
                top_dn_lw_spc, &
                clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
                roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
                ground_dn_dir_sw_spc, ground_net_sw_spc, &
-               qn, kup, lup)
+               qn, kup, lup, qn_roof, qn_wall)
          END IF
 
       ELSE ! NetRadiationMethod==0
-         SnowFrac = snowFrac_obs
+         ! SnowFrac = snowFrac_obs
          qn = qn1_obs
          qn_snowfree = qn1_obs
          qn_snow = qn1_obs
@@ -1526,7 +1964,7 @@ CONTAINS
          qn1_ind = NAN
          Fcld = NAN
       END IF
-      snowFrac_next = SnowFrac
+      ! snowFrac_next = SnowFrac
 
       IF (ldown_option == 1) THEN
          Fcld = NAN
@@ -1542,17 +1980,25 @@ CONTAINS
    !=============storage heat flux=========================================
    SUBROUTINE SUEWS_cal_Qs( &
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
-      id, tstep, dt_since_start, Diagnose, sfr, &
+      id, tstep, dt_since_start, Diagnose, &
+      nlayer, &
+      QG_surf, QG_roof, QG_wall, &
+      tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+      tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+      tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
       OHM_coef, OHM_threshSW, OHM_threshWD, &
       soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
-      HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
+      HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
-      Tair_av, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
+      Tair_av, qn_av_prev, dqndt_prev, qn_s_av_prev, dqnsdt_prev, &
       StoreDrainPrm, &
-      qn1_S, dataOutLineESTM, qs, & !output
-      qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
-      deltaQi, a1, a2, a3)
+      qn_S, dataOutLineESTM, qs, & !output
+      qn_av_next, dqndt_next, qn_s_av_next, dqnsdt_next, &
+      deltaQi, a1, a2, a3, &
+      tsfc_roof, temp_out_roof, QS_roof, & !output
+      tsfc_wall, temp_out_wall, QS_wall, & !output
+      tsfc_surf, temp_out_surf, QS_surf) !output
 
       IMPLICIT NONE
 
@@ -1567,6 +2013,7 @@ CONTAINS
       INTEGER, INTENT(in) :: SnowUse ! option for snow related calculations
       INTEGER, INTENT(in) :: DiagQS ! diagnostic option
       INTEGER, INTENT(in) :: EmissionsMethod !< AnthropHeat option [-]
+      INTEGER, INTENT(in) :: nlayer
 
       REAL(KIND(1D0)), INTENT(in) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients
       REAL(KIND(1D0)), INTENT(in) :: OHM_threshSW(nsurf + 1) ! OHM thresholds
@@ -1577,12 +2024,11 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(12), INTENT(in) :: HDD_id
       REAL(KIND(1D0)), INTENT(in) :: qf
-      REAL(KIND(1D0)), INTENT(in) :: qn1
+      REAL(KIND(1D0)), INTENT(in) :: qn
       REAL(KIND(1D0)), INTENT(in) :: qs_obs
       REAL(KIND(1D0)), INTENT(in) :: avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
       REAL(KIND(1D0)), INTENT(in) :: bldgh
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: alb !< albedo [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis !< emissivity [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: cpAnOHM !< heat capacity [J m-3 K-1]
@@ -1594,13 +2040,14 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: Ts5mindata_ir
 
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: QG_surf
       REAL(KIND(1D0)), INTENT(in) :: Tair_av
-      REAL(KIND(1D0)), INTENT(in) :: qn1_av_prev
-      REAL(KIND(1D0)), INTENT(out) :: qn1_av_next
+      REAL(KIND(1D0)), INTENT(in) :: qn_av_prev
+      REAL(KIND(1D0)), INTENT(out) :: qn_av_next
       REAL(KIND(1D0)), INTENT(in) :: dqndt_prev ! Rate of change of net radiation [W m-2 h-1] at t-1
       REAL(KIND(1D0)), INTENT(out) :: dqndt_next ! Rate of change of net radiation [W m-2 h-1] at t-1
-      REAL(KIND(1D0)), INTENT(in) :: qn1_s_av_prev
-      REAL(KIND(1D0)), INTENT(out) :: qn1_s_av_next
+      REAL(KIND(1D0)), INTENT(in) :: qn_s_av_prev
+      REAL(KIND(1D0)), INTENT(out) :: qn_s_av_next
       REAL(KIND(1D0)), INTENT(in) :: dqnsdt_prev ! Rate of change of net radiation [W m-2 h-1] at t-1
       REAL(KIND(1D0)), INTENT(out) :: dqnsdt_next ! Rate of change of net radiation [W m-2 h-1] at t-1
       ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
@@ -1613,14 +2060,53 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: deltaQi ! storage heat flux of snow surfaces
 
       REAL(KIND(1D0)), DIMENSION(27), INTENT(out) :: dataOutLineESTM
-      REAL(KIND(1D0)), INTENT(out) :: qn1_S
+      REAL(KIND(1D0)), INTENT(out) :: qn_S
       REAL(KIND(1D0)), INTENT(out) :: qs ! storage heat flux
       REAL(KIND(1D0)), INTENT(out) :: a1 !< AnOHM coefficients of grid [-]
       REAL(KIND(1D0)), INTENT(out) :: a2 !< AnOHM coefficients of grid [h]
       REAL(KIND(1D0)), INTENT(out) :: a3 !< AnOHM coefficients of grid [W m-2]
 
+      ! extended for ESTM_ext
+      ! input arrays: standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: temp_in_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_roof
+      ! input arrays: standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: temp_in_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
+      ! input arrays: standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
+      ! output arrays
+      ! roof facets
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_roof !interface temperature between depth layers
+      ! wall facets
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_wall !interface temperature between depth layers
+      ! standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: QS_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(out) :: temp_out_surf !interface temperature between depth layers
+
+      ! internal use arrays
       REAL(KIND(1D0)) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
-      REAL(KIND(1D0)) :: qn1_use ! qn used in OHM calculations
+      REAL(KIND(1D0)) :: qn_use ! qn used in OHM calculations
 
       REAL(KIND(1D0)) :: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
@@ -1636,9 +2122,9 @@ CONTAINS
 
       ! calculate qn if qf should be included
       IF (OHMIncQF == 1) THEN
-         qn1_use = qf + qn1
+         qn_use = qf + qn
       ELSEIF (OHMIncQF == 0) THEN
-         qn1_use = qn1
+         qn_use = qn
       END IF
 
       IF (StorageHeatMethod == 0) THEN !Use observed QS
@@ -1647,10 +2133,10 @@ CONTAINS
       ELSEIF (StorageHeatMethod == 1) THEN !Use OHM to calculate QS
          Tair_mav_5d = HDD_id(10)
          IF (Diagnose == 1) WRITE (*, *) 'Calling OHM...'
-         CALL OHM(qn1_use, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
-                  qn1_S, qn1_s_av_prev, dqnsdt_prev, qn1_s_av_next, dqnsdt_next, &
+         CALL OHM(qn_use, qn_av_prev, dqndt_prev, qn_av_next, dqndt_next, &
+                  qn_S, qn_s_av_prev, dqnsdt_prev, qn_s_av_next, dqnsdt_next, &
                   tstep, dt_since_start, &
-                  sfr, nsurf, &
+                  sfr_surf, nsurf, &
                   Tair_mav_5d, &
                   OHM_coef, &
                   OHM_threshSW, OHM_threshWD, &
@@ -1666,16 +2152,16 @@ CONTAINS
          ! CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
          !      MetForcingData_grid,state_id/StoreDrainPrm(6,:),&
          !      alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-         !      sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
+         !      sfr_surf,nsurf,nsh,EmissionsMethod,id,Gridiv,&
          !      a1,a2,a3,qs,deltaQi)
          moist_surf = state_id/StoreDrainPrm(6, :)
          CALL AnOHM( &
             tstep, dt_since_start, &
-            qn1_use, qn1_av_prev, dqndt_prev, qf, &
+            qn_use, qn_av_prev, dqndt_prev, qf, &
             MetForcingData_grid, moist_surf, &
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM, & ! input
-            sfr, nsurf, EmissionsMethod, id, Gridiv, &
-            qn1_av_next, dqndt_next, &
+            sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
+            qn_av_next, dqndt_next, &
             a1, a2, a3, qs, deltaQi) ! output
 
          ! !Calculate QS using ESTM
@@ -1691,6 +2177,35 @@ CONTAINS
             dataOutLineESTM, QS) !output
          !    CALL ESTM(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
          !    QS=QSestm   ! Use ESTM qs
+      ELSEIF (StorageHeatMethod == 5) THEN
+         !    !CALL ESTM(QSestm,iMB)
+         IF (Diagnose == 1) WRITE (*, *) 'Calling extended ESTM...'
+         ! facets: seven suews standard facets + extra for buildings [roof, wall] (can be extended for heterogeneous buildings)
+         !
+         ! ASSOCIATE (v => dz_roof(1, 1:ndepth))
+         !    PRINT *, 'dz_roof in cal_qs', v, SIZE(v)
+         ! END ASSOCIATE
+         ! ASSOCIATE (v => dz_wall(1, 1:ndepth))
+         !    PRINT *, 'dz_wall in cal_qs', v, SIZE(v)
+         ! END ASSOCIATE
+         CALL ESTM_ext( &
+            tstep, & !input
+            nlayer, &
+            QG_surf, qg_roof, qg_wall, &
+            tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+            tsfc_roof, temp_out_roof, QS_roof, & !output
+            tsfc_wall, temp_out_wall, QS_wall, & !output
+            tsfc_surf, temp_out_surf, QS_surf, & !output
+            QS) !output
+
+         ! PRINT *, 'QS after ESTM_ext', QS
+         ! PRINT *, 'QS_roof after ESTM_ext', QS_roof
+         ! PRINT *, 'QS_wall after ESTM_ext', QS_wall
+         ! PRINT *, 'QS_surf after ESTM_ext', QS_surf
+         ! PRINT *, '------------------------------------'
+         ! PRINT *, ''
       END IF
 
    END SUBROUTINE SUEWS_cal_Qs
@@ -1700,11 +2215,11 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Water( &
       Diagnose, & !input
       SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-      state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
+      state_id, sfr_surf, StoreDrainPrm, WaterDist, nsh_real, &
       drain_per_tstep, & !output
       drain, frac_water2runoff, &
       AdditionalWater, runoffPipes, runoff_per_interval, &
-      AddWater, stateOld, soilstoreOld)
+      AddWater)
 
       IMPLICIT NONE
       ! INTEGER,PARAMETER :: nsurf=7! number of surface types
@@ -1720,16 +2235,16 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: nsh_real !nsh cast as a real for use in calculations
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm
       REAL(KIND(1D0)), DIMENSION(nsurf + 1, nsurf - 1), INTENT(in) :: WaterDist
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: drain !Drainage of surface type "is" [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: AddWater !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: stateOld
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstoreOld
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: stateOld
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstoreOld
 
       REAL(KIND(1D0)), INTENT(out) :: drain_per_tstep
       REAL(KIND(1D0)), INTENT(out) :: AdditionalWater
@@ -1738,8 +2253,8 @@ CONTAINS
       INTEGER :: is
 
       ! Retain previous surface state_id and soil moisture state_id
-      stateOld = state_id !state_id of each surface [mm] for the previous timestep
-      soilstoreOld = soilstore_id !Soil moisture of each surface [mm] for the previous timestep
+      ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
+      ! soilstoreOld = soilstore_id !Soil moisture of each surface [mm] for the previous timestep
 
       !============= Grid-to-grid runoff =============
       ! Calculate additional water coming from other grids
@@ -1772,9 +2287,9 @@ CONTAINS
                drain(is)) ! output
 
             ! !HCW added and changed to StoreDrainPrm(6,is) here 20 Feb 2015
-            ! drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
+            ! drain_per_tstep=drain_per_tstep+(drain(is)*sfr_surf(is)/NonWaterFraction)   !No water body included
          END DO
-         drain_per_tstep = DOT_PRODUCT(drain(1:nsurf - 1), sfr(1:nsurf - 1))/NonWaterFraction !No water body included
+         drain_per_tstep = DOT_PRODUCT(drain(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction !No water body included
       ELSE
          drain(1:nsurf - 1) = 0
          drain_per_tstep = 0
@@ -1787,7 +2302,7 @@ CONTAINS
       ! CALL ReDistributeWater
       !Calculates AddWater(is)
       CALL ReDistributeWater( &
-         SnowUse, WaterDist, sfr, Drain, & ! input:
+         SnowUse, WaterDist, sfr_surf, Drain, & ! input:
          frac_water2runoff, AddWater) ! output
 
    END SUBROUTINE SUEWS_cal_Water
@@ -1824,36 +2339,33 @@ CONTAINS
 
    END SUBROUTINE SUEWS_init_QH
    !========================================================================
-
-   !================latent heat flux and surface wetness===================
-   ! TODO: optimise the structure of this function
-   SUBROUTINE SUEWS_cal_QE( &
-      Diagnose, SnowUse, & !input
+   SUBROUTINE SUEWS_cal_snow( &
+      Diagnose, nlayer, & !input
       tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
       dectime, avdens, avcp, lv_J_kg, lvS_J_kg, avRh, Press_hPa, Temp_C, &
       RAsnow, psyc_hPa, sIce_hPa, &
-      PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
+      PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
       RS, RA, RB, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-      NonWaterFraction, WU_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-      SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
-      freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-      StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
+      addVeg, SnowLimPaved, SnowLimBldg, &
+      FlowChange, drain, WetThresh_surf, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+      freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, &
+      AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, & ! input:
-      runoff_per_interval_in, state_id_in, soilstore_id_in, & ! input:
-      state_id_out, soilstore_id_out, & ! output:
+      state_id_in, soilstore_id_in, & ! input:
+      qn_surf, qs_surf, &
+      SnowRemoval, & ! snow specific output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, & ! output
-      runoffSoil, & ! output:
-      SnowRemoval, &
-      state_per_tstep, NWstate_per_tstep, qe, &
+      state_id_out, soilstore_id_out, & ! general output:
+      state_per_tstep, NWstate_per_tstep, &
+      qe, qe_surf, qe_roof, qe_wall, &
       swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
       surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-      runoffAGveg, runoffAGimpervious, rss_nsurf)
+      runoffAGveg, runoffAGimpervious, rss_surf)
 
       IMPLICIT NONE
-      ! TODO: #140 several state/soilstore related variables need to be sorted out
 
       INTEGER, INTENT(in) :: Diagnose
-      INTEGER, INTENT(in) :: SnowUse
+      INTEGER, INTENT(in) :: nlayer
       INTEGER, INTENT(in) :: tstep
       INTEGER, INTENT(in) :: imin
       INTEGER, INTENT(in) :: it
@@ -1878,7 +2390,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: PervFraction
       REAL(KIND(1D0)), INTENT(in) :: vegfraction
       REAL(KIND(1D0)), INTENT(in) :: addimpervious
-      REAL(KIND(1D0)), INTENT(in) :: qn1_snowfree
+      REAL(KIND(1D0)), INTENT(in) :: qn_snowfree
       REAL(KIND(1D0)), INTENT(in) :: qf
       REAL(KIND(1D0)), INTENT(in) :: qs
       REAL(KIND(1D0)), INTENT(in) :: vpd_hPa
@@ -1890,20 +2402,20 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: precip
       REAL(KIND(1D0)), INTENT(in) :: PipeCapacity
       REAL(KIND(1D0)), INTENT(in) :: RunoffToWater
-      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
+      ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
       ! REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
       ! REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
       ! REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
       REAL(KIND(1D0)), INTENT(in) :: addVeg !Water from vegetated surfaces of other grids [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(in) :: addWaterBody !Water from water surface of other grids [mm] for whole surface area
+      ! REAL(KIND(1D0)), INTENT(in) :: addWaterBody !Water from water surface of other grids [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(in) :: SnowLimPaved
       REAL(KIND(1D0)), INTENT(in) :: SnowLimBldg
-      REAL(KIND(1D0)), INTENT(in) :: SurfaceArea
+      ! REAL(KIND(1D0)), INTENT(in) :: SurfaceArea
       REAL(KIND(1D0)), INTENT(in) :: FlowChange
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_nsurf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_nsurf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: mw_ind
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap
@@ -1914,16 +2426,16 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Qm_Melt
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Qm_rain
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPackLimit
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: addwaterrunoff
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr
 
       ! Total water transported to each grid for grid-to-grid connectivity
-      REAL(KIND(1D0)), INTENT(in) :: runoff_per_interval_in
+      ! REAL(KIND(1D0)), INTENT(in) :: runoff_per_interval_in
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_id_in
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id_in
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_in
@@ -1933,7 +2445,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_in
 
       ! output:
-      REAL(KIND(1D0)) :: runoff_per_interval_out
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id_out
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_id_out
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out
@@ -1942,21 +2453,24 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: iceFrac_out
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow !Initialize for runoff caused by snowmelting
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: changSnow
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: snowDepth
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: ChangSnow_surf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: snowDepth
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
       REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
       REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: evap
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_nsurf
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf
 
-      REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
+      ! REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
-      REAL(KIND(1D0)) :: qe_surf ! latent heat flux [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_roof ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_wall ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: state_per_tstep
       REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep
       REAL(KIND(1D0)), INTENT(out) :: qe
@@ -1970,22 +2484,23 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: runoffPipes
       REAL(KIND(1D0)), INTENT(out) :: mwstore
       REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody
-      REAL(KIND(1D0)) :: runoffWaterBody_m3
-      REAL(KIND(1D0)) :: runoffPipes_m3
+      ! REAL(KIND(1D0)) :: runoffWaterBody_m3
+      ! REAL(KIND(1D0)) :: runoffPipes_m3
       REAL(KIND(1D0)), INTENT(out) :: runoffAGveg
       REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious
 
       ! local:
       INTEGER :: is
 
-      REAL(KIND(1D0)) :: runoff_per_interval
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id
+      ! REAL(KIND(1D0)) :: runoff_per_interval
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id_surf
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowPack
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowWater
       REAL(KIND(1D0)), DIMENSION(nsurf) :: iceFrac
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_e_surf
 
       REAL(KIND(1D0)), DIMENSION(2) :: SurplusEvap !Surplus for evaporation in 5 min timestep
       REAL(KIND(1D0)) :: surplusWaterBody
@@ -1996,43 +2511,34 @@ CONTAINS
       ! REAL(KIND(1d0))::numPM
       REAL(KIND(1D0)) :: qn_e
       REAL(KIND(1D0)) :: tlv
-      REAL(KIND(1D0)) :: runoffAGimpervious_m3
-      REAL(KIND(1D0)) :: runoffAGveg_m3
+      ! REAL(KIND(1D0)) :: runoffAGimpervious_m3
+      ! REAL(KIND(1D0)) :: runoffAGveg_m3
       REAL(KIND(1D0)) :: nsh_real
-      REAL(KIND(1D0)) :: tstep_real
+      ! REAL(KIND(1D0)) :: tstep_real
       REAL(KIND(1D0)) :: ev_tot
       REAL(KIND(1D0)) :: qe_tot
       REAL(KIND(1D0)) :: surf_chang_tot
       REAL(KIND(1D0)) :: runoff_tot
       REAL(KIND(1D0)) :: chSnow_tot
 
-      REAL(KIND(1D0)), DIMENSION(7) :: capStore ! current storage capacity [mm]
+      REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
-      runoff_per_interval = runoff_per_interval_in
-      state_id = state_id_in
+      ! runoff_per_interval = runoff_per_interval_in
+      state_id_surf = state_id_in
       soilstore_id = soilstore_id_in
-      SnowPack = SnowPack_in
-      SnowFrac = SnowFrac_in
-      SnowWater = SnowWater_in
-      iceFrac = iceFrac_in
-      SnowDens = SnowDens_in
 
-      tstep_real = tstep*1.D0
-      nsh_real = 3600/tstep_real
+      ! tstep_real = tstep*1.D0
+      nsh_real = 3600/tstep*1.D0
 
-      capStore = 0 !initialise capStore
+      capStore_surf = 0 !initialise capStore
 
-      tlv = lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+      tlv = lv_J_kg/tstep*1.D0 !Latent heat of vapourisation per timestep
 
       pin = MAX(0., Precip) !Initiate rain data [mm]
 
       ! Initialize the output variables
       qe_surf = 0
-      ev = 0
-      qe_tot = 0
-      ev_tot = 0
-      swe = 0
-      ev_snow = 0
+
       ev_per_tstep = 0
       qe_per_tstep = 0
       surf_chang_per_tstep = 0
@@ -2041,139 +2547,436 @@ CONTAINS
       NWstate_per_tstep = 0
       qe = 0
       runoffwaterbody = 0
-      chSnow_per_interval = 0
-      mwstore = 0
+
       runoffAGveg = 0
       runoffAGimpervious = 0
       surplusWaterBody = 0
-      runoffSoil = 0
-      runoff = 0
+      runoff_surf = 0
       chang = 0
       SurplusEvap = 0
-      SnowRemoval = 0
+
+      ! force these facets to be totally dry
+      ! TODO: need to consider their hydrologic dynamics
+      qe_roof = 0
+      qe_wall = 0
 
       ! net available energy for evaporation
-      qn_e = qn1_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
+      qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
-      IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
+      IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_snow...'
+      ! IF (SnowUse == 1) THEN ! snow calculation
+      ! net available energy for evaporation
+      qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
+      ev = 0
+
+      mwstore = 0
+
+      chSnow_per_interval = 0
+      qe_tot = 0
+      ev_tot = 0
+      swe = 0
+      ev_snow = 0
+
+      SnowRemoval = 0
+      SnowPack = SnowPack_in
+      SnowFrac = SnowFrac_in
+      SnowWater = SnowWater_in
+      iceFrac = iceFrac_in
+      SnowDens = SnowDens_in
       DO is = 1, nsurf !For each surface in turn
-         IF (SnowUse == 1 .AND. snowCalcSwitch(is) == 1) THEN ! snow calculation
-            IF (sfr(is) /= 0) THEN
-               ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
-               CALL SnowCalc( &
-                  tstep, imin, it, dectime, is, & !input
-                  EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
-                  avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
-                  PervFraction, vegfraction, addimpervious, &
-                  vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, snowdensmin, SnowProf_24hr, precip, &
-                  PipeCapacity, RunoffToWater, &
-                  addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
-                  WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
-                  freezmelt, freezstate, freezstatevol, &
-                  Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
-                  AddWater, addwaterrunoff, &
-                  soilstore_id, SnowPack, SurplusEvap, & !inout
-                  SnowFrac, SnowWater, iceFrac, SnowDens, &
-                  runoffAGimpervious, runoffAGveg, surplusWaterBody, &
-                  rss_nsurf, runoffSnow, & ! output
-                  runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, &
-                  SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
-                  ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
-                  runoffPipes, mwstore, runoffwaterbody)
+         IF (sfr_surf(is) /= 0 .AND. snowCalcSwitch(is) == 1) THEN
+            ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
+            CALL SnowCalc( &
+               tstep, imin, it, dectime, is, & !input
+               EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
+               avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
+               PervFraction, vegfraction, addimpervious, &
+               vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, snowdensmin, SnowProf_24hr, precip, &
+               PipeCapacity, RunoffToWater, &
+               addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
+               WetThresh_surf, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+               freezmelt, freezstate, freezstatevol, &
+               Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
+               AddWater, addwaterrunoff, &
+               soilstore_id, SnowPack, SurplusEvap, & !inout
+               SnowFrac, SnowWater, iceFrac, SnowDens, &
+               runoffAGimpervious, runoffAGveg, surplusWaterBody, &
+               ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
+               rss_surf, &
+               runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
+               SnowRemoval, swe, &
+               runoffPipes, mwstore, runoffwaterbody)
 
-               !Actual updates here as xx_tstep variables not taken as input to snowcalc
-               ev_per_tstep = ev_per_tstep + ev_tot
-               qe_per_tstep = qe_per_tstep + qe_tot
-               runoff_per_tstep = runoff_per_tstep + runoff_tot
-               surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
-               chSnow_per_interval = chSnow_per_interval + chSnow_tot
-            ELSE
-               SnowFrac(is) = 0
-               SnowDens(is) = 0
-               SnowPack(is) = 0
-            END IF
-
-            !Store ev_tot for each surface
-            evap(is) = ev_tot
-         ELSE ! snow-free calculation
-
-            capStore(is) = StoreDrainPrm(6, is)
-            !Calculates ev [mm]
-            CALL cal_evap( &
-               EvapMethod, state_id(is), WetThresh(is), capStore(is), & !input
-               vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
-               rss_nsurf(is), ev, qe_surf) !output
-
-            !Surface water balance and soil store updates (can modify ev, updates state_id)
-            CALL cal_water_storage( &
-               is, sfr, PipeCapacity, RunoffToWater, pin, & ! input:
-               WU_nsurf, &
-               drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
-               PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, runoffAGimpervious, surplusWaterBody, &
-               runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &
-               p_mm, chang, runoff, state_id) !output:
-
-            !Store ev for each surface
-            evap(is) = ev
-
-            ! Sum evaporation from different surfaces to find total evaporation [mm]
-            ev_per_tstep = ev_per_tstep + evap(is)*sfr(is)
-
-            ! Sum latent heat flux from different surfaces to find total latent heat flux
-            qe_per_tstep = qe_per_tstep + qe_surf*sfr(is)
-
-            ! Sum change from different surfaces to find total change to surface state_id
-            surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)
-
-            ! Sum runoff from different surfaces to find total runoff
-            runoff_per_tstep = runoff_per_tstep + runoff(is)*sfr(is)
-
-            ! Calculate total state_id (including water body)
-            state_per_tstep = state_per_tstep + state_id(is)*sfr(is)
-
-            ! sum The total runoff from the area !!Check (HCW)
-            runoff_per_interval = runoff_per_interval + (runoff(is)*sfr(is))
-
-            IF (NonWaterFraction /= 0 .AND. is /= WaterSurf) THEN
-               NWstate_per_tstep = NWstate_per_tstep + (state_id(is)*sfr(is)/NonWaterFraction)
-            END IF
-
-            ChangSnow(is) = 0
-            runoffSnow(is) = 0
-
+            !Actual updates here as xx_tstep variables not taken as input to snowcalc
+            ev_per_tstep = ev_per_tstep + ev_tot
+            qe_per_tstep = qe_per_tstep + qe_tot
+            runoff_per_tstep = runoff_per_tstep + runoff_tot
+            surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
+            chSnow_per_interval = chSnow_per_interval + chSnow_tot
+         ELSE
+            SnowFrac(is) = 0
+            SnowDens(is) = 0
+            SnowPack(is) = 0
          END IF
-      END DO !end loop over surfaces
+
+         !Store ev_tot for each surface
+         ev_surf(is) = ev_tot
+      END DO
+      ! ELSE ! snow-free calculation
+      ! ChangSnow_surf = 0
+      ! ! runoffSnow_surf = 0
+      ! DO is = 1, nsurf !For each surface in turn
+      !    capStore_surf(is) = StoreDrainPrm(6, is)
+      !    !Calculates ev [mm]
+      !    CALL cal_evap( &
+      !       EvapMethod, state_id_surf(is), WetThresh_surf(is), capStore_surf(is), & !input
+      !       vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+      !       rss_surf(is), ev_surf(is), qe_surf(is)) !output
+      !    ! print *, 'qe_surf for', is , qe_surf(is)
+
+      !    !Surface water balance and soil store updates (can modify ev, updates state_id)
+      !    CALL cal_water_storage( &
+      !       is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+      !       WU_nsurf, &
+      !       drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
+      !       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, &
+      !       StateLimit, runoffAGimpervious, surplusWaterBody, &
+      !       runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, &
+      !       p_mm, chang, runoff_surf, state_id_surf) !output:
+
+      ! END DO !end loop over surfaces
+
+      ! ! Sum evaporation from different surfaces to find total evaporation [mm]
+      ! ev_per_tstep = DOT_PRODUCT(ev_surf, sfr_surf)
+
+      ! ! Sum latent heat flux from different surfaces to find total latent heat flux
+      ! qe_per_tstep = DOT_PRODUCT(qe_surf, sfr_surf)
+
+      ! ! Sum change from different surfaces to find total change to surface state_id
+      ! surf_chang_per_tstep = DOT_PRODUCT(state_id_surf - stateOld, sfr_surf)
+
+      ! ! Sum runoff from different surfaces to find total runoff
+      ! runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
+
+      ! ! Calculate total state_id (including water body)
+      ! state_per_tstep = DOT_PRODUCT(state_id_surf, sfr_surf)
+
+      ! IF (NonWaterFraction /= 0) THEN
+      !    NWstate_per_tstep = DOT_PRODUCT(state_id_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+      ! END IF
+      ! END IF
 
       qe = qe_per_tstep
 
       ! Calculate volume of water that will move between grids
       ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
       ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
-      runoffAGimpervious_m3 = runoffAGimpervious/1000*SurfaceArea
-      runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
-      runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
-      runoffPipes_m3 = runoffPipes/1000*SurfaceArea
+      ! runoffAGimpervious_m3 = runoffAGimpervious/1000*SurfaceArea
+      ! runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
+      ! runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
+      ! runoffPipes_m3 = runoffPipes/1000*SurfaceArea
 
-      runoff_per_interval_out = runoff_per_interval
-      state_id_out = state_id
+      state_id_out = state_id_surf
       soilstore_id_out = soilstore_id
+
       SnowPack_out = SnowPack
       SnowFrac_out = SnowFrac
       SnowWater_out = SnowWater
       iceFrac_out = iceFrac
       SnowDens_out = SnowDens
 
+   END SUBROUTINE SUEWS_cal_snow
+
+   !================latent heat flux and surface wetness===================
+   ! TODO: optimise the structure of this function
+   SUBROUTINE SUEWS_cal_QE( &
+      Diagnose, nlayer, & !input
+      tstep, &
+      EvapMethod, &
+      avdens, avcp, lv_J_kg, &
+      psyc_hPa, &
+      PervFraction, &
+      addimpervious, &
+      qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
+      precip, PipeCapacity, RunoffToWater, &
+      NonWaterFraction, WU_nsurf, addVeg, addWaterBody, &
+      FlowChange, drain, WetThresh_surf, stateOld, &
+      SoilStoreCap, &
+      sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm, &
+      state_id_in, soilstore_id_in, & ! input:
+      qn_surf, qs_surf, &
+      state_id_out, soilstore_id_out, & ! general output:
+      state_per_tstep, NWstate_per_tstep, &
+      qe, qe_surf, qe_roof, qe_wall, &
+      ev_per_tstep, runoff_per_tstep, &
+      surf_chang_per_tstep, runoffPipes, &
+      runoffwaterbody, &
+      runoffAGveg, runoffAGimpervious, rss_surf)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(in) :: Diagnose
+      ! INTEGER, INTENT(in) :: SnowUse
+      INTEGER, INTENT(in) :: nlayer
+      INTEGER, INTENT(in) :: tstep
+      ! INTEGER, INTENT(in) :: imin
+      ! INTEGER, INTENT(in) :: it
+      INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+
+      ! INTEGER, DIMENSION(nsurf), INTENT(in) :: snowCalcSwitch
+      ! INTEGER, DIMENSION(3), INTENT(in) :: dayofWeek_id
+
+      ! REAL(KIND(1D0)), INTENT(in) :: CRWmin
+      ! REAL(KIND(1D0)), INTENT(in) :: CRWmax
+      ! REAL(KIND(1D0)), INTENT(in) :: dectime
+      ! REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg
+      REAL(KIND(1D0)), INTENT(in) :: lv_j_kg
+      REAL(KIND(1D0)), INTENT(in) :: avdens
+      ! REAL(KIND(1D0)), INTENT(in) :: avRh
+      ! REAL(KIND(1D0)), INTENT(in) :: Press_hPa
+      ! REAL(KIND(1D0)), INTENT(in) :: Temp_C
+      ! REAL(KIND(1D0)), INTENT(in) :: RAsnow
+      REAL(KIND(1D0)), INTENT(in) :: psyc_hPa
+      REAL(KIND(1D0)), INTENT(in) :: avcp
+      ! REAL(KIND(1D0)), INTENT(in) :: sIce_hPa
+      REAL(KIND(1D0)), INTENT(in) :: PervFraction
+      ! REAL(KIND(1D0)), INTENT(in) :: vegfraction
+      REAL(KIND(1D0)), INTENT(in) :: addimpervious
+      ! REAL(KIND(1D0)), INTENT(in) :: qn_snowfree
+      REAL(KIND(1D0)), INTENT(in) :: qf
+      ! REAL(KIND(1D0)), INTENT(in) :: qs
+      REAL(KIND(1D0)), INTENT(in) :: vpd_hPa
+      REAL(KIND(1D0)), INTENT(in) :: s_hPa
+      REAL(KIND(1D0)), INTENT(in) :: RS
+      REAL(KIND(1D0)), INTENT(in) :: RA_h
+      REAL(KIND(1D0)), INTENT(in) :: RB
+      ! REAL(KIND(1D0)), INTENT(in) :: snowdensmin
+      REAL(KIND(1D0)), INTENT(in) :: precip
+      REAL(KIND(1D0)), INTENT(in) :: PipeCapacity
+      REAL(KIND(1D0)), INTENT(in) :: RunoffToWater
+      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
+      ! REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
+      REAL(KIND(1D0)), INTENT(in) :: addVeg !Water from vegetated surfaces of other grids [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(in) :: addWaterBody !Water from water surface of other grids [mm] for whole surface area
+      ! REAL(KIND(1D0)), INTENT(in) :: SnowLimPaved
+      ! REAL(KIND(1D0)), INTENT(in) :: SnowLimBldg
+      ! REAL(KIND(1D0)), INTENT(in) :: SurfaceArea
+      REAL(KIND(1D0)), INTENT(in) :: FlowChange
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_nsurf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: mw_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: rainonsnow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: freezmelt
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: freezstate
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: freezstatevol
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Qm_Melt
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Qm_rain
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPackLimit
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff
+      REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm
+      ! REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr
+
+      ! Total water transported to each grid for grid-to-grid connectivity
+      ! REAL(KIND(1D0)), INTENT(in) :: runoff_per_interval_in
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_id_in
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id_in
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_in
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowWater_in
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: iceFrac_in
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_in
+
+      ! output:
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id_out
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_id_out
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowWater_out
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: iceFrac_out
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out
+
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: ChangSnow_surf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: snowDepth
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
+      ! REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf
+
+      REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
+      ! REAL(KIND(1d0)),INTENT(out)::rss
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_roof ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_wall ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: state_per_tstep
+      REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep
+      REAL(KIND(1D0)), INTENT(out) :: qe
+      ! REAL(KIND(1D0)), INTENT(out) :: swe
+      ! REAL(KIND(1D0)) :: ev
+      ! REAL(KIND(1D0)), INTENT(out) :: chSnow_per_interval
+      REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep
+      REAL(KIND(1D0)) :: qe_per_tstep
+      REAL(KIND(1D0)), INTENT(out) :: runoff_per_tstep
+      REAL(KIND(1D0)), INTENT(out) :: surf_chang_per_tstep
+      REAL(KIND(1D0)), INTENT(out) :: runoffPipes
+      ! REAL(KIND(1D0)), INTENT(out) :: mwstore
+      REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody
+      ! REAL(KIND(1D0)) :: runoffWaterBody_m3
+      ! REAL(KIND(1D0)) :: runoffPipes_m3
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious
+
+      ! local:
+      INTEGER :: is
+
+      ! REAL(KIND(1D0)) :: runoff_per_interval
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowPack
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowWater
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: iceFrac
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_e_surf
+
+      REAL(KIND(1D0)), DIMENSION(2) :: SurplusEvap !Surplus for evaporation in 5 min timestep
+      REAL(KIND(1D0)) :: surplusWaterBody
+      REAL(KIND(1D0)) :: pin !Rain per time interval
+      REAL(KIND(1D0)) :: tlv
+      REAL(KIND(1D0)) :: nsh_real
+
+      REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
+
+      ! runoff_per_interval = runoff_per_interval_in
+      state_id_surf = state_id_in
+      soilstore_id = soilstore_id_in
+
+      ! tstep_real = tstep*1.D0
+      nsh_real = 3600/tstep*1.D0
+
+      capStore_surf = 0 !initialise capStore
+
+      tlv = lv_J_kg/tstep*1.D0 !Latent heat of vapourisation per timestep
+
+      pin = MAX(0., Precip) !Initiate rain data [mm]
+
+      ! Initialize the output variables
+      qe_surf = 0
+
+      ev_per_tstep = 0
+      qe_per_tstep = 0
+      surf_chang_per_tstep = 0
+      runoff_per_tstep = 0
+      state_per_tstep = 0
+      NWstate_per_tstep = 0
+      qe = 0
+      runoffwaterbody = 0
+
+      runoffAGveg = 0
+      runoffAGimpervious = 0
+      surplusWaterBody = 0
+      runoff_surf = 0
+      chang = 0
+      SurplusEvap = 0
+
+      ! force these facets to be totally dry
+      ! TODO: need to consider their hydrologic dynamics
+      qe_roof = 0
+      qe_wall = 0
+
+      ! net available energy for evaporation
+      qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
+
+      IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
+
+      ChangSnow_surf = 0
+
+      DO is = 1, nsurf !For each surface in turn
+         capStore_surf(is) = StoreDrainPrm(6, is)
+         !Calculates ev [mm]
+         CALL cal_evap( &
+            EvapMethod, state_id_surf(is), WetThresh_surf(is), capStore_surf(is), & !input
+            vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+            rss_surf(is), ev_surf(is), qe_surf(is)) !output
+         ! print *, 'qe_surf for', is , qe_surf(is)
+
+         !Surface water balance and soil store updates (can modify ev, updates state_id)
+         CALL cal_water_storage( &
+            is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+            WU_nsurf, &
+            drain, AddWater, addImpervious, nsh_real, stateOld, frac_water2runoff, &
+            PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, &
+            StateLimit, runoffAGimpervious, surplusWaterBody, &
+            runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, &
+            p_mm, chang, runoff_surf, state_id_surf) !output:
+
+      END DO !end loop over surfaces
+
+      ! Sum evaporation from different surfaces to find total evaporation [mm]
+      ev_per_tstep = DOT_PRODUCT(ev_surf, sfr_surf)
+
+      ! Sum latent heat flux from different surfaces to find total latent heat flux
+      qe_per_tstep = DOT_PRODUCT(qe_surf, sfr_surf)
+
+      ! Sum change from different surfaces to find total change to surface state_id
+      surf_chang_per_tstep = DOT_PRODUCT(state_id_surf - stateOld, sfr_surf)
+
+      ! Sum runoff from different surfaces to find total runoff
+      runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
+
+      ! Calculate total state_id (including water body)
+      state_per_tstep = DOT_PRODUCT(state_id_surf, sfr_surf)
+
+      IF (NonWaterFraction /= 0) THEN
+         NWstate_per_tstep = DOT_PRODUCT(state_id_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+      END IF
+      ! END IF
+
+      qe = qe_per_tstep
+
+      ! Calculate volume of water that will move between grids
+      ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
+      ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
+      ! runoffAGimpervious_m3 = runoffAGimpervious/1000*SurfaceArea
+      ! runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
+      ! runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
+      ! runoffPipes_m3 = runoffPipes/1000*SurfaceArea
+
+      state_id_out = state_id_surf
+      soilstore_id_out = soilstore_id
+
    END SUBROUTINE SUEWS_cal_QE
    !========================================================================
 
    !===============sensible heat flux======================================
    SUBROUTINE SUEWS_cal_QH( &
-      QHMethod, & !input
-      qn, qf, QmRain, qeOut, qs, QmFreez, qm, avdens, avcp, tsurf, Temp_C, RA, &
-      qh, qh_residual, qh_resist) !output
+      QHMethod, nlayer, & !input
+      qn, qf, QmRain, qeOut, qs, QmFreez, qm, avdens, avcp, &
+      sfr_surf, sfr_roof, sfr_wall, &
+      tsfc_surf, tsfc_roof, tsfc_wall, &
+      Temp_C, &
+      RA, &
+      qh, qh_residual, qh_resist, & !output
+      qh_surf, qh_roof, qh_wall)
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: QHMethod ! option for QH calculation: 1, residual; 2, resistance-based
+      INTEGER, INTENT(in) :: nlayer
 
       REAL(KIND(1D0)), INTENT(in) :: qn
       REAL(KIND(1D0)), INTENT(in) :: qf
@@ -2184,26 +2987,56 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: qm
       REAL(KIND(1D0)), INTENT(in) :: avdens
       REAL(KIND(1D0)), INTENT(in) :: avcp
-      REAL(KIND(1D0)), INTENT(in) :: tsurf
+      ! REAL(KIND(1D0)), INTENT(in) :: tsurf
       REAL(KIND(1D0)), INTENT(in) :: Temp_C
       REAL(KIND(1D0)), INTENT(in) :: RA
 
       REAL(KIND(1D0)), INTENT(out) :: qh
       REAL(KIND(1D0)), INTENT(out) :: qh_resist
       REAL(KIND(1D0)), INTENT(out) :: qh_residual
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_surf
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_wall
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
+      INTEGER :: is
 
       ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
       qh_residual = (qn + qf + QmRain) - (qeOut + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
 
       ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
       ! Aerodynamic-Resistance-based method
-      IF (RA /= 0) THEN
-         qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
-      ELSE
-         qh_resist = NAN
-      END IF
+      DO is = 1, nsurf
+         IF (RA /= 0) THEN
+            qh_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA
+         ELSE
+            qh_surf(is) = NAN
+         END IF
+      END DO
+
+      DO is = 1, nlayer
+         IF (RA /= 0) THEN
+            qh_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
+            qh_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA
+         ELSE
+            qh_surf(is) = NAN
+         END IF
+      END DO
+
+      ! IF (RA /= 0) THEN
+      !    qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
+      ! ELSE
+      !    qh_resist = NAN
+      ! END IF
+      ! aggregate QH of roof and wall
+      qh_surf(BldgSurf) = (DOT_PRODUCT(qh_roof, sfr_roof) + DOT_PRODUCT(qh_wall, sfr_wall))/2.
+      qh_resist = DOT_PRODUCT(qh_surf, sfr_surf)
 
       ! choose output QH
       SELECT CASE (QHMethod)
@@ -2224,7 +3057,7 @@ CONTAINS
       avdens, avcp, QH_init, zzd, z0m, zdm, &
       avU1, Temp_C, VegFraction, &
       avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
-      xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
+      xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr_surf, &
       UStar, TStar, L_mod, & !output
       zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
 
@@ -2271,7 +3104,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAI_id !=LAI_id(id-1,:), LAI for each veg surface [m2 m-2]
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac !Surface fraction of snow cover
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr !Surface fractions [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !Surface fractions [-]
 
       REAL(KIND(1D0)), INTENT(out) :: TStar !T*
       REAL(KIND(1D0)), INTENT(out) :: UStar !Friction velocity
@@ -2341,7 +3174,7 @@ CONTAINS
       ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
       CALL SurfaceResistance( &
          id, it, & ! input:
-         SMDMethod, SnowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+         SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
          LAIMax, LAI_id, gsModel, Kmax, &
          G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
          gfunc, gsc, RS) ! output:
@@ -2368,10 +3201,10 @@ CONTAINS
       MwStore, &
       nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
       qeOut, qf, qh, qh_resist, Qm, QmFreez, &
-      QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
+      QmRain, qn, qn_snow, qn_snowfree, qs, RA, &
       resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
       runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
-      runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
+      runoffWaterBody, sfr_surf, smd, smd_nsurf, SnowAlb, SnowRemoval, &
       state_id, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
       tot_chang_per_tstep, tsurf, UStar, &
       wu_nsurf, &
@@ -2381,12 +3214,9 @@ CONTAINS
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER, INTENT(in) :: iy
-      ! INTEGER,INTENT(in) :: iy_prev_t
       INTEGER, INTENT(in) :: id
-      ! INTEGER,INTENT(in) :: id_prev_t
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-      !  INTEGER, INTENT(in) :: Gridiv
       REAL(KIND(1D0)), INTENT(in) :: AdditionalWater
       REAL(KIND(1D0)), INTENT(in) :: alb(nsurf)
       REAL(KIND(1D0)), INTENT(in) :: avkdn
@@ -2427,9 +3257,9 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: Qm
       REAL(KIND(1D0)), INTENT(in) :: QmFreez
       REAL(KIND(1D0)), INTENT(in) :: QmRain
-      REAL(KIND(1D0)), INTENT(in) :: qn1
-      REAL(KIND(1D0)), INTENT(in) :: qn1_S
-      REAL(KIND(1D0)), INTENT(in) :: qn1_snowfree
+      REAL(KIND(1D0)), INTENT(in) :: qn
+      REAL(KIND(1D0)), INTENT(in) :: qn_snow
+      REAL(KIND(1D0)), INTENT(in) :: qn_snowfree
       REAL(KIND(1D0)), INTENT(in) :: qs
       REAL(KIND(1D0)), INTENT(in) :: RA
       REAL(KIND(1D0)), INTENT(in) :: resistsurf
@@ -2440,7 +3270,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: runoffPipes
       REAL(KIND(1D0)), INTENT(in) :: runoffSoil_per_tstep
       REAL(KIND(1D0)), INTENT(in) :: runoffWaterBody
-      REAL(KIND(1D0)), INTENT(in) :: sfr(nsurf)
+      REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf)
       REAL(KIND(1D0)), INTENT(in) :: smd
       REAL(KIND(1D0)), INTENT(in) :: smd_nsurf(nsurf)
       REAL(KIND(1D0)), INTENT(in) :: SnowAlb
@@ -2483,8 +3313,8 @@ CONTAINS
       ! values outside of reasonable range are set as NAN-like numbers. TS 10 Jun 2018
 
       ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
-      state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr < 0.00001), field=state_id)
-      smd_nsurf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr < 0.00001), field=smd_nsurf)
+      state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_id)
+      smd_nsurf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_nsurf)
 
       ResistSurf_x = MIN(9999., ResistSurf)
 
@@ -2492,15 +3322,15 @@ CONTAINS
 
       ! Calculate areally-weighted LAI
       ! IF(iy == (iy_prev_t  +1) .AND. (id-1) == 0) THEN   !Check for start of next year and avoid using LAI(id-1) as this is at the start of the year
-      !    LAI_wt=DOT_PRODUCT(LAI(id_prev_t,:),sfr(1+2:nvegsurf+2))
+      !    LAI_wt=DOT_PRODUCT(LAI(id_prev_t,:),sfr_surf(1+2:nvegsurf+2))
       ! ELSE
-      !    LAI_wt=DOT_PRODUCT(LAI(id-1,:),sfr(1+2:nvegsurf+2))
+      !    LAI_wt=DOT_PRODUCT(LAI(id-1,:),sfr_surf(1+2:nvegsurf+2))
       ! ENDIF
 
-      LAI_wt = DOT_PRODUCT(LAI_id(:), sfr(1 + 2:nvegsurf + 2))
+      LAI_wt = DOT_PRODUCT(LAI_id(:), sfr_surf(1 + 2:nvegsurf + 2))
 
       ! Calculate areally-weighted albedo
-      bulkalbedo = DOT_PRODUCT(alb, sfr)
+      bulkalbedo = DOT_PRODUCT(alb, sfr_surf)
 
       ! convert RH2 to a percentage form
       RH2_pct = RH2*100.0
@@ -2518,7 +3348,7 @@ CONTAINS
       !Define the overall output matrix to be printed out step by step
       dataOutLineSUEWS = [ &
                          avkdn, kup, ldown, lup, tsurf, &
-                         qn1, qf, qs, qh, qeOut, &
+                         qn, qf, qs, qh, qeOut, &
                          h_mod, e_mod, qh_resist, &
                          precip, ext_wu, ev_per_tstep, runoff_per_tstep, tot_chang_per_tstep, &
                          surf_chang_per_tstep, state_per_tstep, NWstate_per_tstep, drain_per_tstep, smd, &
@@ -2532,7 +3362,7 @@ CONTAINS
                          UStar, l_mod, RA, ResistSurf, &
                          Fc, &
                          Fc_photo, Fc_respi, Fc_metab, Fc_traff, Fc_build, Fc_point, &
-                         qn1_snowfree, qn1_S, SnowAlb, &
+                         qn_snowfree, qn_snow, SnowAlb, &
                          Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
                          SnowRemoval(1:2), &
                          tskin_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
@@ -2551,8 +3381,9 @@ CONTAINS
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
-      dataoutlineDebug, dataoutlineSPARTACUS, & !input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS) !inout
+      dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineESTMExt, & !input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS, &
+      dataOutESTMExt) !inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: ReadLinesMetdata
@@ -2565,6 +3396,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(5), INTENT(in) :: datetimeLine
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(in) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(in) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(in) :: dataOutLineESTMExt
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(in) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS - 5), INTENT(in) :: dataOutLineBEERS
@@ -2574,6 +3406,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutESTM(ReadLinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutESTMExt(ReadLinesMetdata, ncolumnsDataOutESTMExt, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
@@ -2597,6 +3430,10 @@ CONTAINS
 
       IF (storageheatmethod == 4) THEN
          dataOutESTM(ir, 1:ncolumnsDataOutESTM, Gridiv) = [datetimeLine, set_nan(dataOutLineESTM)]
+      END IF
+
+      IF (storageheatmethod == 5) THEN
+         dataOutESTMExt(ir, 1:ncolumnsDataOutESTMExt, Gridiv) = [datetimeLine, set_nan(dataOutLineESTMExt)]
       END IF
 
       !====================update output arrays end==============================
@@ -2675,20 +3512,20 @@ CONTAINS
 
    ! calculate several surface fraction related parameters
    SUBROUTINE SUEWS_cal_surf( &
-      sfr, & !input
+      sfr_surf, & !input
       vegfraction, ImpervFraction, PervFraction, NonWaterFraction) ! output
       IMPLICIT NONE
 
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf
       REAL(KIND(1D0)), INTENT(OUT) :: VegFraction
       REAL(KIND(1D0)), INTENT(OUT) :: ImpervFraction
       REAL(KIND(1D0)), INTENT(OUT) :: PervFraction
       REAL(KIND(1D0)), INTENT(OUT) :: NonWaterFraction
 
-      VegFraction = sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf)
-      ImpervFraction = sfr(PavSurf) + sfr(BldgSurf)
+      VegFraction = sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)
+      ImpervFraction = sfr_surf(PavSurf) + sfr_surf(BldgSurf)
       PervFraction = 1 - ImpervFraction
-      NonWaterFraction = 1 - sfr(WaterSurf)
+      NonWaterFraction = 1 - sfr_surf(WaterSurf)
 
    END SUBROUTINE SUEWS_cal_surf
 
@@ -2937,22 +3774,39 @@ CONTAINS
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       PrecipLimit, PrecipLimitAlb, &
       QF0_BEU, Qf_A, Qf_B, Qf_C, &
+      nlayer, &
+      n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, &
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-      SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+      SatHydraulicConduct, SDDFull, SDD_id, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       BaseT_Cooling, BaseT_Heating, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+      sfr_roof, sfr_wall, sfr_surf, &
+      tsfc_roof, tsfc_wall, tsfc_surf, &
+      temp_roof, temp_wall, temp_surf, &
+      tin_roof, tin_wall, tin_surf, &
+      k_wall, k_roof, k_surf, &
+      cp_wall, cp_roof, cp_surf, &
+      dz_wall, dz_roof, dz_surf, &
       Tmin_id, Tmax_id, lenday_id, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, & !output
-      dataOutBlockDebug, dataOutBlockSPARTACUS, &
+      dataOutBlockDebug, dataOutBlockSPARTACUS, dataOutBlockESTMExt, &
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -2961,6 +3815,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, 24), INTENT(IN) :: MetForcingBlock
       INTEGER, INTENT(IN) :: len_sim
       ! input variables
+      INTEGER, INTENT(IN) :: nlayer ! number of vertical layers in urban canyon
       INTEGER, INTENT(IN) :: AerodynamicResistanceMethod
       INTEGER, INTENT(IN) :: BaseTMethod
       INTEGER, INTENT(IN) :: Diagnose
@@ -3114,7 +3969,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: emis
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: kkAnOHM
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SatHydraulicConduct
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SnowPackLimit
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SoilDepth
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: SoilStoreCap
@@ -3193,6 +4048,54 @@ CONTAINS
 
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av
+
+      !  ! extended for ESTM_ext, TS 20 Jan 2022
+      ! input arrays: standard suews surfaces
+      ! REAL(KIND(1D0)), DIMENSION(nroof) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(inout) :: temp_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_roof
+      ! input arrays: standard suews surfaces
+      ! REAL(KIND(1D0)), DIMENSION(nwall) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(inout) :: temp_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
+      ! input arrays: standard suews surfaces
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(INOUT) :: tsfc_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(inout) :: temp_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: dz_surf
+
+      ! SPARTACUS input variables
+      INTEGER, INTENT(IN) :: n_vegetation_region_urban, &
+                             n_stream_sw_urban, n_stream_lw_urban
+      REAL(KIND(1D0)), INTENT(IN) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+                                     veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+                                     veg_fsd_const, veg_contact_fraction_const, &
+                                     ground_albedo_dir_mult_fact
+      LOGICAL, INTENT(IN) :: use_sw_direct_albedo
+      REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_scale
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_wall
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: roof_albedo_dir_mult_fact
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac
       ! ########################################################################################
 
       ! ########################################################################################
@@ -3201,6 +4104,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS), INTENT(OUT) :: dataOutBlockSUEWS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) :: dataOutBlockSnow
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) :: dataOutBlockESTM
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt), INTENT(OUT) :: dataOutBlockESTMExt
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) :: dataOutBlockRSL
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS), INTENT(OUT) :: dataOutBlockBEERS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug), INTENT(OUT) :: dataOutBlockDebug
@@ -3248,8 +4152,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataOutLineRSL
-      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) :: dataOutLineSOLWEIG
+      ! REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) :: dataOutLineSOLWEIG
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLinedebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
@@ -3258,6 +4163,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) :: dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) :: dataOutBlockSnow_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) :: dataOutBlockESTM_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt, 1) :: dataOutBlockESTMExt_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) :: dataOutBlockRSL_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS, 1) :: dataOutBlockBEERS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) :: dataOutBlockDebug_X
@@ -3464,7 +4370,7 @@ CONTAINS
          ! write (12, *) 'sathydraulicconduct=', sathydraulicconduct
          ! write (12, *) 'sddfull=', sddfull
          ! write (12, *) 'sdd_id=', sdd_id
-         ! write (12, *) 'sfr=', sfr
+         ! write (12, *) 'sfr_surf=', sfr_surf
          ! write (12, *) 'smdmethod=', smdmethod
          ! write (12, *) 'snowalb=', snowalb
          ! write (12, *) 'snowalbmax=', snowalbmax
@@ -3544,7 +4450,7 @@ CONTAINS
             BaseTMethod, &
             BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-            DecTreeH, DiagMethod,Diagnose, DiagQN, DiagQS, DRAINRT, &
+            DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
             dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
@@ -3560,6 +4466,16 @@ CONTAINS
             LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
             SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
             NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+            nlayer, &
+            n_vegetation_region_urban, &
+            n_stream_sw_urban, n_stream_lw_urban, &
+            sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+            veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+            veg_fsd_const, veg_contact_fraction_const, &
+            ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+            height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+            alb_roof, emis_roof, alb_wall, emis_wall, &
+            roof_albedo_dir_mult_fact, wall_specular_frac, &
             OHM_coef, OHMIncQF, OHM_threshSW, &
             OHM_threshWD, PipeCapacity, PopDensDaytime, &
             PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
@@ -3568,7 +4484,7 @@ CONTAINS
             qn1_obs, qs_obs, qf_obs, &
             RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-            SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+            SatHydraulicConduct, SDDFull, SDD_id, SMDMethod, SnowAlb, SnowAlbMax, &
             SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
             SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
@@ -3576,13 +4492,21 @@ CONTAINS
             Tmax_id, Tmin_id, &
             BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+            sfr_roof, sfr_wall, sfr_surf, &
+            tsfc_roof, tsfc_wall, tsfc_surf, &
+            temp_roof, temp_wall, temp_surf, &
+            tin_roof, tin_wall, tin_surf, &
+            k_roof, k_wall, k_surf, &
+            cp_roof, cp_wall, cp_surf, &
+            dz_roof, dz_wall, dz_surf, &
             TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &
+            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
             dataOutLineBEERS, & !output
             dataOutLineDebug, dataOutLineSPARTACUS, &
+            dataOutLineESTMExt, &
             DailyStateLine) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -3597,18 +4521,20 @@ CONTAINS
             SnowUse, storageheatmethod, & !input
             len_sim, 1, &
             ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, & !input
-            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, dataOutLineSPARTACUS, & !input
+            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, dataOutLineSPARTACUS, dataOutLineESTMExt, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
-            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X) !inout
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockESTMExt_X) !inout
 
       END DO
 
       dataOutBlockSUEWS = dataOutBlockSUEWS_X(:, :, 1)
       dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
+      dataOutBlockESTMExt = dataOutBlockESTMExt_X(:, :, 1)
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
       dataOutBlockBEERS = dataOutBlockBEERS_X(:, :, 1)
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
+      dataOutBlockSPARTACUS = dataOutBlockSPARTACUS_X(:, :, 1)
       ! DailyStateBlock=DailyStateBlock_X(:,:,1)
 
    END SUBROUTINE SUEWS_cal_multitsteps
@@ -3678,452 +4604,5 @@ CONTAINS
 
       tsfc_C = qh/(avdens*avcp)*RA + temp_C
    END FUNCTION cal_tsfc
-
-   SUBROUTINE SPARTACUS( &
-      sfr, zenith_deg, tsurf_0, avKdn, ldown, temp_c, alb, emis, LAI_id, & !input:
-      alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output:
-      clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-      roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
-      top_dn_lw_spc, &
-      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-      roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-      ground_dn_dir_sw_spc, ground_net_sw_spc, &
-      qn, kup, lup)
-      USE parkind1, ONLY: jpim, jprb
-      USE radsurf_interface, ONLY: radsurf
-      USE radsurf_config, ONLY: config_type
-      ! USE spartacus_surface_config, ONLY: read_config_from_namelist, driver_config_type
-      USE radsurf_canopy_properties, ONLY: canopy_properties_type
-      USE radsurf_sw_spectral_properties, ONLY: sw_spectral_properties_type
-      USE radsurf_lw_spectral_properties, ONLY: lw_spectral_properties_type
-      USE radsurf_boundary_conds_out, ONLY: boundary_conds_out_type
-      USE radsurf_canopy_flux, ONLY: canopy_flux_type
-      USE radsurf_simple_spectrum, ONLY: calc_simple_spectrum_lw
-      USE data_in, ONLY: fileinputpath
-
-      IMPLICIT NONE
-
-      !!!!!!!!!!!!!! Set objects and variables !!!!!!!!!!!!!!
-
-      ! Input parameters and variables from SUEWS
-      REAL(KIND(1D0)), INTENT(IN) :: zenith_deg, tsurf_0, & ! tsurf_0 and temp_C need to be made vertically distributed
-                                     avKdn, ldown, temp_C
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr, alb, emis
-      REAL(KIND(1D0)), DIMENSION(NVegSurf), INTENT(IN) :: LAI_id
-
-      ! SPARTACUS configuration parameters
-      INTEGER(kind=jpim) :: ncol, ntotlay
-      INTEGER(kind=jpim), ALLOCATABLE :: i_representation(:)
-      INTEGER(kind=jpim), ALLOCATABLE :: nlay(:)
-      INTEGER :: istartcol, iendcol
-      INTEGER :: jrepeat, ilay, jlay, jcol
-
-      ! output variables
-      REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: qn, kup, lup
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-                                                     roof_in_lw_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-                                                     roof_in_sw_spc
-
-      ! Derived types for the inputs to the radiation scheme
-      TYPE(config_type) :: config
-      ! TYPE(driver_config_type)          :: driver_config
-      TYPE(canopy_properties_type) :: canopy_props
-      TYPE(sw_spectral_properties_type) :: sw_spectral_props
-      TYPE(lw_spectral_properties_type) :: lw_spectral_props
-      TYPE(boundary_conds_out_type) :: bc_out
-      TYPE(canopy_flux_type) &
-         &  :: sw_norm_dir, & ! SW fluxes normalized by top-of-canopy direct
-         &     sw_norm_diff, & ! SW fluxes normalized by top-of-canopy diffuse
-         &     lw_internal, & ! LW fluxes from internal emission
-         &     lw_norm, & ! LW fluxes normalized by top-of-canopy down
-         &     lw_flux, & ! Total lw canopy fluxes
-         &     sw_flux ! Total sw canopy fluxes
-
-      ! Top-of-canopy downward radiation, all dimensioned (nspec, ncol)
-      REAL(kind=jprb), ALLOCATABLE &
-           &  :: top_flux_dn_sw(:, :), & ! Total shortwave (direct+diffuse)
-           &     top_flux_dn_direct_sw(:, :), & ! ...diffuse only
-           &     top_flux_dn_lw(:, :) ! longwave
-
-      ! surface temperature and air temperature in Kelvin
-      REAL(KIND(1D0)) :: tsurf_0_K, tair_K
-      ! top-of-canopy diffuse sw downward
-      REAL(KIND(1D0)) :: top_flux_dn_diffuse_sw
-      ! plan area weighted albedo and emissivity of surfaces not including buildings and trees
-      REAL(KIND(1D0)) :: alb_no_tree_bldg, emis_no_tree_bldg
-      ! vegetation emissivity
-      REAL(KIND(1D0)) :: veg_emis
-      ! area weighted LAI of trees
-      REAL(kind=jprb), ALLOCATABLE :: LAI_av(:)
-      ! area weighted LAI of trees in each layer
-      REAL(kind=jprb), ALLOCATABLE :: LAI_av_z(:)
-      ! depth of the vegetated layer
-      REAL(kind=jprb), ALLOCATABLE :: veg_depth(:)
-
-      INTEGER :: nlayers, n_vegetation_region_urban, nsw, nlw, nspec, &
-                 n_stream_sw_urban, n_stream_lw_urban
-      REAL(KIND(1D0)) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
-                         veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
-                         veg_fsd_const, veg_contact_fraction_const, &
-                         ground_albedo_dir_mult_fact
-      LOGICAL :: use_sw_direct_albedo
-      REAL(kind=jprb), ALLOCATABLE :: height(:), building_frac(:), veg_frac(:), &
-                                      building_scale(:), veg_scale(:), veg_ext(:), &
-                                      veg_fsd(:), veg_contact_fraction(:), &
-                                      roof_albedo(:, :), wall_albedo(:, :), roof_albedo_dir_mult_fact(:, :), &
-                                      wall_specular_frac(:, :), roof_emissivity(:, :), &
-                                      wall_emissivity(:, :)
-
-      NAMELIST /Spartacus_Settings/ nlayers, use_sw_direct_albedo, n_vegetation_region_urban, &
-         n_stream_sw_urban, n_stream_lw_urban &
-         /Spartacus_Constant_Parameters/ sw_dn_direct_frac, air_ext_sw, air_ssa_sw, veg_ssa_sw, air_ext_lw, &
-         air_ssa_lw, veg_ssa_lw, veg_fsd_const, veg_contact_fraction_const, ground_albedo_dir_mult_fact &
-         /Spartacus_Profile_Parameters/ height, building_frac, veg_frac, building_scale, veg_scale, &
-         roof_albedo, wall_albedo, roof_emissivity, wall_emissivity, roof_albedo_dir_mult_fact, wall_specular_frac
-
-      ! SU is currently single band so the following are 1
-      nspec = 1
-      nsw = 1
-      nlw = 1
-      ! SUEWS does not have multiple tiles so ncol=1
-      ncol = 1
-      ! Bring in SUEWS-SPARTACUS.nml settings and parameters
-      OPEN (511, file=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml', status='old')
-      READ (511, nml=Spartacus_Settings)
-      READ (511, nml=Spartacus_Constant_Parameters)
-      CLOSE (511)
-      ALLOCATE (nlay(ncol))
-      nlay = [nlayers]
-      ntotlay = SUM(nlay)
-      ALLOCATE (height(ntotlay + ncol))
-      ALLOCATE (building_frac(ntotlay))
-      ALLOCATE (veg_frac(ntotlay))
-      ALLOCATE (building_scale(ntotlay))
-      ALLOCATE (veg_scale(ntotlay))
-      ALLOCATE (veg_ext(ntotlay))
-      ALLOCATE (veg_fsd(ntotlay))
-      ALLOCATE (veg_contact_fraction(ntotlay))
-      ALLOCATE (roof_albedo(nspec, ntotlay))
-      ALLOCATE (wall_albedo(nspec, ntotlay))
-      ALLOCATE (roof_albedo_dir_mult_fact(nspec, ntotlay))
-      ALLOCATE (wall_specular_frac(nspec, ntotlay))
-      ALLOCATE (roof_emissivity(nspec, ntotlay))
-      ALLOCATE (wall_emissivity(nspec, ntotlay))
-      OPEN (511, file=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml', status='old')
-      READ (511, nml=Spartacus_Profile_Parameters)
-      CLOSE (511)
-      !Set the values of profiles that are implemented as being constant with height
-      veg_fsd(:) = veg_fsd_const
-      veg_contact_fraction(:) = veg_contact_fraction_const
-
-      !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
-
-      CALL config%READ(file_name=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml')
-      config%do_sw = .TRUE.
-      config%do_lw = .TRUE.
-      config%use_sw_direct_albedo = use_sw_direct_albedo
-      ALLOCATE (i_representation(ncol))
-      IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0 .AND. sfr(BldgSurf) > 0.0) THEN
-         config%do_vegetation = .TRUE.
-         i_representation = [3]
-         config%do_urban = .TRUE.
-      ELSE IF (sfr(ConifSurf) + sfr(DecidSurf) == 0.0 .AND. sfr(BldgSurf) > 0.0) THEN
-         config%do_vegetation = .FALSE.
-         i_representation = [2]
-         config%do_urban = .TRUE.
-      ELSE IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0 .AND. sfr(BldgSurf) == 0.0) THEN
-         config%do_vegetation = .TRUE.
-         i_representation = [1]
-         config%do_urban = .FALSE.
-      ELSE
-         config%do_vegetation = .FALSE.
-         i_representation = [0]
-         config%do_urban = .FALSE.
-      END IF
-      config%iverbose = 3
-      config%n_vegetation_region_urban = n_vegetation_region_urban
-      config%n_vegetation_region_forest = n_vegetation_region_urban ! use the same complexity for urban as forests
-      config%nsw = nsw
-      config%nlw = nlw
-      config%n_stream_sw_urban = n_stream_sw_urban
-      config%n_stream_lw_urban = n_stream_lw_urban
-      config%n_stream_sw_forest = n_stream_sw_urban ! use the same complexity for urban as forests
-      config%n_stream_lw_forest = n_stream_lw_urban ! use the same complexity for urban as forests
-      CALL config%consolidate()
-
-      !!!!!!!!!!!!!! allocate and set canopy_props !!!!!!!!!!!!!!
-
-      ! allocate
-      CALL canopy_props%DEALLOCATE()
-      CALL canopy_props%ALLOCATE(config, ncol, ntotlay, i_representation)
-
-      ! set cos_sza, nlay, ncol, ntotlay
-      canopy_props%cos_sza = COS(zenith_deg*3.1415927/180)
-      canopy_props%nlay = nlay
-      canopy_props%ncol = ncol
-      canopy_props%ntotlay = ntotlay
-
-      ! calculate dz array
-      ilay = 1
-      DO jcol = 1, ncol
-         canopy_props%dz(ilay:ilay + canopy_props%nlay(jcol) - 1) &
-              &  = height(ilay + 1:ilay + canopy_props%nlay(jcol)) &
-              &   - height(ilay:ilay + canopy_props%nlay(jcol) - 1)
-         canopy_props%istartlay(jcol) = ilay
-         ilay = ilay + canopy_props%nlay(jcol)
-      END DO
-
-      ALLOCATE (LAI_av(ncol))
-      ALLOCATE (veg_depth(ncol))
-      ALLOCATE (LAI_av_z(ntotlay))
-      !Calculate the area weighted LAI of trees
-      DO jcol = 1, ncol
-         LAI_av(jcol) = (sfr(ConifSurf)*LAI_id(1) + sfr(DecidSurf)*LAI_id(2))/(sfr(ConifSurf) + sfr(DecidSurf) + 10.**(-10)) ! the 10.**-10 stops the equation blowing up when there are no trees
-      END DO
-      ! find veg_depth
-      DO jcol = 1, ncol
-         ilay = canopy_props%istartlay(jcol)
-         veg_depth(jcol) = 0.
-         DO jlay = 0, nlay(jcol) - 1
-            IF (veg_frac(ilay + jlay) > 0.) THEN
-               veg_depth(jcol) = veg_depth(jcol) + canopy_props%dz(ilay + jlay)
-            END IF
-         END DO
-      END DO
-      ! find LAV_av_z and veg_ext. Assume the LAI is uniform with height within the vegetation layer.
-      DO jcol = 1, ncol
-         ilay = canopy_props%istartlay(jcol)
-         DO jlay = 0, nlay(jcol) - 1
-            IF (veg_frac(ilay + jlay) > 0.) THEN
-               LAI_av_z(ilay + jlay) = LAI_av(jcol)*canopy_props%dz(ilay + jlay)/veg_depth(jcol)
-               veg_ext(ilay + jlay) = LAI_av_z(ilay + jlay)/(2*canopy_props%dz(ilay))
-            END IF
-         END DO
-      END DO
-
-      ! set temperature
-      tsurf_0_K = tsurf_0 + 273.15 ! convert surface temperature to Kelvin
-      tair_K = temp_C + 273.15 ! convert air temperature to Kelvin
-      canopy_props%ground_temperature = tsurf_0_K ! TODO: tsurf_0_K needs to be made vertically distributed
-      canopy_props%roof_temperature = tsurf_0_K
-      canopy_props%wall_temperature = tsurf_0_K
-      canopy_props%clear_air_temperature = tair_K
-      IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
-         canopy_props%veg_temperature = tair_K
-         canopy_props%veg_air_temperature = tair_K
-      END IF
-
-      ! set building and vegetation properties
-      canopy_props%i_representation = i_representation
-      canopy_props%building_scale = building_scale(:) ! diameter of buildings (m). The only L method for buildings is Eq. 19 Hogan et al. 2018.
-      canopy_props%building_fraction = building_frac(:) ! building fraction
-      IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
-         canopy_props%veg_fraction = veg_frac(:) ! evergreen + deciduous fractions
-         canopy_props%veg_scale = veg_scale(:) ! scale of tree crowns (m). Using the default use_symmetric_vegetation_scale_urban=.TRUE. so that Eq. 20 Hogan et al. 2018 is used for L.
-         canopy_props%veg_ext = veg_ext(:)
-         canopy_props%veg_fsd = veg_fsd(:)
-         canopy_props%veg_contact_fraction = veg_contact_fraction(:)
-      END IF
-
-      !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
-
-      ALLOCATE (top_flux_dn_sw(nspec, ncol))
-      ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
-      ALLOCATE (top_flux_dn_lw(nspec, ncol))
-      top_flux_dn_sw = avKdn ! diffuse + direct
-      top_flux_dn_direct_sw = sw_dn_direct_frac*avKdn ! Berrizbeitia et al. 2020 say the ratio diffuse/direct is 0.55 for Berlin and Brussels on av annually
-      top_flux_dn_diffuse_sw = top_flux_dn_sw(nspec, ncol) - top_flux_dn_direct_sw(nspec, ncol)
-      top_flux_dn_lw = ldown
-
-      !!!!!!!!!!!!!! allocate and set sw_spectral_props !!!!!!!!!!!!!!
-
-      CALL sw_spectral_props%DEALLOCATE()
-      CALL sw_spectral_props%ALLOCATE(config, ncol, ntotlay, nspec, canopy_props%i_representation)
-
-      alb_no_tree_bldg = (alb(1)*sfr(PavSurf) + alb(5)*sfr(GrassSurf) + &
-                          alb(6)*sfr(BSoilSurf) + alb(7)*sfr(WaterSurf))/ &
-                         (sfr(PavSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf)) ! albedo of the ground
-      sw_spectral_props%air_ext = air_ext_sw
-      sw_spectral_props%air_ssa = air_ssa_sw
-      IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
-         sw_spectral_props%veg_ssa = veg_ssa_sw
-      END IF
-      sw_spectral_props%ground_albedo = alb_no_tree_bldg ! albedo excluding buildings and trees
-      sw_spectral_props%roof_albedo = roof_albedo(nspec, ncol) ! albedo of buildings
-      sw_spectral_props%wall_albedo = wall_albedo(nspec, ncol) ! albedo of buildings
-      sw_spectral_props%wall_specular_frac = wall_specular_frac(nspec, ncol)
-      IF (config%use_sw_direct_albedo) THEN
-         sw_spectral_props%ground_albedo_dir = alb_no_tree_bldg*ground_albedo_dir_mult_fact
-         sw_spectral_props%roof_albedo_dir = roof_albedo(nspec, ncol)*roof_albedo_dir_mult_fact(nspec, ncol)
-      END IF
-
-      !!!!!!!!!!!!!! allocate and set lw_spectral_props !!!!!!!!!!!!!!
-
-      CALL lw_spectral_props%DEALLOCATE()
-      CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, ntotlay, canopy_props%i_representation)
-
-      emis_no_tree_bldg = (emis(1)*sfr(PavSurf) + emis(5)*sfr(GrassSurf) + &
-                           emis(6)*sfr(BSoilSurf) + emis(7)*sfr(WaterSurf))/ &
-                          (sfr(PavSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf)) ! emissivity of the ground
-      lw_spectral_props%air_ext = air_ext_lw
-      lw_spectral_props%air_ssa = air_ssa_lw
-      IF (sfr(ConifSurf) + sfr(DecidSurf) > 0.0) THEN
-         lw_spectral_props%veg_ssa = veg_ssa_lw
-      END IF
-      lw_spectral_props%ground_emissivity = emis_no_tree_bldg ! emissivity excluding buildings and trees
-      lw_spectral_props%roof_emissivity = roof_emissivity(nspec, ncol) ! emissivity of buildings
-      lw_spectral_props%wall_emissivity = wall_emissivity(nspec, ncol) ! emissivity of buildings
-
-      !!!!!!!!!!!!!! allocate sw !!!!!!!!!!!!!!
-
-      IF (config%do_sw) THEN
-         CALL sw_norm_dir%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
-         CALL sw_norm_diff%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
-
-         CALL sw_norm_dir%zero_all()
-         CALL sw_norm_diff%zero_all()
-
-         CALL sw_flux%ALLOCATE(config, ncol, ntotlay, config%nsw, use_direct=.TRUE.)
-      END IF
-
-      !!!!!!!!!!!!!! allocate lw !!!!!!!!!!!!!!
-
-      IF (config%do_lw) THEN
-         CALL lw_internal%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
-         CALL lw_norm%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
-
-         CALL lw_internal%zero_all()
-         CALL lw_norm%zero_all()
-
-         CALL lw_flux%ALLOCATE(config, ncol, ntotlay, config%nlw, use_direct=.TRUE.)
-      END IF
-
-      !!!!!!!!!!!!!! allocate bc_out !!!!!!!!!!!!!!
-
-      CALL bc_out%ALLOCATE(ncol, config%nsw, config%nlw)
-
-      !!!!!!!!!!!!!! run calc_monochromatic_emission !!!!!!!!!!!!!!
-
-      CALL lw_spectral_props%calc_monochromatic_emission(canopy_props)
-
-      !!!!!!!!!!!!!! CALL radsurf !!!!!!!!!!!!!!
-
-      istartcol = 1
-      iendcol = 1
-      ! Option of repeating calculation multiple time for more accurate profiling
-      DO jrepeat = 1, 3
-         IF (config%do_lw) THEN
-            ! Gas optics and spectral emission
-            CALL calc_simple_spectrum_lw(config, canopy_props, lw_spectral_props, &
-                 &                       istartcol, iendcol)
-         END IF
-         ! Call the SPARTACUS-Surface radiation scheme
-         CALL radsurf(config, canopy_props, &
-              &       sw_spectral_props, lw_spectral_props, &
-              &       bc_out, &
-              &       istartcol, iendcol, &
-              &       sw_norm_dir, sw_norm_diff, &
-              &       lw_internal, lw_norm)
-         IF (config%do_sw) THEN
-            ! Scale the normalized fluxes
-            CALL sw_norm_dir%SCALE(canopy_props%nlay, &
-                 &  top_flux_dn_direct_sw)
-            CALL sw_norm_diff%SCALE(canopy_props%nlay, &
-                 &  top_flux_dn_sw - top_flux_dn_direct_sw)
-            CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
-         END IF
-         IF (config%do_lw) THEN
-            CALL lw_norm%SCALE(canopy_props%nlay, top_flux_dn_lw)
-            CALL lw_flux%SUM(lw_internal, lw_norm)
-         END IF
-      END DO
-
-      ! albedo
-      alb_spc = ((top_flux_dn_diffuse_sw + 10.**(-10))*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
-                 + (top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))*bc_out%sw_albedo_dir(nspec, ncol)) &
-                /(top_flux_dn_diffuse_sw + 10.**(-10) + top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))
-
-      !!! Output arrays !!!
-
-      ! emissivity
-      emis_spc = bc_out%lw_emissivity(nspec, ncol)
-      ! longwave emission
-      lw_emission_spc = bc_out%lw_emission(nspec, ncol)
-      ! lowngwave upward = emitted as blackbody + reflected
-      lw_up_spc = lw_emission_spc + (1 - emis_spc)*ldown
-      ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
-      sw_up_spc = top_flux_dn_diffuse_sw*bc_out%sw_albedo(nspec, ncol) &
-                  + top_flux_dn_direct_sw(nspec, ncol)*bc_out%sw_albedo_dir(nspec, ncol) ! or more simply: alb_spc*avKdn
-      ! net all = net sw + net lw
-      qn_spc = sw_flux%top_net(nspec, ncol) + lw_flux%top_net(nspec, ncol)
-
-      ! lw arrays
-      clear_air_abs_lw_spc = 0.0
-      clear_air_abs_lw_spc(:ntotlay) = lw_flux%clear_air_abs(nspec, :)
-      wall_net_lw_spc = 0.0
-      wall_net_lw_spc(:ntotlay) = lw_flux%wall_net(nspec, :)
-      roof_net_lw_spc = 0.0
-      roof_net_lw_spc(:ntotlay) = lw_flux%roof_net(nspec, :)
-      roof_in_lw_spc = 0.0
-      roof_in_lw_spc(:ntotlay) = lw_flux%roof_in(nspec, :)
-      top_net_lw_spc = lw_flux%top_net(nspec, ncol)
-      ground_net_lw_spc = lw_flux%ground_net(nspec, ncol)
-      top_dn_lw_spc = lw_flux%top_dn(nspec, ncol)
-      ! sw arrays
-      clear_air_abs_sw_spc = 0.0
-      clear_air_abs_sw_spc(:ntotlay) = sw_flux%clear_air_abs(nspec, :)
-      wall_net_sw_spc = 0.0
-      wall_net_sw_spc(:ntotlay) = sw_flux%wall_net(nspec, :)
-      roof_net_sw_spc = 0.0
-      roof_net_sw_spc(:ntotlay) = sw_flux%roof_net(nspec, :)
-      roof_in_sw_spc = 0.0
-      roof_in_sw_spc(:ntotlay) = sw_flux%roof_in(nspec, :)
-      top_dn_dir_sw_spc = sw_flux%top_dn_dir(nspec, ncol)
-      top_net_sw_spc = sw_flux%top_net(nspec, ncol)
-      ground_dn_dir_sw_spc = sw_flux%ground_dn_dir(nspec, ncol)
-      ground_net_sw_spc = sw_flux%ground_net(nspec, ncol)
-
-      !!!!!!!!!!!!!! Bulk KUP, LUP, QSTAR for SUEWS !!!!!!!!!!!!!!
-
-      lup = lw_up_spc
-      kup = sw_up_spc
-      qn = qn_spc
-
-      !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
-
-      CALL canopy_props%DEALLOCATE()
-      CALL sw_spectral_props%DEALLOCATE()
-      CALL lw_spectral_props%DEALLOCATE()
-      CALL bc_out%DEALLOCATE()
-      CALL sw_norm_dir%DEALLOCATE()
-      CALL sw_norm_diff%DEALLOCATE()
-      CALL lw_internal%DEALLOCATE()
-      CALL lw_norm%DEALLOCATE()
-      CALL sw_flux%DEALLOCATE()
-      CALL lw_flux%DEALLOCATE()
-
-      DEALLOCATE (height)
-      DEALLOCATE (top_flux_dn_sw)
-      DEALLOCATE (top_flux_dn_direct_sw)
-      DEALLOCATE (top_flux_dn_lw)
-      DEALLOCATE (building_frac)
-      DEALLOCATE (veg_frac)
-      DEALLOCATE (building_scale)
-      DEALLOCATE (veg_scale)
-      DEALLOCATE (veg_ext)
-      DEALLOCATE (veg_fsd)
-      DEALLOCATE (veg_contact_fraction)
-      DEALLOCATE (roof_albedo)
-      DEALLOCATE (wall_albedo)
-      DEALLOCATE (roof_albedo_dir_mult_fact)
-      DEALLOCATE (wall_specular_frac)
-      DEALLOCATE (roof_emissivity)
-      DEALLOCATE (wall_emissivity)
-
-   END SUBROUTINE SPARTACUS
 
 END MODULE SUEWS_Driver
