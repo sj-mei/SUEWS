@@ -479,7 +479,7 @@ CONTAINS
       REAL(KIND(1D0)) :: zH
 
       REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_nsurf
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf
       REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezMelt
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_snow
       REAL(KIND(1D0)), DIMENSION(NSURF) :: mw_ind
@@ -921,7 +921,7 @@ CONTAINS
             DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
             InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
             WaterUseMethod, NSH, it, imin, DLS, &
-            wu_nsurf, wu_int, wu_ext) ! output:
+            wu_surf, wu_int, wu_ext) ! output:
 
          ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
          CALL SUEWS_cal_AnthropogenicEmission( &
@@ -1149,7 +1149,7 @@ CONTAINS
                addimpervious, &
                qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
                precip, PipeCapacity, RunoffToWater, &
-               NonWaterFraction, wu_nsurf, addVeg, addWaterBody, &
+               NonWaterFraction, wu_surf, addVeg, addWaterBody, &
                FlowChange, drain, WetThresh, state_id_prev, &
                SoilStoreCap, &
                sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, &
@@ -1428,7 +1428,7 @@ CONTAINS
          runoffWaterBody, sfr_surf, smd, smd_nsurf, SnowAlb, SnowRemoval, &
          state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
          tot_chang_per_tstep, tsurf, UStar, &
-         wu_nsurf, &
+         wu_surf, &
          z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS) !output
 
@@ -2699,7 +2699,7 @@ CONTAINS
       addimpervious, &
       qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
       precip, PipeCapacity, RunoffToWater, &
-      NonWaterFraction, WU_nsurf, addVeg, addWaterBody, &
+      NonWaterFraction, WU_surf, addVeg, addWaterBody, &
       FlowChange, drain, WetThresh_surf, stateOld, &
       SoilStoreCap, &
       sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm, &
@@ -2765,7 +2765,7 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(in) :: SurfaceArea
       REAL(KIND(1D0)), INTENT(in) :: FlowChange
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_nsurf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld
@@ -2888,6 +2888,7 @@ CONTAINS
       runoffwaterbody = 0
 
       runoffAGveg = 0
+      runoffPipes = 0
       runoffAGimpervious = 0
       surplusWaterBody = 0
       runoff_surf = 0
@@ -2918,12 +2919,12 @@ CONTAINS
          !Surface water balance and soil store updates (can modify ev, updates state_id)
          CALL cal_water_storage( &
             is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
-            WU_nsurf, &
+            WU_surf, &
             drain, AddWater, addImpervious, nsh_real, stateOld, frac_water2runoff, &
-            PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, &
-            StateLimit, runoffAGimpervious, surplusWaterBody, &
-            runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, &
-            p_mm, chang, runoff_surf, state_id_surf) !output:
+            PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
+            ! runoffAGimpervious, surplusWaterBody, & ! inout:
+            runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
+            chang, runoff_surf, state_id_surf) !output:
 
       END DO !end loop over surfaces
 

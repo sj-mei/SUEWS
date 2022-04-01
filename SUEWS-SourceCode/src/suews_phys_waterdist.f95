@@ -91,12 +91,13 @@ CONTAINS
    !--------------Calculation of water storage change of specific land cover------------------------------
    SUBROUTINE cal_water_storage( &
       is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
-      WU_nsurf, &
+      WU_surf, &
       drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-      runoffAGimpervious, surplusWaterBody, & ! inout:
+      ! runoffAGimpervious, surplusWaterBody, & ! inout:
       runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &
-      p_mm, chang, runoff, state_id) !output:
+      ! p_mm, &!output:
+      chang, runoff, state_id) !output:
       !------------------------------------------------------------------------------
       !Calculation of storage change
       ! TS 30 Nov 2019
@@ -148,6 +149,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain !Drainage of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf !external water use of each surface type [mm]
 
       REAL(KIND(1D0)), INTENT(in) :: PipeCapacity !Capacity of pipes to transfer water
       REAL(KIND(1D0)), INTENT(in) :: RunoffToWater !Fraction of surface runoff going to water body
@@ -159,23 +162,27 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: addWaterBody !Water from water surface of other grids [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(in) :: FlowChange !Difference between the input and output flow in the water body
 
-      REAL(KIND(1D0)), INTENT(inout) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(inout) :: surplusWaterBody !Extra runoff that goes to water body [mm] as specified by RunoffToWater
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: soilstore_id !Soil moisture of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(inout) :: SurplusEvap !Surplus for evaporation in 5 min timestep
+
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang !Change in state_id [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff !Runoff from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id !Wetness status of each surface type [mm]
+
+      ! =============================
+      ! TS 01 Apr 2022:
+      !   these variables were used as inout variables in the original code for water transfer between grids
+      !  but they are not used in the new code, so they are removed here
+      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
+      REAL(KIND(1D0)) :: surplusWaterBody !Extra runoff that goes to water body [mm] as specified by RunoffToWater
       REAL(KIND(1D0)), INTENT(inout) :: runoffAGveg !Above ground runoff from vegetated surfaces [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(inout) :: runoffPipes !Runoff in pipes [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(inout) :: ev !Evaporation
       REAL(KIND(1D0)), INTENT(inout) :: runoffWaterBody !Above ground runoff from water surface [mm] for whole surface area
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: soilstore_id !Soil moisture of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(inout) :: SurplusEvap !Surplus for evaporation in 5 min timestep
 
-      REAL(KIND(1D0)), INTENT(out) :: p_mm !Inputs to surface water balance
-
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain !Drainage of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_nsurf !external water use of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang !Change in state_id [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff !Runoff from each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
 
       !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
       REAL(KIND(1D0)) :: EvPart
@@ -208,7 +215,7 @@ CONTAINS
 
       ! Combine water inputs to the current surface
       ! Add external water use for each surface type
-      p_mm = pin + WU_nsurf(is)
+      p_mm = pin + WU_surf(is)
 
       ! Add water from other surfaces within the same grid (RS2S) ----
       ! AddWater is the water supplied to the current surface from other surfaces
@@ -873,7 +880,7 @@ CONTAINS
       DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
       InternalWaterUse_h, HDD_id, WUDay_id, &
       WaterUseMethod, NSH, it, imin, DLS, &
-      wu_nsurf, wu_int, wu_ext) ! output:
+      wu_surf, wu_int, wu_ext) ! output:
       ! Conversion of water use (irrigation)
       ! Last modified:
       ! TS 30 Nov 2019  - allow external water use for all surfaces
@@ -919,7 +926,7 @@ CONTAINS
       INTEGER, INTENT(in) :: imin !Minutes
       INTEGER, INTENT(in) :: DLS !day lightsavings =1 + 1h) =0
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: wu_nsurf !external Water use for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: wu_surf !external Water use for each surface [mm]
       REAL(KIND(1D0)), INTENT(out) :: wu_int !Internal water use for the model timestep [mm] (over whole study area)
       REAL(KIND(1D0)), INTENT(out) :: wu_ext !External water use for the model timestep [mm] (over whole study area)
 
@@ -966,10 +973,6 @@ CONTAINS
 
       ! Irrigated Fraction of each surface
       ! TS: as of 20191130, assuming irrigation fraction as ONE except for vegetated surfaces
-      ! IrrFrac = 1
-      ! IrrFrac(ConifSurf) = IrrFracEveTr
-      ! IrrFrac(DecidSurf) = IrrFracDecTr
-      ! IrrFrac(GrassSurf) = IrrFracGrass
 
       ! Irrigated Fraction of each surface
       ! TS: 20200409, add irrigation fractions for all surfaces
@@ -995,7 +998,7 @@ CONTAINS
          wu_DecTr = 0
          wu_Grass = 0
 
-         wu_nsurf = 0
+         wu_surf = 0
          IF (wu_m3 == NAN .OR. wu_m3 == 0) THEN !If no water use
             ! wu_m3=0
             wu = 0
@@ -1015,7 +1018,7 @@ CONTAINS
                !    wu_Grass = wu_Grass*IrrFracGrass !Water use for Grass in mm
                ! ENDIF
 
-               wu_nsurf = wu*IrrFrac
+               wu_surf = wu*IrrFrac
 
                wu = (wu_m3/SurfaceArea*1000) !Water use for the whole study area in mm
             END IF
@@ -1048,21 +1051,7 @@ CONTAINS
          WUDay_M_id(GrassSurf) = WUDay_id(9)
 
          ! ---- Automatic irrigation ----
-         ! wu_EveTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(2)   !Automatic evergreen trees
-         ! wu_DecTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(5)   !Automatic deciduous trees
-         ! wu_Grass = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(8)   !Automatic grass
          WUProfA_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)
-         ! wu_EveTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(2)   !Automatic evergreen trees
-         ! wu_DecTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(5)   !Automatic deciduous trees
-         ! wu_Grass = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(8)   !Automatic grass
-
-         ! PRINT*, ''
-         ! PRINT*, 'WUDay_id(2) ',WUDay_id(2)
-         ! PRINT*, 'profile ',get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)
-         ! PRINT*, 'manual:'
-         ! PRINT*, 'wu_EveTr',wu_EveTr
-         ! PRINT*, 'wu_DecTr',wu_DecTr
-         ! PRINT*, 'wu_Grass',wu_Grass
 
          ! ---- Manual irrigation ----
          flag_WuM = 1 !Initialize flag_WuM to 1, but if raining, reduce manual fraction of water use
@@ -1072,36 +1061,17 @@ CONTAINS
          END IF
 
          ! Add manual to automatic to find total irrigation
-         ! wu_EveTr = wu_EveTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(3)) !Manual evergreen trees
-         ! wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(6)) !Manual deciduous trees
-         ! wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(9)) !Manual grass
          WUProfM_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)
 
          ! sum up irrigation amount of automatic and manual approaches
-         wu_nsurf = WUProfA_tstep*WUDay_A_id + WUProfM_tstep*WUDay_M_id*flag_WuM
+         wu_surf = WUProfA_tstep*WUDay_A_id + WUProfM_tstep*WUDay_M_id*flag_WuM
          ! apply irrigation fraction: part of land covers are not irrigated
-         wu_nsurf = wu_nsurf*IrrFrac
+         wu_surf = wu_surf*IrrFrac
 
-         ! PRINT*, 'auto:'
-         ! PRINT*, 'wu_EveTr',wu_EveTr
-         ! PRINT*, 'wu_DecTr',wu_DecTr
-         ! PRINT*, 'wu_Grass',wu_Grass
-         ! Added HCW 12 Feb 2015.
-         !wu_EveTr=wu_EveTr*sfr_surf(ConifSurf)*IrrFracEveTr        !Water use for EveTr [mm]
-         !wu_DecTr=wu_DecTr*sfr_surf(DecidSurf)*IrrFracDecTr        !Water use for DecTr [mm]
-         !wu_Grass=wu_Grass*sfr_surf(GrassSurf)*IrrFracGrass        !Water use for Grass [mm]
-         ! wu_EveTr = wu_EveTr*IrrFracEveTr  !Water use for EveTr [mm]
-         ! wu_DecTr = wu_DecTr*IrrFracDecTr  !Water use for DecTr [mm]
-         ! wu_Grass = wu_Grass*IrrFracGrass  !Water use for Grass [mm]
-
-         ! PRINT*, 'auto:'
-         ! PRINT*, 'IrrFracEveTr',IrrFracEveTr
-         ! PRINT*, 'IrrFracDecTr',IrrFracDecTr
-         ! PRINT*, 'IrrFracGrass',IrrFracGrass
 
          ! Total water use for the whole study area [mm]
          ! wu = wu_EveTr*sfr_surf(ConifSurf) + wu_DecTr*sfr_surf(DecidSurf) + wu_Grass*sfr_surf(GrassSurf)
-         wu = DOT_PRODUCT(wu_nsurf, sfr_surf)
+         wu = DOT_PRODUCT(wu_surf, sfr_surf)
 
       END IF !End WU_choice
       ! --------------------------------------------------------------------------------
@@ -1127,7 +1097,7 @@ CONTAINS
          ! wu_EveTr = wu_EveTr*wu_ext/wu
          ! wu_DecTr = wu_DecTr*wu_ext/wu
          ! wu_Grass = wu_Grass*wu_ext/wu
-         wu_nsurf = wu_nsurf*wu_ext/wu
+         wu_surf = wu_surf*wu_ext/wu
       END IF
 
    END SUBROUTINE SUEWS_cal_WaterUse
