@@ -3318,7 +3318,7 @@ CONTAINS
 
       ResistSurf_x = MIN(9999., ResistSurf)
 
-      surf_chang_per_tstep_x= MERGE(surf_chang_per_tstep,0.d0,abs(surf_chang_per_tstep)>1e-6 )
+      surf_chang_per_tstep_x = MERGE(surf_chang_per_tstep, 0.D0, ABS(surf_chang_per_tstep) > 1E-6)
 
       l_mod_x = MAX(MIN(9999., l_mod), -9999.)
 
@@ -3671,14 +3671,14 @@ CONTAINS
    ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
       IMPLICIT NONE
       REAL(KIND(1D0)), PARAMETER :: pNAN = 30000 ! 30000 to prevent water_state being filtered out as it can be large
-      REAL(KIND(1D0)), PARAMETER :: pZERO = 1e-8 ! to prevent inconsistency caused by positive or negative zero
+      REAL(KIND(1D0)), PARAMETER :: pZERO = 1E-8 ! to prevent inconsistency caused by positive or negative zero
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       REAL(KIND(1D0)), INTENT(in) :: x
       REAL(KIND(1D0)) :: xx
 
       IF (ABS(x) > pNAN) THEN
          xx = NAN
-      elseIF (ABS(x) < pZERO) THEN
+      ELSEIF (ABS(x) < pZERO) THEN
          xx = 0
       ELSE
          xx = x
