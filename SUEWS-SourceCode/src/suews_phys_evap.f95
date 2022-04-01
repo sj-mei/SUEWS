@@ -117,22 +117,23 @@ CONTAINS
    END SUBROUTINE cal_evap
 
    SUBROUTINE cal_evap_multi( &
-      n_facet, EvapMethod, &
-      state_multi, WetThresh_multi, capStore_multi, & !input
-      vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
-      RSS_multi, ev_multi, qe_multi) !output
+      EvapMethod, & !input
+      sfr_multi, state_multi, WetThresh_multi, capStore_multi, & !input
+      vpd_hPa, avdens, avcp, qn_e_multi, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+      RSS_multi, ev_multi, qe_multi, qe_total) !output
       IMPLICIT NONE
       INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-      INTEGER, INTENT(in) :: n_facet !number of facets
+      ! INTEGER, INTENT(in) :: n_facet !number of facets
 
-      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(in) :: state_multi ! wetness status
-      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(in) :: WetThresh_multi !When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(in) :: capStore_multi ! = StoreDrainPrm(6,is), current storage capacity [mm]
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: sfr_multi ! facet fraction of surface
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: state_multi ! wetness status
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: WetThresh_multi !When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: capStore_multi ! = StoreDrainPrm(6,is), current storage capacity [mm]
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: qn_e_multi !net available energy for evaporation [W m-2]
 
       REAL(KIND(1D0)), INTENT(in) :: vpd_hPa ! vapour pressure deficit [hPa]
       REAL(KIND(1D0)), INTENT(in) :: avdens ! air density [kg m-3]
       REAL(KIND(1D0)), INTENT(in) :: avcp ! air heat capacity [J kg-1 K-1]
-      REAL(KIND(1D0)), INTENT(in) :: qn_e !net available energy for evaporation [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: s_hPa !Vapour pressure versus temperature slope [hPa K-1]]
       REAL(KIND(1D0)), INTENT(in) :: psyc_hPa !Psychometric constant [hPa]
       REAL(KIND(1D0)), INTENT(in) :: RS !Surface resistance [s m-1]
@@ -140,9 +141,10 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: RB !Boundary layer resistance [s m-1]
       REAL(KIND(1D0)), INTENT(in) :: tlv !Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
 
-      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(out) :: RSS_multi !Redefined surface resistance for wet surfaces [s m-1]
-      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(out) :: ev_multi ! evapotranspiration [mm]
-      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(out) :: qe_multi ! latent heat flux [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: RSS_multi !Redefined surface resistance for wet surfaces [s m-1]
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: ev_multi ! evapotranspiration [mm]
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: qe_multi ! latent heat flux [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: qe_total ! latent heat flux [W m-2]
 
       ! REAL(KIND(1D0)) :: numPM !numerator of P-M eqn
       ! REAL(KIND(1D0)) :: RB_SG !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
@@ -150,16 +152,22 @@ CONTAINS
       ! REAL(KIND(1D0)) :: flag_dry
       ! REAL(KIND(1D0)) :: W !Depends on the amount of water on the canopy [-]
       ! REAL(KIND(1D0)) :: x
+      INTEGER :: n_facet
       INTEGER :: i
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
 
+      n_facet=size(sfr_multi)
+
       DO i = 1, n_facet
          CALL cal_evap( &
             EvapMethod, state_multi(i), WetThresh_multi(i), capStore_multi(i), &
-            vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+            vpd_hPa, avdens, avcp, qn_e_multi(i), s_hPa, psyc_hPa, RS, RA, RB, tlv, &
             RSS_multi(i), ev_multi(i), qe_multi(i))
       END DO
+
+      ! Sum latent heat flux from different surfaces to find total latent heat flux
+      qe_total = DOT_PRODUCT(qe_multi, sfr_multi)
 
    END SUBROUTINE cal_evap_multi
 

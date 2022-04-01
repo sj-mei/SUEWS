@@ -25,11 +25,10 @@ MODULE SUEWS_Driver
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    USE lumps_module, ONLY: LUMPS_cal_QHQE
-   USE evap_module, ONLY: cal_evap
+   USE evap_module, ONLY: cal_evap_multi
    USE rsl_module, ONLY: RSLProfile
    USE anemsn_module, ONLY: AnthropogenicEmissions
    USE CO2_module, ONLY: CO2_biogen
-   USE evap_module, ONLY: cal_evap
    USE allocateArray, ONLY: &
       nsurf, nvegsurf, ndepth, nspec, &
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &
@@ -2706,10 +2705,10 @@ CONTAINS
       state_id_in, soilstore_id_in, & ! input:
       qn_surf, qs_surf, &
       state_id_out, soilstore_id_out, & ! general output:
-      state_per_tstep, NWstate_per_tstep, &
+      state_grid, NWstate_grid, &
       qe, qe_surf, qe_roof, qe_wall, &
-      ev_per_tstep, runoff_per_tstep, &
-      surf_chang_per_tstep, runoffPipes, &
+      ev_grid, runoff_grid, &
+      surf_chang_grid, runoffPipes, &
       runoffwaterbody, &
       runoffAGveg, runoffAGimpervious, rss_surf)
 
@@ -2822,16 +2821,16 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_roof ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_wall ! latent heat flux of individual surface [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: state_per_tstep
-      REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep
+      REAL(KIND(1D0)), INTENT(out) :: state_grid
+      REAL(KIND(1D0)), INTENT(out) :: NWstate_grid
       REAL(KIND(1D0)), INTENT(out) :: qe
       ! REAL(KIND(1D0)), INTENT(out) :: swe
       ! REAL(KIND(1D0)) :: ev
       ! REAL(KIND(1D0)), INTENT(out) :: chSnow_per_interval
-      REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep
-      REAL(KIND(1D0)) :: qe_per_tstep
-      REAL(KIND(1D0)), INTENT(out) :: runoff_per_tstep
-      REAL(KIND(1D0)), INTENT(out) :: surf_chang_per_tstep
+      REAL(KIND(1D0)), INTENT(out) :: ev_grid
+      REAL(KIND(1D0)) :: qe_grid
+      REAL(KIND(1D0)), INTENT(out) :: runoff_grid
+      REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid
       REAL(KIND(1D0)), INTENT(out) :: runoffPipes
       ! REAL(KIND(1D0)), INTENT(out) :: mwstore
       REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody
@@ -2877,12 +2876,12 @@ CONTAINS
       ! Initialize the output variables
       qe_surf = 0
 
-      ev_per_tstep = 0
-      qe_per_tstep = 0
-      surf_chang_per_tstep = 0
-      runoff_per_tstep = 0
-      state_per_tstep = 0
-      NWstate_per_tstep = 0
+      ev_grid = 0
+      qe_grid = 0
+      surf_chang_grid = 0
+      runoff_grid = 0
+      state_grid = 0
+      NWstate_grid = 0
       qe = 0
       runoffwaterbody = 0
 
@@ -2903,14 +2902,20 @@ CONTAINS
       qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
+      capStore_surf = StoreDrainPrm(6, :)
+      CALL cal_evap_multi( &
+         EvapMethod, & !input
+         sfr_surf, state_id_in, WetThresh_surf, capStore_surf, & !input
+         vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+         rss_surf, ev_surf, qe_surf, qe_grid) !output
 
       DO is = 1, nsurf !For each surface in turn
-         capStore_surf(is) = StoreDrainPrm(6, is)
-         !Calculates ev [mm]
-         CALL cal_evap( &
-            EvapMethod, state_id_in(is), WetThresh_surf(is), capStore_surf(is), & !input
-            vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-            rss_surf(is), ev_surf(is), qe_surf(is)) !output
+         ! capStore_surf(is) = StoreDrainPrm(6, is)
+         ! !Calculates ev [mm]
+         ! CALL cal_evap( &
+         !    EvapMethod, state_id_in(is), WetThresh_surf(is), capStore_surf(is), & !input
+         !    vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+         !    rss_surf(is), ev_surf(is), qe_surf(is)) !output
          ! print *, 'qe_surf for', is , qe_surf(is)
 
          !Surface water balance and soil store updates (can modify ev, updates state_id)
@@ -2925,26 +2930,23 @@ CONTAINS
       END DO !end loop over surfaces
 
       ! Sum evaporation from different surfaces to find total evaporation [mm]
-      ev_per_tstep = DOT_PRODUCT(ev_surf, sfr_surf)
-
-      ! Sum latent heat flux from different surfaces to find total latent heat flux
-      qe_per_tstep = DOT_PRODUCT(qe_surf, sfr_surf)
+      ev_grid = DOT_PRODUCT(ev_surf, sfr_surf)
 
       ! Sum change from different surfaces to find total change to surface state_id
-      surf_chang_per_tstep = DOT_PRODUCT(state_id_out - state_id_in, sfr_surf)
+      surf_chang_grid = DOT_PRODUCT(state_id_out - state_id_in, sfr_surf)
 
       ! Sum runoff from different surfaces to find total runoff
-      runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
+      runoff_grid = DOT_PRODUCT(runoff_surf, sfr_surf)
 
       ! Calculate total state_id (including water body)
-      state_per_tstep = DOT_PRODUCT(state_id_out, sfr_surf)
+      state_grid = DOT_PRODUCT(state_id_out, sfr_surf)
 
       IF (NonWaterFraction /= 0) THEN
-         NWstate_per_tstep = DOT_PRODUCT(state_id_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+         NWstate_grid = DOT_PRODUCT(state_id_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
       END IF
       ! END IF
 
-      qe = qe_per_tstep
+      qe = qe_grid
 
       ! Calculate volume of water that will move between grids
       ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
