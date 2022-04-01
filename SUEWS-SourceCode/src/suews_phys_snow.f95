@@ -127,11 +127,11 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow_notime), INTENT(out) :: dataOutLineSnow
 
-      SnowAlb = SnowAlb_in
-      SnowfallCum = SnowfallCum_in
       SnowPack = SnowPack_in
       SnowFrac = SnowFrac_in
+      SnowAlb = SnowAlb_in
       SnowDens = SnowDens_in
+      SnowfallCum = SnowfallCum_in
 
       IF (SnowUse == 1) THEN
          SnowDens = update_snow_dens( &
@@ -139,11 +139,12 @@ CONTAINS
                     tau_r, SnowDensMax, SnowDensMin)
 
          CALL MeltHeat( &
-            lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, &
+            lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, & !input
             SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
             nsh_real, waterdens, sfr_surf, Tsurf_ind, state_id, qn1_ind_snow, &
-            SnowWater, deltaQi, SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, &
-            mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, &
+            SnowWater, deltaQi, &
+            SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, & !inout
+            mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, & !output
             Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
             rainOnSnow, SnowDepth, mw_ind)
 
@@ -173,10 +174,10 @@ CONTAINS
          sfr_surf, SnowFrac, & !input
          veg_fr) !output
 
-      SnowAlb_out = SnowAlb
-      SnowfallCum_out = SnowfallCum
       SnowPack_out = SnowPack
       SnowFrac_out = SnowFrac
+      SnowAlb_out = SnowAlb
+      SnowfallCum_out = SnowfallCum
       SnowDens_out = SnowDens
 
       ! pack output into one line
@@ -315,8 +316,8 @@ CONTAINS
       mw_ind = 0
 
       !===dummy calculations===
-      xx = bldgsurf
-      xx = PavSurf
+      ! xx = bldgsurf
+      ! xx = PavSurf
       !===dummy calculations end===
 
       !=========================================================================================
@@ -332,7 +333,7 @@ CONTAINS
                !These are for snow melting
                IF (Temp_C >= 0) THEN
                   IF (qn1_ind_snow(is) < 0) THEN
-                     mw_ind(is) = TempMeltFact*Temp_C !(mm C−1 h−1)*(C) = in mm h-1
+                     mw_ind(is) = TempMeltFact*Temp_C !(mm C−1 h−1)*(C) = in mm h-1
                   ELSE
                      mw_ind(is) = RadMeltFact*(qn1_ind_snow(is)) !(mm m2 W−1 h−1)*(W m-2)= mm h-1 ??
                   END IF

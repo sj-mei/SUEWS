@@ -522,7 +522,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: drain
       REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezState
       REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezStateVol
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: soilstore_updated
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: soilstore_updated
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: state_id_updated
       REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind
 
@@ -1085,7 +1085,7 @@ CONTAINS
          CALL SUEWS_cal_Water( &
             Diagnose, & !input
             SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-            state_id_prev, soilstore_id_prev, sfr_surf, StoreDrainPrm_next, WaterDist, nsh_real, &
+            state_id_prev, sfr_surf, StoreDrainPrm_next, WaterDist, nsh_real, &
             drain_per_tstep, & !output
             drain, frac_water2runoff, &
             AdditionalWater, runoffPipes, runoff_per_interval, &
@@ -2215,7 +2215,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Water( &
       Diagnose, & !input
       SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-      state_id, soilstore_id, sfr_surf, StoreDrainPrm, WaterDist, nsh_real, &
+      state_id, sfr_surf, StoreDrainPrm, WaterDist, nsh_real, &
       drain_per_tstep, & !output
       drain, frac_water2runoff, &
       AdditionalWater, runoffPipes, runoff_per_interval, &
@@ -2235,7 +2235,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: nsh_real !nsh cast as a real for use in calculations
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_id
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm
       REAL(KIND(1D0)), DIMENSION(nsurf + 1, nsurf - 1), INTENT(in) :: WaterDist
@@ -3272,7 +3272,7 @@ CONTAINS
       MwStore, &
       nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
       qeOut, qf, qh, qh_resist, Qm, QmFreez, &
-      QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
+      QmRain, qn1, qn1_S, qn_snowfree, qs, RA, &
       resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
       runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
       runoffWaterBody, sfr_surf, smd, smd_nsurf, SnowAlb, SnowRemoval, &
@@ -3333,7 +3333,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: QmRain
       REAL(KIND(1D0)), INTENT(in) :: qn1
       REAL(KIND(1D0)), INTENT(in) :: qn1_S
-      REAL(KIND(1D0)), INTENT(in) :: qn1_snowfree
+      REAL(KIND(1D0)), INTENT(in) :: qn_snowfree
       REAL(KIND(1D0)), INTENT(in) :: qs
       REAL(KIND(1D0)), INTENT(in) :: RA
       REAL(KIND(1D0)), INTENT(in) :: resistsurf
@@ -3436,7 +3436,7 @@ CONTAINS
                          UStar, l_mod, RA, ResistSurf, &
                          Fc, &
                          Fc_photo, Fc_respi, Fc_metab, Fc_traff, Fc_build, Fc_point, &
-                         qn1_snowfree, qn1_S, SnowAlb, &
+                         qn_snowfree, qn1_S, SnowAlb, &
                          Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
                          SnowRemoval(1:2), &
                          tskin_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
