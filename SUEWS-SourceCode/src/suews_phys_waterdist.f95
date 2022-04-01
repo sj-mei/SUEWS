@@ -95,7 +95,7 @@ CONTAINS
       drain, AddWater, addImpervious, nsh_real, state_in, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &! inout:
-      chang, runoff, state_out) !output:
+      runoff, state_out) !output:
       !------------------------------------------------------------------------------
       !Calculation of storage change
       ! TS 30 Nov 2019
@@ -164,7 +164,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(inout) :: SurplusEvap !Surplus for evaporation in 5 min timestep
 
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang !Change in state_id [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: chang !Change in state_id [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff !Runoff from each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_out !Wetness status of each surface type [mm]
 

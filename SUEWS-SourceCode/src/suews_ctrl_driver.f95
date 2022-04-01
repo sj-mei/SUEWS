@@ -2922,7 +2922,7 @@ CONTAINS
             drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
             PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
             runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
-            chang, runoff_surf, state_id_out) !output:
+            runoff_surf, state_id_out) !output:
 
       END DO !end loop over surfaces
 
