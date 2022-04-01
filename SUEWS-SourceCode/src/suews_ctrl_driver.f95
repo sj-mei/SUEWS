@@ -1150,7 +1150,7 @@ CONTAINS
                qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
                precip, PipeCapacity, RunoffToWater, &
                NonWaterFraction, wu_surf, addVeg, addWaterBody, &
-               FlowChange, drain, WetThresh, state_id_prev, &
+               FlowChange, drain, WetThresh, &
                SoilStoreCap, &
                sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, &
                state_id_prev, soilstore_id_prev, & ! input:
@@ -2700,7 +2700,7 @@ CONTAINS
       qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
       precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_surf, addVeg, addWaterBody, &
-      FlowChange, drain, WetThresh_surf, stateOld, &
+      FlowChange, drain, WetThresh_surf,&
       SoilStoreCap, &
       sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm, &
       state_id_in, soilstore_id_in, & ! input:
@@ -2768,7 +2768,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WetThresh_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: mw_ind
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: rainonsnow
@@ -2911,7 +2910,7 @@ CONTAINS
          capStore_surf(is) = StoreDrainPrm(6, is)
          !Calculates ev [mm]
          CALL cal_evap( &
-            EvapMethod, state_id_surf(is), WetThresh_surf(is), capStore_surf(is), & !input
+            EvapMethod, state_id_in(is), WetThresh_surf(is), capStore_surf(is), & !input
             vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
             rss_surf(is), ev_surf(is), qe_surf(is)) !output
          ! print *, 'qe_surf for', is , qe_surf(is)
@@ -2920,9 +2919,8 @@ CONTAINS
          CALL cal_water_storage( &
             is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
             WU_surf, &
-            drain, AddWater, addImpervious, nsh_real, stateOld, frac_water2runoff, &
+            drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
             PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-            ! runoffAGimpervious, surplusWaterBody, & ! inout:
             runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
             chang, runoff_surf, state_id_surf) !output:
 
@@ -2935,7 +2933,7 @@ CONTAINS
       qe_per_tstep = DOT_PRODUCT(qe_surf, sfr_surf)
 
       ! Sum change from different surfaces to find total change to surface state_id
-      surf_chang_per_tstep = DOT_PRODUCT(state_id_surf - stateOld, sfr_surf)
+      surf_chang_per_tstep = DOT_PRODUCT(state_id_surf - state_id_in, sfr_surf)
 
       ! Sum runoff from different surfaces to find total runoff
       runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
