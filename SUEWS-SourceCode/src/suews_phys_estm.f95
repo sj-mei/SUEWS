@@ -943,6 +943,10 @@ CONTAINS
       cp_roof_grids(Gridiv, 1:nlayer, 1:ndepth) = cp_roof(1:nlayer, 1:ndepth)
       alb_roof_grids(Gridiv, 1:nlayer) = alb_roof(1:nlayer)
       emis_roof_grids(Gridiv, 1:nlayer) = emis_roof(1:nlayer)
+      state_roof_grids(Gridiv, 1:nlayer) = state_roof(1:nlayer)
+      wetthresh_roof_grids(Gridiv, 1:nlayer) = wetthresh_roof(1:nlayer)
+      soilstore_roof_grids(Gridiv, 1:nlayer) = soilstore_roof(1:nlayer)
+      capstore_roof_grids(Gridiv, 1:nlayer) = capstore_roof(1:nlayer)
       roof_albedo_dir_mult_fact_grids(Gridiv, 1:nspec, 1:nlayer) = roof_albedo_dir_mult_fact
       ! PRINT *, 'dz_roof_grids in loading', dz_roof_grids(Gridiv, 1:nroof, 1:ndepth)
       ! PRINT *, 'dz_roof_grids(1,1) in loading', dz_roof_grids(Gridiv, 1, 1:ndepth)
@@ -960,6 +964,10 @@ CONTAINS
       cp_wall_grids(gridIV, 1:nlayer, 1:ndepth) = cp_wall(1:nlayer, 1:ndepth)
       alb_wall_grids(Gridiv, 1:nlayer) = alb_wall(1:nlayer)
       emis_wall_grids(Gridiv, 1:nlayer) = emis_wall(1:nlayer)
+      state_wall_grids(Gridiv, 1:nlayer) = state_wall(1:nlayer)
+      wetthresh_wall_grids(Gridiv, 1:nlayer) = wetthresh_wall(1:nlayer)
+      soilstore_wall_grids(Gridiv, 1:nlayer) = soilstore_wall(1:nlayer)
+      capstore_wall_grids(Gridiv, 1:nlayer) = capstore_wall(1:nlayer)
       wall_specular_frac_grids(gridIV, 1:nspec, 1:nlayer) = wall_specular_frac
       ! PRINT *, 'dz_wall_grids in loading', dz_wall_grids(Gridiv, 1:nwall, 1:ndepth)
       ! PRINT *, 'dz_wall_grids(1,1) in loading', dz_wall_grids(Gridiv, 1, 1:ndepth)
