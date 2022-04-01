@@ -62,23 +62,19 @@ CONTAINS
       ! Calculation independent of surface characteristics
       ! Uses value of RS for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance.f95)
 
-      ! PRINT*, 'is',is,'SMOIS',state(is)
-      ! PRINT*, 'SMOIS',state_is,state_is<=0.001
-      ! PRINT*, 'EvapMethod',EvapMethod
-
       !numerator of P-M eqn, refer to Eq6, Jarvi et al. 2011
       numPM = s_hPa*qn_e + vpd_hPa*avdens*avcp/RA !s_haPa - slope of svp vs t curve.
 
-      ! Dry surface ---------------------------------------------------------------
       IF (state_is <= 0.001) THEN
+         ! Dry surface ---------------------------------------------------------------
          qe = numPM/(s_hPa + psyc_hPa*(1 + RS/RA)) !QE [W m-2] (numPM = numerator of P-M eqn)
          ev = qe/tlv !Ev [mm] (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])
          W = NAN !W not needed for dry surfaces (set to -999)
          flag_dry = 1 !Set flag indicating dry surface(1)
          RSS = RS
 
-         ! Wet surface ---------------------------------------------------------------
       ELSE
+         ! Wet surface ---------------------------------------------------------------
          flag_dry = 0 !Set flag=0 indicating wet surface(0)
 
          ! Evaporation calculated according to Rutter(EvapMethod=1) or Shuttleworth(EvapMethod=2).
@@ -118,10 +114,53 @@ CONTAINS
          END IF !Rutter/Shuttleworth calculation
       END IF !Wet/dry surface
 
-      ! IF ( id>190 ) THEN
-      !    STOP "stop in Evap_SUEWS_new"
-      !
-      ! END IF
    END SUBROUTINE cal_evap
+
+   SUBROUTINE cal_evap_multi( &
+      n_facet, EvapMethod, &
+      state_multi, WetThresh_multi, capStore_multi, & !input
+      vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+      RSS_multi, ev_multi, qe_multi) !output
+      IMPLICIT NONE
+      INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+      INTEGER, INTENT(in) :: n_facet !number of facets
+
+      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(in) :: state_multi ! wetness status
+      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(in) :: WetThresh_multi !When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(in) :: capStore_multi ! = StoreDrainPrm(6,is), current storage capacity [mm]
+
+      REAL(KIND(1D0)), INTENT(in) :: vpd_hPa ! vapour pressure deficit [hPa]
+      REAL(KIND(1D0)), INTENT(in) :: avdens ! air density [kg m-3]
+      REAL(KIND(1D0)), INTENT(in) :: avcp ! air heat capacity [J kg-1 K-1]
+      REAL(KIND(1D0)), INTENT(in) :: qn_e !net available energy for evaporation [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: s_hPa !Vapour pressure versus temperature slope [hPa K-1]]
+      REAL(KIND(1D0)), INTENT(in) :: psyc_hPa !Psychometric constant [hPa]
+      REAL(KIND(1D0)), INTENT(in) :: RS !Surface resistance [s m-1]
+      REAL(KIND(1D0)), INTENT(in) :: RA !Aerodynamic resistance [s m-1]
+      REAL(KIND(1D0)), INTENT(in) :: RB !Boundary layer resistance [s m-1]
+      REAL(KIND(1D0)), INTENT(in) :: tlv !Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
+
+      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(out) :: RSS_multi !Redefined surface resistance for wet surfaces [s m-1]
+      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(out) :: ev_multi ! evapotranspiration [mm]
+      REAL(KIND(1D0)), DIMENSION(n_facet), INTENT(out) :: qe_multi ! latent heat flux [W m-2]
+
+      ! REAL(KIND(1D0)) :: numPM !numerator of P-M eqn
+      ! REAL(KIND(1D0)) :: RB_SG !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+      ! REAL(KIND(1D0)) :: rsrbsg !RS + rbsg [s m-1]
+      ! REAL(KIND(1D0)) :: flag_dry
+      ! REAL(KIND(1D0)) :: W !Depends on the amount of water on the canopy [-]
+      ! REAL(KIND(1D0)) :: x
+      INTEGER :: i
+
+      REAL(KIND(1D0)), PARAMETER :: NAN = -999
+
+      DO i = 1, n_facet
+         CALL cal_evap( &
+            EvapMethod, state_multi(i), WetThresh_multi(i), capStore_multi(i), &
+            vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
+            RSS_multi(i), ev_multi(i), qe_multi(i))
+      END DO
+
+   END SUBROUTINE cal_evap_multi
 
 END MODULE evap_module

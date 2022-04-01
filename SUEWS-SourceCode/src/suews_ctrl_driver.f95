@@ -2807,7 +2807,7 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chang
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: ChangSnow_surf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: ChangSnow_surf
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: snowDepth
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
@@ -2903,8 +2903,6 @@ CONTAINS
       qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
-
-      ChangSnow_surf = 0
 
       DO is = 1, nsurf !For each surface in turn
          capStore_surf(is) = StoreDrainPrm(6, is)

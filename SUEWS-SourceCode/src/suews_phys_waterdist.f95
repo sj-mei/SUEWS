@@ -198,19 +198,6 @@ CONTAINS
       !==================================================================
       ! Combine water inputs to the current surface
       ! Add external water use for each surface type
-      ! SELECT CASE (is)
-      ! CASE (ConifSurf)
-      !    p_mm = pin + wu_EveTr
-      ! CASE (DecidSurf)
-      !    p_mm = pin + wu_DecTr
-      ! CASE (GrassSurf)
-      !    p_mm = pin + wu_Grass
-      ! CASE default
-      !    p_mm = pin
-      ! END SELECT
-
-      ! Combine water inputs to the current surface
-      ! Add external water use for each surface type
       p_mm = pin + WU_surf(is)
 
       ! Add water from other surfaces within the same grid (RS2S) ----
