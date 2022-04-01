@@ -2700,7 +2700,7 @@ CONTAINS
       qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
       precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, WU_surf, addVeg, addWaterBody, &
-      FlowChange, drain, WetThresh_surf,&
+      FlowChange, drain, WetThresh_surf, &
       SoilStoreCap, &
       sfr_surf, StateLimit, AddWater, frac_water2runoff, StoreDrainPrm, &
       state_id_in, soilstore_id_in, & ! input:
