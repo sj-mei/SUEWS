@@ -3299,6 +3299,7 @@ CONTAINS
 
       ! the variables below with '_x' endings stand for 'exported' values
       REAL(KIND(1D0)) :: ResistSurf_x
+      REAL(KIND(1D0)) :: surf_chang_per_tstep_x
       REAL(KIND(1D0)) :: l_mod_x
       REAL(KIND(1D0)) :: bulkalbedo
       REAL(KIND(1D0)) :: smd_nsurf_x(nsurf)
@@ -3316,6 +3317,8 @@ CONTAINS
       smd_nsurf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_nsurf)
 
       ResistSurf_x = MIN(9999., ResistSurf)
+
+      surf_chang_per_tstep_x= MERGE(surf_chang_per_tstep,0.d0,abs(surf_chang_per_tstep)>1e-6 )
 
       l_mod_x = MAX(MIN(9999., l_mod), -9999.)
 
@@ -3350,7 +3353,7 @@ CONTAINS
                          qn, qf, qs, qh, qeOut, &
                          h_mod, e_mod, qh_resist, &
                          precip, ext_wu, ev_per_tstep, runoff_per_tstep, tot_chang_per_tstep, &
-                         surf_chang_per_tstep, state_per_tstep, NWstate_per_tstep, drain_per_tstep, smd, &
+                         surf_chang_per_tstep_x, state_per_tstep, NWstate_per_tstep, drain_per_tstep, smd, &
                          FlowChange/nsh_real, AdditionalWater, &
                          runoffSoil_per_tstep, runoffPipes, runoffAGimpervious, runoffAGveg, runoffWaterBody, &
                          int_wu, wu_EveTr, wu_DecTr, wu_Grass, &
@@ -3668,12 +3671,15 @@ CONTAINS
    ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
       IMPLICIT NONE
       REAL(KIND(1D0)), PARAMETER :: pNAN = 30000 ! 30000 to prevent water_state being filtered out as it can be large
+      REAL(KIND(1D0)), PARAMETER :: pZERO = 1e-8 ! to prevent inconsistency caused by positive or negative zero
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       REAL(KIND(1D0)), INTENT(in) :: x
       REAL(KIND(1D0)) :: xx
 
       IF (ABS(x) > pNAN) THEN
          xx = NAN
+      elseIF (ABS(x) < pZERO) THEN
+         xx = 0
       ELSE
          xx = x
       END IF
