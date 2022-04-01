@@ -92,12 +92,10 @@ CONTAINS
    SUBROUTINE cal_water_storage( &
       is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
       WU_surf, &
-      drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
+      drain, AddWater, addImpervious, nsh_real, state_in, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-      ! runoffAGimpervious, surplusWaterBody, & ! inout:
-      runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &
-      ! p_mm, &!output:
-      chang, runoff, state_id) !output:
+      runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &! inout:
+      chang, runoff, state_out) !output:
       !------------------------------------------------------------------------------
       !Calculation of storage change
       ! TS 30 Nov 2019
@@ -145,7 +143,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: stateOld !Wetness status of each surface type from previous timestep [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_in !Wetness status of each surface type from previous timestep [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
@@ -168,7 +166,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: chang !Change in state_id [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff !Runoff from each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_out !Wetness status of each surface type [mm]
 
       ! =============================
       ! TS 01 Apr 2022:
@@ -246,15 +244,15 @@ CONTAINS
          END IF
 
          ! Calculate updated state_id using chang
-         state_id(is) = stateOld(is) + chang(is)
+         state_out(is) = state_in(is) + chang(is)
 
          ! Check state_id is within physical limits between zero (dry) and max. storage capacity
-         IF (state_id(is) < 0.0) THEN ! Cannot have a negative surface state_id
+         IF (state_out(is) < 0.0) THEN ! Cannot have a negative surface state_id
             ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
             ! Allow evaporation only until surface is dry (state_id(is)=0); additional evaporation -> evaporation surplus
-            SurplusEvap(is) = ABS(state_id(is)) !Surplus evaporation is that which tries to evaporate non-existent water
+            SurplusEvap(is) = ABS(state_out(is)) !Surplus evaporation is that which tries to evaporate non-existent water
             ev = ev - SurplusEvap(is) !Limit evaporation according to water availability
-            state_id(is) = 0.0 !Now surface is dry
+            state_out(is) = 0.0 !Now surface is dry
             ! elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
             !    !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
             !    !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
@@ -263,7 +261,7 @@ CONTAINS
          END IF
 
          ! Recalculate change in surface state_id from difference with previous timestep
-         chang(is) = state_id(is) - stateOld(is)
+         chang(is) = state_out(is) - state_in(is)
 
          ! Runoff -------------------------------------------------------
          ! For impervious surfaces, some of drain(is) becomes runoff
@@ -304,19 +302,19 @@ CONTAINS
          END IF
 
          ! Calculate updated state_id using chang
-         state_id(is) = stateOld(is) + chang(is)
+         state_out(is) = state_in(is) + chang(is)
 
          ! Check state_id is within physical limits between zero (dry) and max. storage capacity
-         IF (state_id(is) < 0.0) THEN ! Cannot have a negative surface state_id
+         IF (state_out(is) < 0.0) THEN ! Cannot have a negative surface state_id
             ! If there is not sufficient water on the surface, then remove water from soilstore
             ! Allow evaporation until soilstore_id is depleted and surface is dry
-            IF ((soilstore_id(is) + state_id(is)) >= 0) THEN
-               soilstore_id(is) = soilstore_id(is) + state_id(is)
-               state_id(is) = 0.0
+            IF ((soilstore_id(is) + state_out(is)) >= 0) THEN
+               soilstore_id(is) = soilstore_id(is) + state_out(is)
+               state_out(is) = 0.0
                ! If there is not sufficient water on the surface or soilstore, then don't allow this evaporation to happen
             ELSE
-               ev = ev - ABS(state_id(is)) !Limit evaporation according to water availability
-               state_id(is) = 0.0 !Now surface is dry
+               ev = ev - ABS(state_out(is)) !Limit evaporation according to water availability
+               state_out(is) = 0.0 !Now surface is dry
             END IF
 
             !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
@@ -327,7 +325,7 @@ CONTAINS
          END IF
 
          ! Recalculate change in surface state_id from difference with previous timestep
-         chang(is) = state_id(is) - stateOld(is)
+         chang(is) = state_out(is) - state_in(is)
 
          !Where should this go? Used to be before previous part!!
          ! soilstore_id -------------------------------------------------
@@ -357,13 +355,13 @@ CONTAINS
             chang(is) = p_mm + FlowChange/nsh_real - ev
 
             ! Calculate updated state_id using chang
-            state_id(is) = stateOld(is) + chang(is)
+            state_out(is) = state_in(is) + chang(is)
 
             ! Check state_id is within physical limits between zero (dry) and max. storage capacity
-            IF (state_id(is) < 0.0) THEN ! Cannot have a negative surface state_id
+            IF (state_out(is) < 0.0) THEN ! Cannot have a negative surface state_id
                ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
-               ev = ev - ABS(state_id(is)) !Limit evaporation according to water availability
-               state_id(is) = 0.0 !Now surface is dry
+               ev = ev - ABS(state_out(is)) !Limit evaporation according to water availability
+               state_out(is) = 0.0 !Now surface is dry
                !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
                !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
                !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
@@ -372,23 +370,23 @@ CONTAINS
             END IF
 
             ! Recalculate change in surface state_id from difference with previous timestep
-            chang(is) = state_id(is) - stateOld(is)
+            chang(is) = state_out(is) - state_in(is)
 
             ! If state_id exceeds limit, then excess goes to runoff (currently applies to water StoreDrainPrm only)
-            IF (state_id(WaterSurf) > StateLimit(WaterSurf)) THEN
-               runoff(WaterSurf) = runoff(WaterSurf) + (state_id(WaterSurf) - StateLimit(WaterSurf))
-               state_id(WaterSurf) = StateLimit(WaterSurf)
+            IF (state_out(WaterSurf) > StateLimit(WaterSurf)) THEN
+               runoff(WaterSurf) = runoff(WaterSurf) + (state_out(WaterSurf) - StateLimit(WaterSurf))
+               state_out(WaterSurf) = StateLimit(WaterSurf)
                runoffWaterBody = runoffWaterBody + runoff(WaterSurf)*sfr_surf(WaterSurf)
             ELSE
-               state_id(WaterSurf) = state_id(WaterSurf) + surplusWaterBody
-               IF (state_id(WaterSurf) > StateLimit(WaterSurf)) THEN
-                  runoffWaterBody = runoffWaterBody + (state_id(WaterSurf) - StateLimit(WaterSurf))*sfr_surf(WaterSurf)
-                  state_id(WaterSurf) = StateLimit(WaterSurf)
+               state_out(WaterSurf) = state_out(WaterSurf) + surplusWaterBody
+               IF (state_out(WaterSurf) > StateLimit(WaterSurf)) THEN
+                  runoffWaterBody = runoffWaterBody + (state_out(WaterSurf) - StateLimit(WaterSurf))*sfr_surf(WaterSurf)
+                  state_out(WaterSurf) = StateLimit(WaterSurf)
                END IF
             END IF
 
             ! Recalculate change in surface state_id from difference with previous timestep
-            chang(is) = state_id(is) - stateOld(is)
+            chang(is) = state_out(is) - state_in(is)
          END IF
       END SELECT
       !==================================================================

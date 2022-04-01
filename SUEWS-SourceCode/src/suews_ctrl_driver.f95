@@ -2844,7 +2844,7 @@ CONTAINS
       INTEGER :: is
 
       ! REAL(KIND(1D0)) :: runoff_per_interval
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id_surf
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id_out
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowPack
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
@@ -2862,7 +2862,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
       ! runoff_per_interval = runoff_per_interval_in
-      state_id_surf = state_id_in
+      state_id_out = state_id_in
       soilstore_id = soilstore_id_in
 
       ! tstep_real = tstep*1.D0
@@ -2922,7 +2922,7 @@ CONTAINS
             drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
             PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
             runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
-            chang, runoff_surf, state_id_surf) !output:
+            chang, runoff_surf, state_id_out) !output:
 
       END DO !end loop over surfaces
 
@@ -2933,16 +2933,16 @@ CONTAINS
       qe_per_tstep = DOT_PRODUCT(qe_surf, sfr_surf)
 
       ! Sum change from different surfaces to find total change to surface state_id
-      surf_chang_per_tstep = DOT_PRODUCT(state_id_surf - state_id_in, sfr_surf)
+      surf_chang_per_tstep = DOT_PRODUCT(state_id_out - state_id_in, sfr_surf)
 
       ! Sum runoff from different surfaces to find total runoff
       runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
 
       ! Calculate total state_id (including water body)
-      state_per_tstep = DOT_PRODUCT(state_id_surf, sfr_surf)
+      state_per_tstep = DOT_PRODUCT(state_id_out, sfr_surf)
 
       IF (NonWaterFraction /= 0) THEN
-         NWstate_per_tstep = DOT_PRODUCT(state_id_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+         NWstate_per_tstep = DOT_PRODUCT(state_id_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
       END IF
       ! END IF
 
@@ -2956,7 +2956,7 @@ CONTAINS
       ! runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
       ! runoffPipes_m3 = runoffPipes/1000*SurfaceArea
 
-      state_id_out = state_id_surf
+      ! state_id_out = state_id_out
       soilstore_id_out = soilstore_id
 
    END SUBROUTINE SUEWS_cal_QE
