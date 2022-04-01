@@ -94,7 +94,7 @@ CONTAINS
       WU_surf, &
       drain, AddWater, addImpervious, nsh_real, state_in, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-      runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &! inout:
+      runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
       runoff, state_out) !output:
       !------------------------------------------------------------------------------
       !Calculation of storage change
@@ -163,7 +163,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: soilstore_id !Soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(2), INTENT(inout) :: SurplusEvap !Surplus for evaporation in 5 min timestep
 
-
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chang !Change in state_id [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff !Runoff from each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_out !Wetness status of each surface type [mm]
@@ -178,7 +177,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: runoffPipes !Runoff in pipes [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(inout) :: ev !Evaporation
       REAL(KIND(1D0)), INTENT(inout) :: runoffWaterBody !Above ground runoff from water surface [mm] for whole surface area
-
 
       REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
 
@@ -1065,7 +1063,6 @@ CONTAINS
          wu_surf = WUProfA_tstep*WUDay_A_id + WUProfM_tstep*WUDay_M_id*flag_WuM
          ! apply irrigation fraction: part of land covers are not irrigated
          wu_surf = wu_surf*IrrFrac
-
 
          ! Total water use for the whole study area [mm]
          ! wu = wu_EveTr*sfr_surf(ConifSurf) + wu_DecTr*sfr_surf(DecidSurf) + wu_Grass*sfr_surf(GrassSurf)
