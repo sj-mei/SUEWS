@@ -2898,7 +2898,6 @@ CONTAINS
       qe_roof = 0
       qe_wall = 0
 
-
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
       ! == calculate QE ==
       ! --- general suews surfaces ---
@@ -2908,30 +2907,27 @@ CONTAINS
       ! soil store capacity
       capStore_surf = StoreDrainPrm(6, :)
       CALL cal_evap_multi( &
-      EvapMethod, & !input
-      sfr_surf, state_id_in, WetThresh_surf, capStore_surf, & !input
-      vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-      rss_surf, ev_surf, qe_surf, qe_grid) !output
+         EvapMethod, & !input
+         sfr_surf, state_id_in, WetThresh_surf, capStore_surf, & !input
+         vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+         rss_surf, ev_surf, qe_surf, qe_grid) !output
 
       ! --- roofs ---
 
-
       ! --- walls ---
-
-
 
       ! == calculate water balance ==
       ! --- general suews surfaces ---
-      call cal_water_storage_multi( &
-      sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
-      WU_surf, &
-      NonWaterFraction,&
-      drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
-      PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-      ev_surf, soilstore_id_in, &
-      runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
-      state_id_out, soilstore_id_out,&
-      ev_grid, runoff_grid, state_grid, surf_chang_grid,NWstate_grid)
+      CALL cal_water_storage_multi( &
+         sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+         WU_surf, &
+         NonWaterFraction, &
+         drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
+         PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
+         ev_surf, soilstore_id_in, &
+         runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
+         state_id_out, soilstore_id_out, &
+         ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid)
 
       ! DO is = 1, nsurf !For each surface in turn
 

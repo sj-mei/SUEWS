@@ -397,13 +397,13 @@ CONTAINS
    SUBROUTINE cal_water_storage_multi( &
       sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
       WU_surf, &
-      NonWaterFraction,&
+      NonWaterFraction, &
       drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       ev_surf_in, soilstore_in, &
       runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
-      state_out, soilstore_out,&
-      ev_grid, runoff_grid, state_grid, surf_chang_grid,NWstate_grid) !output:
+      state_out, soilstore_out, &
+      ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid) !output:
       IMPLICIT NONE
 
       !Stores flood water when surface state_id exceeds storage capacity [mm]
@@ -439,7 +439,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_out !Wetness status of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_out !Wetness status of each surface type [mm]
 
-
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf !Runoff from each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore !Soil moisture of each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: chang !Change in state_id [mm]
@@ -473,7 +472,7 @@ CONTAINS
       runoffAGveg = 0
       runoffPipes = 0
       SurplusEvap = 0
-      runoffWaterBody=0
+      runoffWaterBody = 0
 
       DO is = 1, nsurf !For each surface in turn
 

@@ -157,7 +157,7 @@ CONTAINS
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
 
-      n_facet=size(sfr_multi)
+      n_facet = SIZE(sfr_multi)
 
       DO i = 1, n_facet
          CALL cal_evap( &
