@@ -92,7 +92,7 @@ CONTAINS
    SUBROUTINE cal_water_storage( &
       is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
       WU_surf, &
-      drain, AddWater, addImpervious, nsh_real, state_in, AddWaterRunoff, &
+      drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
       runoff, state_out) !output:
@@ -144,7 +144,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_in !Wetness status of each surface type from previous timestep [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain !Drainage of each surface type [mm]
@@ -250,7 +250,7 @@ CONTAINS
 
          ! Runoff -------------------------------------------------------
          ! For impervious surfaces, some of drain(is) becomes runoff
-         runoff(is) = runoff(is) + drain(is)*AddWaterRunoff(is) !Drainage (that is not flowing to other surfaces) goes to runoff
+         runoff(is) = runoff(is) + drain(is)*frac_water2runoff(is) !Drainage (that is not flowing to other surfaces) goes to runoff
 
          !So, up to this point, runoff(is) can have contributions if
          ! p_mm > ipthreshold (water input too fast)
@@ -316,7 +316,7 @@ CONTAINS
          ! soilstore_id -------------------------------------------------
          ! For pervious surfaces (not water), some of drain(is) goes to soil storage
          ! Drainage (that is not flowing to other surfaces) goes to soil storages
-         soilstore_id(is) = soilstore_id(is) + drain(is)*AddWaterRunoff(is)
+         soilstore_id(is) = soilstore_id(is) + drain(is)*frac_water2runoff(is)
 
          ! If soilstore is full, the excess will go to runoff
          IF (soilstore_id(is) > SoilStoreCap(is)) THEN ! TODO: this should also go to flooding of some sort
@@ -392,6 +392,122 @@ CONTAINS
 
    END SUBROUTINE cal_water_storage
    !------------------------------------------------------------------------------
+
+   ! TODO: continue here  for the multi-facet case
+   SUBROUTINE cal_water_storage_multi( &
+      sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+      WU_surf, &
+      NonWaterFraction,&
+      drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
+      PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
+      ev_surf_in, soilstore_in, &
+      runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
+      state_out, soilstore_out,&
+      ev_grid, runoff_grid, state_grid, surf_chang_grid,NWstate_grid) !output:
+      IMPLICIT NONE
+
+      !Stores flood water when surface state_id exceeds storage capacity [mm]
+      INTEGER :: is ! surface type
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_in !Wetness status of each surface type from previous timestep [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain !Drainage of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf !external water use of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: ev_surf_in !Evaporation
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_in !Evaporation
+
+      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !Capacity of pipes to transfer water
+      REAL(KIND(1D0)), INTENT(in) :: PipeCapacity !Capacity of pipes to transfer water
+      REAL(KIND(1D0)), INTENT(in) :: RunoffToWater !Fraction of surface runoff going to water body
+      REAL(KIND(1D0)), INTENT(in) :: pin !Rain per time interval
+      REAL(KIND(1D0)), INTENT(in) :: addImpervious !Water from impervious surfaces of other grids [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(in) :: nsh_real !nsh cast as a real for use in calculations
+      REAL(KIND(1D0)), INTENT(in) :: PervFraction ! sum of surface cover fractions for impervious surfaces
+      REAL(KIND(1D0)), INTENT(in) :: addVeg !Water from vegetated surfaces of other grids [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(in) :: addWaterBody !Water from water surface of other grids [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(in) :: FlowChange !Difference between the input and output flow in the water body
+
+      REAL(KIND(1D0)), INTENT(out) :: runoff_grid !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), INTENT(out) :: state_grid !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), INTENT(out) :: ev_grid !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid !Wetness status of each surface type [mm]
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_out !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_out !Wetness status of each surface type [mm]
+
+
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf !Runoff from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore !Soil moisture of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: chang !Change in state_id [mm]
+      REAL(KIND(1D0)), DIMENSION(2) :: SurplusEvap !Surplus for evaporation in 5 min timestep
+
+      ! =============================
+      ! TS 01 Apr 2022:
+      !   these variables were used as inout variables in the original code for water transfer between grids
+      !  but they are not used in the new code, so they are removed here
+      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
+      REAL(KIND(1D0)) :: surplusWaterBody !Extra runoff that goes to water body [mm] as specified by RunoffToWater
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg !Above ground runoff from vegetated surfaces [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(out) :: runoffPipes !Runoff in pipes [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody !Above ground runoff from water surface [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !Above ground runoff from water surface [mm] for whole surface area
+
+      REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
+
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_surf !Evaporation
+
+      !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
+      REAL(KIND(1D0)) :: EvPart
+      REAL(KIND(1D0)), PARAMETER :: NotUsed = -55.5
+
+      !Threshold for intense precipitation [mm hr-1]
+      REAL(KIND(1D0)), PARAMETER :: IPThreshold_mmhr = 10 ! NB:this should be an input and can be specified. SG 25 Apr 2018
+
+      ev_surf = ev_surf_in
+      soilstore = soilstore_in
+
+      runoffAGveg = 0
+      runoffPipes = 0
+      SurplusEvap = 0
+      runoffWaterBody=0
+
+      DO is = 1, nsurf !For each surface in turn
+
+         !Surface water balance and soil store updates (can modify ev, updates state_id)
+         CALL cal_water_storage( &
+            is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+            WU_surf, &
+            drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
+            PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
+            runoffAGveg, runoffPipes, ev_surf(is), soilstore, SurplusEvap, runoffWaterBody, & ! inout:
+            runoff_surf, state_out) !output:
+
+      END DO !end loop over surfaces
+
+      ! ev_surf_out = ev_surf
+      soilstore_out = soilstore
+
+      ! Sum change from different surfaces to find total change to surface state_id
+      surf_chang_grid = DOT_PRODUCT(state_out - state_in, sfr_surf)
+
+      ! Sum evaporation from different surfaces to find total evaporation [mm]
+      ev_grid = DOT_PRODUCT(ev_surf, sfr_surf)
+
+      ! Sum runoff from different surfaces to find total runoff
+      runoff_grid = DOT_PRODUCT(runoff_surf, sfr_surf)
+
+      ! Calculate total state_id (including water body)
+      state_grid = DOT_PRODUCT(state_out, sfr_surf)
+
+      IF (NonWaterFraction /= 0) THEN
+         NWstate_grid = DOT_PRODUCT(state_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+      END IF
+
+   END SUBROUTINE cal_water_storage_multi
 
    !------------------------------------------------------------------------------
    SUBROUTINE updateFlood( &

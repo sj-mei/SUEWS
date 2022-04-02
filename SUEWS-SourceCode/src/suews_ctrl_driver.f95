@@ -18,7 +18,7 @@ MODULE SUEWS_Driver
    USE ESTM_module, ONLY: ESTM, ESTM_ext
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
-   USE WaterDist_module, ONLY: drainage, cal_water_storage, &
+   USE WaterDist_module, ONLY: drainage, cal_water_storage_multi, &
                                SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
                                ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
                                SUEWS_cal_WaterUse
@@ -2898,53 +2898,71 @@ CONTAINS
       qe_roof = 0
       qe_wall = 0
 
+
+      IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
+      ! == calculate QE ==
+      ! --- general suews surfaces ---
       ! net available energy for evaporation
       qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
-      IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
+      ! soil store capacity
       capStore_surf = StoreDrainPrm(6, :)
       CALL cal_evap_multi( &
-         EvapMethod, & !input
-         sfr_surf, state_id_in, WetThresh_surf, capStore_surf, & !input
-         vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-         rss_surf, ev_surf, qe_surf, qe_grid) !output
+      EvapMethod, & !input
+      sfr_surf, state_id_in, WetThresh_surf, capStore_surf, & !input
+      vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+      rss_surf, ev_surf, qe_surf, qe_grid) !output
 
-      DO is = 1, nsurf !For each surface in turn
-         ! capStore_surf(is) = StoreDrainPrm(6, is)
-         ! !Calculates ev [mm]
-         ! CALL cal_evap( &
-         !    EvapMethod, state_id_in(is), WetThresh_surf(is), capStore_surf(is), & !input
-         !    vpd_hPa, avdens, avcp, qn_e_surf(is), s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-         !    rss_surf(is), ev_surf(is), qe_surf(is)) !output
-         ! print *, 'qe_surf for', is , qe_surf(is)
+      ! --- roofs ---
 
-         !Surface water balance and soil store updates (can modify ev, updates state_id)
-         CALL cal_water_storage( &
-            is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
-            WU_surf, &
-            drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
-            PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-            runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
-            runoff_surf, state_id_out) !output:
 
-      END DO !end loop over surfaces
+      ! --- walls ---
 
-      ! Sum evaporation from different surfaces to find total evaporation [mm]
-      ev_grid = DOT_PRODUCT(ev_surf, sfr_surf)
 
-      ! Sum change from different surfaces to find total change to surface state_id
-      surf_chang_grid = DOT_PRODUCT(state_id_out - state_id_in, sfr_surf)
 
-      ! Sum runoff from different surfaces to find total runoff
-      runoff_grid = DOT_PRODUCT(runoff_surf, sfr_surf)
+      ! == calculate water balance ==
+      ! --- general suews surfaces ---
+      call cal_water_storage_multi( &
+      sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+      WU_surf, &
+      NonWaterFraction,&
+      drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
+      PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
+      ev_surf, soilstore_id_in, &
+      runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
+      state_id_out, soilstore_id_out,&
+      ev_grid, runoff_grid, state_grid, surf_chang_grid,NWstate_grid)
 
-      ! Calculate total state_id (including water body)
-      state_grid = DOT_PRODUCT(state_id_out, sfr_surf)
+      ! DO is = 1, nsurf !For each surface in turn
 
-      IF (NonWaterFraction /= 0) THEN
-         NWstate_grid = DOT_PRODUCT(state_id_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
-      END IF
+      !    !Surface water balance and soil store updates (can modify ev, updates state_id)
+      !    CALL cal_water_storage( &
+      !    is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+      !    WU_surf, &
+      !    drain, AddWater, addImpervious, nsh_real, state_id_in, frac_water2runoff, &
+      !    PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
+      !    runoffAGveg, runoffPipes, ev_surf(is), soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
+      !    runoff_surf, state_id_out) !output:
+
+      ! END DO !end loop over surfaces
+
+      ! ! Sum evaporation from different surfaces to find total evaporation [mm]
+      ! ev_grid = DOT_PRODUCT(ev_surf, sfr_surf)
+
+      ! ! Sum change from different surfaces to find total change to surface state_id
+      ! surf_chang_grid = DOT_PRODUCT(state_id_out - state_id_in, sfr_surf)
+
+      ! ! Sum runoff from different surfaces to find total runoff
+      ! runoff_grid = DOT_PRODUCT(runoff_surf, sfr_surf)
+
+      ! ! Calculate total state_id (including water body)
+      ! state_grid = DOT_PRODUCT(state_id_out, sfr_surf)
+
+      ! IF (NonWaterFraction /= 0) THEN
+      !    NWstate_grid = DOT_PRODUCT(state_id_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
       ! END IF
+      ! END IF
+      ! == general suews surfaces end ==
 
       qe = qe_grid
 
@@ -2957,7 +2975,7 @@ CONTAINS
       ! runoffPipes_m3 = runoffPipes/1000*SurfaceArea
 
       ! state_id_out = state_id_out
-      soilstore_id_out = soilstore_id
+      ! soilstore_id_out = soilstore_id
 
    END SUBROUTINE SUEWS_cal_QE
    !========================================================================
