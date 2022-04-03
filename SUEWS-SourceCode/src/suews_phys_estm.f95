@@ -756,9 +756,10 @@ CONTAINS
          alb_roof, alb_roof_grids, &
          emis_roof, emis_roof_grids, &
          state_roof, state_roof_grids, &
+         statelimit_roof, statelimit_roof_grids, &
          wetthresh_roof, wetthresh_roof_grids, &
          soilstore_roof, soilstore_roof_grids, &
-         capstore_roof, capstore_roof_grids, &
+         soilstorecap_roof, soilstorecap_roof_grids, &
          k_roof, k_roof_grids, &
          cp_roof, cp_roof_grids, &
          dz_roof, dz_roof_grids, &
@@ -768,9 +769,10 @@ CONTAINS
          alb_wall, alb_wall_grids, &
          emis_wall, emis_wall_grids, &
          state_wall, state_wall_grids, &
+         statelimit_wall, statelimit_wall_grids, &
          wetthresh_wall, wetthresh_wall_grids, &
          soilstore_wall, soilstore_wall_grids, &
-         capstore_wall, capstore_wall_grids, &
+         soilstorecap_wall, soilstorecap_wall_grids, &
          k_wall, k_wall_grids, &
          cp_wall, cp_wall_grids, &
          dz_wall, dz_wall_grids, &
@@ -813,7 +815,7 @@ CONTAINS
          state_roof, &
          wetthresh_roof, &
          soilstore_roof, &
-         capstore_roof, &
+         soilstorecap_roof, &
          dz_roof, &
          k_roof, &
          cp_roof &
@@ -827,7 +829,7 @@ CONTAINS
          state_wall, &
          wetthresh_wall, &
          soilstore_wall, &
-         capstore_wall, &
+         soilstorecap_wall, &
          dz_wall, &
          k_wall, &
          cp_wall, &
@@ -876,7 +878,7 @@ CONTAINS
       ALLOCATE (state_roof(nlayer))
       ALLOCATE (wetthresh_roof(nlayer))
       ALLOCATE (soilstore_roof(nlayer))
-      ALLOCATE (capstore_roof(nlayer))
+      ALLOCATE (soilstorecap_roof(nlayer))
       ALLOCATE (roof_albedo_dir_mult_fact(nspec, nlayer))
 
       ALLOCATE (sfr_wall(nlayer))
@@ -889,7 +891,7 @@ CONTAINS
       ALLOCATE (state_wall(nlayer))
       ALLOCATE (wetthresh_wall(nlayer))
       ALLOCATE (soilstore_wall(nlayer))
-      ALLOCATE (capstore_wall(nlayer))
+      ALLOCATE (soilstorecap_wall(nlayer))
       ALLOCATE (wall_specular_frac(nspec, nlayer))
 
       ALLOCATE (dz_surf(nsurf, ndepth))
@@ -944,9 +946,10 @@ CONTAINS
       alb_roof_grids(Gridiv, 1:nlayer) = alb_roof(1:nlayer)
       emis_roof_grids(Gridiv, 1:nlayer) = emis_roof(1:nlayer)
       state_roof_grids(Gridiv, 1:nlayer) = state_roof(1:nlayer)
+      statelimit_roof_grids(Gridiv, 1:nlayer) = statelimit_roof(1:nlayer)
       wetthresh_roof_grids(Gridiv, 1:nlayer) = wetthresh_roof(1:nlayer)
       soilstore_roof_grids(Gridiv, 1:nlayer) = soilstore_roof(1:nlayer)
-      capstore_roof_grids(Gridiv, 1:nlayer) = capstore_roof(1:nlayer)
+      soilstorecap_roof_grids(Gridiv, 1:nlayer) = soilstorecap_roof(1:nlayer)
       roof_albedo_dir_mult_fact_grids(Gridiv, 1:nspec, 1:nlayer) = roof_albedo_dir_mult_fact
       ! PRINT *, 'dz_roof_grids in loading', dz_roof_grids(Gridiv, 1:nroof, 1:ndepth)
       ! PRINT *, 'dz_roof_grids(1,1) in loading', dz_roof_grids(Gridiv, 1, 1:ndepth)
@@ -965,9 +968,10 @@ CONTAINS
       alb_wall_grids(Gridiv, 1:nlayer) = alb_wall(1:nlayer)
       emis_wall_grids(Gridiv, 1:nlayer) = emis_wall(1:nlayer)
       state_wall_grids(Gridiv, 1:nlayer) = state_wall(1:nlayer)
+      statelimit_wall_grids(Gridiv, 1:nlayer) = statelimit_wall(1:nlayer)
       wetthresh_wall_grids(Gridiv, 1:nlayer) = wetthresh_wall(1:nlayer)
       soilstore_wall_grids(Gridiv, 1:nlayer) = soilstore_wall(1:nlayer)
-      capstore_wall_grids(Gridiv, 1:nlayer) = capstore_wall(1:nlayer)
+      soilstorecap_wall_grids(Gridiv, 1:nlayer) = soilstorecap_wall(1:nlayer)
       wall_specular_frac_grids(gridIV, 1:nspec, 1:nlayer) = wall_specular_frac
       ! PRINT *, 'dz_wall_grids in loading', dz_wall_grids(Gridiv, 1:nwall, 1:ndepth)
       ! PRINT *, 'dz_wall_grids(1,1) in loading', dz_wall_grids(Gridiv, 1, 1:ndepth)
@@ -1041,7 +1045,7 @@ CONTAINS
       DEALLOCATE (state_roof)
       DEALLOCATE (wetthresh_roof)
       DEALLOCATE (soilstore_roof)
-      DEALLOCATE (capstore_roof)
+      DEALLOCATE (soilstorecap_roof)
       DEALLOCATE (dz_roof)
       DEALLOCATE (k_roof)
       DEALLOCATE (cp_roof)
@@ -1054,7 +1058,7 @@ CONTAINS
       DEALLOCATE (state_wall)
       DEALLOCATE (wetthresh_wall)
       DEALLOCATE (soilstore_wall)
-      DEALLOCATE (capstore_wall)
+      DEALLOCATE (soilstorecap_wall)
       DEALLOCATE (dz_wall)
       DEALLOCATE (k_wall)
       DEALLOCATE (cp_wall)
@@ -1108,7 +1112,7 @@ CONTAINS
       ALLOCATE (state_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (wetthresh_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (soilstore_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (capstore_roof_grids(NumberOfGrids, nroof_max))
+      ALLOCATE (soilstorecap_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (k_roof_grids(NumberOfGrids, nroof_max, ndepth))
       ALLOCATE (cp_roof_grids(NumberOfGrids, nroof_max, ndepth))
       ALLOCATE (dz_roof_grids(NumberOfGrids, nroof_max, ndepth))
@@ -1124,7 +1128,7 @@ CONTAINS
       ALLOCATE (state_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (wetthresh_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (soilstore_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (capstore_wall_grids(NumberOfGrids, nwall_max))
+      ALLOCATE (soilstorecap_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (k_wall_grids(NumberOfGrids, nwall_max, ndepth))
       ALLOCATE (cp_wall_grids(NumberOfGrids, nwall_max, ndepth))
       ALLOCATE (dz_wall_grids(NumberOfGrids, nwall_max, ndepth))

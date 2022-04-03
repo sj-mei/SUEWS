@@ -14,6 +14,11 @@ roof_albedo_dir_mult_fact(1,:) = 1.
 tin_roof=5,5,6
 alb_roof=.5,.5,.2
 emis_roof=.95,.95,.95
+state_roof=.0,.0,.0
+statelimit_roof=.0,.0,.0
+wetthresh_roof=5,5,5
+soilstore_roof=20,20,20
+soilstorecap_roof=120,120,120
 
 dz_roof(1,:) = .2,.1,.1,.01,.01
 k_roof(1,:) = 1.2,1.2,1.2,1.2,1.2
@@ -33,6 +38,12 @@ wall_specular_frac(1,:) = 0.
 tin_wall=5,5,5
 alb_wall=.5,.5,.5
 emis_wall=.95,.95,.95
+
+state_wall=.0,.0,.0
+statelimit_wall=.0,.0,.0
+wetthresh_wall=5,5,5
+soilstore_wall=20,20,20
+soilstorecap_wall=120,120,120
 
 dz_wall(1,:) = .2,.1,.1,.01,.01
 k_wall(1,:) = 1.2,1.2,1.2,1.2,1.2

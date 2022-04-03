@@ -94,7 +94,8 @@ CONTAINS
       WU_surf, &
       drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-      runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, & ! inout:
+      runoffAGimpervious, runoffAGveg, runoffPipes, ev, soilstore_id, & ! inout:
+      surplusWaterBody, SurplusEvap, runoffWaterBody, & ! inout:
       runoff, state_out) !output:
       !------------------------------------------------------------------------------
       !Calculation of storage change
@@ -171,8 +172,8 @@ CONTAINS
       ! TS 01 Apr 2022:
       !   these variables were used as inout variables in the original code for water transfer between grids
       !  but they are not used in the new code, so they are removed here
-      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
-      REAL(KIND(1D0)) :: surplusWaterBody !Extra runoff that goes to water body [mm] as specified by RunoffToWater
+      REAL(KIND(1D0)), INTENT(inout) :: surplusWaterBody !Extra runoff that goes to water body [mm] as specified by RunoffToWater
+      REAL(KIND(1D0)), INTENT(inout) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(inout) :: runoffAGveg !Above ground runoff from vegetated surfaces [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(inout) :: runoffPipes !Runoff in pipes [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(inout) :: ev !Evaporation
@@ -401,7 +402,7 @@ CONTAINS
       drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       ev_surf_in, soilstore_in, &
-      runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
+      runoffAGimpervious,runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
       state_out, soilstore_out, &
       ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid) !output:
       IMPLICIT NONE
@@ -448,19 +449,19 @@ CONTAINS
       ! TS 01 Apr 2022:
       !   these variables were used as inout variables in the original code for water transfer between grids
       !  but they are not used in the new code, so they are removed here
-      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
       REAL(KIND(1D0)) :: surplusWaterBody !Extra runoff that goes to water body [mm] as specified by RunoffToWater
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: runoffAGveg !Above ground runoff from vegetated surfaces [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: runoffPipes !Runoff in pipes [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody !Above ground runoff from water surface [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !Above ground runoff from water surface [mm] for whole surface area
 
-      REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
+      ! REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_surf !Evaporation
 
       !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
-      REAL(KIND(1D0)) :: EvPart
+      ! REAL(KIND(1D0)) :: EvPart
       REAL(KIND(1D0)), PARAMETER :: NotUsed = -55.5
 
       !Threshold for intense precipitation [mm hr-1]
@@ -473,6 +474,12 @@ CONTAINS
       runoffPipes = 0
       SurplusEvap = 0
       runoffWaterBody = 0
+      surplusWaterBody = 0
+
+      surf_chang_grid = 0
+      runoff_grid = 0
+      state_grid = 0
+      NWstate_grid = 0
 
       DO is = 1, nsurf !For each surface in turn
 
@@ -482,7 +489,8 @@ CONTAINS
             WU_surf, &
             drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
             PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-            runoffAGveg, runoffPipes, ev_surf(is), soilstore, SurplusEvap, runoffWaterBody, & ! inout:
+            runoffAGimpervious, runoffAGveg, runoffPipes, ev_surf(is), soilstore, & ! inout:
+            surplusWaterBody, SurplusEvap, runoffWaterBody, & ! inout:
             runoff_surf, state_out) !output:
 
       END DO !end loop over surfaces
