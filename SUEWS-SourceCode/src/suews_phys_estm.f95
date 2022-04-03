@@ -813,6 +813,7 @@ CONTAINS
          alb_roof, &
          emis_roof, &
          state_roof, &
+         statelimit_roof, &
          wetthresh_roof, &
          soilstore_roof, &
          soilstorecap_roof, &
@@ -827,6 +828,7 @@ CONTAINS
          alb_wall, &
          emis_wall, &
          state_wall, &
+         statelimit_wall, &
          wetthresh_wall, &
          soilstore_wall, &
          soilstorecap_wall, &
@@ -862,6 +864,8 @@ CONTAINS
       END IF
       CLOSE (iunit)
 
+
+
       ALLOCATE (height(nlayer + 1))
       ALLOCATE (building_frac(nlayer))
       ALLOCATE (veg_frac(nlayer))
@@ -876,6 +880,7 @@ CONTAINS
       ALLOCATE (alb_roof(nlayer))
       ALLOCATE (emis_roof(nlayer))
       ALLOCATE (state_roof(nlayer))
+      ALLOCATE (statelimit_roof(nlayer))
       ALLOCATE (wetthresh_roof(nlayer))
       ALLOCATE (soilstore_roof(nlayer))
       ALLOCATE (soilstorecap_roof(nlayer))
@@ -889,6 +894,7 @@ CONTAINS
       ALLOCATE (alb_wall(nlayer))
       ALLOCATE (emis_wall(nlayer))
       ALLOCATE (state_wall(nlayer))
+      ALLOCATE (statelimit_wall(nlayer))
       ALLOCATE (wetthresh_wall(nlayer))
       ALLOCATE (soilstore_wall(nlayer))
       ALLOCATE (soilstorecap_wall(nlayer))
@@ -902,10 +908,46 @@ CONTAINS
       OPEN (iunit, file=TRIM(FileInputPath)//TRIM(FileLayout), status='old')
       PRINT *, 'Read geometry part of GridLayout'
       READ (iunit, nml=geom, iostat=istat)
+      PRINT *, 'height', height
+      PRINT *, 'building_frac', building_frac
+      PRINT *, 'veg_frac', veg_frac
+      PRINT *, 'building_scale', building_scale
+      PRINT *, 'veg_scale', veg_scale
+
+
       PRINT *, 'Read roof part of GridLayout'
       READ (iunit, nml=roof, iostat=istat)
+      PRINT *, 'sfr_roof', sfr_roof
+      PRINT *, 'dz_roof', dz_roof
+      PRINT *, 'k_roof', k_roof
+      PRINT *, 'cp_roof', cp_roof
+      PRINT *, 'tin_roof', tin_roof
+      PRINT *, 'alb_roof', alb_roof
+      PRINT *, 'emis_roof', emis_roof
+      PRINT *, 'state_roof', state_roof
+      PRINT *, 'statelimit_roof', statelimit_roof
+      PRINT *, 'wetthresh_roof', wetthresh_roof
+      PRINT *, 'soilstore_roof', soilstore_roof
+      PRINT *, 'soilstorecap_roof', soilstorecap_roof
+
+
+
       PRINT *, 'Read wall part of GridLayout'
       READ (iunit, nml=wall, iostat=istat)
+      PRINT *, 'sfr_wall', sfr_wall
+      PRINT *, 'dz_wall', dz_wall
+      PRINT *, 'k_wall', k_wall
+      PRINT *, 'cp_wall', cp_wall
+      PRINT *, 'tin_wall', tin_wall
+      PRINT *, 'alb_wall', alb_wall
+      PRINT *, 'emis_wall', emis_wall
+      PRINT *, 'state_wall', state_wall
+      PRINT *, 'statelimit_wall', statelimit_wall
+      PRINT *, 'wetthresh_wall', wetthresh_wall
+      PRINT *, 'soilstore_wall', soilstore_wall
+      PRINT *, 'soilstorecap_wall', soilstorecap_wall
+
+
       PRINT *, 'Read surf part of GridLayout'
       READ (iunit, nml=surf, iostat=istat)
       IF (istat /= 0) THEN
@@ -1043,6 +1085,7 @@ CONTAINS
       DEALLOCATE (alb_roof)
       DEALLOCATE (emis_roof)
       DEALLOCATE (state_roof)
+      DEALLOCATE (statelimit_roof)
       DEALLOCATE (wetthresh_roof)
       DEALLOCATE (soilstore_roof)
       DEALLOCATE (soilstorecap_roof)
@@ -1056,6 +1099,7 @@ CONTAINS
       DEALLOCATE (alb_wall)
       DEALLOCATE (emis_wall)
       DEALLOCATE (state_wall)
+      DEALLOCATE (statelimit_wall)
       DEALLOCATE (wetthresh_wall)
       DEALLOCATE (soilstore_wall)
       DEALLOCATE (soilstorecap_wall)
@@ -1110,6 +1154,7 @@ CONTAINS
       ALLOCATE (alb_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (emis_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (state_roof_grids(NumberOfGrids, nroof_max))
+      ALLOCATE (statelimit_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (wetthresh_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (soilstore_roof_grids(NumberOfGrids, nroof_max))
       ALLOCATE (soilstorecap_roof_grids(NumberOfGrids, nroof_max))
@@ -1126,6 +1171,7 @@ CONTAINS
       ALLOCATE (alb_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (emis_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (state_wall_grids(NumberOfGrids, nwall_max))
+      ALLOCATE (statelimit_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (wetthresh_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (soilstore_wall_grids(NumberOfGrids, nwall_max))
       ALLOCATE (soilstorecap_wall_grids(NumberOfGrids, nwall_max))
