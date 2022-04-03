@@ -2911,7 +2911,6 @@ CONTAINS
 
       ! --- roofs ---
 
-
       ! --- walls ---
 
       qe = qe_surf_total

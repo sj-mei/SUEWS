@@ -864,8 +864,6 @@ CONTAINS
       END IF
       CLOSE (iunit)
 
-
-
       ALLOCATE (height(nlayer + 1))
       ALLOCATE (building_frac(nlayer))
       ALLOCATE (veg_frac(nlayer))
@@ -914,7 +912,6 @@ CONTAINS
       PRINT *, 'building_scale', building_scale
       PRINT *, 'veg_scale', veg_scale
 
-
       PRINT *, 'Read roof part of GridLayout'
       READ (iunit, nml=roof, iostat=istat)
       PRINT *, 'sfr_roof', sfr_roof
@@ -930,8 +927,6 @@ CONTAINS
       PRINT *, 'soilstore_roof', soilstore_roof
       PRINT *, 'soilstorecap_roof', soilstorecap_roof
 
-
-
       PRINT *, 'Read wall part of GridLayout'
       READ (iunit, nml=wall, iostat=istat)
       PRINT *, 'sfr_wall', sfr_wall
@@ -946,7 +941,6 @@ CONTAINS
       PRINT *, 'wetthresh_wall', wetthresh_wall
       PRINT *, 'soilstore_wall', soilstore_wall
       PRINT *, 'soilstorecap_wall', soilstorecap_wall
-
 
       PRINT *, 'Read surf part of GridLayout'
       READ (iunit, nml=surf, iostat=istat)
