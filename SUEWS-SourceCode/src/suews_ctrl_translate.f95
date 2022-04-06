@@ -231,10 +231,10 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    PorMax_dec = SurfaceChar(Gridiv, c_PorosityMax(ivDecid)) ! Minimum
 
    ! ---- Threshold for wet evaporation [mm]
-   WetThresh(1:nsurf) = SurfaceChar(Gridiv, c_WetThresh)
+   WetThresh_surf(1:nsurf) = SurfaceChar(Gridiv, c_WetThresh)
 
    ! ---- Limit for state [mm]
-   StateLimit(1:nsurf) = SurfaceChar(Gridiv, c_StateLimit)
+   StateLimit_surf(1:nsurf) = SurfaceChar(Gridiv, c_StateLimit)
 
    ! ---- Water depth [mm]
    WaterDepth = SurfaceChar(Gridiv, c_WaterDepth)
@@ -254,7 +254,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    ! ---- Soil characteristics (each surface except Water)
    SoilDepth(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SoilDepth(1:(nsurf - 1))) ! Depth of sub-surface soil store [mm]
-   SoilStoreCap(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SoilStCap(1:(nsurf - 1))) ! Soil store capacity [mm]
+   SoilStoreCap_surf(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SoilStCap(1:(nsurf - 1))) ! Soil store capacity [mm]
    SatHydraulicConduct(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_KSat(1:(nsurf - 1))) ! Hydraulic conductivity of saturated soil [mm s-1]
    !SoilDensity(1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilDens(1:(nsurf-1))) ! Soil density [kg m-3]
    ! Not yet implemented in model
@@ -1061,10 +1061,10 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! === Translate inputs from ModelOutputData to variable names used in model ===
       ! =============================================================================
       ! ---- Above-ground state
-      state_id(1:nsurf) = ModelOutputData(0, cMOD_State(1:nsurf), Gridiv)
+      state_surf(1:nsurf) = ModelOutputData(0, cMOD_State(1:nsurf), Gridiv)
       !     stateDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_State(1:nsurf),Gridiv)
       ! ---- Below-ground
-      soilstore_id(1:nsurf) = ModelOutputData(0, cMOD_SoilState(1:nsurf), Gridiv)
+      soilstore_surf(1:nsurf) = ModelOutputData(0, cMOD_SoilState(1:nsurf), Gridiv)
       !     soilmoistDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_SoilState(1:nsurf),Gridiv)
       ! ---- Snow fraction
       SnowFrac(1:nsurf) = ModelOutputData(0, cMOD_SnowFrac(1:nsurf), Gridiv)
@@ -1105,8 +1105,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, 120) FCskip, FCskip, (baseTe(iv), iv=1, nvegsurf), FCskip, FCskip, FCskip, ' BaseTe'
       WRITE (12, 120) (StoreDrainPrm(1, iv), iv=1, nsurf), FCskip, ' StorageMin'
       WRITE (12, 120) (StoreDrainPrm(5, iv), iv=1, nsurf), FCskip, ' StorageMax'
-      WRITE (12, 120) (WetThresh(iv), iv=1, nsurf), FCskip, ' WetThreshold'
-      WRITE (12, 120) (StateLimit(iv), iv=1, nsurf), FCskip, ' StateLimit'
+      WRITE (12, 120) (WetThresh_surf(iv), iv=1, nsurf), FCskip, ' WetThreshold'
+      WRITE (12, 120) (StateLimit_surf(iv), iv=1, nsurf), FCskip, ' StateLimit'
       WRITE (12, 120) (StoreDrainPrm(2, iv), iv=1, nsurf), FCskip, ' DrainageEq' !real
       WRITE (12, 120) (StoreDrainPrm(3, iv), iv=1, nsurf), FCskip, ' DrainageCoef1'
       WRITE (12, 120) (StoreDrainPrm(4, iv), iv=1, nsurf), FCskip, ' DrainageCoef2'
@@ -1123,7 +1123,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, '(2f10.3,3f10.5,3f10.3,a16)') FCskip, FCskip, LAIPower(4, 1:nvegsurf), FCskip, FCskip, FCskip, ' LAI_LeafOP2'
       WRITE (12, 120) FCskip, FCskip, (MaxConductance(iv), iv=1, nvegsurf), FCskip, FCskip, FCskip, ' MaxCond'
       WRITE (12, 120) (SoilDepth(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SoilDepth'
-      WRITE (12, 120) (SoilStoreCap(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SoilStoreCap'
+      WRITE (12, 120) (SoilStoreCap_surf(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SoilStoreCap'
       WRITE (12, '(6f10.5,2f10.3,a16)') (SatHydraulicConduct(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SatHydraulicConduct'
       ! Not currently coded, but add these later: SoilDensity, InfiltrationRate, OBS_SMDept, OBS_SMCap, OBS_SoilNotRocks
       WRITE (12, 120) (SnowPackLimit(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SnowLimPatch'
@@ -1332,9 +1332,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! === Translate values from ModelOutputData to variable names used in model ===
       ! =============================================================================
       ! ---- Above-ground state
-      state_id(1:nsurf) = ModelOutputData(ir - 1, cMOD_State(1:nsurf), Gridiv)
+      state_surf(1:nsurf) = ModelOutputData(ir - 1, cMOD_State(1:nsurf), Gridiv)
       ! ---- Below-ground state
-      soilstore_id(1:nsurf) = ModelOutputData(ir - 1, cMOD_SoilState(1:nsurf), Gridiv)
+      soilstore_surf(1:nsurf) = ModelOutputData(ir - 1, cMOD_SoilState(1:nsurf), Gridiv)
       ! ---- Snow fraction
       SnowFrac(1:nsurf) = ModelOutputData(ir - 1, cMOD_SnowFrac(1:nsurf), Gridiv)
       ! ---- Snow water equivalent in SnowPack
@@ -1531,12 +1531,12 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) 'snowprof_24hr=', snowprof_24hr
       WRITE (12, *) 'SnowUse=', SnowUse
       WRITE (12, *) 'soildepth=', soildepth
-      WRITE (12, *) 'soilstore_id=', soilstore_id
-      WRITE (12, *) 'soilstorecap=', soilstorecap
+      WRITE (12, *) 'soilstore_id=', soilstore_surf
+      WRITE (12, *) 'soilstorecap=', SoilStoreCap_surf
       WRITE (12, *) 'stabilitymethod=', stabilitymethod
       WRITE (12, *) 'startdls=', startdls
-      WRITE (12, *) 'state_id=', state_id
-      WRITE (12, *) 'statelimit=', statelimit
+      WRITE (12, *) 'state_id=', state_surf
+      WRITE (12, *) 'statelimit=', StateLimit_surf
       WRITE (12, *) 'storageheatmethod=', storageheatmethod
       WRITE (12, *) 'storedrainprm=', storedrainprm
       WRITE (12, *) 'surfacearea=', surfacearea
@@ -1563,7 +1563,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) 'veg_type=', veg_type
       WRITE (12, *) 'waterdist=', waterdist
       WRITE (12, *) 'waterusemethod=', waterusemethod
-      WRITE (12, *) 'wetthresh=', wetthresh
+      WRITE (12, *) 'wetthresh=', WetThresh_surf
       WRITE (12, *) 'wu_m3=', wu_m3
       WRITE (12, *) 'wuday_id=', wuday_id
       WRITE (12, *) 'decidcap_id=', decidcap_id
@@ -1762,8 +1762,8 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! === Translate values from variable names used in model to ModelOutputData ===
    ! =============================================================================
 
-   ModelOutputData(ir, cMOD_State(1:nsurf), Gridiv) = state_id(1:nsurf)
-   ModelOutputData(ir, cMOD_SoilState(1:nsurf), Gridiv) = soilstore_id(1:nsurf)
+   ModelOutputData(ir, cMOD_State(1:nsurf), Gridiv) = state_surf(1:nsurf)
+   ModelOutputData(ir, cMOD_SoilState(1:nsurf), Gridiv) = soilstore_surf(1:nsurf)
    ModelOutputData(ir, cMOD_SnowFrac(1:nsurf), Gridiv) = SnowFrac(1:nsurf)
    ModelOutputData(ir, cMOD_SnowPack(1:nsurf), Gridiv) = SnowPack(1:nsurf)
    ModelOutputData(ir, cMOD_SnowWaterState(1:nsurf), Gridiv) = SnowWater(1:nsurf)
@@ -1772,8 +1772,8 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    IceFrac_grids(:, Gridiv) = IceFrac
 
    IF (ir == irMax) THEN !Store variables ready for next chunk of met data
-      ModelOutputData(0, cMOD_State(1:nsurf), Gridiv) = state_id(1:nsurf)
-      ModelOutputData(0, cMOD_SoilState(1:nsurf), Gridiv) = soilstore_id(1:nsurf)
+      ModelOutputData(0, cMOD_State(1:nsurf), Gridiv) = state_surf(1:nsurf)
+      ModelOutputData(0, cMOD_SoilState(1:nsurf), Gridiv) = soilstore_surf(1:nsurf)
       ModelOutputData(0, cMOD_SnowFrac(1:nsurf), Gridiv) = SnowFrac(1:nsurf)
       ModelOutputData(0, cMOD_SnowPack(1:nsurf), Gridiv) = SnowPack(1:nsurf)
       ModelOutputData(0, cMOD_SnowWaterState(1:nsurf), Gridiv) = SnowWater(1:nsurf)
