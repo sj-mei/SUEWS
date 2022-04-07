@@ -242,22 +242,22 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: smd_nsurf !Soil moisture deficit of each sub-surface [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: smd_nsurfOut !Soil moisture deficit of each sub-surface (written out) [mm]
-   REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id !Soil moisture of each surface type [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf !Soil moisture of each surface type [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstoreOld !Soil moisture of each surface type from previous timestep [mm]
-   REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id !Wetness status of each surface type [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf !Wetness status of each surface type [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: stateOut !Wetness status of each surface type (written out) [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: stateOld !Wetness status of each surface type from previous timestep [mm]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: rss_nsurf !Surface resistance after wet/partially wet adjustment for each surface
 
-   REAL(KIND(1D0)), DIMENSION(nsurf) :: WetThresh !When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-   REAL(KIND(1D0)), DIMENSION(nsurf) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
+   REAL(KIND(1D0)), DIMENSION(nsurf) :: WetThresh_surf !When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
+   REAL(KIND(1D0)), DIMENSION(nsurf) :: StateLimit_surf !Limit for state_id of each surface type [mm] (specified in input files)
 
    REAL(KIND(1D0)), DIMENSION(1) :: WaterDepth !Depth of open water
 
    ! ---- Soil characteristics specified in input files -------------------------------------------
    REAL(KIND(1D0)), DIMENSION(nsurf) :: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
    REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilDepth !Depth of sub-surface soil store for each surface [mm]
-   REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap !Capacity of soil store for each surface [mm]
+   REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap_surf !Capacity of soil store for each surface [mm]
 
    ! ---- Within-grid water distribution matrix ---------------------------------------------------
    REAL(KIND(1D0)), DIMENSION(nsurf + 1, nsurf - 1) :: WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
@@ -505,6 +505,11 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_roof
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_roof
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: statelimit_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wetthresh_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstorecap_roof
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof
    ! larger container arrays for different grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_roof_grids
@@ -515,6 +520,11 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: state_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: statelimit_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wetthresh_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: soilstore_roof_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: soilstorecap_roof_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_roof_grids
 
    ! wall
@@ -526,6 +536,11 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_wall
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_wall
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: statelimit_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wetthresh_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstorecap_wall
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall
    ! larger container arrays for different grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tsfc_wall_grids
@@ -536,6 +551,11 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: tin_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: alb_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: emis_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: state_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: statelimit_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wetthresh_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: soilstore_wall_grids
+   REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: soilstorecap_wall_grids
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: temp_wall_grids
 
    ! standard suews surfaces

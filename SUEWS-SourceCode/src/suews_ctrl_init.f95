@@ -1976,12 +1976,12 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       iy, id, lat, & !input
       dayofWeek_id) !output
 
-   state_id = [PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState]
-   soilstore_id = [SoilStorePavedState, SoilStoreBldgsState, SoilStoreEveTrstate, SoilStoreDecTrState, &
-                   SoilStoreGrassState, SoilStoreBSoilState, 0D0]
+   state_surf = [PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState]
+   soilstore_surf = [SoilStorePavedState, SoilStoreBldgsState, SoilStoreEveTrstate, SoilStoreDecTrState, &
+                     SoilStoreGrassState, SoilStoreBSoilState, 0D0]
    CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, & !input
-      state_id, soilstore_id, SoilStoreCap, H_maintain, & !input
+      state_surf, soilstore_surf, SoilStoreCap_surf, H_maintain, & !input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
@@ -2094,19 +2094,19 @@ SUBROUTINE NextInitial(GridName, year_int)
    WRITE (57, *) 'AlbGrass0=', AlbGrass_id
    WRITE (57, *) 'DecidCap0=', decidCap_id
    WRITE (57, *) 'Porosity0=', porosity_id
-   WRITE (57, *) 'SoilStorePavedState=', soilstore_id(PavSurf)
-   WRITE (57, *) 'SoilStoreBldgsState=', soilstore_id(BldgSurf)
-   WRITE (57, *) 'SoilStoreEveTrState=', soilstore_id(ConifSurf)
-   WRITE (57, *) 'SoilStoreDecTrState=', soilstore_id(DecidSurf)
-   WRITE (57, *) 'SoilStoreGrassState=', soilstore_id(GrassSurf)
-   WRITE (57, *) 'SoilStoreBSoilState=', soilstore_id(BSoilSurf)
-   WRITE (57, *) 'PavedState=', state_id(PavSurf)
-   WRITE (57, *) 'BldgsState=', state_id(BldgSurf)
-   WRITE (57, *) 'EveTrState=', state_id(ConifSurf)
-   WRITE (57, *) 'DecTrState=', state_id(DecidSurf)
-   WRITE (57, *) 'GrassState=', state_id(GrassSurf)
-   WRITE (57, *) 'BSoilState=', state_id(BSoilSurf)
-   WRITE (57, *) 'WaterState=', state_id(WaterSurf)
+   WRITE (57, *) 'SoilStorePavedState=', soilstore_surf(PavSurf)
+   WRITE (57, *) 'SoilStoreBldgsState=', soilstore_surf(BldgSurf)
+   WRITE (57, *) 'SoilStoreEveTrState=', soilstore_surf(ConifSurf)
+   WRITE (57, *) 'SoilStoreDecTrState=', soilstore_surf(DecidSurf)
+   WRITE (57, *) 'SoilStoreGrassState=', soilstore_surf(GrassSurf)
+   WRITE (57, *) 'SoilStoreBSoilState=', soilstore_surf(BSoilSurf)
+   WRITE (57, *) 'PavedState=', state_surf(PavSurf)
+   WRITE (57, *) 'BldgsState=', state_surf(BldgSurf)
+   WRITE (57, *) 'EveTrState=', state_surf(ConifSurf)
+   WRITE (57, *) 'DecTrState=', state_surf(DecidSurf)
+   WRITE (57, *) 'GrassState=', state_surf(GrassSurf)
+   WRITE (57, *) 'BSoilState=', state_surf(BSoilSurf)
+   WRITE (57, *) 'WaterState=', state_surf(WaterSurf)
    ! Only write snow variables if snow part is running
    IF (SnowUse == 1) THEN
       WRITE (57, *) 'SnowWaterPavedState=', SnowWater(PavSurf)
@@ -2308,29 +2308,29 @@ SUBROUTINE CheckInitial
    END IF
 
    !Soilstore check
-   IF (SoilstoreBldgsState > SoilStoreCap(BldgSurf)) THEN
+   IF (SoilstoreBldgsState > SoilStoreCap_surf(BldgSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of building soil store.', &
-                     SoilstoreBldgsState, SoilStoreCap(BldgSurf), notUsedI)
+                     SoilstoreBldgsState, SoilStoreCap_surf(BldgSurf), notUsedI)
    END IF
-   IF (SoilstorePavedState > SoilStoreCap(PavSurf)) THEN
+   IF (SoilstorePavedState > SoilStoreCap_surf(PavSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of paved soil store.', &
-                     SoilstorePavedState, SoilStoreCap(PavSurf), notUsedI)
+                     SoilstorePavedState, SoilStoreCap_surf(PavSurf), notUsedI)
    END IF
-   IF (SoilstoreEveTrState > SoilStoreCap(ConifSurf)) THEN
+   IF (SoilstoreEveTrState > SoilStoreCap_surf(ConifSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of conif soil store.', &
-                     SoilstoreEveTrState, SoilStoreCap(ConifSurf), notUsedI)
+                     SoilstoreEveTrState, SoilStoreCap_surf(ConifSurf), notUsedI)
    END IF
-   IF (SoilstoreDecTrState > SoilStoreCap(DecidSurf)) THEN
+   IF (SoilstoreDecTrState > SoilStoreCap_surf(DecidSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of deciduous soil store.', &
-                     SoilstoreDecTrState, SoilStoreCap(DecidSurf), notUsedI)
+                     SoilstoreDecTrState, SoilStoreCap_surf(DecidSurf), notUsedI)
    END IF
-   IF (SoilstoreBSoilState > SoilStoreCap(BSoilSurf)) THEN
+   IF (SoilstoreBSoilState > SoilStoreCap_surf(BSoilSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of bare soil soil store.', &
-                     SoilstoreBSoilState, SoilStoreCap(BSoilSurf), notUsedI)
+                     SoilstoreBSoilState, SoilStoreCap_surf(BSoilSurf), notUsedI)
    END IF
-   IF (SoilstoreGrassState > SoilStoreCap(GrassSurf)) THEN
+   IF (SoilstoreGrassState > SoilStoreCap_surf(GrassSurf)) THEN
       CALL ErrorHint(37, 'InitialCond: Check initial condition of grass soil store.', &
-                     SoilstoreGrassState, SoilStoreCap(GrassSurf), notUsedI)
+                     SoilstoreGrassState, SoilStoreCap_surf(GrassSurf), notUsedI)
    END IF
 
    !Snow stuff
