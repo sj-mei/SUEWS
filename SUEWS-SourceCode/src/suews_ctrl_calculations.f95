@@ -73,9 +73,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dqnsdt, qn1_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
       sfr_surf, SnowPackLimit, snowdens, SnowFrac, snowpack, &
-      soildepth, soilstore_id, SoilStoreCap, state_id, statelimit, &
+      soildepth, &
+      soilstore_surf, SoilStoreCap_surf, state_surf, StateLimit_surf, WetThresh_surf, &
+      soilstore_roof, SoilStoreCap_roof, state_roof, StateLimit_roof, WetThresh_roof, &
+      soilstore_wall, SoilStoreCap_wall, state_wall, StateLimit_wall, WetThresh_wall, &
       StoreDrainPrm, theta_bioco2, ts5mindata_ir, &
-      waterdist, wetthresh, &
+      waterdist, &
       WUDay_id, &
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
@@ -192,7 +195,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       SatHydraulicConduct, SDDFull, SDD_id, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, SnowUse, SoilDepth, &
-      soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
+      StabilityMethod, startDLS, &
+      soilstore_surf, SoilStoreCap_surf, state_surf, StateLimit_surf, WetThresh_surf, &
+      soilstore_roof, SoilStoreCap_roof, state_roof, StateLimit_roof, WetThresh_roof, &
+      soilstore_wall, SoilStoreCap_wall, state_wall, StateLimit_wall, WetThresh_wall, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       Tmax_id, Tmin_id, &
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
@@ -205,7 +211,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       cp_roof, cp_wall, cp_surf, &
       dz_roof, dz_wall, dz_surf, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
-      WaterDist, WaterUseMethod, WetThresh, wu_m3, &
+      WaterDist, WaterUseMethod, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
