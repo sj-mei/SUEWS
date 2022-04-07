@@ -1483,6 +1483,25 @@ CONTAINS
          z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS) !output
 
+      CALL ESTMExt_update_outputLine( &
+         iy, id, it, imin, dectime, nlayer, & !input
+         tsfc_out_surf, qs_surf, &
+         tsfc_out_roof, &
+         Qn_roof, &
+         QS_roof, &
+         QE_roof, &
+         QH_roof, &
+         state_roof, &
+         soilstore_roof, &
+         tsfc_out_wall, &
+         Qn_wall, &
+         QS_wall, &
+         QE_wall, &
+         QH_wall, &
+         state_wall, &
+         soilstore_wall, &
+         datetimeLine, dataOutLineESTMExt) !output
+
       ! daily state_id:
       CALL update_DailyStateLine( &
          it, imin, nsh_real, & !input
@@ -1532,8 +1551,6 @@ CONTAINS
       ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
       ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
 
-      dataoutlineESTMExt = [tsfc_out_surf, TSfc_C, & !output
-                            qs_surf, QS]
       ! PRINT *, 'dataoutlineESTMExt = ', dataoutlineESTMExt
 
    END SUBROUTINE SUEWS_cal_Main
@@ -3476,6 +3493,115 @@ CONTAINS
 
    END SUBROUTINE SUEWS_update_outputLine
    !========================================================================
+
+   !==============Update output arrays=========================
+   SUBROUTINE ESTMExt_update_outputLine( &
+      iy, id, it, imin, dectime, nlayer, & !input
+      tsfc_out_surf, qs_surf, &
+      tsfc_out_roof, &
+      Qn_roof, &
+      QS_roof, &
+      QE_roof, &
+      QH_roof, &
+      state_roof, &
+      soilstore_roof, &
+      tsfc_out_wall, &
+      Qn_wall, &
+      QS_wall, &
+      QE_wall, &
+      QH_wall, &
+      state_wall, &
+      soilstore_wall, &
+      datetimeLine, dataOutLineESTMExt) !output
+      IMPLICIT NONE
+
+      REAL(KIND(1D0)), PARAMETER :: NAN = -999
+      INTEGER, PARAMETER :: n_fill = 15
+
+      INTEGER, INTENT(in) :: iy
+      INTEGER, INTENT(in) :: id
+      INTEGER, INTENT(in) :: it
+      INTEGER, INTENT(in) :: imin
+
+      INTEGER, INTENT(in) :: nlayer
+      REAL(KIND(1D0)), INTENT(in) :: dectime
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_out_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_out_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: Qn_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QS_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QE_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QH_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_out_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: Qn_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QS_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QE_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QH_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_wall
+
+      REAL(KIND(1D0)), DIMENSION(5), INTENT(OUT) :: datetimeLine
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(out) :: dataOutLineESTMExt
+      ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
+      ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
+      ! INTEGER:: is
+      REAL(KIND(1D0)) :: LAI_wt
+      REAL(KIND(1D0)) :: RH2_pct ! RH2 in percentage
+
+      ! the variables below with '_x' endings stand for 'exported' values
+      REAL(KIND(1D0)) :: ResistSurf_x
+      REAL(KIND(1D0)) :: surf_chang_per_tstep_x
+      REAL(KIND(1D0)) :: l_mod_x
+      REAL(KIND(1D0)) :: bulkalbedo
+      REAL(KIND(1D0)) :: smd_nsurf_x(nsurf)
+      REAL(KIND(1D0)) :: state_x(nsurf)
+      REAL(KIND(1D0)) :: wu_DecTr
+      REAL(KIND(1D0)) :: wu_EveTr
+      REAL(KIND(1D0)) :: wu_Grass
+
+      ! date & time:
+      datetimeLine = [ &
+                     REAL(iy, KIND(1D0)), REAL(id, KIND(1D0)), &
+                     REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), dectime]
+      !Define the overall output matrix to be printed out step by step
+      dataoutlineESTMExt = [ &
+                           tsfc_out_surf, qs_surf, & !output
+                           fill_result(tsfc_out_roof, n_fill), &
+                           fill_result(Qn_roof, n_fill), &
+                           fill_result(QS_roof, n_fill), &
+                           fill_result(QE_roof, n_fill), &
+                           fill_result(QH_roof, n_fill), &
+                           fill_result(state_roof, n_fill), &
+                           fill_result(soilstore_roof, n_fill), &
+                           fill_result(tsfc_out_wall, n_fill), &
+                           fill_result(Qn_wall, n_fill), &
+                           fill_result(QS_wall, n_fill), &
+                           fill_result(QE_wall, n_fill), &
+                           fill_result(QH_wall, n_fill), &
+                           fill_result(state_wall, n_fill), &
+                           fill_result(soilstore_wall, n_fill) &
+                           ]
+      ! set invalid values to NAN
+      ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
+
+      !====================update output line end==============================
+
+   END SUBROUTINE ESTMExt_update_outputLine
+   !========================================================================
+
+   FUNCTION fill_result(res_valid, n_fill) RESULT(res_filled)
+      IMPLICIT NONE
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: res_valid
+      INTEGER, INTENT(IN) :: n_fill
+      REAL(KIND(1D0)), DIMENSION(n_fill) :: res_filled
+
+      REAL(KIND(1D0)), PARAMETER :: NAN = -999
+
+      res_filled = RESHAPE(res_valid, [n_fill], pad=[NAN])
+   END FUNCTION fill_result
 
    !==============Update output arrays=========================
    SUBROUTINE SUEWS_update_output( &
