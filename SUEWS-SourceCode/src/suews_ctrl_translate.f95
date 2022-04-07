@@ -729,6 +729,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    END IF
 
 ! ---- ESTM_ext related ------------------------------
+   ! if ( StorageHeatMethod==5 ) then
+
+
    nlayer = nlayer_grids(Gridiv)
 
    ALLOCATE (height(nlayer + 1)) ! why such dimension? why plus ncol?
@@ -832,7 +835,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    tsfc_surf(1:nsurf) = tsfc_surf_grids(Gridiv, 1:nsurf)
    tin_surf(1:nsurf) = tin_surf_grids(Gridiv, 1:nsurf)
    temp_surf(1:nsurf, 1:ndepth) = temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
-
+! end if
    ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
    BaseT_HC = -999 ! Initialise QF coeffs
    QF_A = 0
@@ -1711,6 +1714,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ModelDailyState(Gridiv, cMDS_SnowAlb) = SnowAlb
 
    ! ---- ESTM_ext related ------------------------------
+      ! if ( StorageHeatMethod==5 ) then
    ! roof
 
    ! k_roof(1:nroof, 1:ndepth) = k_roof_grids(Gridiv, 1:nroof, 1:ndepth)
@@ -1792,7 +1796,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! DEALLOCATE (veg_contact_fraction)
    ! DEALLOCATE (alb_roof)
    ! DEALLOCATE (alb_wall)
-
+      ! end if
    ! =============================================================================
    ! === Translate values from variable names used in model to ModelOutputData ===
    ! =============================================================================

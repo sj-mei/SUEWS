@@ -750,11 +750,14 @@ CONTAINS
       SnowFrac_prev = MERGE(SnowFrac_obs, SnowFrac, NetRadiationMethod == 0)
       SnowPack_prev = SnowPack
       state_surf_prev = state_surf
-      state_roof_prev = state_roof
-      state_wall_prev = state_wall
       soilstore_surf_prev = soilstore_surf
-      soilstore_roof_prev = soilstore_roof
-      soilstore_wall_prev = soilstore_wall
+      ! IF (StorageHeatMethod == 5) THEN
+         state_roof_prev = state_roof
+         state_wall_prev = state_wall
+         soilstore_roof_prev = soilstore_roof
+         soilstore_wall_prev = soilstore_wall
+
+      ! END IF
       Tair_av_prev = Tair_av
       LAI_id_prev = LAI_id
       GDD_id_prev = GDD_id
@@ -794,12 +797,16 @@ CONTAINS
       SnowDens_next = SnowDens
       SnowFrac_next = SnowFrac_prev
       SnowPack_next = SnowPack
-      soilstore_surf_next = soilstore_surf
-      soilstore_roof_next = soilstore_roof
-      soilstore_wall_next = soilstore_wall
       state_surf_next = state_surf
-      state_roof_next = state_roof
-      state_wall_next = state_wall
+      soilstore_surf_next = soilstore_surf
+      ! IF (StorageHeatMethod == 5) THEN
+
+         soilstore_roof_next = soilstore_roof
+         soilstore_wall_next = soilstore_wall
+         state_roof_next = state_roof
+         state_wall_next = state_wall
+
+      ! END IF
       Tair_av_next = Tair_av
       LAI_id_next = LAI_id
       GDD_id_next = GDD_id

@@ -161,10 +161,10 @@ PROGRAM SUEWS_Program
 
    ! -------------------------------------------------------------------------
    ! Initialise ESTM (reads ESTM nml, should only run once)
-   IF (StorageHeatMethod == 5) THEN
+   ! IF (StorageHeatMethod == 5) THEN
       IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_initials...'
       CALL ESTM_ext_initialise
-   END IF
+   ! END IF
 
    ! -------------------------------------------------------------------------
    ! Initialise SPARTACUS (reads SPARTACUS nml, should only run once)
