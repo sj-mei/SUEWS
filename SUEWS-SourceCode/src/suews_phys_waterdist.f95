@@ -498,25 +498,23 @@ CONTAINS
       END DO !end loop over surfaces
 
       ! update soilstore
-      soilstore_surf_out=soilstore
-
-
+      soilstore_surf_out = soilstore
 
    END SUBROUTINE cal_water_storage_surf
 
    SUBROUTINE cal_water_storage_building( &
-      pin, nsh_real,nlayer, &
+      pin, nsh_real, nlayer, &
       sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
       state_roof_in, soilstore_roof_in, ev_roof, & ! input:
       sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
       state_wall_in, soilstore_wall_in, ev_wall, & ! input:
       state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
       state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
-      state_building,soilstore_building,runoff_building,SoilStoreCap_building)
+      state_building, soilstore_building, runoff_building, SoilStoreCap_building)
 
       IMPLICIT NONE
 
-      INTEGER , INTENT(in):: nlayer !number of layers
+      INTEGER, INTENT(in) :: nlayer !number of layers
       REAL(KIND(1D0)), INTENT(in) :: pin !Rain per time interval
       REAL(KIND(1D0)), INTENT(in) :: nsh_real !timesteps per hour
 
@@ -551,7 +549,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: state_building !aggregated surface water of building facets [mm]
       REAL(KIND(1D0)), INTENT(out) :: soilstore_building ! aggregated soilstore of building facets[mm]
       REAL(KIND(1D0)), INTENT(out) :: runoff_building !aggregated Runoff of building facets [mm]
-      REAL(KIND(1D0)), INTENT(out) ::SoilStoreCap_building
+      REAL(KIND(1D0)), INTENT(out) :: SoilStoreCap_building
 
       REAL(KIND(1D0)) :: precip_excess_roof !precipitation excess above IPThreshold_mmhr [mm]
       REAL(KIND(1D0)) :: precip_excess_wall !precipitation excess above limit [mm]
@@ -703,7 +701,7 @@ CONTAINS
       ! aggregated values
       state_building = DOT_PRODUCT(state_roof_out, sfr_roof) + DOT_PRODUCT(state_wall_out, sfr_wall)
       soilstore_building = DOT_PRODUCT(soilstore_roof_out, sfr_roof) + DOT_PRODUCT(soilstore_wall_out, sfr_wall)
-      SoilStoreCap_building=DOT_PRODUCT(SoilStoreCap_roof, sfr_roof) + DOT_PRODUCT(SoilStoreCap_wall, sfr_wall)
+      SoilStoreCap_building = DOT_PRODUCT(SoilStoreCap_roof, sfr_roof) + DOT_PRODUCT(SoilStoreCap_wall, sfr_wall)
       ! only allow runoff from walls
       runoff_building = DOT_PRODUCT(runoff_wall, sfr_wall)
 

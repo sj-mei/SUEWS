@@ -1978,7 +1978,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    state_surf = [PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState]
    soilstore_surf = [SoilStorePavedState, SoilStoreBldgsState, SoilStoreEveTrstate, SoilStoreDecTrState, &
-                   SoilStoreGrassState, SoilStoreBSoilState, 0D0]
+                     SoilStoreGrassState, SoilStoreBSoilState, 0D0]
    CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, & !input
       state_surf, soilstore_surf, SoilStoreCap_surf, H_maintain, & !input

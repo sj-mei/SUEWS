@@ -1170,7 +1170,7 @@ CONTAINS
          ELSE
             !======== Evaporation and surface state_id for snow-free conditions ========
             CALL SUEWS_cal_QE( &
-               Diagnose,storageheatmethod, nlayer, & !input
+               Diagnose, storageheatmethod, nlayer, & !input
                tstep, &
                EvapMethod, &
                avdens, avcp, lv_J_kg, &
@@ -1199,7 +1199,7 @@ CONTAINS
                runoffAGveg, runoffAGimpervious, rss_nsurf)
             !======== Evaporation and surface state_id end========
          END IF
-         IF (Diagnose == 1) print*, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
+         IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
 
          !=== Horizontal movement between soil stores ===
          ! Now water is allowed to move horizontally between the soil stores
@@ -2996,7 +2996,7 @@ CONTAINS
          ! == calculate water balance ==
          ! --- building facets: roofs and walls ---
          CALL cal_water_storage_building( &
-            pin, nsh_real,nlayer, &
+            pin, nsh_real, nlayer, &
             sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
             state_roof_in, soilstore_roof_in, ev_roof, & ! input:
             sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
@@ -3026,7 +3026,6 @@ CONTAINS
          runoff_surf(BldgSurf) = runoff_building
       END IF
 
-
       ! aggregate all surface water fluxes/amounts
       qe = DOT_PRODUCT(qe_surf, sfr_surf)
 
@@ -3055,10 +3054,10 @@ CONTAINS
 
       ! state_id_out = state_id_out
       ! soilstore_id_out = soilstore_id
-      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE soilstore_building = ', soilstore_building
-      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE capStore_builing = ', capStore_builing
-      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
-      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf_out
+      IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_building = ', soilstore_building
+      IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_builing = ', capStore_builing
+      IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
+      IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf_out
 
    END SUBROUTINE SUEWS_cal_QE
    !========================================================================
