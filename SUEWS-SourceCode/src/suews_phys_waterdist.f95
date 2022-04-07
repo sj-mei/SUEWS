@@ -673,7 +673,7 @@ CONTAINS
                ! evap_roof = evap_roof - ABS(state_roof_out(i_layer)) !Limit evaporation according to water availability
             END IF
             ! force surface to dry
-            soilstore_wall_out(i_layer) = 0.0
+            state_wall_out(i_layer) = 0.0
          ELSE
             ! If there is sufficient water on the surface, then allow surface water to replenish soilstore
             IF (soilstore_wall_in(i_layer) + infil_wall(i_layer) > SoilStoreCap_wall(i_layer)) THEN
