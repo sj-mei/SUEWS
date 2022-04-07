@@ -83,7 +83,7 @@ MODULE allocateArray
                          ncolumnsDataOutBEERS = 34, &
                          ncolumnsdataOutBL = 22, &
                          ncolumnsDataOutESTM = 5 + 27, &
-                         ncolumnsDataOutESTMExt = 5 + 7*2+15*(1+4+2)*2, &
+                         ncolumnsDataOutESTMExt = 5 + 7*2 + 15*(1 + 4 + 2)*2, &
                          ncolumnsDataOutDailyState = 50, &
                          ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                          ncolumnsDataOutDebug = 5 + 24, &
