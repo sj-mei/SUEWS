@@ -2535,7 +2535,7 @@ CONTAINS
       ! building surface
       ! PRINT *, 'QS_roof in estm_ext', DOT_PRODUCT(QS_roof, sfr_roof), 'for', sfr_roof
       ! PRINT *, 'QS_wall in estm_ext', DOT_PRODUCT(QS_wall, sfr_wall), 'for', sfr_wall
-      QS_surf(BldgSurf) = (DOT_PRODUCT(QS_roof, sfr_roof) + DOT_PRODUCT(QS_wall, sfr_wall))*.5
+      QS_surf(BldgSurf) = (DOT_PRODUCT(QS_roof, sfr_roof) + DOT_PRODUCT(QS_wall, sfr_wall))
       ! TODO: TS 14 Feb 2022, ESTM development:
       ! the building surface temperature should be aggregated based on longwave radiation
       ! tsfc_surf(BldgSurf) = (DOT_PRODUCT(tsfc_roof, sfr_roof) + DOT_PRODUCT(tsfc_wall, sfr_wall))*.5

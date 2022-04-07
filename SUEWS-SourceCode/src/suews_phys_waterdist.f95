@@ -396,14 +396,15 @@ CONTAINS
 
    ! TODO: continue here  for the multi-facet case
    SUBROUTINE cal_water_storage_surf( &
-      sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
-      WU_surf, &
-      NonWaterFraction, &
-      drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
-      PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-      ev_surf_in, soilstore_in, &
-      runoffAGimpervious, runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
-      state_out, soilstore_out, &
+      pin, nsh_real, & ! input:
+      PipeCapacity, RunoffToWater, &
+      addImpervious, addVeg, addWaterBody, FlowChange, &
+      SoilStoreCap_surf, StateLimit_surf, &
+      NonWaterFraction, PervFraction, &
+      sfr_surf, ev_surf_in, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
+      state_surf_in, soilstore_surf_in, &
+      state_surf_out, soilstore_surf_out, & ! output:
+      runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
       ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid) !output:
       IMPLICIT NONE
 
@@ -411,15 +412,15 @@ CONTAINS
       INTEGER :: is ! surface type
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_in !Wetness status of each surface type from previous timestep [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain !Drainage of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater_surf !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_surf_in !Wetness status of each surface type from previous timestep [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff_surf !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap_surf !Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit_surf !Limit for state_id of each surface type [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain_surf !Drainage of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf !external water use of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: ev_surf_in !Evaporation
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_in !Evaporation
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_surf_in !Evaporation
 
       REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !Capacity of pipes to transfer water
       REAL(KIND(1D0)), INTENT(in) :: PipeCapacity !Capacity of pipes to transfer water
@@ -436,9 +437,14 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: state_grid !Wetness status of each surface type [mm]
       REAL(KIND(1D0)), INTENT(out) :: ev_grid !Wetness status of each surface type [mm]
       REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious_grid !Above ground runoff from impervious surface [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg_grid !Above ground runoff from vegetated surfaces [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(out) :: runoffPipes_grid !Runoff in pipes [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody_grid !Above ground runoff from water surface [mm] for whole surface area
+      REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !Above ground runoff from water surface [mm] for whole surface area
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_out !Wetness status of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_out !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_surf_out !Wetness status of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_surf_out !Wetness status of each surface type [mm]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf !Runoff from each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore !Soil moisture of each surface type [mm]
@@ -450,11 +456,6 @@ CONTAINS
       !   these variables were used as inout variables in the original code for water transfer between grids
       !  but they are not used in the new code, so they are removed here
       REAL(KIND(1D0)) :: surplusWaterBody !Extra runoff that goes to water body [mm] as specified by RunoffToWater
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious !Above ground runoff from impervious surface [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg !Above ground runoff from vegetated surfaces [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(out) :: runoffPipes !Runoff in pipes [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody !Above ground runoff from water surface [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !Above ground runoff from water surface [mm] for whole surface area
 
       ! REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
 
@@ -468,18 +469,19 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: IPThreshold_mmhr = 10 ! NB:this should be an input and can be specified. SG 25 Apr 2018
 
       ev_surf = ev_surf_in
-      soilstore = soilstore_in
+      soilstore = soilstore_surf_in
 
-      runoffAGveg = 0
-      runoffPipes = 0
       SurplusEvap = 0
-      runoffWaterBody = 0
+      runoffAGveg_grid = 0
+      runoffPipes_grid = 0
+      runoffAGimpervious_grid = 0
+      runoffWaterBody_grid = 0
       surplusWaterBody = 0
 
-      surf_chang_grid = 0
-      runoff_grid = 0
-      state_grid = 0
-      NWstate_grid = 0
+      ! surf_chang_grid = 0
+      ! runoff_grid = 0
+      ! state_grid = 0
+      ! NWstate_grid = 0
 
       DO is = 1, nsurf !For each surface in turn
 
@@ -487,91 +489,82 @@ CONTAINS
          CALL cal_water_storage( &
             is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
             WU_surf, &
-            drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
-            PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
-            runoffAGimpervious, runoffAGveg, runoffPipes, ev_surf(is), soilstore, & ! inout:
-            surplusWaterBody, SurplusEvap, runoffWaterBody, & ! inout:
-            runoff_surf, state_out) !output:
+            drain_surf, AddWater_surf, addImpervious, nsh_real, state_surf_in, frac_water2runoff_surf, &
+            PervFraction, addVeg, SoilStoreCap_surf, addWaterBody, FlowChange, StateLimit_surf, &
+            runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, ev_surf(is), soilstore, & ! inout:
+            surplusWaterBody, SurplusEvap, runoffWaterBody_grid, & ! inout:
+            runoff_surf, state_surf_out) !output:
 
       END DO !end loop over surfaces
 
-      ! ev_surf_out = ev_surf
-      soilstore_out = soilstore
+      ! update soilstore
+      soilstore_surf_out=soilstore
 
-      ! Sum change from different surfaces to find total change to surface state_id
-      surf_chang_grid = DOT_PRODUCT(state_out - state_in, sfr_surf)
 
-      ! Sum evaporation from different surfaces to find total evaporation [mm]
-      ev_grid = DOT_PRODUCT(ev_surf, sfr_surf)
-
-      ! Sum runoff from different surfaces to find total runoff
-      runoff_grid = DOT_PRODUCT(runoff_surf, sfr_surf)
-
-      ! Calculate total state_id (including water body)
-      state_grid = DOT_PRODUCT(state_out, sfr_surf)
-
-      IF (NonWaterFraction /= 0) THEN
-         NWstate_grid = DOT_PRODUCT(state_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
-      END IF
 
    END SUBROUTINE cal_water_storage_surf
 
    SUBROUTINE cal_water_storage_building( &
-      pin, nsh_real, &
+      pin, nsh_real,nlayer, &
       sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
       state_roof_in, soilstore_roof_in, ev_roof, & ! input:
       sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
       state_wall_in, soilstore_wall_in, ev_wall, & ! input:
       state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
       state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
-      runoff_building)
+      state_building,soilstore_building,runoff_building,SoilStoreCap_building)
 
       IMPLICIT NONE
 
+      INTEGER , INTENT(in):: nlayer !number of layers
       REAL(KIND(1D0)), INTENT(in) :: pin !Rain per time interval
       REAL(KIND(1D0)), INTENT(in) :: nsh_real !timesteps per hour
 
       ! input for generic roof facets
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: sfr_roof
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: StateLimit_roof !Limit for state_id of each surface type [mm] (specified in input files)
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: WetThresh_roof
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: SoilStoreCap_roof
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: state_roof_in
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: soilstore_roof_in
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: ev_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: StateLimit_roof !Limit for state_id of each surface type [mm] (specified in input files)
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: WetThresh_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: SoilStoreCap_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_roof_in
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_roof_in
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: ev_roof
 
       ! input for generic wall facets
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: sfr_wall
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: StateLimit_wall
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: WetThresh_wall
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: SoilStoreCap_wall
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: state_wall_in
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: soilstore_wall_in
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: ev_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: StateLimit_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: WetThresh_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: SoilStoreCap_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_wall_in
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_wall_in
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: ev_wall
 
       ! output for generic roof facets
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: state_roof_out
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: soilstore_roof_out
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: runoff_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_roof_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_roof_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: runoff_roof
 
       ! output for generic wall facets
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: state_wall_out
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: soilstore_wall_out
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: runoff_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_wall_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_wall_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: runoff_wall
 
-      REAL(KIND(1D0)) :: runoff_building !Runoff from each surface type [mm]
+      REAL(KIND(1D0)), INTENT(out) :: state_building !aggregated surface water of building facets [mm]
+      REAL(KIND(1D0)), INTENT(out) :: soilstore_building ! aggregated soilstore of building facets[mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoff_building !aggregated Runoff of building facets [mm]
+      REAL(KIND(1D0)), INTENT(out) ::SoilStoreCap_building
+
       REAL(KIND(1D0)) :: precip_excess_roof !precipitation excess above IPThreshold_mmhr [mm]
       REAL(KIND(1D0)) :: precip_excess_wall !precipitation excess above limit [mm]
       REAL(KIND(1D0)) :: pin_wall !input water to wall facet [mm]
 
-      REAL(KIND(1D0)) :: chang_roof !Runoff from each surface type [mm]
-      REAL(KIND(1D0)) :: chang_wall !Runoff from each surface type [mm]
-      REAL(KIND(1D0)) :: drain_roof !drainage to sewer [mm]
-      REAL(KIND(1D0)) :: drain_wall !drainage to sewer [mm]
-      REAL(KIND(1D0)) :: infil_roof !infiltration to replenish soil water [mm]
-      REAL(KIND(1D0)) :: infil_wall !infiltration to replenish soil water [mm]
-      REAL(KIND(1D0)) :: evap_roof !evapotranpiration from each surface type [mm]
-      REAL(KIND(1D0)) :: evap_wall !evapotranpiration from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: chang_roof !Runoff from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: chang_wall !Runoff from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: drain_roof !drainage to sewer [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: drain_wall !drainage to sewer [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: infil_roof !infiltration to replenish soil water [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: infil_wall !infiltration to replenish soil water [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: evap_roof !evapotranpiration from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: evap_wall !evapotranpiration from each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore !Soil moisture of each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: chang !Change in state_id [mm]
       ! REAL(KIND(1D0)), DIMENSION(2) :: SurplusEvap !Surplus for evaporation in 5 min timestep
@@ -588,32 +581,31 @@ CONTAINS
       ! precipitation excess above IPThreshold_mmhr
       precip_excess_roof = pin - IPThreshold
 
-      n_layer = SIZE(sfr_roof)
-      DO i_layer = 1, n_layer
-
+      ! n_layer = SIZE(sfr_roof)
+      DO i_layer = 1, nlayer
 
          ! ===== roof part =====
          ! initialize temporary variables
-         runoff_roof = 0.0
-         chang_roof = 0.0
+         runoff_roof(i_layer) = 0.0
+         chang_roof(i_layer) = 0.0
 
          ! let's assume so for now
          ! TODO: introduce a more sophisticated drinage function for green roofs
-         drain_roof = state_roof_in(i_layer)*.0
+         drain_roof(i_layer) = state_roof_in(i_layer)*.0
 
          ! infiltration to replenish soil water
-         infil_roof = state_roof_in(i_layer)*.3
+         infil_roof(i_layer) = state_roof_in(i_layer)*.3
 
          IF (precip_excess_roof > 0) THEN
             ! runoff generated from roof
-            runoff_roof = precip_excess_roof
-            chang_roof = IPThreshold - ev_roof(i_layer) - drain_roof - infil_roof
+            runoff_roof(i_layer) = precip_excess_roof
+            chang_roof(i_layer) = IPThreshold - ev_roof(i_layer) - drain_roof(i_layer) - infil_roof(i_layer)
          ELSE
-            chang_roof = pin - ev_roof(i_layer) - drain_roof - infil_roof
+            chang_roof(i_layer) = pin - ev_roof(i_layer) - drain_roof(i_layer) - infil_roof(i_layer)
          END IF
 
          ! change in surface water
-         state_roof_out(i_layer) = state_roof_in(i_layer) + chang_roof
+         state_roof_out(i_layer) = state_roof_in(i_layer) + chang_roof(i_layer)
 
          ! Check state_id is within physical limits between zero (dry) and max. storage capacity
          IF (state_roof_out(i_layer) < 0.0) THEN ! Cannot have a negative surface state_id
@@ -630,22 +622,22 @@ CONTAINS
             state_roof_out(i_layer) = 0.0
          ELSE
             ! If there is sufficient water on the surface, then allow surface water to replenish soilstore
-            IF (soilstore_roof_in(i_layer) + infil_roof > SoilStoreCap_roof(i_layer)) THEN
+            IF (soilstore_roof_in(i_layer) + infil_roof(i_layer) > SoilStoreCap_roof(i_layer)) THEN
                ! cap soilstore_id at max. storage capacity if saturated
                soilstore_roof_out(i_layer) = SoilStoreCap_roof(i_layer)
 
                ! excessive infiltration goes into runoff
-               runoff_roof = runoff_roof + (soilstore_roof_in(i_layer) + infil_roof - SoilStoreCap_roof(i_layer))
+               runoff_roof = runoff_roof + (soilstore_roof_in(i_layer) + infil_roof(i_layer) - SoilStoreCap_roof(i_layer))
             ELSE
-               soilstore_roof_out(i_layer) = soilstore_roof_in(i_layer) + infil_roof
+               soilstore_roof_out(i_layer) = soilstore_roof_in(i_layer) + infil_roof(i_layer)
             END IF
 
          END IF
 
          ! ===== wall part =====
-          ! initialize temporary variables
-         runoff_wall = 0.0
-         chang_wall = 0.0
+         ! initialize temporary variables
+         runoff_wall(i_layer) = 0.0
+         chang_wall(i_layer) = 0.0
          pin_wall = 0.0
 
          ! runoff from roof goes into wall as water supply
@@ -655,21 +647,21 @@ CONTAINS
 
          ! let's assume so for now
          ! TODO: introduce a more sophisticated drinage function for green roofs
-         drain_wall = state_wall_in(i_layer)*.0
+         drain_wall(i_layer) = state_wall_in(i_layer)*.0
 
          ! infiltration to replenish soil water
-         infil_wall = state_wall_in(i_layer)*.1
+         infil_wall(i_layer) = state_wall_in(i_layer)*.1
 
          IF (precip_excess_wall > 0) THEN
             ! runoff generated from roof
-            runoff_wall = precip_excess_wall
-            chang_wall = StateLimit_wall(i_layer) - ev_wall(i_layer) - drain_wall - infil_wall
+            runoff_wall(i_layer) = precip_excess_wall
+            chang_wall(i_layer) = StateLimit_wall(i_layer) - ev_wall(i_layer) - drain_wall(i_layer) - infil_wall(i_layer)
          ELSE
-            chang_wall = pin_wall - ev_wall(i_layer) - drain_wall - infil_wall
+            chang_wall(i_layer) = pin_wall - ev_wall(i_layer) - drain_wall(i_layer) - infil_wall(i_layer)
          END IF
 
-          ! change in surface water
-         state_wall_out(i_layer) = state_wall_in(i_layer) + chang_wall
+         ! change in surface water
+         state_wall_out(i_layer) = state_wall_in(i_layer) + chang_wall(i_layer)
 
          ! Check state_id is within physical limits between zero (dry) and max. storage capacity
          IF (state_wall_out(i_layer) < 0.0) THEN ! Cannot have a negative surface state_id
@@ -686,19 +678,34 @@ CONTAINS
             soilstore_wall_out(i_layer) = 0.0
          ELSE
             ! If there is sufficient water on the surface, then allow surface water to replenish soilstore
-            IF (soilstore_wall_in(i_layer) + infil_wall > SoilStoreCap_wall(i_layer)) THEN
+            IF (soilstore_wall_in(i_layer) + infil_wall(i_layer) > SoilStoreCap_wall(i_layer)) THEN
                ! cap soilstore_id at max. storage capacity if saturated
                soilstore_wall_out(i_layer) = SoilStoreCap_wall(i_layer)
 
                ! excessive infiltration goes into runoff
-               runoff_wall = runoff_wall + (soilstore_wall_in(i_layer) + infil_wall - SoilStoreCap_wall(i_layer))
+               runoff_wall(i_layer) = &
+                  runoff_wall(i_layer) + &
+                  (soilstore_wall_in(i_layer) + infil_wall(i_layer) - SoilStoreCap_wall(i_layer))
             ELSE
-               soilstore_wall_out(i_layer) = soilstore_wall_in(i_layer) + infil_wall
+               soilstore_wall_out(i_layer) = soilstore_wall_in(i_layer) + infil_wall(i_layer)
             END IF
 
          END IF
 
       END DO
+
+      ! diagnostics info:
+      ! call r8vec_print(SIZE(soilstore_roof_out), soilstore_roof_in, 'soilstore_roof_in in layer')
+      ! call r8vec_print(SIZE(soilstore_roof_out), SoilStoreCap_roof, 'SoilStoreCap_roof in layer')
+      ! call r8vec_print(SIZE(soilstore_roof_out), infil_roof, 'infil_roof in layer')
+      ! call r8vec_print(SIZE(soilstore_wall_out), soilstore_roof_out, 'soilstore_roof_out in layer')
+
+      ! aggregated values
+      state_building = DOT_PRODUCT(state_roof_out, sfr_roof) + DOT_PRODUCT(state_wall_out, sfr_wall)
+      soilstore_building = DOT_PRODUCT(soilstore_roof_out, sfr_roof) + DOT_PRODUCT(soilstore_wall_out, sfr_wall)
+      SoilStoreCap_building=DOT_PRODUCT(SoilStoreCap_roof, sfr_roof) + DOT_PRODUCT(SoilStoreCap_wall, sfr_wall)
+      ! only allow runoff from walls
+      runoff_building = DOT_PRODUCT(runoff_wall, sfr_wall)
 
    END SUBROUTINE cal_water_storage_building
 
@@ -1080,7 +1087,12 @@ CONTAINS
                      IF (DimenWaterCon2 < 0.00000005) THEN
                         DimenWaterCon2 = DimenWaterCon2 + 0.0000001 !Added HCW 22 Feb 2017
                      END IF
-
+                     ! print*, 'soilstore_id = ', soilstore_id
+                     ! print*, 'SoilStoreCap = ', SoilStoreCap
+                     ! print*, 'SoilDepth = ', SoilDepth
+                     ! print*, 'SoilMoist_vol2 = ', SoilMoist_vol2
+                     ! print*, 'SoilMoistCap_Vol2 = ', SoilMoistCap_Vol2
+                     ! print*, 'is = ', is, ' jj = ', jj, ' DimenWaterCon2 = ', DimenWaterCon2
                      !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2
                      !Water potential of second store [mm] (van Genuchten 1980, Eq 3 rearranged)
                      MatPot2 = SQRT(1/DimenWaterCon2**2 - 1)/alphavG

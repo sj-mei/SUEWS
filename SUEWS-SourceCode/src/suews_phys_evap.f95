@@ -120,7 +120,7 @@ CONTAINS
       EvapMethod, & !input
       sfr_multi, state_multi, WetThresh_multi, capStore_multi, & !input
       vpd_hPa, avdens, avcp, qn_e_multi, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
-      RSS_multi, ev_multi, qe_multi, qe_total) !output
+      RSS_multi, ev_multi, qe_multi) !output
       IMPLICIT NONE
       INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
       ! INTEGER, INTENT(in) :: n_facet !number of facets
@@ -144,7 +144,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: RSS_multi !Redefined surface resistance for wet surfaces [s m-1]
       REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: ev_multi ! evapotranspiration [mm]
       REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: qe_multi ! latent heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: qe_total ! latent heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qe_total ! latent heat flux [W m-2]
 
       ! REAL(KIND(1D0)) :: numPM !numerator of P-M eqn
       ! REAL(KIND(1D0)) :: RB_SG !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
@@ -167,7 +167,7 @@ CONTAINS
       END DO
 
       ! Sum latent heat flux from different surfaces to find total latent heat flux
-      qe_total = DOT_PRODUCT(qe_multi, sfr_multi)
+      ! qe_total = DOT_PRODUCT(qe_multi, sfr_multi)
 
    END SUBROUTINE cal_evap_multi
 

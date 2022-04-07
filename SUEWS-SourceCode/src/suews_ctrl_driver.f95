@@ -749,10 +749,12 @@ CONTAINS
       SnowDens_prev = SnowDens
       SnowFrac_prev = MERGE(SnowFrac_obs, SnowFrac, NetRadiationMethod == 0)
       SnowPack_prev = SnowPack
-      soilstore_surf_prev = soilstore_surf
       state_surf_prev = state_surf
       state_roof_prev = state_roof
       state_wall_prev = state_wall
+      soilstore_surf_prev = soilstore_surf
+      soilstore_roof_prev = soilstore_roof
+      soilstore_wall_prev = soilstore_wall
       Tair_av_prev = Tair_av
       LAI_id_prev = LAI_id
       GDD_id_prev = GDD_id
@@ -1168,7 +1170,7 @@ CONTAINS
          ELSE
             !======== Evaporation and surface state_id for snow-free conditions ========
             CALL SUEWS_cal_QE( &
-               Diagnose, nlayer, & !input
+               Diagnose,storageheatmethod, nlayer, & !input
                tstep, &
                EvapMethod, &
                avdens, avcp, lv_J_kg, &
@@ -1197,6 +1199,7 @@ CONTAINS
                runoffAGveg, runoffAGimpervious, rss_nsurf)
             !======== Evaporation and surface state_id end========
          END IF
+         IF (Diagnose == 1) print*, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
 
          !=== Horizontal movement between soil stores ===
          ! Now water is allowed to move horizontally between the soil stores
@@ -1268,12 +1271,19 @@ CONTAINS
          qh_surf = qn_surf + qf - qs_surf - qe_surf
          qh_roof = qn_roof + qf - qs_roof - qe_roof
          qh_wall = qn_wall + qf - qs_wall - qe_wall
+         IF (diagnose == 1) THEN
+            PRINT *, 'qn_surf before QH back env.:', qn_surf
+            PRINT *, 'qf before QH back env.:', qf
+            PRINT *, 'qs_surf before QH back env.:', qs_surf
+            PRINT *, 'qe_surf before QH back env.:', qe_surf
+            PRINT *, 'qh_surf before QH back env.:', qh_surf
 
-         PRINT *, 'qn_surf before QH back env.:', qn_surf
-         PRINT *, 'qf before QH back env.:', qf
-         PRINT *, 'qs_surf before QH back env.:', qs_surf
-         PRINT *, 'qe_surf before QH back env.:', qe_surf
-         PRINT *, 'qh_surf before QH back env.:', qh_surf
+            PRINT *, 'qn_roof before QH back env.:', qn_roof
+            PRINT *, 'qs_roof before QH back env.:', qs_roof
+            PRINT *, 'qe_roof before QH back env.:', qe_roof
+            PRINT *, 'qh_roof before QH back env.:', qh_roof
+
+         END IF
          DO i_surf = 1, nsurf
             ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
             tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
@@ -1291,13 +1301,16 @@ CONTAINS
             tsfc_out_wall(i_surf) = cal_tsfc(qh_wall(i_surf), avdens, avcp, RA_h, temp_c)
          END DO
 
-         PRINT *, 'tsfc_surf after QH back env.:', tsfc_out_surf
+         IF (diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', tsfc_out_surf
          ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
-         PRINT *, 'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf)), MAXLOC(ABS(tsfc_out_surf - tsfc0_out_surf))
+         IF (diagnose == 1) PRINT *, &
+            'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf)), MAXLOC(ABS(tsfc_out_surf - tsfc0_out_surf))
          dif_tsfc_iter = MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf))
-         PRINT *, 'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
+         IF (diagnose == 1) PRINT *, &
+            'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
          dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), dif_tsfc_iter)
-         PRINT *, 'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
+         IF (diagnose == 1) PRINT *, &
+            'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
          dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_out_wall)), dif_tsfc_iter)
 
          ! ====test===
@@ -2728,7 +2741,7 @@ CONTAINS
    !================latent heat flux and surface wetness===================
    ! TODO: optimise the structure of this function
    SUBROUTINE SUEWS_cal_QE( &
-      Diagnose, nlayer, & !input
+      Diagnose, storageheatmethod, nlayer, & !input
       tstep, &
       EvapMethod, &
       avdens, avcp, lv_J_kg, &
@@ -2737,9 +2750,9 @@ CONTAINS
       addimpervious, &
       qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
       precip, PipeCapacity, RunoffToWater, &
-      NonWaterFraction, WU_surf, addVeg, addWaterBody, AddWater, &
-      FlowChange, drain, &
-      frac_water2runoff, StoreDrainPrm, &
+      NonWaterFraction, WU_surf, addVeg, addWaterBody, AddWater_surf, &
+      FlowChange, drain_surf, &
+      frac_water2runoff_surf, StoreDrainPrm, &
       sfr_surf, StateLimit_surf, SoilStoreCap_surf, WetThresh_surf, & ! input:
       state_surf_in, soilstore_surf_in, qn_surf, qs_surf, & ! input:
       sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
@@ -2752,14 +2765,14 @@ CONTAINS
       state_grid, NWstate_grid, &
       qe, qe_surf, qe_roof, qe_wall, &
       ev_grid, runoff_grid, &
-      surf_chang_grid, runoffPipes, &
-      runoffwaterbody, &
-      runoffAGveg, runoffAGimpervious, rss_surf)
+      surf_chang_grid, runoffPipes_grid, &
+      runoffWaterBody_grid, &
+      runoffAGveg_grid, runoffAGimpervious_grid, rss_surf)
 
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: Diagnose
-      ! INTEGER, INTENT(in) :: SnowUse
+      INTEGER, INTENT(in) :: storageheatmethod
       INTEGER, INTENT(in) :: nlayer
       INTEGER, INTENT(in) :: tstep
       ! INTEGER, INTENT(in) :: imin
@@ -2809,7 +2822,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: FlowChange
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain_surf
 
       ! input for generic suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
@@ -2842,8 +2855,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_wall
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPackLimit
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff_surf
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm
       ! REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr
 
@@ -2858,10 +2871,10 @@ CONTAINS
       ! output:
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_surf_out
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_surf_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_roof_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_roof_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_wall_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_wall_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_roof_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_roof_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_wall_out
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_wall_out
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowWater_out
@@ -2899,16 +2912,16 @@ CONTAINS
       ! REAL(KIND(1D0)) :: ev
       ! REAL(KIND(1D0)), INTENT(out) :: chSnow_per_interval
       REAL(KIND(1D0)), INTENT(out) :: ev_grid
-      REAL(KIND(1D0)) :: qe_surf_total
+      REAL(KIND(1D0)) :: qe_grid
       REAL(KIND(1D0)), INTENT(out) :: runoff_grid
       REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid
-      REAL(KIND(1D0)), INTENT(out) :: runoffPipes
+      REAL(KIND(1D0)), INTENT(out) :: runoffPipes_grid
       ! REAL(KIND(1D0)), INTENT(out) :: mwstore
-      REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody
+      REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody_grid
       ! REAL(KIND(1D0)) :: runoffWaterBody_m3
       ! REAL(KIND(1D0)) :: runoffPipes_m3
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg_grid
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious_grid
 
       ! local:
       ! INTEGER :: is
@@ -2926,7 +2939,11 @@ CONTAINS
       REAL(KIND(1D0)) :: pin !Rain per time interval
       REAL(KIND(1D0)) :: tlv
       REAL(KIND(1D0)) :: nsh_real
-       REAL(KIND(1D0)) :: runoff_building
+      REAL(KIND(1D0)) :: state_building
+      REAL(KIND(1D0)) :: soilstore_building
+      REAL(KIND(1D0)) :: capStore_builing
+      REAL(KIND(1D0)) :: runoff_building
+      REAL(KIND(1D0)) :: qe_building
 
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
@@ -2957,51 +2974,77 @@ CONTAINS
          EvapMethod, & !input
          sfr_surf, state_surf_in, WetThresh_surf, capStore_surf, & !input
          vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-         rss_surf, ev_surf, qe_surf, qe_surf_total) !output
+         rss_surf, ev_surf, qe_surf) !output
 
-      ! --- roofs ---
-      CALL cal_evap_multi( &
-         EvapMethod, & !input
-         sfr_roof, state_roof_in, WetThresh_roof, statelimit_roof, & !input
-         vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-         rss_roof, ev_roof, qe_roof, qe_roof_total) !output
+      IF (storageheatmethod == 5) THEN
+         ! --- roofs ---
+         CALL cal_evap_multi( &
+            EvapMethod, & !input
+            sfr_roof, state_roof_in, WetThresh_roof, statelimit_roof, & !input
+            vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+            rss_roof, ev_roof, qe_roof) !output
 
-      ! --- walls ---
-      CALL cal_evap_multi( &
-         EvapMethod, & !input
-         sfr_wall, state_wall_in, WetThresh_wall, statelimit_wall, & !input
-         vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-         rss_wall, ev_wall, qe_wall, qe_wall_total) !output
+         ! --- walls ---
+         CALL cal_evap_multi( &
+            EvapMethod, & !input
+            sfr_wall, state_wall_in, WetThresh_wall, statelimit_wall, & !input
+            vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+            rss_wall, ev_wall, qe_wall) !output
 
-      ! == calculate water balance ==
-      CALL cal_water_storage_building( &
-         pin, nsh_real, &
-         sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
-         state_roof_in, soilstore_roof_in, ev_roof, & ! input:
-         sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
-         state_wall_in, soilstore_wall_in, ev_wall, & ! input:
-         state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
-         state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
-         runoff_building)
+         qe_building = 0.5*(DOT_PRODUCT(qe_roof, sfr_roof) + DOT_PRODUCT(qe_wall, sfr_wall))
 
+         ! == calculate water balance ==
+         ! --- building facets: roofs and walls ---
+         CALL cal_water_storage_building( &
+            pin, nsh_real,nlayer, &
+            sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
+            state_roof_in, soilstore_roof_in, ev_roof, & ! input:
+            sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
+            state_wall_in, soilstore_wall_in, ev_wall, & ! input:
+            state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
+            state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
+            state_building, soilstore_building, runoff_building, capStore_builing)
+      END IF
       ! --- general suews surfaces ---
       CALL cal_water_storage_surf( &
-         sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
-         WU_surf, &
-         NonWaterFraction, &
-         drain, AddWater, addImpervious, nsh_real, state_surf_in, frac_water2runoff, &
-         PervFraction, addVeg, SoilStoreCap_surf, addWaterBody, FlowChange, StateLimit_surf, &
-         ev_surf, soilstore_surf_in, &
-         runoffAGimpervious, runoffAGveg, runoffPipes, runoffWaterBody, & ! output:
-         state_surf_out, soilstore_surf_out, &
+         pin, nsh_real, &
+         PipeCapacity, RunoffToWater, & ! input:
+         addImpervious, addVeg, addWaterBody, FlowChange, &
+         SoilStoreCap_surf, StateLimit_surf, &
+         NonWaterFraction, PervFraction, &
+         sfr_surf, ev_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
+         state_surf_in, soilstore_surf_in, &
+         state_surf_out, soilstore_surf_out, & ! output:
+         runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
          ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid)
 
-      ! --- roofs ---
+      IF (storageheatmethod == 5) THEN
+         ! update building specific values
+         qe_surf(BldgSurf) = qe_building
+         state_surf_out(BldgSurf) = state_building
+         soilstore_surf_out(BldgSurf) = soilstore_building/capStore_builing*capStore_surf(BldgSurf)
+         runoff_surf(BldgSurf) = runoff_building
+      END IF
 
-      ! --- walls ---
 
-      qe = qe_surf_total
+      ! aggregate all surface water fluxes/amounts
+      qe = DOT_PRODUCT(qe_surf, sfr_surf)
 
+      ! Sum change from different surfaces to find total change to surface state_id
+      surf_chang_grid = DOT_PRODUCT(state_surf_out - state_surf_in, sfr_surf)
+
+      ! Sum evaporation from different surfaces to find total evaporation [mm]
+      ev_grid = DOT_PRODUCT(ev_surf, sfr_surf)
+
+      ! Sum runoff from different surfaces to find total runoff
+      runoff_grid = DOT_PRODUCT(runoff_surf, sfr_surf)
+
+      ! Calculate total state_id (including water body)
+      state_grid = DOT_PRODUCT(state_surf_out, sfr_surf)
+
+      IF (NonWaterFraction /= 0) THEN
+         NWstate_grid = DOT_PRODUCT(state_surf_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+      END IF
       ! Calculate volume of water that will move between grids
       ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
       ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
@@ -3012,6 +3055,10 @@ CONTAINS
 
       ! state_id_out = state_id_out
       ! soilstore_id_out = soilstore_id
+      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE soilstore_building = ', soilstore_building
+      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE capStore_builing = ', capStore_builing
+      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
+      IF (Diagnose == 1) print*, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf_out
 
    END SUBROUTINE SUEWS_cal_QE
    !========================================================================
