@@ -1893,9 +1893,9 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ! initialise surface temperatures for ESTM_ext
    ! if ( StorageHeatMethod==5 ) then
 
-      tsfc_roof_grids(Gridiv, :) = Temp_C0
-      tsfc_wall_grids(Gridiv, :) = Temp_C0
-      tsfc_surf_grids(Gridiv, :) = Temp_C0
+   tsfc_roof_grids(Gridiv, :) = Temp_C0
+   tsfc_wall_grids(Gridiv, :) = Temp_C0
+   tsfc_surf_grids(Gridiv, :) = Temp_C0
    ! end if
 
    ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)

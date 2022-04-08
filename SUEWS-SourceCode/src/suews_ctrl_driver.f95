@@ -752,10 +752,10 @@ CONTAINS
       state_surf_prev = state_surf
       soilstore_surf_prev = soilstore_surf
       ! IF (StorageHeatMethod == 5) THEN
-         state_roof_prev = state_roof
-         state_wall_prev = state_wall
-         soilstore_roof_prev = soilstore_roof
-         soilstore_wall_prev = soilstore_wall
+      state_roof_prev = state_roof
+      state_wall_prev = state_wall
+      soilstore_roof_prev = soilstore_roof
+      soilstore_wall_prev = soilstore_wall
 
       ! END IF
       Tair_av_prev = Tair_av
@@ -801,10 +801,10 @@ CONTAINS
       soilstore_surf_next = soilstore_surf
       ! IF (StorageHeatMethod == 5) THEN
 
-         soilstore_roof_next = soilstore_roof
-         soilstore_wall_next = soilstore_wall
-         state_roof_next = state_roof
-         state_wall_next = state_wall
+      soilstore_roof_next = soilstore_roof
+      soilstore_wall_next = soilstore_wall
+      state_roof_next = state_roof
+      state_wall_next = state_wall
 
       ! END IF
       Tair_av_next = Tair_av
