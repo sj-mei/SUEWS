@@ -583,29 +583,29 @@ CONTAINS
 
       ! lw arrays
       clear_air_abs_lw_spc = 0.0
-      clear_air_abs_lw_spc(:nlayer) = lw_flux%clear_air_abs(nspec, :)
+      clear_air_abs_lw_spc(:nlayer) = lw_flux%clear_air_abs(nspec, :nlayer)
       wall_net_lw_spc = 0.0
-      wall_net_lw_spc(:nlayer) = lw_flux%wall_net(nspec, :)
+      wall_net_lw_spc(:nlayer) = lw_flux%wall_net(nspec, :nlayer)
       ! PRINT *, 'wall_net_lw_spc in suews-su', lw_flux%wall_net
       roof_net_lw_spc = 0.0
-      roof_net_lw_spc(:nlayer) = lw_flux%roof_net(nspec, :)
+      roof_net_lw_spc(:nlayer) = lw_flux%roof_net(nspec, :nlayer)
       ! PRINT *, 'roof_net_lw_spc in suews-su', lw_flux%roof_net
       roof_in_lw_spc = 0.0
-      roof_in_lw_spc(:nlayer) = lw_flux%roof_in(nspec, :)
+      roof_in_lw_spc(:nlayer) = lw_flux%roof_in(nspec, :nlayer)
       top_net_lw_spc = lw_flux%top_net(nspec, ncol)
       ground_net_lw_spc = lw_flux%ground_net(nspec, ncol)
       top_dn_lw_spc = lw_flux%top_dn(nspec, ncol)
       ! sw arrays
       clear_air_abs_sw_spc = 0.0
-      clear_air_abs_sw_spc(:nlayer) = sw_flux%clear_air_abs(nspec, :)
+      clear_air_abs_sw_spc(:nlayer) = sw_flux%clear_air_abs(nspec, :nlayer)
       wall_net_sw_spc = 0.0
-      wall_net_sw_spc(:nlayer) = sw_flux%wall_net(nspec, :)
+      wall_net_sw_spc(:nlayer) = sw_flux%wall_net(nspec, :nlayer)
       ! PRINT *, 'wall_net_sw_spc in suews-su', wall_net_sw_spc(:nlayer), sw_flux%wall_net
       roof_net_sw_spc = 0.0
-      roof_net_sw_spc(:nlayer) = sw_flux%roof_net(nspec, :)
+      roof_net_sw_spc(:nlayer) = sw_flux%roof_net(nspec, :nlayer)
       ! PRINT *, 'roof_net_sw_spc in suews-su', roof_net_sw_spc(:nlayer), sw_flux%roof_net
       roof_in_sw_spc = 0.0
-      roof_in_sw_spc(:nlayer) = sw_flux%roof_in(nspec, :)
+      roof_in_sw_spc(:nlayer) = sw_flux%roof_in(nspec, :nlayer)
       top_dn_dir_sw_spc = sw_flux%top_dn_dir(nspec, ncol)
       top_net_sw_spc = sw_flux%top_net(nspec, ncol)
       ground_dn_dir_sw_spc = sw_flux%ground_dn_dir(nspec, ncol)
