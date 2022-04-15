@@ -783,7 +783,7 @@ CONTAINS
          cp_surf, cp_surf_grids, &
          tin_surf, tin_surf_grids, &
          nspec
-      USE data_in, ONLY: FileInputPath
+      USE data_in, ONLY: FileInputPath,filecode
       USE strings, ONLY: writenum
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: gridIV
@@ -791,7 +791,6 @@ CONTAINS
       CHARACTER(len=100) :: FileLayout, str_gridIV
       INTEGER :: istat, iunit, ERROR_UNIT, i
       INTEGER :: igroup, ilayer, idepth
-      CHARACTER(len=10) :: str_igroup, str_ilayer, str_idepth
       CHARACTER(len=1000) :: line
       REAL(KIND(1D0)) :: k, dz
 
@@ -843,17 +842,17 @@ CONTAINS
 
       IF (MultipleLayoutFiles) THEN
          CALL writenum(gridIV, str_gridIV, 'i4')
-         FileLayout = 'GridLayout'//TRIM(str_gridIV)//'.nml'
+         FileLayout = 'GridLayout'//TRIM(filecode)//TRIM(str_gridIV)//'.nml'
       ELSE
-         FileLayout = 'GridLayout.nml'
+         FileLayout = 'GridLayout'//TRIM(filecode)//'.nml'
       END IF
 
-      PRINT *, 'Reading layout file: ', TRIM(FileInputPath)//FileLayout
+      ! PRINT *, 'Reading layout file: ', TRIM(FileInputPath)//FileLayout
       iunit = 212
       OPEN (iunit, file=TRIM(FileInputPath)//TRIM(FileLayout), status='old')
-      PRINT *, 'Read dim info of GridLayout'
+      ! PRINT *, 'Read dim info of GridLayout'
       READ (iunit, nml=dim, iostat=istat)
-      PRINT *, 'nroof', nlayer, 'nwall', nlayer
+      ! PRINT *, 'nroof', nlayer, 'nwall', nlayer
 
       IF (istat /= 0) THEN
          BACKSPACE (iunit)
@@ -904,45 +903,45 @@ CONTAINS
       ALLOCATE (tin_surf(nsurf))
 
       OPEN (iunit, file=TRIM(FileInputPath)//TRIM(FileLayout), status='old')
-      PRINT *, 'Read geometry part of GridLayout'
+      ! PRINT *, 'Read geometry part of GridLayout'
       READ (iunit, nml=geom, iostat=istat)
-      PRINT *, 'height', height
-      PRINT *, 'building_frac', building_frac
-      PRINT *, 'veg_frac', veg_frac
-      PRINT *, 'building_scale', building_scale
-      PRINT *, 'veg_scale', veg_scale
+      ! PRINT *, 'height', height
+      ! PRINT *, 'building_frac', building_frac
+      ! PRINT *, 'veg_frac', veg_frac
+      ! PRINT *, 'building_scale', building_scale
+      ! PRINT *, 'veg_scale', veg_scale
 
-      PRINT *, 'Read roof part of GridLayout'
+      ! PRINT *, 'Read roof part of GridLayout'
       READ (iunit, nml=roof, iostat=istat)
-      PRINT *, 'sfr_roof', sfr_roof
-      PRINT *, 'dz_roof', dz_roof
-      PRINT *, 'k_roof', k_roof
-      PRINT *, 'cp_roof', cp_roof
-      PRINT *, 'tin_roof', tin_roof
-      PRINT *, 'alb_roof', alb_roof
-      PRINT *, 'emis_roof', emis_roof
-      PRINT *, 'state_roof', state_roof
-      PRINT *, 'statelimit_roof', statelimit_roof
-      PRINT *, 'wetthresh_roof', wetthresh_roof
-      PRINT *, 'soilstore_roof', soilstore_roof
-      PRINT *, 'soilstorecap_roof', soilstorecap_roof
+      ! PRINT *, 'sfr_roof', sfr_roof
+      ! PRINT *, 'dz_roof', dz_roof
+      ! PRINT *, 'k_roof', k_roof
+      ! PRINT *, 'cp_roof', cp_roof
+      ! PRINT *, 'tin_roof', tin_roof
+      ! PRINT *, 'alb_roof', alb_roof
+      ! PRINT *, 'emis_roof', emis_roof
+      ! PRINT *, 'state_roof', state_roof
+      ! PRINT *, 'statelimit_roof', statelimit_roof
+      ! PRINT *, 'wetthresh_roof', wetthresh_roof
+      ! PRINT *, 'soilstore_roof', soilstore_roof
+      ! PRINT *, 'soilstorecap_roof', soilstorecap_roof
 
-      PRINT *, 'Read wall part of GridLayout'
+      ! PRINT *, 'Read wall part of GridLayout'
       READ (iunit, nml=wall, iostat=istat)
-      PRINT *, 'sfr_wall', sfr_wall
-      PRINT *, 'dz_wall', dz_wall
-      PRINT *, 'k_wall', k_wall
-      PRINT *, 'cp_wall', cp_wall
-      PRINT *, 'tin_wall', tin_wall
-      PRINT *, 'alb_wall', alb_wall
-      PRINT *, 'emis_wall', emis_wall
-      PRINT *, 'state_wall', state_wall
-      PRINT *, 'statelimit_wall', statelimit_wall
-      PRINT *, 'wetthresh_wall', wetthresh_wall
-      PRINT *, 'soilstore_wall', soilstore_wall
-      PRINT *, 'soilstorecap_wall', soilstorecap_wall
+      ! PRINT *, 'sfr_wall', sfr_wall
+      ! PRINT *, 'dz_wall', dz_wall
+      ! PRINT *, 'k_wall', k_wall
+      ! PRINT *, 'cp_wall', cp_wall
+      ! PRINT *, 'tin_wall', tin_wall
+      ! PRINT *, 'alb_wall', alb_wall
+      ! PRINT *, 'emis_wall', emis_wall
+      ! PRINT *, 'state_wall', state_wall
+      ! PRINT *, 'statelimit_wall', statelimit_wall
+      ! PRINT *, 'wetthresh_wall', wetthresh_wall
+      ! PRINT *, 'soilstore_wall', soilstore_wall
+      ! PRINT *, 'soilstorecap_wall', soilstorecap_wall
 
-      PRINT *, 'Read surf part of GridLayout'
+      ! PRINT *, 'Read surf part of GridLayout'
       READ (iunit, nml=surf, iostat=istat)
       IF (istat /= 0) THEN
          BACKSPACE (iunit)

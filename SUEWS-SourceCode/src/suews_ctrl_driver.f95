@@ -849,14 +849,14 @@ CONTAINS
       tsfc0_out_roof = tsfc_roof
       tsfc_out_wall = tsfc_wall
       tsfc0_out_wall = tsfc_wall
-      PRINT *, 'sfr_surf for this grid ', sfr_surf
-      PRINT *, 'before iteration Ts_iter = ', Ts_iter
+      ! PRINT *, 'sfr_surf for this grid ', sfr_surf
+      ! PRINT *, 'before iteration Ts_iter = ', Ts_iter
       ! L_mod_iter = 10
       i_iter = 1
       max_iter = 30
       DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
-         PRINT *, '=========================== '
-         PRINT *, 'Ts_iter of ', i_iter, ' is:', Ts_iter
+         ! PRINT *, '=========================== '
+         ! PRINT *, 'Ts_iter of ', i_iter, ' is:', Ts_iter
 
          ! calculate dectime
          CALL SUEWS_cal_dectime( &
@@ -1025,10 +1025,10 @@ CONTAINS
          ! PRINT *, 'Qg_wall before cal_qs', Qg_wall
          ! print *,''
 
-         PRINT *, 'tsfc_surf before cal_qs', tsfc_out_surf
-         PRINT *, 'tsfc_out_roof before cal_qs', tsfc_out_roof
-         PRINT *, 'tsfc_wall before cal_qs', tsfc_out_wall
-         PRINT *, ''
+         ! PRINT *, 'tsfc_surf before cal_qs', tsfc_out_surf
+         ! PRINT *, 'tsfc_out_roof before cal_qs', tsfc_out_roof
+         ! PRINT *, 'tsfc_wall before cal_qs', tsfc_out_wall
+         ! PRINT *, ''
 
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
@@ -1061,7 +1061,7 @@ CONTAINS
          ! PRINT *, 'QS_roof after cal_qs', QS_roof
          ! PRINT *, 'QS_wall after cal_qs', QS_wall
 
-         PRINT *, ''
+         ! PRINT *, ''
 
          ! PRINT *, 'tsfc_surf after cal_qs', tsfc_out_surf
          ! PRINT *, 'tsfc_roof after cal_qs', tsfc_out_roof
@@ -1254,7 +1254,7 @@ CONTAINS
          ! PRINT *, 'tsfc_surf after SUEWS_cal_QH (resist)', tsfc_out_surf
          ! PRINT *, 'tsfc_roof after SUEWS_cal_QH (resist)', tsfc_out_roof
          ! PRINT *, 'tsfc_wall after SUEWS_cal_QH (resist)', tsfc_out_wall
-         PRINT *, ''
+         ! PRINT *, ''
          ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
          ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
          !============ Sensible heat flux end ===============
@@ -1350,28 +1350,28 @@ CONTAINS
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
-            PRINT *, 'Iteration done in', i_iter, ' iterations'
+            ! PRINT *, 'Iteration done in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
-            PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
+            ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
 
          END IF
 
          i_iter = i_iter + 1
          ! force quit do-while loop if not convergent after 100 iterations
          IF (i_iter == max_iter) THEN
-            PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
+            ! PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
             ! PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
-            PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
+            ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
             ! exit
          END IF
 
          ! Ts_iter = TSfc_C
          ! l_mod_iter = l_mod
-         PRINT *, '========================='
-         PRINT *, ''
+         ! PRINT *, '========================='
+         ! PRINT *, ''
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 

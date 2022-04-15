@@ -626,9 +626,9 @@ PROGRAM SUEWS_Program
 
          DO ir = 1, irMax !Loop through rows of current block of met data
             GridCounter = 1 !Initialise counter for grids in each year
-            PRINT *, '*****************************************'
-            WRITE (*, *) 'ir here', ir, 'of', irMax
-            PRINT *, ''
+            ! PRINT *, '*****************************************'
+            ! WRITE (*, *) 'ir here', ir, 'of', irMax
+            ! PRINT *, ''
 
             ! quick stop : for testing
             ! if ( ir>10 ) then
