@@ -2220,6 +2220,8 @@ CONTAINS
                   SnowUse, SnowFrac, &
                   DiagQS, &
                   a1, a2, a3, qs, deltaQi)
+         QS_roof = qs
+         QS_wall = qs
 
          ! use AnOHM to calculate QS, TS 14 Mar 2016
       ELSEIF (StorageHeatMethod == 3) THEN
@@ -2238,6 +2240,8 @@ CONTAINS
             sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
             qn_av_next, dqndt_next, &
             a1, a2, a3, qs, deltaQi) ! output
+         QS_roof = qs
+         QS_wall = qs
 
          ! !Calculate QS using ESTM
       ELSEIF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
