@@ -1,10 +1,10 @@
 &RunControl
 CBLUse=0
 SnowUse=0
-NetRadiationMethod=1003 ! anything larger than 1000 for SU
+NetRadiationMethod=3 ! anything larger than 1000 for SU
 BaseTMethod=1
 EmissionsMethod=1
-StorageHeatMethod=5
+StorageHeatMethod=1
 OHMIncQF=0
 StabilityMethod=3
 RoughLenHeatMethod=2
@@ -19,7 +19,7 @@ MultipleInitFiles=0
 MultipleESTMFiles=1
 MultipleLayoutFiles=1
 KeepTstepFilesIn=0
-KeepTstepFilesOut=1
+KeepTstepFilesOut=0
 WriteOutOption=1
 ResolutionFilesOut=3600
 Tstep=300
