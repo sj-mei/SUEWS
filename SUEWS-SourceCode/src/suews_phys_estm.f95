@@ -783,7 +783,7 @@ CONTAINS
          cp_surf, cp_surf_grids, &
          tin_surf, tin_surf_grids, &
          nspec
-      USE data_in, ONLY: FileInputPath,filecode
+      USE data_in, ONLY: FileInputPath, filecode
       USE strings, ONLY: writenum
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: gridIV
