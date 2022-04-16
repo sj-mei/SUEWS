@@ -1393,18 +1393,18 @@ CONTAINS
       INTEGER :: tdiff !Time difference (in minutes) between first and second rows of original met forcing file
       INTEGER :: i, ii !counter
       INTEGER :: iBlock, igrid
-      INTEGER, DIMENSION(Nper) :: seq1Nper
+      INTEGER, DIMENSION(NperTstepIn) :: seq1Nper
       INTEGER, DIMENSION(nsd) :: seq1nsd
       INTEGER, DIMENSION(nColumnsMetForcingData) :: MetDisaggMethod ! Stores method to use for disaggregating met data
       REAL(KIND(1D0)), DIMENSION(nColumnsMetForcingData) :: MetArrayOrig
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper, ncolumnsMetForcingData) :: Met_tt
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper) :: Met_tt_kdownAdj
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*NperTstepIn, ncolumnsMetForcingData) :: Met_tt
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*NperTstepIn) :: Met_tt_kdownAdj
       CHARACTER(LEN=9), DIMENSION(ncolumnsMetForcingData) :: HeaderMet
       CHARACTER(LEN=10*ncolumnsMetForcingData) :: HeaderMetOut
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData):: dectimeOrig
       ! REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData*Nper):: dectimeDscd, dectimeFast
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper) :: dectimeFast
-      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*Nper) :: idectime ! sun position at middle of time-step before
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*NperTstepIn) :: dectimeFast
+      REAL(KIND(1D0)), DIMENSION(ReadLinesOrigMetData*NperTstepIn) :: idectime ! sun position at middle of time-step before
 
       ! INTEGER, DIMENSION(Nper):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm ! temorary varaibles for disaggragation
       ! REAL(KIND(1d0)), DIMENSION(Nper):: temp_dectime ! temorary varaibles for disaggragation
@@ -1424,7 +1424,7 @@ CONTAINS
       MetDisaggMethod = -999
 
       ! Generate useful sequences
-      seq1Nper = (/(i, i=1, Nper, 1)/)
+      seq1Nper = (/(i, i=1, NperTstepIn, 1)/)
       seq1nsd = (/(i, i=1, nsd, 1)/)
 
       ! Get methods to use for disaggregation from RunControl
@@ -1500,32 +1500,35 @@ CONTAINS
       ! Disaggregate time columns ---------------------------------------------------------
       IF (Diagnose == 1) WRITE (*, *) 'Disaggregating met forcing data (', TRIM(FileOrigMet), ') to model time-step...'
 
-      CALL DisaggregateDateTime(MetForDisagg(:, 1:4), tstep, Nper, ReadLinesOrigMetDataMax, Met_tt(:, 1:4))
+      CALL DisaggregateDateTime(MetForDisagg(:, 1:4), tstep, NperTstepIn, ReadLinesOrigMetDataMax, Met_tt(:, 1:4))
 
       ! Disaggregate other columns --------------------------------------------------------
       DO ii = 5, ncolumnsMetForcingData
          IF (ii == 14) THEN !Do something different for rainfall and snowfall (if present)
             IF (MetDisaggMethod(14) == 100) THEN
-               Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), Nper, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+               Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), &
+                                              NperTstepIn, NperTstepIn, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                IF (ALL(MetForDisagg(:, 16) == -999)) THEN
                   Met_tt(:, 16) = -999
                ELSE
-                  Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), Nper, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+                  Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), &
+                                                 NperTstepIn, NperTstepIn, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                END IF
             ELSEIF (MetDisaggMethod(14) == 101) THEN
                IF (RainAmongN == -999) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
                                  REAL(RainAmongN, KIND(1D0)), NotUsed, RainDisaggMethod)
-               ELSEIF (RainAmongN > Nper) THEN
-                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainAmongN > Nper', REAL(Nper, KIND(1D0)), NotUsed, RainAmongN)
+               ELSEIF (RainAmongN > NperTstepIn) THEN
+                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainAmongN > Nper', &
+                                 REAL(NperTstepIn, KIND(1D0)), NotUsed, RainAmongN)
                ELSE
                   Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), &
-                                                 RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+                                                 RainAmongN, NperTstepIn, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   IF (ALL(MetForDisagg(:, 16) == -999)) THEN
                      Met_tt(:, 16) = -999
                   ELSE
                      Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), &
-                                                    RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+                                                    RainAmongN, NperTstepIn, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   END IF
                END IF
             ELSEIF (MetDisaggMethod(14) == 102) THEN
@@ -1535,16 +1538,16 @@ CONTAINS
                ELSEIF (ALL(MultRainAmongNUpperI == -999)) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongNUpperI', &
                                  MultRainAmongNUpperI(1), NotUsed, RainDisaggMethod)
-               ELSEIF (ANY(MultRainAmongN > Nper)) THEN
-                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: MultRainAmongN > Nper', REAL(Nper, KIND(1D0)), NotUsed, &
+               ELSEIF (ANY(MultRainAmongN > NperTstepIn)) THEN
+                  CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: MultRainAmongN > Nper', REAL(NperTstepIn, KIND(1D0)), NotUsed, &
                                  MAXVAL(MultRainAmongN))
                ELSE
-                  Met_tt(:, 14) = DisaggP_amongNMult(MetForDisagg(:, 14), MultRainAmongNUpperI, MultRainAmongN, Nper, &
+                  Met_tt(:, 14) = DisaggP_amongNMult(MetForDisagg(:, 14), MultRainAmongNUpperI, MultRainAmongN, NperTstepIn, &
                                                      ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   IF (ALL(MetForDisagg(:, 16) == -999)) THEN
                      Met_tt(:, 16) = -999
                   ELSE
-                     Met_tt(:, 16) = DisaggP_amongNMult(MetForDisagg(:, 16), MultRainAmongNUpperI, MultRainAmongN, Nper, &
+                     Met_tt(:, 16) = DisaggP_amongNMult(MetForDisagg(:, 16), MultRainAmongNUpperI, MultRainAmongN, NperTstepIn, &
                                                         ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   END IF
                END IF
@@ -1561,7 +1564,7 @@ CONTAINS
                Met_tt(:, ii) = -999
             ELSE
                Met_tt(:, ii) = Disagg_Lin(MetForDisagg(:, ii), MetForDisaggPrev(ii), MetForDisaggNext(ii), MetDisaggMethod(ii), &
-                                          Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax, iBlock)
+                                          NperTstepIn, ReadLinesOrigMetData, ReadLinesOrigMetDataMax, iBlock)
             END IF
          END IF
       END DO
@@ -1578,7 +1581,7 @@ CONTAINS
          ! Calculate dectime at downscaled time-step
          dectimeFast(:) = Met_tt(:, 2) + Met_tt(:, 3)/24.0 + Met_tt(:, 4)/(60.0*24.0)
          idectime = dectimeFast - halftimestep ! sun position at middle of timestep before
-         DO i = 1, (ReadLinesOrigMetDataMax*Nper)
+         DO i = 1, (ReadLinesOrigMetDataMax*NperTstepIn)
             CALL NARP_cal_SunPosition(Met_tt(i, 2), idectime(i), timezone, lat, lng, alt, azimuth, zenith_deg)
             ! If sun below horizon, set disaggregated kdown to zero
             IF (zenith_deg > 90) THEN
@@ -1587,7 +1590,7 @@ CONTAINS
             END IF
          END DO
          ! Redistribute kdown over each day
-         DO i = 1, (ReadLinesOrigMetDataMax*Nper/nsd) ! Loop over each day
+         DO i = 1, (ReadLinesOrigMetDataMax*NperTstepIn/nsd) ! Loop over each day
             Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) = &
                Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) &
                *SUM(Met_tt((i - 1)*nsd + seq1nsd, 15)) &
@@ -1624,7 +1627,7 @@ CONTAINS
             OPEN (78, file=TRIM(FileDscdMet), position='append') !,err=112)
          END IF
          ! Write out data
-         DO i = 1, (ReadLinesOrigMetDataMax*Nper)
+         DO i = 1, (ReadLinesOrigMetDataMax*NperTstepIn)
             WRITE (78, 303) (INT(Met_tt(i, ii)), ii=1, 4), Met_tt(i, 5:ncolumnsMetForcingData)
          END DO
          !IF(iBlock == ReadBlocksOrigMetData) THEN

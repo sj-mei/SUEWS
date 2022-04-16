@@ -184,14 +184,14 @@ PROGRAM SUEWS_Program
 
       ! Prepare to disaggregate met data to model time-step (if required) ------
       ! Find number of model time-steps per resolution of original met forcing file
-      Nper_real = ResolutionFilesIn/REAL(Tstep, KIND(1D0))
-      Nper = INT(Nper_real)
+      NperTstepIn_real = ResolutionFilesIn/REAL(Tstep, KIND(1D0))
+      NperTstepIn = INT(NperTstepIn_real)
 
-      IF (Nper /= Nper_real) THEN
+      IF (NperTstepIn /= NperTstepIn_real) THEN
          CALL ErrorHint(2, 'Problem in SUEWS_Program: check resolution of met forcing data (ResolutionFilesIn)'// &
                         'and model time-step (Tstep).', &
                         REAL(Tstep, KIND(1D0)), NotUsed, ResolutionFilesIn)
-      ELSEIF (Nper > 1) THEN
+      ELSEIF (NperTstepIn > 1) THEN
          WRITE (*, *) 'Resolution of met forcing data: ', TRIM(ADJUSTL(ResIn_txt)), ' min;', &
             ' model time-step: ', TRIM(ADJUSTL(tstep_txt)), ' min', ' -> SUEWS will perform disaggregation.'
          IF (Diagnose == 1) WRITE (*, *) 'Getting information for met disaggregation'
@@ -212,11 +212,11 @@ PROGRAM SUEWS_Program
          ! WRITE(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
 
          ReadLinesOrigMetData = nlinesOrigMetdata !Initially set limit as the size of  file
-         IF (nlinesOrigMetData*Nper > nlinesLimit) THEN !But restrict if this limit exceeds memory capacity
-            ReadLinesOrigMetData = INT(nlinesLimit/Nper)
+         IF (nlinesOrigMetData*NperTstepIn > nlinesLimit) THEN !But restrict if this limit exceeds memory capacity
+            ReadLinesOrigMetData = INT(nlinesLimit/NperTstepIn)
          END IF
          ! make sure the metblocks read in consists of complete diurnal cycles
-         nsdorig = nsd/Nper
+         nsdorig = nsd/NperTstepIn
          ReadLinesOrigMetData = INT(MAX(nsdorig*(ReadLinesOrigMetData/nsdorig), nsdorig))
          !WRITE(*,*) 'ReadlinesOrigMetdata', ReadlinesOrigMetdata
          WRITE (*, *) 'Original met data will be read in chunks of ', ReadlinesOrigMetdata, 'lines.'
@@ -224,13 +224,13 @@ PROGRAM SUEWS_Program
          ReadBlocksOrigMetData = INT(CEILING(REAL(nlinesOrigMetData, KIND(1D0))/REAL(ReadLinesOrigMetData, KIND(1D0))))
 
          ! Set ReadLinesMetdata and ReadBlocksMetData
-         ReadLinesMetdata = ReadLinesOrigMetdata*Nper
-         ReadBlocksMetData = INT(CEILING(REAL(nlinesOrigMetData*Nper, KIND(1D0))/REAL(ReadLinesMetdata, KIND(1D0))))
+         ReadLinesMetdata = ReadLinesOrigMetdata*NperTstepIn
+         ReadBlocksMetData = INT(CEILING(REAL(nlinesOrigMetData*NperTstepIn, KIND(1D0))/REAL(ReadLinesMetdata, KIND(1D0))))
          WRITE (*, *) 'Processing current year in ', ReadBlocksMetData, 'blocks.'
 
-         nlinesMetdata = nlinesOrigMetdata*Nper
+         nlinesMetdata = nlinesOrigMetdata*NperTstepIn
 
-      ELSEIF (Nper == 1) THEN
+      ELSEIF (NperTstepIn == 1) THEN
          WRITE (*, *) 'ResolutionFilesIn = Tstep: no disaggregation needed for met data.'
 
          !-----------------------------------------------------------------------
@@ -270,7 +270,6 @@ PROGRAM SUEWS_Program
 
       END IF
 
-      !write(*,*) ReadBlocksMetData, ReadBlocksOrigMetData
 
       ! ---- Allocate arrays--------------------------------------------------
       IF (Diagnose == 1) WRITE (*, *) 'Allocating arrays in SUEWS_Program.f95...'
@@ -291,21 +290,13 @@ PROGRAM SUEWS_Program
       ALLOCATE (dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)) !SOLWEIG POI output
       dataOutBEERS = NaN
       IF (CBLuse >= 1) ALLOCATE (dataOutBL(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids)) !CBL output
-      ! IF (SnowUse == 1) THEN
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)) !Snow output
-      ! ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
-      ! ALLOCATE(qn1_S_store_grid(NSH))
-      ! ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
-      ! ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
+
       IF (.NOT. ALLOCATED(qn1_s_av_grids)) ALLOCATE (qn1_s_av_grids(NumberOfGrids))
       IF (.NOT. ALLOCATED(dqnsdt_grids)) ALLOCATE (dqnsdt_grids(NumberOfGrids))
-      ! qn1_S_store(:,:) = NAN
-      ! qn1_S_av_store(:,:) = NaN
-      ! qn1_S_store_grid(:) = NAN
-      ! qn1_S_av_store_grid(:) = NaN
       qn1_s_av_grids = 0 ! Initialise to 0
       dqnsdt_grids = 0 ! Initialise to 0
-      ! ENDIF
+
       ! IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
       IF (.NOT. ALLOCATED(dataOutESTM)) ALLOCATE (dataOutESTM(ReadlinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)) !ESTM output
       IF (.NOT. ALLOCATED(dataOutESTMExt)) ALLOCATE (dataOutESTMExt(ReadlinesMetdata, ncolumnsDataOutESTMExt, NumberOfGrids)) !ESTM output
@@ -469,7 +460,7 @@ PROGRAM SUEWS_Program
             END IF !end first block of met data
 
             ! (1b) Initialise met data
-            IF (Nper > 1) THEN
+            IF (NperTstepIn > 1) THEN
                ! Disaggregate met data ---------------------------------------------------
 
                ! Set maximum value for ReadLinesOrigMetData to handle end of file (i.e. small final block)
@@ -502,7 +493,7 @@ PROGRAM SUEWS_Program
                   END IF
                END IF
 
-            ELSEIF (Nper == 1) THEN
+            ELSEIF (NperTstepIn == 1) THEN
                ! Get met forcing file name for this year for the first grid
                ! Can be something else than 1
                FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
@@ -604,16 +595,11 @@ PROGRAM SUEWS_Program
          !write(*,*) skippedLines, skippedLinesOrig, skippedLinesOrig*Nper
 
          ! Initialise the modules on the first day
-         ! Initialise CBL and SOLWEIG parts if required
+         ! Initialise CBL if required
          IF (iblock == 1) THEN
             IF ((CBLuse == 1) .OR. (CBLuse == 2)) CALL CBL_ReadInputData(FileInputPath, qh_choice)
          END IF
 
-         ! NB: SOLWEIG is disabled in v2018a
-         ! QUESTION: not sure if solweig should be within iblock if statement too?
-         ! IF(SOLWEIGuse==1) CALL SOLWEIG_initial
-
-         !write(*,*) 'Initialisation done'
          ! First stage: initialisation done ----------------------------------
 
          ! (2) Second stage: do calculations at 5-min time-steps -------------
@@ -687,26 +673,10 @@ PROGRAM SUEWS_Program
          END DO !end loop over rows of met data
 
          ! Write output files in blocks --------------------------------
-! #ifdef nc
-!          IF (ncMode == 0) THEN
-! #endif
          DO igrid = 1, NumberOfGrids
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output...'
             CALL SUEWS_Output(irMax, iblock, igrid, year_int)
          END DO
-! #ifdef nc
-!          ENDIF
-
-!          IF (ncMode == 1) THEN
-!             ! write resulst in netCDF
-!             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output_nc...'
-!             CALL SUEWS_Output(irMax)
-!             ! write input information in netCDF as well for future development
-!             !  IF ( iblock==1 ) THEN
-!             !     CALL SiteSelect_txt2nc
-!             !  ENDIF
-!          ENDIF
-! #endif
 
       END DO !end loop over blocks of met data
       !-----------------------------------------------------------------------

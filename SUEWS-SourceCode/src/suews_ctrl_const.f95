@@ -1532,11 +1532,11 @@ MODULE sues_data
               nsd, & !Number of timesteps per day
               nsdorig, & !Number of timesteps per day for original met forcing file
               t_interval, & !Number of seconds in an hour [s] (now set in OverallRunControl)
-              Nper, NperESTM ! Number of model time-steps per input resolution (ResolutionFilesIn/Tstep)
+              NperTstepIn, NperESTM ! Number of model time-steps per input resolution (ResolutionFilesIn/Tstep)
 
    REAL(KIND(1D0)) :: nsh_real, & !nsh cast as a real for use in calculations
                       tstep_real, & !tstep cast as a real for use in calculations
-                      Nper_real, NperESTM_real !Nper as real
+                      NperTstepIn_real, NperESTM_real !Nper as real
 
    REAL(KIND(1D0)) :: halftimestep !In decimal time based on interval
 

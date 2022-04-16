@@ -2069,13 +2069,16 @@ SUBROUTINE NextInitial(GridName, year_int)
    IF (id == 1 .AND. iy == (year + 1)) THEN !if id = 1 and this is the first row of next year
       year_int2 = INT(year + 1)
       WRITE (year_txt2, '(I4)') year_int2
-      OPEN (57, File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))//'.nml', err=200)
+      OPEN (57, &
+            File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))//'.nml', &
+            err=200)
       nofDaysThisYear_ForOutput = nofdaysthisyear
    ELSE
       year_int2 = INT(year) !End of Run but not end of year
       WRITE (year_txt2, '(I4)') year_int2
-      OPEN (57, File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))// &
-            '_EndofRun.nml', err=201)
+      OPEN (57, &
+            File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))//'_EndofRun.nml', &
+            err=201)
       nofDaysThisYear_ForOutput = id - 1
    END IF
    ID_Prev_Out = (id - 1)

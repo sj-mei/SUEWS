@@ -1210,6 +1210,11 @@ CONTAINS
       IF (ALLOCATED(dz_roof_grids)) DEALLOCATE (dz_roof_grids)
       IF (ALLOCATED(tin_roof_grids)) DEALLOCATE (tin_roof_grids)
       IF (ALLOCATED(temp_roof_grids)) DEALLOCATE (temp_roof_grids)
+      IF (ALLOCATED(state_roof_grids)) DEALLOCATE (state_roof_grids)
+      IF (ALLOCATED(statelimit_roof_grids)) DEALLOCATE (statelimit_roof_grids)
+      IF (ALLOCATED(wetthresh_roof_grids)) DEALLOCATE (wetthresh_roof_grids)
+      IF (ALLOCATED(soilstore_roof_grids)) DEALLOCATE (soilstore_roof_grids)
+      IF (ALLOCATED(soilstorecap_roof_grids)) DEALLOCATE (soilstorecap_roof_grids)
       IF (ALLOCATED(roof_albedo_dir_mult_fact_grids)) DEALLOCATE (roof_albedo_dir_mult_fact_grids)
 
       IF (ALLOCATED(sfr_wall_grids)) DEALLOCATE (sfr_wall_grids)
@@ -1220,6 +1225,11 @@ CONTAINS
       IF (ALLOCATED(dz_wall_grids)) DEALLOCATE (dz_wall_grids)
       IF (ALLOCATED(tin_wall_grids)) DEALLOCATE (tin_wall_grids)
       IF (ALLOCATED(temp_wall_grids)) DEALLOCATE (temp_wall_grids)
+      IF (ALLOCATED(state_wall_grids)) DEALLOCATE (state_wall_grids)
+      IF (ALLOCATED(statelimit_wall_grids)) DEALLOCATE (statelimit_wall_grids)
+      IF (ALLOCATED(wetthresh_wall_grids)) DEALLOCATE (wetthresh_wall_grids)
+      IF (ALLOCATED(soilstore_wall_grids)) DEALLOCATE (soilstore_wall_grids)
+      IF (ALLOCATED(soilstorecap_wall_grids)) DEALLOCATE (soilstorecap_wall_grids)
       IF (ALLOCATED(wall_specular_frac_grids)) DEALLOCATE (wall_specular_frac_grids)
 
       IF (ALLOCATED(k_surf_grids)) DEALLOCATE (k_surf_grids)
