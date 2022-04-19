@@ -270,7 +270,6 @@ PROGRAM SUEWS_Program
 
       END IF
 
-
       ! ---- Allocate arrays--------------------------------------------------
       IF (Diagnose == 1) WRITE (*, *) 'Allocating arrays in SUEWS_Program.f95...'
       ALLOCATE (SurfaceChar(NumberOfGrids, MaxNCols_c)) !Surface characteristics
