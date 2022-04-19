@@ -3147,24 +3147,24 @@ CONTAINS
             qh_surf(is) = NAN
          END IF
       END DO
-      if (storageheatmethod==5) then
-      DO is = 1, nlayer
-         IF (RA /= 0) THEN
-            qh_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
-            qh_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA
-         ELSE
-            qh_surf(is) = NAN
-         END IF
-      END DO
+      IF (storageheatmethod == 5) THEN
+         DO is = 1, nlayer
+            IF (RA /= 0) THEN
+               qh_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
+               qh_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA
+            ELSE
+               qh_surf(is) = NAN
+            END IF
+         END DO
 
-      ! IF (RA /= 0) THEN
-      !    qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
-      ! ELSE
-      !    qh_resist = NAN
-      ! END IF
-      ! aggregate QH of roof and wall
-      qh_surf(BldgSurf) = (DOT_PRODUCT(qh_roof, sfr_roof) + DOT_PRODUCT(qh_wall, sfr_wall))/2.
-      end if
+         ! IF (RA /= 0) THEN
+         !    qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
+         ! ELSE
+         !    qh_resist = NAN
+         ! END IF
+         ! aggregate QH of roof and wall
+         qh_surf(BldgSurf) = (DOT_PRODUCT(qh_roof, sfr_roof) + DOT_PRODUCT(qh_wall, sfr_wall))/2.
+      END IF
 
       qh_resist = DOT_PRODUCT(qh_surf, sfr_surf)
 
