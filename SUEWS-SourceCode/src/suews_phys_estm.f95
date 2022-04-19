@@ -530,7 +530,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
       REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
-      LOGICAL, INTENT(in) :: bctype(2)
+      LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
       LOGICAL, INTENT(in) :: debug
       INTEGER :: i, n !,j       !!!!!FO!!!!!
       REAL(KIND(1D0)), ALLOCATABLE :: w(:), a(:), T1(:), cfl(:)
@@ -2229,12 +2229,12 @@ CONTAINS
       tstep, & !input
       nlayer, &
       QG_surf, qg_roof, qg_wall, &
-      tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-      tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-      tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
-      tsfc_roof, temp_out_roof, QS_roof, & !output
-      tsfc_wall, temp_out_wall, QS_wall, & !output
-      tsfc_surf, temp_out_surf, QS_surf, & !output
+      tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+      tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+      tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+      temp_out_roof, QS_roof, & !output
+      temp_out_wall, QS_wall, & !output
+      temp_out_surf, QS_surf, & !output
       QS) !output
       USE allocateArray, ONLY: &
          nsurf, ndepth, &
@@ -2259,6 +2259,7 @@ CONTAINS
 
       ! input arrays: roof facets
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: temp_in_roof
@@ -2267,6 +2268,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_roof
       ! input arrays: wall facets
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: temp_in_wall
@@ -2274,6 +2276,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
       ! input arrays: standard suews surfaces
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf
@@ -2283,15 +2286,12 @@ CONTAINS
 
       ! output arrays
       ! roof facets
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_roof !interface temperature between depth layers
       ! wall facets
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_wall
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_wall !interface temperature between depth layers
       ! standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: QS_surf
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(out) :: temp_out_surf !interface temperature between depth layers
 

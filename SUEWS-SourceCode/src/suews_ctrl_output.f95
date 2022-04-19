@@ -580,20 +580,34 @@ MODULE ctrl_output
         + ncolumnsDataOutRSL - 5 &
         + ncolumnsDataOutDebug - 5 &
         )/ &
-      varAttr('RSS_Paved', 'm', f104, 'wetness adjusted RS for paved surface', aA, 'debug', 0), &
-      varAttr('RSS_Bldgs', 'm', f104, 'wetness adjusted RS for building surface', aA, 'debug', 0), &
-      varAttr('RSS_EveTr', 'm', f104, 'wetness adjusted RS for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('RSS_DecTr', 'm', f104, 'wetness adjusted RS for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('RSS_Grass', 'm', f104, 'wetness adjusted RS for grass surface', aA, 'debug', 0), &
-      varAttr('RSS_BSoil', 'm', f104, 'wetness adjusted RS for bare soil surface', aA, 'debug', 0), &
-      varAttr('RSS_Water', 'm', f104, 'wetness adjusted RS for water surface', aA, 'debug', 0), &
-      varAttr('state_Paved', 'm', f104, 'surface wetness for paved surface', aA, 'debug', 0), &
-      varAttr('state_Bldgs', 'm', f104, 'surface wetness for building surface', aA, 'debug', 0), &
-      varAttr('state_EveTr', 'm', f104, 'surface wetness for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('state_DecTr', 'm', f104, 'surface wetness for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('state_Grass', 'm', f104, 'surface wetness for grass surface', aA, 'debug', 0), &
-      varAttr('state_BSoil', 'm', f104, 'surface wetness for bare soil surface', aA, 'debug', 0), &
-      varAttr('state_Water', 'm', f104, 'surface wetness for water surface', aA, 'debug', 0), &
+      ! varAttr('RSS_Paved', 'm', f104, 'wetness adjusted RS for paved surface', aA, 'debug', 0), &
+      ! varAttr('RSS_Bldgs', 'm', f104, 'wetness adjusted RS for building surface', aA, 'debug', 0), &
+      ! varAttr('RSS_EveTr', 'm', f104, 'wetness adjusted RS for evergreen tree surface', aA, 'debug', 0), &
+      ! varAttr('RSS_DecTr', 'm', f104, 'wetness adjusted RS for deciduous tree surface', aA, 'debug', 0), &
+      ! varAttr('RSS_Grass', 'm', f104, 'wetness adjusted RS for grass surface', aA, 'debug', 0), &
+      ! varAttr('RSS_BSoil', 'm', f104, 'wetness adjusted RS for bare soil surface', aA, 'debug', 0), &
+      ! varAttr('RSS_Water', 'm', f104, 'wetness adjusted RS for water surface', aA, 'debug', 0), &
+      varAttr('QH_Paved', 'm', f104, 'wetness adjusted RS for paved surface', aA, 'debug', 0), &
+      varAttr('QH_Bldgs', 'm', f104, 'wetness adjusted RS for building surface', aA, 'debug', 0), &
+      varAttr('QH_EveTr', 'm', f104, 'wetness adjusted RS for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('QH_DecTr', 'm', f104, 'wetness adjusted RS for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('QH_Grass', 'm', f104, 'wetness adjusted RS for grass surface', aA, 'debug', 0), &
+      varAttr('QH_BSoil', 'm', f104, 'wetness adjusted RS for bare soil surface', aA, 'debug', 0), &
+      varAttr('QH_Water', 'm', f104, 'wetness adjusted RS for water surface', aA, 'debug', 0), &
+      varAttr('Tsfc_Paved', 'm', f104, 'wetness adjusted RS for paved surface', aA, 'debug', 0), &
+      varAttr('Tsfc_Bldgs', 'm', f104, 'wetness adjusted RS for building surface', aA, 'debug', 0), &
+      varAttr('Tsfc_EveTr', 'm', f104, 'wetness adjusted RS for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('Tsfc_DecTr', 'm', f104, 'wetness adjusted RS for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('Tsfc_Grass', 'm', f104, 'wetness adjusted RS for grass surface', aA, 'debug', 0), &
+      varAttr('Tsfc_BSoil', 'm', f104, 'wetness adjusted RS for bare soil surface', aA, 'debug', 0), &
+      varAttr('Tsfc_Water', 'm', f104, 'wetness adjusted RS for water surface', aA, 'debug', 0), &
+      ! varAttr('state_Paved', 'm', f104, 'surface wetness for paved surface', aA, 'debug', 0), &
+      ! varAttr('state_Bldgs', 'm', f104, 'surface wetness for building surface', aA, 'debug', 0), &
+      ! varAttr('state_EveTr', 'm', f104, 'surface wetness for evergreen tree surface', aA, 'debug', 0), &
+      ! varAttr('state_DecTr', 'm', f104, 'surface wetness for deciduous tree surface', aA, 'debug', 0), &
+      ! varAttr('state_Grass', 'm', f104, 'surface wetness for grass surface', aA, 'debug', 0), &
+      ! varAttr('state_BSoil', 'm', f104, 'surface wetness for bare soil surface', aA, 'debug', 0), &
+      ! varAttr('state_Water', 'm', f104, 'surface wetness for water surface', aA, 'debug', 0), &
       varAttr('RS', 'm', f104, 'RS', aA, 'debug', 0), &
       varAttr('RA', 'm', f104, 'RA', aA, 'debug', 0), &
       varAttr('RB', 'm', f104, 'RB', aA, 'debug', 0), &

@@ -488,9 +488,6 @@ CONTAINS
       REAL(KIND(1D0)) :: tsurf
       REAL(KIND(1D0)) :: UStar
       REAL(KIND(1D0)) :: VPD_Pa
-      ! REAL(KIND(1D0))::wu_DecTr
-      ! REAL(KIND(1D0))::wu_EveTr
-      ! REAL(KIND(1D0))::wu_Grass
       REAL(KIND(1D0)) :: z0m
       REAL(KIND(1D0)) :: zdm
       REAL(KIND(1D0)) :: ZENITH_deg
@@ -655,7 +652,7 @@ CONTAINS
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_out_roof, tsfc0_out_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof
@@ -689,6 +686,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_roof ! net all-wave radiation of roof surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_roof ! latent heat flux of roof surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_roof ! latent heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_resist_roof ! latent heat flux of roof surface [W m-2]
 
       ! wall facets
       ! aggregated heat storage of all wall facets
@@ -701,6 +699,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_wall ! net all-wave radiation of wall surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_wall ! latent heat flux of wall surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_wall ! latent heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_resist_wall ! latent heat flux of wall surface [W m-2]
 
       ! standard suews surfaces
       !interface temperature between depth layers
@@ -712,6 +711,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_resist_surf ! latent heat flux of individual surface [W m-2]
       ! surface temperature
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_qh_surf ! latent heat flux of individual surface [W m-2]
 
@@ -1035,9 +1035,9 @@ CONTAINS
             id, tstep, dt_since_start, Diagnose, &
             nlayer, &
             Qg_surf, Qg_roof, Qg_wall, &
-            tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-            tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-            tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+            tsfc_out_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tsfc_out_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tsfc_out_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
             OHM_coef, OHM_threshSW, OHM_threshWD, &
             soilstore_surf, SoilStoreCap_surf, state_surf, SnowUse, SnowFrac, DiagQS, &
             HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
@@ -1048,9 +1048,9 @@ CONTAINS
             qn_snow, dataOutLineESTM, qs, & !output
             qn_av_next, dqndt_next, qn_s_av_next, dqnsdt_next, &
             deltaQi, a1, a2, a3, &
-            tsfc_out_roof, temp_out_roof, QS_roof, & !output
-            tsfc_out_wall, temp_out_wall, QS_wall, & !output
-            tsfc_out_surf, temp_out_surf, QS_surf) !output
+            temp_out_roof, QS_roof, & !output
+            temp_out_wall, QS_wall, & !output
+            temp_out_surf, QS_surf) !output
 
          ! update iteration variables
          ! temp_in_roof = temp_out_roof
@@ -1074,13 +1074,9 @@ CONTAINS
          ! print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
          ! dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
 
-         ! tsfc0_out_surf=tsfc_out_surf
-         ! tsfc0_out_roof=tsfc_out_roof
-         ! tsfc0_out_wall=tsfc_out_wall
-
-         tsfc0_out_surf = tsfc_out_surf
-         tsfc0_out_roof = tsfc_out_roof
-         tsfc0_out_wall = tsfc_out_wall
+         ! tsfc0_out_surf = tsfc_out_surf
+         ! tsfc0_out_roof = tsfc_out_roof
+         ! tsfc0_out_wall = tsfc_out_wall
 
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -1242,7 +1238,7 @@ CONTAINS
             Temp_C, &
             RA_h, &
             qh, qh_residual, qh_resist, & !output
-            qh_surf, qh_roof, qh_wall)
+            qh_resist_surf, qh_resist_roof, qh_resist_wall)
          ! PRINT *, 'qn_surf after SUEWS_cal_QH', qn_surf
          ! PRINT *, 'qs_surf after SUEWS_cal_QH', qs_surf
          ! PRINT *, 'qe_surf after SUEWS_cal_QH', qe_surf
@@ -1313,12 +1309,14 @@ CONTAINS
          IF (diagnose == 1) PRINT *, &
             'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf)), MAXLOC(ABS(tsfc_out_surf - tsfc0_out_surf))
          dif_tsfc_iter = MAXVAL(ABS(tsfc_out_surf - tsfc0_out_surf))
-         IF (diagnose == 1) PRINT *, &
-            'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
-         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), dif_tsfc_iter)
-         IF (diagnose == 1) PRINT *, &
-            'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
-         dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_out_wall)), dif_tsfc_iter)
+         IF (StorageHeatMethod == 5) THEN
+            IF (diagnose == 1) PRINT *, &
+               'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), MAXLOC(ABS(tsfc_out_roof - tsfc0_out_roof))
+            dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_out_roof - tsfc0_out_roof)), dif_tsfc_iter)
+            IF (diagnose == 1) PRINT *, &
+               'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_out_wall - tsfc0_out_wall)), MAXLOC(ABS(tsfc_out_wall - tsfc0_out_wall))
+            dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_out_wall)), dif_tsfc_iter)
+         END IF
 
          ! ====test===
          ! see if this converges better
@@ -1359,7 +1357,7 @@ CONTAINS
 
          i_iter = i_iter + 1
          ! force quit do-while loop if not convergent after 100 iterations
-         IF (i_iter == max_iter) THEN
+         IF (Diagnose == 1 .AND. i_iter == max_iter) THEN
             ! PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
@@ -1528,7 +1526,10 @@ CONTAINS
 
       !==============translation end ================
 
-      dataoutlineDebug = [RSS_nsurf, state_surf_prev, RS, RA_h, RB, RAsnow, &
+      dataoutlineDebug = [qh_resist_surf, &
+                          tsfc0_out_surf, &
+                          ! state_surf_prev, &
+                          RS, RA_h, RB, RAsnow, &
                           vpd_hPa, lv_J_kg, avdens, avcp, qn_av, dqndt]
 
       dataOutLineSPARTACUS = [alb_spc, emis_spc, &
@@ -2058,9 +2059,9 @@ CONTAINS
       id, tstep, dt_since_start, Diagnose, &
       nlayer, &
       QG_surf, QG_roof, QG_wall, &
-      tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-      tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-      tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+      tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+      tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+      tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
       OHM_coef, OHM_threshSW, OHM_threshWD, &
       soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
@@ -2071,9 +2072,9 @@ CONTAINS
       qn_S, dataOutLineESTM, qs, & !output
       qn_av_next, dqndt_next, qn_s_av_next, dqnsdt_next, &
       deltaQi, a1, a2, a3, &
-      tsfc_roof, temp_out_roof, QS_roof, & !output
-      tsfc_wall, temp_out_wall, QS_wall, & !output
-      tsfc_surf, temp_out_surf, QS_surf) !output
+      temp_out_roof, QS_roof, & !output
+      temp_out_wall, QS_wall, & !output
+      temp_out_surf, QS_surf) !output
 
       IMPLICIT NONE
 
@@ -2271,12 +2272,12 @@ CONTAINS
             tstep, & !input
             nlayer, &
             QG_surf, qg_roof, qg_wall, &
-            tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
-            tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
-            tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
-            tsfc_roof, temp_out_roof, QS_roof, & !output
-            tsfc_wall, temp_out_wall, QS_wall, & !output
-            tsfc_surf, temp_out_surf, QS_surf, & !output
+            tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
+            tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
+            tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
+            temp_out_roof, QS_roof, & !output
+            temp_out_wall, QS_wall, & !output
+            temp_out_surf, QS_surf, & !output
             QS) !output
 
          ! PRINT *, 'QS after ESTM_ext', QS
@@ -3093,13 +3094,13 @@ CONTAINS
    !===============sensible heat flux======================================
    SUBROUTINE SUEWS_cal_QH( &
       QHMethod, nlayer, storageheatmethod, & !input
-      qn, qf, QmRain, qeOut, qs, QmFreez, qm, avdens, avcp, &
+      qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
       sfr_surf, sfr_roof, sfr_wall, &
       tsfc_surf, tsfc_roof, tsfc_wall, &
       Temp_C, &
       RA, &
       qh, qh_residual, qh_resist, & !output
-      qh_surf, qh_roof, qh_wall)
+      qh_resist_surf, qh_resist_roof, qh_resist_wall)
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: QHMethod ! option for QH calculation: 1, residual; 2, resistance-based
@@ -3109,7 +3110,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: qn
       REAL(KIND(1D0)), INTENT(in) :: qf
       REAL(KIND(1D0)), INTENT(in) :: QmRain
-      REAL(KIND(1D0)), INTENT(in) :: qeOut
+      REAL(KIND(1D0)), INTENT(in) :: qe
       REAL(KIND(1D0)), INTENT(in) :: qs
       REAL(KIND(1D0)), INTENT(in) :: QmFreez
       REAL(KIND(1D0)), INTENT(in) :: qm
@@ -3124,36 +3125,36 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: qh_residual
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_surf
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER :: is
 
       ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
-      qh_residual = (qn + qf + QmRain) - (qeOut + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
+      qh_residual = (qn + qf + QmRain) - (qe + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
 
       ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
       ! Aerodynamic-Resistance-based method
       DO is = 1, nsurf
          IF (RA /= 0) THEN
-            qh_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA
+            qh_resist_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA
          ELSE
-            qh_surf(is) = NAN
+            qh_resist_surf(is) = NAN
          END IF
       END DO
       IF (storageheatmethod == 5) THEN
          DO is = 1, nlayer
             IF (RA /= 0) THEN
-               qh_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
-               qh_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA
+               qh_resist_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
+               qh_resist_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA
             ELSE
-               qh_surf(is) = NAN
+               qh_resist_surf(is) = NAN
             END IF
          END DO
 
@@ -3163,10 +3164,10 @@ CONTAINS
          !    qh_resist = NAN
          ! END IF
          ! aggregate QH of roof and wall
-         qh_surf(BldgSurf) = (DOT_PRODUCT(qh_roof, sfr_roof) + DOT_PRODUCT(qh_wall, sfr_wall))/2.
+         qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
       END IF
 
-      qh_resist = DOT_PRODUCT(qh_surf, sfr_surf)
+      qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
 
       ! choose output QH
       SELECT CASE (QHMethod)
