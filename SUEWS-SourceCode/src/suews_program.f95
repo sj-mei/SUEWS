@@ -273,28 +273,28 @@ PROGRAM SUEWS_Program
 
       ! ---- Allocate arrays--------------------------------------------------
       IF (Diagnose == 1) WRITE (*, *) 'Allocating arrays in SUEWS_Program.f95...'
-      ALLOCATE (SurfaceChar(NumberOfGrids, MaxNCols_c)) !Surface characteristics
-      ALLOCATE (MetForcingData(ReadLinesMetdata, ncolumnsMetForcingData, NumberOfGrids)) !Met forcing data
-      ALLOCATE (MetForcingData_grid(ReadLinesMetdata, ncolumnsMetForcingData)) !Met forcing data
-      ALLOCATE (ModelOutputData(0:ReadLinesMetdata, MaxNCols_cMOD, NumberOfGrids)) !Data at model timestep
-      ALLOCATE (dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)) !Main output array
+      IF (.NOT. ALLOCATED(SurfaceChar)) ALLOCATE (SurfaceChar(NumberOfGrids, MaxNCols_c)) !Surface characteristics
+      IF (.NOT. ALLOCATED(MetForcingData)) ALLOCATE (MetForcingData(ReadLinesMetdata, ncolumnsMetForcingData, NumberOfGrids)) !Met forcing data
+      IF (.NOT. ALLOCATED(MetForcingData_grid)) ALLOCATE (MetForcingData_grid(ReadLinesMetdata, ncolumnsMetForcingData)) !Met forcing data
+      IF (.NOT. ALLOCATED(ModelOutputData)) ALLOCATE (ModelOutputData(0:ReadLinesMetdata, MaxNCols_cMOD, NumberOfGrids)) !Data at model timestep
+      IF (.NOT. ALLOCATED(dataOutSUEWS)) ALLOCATE (dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)) !Main output array
       dataOutSUEWS = NaN ! initialise Main output array
-      ALLOCATE (dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)) !RSL output array
+      IF (.NOT. ALLOCATED(dataOutRSL)) ALLOCATE (dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)) !RSL output array
       dataOutRSL = NaN ! initialise RSL array
-      ALLOCATE (dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)) !RSL output array
+      IF (.NOT. ALLOCATED(dataOutDebug)) ALLOCATE (dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)) !RSL output array
       dataOutDebug = NaN ! initialise Debug array
-      ALLOCATE (dataOutSPARTACUS(ReadLinesMetdata, ncolumnsDataOutSPARTACUS, NumberOfGrids)) !SPARTACUS output array
+      IF (.NOT. ALLOCATED(dataOutSPARTACUS)) ALLOCATE (dataOutSPARTACUS(ReadLinesMetdata, ncolumnsDataOutSPARTACUS, NumberOfGrids)) !SPARTACUS output array
       dataOutSPARTACUS = NaN ! initialise SPARTACUS array
-      ALLOCATE (dataOutDailyState(ndays, ncolumnsDataOutDailyState, NumberOfGrids)) !DailyState array
+      IF (.NOT. ALLOCATED(dataOutDailyState)) ALLOCATE (dataOutDailyState(ndays, ncolumnsDataOutDailyState, NumberOfGrids)) !DailyState array
       dataOutDailyState = NaN ! initialise DailyState
-      ALLOCATE (dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)) !SOLWEIG POI output
+      IF (.NOT. ALLOCATED(dataOutBEERS)) ALLOCATE (dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)) !SOLWEIG POI output
       dataOutBEERS = NaN
       IF (CBLuse >= 1) ALLOCATE (dataOutBL(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids)) !CBL output
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)) !Snow output
 
-      IF (.NOT. ALLOCATED(qn1_s_av_grids)) ALLOCATE (qn1_s_av_grids(NumberOfGrids))
+      IF (.NOT. ALLOCATED(qn_s_av_grids)) ALLOCATE (qn_s_av_grids(NumberOfGrids))
       IF (.NOT. ALLOCATED(dqnsdt_grids)) ALLOCATE (dqnsdt_grids(NumberOfGrids))
-      qn1_s_av_grids = 0 ! Initialise to 0
+      qn_s_av_grids = 0 ! Initialise to 0
       dqnsdt_grids = 0 ! Initialise to 0
 
       ! IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
@@ -312,12 +312,12 @@ PROGRAM SUEWS_Program
       ! ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
       ! ALLOCATE(qn1_store_grid(NSH))
       ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
-      ALLOCATE (qhforCBL(NumberOfGrids))
-      ALLOCATE (qeforCBL(NumberOfGrids))
+      IF (.NOT. ALLOCATED(qhforCBL)) ALLOCATE (qhforCBL(NumberOfGrids))
+      IF (.NOT. ALLOCATED(qeforCBL)) ALLOCATE (qeforCBL(NumberOfGrids))
 
-      ALLOCATE (tair_av_grids(NumberOfGrids))
-      ALLOCATE (qn1_av_grids(NumberOfGrids))
-      ALLOCATE (dqndt_grids(NumberOfGrids))
+      IF (.NOT. ALLOCATED(tair_av_grids)) ALLOCATE (tair_av_grids(NumberOfGrids))
+      IF (.NOT. ALLOCATED(qn_av_grids)) ALLOCATE (qn_av_grids(NumberOfGrids))
+      IF (.NOT. ALLOCATED(dqndt_grids)) ALLOCATE (dqndt_grids(NumberOfGrids))
       !! QUESTION: Add snow clearing (?)
 
       ! qn1_store(:,:) = NAN ! Initialise to -999
@@ -325,7 +325,7 @@ PROGRAM SUEWS_Program
       ! qn1_store_grid(:)=NAN
       ! qn1_av_store_grid(:)=NAN
       tair_av_grids = 273.15 ! Initialise to 273.15 K
-      qn1_av_grids = 0 ! Initialise to 0
+      qn_av_grids = 0 ! Initialise to 0
       dqndt_grids = 0 ! Initialise to 0
 
       qhforCBL(:) = NAN
@@ -619,7 +619,6 @@ PROGRAM SUEWS_Program
             ! quick stop : for testing
             ! if ( ir>10 ) then
             !    STOP 'testing finished'
-
             ! end if
 
             DO igrid = 1, NumberOfGrids !Loop through grids
@@ -627,7 +626,6 @@ PROGRAM SUEWS_Program
                   'Grid:', GridIDmatrix(igrid)
 
                ! Call model calculation code
-               !  IF(ir==1) WRITE(*,*) 'Now running block ',iblock,'/',ReadBlocksMetData,' of year ',year_int,'...'
                WRITE (grid_txt, '(I10)') GridIDmatrix(igrid) !Get grid ID as a text string
                FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
                IF (ir == 1 .AND. igrid == 1) THEN
@@ -635,13 +633,10 @@ PROGRAM SUEWS_Program
                      ': Now running block ', iblock, '/', ReadBlocksMetData, ' of ', TRIM(year_txt), '...'
                END IF
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Calculations...'
-               ! print*, 'before cal:',sum(Tair24HR)
                CALL SUEWS_Calculations(GridCounter, ir, iblock, irMax)
-               ! print*, 'after cal:',sum(Tair24HR)
                IF (Diagnose == 1) WRITE (*, *) 'SUEWS_Calculations finished...'
 
                ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
-               !  IF(GridCounter == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
                IF (igrid == NumberOfGrids) THEN !Adjust only when the final grid has been run for this time step
                   iy_prev_t = iy
                   id_prev_t = id
@@ -651,10 +646,6 @@ PROGRAM SUEWS_Program
                IF (ir == irMax) THEN !If last row...
                   IF (iblock == ReadBlocksMetData) THEN !...of last block of met data
                      WRITE (grid_txt, '(I10)') GridIDmatrix(igrid)
-                     !  WRITE(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
-                     !  FileCodeX     = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-                     !  FileCodeXNext = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txtNext)
-                     !  CALL NextInitial(FileCodeXNext,year_int)
                      FileCodeXwy = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt)) !File code without year (HCW 24 May 2016)
                      IF (Diagnose == 1) WRITE (*, *) 'Calling NextInitial...'
                      CALL NextInitial(FileCodeXwy, year_int)
@@ -696,7 +687,7 @@ PROGRAM SUEWS_Program
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN
       DEALLOCATE (dataOutSnow)
-      DEALLOCATE (qn1_s_av_grids)
+      DEALLOCATE (qn_s_av_grids)
       DEALLOCATE (dqnsdt_grids)
       ! ENDIF
       ! IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
@@ -709,7 +700,7 @@ PROGRAM SUEWS_Program
       DEALLOCATE (qhforCBL)
       DEALLOCATE (qeforCBL)
       DEALLOCATE (tair_av_grids)
-      DEALLOCATE (qn1_av_grids)
+      DEALLOCATE (qn_av_grids)
       DEALLOCATE (dqndt_grids)
       IF (CBLuse >= 1) THEN
          DEALLOCATE (dataOutBL)

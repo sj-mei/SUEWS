@@ -1298,12 +1298,12 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! get qn1 memory for previous time steps
       dqndt = dqndt_grids(Gridiv)
-      qn1_av = qn1_av_grids(Gridiv)
+      qn_av = qn_av_grids(Gridiv)
       tair_av = tair_av_grids(Gridiv)
 
       IF (SnowUse == 1) THEN
          dqnsdt = dqnsdt_grids(Gridiv)
-         qn1_s_av = qn1_s_av_grids(Gridiv)
+         qn_s_av = qn_s_av_grids(Gridiv)
       END IF
 
       ! added by TS 29 Jun 2018 to remove annual loops in main calculation
@@ -1432,9 +1432,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) 'drainrt=', drainrt
       WRITE (12, *) 'dt_since_start=', dt_since_start
       WRITE (12, *) 'dqndt=', dqndt
-      WRITE (12, *) 'qn1_av=', qn1_av
+      WRITE (12, *) 'qn_av=', qn_av
       WRITE (12, *) 'dqnsdt=', dqnsdt
-      WRITE (12, *) 'qn1_s_av=', qn1_s_av
+      WRITE (12, *) 'qn_s_av=', qn_s_av
       WRITE (12, *) 'ef_umolco2perj=', ef_umolco2perj
       WRITE (12, *) 'emis=', emis
       WRITE (12, *) 'emissionsmethod=', emissionsmethod
@@ -1685,11 +1685,11 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
 
    ! update averaged qn1 memory
    dqndt_grids(Gridiv) = dqndt
-   qn1_av_grids(Gridiv) = qn1_av
+   qn_av_grids(Gridiv) = qn_av
    tair_av_grids(Gridiv) = tair_av
    IF (SnowUse == 1) THEN
       dqnsdt_grids(Gridiv) = dqnsdt
-      qn1_s_av_grids(Gridiv) = qn1_s_av
+      qn_s_av_grids(Gridiv) = qn_s_av
    END IF
 
    ! added by TS 29 Jun 2018 to remove annual loops in main calculation

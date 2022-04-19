@@ -424,11 +424,11 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
 
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tair_av_grids
-   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qn1_av_grids, qn1_s_av_grids
+   REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qn_av_grids, qn_s_av_grids
    REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: dqndt_grids, dqnsdt_grids
-   REAL(KIND(1D0)) :: qn1_av, dqndt
+   REAL(KIND(1D0)) :: qn_av, dqndt
    REAL(KIND(1D0)) :: tair_av
-   REAL(KIND(1D0)) :: qn1_s_av, dqnsdt
+   REAL(KIND(1D0)) :: qn_s_av, dqnsdt
 
    !-----------------------------------------------------------------------------------------------
 

@@ -69,8 +69,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       ohm_coef, ohm_threshsw, ohm_threshwd, &
       pormax_dec, pormin_dec, &
       tair_av, &
-      dqndt, qn1_av, &
-      dqnsdt, qn1_s_av, &
+      dqndt, qn_av, &
+      dqnsdt, qn_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
       sfr_surf, SnowPackLimit, snowdens, SnowFrac, snowpack, &
       soildepth, &
@@ -159,7 +159,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
-      dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+      dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &

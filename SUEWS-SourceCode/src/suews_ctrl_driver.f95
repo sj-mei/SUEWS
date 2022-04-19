@@ -52,12 +52,12 @@ CONTAINS
       AH_SLOPE_Heating, &
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-      alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
+      alpha_bioCO2, alpha_enh_bioCO2, alt, kdown, avRh, avU1, BaseT, BaseTe, &
       BaseTMethod, &
       BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
-      dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+      dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
@@ -164,7 +164,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: AlbMin_EveTr
       REAL(KIND(1D0)), INTENT(IN) :: AlbMin_Grass
       REAL(KIND(1D0)), INTENT(IN) :: alt
-      REAL(KIND(1D0)), INTENT(IN) :: avkdn
+      REAL(KIND(1D0)), INTENT(IN) :: kdown
       REAL(KIND(1D0)), INTENT(IN) :: avRh
       REAL(KIND(1D0)), INTENT(IN) :: avU1
       REAL(KIND(1D0)), INTENT(IN) :: BaseT_HC
@@ -333,9 +333,9 @@ CONTAINS
       ! ########################################################################################
       ! inout variables
       ! OHM related:
-      REAL(KIND(1D0)), INTENT(INOUT) :: qn1_av
+      REAL(KIND(1D0)), INTENT(INOUT) :: qn_av
       REAL(KIND(1D0)), INTENT(INOUT) :: dqndt
-      REAL(KIND(1D0)), INTENT(INOUT) :: qn1_s_av
+      REAL(KIND(1D0)), INTENT(INOUT) :: qn_s_av
       REAL(KIND(1D0)), INTENT(INOUT) :: dqnsdt
 
       ! snow related:
@@ -738,9 +738,9 @@ CONTAINS
 
       ! ########################################################################################
       ! save initial values of inout variables
-      qn_av_prev = qn1_av
+      qn_av_prev = qn_av
       dqndt_prev = dqndt
-      qn_s_av_prev = qn1_s_av
+      qn_s_av_prev = qn_s_av
       dqnsdt_prev = dqnsdt
       SnowfallCum_prev = SnowfallCum
       SnowAlb_prev = SnowAlb
@@ -786,9 +786,9 @@ CONTAINS
       ! tin_surf = 3.
 
       ! initialise  variables
-      qn_av_next = qn1_av
+      qn_av_next = qn_av
       dqndt_next = dqndt
-      qn_s_av_next = qn1_s_av
+      qn_s_av_next = qn_s_av
       dqnsdt_next = dqnsdt
       SnowfallCum_next = SnowfallCum
       SnowAlb_next = SnowAlb
@@ -915,7 +915,7 @@ CONTAINS
             BaseTMethod, &
             WaterUseMethod, Ie_start, Ie_end, &
             LAICalcYes, LAIType, &
-            nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
+            nsh_real, kdown, Temp_C, Precip, BaseT_HC, &
             BaseT_Heating, BaseT_Cooling, &
             lat, Faut, LAI_obs, &
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
@@ -978,7 +978,7 @@ CONTAINS
             StorageHeatMethod, NetRadiationMethod, SnowUse, & !input
             tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
             Diagnose, ldown_obs, fcld_obs, &
-            dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
+            dectime, ZENITH_deg, Ts_iter, kdown, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, &
             sfr_surf, tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
@@ -1041,7 +1041,7 @@ CONTAINS
             OHM_coef, OHM_threshSW, OHM_threshWD, &
             soilstore_surf, SoilStoreCap_surf, state_surf, SnowUse, SnowFrac, DiagQS, &
             HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
-            avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
+            kdown, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
             bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
             Tair_av, qn_av_prev, dqndt_prev, qn_s_av_prev, dqnsdt_prev, &
             StoreDrainPrm, &
@@ -1135,7 +1135,7 @@ CONTAINS
             Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, SnowUse, &
             id, it, gsModel, SMDMethod, &
             avdens, avcp, QH_Init, zzd, z0m, zdm, &
-            avU1, Temp_C, VegFraction, avkdn, &
+            avU1, Temp_C, VegFraction, kdown, &
             Kmax, &
             g1, g2, g3, g4, &
             g5, g6, s1, s2, &
@@ -1235,7 +1235,7 @@ CONTAINS
          !============ Sensible heat flux ===============
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
          CALL SUEWS_cal_QH( &
-            1, nlayer, & !input
+            1, nlayer, storageheatmethod, & !input
             qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
             sfr_surf, sfr_roof, sfr_wall, &
             tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
@@ -1391,7 +1391,7 @@ CONTAINS
 
       ! ============ BIOGENIC CO2 FLUX =======================
       CALL SUEWS_cal_BiogenCO2( &
-         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
+         alpha_bioCO2, alpha_enh_bioCO2, kdown, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
          dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
          G5, G6, gfunc, gsmodel, id, it, Kmax, LAI_id_next, LAIMin, &
          LAIMax, MaxConductance, min_res_bioCO2, Press_hPa, resp_a, &
@@ -1403,9 +1403,9 @@ CONTAINS
 
       !==============================================================
       ! update inout variables with new values
-      qn1_av = qn_av_next
+      qn_av = qn_av_next
       dqndt = dqndt_next
-      qn1_s_av = qn_s_av_next
+      qn_s_av = qn_s_av_next
       dqnsdt = dqnsdt_next
       SnowfallCum = SnowfallCum_next
       SnowAlb = SnowAlb_next
@@ -1459,7 +1459,7 @@ CONTAINS
       ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
       IF (sfr_surf(BldgSurf) > 0) THEN
          PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
-         CALL BEERS_cal_main(iy, id, dectime, PAI, FAI, avkdn, ldown, Temp_C, avrh, &
+         CALL BEERS_cal_main(iy, id, dectime, PAI, FAI, kdown, ldown, Temp_C, avrh, &
                              Press_hPa, TSfc_C, lat, lng, alt, timezone, zenith_deg, azimuth, &
                              alb(1), alb(2), emis(1), emis(2), &
                              dataOutLineBEERS) ! output
@@ -1471,7 +1471,7 @@ CONTAINS
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
-         AdditionalWater, alb, avkdn, U10_ms, azimuth, & !input
+         AdditionalWater, alb, kdown, U10_ms, azimuth, & !input
          chSnow_per_interval, dectime, &
          drain_per_tstep, QE_LUMPS, ev_per_tstep, wu_ext, Fc, Fc_build, fcld, &
          Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &
@@ -1529,7 +1529,7 @@ CONTAINS
       !==============translation end ================
 
       dataoutlineDebug = [RSS_nsurf, state_surf_prev, RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa]
+                          vpd_hPa, lv_J_kg, avdens, avcp, qn_av, dqndt]
 
       dataOutLineSPARTACUS = [alb_spc, emis_spc, &
                               top_dn_dir_sw_spc, &
@@ -3092,7 +3092,7 @@ CONTAINS
 
    !===============sensible heat flux======================================
    SUBROUTINE SUEWS_cal_QH( &
-      QHMethod, nlayer, & !input
+      QHMethod, nlayer, storageheatmethod, & !input
       qn, qf, QmRain, qeOut, qs, QmFreez, qm, avdens, avcp, &
       sfr_surf, sfr_roof, sfr_wall, &
       tsfc_surf, tsfc_roof, tsfc_wall, &
@@ -3103,6 +3103,7 @@ CONTAINS
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: QHMethod ! option for QH calculation: 1, residual; 2, resistance-based
+      INTEGER, INTENT(in) :: storageheatmethod ! decide if roof and wall are included in QH calculation
       INTEGER, INTENT(in) :: nlayer
 
       REAL(KIND(1D0)), INTENT(in) :: qn
@@ -3146,7 +3147,7 @@ CONTAINS
             qh_surf(is) = NAN
          END IF
       END DO
-
+      if (storageheatmethod==5) then
       DO is = 1, nlayer
          IF (RA /= 0) THEN
             qh_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
@@ -3163,6 +3164,8 @@ CONTAINS
       ! END IF
       ! aggregate QH of roof and wall
       qh_surf(BldgSurf) = (DOT_PRODUCT(qh_roof, sfr_roof) + DOT_PRODUCT(qh_wall, sfr_wall))/2.
+      end if
+
       qh_resist = DOT_PRODUCT(qh_surf, sfr_surf)
 
       ! choose output QH
