@@ -992,6 +992,16 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       !ENDIF
    END IF
 
+   ! get qn memory for previous time steps: used in OHM calculations
+   dqndt = dqndt_grids(Gridiv)
+   qn_av = qn_av_grids(Gridiv)
+   tair_av = tair_av_grids(Gridiv)
+
+   IF (SnowUse == 1) THEN
+      dqnsdt = dqnsdt_grids(Gridiv)
+      qn_s_av = qn_s_av_grids(Gridiv)
+   END IF
+
    !=================================================================================
    ! When SUEWS_Translate is called from InitialState (ir=0), inputs need translating
    IF (ir == 0) THEN
@@ -1095,6 +1105,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       SnowPack(1:nsurf) = ModelOutputData(0, cMOD_SnowPack(1:nsurf), Gridiv)
       ! ---- Liquid (melted) water in SnowPack
       SnowWater(1:nsurf) = ModelOutputData(0, cMOD_SnowWaterState(1:nsurf), Gridiv)
+
 
    END IF !ir = 0
    !=================================================================================
@@ -1296,15 +1307,15 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       kdir = MetForcingData(ir, 23, Gridiv)
       wdir = MetForcingData(ir, 24, Gridiv)
 
-      ! get qn1 memory for previous time steps
-      dqndt = dqndt_grids(Gridiv)
-      qn_av = qn_av_grids(Gridiv)
-      tair_av = tair_av_grids(Gridiv)
+      ! ! get qn memory for previous time steps: used in OHM calculations
+      ! dqndt = dqndt_grids(Gridiv)
+      ! qn_av = qn_av_grids(Gridiv)
+      ! tair_av = tair_av_grids(Gridiv)
 
-      IF (SnowUse == 1) THEN
-         dqnsdt = dqnsdt_grids(Gridiv)
-         qn_s_av = qn_s_av_grids(Gridiv)
-      END IF
+      ! IF (SnowUse == 1) THEN
+      !    dqnsdt = dqnsdt_grids(Gridiv)
+      !    qn_s_av = qn_s_av_grids(Gridiv)
+      ! END IF
 
       ! added by TS 29 Jun 2018 to remove annual loops in main calculation
       GDD_id = GDD_id_grids(:, Gridiv)
