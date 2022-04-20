@@ -32,7 +32,7 @@ else
 # --DEBUGGING CONFIGURATION--
 OPTFLAGS = -O0
 WARNFLAGS = -Wall
-DEBUGFLAGS = -g -ffpe-trap=invalid,zero,overflow -fcheck=bounds -finit-real=snan
+DEBUGFLAGS = -ggdb -g -ffpe-trap=invalid,zero,overflow -fcheck=bounds -finit-real=snan
 
 endif
 

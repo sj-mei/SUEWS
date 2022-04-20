@@ -444,6 +444,7 @@ CONTAINS
             LUP_SNOW = 0
             TSURF_SNOW_C = 0
             QSTAR_SNOW = 0
+            TSURF_SNOW_K = 0
             !QSTAR_ICE = 0
             !KUP_ICE = 0
          END IF

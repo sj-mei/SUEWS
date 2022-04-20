@@ -963,11 +963,11 @@ CONTAINS
 
       ! assign values to the grid container
       nlayer_grids(gridIV) = nlayer
-      height_grids(gridIV, :) = height(:)
-      building_frac_grids(gridIV, :) = building_frac(:)
-      veg_frac_grids(gridIV, :) = veg_frac(:)
-      building_scale_grids(gridIV, :) = building_scale(:)
-      veg_scale_grids(gridIV, :) = veg_scale(:)
+      height_grids(gridIV, 1:nlayer+1) = height(1:nlayer+1)
+      building_frac_grids(gridIV, 1:nlayer) = building_frac(1:nlayer)
+      veg_frac_grids(gridIV, 1:nlayer) = veg_frac(1:nlayer)
+      building_scale_grids(gridIV, 1:nlayer) = building_scale(1:nlayer)
+      veg_scale_grids(gridIV, 1:nlayer) = veg_scale(1:nlayer)
 
       ! roof
       sfr_roof_grids(gridIV, 1:nlayer) = sfr_roof

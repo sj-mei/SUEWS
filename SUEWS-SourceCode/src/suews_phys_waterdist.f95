@@ -404,6 +404,7 @@ CONTAINS
       sfr_surf, ev_surf_in, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
       state_surf_in, soilstore_surf_in, &
       state_surf_out, soilstore_surf_out, & ! output:
+      runoff_surf,&
       runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
       ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid) !output:
       IMPLICIT NONE
@@ -446,7 +447,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_surf_out !Wetness status of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_surf_out !Wetness status of each surface type [mm]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf !Runoff from each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoff_surf !Runoff from each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore !Soil moisture of each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: chang !Change in state_id [mm]
       REAL(KIND(1D0)), DIMENSION(2) :: SurplusEvap !Surplus for evaporation in 5 min timestep

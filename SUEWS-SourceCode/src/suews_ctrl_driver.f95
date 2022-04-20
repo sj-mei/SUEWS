@@ -736,6 +736,14 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: roof_albedo_dir_mult_fact
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac
 
+      ! ####
+      ! set initial values for output arrays
+      SWE = 0.
+      mwh = 0.
+      MwStore = 0.
+      chSnow_per_interval = 0.
+      SnowRemoval = 0.
+
       ! ########################################################################################
       ! save initial values of inout variables
       qn_av_prev = qn_av
@@ -1526,33 +1534,37 @@ CONTAINS
 
       !==============translation end ================
 
-      dataoutlineDebug = [qh_resist_surf, &
-                          tsfc0_out_surf, &
-                          ! state_surf_prev, &
-                          RS, RA_h, RB, RAsnow, &
-                          vpd_hPa, lv_J_kg, avdens, avcp, qn_av, dqndt]
+      dataoutlineDebug = &
+         [qh_resist_surf, &
+          tsfc0_out_surf, &
+          ! state_surf_prev, &
+          RS, RA_h, RB, RAsnow, &
+          vpd_hPa, lv_J_kg, avdens, avcp, qn_av, dqndt]
+      IF (NetRadiationMethod > 1000) THEN
+         dataOutLineSPARTACUS = &
+            [alb_spc, emis_spc, &
+             top_dn_dir_sw_spc, &
+             sw_up_spc, &
+             top_dn_lw_spc, &
+             lw_up_spc, &
+             qn_spc, &
+             top_net_sw_spc, &
+             top_net_lw_spc, &
+             lw_emission_spc, &
+             ground_dn_dir_sw_spc, &
+             ground_net_sw_spc, &
+             ground_net_lw_spc, &
+             roof_in_sw_spc, &
+             roof_net_sw_spc, &
+             wall_net_sw_spc, &
+             clear_air_abs_sw_spc, &
+             roof_in_lw_spc, &
+             roof_net_lw_spc, &
+             wall_net_lw_spc, &
+             clear_air_abs_lw_spc &
+             ]
+      END IF
 
-      dataOutLineSPARTACUS = [alb_spc, emis_spc, &
-                              top_dn_dir_sw_spc, &
-                              sw_up_spc, &
-                              top_dn_lw_spc, &
-                              lw_up_spc, &
-                              qn_spc, &
-                              top_net_sw_spc, &
-                              top_net_lw_spc, &
-                              lw_emission_spc, &
-                              ground_dn_dir_sw_spc, &
-                              ground_net_sw_spc, &
-                              ground_net_lw_spc, &
-                              roof_in_sw_spc, &
-                              roof_net_sw_spc, &
-                              wall_net_sw_spc, &
-                              clear_air_abs_sw_spc, &
-                              roof_in_lw_spc, &
-                              roof_net_lw_spc, &
-                              wall_net_lw_spc, &
-                              clear_air_abs_lw_spc &
-                              ]
       ! write out ESTM_ext output
       ! dataoutlineESTMExt=-999
       ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
@@ -2023,6 +2035,9 @@ CONTAINS
                roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
                ground_dn_dir_sw_spc, ground_net_sw_spc, &
                qn, kup, lup, qn_roof, qn_wall)
+         ELSE
+            qn_roof = qn_surf(BldgSurf)
+            qn_wall = qn_surf(BldgSurf)
          END IF
 
       ELSE ! NetRadiationMethod==0
@@ -2039,6 +2054,9 @@ CONTAINS
          tsurf_ind = NAN
          qn1_ind = NAN
          Fcld = NAN
+         qn_surf=qn
+         qn_roof = qn_surf(BldgSurf)
+            qn_wall = qn_surf(BldgSurf)
       END IF
       ! snowFrac_next = SnowFrac
 
@@ -2221,6 +2239,7 @@ CONTAINS
                   SnowUse, SnowFrac, &
                   DiagQS, &
                   a1, a2, a3, qs, deltaQi)
+         QS_surf = qs
          QS_roof = qs
          QS_wall = qs
 
@@ -2241,7 +2260,8 @@ CONTAINS
             sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
             qn_av_next, dqndt_next, &
             a1, a2, a3, qs, deltaQi) ! output
-         QS_roof = qs
+          QS_surf = qs
+            QS_roof = qs
          QS_wall = qs
 
          ! !Calculate QS using ESTM
@@ -3044,6 +3064,7 @@ CONTAINS
          sfr_surf, ev_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
          state_surf_in, soilstore_surf_in, &
          state_surf_out, soilstore_surf_out, & ! output:
+         runoff_surf, &
          runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
          ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid)
 
@@ -3255,6 +3276,7 @@ CONTAINS
       ! CALL SUEWS_init_QH( &
       !    avdens, avcp, QH_init, qn1, dectime, &
       !    H_init)
+      RAsnow = 0.0
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
       !u* and Obukhov length out
