@@ -300,33 +300,17 @@ PROGRAM SUEWS_Program
       IF (.NOT. ALLOCATED(dataOutESTM)) ALLOCATE (dataOutESTM(ReadlinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)) !ESTM output
       IF (.NOT. ALLOCATED(dataOutESTMExt)) ALLOCATE (dataOutESTMExt(ReadlinesMetdata, ncolumnsDataOutESTMExt, NumberOfGrids)) !ESTM output
       ! ENDIF
-      ! ALLOCATE(TstepProfiles(NumberOfGrids,14,24*NSH))   !Hourly profiles interpolated to model timestep
-      ! ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
-      ! ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
-      ! ALLOCATE(WUProfA_tstep(24*NSH,2))                  !Automatic water use profiles at model timestep
-      ! ALLOCATE(HumActivity_tstep(24*NSH,2))              !Human activity profiles at model timestep
-      ! ALLOCATE(TraffProf_tstep(24*NSH,2))                !Traffic profiles at model timestep
-      ! ALLOCATE(PopProf_tstep(24*NSH,2))                  !Population profiles at model timestep
-      ! ALLOCATE(qn1_store(NSH,NumberOfGrids))
-      ! ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
-      ! ALLOCATE(qn1_store_grid(NSH))
-      ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
-      IF (.NOT. ALLOCATED(qhforCBL)) ALLOCATE (qhforCBL(NumberOfGrids))
-      IF (.NOT. ALLOCATED(qeforCBL)) ALLOCATE (qeforCBL(NumberOfGrids))
 
       IF (.NOT. ALLOCATED(tair_av_grids)) ALLOCATE (tair_av_grids(NumberOfGrids))
       IF (.NOT. ALLOCATED(qn_av_grids)) ALLOCATE (qn_av_grids(NumberOfGrids))
       IF (.NOT. ALLOCATED(dqndt_grids)) ALLOCATE (dqndt_grids(NumberOfGrids))
       !! QUESTION: Add snow clearing (?)
-
-      ! qn1_store(:,:) = NAN ! Initialise to -999
-      ! qn1_av_store(:,:) = NAN ! Initialise to -999
-      ! qn1_store_grid(:)=NAN
-      ! qn1_av_store_grid(:)=NAN
       tair_av_grids = 273.15 ! Initialise to 273.15 K
       qn_av_grids = 0 ! Initialise to 0
       dqndt_grids = 0 ! Initialise to 0
 
+      IF (.NOT. ALLOCATED(qhforCBL)) ALLOCATE (qhforCBL(NumberOfGrids))
+      IF (.NOT. ALLOCATED(qeforCBL)) ALLOCATE (qeforCBL(NumberOfGrids))
       qhforCBL(:) = NAN
       qeforCBL(:) = NAN
 
@@ -403,15 +387,6 @@ PROGRAM SUEWS_Program
             END IF
 
          END IF
-
-         ! Allocate arrays to receive ESTM forcing data
-         ! IF (.NOT. ALLOCATED(ESTMForcingData)) ALLOCATE(ESTMForcingData(1:ReadLinesMetdata,ncolsESTMdata,NumberOfGrids))
-         ! IF (.NOT. ALLOCATED(Ts5mindata)) ALLOCATE(Ts5mindata(1:ReadLinesMetdata,ncolsESTMdata))
-         ! IF (.NOT. ALLOCATED(Ts5mindata_ir)) ALLOCATE(Ts5mindata_ir(ncolsESTMdata))
-         !
-         ! IF (.NOT. ALLOCATED(Tair24HR)) ALLOCATE(Tair24HR(24*nsh))
-         ! if ( /= 0) print *, ": Deallocation request denied"
-         ! ALLOCATE(Tair24HR(24*nsh))
 
       END IF
       IF (.NOT. ALLOCATED(ESTMForcingData)) ALLOCATE (ESTMForcingData(1:ReadLinesMetdata, ncolsESTMdata, NumberOfGrids))
@@ -610,7 +585,7 @@ PROGRAM SUEWS_Program
          END IF
 
          DO ir = 1, irMax !Loop through rows of current block of met data
-            GridCounter = 1 !Initialise counter for grids in each year
+            ! GridCounter = 1 !Initialise counter for grids in each year
             ! PRINT *, '*****************************************'
             ! WRITE (*, *) 'ir here', ir, 'of', irMax
             ! PRINT *, ''
@@ -631,8 +606,9 @@ PROGRAM SUEWS_Program
                   WRITE (*, *) TRIM(ADJUSTL(FileCodeX)), &
                      ': Now running block ', iblock, '/', ReadBlocksMetData, ' of ', TRIM(year_txt), '...'
                END IF
+
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Calculations...'
-               CALL SUEWS_Calculations(GridCounter, ir, iblock, irMax)
+               CALL SUEWS_Calculations(igrid, ir, iblock, irMax)
                IF (Diagnose == 1) WRITE (*, *) 'SUEWS_Calculations finished...'
 
                ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
@@ -652,7 +628,7 @@ PROGRAM SUEWS_Program
                   END IF
                END IF
 
-               GridCounter = GridCounter + 1 !Increase GridCounter by 1 for next grid
+               ! GridCounter = GridCounter + 1 !Increase GridCounter by 1 for next grid
             END DO !end loop over grids
 
             ! update simulation time since start
