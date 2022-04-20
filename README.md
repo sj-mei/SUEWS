@@ -50,7 +50,7 @@ The compiled SUEWS binary executable can be found under `Release/bin/<system>` w
 Sample input and output files can be found under `Test/BaseRun/<version>`, where `<version>` is denoted by the ending part of compiled binary (e.g., `2020b`).
 
 ## Developer Note
-- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.  
+- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.
 
 ### Branch
 
@@ -114,7 +114,8 @@ Here are some tips to debug SUEWS code:
 #### GDB on macOS
 
 Recent macOS (since High Sierra) introduces extra security procedures for system level operations that makes installation GDB more tedious than before.
-The best practice, in TS's option, to avoid hacking your macOS, is to use Linux docker images with gfortran & gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran).
+The best practice, in TS's opinion, to avoid hacking your macOS, is to use Linux docker images with gfortran & gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran)
+(otherwise, [this guide](https://dev.to/jasonelwood/setup-gdb-on-macos-in-2020-489k#generate-cert) might be useful for installation of GDB on macOS; also run `set startup-with-shell off` *inside GDB* before `run` the debuggng process)
 
 Once the docker image is installed, simply run this from the SUEWS root folder for debugging:
 
