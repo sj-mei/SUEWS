@@ -89,7 +89,6 @@ src_f95 = path_target_f95 + path_other_f95
 # #     print(f)
 
 
-
 def readme():
     f = """
     `supy_driver` is `F2PY`-based python binary package for `supy` with `SUEWS` as the computation core.
@@ -141,7 +140,10 @@ ext_modules = [
     Extension(
         "supy_driver.suews_driver",
         [str(p) for p in path_target_f95],
-        extra_compile_args=["-D_POSIX_C_SOURCE=200809L",'-fbracket-depth=1024'],
+        extra_compile_args=[
+            "-D_POSIX_C_SOURCE=200809L",
+            "-fbracket-depth=1024" if sysname == "Darwin" else "", # for clang on MacOS
+        ],
         extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
         f2py_options=[
             # '--quiet',
