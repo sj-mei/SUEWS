@@ -386,6 +386,15 @@ def test_multigrid(
     # test equality
     # res_test = np.array_equal(res_sim_multigrid.values, res_sim_singlegrid.values)
     res_test = res_sim_multigrid.equals(res_sim_singlegrid)
+    if not res_test:
+        # change back to previous path
+        os.chdir(dir_save)
+        print("results not equal")
+        print("saving test results to:", dir_save)
+        res_sim_multigrid.to_pickle("res_sim_multigrid.pkl")
+        print("res_sim_multigrid.pkl saved")
+        res_sim_singlegrid.to_pickle("res_sim_singlegrid.pkl")
+        print("res_sim_singlegrid.pkl saved")
 
     # change back to previous path
     os.chdir(dir_sys)

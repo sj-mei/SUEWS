@@ -121,6 +121,8 @@ class Test_SUEWS(unittest.TestCase):
             print("testing multi-grid multi-year run ... ")
             n_grid = 3
             name_sim = "test-multi-grid" + str(np.random.randint(10000))
+            print("name_sim:", name_sim)
+            print("name_exe:", name_exe)
             res_test = ts.test_multigrid(
                 name_sim,
                 name_exe,
