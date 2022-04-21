@@ -404,7 +404,7 @@ CONTAINS
       sfr_surf, ev_surf_in, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
       state_surf_in, soilstore_surf_in, &
       state_surf_out, soilstore_surf_out, & ! output:
-      runoff_surf,&
+      runoff_surf, &
       runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
       ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid) !output:
       IMPLICIT NONE

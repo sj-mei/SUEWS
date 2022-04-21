@@ -2054,9 +2054,9 @@ CONTAINS
          tsurf_ind = NAN
          qn1_ind = NAN
          Fcld = NAN
-         qn_surf=qn
+         qn_surf = qn
          qn_roof = qn_surf(BldgSurf)
-            qn_wall = qn_surf(BldgSurf)
+         qn_wall = qn_surf(BldgSurf)
       END IF
       ! snowFrac_next = SnowFrac
 
@@ -2260,8 +2260,8 @@ CONTAINS
             sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
             qn_av_next, dqndt_next, &
             a1, a2, a3, qs, deltaQi) ! output
-          QS_surf = qs
-            QS_roof = qs
+         QS_surf = qs
+         QS_roof = qs
          QS_wall = qs
 
          ! !Calculate QS using ESTM

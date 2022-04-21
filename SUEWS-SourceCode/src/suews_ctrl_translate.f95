@@ -1106,7 +1106,6 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! ---- Liquid (melted) water in SnowPack
       SnowWater(1:nsurf) = ModelOutputData(0, cMOD_SnowWaterState(1:nsurf), Gridiv)
 
-
    END IF !ir = 0
    !=================================================================================
 

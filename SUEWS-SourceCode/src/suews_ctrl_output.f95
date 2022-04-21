@@ -1406,8 +1406,8 @@ CONTAINS
          x = i/nlinesOut
          dataOut_agg0 = dataOutX(i - nlinesOut + 1:i, :)
          DO j = 1, SIZE(varList), 1
-            IF (Diagnose == 1 ) THEN
-               print *, "aggregating variable ", j, " of ", varList(j)%header,'in group ',varList(j)%group
+            IF (Diagnose == 1) THEN
+               PRINT *, "aggregating variable ", j, " of ", varList(j)%header, 'in group ', varList(j)%group
             END IF
             ! aggregating different variables
             SELECT CASE (varList(j)%aggreg)

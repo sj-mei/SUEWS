@@ -963,7 +963,7 @@ CONTAINS
 
       ! assign values to the grid container
       nlayer_grids(gridIV) = nlayer
-      height_grids(gridIV, 1:nlayer+1) = height(1:nlayer+1)
+      height_grids(gridIV, 1:nlayer + 1) = height(1:nlayer + 1)
       building_frac_grids(gridIV, 1:nlayer) = building_frac(1:nlayer)
       veg_frac_grids(gridIV, 1:nlayer) = veg_frac(1:nlayer)
       building_scale_grids(gridIV, 1:nlayer) = building_scale(1:nlayer)
