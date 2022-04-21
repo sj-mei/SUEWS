@@ -141,7 +141,7 @@ ext_modules = [
     Extension(
         "supy_driver.suews_driver",
         [str(p) for p in path_target_f95],
-        extra_compile_args=["-D_POSIX_C_SOURCE=200809L"],
+        extra_compile_args=["-D_POSIX_C_SOURCE=200809L",'-fbracket-depth=1024'],
         extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
         f2py_options=[
             # '--quiet',
@@ -161,7 +161,7 @@ ext_modules = [
 setup(
     name="supy_driver",
     # update version info here!
-    version=get_suews_version(ver_minor=5),
+    version=get_suews_version(ver_minor=6),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
     url="https://github.com/sunt05/SuPy",
