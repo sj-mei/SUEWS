@@ -32,7 +32,8 @@ else
 	endif
 endif
 
-
+# enable this if we want to use the debug version of SUEWS
+# DEBUG=1
 
 LIBUTILS = $(addprefix $(DIR_LIB_SUEWS),libsuewsutil.a)
 LIBPHYS = $(addprefix $(DIR_LIB_SUEWS),libsuewsphys.a)
@@ -74,6 +75,11 @@ NETCDF4        = 1
 endif
 else
 $(info *** nf-config not found)
+endif
+
+ifdef DEBUG
+$(info *** DEBUG mode is ON)
+else
 endif
 
 # make can be invoked using "make PROFILE=<prof>" in which case your
@@ -119,7 +125,6 @@ export LIBS    = $(DEBUGFLAGS) $(LDFLAGS) \
 	-L$(DIR_LIB_SUEWS) -lsuewsdriver -lspartacus \
 	$(STATICLIB)
 	# $(FCLIBS) $(NETCDF_LIB) $(OMPFLAG)
-
 
 
 
