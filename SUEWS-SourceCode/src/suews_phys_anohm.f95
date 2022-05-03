@@ -27,11 +27,11 @@ CONTAINS
    !! -# grid ensemble OHM coefficients: a1, a2 and a3
    SUBROUTINE AnOHM( &
       tstep, dt_since_start, &
-      qn1, qn1_av_prev, dqndt_prev, qf, &
+      qn1, qn_av_prev, dqndt_prev, qf, &
       MetForcingData_grid, moist_surf, &
       alb, emis, cpAnOHM, kkAnOHM, chAnOHM, & ! input
       sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
-      qn1_av_next, dqndt_next, &
+      qn_av_next, dqndt_next, &
       a1, a2, a3, qs, deltaQi) ! output
 
       IMPLICIT NONE
@@ -57,8 +57,8 @@ CONTAINS
       INTEGER, INTENT(in) :: nsurf !< number of surfaces [-]
       ! INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour [-]
 
-      REAL(KIND(1D0)), INTENT(in) :: qn1_av_prev
-      REAL(KIND(1D0)), INTENT(out) :: qn1_av_next
+      REAL(KIND(1D0)), INTENT(in) :: qn_av_prev
+      REAL(KIND(1D0)), INTENT(out) :: qn_av_next
       REAL(KIND(1D0)), INTENT(in) :: dqndt_prev !Rate of change of net radiation [W m-2 h-1] at t-1
       REAL(KIND(1D0)), INTENT(out) :: dqndt_next !Rate of change of net radiation [W m-2 h-1] at t-1
 
@@ -80,8 +80,6 @@ CONTAINS
       ! REAL(KIND(1d0))                  :: dqndt       !< rate of change of net radiation [W m-2 h-1] at t-2
       ! REAL(KIND(1d0))                  :: surfrac     !< surface fraction accounting for SnowFrac if appropriate
       REAL(KIND(1D0)), DIMENSION(nsurf) :: xa1, xa2, xa3 !< temporary AnOHM coefs.
-      ! REAL(KIND(1d0))                  :: qn1_av      ! average net radiation over previous hour [W m-2]
-      ! REAL(KIND(1d0))                  :: nsh_nna     ! number of timesteps per hour with non -999 values (used for spinup)
 
       ! initialize output variables
       xa1 = 0.1
@@ -127,8 +125,8 @@ CONTAINS
 
          ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
          ! CALL OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
-         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_av_prev, qn1, dqndt_prev, &
-                              qn1_av_next, dqndt_next)
+         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn_av_prev, qn1, dqndt_prev, &
+                              qn_av_next, dqndt_next)
 
          ! Calculate net storage heat flux
          CALL OHM_QS_cal(qn1, dqndt_prev, a1, a2, a3, qs)

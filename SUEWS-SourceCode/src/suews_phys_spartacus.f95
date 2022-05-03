@@ -317,7 +317,7 @@ CONTAINS
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
 
-      CALL config%READ(file_name=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml')
+      ! CALL config%READ(file_name=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml')
       config%do_sw = .TRUE.
       config%do_lw = .TRUE.
       config%use_sw_direct_albedo = use_sw_direct_albedo

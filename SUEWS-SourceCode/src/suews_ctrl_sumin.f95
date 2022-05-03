@@ -40,7 +40,7 @@ CONTAINS
       z0m_in, zdm_in, & ! roughness related settings
       alb, emis, SnowAlb, OHM_coef, WaterDist, & ! surface properties
       AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, snowProf_24hr, & ! hourly profile values
-      qn1_av, dqndt, qn1_s_av, dqnsdt, & ! OHM related Qn quantities
+      qn_av, dqndt, qn_s_av, dqnsdt, & ! OHM related Qn quantities
       surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, &
       NumCapita_id, &
       BaseT_id, &
@@ -198,9 +198,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: snowProf_24hr
       ! daily states, also initial conditions
 
-      REAL(KIND(1D0)), INTENT(INOUT) :: qn1_av
+      REAL(KIND(1D0)), INTENT(INOUT) :: qn_av
       REAL(KIND(1D0)), INTENT(INOUT) :: dqndt
-      REAL(KIND(1D0)), INTENT(INOUT) :: qn1_s_av !qn1_av for snow
+      REAL(KIND(1D0)), INTENT(INOUT) :: qn_s_av !qn_av for snow
       REAL(KIND(1D0)), INTENT(INOUT) :: dqnsdt !dqndt for snow
       REAL(KIND(1D0)), INTENT(INOUT) :: DecidCap_id
       REAL(KIND(1D0)), INTENT(INOUT) :: albDecTr_id
@@ -549,7 +549,7 @@ CONTAINS
          BaseT_HC_id, beta_bioCO2, beta_enh_bioCO2, bldgH_id, CapMax_dec_id, CapMin_dec_id, &
          chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat_id, DayWatPer_id, &
          DecTreeH_id, Diagnose, DiagQN, DiagQS, DRAINRT_id, &
-         dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+         dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
          EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH_id, FAIBldg_id, &
          FAIDecTree_id, FAIEveTree_id, Faut_id, FcEF_v_kgkm, fcld_obs, FlowChange_id, &
          FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &

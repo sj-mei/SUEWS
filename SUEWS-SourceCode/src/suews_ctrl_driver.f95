@@ -4022,7 +4022,7 @@ CONTAINS
       BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
-      dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+      dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
@@ -4278,9 +4278,9 @@ CONTAINS
       ! ########################################################################################
       ! inout variables
       ! OHM related:
-      REAL(KIND(1D0)), INTENT(INOUT) :: qn1_av
+      REAL(KIND(1D0)), INTENT(INOUT) :: qn_av
       REAL(KIND(1D0)), INTENT(INOUT) :: dqndt
-      REAL(KIND(1D0)), INTENT(INOUT) :: qn1_s_av
+      REAL(KIND(1D0)), INTENT(INOUT) :: qn_s_av
       REAL(KIND(1D0)), INTENT(INOUT) :: dqnsdt
 
       ! snow related:
@@ -4551,7 +4551,7 @@ CONTAINS
          ! write (12, *) 'drainrt=', drainrt
          ! write (12, *) 'dt_since_start=', dt_since_start
          ! write (12, *) 'dqndt=', dqndt
-         ! write (12, *) 'qn1_av=', qn1_av
+         ! write (12, *) 'qn_av=', qn_av
          ! write (12, *) 'dqnsdt=', dqnsdt
          ! write (12, *) 'qn1_s_av=', qn1_s_av
          ! write (12, *) 'ef_umolco2perj=', ef_umolco2perj
@@ -4736,7 +4736,7 @@ CONTAINS
             BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
             DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
-            dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+            dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
