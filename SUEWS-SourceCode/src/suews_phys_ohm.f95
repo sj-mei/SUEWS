@@ -78,7 +78,6 @@ SUBROUTINE OHM(qn1, qn_av_prev, dqndt_prev, qn_av_next, dqndt_next, &
    REAL(KIND(1D0)), INTENT(in) :: dqnsdt_prev ! Rate of change of net radiation [W m-2 h-1] at t-1
    REAL(KIND(1D0)), INTENT(out) :: dqnsdt_next ! Rate of change of net radiation [W m-2 h-1] at t-1
 
-
    REAL(KIND(1D0)), INTENT(out) :: qs ! storage heat flux
    ! REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+1) ! storage heat flux of snow surfaces
    REAL(KIND(1D0)), INTENT(out) :: deltaQi(nsurf) ! storage heat flux of snow surfaces
