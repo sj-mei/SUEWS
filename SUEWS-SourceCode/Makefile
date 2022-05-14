@@ -28,7 +28,12 @@ else
 		DIR_RELEASE_SUEWS = $(addprefix $(DIR_RELEASE_BASE_SUEWS), Linux)
 	endif
 	ifeq ($(UNAME_S),Darwin) # macOS
-		DIR_RELEASE_SUEWS = $(addprefix $(DIR_RELEASE_BASE_SUEWS), macOS)
+		UNAME_m := $(shell uname -m)
+		ifeq ($(UNAME_m),arm64) # arm64
+			DIR_RELEASE_SUEWS = $(addprefix $(DIR_RELEASE_BASE_SUEWS), macOS_arm64)
+		else # x64
+			DIR_RELEASE_SUEWS = $(addprefix $(DIR_RELEASE_BASE_SUEWS), macOS_x64)
+		endif
 	endif
 endif
 

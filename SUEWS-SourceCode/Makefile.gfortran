@@ -54,8 +54,14 @@ else
 		SUEWS_build_dir = $(addprefix $(SUEWS_build_base), Linux)
 	endif
 	ifeq ($(UNAME_S),Darwin) # macOS
+		UNAME_m := $(shell uname -m)
 		STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
-		STATICLIB = $(shell $(FC) -print-file-name=libquadmath.dylib | xargs -t rm -rf; $(FC) -print-file-name=libquadmath.a) # force-ship this static lib
-		SUEWS_build_dir = $(addprefix $(SUEWS_build_base), macOS)
+		ifeq ($(UNAME_m),arm64)
+			STATICLIB =
+			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), macOS_arm64)
+		else
+			STATICLIB = $(shell $(FC) -print-file-name=libquadmath.dylib | xargs -t rm -rf; $(FC) -print-file-name=libquadmath.a) # force-ship this static lib
+			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), macOS_x64)
+		endif
 	endif
 endif
