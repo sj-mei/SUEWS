@@ -2984,6 +2984,8 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: iceFrac
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_e_surf
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_e_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_e_wall
 
       REAL(KIND(1D0)) :: pin !Rain per time interval
       REAL(KIND(1D0)) :: tlv
@@ -3027,32 +3029,39 @@ CONTAINS
 
       IF (storageheatmethod == 5) THEN
          ! --- roofs ---
+         ! net available energy for evaporation
+         qn_e_roof = qn_roof + qf - qs_roof ! qn1 changed to qn1_snowfree, lj in May 2013
          CALL cal_evap_multi( &
             EvapMethod, & !input
             sfr_roof, state_roof_in, WetThresh_roof, statelimit_roof, & !input
-            vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+            vpd_hPa, avdens, avcp, qn_e_roof, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
             rss_roof, ev_roof, qe_roof) !output
 
          ! --- walls ---
+         ! net available energy for evaporation
+         qn_e_wall = qn_wall + qf - qs_wall ! qn1 changed to qn1_snowfree, lj in May 2013
          CALL cal_evap_multi( &
             EvapMethod, & !input
             sfr_wall, state_wall_in, WetThresh_wall, statelimit_wall, & !input
-            vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
+            vpd_hPa, avdens, avcp, qn_e_wall, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
             rss_wall, ev_wall, qe_wall) !output
-
-         qe_building = 0.5*(DOT_PRODUCT(qe_roof, sfr_roof) + DOT_PRODUCT(qe_wall, sfr_wall))
 
          ! == calculate water balance ==
          ! --- building facets: roofs and walls ---
          CALL cal_water_storage_building( &
             pin, nsh_real, nlayer, &
             sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
-            state_roof_in, soilstore_roof_in, ev_roof, & ! input:
+            ev_roof, state_roof_in, soilstore_roof_in, & ! input:
             sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
-            state_wall_in, soilstore_wall_in, ev_wall, & ! input:
-            state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
-            state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
+            ev_wall, state_wall_in, soilstore_wall_in, & ! input:
+            ev_roof, state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
+            ev_wall, state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
             state_building, soilstore_building, runoff_building, capStore_builing)
+
+         ! update QE based on the water balance
+         qe_roof = tlv*ev_roof
+         qe_wall = tlv*ev_wall
+         qe_building = 0.5*(DOT_PRODUCT(qe_roof, sfr_roof) + DOT_PRODUCT(qe_wall, sfr_wall))
       END IF
       ! --- general suews surfaces ---
       CALL cal_water_storage_surf( &
@@ -3061,13 +3070,17 @@ CONTAINS
          addImpervious, addVeg, addWaterBody, FlowChange, &
          SoilStoreCap_surf, StateLimit_surf, &
          NonWaterFraction, PervFraction, &
-         sfr_surf, ev_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
-         state_surf_in, soilstore_surf_in, &
-         state_surf_out, soilstore_surf_out, & ! output:
+         sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
+         ev_surf, state_surf_in, soilstore_surf_in, &
+         ev_surf, state_surf_out, soilstore_surf_out, & ! output:
          runoff_surf, &
          runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
          ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid)
 
+      ! update QE based on the water balance
+      qe_surf = tlv*ev_surf
+
+      ! --- update building related ---
       IF (storageheatmethod == 5) THEN
          ! update building specific values
          qe_surf(BldgSurf) = qe_building

@@ -401,9 +401,9 @@ CONTAINS
       addImpervious, addVeg, addWaterBody, FlowChange, &
       SoilStoreCap_surf, StateLimit_surf, &
       NonWaterFraction, PervFraction, &
-      sfr_surf, ev_surf_in, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
-      state_surf_in, soilstore_surf_in, &
-      state_surf_out, soilstore_surf_out, & ! output:
+      sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
+      ev_surf_in, state_surf_in, soilstore_surf_in, &
+      ev_surf_out, state_surf_out, soilstore_surf_out, & ! output:
       runoff_surf, &
       runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
       ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid) !output:
@@ -444,6 +444,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody_grid !Above ground runoff from water surface [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !Above ground runoff from water surface [mm] for whole surface area
 
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev_surf_out !evaporation each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_surf_out !Wetness status of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_surf_out !Wetness status of each surface type [mm]
 
@@ -501,16 +502,19 @@ CONTAINS
       ! update soilstore
       soilstore_surf_out = soilstore
 
+      ! update evaporation
+      ev_surf_out = ev_surf
+
    END SUBROUTINE cal_water_storage_surf
 
    SUBROUTINE cal_water_storage_building( &
       pin, nsh_real, nlayer, &
       sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
-      state_roof_in, soilstore_roof_in, ev_roof, & ! input:
+      ev_roof_in, state_roof_in, soilstore_roof_in, & ! input:
       sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
-      state_wall_in, soilstore_wall_in, ev_wall, & ! input:
-      state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
-      state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
+      ev_wall_in, state_wall_in, soilstore_wall_in, & ! input:
+      ev_roof_out, state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
+      ev_wall_out, state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
       state_building, soilstore_building, runoff_building, SoilStoreCap_building)
 
       IMPLICIT NONE
@@ -526,7 +530,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: SoilStoreCap_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_roof_in
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_roof_in
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: ev_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: ev_roof_in
 
       ! input for generic wall facets
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
@@ -535,14 +539,16 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: SoilStoreCap_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_wall_in
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_wall_in
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: ev_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: ev_wall_in
 
       ! output for generic roof facets
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: ev_roof_out
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_roof_out
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_roof_out
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: runoff_roof
 
       ! output for generic wall facets
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: ev_wall_out
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_wall_out
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_wall_out
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: runoff_wall
@@ -598,9 +604,9 @@ CONTAINS
          IF (precip_excess_roof > 0) THEN
             ! runoff generated from roof
             runoff_roof(i_layer) = precip_excess_roof
-            chang_roof(i_layer) = IPThreshold - ev_roof(i_layer) - drain_roof(i_layer) - infil_roof(i_layer)
+            chang_roof(i_layer) = IPThreshold - ev_roof_in(i_layer) - drain_roof(i_layer) - infil_roof(i_layer)
          ELSE
-            chang_roof(i_layer) = pin - ev_roof(i_layer) - drain_roof(i_layer) - infil_roof(i_layer)
+            chang_roof(i_layer) = pin - ev_roof_in(i_layer) - drain_roof(i_layer) - infil_roof(i_layer)
          END IF
 
          ! change in surface water
@@ -615,7 +621,7 @@ CONTAINS
                soilstore_roof_out(i_layer) = soilstore_roof_in(i_layer) + state_roof_out(i_layer)
                ! If there is not sufficient water on the surface or soilstore, then don't allow this evaporation to happen
             ELSE
-               ! evap_roof = evap_roof - ABS(state_roof_out(i_layer)) !Limit evaporation according to water availability
+               ev_roof_out(i_layer) = ev_roof_in(i_layer) - ABS(state_roof_out(i_layer)) !Limit evaporation according to water availability
             END IF
             ! force surface to dry
             state_roof_out(i_layer) = 0.0
@@ -654,9 +660,9 @@ CONTAINS
          IF (precip_excess_wall > 0) THEN
             ! runoff generated from roof
             runoff_wall(i_layer) = precip_excess_wall
-            chang_wall(i_layer) = StateLimit_wall(i_layer) - ev_wall(i_layer) - drain_wall(i_layer) - infil_wall(i_layer)
+            chang_wall(i_layer) = StateLimit_wall(i_layer) - ev_wall_in(i_layer) - drain_wall(i_layer) - infil_wall(i_layer)
          ELSE
-            chang_wall(i_layer) = pin_wall - ev_wall(i_layer) - drain_wall(i_layer) - infil_wall(i_layer)
+            chang_wall(i_layer) = pin_wall - ev_wall_in(i_layer) - drain_wall(i_layer) - infil_wall(i_layer)
          END IF
 
          ! change in surface water
@@ -671,7 +677,7 @@ CONTAINS
                soilstore_wall_out(i_layer) = soilstore_wall_in(i_layer) + state_wall_out(i_layer)
                ! If there is not sufficient water on the surface or soilstore, then don't allow this evaporation to happen
             ELSE
-               ! evap_roof = evap_roof - ABS(state_roof_out(i_layer)) !Limit evaporation according to water availability
+               ev_wall_out(i_layer) = ev_wall_in(i_layer) - ABS(state_wall_out(i_layer)) !Limit evaporation according to water availability
             END IF
             ! force surface to dry
             state_wall_out(i_layer) = 0.0
