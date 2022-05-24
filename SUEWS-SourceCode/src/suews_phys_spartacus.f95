@@ -124,7 +124,8 @@ CONTAINS
       clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
       roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
       ground_dn_dir_sw_spc, ground_net_sw_spc, &
-      qn, kup, lup, qn_roof, qn_wall)
+      qn, kup, lup, qn_roof, qn_wall, &
+      dataOutLineSPARTACUS)
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
       USE radsurf_config, ONLY: config_type
@@ -135,7 +136,8 @@ CONTAINS
       USE radsurf_boundary_conds_out, ONLY: boundary_conds_out_type
       USE radsurf_canopy_flux, ONLY: canopy_flux_type
       USE radsurf_simple_spectrum, ONLY: calc_simple_spectrum_lw
-      USE data_in, ONLY: fileinputpath
+      ! USE data_in, ONLY: fileinputpath
+      USE allocateArray, ONLY: ncolumnsDataOutSPARTACUS
 
       IMPLICIT NONE
 
@@ -187,6 +189,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: roof_in_sw_spc
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_wall
+
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
 
       ! Derived types for the inputs to the radiation scheme
       TYPE(config_type) :: config
@@ -247,6 +251,10 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: roof_emissivity
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
+
+      ! initialize the output variables
+      dataOutLineSPARTACUS = -999.
+
       ! REAL(kind(1d0)), ALLOCATABLE :: height(:), building_frac(:), veg_frac(:), &
       !                                 building_scale(:), veg_scale(:), veg_ext(:), &
       !                                 veg_fsd(:), veg_contact_fraction(:), &
@@ -623,6 +631,30 @@ CONTAINS
       ! net radiation for roof/wall
       qn_roof = roof_net_lw_spc(:nlayer) + roof_net_sw_spc(:nlayer)
       qn_wall = wall_net_lw_spc(:nlayer) + wall_net_sw_spc(:nlayer)
+
+      ! TODO: #101 to move SPARTACUS output here
+      dataOutLineSPARTACUS = &
+         [alb_spc, emis_spc, &
+          top_dn_dir_sw_spc, &
+          sw_up_spc, &
+          top_dn_lw_spc, &
+          lw_up_spc, &
+          qn_spc, &
+          top_net_sw_spc, &
+          top_net_lw_spc, &
+          lw_emission_spc, &
+          ground_dn_dir_sw_spc, &
+          ground_net_sw_spc, &
+          ground_net_lw_spc, &
+          roof_in_sw_spc, &
+          roof_net_sw_spc, &
+          wall_net_sw_spc, &
+          clear_air_abs_sw_spc, &
+          roof_in_lw_spc, &
+          roof_net_lw_spc, &
+          wall_net_lw_spc, &
+          clear_air_abs_lw_spc &
+          ]
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
 
