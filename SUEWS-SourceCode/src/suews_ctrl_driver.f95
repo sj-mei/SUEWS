@@ -1010,7 +1010,8 @@ CONTAINS
             top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
             clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
             top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
-            clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc)
+            clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc,&
+            dataOutLineSPARTACUS)
 
          ! PRINT *, 'Qn_surf after SUEWS_cal_Qn ', qn_surf
          ! PRINT *, 'qn_roof after SUEWS_cal_Qn ', qn_roof
@@ -1540,30 +1541,30 @@ CONTAINS
           ! state_surf_prev, &
           RS, RA_h, RB, RAsnow, &
           vpd_hPa, lv_J_kg, avdens, avcp, qn_av, dqndt]
-      IF (NetRadiationMethod > 1000) THEN
-         dataOutLineSPARTACUS = &
-            [alb_spc, emis_spc, &
-             top_dn_dir_sw_spc, &
-             sw_up_spc, &
-             top_dn_lw_spc, &
-             lw_up_spc, &
-             qn_spc, &
-             top_net_sw_spc, &
-             top_net_lw_spc, &
-             lw_emission_spc, &
-             ground_dn_dir_sw_spc, &
-             ground_net_sw_spc, &
-             ground_net_lw_spc, &
-             roof_in_sw_spc, &
-             roof_net_sw_spc, &
-             wall_net_sw_spc, &
-             clear_air_abs_sw_spc, &
-             roof_in_lw_spc, &
-             roof_net_lw_spc, &
-             wall_net_lw_spc, &
-             clear_air_abs_lw_spc &
-             ]
-      END IF
+      ! IF (NetRadiationMethod > 1000) THEN
+      !    dataOutLineSPARTACUS = &
+      !       [alb_spc, emis_spc, &
+      !        top_dn_dir_sw_spc, &
+      !        sw_up_spc, &
+      !        top_dn_lw_spc, &
+      !        lw_up_spc, &
+      !        qn_spc, &
+      !        top_net_sw_spc, &
+      !        top_net_lw_spc, &
+      !        lw_emission_spc, &
+      !        ground_dn_dir_sw_spc, &
+      !        ground_net_sw_spc, &
+      !        ground_net_lw_spc, &
+      !        roof_in_sw_spc, &
+      !        roof_net_sw_spc, &
+      !        wall_net_sw_spc, &
+      !        clear_air_abs_sw_spc, &
+      !        roof_in_lw_spc, &
+      !        roof_net_lw_spc, &
+      !        wall_net_lw_spc, &
+      !        clear_air_abs_lw_spc &
+      !        ]
+      ! END IF
 
       ! write out ESTM_ext output
       ! dataoutlineESTMExt=-999
@@ -1844,7 +1845,8 @@ CONTAINS
       top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
       clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
       top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
-      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc)
+      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc,&
+      dataOutLineSPARTACUS)
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
 
@@ -1962,6 +1964,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_roof
 
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
+
       ! translate values
       alb = alb_prev
 
@@ -2034,7 +2038,8 @@ CONTAINS
                clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
                roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
                ground_dn_dir_sw_spc, ground_net_sw_spc, &
-               qn, kup, lup, qn_roof, qn_wall)
+               qn, kup, lup, qn_roof, qn_wall, &
+               dataOutLineSPARTACUS)
          ELSE
             qn_roof = qn_surf(BldgSurf)
             qn_wall = qn_surf(BldgSurf)
