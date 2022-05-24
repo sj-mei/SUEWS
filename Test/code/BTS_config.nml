@@ -23,6 +23,6 @@
     stabilitymethod    = 2, 3, 4
     roughlenheatmethod = 1, 2, 3, 4, 5
     roughlenmommethod  = 1, 2, 3, 4
-    smdmethod          = 0, 1, 2
+    smdmethod          = 0, 1
     waterusemethod     = 0, 1
 /
