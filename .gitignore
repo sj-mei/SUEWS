@@ -351,3 +351,4 @@ log.test
 Test/fortran-notebook/test-fortran.ipynb
 # Test/BaseRun/2021a/Output/
 Test/code/quick-test.py
+.fortls
