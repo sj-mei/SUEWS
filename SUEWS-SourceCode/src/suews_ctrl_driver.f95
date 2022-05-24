@@ -1006,11 +1006,11 @@ CONTAINS
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, SnowAlb_next, &
-            alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
-            top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
-            clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
-            top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
-            clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc, &
+            ! alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
+            ! top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
+            ! clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
+            ! top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
+            ! clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc, &
             dataOutLineSPARTACUS)
 
          ! PRINT *, 'Qn_surf after SUEWS_cal_Qn ', qn_surf
@@ -1841,11 +1841,11 @@ CONTAINS
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
       albedo_snow, SnowAlb_next, &
-      alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
-      top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
-      clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
-      top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
-      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc, &
+      ! alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
+      ! top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
+      ! clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
+      ! top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
+      ! clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc, &
       dataOutLineSPARTACUS)
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
@@ -1933,13 +1933,13 @@ CONTAINS
       INTEGER :: AlbedoChoice, ldown_option
 
       ! SPARTACUS output variables
-      REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-                                                     roof_in_lw_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-                                                     roof_in_sw_spc
+      ! REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
+      ! REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      ! REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+      !                                                roof_in_lw_spc
+      ! REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
+      ! REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
+      !                                                roof_in_sw_spc
 
       ! SPARTACUS input variables
       INTEGER, INTENT(IN) :: n_vegetation_region_urban, &
@@ -2031,14 +2031,14 @@ CONTAINS
                height, building_frac, veg_frac, building_scale, veg_scale, & !input:
                alb_roof, emis_roof, alb_wall, emis_wall, &
                roof_albedo_dir_mult_fact, wall_specular_frac, &
-               alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output:
-               clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-               roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
-               top_dn_lw_spc, &
-               clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-               roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-               ground_dn_dir_sw_spc, ground_net_sw_spc, &
-               qn, kup, lup, qn_roof, qn_wall, &
+               ! alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output:
+               ! clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+               ! roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
+               ! top_dn_lw_spc, &
+               ! clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
+               ! roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
+               ! ground_dn_dir_sw_spc, ground_net_sw_spc, &
+               qn, kup, lup, qn_roof, qn_wall, &!output:
                dataOutLineSPARTACUS)
          ELSE
             qn_roof = qn_surf(BldgSurf)
