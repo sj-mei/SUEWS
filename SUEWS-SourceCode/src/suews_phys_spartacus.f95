@@ -116,15 +116,15 @@ CONTAINS
       height, building_frac, veg_frac, building_scale, veg_scale, & !input:
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
-      alb_spc, emis_spc, & !output:
-      lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
-      clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-      roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
-      top_dn_lw_spc, &
-      clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-      roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-      ground_dn_dir_sw_spc, ground_net_sw_spc, &
-      qn, kup, lup, qn_roof, qn_wall, &
+      ! alb_spc, emis_spc, & !output:
+      ! lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
+      ! clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+      ! roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
+      ! top_dn_lw_spc, &
+      ! clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
+      ! roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
+      ! ground_dn_dir_sw_spc, ground_net_sw_spc, &
+      qn, kup, lup, qn_roof, qn_wall, &!output:
       dataOutLineSPARTACUS)
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
@@ -172,21 +172,23 @@ CONTAINS
       INTEGER :: jrepeat, ilay, jlay, jcol
 
       ! output variables
-      REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: qn, kup, lup
-      REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: top_net_sw_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: ground_dn_dir_sw_spc
-      REAL(KIND(1D0)), INTENT(OUT) :: ground_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: wall_net_lw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: roof_net_lw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: roof_in_lw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: wall_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: roof_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: roof_in_sw_spc
+      REAL(KIND(1D0)) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
+      REAL(KIND(1D0)) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      REAL(KIND(1D0)) :: qn, kup, lup
+      REAL(KIND(1D0)) :: top_dn_dir_sw_spc
+      REAL(KIND(1D0)) :: top_net_sw_spc
+      REAL(KIND(1D0)) :: ground_dn_dir_sw_spc
+      REAL(KIND(1D0)) :: ground_net_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: roof_in_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: roof_in_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: roof_net_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: roof_net_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: wall_in_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: wall_in_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: wall_net_sw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: wall_net_lw_spc
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_wall
 
@@ -594,6 +596,8 @@ CONTAINS
       clear_air_abs_lw_spc(:nlayer) = lw_flux%clear_air_abs(nspec, :nlayer)
       wall_net_lw_spc = 0.0
       wall_net_lw_spc(:nlayer) = lw_flux%wall_net(nspec, :nlayer)
+      wall_in_lw_spc = 0.0
+      wall_in_lw_spc(:nlayer) = lw_flux%wall_in(nspec, :nlayer)
       ! PRINT *, 'wall_net_lw_spc in suews-su', lw_flux%wall_net
       roof_net_lw_spc = 0.0
       roof_net_lw_spc(:nlayer) = lw_flux%roof_net(nspec, :nlayer)
@@ -608,6 +612,8 @@ CONTAINS
       clear_air_abs_sw_spc(:nlayer) = sw_flux%clear_air_abs(nspec, :nlayer)
       wall_net_sw_spc = 0.0
       wall_net_sw_spc(:nlayer) = sw_flux%wall_net(nspec, :nlayer)
+      wall_in_sw_spc = 0.0
+      wall_in_sw_spc(:nlayer) = sw_flux%wall_in(nspec, :nlayer)
       ! PRINT *, 'wall_net_sw_spc in suews-su', wall_net_sw_spc(:nlayer), sw_flux%wall_net
       roof_net_sw_spc = 0.0
       roof_net_sw_spc(:nlayer) = sw_flux%roof_net(nspec, :nlayer)
@@ -648,10 +654,12 @@ CONTAINS
           ground_net_lw_spc, &
           roof_in_sw_spc, &
           roof_net_sw_spc, &
+          wall_in_sw_spc, &
           wall_net_sw_spc, &
           clear_air_abs_sw_spc, &
           roof_in_lw_spc, &
           roof_net_lw_spc, &
+          wall_in_lw_spc, &
           wall_net_lw_spc, &
           clear_air_abs_lw_spc &
           ]
