@@ -87,7 +87,7 @@ MODULE allocateArray
                          ncolumnsDataOutDailyState = 50, &
                          ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                          ncolumnsDataOutDebug = 5 + 24, &
-                         ncolumnsDataOutSPARTACUS = 5 + 6 + 4*15 + 3 + 6*15 + 4
+                         ncolumnsDataOutSPARTACUS = 5 + 7 + 4*15 + 3 + 6*15 + 4
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect) :: HeaderSiteSelect_File !Header for SiteSelect.txt
