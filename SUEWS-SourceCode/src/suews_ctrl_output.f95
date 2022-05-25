@@ -648,6 +648,7 @@ MODULE ctrl_output
       varAttr('LTopNet', 'W m-2', f104, 'lw net radiation at top-of-canopy', aA, 'SPARTACUS', 0), &
       varAttr('Lemission', 'W m-2', f104, 'lw emission from spartacus', aA, 'SPARTACUS', 0), &
       varAttr('KGrndDnDir', 'W m-2', f104, 'sw downwelling direct radiation at ground', aA, 'SPARTACUS', 0), &
+      varAttr('KGrndVtlDif', 'W m-2', f104, 'sw diffuse flux at ground into a vertical surface', aA, 'SPARTACUS', 0), &
       varAttr('KGrndNet', 'W m-2', f104, 'sw net radiation at ground', aA, 'SPARTACUS', 0), &
       varAttr('LGrndNet', 'W m-2', f104, 'lw net radiation at ground', aA, 'SPARTACUS', 0), &
       varAttr('KRfIn_1', 'W m-2', f104, 'sw radiation into roof - SPARTACUS level 1', aA, 'SPARTACUS', 0), &

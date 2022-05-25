@@ -179,6 +179,7 @@ CONTAINS
       REAL(KIND(1D0)) :: top_net_sw_spc
       REAL(KIND(1D0)) :: ground_dn_dir_sw_spc
       REAL(KIND(1D0)) :: ground_net_sw_spc
+      REAL(KIND(1D0)) :: ground_vertical_diff
       REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_lw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_sw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: roof_in_sw_spc
@@ -607,6 +608,7 @@ CONTAINS
       top_net_lw_spc = lw_flux%top_net(nspec, ncol)
       ground_net_lw_spc = lw_flux%ground_net(nspec, ncol)
       top_dn_lw_spc = lw_flux%top_dn(nspec, ncol)
+
       ! sw arrays
       clear_air_abs_sw_spc = 0.0
       clear_air_abs_sw_spc(:nlayer) = sw_flux%clear_air_abs(nspec, :nlayer)
@@ -624,6 +626,7 @@ CONTAINS
       top_net_sw_spc = sw_flux%top_net(nspec, ncol)
       ground_dn_dir_sw_spc = sw_flux%ground_dn_dir(nspec, ncol)
       ground_net_sw_spc = sw_flux%ground_net(nspec, ncol)
+      ground_vertical_diff = sw_flux%ground_vertical_diff(nspec, ncol)
 
       !!!!!!!!!!!!!! Bulk KUP, LUP, QSTAR for SUEWS !!!!!!!!!!!!!!
 
@@ -650,6 +653,7 @@ CONTAINS
           top_net_lw_spc, &
           lw_emission_spc, &
           ground_dn_dir_sw_spc, &
+          ground_vertical_diff,&
           ground_net_sw_spc, &
           ground_net_lw_spc, &
           roof_in_sw_spc, &
