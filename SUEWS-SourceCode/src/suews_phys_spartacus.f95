@@ -653,7 +653,7 @@ CONTAINS
           top_net_lw_spc, &
           lw_emission_spc, &
           ground_dn_dir_sw_spc, &
-          ground_vertical_diff,&
+          ground_vertical_diff, &
           ground_net_sw_spc, &
           ground_net_lw_spc, &
           roof_in_sw_spc, &
