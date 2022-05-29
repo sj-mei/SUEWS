@@ -173,7 +173,9 @@ CONTAINS
 
       ! output variables
       REAL(KIND(1D0)) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
-      REAL(KIND(1D0)) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      REAL(KIND(1D0)) :: top_net_lw_spc
+      REAL(KIND(1D0)) :: ground_net_lw_spc
+      REAL(KIND(1D0)) :: top_dn_lw_spc
       REAL(KIND(1D0)) :: qn, kup, lup
       REAL(KIND(1D0)) :: top_dn_dir_sw_spc
       REAL(KIND(1D0)) :: top_net_sw_spc
@@ -433,7 +435,8 @@ CONTAINS
 
       ! TODO: what does the "ground" refer to?
       ! set ground temperature as the area-weighted average of the surface temperature of all land covers but buildings
-      canopy_props%ground_temperature = DOT_PRODUCT(tsfc_surf_K, sfr_surf) - tsfc_surf_K(BldgSurf)*sfr_surf(BldgSurf)
+      canopy_props%ground_temperature = (DOT_PRODUCT(tsfc_surf_K, sfr_surf) - tsfc_surf_K(BldgSurf)*sfr_surf(BldgSurf)) &
+                                        /(1 - sfr_surf(BldgSurf))
 
       canopy_props%roof_temperature = tsfc_roof_K
       canopy_props%wall_temperature = tsfc_wall_K
