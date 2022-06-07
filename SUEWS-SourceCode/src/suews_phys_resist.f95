@@ -487,9 +487,9 @@ CONTAINS
             ! these are derived using digitalised points
             zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*areaZh) + 0.493*sigmoid(-5.17 + 32.7*areaZh))*Zh
             z0m = (0.00208 + &
-            0.0165*min(areaZh,.7) + 2.52*min(areaZh,.7)**2 + &
-            3.21*min(areaZh,.7)**3 - 43.6*min(areaZh,.7)**4 + &
-            76.5*min(areaZh,.7)**5 - 40.*min(areaZh,.7)**6)*Zh
+                   0.0165*MIN(areaZh, .7) + 2.52*MIN(areaZh, .7)**2 + &
+                   3.21*MIN(areaZh, .7)**3 - 43.6*MIN(areaZh, .7)**4 + &
+                   76.5*MIN(areaZh, .7)**5 - 40.*MIN(areaZh, .7)**6)*Zh
          END IF
       ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
          IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)
