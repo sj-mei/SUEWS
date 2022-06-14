@@ -9,7 +9,7 @@ SUEWS_AnthropogenicEmission.txt
 
 `SUEWS_AnthropogenicEmission.txt` provides the parameters needed to model the anthropogenic heat flux using either the method of :cite:t:`L11` based on air temperature (`EmissionsMethod` = 1 in `RunControl.nml`) or the method of :cite:t:`J11` based on heating and cooling degree days (`EmissionsMethod` = 2 in `RunControl.nml`).
 
-For the method of :cite:t:`J11` (`EmissionsMethod` = 2 in `RunControl.nml`), one can further configure the scheme for calculting `HDD`/ `CDD` via `BaseTMethod` in `RunControl.nml`:
+For the method of :cite:t:`J11` (`EmissionsMethod` = 2 in `RunControl.nml`), one can further configure the scheme for calculting :term:`HDD`/ :term:`CDD` via `BaseTMethod` in `RunControl.nml`:
 
 - `BaseTMethod` = 1 ("V-shape" approach): a single `BaseT_HC` is used by omitting the comfort range where neither heating nor cooling is activated.
 

@@ -229,7 +229,7 @@ exhale_args = {
     # Suggested optional arguments
     "createTreeView": True,
     # TIP: if using the sphinx-bootstrap-theme, you need
-    # "treeViewIsBootstrap": True,
+    "treeViewIsBootstrap": True,
     "exhaleExecutesDoxygen": True,
     "exhaleUseDoxyfile": True,
     # "exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
@@ -341,7 +341,7 @@ nitpicky = True
 # non-false value, then it is used:
 # today = ''
 # Else, today_fmt is used as the format for a strftime call.
-today_fmt = "%Y-%m-%d"
+today_fmt = r"%Y-%m-%d"
 
 html_last_updated_fmt = today_fmt
 

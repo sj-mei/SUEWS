@@ -75,8 +75,8 @@ Longwave-related options
 
 
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
+.. .. toctree::
+..    :maxdepth: 1
+..    :hidden:
 
-   SS_input
+..    SS_input
