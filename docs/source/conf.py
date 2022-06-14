@@ -68,7 +68,11 @@ def load_df_csv(path_csv):
 
 # retrieve description from rst files
 def load_df_opt_desc(file_options):
-    ser_opts = pd.read_csv(file_options, sep="\n", skipinitialspace=True)
+    ser_opts = pd.read_csv(
+        file_options,
+        sep=r"\n",
+        skipinitialspace=True,
+        )
     ser_opts = ser_opts.iloc[:, 0]
     ind_opt = ser_opts.index[ser_opts.str.contains(".. option::")]
     ser_opt_name = ser_opts[ind_opt].str.replace(".. option::", "").str.strip()
@@ -141,7 +145,6 @@ html_last_updated_fmt = today_fmt
 
 # determine if in RTD environment
 read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
-
 
 if read_the_docs_build:
     # run doxygen
