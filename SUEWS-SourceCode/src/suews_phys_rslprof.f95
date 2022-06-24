@@ -13,7 +13,8 @@ CONTAINS
    SUBROUTINE RSLProfile( &
       DiagMethod, &
       Zh, z0m, zdm, z0v, &
-      L_MOD, sfr_surf, FAI, FAIBldg, StabilityMethod, RA_h, &
+      L_MOD, sfr_surf, FAI, FAIBldg, porosity_dectr, &
+      StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
       avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, & ! input
       T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -50,6 +51,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: zdm ! zero-plane displacement [m]
       REAL(KIND(1D0)), INTENT(in) :: FAI ! Frontal area index [-]
       REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! Frontal area index of buildings [-]
+      REAL(KIND(1D0)), INTENT(in) :: porosity_dectr ! porosity of deciduous trees [-]
 
       INTEGER, INTENT(in) :: StabilityMethod
       INTEGER, INTENT(in) :: DiagMethod
@@ -108,7 +110,8 @@ CONTAINS
       ! real(KIND(1D0))::L_unstab ! threshold for Obukhov length under unstable conditions
 
       REAL(KIND(1D0)) :: zH_RSL ! mean canyon height used in RSL module with thresholds applied
-      REAL(KIND(1D0)) :: dz ! initial height step
+      REAL(KIND(1D0)) :: dz_above ! height step above canopy
+      REAL(KIND(1D0)) :: dz_can ! height step within canopy
       REAL(KIND(1D0)) :: phi_hatmZh, phim_zh
       ! REAL(KIND(1d0)), parameter::zH_min = 8! limit for minimum canyon height used in RSL module
       REAL(KIND(1D0)), PARAMETER :: ratio_dz = 1.618 ! ratio between neighbouring height steps
@@ -132,7 +135,7 @@ CONTAINS
       ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
       CALL RSL_cal_prms( &
          StabilityMethod, & !input
-         zh, L_MOD, sfr_surf, FAI, FAIBldg, & !input
+         zh, L_MOD, sfr_surf, FAI, FAIBldg, porosity_dectr, & !input
          zH_RSL, L_MOD_RSL, &
          Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx, PAI)
 
@@ -147,10 +150,11 @@ CONTAINS
       ELSEIF (DiagMethod == 2) THEN
 
          flag_RSL = &
-            ! zd>0 subject to FAI > beta**2*(1-sfr(bldg)); also beta<0.5;
+            ! zd>0 subject to FAI > beta**2*(1-PAI); also beta<0.5;
             ! hence the lower limit of FAI below
-            FAI > 0.25*(1 - sfr_surf(BldgSurf)) .AND. FAI < 0.45 .AND. & ! FAI
-            PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
+            FAI > 0.25*(1 -PAI) .AND. FAI < 0.45 .AND. & ! FAI
+            ! PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
+            PAI > 0.1 .AND. PAI < 0.68 .AND. & ! PAI
             zH > 2 ! effective canopy height
          ! (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5
          ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint
@@ -168,23 +172,23 @@ CONTAINS
       IF (Zh <= 2) THEN
          nz_can = 3
       ELSE IF (Zh <= 10) THEN
-         nz_can = 10
+         nz_can = 6
       ELSE
          nz_can = 15
       END IF
       ! fill up heights in canopy
-      dz = Zh/nz_can
+      dz_can = Zh/nz_can
       DO i = 1, nz_can
-         zarray(i) = dz*i
+         zarray(i) = dz_can*i
       END DO
 
       ! guaranttee 2 m is within the zarray
-      IF (dz > 2) zarray(1) = 1.999
+      IF (dz_can > 2) zarray(1) = 1.999
 
       ! fill up heights above canopy
-      dz = (zMeas - Zh)/(nz - nz_can)
+      dz_above = (zMeas - Zh)/(nz - nz_can)
       DO i = nz_can + 1, nz
-         zarray(i) = Zh + (i - nz_can)*dz
+         zarray(i) = Zh + (i - nz_can)*dz_above
       END DO
 
       ! determine index at the canyon top
@@ -192,7 +196,10 @@ CONTAINS
          dif(z) = ABS(zarray(z) - Zh)
       END DO
       idx_can = MINLOC(dif, DIM=1)
-      zarray(idx_can) = Zh
+      ! zarray(idx_can+2) = Zh+.1
+      ! zarray(idx_can+1) = Zh+.05
+      zarray(idx_can) = Zh+.1
+      ! zarray(idx_can-1) = Zh-.1
 
       ! determine index at measurement height
       idx_za = nz
@@ -214,13 +221,13 @@ CONTAINS
             phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
             phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
 
-            psihatm_z(z) = psihatm_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
+            psihatm_z(z) = psihatm_z(z + 1) + dz_above/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
                            /(zarray(z + 1) - zd_RSL)
-            psihatm_z(z) = psihatm_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd_RSL)/elm)) &
+            psihatm_z(z) = psihatm_z(z) + dz_above/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd_RSL)/elm)) &
                            /(zarray(z) - zd_RSL)
-            psihath_z(z) = psihath_z(z + 1) + dz/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
+            psihath_z(z) = psihath_z(z + 1) + dz_above/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
                            /(zarray(z + 1) - zd_RSL)
-            psihath_z(z) = psihath_z(z) + dz/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
+            psihath_z(z) = psihath_z(z) + dz_above/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
                            /(zarray(z) - zd_RSL)
          END DO
 
@@ -817,7 +824,7 @@ CONTAINS
    END FUNCTION cal_z0_RSL
 
    SUBROUTINE RSL_cal_prms( &
-      StabilityMethod, zh, L_MOD, sfr_surf, FAI, FAIBldg, & !input
+      StabilityMethod, zh, L_MOD, sfr_surf, FAI, FAIBldg, porosity_dectr, & !input
       zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx, PAI) !output
 
       IMPLICIT NONE
@@ -825,6 +832,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: zh ! canyon depth [m]
       REAL(KIND(1D0)), INTENT(in) :: FAI ! frontal area index
       REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! frontal area index of buildings
+      REAL(KIND(1D0)), INTENT(in) :: porosity_dectr ! porosity of deciduous trees
       REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! land cover fractions
 
@@ -853,7 +861,7 @@ CONTAINS
       ! real(KIND(1D0)) ::betaHF
       ! real(KIND(1D0)) ::betaNL
       REAL(KIND(1D0)) :: Lc_min ! LB Oct2021 - minimum value of Lc
-      REAL(KIND(1D0)) :: bldg_dim ! LB Oct2021 - horizontal building dimensions
+      REAL(KIND(1D0)) :: dim_bluffbody ! LB Oct2021 - horizontal building dimensions
 
       REAL(KIND(1D0)), PARAMETER :: cd_tree = 1.2 ! drag coefficient tree canopy !!!!needs adjusting!!!
       REAL(KIND(1D0)), PARAMETER :: a_tree = 0.05 ! the foliage area per unit volume !!!!needs adjusting!!!
@@ -867,6 +875,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: r = 0.1
       REAL(KIND(1D0)), PARAMETER :: a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
       REAL(KIND(1D0)), PARAMETER :: Zh_min = 0.4 ! limit for minimum canyon height used in RSL module
+      REAL(KIND(1D0)), PARAMETER :: porosity_evetr = 0.32 ! assumed porosity of evergreen trees, ref: Lai et al. (2022), http://dx.doi.org/10.2139/ssrn.4058842
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
       ! L_MOD = merge(L_MOD, 300.d1, L_MOD < 300.)
@@ -875,7 +884,7 @@ CONTAINS
       zH_RSL = MAX(zh, Zh_min)
 
       ! land cover fraction of bluff bodies
-      PAI = SUM(sfr_surf([BldgSurf, ConifSurf, DecidSurf]))
+      PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1-porosity_evetr, 1-porosity_dectr])
       ! set a threshold for sfr_zh to avoid numerical difficulties
       ! PAI = min(PAI, 0.8)
 
@@ -889,13 +898,16 @@ CONTAINS
       ! Lc_tree = 1./(cd_tree*a_tree) ! not used? why?
 
       ! height scale for bluff bodies
-      Lc = (1.-sfr_surf(BldgSurf))/FAI*Zh_RSL ! LB Oct2021 - replaced PAI with sfr(BldgSurf) since the parameter should represent the solid fraction (and trees have negligible solid fraction).
+      ! LB Oct2021 - replaced PAI with sfr(BldgSurf) since the parameter should represent the solid fraction (and trees have negligible solid fraction).
+      ! TS 18 Jun 2022 - changed sfr_surf(BldgSurf) back to PAI to account for trees with PAI updated by accounting for porosity.
+      Lc = (1.-PAI)/FAI*Zh_RSL
+
       ! set a minimum threshold (of 0.5*Zh_RSL) for Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
       ! Lc = MERGE(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
       ! LB Oct2021 - set a minimum Lc threshold based on the Lc required to ensure the horizontal length scale associated with changes in canopy geometry (i.e. 3Lc) is greater than a typical street+building unit
       ! Note: the horizontal building size and street+building unit size is calculated assuming a regular array of cuboids with the same x and y dimension but with height that can be different
-      bldg_dim = Zh_RSL*sfr_surf(BldgSurf)/FAIBldg
-      Lc_min = bldg_dim*sfr_surf(BldgSurf)**(-0.5)/3.
+      dim_bluffbody = Zh_RSL*PAI/FAI
+      Lc_min = dim_bluffbody*PAI**(-0.5)/3.
       Lc = MERGE(Lc, Lc_min, Lc > Lc_min)
 
       ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)

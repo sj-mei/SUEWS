@@ -740,7 +740,7 @@ CONTAINS
 
    END SUBROUTINE ESTM_initials
    !======================================================================================
-   SUBROUTINE load_GridLayout(gridIV, MultipleLayoutFiles)
+   SUBROUTINE load_GridLayout(gridIV, MultipleLayoutFiles, diagnose)
       USE allocateArray, ONLY: &
          ndepth, &
          nlayer, nlayer_grids, &
@@ -787,6 +787,7 @@ CONTAINS
       USE strings, ONLY: writenum
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: gridIV
+      INTEGER, INTENT(IN) :: diagnose
       LOGICAL, INTENT(IN) :: MultipleLayoutFiles
       CHARACTER(len=100) :: FileLayout, str_gridIV
       INTEGER :: istat, iunit, ERROR_UNIT, i
@@ -847,12 +848,12 @@ CONTAINS
          FileLayout = 'GridLayout'//TRIM(filecode)//'.nml'
       END IF
 
-      ! PRINT *, 'Reading layout file: ', TRIM(FileInputPath)//FileLayout
+      IF (diagnose == 1) PRINT *, 'Reading layout file: ', TRIM(FileInputPath)//FileLayout
       iunit = 212
       OPEN (iunit, file=TRIM(FileInputPath)//TRIM(FileLayout), status='old')
-      ! PRINT *, 'Read dim info of GridLayout'
+      IF (diagnose == 1) PRINT *, 'Read dim info of GridLayout'
       READ (iunit, nml=dim, iostat=istat)
-      ! PRINT *, 'nroof', nlayer, 'nwall', nlayer
+      IF (diagnose == 1) PRINT *, 'Number of layers to read: ', nlayer
 
       IF (istat /= 0) THEN
          BACKSPACE (iunit)
@@ -903,43 +904,43 @@ CONTAINS
       ALLOCATE (tin_surf(nsurf))
 
       OPEN (iunit, file=TRIM(FileInputPath)//TRIM(FileLayout), status='old')
-      ! PRINT *, 'Read geometry part of GridLayout'
+      IF (diagnose == 1) PRINT *, 'Read geometry part of GridLayout'
       READ (iunit, nml=geom, iostat=istat)
-      ! PRINT *, 'height', height
-      ! PRINT *, 'building_frac', building_frac
-      ! PRINT *, 'veg_frac', veg_frac
-      ! PRINT *, 'building_scale', building_scale
-      ! PRINT *, 'veg_scale', veg_scale
+      IF (diagnose == 1) PRINT *, 'height', height
+      IF (diagnose == 1) PRINT *, 'building_frac', building_frac
+      IF (diagnose == 1) PRINT *, 'veg_frac', veg_frac
+      IF (diagnose == 1) PRINT *, 'building_scale', building_scale
+      IF (diagnose == 1) PRINT *, 'veg_scale', veg_scale
 
-      ! PRINT *, 'Read roof part of GridLayout'
+      IF (diagnose == 1) PRINT *, 'Read roof part of GridLayout'
       READ (iunit, nml=roof, iostat=istat)
-      ! PRINT *, 'sfr_roof', sfr_roof
-      ! PRINT *, 'dz_roof', dz_roof
-      ! PRINT *, 'k_roof', k_roof
-      ! PRINT *, 'cp_roof', cp_roof
-      ! PRINT *, 'tin_roof', tin_roof
-      ! PRINT *, 'alb_roof', alb_roof
-      ! PRINT *, 'emis_roof', emis_roof
-      ! PRINT *, 'state_roof', state_roof
-      ! PRINT *, 'statelimit_roof', statelimit_roof
-      ! PRINT *, 'wetthresh_roof', wetthresh_roof
-      ! PRINT *, 'soilstore_roof', soilstore_roof
-      ! PRINT *, 'soilstorecap_roof', soilstorecap_roof
+      IF (diagnose == 1) PRINT *, 'sfr_roof', sfr_roof
+      IF (diagnose == 1) PRINT *, 'dz_roof', dz_roof
+      IF (diagnose == 1) PRINT *, 'k_roof', k_roof
+      IF (diagnose == 1) PRINT *, 'cp_roof', cp_roof
+      IF (diagnose == 1) PRINT *, 'tin_roof', tin_roof
+      IF (diagnose == 1) PRINT *, 'alb_roof', alb_roof
+      IF (diagnose == 1) PRINT *, 'emis_roof', emis_roof
+      IF (diagnose == 1) PRINT *, 'state_roof', state_roof
+      IF (diagnose == 1) PRINT *, 'statelimit_roof', statelimit_roof
+      IF (diagnose == 1) PRINT *, 'wetthresh_roof', wetthresh_roof
+      IF (diagnose == 1) PRINT *, 'soilstore_roof', soilstore_roof
+      IF (diagnose == 1) PRINT *, 'soilstorecap_roof', soilstorecap_roof
 
-      ! PRINT *, 'Read wall part of GridLayout'
+      IF (diagnose == 1) PRINT *, 'Read wall part of GridLayout'
       READ (iunit, nml=wall, iostat=istat)
-      ! PRINT *, 'sfr_wall', sfr_wall
-      ! PRINT *, 'dz_wall', dz_wall
-      ! PRINT *, 'k_wall', k_wall
-      ! PRINT *, 'cp_wall', cp_wall
-      ! PRINT *, 'tin_wall', tin_wall
-      ! PRINT *, 'alb_wall', alb_wall
-      ! PRINT *, 'emis_wall', emis_wall
-      ! PRINT *, 'state_wall', state_wall
-      ! PRINT *, 'statelimit_wall', statelimit_wall
-      ! PRINT *, 'wetthresh_wall', wetthresh_wall
-      ! PRINT *, 'soilstore_wall', soilstore_wall
-      ! PRINT *, 'soilstorecap_wall', soilstorecap_wall
+      IF (diagnose == 1) PRINT *, 'sfr_wall', sfr_wall
+      IF (diagnose == 1) PRINT *, 'dz_wall', dz_wall
+      IF (diagnose == 1) PRINT *, 'k_wall', k_wall
+      IF (diagnose == 1) PRINT *, 'cp_wall', cp_wall
+      IF (diagnose == 1) PRINT *, 'tin_wall', tin_wall
+      IF (diagnose == 1) PRINT *, 'alb_wall', alb_wall
+      IF (diagnose == 1) PRINT *, 'emis_wall', emis_wall
+      IF (diagnose == 1) PRINT *, 'state_wall', state_wall
+      IF (diagnose == 1) PRINT *, 'statelimit_wall', statelimit_wall
+      IF (diagnose == 1) PRINT *, 'wetthresh_wall', wetthresh_wall
+      IF (diagnose == 1) PRINT *, 'soilstore_wall', soilstore_wall
+      IF (diagnose == 1) PRINT *, 'soilstorecap_wall', soilstorecap_wall
 
       ! PRINT *, 'Read surf part of GridLayout'
       READ (iunit, nml=surf, iostat=istat)
@@ -952,13 +953,13 @@ CONTAINS
       END IF
       CLOSE (iunit)
 
-      ! PRINT *, 'Read GridLayout'
-      ! PRINT *, 'sfr_roof in load_GridLayout', sfr_roof
-      ! PRINT *, 'sfr_wall in load_GridLayout', sfr_wall
-      ! PRINT *, 'tin_surf in load_GridLayout', tin_surf
-      ! PRINT *, 'dz_surf(1,:) in load_GridLayout', dz_surf(1,:)
-      ! PRINT *, 'k_surf(1,:) in load_GridLayout', k_surf(1,:)
-      ! PRINT *, 'dz_roof in load_GridLayout', dz_roof(1:nroof, :ndepth)
+      IF (diagnose == 1) PRINT *, 'Read GridLayout'
+      IF (diagnose == 1) PRINT *, 'sfr_roof in load_GridLayout', sfr_roof
+      IF (diagnose == 1) PRINT *, 'sfr_wall in load_GridLayout', sfr_wall
+      IF (diagnose == 1) PRINT *, 'tin_surf in load_GridLayout', tin_surf
+      IF (diagnose == 1) PRINT *, 'dz_surf(1,:) in load_GridLayout', dz_surf(1, :)
+      IF (diagnose == 1) PRINT *, 'k_surf(1,:) in load_GridLayout', k_surf(1, :)
+      IF (diagnose == 1) PRINT *, 'dz_roof in load_GridLayout', dz_roof(1:nlayer, :ndepth)
       ! PRINT *, 'dz_roof in load_GridLayout', dz_roof(1, :ndepth)
 
       ! assign values to the grid container
@@ -1120,7 +1121,7 @@ CONTAINS
       USE PhysConstants, ONLY: c2k
       ! USE ESTM_data
       USE allocateArray
-      USE data_in, ONLY: MultipleLayoutFiles
+      USE data_in, ONLY: MultipleLayoutFiles, Diagnose
       USE Initial, ONLY: numberofgrids
 
       IMPLICIT NONE
@@ -1135,45 +1136,45 @@ CONTAINS
 
       ALLOCATE (nlayer_grids(NumberOfGrids))
 
-      ALLOCATE (height_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (building_frac_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (veg_frac_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (building_scale_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (veg_scale_grids(NumberOfGrids, nroof_max))
+      ALLOCATE (height_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (building_frac_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (veg_frac_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (building_scale_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (veg_scale_grids(NumberOfGrids, nlayer_max))
 
       ! allocate roof variables
-      ALLOCATE (tsfc_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (sfr_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (alb_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (emis_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (state_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (statelimit_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (wetthresh_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (soilstore_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (soilstorecap_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (k_roof_grids(NumberOfGrids, nroof_max, ndepth))
-      ALLOCATE (cp_roof_grids(NumberOfGrids, nroof_max, ndepth))
-      ALLOCATE (dz_roof_grids(NumberOfGrids, nroof_max, ndepth))
-      ALLOCATE (tin_roof_grids(NumberOfGrids, nroof_max))
-      ALLOCATE (temp_roof_grids(NumberOfGrids, nroof_max, ndepth))
-      ALLOCATE (roof_albedo_dir_mult_fact_grids(NumberOfGrids, nspec, nroof_max))
+      ALLOCATE (tsfc_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (sfr_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (alb_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (emis_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (state_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (statelimit_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (wetthresh_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (soilstore_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (soilstorecap_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (k_roof_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (cp_roof_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (dz_roof_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (tin_roof_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (temp_roof_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (roof_albedo_dir_mult_fact_grids(NumberOfGrids, nspec, nlayer_max))
 
       ! allocate wall variables
-      ALLOCATE (tsfc_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (sfr_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (alb_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (emis_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (state_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (statelimit_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (wetthresh_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (soilstore_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (soilstorecap_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (k_wall_grids(NumberOfGrids, nwall_max, ndepth))
-      ALLOCATE (cp_wall_grids(NumberOfGrids, nwall_max, ndepth))
-      ALLOCATE (dz_wall_grids(NumberOfGrids, nwall_max, ndepth))
-      ALLOCATE (tin_wall_grids(NumberOfGrids, nwall_max))
-      ALLOCATE (temp_wall_grids(NumberOfGrids, nwall_max, ndepth))
-      ALLOCATE (wall_specular_frac_grids(NumberOfGrids, nspec, nwall_max))
+      ALLOCATE (tsfc_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (sfr_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (alb_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (emis_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (state_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (statelimit_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (wetthresh_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (soilstore_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (soilstorecap_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (k_wall_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (cp_wall_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (dz_wall_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (tin_wall_grids(NumberOfGrids, nlayer_max))
+      ALLOCATE (temp_wall_grids(NumberOfGrids, nlayer_max, ndepth))
+      ALLOCATE (wall_specular_frac_grids(NumberOfGrids, nspec, nlayer_max))
 
       ! allocate surf variables
       ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
@@ -1185,7 +1186,7 @@ CONTAINS
 
       DO i_grid = 1, NumberOfGrids
          PRINT *, 'Reading layout data for grid ', i_grid
-         CALL load_GridLayout(i_grid, flag_mutiple_layout_files)
+         CALL load_GridLayout(i_grid, flag_mutiple_layout_files, diagnose)
       END DO
 
    END SUBROUTINE ESTM_ext_initialise

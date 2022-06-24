@@ -34,8 +34,8 @@ MODULE allocateArray
    ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_roof_grid !Number of extra roof facets (e.g., green roofs, etc.)
    ! INTEGER, DIMENSION(MaxNumberOfGrids) :: nsurf_wall_grid !Number of extra building facets (e.g., green walls, etc.)
    INTEGER, PARAMETER :: ndepth = 5 !Number of depth levels for facets
-   INTEGER, PARAMETER :: nroof_max = 5 !max Number of allowed roof types
-   INTEGER, PARAMETER :: nwall_max = 100 !max Number of allowed roof types
+   ! INTEGER, PARAMETER :: nlayer_max = 5 !max Number of allowed roof types
+   INTEGER, PARAMETER :: nlayer_max = 100 !max Number of allowed roof types
 
    ! SPARTACUS related
    INTEGER, PARAMETER :: nspec = 1 !Number of spectral bands

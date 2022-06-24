@@ -1390,7 +1390,8 @@ CONTAINS
       CALL RSLProfile( &
          DiagMethod, &
          zH, z0m, zdm, z0v, &
-         L_MOD, sfr_surf, FAI, FAIBldg, StabilityMethod, RA_h, &
+         L_MOD, sfr_surf, FAI, FAIBldg, porosity_id_next, &
+         StabilityMethod, RA_h, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, & ! input
          T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -2016,9 +2017,11 @@ CONTAINS
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, & ! output:
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
 
+         IF (Diagqn == 1) WRITE (*, *) 'Calling SPARTACUS:'
          IF (NetRadiationMethod > 1000) THEN
             ! TODO: TS 14 Feb 2022, ESTM development: introduce facet surface temperatures
             CALL SPARTACUS( &
+               Diagqn, & !input:
                sfr_surf, zenith_deg, nlayer, & !input:
                tsfc_surf, tsfc_roof, tsfc_wall, &
                kdown, ldown, Tair_C, alb, emis, LAI_id, &

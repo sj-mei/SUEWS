@@ -404,7 +404,7 @@ CONTAINS
       RoughLenMomMethod, & ! input:
       sfr_surf, & ! surface fractions
       bldgH, EveTreeH, DecTreeH, &
-      porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
+      porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
       FAI, & ! output:
       Zh, z0m, zdm, ZZD)
@@ -426,6 +426,7 @@ CONTAINS
       INTEGER, PARAMETER :: GrassSurf = 5 !New surface classes: Grass = 5th/7 surfaces
       INTEGER, PARAMETER :: BSoilSurf = 6 !New surface classes: Bare soil = 6th/7 surfaces
       INTEGER, PARAMETER :: WaterSurf = 7
+      REAL(KIND(1D0)), PARAMETER :: porosity_evetr = 0.32 ! assumed porosity of evergreen trees, ref: Lai et al. (2022), http://dx.doi.org/10.2139/ssrn.4058842
 
       INTEGER, INTENT(in) :: RoughLenMomMethod
 
@@ -434,7 +435,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: bldgH
       REAL(KIND(1D0)), INTENT(in) :: EveTreeH
       REAL(KIND(1D0)), INTENT(in) :: DecTreeH
-      REAL(KIND(1D0)), INTENT(in) :: porosity_id
+      REAL(KIND(1D0)), INTENT(in) :: porosity_dectr
       REAL(KIND(1D0)), INTENT(in) :: FAIBldg
       REAL(KIND(1D0)), INTENT(in) :: FAIEveTree
       REAL(KIND(1D0)), INTENT(in) :: FAIDecTree
@@ -454,7 +455,9 @@ CONTAINS
       REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
 
       !Total area of buildings and trees
-      areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
+      ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
+      ! TS 19 Jun 2022: take porosity of trees into account; to be consistent with PAI calculation in RSL
+      areaZh = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
 
       ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
       Z0m4Paved = 0.003 !estimate
@@ -465,8 +468,12 @@ CONTAINS
       !------------------------------------------------------------------------------
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
       IF (areaZh /= 0) THEN
-         Zh = DOT_PRODUCT([bldgH, EveTreeH, DecTreeH*(1 - porosity_id)], sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/areaZh
-         FAI = SUM([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)])
+         Zh = DOT_PRODUCT( &
+              [bldgH, EveTreeH*(1 - porosity_evetr), DecTreeH*(1 - porosity_dectr)], &
+              sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/areaZh
+         FAI = SUM(MERGE([FAIBldg, FAIEveTree*(1 - porosity_evetr), FAIDecTree*(1 - porosity_dectr)], &
+                         [0D0, 0D0, 0D0], &
+                         sfr_surf([BldgSurf, ConifSurf, DecidSurf]) > 0))
 
          ! `1e-5` set to avoid numerical difficulty
          FAI = MAX(FAI, 1E-5)

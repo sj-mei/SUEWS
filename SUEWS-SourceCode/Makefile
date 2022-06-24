@@ -38,7 +38,7 @@ else
 endif
 
 # enable this if we want to use the debug version of SUEWS
-# DEBUG=1
+DEBUG=1
 
 LIBUTILS = $(addprefix $(DIR_LIB_SUEWS),libsuewsutil.a)
 LIBPHYS = $(addprefix $(DIR_LIB_SUEWS),libsuewsphys.a)
