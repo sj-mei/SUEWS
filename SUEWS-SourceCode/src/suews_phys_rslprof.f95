@@ -152,7 +152,7 @@ CONTAINS
          flag_RSL = &
             ! zd>0 subject to FAI > beta**2*(1-PAI); also beta<0.5;
             ! hence the lower limit of FAI below
-            FAI > 0.25*(1 -PAI) .AND. FAI < 0.45 .AND. & ! FAI
+            FAI > 0.25*(1 - PAI) .AND. FAI < 0.45 .AND. & ! FAI
             ! PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
             PAI > 0.1 .AND. PAI < 0.68 .AND. & ! PAI
             zH > 2 ! effective canopy height
@@ -198,7 +198,7 @@ CONTAINS
       idx_can = MINLOC(dif, DIM=1)
       ! zarray(idx_can+2) = Zh+.1
       ! zarray(idx_can+1) = Zh+.05
-      zarray(idx_can) = Zh+.1
+      zarray(idx_can) = Zh + .1
       ! zarray(idx_can-1) = Zh-.1
 
       ! determine index at measurement height
@@ -884,7 +884,7 @@ CONTAINS
       zH_RSL = MAX(zh, Zh_min)
 
       ! land cover fraction of bluff bodies
-      PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1-porosity_evetr, 1-porosity_dectr])
+      PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
       ! set a threshold for sfr_zh to avoid numerical difficulties
       ! PAI = min(PAI, 0.8)
 
