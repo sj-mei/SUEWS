@@ -120,7 +120,7 @@ The best practice, in TS's opinion, to avoid hacking your macOS, is to use Linux
 Once the docker image is installed, simply run this from the SUEWS root folder for debugging:
 
 ```bash
- docker run --rm -it -v $(pwd):/source cmplopes/alpine-gfortran /bin/bash
+ docker run --rm -it -v $(pwd):/source sunt05/alpine-gfortran /bin/bash
 
 ```
  which will mount the current `SUEWS` directory to docker's path `/source` and enter the interactive mode for debugging.
