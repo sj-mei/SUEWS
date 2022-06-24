@@ -162,8 +162,9 @@ PROGRAM SUEWS_Program
    ! -------------------------------------------------------------------------
    ! Initialise ESTM (reads ESTM nml, should only run once)
    ! IF (StorageHeatMethod == 5) THEN
-   IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_initials...'
+   IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_ext_initialise...'
    CALL ESTM_ext_initialise
+   WRITE (*, *) 'No. vertical layers identified:', nlayer, 'layers'
    ! END IF
 
    ! -------------------------------------------------------------------------
