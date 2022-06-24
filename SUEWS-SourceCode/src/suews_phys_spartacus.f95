@@ -104,7 +104,7 @@ CONTAINS
    ! END SUBROUTINE spartacus_finalise
 
    SUBROUTINE SPARTACUS( &
-      DiagQN ,&!input:
+      DiagQN, & !input:
       sfr_surf, zenith_deg, nlayer, & !input:
       tsfc_surf, tsfc_roof, tsfc_wall, &
       kdown, ldown, Tair_C, alb, emis, LAI_id, &
@@ -259,7 +259,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
 
-      if (DiagQN==1) print *, 'in SPARTACUS, starting ...'
+      IF (DiagQN == 1) PRINT *, 'in SPARTACUS, starting ...'
       ! initialize the output variables
       dataOutLineSPARTACUS = -999.
 
@@ -332,7 +332,7 @@ CONTAINS
       ! print *, 'wall_emissivity(nspec, :) in su', wall_emissivity(nspec, :)
 
       !!!!!!!!!!!!!! Model configuration !!!!!!!!!!!!!!
-      if (DiagQN==1) print *, 'in SPARTACUS, setting up model ...'
+      IF (DiagQN == 1) PRINT *, 'in SPARTACUS, setting up model ...'
       ! CALL config%READ(file_name=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml')
       config%do_sw = .TRUE.
       config%do_lw = .TRUE.
@@ -378,7 +378,7 @@ CONTAINS
       canopy_props%ncol = ncol
       canopy_props%ntotlay = nlayer
 
-      if (DiagQN==1) print *, 'in SPARTACUS, calculating dz array ...'
+      IF (DiagQN == 1) PRINT *, 'in SPARTACUS, calculating dz array ...'
       ! calculate dz array
       ilay = 1
       DO jcol = 1, ncol
@@ -463,7 +463,7 @@ CONTAINS
       END IF
 
       !!!!!!!!!!!!!! allocate and set canopy top forcing !!!!!!!!!!!!!!
-       if (DiagQN==1) print *, 'in SPARTACUS, setting canopy top forcing ...'
+      IF (DiagQN == 1) PRINT *, 'in SPARTACUS, setting canopy top forcing ...'
       ALLOCATE (top_flux_dn_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_direct_sw(nspec, ncol))
       ALLOCATE (top_flux_dn_lw(nspec, ncol))
