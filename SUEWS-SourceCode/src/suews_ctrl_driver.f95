@@ -904,7 +904,7 @@ CONTAINS
             bldgH, EveTreeH, DecTreeH, &
             porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
-            FAI, & !output
+            FAI,PAI, & !output
             zH, z0m, zdm, ZZD)
 
          !=================Calculate sun position=================
@@ -1390,7 +1390,7 @@ CONTAINS
       CALL RSLProfile( &
          DiagMethod, &
          zH, z0m, zdm, z0v, &
-         L_MOD, sfr_surf, FAI, FAIBldg, porosity_id_next, &
+         L_MOD, sfr_surf, FAI, PAI, &
          StabilityMethod, RA_h, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, & ! input

@@ -406,7 +406,7 @@ CONTAINS
       bldgH, EveTreeH, DecTreeH, &
       porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
-      FAI, & ! output:
+      FAI,PAI, & ! output:
       Zh, z0m, zdm, ZZD)
       ! Get surface covers and frontal area fractions (LJ 11/2010)
       ! Last modified:
@@ -444,12 +444,12 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: Z
 
       REAL(KIND(1D0)), INTENT(out) :: FAI
+      REAL(KIND(1D0)), INTENT(out)  :: PAI
       REAL(KIND(1D0)), INTENT(out) :: Zh ! effective height of bluff bodies
       REAL(KIND(1D0)), INTENT(out) :: z0m ! aerodynamic roughness length
       REAL(KIND(1D0)), INTENT(out) :: zdm ! zero-plance displacement
       REAL(KIND(1D0)), INTENT(out) :: ZZD ! z-zdm
 
-      REAL(KIND(1D0)) :: areaZh
       INTEGER, PARAMETER :: notUsedI = -55
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
       REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
@@ -457,7 +457,7 @@ CONTAINS
       !Total area of buildings and trees
       ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
       ! TS 19 Jun 2022: take porosity of trees into account; to be consistent with PAI calculation in RSL
-      areaZh = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
+      PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
 
       ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
       Z0m4Paved = 0.003 !estimate
@@ -467,16 +467,17 @@ CONTAINS
 
       !------------------------------------------------------------------------------
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
-      IF (areaZh /= 0) THEN
+      IF (PAI /= 0) THEN
          Zh = DOT_PRODUCT( &
               [bldgH, EveTreeH*(1 - porosity_evetr), DecTreeH*(1 - porosity_dectr)], &
-              sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/areaZh
+              sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/PAI
          FAI = SUM(MERGE([FAIBldg, FAIEveTree*(1 - porosity_evetr), FAIDecTree*(1 - porosity_dectr)], &
                          [0D0, 0D0, 0D0], &
                          sfr_surf([BldgSurf, ConifSurf, DecidSurf]) > 0))
 
          ! `1e-5` set to avoid numerical difficulty
          FAI = MAX(FAI, 1E-5)
+
       ELSE
          Zh = 0 !Set Zh to zero if areaZh = 0
          FAI = 1E-5
@@ -492,23 +493,23 @@ CONTAINS
             z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
          ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
             ! these are derived using digitalised points
-            zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*areaZh) + 0.493*sigmoid(-5.17 + 32.7*areaZh))*Zh
+            zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
             z0m = (0.00208 + &
-                   0.0165*MIN(areaZh, .7) + 2.52*MIN(areaZh, .7)**2 + &
-                   3.21*MIN(areaZh, .7)**3 - 43.6*MIN(areaZh, .7)**4 + &
-                   76.5*MIN(areaZh, .7)**5 - 40.*MIN(areaZh, .7)**6)*Zh
+                   0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
+                   3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
+                   76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
          END IF
       ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
-         IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)
+         IF (PAI /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, PAI, notUsedI)
          !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
-         IF (areaZh /= 1) THEN
+         IF (PAI /= 1) THEN
             z0m = (z0m4Paved*sfr_surf(PavSurf) &
                    + z0m4Grass*sfr_surf(GrassSurf) &
                    + z0m4BSoil*sfr_surf(BSoilSurf) &
-                   + z0m4Water*sfr_surf(WaterSurf))/(1 - areaZh)
+                   + z0m4Water*sfr_surf(WaterSurf))/(1 - PAI)
             zdm = 0
             CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
-         ELSEIF (areaZh == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
+         ELSEIF (PAI == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
             z0m = 1
             zdm = 7
             CALL ErrorHint(15, 'Assuming mean height = 10 m, Setting z0m and zdm to default value', z0m, zdm, notUsedI)

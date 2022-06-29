@@ -1909,7 +1909,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       bldgH, EveTreeH, DecTreeH, &
       porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
-      FAI, & !output
+      FAI, PAI, & !output
       Zh, z0m, zdm, ZZD)
 
    !=============================================================================

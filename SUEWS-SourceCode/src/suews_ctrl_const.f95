@@ -1595,6 +1595,7 @@ MODULE sues_data
                       p_mm, & !Inputs to surface water balance
                       pin, & !Rain per time interval
                       FAI, & !Areally weighted frontal area fraction
+                      PAI, & !Areally weighted plan area fraction
                       rb, & !Boundary layer resistance
                       ! Water leaving each grid for grid-to-grid connectivity
                       runoffAGimpervious, & !Above ground runoff from impervious surface [mm] for whole surface area

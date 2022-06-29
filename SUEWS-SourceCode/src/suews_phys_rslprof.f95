@@ -13,7 +13,7 @@ CONTAINS
    SUBROUTINE RSLProfile( &
       DiagMethod, &
       Zh, z0m, zdm, z0v, &
-      L_MOD, sfr_surf, FAI, FAIBldg, porosity_dectr, &
+      L_MOD, sfr_surf, FAI, PAI, &
       StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
       avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, & ! input
@@ -50,8 +50,9 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: z0v ! roughnesslength for heat [s m-1]
       REAL(KIND(1D0)), INTENT(in) :: zdm ! zero-plane displacement [m]
       REAL(KIND(1D0)), INTENT(in) :: FAI ! Frontal area index [-]
-      REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! Frontal area index of buildings [-]
-      REAL(KIND(1D0)), INTENT(in) :: porosity_dectr ! porosity of deciduous trees [-]
+      REAL(KIND(1D0)), INTENT(in) :: PAI ! Plan area index [-]
+      ! REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! Frontal area index of buildings [-]
+      ! REAL(KIND(1D0)), INTENT(in) :: porosity_dectr ! porosity of deciduous trees [-]
 
       INTEGER, INTENT(in) :: StabilityMethod
       INTEGER, INTENT(in) :: DiagMethod
@@ -63,13 +64,15 @@ CONTAINS
 
       INTEGER, PARAMETER :: nz = 30 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
-      REAL(KIND(1D0)), PARAMETER :: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
-                                    a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
-                                    kappa = 0.40, & ! von karman constant
-                                    !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
-                                    beta_N = 0.40, & ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
-                                    pi = 4.*ATAN(1.0), r = 0.1, &
-                                    a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
+      REAL(KIND(1D0)), PARAMETER :: cd_tree = 1.2 ! drag coefficient tree canopy !!!!needs adjusting!!!
+      REAL(KIND(1D0)), PARAMETER :: a_tree = 0.05 ! the foliage area per unit volume !!!!needs adjusting!!!
+      REAL(KIND(1D0)), PARAMETER :: kappa = 0.40 ! von karman constant
+
+      REAL(KIND(1D0)), PARAMETER :: beta_N = 0.40 ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
+      REAL(KIND(1D0)), PARAMETER :: pi = 4.*ATAN(1.0), r = 0.1
+      REAL(KIND(1D0)), PARAMETER :: a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
+
+      REAL(KIND(1D0)), PARAMETER :: porosity_evetr = 0.32 ! assumed porosity of evergreen trees, ref: Lai et al. (2022), http://dx.doi.org/10.2139/ssrn.4058842
 
       ! Variables array [z,U,T,q, 12 debug vars]
       ! z: height array
@@ -103,7 +106,7 @@ CONTAINS
       REAL(KIND(1D0)) :: TStar_RSL ! temperature scale
       REAL(KIND(1D0)) :: UStar_RSL ! friction velocity used in RSL
       REAL(KIND(1D0)) :: UStar_heat ! friction velocity derived from RA_h with correction/restriction
-      REAL(KIND(1D0)) :: PAI ! plan area index, including areas of roughness elements: buildings and trees
+      ! REAL(KIND(1D0)) :: PAI ! plan area index, including areas of roughness elements: buildings and trees
       ! REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
       REAL(KIND(1D0)) :: L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
       ! real(KIND(1D0))::L_stab ! threshold for Obukhov length under stable conditions
@@ -114,7 +117,7 @@ CONTAINS
       REAL(KIND(1D0)) :: dz_can ! height step within canopy
       REAL(KIND(1D0)) :: phi_hatmZh, phim_zh
       ! REAL(KIND(1d0)), parameter::zH_min = 8! limit for minimum canyon height used in RSL module
-      REAL(KIND(1D0)), PARAMETER :: ratio_dz = 1.618 ! ratio between neighbouring height steps
+      ! REAL(KIND(1D0)), PARAMETER :: ratio_dz = 1.618 ! ratio between neighbouring height steps
 
       REAL(KIND(1D0)) :: qa_gkg, qStar_RSL ! specific humidity scale
       INTEGER :: I, z, idx_can, idx_za, idx_2m, idx_10m
@@ -132,12 +135,12 @@ CONTAINS
       ! Step 6: Calculate mean variables above canopy
       ! Step 7: Calculate mean variables in canopy
 
-      ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
-      CALL RSL_cal_prms( &
-         StabilityMethod, & !input
-         zh, L_MOD, sfr_surf, FAI, FAIBldg, porosity_dectr, & !input
-         zH_RSL, L_MOD_RSL, &
-         Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx, PAI)
+!  ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
+!       CALL RSL_cal_prms( &
+!          StabilityMethod, & !input
+!          zh, L_MOD, sfr_surf, FAI, PAI, & !input
+!          zH_RSL, L_MOD_RSL, & ! output
+!          Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
 
       ! Step 1: determine if RSL should be used
 
@@ -156,7 +159,6 @@ CONTAINS
             ! PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
             PAI > 0.1 .AND. PAI < 0.68 .AND. & ! PAI
             zH > 2 ! effective canopy height
-         ! (1.-PAI)/FAI <= 18 .AND. zH_RSL >= 5
          ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint
          !(note: it seems wrong anyway - should be 0.87 not 0.021 based on G&O1991 numbers)
       ELSE
@@ -206,7 +208,15 @@ CONTAINS
       zarray(idx_za) = zMeas
 
       IF (flag_RSL) THEN
+
          ! use RSL approach to calculate correction factors
+         ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
+         CALL RSL_cal_prms( &
+            StabilityMethod, & !input
+            zh, L_MOD, sfr_surf, FAI, PAI, & !input
+            zH_RSL, L_MOD_RSL, & ! output
+            Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
+
          ! Step 3: calculate the stability dependent H&F constants
 
          CALL cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, fx, c2h, ch)
@@ -245,20 +255,13 @@ CONTAINS
          !correct RSL-based using SUEWS system-wide values
          z0_RSL = z0m
          zd_RSL = zdm
-         ! if (zh_rsl <= zd_RSL) then
-         !    ! this may happen as only building height is considered in calculation of zd
-         !    zd_RSL = 0.99*zh_rsl
-         ! end if
+         zH_RSL = Zh
 
-         ! ! correct elm uisng suggested valid thresholds by Harman and Finnigan (2007)
-         ! IF (L_MOD_RSL > 0) THEN
-         !    ! eqn 25 in HF07 assuming gamma==1, stable condition:
-         !    Lc = MIN(2.2*kappa/beta*L_MOD_RSL, Lc)
-         ! ELSE
-         !    ! eqn 26 in HF07, unstable condition:
-         !    Lc = MAX(-2/beta**2*L_MOD_RSL, Lc)
-         ! END IF
-         ! elm = cal_elm_RSL(beta, Lc)
+         Lc = -999
+         beta = -999
+         Scc = -999
+         fx = -999
+         elm = -999
 
          ! then MOST recovers from RSL correction
       END IF
@@ -824,15 +827,16 @@ CONTAINS
    END FUNCTION cal_z0_RSL
 
    SUBROUTINE RSL_cal_prms( &
-      StabilityMethod, zh, L_MOD, sfr_surf, FAI, FAIBldg, porosity_dectr, & !input
-      zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx, PAI) !output
+      StabilityMethod, zh, L_MOD, sfr_surf, FAI, PAI, & !input
+      zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx) !output
 
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
       REAL(KIND(1D0)), INTENT(in) :: zh ! canyon depth [m]
-      REAL(KIND(1D0)), INTENT(in) :: FAI ! frontal area index
-      REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! frontal area index of buildings
-      REAL(KIND(1D0)), INTENT(in) :: porosity_dectr ! porosity of deciduous trees
+      REAL(KIND(1D0)), INTENT(in) :: FAI ! frontal area index inlcuding trees
+      ! REAL(KIND(1D0)), INTENT(in) :: FAIBldg ! frontal area index of buildings
+      REAL(KIND(1D0)), INTENT(in) :: PAI ! plan area index inlcuding area of trees
+      ! REAL(KIND(1D0)), INTENT(in) :: porosity_dectr ! porosity of deciduous trees
       REAL(KIND(1D0)), INTENT(in) :: L_MOD ! Obukhov length [m]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! land cover fractions
 
@@ -850,7 +854,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: elm ! length scale used in RSL
       REAL(KIND(1D0)), INTENT(out) :: Scc ! parameter in RSL
       REAL(KIND(1D0)), INTENT(out) :: fx ! parameter in RSL
-      REAL(KIND(1D0)), INTENT(out) :: PAI ! plan area index inlcuding area of trees
 
       ! internal variables
       ! INTEGER ::it
@@ -883,8 +886,8 @@ CONTAINS
       ! zH_RSL
       zH_RSL = MAX(zh, Zh_min)
 
-      ! land cover fraction of bluff bodies
-      PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
+      ! ! land cover fraction of bluff bodies
+      ! PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
       ! set a threshold for sfr_zh to avoid numerical difficulties
       ! PAI = min(PAI, 0.8)
 
