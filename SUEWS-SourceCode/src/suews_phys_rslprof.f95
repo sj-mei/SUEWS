@@ -210,7 +210,7 @@ CONTAINS
          ! Step 3: calculate the stability dependent H&F constants
 
          CALL cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, fx, c2h, ch)
-         CALL cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm, phi_hatmZh, phim_zh)
+         CALL cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm)
 
          ! Step 4: determine psihat at levels above the canopy
          psihatm_z = 0.*zarray
@@ -492,19 +492,19 @@ CONTAINS
 
       REAL(KIND(1D0)) :: elm
       REAL(KIND(1D0)) :: c2
-      REAL(KIND(1D0)) :: cm, phi_hatmZh, phim_zh
+      REAL(KIND(1D0)) :: cm
 
       elm = cal_elm_RSL(beta, lc)
 
       zd_RSL = cal_zd_RSL(Zh_RSL, beta, lc)
 
-      CALL cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD, c2, cm, phi_hatmZh, phim_zh)
+      CALL cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD, c2, cm)
 
       phim_hat = 1 - cm*EXP(-1.*c2*beta*(z - zd_RSL)/elm)
 
    END FUNCTION cal_phim_hat
 
-   SUBROUTINE cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD, c2, cm, phi_hatmZh, phim_zh)
+   SUBROUTINE cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD, c2, cm)
 
       IMPLICIT NONE
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
@@ -518,11 +518,11 @@ CONTAINS
       ! output
       REAL(KIND(1D0)), INTENT(out) :: c2
       REAL(KIND(1D0)), INTENT(out) :: cm
-      REAL(KIND(1D0)), INTENT(out) :: phi_hatmZh
-      REAL(KIND(1D0)), INTENT(out) :: phim_zh
 
       ! internal variables
       ! real(KIND(1D0)) ::phim_zh
+      REAL(KIND(1D0)) :: phi_hatmZh
+      REAL(KIND(1D0)) :: phim_zh
       REAL(KIND(1D0)) :: phim_zhdz
       REAL(KIND(1D0)) :: dphi
       ! real(KIND(1D0)) ::phi_hatmZh
