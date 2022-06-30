@@ -173,8 +173,8 @@ jobs:
 
     strategy:
       matrix:
-        py: ["3.10", "3.9"]
-        os: [macOS-latest, windows-latest]
+        py: ["3.10", "3.9", "3.8", "3.7"]
+        os: [macOS-latest, windows-2019]
 
     runs-on: ${{ matrix.os }}
     steps:
