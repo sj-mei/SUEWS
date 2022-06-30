@@ -217,9 +217,9 @@ CONTAINS
          ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
          CALL RSL_cal_prms( &
             StabilityMethod, & !input
-            nz_above, zarray(nz_can+1:nz), & !input
+            nz_above, zarray(nz_can + 1:nz), & !input
             zh, L_MOD, sfr_surf, FAI, PAI, & !input
-            psihatm_z(nz_can+1:nz), psihath_z(nz_can + 1:nz), & !output
+            psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
             zH_RSL, L_MOD_RSL, & ! output
             Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
 
@@ -475,7 +475,6 @@ CONTAINS
          RETURN ! psihatm_z will be returned
       END IF
 
-
       IF (ABS(psihatm_btm) > 1E-3) THEN
          ! test if recursion is needed by comparing slopes of psihat within the top and mid ranges
          slope_top = (psihatm_top - psihatm_mid)/(z_top - z_mid)
@@ -534,7 +533,6 @@ CONTAINS
       REAL(KIND(1D0)) :: slope_btm ! displacement height used in RSL
       REAL(KIND(1D0)) :: z_plus ! displacement height used in RSL
       REAL(KIND(1D0)) :: psihath_plus ! displacement height used in RSL
-
 
       REAL(KIND(1D0)), PARAMETER :: tol = 0.1 ! tolerance for iterative calculations
       REAL(KIND(1D0)), PARAMETER :: kappa = 0.40
@@ -1084,7 +1082,7 @@ CONTAINS
       END DO
 
       ! calculate z0 iteratively
-      psihatm_Zh=psihatm_array(1)
+      psihatm_Zh = psihatm_array(1)
       z0_RSL = cal_z0_RSL(StabilityMethod, zh_RSL, zd_RSL, beta, L_MOD_RSL, psihatm_Zh)
 
    END SUBROUTINE RSL_cal_prms

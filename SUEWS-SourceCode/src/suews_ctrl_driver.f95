@@ -904,7 +904,7 @@ CONTAINS
             bldgH, EveTreeH, DecTreeH, &
             porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
-            FAI,PAI, & !output
+            FAI, PAI, & !output
             zH, z0m, zdm, ZZD)
 
          !=================Calculate sun position=================

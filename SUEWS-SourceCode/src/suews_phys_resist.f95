@@ -406,7 +406,7 @@ CONTAINS
       bldgH, EveTreeH, DecTreeH, &
       porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
-      FAI,PAI, & ! output:
+      FAI, PAI, & ! output:
       Zh, z0m, zdm, ZZD)
       ! Get surface covers and frontal area fractions (LJ 11/2010)
       ! Last modified:
@@ -444,7 +444,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: Z
 
       REAL(KIND(1D0)), INTENT(out) :: FAI
-      REAL(KIND(1D0)), INTENT(out)  :: PAI
+      REAL(KIND(1D0)), INTENT(out) :: PAI
       REAL(KIND(1D0)), INTENT(out) :: Zh ! effective height of bluff bodies
       REAL(KIND(1D0)), INTENT(out) :: z0m ! aerodynamic roughness length
       REAL(KIND(1D0)), INTENT(out) :: zdm ! zero-plance displacement
