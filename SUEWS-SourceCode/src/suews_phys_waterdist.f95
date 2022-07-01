@@ -400,13 +400,13 @@ CONTAINS
       PipeCapacity, RunoffToWater, &
       addImpervious, addVeg, addWaterBody, FlowChange, &
       SoilStoreCap_surf, StateLimit_surf, &
-      NonWaterFraction, PervFraction, &
+       PervFraction, &
       sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
       ev_surf_in, state_surf_in, soilstore_surf_in, &
       ev_surf_out, state_surf_out, soilstore_surf_out, & ! output:
       runoff_surf, &
-      runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
-      ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid) !output:
+      runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid & ! output
+      ) !output:
       IMPLICIT NONE
 
       !Stores flood water when surface state_id exceeds storage capacity [mm]
@@ -423,7 +423,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: ev_surf_in !Evaporation
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_surf_in !Evaporation
 
-      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !Capacity of pipes to transfer water
+      ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !Capacity of pipes to transfer water
       REAL(KIND(1D0)), INTENT(in) :: PipeCapacity !Capacity of pipes to transfer water
       REAL(KIND(1D0)), INTENT(in) :: RunoffToWater !Fraction of surface runoff going to water body
       REAL(KIND(1D0)), INTENT(in) :: pin !Rain per time interval
@@ -434,15 +434,15 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: addWaterBody !Water from water surface of other grids [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(in) :: FlowChange !Difference between the input and output flow in the water body
 
-      REAL(KIND(1D0)), INTENT(out) :: runoff_grid !Wetness status of each surface type [mm]
-      REAL(KIND(1D0)), INTENT(out) :: state_grid !Wetness status of each surface type [mm]
-      REAL(KIND(1D0)), INTENT(out) :: ev_grid !Wetness status of each surface type [mm]
-      REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid !Wetness status of each surface type [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: runoff_grid !Wetness status of each surface type [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: state_grid !Wetness status of each surface type [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: ev_grid !Wetness status of each surface type [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid !Wetness status of each surface type [mm]
       REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious_grid !Above ground runoff from impervious surface [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: runoffAGveg_grid !Above ground runoff from vegetated surfaces [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: runoffPipes_grid !Runoff in pipes [mm] for whole surface area
       REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody_grid !Above ground runoff from water surface [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !Above ground runoff from water surface [mm] for whole surface area
+      ! REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !Above ground runoff from water surface [mm] for whole surface area
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev_surf_out !evaporation each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_surf_out !Wetness status of each surface type [mm]
@@ -486,9 +486,11 @@ CONTAINS
       ! NWstate_grid = 0
 
       DO is = 1, nsurf !For each surface in turn
+         if ( sfr_surf(is)>0 ) then
 
-         !Surface water balance and soil store updates (can modify ev, updates state_id)
-         CALL cal_water_storage( &
+
+            !Surface water balance and soil store updates (can modify ev, updates state_id)
+            CALL cal_water_storage( &
             is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
             WU_surf, &
             drain_surf, AddWater_surf, addImpervious, nsh_real, state_surf_in, frac_water2runoff_surf, &
@@ -496,6 +498,7 @@ CONTAINS
             runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, ev_surf(is), soilstore, & ! inout:
             surplusWaterBody, SurplusEvap, runoffWaterBody_grid, & ! inout:
             runoff_surf, state_surf_out) !output:
+         end if
 
       END DO !end loop over surfaces
 

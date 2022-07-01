@@ -3077,13 +3077,13 @@ CONTAINS
          PipeCapacity, RunoffToWater, & ! input:
          addImpervious, addVeg, addWaterBody, FlowChange, &
          SoilStoreCap_surf, StateLimit_surf, &
-         NonWaterFraction, PervFraction, &
+         PervFraction, &
          sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
          ev_surf, state_surf_in, soilstore_surf_in, &
          ev_surf, state_surf_out, soilstore_surf_out, & ! output:
          runoff_surf, &
-         runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
-         ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid)
+         runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid & ! output:
+)
 
       ! update QE based on the water balance
       qe_surf = tlv*ev_surf
