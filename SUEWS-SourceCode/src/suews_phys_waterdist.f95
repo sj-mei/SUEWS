@@ -400,7 +400,7 @@ CONTAINS
       PipeCapacity, RunoffToWater, &
       addImpervious, addVeg, addWaterBody, FlowChange, &
       SoilStoreCap_surf, StateLimit_surf, &
-       PervFraction, &
+      PervFraction, &
       sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
       ev_surf_in, state_surf_in, soilstore_surf_in, &
       ev_surf_out, state_surf_out, soilstore_surf_out, & ! output:
@@ -486,19 +486,18 @@ CONTAINS
       ! NWstate_grid = 0
 
       DO is = 1, nsurf !For each surface in turn
-         if ( sfr_surf(is)>0 ) then
-
+         IF (sfr_surf(is) > 0) THEN
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
             CALL cal_water_storage( &
-            is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
-            WU_surf, &
-            drain_surf, AddWater_surf, addImpervious, nsh_real, state_surf_in, frac_water2runoff_surf, &
-            PervFraction, addVeg, SoilStoreCap_surf, addWaterBody, FlowChange, StateLimit_surf, &
-            runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, ev_surf(is), soilstore, & ! inout:
-            surplusWaterBody, SurplusEvap, runoffWaterBody_grid, & ! inout:
-            runoff_surf, state_surf_out) !output:
-         end if
+               is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
+               WU_surf, &
+               drain_surf, AddWater_surf, addImpervious, nsh_real, state_surf_in, frac_water2runoff_surf, &
+               PervFraction, addVeg, SoilStoreCap_surf, addWaterBody, FlowChange, StateLimit_surf, &
+               runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, ev_surf(is), soilstore, & ! inout:
+               surplusWaterBody, SurplusEvap, runoffWaterBody_grid, & ! inout:
+               runoff_surf, state_surf_out) !output:
+         END IF
 
       END DO !end loop over surfaces
 
