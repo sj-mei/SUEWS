@@ -17,11 +17,11 @@
  SoilStoreDecTrState=   150.00000000000000     
  SoilStoreGrassState=   150.00000000000000     
  SoilStoreBSoilState=   150.00000000000000     
- PavedState=  0.21989546521472103     
- BldgsState=  0.20951959817103311     
- EveTrState=  0.76863966982337650     
- DecTrState=  0.73622126093118989     
- GrassState=  0.78959990516583778     
- BSoilState=  0.20966389761674811     
- WaterState=   27.518630954070012     
+ PavedState=  0.21989367836329352     
+ BldgsState=  0.20951969791656375     
+ EveTrState=  0.76853160645620222     
+ DecTrState=  0.73600004059510038     
+ GrassState=  0.78950824409487530     
+ BSoilState=  0.20966416228147552     
+ WaterState=   27.168650200980643     
  /

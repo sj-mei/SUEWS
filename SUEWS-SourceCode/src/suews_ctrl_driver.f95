@@ -904,7 +904,7 @@ CONTAINS
             bldgH, EveTreeH, DecTreeH, &
             porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
-            FAI, & !output
+            FAI, PAI, & !output
             zH, z0m, zdm, ZZD)
 
          !=================Calculate sun position=================
@@ -1390,7 +1390,7 @@ CONTAINS
       CALL RSLProfile( &
          DiagMethod, &
          zH, z0m, zdm, z0v, &
-         L_MOD, sfr_surf, FAI, FAIBldg, porosity_id_next, &
+         L_MOD, sfr_surf, FAI, PAI, &
          StabilityMethod, RA_h, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, & ! input
@@ -3077,13 +3077,13 @@ CONTAINS
          PipeCapacity, RunoffToWater, & ! input:
          addImpervious, addVeg, addWaterBody, FlowChange, &
          SoilStoreCap_surf, StateLimit_surf, &
-         NonWaterFraction, PervFraction, &
+         PervFraction, &
          sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
          ev_surf, state_surf_in, soilstore_surf_in, &
          ev_surf, state_surf_out, soilstore_surf_out, & ! output:
          runoff_surf, &
-         runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! output:
-         ev_grid, runoff_grid, state_grid, surf_chang_grid, NWstate_grid)
+         runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid & ! output:
+)
 
       ! update QE based on the water balance
       qe_surf = tlv*ev_surf
