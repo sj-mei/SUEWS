@@ -122,7 +122,7 @@ CONTAINS
 
       ! ########################################################################################
       ! input variables
-      INTEGER, INTENT(IN) :: AerodynamicResistanceMethod
+      INTEGER, INTENT(IN) :: AerodynamicResistanceMethod ! number of vertical layers in urban canyon(modify)
       INTEGER, INTENT(IN) :: BaseTMethod
       INTEGER, INTENT(IN) :: Diagnose
       INTEGER, INTENT(IN) :: DiagQN
