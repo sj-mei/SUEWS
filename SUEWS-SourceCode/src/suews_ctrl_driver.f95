@@ -123,8 +123,8 @@ CONTAINS
       ! ########################################################################################
       ! input variables
       INTEGER, INTENT(IN) :: AerodynamicResistanceMethod ! number of vertical layers in urban canyon(modify)
-      INTEGER, INTENT(IN) :: BaseTMethod
-      INTEGER, INTENT(IN) :: Diagnose
+      INTEGER, INTENT(IN) :: BaseTMethod ! baset method
+      INTEGER, INTENT(IN) :: Diagnose ! flag for printing diagnostic info during runtime [N/A]C
       INTEGER, INTENT(IN) :: DiagQN
       INTEGER, INTENT(IN) :: DiagQS
       INTEGER, INTENT(IN) :: startDLS
@@ -248,7 +248,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: TL
       REAL(KIND(1D0)), INTENT(IN) :: TrafficUnits
       REAL(KIND(1D0)), INTENT(IN) :: wu_m3
-      REAL(KIND(1D0)), INTENT(IN) :: xsmd
+      REAL(KIND(1D0)), INTENT(IN) :: xsmd ! soil moisture deficit [?]
       REAL(KIND(1D0)), INTENT(IN) :: Z
       REAL(KIND(1D0)), INTENT(IN) :: z0m_in
       REAL(KIND(1D0)), INTENT(IN) :: zdm_in
