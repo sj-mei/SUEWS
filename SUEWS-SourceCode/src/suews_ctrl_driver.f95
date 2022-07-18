@@ -1609,7 +1609,7 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::NumCapita
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: PopDensDaytime
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: QF0_BEU
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_A
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_A ! some parameter [unit]
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_C
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Heating
