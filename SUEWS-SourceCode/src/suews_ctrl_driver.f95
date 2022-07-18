@@ -122,7 +122,7 @@ CONTAINS
 
       ! ########################################################################################
       ! input variables
-      INTEGER, INTENT(IN) :: AerodynamicResistanceMethod  
+      INTEGER, INTENT(IN) :: AerodynamicResistanceMethod
       INTEGER, INTENT(IN) :: BaseTMethod ! baset method
       INTEGER, INTENT(IN) :: Diagnose ! flag for printing diagnostic info during runtime [N/A]C
       INTEGER, INTENT(IN) :: DiagQN
@@ -1592,7 +1592,7 @@ CONTAINS
       IMPLICIT NONE
 
       ! INTEGER, INTENT(in)::Diagnose
-      INTEGER, INTENT(in) :: DLS ! daylighting savings 
+      INTEGER, INTENT(in) :: DLS ! daylighting savings
       INTEGER, INTENT(in) :: EmissionsMethod
       ! INTEGER, INTENT(in) :: id
       INTEGER, INTENT(in) :: it ! hour
@@ -1626,7 +1626,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: EnEF_v_Jkm ! energy emission factor
       REAL(KIND(1D0)), INTENT(in) :: FrFossilFuel_Heat ! fraction of fossil fuel heat
       REAL(KIND(1D0)), INTENT(in) :: FrFossilFuel_NonHeat ! fraction of fossil fuel non heat
-      REAL(KIND(1D0)), INTENT(in) :: MaxFCMetab  ! maximum FC metabolism
+      REAL(KIND(1D0)), INTENT(in) :: MaxFCMetab ! maximum FC metabolism
       REAL(KIND(1D0)), INTENT(in) :: MaxQFMetab ! Maximum QF Metabolism
       REAL(KIND(1D0)), INTENT(in) :: MinFCMetab ! minimum QF metabolism
       REAL(KIND(1D0)), INTENT(in) :: MinQFMetab ! mMinimum FC metabolism
