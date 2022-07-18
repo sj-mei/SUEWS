@@ -1613,7 +1613,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_C
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Heating
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Cooling ! cooling temperature
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: TrafficRate
 
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: AHProf_24hr
