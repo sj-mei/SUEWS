@@ -785,9 +785,11 @@ CONTAINS
 
       ! ESTM_ext related
       ! save initial values of inout variables
+      if (StorageHeatMethod==5) then
       temp_in_roof = temp_roof
       temp_in_wall = temp_wall
       temp_in_surf = temp_surf
+      end if
       ! initialise indoor/bottom boundary temperature arrays
       ! tin_roof = 10.
       ! tin_wall = 10.
@@ -807,14 +809,16 @@ CONTAINS
       SnowPack_next = SnowPack
       state_surf_next = state_surf
       soilstore_surf_next = soilstore_surf
-      ! IF (StorageHeatMethod == 5) THEN
+
+      IF (StorageHeatMethod == 5) THEN
 
       soilstore_roof_next = soilstore_roof
       soilstore_wall_next = soilstore_wall
       state_roof_next = state_roof
       state_wall_next = state_wall
 
-      ! END IF
+      END IF
+
       Tair_av_next = Tair_av
       LAI_id_next = LAI_id
       GDD_id_next = GDD_id
@@ -851,12 +855,14 @@ CONTAINS
       Ts_iter = TEMP_C
 
       ! TODO: ESTM work: to allow heterogeneous surface temperatures
+      if (StorageHeatMethod == 5) then
       tsfc_out_surf = tsfc_surf
       tsfc0_out_surf = tsfc_surf
       tsfc_out_roof = tsfc_roof
       tsfc0_out_roof = tsfc_roof
       tsfc_out_wall = tsfc_wall
       tsfc0_out_wall = tsfc_wall
+      end if
       ! PRINT *, 'sfr_surf for this grid ', sfr_surf
       ! PRINT *, 'before iteration Ts_iter = ', Ts_iter
       ! L_mod_iter = 10
@@ -1442,6 +1448,7 @@ CONTAINS
       HDD_id = HDD_id_next
       WUDay_id = WUDay_id_next
 
+      if(StorageHeatMethod==5) then
       ! ESTM_ext related
       temp_roof = temp_out_roof
       temp_wall = temp_out_wall
@@ -1450,10 +1457,12 @@ CONTAINS
       tsfc_wall = tsfc_out_wall
       tsfc_surf = tsfc_out_surf
 
+
       soilstore_roof = soilstore_roof_next
       state_roof = state_roof_next
       soilstore_wall = soilstore_wall_next
       state_wall = state_wall_next
+      end if
 
       !==============use SOLWEIG to get localised radiation flux==================
       ! if (sfr_surf(BldgSurf) > 0) then

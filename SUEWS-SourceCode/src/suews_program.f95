@@ -46,6 +46,7 @@ PROGRAM SUEWS_Program
       ESTM_ext_initialise, estm_ext_finalise
    USE BLUEWS_module, ONLY: CBL_ReadInputData
    USE SPARTACUS_MODULE, ONLY: SPARTACUS_Initialise
+   use version, only:gitversion
 
    IMPLICIT NONE
 
@@ -69,7 +70,7 @@ PROGRAM SUEWS_Program
 
    REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
 
-   !==========================================================================
+
 
    ! Start counting cpu time
    CALL CPU_TIME(timeStart)
@@ -79,6 +80,7 @@ PROGRAM SUEWS_Program
 
    WRITE (*, *) '========================================================'
    WRITE (*, *) 'Running ', progname
+   WRITE (*, *) 'Version ID: ', TRIM(gitversion)
 
    ! Initialise error file (0 -> problems.txt file will be newly created)
    errorChoice = 0
@@ -161,11 +163,11 @@ PROGRAM SUEWS_Program
 
    ! -------------------------------------------------------------------------
    ! Initialise ESTM (reads ESTM nml, should only run once)
-   ! IF (StorageHeatMethod == 5) THEN
+   IF (StorageHeatMethod == 5) THEN
    IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_ext_initialise...'
    CALL ESTM_ext_initialise
    WRITE (*, *) 'No. vertical layers identified:', nlayer, 'layers'
-   ! END IF
+   END IF
 
    ! -------------------------------------------------------------------------
    ! Initialise SPARTACUS (reads SPARTACUS nml, should only run once)
