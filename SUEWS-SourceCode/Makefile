@@ -303,7 +303,7 @@ libdriver: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS) $(DRIVER))
 suews: libspartacus libdriver exe
 
 # special rule for generating version info file
-src/suews_ctrl_ver.f95:
+src/suews_ctrl_ver.f95: force
 	@echo "generating version info file..."
 	@echo "MODULE version" > $@
 	@echo "IMPLICIT NONE" >> $@
@@ -370,4 +370,4 @@ $(WRF): $(subst .o,$(suffix_code), $(WRF))
 
 
 
-.PHONY: libutil libphys libdriver exe clean-toplevel test
+.PHONY: libutil libphys libdriver exe clean-toplevel test force
