@@ -296,6 +296,7 @@ PROGRAM SUEWS_Program
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)) !Snow output
 
       IF (.NOT. ALLOCATED(tsfc_surf_grids)) ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
+      IF (.NOT. ALLOCATED(tin_surf_grids)) ALLOCATE (tin_surf_grids(NumberOfGrids, nsurf))
       IF (.NOT. ALLOCATED(qn_s_av_grids)) ALLOCATE (qn_s_av_grids(NumberOfGrids))
       IF (.NOT. ALLOCATED(dqnsdt_grids)) ALLOCATE (dqnsdt_grids(NumberOfGrids))
       qn_s_av_grids = 0 ! Initialise to 0
@@ -668,6 +669,7 @@ PROGRAM SUEWS_Program
       ! IF (SnowUse == 1) THEN
       DEALLOCATE (dataOutSnow)
       deallocate(tsfc_surf_grids)
+      deallocate(tin_surf_grids)
       DEALLOCATE (qn_s_av_grids)
       DEALLOCATE (dqnsdt_grids)
       ! ENDIF

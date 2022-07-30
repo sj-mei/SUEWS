@@ -1895,8 +1895,9 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
 
    tsfc_roof_grids(Gridiv, :) = Temp_C0
    tsfc_wall_grids(Gridiv, :) = Temp_C0
-   tsfc_surf_grids(Gridiv, :) = Temp_C0
-   end if
+end if
+tsfc_surf_grids(Gridiv, :) = Temp_C0
+tin_surf_grids(Gridiv, :) = Temp_C0
 
    ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)
    IF (Diagnose == 1) PRINT *, 'calling in initial state: SUEWS_Translate'

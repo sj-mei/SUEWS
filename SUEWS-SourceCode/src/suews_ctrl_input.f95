@@ -108,6 +108,9 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
    !===============Meteorological variables reading done==========================
    Pres_hPa = Pres_kPa*10. ! convert to hPa
 
+   ! get decimal time
+   dectime = id + it + imin/60.0
+
    IF (iostat_var < 0) THEN
       iostat_var = 0
       CLOSE (lfn)
