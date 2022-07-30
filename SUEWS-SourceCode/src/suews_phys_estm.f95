@@ -1177,7 +1177,7 @@ CONTAINS
       ALLOCATE (wall_specular_frac_grids(NumberOfGrids, nspec, nlayer_max))
 
       ! allocate surf variables
-      ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
+      ! ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
       ALLOCATE (k_surf_grids(NumberOfGrids, nsurf, ndepth))
       ALLOCATE (cp_surf_grids(NumberOfGrids, nsurf, ndepth))
       ALLOCATE (dz_surf_grids(NumberOfGrids, nsurf, ndepth))

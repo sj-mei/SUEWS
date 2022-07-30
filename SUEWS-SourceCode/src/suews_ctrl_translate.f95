@@ -825,16 +825,16 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ALLOCATE (dz_surf(nsurf, ndepth))
       ALLOCATE (k_surf(nsurf, ndepth))
       ALLOCATE (cp_surf(nsurf, ndepth))
-      ALLOCATE (tsfc_surf(nsurf))
       ALLOCATE (tin_surf(nsurf))
       ALLOCATE (temp_surf(nsurf, ndepth))
       dz_surf(1:nsurf, 1:ndepth) = dz_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
       k_surf(1:nsurf, 1:ndepth) = k_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
       cp_surf(1:nsurf, 1:ndepth) = cp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
-      tsfc_surf(1:nsurf) = tsfc_surf_grids(Gridiv, 1:nsurf)
       tin_surf(1:nsurf) = tin_surf_grids(Gridiv, 1:nsurf)
       temp_surf(1:nsurf, 1:ndepth) = temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
    END IF
+   ALLOCATE (tsfc_surf(nsurf))
+   tsfc_surf(1:nsurf) = tsfc_surf_grids(Gridiv, 1:nsurf)
    ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
    BaseT_HC = -999 ! Initialise QF coeffs
    QF_A = 0
@@ -1786,9 +1786,6 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
       ! surf
       ! tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
       temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth) = temp_surf(1:nsurf, 1:ndepth)
-      tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
-
-      DEALLOCATE (tsfc_surf)
       DEALLOCATE (k_surf)
       DEALLOCATE (cp_surf)
       DEALLOCATE (dz_surf)
@@ -1806,6 +1803,10 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
       ! DEALLOCATE (alb_roof)
       ! DEALLOCATE (alb_wall)
    END IF
+
+   tsfc_surf_grids(Gridiv, 1:nsurf) = tsfc_surf(1:nsurf)
+
+   DEALLOCATE (tsfc_surf)
    ! =============================================================================
    ! === Translate values from variable names used in model to ModelOutputData ===
    ! =============================================================================

@@ -854,10 +854,10 @@ CONTAINS
       flag_converge = .FALSE.
       Ts_iter = TEMP_C
 
-      ! TODO: ESTM work: to allow heterogeneous surface temperatures
-      if (StorageHeatMethod == 5) then
       tsfc_out_surf = tsfc_surf
       tsfc0_out_surf = tsfc_surf
+      ! TODO: ESTM work: to allow heterogeneous surface temperatures
+      if (StorageHeatMethod == 5) then
       tsfc_out_roof = tsfc_roof
       tsfc0_out_roof = tsfc_roof
       tsfc_out_wall = tsfc_wall

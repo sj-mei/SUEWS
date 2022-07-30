@@ -169,6 +169,7 @@ PROGRAM SUEWS_Program
    WRITE (*, *) 'No. vertical layers identified:', nlayer, 'layers'
    END IF
 
+
    ! -------------------------------------------------------------------------
    ! Initialise SPARTACUS (reads SPARTACUS nml, should only run once)
    IF (NetRadiationMethod > 1000) THEN
@@ -294,6 +295,7 @@ PROGRAM SUEWS_Program
       IF (CBLuse >= 1) ALLOCATE (dataOutBL(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids)) !CBL output
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)) !Snow output
 
+      IF (.NOT. ALLOCATED(tsfc_surf_grids)) ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
       IF (.NOT. ALLOCATED(qn_s_av_grids)) ALLOCATE (qn_s_av_grids(NumberOfGrids))
       IF (.NOT. ALLOCATED(dqnsdt_grids)) ALLOCATE (dqnsdt_grids(NumberOfGrids))
       qn_s_av_grids = 0 ! Initialise to 0
@@ -665,6 +667,7 @@ PROGRAM SUEWS_Program
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN
       DEALLOCATE (dataOutSnow)
+      deallocate(tsfc_surf_grids)
       DEALLOCATE (qn_s_av_grids)
       DEALLOCATE (dqnsdt_grids)
       ! ENDIF
