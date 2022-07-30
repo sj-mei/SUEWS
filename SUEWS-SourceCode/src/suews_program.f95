@@ -59,6 +59,7 @@ PROGRAM SUEWS_Program
                         tstep_txt, & !Model timestep (in minutes) as a text string (minutes)
                         ResIn_txt, ResInESTM_txt !Resolution of Original met/ESTM forcing file as a text string (minutes)
 
+   INTEGER :: ReadLinesMetdata_read !Max number of lines that can be read in one go for each grid
    INTEGER :: nlinesLimit, & !Max number of lines that can be read in one go for each grid
               NumberOfYears !Number of years to be run
 
@@ -264,7 +265,7 @@ PROGRAM SUEWS_Program
             ReadLinesMetdata = nlinesLimit
          END IF
          ! make sure the metblocks read in consists of complete diurnal cycles, TS 08 Jul 2016
-         ReadLinesMetdata = INT(MAX(nsd*(ReadLinesMetdata/nsd), nsd))
+         ! ReadLinesMetdata = INT(MAX(nsd*(ReadLinesMetdata/nsd), nsd))
 
          WRITE (*, *) 'Met data will be read in blocks of ', ReadLinesMetdata, 'lines.'
 
@@ -439,6 +440,17 @@ PROGRAM SUEWS_Program
                END DO
             END IF !end first block of met data
 
+            ! adjust ReadLinesMetdata for the last block of met data
+         IF (iblock == ReadBlocksMetData) THEN !For last block of data in file
+            ReadLinesMetdata_read = nlinesMetdata - (iblock - 1)*ReadLinesMetdata
+         else
+            ReadLinesMetdata_read = ReadLinesMetdata
+         END IF
+
+         if ( igrid==1 ) then
+            print*, 'ReadLinesMetdata', ReadLinesMetdata, 'in block', iblock, 'of', ReadBlocksMetData
+         end if
+
             ! (1b) Initialise met data
             IF (NperTstepIn > 1) THEN
                ! Disaggregate met data ---------------------------------------------------
@@ -469,7 +481,7 @@ PROGRAM SUEWS_Program
                   IF (igrid == 1) THEN !Disaggregate for the first grid only
                      CALL DisaggregateMet(iblock, igrid)
                   ELSE !Then for subsequent grids simply copy data
-                     MetForcingData(1:ReadLinesMetdata, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata, 1:24, 1)
+                     MetForcingData(1:ReadLinesMetdata_read, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata_read, 1:24, 1)
                   END IF
                END IF
 
@@ -485,15 +497,15 @@ PROGRAM SUEWS_Program
                !write(*,*) 'Initialising met data for block',iblock
                IF (MultipleMetFiles == 1) THEN !If each grid has its own met file
                   FileMet = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
-                  CALL SUEWS_InitializeMetData(1)
+                  CALL SUEWS_InitializeMetData(1,ReadLinesMetdata_read)
                ELSE !If one met file used for all grids
                   !FileMet=TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                   ! If one met file used for all grids, look for met file with no grid code (FileCodeXWG)
                   FileMet = TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                   IF (igrid == 1) THEN !Read for the first grid only
-                     CALL SUEWS_InitializeMetData(1)
+                     CALL SUEWS_InitializeMetData(1,ReadLinesMetdata_read)
                   ELSE !Then for subsequent grids simply copy data
-                     MetForcingData(1:ReadLinesMetdata, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata, 1:24, 1)
+                     MetForcingData(1:ReadLinesMetdata_read, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata_read, 1:24, 1)
                   END IF
                END IF
             END IF !end of nper statement
@@ -593,7 +605,7 @@ PROGRAM SUEWS_Program
          DO ir = 1, irMax !Loop through rows of current block of met data
             ! GridCounter = 1 !Initialise counter for grids in each year
             ! PRINT *, '*****************************************'
-            ! WRITE (*, *) 'ir here', ir, 'of', irMax
+            ! WRITE (*, *) 'ir here', ir, 'of', irMax, 'for block', iblock, 'of', ReadBlocksMetData
             ! PRINT *, ''
 
             ! quick stop : for testing
