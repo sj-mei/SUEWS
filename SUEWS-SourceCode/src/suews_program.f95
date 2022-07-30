@@ -46,7 +46,7 @@ PROGRAM SUEWS_Program
       ESTM_ext_initialise, estm_ext_finalise
    USE BLUEWS_module, ONLY: CBL_ReadInputData
    USE SPARTACUS_MODULE, ONLY: SPARTACUS_Initialise
-   use version, only:gitversion
+   use version, only:git_commit,compiler_ver
 
    IMPLICIT NONE
 
@@ -81,7 +81,8 @@ PROGRAM SUEWS_Program
 
    WRITE (*, *) '========================================================'
    WRITE (*, *) 'Running ', progname
-   WRITE (*, *) 'Version ID: ', TRIM(gitversion)
+   WRITE (*, *) 'Version commit: ', TRIM(git_commit)
+   WRITE (*, *) 'Compiler: ', TRIM(compiler_ver)
 
    ! Initialise error file (0 -> problems.txt file will be newly created)
    errorChoice = 0
@@ -448,7 +449,7 @@ PROGRAM SUEWS_Program
          END IF
 
          if ( igrid==1 ) then
-            print*, 'ReadLinesMetdata', ReadLinesMetdata, 'in block', iblock, 'of', ReadBlocksMetData
+            print*, 'Read in', ReadLinesMetdata_read, 'lines of met data in block', iblock, '/', ReadBlocksMetData
          end if
 
             ! (1b) Initialise met data

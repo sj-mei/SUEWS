@@ -1550,7 +1550,7 @@ CONTAINS
           tsfc0_out_surf, &
           ! state_surf_prev, &
           RS, RA_h, RB, RAsnow, &
-          vpd_hPa, lv_J_kg, avdens, avcp, qn_av, dqndt]
+          vpd_hPa, lv_J_kg, avdens, avcp, i_iter*1D0, dqndt]
       ! IF (NetRadiationMethod > 1000) THEN
       !    dataOutLineSPARTACUS = &
       !       [alb_spc, emis_spc, &

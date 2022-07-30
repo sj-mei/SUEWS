@@ -56,7 +56,7 @@ variable   := $(shell $(grep) progname ${file})
 TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
 TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 VERSION    := $(lastword $(subst _V, ,${TARGET}))
-GIT_COMMIT :=$(shell git describe --always --dirty=-dirty || echo unknown:non-git)
+GIT_COMMIT := $(shell git describe --always --dirty=-dirty || echo unknown:non-git)
 
 timestamp := $(shell date +"%Y%m%dT%H%M")
 EXECUTABLE := $(strip $(TARGET))_$(strip $(timestamp))
@@ -124,6 +124,7 @@ endif
 # Consolidate flags
 export SUEWS_VER = $(GIT_COMMIT)
 export FC
+export FC_VER := `$(FC) --version | head -n 1`
 export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 	$(STATIC)	\
 	$(OPTFLAGS) $(DEBUGFLAGS)
@@ -273,6 +274,7 @@ help:
 	@echo "where <prof> can be either 'gfortran' or 'ifort'."
 	@echo $(C_MODULE)
 	@echo $(SUEWS_VER)
+	@echo $(FC_VER)
 
 libspartacus: $(FILE_SRC_UTIL_SPTCS) $(FILE_SRC_RADTOOL_SPTCS) $(FILE_SRC_RAD_SPTCS)
 	mkdir -p $(DIR_LIB_SUEWS)
@@ -307,7 +309,8 @@ src/suews_ctrl_ver.f95: force
 	@echo "generating version info file..."
 	@echo "MODULE version" > $@
 	@echo "IMPLICIT NONE" >> $@
-	@echo "CHARACTER(len=90) :: gitversion = '$(GIT_COMMIT)' " >> $@
+	@echo "CHARACTER(len=90) :: git_commit = '$(GIT_COMMIT)' " >> $@
+	@echo "CHARACTER(len=90) :: compiler_ver = '$(FC_VER)' " >> $@
 	@echo "END MODULE version" >> $@
 
 
