@@ -56,6 +56,7 @@ variable   := $(shell $(grep) progname ${file})
 TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
 TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 VERSION    := $(lastword $(subst _V, ,${TARGET}))
+GIT_COMMIT := $(shell git describe --always --dirty=-dirty || echo unknown:non-git)
 
 timestamp := $(shell date +"%Y%m%dT%H%M")
 EXECUTABLE := $(strip $(TARGET))_$(strip $(timestamp))
@@ -121,7 +122,9 @@ CPPFLAGS += -DNC_NETCDF4
 endif
 
 # Consolidate flags
+export SUEWS_VER = $(GIT_COMMIT)
 export FC
+export FC_VER := `$(FC) --version | head -n 1`
 export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 	$(STATIC)	\
 	$(OPTFLAGS) $(DEBUGFLAGS)
@@ -193,6 +196,7 @@ DRIVER = suews_ctrl_driver.o
 OTHERS =  suews_ctrl_translate.o \
 	suews_ctrl_error.o \
 	suews_ctrl_init.o \
+	suews_ctrl_ver.o \
 	suews_ctrl_calculations.o
 
 # modules under rapid development
@@ -269,6 +273,8 @@ help:
 	@echo "  make PROFILE=<prof>"
 	@echo "where <prof> can be either 'gfortran' or 'ifort'."
 	@echo $(C_MODULE)
+	@echo $(SUEWS_VER)
+	@echo $(FC_VER)
 
 libspartacus: $(FILE_SRC_UTIL_SPTCS) $(FILE_SRC_RADTOOL_SPTCS) $(FILE_SRC_RAD_SPTCS)
 	mkdir -p $(DIR_LIB_SUEWS)
@@ -298,12 +304,22 @@ libdriver: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS) $(DRIVER))
 
 suews: libspartacus libdriver exe
 
+# special rule for generating version info file
+src/suews_ctrl_ver.f95: force
+	@echo "generating version info file..."
+	@echo "MODULE version" > $@
+	@echo "IMPLICIT NONE" >> $@
+	@echo "CHARACTER(len=90) :: git_commit = '$(GIT_COMMIT)' " >> $@
+	@echo "CHARACTER(len=90) :: compiler_ver = '$(FC_VER)' " >> $@
+	@echo "END MODULE version" >> $@
+
 
 exe: $(addprefix $(DIR_SRC_SUEWS), $(OTHERS) suews_program$(suffix_code))
 	@echo  $(LIBUTILS) $(LIBPHYS) $(LIBDRIVER)
 	@echo $(TARGET) $(EXECUTABLE) $(OTHERS)
 	@echo Building SUEWS ...
 	$(FC) $(FCFLAGS) $^ -o $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(LIBS)
+	@echo SUEWS built.
 	@echo $(TARGET) has been saved in $(DIR_BIN_SUEWS)
 	cd $(DIR_BIN_SUEWS) && ln -sf $(EXECUTABLE) $(TARGET)
 	mkdir -p $(DIR_RELEASE_SUEWS) && cp -f $(DIR_BIN_SUEWS)/$(EXECUTABLE) $(DIR_RELEASE_SUEWS)/$(TARGET)
@@ -346,8 +362,6 @@ $(C_MODULE): $(subst .o,.c, $(C_MODULE))
 
 
 
-
-
 # If OTHERS have changed, compile them again
 $(OTHERS): $(UTILS) $(PHYS) $(subst .o,$(suffix_code), $(OTHERS))
 
@@ -359,4 +373,4 @@ $(WRF): $(subst .o,$(suffix_code), $(WRF))
 
 
 
-.PHONY: libutil libphys libdriver exe clean-toplevel test
+.PHONY: libutil libphys libdriver exe clean-toplevel test force

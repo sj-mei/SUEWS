@@ -1177,7 +1177,7 @@ CONTAINS
       ALLOCATE (wall_specular_frac_grids(NumberOfGrids, nspec, nlayer_max))
 
       ! allocate surf variables
-      ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
+      ! ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
       ALLOCATE (k_surf_grids(NumberOfGrids, nsurf, ndepth))
       ALLOCATE (cp_surf_grids(NumberOfGrids, nsurf, ndepth))
       ALLOCATE (dz_surf_grids(NumberOfGrids, nsurf, ndepth))
@@ -1236,7 +1236,7 @@ CONTAINS
       IF (ALLOCATED(k_surf_grids)) DEALLOCATE (k_surf_grids)
       IF (ALLOCATED(cp_surf_grids)) DEALLOCATE (cp_surf_grids)
       IF (ALLOCATED(dz_surf_grids)) DEALLOCATE (dz_surf_grids)
-      IF (ALLOCATED(tin_surf_grids)) DEALLOCATE (tin_surf_grids)
+      ! IF (ALLOCATED(tin_surf_grids)) DEALLOCATE (tin_surf_grids)
       IF (ALLOCATED(temp_surf_grids)) DEALLOCATE (temp_surf_grids)
 
    END SUBROUTINE ESTM_ext_finalise

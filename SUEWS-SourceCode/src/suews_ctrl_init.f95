@@ -1891,12 +1891,13 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    IceFrac = 0.2 !Estimated fraction of ice. Should be improved in the future
 
    ! initialise surface temperatures for ESTM_ext
-   ! if ( StorageHeatMethod==5 ) then
+   IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
 
-   tsfc_roof_grids(Gridiv, :) = Temp_C0
-   tsfc_wall_grids(Gridiv, :) = Temp_C0
+      tsfc_roof_grids(Gridiv, :) = Temp_C0
+      tsfc_wall_grids(Gridiv, :) = Temp_C0
+   END IF
    tsfc_surf_grids(Gridiv, :) = Temp_C0
-   ! end if
+   tin_surf_grids(Gridiv, :) = Temp_C0
 
    ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)
    IF (Diagnose == 1) PRINT *, 'calling in initial state: SUEWS_Translate'
@@ -2168,7 +2169,7 @@ END SUBROUTINE NextInitial
 !=======================================================================
 !This subroutine prepares a meteorological forcing file.
 
-SUBROUTINE SUEWS_InitializeMetData(lunit)
+SUBROUTINE SUEWS_InitializeMetData(lunit, ReadlinesMetdata_read)
 
    USE allocateArray
    USE data_in
@@ -2180,6 +2181,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
    IMPLICIT NONE
 
    INTEGER :: lunit, i, iyy !,RunNumber,NSHcounter
+   INTEGER :: ReadlinesMetdata_read !,RunNumber,NSHcounter
    REAL(KIND(1D0)), DIMENSION(24) :: MetArray
    REAL(KIND(1D0)) :: imin_prev, ih_prev, iday_prev, tstep_met, iy_only !For checks on temporal resolution of met data
 
@@ -2192,7 +2194,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
    !---------------------------------------------------------------
 
    !Open the file for reading and read the actual data
-   !write(*,*) fileMet
+   WRITE (*, *) fileMet
    OPEN (lunit, file=TRIM(fileMet), status='old', err=314)
    CALL skipHeader(lunit, SkipHeaderMet)
 
@@ -2206,7 +2208,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
    ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
    !NSHcounter = 1
    !write(*,*) 'ReadlinesMetdata:',ReadlinesMetdata
-   DO i = 1, ReadlinesMetdata
+   DO i = 1, ReadlinesMetdata_read
       CALL MetRead(lunit, MetArray, InputmetFormat, ldown_option, NetRadiationMethod, &
                    SnowUse, SMDMethod, SoilDepthMeas, SoilRocks, SoilDensity, SmCap)
       !DO iv=1,NSH

@@ -46,6 +46,7 @@ PROGRAM SUEWS_Program
       ESTM_ext_initialise, estm_ext_finalise
    USE BLUEWS_module, ONLY: CBL_ReadInputData
    USE SPARTACUS_MODULE, ONLY: SPARTACUS_Initialise
+   USE version, ONLY: git_commit, compiler_ver
 
    IMPLICIT NONE
 
@@ -58,6 +59,7 @@ PROGRAM SUEWS_Program
                         tstep_txt, & !Model timestep (in minutes) as a text string (minutes)
                         ResIn_txt, ResInESTM_txt !Resolution of Original met/ESTM forcing file as a text string (minutes)
 
+   INTEGER :: ReadLinesMetdata_read !Max number of lines that can be read in one go for each grid
    INTEGER :: nlinesLimit, & !Max number of lines that can be read in one go for each grid
               NumberOfYears !Number of years to be run
 
@@ -69,8 +71,6 @@ PROGRAM SUEWS_Program
 
    REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
 
-   !==========================================================================
-
    ! Start counting cpu time
    CALL CPU_TIME(timeStart)
 
@@ -79,6 +79,8 @@ PROGRAM SUEWS_Program
 
    WRITE (*, *) '========================================================'
    WRITE (*, *) 'Running ', progname
+   WRITE (*, *) 'Version commit: ', TRIM(git_commit)
+   WRITE (*, *) 'Compiler: ', TRIM(compiler_ver)
 
    ! Initialise error file (0 -> problems.txt file will be newly created)
    errorChoice = 0
@@ -161,11 +163,11 @@ PROGRAM SUEWS_Program
 
    ! -------------------------------------------------------------------------
    ! Initialise ESTM (reads ESTM nml, should only run once)
-   ! IF (StorageHeatMethod == 5) THEN
-   IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_ext_initialise...'
-   CALL ESTM_ext_initialise
-   WRITE (*, *) 'No. vertical layers identified:', nlayer, 'layers'
-   ! END IF
+   IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
+      IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_ext_initialise...'
+      CALL ESTM_ext_initialise
+      WRITE (*, *) 'No. vertical layers identified:', nlayer, 'layers'
+   END IF
 
    ! -------------------------------------------------------------------------
    ! Initialise SPARTACUS (reads SPARTACUS nml, should only run once)
@@ -261,7 +263,7 @@ PROGRAM SUEWS_Program
             ReadLinesMetdata = nlinesLimit
          END IF
          ! make sure the metblocks read in consists of complete diurnal cycles, TS 08 Jul 2016
-         ReadLinesMetdata = INT(MAX(nsd*(ReadLinesMetdata/nsd), nsd))
+         ! ReadLinesMetdata = INT(MAX(nsd*(ReadLinesMetdata/nsd), nsd))
 
          WRITE (*, *) 'Met data will be read in blocks of ', ReadLinesMetdata, 'lines.'
 
@@ -292,6 +294,8 @@ PROGRAM SUEWS_Program
       IF (CBLuse >= 1) ALLOCATE (dataOutBL(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids)) !CBL output
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)) !Snow output
 
+      IF (.NOT. ALLOCATED(tsfc_surf_grids)) ALLOCATE (tsfc_surf_grids(NumberOfGrids, nsurf))
+      IF (.NOT. ALLOCATED(tin_surf_grids)) ALLOCATE (tin_surf_grids(NumberOfGrids, nsurf))
       IF (.NOT. ALLOCATED(qn_s_av_grids)) ALLOCATE (qn_s_av_grids(NumberOfGrids))
       IF (.NOT. ALLOCATED(dqnsdt_grids)) ALLOCATE (dqnsdt_grids(NumberOfGrids))
       qn_s_av_grids = 0 ! Initialise to 0
@@ -434,6 +438,17 @@ PROGRAM SUEWS_Program
                END DO
             END IF !end first block of met data
 
+            ! adjust ReadLinesMetdata for the last block of met data
+            IF (iblock == ReadBlocksMetData) THEN !For last block of data in file
+               ReadLinesMetdata_read = nlinesMetdata - (iblock - 1)*ReadLinesMetdata
+            ELSE
+               ReadLinesMetdata_read = ReadLinesMetdata
+            END IF
+
+            IF (igrid == 1) THEN
+               PRINT *, 'Read in', ReadLinesMetdata_read, 'lines of met data in block', iblock, '/', ReadBlocksMetData
+            END IF
+
             ! (1b) Initialise met data
             IF (NperTstepIn > 1) THEN
                ! Disaggregate met data ---------------------------------------------------
@@ -464,7 +479,7 @@ PROGRAM SUEWS_Program
                   IF (igrid == 1) THEN !Disaggregate for the first grid only
                      CALL DisaggregateMet(iblock, igrid)
                   ELSE !Then for subsequent grids simply copy data
-                     MetForcingData(1:ReadLinesMetdata, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata, 1:24, 1)
+                     MetForcingData(1:ReadLinesMetdata_read, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata_read, 1:24, 1)
                   END IF
                END IF
 
@@ -480,15 +495,15 @@ PROGRAM SUEWS_Program
                !write(*,*) 'Initialising met data for block',iblock
                IF (MultipleMetFiles == 1) THEN !If each grid has its own met file
                   FileMet = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
-                  CALL SUEWS_InitializeMetData(1)
+                  CALL SUEWS_InitializeMetData(1, ReadLinesMetdata_read)
                ELSE !If one met file used for all grids
                   !FileMet=TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                   ! If one met file used for all grids, look for met file with no grid code (FileCodeXWG)
                   FileMet = TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                   IF (igrid == 1) THEN !Read for the first grid only
-                     CALL SUEWS_InitializeMetData(1)
+                     CALL SUEWS_InitializeMetData(1, ReadLinesMetdata_read)
                   ELSE !Then for subsequent grids simply copy data
-                     MetForcingData(1:ReadLinesMetdata, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata, 1:24, 1)
+                     MetForcingData(1:ReadLinesMetdata_read, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata_read, 1:24, 1)
                   END IF
                END IF
             END IF !end of nper statement
@@ -588,7 +603,7 @@ PROGRAM SUEWS_Program
          DO ir = 1, irMax !Loop through rows of current block of met data
             ! GridCounter = 1 !Initialise counter for grids in each year
             ! PRINT *, '*****************************************'
-            ! WRITE (*, *) 'ir here', ir, 'of', irMax
+            ! WRITE (*, *) 'ir here', ir, 'of', irMax, 'for block', iblock, 'of', ReadBlocksMetData
             ! PRINT *, ''
 
             ! quick stop : for testing
@@ -663,6 +678,8 @@ PROGRAM SUEWS_Program
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN
       DEALLOCATE (dataOutSnow)
+      DEALLOCATE (tsfc_surf_grids)
+      DEALLOCATE (tin_surf_grids)
       DEALLOCATE (qn_s_av_grids)
       DEALLOCATE (dqnsdt_grids)
       ! ENDIF

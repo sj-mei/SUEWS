@@ -618,7 +618,8 @@ MODULE ctrl_output
       varAttr('avcp', 'm', f104, 'air heat capacity at constant pressure', aA, 'debug', 0), &
       ! varAttr('s_hPa', 'm', f104, 'Vapour pressure versus temperature slope in PM', aA, 'debug', 0), &
       ! varAttr('psyc_hPa', 'm', f104, 'Psychometric constant', aA, 'debug', 0) &
-      varAttr('qn_av', 'm', f104, 'qn_av', aA, 'debug', 0), &
+      ! varAttr('qn_av', 'm', f104, 'qn_av', aA, 'debug', 0), &
+      varAttr('iter', '-', f104, 'qn_av', aS, 'debug', 0), &
       varAttr('dqndt', 'm', f104, 'dqndt', aA, 'debug', 0) &
       /
 
