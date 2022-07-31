@@ -636,13 +636,13 @@ CONTAINS
       INTEGER :: i_iter
 
       ! SPARTACUS test out
-      REAL(KIND(1D0)) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
-      REAL(KIND(1D0)) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
-      REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-                                        roof_in_lw_spc
-      REAL(KIND(1D0)) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
-      REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-                                        roof_in_sw_spc
+      ! REAL(KIND(1D0)) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
+      ! REAL(KIND(1D0)) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      ! REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+      !                                   roof_in_lw_spc
+      ! REAL(KIND(1D0)) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
+      ! REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
+      !                                   roof_in_sw_spc
       ! REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
       ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
 
