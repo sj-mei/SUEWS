@@ -46,7 +46,7 @@ PROGRAM SUEWS_Program
       ESTM_ext_initialise, estm_ext_finalise
    USE BLUEWS_module, ONLY: CBL_ReadInputData
    USE SPARTACUS_MODULE, ONLY: SPARTACUS_Initialise
-   use version, only:git_commit,compiler_ver
+   USE version, ONLY: git_commit, compiler_ver
 
    IMPLICIT NONE
 
@@ -70,8 +70,6 @@ PROGRAM SUEWS_Program
               rr !Row of SiteSelect corresponding to current year and grid
 
    REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
-
-
 
    ! Start counting cpu time
    CALL CPU_TIME(timeStart)
@@ -165,12 +163,11 @@ PROGRAM SUEWS_Program
 
    ! -------------------------------------------------------------------------
    ! Initialise ESTM (reads ESTM nml, should only run once)
-   IF (StorageHeatMethod == 5) THEN
-   IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_ext_initialise...'
-   CALL ESTM_ext_initialise
-   WRITE (*, *) 'No. vertical layers identified:', nlayer, 'layers'
+   IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
+      IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM_ext_initialise...'
+      CALL ESTM_ext_initialise
+      WRITE (*, *) 'No. vertical layers identified:', nlayer, 'layers'
    END IF
-
 
    ! -------------------------------------------------------------------------
    ! Initialise SPARTACUS (reads SPARTACUS nml, should only run once)
@@ -442,15 +439,15 @@ PROGRAM SUEWS_Program
             END IF !end first block of met data
 
             ! adjust ReadLinesMetdata for the last block of met data
-         IF (iblock == ReadBlocksMetData) THEN !For last block of data in file
-            ReadLinesMetdata_read = nlinesMetdata - (iblock - 1)*ReadLinesMetdata
-         else
-            ReadLinesMetdata_read = ReadLinesMetdata
-         END IF
+            IF (iblock == ReadBlocksMetData) THEN !For last block of data in file
+               ReadLinesMetdata_read = nlinesMetdata - (iblock - 1)*ReadLinesMetdata
+            ELSE
+               ReadLinesMetdata_read = ReadLinesMetdata
+            END IF
 
-         if ( igrid==1 ) then
-            print*, 'Read in', ReadLinesMetdata_read, 'lines of met data in block', iblock, '/', ReadBlocksMetData
-         end if
+            IF (igrid == 1) THEN
+               PRINT *, 'Read in', ReadLinesMetdata_read, 'lines of met data in block', iblock, '/', ReadBlocksMetData
+            END IF
 
             ! (1b) Initialise met data
             IF (NperTstepIn > 1) THEN
@@ -498,13 +495,13 @@ PROGRAM SUEWS_Program
                !write(*,*) 'Initialising met data for block',iblock
                IF (MultipleMetFiles == 1) THEN !If each grid has its own met file
                   FileMet = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
-                  CALL SUEWS_InitializeMetData(1,ReadLinesMetdata_read)
+                  CALL SUEWS_InitializeMetData(1, ReadLinesMetdata_read)
                ELSE !If one met file used for all grids
                   !FileMet=TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                   ! If one met file used for all grids, look for met file with no grid code (FileCodeXWG)
                   FileMet = TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                   IF (igrid == 1) THEN !Read for the first grid only
-                     CALL SUEWS_InitializeMetData(1,ReadLinesMetdata_read)
+                     CALL SUEWS_InitializeMetData(1, ReadLinesMetdata_read)
                   ELSE !Then for subsequent grids simply copy data
                      MetForcingData(1:ReadLinesMetdata_read, 1:24, GridCounter) = MetForcingData(1:ReadLinesMetdata_read, 1:24, 1)
                   END IF
@@ -681,8 +678,8 @@ PROGRAM SUEWS_Program
       DEALLOCATE (dataOutDailyState)
       ! IF (SnowUse == 1) THEN
       DEALLOCATE (dataOutSnow)
-      deallocate(tsfc_surf_grids)
-      deallocate(tin_surf_grids)
+      DEALLOCATE (tsfc_surf_grids)
+      DEALLOCATE (tin_surf_grids)
       DEALLOCATE (qn_s_av_grids)
       DEALLOCATE (dqnsdt_grids)
       ! ENDIF

@@ -729,7 +729,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    END IF
 
 ! ---- ESTM_ext related ------------------------------
-   IF (StorageHeatMethod == 5) THEN
+   IF (StorageHeatMethod == 5 .or. NetRadiationMethod > 1000) THEN
 
       nlayer = nlayer_grids(Gridiv)
 
@@ -822,18 +822,18 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! TODO: these need to be updated; ESTM coupling work
       ! standard suews surfaces
+      ALLOCATE (tin_surf(nsurf))
       ALLOCATE (dz_surf(nsurf, ndepth))
       ALLOCATE (k_surf(nsurf, ndepth))
       ALLOCATE (cp_surf(nsurf, ndepth))
       ALLOCATE (temp_surf(nsurf, ndepth))
+      tin_surf(1:nsurf) = tin_surf_grids(Gridiv, 1:nsurf)
       dz_surf(1:nsurf, 1:ndepth) = dz_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
       k_surf(1:nsurf, 1:ndepth) = k_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
       cp_surf(1:nsurf, 1:ndepth) = cp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
       temp_surf(1:nsurf, 1:ndepth) = temp_surf_grids(Gridiv, 1:nsurf, 1:ndepth)
    END IF
-   ! ALLOCATE (tin_surf(nsurf))
    ALLOCATE (tsfc_surf(nsurf))
-   ! tin_surf(1:nsurf) = tin_surf_grids(Gridiv, 1:nsurf)
    tsfc_surf(1:nsurf) = tsfc_surf_grids(Gridiv, 1:nsurf)
    ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
    BaseT_HC = -999 ! Initialise QF coeffs
@@ -1722,7 +1722,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ModelDailyState(Gridiv, cMDS_SnowDens(1:nsurf)) = SnowDens(1:nsurf)
    ModelDailyState(Gridiv, cMDS_SnowAlb) = SnowAlb
 
-   IF (StorageHeatMethod == 5) THEN
+   IF (StorageHeatMethod == 5 .or. NetRadiationMethod>1000) THEN
       ! ---- ESTM_ext related ------------------------------
       ! roof
 

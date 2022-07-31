@@ -1891,13 +1891,13 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    IceFrac = 0.2 !Estimated fraction of ice. Should be improved in the future
 
    ! initialise surface temperatures for ESTM_ext
-   if ( StorageHeatMethod==5 ) then
+   IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
 
-   tsfc_roof_grids(Gridiv, :) = Temp_C0
-   tsfc_wall_grids(Gridiv, :) = Temp_C0
-end if
-tsfc_surf_grids(Gridiv, :) = Temp_C0
-tin_surf_grids(Gridiv, :) = Temp_C0
+      tsfc_roof_grids(Gridiv, :) = Temp_C0
+      tsfc_wall_grids(Gridiv, :) = Temp_C0
+   END IF
+   tsfc_surf_grids(Gridiv, :) = Temp_C0
+   tin_surf_grids(Gridiv, :) = Temp_C0
 
    ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)
    IF (Diagnose == 1) PRINT *, 'calling in initial state: SUEWS_Translate'
@@ -2169,7 +2169,7 @@ END SUBROUTINE NextInitial
 !=======================================================================
 !This subroutine prepares a meteorological forcing file.
 
-SUBROUTINE SUEWS_InitializeMetData(lunit,ReadlinesMetdata_read)
+SUBROUTINE SUEWS_InitializeMetData(lunit, ReadlinesMetdata_read)
 
    USE allocateArray
    USE data_in
@@ -2194,7 +2194,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit,ReadlinesMetdata_read)
    !---------------------------------------------------------------
 
    !Open the file for reading and read the actual data
-   write(*,*) fileMet
+   WRITE (*, *) fileMet
    OPEN (lunit, file=TRIM(fileMet), status='old', err=314)
    CALL skipHeader(lunit, SkipHeaderMet)
 
