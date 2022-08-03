@@ -1593,7 +1593,7 @@ CONTAINS
 
       ! INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in) :: DLS ! daylighting savings
-      INTEGER, INTENT(in) :: EmissionsMethod !0 - Use values in met forcing file, or default QF;1 - Method according to Loridan et al. (2011) : SAHP; 2 - Method according to Jarvi et al. (2011)   : SAHP_2 
+      INTEGER, INTENT(in) :: EmissionsMethod !0 - Use values in met forcing file, or default QF;1 - Method according to Loridan et al. (2011) : SAHP; 2 - Method according to Jarvi et al. (2011)   : SAHP_2
       ! INTEGER, INTENT(in) :: id
       INTEGER, INTENT(in) :: it ! hour [H]
       INTEGER, INTENT(in) :: imin ! minutes [M]
@@ -1614,7 +1614,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_C ! Parameter related to cooling degree days [W m-2 K-1 (Cap ha-1 )-1]
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Heating ! base temperatrue for heating degree day [˚C]
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Cooling ! base temperature for cooling degree day [˚C]
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: TrafficRate ! Traffic rate [veh km m-2 s-1] 
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: TrafficRate ! Traffic rate [veh km m-2 s-1]
 
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: AHProf_24hr ! diurnal profile of anthropogenic heat flux (AVERAGE of the multipliers is equal to 1) [-]
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: HumActivity_24hr ! diurnal profile of human activity [-]
@@ -1699,7 +1699,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: alpha_bioCO2 !The mean apparent ecosystem quantum. Represents the initial slope of the light-response curve [-]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: alpha_enh_bioCO2 !part of the alpha coefficient related to the fraction of vegetation [-]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: beta_bioCO2 !The light-saturated gross photosynthesis of the canopy [umol m-2 s-1 ]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: beta_enh_bioCO2!Part of the beta coefficient related to the fraction of vegetation [umol m-2 s-1 ]
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: beta_enh_bioCO2 !Part of the beta coefficient related to the fraction of vegetation [umol m-2 s-1 ]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAI_id !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAIMin !Min LAI [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAIMax !Max LAI [m2 m-2]
@@ -1717,7 +1717,7 @@ CONTAINS
       ! INTEGER, INTENT(in) :: ConifSurf
       ! INTEGER, INTENT(in) :: DecidSurf
       INTEGER, INTENT(in) :: Diagnose
-      INTEGER, INTENT(in) :: EmissionsMethod  
+      INTEGER, INTENT(in) :: EmissionsMethod
       ! INTEGER, INTENT(in) :: GrassSurf
       INTEGER, INTENT(in) :: gsmodel !choice of gs parameterisation (1 = Ja11, 2 = Wa16)
       INTEGER, INTENT(in) :: id !day of year [-]
@@ -1739,7 +1739,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: G4 !Fitted parameters related to surface res. calculations
       REAL(KIND(1D0)), INTENT(in) :: G5 !Fitted parameters related to surface res. calculations
       REAL(KIND(1D0)), INTENT(in) :: G6 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: gfunc 
+      REAL(KIND(1D0)), INTENT(in) :: gfunc
       REAL(KIND(1D0)), INTENT(in) :: Kmax !annual maximum hourly solar radiation [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: Press_hPa !air pressure [hPa]
       REAL(KIND(1D0)), INTENT(in) :: S1 !Fitted parameters related to surface res. calculations
@@ -1884,7 +1884,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAI_id !LAI for day of year [m2 m-3]
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac !fraction of ice in snowpack [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf  !fraction of each surfaces [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !fraction of each surfaces [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf ! surface temperature [°C]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof ! roof surface temperature [°C]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall ! wall surface temperature [°C]
@@ -1907,7 +1907,7 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(out) :: ldown ! output incoming longwave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: fcld ! estimated cloud fraction [-](used only for emissivity estimate)
-      REAL(KIND(1D0)), INTENT(out) :: qn!  output net all-wave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: qn !  output net all-wave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: qn_snowfree !output net all-wave radiation for snow free surface [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: qn_snow ! output net all-wave radiation for snowpack [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: kclear !output clear sky incoming shortwave radiation [W m-2]
@@ -1926,8 +1926,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: tsurf_ind !snow-free surface temperature [C]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind !outgoing longwave radiation from observation [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind!outgoing shortwave radiation from observation [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind!net all-wave radiation from observation [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind !outgoing shortwave radiation from observation [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind !net all-wave radiation from observation [W m-2]
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER :: NetRadiationMethod_use
@@ -1961,7 +1961,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_wall !albedo of wall [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_wall ! emissivity of wall [-]
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: roof_albedo_dir_mult_fact !roof albedo [-]
-      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac  ! wall fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac ! wall fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_wall ! net all-wave radiation on the wall [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_roof ! net all-wave radiation on the roof [W m-2]
 
@@ -2118,9 +2118,9 @@ CONTAINS
       INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy [-]
 
       REAL(KIND(1D0)), INTENT(in) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients [-]
-      REAL(KIND(1D0)), INTENT(in) :: OHM_threshSW(nsurf + 1) ! OHM thresholds 
+      REAL(KIND(1D0)), INTENT(in) :: OHM_threshSW(nsurf + 1) ! OHM thresholds
       REAL(KIND(1D0)), INTENT(in) :: OHM_threshWD(nsurf + 1) ! OHM thresholds
-      REAL(KIND(1D0)), INTENT(in) :: soilstore_id(nsurf) ! soil moisture on day of year 
+      REAL(KIND(1D0)), INTENT(in) :: soilstore_id(nsurf) ! soil moisture on day of year
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap(nsurf) ! capacity of soil store [J m-3 K-1]
       REAL(KIND(1D0)), INTENT(in) :: state_id(nsurf) ! wetness status [mm]
 
@@ -2148,8 +2148,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: qn_av_next ! weighted average of qn for previous 60 mins [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: dqndt_prev ! Rate of change of net radiation at t-1 [W m-2 h-1]
       REAL(KIND(1D0)), INTENT(out) :: dqndt_next ! Rate of change of net radiation at t+1 [W m-2 h-1]
-      REAL(KIND(1D0)), INTENT(in) :: qn_s_av_prev! weighted average of qn over snow for previous 60mins [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: qn_s_av_next! weighted average of qn over snow for next 60mins [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: qn_s_av_prev ! weighted average of qn over snow for previous 60mins [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: qn_s_av_next ! weighted average of qn over snow for next 60mins [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: dqnsdt_prev ! Rate of change of net radiation [W m-2 h-1] at t-1
       REAL(KIND(1D0)), INTENT(out) :: dqnsdt_next ! Rate of change of net radiation [W m-2 h-1] at t+1
       ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
@@ -2354,7 +2354,7 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: stateOld
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstoreOld
 
-      REAL(KIND(1D0)), INTENT(out) :: drain_per_tstep! total drainage for all surface type at each timestep [mm]
+      REAL(KIND(1D0)), INTENT(out) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
       REAL(KIND(1D0)), INTENT(out) :: AdditionalWater !Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
       REAL(KIND(1D0)), INTENT(out) :: runoffPipes !run-off in pipes [mm]
       REAL(KIND(1D0)), INTENT(out) :: runoff_per_interval !run-off at each time interval [mm]
@@ -2424,7 +2424,7 @@ CONTAINS
       IMPLICIT NONE
       ! REAL(KIND(1d0)), INTENT(in)::qh_obs
       REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
-      REAL(KIND(1D0)), INTENT(in) :: avcp! air heat capacity [J kg-1 K-1]
+      REAL(KIND(1D0)), INTENT(in) :: avcp ! air heat capacity [J kg-1 K-1]
       REAL(KIND(1D0)), INTENT(in) :: h_mod !volumetric air heat capacity [J m-3 K-1]
       REAL(KIND(1D0)), INTENT(in) :: qn1 !net all-wave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: dectime !local time (days), not daylight savings
@@ -2485,7 +2485,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: CRWmin !minimum water holding capacity of snow [mm]
       REAL(KIND(1D0)), INTENT(in) :: CRWmax !maximum water holding capacity of snow [mm]
       REAL(KIND(1D0)), INTENT(in) :: dectime !local time [days]
-      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg  !latent heat of sublimation [J kg-1]
+      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg !latent heat of sublimation [J kg-1]
       REAL(KIND(1D0)), INTENT(in) :: lv_j_kg !Latent heat of vapourisation per timestep [J kg-1]
       REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
       REAL(KIND(1D0)), INTENT(in) :: avRh !relative humidity [-]
@@ -2501,7 +2501,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: qn_snowfree ! net all-wave radiation for snow-free surface [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: qf !anthropogenic heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: vpd_hPa  ! vapour pressure deficit [hPa]
+      REAL(KIND(1D0)), INTENT(in) :: vpd_hPa ! vapour pressure deficit [hPa]
       REAL(KIND(1D0)), INTENT(in) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
       REAL(KIND(1D0)), INTENT(in) :: RS !surface resistance [s m-1]
       REAL(KIND(1D0)), INTENT(in) :: RA !aerodynamic resistance [s m-1]
@@ -2509,7 +2509,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: snowdensmin !Fresh snow density [kg m-3]
       REAL(KIND(1D0)), INTENT(in) :: precip !rain data [mm]
       REAL(KIND(1D0)), INTENT(in) :: PipeCapacity !Capacity of pipes to transfer water [mm]
-      REAL(KIND(1D0)), INTENT(in) :: RunoffToWater  !Fraction of surface runoff going to water body [-]
+      REAL(KIND(1D0)), INTENT(in) :: RunoffToWater !Fraction of surface runoff going to water body [-]
       ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
       ! REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
       ! REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
@@ -2540,7 +2540,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater !addition water from other surfaces [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: addwaterrunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm !Coefficients used in drainage calculation [-]
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr!Hourly profile values used in snow clearing [-]
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr !Hourly profile values used in snow clearing [-]
 
       ! Total water transported to each grid for grid-to-grid connectivity
       ! REAL(KIND(1D0)), INTENT(in) :: runoff_per_interval_in
@@ -2554,12 +2554,12 @@ CONTAINS
 
       ! output:
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_id_out ! wetness status of each surface type at next timestep [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_id_out!soil moisture of each surface type at next timestep[mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out! snowpack at next timestep[mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out!  snow fraction at next timestep[-]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowWater_out! snow water at nexts timestep[mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: iceFrac_out! ice fraction at next timestep [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out! snow density at next timestep[kg m-3]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_id_out !soil moisture of each surface type at next timestep[mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out ! snowpack at next timestep[mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out !  snow fraction at next timestep[-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowWater_out ! snow water at nexts timestep[mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: iceFrac_out ! ice fraction at next timestep [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out ! snow density at next timestep[kg m-3]
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf ! runoff for each surface [-]
@@ -2584,7 +2584,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: qe !latent heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: swe !overall snow water equavalent[mm]
       REAL(KIND(1D0)) :: ev ! evaporation [mm]
-      REAL(KIND(1D0)), INTENT(out) :: chSnow_per_interval! change state_id of snow and surface per time interval [mm]
+      REAL(KIND(1D0)), INTENT(out) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
       REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep ! evaporation at each time step [mm]
       REAL(KIND(1D0)) :: qe_per_tstep !latent heat flux at each timestep[W m-2]
       REAL(KIND(1D0)), INTENT(out) :: runoff_per_tstep !runoff water at each time step [mm]
@@ -2595,7 +2595,7 @@ CONTAINS
       ! REAL(KIND(1D0)) :: runoffWaterBody_m3
       ! REAL(KIND(1D0)) :: runoffPipes_m3
       REAL(KIND(1D0)), INTENT(out) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious!Above ground runoff from impervious surface for all surface area [mm] 
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
 
       ! local:
       INTEGER :: is ! surface type [-]
@@ -2854,7 +2854,7 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(in) :: sIce_hPa
       REAL(KIND(1D0)), INTENT(in) :: PervFraction ! sum of surface cover fractions for impervious surfaces [-]
       ! REAL(KIND(1D0)), INTENT(in) :: vegfraction
-      REAL(KIND(1D0)), INTENT(in) :: addimpervious!Water from impervious surfaces of other grids for whole surface area [mm]
+      REAL(KIND(1D0)), INTENT(in) :: addimpervious !Water from impervious surfaces of other grids for whole surface area [mm]
       ! REAL(KIND(1D0)), INTENT(in) :: qn_snowfree
       REAL(KIND(1D0)), INTENT(in) :: qf ! athropogenic heat flux [W m-2]
       ! REAL(KIND(1D0)), INTENT(in) :: qs
@@ -2902,19 +2902,19 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_roof !heat storage flux for roof [W m-2]
 
       ! input for generic wall facets
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall!surface fraction ratio of wall [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !surface fraction ratio of wall [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: StateLimit_wall ! upper limit for state_id of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: WetThresh_wall! wetness threshold  of roof[mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: SoilStoreCap_wall!Capacity of soil store for wall [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_wall_in!wetness status of wall from previous timestep[mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_wall_in!Soil moisture of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_wall!net all-wave radiation for wall [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_wall!heat storage flux for wall [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: WetThresh_wall ! wetness threshold  of roof[mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: SoilStoreCap_wall !Capacity of soil store for wall [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_wall_in !wetness status of wall from previous timestep[mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_wall_in !Soil moisture of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_wall !net all-wave radiation for wall [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_wall !heat storage flux for wall [W m-2]
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPackLimit
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater_surf !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff_surf !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-      REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm!Coefficients used in drainage calculation [-]
+      REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm !Coefficients used in drainage calculation [-]
       ! REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr
 
       ! Total water transported to each grid for grid-to-grid connectivity
@@ -2928,9 +2928,9 @@ CONTAINS
       ! output:
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: state_surf_out !wetness status of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstore_surf_out !soil moisture of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_roof_out!Wetness status of roof [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_roof_out !Wetness status of roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_roof_out !soil moisture of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_wall_out!wetness status of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: state_wall_out !wetness status of wall [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: soilstore_wall_out !soil moisture of wall [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out
@@ -2958,9 +2958,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer) :: rss_roof ! redefined surface resistance for wet roof [s m-1]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: runoff_roof !runoff from roof [mm]
       REAL(KIND(1D0)) :: qe_roof_total !turbulent latent heat flux on the roof [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_wall! evaporation of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: rss_wall! redefined surface resistance for wet wall [s m-1]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: runoff_wall!runoff from wall [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_wall ! evaporation of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: rss_wall ! redefined surface resistance for wet wall [s m-1]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: runoff_wall !runoff from wall [mm]
       REAL(KIND(1D0)) :: qe_wall_total !turbulent latent heat flux on the wall [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: state_grid !total state_id (including water body) [mm]
       REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !total state_id (excluding water body) [mm]
@@ -2972,13 +2972,13 @@ CONTAINS
       REAL(KIND(1D0)) :: qe_grid ! total latent heat flux [W m-2] for all surfaces [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: runoff_grid ! total runoff for all surfaces [mm]
       REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid ! total change in surface state_id for all surfaces [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffPipes_grid! !Runoff in pipes for all surface area [mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoffPipes_grid ! !Runoff in pipes for all surface area [mm]
       ! REAL(KIND(1D0)), INTENT(out) :: mwstore
       REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody_grid !Above ground runoff from water surface for all surface area [mm]
       ! REAL(KIND(1D0)) :: runoffWaterBody_m3
       ! REAL(KIND(1D0)) :: runoffPipes_m3
       REAL(KIND(1D0)), INTENT(out) :: runoffAGveg_grid !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious_grid!Above ground runoff from impervious surface for all surface area [mm] 
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious_grid !Above ground runoff from impervious surface for all surface area [mm]
 
       ! local:
       ! INTEGER :: is
@@ -2992,8 +2992,8 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: iceFrac
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_e_surf !net available energy for evaporation for each surface[W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_e_roof!net available energy for evaporation for roof[W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_e_wall!net available energy for evaporation for wall[W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_e_roof !net available energy for evaporation for roof[W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_e_wall !net available energy for evaporation for wall[W m-2]
 
       REAL(KIND(1D0)) :: pin !Rain per time interval
       REAL(KIND(1D0)) :: tlv !Latent heat of vapourisation per timestep [J kg-1 s-1]
@@ -3012,7 +3012,7 @@ CONTAINS
 
       nsh_real = 3600/tstep*1.D0
 
-      tlv = lv_J_kg/tstep*1.D0 !Latent heat of vapourisation per timestep 
+      tlv = lv_J_kg/tstep*1.D0 !Latent heat of vapourisation per timestep
 
       pin = MAX(0., Precip) !Initiate rain data [mm]
 
@@ -3167,13 +3167,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: qh_residual ! residual based sensible heat flux [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf !surface temperature [°C]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !surface fraction ratio [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf  !resistance-based sensible heat flux [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf !resistance-based sensible heat flux [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !surface fraction of roof [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof !roof surface temperature [°C]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof!resistance-based sensible heat flux of roof [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof !resistance-based sensible heat flux of roof [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !surface fraction of wall [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall !wall surface temperature[°C]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall!resistance-based sensible heat flux of wall [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall !resistance-based sensible heat flux of wall [W m-2]
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER :: is
@@ -3241,7 +3241,7 @@ CONTAINS
       INTEGER, INTENT(in) :: AerodynamicResistanceMethod
       INTEGER, INTENT(in) :: RoughLenHeatMethod
       INTEGER, INTENT(in) :: SnowUse !!Snow part used (1) or not used (0) [-]
-      INTEGER, INTENT(in) :: id ! day of the year 
+      INTEGER, INTENT(in) :: id ! day of the year
       INTEGER, INTENT(in) :: it !time: day of year and hour
       INTEGER, INTENT(in) :: gsModel !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
       INTEGER, INTENT(in) :: SMDMethod !Method of measured soil moisture
