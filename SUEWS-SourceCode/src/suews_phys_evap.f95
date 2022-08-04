@@ -123,7 +123,6 @@ CONTAINS
       RSS_multi, ev_multi, qe_multi) !output
       IMPLICIT NONE
       INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-      ! INTEGER, INTENT(in) :: n_facet !number of facets
 
       REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: sfr_multi ! facet fraction of surface
       REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: state_multi ! wetness status
@@ -152,7 +151,7 @@ CONTAINS
       ! REAL(KIND(1D0)) :: flag_dry
       ! REAL(KIND(1D0)) :: W !Depends on the amount of water on the canopy [-]
       ! REAL(KIND(1D0)) :: x
-      INTEGER :: n_facet
+      INTEGER :: n_facet !number of facets
       INTEGER :: i
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999

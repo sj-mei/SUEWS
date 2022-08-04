@@ -117,14 +117,6 @@ CONTAINS
       height, building_frac, veg_frac, building_scale, veg_scale, & !input:
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
-      ! alb_spc, emis_spc, & !output:
-      ! lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
-      ! clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-      ! roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
-      ! top_dn_lw_spc, &
-      ! clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-      ! roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-      ! ground_dn_dir_sw_spc, ground_net_sw_spc, &
       qn, kup, lup, qn_roof, qn_wall, & !output:
       dataOutLineSPARTACUS)
       USE parkind1, ONLY: jpim, jprb
@@ -258,6 +250,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: roof_emissivity
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
+      REAL(KIND(1D0)) :: debug1, debug2
 
       IF (DiagQN == 1) PRINT *, 'in SPARTACUS, starting ...'
       ! initialize the output variables
@@ -568,10 +561,16 @@ CONTAINS
               &       lw_internal, lw_norm)
          IF (config%do_sw) THEN
             ! Scale the normalized fluxes
+            debug1 = sw_norm_dir%roof_in(1, 1)
+            debug2=0
             CALL sw_norm_dir%SCALE(canopy_props%nlay, &
-                 &  top_flux_dn_direct_sw)
+            &  top_flux_dn_direct_sw)
+            if (debug1 > 0.0) then
+               debug1=MAXLOC(sw_norm_dir%roof_in(1, :),1)
+               debug2 = sw_norm_dir%roof_in(1, int(debug1))
+            endif
             CALL sw_norm_diff%SCALE(canopy_props%nlay, &
-                 &  top_flux_dn_sw - top_flux_dn_direct_sw)
+            &  top_flux_dn_sw - top_flux_dn_direct_sw)
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
          END IF
          IF (config%do_lw) THEN
@@ -579,6 +578,14 @@ CONTAINS
             CALL lw_flux%SUM(lw_internal, lw_norm)
          END IF
       END DO
+      if (debug2 > 0) then
+         print *, ''
+         print *, 'debug1 = ', debug1
+         print *, 'debug2 = ', debug2
+         print *, 'top_flux_dn_sw = ', top_flux_dn_sw
+         print *, 'top_flux_dn_direct_sw = ', top_flux_dn_direct_sw
+      endif
+      ! print *, 'debug1, debug2', debug1, debug2
 
       ! albedo
       alb_spc = ((top_flux_dn_diffuse_sw + 10.**(-10))*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
@@ -626,9 +633,13 @@ CONTAINS
       ! PRINT *, 'wall_net_sw_spc in suews-su', wall_net_sw_spc(:nlayer), sw_flux%wall_net
       roof_net_sw_spc = 0.0
       roof_net_sw_spc(:nlayer) = sw_flux%roof_net(nspec, :nlayer)
-      ! PRINT *, 'roof_net_sw_spc in suews-su', roof_net_sw_spc(:nlayer), sw_flux%roof_net
+      ! PRINT *, 'roof_net_sw_spc in suews-su', roof_net_sw_spc(:nlayer)
+      ! PRINT *, 'roof_net_sw_spc in suews-su', sw_flux%roof_net
       roof_in_sw_spc = 0.0
       roof_in_sw_spc(:nlayer) = sw_flux%roof_in(nspec, :nlayer)
+      ! PRINT *, 'roof sw in in suews-su', roof_in_sw_spc(:nlayer)
+      ! PRINT *, 'roof sw in in suews-su', sw_flux%roof_in
+      ! print *, ''
       top_dn_dir_sw_spc = sw_flux%top_dn_dir(nspec, ncol)
       top_net_sw_spc = sw_flux%top_net(nspec, ncol)
       ground_dn_dir_sw_spc = sw_flux%ground_dn_dir(nspec, ncol)
@@ -672,7 +683,9 @@ CONTAINS
           roof_net_lw_spc, &
           wall_in_lw_spc, &
           wall_net_lw_spc, &
-          clear_air_abs_lw_spc &
+          clear_air_abs_lw_spc, &
+          debug1, &
+          debug2 &
           ]
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!

@@ -683,9 +683,9 @@ CONTAINS
 
       ! energy fluxes of individual surfaces
       REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_roof ! heat flux used in ESTM_ext as forcing of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_roof ! net all-wave radiation of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QN_roof ! net all-wave radiation of roof surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_roof ! latent heat flux of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_roof ! latent heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QH_roof ! latent heat flux of roof surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_resist_roof ! latent heat flux of roof surface [W m-2]
 
       ! wall facets
@@ -696,9 +696,9 @@ CONTAINS
 
       ! energy fluxes of individual surfaces
       REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_wall ! heat flux used in ESTM_ext as forcing of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: qn_wall ! net all-wave radiation of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QN_wall ! net all-wave radiation of wall surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_wall ! latent heat flux of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_wall ! latent heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QH_wall ! latent heat flux of wall surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_resist_wall ! latent heat flux of wall surface [W m-2]
 
       ! standard suews surfaces
@@ -707,10 +707,10 @@ CONTAINS
 
       ! energy fluxes of individual surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf) :: QG_surf ! heat flux used in ESTM_ext as forcing of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_surf ! net all-wave radiation of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf ! net all-wave radiation of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: QH_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_resist_surf ! latent heat flux of individual surface [W m-2]
       ! surface temperature
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_qh_surf ! latent heat flux of individual surface [W m-2]
@@ -1008,7 +1008,7 @@ CONTAINS
             alb_roof, emis_roof, alb_wall, emis_wall, &
             roof_albedo_dir_mult_fact, wall_specular_frac, &
             alb_next, ldown, fcld, & !output
-            qn_surf, qn_roof, qn_wall, &
+            QN_surf, QN_roof, QN_wall, &
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, SnowAlb_next, &
@@ -1026,13 +1026,13 @@ CONTAINS
 
          ! =================STORAGE HEAT FLUX=======================================
          IF (i_iter == 1) THEN
-            Qg_surf = 0.1*qn_surf
-            Qg_roof = 0.1*qn_roof
-            Qg_wall = 0.1*qn_wall
+            Qg_surf = 0.1*QN_surf
+            Qg_roof = 0.1*QN_roof
+            Qg_wall = 0.1*QN_wall
          ELSE
-            Qg_surf = qn_surf + QF - (qh_surf + QE_surf)
-            Qg_roof = qn_roof + QF - (qh_roof + QE_roof)
-            Qg_wall = qn_wall + QF - (qh_wall + QE_wall)
+            Qg_surf = QN_surf + QF - (QH_surf + QE_surf)
+            Qg_roof = QN_roof + QF - (QH_roof + QE_roof)
+            Qg_wall = QN_wall + QF - (QH_wall + QE_wall)
          END IF
 
          ! PRINT *, 'Qg_surf before cal_qs', Qg_surf
@@ -1174,7 +1174,7 @@ CONTAINS
                AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
                SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, & ! input:
                state_surf_prev, soilstore_surf_prev, & ! input:
-               qn_surf, qs_surf, &
+               QN_surf, qs_surf, &
                SnowRemoval, & ! snow specific output
                SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, & ! output
                state_surf_next, soilstore_surf_next, & ! general output:
@@ -1201,11 +1201,11 @@ CONTAINS
                FlowChange, drain, &
                frac_water2runoff, StoreDrainPrm_next, &
                sfr_surf, StateLimit_surf, SoilStoreCap_surf, WetThresh_surf, & ! input:
-               state_surf_prev, soilstore_surf_prev, qn_surf, qs_surf, & ! input:
+               state_surf_prev, soilstore_surf_prev, QN_surf, qs_surf, & ! input:
                sfr_roof, StateLimit_roof, SoilStoreCap_roof, WetThresh_roof, & ! input:
-               state_roof_prev, soilstore_roof_prev, qn_roof, qs_roof, & ! input:
+               state_roof_prev, soilstore_roof_prev, QN_roof, qs_roof, & ! input:
                sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
-               state_wall_prev, soilstore_wall_prev, qn_wall, qs_wall, & ! input:
+               state_wall_prev, soilstore_wall_prev, QN_wall, qs_wall, & ! input:
                state_surf_next, soilstore_surf_next, & ! general output:
                state_roof_next, soilstore_roof_next, & ! general output:
                state_wall_next, soilstore_wall_next, & ! general output:
@@ -1286,25 +1286,25 @@ CONTAINS
          tsfc0_out_roof = tsfc_out_roof
          tsfc0_out_wall = tsfc_out_wall
 
-         qh_surf = qn_surf + qf - qs_surf - qe_surf
-         qh_roof = qn_roof + qf - qs_roof - qe_roof
-         qh_wall = qn_wall + qf - qs_wall - qe_wall
+         QH_surf = QN_surf + qf - qs_surf - qe_surf
+         QH_roof = QN_roof + qf - qs_roof - qe_roof
+         QH_wall = QN_wall + qf - qs_wall - qe_wall
          IF (diagnose == 1) THEN
-            PRINT *, 'qn_surf before QH back env.:', qn_surf
+            PRINT *, 'qn_surf before QH back env.:', QN_surf
             PRINT *, 'qf before QH back env.:', qf
             PRINT *, 'qs_surf before QH back env.:', qs_surf
             PRINT *, 'qe_surf before QH back env.:', qe_surf
-            PRINT *, 'qh_surf before QH back env.:', qh_surf
+            PRINT *, 'qh_surf before QH back env.:', QH_surf
 
-            PRINT *, 'qn_roof before QH back env.:', qn_roof
+            PRINT *, 'qn_roof before QH back env.:', QN_roof
             PRINT *, 'qs_roof before QH back env.:', qs_roof
             PRINT *, 'qe_roof before QH back env.:', qe_roof
-            PRINT *, 'qh_roof before QH back env.:', qh_roof
+            PRINT *, 'qh_roof before QH back env.:', QH_roof
 
          END IF
          DO i_surf = 1, nsurf
             ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
-            tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_out_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
             ! if ( i_surf==1 ) then
             !    tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
             ! else
@@ -1315,8 +1315,8 @@ CONTAINS
          END DO
 
          DO i_surf = 1, nlayer
-            tsfc_out_roof(i_surf) = cal_tsfc(qh_roof(i_surf), avdens, avcp, RA_h, temp_c)
-            tsfc_out_wall(i_surf) = cal_tsfc(qh_wall(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_out_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_out_wall(i_surf) = cal_tsfc(QH_wall(i_surf), avdens, avcp, RA_h, temp_c)
          END DO
 
          IF (diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', tsfc_out_surf
@@ -1510,14 +1510,14 @@ CONTAINS
          iy, id, it, imin, dectime, nlayer, & !input
          tsfc_out_surf, qs_surf, &
          tsfc_out_roof, &
-         Qn_roof, &
+         QN_roof, &
          QS_roof, &
          QE_roof, &
          QH_roof, &
          state_roof, &
          soilstore_roof, &
          tsfc_out_wall, &
-         Qn_wall, &
+         QN_wall, &
          QS_wall, &
          QE_wall, &
          QH_wall, &
@@ -2042,13 +2042,6 @@ CONTAINS
                height, building_frac, veg_frac, building_scale, veg_scale, & !input:
                alb_roof, emis_roof, alb_wall, emis_wall, &
                roof_albedo_dir_mult_fact, wall_specular_frac, &
-               ! alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, & !output:
-               ! clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-               ! roof_in_lw_spc, top_net_lw_spc, ground_net_lw_spc, &
-               ! top_dn_lw_spc, &
-               ! clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-               ! roof_in_sw_spc, top_dn_dir_sw_spc, top_net_sw_spc, &
-               ! ground_dn_dir_sw_spc, ground_net_sw_spc, &
                qn, kup, lup, qn_roof, qn_wall, & !output:
                dataOutLineSPARTACUS)
          ELSE
