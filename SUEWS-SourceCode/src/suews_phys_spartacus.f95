@@ -233,7 +233,7 @@ CONTAINS
       LOGICAL, INTENT(IN) :: use_sw_direct_albedo
 
       REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac ! cumulative building fraction at each layer
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_frac
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_scale
@@ -250,18 +250,17 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: roof_emissivity
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
+      REAL(KIND(1D0)), DIMENSION(nlayer):: building_frac_ind ! individual building fraction at each layer
       REAL(KIND(1D0)) :: debug1, debug2
 
       IF (DiagQN == 1) PRINT *, 'in SPARTACUS, starting ...'
       ! initialize the output variables
       dataOutLineSPARTACUS = -999.
 
-      ! REAL(kind(1d0)), ALLOCATABLE :: height(:), building_frac(:), veg_frac(:), &
-      !                                 building_scale(:), veg_scale(:), veg_ext(:), &
-      !                                 veg_fsd(:), veg_contact_fraction(:), &
-      !                                 roof_albedo(:, :), wall_albedo(:, :), roof_albedo_dir_mult_fact(:, :), &
-      !                                 wall_specular_frac(:, :), roof_emissivity(:, :), &
-      !                                 wall_emissivity(:, :)
+      ! get individual building fractions at each layer
+      building_frac_ind=0.
+      building_frac_ind (1:nlayer-1) = building_frac (1:nlayer-1)-building_frac (2:nlayer)
+      building_frac_ind (nlayer) = building_frac (nlayer)
 
       ! PRINT *, 'n_vegetation_region_urban', n_vegetation_region_urban
       ! PRINT *, 'n_stream_sw_urban', n_stream_sw_urban
@@ -561,14 +560,8 @@ CONTAINS
               &       lw_internal, lw_norm)
          IF (config%do_sw) THEN
             ! Scale the normalized fluxes
-            debug1 = sw_norm_dir%roof_in(1, 1)
-            debug2=0
             CALL sw_norm_dir%SCALE(canopy_props%nlay, &
             &  top_flux_dn_direct_sw)
-            if (debug1 > 0.0) then
-               debug1=MAXLOC(sw_norm_dir%roof_in(1, :),1)
-               debug2 = sw_norm_dir%roof_in(1, int(debug1))
-            endif
             CALL sw_norm_diff%SCALE(canopy_props%nlay, &
             &  top_flux_dn_sw - top_flux_dn_direct_sw)
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
@@ -578,14 +571,7 @@ CONTAINS
             CALL lw_flux%SUM(lw_internal, lw_norm)
          END IF
       END DO
-      if (debug2 > 0) then
-         print *, ''
-         print *, 'debug1 = ', debug1
-         print *, 'debug2 = ', debug2
-         print *, 'top_flux_dn_sw = ', top_flux_dn_sw
-         print *, 'top_flux_dn_direct_sw = ', top_flux_dn_direct_sw
-      endif
-      ! print *, 'debug1, debug2', debug1, debug2
+
 
       ! albedo
       alb_spc = ((top_flux_dn_diffuse_sw + 10.**(-10))*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
@@ -655,9 +641,46 @@ CONTAINS
       qn = qn_spc
       ! print *, 'qn_spc', qn_spc
 
+      ! ! denormalise all the fluxes of building facets for consistency with SUEWS
+      ! ! lw
+      ! roof_in_lw_spc(:nlayer)=roof_in_lw_spc(:nlayer)/building_frac_ind(:nlayer)
+      ! ! wall_in_lw_spc(:nlayer)=wall_in_lw_spc(:nlayer)/building_frac_ind(:nlayer)
+      ! roof_net_lw_spc(:nlayer)=roof_net_lw_spc(:nlayer)/building_frac_ind(:nlayer)
+      ! ! wall_net_lw_spc(:nlayer)=wall_net_lw_spc(:nlayer)/building_frac_ind(:nlayer)
+      ! ! sw
+      ! roof_in_sw_spc(:nlayer)=roof_in_sw_spc(:nlayer)/building_frac_ind(:nlayer)
+      ! ! wall_in_sw_spc(:nlayer)=wall_in_sw_spc(:nlayer)/building_frac_ind(:nlayer)
+      ! roof_net_sw_spc(:nlayer)=roof_net_sw_spc(:nlayer)/building_frac_ind(:nlayer)
+      ! ! wall_net_sw_spc(:nlayer)=wall_net_sw_spc(:nlayer)/building_frac_ind(:nlayer)
+
       ! net radiation for roof/wall
       qn_roof = roof_net_lw_spc(:nlayer) + roof_net_sw_spc(:nlayer)
       qn_wall = wall_net_lw_spc(:nlayer) + wall_net_sw_spc(:nlayer)
+
+      ! if (debug2 > 0) then
+      !    print *, ''
+      !    print *, 'debug1 = ', debug1
+      !    print *, 'debug2 = ', debug2
+      !    print *, 'top_flux_dn_sw = ', top_flux_dn_sw
+      !    print *, 'top_flux_dn_direct_sw = ', top_flux_dn_direct_sw
+      ! endif
+      ! if (roof_in_sw_spc(1) > 0.0) then
+         ! print *, ''
+         ! print *, 'building_frac_ind = ', building_frac_ind(:nlayer)
+         ! print *, 'roof==='
+         ! print *, 'roof_in_sw_spc = ', roof_in_sw_spc(:nlayer)
+         ! print *, 'roof_in_lw_spc = ', roof_in_lw_spc(:nlayer)
+         ! print *, 'roof_net_lw_spc = ', roof_net_lw_spc(:nlayer)
+         ! print *, 'tsfc_roof = ', tsfc_roof_K(:nlayer)
+         ! print *, 'qn_roof = ', qn_roof(:nlayer)
+         ! print *, 'wall===='
+         ! print *, 'wall_in_sw_spc = ', wall_in_sw_spc(:nlayer)
+         ! print *, 'wall_in_lw_spc = ', wall_in_lw_spc(:nlayer)
+         ! print *, 'wall_net_lw_spc = ', wall_net_lw_spc(:nlayer)
+         ! print *, 'tsfc_wall = ', tsfc_wall_K(:nlayer)
+         ! print *, 'qn_wall = ', qn_wall(:nlayer)
+      ! endif
+
 
       ! TODO: #101 to move SPARTACUS output here
       dataOutLineSPARTACUS = &
@@ -683,9 +706,7 @@ CONTAINS
           roof_net_lw_spc, &
           wall_in_lw_spc, &
           wall_net_lw_spc, &
-          clear_air_abs_lw_spc, &
-          debug1, &
-          debug2 &
+          clear_air_abs_lw_spc &
           ]
 
       !!!!!!!!!!!!!! Clear from memory !!!!!!!!!!!!!
