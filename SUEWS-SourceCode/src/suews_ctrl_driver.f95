@@ -635,7 +635,6 @@ CONTAINS
       REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
       INTEGER :: i_iter
 
-
       ! ########################################################################################
       !  ! extended for ESTM_ext, TS 20 Jan 2022
       !
