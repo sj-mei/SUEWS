@@ -42,7 +42,7 @@ MODULE SUEWS_Driver
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main
-   use version, ONLY: git_commit, compiler_ver
+   USE version, ONLY: git_commit, compiler_ver
 
    IMPLICIT NONE
 
