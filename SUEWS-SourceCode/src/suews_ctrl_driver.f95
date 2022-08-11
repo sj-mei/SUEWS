@@ -102,7 +102,7 @@ CONTAINS
       Tmax_id, Tmin_id, &
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
-      sfr_roof, sfr_wall, sfr_surf, &
+      sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
       temp_roof, temp_wall, temp_surf, &
       tin_roof, tin_wall, tin_surf, &
@@ -642,7 +642,7 @@ CONTAINS
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_out_roof, tsfc0_out_roof !surface temperature of roof[degC]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof ! indoor temperature for roof [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !roof surface fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof !roof surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_roof ! temperature at inner interfaces of roof [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof ! thermal conductivity of roof [W m-1 K]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof ! Heat capacity of roof [J m-3 K-1]
@@ -650,7 +650,7 @@ CONTAINS
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_out_wall, tsfc0_out_wall !surface temperature of wall [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_wall ! indoor temperature for wall [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !wall surface fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall !wall surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_wall ! temperature at inner interfaces of wall [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_wall ! thermal conductivity of wall [W m-1 K]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall ! Heat capacity of wall [J m-3 K-1]
@@ -874,8 +874,10 @@ CONTAINS
 
          ! calculate surface fraction related VARIABLES
          CALL SUEWS_cal_surf( &
-            sfr_surf, & !input
-            VegFraction, ImpervFraction, PervFraction, NonWaterFraction) ! output
+            nlayer, sfr_surf, & !input
+            building_frac, building_scale, height, & !input
+            VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
+            sfr_roof, sfr_wall) ! output
 
          ! calculate dayofweek information
          CALL SUEWS_cal_weekday( &
@@ -985,7 +987,8 @@ CONTAINS
             dectime, ZENITH_deg, Ts_iter, kdown, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, &
-            sfr_surf, tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
+            sfr_surf, sfr_roof, sfr_wall, &
+            tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
             emis, alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
             LAI_id, & !input
             n_vegetation_region_urban, &
@@ -1818,7 +1821,8 @@ CONTAINS
       dectime, ZENITH_deg, Tsurf_0, kdown, Tair_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, &
-      sfr_surf, tsfc_surf, tsfc_roof, tsfc_wall, &
+      sfr_surf, sfr_roof, sfr_wall, &
+      tsfc_surf, tsfc_roof, tsfc_wall, &
       emis, alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &
       LAI_id, & !input
       n_vegetation_region_urban, &
@@ -1874,7 +1878,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac !fraction of ice in snowpack [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !fraction of each surfaces [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf ! surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !  surface fraction of roofs at each surfaces [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof ! roof surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall ! surface fraction of walls at each surfaces [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall ! wall surface temperature [degC]
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: emis ! Effective surface emissivity. [-]
@@ -2019,7 +2025,8 @@ CONTAINS
                veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
                veg_fsd_const, veg_contact_fraction_const, &
                ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
-               height, building_frac, veg_frac, building_scale, veg_scale, & !input:
+               height, building_frac, veg_frac, sfr_roof, sfr_wall, &
+               building_scale, veg_scale, & !input:
                alb_roof, emis_roof, alb_wall, emis_wall, &
                roof_albedo_dir_mult_fact, wall_specular_frac, &
                qn, kup, lup, qn_roof, qn_wall, & !output:
@@ -3779,20 +3786,52 @@ CONTAINS
 
    ! calculate several surface fraction related parameters
    SUBROUTINE SUEWS_cal_surf( &
-      sfr_surf, & !input
-      vegfraction, ImpervFraction, PervFraction, NonWaterFraction) ! output
+      nlayer, sfr_surf, & !input
+      building_frac, building_scale, height, & !input
+      vegfraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
+      sfr_roof, sfr_wall) ! output
       IMPLICIT NONE
 
+      INTEGER, INTENT(IN) :: nlayer !number of vertical layers[-]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf !surface fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac !cumulative surface fraction of buildings across vertical layers [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale !building scales of each vertical layer  [m]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: height !building height of each layer[-]
       REAL(KIND(1D0)), INTENT(OUT) :: VegFraction ! fraction of vegetation [-]
       REAL(KIND(1D0)), INTENT(OUT) :: ImpervFraction !fractioin of impervious surface [-]
       REAL(KIND(1D0)), INTENT(OUT) :: PervFraction !fraction of pervious surfaces [-]
       REAL(KIND(1D0)), INTENT(OUT) :: NonWaterFraction !fraction of non-water [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: sfr_roof !fraction of roof facets [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: sfr_wall !fraction of wall facets [-]
+
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof ! individual building fraction at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: dz_ind ! individual net building height at each layer
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall ! individual net building height at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: perimeter_ind ! individual building perimeter at each layer
 
       VegFraction = sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)
       ImpervFraction = sfr_surf(PavSurf) + sfr_surf(BldgSurf)
       PervFraction = 1 - ImpervFraction
       NonWaterFraction = 1 - sfr_surf(WaterSurf)
+
+      ! get individual building fractions of each layer
+      ! sum(sfr_roof) = building_frac(1)
+      sfr_roof = 0.
+      sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
+      sfr_roof(nlayer) = building_frac(nlayer)
+
+      ! get individual net building height of each layer
+      dz_ind = 0.
+      dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
+
+      ! get individual building perimeter of each layer
+      perimeter_ind = 0.
+      perimeter_ind(1:nlayer) = 4.*sfr_roof(1:nlayer)/building_scale(1:nlayer)
+
+      ! sfr_wall stands for individual wall area
+      ! get individual wall area at each layer
+      sfr_wall = 0.
+      sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
 
    END SUBROUTINE SUEWS_cal_surf
 
@@ -4066,7 +4105,7 @@ CONTAINS
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       BaseT_Cooling, BaseT_Heating, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
-      sfr_roof, sfr_wall, sfr_surf, &
+      sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
       temp_roof, temp_wall, temp_surf, &
       tin_roof, tin_wall, tin_surf, &
@@ -4326,7 +4365,7 @@ CONTAINS
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nroof) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_roof !roof surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !roof surface fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof !roof surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof ! indoor temperature for roof [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(inout) :: temp_roof !interface temperature between depth layers in roof[degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof ! thermal conductivity of roof [W m-1 K]
@@ -4335,7 +4374,7 @@ CONTAINS
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nwall) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_wall !surface temperature of wall [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !wall surface fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall !wall surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_wall ! indoor temperature for wall [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(inout) :: temp_wall !interface temperature between depth layers in wall[degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_wall ! thermal conductivity of wall [W m-1 K]
@@ -4782,7 +4821,7 @@ CONTAINS
             Tmax_id, Tmin_id, &
             BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
-            sfr_roof, sfr_wall, sfr_surf, &
+            sfr_surf, &
             tsfc_roof, tsfc_wall, tsfc_surf, &
             temp_roof, temp_wall, temp_surf, &
             tin_roof, tin_wall, tin_surf, &

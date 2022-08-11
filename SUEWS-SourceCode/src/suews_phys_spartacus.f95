@@ -76,7 +76,8 @@ CONTAINS
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
-      height, building_frac, veg_frac, building_scale, veg_scale, & !input:
+      height, building_frac, veg_frac, sfr_roof, sfr_wall, &
+      building_scale, veg_scale, & !input:
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
       qn, kup, lup, qn_roof, qn_wall, & !output:
@@ -200,6 +201,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac ! cumulative building fraction at each layer
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_frac
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: sfr_roof ! individual surface fraction of roofs at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: sfr_wall ! individual surface fraction of walls at each layer
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_scale
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_roof
@@ -215,9 +218,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: roof_emissivity
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: building_frac_ind ! individual building fraction at each layer
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof ! individual building fraction at each layer
       REAL(KIND(1D0)), DIMENSION(nlayer) :: dz_ind ! individual net building height at each layer
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: area_wall_ind ! individual net building height at each layer
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall ! individual net building height at each layer
       REAL(KIND(1D0)), DIMENSION(nlayer) :: perimeter_ind ! individual building perimeter at each layer
       ! REAL(KIND(1D0)) :: debug1, debug2
 
@@ -225,22 +228,22 @@ CONTAINS
       ! initialize the output variables
       dataOutLineSPARTACUS = -999.
 
-      ! get individual building fractions of each layer
-      building_frac_ind = 0.
-      building_frac_ind(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
-      building_frac_ind(nlayer) = building_frac(nlayer)
+      ! ! get individual building fractions of each layer
+      ! sfr_roof = 0.
+      ! sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
+      ! sfr_roof(nlayer) = building_frac(nlayer)
 
-      ! get individual net building height of each layer
-      dz_ind = 0.
-      dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
+      ! ! get individual net building height of each layer
+      ! dz_ind = 0.
+      ! dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
 
-      ! get individual building perimeter of each layer
-      perimeter_ind = 0.
-      perimeter_ind(1:nlayer) = 4.*building_frac_ind(1:nlayer)/building_scale(1:nlayer)
+      ! ! get individual building perimeter of each layer
+      ! perimeter_ind = 0.
+      ! perimeter_ind(1:nlayer) = 4.*sfr_roof(1:nlayer)/building_scale(1:nlayer)
 
-      ! get individual wall area at each layer
-      area_wall_ind = 0.
-      area_wall_ind(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
+      ! ! get individual wall area at each layer
+      ! sfr_wall = 0.
+      ! sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
 
       ALLOCATE (nlay(ncol))
       ! nlay = [nlayers] ! modified to follow ESTM_ext convention
@@ -596,10 +599,10 @@ CONTAINS
 
       ! de-normalise net radiation for roof/wall - these will be used in other SUEWS calculations
       ! roof
-      qn_roof = qn_roof/building_frac_ind(:nlayer)
+      qn_roof = qn_roof/sfr_roof(:nlayer)
       ! wall
       ! wall area of each layer needs to be considered
-      qn_wall = qn_wall*building_frac_ind(:nlayer)/area_wall_ind(:nlayer)
+      qn_wall = qn_wall*sfr_roof(:nlayer)/sfr_wall(:nlayer)
 
       dataOutLineSPARTACUS = &
          [alb_spc, emis_spc, &
