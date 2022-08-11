@@ -3800,7 +3800,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf !surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac !cumulative surface fraction of buildings across vertical layers [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale !building scales of each vertical layer  [m]
-      REAL(KIND(1D0)), DIMENSION(nlayer+1), INTENT(IN) :: height !building height of each layer[-]
+      REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height !building height of each layer[-]
       REAL(KIND(1D0)), INTENT(OUT) :: VegFraction ! fraction of vegetation [-]
       REAL(KIND(1D0)), INTENT(OUT) :: ImpervFraction !fractioin of impervious surface [-]
       REAL(KIND(1D0)), INTENT(OUT) :: PervFraction !fraction of pervious surfaces [-]
