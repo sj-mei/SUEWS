@@ -2326,8 +2326,8 @@ CONTAINS
       LOGICAL :: use_heatcond1d, use_heatcond1d_water
 
       ! normalised surface fractions
-       REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof_n
-       REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall_n
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof_n
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall_n
 
       ! initialise solver flags
       use_heatcond1d = .TRUE.
@@ -2336,8 +2336,8 @@ CONTAINS
 
       ! normalised surface fractions
       ! NB: the sum of sfr_roof (sfr_wall) is NOT unity; so need to be normalised by the sum
-      sfr_roof_n = sfr_roof / sum(sfr_roof)
-      sfr_wall_n = sfr_wall / sum(sfr_wall)
+      sfr_roof_n = sfr_roof/SUM(sfr_roof)
+      sfr_wall_n = sfr_wall/SUM(sfr_wall)
       ! sub-facets of buildings: e.g. walls, roofs, etc.
       DO i_group = 1, 3
 
@@ -2558,8 +2558,8 @@ CONTAINS
       DO i_depth = 1, ndepth
          temp_out_surf(BldgSurf, i_depth) = &
             (DOT_PRODUCT(temp_out_roof(:, i_depth), sfr_roof) &
-            + DOT_PRODUCT(temp_out_wall(:, i_depth), sfr_wall)) &
-            / (sum(sfr_roof) + sum(sfr_wall))
+             + DOT_PRODUCT(temp_out_wall(:, i_depth), sfr_wall)) &
+            /(SUM(sfr_roof) + SUM(sfr_wall))
       END DO
 
       ! all standard suews surfaces
