@@ -165,12 +165,19 @@ CONTAINS
       INTEGER :: istartcol, iendcol
       INTEGER :: jrepeat, ilay, jlay, jcol
 
+      ! --------------------------------------------------------------------------------
       ! output variables
+      ! --------------------------------------------------------------------------------
+      ! these will be used by other SUEWS calculations
+      REAL(KIND(1D0)), INTENT(OUT) :: qn, kup, lup
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_wall
+      ! --------------------------------------------------------------------------------
+      ! these will be in the SPARTACUS output array
       REAL(KIND(1D0)) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
       REAL(KIND(1D0)) :: top_net_lw_spc
       REAL(KIND(1D0)) :: ground_net_lw_spc
       REAL(KIND(1D0)) :: top_dn_lw_spc
-      REAL(KIND(1D0)) :: qn, kup, lup
       REAL(KIND(1D0)) :: top_dn_dir_sw_spc
       REAL(KIND(1D0)) :: top_net_sw_spc
       REAL(KIND(1D0)) :: ground_dn_dir_sw_spc
@@ -186,8 +193,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(15) :: wall_in_lw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: wall_net_sw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: wall_net_lw_spc
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_roof
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_wall
+      ! --------------------------------------------------------------------------------
 
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
 
@@ -251,16 +257,31 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
       REAL(KIND(1D0)), DIMENSION(nlayer) :: building_frac_ind ! individual building fraction at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: dz_ind ! individual net building height at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: area_wall_ind ! individual net building height at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: perimeter_ind ! individual building perimeter at each layer
       REAL(KIND(1D0)) :: debug1, debug2
 
       IF (DiagQN == 1) PRINT *, 'in SPARTACUS, starting ...'
       ! initialize the output variables
       dataOutLineSPARTACUS = -999.
 
-      ! get individual building fractions at each layer
+      ! get individual building fractions of each layer
       building_frac_ind = 0.
       building_frac_ind(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
       building_frac_ind(nlayer) = building_frac(nlayer)
+
+      ! get individual net building height of each layer
+      dz_ind = 0.
+      dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
+
+      ! get individual building perimeter of each layer
+      perimeter_ind = 0.
+      perimeter_ind(1:nlayer) = 4. * building_frac_ind(1:nlayer) / building_scale(1:nlayer)
+
+      ! get individual wall area at each layer
+      area_wall_ind = 0.
+      area_wall_ind(1:nlayer) = perimeter_ind(1:nlayer) * dz_ind(1:nlayer) / 2.
 
       ! PRINT *, 'n_vegetation_region_urban', n_vegetation_region_urban
       ! PRINT *, 'n_stream_sw_urban', n_stream_sw_urban
@@ -653,34 +674,17 @@ CONTAINS
       ! ! wall_net_sw_spc(:nlayer)=wall_net_sw_spc(:nlayer)/building_frac_ind(:nlayer)
 
       ! net radiation for roof/wall
+      ! note these fluxes are NOT de-normalised
       qn_roof = roof_net_lw_spc(:nlayer) + roof_net_sw_spc(:nlayer)
       qn_wall = wall_net_lw_spc(:nlayer) + wall_net_sw_spc(:nlayer)
 
-      ! if (debug2 > 0) then
-      !    print *, ''
-      !    print *, 'debug1 = ', debug1
-      !    print *, 'debug2 = ', debug2
-      !    print *, 'top_flux_dn_sw = ', top_flux_dn_sw
-      !    print *, 'top_flux_dn_direct_sw = ', top_flux_dn_direct_sw
-      ! endif
-      ! if (roof_in_sw_spc(1) > 0.0) then
-      ! print *, ''
-      ! print *, 'building_frac_ind = ', building_frac_ind(:nlayer)
-      ! print *, 'roof==='
-      ! print *, 'roof_in_sw_spc = ', roof_in_sw_spc(:nlayer)
-      ! print *, 'roof_in_lw_spc = ', roof_in_lw_spc(:nlayer)
-      ! print *, 'roof_net_lw_spc = ', roof_net_lw_spc(:nlayer)
-      ! print *, 'tsfc_roof = ', tsfc_roof_K(:nlayer)
-      ! print *, 'qn_roof = ', qn_roof(:nlayer)
-      ! print *, 'wall===='
-      ! print *, 'wall_in_sw_spc = ', wall_in_sw_spc(:nlayer)
-      ! print *, 'wall_in_lw_spc = ', wall_in_lw_spc(:nlayer)
-      ! print *, 'wall_net_lw_spc = ', wall_net_lw_spc(:nlayer)
-      ! print *, 'tsfc_wall = ', tsfc_wall_K(:nlayer)
-      ! print *, 'qn_wall = ', qn_wall(:nlayer)
-      ! endif
+      ! de-normalise net radiation for roof/wall - these will be used in other SUEWS calculations
+      ! roof
+      qn_roof = qn_roof/building_frac_ind(:nlayer)
+      ! wall
+      ! wall area of each layer needs to be considered
+      qn_wall = qn_wall*building_frac_ind(:nlayer)/area_wall_ind(:nlayer)
 
-      ! TODO: #101 to move SPARTACUS output here
       dataOutLineSPARTACUS = &
          [alb_spc, emis_spc, &
           top_dn_dir_sw_spc, &

@@ -1835,11 +1835,6 @@ CONTAINS
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
       albedo_snow, SnowAlb_next, &
-      ! alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc, &
-      ! top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc, &
-      ! clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, roof_in_lw_spc, &
-      ! top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc, &
-      ! clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, roof_in_sw_spc, &
       dataOutLineSPARTACUS)
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
