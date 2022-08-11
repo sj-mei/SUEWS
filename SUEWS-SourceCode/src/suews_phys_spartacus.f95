@@ -277,11 +277,11 @@ CONTAINS
 
       ! get individual building perimeter of each layer
       perimeter_ind = 0.
-      perimeter_ind(1:nlayer) = 4. * building_frac_ind(1:nlayer) / building_scale(1:nlayer)
+      perimeter_ind(1:nlayer) = 4.*building_frac_ind(1:nlayer)/building_scale(1:nlayer)
 
       ! get individual wall area at each layer
       area_wall_ind = 0.
-      area_wall_ind(1:nlayer) = perimeter_ind(1:nlayer) * dz_ind(1:nlayer) / 2.
+      area_wall_ind(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
 
       ! PRINT *, 'n_vegetation_region_urban', n_vegetation_region_urban
       ! PRINT *, 'n_stream_sw_urban', n_stream_sw_urban
