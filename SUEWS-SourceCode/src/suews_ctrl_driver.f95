@@ -874,6 +874,7 @@ CONTAINS
 
          ! calculate surface fraction related VARIABLES
          CALL SUEWS_cal_surf( &
+            StorageHeatMethod, NetRadiationMethod, & !input
             nlayer, sfr_surf, & !input
             building_frac, building_scale, height, & !input
             VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
@@ -3786,17 +3787,20 @@ CONTAINS
 
    ! calculate several surface fraction related parameters
    SUBROUTINE SUEWS_cal_surf( &
+      StorageHeatMethod, NetRadiationMethod, & !input
       nlayer, sfr_surf, & !input
       building_frac, building_scale, height, & !input
       vegfraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
       sfr_roof, sfr_wall) ! output
       IMPLICIT NONE
 
+      INTEGER, INTENT(IN) :: StorageHeatMethod ! method for storage heat calculations [-]
+      INTEGER, INTENT(IN) :: NetRadiationMethod ! method for net radiation calculations [-]
       INTEGER, INTENT(IN) :: nlayer !number of vertical layers[-]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf !surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac !cumulative surface fraction of buildings across vertical layers [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale !building scales of each vertical layer  [m]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: height !building height of each layer[-]
+      REAL(KIND(1D0)), DIMENSION(nlayer+1), INTENT(IN) :: height !building height of each layer[-]
       REAL(KIND(1D0)), INTENT(OUT) :: VegFraction ! fraction of vegetation [-]
       REAL(KIND(1D0)), INTENT(OUT) :: ImpervFraction !fractioin of impervious surface [-]
       REAL(KIND(1D0)), INTENT(OUT) :: PervFraction !fraction of pervious surfaces [-]
@@ -3814,24 +3818,26 @@ CONTAINS
       PervFraction = 1 - ImpervFraction
       NonWaterFraction = 1 - sfr_surf(WaterSurf)
 
-      ! get individual building fractions of each layer
-      ! sum(sfr_roof) = building_frac(1)
-      sfr_roof = 0.
-      sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
-      sfr_roof(nlayer) = building_frac(nlayer)
+      IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
+         ! get individual building fractions of each layer
+         ! NB.: sum(sfr_roof) = building_frac(1)
+         sfr_roof = 0.
+         IF (nlayer > 1) sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
+         sfr_roof(nlayer) = building_frac(nlayer)
 
-      ! get individual net building height of each layer
-      dz_ind = 0.
-      dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
+         ! get individual net building height of each layer
+         dz_ind = 0.
+         dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
 
-      ! get individual building perimeter of each layer
-      perimeter_ind = 0.
-      perimeter_ind(1:nlayer) = 4.*sfr_roof(1:nlayer)/building_scale(1:nlayer)
+         ! get individual building perimeter of each layer
+         perimeter_ind = 0.
+         perimeter_ind(1:nlayer) = 4.*sfr_roof(1:nlayer)/building_scale(1:nlayer)
 
-      ! sfr_wall stands for individual wall area
-      ! get individual wall area at each layer
-      sfr_wall = 0.
-      sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
+         ! sfr_wall stands for individual wall area
+         ! get individual wall area at each layer
+         sfr_wall = 0.
+         sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
+      END IF
 
    END SUBROUTINE SUEWS_cal_surf
 
