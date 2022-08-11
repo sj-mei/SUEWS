@@ -65,44 +65,6 @@ CONTAINS
 
    END SUBROUTINE SPARTACUS_Initialise
 
-   ! SUBROUTINE spartacus_finalise
-   !    USE allocateArray
-   !    IMPLICIT NONE
-
-   !    IF (ALLOCATED(nlayer_grids)) DEALLOCATE (nlayer_grids)
-
-   !    IF (ALLOCATED(height_grids)) DEALLOCATE (height_grids)
-   !    IF (ALLOCATED(building_frac_grids)) DEALLOCATE (building_frac_grids)
-   !    IF (ALLOCATED(veg_frac_grids)) DEALLOCATE (veg_frac_grids)
-   !    IF (ALLOCATED(building_scale_grids)) DEALLOCATE (building_scale_grids)
-   !    IF (ALLOCATED(veg_scale_grids)) DEALLOCATE (veg_scale_grids)
-
-   !    IF (ALLOCATED(sfr_roof_grids)) DEALLOCATE (sfr_roof_grids)
-   !    IF (ALLOCATED(alb_roof_grids)) DEALLOCATE (alb_roof_grids)
-   !    IF (ALLOCATED(emis_roof_grids)) DEALLOCATE (emis_roof_grids)
-   !    IF (ALLOCATED(k_roof_grids)) DEALLOCATE (k_roof_grids)
-   !    IF (ALLOCATED(cp_roof_grids)) DEALLOCATE (cp_roof_grids)
-   !    IF (ALLOCATED(dz_roof_grids)) DEALLOCATE (dz_roof_grids)
-   !    IF (ALLOCATED(tin_roof_grids)) DEALLOCATE (tin_roof_grids)
-   !    IF (ALLOCATED(temp_roof_grids)) DEALLOCATE (temp_roof_grids)
-
-   !    IF (ALLOCATED(sfr_wall_grids)) DEALLOCATE (sfr_wall_grids)
-   !    IF (ALLOCATED(alb_wall_grids)) DEALLOCATE (alb_wall_grids)
-   !    IF (ALLOCATED(emis_wall_grids)) DEALLOCATE (emis_wall_grids)
-   !    IF (ALLOCATED(k_wall_grids)) DEALLOCATE (k_wall_grids)
-   !    IF (ALLOCATED(cp_wall_grids)) DEALLOCATE (cp_wall_grids)
-   !    IF (ALLOCATED(dz_wall_grids)) DEALLOCATE (dz_wall_grids)
-   !    IF (ALLOCATED(tin_wall_grids)) DEALLOCATE (tin_wall_grids)
-   !    IF (ALLOCATED(temp_wall_grids)) DEALLOCATE (temp_wall_grids)
-
-   !    IF (ALLOCATED(k_surf_grids)) DEALLOCATE (k_surf_grids)
-   !    IF (ALLOCATED(cp_surf_grids)) DEALLOCATE (cp_surf_grids)
-   !    IF (ALLOCATED(dz_surf_grids)) DEALLOCATE (dz_surf_grids)
-   !    IF (ALLOCATED(tin_surf_grids)) DEALLOCATE (tin_surf_grids)
-   !    IF (ALLOCATED(temp_surf_grids)) DEALLOCATE (temp_surf_grids)
-
-   ! END SUBROUTINE spartacus_finalise
-
    SUBROUTINE SPARTACUS( &
       DiagQN, & !input:
       sfr_surf, zenith_deg, nlayer, & !input:
@@ -199,24 +161,21 @@ CONTAINS
 
       ! Derived types for the inputs to the radiation scheme
       TYPE(config_type) :: config
-      ! TYPE(driver_config_type)          :: driver_config
       TYPE(canopy_properties_type) :: canopy_props
       TYPE(sw_spectral_properties_type) :: sw_spectral_props
       TYPE(lw_spectral_properties_type) :: lw_spectral_props
       TYPE(boundary_conds_out_type) :: bc_out
-      TYPE(canopy_flux_type) &
-         &  :: sw_norm_dir, & ! SW fluxes normalized by top-of-canopy direct
-         &     sw_norm_diff, & ! SW fluxes normalized by top-of-canopy diffuse
-         &     lw_internal, & ! LW fluxes from internal emission
-         &     lw_norm, & ! LW fluxes normalized by top-of-canopy down
-         &     lw_flux, & ! Total lw canopy fluxes
-         &     sw_flux ! Total sw canopy fluxes
+      TYPE(canopy_flux_type) :: sw_norm_dir ! SW fluxes normalized by top-of-canopy direct
+      TYPE(canopy_flux_type) :: sw_norm_diff ! SW fluxes normalized by top-of-canopy diffuse
+      TYPE(canopy_flux_type) :: lw_internal ! LW fluxes from internal emission
+      TYPE(canopy_flux_type) :: lw_norm ! LW fluxes normalized by top-of-canopy down
+      TYPE(canopy_flux_type) :: lw_flux ! Total lw canopy fluxes
+      TYPE(canopy_flux_type) :: sw_flux ! Total sw canopy fluxes
 
       ! Top-of-canopy downward radiation, all dimensioned (nspec, ncol)
-      REAL(KIND(1D0)), ALLOCATABLE &
-           &  :: top_flux_dn_sw(:, :), & ! Total shortwave (direct+diffuse)
-           &     top_flux_dn_direct_sw(:, :), & ! ...diffuse only
-           &     top_flux_dn_lw(:, :) ! longwave
+      REAL(KIND(1D0)), ALLOCATABLE :: top_flux_dn_sw(:, :) ! Total shortwave (direct+diffuse)
+      REAL(KIND(1D0)), ALLOCATABLE :: top_flux_dn_direct_sw(:, :) ! ...diffuse only
+      REAL(KIND(1D0)), ALLOCATABLE :: top_flux_dn_lw(:, :) ! longwave
 
       ! surface temperature and air temperature in Kelvin
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof_K, tsfc_wall_K
@@ -260,7 +219,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer) :: dz_ind ! individual net building height at each layer
       REAL(KIND(1D0)), DIMENSION(nlayer) :: area_wall_ind ! individual net building height at each layer
       REAL(KIND(1D0)), DIMENSION(nlayer) :: perimeter_ind ! individual building perimeter at each layer
-      REAL(KIND(1D0)) :: debug1, debug2
+      ! REAL(KIND(1D0)) :: debug1, debug2
 
       IF (DiagQN == 1) PRINT *, 'in SPARTACUS, starting ...'
       ! initialize the output variables
@@ -283,54 +242,11 @@ CONTAINS
       area_wall_ind = 0.
       area_wall_ind(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
 
-      ! PRINT *, 'n_vegetation_region_urban', n_vegetation_region_urban
-      ! PRINT *, 'n_stream_sw_urban', n_stream_sw_urban
-      ! PRINT *, 'n_stream_lw_urban', n_stream_lw_urban
-      ! PRINT *, 'sw_dn_direct_frac', sw_dn_direct_frac
-      ! PRINT *, 'air_ext_sw', air_ext_sw
-      ! PRINT *, 'air_ssa_sw', air_ssa_sw
-      ! PRINT *, 'veg_ssa_sw', veg_ssa_sw
-      ! PRINT *, 'air_ext_lw', air_ext_lw
-      ! PRINT *, 'air_ssa_lw', air_ssa_lw
-      ! PRINT *, 'veg_ssa_lw', veg_ssa_lw
-      ! PRINT *, 'veg_fsd_const', veg_fsd_const
-      ! PRINT *, 'veg_contact_fraction_const', veg_contact_fraction_const
-      ! PRINT *, 'ground_albedo_dir_mult_fact', ground_albedo_dir_mult_fact
-      ! PRINT *, 'use_sw_direct_albedo', use_sw_direct_albedo
-
-      ! SU is currently single band so the following are 1
-      ! nspec = 1
-      ! nsw = 1
-      ! nlw = 1
-      ! SUEWS does not have multiple tiles so ncol=1
-      ! ncol = 1
-      ! ! Bring in SUEWS-SPARTACUS.nml settings and parameters
-      ! OPEN (511, file=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml', status='old')
-      ! READ (511, nml=Spartacus_Settings)
-      ! READ (511, nml=Spartacus_Constant_Parameters)
-      ! CLOSE (511)
       ALLOCATE (nlay(ncol))
       ! nlay = [nlayers] ! modified to follow ESTM_ext convention
       nlay = [nlayer]
-      ! nlayer = SUM(nlay)
-      ! ALLOCATE (height(nlayer + ncol)) ! why such dimension? why plus ncol?
-      ! ALLOCATE (height(nlayer + 1)) ! why such dimension? why plus ncol?
-      ! ALLOCATE (building_frac(nlayer))
-      ! ALLOCATE (veg_frac(nlayer))
-      ! ALLOCATE (building_scale(nlayer))
-      ! ALLOCATE (veg_scale(nlayer))
       ALLOCATE (veg_ext(nlayer))
-      ! ALLOCATE (veg_fsd(nlayer))
-      ! ALLOCATE (veg_contact_fraction(nlayer))
-      ! ALLOCATE (roof_albedo(nspec, nlayer))
-      ! ALLOCATE (wall_albedo(nspec, nlayer))
-      ! ALLOCATE (roof_albedo_dir_mult_fact(nspec, nlayer))
-      ! ALLOCATE (wall_specular_frac(nspec, nlayer))
-      ! ALLOCATE (roof_emissivity(nspec, nlayer))
-      ! ALLOCATE (wall_emissivity(nspec, nlayer))
-      ! OPEN (511, file=TRIM(FileInputPath)//'SUEWS_SPARTACUS.nml', status='old')
-      ! READ (511, nml=Spartacus_Profile_Parameters)
-      ! CLOSE (511)
+
       !Set the values of profiles that are implemented as being constant with height
       ! veg_frac(:) = veg_frac_const
       veg_fsd(:) = veg_fsd_const
@@ -613,35 +529,35 @@ CONTAINS
       qn_spc = sw_flux%top_net(nspec, ncol) + lw_flux%top_net(nspec, ncol)
 
       ! lw arrays
-      clear_air_abs_lw_spc = 0.0
+      clear_air_abs_lw_spc = -999
       clear_air_abs_lw_spc(:nlayer) = lw_flux%clear_air_abs(nspec, :nlayer)
-      wall_net_lw_spc = 0.0
+      wall_net_lw_spc = -999
       wall_net_lw_spc(:nlayer) = lw_flux%wall_net(nspec, :nlayer)
-      wall_in_lw_spc = 0.0
+      wall_in_lw_spc = -999
       wall_in_lw_spc(:nlayer) = lw_flux%wall_in(nspec, :nlayer)
       ! PRINT *, 'wall_net_lw_spc in suews-su', lw_flux%wall_net
-      roof_net_lw_spc = 0.0
+      roof_net_lw_spc = -999
       roof_net_lw_spc(:nlayer) = lw_flux%roof_net(nspec, :nlayer)
       ! PRINT *, 'roof_net_lw_spc in suews-su', lw_flux%roof_net
-      roof_in_lw_spc = 0.0
+      roof_in_lw_spc = -999
       roof_in_lw_spc(:nlayer) = lw_flux%roof_in(nspec, :nlayer)
       top_net_lw_spc = lw_flux%top_net(nspec, ncol)
       ground_net_lw_spc = lw_flux%ground_net(nspec, ncol)
       top_dn_lw_spc = lw_flux%top_dn(nspec, ncol)
 
       ! sw arrays
-      clear_air_abs_sw_spc = 0.0
+      clear_air_abs_sw_spc = -999
       clear_air_abs_sw_spc(:nlayer) = sw_flux%clear_air_abs(nspec, :nlayer)
-      wall_net_sw_spc = 0.0
+      wall_net_sw_spc = -999
       wall_net_sw_spc(:nlayer) = sw_flux%wall_net(nspec, :nlayer)
-      wall_in_sw_spc = 0.0
+      wall_in_sw_spc = -999
       wall_in_sw_spc(:nlayer) = sw_flux%wall_in(nspec, :nlayer)
       ! PRINT *, 'wall_net_sw_spc in suews-su', wall_net_sw_spc(:nlayer), sw_flux%wall_net
-      roof_net_sw_spc = 0.0
+      roof_net_sw_spc = -999
       roof_net_sw_spc(:nlayer) = sw_flux%roof_net(nspec, :nlayer)
       ! PRINT *, 'roof_net_sw_spc in suews-su', roof_net_sw_spc(:nlayer)
       ! PRINT *, 'roof_net_sw_spc in suews-su', sw_flux%roof_net
-      roof_in_sw_spc = 0.0
+      roof_in_sw_spc = -999
       roof_in_sw_spc(:nlayer) = sw_flux%roof_in(nspec, :nlayer)
       ! PRINT *, 'roof sw in in suews-su', roof_in_sw_spc(:nlayer)
       ! PRINT *, 'roof sw in in suews-su', sw_flux%roof_in
