@@ -562,13 +562,13 @@ CONTAINS
          IF (config%do_sw) THEN
             ! Scale the normalized fluxes
             debug1 = sw_norm_dir%roof_in(1, 1)
-            debug2=0
+            debug2 = 0
             CALL sw_norm_dir%SCALE(canopy_props%nlay, &
             &  top_flux_dn_direct_sw)
-            if (debug1 > 0.0) then
-               debug1=MAXLOC(sw_norm_dir%roof_in(1, :),1)
-               debug2 = sw_norm_dir%roof_in(1, int(debug1))
-            endif
+            IF (debug1 > 0.0) THEN
+               debug1 = MAXLOC(sw_norm_dir%roof_in(1, :), 1)
+               debug2 = sw_norm_dir%roof_in(1, INT(debug1))
+            END IF
             CALL sw_norm_diff%SCALE(canopy_props%nlay, &
             &  top_flux_dn_sw - top_flux_dn_direct_sw)
             CALL sw_flux%SUM(sw_norm_dir, sw_norm_diff)
@@ -578,13 +578,13 @@ CONTAINS
             CALL lw_flux%SUM(lw_internal, lw_norm)
          END IF
       END DO
-      if (debug2 > 0) then
-         print *, ''
-         print *, 'debug1 = ', debug1
-         print *, 'debug2 = ', debug2
-         print *, 'top_flux_dn_sw = ', top_flux_dn_sw
-         print *, 'top_flux_dn_direct_sw = ', top_flux_dn_direct_sw
-      endif
+      IF (debug2 > 0) THEN
+         PRINT *, ''
+         PRINT *, 'debug1 = ', debug1
+         PRINT *, 'debug2 = ', debug2
+         PRINT *, 'top_flux_dn_sw = ', top_flux_dn_sw
+         PRINT *, 'top_flux_dn_direct_sw = ', top_flux_dn_direct_sw
+      END IF
       ! print *, 'debug1, debug2', debug1, debug2
 
       ! albedo
