@@ -600,11 +600,14 @@ CONTAINS
       qn_wall = wall_net_lw_spc(:nlayer) + wall_net_sw_spc(:nlayer)
 
       ! de-normalise net radiation for roof/wall - these will be used in other SUEWS calculations
-      ! roof
+      ! note the orignal results from above SS calcuations are normalised by the whole grid area
+      ! roof: need to de-normalise by dividing the building/roof fraction
       qn_roof = qn_roof/sfr_roof(:nlayer)
-      ! wall
-      ! wall area of each layer needs to be considered
+      ! wall: two steps needed:
+      ! 1. convert to horizotnal sense by mutliplying the roof/building fractions
+      ! 2. de-normalise by dividing the wall areas
       qn_wall = qn_wall*sfr_roof(:nlayer)/sfr_wall(:nlayer)
+      ! qn_wall = qn_wall/sfr_wall(:nlayer)
 
       dataOutLineSPARTACUS = &
          [alb_spc, emis_spc, &
