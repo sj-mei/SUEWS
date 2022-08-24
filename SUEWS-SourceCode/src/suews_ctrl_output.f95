@@ -801,9 +801,7 @@ MODULE ctrl_output
       varAttr('LCAAbs_12', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 12', aA, 'SPARTACUS', 0), &
       varAttr('LCAAbs_13', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 13', aA, 'SPARTACUS', 0), &
       varAttr('LCAAbs_14', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 14', aA, 'SPARTACUS', 0), &
-      varAttr('LCAAbs_15', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 15', aA, 'SPARTACUS', 0), &
-      varAttr('debug1', 'W m-2', f104, 'canyon top SW - direct', aA, 'SPARTACUS', 0), &
-      varAttr('debug2', 'W m-2', f104, 'canyon top SW - diffuse', aA, 'SPARTACUS', 0) &
+      varAttr('LCAAbs_15', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 15', aA, 'SPARTACUS', 0) &
       /
    ! ESTM_ext info
    DATA(varListAll(n), &

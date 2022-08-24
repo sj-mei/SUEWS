@@ -9,6 +9,9 @@ import subprocess
 import shutil
 from nonstopf2py import f2py
 
+
+
+
 # from gen_suewsdrv import merge_source
 
 # wrap OS-specific `SUEWS_driver` libs
@@ -69,25 +72,6 @@ if sysname == "Windows":
     fn_other_obj.append(os.path.join(dir_f95, "strptime.o"))
 
 src_f95 = path_target_f95 + path_other_f95
-# %%
-# # combine for files to use:
-# file_all_f95 = 'suews_all.f95'
-# # with open(file_all_f95, 'wb') as wfd:
-# #     for f in src_f95:
-# #         with open(f, 'rb') as fd:
-# #             shutil.copyfileobj(fd, wfd)
-# # directory of SUEWS source code
-# # this dir is included as a git submodule so DON'T make ANY change there
-# file_all_f95 = 'suews_all.f95'
-# path_src_SUEWS = Path(dir_f95).resolve()
-# print(path_src_SUEWS)
-# # 4. generate SUEWS related source files from $dir_src_SUEWS and add them to $dir_WRF_SUEWS
-# path_sf_suewsdrv = Path(file_all_f95)
-# print(f'calling merge_source to generate {file_all_f95}')
-# merge_source(path_src_SUEWS, path_sf_suewsdrv)
-# # for f in target_f95:
-# #     print(f)
-
 
 def readme():
     f = """
@@ -97,23 +81,43 @@ def readme():
 
 
 def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"):
-    try:
-        path_source = Path(dir_source)
-        path_makefile = path_source.parent / "Makefile"
-        print(path_makefile, path_makefile.exists())
+    import subprocess
 
-        # get version from `file`
-        path_constfile = path_source / file
-        print(path_constfile, path_constfile.exists())
-        print(path_constfile)
-    except IOError:
-        raise IOError(f"{path_constfile} not existing!")
+    pipe = None
+    for cmd in ['git', 'git.cmd']:
+        # try to find git in system path
+        try:
+            pipe = subprocess.Popen(
+                [cmd, "describe", "--always", "--match", "2[0-9]*"],
+                stdout=subprocess.PIPE)
+            (sout, serr) = pipe.communicate()
 
-    with open(str(path_constfile)) as fm:
-        for line in fm:
-            if "progname" in line:
-                ver = line.split("SUEWS_V")[-1].replace("'", "").strip()
-                ver += str(ver_minor)
+            # use git describe to get the version
+            ver = sout.decode().strip()
+
+            if pipe.returncode == 0:
+                break
+        except:
+            pass
+    if pipe is None or pipe.returncode != 0:
+        # no git, use version from source
+        try:
+            path_source = Path(dir_source)
+            path_makefile = path_source.parent / "Makefile"
+            print(path_makefile, path_makefile.exists())
+
+            # get version from `file`
+            path_constfile = path_source / file
+            print(path_constfile, path_constfile.exists())
+            print(path_constfile)
+        except IOError:
+            raise IOError(f"{path_constfile} not existing!")
+
+        with open(str(path_constfile)) as fm:
+            for line in fm:
+                if "progname" in line:
+                    ver = line.split("SUEWS_V")[-1].replace("'", "").strip()
+                    ver += str(ver_minor)
 
     # cast `ver` to the driver package
     path_pkg_init = Path(".") / lib_basename / "version.py"

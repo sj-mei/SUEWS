@@ -179,6 +179,7 @@ PHYS =	suews_phys_narp.o \
 	suews_phys_snow.o \
 	suews_phys_dailystate.o \
 	suews_phys_estm.o \
+	suews_ctrl_ver.o \
 	suews_ctrl_output.o \
 	suews_phys_anohm.o \
 	suews_phys_lumps.o \
@@ -196,7 +197,6 @@ DRIVER = suews_ctrl_driver.o
 OTHERS =  suews_ctrl_translate.o \
 	suews_ctrl_error.o \
 	suews_ctrl_init.o \
-	suews_ctrl_ver.o \
 	suews_ctrl_calculations.o
 
 # modules under rapid development

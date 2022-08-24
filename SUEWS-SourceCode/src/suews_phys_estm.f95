@@ -2325,10 +2325,19 @@ CONTAINS
       ! use finite depth heat conduction solver
       LOGICAL :: use_heatcond1d, use_heatcond1d_water
 
+      ! normalised surface fractions
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof_n
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall_n
+
       ! initialise solver flags
       use_heatcond1d = .TRUE.
       use_heatcond1d_water = .FALSE.
       debug = .FALSE.
+
+      ! normalised surface fractions
+      ! NB: the sum of sfr_roof (sfr_wall) is NOT unity; so need to be normalised by the sum
+      sfr_roof_n = sfr_roof/SUM(sfr_roof)
+      sfr_wall_n = sfr_wall/SUM(sfr_wall)
       ! sub-facets of buildings: e.g. walls, roofs, etc.
       DO i_group = 1, 3
 
@@ -2545,13 +2554,12 @@ CONTAINS
       ! building surface
       ! PRINT *, 'QS_roof in estm_ext', DOT_PRODUCT(QS_roof, sfr_roof), 'for', sfr_roof
       ! PRINT *, 'QS_wall in estm_ext', DOT_PRODUCT(QS_wall, sfr_wall), 'for', sfr_wall
-      QS_surf(BldgSurf) = (DOT_PRODUCT(QS_roof, sfr_roof) + DOT_PRODUCT(QS_wall, sfr_wall))
-      ! TODO: TS 14 Feb 2022, ESTM development:
-      ! the building surface temperature should be aggregated based on longwave radiation
+      QS_surf(BldgSurf) = (DOT_PRODUCT(QS_roof, sfr_roof_n) + DOT_PRODUCT(QS_wall, sfr_wall_n))
       DO i_depth = 1, ndepth
          temp_out_surf(BldgSurf, i_depth) = &
-            DOT_PRODUCT(temp_out_roof(:, i_depth), sfr_roof) &
-            + DOT_PRODUCT(temp_out_wall(:, i_depth), sfr_wall)
+            (DOT_PRODUCT(temp_out_roof(:, i_depth), sfr_roof) &
+             + DOT_PRODUCT(temp_out_wall(:, i_depth), sfr_wall)) &
+            /(SUM(sfr_roof) + SUM(sfr_wall))
       END DO
 
       ! all standard suews surfaces

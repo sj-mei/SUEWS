@@ -93,7 +93,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
-      sfr_roof, sfr_wall, sfr_surf, &
+      sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
       tin_roof, tin_wall, tin_surf, &
       temp_roof, temp_wall, temp_surf, &
@@ -203,7 +203,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       Tmax_id, Tmin_id, &
       BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
-      sfr_roof, sfr_wall, sfr_surf, &
+      sfr_surf, &
       tsfc_roof, tsfc_wall, tsfc_surf, &
       temp_roof, temp_wall, temp_surf, &
       tin_roof, tin_wall, tin_surf, &
