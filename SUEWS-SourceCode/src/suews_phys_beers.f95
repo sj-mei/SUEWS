@@ -180,7 +180,7 @@ CONTAINS
       emis_sky = (1 - (1 + msteg)*EXP(-((1.2 + 3.0*msteg)**0.5)))
 
       !!! DAYTIME !!!
-      IF (altitude > 0) THEN
+      IF (altitude > 0.1) THEN
 
          !Clearness Index on Earth's surface after Crawford and Dunchon (1999) with a correction
          !factor for low sun elevations after Lindberg et al. (2008)
