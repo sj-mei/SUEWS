@@ -532,7 +532,7 @@ CONTAINS
       REAL(KIND(1D0)) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
       REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
       REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
-      REAL(KIND(1D0)) :: veg_fr !vegetation fraction [-]
+      ! REAL(KIND(1D0)) :: veg_fr !vegetation fraction [-]
       REAL(KIND(1D0)) :: VegPhenLumps
       REAL(KIND(1D0)) :: VPd_hpa ! vapour pressure deficit [hPa]
       REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
@@ -733,6 +733,9 @@ CONTAINS
       MwStore = 0.
       chSnow_per_interval = 0.
       SnowRemoval = 0.
+      Qm=0
+      QmFreez=0
+      QmRain=0
 
       ! ########################################################################################
       ! save initial values of inout variables
@@ -1085,19 +1088,6 @@ CONTAINS
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
 
-         CALL Snow_cal_MeltHeat( &
-            SnowUse, & !input
-            tstep, tau_r, SnowDensMax, &
-            lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
-            SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-            nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_surf_prev, qn_ind_snow, &
-            kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
-            SnowPack_prev, snowFrac_prev, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, & !input
-            SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, & !output
-            mwh, Qm, QmFreez, QmRain, & ! output
-            veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
-            FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
-            dataOutLineSnow) !output
 
          !==========================Turbulent Fluxes================================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
@@ -1105,7 +1095,7 @@ CONTAINS
             !Calculate QH and QE from LUMPS in the first iteration of each time step
             CALL LUMPS_cal_QHQE( &
                veg_type, & !input
-               SnowUse, qn, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
+               SnowUse, qn, qf, qs, Temp_C, VegFraction, avcp, Press_hPa, lv_J_kg, &
                tstep_real, DRAINRT, nsh_real, &
                Precip, RainMaxRes, RAINCOVER, sfr_surf, LAI_id_next, LAImax, LAImin, &
                QH_LUMPS, & !output
@@ -1148,6 +1138,20 @@ CONTAINS
 
          !===================Calculate surface hydrology and related soil water=======================
          IF (SnowUse == 1) THEN
+
+            ! !===================Calculate snow-related energy budgets=======================
+             CALL Snow_cal_MeltHeat( &
+            tstep, tau_r, SnowDensMax, &
+            lvS_J_kg, lv_J_kg, RadMeltFact, TempMeltFact, SnowAlbMax, &
+            SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
+            nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_surf_prev, qn_ind_snow, &
+            kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
+            SnowPack_prev, snowFrac_prev, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, & !input
+            SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, & !output
+            mwh, Qm, QmFreez, QmRain, & ! output
+            snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
+            FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
+            dataOutLineSnow) !output
 
             ! ===================Calculate snow related hydrology=======================
             CALL SUEWS_cal_snow( &
@@ -2202,7 +2206,7 @@ CONTAINS
       REAL(KIND(1D0)) :: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
       ! initialise output variables
-      !deltaQi = 0
+      deltaQi = 0
       !SnowFrac = 0
       !qn1_S = 0
       dataOutLineESTM = -999
@@ -2296,6 +2300,8 @@ CONTAINS
             temp_out_wall, QS_wall, & !output
             temp_out_surf, QS_surf, & !output
             QS) !output
+
+            ! TODO: add deltaQi to output for snow heat storage
 
          ! PRINT *, 'QS after ESTM_ext', QS
          ! PRINT *, 'QS_roof after ESTM_ext', QS_roof
@@ -2618,6 +2624,38 @@ CONTAINS
       REAL(KIND(1D0)) :: chSnow_tot !total change state_id of snow and surface [mm]
 
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
+
+      ! REAL(KIND(1D0)), INTENT(in) :: tau_r
+      ! REAL(KIND(1D0)), INTENT(in) :: SnowDensMax
+      ! REAL(KIND(1D0)), INTENT(in) :: RadMeltFact
+      ! REAL(KIND(1D0)), INTENT(in) :: TempMeltFact
+      ! REAL(KIND(1D0)), INTENT(in) :: SnowAlbMax
+      ! REAL(KIND(1D0)), INTENT(in) :: PrecipLimit
+      ! REAL(KIND(1D0)), INTENT(in) :: PrecipLimitAlb
+      ! REAL(KIND(1D0)), INTENT(in) :: albedo_snow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind_snow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_surf_prev
+      !  REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: kup_ind_snow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowWater_prev
+      !  REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: deltaQi
+      !  REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_in
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in
+      ! REAL(KIND(1D0)), INTENT(in) :: SnowAlb_in
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_in
+      ! REAL(KIND(1D0)), INTENT(in) :: SnowfallCum_in
+      ! !===================Calculate snow-related energy budgets=======================
+      !        CALL Snow_cal_MeltHeat( &
+      !       tstep, tau_r, SnowDensMax, &!input
+      !       lvS_J_kg, lv_J_kg, RadMeltFact, TempMeltFact, SnowAlbMax, &
+      !       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
+      !       nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_surf_prev, qn_ind_snow, &
+      !       kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
+      !       SnowPack_in, snowFrac_in, SnowAlb_in, SnowDens_in, SnowfallCum_in, & !input
+      !       SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, & !output
+      !       mwh, Qm, QmFreez, QmRain, & ! output
+      !       snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
+      !       FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
+      !       dataOutLineSnow) !output
 
       ! runoff_per_interval = runoff_per_interval_in
       state_id_surf = state_id_in
