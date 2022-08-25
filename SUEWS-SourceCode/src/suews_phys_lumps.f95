@@ -4,7 +4,7 @@ MODULE lumps_module
 CONTAINS
    SUBROUTINE LUMPS_cal_QHQE( &
       veg_type, & !input
-      SnowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
+      SnowUse, qn1, qf, qs, Temp_C, VegFraction, avcp, Press_hPa, lv_J_kg, &
       tstep_real, DRAINRT, nsh_real, &
       Precip, RainMaxRes, RAINCOVER, sfr_surf, LAI_id_prev, LAImax, LAImin, &
       QH_LUMPS, & !output
@@ -30,15 +30,17 @@ CONTAINS
       INTEGER, PARAMETER :: ivConif = 1
       INTEGER, PARAMETER :: ivGrass = 3
 
+      ! TS 25 Aug 2022: remove Qm from input list as LUMPS is used for initial guess and Qm could be zero
+      REAL(KIND(1D0)), PARAMETER :: Qm =0 !Snow melt associated heat flux
+
       INTEGER, INTENT(in) :: veg_type !Defines how vegetation is calculated for LUMPS
       INTEGER, INTENT(in) :: SnowUse ! option of snow module
 
       REAL(KIND(1D0)), INTENT(in) :: qn1 ! net all-wave radiation
       REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux
       REAL(KIND(1D0)), INTENT(in) :: qs ! storage heat flux
-      REAL(KIND(1D0)), INTENT(in) :: Qm !Snow melt associated heat flux
       REAL(KIND(1D0)), INTENT(in) :: Temp_C !air temperature in degC
-      REAL(KIND(1D0)), INTENT(in) :: Veg_Fr !Vegetation fraction from land area
+      REAL(KIND(1D0)), INTENT(in) :: VegFraction !Vegetation fraction from land area
       REAL(KIND(1D0)), INTENT(in) :: avcp !Specific heat capacity
       REAL(KIND(1D0)), INTENT(in) :: Press_hPa !Station air pressure in hPa
       REAL(KIND(1D0)), INTENT(in) :: lv_J_kg !Latent heat of vaporization in [J kg-1]
@@ -63,6 +65,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: VegPhenLumps
       ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
       ! INTEGER::iv
+
+
       REAL(KIND(1D0)), DIMENSION(3) :: sfrVeg ! veg surface fractions [-]                             !,start
       REAL(KIND(1D0)) :: VegPhen, VegMax, VegMin, & !Vegetation phenology for LUMPS
                          psyc_s, & !Psychometric constant
@@ -131,7 +135,7 @@ CONTAINS
          Veg_Fr_temp = 0
       ELSE
          VegPhenLumps = (VegPhen)/(VegMax)
-         Veg_Fr_temp = Veg_Fr*VegPhenLumps !Now this is veg_fraction in general
+         Veg_Fr_temp = VegFraction*VegPhenLumps !Now this is veg_fraction in general
       END IF
 
       ! initialisation
