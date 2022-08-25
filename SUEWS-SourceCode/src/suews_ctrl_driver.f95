@@ -2455,7 +2455,7 @@ CONTAINS
       state_id_out, soilstore_id_out, & ! general output:
       state_per_tstep, NWstate_per_tstep, &
       qe, qe_surf, qe_roof, qe_wall, &
-      swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
+      swe, chSnow_per_tstep, ev_per_tstep, runoff_per_tstep, &
       surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
       runoffAGveg, runoffAGimpervious, rss_surf)
 
@@ -2572,8 +2572,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
       REAL(KIND(1D0)), INTENT(out) :: qe !latent heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: swe !overall snow water equavalent[mm]
-      REAL(KIND(1D0)) :: ev ! evaporation [mm]
-      REAL(KIND(1D0)), INTENT(out) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
+      REAL(KIND(1D0)), INTENT(out) :: chSnow_per_tstep ! change state_id of snow and surface per time interval [mm]
       REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep ! evaporation at each time step [mm]
       REAL(KIND(1D0)) :: qe_per_tstep !latent heat flux at each timestep[W m-2]
       REAL(KIND(1D0)), INTENT(out) :: runoff_per_tstep !runoff water at each time step [mm]
@@ -2642,8 +2641,8 @@ CONTAINS
       runoff_per_tstep = 0
       state_per_tstep = 0
       NWstate_per_tstep = 0
+      chSnow_per_tstep = 0
       qe = 0
-      runoffwaterbody = 0
 
       runoffAGveg = 0
       runoffAGimpervious = 0
@@ -2664,27 +2663,31 @@ CONTAINS
       ! IF (SnowUse == 1) THEN ! snow calculation
       ! net available energy for evaporation
       qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
-      ev = 0
 
-      mwstore = 0
 
-      chSnow_per_interval = 0
-      qe_tot = 0
-      ev_tot = 0
-      swe = 0
-      ev_snow = 0
-
-      SnowRemoval = 0
       SnowPack = SnowPack_in
       SnowFrac = SnowFrac_in
       SnowWater = SnowWater_in
       iceFrac = iceFrac_in
       SnowDens = SnowDens_in
       DO is = 1, nsurf !For each surface in turn
-         IF (sfr_surf(is) /= 0 .AND. snowCalcSwitch(is) == 1) THEN
+         qe_tot = 0
+         ev_tot = 0
+         swe = 0
+         ev_snow = 0
+         runoff_tot = 0
+         surf_chang_tot = 0
+         chSnow_tot = 0
+         SnowRemoval = 0
+         runoffPipes = 0
+         mwstore = 0
+         runoffwaterbody = 0
+         IF (sfr_surf(is) > 0) THEN
             ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
+
             CALL SnowCalc( &
                tstep, imin, it, dectime, is, & !input
+               snowCalcSwitch, &
                EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
                avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
                PervFraction, vegfraction, addimpervious, &
@@ -2704,20 +2707,31 @@ CONTAINS
                SnowRemoval, swe, &
                runoffPipes, mwstore, runoffwaterbody)
 
-            !Actual updates here as xx_tstep variables not taken as input to snowcalc
-            ev_per_tstep = ev_per_tstep + ev_tot
-            qe_per_tstep = qe_per_tstep + qe_tot
-            runoff_per_tstep = runoff_per_tstep + runoff_tot
-            surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
-            chSnow_per_interval = chSnow_per_interval + chSnow_tot
          ELSE
             SnowFrac(is) = 0
             SnowDens(is) = 0
             SnowPack(is) = 0
          END IF
+         !Actual updates here as xx_tstep variables not taken as input to snowcalc
+         ev_per_tstep = ev_per_tstep + ev_tot
+         qe_per_tstep = qe_per_tstep + qe_tot
+         runoff_per_tstep = runoff_per_tstep + runoff_tot
+         surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
+         chSnow_per_tstep = chSnow_per_tstep + chSnow_tot
 
          !Store ev_tot for each surface
          ev_surf(is) = ev_tot
+
+         ! IF (SnowFrac(is) == 0. .AND. sfr_surf(is) > 0) THEN
+         !    PRINT *, '  '
+         !    PRINT *, '====='
+         !    PRINT *, 'Surface ', is, SnowFrac(is), '/', sfr_surf(is)
+         !    PRINT *, 'qe_tot=', qe_tot
+         !    PRINT *, 'qe_per_tstep=', qe_per_tstep
+         !    PRINT *, '====='
+         !    PRINT *, '  '
+
+         ! END IF
       END DO
       ! ELSE ! snow-free calculation
       ! ChangSnow_surf = 0
@@ -2764,6 +2778,17 @@ CONTAINS
       ! END IF
 
       qe = qe_per_tstep
+
+      ! IF (SUM(SnowFrac) == 0.) THEN
+      !    PRINT *, '  '
+      !    PRINT *, '********************************************************'
+      !    PRINT *, 'after snowcalc'
+      !    PRINT *, 'Surface snowfrac total:', SUM(SnowFrac)
+      !    PRINT *, 'qe=', qe
+      !    PRINT *, '********************************************************'
+      !    PRINT *, '  '
+
+      ! END IF
 
       ! Calculate volume of water that will move between grids
       ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
