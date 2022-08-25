@@ -3833,14 +3833,14 @@ CONTAINS
          ! this is from eq. 8 in SS documentation:
          ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
          perimeter_ind = 0.
-         perimeter_ind(1:nlayer) = 4.*sfr_roof(1:nlayer)/building_scale(1:nlayer)
+         perimeter_ind(1:nlayer) = 4.*building_frac(1:nlayer)/building_scale(1:nlayer)
 
          ! sfr_wall stands for individual wall area
          ! get individual wall area at each layer
          sfr_wall = 0.
          ! this is from eq. 1 in SS documentation:
          ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
-         sfr_wall(1:nlayer) = 3.1416/2*perimeter_ind(1:nlayer)*dz_ind(1:nlayer)
+         sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)
       END IF
 
    END SUBROUTINE SUEWS_cal_surf
