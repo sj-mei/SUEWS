@@ -2664,7 +2664,6 @@ CONTAINS
       ! net available energy for evaporation
       qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
 
-
       SnowPack = SnowPack_in
       SnowFrac = SnowFrac_in
       SnowWater = SnowWater_in
