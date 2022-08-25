@@ -1138,20 +1138,6 @@ CONTAINS
          !===================Calculate surface hydrology and related soil water=======================
          IF (SnowUse == 1) THEN
 
-            ! !===================Calculate snow-related energy budgets=======================
-            ! CALL Snow_cal_MeltHeat( &
-            !    tstep, tau_r, SnowDensMax, &
-            !    lvS_J_kg, lv_J_kg, RadMeltFact, TempMeltFact, SnowAlbMax, &
-            !    SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-            !    nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_surf_prev, qn_ind_snow, &
-            !    kup_ind_snow, SnowWater_prev, deltaQi, albedo_snow, &
-            !    SnowPack_prev, snowFrac_prev, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, & !input
-            !    SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, & !output
-            !    mwh, Qm, QmFreez, QmRain, & ! output
-            !    snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
-            !    FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
-            !    dataOutLineSnow) !output
-
             ! ===================Calculate snow related hydrology=======================
             CALL SUEWS_cal_snow( &
                Diagnose, nlayer, & !input
@@ -2717,10 +2703,12 @@ CONTAINS
       SnowfallCum = SnowfallCum_in
       SnowAlb = SnowAlb_in
 
+      ! update snow density
       SnowDens = update_snow_dens( &
                  tstep, SnowFrac, SnowDens, &
                  tau_r, SnowDensMax, SnowDensMin)
 
+      ! Calculate snow-related energy budgets
       CALL MeltHeat( &
          lvS_J_kg, lv_J_kg, tstep*1D0, RadMeltFact, TempMeltFact, & !input
          SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
