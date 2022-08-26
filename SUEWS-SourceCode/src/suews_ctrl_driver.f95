@@ -2024,7 +2024,7 @@ CONTAINS
                building_scale, veg_scale, & !input:
                alb_roof, emis_roof, alb_wall, emis_wall, &
                roof_albedo_dir_mult_fact, wall_specular_frac, &
-               qn, kup, lup, qn_roof, qn_wall, & !output:
+               qn, kup, lup, qn_roof, qn_wall, qn_surf, & !output:
                dataOutLineSPARTACUS)
          ELSE
             qn_roof = qn_surf(BldgSurf)
