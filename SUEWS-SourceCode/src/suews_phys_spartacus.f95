@@ -606,7 +606,7 @@ CONTAINS
       ! wall: two steps needed:
       ! 1. convert to horizotnal sense by mutliplying the roof/building fractions
       ! 2. de-normalise by dividing the wall areas
-      qn_wall = qn_wall*sfr_roof(:nlayer)/sfr_wall(:nlayer)
+      qn_wall = qn_wall/sfr_wall(:nlayer)
       ! qn_wall = qn_wall/sfr_wall(:nlayer)
 
       dataOutLineSPARTACUS = &
