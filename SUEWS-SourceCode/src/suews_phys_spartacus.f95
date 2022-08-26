@@ -37,7 +37,7 @@ MODULE SPARTACUS_MODULE
    !==============================================================================================
    USE allocateArray, ONLY: NSURF, NVegSurf, nspec, nsw, nlw, ncol, &
                             ConifSurf, DecidSurf, BldgSurf, PavSurf, GrassSurf, BSoilSurf, WaterSurf
-use PhysConstants, only: SBConst
+   USE PhysConstants, ONLY: SBConst
 
    IMPLICIT NONE
 
@@ -81,7 +81,7 @@ CONTAINS
       building_scale, veg_scale, & !input:
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
-      qn, kup, lup, qn_roof, qn_wall,qn_surf, & !output:
+      qn, kup, lup, qn_roof, qn_wall, qn_surf, & !output:
       dataOutLineSPARTACUS)
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
@@ -143,13 +143,13 @@ CONTAINS
       REAL(KIND(1D0)) :: sw_dn_grnd
       REAL(KIND(1D0)) :: lw_dn_grnd
       REAL(KIND(1D0)) :: lw_up_grnd
-      REAL(KIND(1D0)), DIMENSION(NSURF - 1)  :: qn_grnd_ind
+      REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: qn_grnd_ind
       REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: alb_grnd_ind
       REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: emis_grnd_ind
       REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: sfr_grnd_ind
       REAL(KIND(1D0)), DIMENSION(nsurf - 1) :: sw_net_grnd_ind
       REAL(KIND(1D0)), DIMENSION(nsurf - 1) :: lw_net_grnd_ind
-       REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: tsfc_grnd_ind_K
+      REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: tsfc_grnd_ind_K
       ! --------------------------------------------------------------------------------
       ! these will be in the SPARTACUS output array
       REAL(KIND(1D0)) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
@@ -577,7 +577,6 @@ CONTAINS
       qn = qn_spc
       ! print *, 'qn_spc', qn_spc
 
-
       ! ============================================================
       ! net radiation for roof/wall
       ! note these fluxes are NOT de-normalised
@@ -605,16 +604,15 @@ CONTAINS
       lw_net_grnd = grnd_net_lw_spc/(1 - building_frac(1))
 
       ! net shortwave radiation for individual ground surfaces
-      sw_dn_grnd = sw_net_grnd /DOT_PRODUCT(alb_grnd_ind, sfr_grnd_ind)/sum(sfr_grnd_ind)
+      sw_dn_grnd = sw_net_grnd/DOT_PRODUCT(alb_grnd_ind, sfr_grnd_ind)/SUM(sfr_grnd_ind)
       sw_net_grnd_ind = sw_net_grnd*(1 - alb_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf]))
 
-
       ! net longwave radiation for individual ground surfaces
-      lw_up_grnd=SBConst*DOT_PRODUCT(emis_grnd_ind*tsfc_grnd_ind_K**4, sfr_grnd_ind)/sum(sfr_grnd_ind)
+      lw_up_grnd = SBConst*DOT_PRODUCT(emis_grnd_ind*tsfc_grnd_ind_K**4, sfr_grnd_ind)/SUM(sfr_grnd_ind)
 
       ! assume that the downward longwave radiation incident on the ground is the same between all surfaces
-      lw_dn_grnd=lw_up_grnd-lw_net_grnd
-      lw_net_grnd_ind=lw_dn_grnd-SBConst*emis_grnd_ind*tsfc_grnd_ind_K**4
+      lw_dn_grnd = lw_up_grnd - lw_net_grnd
+      lw_net_grnd_ind = lw_dn_grnd - SBConst*emis_grnd_ind*tsfc_grnd_ind_K**4
 
       ! net all-wave radiation for individual ground surfaces
       qn_grnd_ind = lw_net_grnd_ind + sw_net_grnd_ind
@@ -624,7 +622,6 @@ CONTAINS
 
       ! average between roof and wall for the building surface: a simple treatment
       qn_surf(BldgSurf) = (DOT_PRODUCT(qn_roof, sfr_roof) + DOT_PRODUCT(qn_wall, sfr_wall))/2.0
-
 
       dataOutLineSPARTACUS = &
          [alb_spc, emis_spc, &
