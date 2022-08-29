@@ -508,10 +508,13 @@ CONTAINS
       END DO
 
       ! albedo
-      alb_spc = 0.0
-      alb_spc = ((top_flux_dn_diffuse_sw + 10.**(-10))*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
-                 + (top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))*bc_out%sw_albedo_dir(nspec, ncol)) &
-                /(top_flux_dn_diffuse_sw + 10.**(-10) + top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))
+      IF (top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol) > 0) THEN
+         alb_spc = ((top_flux_dn_diffuse_sw)*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
+         + (top_flux_dn_direct_sw(nspec, ncol))*bc_out%sw_albedo_dir(nspec, ncol)) &
+         /(top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol))
+      else
+         alb_spc = 0.0
+      END IF
 
       !!! Output arrays !!!
 
@@ -523,8 +526,7 @@ CONTAINS
       lw_up_spc = lw_emission_spc + (1 - emis_spc)*ldown
       ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
       sw_up_spc = 0.0
-      sw_up_spc = top_flux_dn_diffuse_sw*bc_out%sw_albedo(nspec, ncol) &
-                  + top_flux_dn_direct_sw(nspec, ncol)*bc_out%sw_albedo_dir(nspec, ncol) ! or more simply: alb_spc*avKdn
+      sw_up_spc = (top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol))*alb_spc ! or more simply: alb_spc*avKdn
       ! net all = net sw + net lw
       qn_spc = sw_flux%top_net(nspec, ncol) + lw_flux%top_net(nspec, ncol)
 

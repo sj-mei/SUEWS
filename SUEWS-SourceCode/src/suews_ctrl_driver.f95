@@ -737,6 +737,17 @@ CONTAINS
       QmFreez = 0
       QmRain = 0
 
+      ! ####
+      ! force several snow related state variables to zero if snow module is off
+      IF (snowuse == 0) THEN
+         SnowDens = 0.
+         SnowFrac = 0.
+         SnowWater = 0.
+         SnowAlb = 0.
+         IceFrac = 0.
+         SnowPack = 0.
+      END IF
+
       ! ########################################################################################
       ! save initial values of inout variables
       qn_av_prev = qn_av
@@ -752,13 +763,12 @@ CONTAINS
       SnowPack_prev = SnowPack
       state_surf_prev = state_surf
       soilstore_surf_prev = soilstore_surf
-      ! IF (StorageHeatMethod == 5) THEN
-      state_roof_prev = state_roof
-      state_wall_prev = state_wall
-      soilstore_roof_prev = soilstore_roof
-      soilstore_wall_prev = soilstore_wall
-
-      ! END IF
+      IF (StorageHeatMethod == 5) THEN
+         state_roof_prev = state_roof
+         state_wall_prev = state_wall
+         soilstore_roof_prev = soilstore_roof
+         soilstore_wall_prev = soilstore_wall
+      END IF
       Tair_av_prev = Tair_av
       LAI_id_prev = LAI_id
       GDD_id_prev = GDD_id
@@ -984,6 +994,11 @@ CONTAINS
          ! ========================================================================
          ! N.B.: the following parts involves snow-related calculations.
          ! ===================NET ALLWAVE RADIATION================================
+         ! if (kdown>0 .and. i_iter == 1) then
+         !    print *, 'snowFrac_prev=', snowFrac_prev
+         !    snowFrac_prev=-999
+         !    print *, 'snowFrac_prev=', snowFrac_prev
+         ! endif
          CALL SUEWS_cal_Qn( &
             StorageHeatMethod, NetRadiationMethod, SnowUse, & !input
             tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
@@ -1010,6 +1025,11 @@ CONTAINS
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             albedo_snow, SnowAlb_next, &
             dataOutLineSPARTACUS)
+
+         ! IF (qn < -300) THEN
+         !    PRINT *, 'qn=', qn
+         !    PRINT *, 'snowFrac_prev=', snowFrac_prev
+         ! END IF
 
          ! PRINT *, 'Qn_surf after SUEWS_cal_Qn ', qn_surf
          ! PRINT *, 'qn_roof after SUEWS_cal_Qn ', qn_roof
@@ -1532,7 +1552,7 @@ CONTAINS
           tsfc0_out_surf, &
           ! state_surf_prev, &
           RS, RA_h, RB, RAsnow, &
-          vpd_hPa, lv_J_kg, avdens, avcp, i_iter*1D0, dqndt]
+          vpd_hPa, lv_J_kg, avdens, avcp, i_iter*1D0, snowuse*1D0]
       ! IF (NetRadiationMethod > 1000) THEN
       !    dataOutLineSPARTACUS = &
       !       [alb_spc, emis_spc, &
