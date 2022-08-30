@@ -510,9 +510,9 @@ CONTAINS
       ! albedo
       IF (top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol) > 0) THEN
          alb_spc = ((top_flux_dn_diffuse_sw)*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
-         + (top_flux_dn_direct_sw(nspec, ncol))*bc_out%sw_albedo_dir(nspec, ncol)) &
-         /(top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol))
-      else
+                    + (top_flux_dn_direct_sw(nspec, ncol))*bc_out%sw_albedo_dir(nspec, ncol)) &
+                   /(top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol))
+      ELSE
          alb_spc = 0.0
       END IF
 
