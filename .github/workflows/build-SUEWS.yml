@@ -23,6 +23,7 @@ on:
       - "SUEWS-SourceCode/*"
       - "supy-driver/*"
       - ".github/workflows/build-SUEWS.yml"
+      - 'Test/BaseRun/*'
 
 
 jobs:
