@@ -1285,9 +1285,9 @@ CONTAINS
 
          !============= calculate surface specific QH and Tsfc ===============
          ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
-         tsfc0_out_surf = min(tsfc_out_surf,Temp_C+50)
-         tsfc0_out_roof =  min(tsfc_out_roof,Temp_C+50)
-         tsfc0_out_wall =  min(tsfc_out_wall,Temp_C+50)
+         tsfc0_out_surf = MIN(tsfc_out_surf, Temp_C + 50)
+         tsfc0_out_roof = MIN(tsfc_out_roof, Temp_C + 50)
+         tsfc0_out_wall = MIN(tsfc_out_wall, Temp_C + 50)
 
          QH_surf = QN_surf + qf - qs_surf - qe_surf
          QH_roof = QN_roof + qf - qs_roof - qe_roof
@@ -1553,7 +1553,6 @@ CONTAINS
           ! state_surf_prev, &
           RS, RA_h, RB, RAsnow, &
           vpd_hPa, lv_J_kg, avdens, avcp, i_iter*1D0, dqndt]
-
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -3127,10 +3126,10 @@ CONTAINS
       ! state_id_out = state_id_out
       ! soilstore_id_out = soilstore_id
       IF (storageheatmethod == 5) THEN
-      IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_building = ', soilstore_building
-      IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_builing = ', capStore_builing
-      IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
-      end if
+         IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_building = ', soilstore_building
+         IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_builing = ', capStore_builing
+         IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
+      END IF
       IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf_out
 
    END SUBROUTINE SUEWS_cal_QE

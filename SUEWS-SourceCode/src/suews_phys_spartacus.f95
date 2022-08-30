@@ -577,7 +577,7 @@ CONTAINS
       kup = sw_up_spc
       ! print *, 'sw_up_spc', sw_up_spc
       ! limit the lower limit of qn to avoid issue when used with OHM
-      qn = max(qn_spc,-600d0)
+      qn = MAX(qn_spc, -600D0)
       ! print *, 'qn_spc', qn_spc
 
       ! ============================================================
