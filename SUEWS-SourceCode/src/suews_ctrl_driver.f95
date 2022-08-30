@@ -1284,10 +1284,10 @@ CONTAINS
          TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
 
          !============= calculate surface specific QH and Tsfc ===============
-
-         tsfc0_out_surf = tsfc_out_surf
-         tsfc0_out_roof = tsfc_out_roof
-         tsfc0_out_wall = tsfc_out_wall
+         ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
+         tsfc0_out_surf = min(tsfc_out_surf,Temp_C+50)
+         tsfc0_out_roof =  min(tsfc_out_roof,Temp_C+50)
+         tsfc0_out_wall =  min(tsfc_out_wall,Temp_C+50)
 
          QH_surf = QN_surf + qf - qs_surf - qe_surf
          QH_roof = QN_roof + qf - qs_roof - qe_roof
@@ -1552,39 +1552,8 @@ CONTAINS
           tsfc0_out_surf, &
           ! state_surf_prev, &
           RS, RA_h, RB, RAsnow, &
-          vpd_hPa, lv_J_kg, avdens, avcp, i_iter*1D0, snowuse*1D0]
-      ! IF (NetRadiationMethod > 1000) THEN
-      !    dataOutLineSPARTACUS = &
-      !       [alb_spc, emis_spc, &
-      !        top_dn_dir_sw_spc, &
-      !        sw_up_spc, &
-      !        top_dn_lw_spc, &
-      !        lw_up_spc, &
-      !        qn_spc, &
-      !        top_net_sw_spc, &
-      !        top_net_lw_spc, &
-      !        lw_emission_spc, &
-      !        ground_dn_dir_sw_spc, &
-      !        ground_net_sw_spc, &
-      !        ground_net_lw_spc, &
-      !        roof_in_sw_spc, &
-      !        roof_net_sw_spc, &
-      !        wall_net_sw_spc, &
-      !        clear_air_abs_sw_spc, &
-      !        roof_in_lw_spc, &
-      !        roof_net_lw_spc, &
-      !        wall_net_lw_spc, &
-      !        clear_air_abs_lw_spc &
-      !        ]
-      ! END IF
+          vpd_hPa, lv_J_kg, avdens, avcp, i_iter*1D0, dqndt]
 
-      ! write out ESTM_ext output
-      ! dataoutlineESTMExt=-999
-      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
-      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
-      ! dataoutlineESTMExt(1:nroof*ndepth)= pack(temp_out_roof,.True.)
-
-      ! PRINT *, 'dataoutlineESTMExt = ', dataoutlineESTMExt
 
    END SUBROUTINE SUEWS_cal_Main
    ! ================================================================================
@@ -3157,9 +3126,11 @@ CONTAINS
 
       ! state_id_out = state_id_out
       ! soilstore_id_out = soilstore_id
+      IF (storageheatmethod == 5) THEN
       IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_building = ', soilstore_building
       IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_builing = ', capStore_builing
       IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
+      end if
       IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf_out
 
    END SUBROUTINE SUEWS_cal_QE
