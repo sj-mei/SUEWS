@@ -35,7 +35,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PAT }}
-          fetch_depth: 0 # to get all tags
+          fetch-depth: 0 # to get all tags
 
       - name: Setup Python for use with actions
         uses: actions/setup-python@v2
@@ -78,7 +78,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PAT }}
-          fetch_depth: 0 # to get all tags
+          fetch-depth: 0 # to get all tags
 
       - name: fix gfortran on mac
         if: startsWith(matrix.os, 'macOS')
@@ -153,7 +153,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PAT }}
-          fetch_depth: 0 # to get all tags
+          fetch-depth: 0 # to get all tags
 
       - name: build for ${{ matrix.manylinux-python-target }}
         run: |
@@ -186,7 +186,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PAT }}
-          fetch_depth: 0 # to get all tags
+          fetch-depth: 0 # to get all tags
 
       - name: fix gfortran on mac
         if: startsWith(matrix.os, 'macOS')
