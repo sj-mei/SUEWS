@@ -35,6 +35,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PAT }}
+          fetch_depth: 0 # to get all tags
 
       - name: Setup Python for use with actions
         uses: actions/setup-python@v2
