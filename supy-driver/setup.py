@@ -88,7 +88,7 @@ def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"
         # try to find git in system path
         try:
             pipe = subprocess.Popen(
-                [cmd, "describe", "--always", "--match", "2[0-9]*"],
+                [cmd, "describe", "--always", "--match", "2[0-9]*",'--dirty'],
                 stdout=subprocess.PIPE)
             (sout, serr) = pipe.communicate()
 
