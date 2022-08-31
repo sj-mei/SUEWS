@@ -5,14 +5,21 @@ on: push
 jobs:
   build-n-publish:
     name: Build and publish Python 🐍 distributions 📦 to PyPI and TestPyPI
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@master
+      with:
+        fetch-depth: 0
+
     - name: Set up Python 3.9
       uses: actions/setup-python@v1
       with:
         python-version: 3.9
+
+    # # remote debugging
+    # - name: Setup upterm session
+    #   uses: lhotari/action-upterm@v1
 
     - name: Install pypa/build
       run: |
