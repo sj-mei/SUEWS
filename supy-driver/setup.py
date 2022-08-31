@@ -193,11 +193,11 @@ setup(
 # check latest build
 path_dir_driver = Path(__file__).resolve().parent
 list_wheels = [str(x) for x in path_dir_driver.glob("dist/*whl")]
-fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
-# print(list_wheels, fn_wheel)
 
 # use auditwheel to repair file name for Linux
 if sysname == "Linux":
+    fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+    # print(list_wheels, fn_wheel)
     # path_dir_driver = Path(__file__).resolve().parent
     # list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
     # fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
