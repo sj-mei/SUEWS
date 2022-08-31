@@ -81,9 +81,8 @@ conda activate supy
 3. Install the dev version of SuPy
 
 ```shell
-cd ../../SuPy
 
-pip install -e src
+pip install -e SuPy/src
 
 ```
 
