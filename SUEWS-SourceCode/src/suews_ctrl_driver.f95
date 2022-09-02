@@ -1548,9 +1548,11 @@ CONTAINS
       !==============translation end ================
 
       dataoutlineDebug = &
-         [qh_resist_surf, &
-          tsfc0_out_surf, &
-          ! state_surf_prev, &
+         [tsfc0_out_surf, &
+          qn_surf, &
+          qs_surf, &
+          qe_surf, &
+          qh_surf, &
           RS, RA_h, RB, RAsnow, &
           vpd_hPa, lv_J_kg, avdens, avcp, i_iter*1D0, dqndt]
 
