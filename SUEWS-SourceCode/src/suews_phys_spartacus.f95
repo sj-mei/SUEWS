@@ -622,7 +622,7 @@ CONTAINS
       lw_up_grnd = SBConst*DOT_PRODUCT(emis_grnd_ind*tsfc_grnd_ind_K**4, sfr_grnd_ind)/SUM(sfr_grnd_ind)
 
       ! assume that the downward longwave radiation incident on the ground is the same between all surfaces
-      lw_dn_grnd = lw_up_grnd - lw_net_grnd
+      lw_dn_grnd = lw_up_grnd + lw_net_grnd
       lw_net_grnd_ind = lw_dn_grnd - SBConst*emis_grnd_ind*tsfc_grnd_ind_K**4
 
       ! net all-wave radiation for individual ground surfaces

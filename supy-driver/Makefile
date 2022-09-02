@@ -63,7 +63,6 @@ main:
 
 # make fortran exe
 suews:
-	$(MAKE) -C $(SUEWS_dir) clean
 	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `suews` recipe
 
 show:
@@ -74,7 +73,6 @@ show:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) show
-	$(MAKE) -C $(SUEWS_dir) clean
 	rm -rf ${MODULE}/*.so ${MODULE}/*.pyd ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	 -$(PYTHON) setup.py clean --all
 	rm -rf build *.mod *.o __pycache__
