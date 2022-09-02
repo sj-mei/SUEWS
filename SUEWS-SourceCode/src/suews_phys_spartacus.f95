@@ -633,7 +633,7 @@ CONTAINS
 
       ! average between roof and wall for the building surface: a simple treatment
       ! qn_surf(BldgSurf) = (DOT_PRODUCT(qn_roof, sfr_roof)/SUM(sfr_roof) + DOT_PRODUCT(qn_wall, sfr_wall)/SUM(sfr_wall))
-      qn_surf(BldgSurf) = (qn_spc-DOT_PRODUCT(qn_grnd_ind,sfr_grnd_ind))/sfr_surf(BldgSurf)
+      qn_surf(BldgSurf) = (qn_spc - DOT_PRODUCT(qn_grnd_ind, sfr_grnd_ind))/sfr_surf(BldgSurf)
 
       dataOutLineSPARTACUS = &
          [alb_spc, emis_spc, &
