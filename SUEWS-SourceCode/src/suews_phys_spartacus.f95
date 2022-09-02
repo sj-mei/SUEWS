@@ -171,6 +171,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(15) :: wall_in_lw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: wall_net_sw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: wall_net_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: sfr_roof_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: sfr_wall_spc
       ! --------------------------------------------------------------------------------
 
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
@@ -233,12 +235,17 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: roof_emissivity
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
-      INTEGER :: i
+      ! INTEGER :: i
       ! REAL(KIND(1D0)) :: debug1, debug2
 
       IF (DiagQN == 1) PRINT *, 'in SPARTACUS, starting ...'
       ! initialize the output variables
       dataOutLineSPARTACUS = -999.
+
+      sfr_roof_spc = -999.
+      sfr_roof_spc(1:nlayer) = sfr_roof
+      sfr_wall_spc = -999.
+      sfr_wall_spc(1:nlayer) = sfr_wall
 
       ALLOCATE (nlay(ncol))
       ! nlay = [nlayers] ! modified to follow ESTM_ext convention
@@ -508,10 +515,11 @@ CONTAINS
       END DO
 
       ! albedo
-      IF (top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol) > 0) THEN
-         alb_spc = ((top_flux_dn_diffuse_sw)*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
-                    + (top_flux_dn_direct_sw(nspec, ncol))*bc_out%sw_albedo_dir(nspec, ncol)) &
-                   /(top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol))
+      IF (top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol) > 0.1) THEN
+         alb_spc = ((top_flux_dn_diffuse_sw + 10.**(-10))*(bc_out%sw_albedo(nspec, ncol)) & ! the 10.**-10 stops the equation blowing up when kdwn=0
+                    + (top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))*(bc_out%sw_albedo_dir(nspec, ncol))) &
+                   /(top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))
+         IF (alb_spc < 0.0) alb_spc = 0
       ELSE
          alb_spc = 0.0
       END IF
@@ -526,7 +534,7 @@ CONTAINS
       lw_up_spc = lw_emission_spc + (1 - emis_spc)*ldown
       ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
       sw_up_spc = 0.0
-      sw_up_spc = (top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol))*alb_spc ! or more simply: alb_spc*avKdn
+      sw_up_spc = kdown*alb_spc ! or more simply: alb_spc*avKdn
       ! net all = net sw + net lw
       qn_spc = sw_flux%top_net(nspec, ncol) + lw_flux%top_net(nspec, ncol)
 
@@ -624,7 +632,8 @@ CONTAINS
       qn_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf]) = qn_grnd_ind
 
       ! average between roof and wall for the building surface: a simple treatment
-      qn_surf(BldgSurf) = (DOT_PRODUCT(qn_roof, sfr_roof) + DOT_PRODUCT(qn_wall, sfr_wall))/2.0
+      ! qn_surf(BldgSurf) = (DOT_PRODUCT(qn_roof, sfr_roof)/SUM(sfr_roof) + DOT_PRODUCT(qn_wall, sfr_wall)/SUM(sfr_wall))
+      qn_surf(BldgSurf) = (qn_spc-DOT_PRODUCT(qn_grnd_ind,sfr_grnd_ind))/sfr_surf(BldgSurf)
 
       dataOutLineSPARTACUS = &
          [alb_spc, emis_spc, &
@@ -649,6 +658,8 @@ CONTAINS
           roof_net_lw_spc, &
           wall_in_lw_spc, &
           wall_net_lw_spc, &
+          sfr_roof_spc, &
+          sfr_wall_spc, &
           clear_air_abs_lw_spc &
           ]
 

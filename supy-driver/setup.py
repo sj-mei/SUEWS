@@ -170,9 +170,9 @@ setup(
     version=get_suews_version(ver_minor=9),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
-    url="https://github.com/sunt05/SuPy",
+    url="https://github.com/UMEP-dev/SuPy",
     author="Ting Sun",
-    author_email="ting.sun@reading.ac.uk",
+    author_email="ting.sun@ucl.ac.uk",
     # license='GPL-V3.0',
     packages=["supy_driver"],
     package_data={
