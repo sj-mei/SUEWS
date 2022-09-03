@@ -3071,7 +3071,7 @@ CONTAINS
          ! update QE based on the water balance
          qe_roof = tlv*ev_roof
          qe_wall = tlv*ev_wall
-         qe_building = 0.5*(DOT_PRODUCT(qe_roof, sfr_roof) + DOT_PRODUCT(qe_wall, sfr_wall))
+         qe_building = (DOT_PRODUCT(qe_roof, sfr_roof) + DOT_PRODUCT(qe_wall, sfr_wall))/sfr_surf(BldgSurf)
       END IF
       ! --- general suews surfaces ---
       CALL cal_water_storage_surf( &
