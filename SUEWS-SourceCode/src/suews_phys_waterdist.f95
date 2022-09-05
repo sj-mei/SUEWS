@@ -92,7 +92,7 @@ CONTAINS
    SUBROUTINE cal_water_storage( &
       is, sfr_surf, PipeCapacity, RunoffToWater, pin, & ! input:
       WU_surf, &
-      drain, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
+      drain_surf, AddWater, addImpervious, nsh_real, state_in, frac_water2runoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       runoffAGimpervious, runoffAGveg, runoffPipes, ev, soilstore_id, & ! inout:
       surplusWaterBody, SurplusEvap, runoffWaterBody, & ! inout:
@@ -148,7 +148,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain !Drainage of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain_surf !Drainage of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf !external water use of each surface type [mm]
 
       REAL(KIND(1D0)), INTENT(in) :: PipeCapacity !Capacity of pipes to transfer water
@@ -220,13 +220,13 @@ CONTAINS
          END IF
 
          ! Calculate change in surface state_id (inputs - outputs)
-         chang(is) = p_mm - (drain(is) + ev)
+         chang(is) = p_mm - (drain_surf(is) + ev)
 
          ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
          ! and does not affect state_id
          IF (p_mm > IPThreshold_mmhr/nsh_real) THEN
             runoff(is) = runoff(is) + (p_mm - IPThreshold_mmhr/nsh_real)
-            chang(is) = IPThreshold_mmhr/nsh_real - (drain(is) + ev)
+            chang(is) = IPThreshold_mmhr/nsh_real - (drain_surf(is) + ev)
          END IF
 
          ! Calculate updated state_id using chang
@@ -251,7 +251,7 @@ CONTAINS
 
          ! Runoff -------------------------------------------------------
          ! For impervious surfaces, some of drain(is) becomes runoff
-         runoff(is) = runoff(is) + drain(is)*frac_water2runoff(is) !Drainage (that is not flowing to other surfaces) goes to runoff
+         runoff(is) = runoff(is) + drain_surf(is)*frac_water2runoff(is) !Drainage (that is not flowing to other surfaces) goes to runoff
 
          !So, up to this point, runoff(is) can have contributions if
          ! p_mm > ipthreshold (water input too fast)
@@ -278,13 +278,13 @@ CONTAINS
          END IF
 
          ! Calculate change in surface state_id (inputs - outputs)
-         chang(is) = p_mm - (drain(is) + ev)
+         chang(is) = p_mm - (drain_surf(is) + ev)
 
          ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
          !  and does not affect state_id
          IF (p_mm > IPThreshold_mmhr/nsh_real) THEN
             runoff(is) = runoff(is) + (p_mm - IPThreshold_mmhr/nsh_real)
-            chang(is) = IPThreshold_mmhr/nsh_real - (drain(is) + ev)
+            chang(is) = IPThreshold_mmhr/nsh_real - (drain_surf(is) + ev)
          END IF
 
          ! Calculate updated state_id using chang
@@ -317,7 +317,7 @@ CONTAINS
          ! soilstore_id -------------------------------------------------
          ! For pervious surfaces (not water), some of drain(is) goes to soil storage
          ! Drainage (that is not flowing to other surfaces) goes to soil storages
-         soilstore_id(is) = soilstore_id(is) + drain(is)*frac_water2runoff(is)
+         soilstore_id(is) = soilstore_id(is) + drain_surf(is)*frac_water2runoff(is)
 
          ! If soilstore is full, the excess will go to runoff
          IF (soilstore_id(is) > SoilStoreCap(is)) THEN ! TODO: this should also go to flooding of some sort
