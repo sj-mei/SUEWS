@@ -580,104 +580,118 @@ MODULE ctrl_output
         + ncolumnsDataOutRSL - 5 &
         + ncolumnsDataOutDebug - 5 &
         )/ &
-      varAttr('Tsfc_Paved', 'm', f104, 'surface temperature for paved surface', aA, 'debug', 0), &
-      varAttr('Tsfc_Bldgs', 'm', f104, 'surface temperature for building surface', aA, 'debug', 0), &
-      varAttr('Tsfc_EveTr', 'm', f104, 'surface temperature for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('Tsfc_DecTr', 'm', f104, 'surface temperature for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('Tsfc_Grass', 'm', f104, 'surface temperature for grass surface', aA, 'debug', 0), &
-      varAttr('Tsfc_BSoil', 'm', f104, 'surface temperature for bare soil surface', aA, 'debug', 0), &
-      varAttr('Tsfc_Water', 'm', f104, 'surface temperature for water surface', aA, 'debug', 0), &
-      varAttr('QN_Paved', 'm', f104, 'Net all-wave radiation for paved surface', aA, 'debug', 0), &
-      varAttr('QN_Bldgs', 'm', f104, 'Net all-wave radiation for building surface', aA, 'debug', 0), &
-      varAttr('QN_EveTr', 'm', f104, 'Net all-wave radiation for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('QN_DecTr', 'm', f104, 'Net all-wave radiation for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('QN_Grass', 'm', f104, 'Net all-wave radiation for grass surface', aA, 'debug', 0), &
-      varAttr('QN_BSoil', 'm', f104, 'Net all-wave radiation for bare soil surface', aA, 'debug', 0), &
-      varAttr('QN_Water', 'm', f104, 'Net all-wave radiation for water surface', aA, 'debug', 0), &
-      varAttr('QS_Paved', 'm', f104, 'Storage heat flux for paved surface', aA, 'debug', 0), &
-      varAttr('QS_Bldgs', 'm', f104, 'Storage heat flux for building surface', aA, 'debug', 0), &
-      varAttr('QS_EveTr', 'm', f104, 'Storage heat flux for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('QS_DecTr', 'm', f104, 'Storage heat flux for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('QS_Grass', 'm', f104, 'Storage heat flux for grass surface', aA, 'debug', 0), &
-      varAttr('QS_BSoil', 'm', f104, 'Storage heat flux for bare soil surface', aA, 'debug', 0), &
-      varAttr('QS_Water', 'm', f104, 'Storage heat flux for water surface', aA, 'debug', 0), &
-      varAttr('QE_Paved', 'm', f104, 'latent heat flux for paved surface', aA, 'debug', 0), &
-      varAttr('QE_Bldgs', 'm', f104, 'latent heat flux for building surface', aA, 'debug', 0), &
-      varAttr('QE_EveTr', 'm', f104, 'latent heat flux for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('QE_DecTr', 'm', f104, 'latent heat flux for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('QE_Grass', 'm', f104, 'latent heat flux for grass surface', aA, 'debug', 0), &
-      varAttr('QE_BSoil', 'm', f104, 'latent heat flux for bare soil surface', aA, 'debug', 0), &
-      varAttr('QE_Water', 'm', f104, 'latent heat flux for water surface', aA, 'debug', 0), &
-      varAttr('QH_Paved', 'm', f104, 'Sensible heat flux for paved surface', aA, 'debug', 0), &
-      varAttr('QH_Bldgs', 'm', f104, 'Sensible heat flux for building surface', aA, 'debug', 0), &
-      varAttr('QH_EveTr', 'm', f104, 'Sensible heat flux for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('QH_DecTr', 'm', f104, 'Sensible heat flux for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('QH_Grass', 'm', f104, 'Sensible heat flux for grass surface', aA, 'debug', 0), &
-      varAttr('QH_BSoil', 'm', f104, 'Sensible heat flux for bare soil surface', aA, 'debug', 0), &
-      varAttr('QH_Water', 'm', f104, 'Sensible heat flux for water surface', aA, 'debug', 0), &
-      varAttr('wu_Paved', 'm', f104, 'Water use for paved surface', aA, 'debug', 0), &
-      varAttr('wu_Bldgs', 'm', f104, 'Water use for building surface', aA, 'debug', 0), &
-      varAttr('wu_EveTr', 'm', f104, 'Water use for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('wu_DecTr', 'm', f104, 'Water use for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('wu_Grass', 'm', f104, 'Water use for grass surface', aA, 'debug', 0), &
-      varAttr('wu_BSoil', 'm', f104, 'Water use for bare soil surface', aA, 'debug', 0), &
-      varAttr('wu_Water', 'm', f104, 'Water use for water surface', aA, 'debug', 0), &
-      varAttr('ev_Paved', 'm', f104, 'Evapotranspiration for paved surface', aA, 'debug', 0), &
-      varAttr('ev_Bldgs', 'm', f104, 'Evapotranspiration for building surface', aA, 'debug', 0), &
-      varAttr('ev_EveTr', 'm', f104, 'Evapotranspiration for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('ev_DecTr', 'm', f104, 'Evapotranspiration for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('ev_Grass', 'm', f104, 'Evapotranspiration for grass surface', aA, 'debug', 0), &
-      varAttr('ev_BSoil', 'm', f104, 'Evapotranspiration for bare soil surface', aA, 'debug', 0), &
-      varAttr('ev_Water', 'm', f104, 'Evapotranspiration for water surface', aA, 'debug', 0), &
-      varAttr('drain_Paved', 'm', f104, 'Drainage for paved surface', aA, 'debug', 0), &
-      varAttr('drain_Bldgs', 'm', f104, 'Drainage for building surface', aA, 'debug', 0), &
-      varAttr('drain_EveTr', 'm', f104, 'Drainage for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('drain_DecTr', 'm', f104, 'Drainage for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('drain_Grass', 'm', f104, 'Drainage for grass surface', aA, 'debug', 0), &
-      varAttr('drain_BSoil', 'm', f104, 'Drainage for bare soil surface', aA, 'debug', 0), &
-      varAttr('drain_Water', 'm', f104, 'Drainage for water surface', aA, 'debug', 0), &
-      varAttr('st_Paved_prev', 'm', f104, 'surface wetness (prev) for paved surface', aA, 'debug', 0), &
-      varAttr('st_Bldgs_prev', 'm', f104, 'surface wetness (prev) for building surface', aA, 'debug', 0), &
-      varAttr('st_EveTr_prev', 'm', f104, 'surface wetness (prev) for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('st_DecTr_prev', 'm', f104, 'surface wetness (prev) for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('st_Grass_prev', 'm', f104, 'surface wetness (prev) for grass surface', aA, 'debug', 0), &
-      varAttr('st_BSoil_prev', 'm', f104, 'surface wetness (prev) for bare soil surface', aA, 'debug', 0), &
-      varAttr('st_Water_prev', 'm', f104, 'surface wetness (prev) for water surface', aA, 'debug', 0), &
-      varAttr('st_Paved_next', 'm', f104, 'surface wetness (next) for paved surface', aA, 'debug', 0), &
-      varAttr('st_Bldgs_next', 'm', f104, 'surface wetness (next) for building surface', aA, 'debug', 0), &
-      varAttr('st_EveTr_next', 'm', f104, 'surface wetness (next) for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('st_DecTr_next', 'm', f104, 'surface wetness (next) for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('st_Grass_next', 'm', f104, 'surface wetness (next) for grass surface', aA, 'debug', 0), &
-      varAttr('st_BSoil_next', 'm', f104, 'surface wetness (next) for bare soil surface', aA, 'debug', 0), &
-      varAttr('st_Water_next', 'm', f104, 'surface wetness (next) for water surface', aA, 'debug', 0), &
-      varAttr('ss_Paved_prev', 'm', f104, 'soil store (prev) for paved surface', aA, 'debug', 0), &
-      varAttr('ss_Bldgs_prev', 'm', f104, 'soil store (prev) for building surface', aA, 'debug', 0), &
-      varAttr('ss_EveTr_prev', 'm', f104, 'soil store (prev) for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('ss_DecTr_prev', 'm', f104, 'soil store (prev) for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('ss_Grass_prev', 'm', f104, 'soil store (prev) for grass surface', aA, 'debug', 0), &
-      varAttr('ss_BSoil_prev', 'm', f104, 'soil store (prev) for bare soil surface', aA, 'debug', 0), &
-      varAttr('ss_Water_prev', 'm', f104, 'soil store (prev) for water surface', aA, 'debug', 0), &
-      varAttr('ss_Paved_next', 'm', f104, 'soil store (next) for paved surface', aA, 'debug', 0), &
-      varAttr('ss_Bldgs_next', 'm', f104, 'soil store (next) for building surface', aA, 'debug', 0), &
-      varAttr('ss_EveTr_next', 'm', f104, 'soil store (next) for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('ss_DecTr_next', 'm', f104, 'soil store (next) for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('ss_Grass_next', 'm', f104, 'soil store (next) for grass surface', aA, 'debug', 0), &
-      varAttr('ss_BSoil_next', 'm', f104, 'soil store (next) for bare soil surface', aA, 'debug', 0), &
-      varAttr('ss_Water_next', 'm', f104, 'soil store (next) for water surface', aA, 'debug', 0), &
-      varAttr('RS', 'm', f104, 'RS', aA, 'debug', 0), &
-      varAttr('RA', 'm', f104, 'RA', aA, 'debug', 0), &
-      varAttr('RB', 'm', f104, 'RB', aA, 'debug', 0), &
-      varAttr('RAsnow', 'm', f104, 'RA for snow', aA, 'debug', 0), &
-      varAttr('RSS_Paved', 'm', f104, 'Wetness-corrected surface conductance for paved surface', aA, 'debug', 0), &
-      varAttr('RSS_Bldgs', 'm', f104, 'Wetness-corrected surface conductance for building surface', aA, 'debug', 0), &
-      varAttr('RSS_EveTr', 'm', f104, 'Wetness-corrected surface conductance for evergreen tree surface', aA, 'debug', 0), &
-      varAttr('RSS_DecTr', 'm', f104, 'Wetness-corrected surface conductance for deciduous tree surface', aA, 'debug', 0), &
-      varAttr('RSS_Grass', 'm', f104, 'Wetness-corrected surface conductance for grass surface', aA, 'debug', 0), &
-      varAttr('RSS_BSoil', 'm', f104, 'Wetness-corrected surface conductance for bare soil surface', aA, 'debug', 0), &
-      varAttr('RSS_Water', 'm', f104, 'Wetness-corrected surface conductance for water surface', aA, 'debug', 0), &
-      varAttr('vpd_hPa', 'm', f104, 'vapour pressure deficit', aA, 'debug', 0), &
-      varAttr('lv_J_kg', 'm', f104, 'latent heat of vaporisation', aA, 'debug', 0), &
-      varAttr('avdens', 'm', f104, 'air density', aA, 'debug', 0), &
+      varAttr('Tsfc_Paved', 'degC', f104, 'surface temperature for paved surface', aA, 'debug', 0), &
+      varAttr('Tsfc_Bldgs', 'degC', f104, 'surface temperature for building surface', aA, 'debug', 0), &
+      varAttr('Tsfc_EveTr', 'degC', f104, 'surface temperature for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('Tsfc_DecTr', 'degC', f104, 'surface temperature for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('Tsfc_Grass', 'degC', f104, 'surface temperature for grass surface', aA, 'debug', 0), &
+      varAttr('Tsfc_BSoil', 'degC', f104, 'surface temperature for bare soil surface', aA, 'debug', 0), &
+      varAttr('Tsfc_Water', 'degC', f104, 'surface temperature for water surface', aA, 'debug', 0), &
+      varAttr('QN_Paved', 'W m-2', f104, 'Net all-wave radiation for paved surface', aA, 'debug', 0), &
+      varAttr('QN_Bldgs', 'W m-2', f104, 'Net all-wave radiation for building surface', aA, 'debug', 0), &
+      varAttr('QN_EveTr', 'W m-2', f104, 'Net all-wave radiation for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('QN_DecTr', 'W m-2', f104, 'Net all-wave radiation for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('QN_Grass', 'W m-2', f104, 'Net all-wave radiation for grass surface', aA, 'debug', 0), &
+      varAttr('QN_BSoil', 'W m-2', f104, 'Net all-wave radiation for bare soil surface', aA, 'debug', 0), &
+      varAttr('QN_Water', 'W m-2', f104, 'Net all-wave radiation for water surface', aA, 'debug', 0), &
+      varAttr('QS_Paved', 'W m-2', f104, 'Storage heat flux for paved surface', aA, 'debug', 0), &
+      varAttr('QS_Bldgs', 'W m-2', f104, 'Storage heat flux for building surface', aA, 'debug', 0), &
+      varAttr('QS_EveTr', 'W m-2', f104, 'Storage heat flux for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('QS_DecTr', 'W m-2', f104, 'Storage heat flux for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('QS_Grass', 'W m-2', f104, 'Storage heat flux for grass surface', aA, 'debug', 0), &
+      varAttr('QS_BSoil', 'W m-2', f104, 'Storage heat flux for bare soil surface', aA, 'debug', 0), &
+      varAttr('QS_Water', 'W m-2', f104, 'Storage heat flux for water surface', aA, 'debug', 0), &
+      varAttr('QE0_Paved', 'W m-2', f104, 'latent heat flux from PM for paved surface', aA, 'debug', 0), &
+      varAttr('QE0_Bldgs', 'W m-2', f104, 'latent heat flux from PM for building surface', aA, 'debug', 0), &
+      varAttr('QE0_EveTr', 'W m-2', f104, 'latent heat flux from PM for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('QE0_DecTr', 'W m-2', f104, 'latent heat flux from PM for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('QE0_Grass', 'W m-2', f104, 'latent heat flux from PM for grass surface', aA, 'debug', 0), &
+      varAttr('QE0_BSoil', 'W m-2', f104, 'latent heat flux from PM for bare soil surface', aA, 'debug', 0), &
+      varAttr('QE0_Water', 'W m-2', f104, 'latent heat flux from PM for water surface', aA, 'debug', 0), &
+      varAttr('QE_Paved', 'W m-2', f104, 'latent heat flux for paved surface', aA, 'debug', 0), &
+      varAttr('QE_Bldgs', 'W m-2', f104, 'latent heat flux for building surface', aA, 'debug', 0), &
+      varAttr('QE_EveTr', 'W m-2', f104, 'latent heat flux for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('QE_DecTr', 'W m-2', f104, 'latent heat flux for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('QE_Grass', 'W m-2', f104, 'latent heat flux for grass surface', aA, 'debug', 0), &
+      varAttr('QE_BSoil', 'W m-2', f104, 'latent heat flux for bare soil surface', aA, 'debug', 0), &
+      varAttr('QE_Water', 'W m-2', f104, 'latent heat flux for water surface', aA, 'debug', 0), &
+      varAttr('QH_Paved', 'W m-2', f104, 'Sensible heat flux for paved surface', aA, 'debug', 0), &
+      varAttr('QH_Bldgs', 'W m-2', f104, 'Sensible heat flux for building surface', aA, 'debug', 0), &
+      varAttr('QH_EveTr', 'W m-2', f104, 'Sensible heat flux for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('QH_DecTr', 'W m-2', f104, 'Sensible heat flux for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('QH_Grass', 'W m-2', f104, 'Sensible heat flux for grass surface', aA, 'debug', 0), &
+      varAttr('QH_BSoil', 'W m-2', f104, 'Sensible heat flux for bare soil surface', aA, 'debug', 0), &
+      varAttr('QH_Water', 'W m-2', f104, 'Sensible heat flux for water surface', aA, 'debug', 0), &
+      varAttr('wu_Paved', 'mm', f104, 'Water use for paved surface', aA, 'debug', 0), &
+      varAttr('wu_Bldgs', 'mm', f104, 'Water use for building surface', aA, 'debug', 0), &
+      varAttr('wu_EveTr', 'mm', f104, 'Water use for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('wu_DecTr', 'mm', f104, 'Water use for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('wu_Grass', 'mm', f104, 'Water use for grass surface', aA, 'debug', 0), &
+      varAttr('wu_BSoil', 'mm', f104, 'Water use for bare soil surface', aA, 'debug', 0), &
+      varAttr('wu_Water', 'mm', f104, 'Water use for water surface', aA, 'debug', 0), &
+      varAttr('ev0_Paved', 'mm', f104, 'Evapotranspiration from PM for paved surface', aA, 'debug', 0), &
+      varAttr('ev0_Bldgs', 'mm', f104, 'Evapotranspiration from PM for building surface', aA, 'debug', 0), &
+      varAttr('ev0_EveTr', 'mm', f104, 'Evapotranspiration from PM for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('ev0_DecTr', 'mm', f104, 'Evapotranspiration from PM for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('ev0_Grass', 'mm', f104, 'Evapotranspiration from PM for grass surface', aA, 'debug', 0), &
+      varAttr('ev0_BSoil', 'mm', f104, 'Evapotranspiration from PM for bare soil surface', aA, 'debug', 0), &
+      varAttr('ev0_Water', 'mm', f104, 'Evapotranspiration from PM for water surface', aA, 'debug', 0), &
+      varAttr('ev_Paved', 'mm', f104, 'Evapotranspiration from PM for paved surface', aA, 'debug', 0), &
+      varAttr('ev_Bldgs', 'mm', f104, 'Evapotranspiration for building surface', aA, 'debug', 0), &
+      varAttr('ev_EveTr', 'mm', f104, 'Evapotranspiration for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('ev_DecTr', 'mm', f104, 'Evapotranspiration for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('ev_Grass', 'mm', f104, 'Evapotranspiration for grass surface', aA, 'debug', 0), &
+      varAttr('ev_BSoil', 'mm', f104, 'Evapotranspiration for bare soil surface', aA, 'debug', 0), &
+      varAttr('ev_Water', 'mm', f104, 'Evapotranspiration for water surface', aA, 'debug', 0), &
+      varAttr('drain_Paved', 'mm', f104, 'Drainage for paved surface', aA, 'debug', 0), &
+      varAttr('drain_Bldgs', 'mm', f104, 'Drainage for building surface', aA, 'debug', 0), &
+      varAttr('drain_EveTr', 'mm', f104, 'Drainage for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('drain_DecTr', 'mm', f104, 'Drainage for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('drain_Grass', 'mm', f104, 'Drainage for grass surface', aA, 'debug', 0), &
+      varAttr('drain_BSoil', 'mm', f104, 'Drainage for bare soil surface', aA, 'debug', 0), &
+      varAttr('drain_Water', 'mm', f104, 'Drainage for water surface', aA, 'debug', 0), &
+      varAttr('st_Paved_prev', 'mm', f104, 'surface wetness (prev) for paved surface', aA, 'debug', 0), &
+      varAttr('st_Bldgs_prev', 'mm', f104, 'surface wetness (prev) for building surface', aA, 'debug', 0), &
+      varAttr('st_EveTr_prev', 'mm', f104, 'surface wetness (prev) for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('st_DecTr_prev', 'mm', f104, 'surface wetness (prev) for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('st_Grass_prev', 'mm', f104, 'surface wetness (prev) for grass surface', aA, 'debug', 0), &
+      varAttr('st_BSoil_prev', 'mm', f104, 'surface wetness (prev) for bare soil surface', aA, 'debug', 0), &
+      varAttr('st_Water_prev', 'mm', f104, 'surface wetness (prev) for water surface', aA, 'debug', 0), &
+      varAttr('st_Paved_next', 'mm', f104, 'surface wetness (next) for paved surface', aA, 'debug', 0), &
+      varAttr('st_Bldgs_next', 'mm', f104, 'surface wetness (next) for building surface', aA, 'debug', 0), &
+      varAttr('st_EveTr_next', 'mm', f104, 'surface wetness (next) for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('st_DecTr_next', 'mm', f104, 'surface wetness (next) for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('st_Grass_next', 'mm', f104, 'surface wetness (next) for grass surface', aA, 'debug', 0), &
+      varAttr('st_BSoil_next', 'mm', f104, 'surface wetness (next) for bare soil surface', aA, 'debug', 0), &
+      varAttr('st_Water_next', 'mm', f104, 'surface wetness (next) for water surface', aA, 'debug', 0), &
+      varAttr('ss_Paved_prev', 'mm', f104, 'soil store (prev) for paved surface', aA, 'debug', 0), &
+      varAttr('ss_Bldgs_prev', 'mm', f104, 'soil store (prev) for building surface', aA, 'debug', 0), &
+      varAttr('ss_EveTr_prev', 'mm', f104, 'soil store (prev) for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('ss_DecTr_prev', 'mm', f104, 'soil store (prev) for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('ss_Grass_prev', 'mm', f104, 'soil store (prev) for grass surface', aA, 'debug', 0), &
+      varAttr('ss_BSoil_prev', 'mm', f104, 'soil store (prev) for bare soil surface', aA, 'debug', 0), &
+      varAttr('ss_Water_prev', 'mm', f104, 'soil store (prev) for water surface', aA, 'debug', 0), &
+      varAttr('ss_Paved_next', 'mm', f104, 'soil store (next) for paved surface', aA, 'debug', 0), &
+      varAttr('ss_Bldgs_next', 'mm', f104, 'soil store (next) for building surface', aA, 'debug', 0), &
+      varAttr('ss_EveTr_next', 'mm', f104, 'soil store (next) for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('ss_DecTr_next', 'mm', f104, 'soil store (next) for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('ss_Grass_next', 'mm', f104, 'soil store (next) for grass surface', aA, 'debug', 0), &
+      varAttr('ss_BSoil_next', 'mm', f104, 'soil store (next) for bare soil surface', aA, 'debug', 0), &
+      varAttr('ss_Water_next', 'mm', f104, 'soil store (next) for water surface', aA, 'debug', 0), &
+      varAttr('RS', 's m-1', f104, 'RS', aA, 'debug', 0), &
+      varAttr('RA', 's m-1', f104, 'RA', aA, 'debug', 0), &
+      varAttr('RB', 's m-1', f104, 'RB', aA, 'debug', 0), &
+      varAttr('RAsnow', 's m-1', f104, 'RA for snow', aA, 'debug', 0), &
+      varAttr('RSS_Paved', 's m-1', f104, 'Wetness-corrected surface conductance for paved surface', aA, 'debug', 0), &
+      varAttr('RSS_Bldgs', 's m-1', f104, 'Wetness-corrected surface conductance for building surface', aA, 'debug', 0), &
+      varAttr('RSS_EveTr', 's m-1', f104, 'Wetness-corrected surface conductance for evergreen tree surface', aA, 'debug', 0), &
+      varAttr('RSS_DecTr', 's m-1', f104, 'Wetness-corrected surface conductance for deciduous tree surface', aA, 'debug', 0), &
+      varAttr('RSS_Grass', 's m-1', f104, 'Wetness-corrected surface conductance for grass surface', aA, 'debug', 0), &
+      varAttr('RSS_BSoil', 's m-1', f104, 'Wetness-corrected surface conductance for bare soil surface', aA, 'debug', 0), &
+      varAttr('RSS_Water', 's m-1', f104, 'Wetness-corrected surface conductance for water surface', aA, 'debug', 0), &
+      varAttr('vpd_hPa', 'hPa', f104, 'vapour pressure deficit', aA, 'debug', 0), &
+      varAttr('lv_J_kg', 'J kg-1', f104, 'latent heat of vaporisation', aA, 'debug', 0), &
+      varAttr('avdens', 'kg m-3', f104, 'air density', aA, 'debug', 0), &
       varAttr('avcp', 'm', f104, 'air heat capacity at constant pressure', aA, 'debug', 0), &
       varAttr('s_hPa', 'm', f104, 'Vapour pressure versus temperature slope in PM', aA, 'debug', 0), &
       varAttr('psyc_hPa', 'm', f104, 'Psychometric constant', aA, 'debug', 0), &

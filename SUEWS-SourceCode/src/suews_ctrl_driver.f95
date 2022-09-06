@@ -599,6 +599,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: state_surf_prev, state_surf_next !wetness status of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: state_roof_prev, state_roof_next !wetness status of roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: state_wall_prev, state_wall_next !wetness status of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf ! evapotranspiration from PM of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_roof ! evapotranspiration of each roof layer [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_wall ! evapotranspiration of each wall type [mm]
@@ -702,6 +703,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: QG_surf ! heat flux used in ESTM_ext as forcing of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf ! net all-wave radiation of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qe0_surf ! latent heat flux from PM of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! sensinle heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_resist_surf ! resistance based sensible heat flux of individual surface [W m-2]
@@ -1216,6 +1218,7 @@ CONTAINS
                state_roof_next, soilstore_roof_next, ev_roof, & ! general output:
                state_wall_next, soilstore_wall_next, ev_wall, & ! general output:
                state_per_tstep, NWstate_per_tstep, &
+               ev0_surf,qe0_surf,&
                qe, qe_surf, qe_roof, qe_wall, &
                ev_per_tstep, runoff_per_tstep, &
                surf_chang_per_tstep, runoffPipes, &
@@ -1552,8 +1555,8 @@ CONTAINS
 
       dataoutlineDebug = &
          [tsfc0_out_surf, &
-          qn_surf, qs_surf, qe_surf, qh_surf, & ! energy balance
-          wu_surf, ev_surf, drain_surf, state_surf_prev, state_surf_next, soilstore_surf_prev, soilstore_surf_next, & ! water balance
+          qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
+          wu_surf, ev0_surf, ev_surf, drain_surf, state_surf_prev, state_surf_next, soilstore_surf_prev, soilstore_surf_next, & ! water balance
           RS, RA_h, RB, RAsnow, rss_surf, & ! for debugging QE
           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
           i_iter*1D0, dqndt]
@@ -2824,6 +2827,7 @@ CONTAINS
       state_roof_out, soilstore_roof_out, ev_roof, & ! general output:
       state_wall_out, soilstore_wall_out, ev_wall, & ! general output:
       state_grid, NWstate_grid, &
+      ev0_surf, qe0_surf,&
       qe, qe_surf, qe_roof, qe_wall, &
       ev_grid, runoff_grid, &
       surf_chang_grid, runoffPipes_grid, &
@@ -2939,6 +2943,8 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowToSurf
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: ev_snow
       ! REAL(KIND(1D0)), DIMENSION(2), INTENT(out) :: SnowRemoval
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe0_surf !evaporation of each surface type by PM [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev0_surf !evaporation of each surface type by PM [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev_surf !evaporation of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf !Redefined surface resistance for wet surfaces [s m-1]
 
@@ -3026,7 +3032,7 @@ CONTAINS
          EvapMethod, & !input
          sfr_surf, state_surf_in, WetThresh_surf, capStore_surf, & !input
          vpd_hPa, avdens, avcp, qn_e_surf, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
-         rss_surf, ev_surf, qe_surf) !output
+         rss_surf, ev0_surf, qe0_surf) !output
 
       IF (storageheatmethod == 5) THEN
          ! --- roofs ---
@@ -3072,7 +3078,7 @@ CONTAINS
          SoilStoreCap_surf, StateLimit_surf, &
          PervFraction, &
          sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
-         ev_surf, state_surf_in, soilstore_surf_in, &
+         ev0_surf, state_surf_in, soilstore_surf_in, &
          ev_surf, state_surf_out, soilstore_surf_out, & ! output:
          runoff_surf, &
          runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid & ! output:
