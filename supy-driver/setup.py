@@ -184,7 +184,7 @@ setup(
     distclass=BinaryDistribution,
     ext_modules=ext_modules,
     python_requires=">=3.7",
-    install_requires=["numpy>=1.20"],
+    install_requires=["numpy"],
     include_package_data=True,
     zip_safe=False,
 )

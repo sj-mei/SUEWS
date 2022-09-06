@@ -57,8 +57,7 @@ SUEWS_dir = ../SUEWS-SourceCode
 main:
 	# $(MAKE) show
 	$(PYTHON) -m pip install -r requirements.txt
-	$(PYTHON) -m pip install auditwheel
-	$(PYTHON) setup.py bdist_wheel
+	$(PYTHON) -m build --wheel
 
 
 # make fortran exe
