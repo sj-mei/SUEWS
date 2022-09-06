@@ -1218,7 +1218,7 @@ CONTAINS
                state_roof_next, soilstore_roof_next, ev_roof, & ! general output:
                state_wall_next, soilstore_wall_next, ev_wall, & ! general output:
                state_per_tstep, NWstate_per_tstep, &
-               ev0_surf,qe0_surf,&
+               ev0_surf, qe0_surf, &
                qe, qe_surf, qe_roof, qe_wall, &
                ev_per_tstep, runoff_per_tstep, &
                surf_chang_per_tstep, runoffPipes, &
@@ -2827,7 +2827,7 @@ CONTAINS
       state_roof_out, soilstore_roof_out, ev_roof, & ! general output:
       state_wall_out, soilstore_wall_out, ev_wall, & ! general output:
       state_grid, NWstate_grid, &
-      ev0_surf, qe0_surf,&
+      ev0_surf, qe0_surf, &
       qe, qe_surf, qe_roof, qe_wall, &
       ev_grid, runoff_grid, &
       surf_chang_grid, runoffPipes_grid, &
