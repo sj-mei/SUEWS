@@ -206,6 +206,7 @@ jobs:
 
       - name: build supy-driver
         run: |
+          export SETUPTOOLS_ENABLE_FEATURES="legacy-editable"
           make driver
 
       - name: Store the ${{ matrix.py }} wheel
