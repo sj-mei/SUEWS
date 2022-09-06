@@ -164,6 +164,7 @@ jobs:
           which python;\
           python -m pip install -U pip pytest --user; \
           cd /io/supy-driver; \
+          export SETUPTOOLS_ENABLE_FEATURES="legacy-editable"; \
           make test"
 
       - name: Store ${{ matrix.manylinux-python-target }} binary wheel
