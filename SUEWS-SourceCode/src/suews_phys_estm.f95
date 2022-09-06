@@ -2554,7 +2554,7 @@ CONTAINS
       ! building surface
       ! PRINT *, 'QS_roof in estm_ext', DOT_PRODUCT(QS_roof, sfr_roof), 'for', sfr_roof
       ! PRINT *, 'QS_wall in estm_ext', DOT_PRODUCT(QS_wall, sfr_wall), 'for', sfr_wall
-      QS_surf(BldgSurf) = (DOT_PRODUCT(QS_roof, sfr_roof_n) + DOT_PRODUCT(QS_wall, sfr_wall_n))
+      QS_surf(BldgSurf) = (DOT_PRODUCT(QS_roof, sfr_roof) + DOT_PRODUCT(QS_wall, sfr_wall))/sfr_surf(BldgSurf)
       DO i_depth = 1, ndepth
          temp_out_surf(BldgSurf, i_depth) = &
             (DOT_PRODUCT(temp_out_roof(:, i_depth), sfr_roof) &

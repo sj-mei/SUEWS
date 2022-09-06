@@ -37,6 +37,7 @@ MODULE SPARTACUS_MODULE
    !==============================================================================================
    USE allocateArray, ONLY: NSURF, NVegSurf, nspec, nsw, nlw, ncol, &
                             ConifSurf, DecidSurf, BldgSurf, PavSurf, GrassSurf, BSoilSurf, WaterSurf
+   USE PhysConstants, ONLY: SBConst
 
    IMPLICIT NONE
 
@@ -69,7 +70,7 @@ CONTAINS
       DiagQN, & !input:
       sfr_surf, zenith_deg, nlayer, & !input:
       tsfc_surf, tsfc_roof, tsfc_wall, &
-      kdown, ldown, Tair_C, alb, emis, LAI_id, &
+      kdown, ldown, Tair_C, alb_surf, emis_surf, LAI_id, &
       n_vegetation_region_urban, &
       n_stream_sw_urban, n_stream_lw_urban, &
       sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
@@ -80,7 +81,7 @@ CONTAINS
       building_scale, veg_scale, & !input:
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
-      qn, kup, lup, qn_roof, qn_wall, & !output:
+      qn, kup, lup, qn_roof, qn_wall, qn_surf, & !output:
       dataOutLineSPARTACUS)
       USE parkind1, ONLY: jpim, jprb
       USE radsurf_interface, ONLY: radsurf
@@ -111,7 +112,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: kdown
       REAL(KIND(1D0)), INTENT(IN) :: ldown
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: tsfc_surf
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf, alb, emis
+
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf, alb_surf, emis_surf
       REAL(KIND(1D0)), DIMENSION(NVegSurf), INTENT(IN) :: LAI_id
 
       ! SPARTACUS configuration parameters
@@ -135,17 +137,30 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(OUT) :: qn, kup, lup
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: qn_wall
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(OUT) :: qn_surf
+      REAL(KIND(1D0)) :: sw_net_grnd
+      REAL(KIND(1D0)) :: lw_net_grnd
+      REAL(KIND(1D0)) :: sw_dn_grnd
+      REAL(KIND(1D0)) :: lw_dn_grnd
+      REAL(KIND(1D0)) :: lw_up_grnd
+      REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: qn_grnd_ind
+      REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: alb_grnd_ind
+      REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: emis_grnd_ind
+      REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: sfr_grnd_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf - 1) :: sw_net_grnd_ind
+      REAL(KIND(1D0)), DIMENSION(nsurf - 1) :: lw_net_grnd_ind
+      REAL(KIND(1D0)), DIMENSION(NSURF - 1) :: tsfc_grnd_ind_K
       ! --------------------------------------------------------------------------------
       ! these will be in the SPARTACUS output array
       REAL(KIND(1D0)) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
       REAL(KIND(1D0)) :: top_net_lw_spc
-      REAL(KIND(1D0)) :: ground_net_lw_spc
+      REAL(KIND(1D0)) :: grnd_net_lw_spc
       REAL(KIND(1D0)) :: top_dn_lw_spc
       REAL(KIND(1D0)) :: top_dn_dir_sw_spc
       REAL(KIND(1D0)) :: top_net_sw_spc
-      REAL(KIND(1D0)) :: ground_dn_dir_sw_spc
-      REAL(KIND(1D0)) :: ground_net_sw_spc
-      REAL(KIND(1D0)) :: ground_vertical_diff
+      REAL(KIND(1D0)) :: grnd_dn_dir_sw_spc
+      REAL(KIND(1D0)) :: grnd_net_sw_spc
+      REAL(KIND(1D0)) :: grnd_vertical_diff
       REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_lw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: clear_air_abs_sw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: roof_in_sw_spc
@@ -156,6 +171,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(15) :: wall_in_lw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: wall_net_sw_spc
       REAL(KIND(1D0)), DIMENSION(15) :: wall_net_lw_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: sfr_roof_spc
+      REAL(KIND(1D0)), DIMENSION(15) :: sfr_wall_spc
       ! --------------------------------------------------------------------------------
 
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
@@ -218,32 +235,17 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: roof_emissivity
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_emissivity
       REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_fsd, veg_contact_fraction
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof ! individual building fraction at each layer
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: dz_ind ! individual net building height at each layer
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall ! individual net building height at each layer
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: perimeter_ind ! individual building perimeter at each layer
+      ! INTEGER :: i
       ! REAL(KIND(1D0)) :: debug1, debug2
 
       IF (DiagQN == 1) PRINT *, 'in SPARTACUS, starting ...'
       ! initialize the output variables
       dataOutLineSPARTACUS = -999.
 
-      ! ! get individual building fractions of each layer
-      ! sfr_roof = 0.
-      ! sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
-      ! sfr_roof(nlayer) = building_frac(nlayer)
-
-      ! ! get individual net building height of each layer
-      ! dz_ind = 0.
-      ! dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
-
-      ! ! get individual building perimeter of each layer
-      ! perimeter_ind = 0.
-      ! perimeter_ind(1:nlayer) = 4.*sfr_roof(1:nlayer)/building_scale(1:nlayer)
-
-      ! ! get individual wall area at each layer
-      ! sfr_wall = 0.
-      ! sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)/2.
+      sfr_roof_spc = -999.
+      sfr_roof_spc(1:nlayer) = sfr_roof
+      sfr_wall_spc = -999.
+      sfr_wall_spc(1:nlayer) = sfr_wall
 
       ALLOCATE (nlay(ncol))
       ! nlay = [nlayers] ! modified to follow ESTM_ext convention
@@ -369,7 +371,6 @@ CONTAINS
       tsfc_wall_K = tsfc_wall + 273.15 ! convert surface temperature to Kelvin
       tair_K = Tair_C + 273.15 ! convert air temperature to Kelvin
 
-      ! TODO: what does the "ground" refer to?
       ! set ground temperature as the area-weighted average of the surface temperature of all land covers but buildings
       canopy_props%ground_temperature = (DOT_PRODUCT(tsfc_surf_K, sfr_surf) - tsfc_surf_K(BldgSurf)*sfr_surf(BldgSurf)) &
                                         /(1 - sfr_surf(BldgSurf))
@@ -409,9 +410,10 @@ CONTAINS
       CALL sw_spectral_props%DEALLOCATE()
       CALL sw_spectral_props%ALLOCATE(config, ncol, nlayer, nspec, canopy_props%i_representation)
 
-      alb_no_tree_bldg = (alb(1)*sfr_surf(PavSurf) + alb(5)*sfr_surf(GrassSurf) + &
-                          alb(6)*sfr_surf(BSoilSurf) + alb(7)*sfr_surf(WaterSurf))/ &
-                         (sfr_surf(PavSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf) + sfr_surf(WaterSurf)) ! albedo of the ground
+      ! albedo of the ground
+      alb_no_tree_bldg = (alb_surf(1)*sfr_surf(PavSurf) + alb_surf(5)*sfr_surf(GrassSurf) + &
+                          alb_surf(6)*sfr_surf(BSoilSurf) + alb_surf(7)*sfr_surf(WaterSurf))/ &
+                         (sfr_surf(PavSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf) + sfr_surf(WaterSurf))
       sw_spectral_props%air_ext = air_ext_sw
       sw_spectral_props%air_ssa = air_ssa_sw
       IF (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) > 0.0) THEN
@@ -431,8 +433,8 @@ CONTAINS
       CALL lw_spectral_props%DEALLOCATE()
       CALL lw_spectral_props%ALLOCATE(config, nspec, ncol, nlayer, canopy_props%i_representation)
 
-      emis_no_tree_bldg = (emis(1)*sfr_surf(PavSurf) + emis(5)*sfr_surf(GrassSurf) + &
-                           emis(6)*sfr_surf(BSoilSurf) + emis(7)*sfr_surf(WaterSurf))/ &
+      emis_no_tree_bldg = (emis_surf(1)*sfr_surf(PavSurf) + emis_surf(5)*sfr_surf(GrassSurf) + &
+                           emis_surf(6)*sfr_surf(BSoilSurf) + emis_surf(7)*sfr_surf(WaterSurf))/ &
                           (sfr_surf(PavSurf) + sfr_surf(GrassSurf) + sfr_surf(BSoilSurf) + sfr_surf(WaterSurf)) ! emissivity of the ground
       lw_spectral_props%air_ext = air_ext_lw
       lw_spectral_props%air_ssa = air_ssa_lw
@@ -513,10 +515,14 @@ CONTAINS
       END DO
 
       ! albedo
-      alb_spc = 0.0
-      alb_spc = ((top_flux_dn_diffuse_sw + 10.**(-10))*bc_out%sw_albedo(nspec, ncol) & ! the 10.**-10 stops the equation blowing up when kdwn=0
-                 + (top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))*bc_out%sw_albedo_dir(nspec, ncol)) &
-                /(top_flux_dn_diffuse_sw + 10.**(-10) + top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))
+      IF (top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol) > 0.1) THEN
+         alb_spc = ((top_flux_dn_diffuse_sw + 10.**(-10))*(bc_out%sw_albedo(nspec, ncol)) & ! the 10.**-10 stops the equation blowing up when kdwn=0
+                    + (top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))*(bc_out%sw_albedo_dir(nspec, ncol))) &
+                   /(top_flux_dn_diffuse_sw + top_flux_dn_direct_sw(nspec, ncol) + 10.**(-10))
+         IF (alb_spc < 0.0) alb_spc = 0
+      ELSE
+         alb_spc = 0.0
+      END IF
 
       !!! Output arrays !!!
 
@@ -528,8 +534,7 @@ CONTAINS
       lw_up_spc = lw_emission_spc + (1 - emis_spc)*ldown
       ! shortwave upward = downward diffuse * diffuse albedo + downward direct * direct albedo
       sw_up_spc = 0.0
-      sw_up_spc = top_flux_dn_diffuse_sw*bc_out%sw_albedo(nspec, ncol) &
-                  + top_flux_dn_direct_sw(nspec, ncol)*bc_out%sw_albedo_dir(nspec, ncol) ! or more simply: alb_spc*avKdn
+      sw_up_spc = kdown*alb_spc ! or more simply: alb_spc*avKdn
       ! net all = net sw + net lw
       qn_spc = sw_flux%top_net(nspec, ncol) + lw_flux%top_net(nspec, ncol)
 
@@ -547,7 +552,7 @@ CONTAINS
       roof_in_lw_spc = -999
       roof_in_lw_spc(:nlayer) = lw_flux%roof_in(nspec, :nlayer)
       top_net_lw_spc = lw_flux%top_net(nspec, ncol)
-      ground_net_lw_spc = lw_flux%ground_net(nspec, ncol)
+      grnd_net_lw_spc = lw_flux%ground_net(nspec, ncol)
       top_dn_lw_spc = lw_flux%top_dn(nspec, ncol)
 
       ! sw arrays
@@ -569,9 +574,9 @@ CONTAINS
       ! print *, ''
       top_dn_dir_sw_spc = sw_flux%top_dn_dir(nspec, ncol)
       top_net_sw_spc = sw_flux%top_net(nspec, ncol)
-      ground_dn_dir_sw_spc = sw_flux%ground_dn_dir(nspec, ncol)
-      ground_net_sw_spc = sw_flux%ground_net(nspec, ncol)
-      ground_vertical_diff = sw_flux%ground_vertical_diff(nspec, ncol)
+      grnd_dn_dir_sw_spc = sw_flux%ground_dn_dir(nspec, ncol)
+      grnd_net_sw_spc = sw_flux%ground_net(nspec, ncol)
+      grnd_vertical_diff = sw_flux%ground_vertical_diff(nspec, ncol)
 
       !!!!!!!!!!!!!! Bulk KUP, LUP, QSTAR for SUEWS !!!!!!!!!!!!!!
 
@@ -579,21 +584,11 @@ CONTAINS
       ! print *, 'lw_up_spc', lw_up_spc
       kup = sw_up_spc
       ! print *, 'sw_up_spc', sw_up_spc
-      qn = qn_spc
+      ! limit the lower limit of qn to avoid issue when used with OHM
+      qn = MAX(qn_spc, -600D0)
       ! print *, 'qn_spc', qn_spc
 
-      ! ! denormalise all the fluxes of building facets for consistency with SUEWS
-      ! ! lw
-      ! roof_in_lw_spc(:nlayer)=roof_in_lw_spc(:nlayer)/building_frac_ind(:nlayer)
-      ! ! wall_in_lw_spc(:nlayer)=wall_in_lw_spc(:nlayer)/building_frac_ind(:nlayer)
-      ! roof_net_lw_spc(:nlayer)=roof_net_lw_spc(:nlayer)/building_frac_ind(:nlayer)
-      ! ! wall_net_lw_spc(:nlayer)=wall_net_lw_spc(:nlayer)/building_frac_ind(:nlayer)
-      ! ! sw
-      ! roof_in_sw_spc(:nlayer)=roof_in_sw_spc(:nlayer)/building_frac_ind(:nlayer)
-      ! ! wall_in_sw_spc(:nlayer)=wall_in_sw_spc(:nlayer)/building_frac_ind(:nlayer)
-      ! roof_net_sw_spc(:nlayer)=roof_net_sw_spc(:nlayer)/building_frac_ind(:nlayer)
-      ! ! wall_net_sw_spc(:nlayer)=wall_net_sw_spc(:nlayer)/building_frac_ind(:nlayer)
-
+      ! ============================================================
       ! net radiation for roof/wall
       ! note these fluxes are NOT de-normalised
       qn_roof = roof_net_lw_spc(:nlayer) + roof_net_sw_spc(:nlayer)
@@ -603,11 +598,42 @@ CONTAINS
       ! note the orignal results from above SS calcuations are normalised by the whole grid area
       ! roof: need to de-normalise by dividing the building/roof fraction
       qn_roof = qn_roof/sfr_roof(:nlayer)
-      ! wall: two steps needed:
-      ! 1. convert to horizotnal sense by mutliplying the roof/building fractions
-      ! 2. de-normalise by dividing the wall areas
-      qn_wall = qn_wall*sfr_roof(:nlayer)/sfr_wall(:nlayer)
-      ! qn_wall = qn_wall/sfr_wall(:nlayer)
+      ! wall: need to de-normalise by dividing the building/wall fraction
+      qn_wall = qn_wall/sfr_wall(:nlayer)
+
+      ! ============================================================
+      ! net radiation for ground surfaces
+      ! retrieve the surface temperatures/properties of all ground land covers except for buildings
+      sfr_grnd_ind = sfr_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf])
+      tsfc_grnd_ind_K = tsfc_surf_K([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf])
+      emis_grnd_ind = emis_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf])
+      alb_grnd_ind = alb_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf])
+
+      ! note the ground here includes all surfaces that are not roof/wall
+      ! de-normalise net radiation for ground surfaces - these will be used in other SUEWS calculations:
+      sw_net_grnd = grnd_net_sw_spc/(1 - building_frac(1))
+      lw_net_grnd = grnd_net_lw_spc/(1 - building_frac(1))
+
+      ! net shortwave radiation for individual ground surfaces
+      sw_dn_grnd = sw_net_grnd/DOT_PRODUCT(alb_grnd_ind, sfr_grnd_ind)/SUM(sfr_grnd_ind)
+      sw_net_grnd_ind = sw_net_grnd*(1 - alb_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf]))
+
+      ! net longwave radiation for individual ground surfaces
+      lw_up_grnd = SBConst*DOT_PRODUCT(emis_grnd_ind*tsfc_grnd_ind_K**4, sfr_grnd_ind)/SUM(sfr_grnd_ind)
+
+      ! assume that the downward longwave radiation incident on the ground is the same between all surfaces
+      lw_dn_grnd = lw_up_grnd + lw_net_grnd
+      lw_net_grnd_ind = lw_dn_grnd - SBConst*emis_grnd_ind*tsfc_grnd_ind_K**4
+
+      ! net all-wave radiation for individual ground surfaces
+      qn_grnd_ind = lw_net_grnd_ind + sw_net_grnd_ind
+
+      ! combine with all surfaces
+      qn_surf([PavSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf]) = qn_grnd_ind
+
+      ! average between roof and wall for the building surface: a simple treatment
+      ! qn_surf(BldgSurf) = (DOT_PRODUCT(qn_roof, sfr_roof)/SUM(sfr_roof) + DOT_PRODUCT(qn_wall, sfr_wall)/SUM(sfr_wall))
+      qn_surf(BldgSurf) = (qn_spc - DOT_PRODUCT(qn_grnd_ind, sfr_grnd_ind))/sfr_surf(BldgSurf)
 
       dataOutLineSPARTACUS = &
          [alb_spc, emis_spc, &
@@ -619,10 +645,10 @@ CONTAINS
           top_net_sw_spc, &
           top_net_lw_spc, &
           lw_emission_spc, &
-          ground_dn_dir_sw_spc, &
-          ground_vertical_diff, &
-          ground_net_sw_spc, &
-          ground_net_lw_spc, &
+          grnd_dn_dir_sw_spc, &
+          grnd_vertical_diff, &
+          grnd_net_sw_spc, &
+          grnd_net_lw_spc, &
           roof_in_sw_spc, &
           roof_net_sw_spc, &
           wall_in_sw_spc, &
@@ -632,6 +658,8 @@ CONTAINS
           roof_net_lw_spc, &
           wall_in_lw_spc, &
           wall_net_lw_spc, &
+          sfr_roof_spc, &
+          sfr_wall_spc, &
           clear_air_abs_lw_spc &
           ]
 

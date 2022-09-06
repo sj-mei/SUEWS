@@ -37,7 +37,7 @@ CONTAINS
          VPd_hpa, & !vapour pressure deficit in hPa
          VPD_Pa, & !vapour pressure deficit in Pa
          dq, & !Specific humidity deficit in g/kg
-         dens_dry, & !Vap density or absolute humidity         (kg/m3)
+         dens_dry, & !Vap density or absolute humidity [kg m-3]
          avcp, & !specific heat capacity in J kg-1 K-1
          air_dens !Air density in kg/m3
 

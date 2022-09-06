@@ -1,5 +1,5 @@
 numpy>=1.21
-setuptools>=40.2.0
+setuptools>=60
 wheel>=0.31.1
 twine
 pytest
