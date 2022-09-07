@@ -8,6 +8,9 @@ before-build = [
     'git describe --tags --always --dirty',
 ]
 
+# Increase pip debugging output
+build-verbosity = 1
+
 # Install system library
 [tool.cibuildwheel.linux]
 before-all = "yum install -y glibc-static"
