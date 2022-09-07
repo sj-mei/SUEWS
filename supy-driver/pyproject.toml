@@ -10,3 +10,6 @@ before-build = [
 # Install system library
 [tool.cibuildwheel.linux]
 before-all = "yum install -y glibc-static"
+
+[tool.cibuildwheel.macos]
+before-all = 'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran'
