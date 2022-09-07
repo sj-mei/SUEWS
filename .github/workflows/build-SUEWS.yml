@@ -150,11 +150,14 @@ jobs:
         # - name: Setup upterm session
         #   uses: lhotari/action-upterm@v1
 
-        - name: Install cibuildwheel
-          run: python -m pip install cibuildwheel==2.9.0
-
         - name: Build wheels
-          run: python -m cibuildwheel --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml
+          run: pipx run cibuildwheel==2.9.0 --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml
+
+        # - name: Install cibuildwheel
+        #   run: python -m pip install cibuildwheel==2.9.0
+
+        # - name: Build wheels
+        #   run: python -m cibuildwheel --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml
           # uses: pypa/cibuildwheel@v2.9.0
           # env:
           #   SETUPTOOLS_ENABLE_FEATURES: legacy-editable
