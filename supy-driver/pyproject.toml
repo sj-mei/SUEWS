@@ -7,17 +7,31 @@ requires = ["wheel", "setuptools", "oldest-supported-numpy"]
 skip = ["*-win32", "*-manylinux_i686","pp*"]
 
 before-build = [
-    "make suews",
     'git describe --tags --always --dirty',
 ]
 
 # Increase pip debugging output
 build-verbosity = 1
 
-# Install system library
+
 [tool.cibuildwheel.linux]
-before-all = "yum install -y glibc-static"
+# Install system library
+before-all = [
+    ""yum install -y glibc-static",
+    "make suews",
+]
+archs = ["auto64"]
 
 [tool.cibuildwheel.macos]
-before-all = 'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran'
-archs = ["x86_64", "universal2", "arm64"]
+before-all = [
+    'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
+    "make suews",
+]
+archs = ["x86_64", "arm64"]
+
+
+[tool.cibuildwheel.windows]
+before-all = [
+    "make suews",
+]
+archs = ["auto64"]

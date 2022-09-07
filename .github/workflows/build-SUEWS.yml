@@ -152,8 +152,6 @@ jobs:
 
         - name: check git tags
           run: |
-            git fetch --tags
-            git tag
             git describe --tags --always --dirty
 
         - name: Build wheels
