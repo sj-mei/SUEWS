@@ -155,10 +155,12 @@ jobs:
           token: ${{ secrets.PAT }}
           fetch-depth: 0 # to get all tags
 
-      # remote debugging
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+      # # remote debugging
+      # - name: Setup upterm session
+      #   uses: lhotari/action-upterm@v1
 
+      # for debugging this:
+      # docker run -it -v $(pwd):/io --rm quay.io/pypa/manylinux2014_x86_64
       - name: build for ${{ matrix.manylinux-python-target }}
         run: |
           docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
