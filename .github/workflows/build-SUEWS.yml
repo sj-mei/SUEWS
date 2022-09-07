@@ -157,23 +157,6 @@ jobs:
           with:
             path: ./wheelhouse/*.whl
 
-  build_sdist:
-    name: Build source distribution
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          token: ${{ secrets.PAT }}
-          fetch-depth: 0 # to get all tags
-
-      - name: Build sdist
-        run: pipx run build --sdist
-
-      - uses: actions/upload-artifact@v3
-        with:
-          path: dist/*.tar.gz
-
   # build-wheels-manylinux:
   #   # needs: test-suews
 

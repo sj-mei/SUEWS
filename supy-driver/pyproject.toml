@@ -1,2 +1,8 @@
 [build-system]
 requires = ["wheel", "setuptools", "oldest-supported-numpy"]
+
+
+[tool.cibuildwheel]
+before-build = [
+    "make suews",
+]
