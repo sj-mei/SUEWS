@@ -132,56 +132,57 @@ jobs:
 
 
 
-  # build-wheels-manylinux:
-  #   # needs: test-suews
+  build-wheels-manylinux:
+    # needs: test-suews
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   strategy:
-  #     matrix:
-  #       manylinux-python-target:
-  #         # NOTE: Must be from this list:
-  #         # NOTE: $ docker run -it --rm quay.io/pypa/manylinux2014_x86_64
-  #         # NOTE:   ls -1 /opt/python
-  #         - cp310-cp310
-  #         - cp39-cp39
-  #         - cp38-cp38
-  #         - cp37-cp37m
+    strategy:
+      matrix:
+        manylinux-python-target:
+          # NOTE: Must be from this list:
+          # NOTE: $ docker run -it --rm quay.io/pypa/manylinux2014_x86_64
+          # NOTE:   ls -1 /opt/python
+          - cp310-cp310
+          - cp39-cp39
+          - cp38-cp38
+          - cp37-cp37m
 
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         submodules: true
-  #         token: ${{ secrets.PAT }}
-  #         fetch-depth: 0 # to get all tags
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0 # to get all tags
 
-  #     - name: build for ${{ matrix.manylinux-python-target }}
-  #       run: |
-  #         docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
-  #         "yum install glibc-static -y; cd /io/supy-driver; make suews"
-  #         docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
-  #         "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
-  #         which python;\
-  #         python -m pip install -U pip pytest --user; \
-  #         cd /io/supy-driver; \
-  #         export SETUPTOOLS_ENABLE_FEATURES="legacy-editable"; \
-  #         make test"
+      - name: build for ${{ matrix.manylinux-python-target }}
+        run: |
+          docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
+          "yum install glibc-static -y; cd /io/supy-driver; make suews"
+          docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
+          "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/bin/python; \
+          "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
+          which python;\
+          python -m pip install -U pip pytest --user; \
+          cd /io/supy-driver; \
+          export SETUPTOOLS_ENABLE_FEATURES="legacy-editable"; \
+          make test"
 
-  #     - name: Store ${{ matrix.manylinux-python-target }} binary wheel
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: python-package-distributions
-  #         path: supy-driver/wheelhouse/
+      - name: Store ${{ matrix.manylinux-python-target }} binary wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-package-distributions
+          path: supy-driver/wheelhouse/
 
   build-wheels-mac_win:
-    # needs: test-suews
+    needs: test-suews
 
     strategy:
       matrix:
         py: ["3.10"]
         # py: ["3.10", "3.9", "3.8", "3.7"]
-        # os: [macOS-latest, windows-latest]
-        os: [macOS-latest]
+        os: [macOS-latest, windows-latest]
+        # os: [macOS-latest]
         # os: [windows-latest]
 
     runs-on: ${{ matrix.os }}
