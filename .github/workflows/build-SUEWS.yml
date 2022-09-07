@@ -155,9 +155,9 @@ jobs:
           env:
             SETUPTOOLS_ENABLE_FEATURES: legacy-editable
           with:
-            package-dir: ../SUEWS
+            package-dir: .
             output-dir: wheelhouse
-            config-file: "{package}/supy-driver/pyproject.toml"
+            config-file: "{project}/supy-driver/pyproject.toml"
 
         - uses: actions/upload-artifact@v3
           with:
