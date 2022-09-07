@@ -133,7 +133,7 @@ jobs:
 
 
   build-wheels-manylinux:
-    needs: test-suews
+    # needs: test-suews
 
     runs-on: ubuntu-latest
 
@@ -157,9 +157,9 @@ jobs:
 
       - name: build for ${{ matrix.manylinux-python-target }}
         run: |
-          docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
+          docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
           "yum install glibc-static -y; cd /io/supy-driver; make suews"
-          docker run -v $(pwd):/io dockcross/manylinux2014-x64 bash -c \
+          docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
           "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
           which python;\
           python -m pip install -U pip pytest --user; \
@@ -179,7 +179,8 @@ jobs:
     strategy:
       matrix:
         py: ["3.10", "3.9", "3.8", "3.7"]
-        os: [macOS-latest, windows-2019]
+        # os: [macOS-latest, windows-latest]
+        os: [macOS-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
