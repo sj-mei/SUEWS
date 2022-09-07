@@ -140,7 +140,7 @@ jobs:
           # os: [ubuntu-20.04]
 
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v2
           with:
             submodules: true
             token: ${{ secrets.PAT }}
@@ -149,6 +149,12 @@ jobs:
         # # remote debugging
         # - name: Setup upterm session
         #   uses: lhotari/action-upterm@v1
+
+        - name: check git tags
+          run: |
+            git fetch --tags
+            git tag
+            git describe --tags --always --dirty
 
         - name: Build wheels
           run: pipx run cibuildwheel==2.9.0 --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml ./supy-driver
