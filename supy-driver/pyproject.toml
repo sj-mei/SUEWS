@@ -6,3 +6,7 @@ requires = ["wheel", "setuptools", "oldest-supported-numpy"]
 before-build = [
     "make suews",
 ]
+
+# Install system library
+[tool.cibuildwheel.linux]
+before-all = "yum install -y glibc-static"
