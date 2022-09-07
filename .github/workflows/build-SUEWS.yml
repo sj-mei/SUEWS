@@ -161,7 +161,7 @@ jobs:
           "yum install glibc-static -y; cd /io/supy-driver; make suews"
           docker run -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 bash -c \
           "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/bin/python; \
-          "ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
+          ln -sf /opt/python/${{ matrix.manylinux-python-target }}/bin/python /usr/local/bin/python; \
           which python;\
           python -m pip install -U pip pytest --user; \
           cd /io/supy-driver; \
