@@ -5,6 +5,7 @@ requires = ["wheel", "setuptools", "oldest-supported-numpy"]
 [tool.cibuildwheel]
 before-build = [
     "make suews",
+    'git describe --tags --always --dirty',
 ]
 
 # Install system library

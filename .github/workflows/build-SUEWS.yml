@@ -136,7 +136,7 @@ jobs:
       strategy:
         matrix:
           # os: [ubuntu-20.04, windows-2019, macos-11]
-          os: [ubuntu-20.04, macos-11]
+          os: [windows-2019]
 
       steps:
         - uses: actions/checkout@v3
@@ -144,6 +144,10 @@ jobs:
             submodules: true
             token: ${{ secrets.PAT }}
             fetch-depth: 0 # to get all tags
+
+        # remote debugging
+        - name: Setup upterm session
+          uses: lhotari/action-upterm@v1
 
         - name: Build wheels
           uses: pypa/cibuildwheel@v2.9.0
