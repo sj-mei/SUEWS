@@ -1,14 +1,24 @@
 [build-system]
-requires = ["wheel", "setuptools", "oldest-supported-numpy"]
+requires = [
+    "wheel",
+    "setuptools",
+    "oldest-supported-numpy",
+    "setuptools-git-versioning",
+]
+
+
+[tool.setuptools-git-versioning]
+enabled = true
+template = "2022.{tag}"
+dev_template = "{tag}.post{ccount}"
+dirty_template = "{tag}.post{ccount}+dirty"
 
 
 [tool.cibuildwheel]
 # skip 32-bit and pypy builds
-skip = ["*-win32", "*-manylinux_i686","pp*"]
+skip = ["*-win32", "*-manylinux_i686", "pp*"]
 
-before-build = [
-    'git describe --tags --always --dirty',
-]
+before-build = ["git describe --tags --always --dirty"]
 
 # Increase pip debugging output
 build-verbosity = 1
@@ -16,10 +26,7 @@ build-verbosity = 1
 
 [tool.cibuildwheel.linux]
 # Install system library
-before-all = [
-    "yum install -y glibc-static",
-    "make suews",
-]
+before-all = ["yum install -y glibc-static", "make suews"]
 archs = ["auto64"]
 
 [tool.cibuildwheel.macos]
@@ -31,7 +38,5 @@ archs = ["x86_64", "arm64"]
 
 
 [tool.cibuildwheel.windows]
-before-all = [
-    "make suews",
-]
+before-all = ["make suews"]
 archs = ["auto64"]
