@@ -157,7 +157,7 @@ jobs:
           with:
             package-dir: .
             output-dir: wheelhouse
-            config-file: "{project}/supy-driver/pyproject.toml"
+            config-file: ./supy-driver/pyproject.toml
 
         - uses: actions/upload-artifact@v3
           with:
