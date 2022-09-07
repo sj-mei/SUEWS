@@ -3,6 +3,9 @@ requires = ["wheel", "setuptools", "oldest-supported-numpy"]
 
 
 [tool.cibuildwheel]
+# skip 32-bit and pypy builds
+skip = ["*-win32", "*-manylinux_i686","pp*"]
+
 before-build = [
     "make suews",
     'git describe --tags --always --dirty',
