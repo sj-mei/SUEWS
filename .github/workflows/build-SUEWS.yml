@@ -144,9 +144,9 @@ jobs:
           # NOTE: $ docker run -it --rm quay.io/pypa/manylinux2014_x86_64
           # NOTE:   ls -1 /opt/python
           - cp310-cp310
-          - cp39-cp39
-          - cp38-cp38
-          - cp37-cp37m
+          # - cp39-cp39
+          # - cp38-cp38
+          # - cp37-cp37m
 
     steps:
       - uses: actions/checkout@v2
@@ -154,6 +154,10 @@ jobs:
           submodules: true
           token: ${{ secrets.PAT }}
           fetch-depth: 0 # to get all tags
+
+      # remote debugging
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       - name: build for ${{ matrix.manylinux-python-target }}
         run: |
@@ -166,6 +170,7 @@ jobs:
           python -m pip install -U pip pytest --user; \
           cd /io/supy-driver; \
           export SETUPTOOLS_ENABLE_FEATURES="legacy-editable"; \
+          echo $SETUPTOOLS_ENABLE_FEATURES; \
           make test"
 
       - name: Store ${{ matrix.manylinux-python-target }} binary wheel
