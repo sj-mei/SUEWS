@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 enabled = true
 template = "2022.{tag}"
 dev_template = "{tag}.post{ccount}"
-dirty_template = "{tag}.post{ccount}+dirty"
+# dirty_template = "{tag}.post{ccount}+dirty"
 
 
 [tool.cibuildwheel]
@@ -46,4 +46,3 @@ before-build = [
     "python build-win-def.py",
 ]
 archs = ["auto64"]
-# environment = { CC='i686-w64-mingw32-gcc',FC='i686-w64-mingw32-gfortran' }

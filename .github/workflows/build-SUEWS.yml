@@ -136,8 +136,8 @@ jobs:
       strategy:
         fail-fast: false
         matrix:
-          # os: [ubuntu-20.04, windows-2019, macos-11]
-          os: [windows-2019]
+          os: [ubuntu-20.04, windows-2019, macos-11]
+          # os: [windows-2019]
 
       steps:
         - uses: actions/checkout@v3
@@ -150,11 +150,10 @@ jobs:
         # - name: Setup upterm session
         #   uses: lhotari/action-upterm@v1
 
-        - uses: actions/setup-python@v3
-
-        # - name: check git tags
-        #   run: |
-        #     git describe --tags --always --dirty
+        - name: check git
+          run: |
+            git describe --tags --always --dirty
+            git status
 
         - name: Build wheels
           run: pipx run cibuildwheel==2.9.0 --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml ./supy-driver
@@ -172,10 +171,51 @@ jobs:
   #         #   output-dir: wheelhouse
   #         #   config-file: ./supy-driver/pyproject.toml
 
-  #       - uses: actions/upload-artifact@v3
-  #         with:
-  #           path: ./wheelhouse/*.whl
+        - name: check git
+          run: |
+            git describe --tags --always --dirty
+            git status
 
+        - uses: actions/upload-artifact@v3
+          with:
+            path: ./wheelhouse/*.whl
+
+
+  deploy:
+    name: Publish 🐍📦 to (Test)PyPI
+    needs:
+      # - build-wheels-manylinux
+      - build_wheels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v2
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution 📦 to Test PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          packages_dir: dist/
+          verbose: true
+          skip_existing: true
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+
+      - name: Publish distribution 📦 to PyPI
+        if: startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          packages_dir: dist/
+          verbose: true
+          skip_existing: true
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+
+####################################################################################
+# archived workflows
   # build-wheels-manylinux:
   #   # needs: test-suews
 
@@ -273,35 +313,3 @@ jobs:
   #       with:
   #         name: python-package-distributions
   #         path: supy-driver/dist/
-
-  deploy:
-    name: Publish 🐍📦 to (Test)PyPI
-    needs:
-      # - build-wheels-manylinux
-      - build_wheels
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v2
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: Publish distribution 📦 to Test PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          packages_dir: dist/
-          verbose: true
-          skip_existing: true
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
-
-      - name: Publish distribution 📦 to PyPI
-        if: startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          packages_dir: dist/
-          verbose: true
-          skip_existing: true
-          password: ${{ secrets.PYPI_API_TOKEN }}
