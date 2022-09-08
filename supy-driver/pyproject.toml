@@ -12,7 +12,8 @@ build-backend = "setuptools.build_meta"
 enabled = true
 template = "2022.{tag}"
 dev_template = "{tag}.post{ccount}"
-# dirty_template = "{tag}.post{ccount}+dirty"
+# ignore "dirty" flag when building using CI
+dirty_template = "{tag}.post{ccount}"
 
 
 [tool.cibuildwheel]
