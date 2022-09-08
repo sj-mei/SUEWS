@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 import shutil
-from nonstopf2py import f2py
+# from nonstopf2py import f2py
 
 
 
@@ -27,7 +27,10 @@ elif sysname == "Linux":
 # change compiler settings
 if sysname == "Windows":
     pfn = Path.cwd() / "setup.cfg"
-    shutil.copyfile("win-setup.cfg", pfn)
+    try:
+        shutil.copyfile("win-setup.cfg", pfn)
+    except:
+        pass
 
 # load SUEWS Fortran source files
 dir_f95 = "../SUEWS-SourceCode/src"
@@ -121,8 +124,11 @@ def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"
 
     # cast `ver` to the driver package
     path_pkg_init = Path(".") / lib_basename / "version.py"
-    with open(str(path_pkg_init), "w") as fm:
-        fm.write("__version__='{ver}'".format(ver=ver))
+    try:
+        with open(str(path_pkg_init), "w") as fm:
+            fm.write("__version__='{ver}'".format(ver=ver))
+    except FileNotFoundError:
+        pass
 
     return ver
 
@@ -207,6 +213,9 @@ if sysname == "Linux":
         subprocess.call(["ls", "-lrt"])
 
 
-# change compiler settings
+#  change compiler settings
 if sysname == "Windows":
-    os.remove("setup.cfg")
+    try:
+        os.remove("setup.cfg")
+    except FileNotFoundError:
+        pass
