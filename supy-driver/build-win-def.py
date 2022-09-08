@@ -9,9 +9,6 @@ from time import sleep
 print("Fixing def file for Windows")
 
 
-# mgwin32=mgwin32C()
-# mgwin32.build_import_library()
-
 dll_file = find_python_dll()
 p_dll=Path(dll_file)
 print('Here is the pythonlib.dll:', dll_file)
