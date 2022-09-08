@@ -37,6 +37,7 @@ before-all = [
     "make suews",
 ]
 archs = ["x86_64", "arm64"]
+skip = ['cp311-macosx*']
 
 
 [tool.cibuildwheel.windows]
