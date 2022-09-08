@@ -136,8 +136,8 @@ jobs:
       strategy:
         fail-fast: false
         matrix:
-          os: [ubuntu-20.04, windows-2019, macos-11]
-          # os: [ubuntu-20.04]
+          # os: [ubuntu-20.04, windows-2019, macos-11]
+          os: [windows-2019]
 
       steps:
         - uses: actions/checkout@v3
@@ -150,29 +150,31 @@ jobs:
         # - name: Setup upterm session
         #   uses: lhotari/action-upterm@v1
 
-        - name: check git tags
-          run: |
-            git describe --tags --always --dirty
+        - uses: actions/setup-python@v3
+
+        # - name: check git tags
+        #   run: |
+        #     git describe --tags --always --dirty
 
         - name: Build wheels
           run: pipx run cibuildwheel==2.9.0 --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml ./supy-driver
 
-        # - name: Install cibuildwheel
-        #   run: python -m pip install cibuildwheel==2.9.0
+  #       # - name: Install cibuildwheel
+  #       #   run: python -m pip install cibuildwheel==2.9.0
 
-        # - name: Build wheels
-        #   run: python -m cibuildwheel --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml
-          # uses: pypa/cibuildwheel@v2.9.0
-          # env:
-          #   SETUPTOOLS_ENABLE_FEATURES: legacy-editable
-          # with:
-          #   package-dir: .
-          #   output-dir: wheelhouse
-          #   config-file: ./supy-driver/pyproject.toml
+  #       # - name: Build wheels
+  #       #   run: python -m cibuildwheel --output-dir wheelhouse --config-file ./supy-driver/pyproject.toml
+  #         # uses: pypa/cibuildwheel@v2.9.0
+  #         # env:
+  #         #   SETUPTOOLS_ENABLE_FEATURES: legacy-editable
+  #         # with:
+  #         #   package-dir: .
+  #         #   output-dir: wheelhouse
+  #         #   config-file: ./supy-driver/pyproject.toml
 
-        - uses: actions/upload-artifact@v3
-          with:
-            path: ./wheelhouse/*.whl
+  #       - uses: actions/upload-artifact@v3
+  #         with:
+  #           path: ./wheelhouse/*.whl
 
   # build-wheels-manylinux:
   #   # needs: test-suews
