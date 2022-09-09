@@ -57,13 +57,11 @@ SUEWS_dir = ../SUEWS-SourceCode
 main:
 	# $(MAKE) show
 	$(PYTHON) -m pip install -r requirements.txt
-	$(PYTHON) -m pip install auditwheel
-	$(PYTHON) setup.py bdist_wheel
+	$(PYTHON) -m build --wheel
 
 
 # make fortran exe
 suews:
-	$(MAKE) -C $(SUEWS_dir) clean
 	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `suews` recipe
 
 show:
@@ -74,7 +72,6 @@ show:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) show
-	$(MAKE) -C $(SUEWS_dir) clean
 	rm -rf ${MODULE}/*.so ${MODULE}/*.pyd ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	 -$(PYTHON) setup.py clean --all
 	rm -rf build *.mod *.o __pycache__
@@ -97,3 +94,7 @@ upload:
 	$(MAKE) show
 	twine upload --skip-existing dist/*whl
 	# $(shell twinup wheelhouse/*whl)
+
+# only local testing on mac
+cibuid:
+	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-localtest.toml

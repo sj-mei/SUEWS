@@ -27,7 +27,10 @@ elif sysname == "Linux":
 # change compiler settings
 if sysname == "Windows":
     pfn = Path.cwd() / "setup.cfg"
-    shutil.copyfile("win-setup.cfg", pfn)
+    try:
+        shutil.copyfile("win-setup.cfg", pfn)
+    except:
+        pass
 
 # load SUEWS Fortran source files
 dir_f95 = "../SUEWS-SourceCode/src"
@@ -88,7 +91,7 @@ def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"
         # try to find git in system path
         try:
             pipe = subprocess.Popen(
-                [cmd, "describe", "--always", "--match", "2[0-9]*"],
+                [cmd, "describe", "--always", "--match", "2[0-9]*",'--dirty'],
                 stdout=subprocess.PIPE)
             (sout, serr) = pipe.communicate()
 
@@ -121,8 +124,11 @@ def get_suews_version(ver_minor, dir_source=dir_f95, file="suews_ctrl_const.f95"
 
     # cast `ver` to the driver package
     path_pkg_init = Path(".") / lib_basename / "version.py"
-    with open(str(path_pkg_init), "w") as fm:
-        fm.write("__version__='{ver}'".format(ver=ver))
+    try:
+        with open(str(path_pkg_init), "w") as fm:
+            fm.write("__version__='{ver}'".format(ver=ver))
+    except FileNotFoundError:
+        pass
 
     return ver
 
@@ -170,9 +176,9 @@ setup(
     version=get_suews_version(ver_minor=9),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
-    url="https://github.com/sunt05/SuPy",
+    url="https://github.com/UMEP-dev/SuPy",
     author="Ting Sun",
-    author_email="ting.sun@reading.ac.uk",
+    author_email="ting.sun@ucl.ac.uk",
     # license='GPL-V3.0',
     packages=["supy_driver"],
     package_data={
@@ -184,7 +190,7 @@ setup(
     distclass=BinaryDistribution,
     ext_modules=ext_modules,
     python_requires=">=3.7",
-    install_requires=["numpy>=1.20"],
+    install_requires=["numpy"],
     include_package_data=True,
     zip_safe=False,
 )
@@ -193,19 +199,23 @@ setup(
 # check latest build
 path_dir_driver = Path(__file__).resolve().parent
 list_wheels = [str(x) for x in path_dir_driver.glob("dist/*whl")]
-fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
-# print(list_wheels, fn_wheel)
 
 # use auditwheel to repair file name for Linux
 if sysname == "Linux":
-    # path_dir_driver = Path(__file__).resolve().parent
-    # list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
-    # fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
-    # print(list_wheels, fn_wheel)
-    subprocess.call(["auditwheel", "repair", fn_wheel])
-    subprocess.call(["ls", "-lrt"])
+    if len(list_wheels) > 0:
+        fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+        # print(list_wheels, fn_wheel)
+        # path_dir_driver = Path(__file__).resolve().parent
+        # list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
+        # fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+        # print(list_wheels, fn_wheel)
+        subprocess.call(["auditwheel", "repair", fn_wheel])
+        subprocess.call(["ls", "-lrt"])
 
 
-# change compiler settings
+#  change compiler settings
 if sysname == "Windows":
-    os.remove("setup.cfg")
+    try:
+        os.remove("setup.cfg")
+    except FileNotFoundError:
+        pass

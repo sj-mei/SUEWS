@@ -1,0 +1,54 @@
+[build-system]
+requires = [
+    "wheel",
+    "setuptools<60",
+    "oldest-supported-numpy",
+    "setuptools-git-versioning",
+]
+# the recommended "build_meta" does not work with nonstop f2py and hence is commented out
+# build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools-git-versioning]
+enabled = true
+template = "2022.{tag}"
+dev_template = "{tag}.post{ccount}"
+# ignore "dirty" flag when building using CI
+dirty_template = "{tag}.post{ccount}"
+
+
+[tool.cibuildwheel]
+# skip 32-bit and pypy builds
+skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
+# build-frontend = "pip"
+before-build = ["git describe --tags --always --dirty"]
+
+# Increase pip debugging output
+build-verbosity = 0
+
+test-requires = "pytest"
+test-command = "pytest -s {package}/supy_driver/test"
+
+
+[tool.cibuildwheel.linux]
+# Install system library
+before-all = ["yum install -y glibc-static", "make suews"]
+archs = ["auto64"]
+
+[tool.cibuildwheel.macos]
+before-all = [
+    'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
+    "make suews",
+]
+archs = ["x86_64", "arm64"]
+skip = ['cp311-macosx*','pp*']
+
+
+[tool.cibuildwheel.windows]
+before-all = ["make suews"]
+before-build = [
+    "cd {package}",
+    "python -m pip install numpy",
+    "python build-win-def.py",
+]
+archs = ["auto64"]

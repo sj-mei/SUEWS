@@ -30,166 +30,166 @@ CONTAINS
    !  LJ May 2013     - Calculation of the energy balance for the SnowPack was modified
    !                        to use qn1_ind_snow(StoreDrainPrm)
    !=======================================================================================
-   SUBROUTINE Snow_cal_MeltHeat( &
-      tstep, tau_r, SnowDensMax, & !input
-      lvS_J_kg, lv_J_kg, RadMeltFact, TempMeltFact, SnowAlbMax, &
-      SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-      nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_surf, qn1_ind_snow, &
-      kup_ind_snow, SnowWater, deltaQi, albedo_snow, &
-      SnowPack_in, SnowFrac_in, SnowAlb_in, SnowDens_in, SnowfallCum_in, & !input
-      SnowPack_out, SnowFrac_out, SnowAlb_out, SnowDens_out, SnowfallCum_out, & !output
-      mwh, Qm, QmFreez, QmRain, & ! output
-      snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
-      FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
-      dataOutLineSnow) !output
+   ! SUBROUTINE Snow_cal_MeltHeat( &
+   !    tstep, tau_r, SnowDensMax, & !input
+   !    lvS_J_kg, lv_J_kg, RadMeltFact, TempMeltFact, SnowAlbMax, &
+   !    SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
+   !    nsh_real, sfr_surf, Tsurf_ind, Tsurf_ind_snow, state_surf, qn1_ind_snow, &
+   !    kup_ind_snow, SnowWater, deltaQi, albedo_snow, &
+   !    SnowPack_in, SnowFrac_in, SnowAlb_in, SnowDens_in, SnowfallCum_in, & !input
+   !    SnowPack_out, SnowFrac_out, SnowAlb_out, SnowDens_out, SnowfallCum_out, & !output
+   !    mwh, Qm, QmFreez, QmRain, & ! output
+   !    snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
+   !    FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
+   !    dataOutLineSnow) !output
 
-      IMPLICIT NONE
-      ! INTEGER, PARAMETER::nsurf = 7
-      ! INTEGER, PARAMETER::PavSurf = 1
-      ! INTEGER, PARAMETER::BldgSurf = 2
-      ! INTEGER, PARAMETER::WaterSurf = 7
-      INTEGER, PARAMETER :: ncolumnsDataOutSnow_notime = ncolumnsDataOutSnow - 5
-      REAL(KIND(1D0)), PARAMETER :: waterDens = 999.8395 !Density of water in 0 cel deg
+   !    IMPLICIT NONE
+   !    ! INTEGER, PARAMETER::nsurf = 7
+   !    ! INTEGER, PARAMETER::PavSurf = 1
+   !    ! INTEGER, PARAMETER::BldgSurf = 2
+   !    ! INTEGER, PARAMETER::WaterSurf = 7
+   !    INTEGER, PARAMETER :: ncolumnsDataOutSnow_notime = ncolumnsDataOutSnow - 5
+   !    REAL(KIND(1D0)), PARAMETER :: waterDens = 999.8395 !Density of water in 0 cel deg
 
-      !These are input to the module
-      ! INTEGER, INTENT(in) :: SnowUse
-      INTEGER, INTENT(in) :: tstep
-      ! INTEGER,INTENT(in)::bldgsurf
-      ! INTEGER,INTENT(in)::nsurf
-      ! INTEGER,INTENT(in)::PavSurf
-      ! INTEGER,INTENT(in)::WaterSurf
+   !    !These are input to the module
+   !    ! INTEGER, INTENT(in) :: SnowUse
+   !    INTEGER, INTENT(in) :: tstep
+   !    ! INTEGER,INTENT(in)::bldgsurf
+   !    ! INTEGER,INTENT(in)::nsurf
+   !    ! INTEGER,INTENT(in)::PavSurf
+   !    ! INTEGER,INTENT(in)::WaterSurf
 
-      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg
-      REAL(KIND(1D0)), INTENT(in) :: lv_J_kg
-      REAL(KIND(1D0)), INTENT(in) :: RadMeltFact
-      REAL(KIND(1D0)), INTENT(in) :: TempMeltFact
-      REAL(KIND(1D0)), INTENT(in) :: SnowAlbMax
-      REAL(KIND(1D0)), INTENT(in) :: SnowDensMax
-      REAL(KIND(1D0)), INTENT(in) :: SnowDensMin
-      REAL(KIND(1D0)), INTENT(in) :: Temp_C
-      REAL(KIND(1D0)), INTENT(in) :: Precip
-      REAL(KIND(1D0)), INTENT(in) :: PrecipLimit
-      REAL(KIND(1D0)), INTENT(in) :: PrecipLimitAlb
-      REAL(KIND(1D0)), INTENT(in) :: nsh_real
-      REAL(KIND(1D0)), INTENT(in) :: albedo_snow
-      REAL(KIND(1D0)), INTENT(in) :: tau_r
-      ! REAL(KIND(1d0)),INTENT(in)::waterdens
+   !    REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg
+   !    REAL(KIND(1D0)), INTENT(in) :: lv_J_kg
+   !    REAL(KIND(1D0)), INTENT(in) :: RadMeltFact
+   !    REAL(KIND(1D0)), INTENT(in) :: TempMeltFact
+   !    REAL(KIND(1D0)), INTENT(in) :: SnowAlbMax
+   !    REAL(KIND(1D0)), INTENT(in) :: SnowDensMax
+   !    REAL(KIND(1D0)), INTENT(in) :: SnowDensMin
+   !    REAL(KIND(1D0)), INTENT(in) :: Temp_C
+   !    REAL(KIND(1D0)), INTENT(in) :: Precip
+   !    REAL(KIND(1D0)), INTENT(in) :: PrecipLimit
+   !    REAL(KIND(1D0)), INTENT(in) :: PrecipLimitAlb
+   !    REAL(KIND(1D0)), INTENT(in) :: nsh_real
+   !    REAL(KIND(1D0)), INTENT(in) :: albedo_snow
+   !    REAL(KIND(1D0)), INTENT(in) :: tau_r
+   !    ! REAL(KIND(1d0)),INTENT(in)::waterdens
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_surf
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn1_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: kup_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowWater
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: deltaQi
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind_snow
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: state_surf
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn1_ind_snow
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: kup_ind_snow
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowWater
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: deltaQi
 
-      !Input and output as this is updated in this subroutine
-      REAL(KIND(1D0)), INTENT(in) :: SnowAlb_in
-      REAL(KIND(1D0)), INTENT(in) :: SnowfallCum_in
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_in
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_in
-      REAL(KIND(1D0)), INTENT(out) :: SnowAlb_out
-      REAL(KIND(1D0)), INTENT(out) :: SnowfallCum_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out
+   !    !Input and output as this is updated in this subroutine
+   !    REAL(KIND(1D0)), INTENT(in) :: SnowAlb_in
+   !    REAL(KIND(1D0)), INTENT(in) :: SnowfallCum_in
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_in
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowDens_in
+   !    REAL(KIND(1D0)), INTENT(out) :: SnowAlb_out
+   !    REAL(KIND(1D0)), INTENT(out) :: SnowfallCum_out
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowPack_out
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowFrac_out
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDens_out
 
-      REAL(KIND(1D0)) :: SnowAlb
-      REAL(KIND(1D0)) :: SnowfallCum
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowPack
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
+   !    REAL(KIND(1D0)) :: SnowAlb
+   !    REAL(KIND(1D0)) :: SnowfallCum
+   !    REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowPack
+   !    REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac
+   !    REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens
 
-      !Output:
-      REAL(KIND(1D0)), INTENT(out) :: mwh
-      REAL(KIND(1D0)) :: fwh
-      REAL(KIND(1D0)), INTENT(out) :: Qm
-      REAL(KIND(1D0)), INTENT(out) :: QmFreez
-      REAL(KIND(1D0)), INTENT(out) :: QmRain
+   !    !Output:
+   !    REAL(KIND(1D0)), INTENT(out) :: mwh
+   !    REAL(KIND(1D0)) :: fwh
+   !    REAL(KIND(1D0)), INTENT(out) :: Qm
+   !    REAL(KIND(1D0)), INTENT(out) :: QmFreez
+   !    REAL(KIND(1D0)), INTENT(out) :: QmRain
 
-      ! REAL(KIND(1D0)), INTENT(out) :: veg_fr
+   !    ! REAL(KIND(1D0)), INTENT(out) :: veg_fr
 
-      INTEGER, DIMENSION(nsurf), INTENT(out) :: snowCalcSwitch
+   !    INTEGER, DIMENSION(nsurf), INTENT(out) :: snowCalcSwitch
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_melt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_freezState
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_rain
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezMelt
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezState
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezStateVol
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rainOnSnow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDepth
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: mw_ind
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_melt
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_freezState
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Qm_rain
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezMelt
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezState
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: FreezStateVol
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rainOnSnow
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: SnowDepth
+   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: mw_ind
 
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow_notime), INTENT(out) :: dataOutLineSnow
+   !    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow_notime), INTENT(out) :: dataOutLineSnow
 
-      SnowPack = SnowPack_in
-      SnowFrac = SnowFrac_in
-      SnowAlb = SnowAlb_in
-      SnowDens = SnowDens_in
-      SnowfallCum = SnowfallCum_in
+   !    SnowPack = SnowPack_in
+   !    SnowFrac = SnowFrac_in
+   !    SnowAlb = SnowAlb_in
+   !    SnowDens = SnowDens_in
+   !    SnowfallCum = SnowfallCum_in
 
-      ! IF (SnowUse == 1) THEN
-      SnowDens = update_snow_dens( &
-                 tstep, SnowFrac, SnowDens, &
-                 tau_r, SnowDensMax, SnowDensMin)
+   !    ! IF (SnowUse == 1) THEN
+   !    SnowDens = update_snow_dens( &
+   !               tstep, SnowFrac, SnowDens, &
+   !               tau_r, SnowDensMax, SnowDensMin)
 
-      CALL MeltHeat( &
-         lvS_J_kg, lv_J_kg, tstep*1D0, RadMeltFact, TempMeltFact, & !input
-         SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-         nsh_real, sfr_surf, Tsurf_ind, state_surf, qn1_ind_snow, &
-         SnowWater, deltaQi, &
-         SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, & !inout
-         mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, & !output
-         Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
-         rainOnSnow, SnowDepth, mw_ind)
+   !    CALL MeltHeat( &
+   !       lvS_J_kg, lv_J_kg, tstep*1D0, RadMeltFact, TempMeltFact, & !input
+   !       SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
+   !       nsh_real, sfr_surf, Tsurf_ind, state_surf, qn1_ind_snow, &
+   !       SnowWater, deltaQi, &
+   !       SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, & !inout
+   !       mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, & !output
+   !       Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
+   !       rainOnSnow, SnowDepth, mw_ind)
 
-      ! ELSE ! no snow calculation
-      !    mwh = 0
-      !    fwh = 0
-      !    Qm = 0
-      !    QmFreez = 0
-      !    QmRain = 0
-      !    SnowfallCum = 0
-      !    snowCalcSwitch = 0
-      !    Qm_melt = 0
-      !    Qm_freezState = 0
-      !    Qm_rain = 0
-      !    FreezMelt = 0
-      !    FreezState = 0
-      !    FreezStateVol = 0
-      !    rainOnSnow = 0
-      !    SnowDepth = 0
-      !    mw_ind = 0
-      !    SnowFrac = 0
+   !    ! ELSE ! no snow calculation
+   !    !    mwh = 0
+   !    !    fwh = 0
+   !    !    Qm = 0
+   !    !    QmFreez = 0
+   !    !    QmRain = 0
+   !    !    SnowfallCum = 0
+   !    !    snowCalcSwitch = 0
+   !    !    Qm_melt = 0
+   !    !    Qm_freezState = 0
+   !    !    Qm_rain = 0
+   !    !    FreezMelt = 0
+   !    !    FreezState = 0
+   !    !    FreezStateVol = 0
+   !    !    rainOnSnow = 0
+   !    !    SnowDepth = 0
+   !    !    mw_ind = 0
+   !    !    SnowFrac = 0
 
-      ! END IF
+   !    ! END IF
 
-      ! ! update veg_fr
-      ! CALL veg_fr_snow( &
-      !    sfr_surf, SnowFrac, & !input
-      !    veg_fr) !output
+   !    ! ! update veg_fr
+   !    ! CALL veg_fr_snow( &
+   !    !    sfr_surf, SnowFrac, & !input
+   !    !    veg_fr) !output
 
-      SnowPack_out = SnowPack
-      SnowFrac_out = SnowFrac
-      SnowAlb_out = SnowAlb
-      SnowfallCum_out = SnowfallCum
-      SnowDens_out = SnowDens
+   !    SnowPack_out = SnowPack
+   !    SnowFrac_out = SnowFrac
+   !    SnowAlb_out = SnowAlb
+   !    SnowfallCum_out = SnowfallCum
+   !    SnowDens_out = SnowDens
 
-      ! pack output into one line
-      dataOutLineSnow = [ &
-                        SnowPack_out(1:nsurf), mw_ind(1:nsurf), Qm_melt(1:nsurf), & !26
-                        Qm_rain(1:nsurf), Qm_freezState(1:nsurf), SnowFrac_out(1:(nsurf - 1)), & !46
-                        rainOnSnow(1:nsurf), & !53
-                        qn1_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
-                        SnowWater(1:nsurf), SnowDens_out(1:nsurf), & !88
-                        snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf), &
-                        albedo_snow]
-      ! dataOutLineSnow=set_nan(dataOutLineSnow)
+   !    ! pack output into one line
+   !    dataOutLineSnow = [ &
+   !                      SnowPack_out(1:nsurf), mw_ind(1:nsurf), Qm_melt(1:nsurf), & !26
+   !                      Qm_rain(1:nsurf), Qm_freezState(1:nsurf), SnowFrac_out(1:(nsurf - 1)), & !46
+   !                      rainOnSnow(1:nsurf), & !53
+   !                      qn1_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
+   !                      SnowWater(1:nsurf), SnowDens_out(1:nsurf), & !88
+   !                      snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf), &
+   !                      albedo_snow]
+   !    ! dataOutLineSnow=set_nan(dataOutLineSnow)
 
-   END SUBROUTINE Snow_cal_MeltHeat
+   ! END SUBROUTINE Snow_cal_MeltHeat
 
    SUBROUTINE MeltHeat( &
       lvS_J_kg, & !input
@@ -252,7 +252,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: PrecipLimit
       REAL(KIND(1D0)), INTENT(in) :: PrecipLimitAlb
       REAL(KIND(1D0)), INTENT(in) :: nsh_real
-
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind
