@@ -72,7 +72,6 @@ git clone git@github.com:UMEP-dev/SuPy.git
 
 2. Set up the [conda environment](https://conda.io/docs/user-guide/tasks/manage-environments.html)
 
-```shell
 
 ```shell
 conda env create -f SuPy/env.yml
