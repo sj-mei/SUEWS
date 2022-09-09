@@ -19,7 +19,7 @@ dirty_template = "{tag}.post{ccount}"
 
 [tool.cibuildwheel]
 # skip 32-bit and pypy builds
-# skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
+skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
 # build-frontend = "pip"
 before-build = ["git describe --tags --always --dirty"]
 
