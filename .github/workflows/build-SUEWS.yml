@@ -183,7 +183,6 @@ jobs:
   deploy:
     name: Publish 🐍📦 to (Test)PyPI
     needs:
-      # - build-wheels-manylinux
       - build_wheels
     runs-on: ubuntu-latest
 
