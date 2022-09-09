@@ -107,28 +107,6 @@ jobs:
 
 
 
-  release-github:
-    name: Release on GitHub
-    needs:
-      - build-binaries
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v2
-        with:
-          name: SUEWS-release
-          path: SUEWS-release/
-
-      - name: Automatic Releases
-        uses: marvinpinto/action-automatic-releases@v1.2.1
-        with:
-          repo_token: "${{ secrets.PAT }}"
-          automatic_release_tag: "latest-dev"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            SUEWS-release/SUEWS_*_*.zip
 
   build_wheels:
       name: Build wheels on ${{ matrix.os }}
@@ -210,6 +188,38 @@ jobs:
           verbose: true
           skip_existing: true
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+  release-github:
+    name: Release on GitHub
+    needs:
+      - build-binaries
+      - build_wheels # only run this job if the build_wheels job was successful to avoid polluting the release with broken wheels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: SUEWS-release
+          path: SUEWS-release/
+
+      - name: Download all binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: python-package-distributions
+          path: wheels/
+
+      - name: Automatic Releases
+        uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+          repo_token: "${{ secrets.PAT }}"
+          automatic_release_tag: "latest-dev"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            SUEWS-release/SUEWS_*_*.zip
+            wheels/*.whl
+
 
 
 ####################################################################################
