@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 import shutil
-# from nonstopf2py import f2py
+from nonstopf2py import f2py
 
 
 

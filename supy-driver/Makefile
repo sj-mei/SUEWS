@@ -94,3 +94,7 @@ upload:
 	$(MAKE) show
 	twine upload --skip-existing dist/*whl
 	# $(shell twinup wheelhouse/*whl)
+
+# only local testing on mac
+cibuid:
+	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-localtest.toml
