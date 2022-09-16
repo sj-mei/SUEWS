@@ -7,9 +7,9 @@ import subprocess
 import warnings
 import re
 
-ISRELEASED = False
+ISRELEASED = True
 # if a release, use strict requirement for supy-driver; otehrwise, use a loose requirement
-DRIVER_REQ = "supy_driver==2021a9" if ISRELEASED else "supy_driver"
+DRIVER_REQ = "supy_driver==2021a15" if ISRELEASED else "supy_driver"
 # FULLVERSION += '.dev'
 
 pipe = None
@@ -108,7 +108,7 @@ setup(
     ),
     author_email=", ".join(
         [
-            "ting.sun@reading.ac.uk",
+            "ting.sun@ucl.ac.uk",
             "h.omidvar@reading.ac.uk",
             "c.s.grimmond@reading.ac.uk",
         ]
