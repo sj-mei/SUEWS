@@ -27,7 +27,7 @@ jobs:
 
     - name: Install pypa/build
       run: |
-        pip install pandas wheel pytest tables
+        pip install pandas wheel pytest tables build
         # make test
         make wheel
 
