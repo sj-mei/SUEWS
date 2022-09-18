@@ -9,9 +9,9 @@ else
 	UNAME_S := $(shell uname -s)
 
 
+
 	ifeq ($(UNAME_S),Linux) # Linux
 		PYTHON_exe=python
-
 	endif
 
 	ifeq ($(UNAME_S),Darwin) # macOS
@@ -20,7 +20,6 @@ else
 	endif
 
 endif
-
 
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
