@@ -1,4 +1,5 @@
 import os
+from signal import raise_signal
 from setuptools import setup
 import json
 from pathlib import Path
@@ -49,8 +50,6 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             # if dirty, add 'dev' to version
             print("ver_list", ver_main,ver_post,ver_git_commit)
         # save version info to json file
-
-        # os.remove(p_fn_ver)
         warnings.warn(
             f"writing version info to {p_fn_ver.as_posix()}"
         )
@@ -101,8 +100,10 @@ if p_fn_ver.exists():
 
     # print(dict_ver)
     __version__ = f"{ver_main}-{ver_post}-{ver_git_commit}"
+    raise ValueError(f"version info found: {__version__}")
 else:
     __version__ = "0.0.0"
+    raise ValueError("version info not found")
 
 
 def readme():
