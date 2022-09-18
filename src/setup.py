@@ -92,7 +92,7 @@ if p_fn_ver.exists():
         ver_git_commit = dict_ver["git_commit"]
 
     # print(dict_ver)
-    __version__ = f"{ver_main}-{ver_post}-{ver_git_commit}"
+    __version__ = f"{ver_main}-{ver_post}-{ver_git_commit}".strip()
     # raise ValueError(f"version info found: {__version__}")
 else:
     __version__ = "0.0.0"
