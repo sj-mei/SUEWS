@@ -16,10 +16,10 @@ DRIVER_REQ = "supy_driver==2021a15" if ISRELEASED else "supy_driver"
 
 pipe = None
 p_fn_ver = Path("./supy/supy_version.json")
-warnings.warn(
-            f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}"
-        )
+warnings.warn(f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}")
+# force remove the version info file
 p_fn_ver.unlink(missing_ok=True)
+warnings.warn(f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}")
 for cmd in ["git", "/usr/bin/git", "git.cmd"]:
 
     try:
@@ -29,7 +29,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
         (sout, serr) = pipe.communicate()
         # parse version info from git
         list_str_ver = sout.decode("utf-8").strip().split("-")
-        print(list_str_ver,len(list_str_ver))
+        print(list_str_ver, len(list_str_ver))
 
         if len(list_str_ver) == 1:
             ver_main = list_str_ver[0]
@@ -37,7 +37,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
         else:
             ver_main = list_str_ver[0]
             if list_str_ver[-1].lower() == "dirty":
-                list_str_ver= list_str_ver[:-1]
+                list_str_ver = list_str_ver[:-1]
                 if len(list_str_ver) > 1:
                     # number of iterations after ver_main
                     ver_post = list_str_ver[1]
@@ -48,11 +48,9 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
                 ver_git_commit += "-dirty"
             # git commit info
             # if dirty, add 'dev' to version
-            print("ver_list", ver_main,ver_post,ver_git_commit)
+            print("ver_list", ver_main, ver_post, ver_git_commit)
         # save version info to json file
-        warnings.warn(
-            f"writing version info to {p_fn_ver.as_posix()}"
-        )
+        warnings.warn(f"writing version info to {p_fn_ver.as_posix()}")
         p_fn_ver.touch()
         with open(p_fn_ver, "w") as f:
             json.dump(
