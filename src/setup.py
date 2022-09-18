@@ -37,8 +37,8 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             print("ver_main", ver_main)
         else:
             ver_main = list_str_ver[0]
-            print("current status is dirty")
             if list_str_ver[-1].lower() == "dirty":
+                print("current status is dirty")
                 list_str_ver = list_str_ver[:-1]
                 if len(list_str_ver) > 1:
                     # number of iterations after ver_main
@@ -48,6 +48,9 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
                     ver_post = ""
                     ver_git_commit = ""
                 ver_git_commit += "-dirty"
+            else:
+                ver_post = list_str_ver[1]
+                ver_git_commit = list_str_ver[2]
             # git commit info
             # if dirty, add 'dev' to version
             print("ver_list", ver_main, ver_post, ver_git_commit)
