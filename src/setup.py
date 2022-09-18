@@ -96,7 +96,7 @@ if p_fn_ver.exists():
     # raise ValueError(f"version info found: {__version__}")
 else:
     __version__ = "0.0.0"
-    # raise ValueError("version info not found")
+    raise ValueError("version info not found")
 
 
 def readme():
