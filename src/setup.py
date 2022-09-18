@@ -38,19 +38,24 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             print("current status is dirty")
             # remove the "dirty" part from version info list
             list_str_ver = list_str_ver[:-1]
+            list_str_ver[-1]+="-dirty"
+            print(f'new list_str_ver: {list_str_ver}')
 
-        if len(list_str_ver) == 1:
-            ver_main = list_str_ver[0]
-            print("ver_main", ver_main)
-        else:
+        ver_main = list_str_ver[0]
+        print("ver_main", ver_main)
+        if len(list_str_ver) > 1:
             ver_post = list_str_ver[1]
-            ver_git_commit = list_str_ver[2] + ("-dirty" if flag_dirty else "")
+            ver_git_commit = list_str_ver[2]
+            print("ver_post", ver_post)
+            print("ver_git_commit", ver_git_commit)
 
             # git commit info
             # if dirty, add 'dev' to version
-        print("ver_list", ver_main, ver_post, ver_git_commit)
+        print("ver_list", ver_main, ver_post, ver_git_commit,'\n====================')
 
         # save version info to json file
+        # p_fn_ver.touch()
+        print('pipe.returncode',pipe.returncode)
         with open(p_fn_ver, "w") as f:
             json.dump(
                 {
