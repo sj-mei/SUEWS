@@ -28,7 +28,7 @@ jobs:
     - name: Install pypa/build
       run: |
         pip install pandas wheel pytest tables build
-        # make test
+        make test
         make wheel
 
     - name: Publish distribution 📦 to Test PyPI
