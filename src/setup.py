@@ -66,9 +66,9 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
                 },
                 f,
             )
+        if pipe.returncode == 0:
             print(f"in {cmd}, git version info saved to", p_fn_ver)
             break
-        # if pipe.returncode == 0:
     except Exception as e:
         pass
     finally:
