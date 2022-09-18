@@ -20,10 +20,12 @@ jobs:
     # # remote debugging
     # - name: Setup upterm session
     #   uses: lhotari/action-upterm@v1
+    - name: check git info
+      run: |
+        git describe --always --dirty
 
     - name: Install pypa/build
       run: |
-        git describe --always --dirty
         pip install pandas wheel pytest tables
         # make test
         make wheel
