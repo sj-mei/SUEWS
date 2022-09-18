@@ -22,6 +22,7 @@ jobs:
     #   uses: lhotari/action-upterm@v1
     - name: check git info
       run: |
+        git tag -l
         git describe --always --dirty
 
     - name: Install pypa/build
