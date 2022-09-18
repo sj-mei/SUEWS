@@ -28,9 +28,6 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 MODULE = supy
 
-main:
-	$(MAKE) clean
-	${PYTHON} setup.py bdist_wheel
 
 # install package in dev mode and do pytest
 test:

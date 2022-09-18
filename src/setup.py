@@ -19,7 +19,6 @@ p_fn_ver = Path("./supy/supy_version.json")
 
 # force remove the version info file
 flag_dirty=False
-p_fn_ver.unlink(missing_ok=True)
 
 for cmd in ["git", "/usr/bin/git", "git.cmd"]:
 
@@ -44,6 +43,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             ver_git_commit = list_str_ver[2]
 
         # save version info to json file
+        p_fn_ver.unlink(missing_ok=True)
         with open(p_fn_ver, "w") as f:
             json.dump(
                 {

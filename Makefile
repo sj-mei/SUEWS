@@ -32,13 +32,13 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 MODULE = supy
 
 # default make options
-main:
+main: test
 	$(MAKE) -C $(src_dir) main
 	$(MAKE) -C $(docs_dir) html
 
 # build wheel
 wheel:
-	$(MAKE) -C $(src_dir) main
+	python -m build --wheel --outdir wheelhouse src
 
 # house cleaning
 clean:
@@ -61,3 +61,7 @@ upload:
 # make live docs for testing
 livehtml:
 	$(MAKE) -C $(docs_dir) livehtml
+
+# use cibuildwheel to build wheels for all platforms
+cibuid:
+	pipx run cibuildwheel==2.9.0 --platform macos
