@@ -68,7 +68,10 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
     except Exception as e:
         pass
     finally:
-        print(f"checking for {cmd} end with {pipe.returncode}; {p_fn_ver.exists()}")
+        print(f"checking for {cmd} end with {pipe.returncode}; {p_fn_ver.exists()}\n=====================")
+        if pipe is not None:
+            pipe.kill()
+            pipe = None
 
 if pipe is None or pipe.returncode != 0:
     # no git, or not in git dir
