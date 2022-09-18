@@ -34,13 +34,15 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             flag_dirty = True
             # remove the "dirty" part from version info list
             list_str_ver = list_str_ver[:-1]
-            list_str_ver[-1]+="-dirty"
 
         ver_main = list_str_ver[0]
         print("ver_main", ver_main)
         if len(list_str_ver) > 1:
             ver_post = list_str_ver[1]
             ver_git_commit = list_str_ver[2]
+        else:
+            ver_post = ""
+            ver_git_commit = ""
 
         # save version info to json file
         p_fn_ver.unlink(missing_ok=True)
@@ -49,7 +51,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
                 {
                     "version": ver_main + ("" if ISRELEASED else ".dev"),
                     "iter": ver_post,
-                    "git_commit": ver_git_commit,
+                    "git_commit": ver_git_commit+("-dirty" if flag_dirty else ""),
                 },
                 f,
             )
