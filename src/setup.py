@@ -78,12 +78,6 @@ else:
     rev = sout.strip()
     rev = rev.decode("ascii")
 
-    # if not rev.startswith("v") and re.match("[a-zA-Z0-9]{7,9}", rev):
-    #     # partial clone, manually construct version string
-    #     # this is the format before we started using git-describe
-    #     # to get an ordering on dev version strings.
-    #     rev = "v%s.dev-%s" % (VERSION, rev)
-
 if p_fn_ver.exists():
     with open(p_fn_ver, "r") as f:
         dict_ver = json.load(f)
