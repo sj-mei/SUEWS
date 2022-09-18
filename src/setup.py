@@ -15,6 +15,10 @@ DRIVER_REQ = "supy_driver==2021a15" if ISRELEASED else "supy_driver"
 
 pipe = None
 p_fn_ver = Path("./supy/supy_version.json")
+warnings.warn(
+            f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}"
+        )
+p_fn_ver.unlink(missing_ok=True)
 for cmd in ["git", "/usr/bin/git", "git.cmd"]:
 
     try:
@@ -45,10 +49,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             # if dirty, add 'dev' to version
             print("ver_list", ver_main,ver_post,ver_git_commit)
         # save version info to json file
-        warnings.warn(
-            f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}"
-        )
-        p_fn_ver.unlink(missing_ok=True)
+
         # os.remove(p_fn_ver)
         warnings.warn(
             f"writing version info to {p_fn_ver.as_posix()}"
