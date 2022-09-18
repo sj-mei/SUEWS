@@ -103,7 +103,7 @@ def readme():
 
 setup(
     name="supy",
-    version=__version__,
+    # version=__version__,
     description="the SUEWS model that speaks python",
     long_description=readme(),
     long_description_content_type="text/markdown",

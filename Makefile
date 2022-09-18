@@ -38,7 +38,7 @@ main: test
 
 # build wheel
 wheel:
-	python -m build src --wheel --outdir wheelhouse -n
+	python -m build src --wheel --outdir wheelhouse
 
 # house cleaning
 clean:
