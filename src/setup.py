@@ -71,11 +71,6 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             break
     except Exception as e:
         pass
-    finally:
-        print(f"checking for {cmd} end with {pipe.returncode}; {p_fn_ver.exists()}\n=====================")
-        if pipe is not None:
-            pipe.kill()
-            # pipe = None
 
 if pipe is None or pipe.returncode != 0:
     # no git, or not in git dir
@@ -109,10 +104,10 @@ if p_fn_ver.exists():
 
     # print(dict_ver)
     __version__ = f"{ver_main}-{ver_post}-{ver_git_commit}"
-    raise ValueError(f"version info found: {__version__}")
+    # raise ValueError(f"version info found: {__version__}")
 else:
     __version__ = "0.0.0"
-    raise ValueError("version info not found")
+    # raise ValueError("version info not found")
 
 
 def readme():
