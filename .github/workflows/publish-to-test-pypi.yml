@@ -25,7 +25,7 @@ jobs:
         git tag -l
         git describe --always --dirty
 
-    - name: Install pypa/build
+    - name: test and build
       run: |
         pip install pandas wheel pytest tables build
         make test
