@@ -54,6 +54,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
         warnings.warn(
             f"writing version info to {p_fn_ver.as_posix()}"
         )
+        p_fn_ver.touch()
         with open(p_fn_ver, "w") as f:
             json.dump(
                 {
