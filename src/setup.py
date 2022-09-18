@@ -37,6 +37,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             print("ver_main", ver_main)
         else:
             ver_main = list_str_ver[0]
+            print("current status is dirty")
             if list_str_ver[-1].lower() == "dirty":
                 list_str_ver = list_str_ver[:-1]
                 if len(list_str_ver) > 1:
@@ -51,7 +52,6 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             # if dirty, add 'dev' to version
             print("ver_list", ver_main, ver_post, ver_git_commit)
         # save version info to json file
-        warnings.warn(f"writing version info to {p_fn_ver.as_posix()}")
         p_fn_ver.touch()
         print("p_fn_ver", p_fn_ver.exists())
         with open(p_fn_ver, "w") as f:
