@@ -16,10 +16,11 @@ DRIVER_REQ = "supy_driver==2021a15" if ISRELEASED else "supy_driver"
 
 pipe = None
 p_fn_ver = Path("./supy/supy_version.json")
-warnings.warn(f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}")
+
 # force remove the version info file
+flag_dirty=False
 p_fn_ver.unlink(missing_ok=True)
-warnings.warn(f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}")
+
 for cmd in ["git", "/usr/bin/git", "git.cmd"]:
     print(f"checking for {cmd}")
 
@@ -32,31 +33,24 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
         list_str_ver = sout.decode("utf-8").strip().split("-")
         print(list_str_ver, len(list_str_ver))
 
+        if list_str_ver[-1].lower() == "dirty":
+            flag_dirty = True
+            print("current status is dirty")
+            # remove the "dirty" part from version info list
+            list_str_ver = list_str_ver[:-1]
+
         if len(list_str_ver) == 1:
             ver_main = list_str_ver[0]
             print("ver_main", ver_main)
         else:
-            ver_main = list_str_ver[0]
-            if list_str_ver[-1].lower() == "dirty":
-                print("current status is dirty")
-                list_str_ver = list_str_ver[:-1]
-                if len(list_str_ver) > 1:
-                    # number of iterations after ver_main
-                    ver_post = list_str_ver[1]
-                    ver_git_commit = list_str_ver[2]
-                else:
-                    ver_post = ""
-                    ver_git_commit = ""
-                ver_git_commit += "-dirty"
-            else:
-                ver_post = list_str_ver[1]
-                ver_git_commit = list_str_ver[2]
+            ver_post = list_str_ver[1]
+            ver_git_commit = list_str_ver[2] + ("-dirty" if flag_dirty else "")
+
             # git commit info
             # if dirty, add 'dev' to version
-            print("ver_list", ver_main, ver_post, ver_git_commit)
+        print("ver_list", ver_main, ver_post, ver_git_commit)
+
         # save version info to json file
-        p_fn_ver.touch()
-        print("p_fn_ver", p_fn_ver.exists())
         with open(p_fn_ver, "w") as f:
             json.dump(
                 {
