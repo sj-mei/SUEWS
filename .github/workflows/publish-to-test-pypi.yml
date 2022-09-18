@@ -17,9 +17,9 @@ jobs:
       with:
         python-version: 3.9
 
-    # # remote debugging
-    # - name: Setup upterm session
-    #   uses: lhotari/action-upterm@v1
+    # remote debugging
+    - name: Setup upterm session
+      uses: lhotari/action-upterm@v1
 
     - name: check git info
       run: |
