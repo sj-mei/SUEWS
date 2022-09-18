@@ -23,6 +23,7 @@ jobs:
 
     - name: Install pypa/build
       run: |
+        git describe --always --dirty
         pip install pandas wheel pytest tables
         make test
         make wheel
