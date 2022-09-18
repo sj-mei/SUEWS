@@ -52,6 +52,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
         # save version info to json file
         warnings.warn(f"writing version info to {p_fn_ver.as_posix()}")
         p_fn_ver.touch()
+        print("p_fn_ver", p_fn_ver.exists())
         with open(p_fn_ver, "w") as f:
             json.dump(
                 {
