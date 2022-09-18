@@ -21,6 +21,7 @@ warnings.warn(f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}")
 p_fn_ver.unlink(missing_ok=True)
 warnings.warn(f"{p_fn_ver.resolve()} exists? {p_fn_ver.exists()}")
 for cmd in ["git", "/usr/bin/git", "git.cmd"]:
+    print(f"checking for {cmd}")
 
     try:
         pipe = subprocess.Popen(
@@ -66,6 +67,8 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
             break
     except Exception as e:
         pass
+    finally:
+        print(f"checking for {cmd} end with {pipe.returncode}; {p_fn_ver.exists()}")
 
 if pipe is None or pipe.returncode != 0:
     # no git, or not in git dir
