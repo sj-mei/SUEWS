@@ -20,34 +20,45 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
         pipe = subprocess.Popen(
             [cmd, "describe", "--always", "--dirty=-dirty"], stdout=subprocess.PIPE
         )
-        (so, serr) = pipe.communicate()
+        (sout, serr) = pipe.communicate()
         # parse version info from git
-        list_str_ver = so.decode("utf-8").strip().split("-")
+        list_str_ver = sout.decode("utf-8").strip().split("-")
+        print(list_str_ver,len(list_str_ver))
 
         if len(list_str_ver) == 1:
             ver_main = list_str_ver[0]
+            print("ver_main", ver_main)
         else:
             ver_main = list_str_ver[0]
-            # number of iterations after ver_main
-            ver_iter = list_str_ver[1]
-            # git commit info
-            ver_git_commit = list_str_ver[2]
-            # if dirty, add 'dev' to version
             if list_str_ver[-1].lower() == "dirty":
+                list_str_ver= list_str_ver[:-1]
+                if len(list_str_ver) > 1:
+                    # number of iterations after ver_main
+                    ver_post = list_str_ver[1]
+                    ver_git_commit = list_str_ver[2]
+                else:
+                    ver_post = ""
+                    ver_git_commit = ""
                 ver_git_commit += "-dirty"
+            # git commit info
+            # if dirty, add 'dev' to version
+            print("ver_list", ver_main,ver_post,ver_git_commit)
         # save version info to json file
+        p_fn_ver.unlink(missing_ok=True)
+        print("writing version info to", p_fn_ver)
         with open(p_fn_ver, "w") as f:
             json.dump(
                 {
                     "version": ver_main + ("" if ISRELEASED else ".dev"),
-                    "iter": ver_iter,
+                    "iter": ver_post,
                     "git_commit": ver_git_commit,
                 },
                 f,
             )
+        print("exists? ", p_fn_ver.exists())
         if pipe.returncode == 0:
             break
-    except:
+    except Exception as e:
         pass
 
 if pipe is None or pipe.returncode != 0:
@@ -64,7 +75,7 @@ if pipe is None or pipe.returncode != 0:
         )
 else:
     # have git, in git dir, but may have used a shallow clone (travis)
-    rev = so.strip()
+    rev = sout.strip()
     rev = rev.decode("ascii")
 
     # if not rev.startswith("v") and re.match("[a-zA-Z0-9]{7,9}", rev):
@@ -77,11 +88,11 @@ if p_fn_ver.exists():
     with open(p_fn_ver, "r") as f:
         dict_ver = json.load(f)
         ver_main = dict_ver["version"]
-        ver_iter = dict_ver["iter"]
+        ver_post = dict_ver["iter"]
         ver_git_commit = dict_ver["git_commit"]
 
-print(dict_ver)
-__version__ = f"{ver_main}-{ver_iter}-{ver_git_commit}"
+# print(dict_ver)
+__version__ = f"{ver_main}-{ver_post}-{ver_git_commit}"
 
 
 def readme():
