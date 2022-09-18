@@ -18,13 +18,14 @@ pipe = None
 p_fn_ver = Path("./supy/supy_version.json")
 
 # force remove the version info file
-flag_dirty=False
+flag_dirty = False
 
 for cmd in ["git", "/usr/bin/git", "git.cmd"]:
 
     try:
         pipe = subprocess.Popen(
-            [cmd, "describe", "--always", "--dirty=-dirty"], stdout=subprocess.PIPE
+            [cmd, "describe", "--always", "--match", "2[0-9]*", "--dirty=-dirty"],
+            stdout=subprocess.PIPE,
         )
         (sout, serr) = pipe.communicate()
         # parse version info from git
@@ -51,7 +52,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
                 {
                     "version": ver_main + ("" if ISRELEASED else ".dev"),
                     "iter": ver_post,
-                    "git_commit": ver_git_commit+("-dirty" if flag_dirty else ""),
+                    "git_commit": ver_git_commit + ("-dirty" if flag_dirty else ""),
                 },
                 f,
             )

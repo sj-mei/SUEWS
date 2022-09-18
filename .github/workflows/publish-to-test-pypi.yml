@@ -20,10 +20,11 @@ jobs:
     # # remote debugging
     # - name: Setup upterm session
     #   uses: lhotari/action-upterm@v1
+
     - name: check git info
       run: |
         git tag -l
-        git describe --always --dirty
+        git describe --always --dirty --match "2[0-9]*"
 
     - name: test and build
       run: |
