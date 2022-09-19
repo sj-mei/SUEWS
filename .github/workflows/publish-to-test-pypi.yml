@@ -24,6 +24,7 @@ jobs:
     - name: check git info
       run: |
         git tag -l
+        git status
         git describe --always --dirty --match "2[0-9]*"
 
     - name: test and build
