@@ -24,7 +24,7 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
 
     try:
         pipe = subprocess.Popen(
-            [cmd, "describe", "--always", "--match", "2[0-9]*", "--dirty=-dirty"],
+            [cmd, "describe", "--tags", "--match", "2[0-9]*", "--dirty=-dirty"],
             stdout=subprocess.PIPE,
         )
         (sout, serr) = pipe.communicate()
