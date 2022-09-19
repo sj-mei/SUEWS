@@ -1,3 +1,5 @@
+import os
+from signal import raise_signal
 from setuptools import setup
 import json
 from pathlib import Path
@@ -7,47 +9,57 @@ import subprocess
 import warnings
 import re
 
-ISRELEASED = False
+ISRELEASED = True
 # if a release, use strict requirement for supy-driver; otehrwise, use a loose requirement
-DRIVER_REQ = "supy_driver==2021a9" if ISRELEASED else "supy_driver"
+DRIVER_REQ = "supy_driver==2021a15" if ISRELEASED else "supy_driver"
 # FULLVERSION += '.dev'
 
 pipe = None
 p_fn_ver = Path("./supy/supy_version.json")
+
+# force remove the version info file
+flag_dirty = False
+
 for cmd in ["git", "/usr/bin/git", "git.cmd"]:
 
     try:
         pipe = subprocess.Popen(
-            [cmd, "describe", "--always", "--dirty=-dirty"], stdout=subprocess.PIPE
+            [cmd, "describe", "--always", "--match", "2[0-9]*", "--dirty=-dirty"],
+            stdout=subprocess.PIPE,
         )
-        (so, serr) = pipe.communicate()
+        (sout, serr) = pipe.communicate()
         # parse version info from git
-        list_str_ver = so.decode("utf-8").strip().split("-")
+        list_str_ver = sout.decode("utf-8").strip().split("-")
 
-        if len(list_str_ver) == 1:
-            ver_main = list_str_ver[0]
-        else:
-            ver_main = list_str_ver[0]
-            # number of iterations after ver_main
-            ver_iter = list_str_ver[1]
-            # git commit info
+        if list_str_ver[-1].lower() == "dirty":
+            flag_dirty = True
+            # remove the "dirty" part from version info list
+            list_str_ver = list_str_ver[:-1]
+
+        ver_main = list_str_ver[0]
+        print("ver_main", ver_main)
+        if len(list_str_ver) > 1:
+            ver_post = list_str_ver[1]
             ver_git_commit = list_str_ver[2]
-            # if dirty, add 'dev' to version
-            if list_str_ver[-1].lower() == "dirty":
-                ver_git_commit += "-dirty"
+        else:
+            ver_post = ""
+            ver_git_commit = ""
+
         # save version info to json file
+        p_fn_ver.unlink(missing_ok=True)
         with open(p_fn_ver, "w") as f:
             json.dump(
                 {
                     "version": ver_main + ("" if ISRELEASED else ".dev"),
-                    "iter": ver_iter,
-                    "git_commit": ver_git_commit,
+                    "iter": ver_post,
+                    "git_commit": ver_git_commit + ("-dirty" if flag_dirty else ""),
                 },
                 f,
             )
         if pipe.returncode == 0:
+            print(f"in {cmd}, git version info saved to", p_fn_ver)
             break
-    except:
+    except Exception as e:
         pass
 
 if pipe is None or pipe.returncode != 0:
@@ -64,24 +76,22 @@ if pipe is None or pipe.returncode != 0:
         )
 else:
     # have git, in git dir, but may have used a shallow clone (travis)
-    rev = so.strip()
+    rev = sout.strip()
     rev = rev.decode("ascii")
-
-    # if not rev.startswith("v") and re.match("[a-zA-Z0-9]{7,9}", rev):
-    #     # partial clone, manually construct version string
-    #     # this is the format before we started using git-describe
-    #     # to get an ordering on dev version strings.
-    #     rev = "v%s.dev-%s" % (VERSION, rev)
 
 if p_fn_ver.exists():
     with open(p_fn_ver, "r") as f:
         dict_ver = json.load(f)
         ver_main = dict_ver["version"]
-        ver_iter = dict_ver["iter"]
+        ver_post = dict_ver["iter"]
         ver_git_commit = dict_ver["git_commit"]
 
-print(dict_ver)
-__version__ = f"{ver_main}-{ver_iter}-{ver_git_commit}"
+    # print(dict_ver)
+    __version__ = f"{ver_main}-{ver_post}-{ver_git_commit}".strip()
+    # raise ValueError(f"version info found: {__version__}")
+else:
+    __version__ = "0.0.0"
+    raise ValueError("version info not found")
 
 
 def readme():
@@ -94,7 +104,7 @@ def readme():
 
 setup(
     name="supy",
-    version=__version__,
+    # version=__version__,
     description="the SUEWS model that speaks python",
     long_description=readme(),
     long_description_content_type="text/markdown",
@@ -108,7 +118,7 @@ setup(
     ),
     author_email=", ".join(
         [
-            "ting.sun@reading.ac.uk",
+            "ting.sun@ucl.ac.uk",
             "h.omidvar@reading.ac.uk",
             "c.s.grimmond@reading.ac.uk",
         ]
