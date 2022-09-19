@@ -25,7 +25,7 @@ jobs:
       run: |
         git tag -l
         git status
-        git describe --always --dirty --match "2[0-9]*"
+        git describe --tags --dirty --match "2[0-9]*"
 
     - name: test and build
       run: |
