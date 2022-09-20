@@ -52,7 +52,14 @@ for cmd in ["git", "/usr/bin/git", "git.cmd"]:
                 {
                     "version": ver_main + ("" if ISRELEASED else ".dev"),
                     "iter": ver_post,
-                    "git_commit": ver_git_commit + ("-dirty" if flag_dirty else ""),
+                    "git_commit": ver_git_commit
+                    + (
+                        "-dirty"
+                        if (flag_dirty and len(ver_git_commit) > 0)
+                        else (
+                            "dirty" if (flag_dirty and len(ver_git_commit) == 0) else ""
+                        )
+                    ),
                 },
                 f,
             )
@@ -87,7 +94,7 @@ if p_fn_ver.exists():
         ver_git_commit = dict_ver["git_commit"]
 
     # print(dict_ver)
-    __version__ = f"{ver_main}-{ver_post}-{ver_git_commit}".strip()
+    __version__ = "-".join(filter(None, [ver_main, ver_post, ver_git_commit]))
     # raise ValueError(f"version info found: {__version__}")
 else:
     __version__ = "0.0.0"

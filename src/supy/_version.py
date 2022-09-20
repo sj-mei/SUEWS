@@ -10,7 +10,18 @@ import pandas as pd
 ser_ver = pd.read_json(
     path_supy_module / "supy_version.json", typ="series", convert_dates=False
 )
-__version__ = f"{ser_ver.version}-{ser_ver.iter}-{ser_ver.git_commit}"
+__version__ = "-".join(
+    list(
+        filter(
+            None,
+            [
+                ser_ver.version,
+                ser_ver.iter,
+                ser_ver.git_commit,
+            ],
+        )
+    )
+)
 __version_driver__ = sd_ver
 
 
