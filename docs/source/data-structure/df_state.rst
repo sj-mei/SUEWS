@@ -70,6 +70,54 @@
         :option:`EnergyUseProfWD <suews:EnergyUseProfWD>`, :option:`EnergyUseProfWE <suews:EnergyUseProfWE>`
 
 
+.. option:: air_ext_lw
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: air_ext_sw
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: air_ssa_lw
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: air_ssa_sw
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
 .. option:: alb
 
     :Description:
@@ -466,6 +514,18 @@
         :option:`H_DecTr <suews:H_DecTr>`
 
 
+.. option:: diagmethod
+
+    :Description:
+        Defines how near surface diagnostics are calculated.
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        :option:`DiagMethod <suews:DiagMethod>`
+
+
 .. option:: diagnose
 
     :Description:
@@ -565,7 +625,7 @@
 .. option:: enef_v_jkm
 
     :Description:
-        Emission factor for heat [J k|m^-1|].
+        Emission factor for heat [J k |m^-1| ].
     :Dimensionality:
         0
     :Dimensionality Remarks:
@@ -776,6 +836,18 @@
         3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}
     :SUEWS-related variables:
         :option:`GDDFull <suews:GDDFull>`
+
+
+.. option:: ground_albedo_dir_mult_fact
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
 
 
 .. option:: gsmodel
@@ -1152,6 +1224,42 @@
         Scalar
     :SUEWS-related variables:
         :option:`MinQFMetab <suews:MinQFMetab>`
+
+
+.. option:: n_stream_lw_urban
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: n_stream_sw_urban
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: n_vegetation_region_urban
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
 
 
 .. option:: narp_emis_snow
@@ -1544,7 +1652,7 @@
         :option:`SDDFull <suews:SDDFull>`
 
 
-.. option:: sfr
+.. option:: sfr_surf
 
     :Description:
         Surface cover fractions.
@@ -1750,10 +1858,10 @@
         :option:`SoilDepth <suews:SoilDepth>`
 
 
-.. option:: soilstore_id
+.. option:: soilstore_surf
 
     :Description:
-        Initial water stored in soil beneath each land cover
+        Initial water stored in soil beneath `Bldgs` surface [mm];;Initial water stored in soil beneath `Paved` surface [mm];;Initial water stored in soil beneath `DecTr` surface [mm];;Initial water stored in soil beneath `EveTr` surface [mm];;Initial water stored in soil beneath `Grass` surface [mm];;Initial water stored in soil beneath `BSoil` surface [mm]
     :Dimensionality:
         (7,)
     :Dimensionality Remarks:
@@ -1762,7 +1870,7 @@
         :option:`SoilstoreBldgsState <suews:SoilstoreBldgsState>`, :option:`SoilstorePavedState <suews:SoilstorePavedState>`, :option:`SoilstoreDecTrState <suews:SoilstoreDecTrState>`, :option:`SoilstoreEveTrState <suews:SoilstoreEveTrState>`, :option:`SoilstoreGrassState <suews:SoilstoreGrassState>`, :option:`SoilstoreBSoilState <suews:SoilstoreBSoilState>`
 
 
-.. option:: soilstorecap
+.. option:: soilstorecap_surf
 
     :Description:
         Limit value for `SoilDepth` [mm]
@@ -1798,10 +1906,10 @@
         :option:`StartDLS <suews:StartDLS>`
 
 
-.. option:: state_id
+.. option:: state_surf
 
     :Description:
-        Initial wetness condition on each land cover
+        Initial wetness condition on `Bldgs`;;Initial wetness condition on `Paved`;;Initial wetness condition on `DecTr`;;Initial wetness condition on `EveTr`;;Initial wetness condition on `Grass`;;Initial wetness condition on `BSoil`;;Initial wetness condition on `Water`
     :Dimensionality:
         (7,)
     :Dimensionality Remarks:
@@ -1810,7 +1918,7 @@
         :option:`BldgsState <suews:BldgsState>`, :option:`PavedState <suews:PavedState>`, :option:`DecTrState <suews:DecTrState>`, :option:`EveTrState <suews:EveTrState>`, :option:`GrassState <suews:GrassState>`, :option:`BSoilState <suews:BSoilState>`, :option:`WaterState <suews:WaterState>`
 
 
-.. option:: statelimit
+.. option:: statelimit_surf
 
     :Description:
         Upper limit to the surface state. [mm]
@@ -1858,6 +1966,18 @@
         Scalar
     :SUEWS-related variables:
         :option:`SurfaceArea <suews:SurfaceArea>`
+
+
+.. option:: sw_dn_direct_frac
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
 
 
 .. option:: tau_a
@@ -2006,6 +2126,66 @@
         :option:`Tstep <suews:Tstep>`
 
 
+.. option:: use_sw_direct_albedo
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: veg_contact_fraction_const
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: veg_fsd_const
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: veg_ssa_lw
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
+.. option:: veg_ssa_sw
+
+    :Description:
+        Internal use. Please DO NOT modify
+    :Dimensionality:
+        0
+    :Dimensionality Remarks:
+        Scalar
+    :SUEWS-related variables:
+        None
+
+
 .. option:: veg_type
 
     :Description:
@@ -2044,7 +2224,7 @@
         :option:`WaterUseMethod <suews:WaterUseMethod>`
 
 
-.. option:: wetthresh
+.. option:: wetthresh_surf
 
     :Description:
         Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface [mm].
@@ -2087,7 +2267,7 @@
 .. option:: z
 
     :Description:
-        Measurement height [m].
+        Measurement height [m] for all atmospheric forcing variables set in `SSss_YYYY_data_tt.txt`.
     :Dimensionality:
         0
     :Dimensionality Remarks:

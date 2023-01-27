@@ -11,19 +11,19 @@
 .. option:: RH
 
     :Description:
-        Relative Humidity [%]
+        Relative Humidity [%] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
 
 
 .. option:: Tair
 
     :Description:
-        Air temperature [°C]
+        Air temperature [°C] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
 
 
 .. option:: U
 
     :Description:
-        Wind speed [m s-1] Height of the wind speed measurement (z) is needed in `SUEWS_SiteSelect.txt`.
+        Wind speed [m s-1] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
 
 
 .. option:: Wuh
@@ -101,7 +101,7 @@
 .. option:: pres
 
     :Description:
-        Barometric pressure [kPa]
+        Barometric pressure [kPa] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
 
 
 .. option:: qe
@@ -125,7 +125,7 @@
 .. option:: qn
 
     :Description:
-        Net all-wave radiation [W |m^-2|] Required if `NetRadiationMethod` = 0.
+        Net all-wave radiation [W |m^-2|] (Required if `NetRadiationMethod` = 0.)
 
 
 .. option:: qs
@@ -137,13 +137,13 @@
 .. option:: rain
 
     :Description:
-        Rainfall [mm]
+        Rainfall [mm] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
 
 
 .. option:: snow
 
     :Description:
-        Snow cover fraction (0 – 1) [-] Required if `SnowUse` = 1
+        Snow cover fraction (0 – 1) [-] (Required if `SnowUse` = 1)
 
 
 .. option:: wdir

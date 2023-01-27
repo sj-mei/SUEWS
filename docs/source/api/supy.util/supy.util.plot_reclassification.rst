@@ -1,4 +1,4 @@
-supy.util.plot\_reclassification
+﻿supy.util.plot\_reclassification
 ================================
 
 .. currentmodule:: supy.util
