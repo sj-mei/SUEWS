@@ -8,6 +8,7 @@
 
 # -- Path setup --------------------------------------------------------------
 
+from datetime import datetime
 import os
 import platform
 import subprocess
@@ -25,8 +26,11 @@ print(r"this build is made by:", "\n", sys.version)
 # determine if in RTD environment
 read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
 if read_the_docs_build:
+    # update `today`
+    dt_today = datetime.today()
     pass
 else:
+    dt_today = datetime.today()
     print(r"this build is for:", "\n")
     supy.show_version()
 
@@ -46,7 +50,7 @@ subprocess_cmd('cd proc_var_info; python3 gen_rst.py')
 project = "SuPy"
 doc_name = "SuPy Documentation"
 author = "Dr Ting Sun, Dr Hamidreza Omidvar and Prof Sue Grimmond"
-year = "2018–2021"
+year = f"2018 – {dt_today.year}"
 copyright = ", ".join([year, author])
 
 
@@ -99,9 +103,9 @@ extensions = [
 ]
 
 extlinks = {
-    "issue": ("https://github.com/UMEP-dev/SuPy/issues/%s", "GH"),
-    "pull": ("https://github.com/UMEP-dev/SuPy/pull/%s", "PR"),
-    "doi": ("http://dx.doi.org/%s", "DOI: "),
+    "issue": ("https://github.com/UMEP-dev/SuPy/issues/%s", "#%s"),
+    "pull": ("https://github.com/UMEP-dev/SuPy/pull/%s", "PR #%s"),
+    "doi": ("http://dx.doi.org/%s", "DOI: %s"),
 }
 
 # sphinx comments
