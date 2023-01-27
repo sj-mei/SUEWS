@@ -19,7 +19,7 @@ from nml_rst_proc import (
     set_input_initcond,
     set_input_runcontrol,
     parse_option_rst,
-    url_repo_input
+    url_repo_input,
 )
 from urlpath import URL
 import urllib.request
@@ -30,14 +30,19 @@ import os
 
 os.getcwd()
 
+# print("\n=======================================")
+# print("=======================================")
+
+
 # %% [markdown]
 # ## generate site characteristics related dataframe
 
 
 # %%
-print("loading in", "gen_df_state", "...")
+print("loading in gen_df_state ...")
 
 url_repo_input_site = url_repo_input / "SUEWS_SiteInfo/csv-table"
+print("table URL: ", url_repo_input_site)
 
 # list of `SUEWS_**.csv `tables
 list_table = [
@@ -58,7 +63,9 @@ list_url_rst = list(set(URL("/".join(url.parts)) for url in list_url_rst_x))
 # preload sample data for later use
 df_init_sample, df_forcing_sample = sp.load_SampleData()
 
-print("loading in", "gen_df_state", "done")
+print("loading gen_df_state done")
+# print("=======================================")
+# print("=======================================\n")
 # %%
 # generate df_site: site characteristics related dataframe
 
@@ -189,6 +196,7 @@ def gen_df_nml(set_initcond, set_runcontrol):
         for url in list_url_rst:
             if not url.get().ok:
                 print(f"{url} not existing!")
+    # df_var_nml = pd.concat(parse_option_rst(url) for url in list_url_rst)
     else:
         df_var_nml_x = (
             df_var_nml.reset_index()
@@ -228,7 +236,11 @@ def gen_df_initcond(set_initcond, set_runcontrol):
         # 'gdd_id': ['gdd_1_0', 'gdd_2_0', ],
         # 'hdd_id':,
         # 'icefrac':,
-        "lai_id": ["laiinitialdectr", "laiinitialevetr", "laiinitialgrass",],
+        "lai_id": [
+            "laiinitialdectr",
+            "laiinitialevetr",
+            "laiinitialgrass",
+        ],
         # 'numcapita':,
         "porosity_id": "porosity0",
         # 'qn1_av': 'qn1_av',
@@ -271,7 +283,7 @@ def gen_df_initcond(set_initcond, set_runcontrol):
             "snowpackbsoil",
             "snowpackwater",
         ],
-        "soilstore_id": [
+        "soilstore_surf": [
             "soilstorebldgsstate",
             "soilstorepavedstate",
             "soilstoredectrstate",
@@ -280,7 +292,7 @@ def gen_df_initcond(set_initcond, set_runcontrol):
             "soilstorebsoilstate",
             # 'soilstorewaterstate',
         ],
-        "state_id": [
+        "state_surf": [
             "bldgsstate",
             "pavedstate",
             "dectrstate",
@@ -299,17 +311,20 @@ def gen_df_initcond(set_initcond, set_runcontrol):
         var_related = dict_initcond_related[var]
         desc = df_var_nml_x.loc[var_related, "Description"]
         desc = desc if isinstance(desc, str) else "\n".join(desc.tolist())
-        print(f'\n{var_related}')
+        # print(f"\n{var_related}")
         var_related = df_var_nml_x.loc[var_related, "SUEWS-related variables"]
         var_related = (
             var_related
             if isinstance(var_related, str)
             else ", ".join(var_related.tolist())
         )
-        print(f'\n{var_related}\n\n')
+        # print(f"\n{var_related}\n\n")
         dict_var = {
             var: pd.Series(
-                {"Description": desc, "SUEWS-related variables": var_related,}
+                {
+                    "Description": desc,
+                    "SUEWS-related variables": var_related,
+                }
             ),
         }
 
@@ -391,7 +406,12 @@ def proc_df_state(
         (
             8,
         ): "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)} ",
-        (24, 2): sep.join(["24: hours of a day", "2: {Weekday, Weekend}",]),
+        (24, 2): sep.join(
+            [
+                "24: hours of a day",
+                "2: {Weekday, Weekend}",
+            ]
+        ),
         (8, 4, 3): sep.join(
             [
                 "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)}",
@@ -457,7 +477,7 @@ def proc_df_state(
     # dict for manual edits of several entries
     dict_var_desc_manual = {
         # surface fractions
-        "sfr": "Surface cover fractions.",
+        "sfr_surf": "Surface cover fractions.",
         # ohm coefficients:
         "ohm_coef": "Coefficients for OHM calculation.",
         # profiles:
@@ -510,9 +530,12 @@ def proc_df_state(
 # %%
 # generate dataframe of all state variables used by supy
 def gen_df_state(
-    list_table: list, set_initcond: set, set_runcontrol: set, set_input_runcontrol: set
+    list_table: list,
+    set_initcond: set,
+    set_runcontrol: set,
+    set_input_runcontrol: set,
 ) -> pd.DataFrame:
-    """generate dataframe of all state variables used by supy
+    """generate dataframe of all state variables used by supy from SUEWS docs repo
 
     Parameters
     ----------
@@ -553,7 +576,13 @@ def gen_df_state(
 
 
 df_var_state = gen_df_state(
-    list_table, set_initcond, set_runcontrol, set_input_runcontrol
+    list_table,
+    set_initcond,
+    set_runcontrol,
+    set_input_runcontrol,
 )
+# print('\n===== df_var_state =====')
+# print('df_var_state shape: ', df_var_state.shape)
+# print('df_var_state head: ', df_var_state.head())
 df_var_state.to_csv("df_state.csv")
-
+# print('===== df_var_state end=====\n')

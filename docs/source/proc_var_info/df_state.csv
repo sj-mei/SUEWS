@@ -6,6 +6,10 @@ ah_slope_heating,"(2,)",Heating slope of QF calculation.,":option:`AHSlope_Heati
 ahprof_24hr,"(24, 2)",Hourly profile values used in energy use calculation.,":option:`EnergyUseProfWD <suews:EnergyUseProfWD>`, :option:`EnergyUseProfWE <suews:EnergyUseProfWE>`","24: hours of a day
 
         2: {Weekday, Weekend}"
+air_ext_lw,0,Internal use. Please DO NOT modify,None,Scalar
+air_ext_sw,0,Internal use. Please DO NOT modify,None,Scalar
+air_ssa_lw,0,Internal use. Please DO NOT modify,None,Scalar
+air_ssa_sw,0,Internal use. Please DO NOT modify,None,Scalar
 alb,"(7,)",Effective surface albedo (middle of the day value) for summertime.,:option:`AlbedoMax <suews:AlbedoMax>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 albdectr_id,0,Albedo of deciduous surface `DecTr` on day 0 of run,:option:`albDecTr0 <suews:albDecTr0>`,Scalar
 albevetr_id,0,Albedo of evergreen surface `EveTr` on day 0 of run,:option:`albEveTr0 <suews:albEveTr0>`,Scalar
@@ -39,6 +43,7 @@ daywat,"(7,)",Irrigation flag: 1 for on and 0 for off.,":option:`DayWat(1) <suew
 daywatper,"(7,)",Fraction of properties using irrigation for each day of a week.,":option:`DayWatPer(1) <suews:DayWatPer(1)>`, :option:`DayWatPer(2) <suews:DayWatPer(2)>`, :option:`DayWatPer(3) <suews:DayWatPer(3)>`, :option:`DayWatPer(4) <suews:DayWatPer(4)>`, :option:`DayWatPer(5) <suews:DayWatPer(5)>`, :option:`DayWatPer(6) <suews:DayWatPer(6)>`, :option:`DayWatPer(7) <suews:DayWatPer(7)>`","7: {Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday}"
 decidcap_id,0,Storage capacity of deciduous surface `DecTr` on day 0 of run.,:option:`decidCap0 <suews:decidCap0>`,Scalar
 dectreeh,0,Mean height of deciduous trees [m],:option:`H_DecTr <suews:H_DecTr>`,Scalar
+diagmethod,0,Defines how near surface diagnostics are calculated.,:option:`DiagMethod <suews:DiagMethod>`,Scalar
 diagnose,0,Internal use. Please DO NOT modify,None,Scalar
 diagqn,0,Internal use. Please DO NOT modify,None,Scalar
 diagqs,0,Internal use. Please DO NOT modify,None,Scalar
@@ -47,7 +52,7 @@ ef_umolco2perj,0,Emission factor for fuels used for building heating.,:option:`E
 emis,"(7,)",Effective surface emissivity.,:option:`Emissivity <suews:Emissivity>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 emissionsmethod,0,Determines method for QF calculation.,:option:`EmissionsMethod <suews:EmissionsMethod>`,Scalar
 enddls,0,End of the day light savings [DOY],:option:`EndDLS <suews:EndDLS>`,Scalar
-enef_v_jkm,0,Emission factor for heat [J k|m^-1|].,:option:`EnEF_v_Jkm <suews:EnEF_v_Jkm>`,Scalar
+enef_v_jkm,0,Emission factor for heat [J k |m^-1| ].,:option:`EnEF_v_Jkm <suews:EnEF_v_Jkm>`,Scalar
 evapmethod,0,Internal use. Please DO NOT modify,None,Scalar
 evetreeh,0,Mean height of evergreen trees [m],:option:`H_EveTr <suews:H_EveTr>`,Scalar
 faibldg,0,Frontal area index for buildings [-],:option:`FAI_Bldgs <suews:FAI_Bldgs>`,Scalar
@@ -65,6 +70,7 @@ g4,0,Related to VPD dependence [units depend on `gsModel`],:option:`G4 <suews:G4
 g5,0,Related to temperature dependence [°C],:option:`G5 <suews:G5>`,Scalar
 g6,0,Related to soil moisture dependence [|mm^-1|],:option:`G6 <suews:G6>`,Scalar
 gddfull,"(3,)",The growing degree days (GDD) needed for full capacity of the leaf area index (LAI) [°C].,:option:`GDDFull <suews:GDDFull>`,"3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+ground_albedo_dir_mult_fact,0,Internal use. Please DO NOT modify,None,Scalar
 gsmodel,0,Formulation choice for conductance calculation.,:option:`gsModel <suews:gsModel>`,Scalar
 h_maintain,0,"water depth to maintain used in automatic irrigation (e.g., ponding water due to flooding irrigation in rice crop-field) [mm].",:option:`H_maintain <suews:H_maintain>`,Scalar
 humactivity_24hr,"(24, 2)",Hourly profile values used in human activity calculation.,":option:`ActivityProfWD <suews:ActivityProfWD>`, :option:`ActivityProfWE <suews:ActivityProfWE>`","24: hours of a day
@@ -100,6 +106,9 @@ maxqfmetab,0,Maximum value for human heat emission. [W |m^-2|],:option:`MaxQFMet
 min_res_bioco2,"(3,)",Minimum soil respiration rate (for cold-temperature limit) [umol |m^-2| |s^-1|].,:option:`min_respi <suews:min_respi>`,"3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
 minfcmetab,0,Minimum (night) CO2 from human metabolism. [W |m^-2|],:option:`MinFCMetab <suews:MinFCMetab>`,Scalar
 minqfmetab,0,Minimum value for human heat emission. [W |m^-2|],:option:`MinQFMetab <suews:MinQFMetab>`,Scalar
+n_stream_lw_urban,0,Internal use. Please DO NOT modify,None,Scalar
+n_stream_sw_urban,0,Internal use. Please DO NOT modify,None,Scalar
+n_vegetation_region_urban,0,Internal use. Please DO NOT modify,None,Scalar
 narp_emis_snow,0,Effective surface emissivity.,:option:`Emissivity <suews:Emissivity>`,Scalar
 narp_trans_site,0,Atmospheric transmissivity for NARP [-],:option:`NARP_Trans <suews:NARP_Trans>`,Scalar
 netradiationmethod,0,Determines method for calculation of radiation fluxes.,:option:`NetRadiationMethod <suews:NetRadiationMethod>`,Scalar
@@ -138,7 +147,7 @@ s1,0,A parameter related to soil moisture dependence [-],:option:`S1 <suews:S1>`
 s2,0,A parameter related to soil moisture dependence [mm],:option:`S2 <suews:S2>`,Scalar
 sathydraulicconduct,"(7,)",Hydraulic conductivity for saturated soil [mm |s^-1|],:option:`SatHydraulicCond <suews:SatHydraulicCond>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 sddfull,"(3,)",The sensesence degree days (SDD) needed to initiate leaf off. [°C],:option:`SDDFull <suews:SDDFull>`,"3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
-sfr,"(7,)",Surface cover fractions.,":option:`Fr_Bldgs <suews:Fr_Bldgs>`, :option:`Fr_Bsoil <suews:Fr_Bsoil>`, :option:`Fr_DecTr <suews:Fr_DecTr>`, :option:`Fr_EveTr <suews:Fr_EveTr>`, :option:`Fr_Grass <suews:Fr_Grass>`, :option:`Fr_Paved <suews:Fr_Paved>`, :option:`Fr_Water <suews:Fr_Water>`","7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
+sfr_surf,"(7,)",Surface cover fractions.,":option:`Fr_Bldgs <suews:Fr_Bldgs>`, :option:`Fr_Bsoil <suews:Fr_Bsoil>`, :option:`Fr_DecTr <suews:Fr_DecTr>`, :option:`Fr_EveTr <suews:Fr_EveTr>`, :option:`Fr_Grass <suews:Fr_Grass>`, :option:`Fr_Paved <suews:Fr_Paved>`, :option:`Fr_Water <suews:Fr_Water>`","7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 smdmethod,0,Determines method for calculating soil moisture deficit (SMD).,:option:`SMDMethod <suews:SMDMethod>`,Scalar
 snowalb,0,Initial snow albedo,:option:`SnowAlb0 <suews:SnowAlb0>`,Scalar
 snowalbmax,0,Effective surface albedo (middle of the day value) for summertime.,:option:`AlbedoMax <suews:AlbedoMax>`,Scalar
@@ -157,17 +166,18 @@ snowprof_24hr,"(24, 2)",Hourly profile values used in snow clearing.,":option:`S
 snowuse,0,Determines whether the snow part of the model runs.,:option:`SnowUse <suews:SnowUse>`,Scalar
 snowwater,"(7,)",Initial amount of liquid water in the snow on each land cover,":option:`SnowWaterBldgsState <suews:SnowWaterBldgsState>`, :option:`SnowWaterPavedState <suews:SnowWaterPavedState>`, :option:`SnowWaterDecTrState <suews:SnowWaterDecTrState>`, :option:`SnowWaterEveTrState <suews:SnowWaterEveTrState>`, :option:`SnowWaterGrassState <suews:SnowWaterGrassState>`, :option:`SnowWaterBSoilState <suews:SnowWaterBSoilState>`, :option:`SnowWaterWaterState <suews:SnowWaterWaterState>`","7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 soildepth,"(7,)",Depth of soil beneath the surface [mm],:option:`SoilDepth <suews:SoilDepth>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
-soilstore_id,"(7,)",Initial water stored in soil beneath each land cover,":option:`SoilstoreBldgsState <suews:SoilstoreBldgsState>`, :option:`SoilstorePavedState <suews:SoilstorePavedState>`, :option:`SoilstoreDecTrState <suews:SoilstoreDecTrState>`, :option:`SoilstoreEveTrState <suews:SoilstoreEveTrState>`, :option:`SoilstoreGrassState <suews:SoilstoreGrassState>`, :option:`SoilstoreBSoilState <suews:SoilstoreBSoilState>`","7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
-soilstorecap,"(7,)",Limit value for `SoilDepth` [mm],:option:`SoilStoreCap <suews:SoilStoreCap>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
+soilstore_surf,"(7,)",Initial water stored in soil beneath `Bldgs` surface [mm];;Initial water stored in soil beneath `Paved` surface [mm];;Initial water stored in soil beneath `DecTr` surface [mm];;Initial water stored in soil beneath `EveTr` surface [mm];;Initial water stored in soil beneath `Grass` surface [mm];;Initial water stored in soil beneath `BSoil` surface [mm],":option:`SoilstoreBldgsState <suews:SoilstoreBldgsState>`, :option:`SoilstorePavedState <suews:SoilstorePavedState>`, :option:`SoilstoreDecTrState <suews:SoilstoreDecTrState>`, :option:`SoilstoreEveTrState <suews:SoilstoreEveTrState>`, :option:`SoilstoreGrassState <suews:SoilstoreGrassState>`, :option:`SoilstoreBSoilState <suews:SoilstoreBSoilState>`","7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
+soilstorecap_surf,"(7,)",Limit value for `SoilDepth` [mm],:option:`SoilStoreCap <suews:SoilStoreCap>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 stabilitymethod,0,Defines which atmospheric stability functions are used.,:option:`StabilityMethod <suews:StabilityMethod>`,Scalar
 startdls,0,Start of the day light savings [DOY],:option:`StartDLS <suews:StartDLS>`,Scalar
-state_id,"(7,)",Initial wetness condition on each land cover,":option:`BldgsState <suews:BldgsState>`, :option:`PavedState <suews:PavedState>`, :option:`DecTrState <suews:DecTrState>`, :option:`EveTrState <suews:EveTrState>`, :option:`GrassState <suews:GrassState>`, :option:`BSoilState <suews:BSoilState>`, :option:`WaterState <suews:WaterState>`","7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
-statelimit,"(7,)",Upper limit to the surface state. [mm],:option:`StateLimit <suews:StateLimit>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
+state_surf,"(7,)",Initial wetness condition on `Bldgs`;;Initial wetness condition on `Paved`;;Initial wetness condition on `DecTr`;;Initial wetness condition on `EveTr`;;Initial wetness condition on `Grass`;;Initial wetness condition on `BSoil`;;Initial wetness condition on `Water`,":option:`BldgsState <suews:BldgsState>`, :option:`PavedState <suews:PavedState>`, :option:`DecTrState <suews:DecTrState>`, :option:`EveTrState <suews:EveTrState>`, :option:`GrassState <suews:GrassState>`, :option:`BSoilState <suews:BSoilState>`, :option:`WaterState <suews:WaterState>`","7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
+statelimit_surf,"(7,)",Upper limit to the surface state. [mm],:option:`StateLimit <suews:StateLimit>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 storageheatmethod,0,Determines method for calculating storage heat flux ΔQS.,:option:`StorageHeatMethod <suews:StorageHeatMethod>`,Scalar
 storedrainprm,"(6, 7)",Coefficients used in drainage calculation.,":option:`DrainageCoef1 <suews:DrainageCoef1>`, :option:`DrainageCoef2 <suews:DrainageCoef2>`, :option:`DrainageEq <suews:DrainageEq>`, :option:`StorageMax <suews:StorageMax>`, :option:`StorageMin <suews:StorageMin>`","6: { `StorageMin`, `DrainageEq`, `DrainageCoef1`, `DrainageCoef2`, `StorageMax`, current storage}
 
         7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 surfacearea,0,Area of the grid [ha].,:option:`SurfaceArea <suews:SurfaceArea>`,Scalar
+sw_dn_direct_frac,0,Internal use. Please DO NOT modify,None,Scalar
 tau_a,0,Time constant for snow albedo aging in cold snow [-],:option:`tau_a <suews:tau_a>`,Scalar
 tau_f,0,Time constant for snow albedo aging in melting snow [-],:option:`tau_f <suews:tau_f>`,Scalar
 tau_r,0,Time constant for snow density ageing [-],:option:`tau_r <suews:tau_r>`,Scalar
@@ -182,18 +192,23 @@ traffprof_24hr,"(24, 2)",Hourly profile values used in traffic activity calculat
 
         2: {Weekday, Weekend}"
 tstep,0,Specifies the model time step [s].,:option:`Tstep <suews:Tstep>`,Scalar
+use_sw_direct_albedo,0,Internal use. Please DO NOT modify,None,Scalar
+veg_contact_fraction_const,0,Internal use. Please DO NOT modify,None,Scalar
+veg_fsd_const,0,Internal use. Please DO NOT modify,None,Scalar
+veg_ssa_lw,0,Internal use. Please DO NOT modify,None,Scalar
+veg_ssa_sw,0,Internal use. Please DO NOT modify,None,Scalar
 veg_type,0,Internal use. Please DO NOT modify,None,Scalar
 waterdist,"(8, 6)",Fraction of water redistribution,":option:`ToBSoil <suews:ToBSoil>`, :option:`ToBldgs <suews:ToBldgs>`, :option:`ToDecTr <suews:ToDecTr>`, :option:`ToEveTr <suews:ToEveTr>`, :option:`ToGrass <suews:ToGrass>`, :option:`ToPaved <suews:ToPaved>`, :option:`ToRunoff <suews:ToRunoff>`, :option:`ToSoilStore <suews:ToSoilStore>`, :option:`ToWater <suews:ToWater>`","8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)}
 
         6: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`}"
 waterusemethod,0,Defines how external water use is calculated.,:option:`WaterUseMethod <suews:WaterUseMethod>`,Scalar
-wetthresh,"(7,)",Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface [mm].,:option:`WetThreshold <suews:WetThreshold>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
+wetthresh_surf,"(7,)",Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface [mm].,:option:`WetThreshold <suews:WetThreshold>`,"7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
 wuprofa_24hr,"(24, 2)",Hourly profile values used in automatic irrigation.,":option:`WaterUseProfAutoWD <suews:WaterUseProfAutoWD>`, :option:`WaterUseProfAutoWE <suews:WaterUseProfAutoWE>`","24: hours of a day
 
         2: {Weekday, Weekend}"
 wuprofm_24hr,"(24, 2)",Hourly profile values used in manual irrigation.,":option:`WaterUseProfManuWD <suews:WaterUseProfManuWD>`, :option:`WaterUseProfManuWE <suews:WaterUseProfManuWE>`","24: hours of a day
 
         2: {Weekday, Weekend}"
-z,0,Measurement height [m].,:option:`z <suews:z>`,Scalar
+z,0,Measurement height [m] for all atmospheric forcing variables set in `SSss_YYYY_data_tt.txt`.,:option:`z <suews:z>`,Scalar
 z0m_in,0,Roughness length for momentum [m],:option:`z0 <suews:z0>`,Scalar
 zdm_in,0,Zero-plane displacement [m],:option:`zd <suews:zd>`,Scalar

@@ -1,7 +1,8 @@
 # %% Change working directory from the workspace root to the ipynb file location. Turn this addition off with the DataSciece.changeDirOnImportExport setting
 import os
+
 try:
-    os.chdir(os.path.join(os.getcwd(), 'docs/proc_var_info'))
+    os.chdir(os.path.join(os.getcwd(), "docs/proc_var_info"))
     print(os.getcwd())
 except:
     pass
@@ -11,8 +12,9 @@ from pathlib import Path
 import pandas as pd
 import supy as sp
 import os
+
 try:
-    os.chdir(os.path.join(os.getcwd(), 'docs/proc_var_info'))
+    os.chdir(os.path.join(os.getcwd(), "docs/proc_var_info"))
     print(os.getcwd())
 except:
     pass
@@ -21,8 +23,13 @@ except:
 
 
 # %%
-from gen_df_state_csv import (gen_df_state, list_table, set_initcond,
-                              set_runcontrol, set_input_runcontrol, gen_df_dim)
+from gen_df_state_csv import (
+    gen_df_state,
+    list_table,
+    set_initcond,
+    set_runcontrol,
+    set_input_runcontrol,
+)
 from gen_df_forcing_output_csv import gen_df_forcing, gen_df_output
 
 # %% [markdown]
@@ -31,11 +38,15 @@ from gen_df_forcing_output_csv import gen_df_forcing, gen_df_output
 # ## generate dataframes for variable groups
 
 # %%
-print('generating df_state.csv ...')
+print("generating df_state.csv ...")
 df_state = gen_df_state(
-    list_table, set_initcond, set_runcontrol, set_input_runcontrol)
-df_state.to_csv('df_state.csv')
-print('df_state.csv done!')
+    list_table,
+    set_initcond,
+    set_runcontrol,
+    set_input_runcontrol,
+)
+df_state.to_csv("df_state.csv")
+print("df_state.csv done!")
 
 
 # #%%
@@ -44,25 +55,25 @@ print('df_state.csv done!')
 
 
 # %%
-print('generating df_forcing.csv ...')
-df_forcing = gen_df_forcing('SSss_YYYY_data_tt.csv')
-df_forcing.to_csv('df_forcing.csv')
-print('df_forcing.csv done!')
+print("generating df_forcing.csv ...")
+df_forcing = gen_df_forcing("SSss_YYYY_data_tt.csv")
+df_forcing.to_csv("df_forcing.csv")
+print("df_forcing.csv done!")
 
 
 # %%
-print('generating df_output.csv ...')
+print("generating df_output.csv ...")
 df_output = gen_df_output(
     [
-        'SSss_YYYY_SUEWS_TT.csv',
-        'SSss_DailyState.csv',
-        'SSss_YYYY_snow_TT.csv',
-        'SSss_YYYY_RSL_TT.csv',
-        'SSss_YYYY_SOLWEIG_TT.csv',
+        "SSss_YYYY_SUEWS_TT.csv",
+        "SSss_DailyState.csv",
+        "SSss_YYYY_snow_TT.csv",
+        "SSss_YYYY_RSL_TT.csv",
+        "SSss_YYYY_SOLWEIG_TT.csv",
     ],
 )
-df_output.to_csv('df_output.csv')
-print('df_output.csv done!')
+df_output.to_csv("df_output.csv")
+print("df_output.csv done!")
 
 # %% [markdown]
 # ## generate option string for rst option file
@@ -70,8 +81,8 @@ print('df_output.csv done!')
 # %%
 
 
-def gen_opt_str(ser_rec: pd.Series)->str:
-    '''generate rst option string
+def gen_opt_str(ser_rec: pd.Series) -> str:
+    """generate rst option string
 
     Parameters
     ----------
@@ -82,15 +93,15 @@ def gen_opt_str(ser_rec: pd.Series)->str:
     -------
     str
         rst string
-    '''
+    """
 
     name = ser_rec.name
-    indent = r'    '
-    str_opt = f'.. option:: {name}'+'\n\n'
+    indent = r"    "
+    str_opt = f".. option:: {name}" + "\n\n"
     for spec in ser_rec.sort_index().index:
-        str_opt += indent+f':{spec}:'+'\n'
+        str_opt += indent + f":{spec}:" + "\n"
         spec_content = ser_rec[spec]
-        str_opt += indent+indent+f'{spec_content}'+'\n'
+        str_opt += indent + indent + f"{spec_content}" + "\n"
     return str_opt
 
 
@@ -100,12 +111,12 @@ def gen_opt_str(ser_rec: pd.Series)->str:
 
 # %%
 def gen_rst(path_rst, path_df_csv, rst_title):
-    df_var_info = pd.read_csv(path_df_csv).set_index('variable')
-    df_var_info['rst'] = df_var_info.copy().apply(gen_opt_str, axis=1)
+    df_var_info = pd.read_csv(path_df_csv).set_index("variable")
+    df_var_info["rst"] = df_var_info.copy().apply(gen_opt_str, axis=1)
     df_var_info = df_var_info.sort_index().reset_index(drop=True)
-    rst_txt_x = '\n\n'.join(df_var_info.rst)
-    rst_txt = '\n'.join([rst_title, rst_txt_x])
-    with open(path_rst, 'w') as f:
+    rst_txt_x = "\n\n".join(df_var_info.rst)
+    rst_txt = "\n".join([rst_title, rst_txt_x])
+    with open(path_rst, "w") as f:
         print(rst_txt, file=f)
 
     return path_rst
@@ -118,35 +129,30 @@ def gen_rst(path_rst, path_df_csv, rst_title):
 
 
 # %%
-def gen_group_dict(
-    group,
-    path_rst_base=Path('../data-structure/')
-)->dict:
-    '''generate dict of rst strings for df groups.
+def gen_group_dict(group, path_rst_base=Path("../data-structure/")) -> dict:
+    """generate dict of rst strings for df groups."""
 
-    '''
-
-    rst_title = f'''
+    rst_title = f"""
 .. _df_{group}_var:
 
 ``df_{group}`` variables
 ============================
 
 
-'''
-    dict_info_group={
-        'output': '/data-structure/supy-io.ipynb#df_output:-model-output-results',
-        'forcing': '/data-structure/supy-io.ipynb#df_forcing:-forcing-data',
-        'state': '/data-structure/supy-io.ipynb#df_state_init:-model-initial-states',
-        }
-    rst_info_group = f'''
+"""
+    dict_info_group = {
+        "output": "/data-structure/supy-io.ipynb#df_output:-model-output-results",
+        "forcing": "/data-structure/supy-io.ipynb#df_forcing:-forcing-data",
+        "state": "/data-structure/supy-io.ipynb#df_state_init:-model-initial-states",
+    }
+    rst_info_group = f"""
 .. note:: Data structure of ``df_{group}`` is explained :ref:`here <{dict_info_group[group]}>`.
-'''
+"""
 
     dict_group = {
-        'path_rst': path_rst_base/('df_'+group+'.rst'),
-        'path_df_csv': 'df_'+group+'.csv',
-        'rst_title': rst_title+rst_info_group,
+        "path_rst": path_rst_base / ("df_" + group + ".rst"),
+        "path_df_csv": "df_" + group + ".csv",
+        "rst_title": rst_title + rst_info_group,
     }
 
     return dict_group
@@ -157,12 +163,13 @@ def gen_group_dict(
 
 # %%
 
-dict_rst_out = {group: gen_group_dict(group)
-                for group in ['state', 'forcing', 'output']}
+dict_rst_out = {
+    group: gen_group_dict(group) for group in ["state", "forcing", "output"]
+}
 # dict_rst_out
 
 
 # %%
 for group in dict_rst_out:
-    print('working on group:', group)
-    print('file generated:', gen_rst(**dict_rst_out[group]), '\n')
+    print("working on group:", group)
+    print("file generated:", gen_rst(**dict_rst_out[group]), "\n")
