@@ -75,7 +75,7 @@ def cal_neutral(
     return ser_ws_neutral, ser_ustar_neutral
 
 
-# calculate z0 and d using MO optimisation
+# calculate z0 and zd using mutli-objective optimisation
 def cal_z0zd_mo(
     ser_qh,
     ser_ustar,
@@ -86,7 +86,7 @@ def cal_z0zd_mo(
     z_meas,
     h_sfc,
 ):
-    """Calculates surface roughness and zero plane displacement height.
+    """Calculates surface roughness and zero plane displacement height using mutli-objective optimisation.
     Refer to https://suews-parameters-docs.readthedocs.io/en/latest/steps/roughness-SuPy.html for example
 
     Parameters
