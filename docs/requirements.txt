@@ -3,7 +3,7 @@ nbsphinx>=0.8.6
 nbconvert>=5.4.1
 nbformat>=4.4.0
 docutils>=0.14
-Sphinx==5
+Sphinx>=6
 sphinx-autobuild>=0.7.1
 sphinx-rtd-theme>=0.4.2
 sphinxcontrib-websupport>=1.1.0
