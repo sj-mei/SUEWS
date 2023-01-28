@@ -1,4 +1,4 @@
-supy.util.derive\_ohm\_coef
+﻿supy.util.derive\_ohm\_coef
 ===========================
 
 .. currentmodule:: supy.util

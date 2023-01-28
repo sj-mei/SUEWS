@@ -18,10 +18,6 @@ from .._env import logger_supy
 def derive_ohm_coef(ser_QS, ser_QN):
     """
     A function to linearly fit two independant variables to a dependent one.
-    Input params: QS_Ser:
-                    QN_Ser: The first independent variable (Net all wave radiation). Pandas Series.
-    Returns: a1, a2 coefficients and a3 (intercept)
-
 
     Parameters
     ----------

@@ -19,7 +19,7 @@ print(f"supy_driver version required: {tag_suews_ver}")
 def gen_url_base(tag):
     url_repo_base = URL(
         "https://github.com/"
-        + "Urban-Meteorology-Reading/"
+        + "UMEP-dev/"
         + f"SUEWS/raw/{tag}/docs/source"
     )
     return url_repo_base
@@ -253,7 +253,7 @@ def gen_url_option(
 def parse_block(block):
     xx = block.reset_index(drop=True)
     name_block = xx.loc[0].replace(".. option::", "").strip()
-    ind_field = xx.index[xx.str.startswith("\t:")]
+    ind_field = xx.index[xx.str.startswith(":")]
     list_field = [
         xx.iloc[slice(*x)].str.strip().reset_index(drop=True)
         for x in zip(ind_field, list(ind_field[1:]) + [None])
@@ -267,7 +267,7 @@ def parse_block(block):
 
 
 def parse_option_rst(path_rst):
-    ser_opts = pd.read_csv(path_rst, sep="\n", skipinitialspace=True)
+    ser_opts = pd.read_csv(path_rst, sep=r"\n", skipinitialspace=True, engine="python")
     ser_opts = ser_opts.iloc[:, 0]
     ind_opt = ser_opts.index[ser_opts.str.contains(".. option::")]
     ser_opt_name = ser_opts[ind_opt].str.replace(".. option::", "").str.strip()

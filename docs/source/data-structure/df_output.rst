@@ -107,6 +107,14 @@
 .. option:: DensSnow_BSoil
 
     :Description:
+        Snow density – bare soil surface [kg |m^-3|]
+    :Group:
+        DailyState
+
+
+.. option:: DensSnow_BSoil
+
+    :Description:
         Snow density - bare soil surface [kg |m^-3|]
     :Group:
         DailyState
@@ -117,7 +125,7 @@
     :Description:
         Snow density – bare soil surface [kg |m^-3|]
     :Group:
-        DailyState
+        snow
 
 
 .. option:: DensSnow_BSoil
@@ -128,10 +136,10 @@
         snow
 
 
-.. option:: DensSnow_BSoil
+.. option:: DensSnow_Bldgs
 
     :Description:
-        Snow density – bare soil surface [kg |m^-3|]
+        Snow density – building surface [kg |m^-3|]
     :Group:
         snow
 
@@ -147,14 +155,6 @@
 .. option:: DensSnow_Bldgs
 
     :Description:
-        Snow density – building surface [kg |m^-3|]
-    :Group:
-        DailyState
-
-
-.. option:: DensSnow_Bldgs
-
-    :Description:
         Snow density - building surface [kg |m^-3|]
     :Group:
         snow
@@ -165,7 +165,7 @@
     :Description:
         Snow density – building surface [kg |m^-3|]
     :Group:
-        snow
+        DailyState
 
 
 .. option:: DensSnow_DecTr
@@ -181,7 +181,7 @@
     :Description:
         Snow density - deciduous surface [kg |m^-3|]
     :Group:
-        snow
+        DailyState
 
 
 .. option:: DensSnow_DecTr
@@ -197,7 +197,7 @@
     :Description:
         Snow density - deciduous surface [kg |m^-3|]
     :Group:
-        DailyState
+        snow
 
 
 .. option:: DensSnow_EveTr
@@ -205,7 +205,7 @@
     :Description:
         Snow density - evergreen surface [kg |m^-3|]
     :Group:
-        DailyState
+        snow
 
 
 .. option:: DensSnow_EveTr
@@ -221,7 +221,7 @@
     :Description:
         Snow density - evergreen surface [kg |m^-3|]
     :Group:
-        snow
+        DailyState
 
 
 .. option:: DensSnow_EveTr
@@ -267,6 +267,14 @@
 .. option:: DensSnow_Paved
 
     :Description:
+        Snow density - paved surface [kg |m^-3|]
+    :Group:
+        DailyState
+
+
+.. option:: DensSnow_Paved
+
+    :Description:
         Snow density – paved surface [kg |m^-3|]
     :Group:
         snow
@@ -288,30 +296,6 @@
         DailyState
 
 
-.. option:: DensSnow_Paved
-
-    :Description:
-        Snow density - paved surface [kg |m^-3|]
-    :Group:
-        DailyState
-
-
-.. option:: DensSnow_Water
-
-    :Description:
-        Snow density – water surface [kg |m^-3|]
-    :Group:
-        snow
-
-
-.. option:: DensSnow_Water
-
-    :Description:
-        Snow density - water surface [kg |m^-3|]
-    :Group:
-        DailyState
-
-
 .. option:: DensSnow_Water
 
     :Description:
@@ -326,6 +310,22 @@
         Snow density – water surface [kg |m^-3|]
     :Group:
         DailyState
+
+
+.. option:: DensSnow_Water
+
+    :Description:
+        Snow density - water surface [kg |m^-3|]
+    :Group:
+        DailyState
+
+
+.. option:: DensSnow_Water
+
+    :Description:
+        Snow density – water surface [kg |m^-3|]
+    :Group:
+        snow
 
 
 .. option:: DiffuseRad
@@ -443,7 +443,7 @@
 .. option:: GDD_EveTr
 
     :Description:
-        Growing degree days for evergreen eree [°C d]
+        Growing degree days for evergreen tree [°C d]
     :Group:
         DailyState
 
@@ -483,7 +483,7 @@
 .. option:: HDD3_Tmean
 
     :Description:
-        Average daily air temperature [°C]
+        Average daily air temperature in forcing data [°C]
     :Group:
         DailyState
 
@@ -491,7 +491,7 @@
 .. option:: HDD4_T5d
 
     :Description:
-        5-day running-mean air temperature [°C]
+        5-day running-mean air temperature in forcing data [°C]
     :Group:
         DailyState
 
@@ -558,6 +558,14 @@
         Outgoing shortwave radiation [W |m^-2|]
     :Group:
         SUEWS
+
+
+.. option:: Kup
+
+    :Description:
+        Outgoing shortwave radiation [W |m^-2|]
+    :Group:
+        SPARTACUS
 
 
 .. option:: Kup2d
@@ -670,6 +678,14 @@
         Outgoing longwave radiation [W |m^-2|]
     :Group:
         SUEWS
+
+
+.. option:: Lup
+
+    :Description:
+        Outgoing longwave radiation [W |m^-2|]
+    :Group:
+        SPARTACUS
 
 
 .. option:: Lup2d
@@ -1283,7 +1299,7 @@
 .. option:: SDD_EveTr
 
     :Description:
-        Senescence degree days for evergreen eree  [°C d]
+        Senescence degree days for evergreen tree  [°C d]
     :Group:
         DailyState
 
@@ -1835,7 +1851,7 @@
 .. option:: Tmax
 
     :Description:
-        Daily maximum temperature [°C]
+        Daily maximum temperature in forcing data [°C]
     :Group:
         DailyState
 
@@ -1843,7 +1859,7 @@
 .. option:: Tmin
 
     :Description:
-        Daily minimum temperature [°C]
+        Daily minimum temperature in forcing data [°C]
     :Group:
         DailyState
 

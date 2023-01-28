@@ -1,4 +1,4 @@
-supy.util.plot\_comp
+﻿supy.util.plot\_comp
 ====================
 
 .. currentmodule:: supy.util
