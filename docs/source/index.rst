@@ -16,7 +16,7 @@ SuPy: SUEWS that speaks Python
     :alt: Downloads
 
 .. image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/UMEP-dev/SuPy/master
+    :target: https://mybinder.org/v2/gh/UMEP-dev/SuPy/main
     :alt: Binder Status
 
 .. image:: https://readthedocs.org/projects/supy/badge/?version=latest

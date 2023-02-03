@@ -425,7 +425,7 @@ html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "UMEP-dev",  # Username
     "github_repo": "SuPy",  # Repo name
-    "github_version": "master",  # Version
+    "github_version": "main",  # Version
     "conf_py_path": "/source/",  # Path in the checkout to the docs root
 }
 
@@ -449,7 +449,7 @@ def source_read_handler(app, docname, source):
 <!-- Please describe the issue below this line -->
 
 ## Links
-[source doc](https://github.com/UMEP-dev/{str_repo}/blob/master/{str_base}/{docname}.rst)
+[source doc](https://github.com/UMEP-dev/{str_repo}/blob/main/{str_base}/{docname}.rst)
 [RTD page](https://suews.readthedocs.org/en/latest/{docname}.html)
 """
     str_query_body = urllib.parse.urlencode({"body": str_body})
