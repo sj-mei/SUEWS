@@ -23,7 +23,7 @@ urlpath
 atmosp>=0.2.8
 cdsapi
 xarray
-sklearn
+scikit-learn
 lmfit
 floweaver
 sphinx-book-theme
