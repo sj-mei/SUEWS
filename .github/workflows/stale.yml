@@ -21,7 +21,7 @@ jobs:
     - uses: actions/stale@v5
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-issue-message: 'Stale issue message'
-        stale-pr-message: 'Stale pull request message'
+        stale-issue-message: 'This is a stale issue that will be automatically closed if no action received in 7 days'
+        stale-pr-message: 'This is a stale PR that will be automatically closed if no action received in 7 days'
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
