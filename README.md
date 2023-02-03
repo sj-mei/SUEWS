@@ -45,7 +45,7 @@ ax.figure.savefig('sample_plot.png')
 
 The above code will produce a plot of surface energy balance components as follows:
 
-![sample plot](https://github.com/UMEP-dev/SuPy/raw/master/sample_plot.png)
+![sample plot](./sample_plot.png)
 
 ## Tutorial
 
