@@ -1,3 +1,7 @@
+# this file is used to generate the def file for the python library
+# which is needed to build the supy-driver on Windows
+# in virtual environments required by the cibuildwheel package
+# see: https://cibuildwheel.readthedocs.io/en/stable/faq/#building-wheels-for-python-extensions
 from numpy.distutils.mingw32ccompiler import Mingw32CCompiler as mgwin32C
 
 from numpy.distutils.mingw32ccompiler import find_python_dll,generate_def

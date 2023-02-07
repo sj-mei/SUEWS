@@ -8,7 +8,7 @@ Input Options
 .. Description: concise information to describe the meaning of the option, always include unit if applicable
 .. this `Description` are synced by multiple places in the doc as the source info.
 
-.. Configuration: detail configuration info should be included in the corresonding csv files that talbe-specific settings are provided there.
+.. Configuration: detail configuration info should be included in the corresponding csv files that table-specific settings are provided there.
 
 .. option:: a1
 
