@@ -96,5 +96,5 @@ upload:
 	# $(shell twinup wheelhouse/*whl)
 
 # only local testing on mac
-cibuid:
+local:
 	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-localtest.toml
