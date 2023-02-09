@@ -26,7 +26,7 @@ import numpy as np
 import pandas as pd
 
 from ._check import check_forcing, check_state
-from ._env import logger_supy, path_supy_module
+from ._env import logger_supy, trv_supy_module
 from ._load import (
     load_InitialCond_grid_df,
     load_SUEWS_Forcing_met_df_raw,
@@ -101,7 +101,8 @@ def init_supy(
         if path_init_x.suffix == ".nml":
             # SUEWS `RunControl.nml`:
             df_state_init = load_InitialCond_grid_df(
-                path_init_x, force_reload=force_reload
+                path_init_x,
+                force_reload=force_reload,
             )
         elif path_init_x.suffix == ".csv":
             # SuPy `df_state.csv`:
@@ -255,9 +256,10 @@ def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     >>> df_state_init, df_forcing = supy.load_SampleData()
 
     """
-
-    path_SampleData = Path(path_supy_module) / "sample_run"
-    path_runcontrol = path_SampleData / "RunControl.nml"
+    from ._env import trv_supy_module
+    trv_SampleData = trv_supy_module / "sample_run"
+    p=trv_SampleData.resolve()
+    path_runcontrol = trv_SampleData / "RunControl.nml"
     df_state_init = init_supy(path_runcontrol, force_reload=False)
     df_forcing = load_forcing_grid(path_runcontrol, df_state_init.index[0])
     return df_state_init, df_forcing

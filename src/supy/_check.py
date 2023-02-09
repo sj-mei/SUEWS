@@ -8,17 +8,17 @@ from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
 
-from ._env import logger_supy, path_supy_module
+from ._env import logger_supy, trv_supy_module, trv_supy_module
 from ._load import dict_var_type_forcing, set_var_use
 
 
 # the check list file with ranges and logics
-path_rules_indiv = path_supy_module / "checker_rules_indiv.json"
+# path_rules_indiv = path_supy_module / "checker_rules_indiv.json"
+path_rules_indiv = trv_supy_module.joinpath("checker_rules_indiv.json")
 
 
 # opening the check list file
 def load_rules(path_rules) -> Dict:
-
     with open(path_rules) as cf:
         dict_rules = json.load(cf)
 
@@ -34,9 +34,9 @@ def load_rules(path_rules) -> Dict:
 # store rules as a dict
 dict_rules_indiv = load_rules(path_rules_indiv)
 
+
 # checking the range of each parameter
 def check_range(ser_to_check: pd.Series, rule_var: dict) -> Tuple:
-
     var = ser_to_check.name.lower()
 
     min_v = rule_var[var]["param"]["min"]
@@ -46,14 +46,14 @@ def check_range(ser_to_check: pd.Series, rule_var: dict) -> Tuple:
     description = ""
     is_accepted_flag = True
     try:
-        flag_optional=rule_var[var]["optional"]
+        flag_optional = rule_var[var]["optional"]
     except KeyError:
-        flag_optional=True
+        flag_optional = True
 
     # if the parameter is optional and not set, it is accepted
-    ser_to_check_nan=ser_to_check.replace(-999.0, np.nan)
+    ser_to_check_nan = ser_to_check.replace(-999.0, np.nan)
     if flag_optional:
-        ser_to_check_nan=ser_to_check_nan.dropna()
+        ser_to_check_nan = ser_to_check_nan.dropna()
     ser_flag = ~ser_to_check_nan.between(min_v, max_v)
     n_flag = ser_flag.sum()
     if ser_flag.sum() > 0:
@@ -73,7 +73,6 @@ def check_range(ser_to_check: pd.Series, rule_var: dict) -> Tuple:
 
 
 def check_zd_zh(var, values, cr):
-
     return 0
 
 
@@ -317,7 +316,7 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
         from ._supy_module import init_supy
 
         # load base df_state
-        path_SampleData = Path(path_supy_module) / "sample_run"
+        path_SampleData = Path(trv_supy_module) / "sample_run"
         path_runcontrol = path_SampleData / "RunControl.nml"
         df_state_base = init_supy(path_runcontrol, force_reload=False)
 

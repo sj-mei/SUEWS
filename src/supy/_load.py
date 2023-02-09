@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from supy_driver import suews_driver as sd
 
-from ._env import logger_supy, path_supy_module
+from ._env import logger_supy, trv_supy_module
 from ._misc import path_insensitive
 
 
@@ -120,15 +120,19 @@ dict_libVar2File = {
 # links between code in SiteSelect to properties in according tables
 # this is described in SUEWS online manual:
 # https://suews.readthedocs.io/en/latest/input_files/SUEWS_SiteInfo/SUEWS_SiteInfo.html
-path_code2file = path_supy_module / "code2file.json"
+path_code2file = trv_supy_module.joinpath("code2file.json")
 dict_Code2File = pd.read_json(
-    path_code2file, typ="series", convert_dates=False
+    path_code2file,
+    typ="series",
+    convert_dates=False,
 ).to_dict()
 # variable translation as done in Fortran-SUEWS
 # path_var2siteselect = os.path.join(path_supy_module, 'var2siteselect.json')
-path_var2siteselect = path_supy_module / "var2siteselect.json"
+path_var2siteselect = trv_supy_module.joinpath("var2siteselect.json")
 dict_var2SiteSelect = pd.read_json(
-    path_var2siteselect, typ="series", convert_dates=False
+    path_var2siteselect,
+    typ="series",
+    convert_dates=False,
 ).to_dict()
 
 # expand dict_Code2File for retrieving surface characteristics
@@ -209,13 +213,15 @@ def gen_suews_arg_info_df(docstring):
     df_info = pd.DataFrame(dict_info).T
     return df_info
 
-
-df_info_suews_cal_main = gen_suews_arg_info_df(sd.suews_cal_main.__doc__)
-df_info_suews_cal_multitsteps = gen_suews_arg_info_df(sd.suews_cal_multitsteps.__doc__)
+# note: infer data types for variables to avoid type conversion
+df_info_suews_cal_main = gen_suews_arg_info_df(sd.suews_cal_main.__doc__).infer_objects()
+df_info_suews_cal_multitsteps = gen_suews_arg_info_df(sd.suews_cal_multitsteps.__doc__).infer_objects()
 
 df_var_info = df_info_suews_cal_multitsteps.merge(
-    df_info_suews_cal_main, how="outer"
-).set_index("name")
+    df_info_suews_cal_main,
+    how="outer",
+)
+df_var_info=df_var_info.set_index("name")
 
 
 # load model settings
@@ -556,7 +562,11 @@ def resample_linear_avg(data_raw_avg, tstep_in, tstep_mod):
     data_tstep = data_raw_tstep.asfreq(f"{tstep_mod}S")
 
     # insert the shifted
-    idx_comb = data_raw_tstep.index.append(data_raw_shift.index).append(data_tstep.index).unique()
+    idx_comb = (
+        data_raw_tstep.index.append(data_raw_shift.index)
+        .append(data_tstep.index)
+        .unique()
+    )
     data_raw_tstep = data_raw_tstep.reindex(idx_comb)
     data_raw_tstep = data_raw_tstep.sort_index()
     # print('data_raw_tstep')
@@ -567,8 +577,8 @@ def resample_linear_avg(data_raw_avg, tstep_in, tstep_mod):
     data_raw_tstep = data_raw_tstep.interpolate(method="linear")
 
     # transfer the interpolated values to the desired time step
-    data_tstep=data_raw_tstep.loc[data_tstep.index]
-    data_tstep=data_tstep.interpolate(method="linear")
+    data_tstep = data_raw_tstep.loc[data_tstep.index]
+    data_tstep = data_tstep.interpolate(method="linear")
     # print('data_tstep.head')
     # print(data_tstep.head())
 
@@ -582,7 +592,6 @@ def resample_linear_avg(data_raw_avg, tstep_in, tstep_mod):
 def resample_forcing_met(
     data_met_raw, tstep_in, tstep_mod, lat=51, lon=0, alt=100, timezone=0, kdownzen=0
 ):
-
     if tstep_in % tstep_mod != 0:
         raise RuntimeError(
             f"`tstep_in` ({tstep_in}) is not divisible by `tstep_mod` ({tstep_mod})"
@@ -1615,7 +1624,7 @@ def add_sfc_init_df(df_init):
     ser_snow_use = df_init[("snowuse", "0")]
     ser_snow_init = df_init[("snowinitially", "0")]
     ser_snow_flag = ser_snow_init.where(ser_snow_init == 0, 1)
-    ser_snow_flag = (ser_snow_use * ser_snow_flag)
+    ser_snow_flag = ser_snow_use * ser_snow_flag
 
     # land cover based assignment
     list_sfc = ["paved", "bldgs", "evetr", "dectr", "grass", "bsoil", "water"]
