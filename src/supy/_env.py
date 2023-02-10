@@ -1,3 +1,4 @@
+from importlib.resources import files
 from logging.handlers import TimedRotatingFileHandler
 import sys
 import logging
@@ -5,12 +6,14 @@ import inspect
 from pathlib import Path
 import tempfile
 
+
+
 ########################################################################
 # this file provides variable and functions useful for the whole module.
 ########################################################################
-
-# define local path for loading resources in this package
-path_supy_module = Path(inspect.getsourcefile(lambda: 0)).resolve().parent
+# get Traversable object for loading resources in this package
+# this can be used similarly as `pathlib.Path` object
+trv_supy_module = files("supy")
 
 # set up logger format, note `u` to guarantee UTF-8 encoding
 FORMATTER = logging.Formatter(u"%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -54,3 +57,9 @@ def get_logger(logger_name, level=logging.DEBUG):
 
 logger_supy = get_logger("SuPy", logging.INFO)
 logger_supy.debug("a debug message from SuPy")
+
+
+if sys.version_info >= (3, 8):
+    from importlib import metadata
+else:
+    from importlib_metadata import metadata
