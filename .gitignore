@@ -135,3 +135,4 @@ Output/
 docs/source/api/supy.util/*.rst
 src/supy/supy_version.json
 wheelhouse/
+src/supy/_version_scm.py
