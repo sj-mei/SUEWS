@@ -5,7 +5,7 @@ from pathlib import Path
 
 from ..util._converter import convert_table, list_ver_from, list_ver_to
 
-# run the whole supy workflow mimicking SUEWS binary
+# convert SUEWS tables from older versions to newer ones
 @click.command(
     short_help="Convert SUEWS input tables from older versions to newer ones (one-way only)"
 )

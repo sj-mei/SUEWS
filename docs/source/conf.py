@@ -94,7 +94,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
-    "sphinx_comments",
+    # "sphinx_comments",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_last_updated_by_git",

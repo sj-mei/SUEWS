@@ -93,7 +93,7 @@ set_site = set(x.lower().strip() for x in np.concatenate(ser_input_site_exp.valu
 # ### filter `runcontrol` related variables
 # %%
 # runcontrol variables for supy input
-path_runcontrol = sp._env.path_supy_module / "sample_run" / "Runcontrol.nml"
+path_runcontrol = sp._env.trv_supy_module / "sample_run" / "Runcontrol.nml"
 dict_runcontrol = sp._load.load_SUEWS_dict_ModConfig(path_runcontrol).copy()
 set_runcontrol = set(dict_runcontrol.keys())
 set_input_runcontrol = set_runcontrol.intersection(set_input)

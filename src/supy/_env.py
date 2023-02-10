@@ -57,3 +57,9 @@ def get_logger(logger_name, level=logging.DEBUG):
 
 logger_supy = get_logger("SuPy", logging.INFO)
 logger_supy.debug("a debug message from SuPy")
+
+
+if sys.version_info >= (3, 8):
+    from importlib import metadata
+else:
+    from importlib_metadata import metadata
