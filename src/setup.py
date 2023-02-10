@@ -14,91 +14,91 @@ ISRELEASED = True
 DRIVER_REQ = "supy_driver==2021a15" if ISRELEASED else "supy_driver"
 # FULLVERSION += '.dev'
 
-pipe = None
-p_fn_ver = Path("./supy/supy_version.json")
+# pipe = None
+# p_fn_ver = Path("./supy/supy_version.json")
 
-# force remove the version info file
-flag_dirty = False
+# # force remove the version info file
+# flag_dirty = False
 
-for cmd in ["git", "/usr/bin/git", "git.cmd"]:
+# for cmd in ["git", "/usr/bin/git", "git.cmd"]:
 
-    try:
-        pipe = subprocess.Popen(
-            [cmd, "describe", "--tags", "--match", "2[0-9]*", "--dirty=-dirty"],
-            stdout=subprocess.PIPE,
-        )
-        (sout, serr) = pipe.communicate()
-        # parse version info from git
-        list_str_ver = sout.decode("utf-8").strip().split("-")
+#     try:
+#         pipe = subprocess.Popen(
+#             [cmd, "describe", "--tags", "--match", "2[0-9]*", "--dirty=-dirty"],
+#             stdout=subprocess.PIPE,
+#         )
+#         (sout, serr) = pipe.communicate()
+#         # parse version info from git
+#         list_str_ver = sout.decode("utf-8").strip().split("-")
 
-        if list_str_ver[-1].lower() == "dirty":
-            flag_dirty = True
-            # remove the "dirty" part from version info list
-            list_str_ver = list_str_ver[:-1]
+#         if list_str_ver[-1].lower() == "dirty":
+#             flag_dirty = True
+#             # remove the "dirty" part from version info list
+#             list_str_ver = list_str_ver[:-1]
 
-        ver_main = list_str_ver[0]
-        print("ver_main", ver_main)
-        if len(list_str_ver) > 1:
-            ver_post = list_str_ver[1]
-            ver_git_commit = list_str_ver[2]
-        else:
-            ver_post = ""
-            ver_git_commit = ""
+#         ver_main = list_str_ver[0]
+#         print("ver_main", ver_main)
+#         if len(list_str_ver) > 1:
+#             ver_post = list_str_ver[1]
+#             ver_git_commit = list_str_ver[2]
+#         else:
+#             ver_post = ""
+#             ver_git_commit = ""
 
-        # save version info to json file
-        p_fn_ver.unlink(missing_ok=True)
-        with open(p_fn_ver, "w") as f:
-            json.dump(
-                {
-                    "version": ver_main + ("" if ISRELEASED else ".dev"),
-                    "iter": ver_post,
-                    "git_commit": ver_git_commit
-                    + (
-                        "-dirty"
-                        if (flag_dirty and len(ver_git_commit) > 0)
-                        else (
-                            "dirty" if (flag_dirty and len(ver_git_commit) == 0) else ""
-                        )
-                    ),
-                },
-                f,
-            )
-        if pipe.returncode == 0:
-            print(f"in {cmd}, git version info saved to", p_fn_ver)
-            break
-    except Exception as e:
-        pass
+#         # save version info to json file
+#         p_fn_ver.unlink(missing_ok=True)
+#         with open(p_fn_ver, "w") as f:
+#             json.dump(
+#                 {
+#                     "version": ver_main + ("" if ISRELEASED else ".dev"),
+#                     "iter": ver_post,
+#                     "git_commit": ver_git_commit
+#                     + (
+#                         "-dirty"
+#                         if (flag_dirty and len(ver_git_commit) > 0)
+#                         else (
+#                             "dirty" if (flag_dirty and len(ver_git_commit) == 0) else ""
+#                         )
+#                     ),
+#                 },
+#                 f,
+#             )
+#         if pipe.returncode == 0:
+#             print(f"in {cmd}, git version info saved to", p_fn_ver)
+#             break
+#     except Exception as e:
+#         pass
 
-if pipe is None or pipe.returncode != 0:
-    # no git, or not in git dir
+# if pipe is None or pipe.returncode != 0:
+#     # no git, or not in git dir
 
-    if p_fn_ver.exists():
-        warnings.warn(
-            f"WARNING: Couldn't get git revision, using existing {p_fn_ver.as_posix()}"
-        )
-        write_version = False
-    else:
-        warnings.warn(
-            "WARNING: Couldn't get git revision, using generic " "version string"
-        )
-else:
-    # have git, in git dir, but may have used a shallow clone (travis)
-    rev = sout.strip()
-    rev = rev.decode("ascii")
+#     if p_fn_ver.exists():
+#         warnings.warn(
+#             f"WARNING: Couldn't get git revision, using existing {p_fn_ver.as_posix()}"
+#         )
+#         write_version = False
+#     else:
+#         warnings.warn(
+#             "WARNING: Couldn't get git revision, using generic " "version string"
+#         )
+# else:
+#     # have git, in git dir, but may have used a shallow clone (travis)
+#     rev = sout.strip()
+#     rev = rev.decode("ascii")
 
-if p_fn_ver.exists():
-    with open(p_fn_ver, "r") as f:
-        dict_ver = json.load(f)
-        ver_main = dict_ver["version"]
-        ver_post = dict_ver["iter"]
-        ver_git_commit = dict_ver["git_commit"]
+# if p_fn_ver.exists():
+#     with open(p_fn_ver, "r") as f:
+#         dict_ver = json.load(f)
+#         ver_main = dict_ver["version"]
+#         ver_post = dict_ver["iter"]
+#         ver_git_commit = dict_ver["git_commit"]
 
-    # print(dict_ver)
-    __version__ = "-".join(filter(None, [ver_main, ver_post, ver_git_commit]))
-    # raise ValueError(f"version info found: {__version__}")
-else:
-    __version__ = "0.0.0"
-    raise ValueError("version info not found")
+#     # print(dict_ver)
+#     __version__ = "-".join(filter(None, [ver_main, ver_post, ver_git_commit]))
+#     # raise ValueError(f"version info found: {__version__}")
+# else:
+#     __version__ = "0.0.0"
+#     raise ValueError("version info not found")
 
 
 def readme():
@@ -147,6 +147,7 @@ setup(
         "pandas< 1.5; python_version <= '3.9'", # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
         "pandas; python_version > '3.9'",
         "matplotlib",
+        "chardet",
         "scipy",
         "dask",  # needs dask for parallel tasks
         "f90nml",  # utility for namelist files
