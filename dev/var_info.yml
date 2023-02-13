@@ -1,0 +1,3473 @@
+Kdown:
+  var_type: output
+  Group: SUEWS
+  Description: Incoming shortwave radiation [W |m^-2|]
+Kup:
+  var_type: output
+  Group:
+  - SUEWS
+  - SPARTACUS
+  Description: Outgoing shortwave radiation [W |m^-2|]
+Ldown:
+  var_type: output
+  Group: SUEWS
+  Description: Incoming longwave radiation [W |m^-2|]
+Lup:
+  var_type: output
+  Group:
+  - SUEWS
+  - SPARTACUS
+  Description: Outgoing longwave radiation [W |m^-2|]
+Tsurf:
+  var_type: output
+  Group: SUEWS
+  Description: "Bulk surface temperature [\xB0C]"
+QN:
+  var_type: output
+  Group: SUEWS
+  Description: Net all-wave radiation [W |m^-2|]
+QF:
+  var_type: output
+  Group: SUEWS
+  Description: Anthropogenic heat flux [W |m^-2|]
+QS:
+  var_type: output
+  Group: SUEWS
+  Description: Storage heat flux [W |m^-2|]
+QH:
+  var_type: output
+  Group: SUEWS
+  Description: Sensible heat flux (calculated using SUEWS) [W |m^-2|]
+QE:
+  var_type: output
+  Group: SUEWS
+  Description: Latent heat flux (calculated using SUEWS) [W |m^-2|]
+QHlumps:
+  var_type: output
+  Group: SUEWS
+  Description: Sensible heat flux (calculated using LUMPS) [W |m^-2|]
+QElumps:
+  var_type: output
+  Group: SUEWS
+  Description: Latent heat flux (calculated using LUMPS) [W |m^-2|]
+QHresis:
+  var_type: output
+  Group: SUEWS
+  Description: Sensible heat flux (calculated using resistance method) [W |m^-2|]
+Rain:
+  var_type: output
+  Group: SUEWS
+  Description: Rain [mm]
+Irr:
+  var_type: output
+  Group: SUEWS
+  Description: Irrigation [mm]
+Evap:
+  var_type: output
+  Group: SUEWS
+  Description: Evaporation [mm]
+RO:
+  var_type: output
+  Group: SUEWS
+  Description: Runoff [mm]
+TotCh:
+  var_type: output
+  Group: SUEWS
+  Description: Change in surface and soil moisture stores [mm]
+SurfCh:
+  var_type: output
+  Group: SUEWS
+  Description: Change in surface moisture store [mm]
+State:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state [mm]
+NWtrState:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state (for non-water surfaces) [mm]
+Drainage:
+  var_type: output
+  Group: SUEWS
+  Description: Drainage [mm]
+SMD:
+  var_type: output
+  Group: SUEWS
+  Description: Soil moisture deficit [mm]
+FlowCh:
+  var_type: output
+  Group: SUEWS
+  Description: Additional flow into water body [mm]
+AddWater:
+  var_type: output
+  Group: SUEWS
+  Description: Additional water flow received from other grids [mm]
+ROSoil:
+  var_type: output
+  Group: SUEWS
+  Description: Runoff to soil (sub-surface) [mm]
+ROPipe:
+  var_type: output
+  Group: SUEWS
+  Description: Runoff to pipes [mm]
+ROImp:
+  var_type: output
+  Group: SUEWS
+  Description: Above ground runoff over impervious surfaces [mm]
+ROVeg:
+  var_type: output
+  Group: SUEWS
+  Description: Above ground runoff over vegetated surfaces [mm]
+ROWater:
+  var_type: output
+  Group: SUEWS
+  Description: Runoff for water body [mm]
+WUInt:
+  var_type: output
+  Group: SUEWS
+  Description: Internal water use [mm]
+WUEveTr:
+  var_type: output
+  Group: SUEWS
+  Description: Water use for irrigation of evergreen trees [mm]
+WUDecTr:
+  var_type: output
+  Group: SUEWS
+  Description: Water use for irrigation of deciduous trees [mm]
+WUGrass:
+  var_type: output
+  Group: SUEWS
+  Description: Water use for irrigation of grass [mm]
+SMDPaved:
+  var_type: output
+  Group: SUEWS
+  Description: Soil moisture deficit for paved surface [mm]
+SMDBldgs:
+  var_type: output
+  Group: SUEWS
+  Description: Soil moisture deficit for building surface [mm]
+SMDEveTr:
+  var_type: output
+  Group: SUEWS
+  Description: Soil moisture deficit for evergreen surface [mm]
+SMDDecTr:
+  var_type: output
+  Group: SUEWS
+  Description: Soil moisture deficit for deciduous surface [mm]
+SMDGrass:
+  var_type: output
+  Group: SUEWS
+  Description: Soil moisture deficit for grass surface [mm]
+SMDBSoil:
+  var_type: output
+  Group: SUEWS
+  Description: Soil moisture deficit for bare soil surface [mm]
+StPaved:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state for paved surface [mm]
+StBldgs:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state for building surface [mm]
+StEveTr:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state for evergreen tree surface [mm]
+StDecTr:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state for deciduous tree surface [mm]
+StGrass:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state for grass surface [mm]
+StBSoil:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state for bare soil surface [mm]
+StWater:
+  var_type: output
+  Group: SUEWS
+  Description: Surface wetness state for water surface [mm]
+Zenith:
+  var_type: output
+  Group: SUEWS
+  Description: "Solar zenith angle [\xB0]"
+Azimuth:
+  var_type: output
+  Group: SUEWS
+  Description: "Solar azimuth angle [\xB0]"
+AlbBulk:
+  var_type: output
+  Group: SUEWS
+  Description: Bulk albedo [-]
+Fcld:
+  var_type: output
+  Group: SUEWS
+  Description: Cloud fraction [-]
+LAI:
+  var_type: output
+  Group: SUEWS
+  Description: Leaf area index [m 2 |m^-2|]
+z0m:
+  var_type: output
+  Group: SUEWS
+  Description: Roughness length for momentum [m]
+zdm:
+  var_type: output
+  Group: SUEWS
+  Description: Zero-plane displacement height [m]
+Lob:
+  var_type: output
+  Group: SUEWS
+  Description: Obukhov length [m]
+RA:
+  var_type: output
+  Group:
+  - SUEWS
+  - debug
+  Description: Aerodynamic resistance [s |m^-1|]
+RS:
+  var_type: output
+  Group:
+  - SUEWS
+  - debug
+  Description: Surface resistance [s |m^-1|]
+Fc:
+  var_type: output
+  Group: SUEWS
+  Description: CO2 flux [umol |m^-2| |s^-1|]
+FcPhoto:
+  var_type: output
+  Group: SUEWS
+  Description: CO2 flux from photosynthesis [umol |m^-2| |s^-1|]
+FcRespi:
+  var_type: output
+  Group: SUEWS
+  Description: CO2 flux from respiration [umol |m^-2| |s^-1|]
+FcMetab:
+  var_type: output
+  Group: SUEWS
+  Description: CO2 flux from metabolism [umol |m^-2| |s^-1|]
+FcTraff:
+  var_type: output
+  Group: SUEWS
+  Description: CO2 flux from traffic [umol |m^-2| |s^-1|]
+FcBuild:
+  var_type: output
+  Group: SUEWS
+  Description: CO2 flux from buildings [umol |m^-2| |s^-1|]
+FcPoint:
+  var_type: output
+  Group: SUEWS
+  Description: CO2 flux from point source [umol |m^-2| |s^-1|]
+QNSnowFr:
+  var_type: output
+  Group: SUEWS
+  Description: Net all-wave radiation for snow-free area [W |m^-2|]
+QNSnow:
+  var_type: output
+  Group: SUEWS
+  Description: Net all-wave radiation for snow area [W |m^-2|]
+AlbSnow:
+  var_type: output
+  Group:
+  - SUEWS
+  - DailyState
+  Description: Snow albedo [-]
+QM:
+  var_type: output
+  Group: SUEWS
+  Description: Snow-related heat exchange [W |m^-2|]
+QMFreeze:
+  var_type: output
+  Group: SUEWS
+  Description: Internal energy change [W |m^-2|]
+QMRain:
+  var_type: output
+  Group: SUEWS
+  Description: Heat released by rain on snow [W |m^-2|]
+SWE:
+  var_type: output
+  Group: SUEWS
+  Description: Snow water equivalent [mm]
+MeltWater:
+  var_type: output
+  Group: SUEWS
+  Description: Meltwater [mm]
+MeltWStore:
+  var_type: output
+  Group: SUEWS
+  Description: Meltwater store [mm]
+SnowCh:
+  var_type: output
+  Group: SUEWS
+  Description: Change in snow pack [mm]
+SnowRPaved:
+  var_type: output
+  Group: SUEWS
+  Description: Snow removed from paved surface [mm]
+SnowRBldgs:
+  var_type: output
+  Group: SUEWS
+  Description: Snow removed from building surface [mm]
+Ts:
+  var_type: output
+  Group: SUEWS
+  Description: "Skin temperature [\xB0C]"
+T2:
+  var_type: output
+  Group: SUEWS
+  Description: "Air temperature at 2 m agl [\xB0C]"
+Q2:
+  var_type: output
+  Group: SUEWS
+  Description: Air specific humidity at 2 m agl [g |kg^-1|]
+U10:
+  var_type: output
+  Group: SUEWS
+  Description: Wind speed at 10 m agl [m |s^-1|]
+RH2:
+  var_type: output
+  Group: SUEWS
+  Description: Relative humidity at 2 m agl [%]
+SWE_Paved:
+  var_type: output
+  Group: snow
+  Description: "Snow water equivalent \u2013 paved surface [mm]"
+SWE_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Snow water equivalent \u2013 building surface [mm]"
+SWE_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Snow water equivalent \u2013 evergreen surface [mm]"
+SWE_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Snow water equivalent \u2013 deciduous surface [mm]"
+SWE_Grass:
+  var_type: output
+  Group: snow
+  Description: "Snow water equivalent \u2013 grass surface [mm]"
+SWE_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Snow water equivalent \u2013 bare soil surface [mm]"
+SWE_Water:
+  var_type: output
+  Group: snow
+  Description: "Snow water equivalent \u2013 water surface [mm]"
+Mw_Paved:
+  var_type: output
+  Group: snow
+  Description: "Meltwater \u2013 paved surface [mm |h^-1|]"
+Mw_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Meltwater \u2013 building surface [mm |h^-1|]"
+Mw_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Meltwater \u2013 evergreen surface [mm |h^-1|]"
+Mw_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Meltwater \u2013 deciduous surface [mm |h^-1|]"
+Mw_Grass:
+  var_type: output
+  Group: snow
+  Description: "Meltwater \u2013 grass surface [mm |h^-1| 1]"
+Mw_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Meltwater \u2013 bare soil surface [mm |h^-1|]"
+Mw_Water:
+  var_type: output
+  Group: snow
+  Description: "Meltwater \u2013 water surface [mm |h^-1|]"
+Qm_Paved:
+  var_type: output
+  Group: snow
+  Description: "Snowmelt-related heat \u2013 paved surface [W |m^-2|]"
+Qm_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Snowmelt-related heat \u2013 building surface [W |m^-2|]"
+Qm_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Snowmelt-related heat \u2013 evergreen surface [W |m^-2|]"
+Qm_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Snowmelt-related heat \u2013 deciduous surface [W |m^-2|]"
+Qm_Grass:
+  var_type: output
+  Group: snow
+  Description: "Snowmelt-related heat \u2013 grass surface [W |m^-2|]"
+Qm_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Snowmelt-related heat \u2013 bare soil surface [W |m^-2|]"
+Qm_Water:
+  var_type: output
+  Group: snow
+  Description: "Snowmelt-related heat \u2013 water surface [W |m^-2|]"
+Qa_Paved:
+  var_type: output
+  Group: snow
+  Description: "Advective heat \u2013 paved surface [W |m^-2|]"
+Qa_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Advective heat \u2013 building surface [W |m^-2|]"
+Qa_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Advective heat \u2013 evergreen surface [W |m^-2|]"
+Qa_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Advective heat \u2013 deciduous surface [W |m^-2|]"
+Qa_Grass:
+  var_type: output
+  Group: snow
+  Description: "Advective heat \u2013 grass surface [W |m^-2|]"
+Qa_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Advective heat \u2013 bare soil surface [W |m^-2|]"
+Qa_Water:
+  var_type: output
+  Group: snow
+  Description: "Advective heat \u2013 water surface [W |m^-2|]"
+QmFr_Paved:
+  var_type: output
+  Group: snow
+  Description: "Heat related to freezing of surface store \u2013 paved surface [W\
+    \ |m^-2|]"
+QmFr_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Heat related to freezing of surface store \u2013 building surface\
+    \ [W |m^-2|]"
+QmFr_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Heat related to freezing of surface store \u2013 evergreen surface\
+    \ [W |m^-2|]"
+QmFr_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Heat related to freezing of surface store \u2013 deciduous surface\
+    \ [W |m^-2|]"
+QmFr_Grass:
+  var_type: output
+  Group: snow
+  Description: "Heat related to freezing of surface store \u2013 grass surface [W\
+    \ |m^-2|]"
+QmFr_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Heat related to freezing of surface store \u2013 bare soil surface\
+    \ [W |m^-2|]"
+QmFr_Water:
+  var_type: output
+  Group: snow
+  Description: "Heat related to freezing of surface store \u2013 water [W |m^-2|]"
+fr_Paved:
+  var_type: output
+  Group: snow
+  Description: "Fraction of snow \u2013 paved surface [-]"
+fr_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Fraction of snow \u2013 building surface [-]"
+fr_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Fraction of snow \u2013 evergreen surface [-]"
+fr_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Fraction of snow \u2013 deciduous surface [-]"
+fr_Grass:
+  var_type: output
+  Group: snow
+  Description: "Fraction of snow \u2013 grass surface [-]"
+RainSn_Paved:
+  var_type: output
+  Group: snow
+  Description: "Rain on snow \u2013 paved surface [mm]"
+RainSn_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Rain on snow \u2013 building surface [mm]"
+RainSn_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Rain on snow \u2013 evergreen surface [mm]"
+RainSn_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Rain on snow \u2013 deciduous surface [mm]"
+RainSn_Grass:
+  var_type: output
+  Group: snow
+  Description: "Rain on snow \u2013 grass surface [mm]"
+RainSn_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Rain on snow \u2013 bare soil surface [mm]"
+RainSn_Water:
+  var_type: output
+  Group: snow
+  Description: "Rain on snow \u2013 water surface [mm]"
+kup_PavedSnow:
+  var_type: output
+  Group: snow
+  Description: "Reflected shortwave radiation \u2013 paved surface [W |m^-2|]"
+kup_BldgsSnow:
+  var_type: output
+  Group: snow
+  Description: "Reflected shortwave radiation \u2013 building surface [W |m^-2|]"
+kup_EveTrSnow:
+  var_type: output
+  Group: snow
+  Description: "Reflected shortwave radiation \u2013 evergreen surface [W |m^-2|]"
+kup_DecTrSnow:
+  var_type: output
+  Group: snow
+  Description: "Reflected shortwave radiation \u2013 deciduous surface [W |m^-2|]"
+kup_GrassSnow:
+  var_type: output
+  Group: snow
+  Description: "Reflected shortwave radiation \u2013 grass surface [W |m^-2|]"
+kup_BSoilSnow:
+  var_type: output
+  Group: snow
+  Description: "Reflected shortwave radiation \u2013 bare soil surface [W |m^-2|]"
+kup_WaterSnow:
+  var_type: output
+  Group: snow
+  Description: "Reflected shortwave radiation \u2013 water surface [W |m^-2|]"
+frMelt_Paved:
+  var_type: output
+  Group: snow
+  Description: "Amount of freezing melt water \u2013 paved surface [mm]"
+frMelt_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Amount of freezing melt water \u2013 building surface [mm]"
+frMelt_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Amount of freezing melt water \u2013 evergreen surface [mm]"
+frMelt_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Amount of freezing melt water \u2013 deciduous surface [mm]"
+frMelt_Grass:
+  var_type: output
+  Group: snow
+  Description: "Amount of freezing melt water \u2013 grass surface [mm]"
+frMelt_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Amount of freezing melt water \u2013 bare soil surface [mm]"
+frMelt_Water:
+  var_type: output
+  Group: snow
+  Description: "Amount of freezing melt water \u2013 water surface [mm]"
+MwStore_Paved:
+  var_type: output
+  Group: snow
+  Description: "Melt water store \u2013 paved surface [mm]"
+MwStore_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Melt water store \u2013 building surface [mm]"
+MwStore_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Melt water store \u2013 evergreen surface [mm]"
+MwStore_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Melt water store \u2013 deciduous surface [mm]"
+MwStore_Grass:
+  var_type: output
+  Group: snow
+  Description: "Melt water store \u2013 grass surface [mm]"
+MwStore_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Melt water store \u2013 bare soil surface [mm]"
+MwStore_Water:
+  var_type: output
+  Group: snow
+  Description: "Melt water store \u2013 water surface [mm]"
+DensSnow_Paved:
+  var_type: output
+  Group:
+  - snow
+  - DailyState
+  Description: "Snow density \u2013 paved surface [kg |m^-3|]"
+DensSnow_Bldgs:
+  var_type: output
+  Group:
+  - snow
+  - DailyState
+  Description: "Snow density \u2013 building surface [kg |m^-3|]"
+DensSnow_EveTr:
+  var_type: output
+  Group:
+  - snow
+  - DailyState
+  Description: "Snow density \u2013 evergreen surface [kg |m^-3|]"
+DensSnow_DecTr:
+  var_type: output
+  Group:
+  - snow
+  - DailyState
+  Description: "Snow density \u2013 deciduous surface [kg |m^-3|]"
+DensSnow_Grass:
+  var_type: output
+  Group:
+  - snow
+  - DailyState
+  Description: "Snow density \u2013 grass surface [kg |m^-3|]"
+DensSnow_BSoil:
+  var_type: output
+  Group:
+  - snow
+  - DailyState
+  Description: "Snow density \u2013 bare soil surface [kg |m^-3|]"
+DensSnow_Water:
+  var_type: output
+  Group:
+  - snow
+  - DailyState
+  Description: "Snow density \u2013 water surface [kg |m^-3|]"
+Sd_Paved:
+  var_type: output
+  Group: snow
+  Description: "Snow depth \u2013 paved surface [mm]"
+Sd_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Snow depth \u2013 building surface [mm]"
+Sd_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Snow depth \u2013 evergreen surface [mm]"
+Sd_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Snow depth \u2013 deciduous surface [mm]"
+Sd_Grass:
+  var_type: output
+  Group: snow
+  Description: "Snow depth \u2013 grass surface [mm]"
+Sd_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Snow depth \u2013 bare soil surface [mm]"
+Sd_Water:
+  var_type: output
+  Group: snow
+  Description: "Snow depth \u2013 water surface [mm]"
+Tsnow_Paved:
+  var_type: output
+  Group: snow
+  Description: "Snow surface temperature \u2013 paved surface [\xB0C]"
+Tsnow_Bldgs:
+  var_type: output
+  Group: snow
+  Description: "Snow surface temperature \u2013 building surface [\xB0C]"
+Tsnow_EveTr:
+  var_type: output
+  Group: snow
+  Description: "Snow surface temperature \u2013 evergreen surface [\xB0C]"
+Tsnow_DecTr:
+  var_type: output
+  Group: snow
+  Description: "Snow surface temperature \u2013 deciduous surface [\xB0C]"
+Tsnow_Grass:
+  var_type: output
+  Group: snow
+  Description: "Snow surface temperature \u2013 grass surface [\xB0C]"
+Tsnow_BSoil:
+  var_type: output
+  Group: snow
+  Description: "Snow surface temperature \u2013 bare soil surface [\xB0C]"
+Tsnow_Water:
+  var_type: output
+  Group: snow
+  Description: "Snow surface temperature \u2013 water surface [\xB0C]"
+z_1:
+  var_type: output
+  Group: RSL
+  Description: Height at level 1 [m]
+z_2:
+  var_type: output
+  Group: RSL
+  Description: Height at level 2 [m]
+z_3:
+  var_type: output
+  Group: RSL
+  Description: Height at level 3 [m]
+z_4:
+  var_type: output
+  Group: RSL
+  Description: Height at level 4 [m]
+z_5:
+  var_type: output
+  Group: RSL
+  Description: Height at level 5 [m]
+z_6:
+  var_type: output
+  Group: RSL
+  Description: Height at level 6 [m]
+z_7:
+  var_type: output
+  Group: RSL
+  Description: Height at level 7 [m]
+z_8:
+  var_type: output
+  Group: RSL
+  Description: Height at level 8 [m]
+z_9:
+  var_type: output
+  Group: RSL
+  Description: Height at level 9 [m]
+z_10:
+  var_type: output
+  Group: RSL
+  Description: Height at level 10 [m]
+z_11:
+  var_type: output
+  Group: RSL
+  Description: Height at level 11 [m]
+z_12:
+  var_type: output
+  Group: RSL
+  Description: Height at level 12 [m]
+z_13:
+  var_type: output
+  Group: RSL
+  Description: Height at level 13 [m]
+z_14:
+  var_type: output
+  Group: RSL
+  Description: Height at level 14 [m]
+z_15:
+  var_type: output
+  Group: RSL
+  Description: Height at level 15 [m]
+z_16:
+  var_type: output
+  Group: RSL
+  Description: Height at level 16 [m]
+z_17:
+  var_type: output
+  Group: RSL
+  Description: Height at level 17 [m]
+z_18:
+  var_type: output
+  Group: RSL
+  Description: Height at level 18 [m]
+z_19:
+  var_type: output
+  Group: RSL
+  Description: Height at level 19 [m]
+z_20:
+  var_type: output
+  Group: RSL
+  Description: Height at level 20 [m]
+z_21:
+  var_type: output
+  Group: RSL
+  Description: Height at level 21 [m]
+z_22:
+  var_type: output
+  Group: RSL
+  Description: Height at level 22 [m]
+z_23:
+  var_type: output
+  Group: RSL
+  Description: Height at level 23 [m]
+z_24:
+  var_type: output
+  Group: RSL
+  Description: Height at level 24 [m]
+z_25:
+  var_type: output
+  Group: RSL
+  Description: Height at level 25 [m]
+z_26:
+  var_type: output
+  Group: RSL
+  Description: Height at level 26 [m]
+z_27:
+  var_type: output
+  Group: RSL
+  Description: Height at level 27 [m]
+z_28:
+  var_type: output
+  Group: RSL
+  Description: Height at level 28 [m]
+z_29:
+  var_type: output
+  Group: RSL
+  Description: Height at level 29 [m]
+z_30:
+  var_type: output
+  Group: RSL
+  Description: Height at level 30 [m]
+U_1:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 1 [m |s^-1|]
+U_2:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 2 [m |s^-1|]
+U_3:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 3 [m |s^-1|]
+U_4:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 4 [m |s^-1|]
+U_5:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 5 [m |s^-1|]
+U_6:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 6 [m |s^-1|]
+U_7:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 7 [m |s^-1|]
+U_8:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 8 [m |s^-1|]
+U_9:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 9 [m |s^-1|]
+U_10:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 10 [m |s^-1|]
+U_11:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 11 [m |s^-1|]
+U_12:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 12 [m |s^-1|]
+U_13:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 13 [m |s^-1|]
+U_14:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 14 [m |s^-1|]
+U_15:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 15 [m |s^-1|]
+U_16:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 16 [m |s^-1|]
+U_17:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 17 [m |s^-1|]
+U_18:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 18 [m |s^-1|]
+U_19:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 19 [m |s^-1|]
+U_20:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 20 [m |s^-1|]
+U_21:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 21 [m |s^-1|]
+U_22:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 22 [m |s^-1|]
+U_23:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 23 [m |s^-1|]
+U_24:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 24 [m |s^-1|]
+U_25:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 25 [m |s^-1|]
+U_26:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 26 [m |s^-1|]
+U_27:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 27 [m |s^-1|]
+U_28:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 28 [m |s^-1|]
+U_29:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 29 [m |s^-1|]
+U_30:
+  var_type: output
+  Group: RSL
+  Description: Wind speed at level 30 [m |s^-1|]
+T_1:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 1 [\xB0C]"
+T_2:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 2 [\xB0C]"
+T_3:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 3 [\xB0C]"
+T_4:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 4 [\xB0C]"
+T_5:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 5 [\xB0C]"
+T_6:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 6 [\xB0C]"
+T_7:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 7 [\xB0C]"
+T_8:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 8 [\xB0C]"
+T_9:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 9 [\xB0C]"
+T_10:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 10 [\xB0C]"
+T_11:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 11 [\xB0C]"
+T_12:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 12 [\xB0C]"
+T_13:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 13 [\xB0C]"
+T_14:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 14 [\xB0C]"
+T_15:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 15 [\xB0C]"
+T_16:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 16 [\xB0C]"
+T_17:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 17 [\xB0C]"
+T_18:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 18 [\xB0C]"
+T_19:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 19 [\xB0C]"
+T_20:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 20 [\xB0C]"
+T_21:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 21 [\xB0C]"
+T_22:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 22 [\xB0C]"
+T_23:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 23 [\xB0C]"
+T_24:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 24 [\xB0C]"
+T_25:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 25 [\xB0C]"
+T_26:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 26 [\xB0C]"
+T_27:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 27 [\xB0C]"
+T_28:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 28 [\xB0C]"
+T_29:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 29 [\xB0C]"
+T_30:
+  var_type: output
+  Group: RSL
+  Description: "Air temperature at level 30 [\xB0C]"
+q_1:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 1 [g |kg^-1|]
+q_2:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 2 [g |kg^-1|]
+q_3:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 3 [g |kg^-1|]
+q_4:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 4 [g |kg^-1|]
+q_5:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 5 [g |kg^-1|]
+q_6:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 6 [g |kg^-1|]
+q_7:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 7 [g |kg^-1|]
+q_8:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 8 [g |kg^-1|]
+q_9:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 9 [g |kg^-1|]
+q_10:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 10 [g |kg^-1|]
+q_11:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 11 [g |kg^-1|]
+q_12:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 12 [g |kg^-1|]
+q_13:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 13 [g |kg^-1|]
+q_14:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 14 [g |kg^-1|]
+q_15:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 15 [g |kg^-1|]
+q_16:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 16 [g |kg^-1|]
+q_17:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 17 [g |kg^-1|]
+q_18:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 18 [g |kg^-1|]
+q_19:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 19 [g |kg^-1|]
+q_20:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 20 [g |kg^-1|]
+q_21:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 21 [g |kg^-1|]
+q_22:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 22 [g |kg^-1|]
+q_23:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 23 [g |kg^-1|]
+q_24:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 24 [g |kg^-1|]
+q_25:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 25 [g |kg^-1|]
+q_26:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 26 [g |kg^-1|]
+q_27:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 27 [g |kg^-1|]
+q_28:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 28 [g |kg^-1|]
+q_29:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 29 [g |kg^-1|]
+q_30:
+  var_type: output
+  Group: RSL
+  Description: Specific humidity at level 30 [g |kg^-1|]
+azimuth:
+  var_type: output
+  Group: BEERS
+  Description: Azimuth angle of the Sun
+altitude:
+  var_type: output
+  Group: BEERS
+  Description: Altitude angle of the Sun
+GlobalRad:
+  var_type: output
+  Group: BEERS
+  Description: Input Kdn
+DiffuseRad:
+  var_type: output
+  Group: BEERS
+  Description: Diffuse shortwave radiation
+DirectRad:
+  var_type: output
+  Group: BEERS
+  Description: Direct shortwave radiation
+Kdown2d:
+  var_type: output
+  Group: BEERS
+  Description: Incoming shortwave radiation at POI
+Kup2d:
+  var_type: output
+  Group: BEERS
+  Description: Outgoing shortwave radiation at POI
+Ksouth:
+  var_type: output
+  Group: BEERS
+  Description: Shortwave radiation from south at POI
+Kwest:
+  var_type: output
+  Group: BEERS
+  Description: Shortwave radiation from west at POI
+Knorth:
+  var_type: output
+  Group: BEERS
+  Description: Shortwave radiation from north at POI
+Keast:
+  var_type: output
+  Group: BEERS
+  Description: Shortwave radiation from east at POI
+Ldown2d:
+  var_type: output
+  Group: BEERS
+  Description: Incoming longwave radiation at POI
+Lup2d:
+  var_type: output
+  Group: BEERS
+  Description: Outgoing longwave radiation at POI
+Lsouth:
+  var_type: output
+  Group: BEERS
+  Description: Longwave radiation from south at POI
+Lwest:
+  var_type: output
+  Group: BEERS
+  Description: Longwave radiation from west at POI
+Lnorth:
+  var_type: output
+  Group: BEERS
+  Description: Longwave radiation from north at POI
+Least:
+  var_type: output
+  Group: BEERS
+  Description: Longwave radiation from east at POI
+Tmrt:
+  var_type: output
+  Group: BEERS
+  Description: Mean Radiant Temperature
+I0:
+  var_type: output
+  Group: BEERS
+  Description: theoretical value of maximum incoming solar radiation
+CI:
+  var_type: output
+  Group: BEERS
+  Description: clearness index for Ldown (Lindberg et al. 2008)
+Ta:
+  var_type: output
+  Group: BEERS
+  Description: Air temperature
+Tg:
+  var_type: output
+  Group: BEERS
+  Description: Surface temperature
+HDD1_h:
+  var_type: output
+  Group: DailyState
+  Description: "Heating degree days [\xB0C d]"
+HDD2_c:
+  var_type: output
+  Group: DailyState
+  Description: "Cooling degree days [\xB0C d]"
+HDD3_Tmean:
+  var_type: output
+  Group: DailyState
+  Description: "Average daily air temperature in forcing data [\xB0C]"
+HDD4_T5d:
+  var_type: output
+  Group: DailyState
+  Description: "5-day running-mean air temperature in forcing data [\xB0C]"
+P_day:
+  var_type: output
+  Group: DailyState
+  Description: Daily total precipitation [mm]
+DaysSR:
+  var_type: output
+  Group: DailyState
+  Description: Days since rain [days]
+GDD_EveTr:
+  var_type: output
+  Group: DailyState
+  Description: "Growing degree days for evergreen tree [\xB0C d]"
+GDD_DecTr:
+  var_type: output
+  Group: DailyState
+  Description: "Growing degree days for deciduous tree [\xB0C d]"
+GDD_Grass:
+  var_type: output
+  Group: DailyState
+  Description: "Growing degree days for grass [\xB0C d]"
+SDD_EveTr:
+  var_type: output
+  Group: DailyState
+  Description: "Senescence degree days for evergreen tree  [\xB0C d]"
+SDD_DecTr:
+  var_type: output
+  Group: DailyState
+  Description: "Senescence degree days for deciduous tree [\xB0C d]"
+SDD_Grass:
+  var_type: output
+  Group: DailyState
+  Description: "Senescence degree days for grass [\xB0C d]"
+Tmin:
+  var_type: output
+  Group: DailyState
+  Description: "Daily minimum temperature in forcing data [\xB0C]"
+Tmax:
+  var_type: output
+  Group: DailyState
+  Description: "Daily maximum temperature in forcing data [\xB0C]"
+DLHrs:
+  var_type: output
+  Group: DailyState
+  Description: Day length [h]
+LAI_EveTr:
+  var_type: output
+  Group: DailyState
+  Description: Leaf area index of evergreen trees [|m^-2| |m^-2|]
+LAI_DecTr:
+  var_type: output
+  Group: DailyState
+  Description: Leaf area index of deciduous trees [|m^-2| |m^-2|]
+LAI_Grass:
+  var_type: output
+  Group: DailyState
+  Description: Leaf area index of grass [|m^-2| |m^-2|]
+DecidCap:
+  var_type: output
+  Group: DailyState
+  Description: Moisture storage capacity of deciduous trees [mm]
+Porosity:
+  var_type: output
+  Group: DailyState
+  Description: Porosity of deciduous trees [-]
+AlbEveTr:
+  var_type: output
+  Group: DailyState
+  Description: Albedo of evergreen trees [-]
+AlbDecTr:
+  var_type: output
+  Group: DailyState
+  Description: Albedo of deciduous trees [-]
+AlbGrass:
+  var_type: output
+  Group: DailyState
+  Description: Albedo of grass [-]
+WU_EveTr1:
+  var_type: output
+  Group: DailyState
+  Description: Total water use for evergreen trees [mm]
+WU_EveTr2:
+  var_type: output
+  Group: DailyState
+  Description: Automatic water use for evergreen trees [mm]
+WU_EveTr3:
+  var_type: output
+  Group: DailyState
+  Description: Manual water use for evergreen trees [mm]
+WU_DecTr1:
+  var_type: output
+  Group: DailyState
+  Description: Total water use for deciduous trees [mm]
+WU_DecTr2:
+  var_type: output
+  Group: DailyState
+  Description: Automatic water use for deciduous trees [mm]
+WU_DecTr3:
+  var_type: output
+  Group: DailyState
+  Description: Manual water use for deciduous trees [mm]
+WU_Grass1:
+  var_type: output
+  Group: DailyState
+  Description: Total water use for grass [mm]
+WU_Grass2:
+  var_type: output
+  Group: DailyState
+  Description: Automatic water use for grass [mm]
+WU_Grass3:
+  var_type: output
+  Group: DailyState
+  Description: Manual water use for grass [mm]
+deltaLAI:
+  var_type: output
+  Group: DailyState
+  Description: Change in leaf area index (normalised 0-1) [-]
+LAIlumps:
+  var_type: output
+  Group: DailyState
+  Description: Leaf area index used in LUMPS (normalised 0-1) [-]
+a1:
+  var_type: output
+  Group: DailyState
+  Description: OHM cofficient a1 - [-]
+a2:
+  var_type: output
+  Group: DailyState
+  Description: OHM cofficient a2 [W |m^-2| |h^-1|]
+a3:
+  var_type: output
+  Group: DailyState
+  Description: OHM cofficient a3 - [W |m^-2|]
+aerodynamicresistancemethod:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+ah_min:
+  var_type: state
+  Description: Minimum QF values.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`AHMin_WD <suews:AHMin_WD>`, :option:`AHMin_WE
+    <suews:AHMin_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - AHMin_WD
+    - AHMin_WE
+ah_slope_cooling:
+  var_type: state
+  Description: Cooling slope of QF calculation.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`AHSlope_Cooling_WD <suews:AHSlope_Cooling_WD>`,
+    :option:`AHSlope_Cooling_WE <suews:AHSlope_Cooling_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - AHSlope_Cooling_WD
+    - AHSlope_Cooling_WE
+ah_slope_heating:
+  var_type: state
+  Description: Heating slope of QF calculation.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`AHSlope_Heating_WD <suews:AHSlope_Heating_WD>`,
+    :option:`AHSlope_Heating_WE <suews:AHSlope_Heating_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - AHSlope_Heating_WD
+    - AHSlope_Heating_WE
+ahprof_24hr:
+  var_type: state
+  Description: Hourly profile values used in energy use calculation.
+  Dimensionality: (24, 2)
+  SUEWS-related variables: :option:`EnergyUseProfWD <suews:EnergyUseProfWD>`, :option:`EnergyUseProfWE
+    <suews:EnergyUseProfWE>`
+  Dimensionality Remarks: "24: hours of a day\n\n        2: {Weekday, Weekend}"
+  path_loading:
+    AnthropogenicCode:
+      EnergyUseProfWD: ':'
+      EnergyUseProfWE: ':'
+air_ext_lw:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+air_ext_sw:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+air_ssa_lw:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+air_ssa_sw:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+alb:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for summertime.
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: AlbedoMax
+    Code_Bldgs: AlbedoMax
+    Code_EveTr: AlbedoMax
+    Code_DecTr: AlbedoMax
+    Code_Grass: AlbedoMax
+    Code_Bsoil: AlbedoMax
+    Code_Water: AlbedoMax
+albdectr_id:
+  var_type: state
+  Description: Albedo of deciduous surface `DecTr` on day 0 of run
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`albDecTr0 <suews:albDecTr0>`
+  Dimensionality Remarks: Scalar
+albevetr_id:
+  var_type: state
+  Description: Albedo of evergreen surface `EveTr` on day 0 of run
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`albEveTr0 <suews:albEveTr0>`
+  Dimensionality Remarks: Scalar
+albgrass_id:
+  var_type: state
+  Description: Albedo of grass surface `Grass` on day 0 of run
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`albGrass0 <suews:albGrass0>`
+  Dimensionality Remarks: Scalar
+albmax_dectr:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for summertime.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_DecTr: AlbedoMax
+albmax_evetr:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for summertime.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_EveTr: AlbedoMax
+albmax_grass:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for summertime.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_Grass: AlbedoMax
+albmin_dectr:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for wintertime (not
+    including snow).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_DecTr: AlbedoMin
+albmin_evetr:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for wintertime (not
+    including snow).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_EveTr: AlbedoMin
+albmin_grass:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for wintertime (not
+    including snow).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_Grass: AlbedoMin
+alpha_bioco2:
+  var_type: state
+  Description: The mean apparent ecosystem quantum. Represents the initial slope of
+    the light-response curve.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`alpha <suews:alpha>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: alpha
+    Code_DecTr:
+      BiogenCO2Code: alpha
+    Code_Grass:
+      BiogenCO2Code: alpha
+alpha_enh_bioco2:
+  var_type: state
+  Description: Part of the `alpha` coefficient related to the fraction of vegetation.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`alpha_enh <suews:alpha_enh>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: alpha_enh
+    Code_DecTr:
+      BiogenCO2Code: alpha_enh
+    Code_Grass:
+      BiogenCO2Code: alpha_enh
+alt:
+  var_type: state
+  Description: Altitude of grids [m].
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Alt <suews:Alt>`
+  Dimensionality Remarks: Scalar
+  path_loading: Alt
+baset:
+  var_type: state
+  Description: "Base Temperature for initiating growing degree days (GDD) for leaf\
+    \ growth. [\xB0C]"
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`BaseT <suews:BaseT>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: BaseT
+    Code_DecTr: BaseT
+    Code_Grass: BaseT
+baset_cooling:
+  var_type: state
+  Description: Critical cooling temperature.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`TCritic_Cooling_WD <suews:TCritic_Cooling_WD>`,
+    :option:`TCritic_Cooling_WE <suews:TCritic_Cooling_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - TCritic_Cooling_WD
+    - TCritic_Cooling_WE
+baset_hc:
+  var_type: state
+  Description: "Base temperature for heating degree days [\xB0C]"
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`BaseT_HC <suews:BaseT_HC>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: BaseT_HC
+baset_heating:
+  var_type: state
+  Description: Critical heating temperature.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`TCritic_Heating_WD <suews:TCritic_Heating_WD>`,
+    :option:`TCritic_Heating_WE <suews:TCritic_Heating_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - TCritic_Heating_WD
+    - TCritic_Heating_WE
+basete:
+  var_type: state
+  Description: "Base temperature for initiating sensesance degree days (SDD) for leaf\
+    \ off. [\xB0C]"
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`BaseTe <suews:BaseTe>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: BaseTe
+    Code_DecTr: BaseTe
+    Code_Grass: BaseTe
+basetmethod:
+  var_type: state
+  Description: Determines method for base temperature used in HDD/CDD calculations.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`BaseTMethod <suews:BaseTMethod>`
+  Dimensionality Remarks: Scalar
+beta_bioco2:
+  var_type: state
+  Description: The light-saturated gross photosynthesis of the canopy. [umol |m^-2|
+    |s^-1| ]
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`beta <suews:beta>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: beta
+    Code_DecTr:
+      BiogenCO2Code: beta
+    Code_Grass:
+      BiogenCO2Code: beta
+beta_enh_bioco2:
+  var_type: state
+  Description: Part of the `beta` coefficient related to the fraction of vegetation.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`beta_enh <suews:beta_enh>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: beta_enh
+    Code_DecTr:
+      BiogenCO2Code: beta_enh
+    Code_Grass:
+      BiogenCO2Code: beta_enh
+bldgh:
+  var_type: state
+  Description: Mean building height [m]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`H_Bldgs <suews:H_Bldgs>`
+  Dimensionality Remarks: Scalar
+  path_loading: H_Bldgs
+capmax_dec:
+  var_type: state
+  Description: Maximum water storage capacity for upper surfaces (i.e. canopy)
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`StorageMax <suews:StorageMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_DecTr: StorageMax
+capmin_dec:
+  var_type: state
+  Description: Minimum water storage capacity for upper surfaces (i.e. canopy).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`StorageMin <suews:StorageMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_DecTr: StorageMin
+chanohm:
+  var_type: state
+  Description: Bulk transfer coefficient for this surface to use in AnOHM [-]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`AnOHM_Ch <suews:AnOHM_Ch>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: AnOHM_Ch
+    Code_Bldgs: AnOHM_Ch
+    Code_EveTr: AnOHM_Ch
+    Code_DecTr: AnOHM_Ch
+    Code_Grass: AnOHM_Ch
+    Code_Bsoil: AnOHM_Ch
+    Code_Water: AnOHM_Ch
+co2pointsource:
+  var_type: state
+  Description: CO2 emission factor [kg |km^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`CO2PointSource <suews:CO2PointSource>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: CO2PointSource
+cpanohm:
+  var_type: state
+  Description: Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`AnOHM_Cp <suews:AnOHM_Cp>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: AnOHM_Cp
+    Code_Bldgs: AnOHM_Cp
+    Code_EveTr: AnOHM_Cp
+    Code_DecTr: AnOHM_Cp
+    Code_Grass: AnOHM_Cp
+    Code_Bsoil: AnOHM_Cp
+    Code_Water: AnOHM_Cp
+crwmax:
+  var_type: state
+  Description: Maximum water holding capacity of snow [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`CRWMax <suews:CRWMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: CRWMax
+crwmin:
+  var_type: state
+  Description: Minimum water holding capacity of snow [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`CRWMin <suews:CRWMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: CRWMin
+daywat:
+  var_type: state
+  Description: 'Irrigation flag: 1 for on and 0 for off.'
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`DayWat(1) <suews:DayWat(1)>`, :option:`DayWat(2)
+    <suews:DayWat(2)>`, :option:`DayWat(3) <suews:DayWat(3)>`, :option:`DayWat(4)
+    <suews:DayWat(4)>`, :option:`DayWat(5) <suews:DayWat(5)>`, :option:`DayWat(6)
+    <suews:DayWat(6)>`, :option:`DayWat(7) <suews:DayWat(7)>`
+  Dimensionality Remarks: '7: {Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,
+    Saturday}'
+  path_loading:
+    IrrigationCode:
+    - DayWat(1)
+    - DayWat(2)
+    - DayWat(3)
+    - DayWat(4)
+    - DayWat(5)
+    - DayWat(6)
+    - DayWat(7)
+daywatper:
+  var_type: state
+  Description: Fraction of properties using irrigation for each day of a week.
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`DayWatPer(1) <suews:DayWatPer(1)>`, :option:`DayWatPer(2)
+    <suews:DayWatPer(2)>`, :option:`DayWatPer(3) <suews:DayWatPer(3)>`, :option:`DayWatPer(4)
+    <suews:DayWatPer(4)>`, :option:`DayWatPer(5) <suews:DayWatPer(5)>`, :option:`DayWatPer(6)
+    <suews:DayWatPer(6)>`, :option:`DayWatPer(7) <suews:DayWatPer(7)>`
+  Dimensionality Remarks: '7: {Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,
+    Saturday}'
+  path_loading:
+    IrrigationCode:
+    - DayWatPer(1)
+    - DayWatPer(2)
+    - DayWatPer(3)
+    - DayWatPer(4)
+    - DayWatPer(5)
+    - DayWatPer(6)
+    - DayWatPer(7)
+decidcap_id:
+  var_type: state
+  Description: Storage capacity of deciduous surface `DecTr` on day 0 of run.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`decidCap0 <suews:decidCap0>`
+  Dimensionality Remarks: Scalar
+dectreeh:
+  var_type: state
+  Description: Mean height of deciduous trees [m]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`H_DecTr <suews:H_DecTr>`
+  Dimensionality Remarks: Scalar
+  path_loading: H_DecTr
+diagmethod:
+  var_type: state
+  Description: Defines how near surface diagnostics are calculated.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`DiagMethod <suews:DiagMethod>`
+  Dimensionality Remarks: Scalar
+diagnose:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+diagqn:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+diagqs:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+drainrt:
+  var_type: state
+  Description: Drainage rate of bucket for LUMPS [mm |h^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`LUMPS_DrRate <suews:LUMPS_DrRate>`
+  Dimensionality Remarks: Scalar
+  path_loading: LUMPS_DrRate
+ef_umolco2perj:
+  var_type: state
+  Description: Emission factor for fuels used for building heating.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`EF_umolCO2perJ <suews:EF_umolCO2perJ>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: EF_umolCO2perJ
+emis:
+  var_type: state
+  Description: Effective surface emissivity.
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`Emissivity <suews:Emissivity>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: Emissivity
+    Code_Bldgs: Emissivity
+    Code_EveTr: Emissivity
+    Code_DecTr: Emissivity
+    Code_Grass: Emissivity
+    Code_Bsoil: Emissivity
+    Code_Water: Emissivity
+emissionsmethod:
+  var_type: state
+  Description: Determines method for QF calculation.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`EmissionsMethod <suews:EmissionsMethod>`
+  Dimensionality Remarks: Scalar
+enddls:
+  var_type: state
+  Description: End of the day light savings [DOY]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`EndDLS <suews:EndDLS>`
+  Dimensionality Remarks: Scalar
+  path_loading: EndDLS
+enef_v_jkm:
+  var_type: state
+  Description: Emission factor for heat [J k |m^-1| ].
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`EnEF_v_Jkm <suews:EnEF_v_Jkm>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: EnEF_v_Jkm
+evapmethod:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+evetreeh:
+  var_type: state
+  Description: Mean height of evergreen trees [m]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`H_EveTr <suews:H_EveTr>`
+  Dimensionality Remarks: Scalar
+  path_loading: H_EveTr
+faibldg:
+  var_type: state
+  Description: Frontal area index for buildings [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`FAI_Bldgs <suews:FAI_Bldgs>`
+  Dimensionality Remarks: Scalar
+  path_loading: FAI_Bldgs
+faidectree:
+  var_type: state
+  Description: Frontal area index for deciduous trees [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`FAI_DecTr <suews:FAI_DecTr>`
+  Dimensionality Remarks: Scalar
+  path_loading: FAI_DecTr
+faievetree:
+  var_type: state
+  Description: Frontal area index for evergreen trees [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`FAI_EveTr <suews:FAI_EveTr>`
+  Dimensionality Remarks: Scalar
+  path_loading: FAI_EveTr
+faut:
+  var_type: state
+  Description: Fraction of irrigated area that is irrigated using automated systems
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Faut <suews:Faut>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    IrrigationCode: Faut
+fcef_v_kgkm:
+  var_type: state
+  Description: CO2 emission factor for weekdays [kg |km^-1|];;CO2 emission factor
+    for weekends [kg |km^-1|]
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`FcEF_v_kgkmWD <suews:FcEF_v_kgkmWD>`, :option:`FcEF_v_kgkmWE
+    <suews:FcEF_v_kgkmWE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - FcEF_v_kgkmWD
+    - FcEF_v_kgkmWE
+flowchange:
+  var_type: state
+  Description: Difference in input and output flows for water surface [mm |h^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`FlowChange <suews:FlowChange>`
+  Dimensionality Remarks: Scalar
+  path_loading: FlowChange
+frfossilfuel_heat:
+  var_type: state
+  Description: Fraction of fossil fuels used for building heating [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`FrFossilFuel_Heat <suews:FrFossilFuel_Heat>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: FrFossilFuel_Heat
+frfossilfuel_nonheat:
+  var_type: state
+  Description: Fraction of fossil fuels used for building energy use [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`FrFossilFuel_NonHeat <suews:FrFossilFuel_NonHeat>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: FrFossilFuel_NonHeat
+g1:
+  var_type: state
+  Description: Related to maximum surface conductance [mm |s^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`G1 <suews:G1>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: G1
+g2:
+  var_type: state
+  Description: Related to Kdown dependence [W |m^-2|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`G2 <suews:G2>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: G2
+g3:
+  var_type: state
+  Description: Related to VPD dependence [units depend on `gsModel`]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`G3 <suews:G3>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: G3
+g4:
+  var_type: state
+  Description: Related to VPD dependence [units depend on `gsModel`]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`G4 <suews:G4>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: G4
+g5:
+  var_type: state
+  Description: "Related to temperature dependence [\xB0C]"
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`G5 <suews:G5>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: G5
+g6:
+  var_type: state
+  Description: Related to soil moisture dependence [|mm^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`G6 <suews:G6>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: G6
+gddfull:
+  var_type: state
+  Description: "The growing degree days (GDD) needed for full capacity of the leaf\
+    \ area index (LAI) [\xB0C]."
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`GDDFull <suews:GDDFull>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: GDDFull
+    Code_DecTr: GDDFull
+    Code_Grass: GDDFull
+ground_albedo_dir_mult_fact:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+gsmodel:
+  var_type: state
+  Description: Formulation choice for conductance calculation.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`gsModel <suews:gsModel>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: gsModel
+h_maintain:
+  var_type: state
+  Description: water depth to maintain used in automatic irrigation (e.g., ponding
+    water due to flooding irrigation in rice crop-field) [mm].
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`H_maintain <suews:H_maintain>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    IrrigationCode: H_maintain
+humactivity_24hr:
+  var_type: state
+  Description: Hourly profile values used in human activity calculation.
+  Dimensionality: (24, 2)
+  SUEWS-related variables: :option:`ActivityProfWD <suews:ActivityProfWD>`, :option:`ActivityProfWE
+    <suews:ActivityProfWE>`
+  Dimensionality Remarks: "24: hours of a day\n\n        2: {Weekday, Weekend}"
+  path_loading:
+    AnthropogenicCode:
+      ActivityProfWD: ':'
+      ActivityProfWE: ':'
+ie_a:
+  var_type: state
+  Description: Coefficient for automatic irrigation model.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`Ie_a1 <suews:Ie_a1>`, :option:`Ie_a2 <suews:Ie_a2>`,
+    :option:`Ie_a3 <suews:Ie_a3>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    IrrigationCode:
+    - Ie_a1
+    - Ie_a2
+    - Ie_a3
+ie_end:
+  var_type: state
+  Description: Day when irrigation ends [DOY]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Ie_end <suews:Ie_end>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    IrrigationCode: Ie_end
+ie_m:
+  var_type: state
+  Description: Coefficient for manual irrigation model.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`Ie_m1 <suews:Ie_m1>`, :option:`Ie_m2 <suews:Ie_m2>`,
+    :option:`Ie_m3 <suews:Ie_m3>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    IrrigationCode:
+    - Ie_m1
+    - Ie_m2
+    - Ie_m3
+ie_start:
+  var_type: state
+  Description: Day when irrigation starts [DOY]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Ie_start <suews:Ie_start>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    IrrigationCode: Ie_start
+internalwateruse_h:
+  var_type: state
+  Description: Internal water use [mm |h^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`InternalWaterUse <suews:InternalWaterUse>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    IrrigationCode: InternalWaterUse
+irrfracbldgs:
+  var_type: state
+  Description: Fraction of `Bldgs` that is irrigated [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`IrrFr_Bldgs <suews:IrrFr_Bldgs>`
+  Dimensionality Remarks: Scalar
+  path_loading: IrrFr_Bldgs
+irrfracbsoil:
+  var_type: state
+  Description: Fraction of `BSoil` that is irrigated [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`IrrFr_BSoil <suews:IrrFr_BSoil>`
+  Dimensionality Remarks: Scalar
+  path_loading: IrrFr_BSoil
+irrfracdectr:
+  var_type: state
+  Description: Fraction of `DecTr` that is irrigated [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`IrrFr_DecTr <suews:IrrFr_DecTr>`
+  Dimensionality Remarks: Scalar
+  path_loading: IrrFr_DecTr
+irrfracevetr:
+  var_type: state
+  Description: Fraction of `EveTr` that is irrigated [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`IrrFr_EveTr <suews:IrrFr_EveTr>`
+  Dimensionality Remarks: Scalar
+  path_loading: IrrFr_EveTr
+irrfracgrass:
+  var_type: state
+  Description: Fraction of `Grass` that is irrigated [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`IrrFr_Grass <suews:IrrFr_Grass>`
+  Dimensionality Remarks: Scalar
+  path_loading: IrrFr_Grass
+irrfracpaved:
+  var_type: state
+  Description: Fraction of `Paved` that is irrigated [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`IrrFr_Paved <suews:IrrFr_Paved>`
+  Dimensionality Remarks: Scalar
+  path_loading: IrrFr_Paved
+irrfracwater:
+  var_type: state
+  Description: Fraction of `Water` that is irrigated [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`IrrFr_Water <suews:IrrFr_Water>`
+  Dimensionality Remarks: Scalar
+  path_loading: IrrFr_Water
+kkanohm:
+  var_type: state
+  Description: Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`AnOHM_Kk <suews:AnOHM_Kk>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: AnOHM_Kk
+    Code_Bldgs: AnOHM_Kk
+    Code_EveTr: AnOHM_Kk
+    Code_DecTr: AnOHM_Kk
+    Code_Grass: AnOHM_Kk
+    Code_Bsoil: AnOHM_Kk
+    Code_Water: AnOHM_Kk
+kmax:
+  var_type: state
+  Description: Maximum incoming shortwave radiation [W |m^-2|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Kmax <suews:Kmax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: Kmax
+lai_id:
+  var_type: state
+  Description: Initial LAI values.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`LAIinitialDecTr <suews:LAIinitialDecTr>`, :option:`LAIinitialEveTr
+    <suews:LAIinitialEveTr>`, :option:`LAIinitialGrass <suews:LAIinitialGrass>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+laicalcyes:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+laimax:
+  var_type: state
+  Description: full leaf-on summertime value
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`LAIMax <suews:LAIMax>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: LAIMax
+    Code_DecTr: LAIMax
+    Code_Grass: LAIMax
+laimin:
+  var_type: state
+  Description: leaf-off wintertime value
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`LAIMin <suews:LAIMin>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: LAIMin
+    Code_DecTr: LAIMin
+    Code_Grass: LAIMin
+laipower:
+  var_type: state
+  Description: parameters required by LAI calculation.
+  Dimensionality: (4, 3)
+  SUEWS-related variables: :option:`LeafGrowthPower1 <suews:LeafGrowthPower1>`, :option:`LeafGrowthPower2
+    <suews:LeafGrowthPower2>`, :option:`LeafOffPower1 <suews:LeafOffPower1>`, :option:`LeafOffPower2
+    <suews:LeafOffPower2>`
+  Dimensionality Remarks: "4: {`LeafGrowthPower1`, `LeafGrowthPower2`, `LeafOffPower1`,\
+    \ `LeafOffPower2`}\n\n        3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+  path_loading:
+    Code_EveTr:
+    - LeafGrowthPower1
+    - LeafGrowthPower2
+    - LeafOffPower1
+    - LeafOffPower2
+    Code_DecTr:
+    - LeafGrowthPower1
+    - LeafGrowthPower2
+    - LeafOffPower1
+    - LeafOffPower2
+    Code_Grass:
+    - LeafGrowthPower1
+    - LeafGrowthPower2
+    - LeafOffPower1
+    - LeafOffPower2
+laitype:
+  var_type: state
+  Description: LAI calculation choice.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`LAIEq <suews:LAIEq>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: LAIEq
+    Code_DecTr: LAIEq
+    Code_Grass: LAIEq
+lat:
+  var_type: state
+  Description: Latitude [deg].
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`lat <suews:lat>`
+  Dimensionality Remarks: Scalar
+  path_loading: lat
+lng:
+  var_type: state
+  Description: longitude [deg]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`lng <suews:lng>`
+  Dimensionality Remarks: Scalar
+  path_loading: lng
+maxconductance:
+  var_type: state
+  Description: The maximum conductance of each vegetation or surface type. [mm |s^-1|]
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`MaxConductance <suews:MaxConductance>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: MaxConductance
+    Code_DecTr: MaxConductance
+    Code_Grass: MaxConductance
+maxfcmetab:
+  var_type: state
+  Description: Maximum (day) CO2 from human metabolism. [W |m^-2|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`MaxFCMetab <suews:MaxFCMetab>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: MaxFCMetab
+maxqfmetab:
+  var_type: state
+  Description: Maximum value for human heat emission. [W |m^-2|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`MaxQFMetab <suews:MaxQFMetab>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: MaxQFMetab
+min_res_bioco2:
+  var_type: state
+  Description: Minimum soil respiration rate (for cold-temperature limit) [umol |m^-2|
+    |s^-1|].
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`min_respi <suews:min_respi>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: min_respi
+    Code_DecTr:
+      BiogenCO2Code: min_respi
+    Code_Grass:
+      BiogenCO2Code: min_respi
+minfcmetab:
+  var_type: state
+  Description: Minimum (night) CO2 from human metabolism. [W |m^-2|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`MinFCMetab <suews:MinFCMetab>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: MinFCMetab
+minqfmetab:
+  var_type: state
+  Description: Minimum value for human heat emission. [W |m^-2|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`MinQFMetab <suews:MinQFMetab>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: MinQFMetab
+n_stream_lw_urban:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+n_stream_sw_urban:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+n_vegetation_region_urban:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+narp_emis_snow:
+  var_type: state
+  Description: Effective surface emissivity.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Emissivity <suews:Emissivity>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: Emissivity
+narp_trans_site:
+  var_type: state
+  Description: Atmospheric transmissivity for NARP [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`NARP_Trans <suews:NARP_Trans>`
+  Dimensionality Remarks: Scalar
+  path_loading: NARP_Trans
+netradiationmethod:
+  var_type: state
+  Description: Determines method for calculation of radiation fluxes.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`NetRadiationMethod <suews:NetRadiationMethod>`
+  Dimensionality Remarks: Scalar
+ohm_coef:
+  var_type: state
+  Description: Coefficients for OHM calculation.
+  Dimensionality: (8, 4, 3)
+  SUEWS-related variables: :option:`a1 <suews:a1>`, :option:`a2 <suews:a2>`, :option:`a3
+    <suews:a3>`
+  Dimensionality Remarks: "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,\
+    \ `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently\
+    \ NOT used)}\n\n        4: {SummerWet, SummerDry, WinterWet, WinterDry}\n\n  \
+    \      3: {a1, a2, a3}"
+  path_loading:
+    Code_Paved:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+    Code_Bldgs:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+    Code_EveTr:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+    Code_DecTr:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+    Code_Grass:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+    Code_Bsoil:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+    Code_Water:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+    SnowCode:
+      OHMCode_SummerWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_SummerDry:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterWet:
+      - a1
+      - a2
+      - a3
+      OHMCode_WinterDry:
+      - a1
+      - a2
+      - a3
+ohm_threshsw:
+  var_type: state
+  Description: "Temperature threshold determining whether summer/winter OHM coefficients\
+    \ are applied [\xB0C]"
+  Dimensionality: (8,)
+  SUEWS-related variables: :option:`OHMThresh_SW <suews:OHMThresh_SW>`
+  Dimensionality Remarks: '8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently
+    NOT used)} '
+  path_loading:
+    Code_Paved: OHMThresh_SW
+    Code_Bldgs: OHMThresh_SW
+    Code_EveTr: OHMThresh_SW
+    Code_DecTr: OHMThresh_SW
+    Code_Grass: OHMThresh_SW
+    Code_Bsoil: OHMThresh_SW
+    Code_Water: OHMThresh_SW
+    SnowCode: OHMThresh_SW
+ohm_threshwd:
+  var_type: state
+  Description: Soil moisture threshold determining whether wet/dry OHM coefficients
+    are applied [-]
+  Dimensionality: (8,)
+  SUEWS-related variables: :option:`OHMThresh_WD <suews:OHMThresh_WD>`
+  Dimensionality Remarks: '8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently
+    NOT used)} '
+  path_loading:
+    Code_Paved: OHMThresh_WD
+    Code_Bldgs: OHMThresh_WD
+    Code_EveTr: OHMThresh_WD
+    Code_DecTr: OHMThresh_WD
+    Code_Grass: OHMThresh_WD
+    Code_Bsoil: OHMThresh_WD
+    Code_Water: OHMThresh_WD
+    SnowCode: OHMThresh_WD
+ohmincqf:
+  var_type: state
+  Description: Determines whether the storage heat flux calculation uses |Qstar| or
+    ( |Qstar| +QF).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`OHMIncQF <suews:OHMIncQF>`
+  Dimensionality Remarks: Scalar
+pipecapacity:
+  var_type: state
+  Description: Storage capacity of pipes [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`PipeCapacity <suews:PipeCapacity>`
+  Dimensionality Remarks: Scalar
+  path_loading: PipeCapacity
+popdensdaytime:
+  var_type: state
+  Description: Daytime population density (i.e. workers, tourists) [people |ha^-1|]
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`PopDensDay <suews:PopDensDay>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+  - PopDensDay
+  - PopDensDay
+popdensnighttime:
+  var_type: state
+  Description: Night-time population density (i.e. residents) [people |ha^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`PopDensNight <suews:PopDensNight>`
+  Dimensionality Remarks: Scalar
+  path_loading: PopDensNight
+popprof_24hr:
+  var_type: state
+  Description: Hourly profile values used in dynamic population estimation.
+  Dimensionality: (24, 2)
+  SUEWS-related variables: :option:`PopProfWD <suews:PopProfWD>`, :option:`PopProfWE
+    <suews:PopProfWE>`
+  Dimensionality Remarks: "24: hours of a day\n\n        2: {Weekday, Weekend}"
+  path_loading:
+    AnthropogenicCode:
+      PopProfWD: ':'
+      PopProfWE: ':'
+pormax_dec:
+  var_type: state
+  Description: full leaf-on summertime value Used only for `DecTr` (can affect roughness
+    calculation)
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`PorosityMax <suews:PorosityMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_DecTr: PorosityMax
+pormin_dec:
+  var_type: state
+  Description: leaf-off wintertime value Used only for `DecTr` (can affect roughness
+    calculation)
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`PorosityMin <suews:PorosityMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_DecTr: PorosityMin
+porosity_id:
+  var_type: state
+  Description: Porosity of deciduous vegetation on day 0 of run.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`porosity0 <suews:porosity0>`
+  Dimensionality Remarks: Scalar
+preciplimit:
+  var_type: state
+  Description: "Temperature limit when precipitation falls as snow [\xB0C]"
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`PrecipLimSnow <suews:PrecipLimSnow>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: PrecipLimSnow
+preciplimitalb:
+  var_type: state
+  Description: Limit for hourly precipitation when the ground is fully covered with
+    snow [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`PrecipLimAlb <suews:PrecipLimAlb>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: PrecipLimAlb
+qf0_beu:
+  var_type: state
+  Description: Building energy use [W |m^-2|]
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`QF0_BEU_WD <suews:QF0_BEU_WD>`, :option:`QF0_BEU_WE
+    <suews:QF0_BEU_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+  - QF0_BEU_WD
+  - QF0_BEU_WE
+qf_a:
+  var_type: state
+  Description: Base value for QF calculation.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`QF_A_WD <suews:QF_A_WD>`, :option:`QF_A_WE <suews:QF_A_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - QF_A_WD
+    - QF_A_WE
+qf_b:
+  var_type: state
+  Description: Parameter related to heating degree days.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`QF_B_WD <suews:QF_B_WD>`, :option:`QF_B_WE <suews:QF_B_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - QF_B_WD
+    - QF_B_WE
+qf_c:
+  var_type: state
+  Description: Parameter related to heating degree days.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`QF_C_WD <suews:QF_C_WD>`, :option:`QF_C_WE <suews:QF_C_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+    AnthropogenicCode:
+    - QF_C_WD
+    - QF_C_WE
+radmeltfact:
+  var_type: state
+  Description: Hourly radiation melt factor of snow [mm |w^-1| |h^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`RadMeltFactor <suews:RadMeltFactor>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: RadMeltFactor
+raincover:
+  var_type: state
+  Description: Limit when surface totally covered with water for LUMPS [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`LUMPS_Cover <suews:LUMPS_Cover>`
+  Dimensionality Remarks: Scalar
+  path_loading: LUMPS_Cover
+rainmaxres:
+  var_type: state
+  Description: Maximum water bucket reservoir [mm] Used for LUMPS surface wetness
+    control.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`LUMPS_MaxRes <suews:LUMPS_MaxRes>`
+  Dimensionality Remarks: Scalar
+  path_loading: LUMPS_MaxRes
+resp_a:
+  var_type: state
+  Description: Respiration coefficient a.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`resp_a <suews:resp_a>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: resp_a
+    Code_DecTr:
+      BiogenCO2Code: resp_a
+    Code_Grass:
+      BiogenCO2Code: resp_a
+resp_b:
+  var_type: state
+  Description: Respiration coefficient b - related to air temperature dependency.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`resp_b <suews:resp_b>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: resp_b
+    Code_DecTr:
+      BiogenCO2Code: resp_b
+    Code_Grass:
+      BiogenCO2Code: resp_b
+roughlenheatmethod:
+  var_type: state
+  Description: Determines method for calculating roughness length for heat.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`RoughLenHeatMethod <suews:RoughLenHeatMethod>`
+  Dimensionality Remarks: Scalar
+roughlenmommethod:
+  var_type: state
+  Description: Determines how aerodynamic roughness length (z0m) and zero displacement
+    height (zdm) are calculated.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`RoughLenMomMethod <suews:RoughLenMomMethod>`
+  Dimensionality Remarks: Scalar
+runofftowater:
+  var_type: state
+  Description: Fraction of above-ground runoff flowing to water surface during flooding
+    [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`RunoffToWater <suews:RunoffToWater>`
+  Dimensionality Remarks: Scalar
+  path_loading: RunoffToWater
+s1:
+  var_type: state
+  Description: A parameter related to soil moisture dependence [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`S1 <suews:S1>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: S1
+s2:
+  var_type: state
+  Description: A parameter related to soil moisture dependence [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`S2 <suews:S2>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: S2
+sathydraulicconduct:
+  var_type: state
+  Description: Hydraulic conductivity for saturated soil [mm |s^-1|]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SatHydraulicCond <suews:SatHydraulicCond>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved:
+      SoilTypeCode: SatHydraulicCond
+    Code_Bldgs:
+      SoilTypeCode: SatHydraulicCond
+    Code_EveTr:
+      SoilTypeCode: SatHydraulicCond
+    Code_DecTr:
+      SoilTypeCode: SatHydraulicCond
+    Code_Grass:
+      SoilTypeCode: SatHydraulicCond
+    Code_Bsoil:
+      SoilTypeCode: SatHydraulicCond
+    const: 0.0
+sddfull:
+  var_type: state
+  Description: "The sensesence degree days (SDD) needed to initiate leaf off. [\xB0\
+    C]"
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`SDDFull <suews:SDDFull>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr: SDDFull
+    Code_DecTr: SDDFull
+    Code_Grass: SDDFull
+sfr_surf:
+  var_type: state
+  Description: Surface cover fractions.
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`Fr_Bldgs <suews:Fr_Bldgs>`, :option:`Fr_Bsoil
+    <suews:Fr_Bsoil>`, :option:`Fr_DecTr <suews:Fr_DecTr>`, :option:`Fr_EveTr <suews:Fr_EveTr>`,
+    :option:`Fr_Grass <suews:Fr_Grass>`, :option:`Fr_Paved <suews:Fr_Paved>`, :option:`Fr_Water
+    <suews:Fr_Water>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+  - Fr_Paved
+  - Fr_Bldgs
+  - Fr_EveTr
+  - Fr_DecTr
+  - Fr_Grass
+  - Fr_Bsoil
+  - Fr_Water
+smdmethod:
+  var_type: state
+  Description: Determines method for calculating soil moisture deficit (SMD).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SMDMethod <suews:SMDMethod>`
+  Dimensionality Remarks: Scalar
+snowalb:
+  var_type: state
+  Description: Initial snow albedo
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SnowAlb0 <suews:SnowAlb0>`
+  Dimensionality Remarks: Scalar
+snowalbmax:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for summertime.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: AlbedoMax
+snowalbmin:
+  var_type: state
+  Description: Effective surface albedo (middle of the day value) for wintertime (not
+    including snow).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: AlbedoMin
+snowdens:
+  var_type: state
+  Description: Initial snow density of each land cover.
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SnowDensBldgs <suews:SnowDensBldgs>`, :option:`SnowDensPaved
+    <suews:SnowDensPaved>`, :option:`SnowDensDecTr <suews:SnowDensDecTr>`, :option:`SnowDensEveTr
+    <suews:SnowDensEveTr>`, :option:`SnowDensGrass <suews:SnowDensGrass>`, :option:`SnowDensBSoil
+    <suews:SnowDensBSoil>`, :option:`SnowDensWater <suews:SnowDensWater>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+snowdensmax:
+  var_type: state
+  Description: Maximum snow density [kg |m^-3|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SnowDensMax <suews:SnowDensMax>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: SnowDensMax
+snowdensmin:
+  var_type: state
+  Description: Fresh snow density [kg |m^-3|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SnowDensMin <suews:SnowDensMin>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: SnowDensMin
+snowfrac:
+  var_type: state
+  Description: Initial plan area fraction of snow on each land cover`
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SnowFracBldgs <suews:SnowFracBldgs>`, :option:`SnowFracPaved
+    <suews:SnowFracPaved>`, :option:`SnowFracDecTr <suews:SnowFracDecTr>`, :option:`SnowFracEveTr
+    <suews:SnowFracEveTr>`, :option:`SnowFracGrass <suews:SnowFracGrass>`, :option:`SnowFracBSoil
+    <suews:SnowFracBSoil>`, :option:`SnowFracWater <suews:SnowFracWater>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+snowlimbldg:
+  var_type: state
+  Description: Limit of the snow water equivalent for snow removal from roads and
+    roofs [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SnowLimRemove <suews:SnowLimRemove>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_Bldgs: SnowLimRemove
+snowlimpaved:
+  var_type: state
+  Description: Limit of the snow water equivalent for snow removal from roads and
+    roofs [mm]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SnowLimRemove <suews:SnowLimRemove>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    Code_Paved: SnowLimRemove
+snowpack:
+  var_type: state
+  Description: Initial snow water equivalent on each land cover
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SnowPackBldgs <suews:SnowPackBldgs>`, :option:`SnowPackPaved
+    <suews:SnowPackPaved>`, :option:`SnowPackDecTr <suews:SnowPackDecTr>`, :option:`SnowPackEveTr
+    <suews:SnowPackEveTr>`, :option:`SnowPackGrass <suews:SnowPackGrass>`, :option:`SnowPackBSoil
+    <suews:SnowPackBSoil>`, :option:`SnowPackWater <suews:SnowPackWater>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+snowpacklimit:
+  var_type: state
+  Description: Limit for the snow water equivalent when snow cover starts to be patchy
+    [mm]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SnowLimPatch <suews:SnowLimPatch>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: SnowLimPatch
+    Code_Bldgs: SnowLimPatch
+    Code_EveTr: SnowLimPatch
+    Code_DecTr: SnowLimPatch
+    Code_Grass: SnowLimPatch
+    Code_Bsoil: SnowLimPatch
+    const: 0.0
+snowprof_24hr:
+  var_type: state
+  Description: Hourly profile values used in snow clearing.
+  Dimensionality: (24, 2)
+  SUEWS-related variables: :option:`SnowClearingProfWD <suews:SnowClearingProfWD>`,
+    :option:`SnowClearingProfWE <suews:SnowClearingProfWE>`
+  Dimensionality Remarks: "24: hours of a day\n\n        2: {Weekday, Weekend}"
+  path_loading:
+    SnowClearingProfWD: ':'
+    SnowClearingProfWE: ':'
+snowuse:
+  var_type: state
+  Description: Determines whether the snow part of the model runs.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SnowUse <suews:SnowUse>`
+  Dimensionality Remarks: Scalar
+snowwater:
+  var_type: state
+  Description: Initial amount of liquid water in the snow on each land cover
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SnowWaterBldgsState <suews:SnowWaterBldgsState>`,
+    :option:`SnowWaterPavedState <suews:SnowWaterPavedState>`, :option:`SnowWaterDecTrState
+    <suews:SnowWaterDecTrState>`, :option:`SnowWaterEveTrState <suews:SnowWaterEveTrState>`,
+    :option:`SnowWaterGrassState <suews:SnowWaterGrassState>`, :option:`SnowWaterBSoilState
+    <suews:SnowWaterBSoilState>`, :option:`SnowWaterWaterState <suews:SnowWaterWaterState>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+soildepth:
+  var_type: state
+  Description: Depth of soil beneath the surface [mm]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SoilDepth <suews:SoilDepth>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved:
+      SoilTypeCode: SoilDepth
+    Code_Bldgs:
+      SoilTypeCode: SoilDepth
+    Code_EveTr:
+      SoilTypeCode: SoilDepth
+    Code_DecTr:
+      SoilTypeCode: SoilDepth
+    Code_Grass:
+      SoilTypeCode: SoilDepth
+    Code_Bsoil:
+      SoilTypeCode: SoilDepth
+    const: 0.0
+soilstore_surf:
+  var_type: state
+  Description: Initial water stored in soil beneath `Bldgs` surface [mm];;Initial
+    water stored in soil beneath `Paved` surface [mm];;Initial water stored in soil
+    beneath `DecTr` surface [mm];;Initial water stored in soil beneath `EveTr` surface
+    [mm];;Initial water stored in soil beneath `Grass` surface [mm];;Initial water
+    stored in soil beneath `BSoil` surface [mm]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SoilstoreBldgsState <suews:SoilstoreBldgsState>`,
+    :option:`SoilstorePavedState <suews:SoilstorePavedState>`, :option:`SoilstoreDecTrState
+    <suews:SoilstoreDecTrState>`, :option:`SoilstoreEveTrState <suews:SoilstoreEveTrState>`,
+    :option:`SoilstoreGrassState <suews:SoilstoreGrassState>`, :option:`SoilstoreBSoilState
+    <suews:SoilstoreBSoilState>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+soilstorecap_surf:
+  var_type: state
+  Description: Limit value for `SoilDepth` [mm]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`SoilStoreCap <suews:SoilStoreCap>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved:
+      SoilTypeCode: SoilStoreCap
+    Code_Bldgs:
+      SoilTypeCode: SoilStoreCap
+    Code_EveTr:
+      SoilTypeCode: SoilStoreCap
+    Code_DecTr:
+      SoilTypeCode: SoilStoreCap
+    Code_Grass:
+      SoilTypeCode: SoilStoreCap
+    Code_Bsoil:
+      SoilTypeCode: SoilStoreCap
+    const: 0.0
+stabilitymethod:
+  var_type: state
+  Description: Defines which atmospheric stability functions are used.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`StabilityMethod <suews:StabilityMethod>`
+  Dimensionality Remarks: Scalar
+startdls:
+  var_type: state
+  Description: Start of the day light savings [DOY]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`StartDLS <suews:StartDLS>`
+  Dimensionality Remarks: Scalar
+  path_loading: StartDLS
+state_surf:
+  var_type: state
+  Description: Initial wetness condition on `Bldgs`;;Initial wetness condition on
+    `Paved`;;Initial wetness condition on `DecTr`;;Initial wetness condition on `EveTr`;;Initial
+    wetness condition on `Grass`;;Initial wetness condition on `BSoil`;;Initial wetness
+    condition on `Water`
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`BldgsState <suews:BldgsState>`, :option:`PavedState
+    <suews:PavedState>`, :option:`DecTrState <suews:DecTrState>`, :option:`EveTrState
+    <suews:EveTrState>`, :option:`GrassState <suews:GrassState>`, :option:`BSoilState
+    <suews:BSoilState>`, :option:`WaterState <suews:WaterState>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+statelimit_surf:
+  var_type: state
+  Description: Upper limit to the surface state. [mm]
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`StateLimit <suews:StateLimit>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: StateLimit
+    Code_Bldgs: StateLimit
+    Code_EveTr: StateLimit
+    Code_DecTr: StateLimit
+    Code_Grass: StateLimit
+    Code_Bsoil: StateLimit
+    Code_Water: StateLimit
+storageheatmethod:
+  var_type: state
+  Description: "Determines method for calculating storage heat flux \u0394QS."
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`StorageHeatMethod <suews:StorageHeatMethod>`
+  Dimensionality Remarks: Scalar
+storedrainprm:
+  var_type: state
+  Description: Coefficients used in drainage calculation.
+  Dimensionality: (6, 7)
+  SUEWS-related variables: :option:`DrainageCoef1 <suews:DrainageCoef1>`, :option:`DrainageCoef2
+    <suews:DrainageCoef2>`, :option:`DrainageEq <suews:DrainageEq>`, :option:`StorageMax
+    <suews:StorageMax>`, :option:`StorageMin <suews:StorageMin>`
+  Dimensionality Remarks: "6: { `StorageMin`, `DrainageEq`, `DrainageCoef1`, `DrainageCoef2`,\
+    \ `StorageMax`, current storage}\n\n        7: { `suews:Paved`, `suews:Bldgs`,\
+    \ `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
+  path_loading:
+  - Code_Paved: StorageMin
+    Code_Bldgs: StorageMin
+    Code_EveTr: StorageMin
+    Code_DecTr: StorageMin
+    Code_Grass: StorageMin
+    Code_Bsoil: StorageMin
+    Code_Water: StorageMin
+  - Code_Paved: DrainageEq
+    Code_Bldgs: DrainageEq
+    Code_EveTr: DrainageEq
+    Code_DecTr: DrainageEq
+    Code_Grass: DrainageEq
+    Code_Bsoil: DrainageEq
+    Code_Water: DrainageEq
+  - Code_Paved: DrainageCoef1
+    Code_Bldgs: DrainageCoef1
+    Code_EveTr: DrainageCoef1
+    Code_DecTr: DrainageCoef1
+    Code_Grass: DrainageCoef1
+    Code_Bsoil: DrainageCoef1
+    Code_Water: DrainageCoef1
+  - Code_Paved: DrainageCoef2
+    Code_Bldgs: DrainageCoef2
+    Code_EveTr: DrainageCoef2
+    Code_DecTr: DrainageCoef2
+    Code_Grass: DrainageCoef2
+    Code_Bsoil: DrainageCoef2
+    Code_Water: DrainageCoef2
+  - Code_Paved: StorageMax
+    Code_Bldgs: StorageMax
+    Code_EveTr: StorageMax
+    Code_DecTr: StorageMax
+    Code_Grass: StorageMax
+    Code_Bsoil: StorageMax
+    Code_Water: StorageMax
+  - Code_Paved: StorageMin
+    Code_Bldgs: StorageMin
+    Code_EveTr: StorageMin
+    Code_DecTr: StorageMin
+    Code_Grass: StorageMin
+    Code_Bsoil: StorageMin
+    Code_Water: StorageMin
+surfacearea:
+  var_type: state
+  Description: Area of the grid [ha].
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`SurfaceArea <suews:SurfaceArea>`
+  Dimensionality Remarks: Scalar
+  path_loading: SurfaceArea
+sw_dn_direct_frac:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+tau_a:
+  var_type: state
+  Description: Time constant for snow albedo aging in cold snow [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`tau_a <suews:tau_a>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: tau_a
+tau_f:
+  var_type: state
+  Description: Time constant for snow albedo aging in melting snow [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`tau_f <suews:tau_f>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: tau_f
+tau_r:
+  var_type: state
+  Description: Time constant for snow density ageing [-]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`tau_r <suews:tau_r>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: tau_r
+tempmeltfact:
+  var_type: state
+  Description: Hourly temperature melt factor of snow [mm |K^-1| |h^-1|]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`TempMeltFactor <suews:TempMeltFactor>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    SnowCode: TempMeltFactor
+th:
+  var_type: state
+  Description: "Upper air temperature limit [\xB0C]"
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`TH <suews:TH>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: TH
+theta_bioco2:
+  var_type: state
+  Description: The convexity of the curve at light saturation.
+  Dimensionality: (3,)
+  SUEWS-related variables: :option:`theta <suews:theta>`
+  Dimensionality Remarks: '3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}'
+  path_loading:
+    Code_EveTr:
+      BiogenCO2Code: theta
+    Code_DecTr:
+      BiogenCO2Code: theta
+    Code_Grass:
+      BiogenCO2Code: theta
+timezone:
+  var_type: state
+  Description: Time zone [h] for site relative to UTC (east is positive). This should
+    be set according to the times given in the meteorological forcing file(s).
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Timezone <suews:Timezone>`
+  Dimensionality Remarks: Scalar
+  path_loading: Timezone
+tl:
+  var_type: state
+  Description: "Lower air temperature limit [\xB0C]"
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`TL <suews:TL>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    CondCode: TL
+trafficrate:
+  var_type: state
+  Description: Traffic rate used for CO2 flux calculation.
+  Dimensionality: (2,)
+  SUEWS-related variables: :option:`TrafficRate_WD <suews:TrafficRate_WD>`, :option:`TrafficRate_WE
+    <suews:TrafficRate_WE>`
+  Dimensionality Remarks: '2: {Weekday, Weekend}'
+  path_loading:
+  - TrafficRate_WD
+  - TrafficRate_WE
+trafficunits:
+  var_type: state
+  Description: Units for the traffic rate for the study area. Not used in v2018a.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`TrafficUnits <suews:TrafficUnits>`
+  Dimensionality Remarks: Scalar
+  path_loading:
+    AnthropogenicCode: TrafficUnits
+traffprof_24hr:
+  var_type: state
+  Description: Hourly profile values used in traffic activity calculation.
+  Dimensionality: (24, 2)
+  SUEWS-related variables: :option:`TraffProfWD <suews:TraffProfWD>`, :option:`TraffProfWE
+    <suews:TraffProfWE>`
+  Dimensionality Remarks: "24: hours of a day\n\n        2: {Weekday, Weekend}"
+  path_loading:
+    AnthropogenicCode:
+      TraffProfWD: ':'
+      TraffProfWE: ':'
+tstep:
+  var_type: state
+  Description: Specifies the model time step [s].
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`Tstep <suews:Tstep>`
+  Dimensionality Remarks: Scalar
+use_sw_direct_albedo:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+veg_contact_fraction_const:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+veg_fsd_const:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+veg_ssa_lw:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+veg_ssa_sw:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+veg_type:
+  var_type: state
+  Description: Internal use. Please DO NOT modify
+  Dimensionality: '0'
+  SUEWS-related variables: None
+  Dimensionality Remarks: Scalar
+waterdist:
+  var_type: state
+  Description: Fraction of water redistribution
+  Dimensionality: (8, 6)
+  SUEWS-related variables: :option:`ToBSoil <suews:ToBSoil>`, :option:`ToBldgs <suews:ToBldgs>`,
+    :option:`ToDecTr <suews:ToDecTr>`, :option:`ToEveTr <suews:ToEveTr>`, :option:`ToGrass
+    <suews:ToGrass>`, :option:`ToPaved <suews:ToPaved>`, :option:`ToRunoff <suews:ToRunoff>`,
+    :option:`ToSoilStore <suews:ToSoilStore>`, :option:`ToWater <suews:ToWater>`
+  Dimensionality Remarks: "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,\
+    \ `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently\
+    \ NOT used)}\n\n        6: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,\
+    \ `suews:Grass`, `suews:BSoil`}"
+  path_loading:
+  - WithinGridPavedCode: ToPaved
+    WithinGridBldgsCode: ToPaved
+    WithinGridEveTrCode: ToPaved
+    WithinGridDecTrCode: ToPaved
+    WithinGridGrassCode: ToPaved
+    WithinGridUnmanBSoilCode: ToPaved
+  - WithinGridPavedCode: ToBldgs
+    WithinGridBldgsCode: ToBldgs
+    WithinGridEveTrCode: ToBldgs
+    WithinGridDecTrCode: ToBldgs
+    WithinGridGrassCode: ToBldgs
+    WithinGridUnmanBSoilCode: ToBldgs
+  - WithinGridPavedCode: ToEveTr
+    WithinGridBldgsCode: ToEveTr
+    WithinGridEveTrCode: ToEveTr
+    WithinGridDecTrCode: ToEveTr
+    WithinGridGrassCode: ToEveTr
+    WithinGridUnmanBSoilCode: ToEveTr
+  - WithinGridPavedCode: ToDecTr
+    WithinGridBldgsCode: ToDecTr
+    WithinGridEveTrCode: ToDecTr
+    WithinGridDecTrCode: ToDecTr
+    WithinGridGrassCode: ToDecTr
+    WithinGridUnmanBSoilCode: ToDecTr
+  - WithinGridPavedCode: ToGrass
+    WithinGridBldgsCode: ToGrass
+    WithinGridEveTrCode: ToGrass
+    WithinGridDecTrCode: ToGrass
+    WithinGridGrassCode: ToGrass
+    WithinGridUnmanBSoilCode: ToGrass
+  - WithinGridPavedCode: ToBSoil
+    WithinGridBldgsCode: ToBSoil
+    WithinGridEveTrCode: ToBSoil
+    WithinGridDecTrCode: ToBSoil
+    WithinGridGrassCode: ToBSoil
+    WithinGridUnmanBSoilCode: ToBSoil
+  - WithinGridPavedCode: ToWater
+    WithinGridBldgsCode: ToWater
+    WithinGridEveTrCode: ToWater
+    WithinGridDecTrCode: ToWater
+    WithinGridGrassCode: ToWater
+    WithinGridUnmanBSoilCode: ToWater
+  - WithinGridPavedCode:
+    - ToRunoff
+    - ToSoilStore
+    WithinGridBldgsCode:
+    - ToRunoff
+    - ToSoilStore
+    WithinGridEveTrCode:
+    - ToRunoff
+    - ToSoilStore
+    WithinGridDecTrCode:
+    - ToRunoff
+    - ToSoilStore
+    WithinGridGrassCode:
+    - ToRunoff
+    - ToSoilStore
+    WithinGridUnmanBSoilCode:
+    - ToRunoff
+    - ToSoilStore
+waterusemethod:
+  var_type: state
+  Description: Defines how external water use is calculated.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`WaterUseMethod <suews:WaterUseMethod>`
+  Dimensionality Remarks: Scalar
+wetthresh_surf:
+  var_type: state
+  Description: Depth of water which determines whether evaporation occurs from a partially
+    wet or completely wet surface [mm].
+  Dimensionality: (7,)
+  SUEWS-related variables: :option:`WetThreshold <suews:WetThreshold>`
+  Dimensionality Remarks: '7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`,
+    `suews:Grass`, `suews:BSoil`, `suews:Water`}'
+  path_loading:
+    Code_Paved: WetThreshold
+    Code_Bldgs: WetThreshold
+    Code_EveTr: WetThreshold
+    Code_DecTr: WetThreshold
+    Code_Grass: WetThreshold
+    Code_Bsoil: WetThreshold
+    Code_Water: WetThreshold
+wuprofa_24hr:
+  var_type: state
+  Description: Hourly profile values used in automatic irrigation.
+  Dimensionality: (24, 2)
+  SUEWS-related variables: :option:`WaterUseProfAutoWD <suews:WaterUseProfAutoWD>`,
+    :option:`WaterUseProfAutoWE <suews:WaterUseProfAutoWE>`
+  Dimensionality Remarks: "24: hours of a day\n\n        2: {Weekday, Weekend}"
+  path_loading:
+    WaterUseProfAutoWD: ':'
+    WaterUseProfAutoWE: ':'
+wuprofm_24hr:
+  var_type: state
+  Description: Hourly profile values used in manual irrigation.
+  Dimensionality: (24, 2)
+  SUEWS-related variables: :option:`WaterUseProfManuWD <suews:WaterUseProfManuWD>`,
+    :option:`WaterUseProfManuWE <suews:WaterUseProfManuWE>`
+  Dimensionality Remarks: "24: hours of a day\n\n        2: {Weekday, Weekend}"
+  path_loading:
+    WaterUseProfManuWD: ':'
+    WaterUseProfManuWE: ':'
+z:
+  var_type: state
+  Description: Measurement height [m] for all atmospheric forcing variables set in
+    `SSss_YYYY_data_tt.txt`.
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`z <suews:z>`
+  Dimensionality Remarks: Scalar
+  path_loading: z
+z0m_in:
+  var_type: state
+  Description: Roughness length for momentum [m]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`z0 <suews:z0>`
+  Dimensionality Remarks: Scalar
+  path_loading: z0
+zdm_in:
+  var_type: state
+  Description: Zero-plane displacement [m]
+  Dimensionality: '0'
+  SUEWS-related variables: :option:`zd <suews:zd>`
+  Dimensionality Remarks: Scalar
+  path_loading: zd
+iy:
+  var_type: forcing
+  Description: Year [YYYY]
+id:
+  var_type: forcing
+  Description: Day of year [DOY]
+it:
+  var_type: forcing
+  Description: Hour [H]
+imin:
+  var_type: forcing
+  Description: Minute [M]
+qn:
+  var_type: forcing
+  Description: Net all-wave radiation [W |m^-2|] (Required if `NetRadiationMethod`
+    = 0.)
+qh:
+  var_type: forcing
+  Description: Sensible heat flux [W |m^-2|]
+qe:
+  var_type: forcing
+  Description: Latent heat flux [W |m^-2|]
+qs:
+  var_type: forcing
+  Description: Storage heat flux [W |m^-2|]
+qf:
+  var_type: forcing
+  Description: Anthropogenic heat flux [W |m^-2|]
+U:
+  var_type: forcing
+  Description: Wind speed [m s-1] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+RH:
+  var_type: forcing
+  Description: Relative Humidity [%] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+Tair:
+  var_type: forcing
+  Description: "Air temperature [\xB0C] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)"
+pres:
+  var_type: forcing
+  Description: Barometric pressure [kPa] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+rain:
+  var_type: forcing
+  Description: Rainfall [mm] (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+kdown:
+  var_type: forcing
+  Description: Incoming shortwave radiation [W |m^-2|] Must be > 0 W |m^-2|.
+snow:
+  var_type: forcing
+  Description: "Snow cover fraction (0 \u2013 1) [-] (Required if `SnowUse` = 1)"
+ldown:
+  var_type: forcing
+  Description: Incoming longwave radiation [W |m^-2|]
+fcld:
+  var_type: forcing
+  Description: Cloud fraction [tenths]
+Wuh:
+  var_type: forcing
+  Description: External water use [|m^3|]
+xsmd:
+  var_type: forcing
+  Description: Observed soil moisture [|m^3| |m^-3|] or [kg |kg^-1|]
+lai:
+  var_type: forcing
+  Description: Observed leaf area index [|m^-2| |m^-2|]
+kdiff:
+  var_type: forcing
+  Description: Diffuse radiation [W |m^-2|] |Recmd| if `SOLWEIGUse` = 1
+kdir:
+  var_type: forcing
+  Description: Direct radiation [W |m^-2|] |Recmd| if `SOLWEIGUse` = 1
+wdir:
+  var_type: forcing
+  Description: "Wind direction [\xB0] |NotAvail|"
+isec:
+  var_type: forcing
+  Description: Second [S]
