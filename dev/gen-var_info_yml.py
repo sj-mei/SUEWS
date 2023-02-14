@@ -21,17 +21,17 @@ for p_fn_csv in p_dir_csv.glob("*.csv"):
 df_var_info = (
     pd.concat(
         dict_df_var_info,
-        names=["var_type"],
+        names=["type"],
         # ignore_index=True,
     )
     .reset_index()
-    .set_index(["variable", "var_type"])
+    .set_index(["variable", "type"])
     .drop(columns="level_1")
     .rename(index=lambda x: x.replace("df_", ""))
-    .reset_index("var_type")
+    .reset_index("type")
 )
-# p_fn_csv = Path("../docs/source/proc_var_info/df_state.csv")
-# df_var_info = pd.read_csv(p_fn_csv)
+
+# debugging info: show all keys with multiple values
 for var in df_var_info.index.unique():
     len_var = df_var_info.loc[var].shape
     if len(len_var) > 1:
@@ -54,24 +54,55 @@ with open(p_fn_json, "r") as json_file:
 yaml_data = {}
 for key in df_var_info.index.unique():
     print(key)
+
     try:
-        df_var = (
-            df_var_info.loc[key]
-            .dropna(how="all", axis=1)
-            .drop_duplicates()
-        )
-        if df_var['var_type'][0] == 'output':
-            df_var=df_var.apply(lambda x: x.dropna().unique())
+        df_var = df_var_info.loc[key].dropna(how="all", axis=1).drop_duplicates()
+        if df_var["type"][0] == "output":
+            df_var = df_var.apply(lambda x: x.dropna().unique())
             # if length of unique values is 1, then reduce to a scalar
-            df_var=df_var.apply(lambda x: x[0] if len(x)==1 else x.tolist())
+            df_var = df_var.apply(lambda x: x[0] if len(x) == 1 else x.tolist())
 
         print(df_var)
         dict_var = df_var.to_dict()
     except ValueError:
         dict_var = df_var_info.loc[key].dropna().to_dict()
-    yaml_data[key] = dict_var
+    # replace all keys to lower case
+    yaml_data[key] = {k.lower(): v for k, v in dict_var.items()}
     if key in json_data:
         yaml_data[key]["path_loading"] = json_data[key]
+
+# re-organise the yaml data
+# merge groups under the key 'type'
+# remove the key 'group' from the sub-keys
+for k, v in yaml_data.items():
+    dict_var = v
+    if "group" in dict_var:
+        dict_var["type"] = {"output": dict_var["group"]}
+        del dict_var["group"]
+    else:
+        dict_var["type"] = {"input": dict_var["type"]}
+
+    # rename the key 'dimensionality' to 'data dimensions':
+    if "dimensionality" in dict_var:
+        dict_var["data dimensions"] = [
+            dict_var["dimensionality"],
+            {"remarks": dict_var["dimensionality remarks"]},
+        ]
+        del dict_var["dimensionality"]
+        del dict_var["dimensionality remarks"]
+
+    # add a key 'scheme' to setting-related variables
+    if "physics scheme" not in dict_var and "input" in dict_var["type"]:
+        if "state" in dict_var["type"]["input"]:
+            dict_var["physics scheme"] = {
+                "scheme to add": [
+                    "code 1",
+                    "code 2",
+                ],
+            }
+
+    # write the data back to the yaml_data
+    yaml_data[k] = dict_var
 
 
 # Write the YAML data to a file
@@ -82,3 +113,8 @@ with open("var_info.yml", "w") as yaml_file:
         default_flow_style=False,
         sort_keys=False,
     )
+# %%
+yaml_data[key]
+# %%
+sorted(yaml_data)
+# %%
