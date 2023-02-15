@@ -1437,7 +1437,7 @@ ah_min:
   suews-related variables:
     :option:`AHMin_WD <suews:AHMin_WD>`, :option:`AHMin_WE
     <suews:AHMin_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - AHMin_WD
       - AHMin_WE
@@ -1455,7 +1455,7 @@ ah_slope_cooling:
   suews-related variables:
     :option:`AHSlope_Cooling_WD <suews:AHSlope_Cooling_WD>`,
     :option:`AHSlope_Cooling_WE <suews:AHSlope_Cooling_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - AHSlope_Cooling_WD
       - AHSlope_Cooling_WE
@@ -1473,7 +1473,7 @@ ah_slope_heating:
   suews-related variables:
     :option:`AHSlope_Heating_WD <suews:AHSlope_Heating_WD>`,
     :option:`AHSlope_Heating_WE <suews:AHSlope_Heating_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - AHSlope_Heating_WD
       - AHSlope_Heating_WE
@@ -1491,7 +1491,7 @@ ahprof_24hr:
   suews-related variables:
     :option:`EnergyUseProfWD <suews:EnergyUseProfWD>`, :option:`EnergyUseProfWE
     <suews:EnergyUseProfWE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       EnergyUseProfWD: ":"
       EnergyUseProfWE: ":"
@@ -1555,7 +1555,7 @@ alb:
     input: state
   description: Effective surface albedo (middle of the day value) for summertime.
   suews-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
-  path_loading:
+  loading path:
     Code_Paved: AlbedoMax
     Code_Bldgs: AlbedoMax
     Code_EveTr: AlbedoMax
@@ -1613,7 +1613,7 @@ albmax_dectr:
     input: state
   description: Effective surface albedo (middle of the day value) for summertime.
   suews-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
-  path_loading:
+  loading path:
     Code_DecTr: AlbedoMax
   data dimensions:
     - "0"
@@ -1627,7 +1627,7 @@ albmax_evetr:
     input: state
   description: Effective surface albedo (middle of the day value) for summertime.
   suews-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
-  path_loading:
+  loading path:
     Code_EveTr: AlbedoMax
   data dimensions:
     - "0"
@@ -1641,7 +1641,7 @@ albmax_grass:
     input: state
   description: Effective surface albedo (middle of the day value) for summertime.
   suews-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
-  path_loading:
+  loading path:
     Code_Grass: AlbedoMax
   data dimensions:
     - "0"
@@ -1657,7 +1657,7 @@ albmin_dectr:
     Effective surface albedo (middle of the day value) for wintertime (not
     including snow).
   suews-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
-  path_loading:
+  loading path:
     Code_DecTr: AlbedoMin
   data dimensions:
     - "0"
@@ -1673,7 +1673,7 @@ albmin_evetr:
     Effective surface albedo (middle of the day value) for wintertime (not
     including snow).
   suews-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
-  path_loading:
+  loading path:
     Code_EveTr: AlbedoMin
   data dimensions:
     - "0"
@@ -1689,7 +1689,7 @@ albmin_grass:
     Effective surface albedo (middle of the day value) for wintertime (not
     including snow).
   suews-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
-  path_loading:
+  loading path:
     Code_Grass: AlbedoMin
   data dimensions:
     - "0"
@@ -1705,7 +1705,7 @@ alpha_bioco2:
     The mean apparent ecosystem quantum. Represents the initial slope of
     the light-response curve.
   suews-related variables: :option:`alpha <suews:alpha>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: alpha
     Code_DecTr:
@@ -1724,7 +1724,7 @@ alpha_enh_bioco2:
     input: state
   description: Part of the `alpha` coefficient related to the fraction of vegetation.
   suews-related variables: :option:`alpha_enh <suews:alpha_enh>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: alpha_enh
     Code_DecTr:
@@ -1743,7 +1743,7 @@ alt:
     input: state
   description: Altitude of grids [m].
   suews-related variables: :option:`Alt <suews:Alt>`
-  path_loading: Alt
+  loading path: Alt
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -1758,7 +1758,7 @@ baset:
     "Base Temperature for initiating growing degree days (GDD) for leaf\
     \ growth. [\xB0C]"
   suews-related variables: :option:`BaseT <suews:BaseT>`
-  path_loading:
+  loading path:
     Code_EveTr: BaseT
     Code_DecTr: BaseT
     Code_Grass: BaseT
@@ -1776,7 +1776,7 @@ baset_cooling:
   suews-related variables:
     :option:`TCritic_Cooling_WD <suews:TCritic_Cooling_WD>`,
     :option:`TCritic_Cooling_WE <suews:TCritic_Cooling_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - TCritic_Cooling_WD
       - TCritic_Cooling_WE
@@ -1792,7 +1792,7 @@ baset_hc:
     input: state
   description: "Base temperature for heating degree days [\xB0C]"
   suews-related variables: :option:`BaseT_HC <suews:BaseT_HC>`
-  path_loading:
+  loading path:
     AnthropogenicCode: BaseT_HC
   data dimensions:
     - "0"
@@ -1808,7 +1808,7 @@ baset_heating:
   suews-related variables:
     :option:`TCritic_Heating_WD <suews:TCritic_Heating_WD>`,
     :option:`TCritic_Heating_WE <suews:TCritic_Heating_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - TCritic_Heating_WD
       - TCritic_Heating_WE
@@ -1826,7 +1826,7 @@ basete:
     "Base temperature for initiating sensesance degree days (SDD) for leaf\
     \ off. [\xB0C]"
   suews-related variables: :option:`BaseTe <suews:BaseTe>`
-  path_loading:
+  loading path:
     Code_EveTr: BaseTe
     Code_DecTr: BaseTe
     Code_Grass: BaseTe
@@ -1856,7 +1856,7 @@ beta_bioco2:
     The light-saturated gross photosynthesis of the canopy. [umol |m^-2|
     |s^-1| ]
   suews-related variables: :option:`beta <suews:beta>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: beta
     Code_DecTr:
@@ -1875,7 +1875,7 @@ beta_enh_bioco2:
     input: state
   description: Part of the `beta` coefficient related to the fraction of vegetation.
   suews-related variables: :option:`beta_enh <suews:beta_enh>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: beta_enh
     Code_DecTr:
@@ -1894,7 +1894,7 @@ bldgh:
     input: state
   description: Mean building height [m]
   suews-related variables: :option:`H_Bldgs <suews:H_Bldgs>`
-  path_loading: H_Bldgs
+  loading path: H_Bldgs
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -1907,7 +1907,7 @@ capmax_dec:
     input: state
   description: Maximum water storage capacity for upper surfaces (i.e. canopy)
   suews-related variables: :option:`StorageMax <suews:StorageMax>`
-  path_loading:
+  loading path:
     Code_DecTr: StorageMax
   data dimensions:
     - "0"
@@ -1921,7 +1921,7 @@ capmin_dec:
     input: state
   description: Minimum water storage capacity for upper surfaces (i.e. canopy).
   suews-related variables: :option:`StorageMin <suews:StorageMin>`
-  path_loading:
+  loading path:
     Code_DecTr: StorageMin
   data dimensions:
     - "0"
@@ -1935,7 +1935,7 @@ chanohm:
     input: state
   description: Bulk transfer coefficient for this surface to use in AnOHM [-]
   suews-related variables: :option:`AnOHM_Ch <suews:AnOHM_Ch>`
-  path_loading:
+  loading path:
     Code_Paved: AnOHM_Ch
     Code_Bldgs: AnOHM_Ch
     Code_EveTr: AnOHM_Ch
@@ -1957,7 +1957,7 @@ co2pointsource:
     input: state
   description: CO2 emission factor [kg |km^-1|]
   suews-related variables: :option:`CO2PointSource <suews:CO2PointSource>`
-  path_loading:
+  loading path:
     AnthropogenicCode: CO2PointSource
   data dimensions:
     - "0"
@@ -1971,7 +1971,7 @@ cpanohm:
     input: state
   description: Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]
   suews-related variables: :option:`AnOHM_Cp <suews:AnOHM_Cp>`
-  path_loading:
+  loading path:
     Code_Paved: AnOHM_Cp
     Code_Bldgs: AnOHM_Cp
     Code_EveTr: AnOHM_Cp
@@ -1993,7 +1993,7 @@ crwmax:
     input: state
   description: Maximum water holding capacity of snow [mm]
   suews-related variables: :option:`CRWMax <suews:CRWMax>`
-  path_loading:
+  loading path:
     SnowCode: CRWMax
   data dimensions:
     - "0"
@@ -2007,7 +2007,7 @@ crwmin:
     input: state
   description: Minimum water holding capacity of snow [mm]
   suews-related variables: :option:`CRWMin <suews:CRWMin>`
-  path_loading:
+  loading path:
     SnowCode: CRWMin
   data dimensions:
     - "0"
@@ -2025,7 +2025,7 @@ daywat:
     <suews:DayWat(2)>`, :option:`DayWat(3) <suews:DayWat(3)>`, :option:`DayWat(4)
     <suews:DayWat(4)>`, :option:`DayWat(5) <suews:DayWat(5)>`, :option:`DayWat(6)
     <suews:DayWat(6)>`, :option:`DayWat(7) <suews:DayWat(7)>`
-  path_loading:
+  loading path:
     IrrigationCode:
       - DayWat(1)
       - DayWat(2)
@@ -2050,7 +2050,7 @@ daywatper:
     <suews:DayWatPer(2)>`, :option:`DayWatPer(3) <suews:DayWatPer(3)>`, :option:`DayWatPer(4)
     <suews:DayWatPer(4)>`, :option:`DayWatPer(5) <suews:DayWatPer(5)>`, :option:`DayWatPer(6)
     <suews:DayWatPer(6)>`, :option:`DayWatPer(7) <suews:DayWatPer(7)>`
-  path_loading:
+  loading path:
     IrrigationCode:
       - DayWatPer(1)
       - DayWatPer(2)
@@ -2083,7 +2083,7 @@ dectreeh:
     input: state
   description: Mean height of deciduous trees [m]
   suews-related variables: :option:`H_DecTr <suews:H_DecTr>`
-  path_loading: H_DecTr
+  loading path: H_DecTr
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2144,7 +2144,7 @@ drainrt:
     input: state
   description: Drainage rate of bucket for LUMPS [mm |h^-1|]
   suews-related variables: :option:`LUMPS_DrRate <suews:LUMPS_DrRate>`
-  path_loading: LUMPS_DrRate
+  loading path: LUMPS_DrRate
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2157,7 +2157,7 @@ ef_umolco2perj:
     input: state
   description: Emission factor for fuels used for building heating.
   suews-related variables: :option:`EF_umolCO2perJ <suews:EF_umolCO2perJ>`
-  path_loading:
+  loading path:
     AnthropogenicCode: EF_umolCO2perJ
   data dimensions:
     - "0"
@@ -2171,7 +2171,7 @@ emis:
     input: state
   description: Effective surface emissivity.
   suews-related variables: :option:`Emissivity <suews:Emissivity>`
-  path_loading:
+  loading path:
     Code_Paved: Emissivity
     Code_Bldgs: Emissivity
     Code_EveTr: Emissivity
@@ -2205,7 +2205,7 @@ enddls:
     input: state
   description: End of the day light savings [DOY]
   suews-related variables: :option:`EndDLS <suews:EndDLS>`
-  path_loading: EndDLS
+  loading path: EndDLS
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2218,7 +2218,7 @@ enef_v_jkm:
     input: state
   description: Emission factor for heat [J k |m^-1| ].
   suews-related variables: :option:`EnEF_v_Jkm <suews:EnEF_v_Jkm>`
-  path_loading:
+  loading path:
     AnthropogenicCode: EnEF_v_Jkm
   data dimensions:
     - "0"
@@ -2244,7 +2244,7 @@ evetreeh:
     input: state
   description: Mean height of evergreen trees [m]
   suews-related variables: :option:`H_EveTr <suews:H_EveTr>`
-  path_loading: H_EveTr
+  loading path: H_EveTr
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2257,7 +2257,7 @@ faibldg:
     input: state
   description: Frontal area index for buildings [-]
   suews-related variables: :option:`FAI_Bldgs <suews:FAI_Bldgs>`
-  path_loading: FAI_Bldgs
+  loading path: FAI_Bldgs
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2270,7 +2270,7 @@ faidectree:
     input: state
   description: Frontal area index for deciduous trees [-]
   suews-related variables: :option:`FAI_DecTr <suews:FAI_DecTr>`
-  path_loading: FAI_DecTr
+  loading path: FAI_DecTr
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2283,7 +2283,7 @@ faievetree:
     input: state
   description: Frontal area index for evergreen trees [-]
   suews-related variables: :option:`FAI_EveTr <suews:FAI_EveTr>`
-  path_loading: FAI_EveTr
+  loading path: FAI_EveTr
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2296,7 +2296,7 @@ faut:
     input: state
   description: Fraction of irrigated area that is irrigated using automated systems
   suews-related variables: :option:`Faut <suews:Faut>`
-  path_loading:
+  loading path:
     IrrigationCode: Faut
   data dimensions:
     - "0"
@@ -2314,7 +2314,7 @@ fcef_v_kgkm:
   suews-related variables:
     :option:`FcEF_v_kgkmWD <suews:FcEF_v_kgkmWD>`, :option:`FcEF_v_kgkmWE
     <suews:FcEF_v_kgkmWE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - FcEF_v_kgkmWD
       - FcEF_v_kgkmWE
@@ -2330,7 +2330,7 @@ flowchange:
     input: state
   description: Difference in input and output flows for water surface [mm |h^-1|]
   suews-related variables: :option:`FlowChange <suews:FlowChange>`
-  path_loading: FlowChange
+  loading path: FlowChange
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2343,7 +2343,7 @@ frfossilfuel_heat:
     input: state
   description: Fraction of fossil fuels used for building heating [-]
   suews-related variables: :option:`FrFossilFuel_Heat <suews:FrFossilFuel_Heat>`
-  path_loading:
+  loading path:
     AnthropogenicCode: FrFossilFuel_Heat
   data dimensions:
     - "0"
@@ -2357,7 +2357,7 @@ frfossilfuel_nonheat:
     input: state
   description: Fraction of fossil fuels used for building energy use [-]
   suews-related variables: :option:`FrFossilFuel_NonHeat <suews:FrFossilFuel_NonHeat>`
-  path_loading:
+  loading path:
     AnthropogenicCode: FrFossilFuel_NonHeat
   data dimensions:
     - "0"
@@ -2371,7 +2371,7 @@ g1:
     input: state
   description: Related to maximum surface conductance [mm |s^-1|]
   suews-related variables: :option:`G1 <suews:G1>`
-  path_loading:
+  loading path:
     CondCode: G1
   data dimensions:
     - "0"
@@ -2385,7 +2385,7 @@ g2:
     input: state
   description: Related to Kdown dependence [W |m^-2|]
   suews-related variables: :option:`G2 <suews:G2>`
-  path_loading:
+  loading path:
     CondCode: G2
   data dimensions:
     - "0"
@@ -2399,7 +2399,7 @@ g3:
     input: state
   description: Related to VPD dependence [units depend on `gsModel`]
   suews-related variables: :option:`G3 <suews:G3>`
-  path_loading:
+  loading path:
     CondCode: G3
   data dimensions:
     - "0"
@@ -2413,7 +2413,7 @@ g4:
     input: state
   description: Related to VPD dependence [units depend on `gsModel`]
   suews-related variables: :option:`G4 <suews:G4>`
-  path_loading:
+  loading path:
     CondCode: G4
   data dimensions:
     - "0"
@@ -2427,7 +2427,7 @@ g5:
     input: state
   description: "Related to temperature dependence [\xB0C]"
   suews-related variables: :option:`G5 <suews:G5>`
-  path_loading:
+  loading path:
     CondCode: G5
   data dimensions:
     - "0"
@@ -2441,7 +2441,7 @@ g6:
     input: state
   description: Related to soil moisture dependence [|mm^-1|]
   suews-related variables: :option:`G6 <suews:G6>`
-  path_loading:
+  loading path:
     CondCode: G6
   data dimensions:
     - "0"
@@ -2457,7 +2457,7 @@ gddfull:
     "The growing degree days (GDD) needed for full capacity of the leaf\
     \ area index (LAI) [\xB0C]."
   suews-related variables: :option:`GDDFull <suews:GDDFull>`
-  path_loading:
+  loading path:
     Code_EveTr: GDDFull
     Code_DecTr: GDDFull
     Code_Grass: GDDFull
@@ -2485,7 +2485,7 @@ gsmodel:
     input: state
   description: Formulation choice for conductance calculation.
   suews-related variables: :option:`gsModel <suews:gsModel>`
-  path_loading:
+  loading path:
     CondCode: gsModel
   data dimensions:
     - "0"
@@ -2501,7 +2501,7 @@ h_maintain:
     water depth to maintain used in automatic irrigation (e.g., ponding
     water due to flooding irrigation in rice crop-field) [mm].
   suews-related variables: :option:`H_maintain <suews:H_maintain>`
-  path_loading:
+  loading path:
     IrrigationCode: H_maintain
   data dimensions:
     - "0"
@@ -2517,7 +2517,7 @@ humactivity_24hr:
   suews-related variables:
     :option:`ActivityProfWD <suews:ActivityProfWD>`, :option:`ActivityProfWE
     <suews:ActivityProfWE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       ActivityProfWD: ":"
       ActivityProfWE: ":"
@@ -2535,7 +2535,7 @@ ie_a:
   suews-related variables:
     :option:`Ie_a1 <suews:Ie_a1>`, :option:`Ie_a2 <suews:Ie_a2>`,
     :option:`Ie_a3 <suews:Ie_a3>`
-  path_loading:
+  loading path:
     IrrigationCode:
       - Ie_a1
       - Ie_a2
@@ -2552,7 +2552,7 @@ ie_end:
     input: state
   description: Day when irrigation ends [DOY]
   suews-related variables: :option:`Ie_end <suews:Ie_end>`
-  path_loading:
+  loading path:
     IrrigationCode: Ie_end
   data dimensions:
     - "0"
@@ -2568,7 +2568,7 @@ ie_m:
   suews-related variables:
     :option:`Ie_m1 <suews:Ie_m1>`, :option:`Ie_m2 <suews:Ie_m2>`,
     :option:`Ie_m3 <suews:Ie_m3>`
-  path_loading:
+  loading path:
     IrrigationCode:
       - Ie_m1
       - Ie_m2
@@ -2585,7 +2585,7 @@ ie_start:
     input: state
   description: Day when irrigation starts [DOY]
   suews-related variables: :option:`Ie_start <suews:Ie_start>`
-  path_loading:
+  loading path:
     IrrigationCode: Ie_start
   data dimensions:
     - "0"
@@ -2599,7 +2599,7 @@ internalwateruse_h:
     input: state
   description: Internal water use [mm |h^-1|]
   suews-related variables: :option:`InternalWaterUse <suews:InternalWaterUse>`
-  path_loading:
+  loading path:
     IrrigationCode: InternalWaterUse
   data dimensions:
     - "0"
@@ -2613,7 +2613,7 @@ irrfracbldgs:
     input: state
   description: Fraction of `Bldgs` that is irrigated [-]
   suews-related variables: :option:`IrrFr_Bldgs <suews:IrrFr_Bldgs>`
-  path_loading: IrrFr_Bldgs
+  loading path: IrrFr_Bldgs
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2626,7 +2626,7 @@ irrfracbsoil:
     input: state
   description: Fraction of `BSoil` that is irrigated [-]
   suews-related variables: :option:`IrrFr_BSoil <suews:IrrFr_BSoil>`
-  path_loading: IrrFr_BSoil
+  loading path: IrrFr_BSoil
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2639,7 +2639,7 @@ irrfracdectr:
     input: state
   description: Fraction of `DecTr` that is irrigated [-]
   suews-related variables: :option:`IrrFr_DecTr <suews:IrrFr_DecTr>`
-  path_loading: IrrFr_DecTr
+  loading path: IrrFr_DecTr
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2652,7 +2652,7 @@ irrfracevetr:
     input: state
   description: Fraction of `EveTr` that is irrigated [-]
   suews-related variables: :option:`IrrFr_EveTr <suews:IrrFr_EveTr>`
-  path_loading: IrrFr_EveTr
+  loading path: IrrFr_EveTr
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2665,7 +2665,7 @@ irrfracgrass:
     input: state
   description: Fraction of `Grass` that is irrigated [-]
   suews-related variables: :option:`IrrFr_Grass <suews:IrrFr_Grass>`
-  path_loading: IrrFr_Grass
+  loading path: IrrFr_Grass
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2678,7 +2678,7 @@ irrfracpaved:
     input: state
   description: Fraction of `Paved` that is irrigated [-]
   suews-related variables: :option:`IrrFr_Paved <suews:IrrFr_Paved>`
-  path_loading: IrrFr_Paved
+  loading path: IrrFr_Paved
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2691,7 +2691,7 @@ irrfracwater:
     input: state
   description: Fraction of `Water` that is irrigated [-]
   suews-related variables: :option:`IrrFr_Water <suews:IrrFr_Water>`
-  path_loading: IrrFr_Water
+  loading path: IrrFr_Water
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2704,7 +2704,7 @@ kkanohm:
     input: state
   description: Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]
   suews-related variables: :option:`AnOHM_Kk <suews:AnOHM_Kk>`
-  path_loading:
+  loading path:
     Code_Paved: AnOHM_Kk
     Code_Bldgs: AnOHM_Kk
     Code_EveTr: AnOHM_Kk
@@ -2726,7 +2726,7 @@ kmax:
     input: state
   description: Maximum incoming shortwave radiation [W |m^-2|]
   suews-related variables: :option:`Kmax <suews:Kmax>`
-  path_loading:
+  loading path:
     CondCode: Kmax
   data dimensions:
     - "0"
@@ -2766,7 +2766,7 @@ laimax:
     input: state
   description: full leaf-on summertime value
   suews-related variables: :option:`LAIMax <suews:LAIMax>`
-  path_loading:
+  loading path:
     Code_EveTr: LAIMax
     Code_DecTr: LAIMax
     Code_Grass: LAIMax
@@ -2782,7 +2782,7 @@ laimin:
     input: state
   description: leaf-off wintertime value
   suews-related variables: :option:`LAIMin <suews:LAIMin>`
-  path_loading:
+  loading path:
     Code_EveTr: LAIMin
     Code_DecTr: LAIMin
     Code_Grass: LAIMin
@@ -2801,7 +2801,7 @@ laipower:
     :option:`LeafGrowthPower1 <suews:LeafGrowthPower1>`, :option:`LeafGrowthPower2
     <suews:LeafGrowthPower2>`, :option:`LeafOffPower1 <suews:LeafOffPower1>`, :option:`LeafOffPower2
     <suews:LeafOffPower2>`
-  path_loading:
+  loading path:
     Code_EveTr:
       - LeafGrowthPower1
       - LeafGrowthPower2
@@ -2831,7 +2831,7 @@ laitype:
     input: state
   description: LAI calculation choice.
   suews-related variables: :option:`LAIEq <suews:LAIEq>`
-  path_loading:
+  loading path:
     Code_EveTr: LAIEq
     Code_DecTr: LAIEq
     Code_Grass: LAIEq
@@ -2847,7 +2847,7 @@ lat:
     input: state
   description: Latitude [deg].
   suews-related variables: :option:`lat <suews:lat>`
-  path_loading: lat
+  loading path: lat
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2860,7 +2860,7 @@ lng:
     input: state
   description: longitude [deg]
   suews-related variables: :option:`lng <suews:lng>`
-  path_loading: lng
+  loading path: lng
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -2873,7 +2873,7 @@ maxconductance:
     input: state
   description: The maximum conductance of each vegetation or surface type. [mm |s^-1|]
   suews-related variables: :option:`MaxConductance <suews:MaxConductance>`
-  path_loading:
+  loading path:
     Code_EveTr: MaxConductance
     Code_DecTr: MaxConductance
     Code_Grass: MaxConductance
@@ -2889,7 +2889,7 @@ maxfcmetab:
     input: state
   description: Maximum (day) CO2 from human metabolism. [W |m^-2|]
   suews-related variables: :option:`MaxFCMetab <suews:MaxFCMetab>`
-  path_loading:
+  loading path:
     AnthropogenicCode: MaxFCMetab
   data dimensions:
     - "0"
@@ -2903,7 +2903,7 @@ maxqfmetab:
     input: state
   description: Maximum value for human heat emission. [W |m^-2|]
   suews-related variables: :option:`MaxQFMetab <suews:MaxQFMetab>`
-  path_loading:
+  loading path:
     AnthropogenicCode: MaxQFMetab
   data dimensions:
     - "0"
@@ -2919,7 +2919,7 @@ min_res_bioco2:
     Minimum soil respiration rate (for cold-temperature limit) [umol |m^-2|
     |s^-1|].
   suews-related variables: :option:`min_respi <suews:min_respi>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: min_respi
     Code_DecTr:
@@ -2938,7 +2938,7 @@ minfcmetab:
     input: state
   description: Minimum (night) CO2 from human metabolism. [W |m^-2|]
   suews-related variables: :option:`MinFCMetab <suews:MinFCMetab>`
-  path_loading:
+  loading path:
     AnthropogenicCode: MinFCMetab
   data dimensions:
     - "0"
@@ -2952,7 +2952,7 @@ minqfmetab:
     input: state
   description: Minimum value for human heat emission. [W |m^-2|]
   suews-related variables: :option:`MinQFMetab <suews:MinQFMetab>`
-  path_loading:
+  loading path:
     AnthropogenicCode: MinQFMetab
   data dimensions:
     - "0"
@@ -3002,7 +3002,7 @@ narp_emis_snow:
     input: state
   description: Effective surface emissivity.
   suews-related variables: :option:`Emissivity <suews:Emissivity>`
-  path_loading:
+  loading path:
     SnowCode: Emissivity
   data dimensions:
     - "0"
@@ -3016,7 +3016,7 @@ narp_trans_site:
     input: state
   description: Atmospheric transmissivity for NARP [-]
   suews-related variables: :option:`NARP_Trans <suews:NARP_Trans>`
-  path_loading: NARP_Trans
+  loading path: NARP_Trans
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -3043,7 +3043,7 @@ ohm_coef:
   suews-related variables:
     :option:`a1 <suews:a1>`, :option:`a2 <suews:a2>`, :option:`a3
     <suews:a3>`
-  path_loading:
+  loading path:
     Code_Paved:
       OHMCode_SummerWet:
         - a1
@@ -3198,7 +3198,7 @@ ohm_threshsw:
     "Temperature threshold determining whether summer/winter OHM coefficients\
     \ are applied [\xB0C]"
   suews-related variables: :option:`OHMThresh_SW <suews:OHMThresh_SW>`
-  path_loading:
+  loading path:
     Code_Paved: OHMThresh_SW
     Code_Bldgs: OHMThresh_SW
     Code_EveTr: OHMThresh_SW
@@ -3223,7 +3223,7 @@ ohm_threshwd:
     Soil moisture threshold determining whether wet/dry OHM coefficients
     are applied [-]
   suews-related variables: :option:`OHMThresh_WD <suews:OHMThresh_WD>`
-  path_loading:
+  loading path:
     Code_Paved: OHMThresh_WD
     Code_Bldgs: OHMThresh_WD
     Code_EveTr: OHMThresh_WD
@@ -3260,7 +3260,7 @@ pipecapacity:
     input: state
   description: Storage capacity of pipes [mm]
   suews-related variables: :option:`PipeCapacity <suews:PipeCapacity>`
-  path_loading: PipeCapacity
+  loading path: PipeCapacity
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -3273,7 +3273,7 @@ popdensdaytime:
     input: state
   description: Daytime population density (i.e. workers, tourists) [people |ha^-1|]
   suews-related variables: :option:`PopDensDay <suews:PopDensDay>`
-  path_loading:
+  loading path:
     - PopDensDay
     - PopDensDay
   data dimensions:
@@ -3288,7 +3288,7 @@ popdensnighttime:
     input: state
   description: Night-time population density (i.e. residents) [people |ha^-1|]
   suews-related variables: :option:`PopDensNight <suews:PopDensNight>`
-  path_loading: PopDensNight
+  loading path: PopDensNight
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -3303,7 +3303,7 @@ popprof_24hr:
   suews-related variables:
     :option:`PopProfWD <suews:PopProfWD>`, :option:`PopProfWE
     <suews:PopProfWE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       PopProfWD: ":"
       PopProfWE: ":"
@@ -3321,7 +3321,7 @@ pormax_dec:
     full leaf-on summertime value Used only for `DecTr` (can affect roughness
     calculation)
   suews-related variables: :option:`PorosityMax <suews:PorosityMax>`
-  path_loading:
+  loading path:
     Code_DecTr: PorosityMax
   data dimensions:
     - "0"
@@ -3337,7 +3337,7 @@ pormin_dec:
     leaf-off wintertime value Used only for `DecTr` (can affect roughness
     calculation)
   suews-related variables: :option:`PorosityMin <suews:PorosityMin>`
-  path_loading:
+  loading path:
     Code_DecTr: PorosityMin
   data dimensions:
     - "0"
@@ -3363,7 +3363,7 @@ preciplimit:
     input: state
   description: "Temperature limit when precipitation falls as snow [\xB0C]"
   suews-related variables: :option:`PrecipLimSnow <suews:PrecipLimSnow>`
-  path_loading:
+  loading path:
     SnowCode: PrecipLimSnow
   data dimensions:
     - "0"
@@ -3379,7 +3379,7 @@ preciplimitalb:
     Limit for hourly precipitation when the ground is fully covered with
     snow [mm]
   suews-related variables: :option:`PrecipLimAlb <suews:PrecipLimAlb>`
-  path_loading:
+  loading path:
     SnowCode: PrecipLimAlb
   data dimensions:
     - "0"
@@ -3395,7 +3395,7 @@ qf0_beu:
   suews-related variables:
     :option:`QF0_BEU_WD <suews:QF0_BEU_WD>`, :option:`QF0_BEU_WE
     <suews:QF0_BEU_WE>`
-  path_loading:
+  loading path:
     - QF0_BEU_WD
     - QF0_BEU_WE
   data dimensions:
@@ -3410,7 +3410,7 @@ qf_a:
     input: state
   description: Base value for QF calculation.
   suews-related variables: :option:`QF_A_WD <suews:QF_A_WD>`, :option:`QF_A_WE <suews:QF_A_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - QF_A_WD
       - QF_A_WE
@@ -3426,7 +3426,7 @@ qf_b:
     input: state
   description: Parameter related to heating degree days.
   suews-related variables: :option:`QF_B_WD <suews:QF_B_WD>`, :option:`QF_B_WE <suews:QF_B_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - QF_B_WD
       - QF_B_WE
@@ -3442,7 +3442,7 @@ qf_c:
     input: state
   description: Parameter related to heating degree days.
   suews-related variables: :option:`QF_C_WD <suews:QF_C_WD>`, :option:`QF_C_WE <suews:QF_C_WE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       - QF_C_WD
       - QF_C_WE
@@ -3458,7 +3458,7 @@ radmeltfact:
     input: state
   description: Hourly radiation melt factor of snow [mm |w^-1| |h^-1|]
   suews-related variables: :option:`RadMeltFactor <suews:RadMeltFactor>`
-  path_loading:
+  loading path:
     SnowCode: RadMeltFactor
   data dimensions:
     - "0"
@@ -3472,7 +3472,7 @@ raincover:
     input: state
   description: Limit when surface totally covered with water for LUMPS [mm]
   suews-related variables: :option:`LUMPS_Cover <suews:LUMPS_Cover>`
-  path_loading: LUMPS_Cover
+  loading path: LUMPS_Cover
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -3487,7 +3487,7 @@ rainmaxres:
     Maximum water bucket reservoir [mm] Used for LUMPS surface wetness
     control.
   suews-related variables: :option:`LUMPS_MaxRes <suews:LUMPS_MaxRes>`
-  path_loading: LUMPS_MaxRes
+  loading path: LUMPS_MaxRes
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -3500,7 +3500,7 @@ resp_a:
     input: state
   description: Respiration coefficient a.
   suews-related variables: :option:`resp_a <suews:resp_a>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: resp_a
     Code_DecTr:
@@ -3519,7 +3519,7 @@ resp_b:
     input: state
   description: Respiration coefficient b - related to air temperature dependency.
   suews-related variables: :option:`resp_b <suews:resp_b>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: resp_b
     Code_DecTr:
@@ -3566,7 +3566,7 @@ runofftowater:
     Fraction of above-ground runoff flowing to water surface during flooding
     [-]
   suews-related variables: :option:`RunoffToWater <suews:RunoffToWater>`
-  path_loading: RunoffToWater
+  loading path: RunoffToWater
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -3579,7 +3579,7 @@ s1:
     input: state
   description: A parameter related to soil moisture dependence [-]
   suews-related variables: :option:`S1 <suews:S1>`
-  path_loading:
+  loading path:
     CondCode: S1
   data dimensions:
     - "0"
@@ -3593,7 +3593,7 @@ s2:
     input: state
   description: A parameter related to soil moisture dependence [mm]
   suews-related variables: :option:`S2 <suews:S2>`
-  path_loading:
+  loading path:
     CondCode: S2
   data dimensions:
     - "0"
@@ -3607,7 +3607,7 @@ sathydraulicconduct:
     input: state
   description: Hydraulic conductivity for saturated soil [mm |s^-1|]
   suews-related variables: :option:`SatHydraulicCond <suews:SatHydraulicCond>`
-  path_loading:
+  loading path:
     Code_Paved:
       SoilTypeCode: SatHydraulicCond
     Code_Bldgs:
@@ -3637,7 +3637,7 @@ sddfull:
     "The sensesence degree days (SDD) needed to initiate leaf off. [\xB0\
     C]"
   suews-related variables: :option:`SDDFull <suews:SDDFull>`
-  path_loading:
+  loading path:
     Code_EveTr: SDDFull
     Code_DecTr: SDDFull
     Code_Grass: SDDFull
@@ -3657,7 +3657,7 @@ sfr_surf:
     <suews:Fr_Bsoil>`, :option:`Fr_DecTr <suews:Fr_DecTr>`, :option:`Fr_EveTr <suews:Fr_EveTr>`,
     :option:`Fr_Grass <suews:Fr_Grass>`, :option:`Fr_Paved <suews:Fr_Paved>`, :option:`Fr_Water
     <suews:Fr_Water>`
-  path_loading:
+  loading path:
     - Fr_Paved
     - Fr_Bldgs
     - Fr_EveTr
@@ -3703,7 +3703,7 @@ snowalbmax:
     input: state
   description: Effective surface albedo (middle of the day value) for summertime.
   suews-related variables: :option:`AlbedoMax <suews:AlbedoMax>`
-  path_loading:
+  loading path:
     SnowCode: AlbedoMax
   data dimensions:
     - "0"
@@ -3719,7 +3719,7 @@ snowalbmin:
     Effective surface albedo (middle of the day value) for wintertime (not
     including snow).
   suews-related variables: :option:`AlbedoMin <suews:AlbedoMin>`
-  path_loading:
+  loading path:
     SnowCode: AlbedoMin
   data dimensions:
     - "0"
@@ -3751,7 +3751,7 @@ snowdensmax:
     input: state
   description: Maximum snow density [kg |m^-3|]
   suews-related variables: :option:`SnowDensMax <suews:SnowDensMax>`
-  path_loading:
+  loading path:
     SnowCode: SnowDensMax
   data dimensions:
     - "0"
@@ -3765,7 +3765,7 @@ snowdensmin:
     input: state
   description: Fresh snow density [kg |m^-3|]
   suews-related variables: :option:`SnowDensMin <suews:SnowDensMin>`
-  path_loading:
+  loading path:
     SnowCode: SnowDensMin
   data dimensions:
     - "0"
@@ -3799,7 +3799,7 @@ snowlimbldg:
     Limit of the snow water equivalent for snow removal from roads and
     roofs [mm]
   suews-related variables: :option:`SnowLimRemove <suews:SnowLimRemove>`
-  path_loading:
+  loading path:
     Code_Bldgs: SnowLimRemove
   data dimensions:
     - "0"
@@ -3815,7 +3815,7 @@ snowlimpaved:
     Limit of the snow water equivalent for snow removal from roads and
     roofs [mm]
   suews-related variables: :option:`SnowLimRemove <suews:SnowLimRemove>`
-  path_loading:
+  loading path:
     Code_Paved: SnowLimRemove
   data dimensions:
     - "0"
@@ -3849,7 +3849,7 @@ snowpacklimit:
     Limit for the snow water equivalent when snow cover starts to be patchy
     [mm]
   suews-related variables: :option:`SnowLimPatch <suews:SnowLimPatch>`
-  path_loading:
+  loading path:
     Code_Paved: SnowLimPatch
     Code_Bldgs: SnowLimPatch
     Code_EveTr: SnowLimPatch
@@ -3873,7 +3873,7 @@ snowprof_24hr:
   suews-related variables:
     :option:`SnowClearingProfWD <suews:SnowClearingProfWD>`,
     :option:`SnowClearingProfWE <suews:SnowClearingProfWE>`
-  path_loading:
+  loading path:
     SnowClearingProfWD: ":"
     SnowClearingProfWE: ":"
   data dimensions:
@@ -3919,7 +3919,7 @@ soildepth:
     input: state
   description: Depth of soil beneath the surface [mm]
   suews-related variables: :option:`SoilDepth <suews:SoilDepth>`
-  path_loading:
+  loading path:
     Code_Paved:
       SoilTypeCode: SoilDepth
     Code_Bldgs:
@@ -3971,7 +3971,7 @@ soilstorecap_surf:
     input: state
   description: Limit value for `SoilDepth` [mm]
   suews-related variables: :option:`SoilStoreCap <suews:SoilStoreCap>`
-  path_loading:
+  loading path:
     Code_Paved:
       SoilTypeCode: SoilStoreCap
     Code_Bldgs:
@@ -4011,7 +4011,7 @@ startdls:
     input: state
   description: Start of the day light savings [DOY]
   suews-related variables: :option:`StartDLS <suews:StartDLS>`
-  path_loading: StartDLS
+  loading path: StartDLS
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -4046,7 +4046,7 @@ statelimit_surf:
     input: state
   description: Upper limit to the surface state. [mm]
   suews-related variables: :option:`StateLimit <suews:StateLimit>`
-  path_loading:
+  loading path:
     Code_Paved: StateLimit
     Code_Bldgs: StateLimit
     Code_EveTr: StateLimit
@@ -4083,7 +4083,7 @@ storedrainprm:
     :option:`DrainageCoef1 <suews:DrainageCoef1>`, :option:`DrainageCoef2
     <suews:DrainageCoef2>`, :option:`DrainageEq <suews:DrainageEq>`, :option:`StorageMax
     <suews:StorageMax>`, :option:`StorageMin <suews:StorageMin>`
-  path_loading:
+  loading path:
     - Code_Paved: StorageMin
       Code_Bldgs: StorageMin
       Code_EveTr: StorageMin
@@ -4141,7 +4141,7 @@ surfacearea:
     input: state
   description: Area of the grid [ha].
   suews-related variables: :option:`SurfaceArea <suews:SurfaceArea>`
-  path_loading: SurfaceArea
+  loading path: SurfaceArea
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -4166,7 +4166,7 @@ tau_a:
     input: state
   description: Time constant for snow albedo aging in cold snow [-]
   suews-related variables: :option:`tau_a <suews:tau_a>`
-  path_loading:
+  loading path:
     SnowCode: tau_a
   data dimensions:
     - "0"
@@ -4180,7 +4180,7 @@ tau_f:
     input: state
   description: Time constant for snow albedo aging in melting snow [-]
   suews-related variables: :option:`tau_f <suews:tau_f>`
-  path_loading:
+  loading path:
     SnowCode: tau_f
   data dimensions:
     - "0"
@@ -4194,7 +4194,7 @@ tau_r:
     input: state
   description: Time constant for snow density ageing [-]
   suews-related variables: :option:`tau_r <suews:tau_r>`
-  path_loading:
+  loading path:
     SnowCode: tau_r
   data dimensions:
     - "0"
@@ -4208,7 +4208,7 @@ tempmeltfact:
     input: state
   description: Hourly temperature melt factor of snow [mm |K^-1| |h^-1|]
   suews-related variables: :option:`TempMeltFactor <suews:TempMeltFactor>`
-  path_loading:
+  loading path:
     SnowCode: TempMeltFactor
   data dimensions:
     - "0"
@@ -4222,7 +4222,7 @@ th:
     input: state
   description: "Upper air temperature limit [\xB0C]"
   suews-related variables: :option:`TH <suews:TH>`
-  path_loading:
+  loading path:
     CondCode: TH
   data dimensions:
     - "0"
@@ -4236,7 +4236,7 @@ theta_bioco2:
     input: state
   description: The convexity of the curve at light saturation.
   suews-related variables: :option:`theta <suews:theta>`
-  path_loading:
+  loading path:
     Code_EveTr:
       BiogenCO2Code: theta
     Code_DecTr:
@@ -4257,7 +4257,7 @@ timezone:
     Time zone [h] for site relative to UTC (east is positive). This should
     be set according to the times given in the meteorological forcing file(s).
   suews-related variables: :option:`Timezone <suews:Timezone>`
-  path_loading: Timezone
+  loading path: Timezone
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -4270,7 +4270,7 @@ tl:
     input: state
   description: "Lower air temperature limit [\xB0C]"
   suews-related variables: :option:`TL <suews:TL>`
-  path_loading:
+  loading path:
     CondCode: TL
   data dimensions:
     - "0"
@@ -4286,7 +4286,7 @@ trafficrate:
   suews-related variables:
     :option:`TrafficRate_WD <suews:TrafficRate_WD>`, :option:`TrafficRate_WE
     <suews:TrafficRate_WE>`
-  path_loading:
+  loading path:
     - TrafficRate_WD
     - TrafficRate_WE
   data dimensions:
@@ -4301,7 +4301,7 @@ trafficunits:
     input: state
   description: Units for the traffic rate for the study area. Not used in v2018a.
   suews-related variables: :option:`TrafficUnits <suews:TrafficUnits>`
-  path_loading:
+  loading path:
     AnthropogenicCode: TrafficUnits
   data dimensions:
     - "0"
@@ -4317,7 +4317,7 @@ traffprof_24hr:
   suews-related variables:
     :option:`TraffProfWD <suews:TraffProfWD>`, :option:`TraffProfWE
     <suews:TraffProfWE>`
-  path_loading:
+  loading path:
     AnthropogenicCode:
       TraffProfWD: ":"
       TraffProfWE: ":"
@@ -4421,7 +4421,7 @@ waterdist:
     :option:`ToDecTr <suews:ToDecTr>`, :option:`ToEveTr <suews:ToEveTr>`, :option:`ToGrass
     <suews:ToGrass>`, :option:`ToPaved <suews:ToPaved>`, :option:`ToRunoff <suews:ToRunoff>`,
     :option:`ToSoilStore <suews:ToSoilStore>`, :option:`ToWater <suews:ToWater>`
-  path_loading:
+  loading path:
     - WithinGridPavedCode: ToPaved
       WithinGridBldgsCode: ToPaved
       WithinGridEveTrCode: ToPaved
@@ -4512,7 +4512,7 @@ wetthresh_surf:
     Depth of water which determines whether evaporation occurs from a partially
     wet or completely wet surface [mm].
   suews-related variables: :option:`WetThreshold <suews:WetThreshold>`
-  path_loading:
+  loading path:
     Code_Paved: WetThreshold
     Code_Bldgs: WetThreshold
     Code_EveTr: WetThreshold
@@ -4536,7 +4536,7 @@ wuprofa_24hr:
   suews-related variables:
     :option:`WaterUseProfAutoWD <suews:WaterUseProfAutoWD>`,
     :option:`WaterUseProfAutoWE <suews:WaterUseProfAutoWE>`
-  path_loading:
+  loading path:
     WaterUseProfAutoWD: ":"
     WaterUseProfAutoWE: ":"
   data dimensions:
@@ -4553,7 +4553,7 @@ wuprofm_24hr:
   suews-related variables:
     :option:`WaterUseProfManuWD <suews:WaterUseProfManuWD>`,
     :option:`WaterUseProfManuWE <suews:WaterUseProfManuWE>`
-  path_loading:
+  loading path:
     WaterUseProfManuWD: ":"
     WaterUseProfManuWE: ":"
   data dimensions:
@@ -4570,7 +4570,7 @@ z:
     Measurement height [m] for all atmospheric forcing variables set in
     `SSss_YYYY_data_tt.txt`.
   suews-related variables: :option:`z <suews:z>`
-  path_loading: z
+  loading path: z
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -4583,7 +4583,7 @@ z0m_in:
     input: state
   description: Roughness length for momentum [m]
   suews-related variables: :option:`z0 <suews:z0>`
-  path_loading: z0
+  loading path: z0
   data dimensions:
     - "0"
     - remarks: Scalar
@@ -4596,7 +4596,7 @@ zdm_in:
     input: state
   description: Zero-plane displacement [m]
   suews-related variables: :option:`zd <suews:zd>`
-  path_loading: zd
+  loading path: zd
   data dimensions:
     - "0"
     - remarks: Scalar

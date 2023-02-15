@@ -69,7 +69,7 @@ for key in df_var_info.index.unique():
     # replace all keys to lower case
     yaml_data[key] = {k.lower(): v for k, v in dict_var.items()}
     if key in json_data:
-        yaml_data[key]["path_loading"] = json_data[key]
+        yaml_data[key]["loading path"] = json_data[key]
 
 # re-organise the yaml data
 # merge groups under the key 'type'
