@@ -24,8 +24,6 @@ from datetime import datetime
 from pathlib import Path
 from time import strptime
 
-import exhale
-import nbsphinx
 import pandas as pd
 import sphinxcontrib.bibtex
 from pybtex.plugin import register_plugin
@@ -139,7 +137,7 @@ release = list_ver[-1]
 # non-false value, then it is used:
 # today = ''
 # Else, today_fmt is used as the format for a strftime call.
-today_fmt = "%Y-%m-%d"
+today_fmt = r"%Y-%m-%d"
 
 html_last_updated_fmt = today_fmt
 
@@ -197,7 +195,7 @@ extensions = [
     "recommonmark",
     "nbsphinx",
     "sphinx.ext.mathjax",
-    "breathe",
+    # "breathe",
     "sphinx_panels",
     "sphinx_last_updated_by_git",
     # 'exhale'
@@ -223,22 +221,22 @@ comments_config = {
 }
 
 
-exhale_args = {
-    # These arguments are required
-    "containmentFolder": "./api",
-    "rootFileName": "library_root.rst",
-    "rootFileTitle": "API",
-    "doxygenStripFromPath": "..",
-    # Suggested optional arguments
-    "createTreeView": True,
-    # TIP: if using the sphinx-bootstrap-theme, you need
-    "treeViewIsBootstrap": True,
-    "exhaleExecutesDoxygen": True,
-    "exhaleUseDoxyfile": True,
-    # "exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
-    #                            GENERATE_HTML  = YES
-    #                            '''
-}
+# exhale_args = {
+#     # These arguments are required
+#     "containmentFolder": "./api",
+#     "rootFileName": "library_root.rst",
+#     "rootFileTitle": "API",
+#     "doxygenStripFromPath": "..",
+#     # Suggested optional arguments
+#     "createTreeView": True,
+#     # TIP: if using the sphinx-bootstrap-theme, you need
+#     "treeViewIsBootstrap": True,
+#     "exhaleExecutesDoxygen": True,
+#     "exhaleUseDoxyfile": True,
+#     # "exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+#     #                            GENERATE_HTML  = YES
+#     #                            '''
+# }
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -576,7 +574,7 @@ my_bracket_style = BracketStyle(
 )
 
 
-@dataclasses.dataclass
+# @dataclasses.dataclass
 class MyReferenceStyle(AuthorYearReferenceStyle):
     bracket_parenthetical: BracketStyle = my_bracket_style
     bracket_textual: BracketStyle = my_bracket_style
