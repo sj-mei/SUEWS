@@ -1,5 +1,10 @@
 # SuPy
 
+This project is now merged into [SUEWS](github.com/UMEP-dev/SUEWS) and will be archived soon.
+
+
+---------
+
 [![Python Version Support Status](https://img.shields.io/pypi/pyversions/supy.svg)](https://pypi.org/project/supy)
 [![Latest Version Status](https://img.shields.io/pypi/v/supy.svg)](https://pypi.org/project/supy)
 [![Downloads](https://pepy.tech/badge/supy)](https://pepy.tech/project/supy)
