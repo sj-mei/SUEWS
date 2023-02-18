@@ -1,6 +1,6 @@
 # SuPy
 
-This project is now merged into [SUEWS](github.com/UMEP-dev/SUEWS) and will be archived soon.
+**This project is now merged into [SUEWS](https://github.com/UMEP-dev/SUEWS) and will be archived soon.**
 
 
 ---------
