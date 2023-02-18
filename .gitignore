@@ -334,7 +334,7 @@ Release/bin/
 Release/*.zip
 supy-driver/wheelhouse/
 test-dev/
-Test/BaseRun/*/SUEWS_V2*
+test/BaseRun/*/SUEWS_V2*
 src/suews/SUEWS_V20*
 src/suews/bin/*
 
@@ -348,14 +348,14 @@ problems.txt
 # local settings
 .vscode/
 log.test
-Test/fortran-notebook/test-fortran.ipynb
+test/fortran-notebook/test-fortran.ipynb
 # Test/BaseRun/2021a/Output/
-Test/code/quick-test.py
+test/code/quick-test.py
 .fortls
 
 # temporary test files
-Test/BaseRun/2021a-gridlayout/
-Test/meg/
+test/BaseRun/2021a-gridlayout/
+test/meg/
 suews_ctrl_ver.f95
 supy-driver/supy_driver/version.py
 wheelhouse/
