@@ -118,3 +118,8 @@ yaml_data[key]
 # %%
 sorted(yaml_data)
 # %%
+import supy as sp
+df_state,df_forcing=sp.load_SampleData()
+# %%
+df_state.shape
+# %%
