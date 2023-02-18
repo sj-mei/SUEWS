@@ -335,8 +335,8 @@ Release/*.zip
 supy-driver/wheelhouse/
 test-dev/
 Test/BaseRun/*/SUEWS_V2*
-SUEWS-SourceCode/SUEWS_V20*
-SUEWS-SourceCode/bin/*
+src/suews/SUEWS_V20*
+src/suews/bin/*
 
 # test diff files
 *.diff.csv
