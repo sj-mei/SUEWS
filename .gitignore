@@ -336,6 +336,7 @@ supy-driver/wheelhouse/
 test-dev/
 test/BaseRun/*/SUEWS_V2*
 src/suews/SUEWS_V20*
+src/Release/
 src/suews/bin/*
 
 # test diff files
