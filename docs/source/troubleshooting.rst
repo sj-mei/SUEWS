@@ -121,17 +121,3 @@ zero in the calculation of water vapour pressure parameterization.
 -  Parameter(s) missing from input files.
 
 See also the error messages provided in problems.txt and warnings.txt
-
-Email list
-~~~~~~~~~~
-
--  SUEWS email list
-
-`https://www.lists.reading.ac.uk/mailman/listinfo/met-suews <https://www.lists.reading.ac.uk/mailman/listinfo/met-suews>`__
-
--  UMEP email list
-
-`https://www.lists.reading.ac.uk/mailman/listinfo/met-umep <https://www.lists.reading.ac.uk/mailman/listinfo/met-umep>`__
-
-
-.. _`UMEP`: http://umep-docs.readthedocs.io/en/latest/index.html
