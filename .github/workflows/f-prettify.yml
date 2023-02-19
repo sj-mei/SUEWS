@@ -12,7 +12,7 @@ on:
   #   tags:        # Array of patterns that match refs/tags.
   #     - v1         # Push events to v1 tag
     paths:       # Push events containing matching files
-      - 'SUEWS-SourceCode/src/*'
+      - 'src/suews/src/*'
       - 'supy-driver/*'
       - '.github/workflows/f-prettify.yml'
 
@@ -60,7 +60,7 @@ jobs:
         make pip
 
     - name: format Fortran code
-      run: fprettify SUEWS-SourceCode/src/*f95 -c .fprettify.yml
+      run: fprettify src/suews/src/*f95 -c .fprettify.yml
 
     # - name: Commit changes
     #   uses: elstudio/actions-js-build/commit@v3
@@ -81,7 +81,7 @@ jobs:
     - name: Add & Commit
       uses: EndBug/add-and-commit@v6.2.0
       with:
-        add: 'SUEWS-SourceCode/src/*f95'
+        add: 'src/suews/src/*f95'
         message: "[GH Actions] fprettify source code"
 
 

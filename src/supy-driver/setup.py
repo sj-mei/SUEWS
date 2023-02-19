@@ -33,7 +33,7 @@ if sysname == "Windows":
         pass
 
 # load SUEWS Fortran source files
-dir_f95 = "../SUEWS-SourceCode/src"
+dir_f95 = "../suews/src"
 path_src = Path(dir_f95)
 path_mod = (path_src.parent / "mod").resolve()
 path_lib = (path_src.parent / "lib").resolve()
