@@ -30,7 +30,7 @@ SUEWS_dir = SUEWS-SourceCode
 
 docs_dir = docs
 
-test_dir= Test
+test_dir= test
 
 release_dir = Release
 
