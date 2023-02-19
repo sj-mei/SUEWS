@@ -1,0 +1,30 @@
+Calling "make" in this directory will run SPARTACUS-Surface on the
+following test input files:
+
+  test_surfaces_in.nc - tests the four surface types (flat, forest,
+    unvegetated urban and vegetated urban) with a simple two-layer
+    canopy
+
+  test_consistency_in.nc - tests the consistency of the forest and
+    urban solvers by running them on an identical forest profile; the
+    fluxes components ought to be the same for these two profiles
+
+  test_empty_layers_in.nc - tests for the correct behaviour in layers
+    where the building or vegetation cover are set to zero, and in
+    those layers the effective building or tree size is also set to
+    zero
+
+  test_nearly_empty_layers_in.nc - validation case for
+    test_empty_layers_in.nc: small but non-zero values for building
+    and vegetation cover, so should be very close to the case when
+    they are actually zero
+
+  test_noscat_in.nc - as test_surfaces_in.nc but with all albedos set
+    to 0 and all emissivities set to 1, in order to more easily test
+    behaviour against analytical results in the case of no scattering
+
+  test_closed_in.nc - tests for "closed" canopies: cases when
+    vegetation fills a forest domain or fills the street in an urban
+    area
+
+The results are written in *_out.nc.
