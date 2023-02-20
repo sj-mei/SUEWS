@@ -1,0 +1,7 @@
+# numpy>=1.21
+# setuptools>=60
+# wheel>=0.31.1
+build
+twine
+pytest
+auditwheel
