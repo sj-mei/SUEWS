@@ -27,6 +27,7 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 # need to be compiled first)
 
 MODULE = supy
+SUEWS_dir = ../suews
 
 
 # install package in dev mode and do pytest
@@ -49,6 +50,10 @@ clean:
 upload:
 	twine upload --skip-existing dist/*whl
 
+# make fortran exe
+suews:
+	$(MAKE) -C $(SUEWS_dir) libdriver; # make SUEWS with the `suews` recipe
+
 # only local testing on mac
 local:
-	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-localtest.toml
+	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-local-test.toml

@@ -265,7 +265,7 @@ LIBSPTCS = libspartacus.a
 ### --- BUILD TARGETS --- ###
 #############################
 
-all: libutil libphys suews
+all: libutil libphys libdriver
 
 help:
 	@echo ${HAVE_NFCONFIG} ${NETCDF_INCLUDE} ${NETCDF_LIB}
@@ -302,7 +302,7 @@ libdriver: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS) $(DRIVER))
 	ar r $(LIBDRIVER) $^
 
 
-suews: libspartacus libdriver exe
+# suews: libspartacus libdriver exe
 
 # special rule for generating version info file
 src/suews_ctrl_ver.f95: force

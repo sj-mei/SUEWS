@@ -26,7 +26,7 @@ endif
 
 MODULE=SUEWS_driver
 
-SUEWS_dir = SUEWS-SourceCode
+SUEWS_dir = src/suews
 
 docs_dir = docs
 
@@ -36,15 +36,15 @@ release_dir = Release
 
 makefile = Makefile.gfortran
 
-SuPy_dir = supy-driver
+supy_dir = src/supy
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 all: driver
 
-# make fortran exe
+# make suews driver library
 suews:
-	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `main` recipe
+	$(MAKE) -C $(SUEWS_dir) libdriver; # make SUEWS library
 	# -rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 # make fortran exe and run test cases
@@ -59,7 +59,7 @@ release: pip
 
 # make supy dist
 driver: suews
-	$(MAKE) -C $(SuPy_dir) test; # make and test supy_driver
+	$(MAKE) -C $(supy_dir) test; # make and test supy_driver
 
 pip:
 	pip install pipreqs
@@ -78,6 +78,6 @@ livehtml:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) -C $(SUEWS_dir) clean
-	$(MAKE) -C $(SuPy_dir) clean
+	$(MAKE) -C $(supy_dir) clean
 	$(MAKE) -C $(release_dir) clean
 	$(MAKE) -C $(docs_dir) clean

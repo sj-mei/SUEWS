@@ -164,6 +164,9 @@ path_exclude_f95 = [
         "suews_c_wrapper.f95",
         "suews_ctrl_sumin.f95",
         "suews_program.f95",
+        "suews_ctrl_init.f95",
+        "suews_ctrl_calculations.f95",
+        "suews_ctrl_translate.f95",
     ]
 ]
 path_other_f95 = list(set(path_all_f95) - set(path_target_f95) - set(path_exclude_f95))

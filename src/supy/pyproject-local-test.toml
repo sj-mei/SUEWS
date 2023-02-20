@@ -10,7 +10,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "supy"
+name="supy"
 dynamic = ["version"]
 requires-python = ">3.9"
 
@@ -40,7 +40,7 @@ root = "../.."
 
 [tool.cibuildwheel]
 # skip 32-bit and pypy builds
-skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
+# skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
 # build-frontend = "pip"
 before-build = ["git describe --tags --always --dirty"]
 
@@ -48,7 +48,7 @@ before-build = ["git describe --tags --always --dirty"]
 build-verbosity = 0
 
 test-requires = "pytest"
-test-command = "pytest -s `{package}/supy/test`"
+test-command = "pytest -s '{package}/supy/test'"
 
 
 [tool.cibuildwheel.linux]
@@ -61,8 +61,7 @@ before-all = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
     "make suews",
 ]
-archs = ["x86_64", "arm64"]
-skip = ['cp311-macosx*', 'pp*']
+build = ['cp39*']
 
 
 [tool.cibuildwheel.windows]

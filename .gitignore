@@ -361,6 +361,7 @@ suews_ctrl_ver.f95
 supy-driver/supy_driver/version.py
 wheelhouse/
 dev-test/
+SuPy.log
 
 # auto-generated version info file
 _version_scm.py
