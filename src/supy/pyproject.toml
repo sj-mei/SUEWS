@@ -55,7 +55,7 @@ before-test = ["cd {package}",
 "cd test",
 "ls -l .",
 ]
-test-command = "pytest -s `{package}/supy/test`"
+test-command = "pytest -s '{package}/supy/test'"
 
 
 [tool.cibuildwheel.linux]
