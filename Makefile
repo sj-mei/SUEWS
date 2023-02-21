@@ -40,7 +40,7 @@ supy_dir = src/supy
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
-all: driver
+all: test
 
 # make suews driver library
 suews:
@@ -55,22 +55,6 @@ test:
 wheel:
 	$(MAKE) -C $(supy_dir) wheel
 
-# make fortran exe and pack release archive
-release: pip
-	$(MAKE) -C $(release_dir) clean; # clean release directory
-	$(MAKE) suews # build SUEWS binary
-	$(MAKE) -C $(release_dir) pack # pack binary and input files
-
-# make supy dist
-driver: suews
-	$(MAKE) -C $(supy_dir) test; # make and test supy_driver
-
-pip:
-	pip install pipreqs
-	pipreqs $(test_dir) --savepath requirements.txt
-	pip install -r requirements.txt
-	rm -rf requirements.txt
-
 # documentation
 docs:
 	$(MAKE) -B -C $(docs_dir) html
@@ -83,5 +67,4 @@ livehtml:
 clean:
 	$(MAKE) -C $(suews_dir) clean
 	$(MAKE) -C $(supy_dir) clean
-	$(MAKE) -C $(release_dir) clean
 	$(MAKE) -C $(docs_dir) clean

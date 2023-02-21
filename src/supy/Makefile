@@ -31,7 +31,7 @@ SUEWS_dir = ../suews
 
 
 # install package in dev mode and do pytest
-test:
+test: suews
 	pip install -e .
 	pytest -s ${MODULE}/test
 
@@ -58,5 +58,5 @@ suews:
 	$(MAKE) -C $(SUEWS_dir) libdriver; # make SUEWS with the `suews` recipe
 
 # only local testing on mac
-local:
+local: clean
 	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-local-test.toml

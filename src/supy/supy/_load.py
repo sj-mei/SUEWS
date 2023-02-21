@@ -603,8 +603,9 @@ def resample_forcing_met(
     data_met_raw = data_met_raw.replace(-999, np.nan)
     # this line is kept for occasional debugging:
     if logger_supy.level < 20:
-        data_met_raw.to_hdf("data_met_raw.h5", key="data_met_raw", mode="w")
-        logger_supy.debug(f"data_met_raw.h5 has been generated!")
+        p_data_met_raw = "data_met_raw.pkl"
+        data_met_raw.to_pickle(p_data_met_raw)
+        logger_supy.debug(f"{p_data_met_raw} has been generated!")
 
     # linear interpolation:
     # the interpolation schemes differ between instantaneous and average values

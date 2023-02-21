@@ -432,10 +432,10 @@ def run_save_supy(
         df_forcing_tstep, df_state_init_m, save_state, n_yr
     )
     # save to path_dir_temp
-    path_out = path_dir_temp / f"{ind}_out.h5"
-    path_state = path_dir_temp / f"{ind}_state.h5"
-    df_output.to_hdf(path_out, f"out_{ind}", mode="w")
-    df_state_final.to_hdf(path_state, f"state_{ind}", mode="w")
+    path_out = path_dir_temp / f"{ind}_out.pkl"
+    path_state = path_dir_temp / f"{ind}_state.pkl"
+    df_output.to_pickle(path_out)
+    df_state_final.to_pickle(path_state)
 
 
 # parallel mode: only used on Linux/macOS; Windows is not supported yet.
@@ -469,13 +469,13 @@ def run_supy_par(df_forcing_tstep, df_state_init_m, save_state, n_yr):
         # load dumped h5 files
         df_output = pd.concat(
             [
-                pd.read_hdf(path_dir_temp / f"{n}_out.h5", f"out_{n}")
+                pd.read_pickle(path_dir_temp / f"{n}_out.pkl")
                 for n in np.arange(n_grid)
             ]
         )
         df_state_final = pd.concat(
             [
-                pd.read_hdf(path_dir_temp / f"{n}_state.h5", f"state_{n}")
+                pd.read_pickle(path_dir_temp / f"{n}_state.pkl")
                 for n in np.arange(n_grid)
             ]
         )

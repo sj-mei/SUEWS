@@ -270,9 +270,9 @@ setup(
         # DRIVER_REQ,  # a separate f2py-based driver
     ],
     extras_require={
-        "hdf": [
-            "tables",  # for dumping in hdf5
-        ]
+        # "hdf": [
+        #     "tables",  # for dumping in hdf5
+        # ]
     },
     entry_points={
         #   command line tools
