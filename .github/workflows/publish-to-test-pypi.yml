@@ -41,6 +41,8 @@ jobs:
       uses: pypa/cibuildwheel@v2.9.0
       env:
         SETUPTOOLS_USE_DISTUTILS: stdlib
+        CC: gcc
+        CXX: g++
       with:
         package-dir: ./src/supy
         output-dir: wheelhouse
