@@ -35,6 +35,9 @@ test:
 	pip install -e .
 	pytest -s ${MODULE}/test
 
+# build wheel
+wheel:
+	python -m build . --wheel --outdir wheelhouse
 
 # If wanted, clean all *.o files after build
 clean:

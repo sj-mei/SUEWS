@@ -26,7 +26,7 @@ endif
 
 MODULE=SUEWS_driver
 
-SUEWS_dir = src/suews
+suews_dir = src/suews
 
 docs_dir = docs
 
@@ -44,12 +44,16 @@ all: driver
 
 # make suews driver library
 suews:
-	$(MAKE) -C $(SUEWS_dir) libdriver; # make SUEWS library
+	$(MAKE) -C $(suews_dir) libdriver; # make SUEWS library
 	# -rm -rf *.o *.mod *.f95 *.a *.dSYM
 
-# make fortran exe and run test cases
+# make supy dist and test
 test:
-	$(MAKE) -C $(test_dir) test
+	$(MAKE) -C $(supy_dir) test
+
+# make supy wheels using cibuild
+wheel:
+	$(MAKE) -C $(supy_dir) wheel
 
 # make fortran exe and pack release archive
 release: pip
@@ -77,7 +81,7 @@ livehtml:
 
 # If wanted, clean all *.o files after build
 clean:
-	$(MAKE) -C $(SUEWS_dir) clean
+	$(MAKE) -C $(suews_dir) clean
 	$(MAKE) -C $(supy_dir) clean
 	$(MAKE) -C $(release_dir) clean
 	$(MAKE) -C $(docs_dir) clean
