@@ -58,5 +58,9 @@ suews:
 	$(MAKE) -C $(SUEWS_dir) libdriver; # make SUEWS with the `suews` recipe
 
 # only local testing on mac
+local: export CIBUILDWHEEL = 1
+local: export SETUPTOOLS_USE_DISTUTILS = stdlib
 local: clean
+	echo ${SETUPTOOLS_USE_DISTUTILS};
+	echo ${CIBUILDWHEEL};
 	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-local-test.toml

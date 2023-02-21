@@ -61,7 +61,12 @@ before-all = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
     "make suews",
 ]
-build = ['cp39*']
+build = ['cp311*']
+# before-test=[
+#     "pwd",
+#     "ls -l",
+#     "ls -l '{package}'",
+#     ]
 
 
 [tool.cibuildwheel.windows]

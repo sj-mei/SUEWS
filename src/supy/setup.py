@@ -9,7 +9,7 @@ import subprocess
 import warnings
 import re
 
-from setuptools import Distribution
+from setuptools import Distribution, find_packages
 from numpy.distutils.core import Extension, setup
 import platform
 import glob
@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import subprocess
 import shutil
+
 # from nonstopf2py import f2py
 
 # ISRELEASED = True
@@ -184,6 +185,7 @@ def readme():
     except:
         return f"SuPy package"
 
+
 class BinaryDistribution(Distribution):
     def has_ext_modules(self):
         return True
@@ -191,13 +193,16 @@ class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
 
+
 ext_modules = [
     Extension(
         "supy.supy_driver.suews_driver",
         [str(p) for p in path_target_f95],
         extra_compile_args=[
             "-D_POSIX_C_SOURCE=200809L",
-            "-fbracket-depth=1024" if sysname == "Darwin" else '-Wall', # for clang on MacOS
+            "-fbracket-depth=1024"
+            if sysname == "Darwin"
+            else "-Wall",  # for clang on MacOS
         ],
         extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
         f2py_options=[
@@ -245,12 +250,13 @@ setup(
             "*.json",
             "util/*",
             "cmd/*",
+            "supy_driver/*",
         ]
     },
     distclass=BinaryDistribution,
     ext_modules=ext_modules,
     install_requires=[
-        "pandas< 1.5; python_version <= '3.9'", # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
+        "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
         "pandas; python_version > '3.9'",
         "matplotlib",
         "chardet",
