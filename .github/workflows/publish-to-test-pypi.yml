@@ -38,9 +38,9 @@ jobs:
       # env:
         # SETUPTOOLS_ENABLE_FEATURES: legacy-editable
       with:
-        package-dir: ./supy
+        package-dir: ./src/supy
         output-dir: wheelhouse
-        config-file: ./supy/pyproject.toml
+        config-file: ./src/supy/pyproject.toml
 
     - name: Publish distribution 📦 to Test PyPI
       uses: pypa/gh-action-pypi-publish@master
