@@ -61,7 +61,8 @@ before-all = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
     "make suews",
 ]
-build = ['cp311*']
+build = ['cp*']
+skip = ['pp*']
 # before-test=[
 #     "pwd",
 #     "ls -l",

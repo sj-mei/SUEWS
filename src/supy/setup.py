@@ -1,13 +1,12 @@
 import os
 from signal import raise_signal
 from setuptools import setup
-import json
 from pathlib import Path
 
 # write version info using git commit
-import subprocess
-import warnings
-import re
+# import subprocess
+# import warnings
+# import re
 
 from setuptools import Distribution, find_packages
 from numpy.distutils.core import Extension, setup
@@ -18,100 +17,156 @@ from pathlib import Path
 import subprocess
 import shutil
 
-# from nonstopf2py import f2py
+#########################################
+# customised f2py
+#########################################
+"""
+TS 19 Feb 2019 :
+adopted this script below to resolve the Fortran `stop` issue:
+Credit to: https://github.com/joezuntz/pycamb/blob/master/nonstopf2py.py
+This is an adapted version with added modification for windows,
+where several GNU C libs are missing that require windows alternatives.
 
-# ISRELEASED = True
-# # if a release, use strict requirement for supy-driver; otehrwise, use a loose requirement
-# DRIVER_REQ = "supy_driver==2021a15" if ISRELEASED else "supy_driver"
-# FULLVERSION += '.dev'
+original header:
 
-# pipe = None
-# p_fn_ver = Path("./supy/supy_version.json")
+   An non-stop f2py. When the fortran program calls stop, it is trapped with a long jmp,
+   and the error is converted to a python error.
 
-# # force remove the version info file
-# flag_dirty = False
+   A lot of inspiration came from patch_f2py.py in James Kermode's quippy
+     (http://www.jrkermode.co.uk/quippy)
 
-# for cmd in ["git", "/usr/bin/git", "git.cmd"]:
+   currently supported fortran runtimes are:
+    ifcore (intel)
+    gfortran (gnu)
 
-#     try:
-#         pipe = subprocess.Popen(
-#             [cmd, "describe", "--tags", "--match", "2[0-9]*", "--dirty=-dirty"],
-#             stdout=subprocess.PIPE,
-#         )
-#         (sout, serr) = pipe.communicate()
-#         # parse version info from git
-#         list_str_ver = sout.decode("utf-8").strip().split("-")
+   For new runtimes, compile a small f90 that uses stop
 
-#         if list_str_ver[-1].lower() == "dirty":
-#             flag_dirty = True
-#             # remove the "dirty" part from version info list
-#             list_str_ver = list_str_ver[:-1]
+   boo.f90:
+      program boo
+          stop "boo the dog stops here"
+      end program boo
 
-#         ver_main = list_str_ver[0]
-#         print("ver_main", ver_main)
-#         if len(list_str_ver) > 1:
-#             ver_post = list_str_ver[1]
-#             ver_git_commit = list_str_ver[2]
-#         else:
-#             ver_post = ""
-#             ver_git_commit = ""
+   and
 
-#         # save version info to json file
-#         p_fn_ver.unlink(missing_ok=True)
-#         with open(p_fn_ver, "w") as f:
-#             json.dump(
-#                 {
-#                     "version": ver_main + ("" if ISRELEASED else ".dev"),
-#                     "iter": ver_post,
-#                     "git_commit": ver_git_commit
-#                     + (
-#                         "-dirty"
-#                         if (flag_dirty and len(ver_git_commit) > 0)
-#                         else (
-#                             "dirty" if (flag_dirty and len(ver_git_commit) == 0) else ""
-#                         )
-#                     ),
-#                 },
-#                 f,
-#             )
-#         if pipe.returncode == 0:
-#             print(f"in {cmd}, git version info saved to", p_fn_ver)
-#             break
-#     except Exception as e:
-#         pass
+     objdump -t a.o
 
-# if pipe is None or pipe.returncode != 0:
-#     # no git, or not in git dir
+   to find the function to override.
 
-#     if p_fn_ver.exists():
-#         warnings.warn(
-#             f"WARNING: Couldn't get git revision, using existing {p_fn_ver.as_posix()}"
-#         )
-#         write_version = False
-#     else:
-#         warnings.warn(
-#             "WARNING: Couldn't get git revision, using generic " "version string"
-#         )
-# else:
-#     # have git, in git dir, but may have used a shallow clone (travis)
-#     rev = sout.strip()
-#     rev = rev.decode("ascii")
+  -- Yu Feng <yfeng1@cmu.edu> @ McWilliam Center, Carnegie Mellon 2012
 
-# if p_fn_ver.exists():
-#     with open(p_fn_ver, "r") as f:
-#         dict_ver = json.load(f)
-#         ver_main = dict_ver["version"]
-#         ver_post = dict_ver["iter"]
-#         ver_git_commit = dict_ver["git_commit"]
+"""
 
-#     # print(dict_ver)
-#     __version__ = "-".join(filter(None, [ver_main, ver_post, ver_git_commit]))
-#     # raise ValueError(f"version info found: {__version__}")
-# else:
-#     __version__ = "0.0.0"
-#     raise ValueError("version info not found")
+import platform
+
+from numpy import f2py
+print('Customised f2py loaded!')
 
 
+# trap the fortran STOP methods.
+# luckily they are not builtin/inlined.
+# we do not need to free 'message'. it appears to be staticly allocated
+# by the compiler.
+
+f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+    '#includes0#\n',
+    r"""#includes0#
+#include <setjmp.h>
+static char * _error;
+static jmp_buf _env;
+void for_stop_core(char * message, int len) {
+  _error = strndup(message, len);
+  longjmp(_env, 1);
+}
+void _gfortran_stop_string(char * message, int len) {
+  _error = strndup(message, len);
+  longjmp(_env, 1);
+}
+     """)
+
+# here we fight the leak as f2py will no longer always return.
+# the easiest way is to first construct the return tuple,
+# then free them all
+f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
+    """\t\tif (f2py_success) {
+#pyobjfrom#
+/*end of pyobjfrom*/
+\t\tCFUNCSMESS(\"Building return value.\\n\");
+\t\tcapi_buildvalue = Py_BuildValue(\"#returnformat#\"#return#);
+/*closepyobjfrom*/
+#closepyobjfrom#
+\t\t} /*if (f2py_success) after callfortranroutine*/""",
+
+    """\t\t{
+#pyobjfrom#
+/*end of pyobjfrom*/
+\t\tCFUNCSMESS(\"Building return value.\\n\");
+\t\tcapi_buildvalue = Py_BuildValue(\"#returnformat#\"#return#);
+/*closepyobjfrom*/
+#closepyobjfrom#
+\t\tif(!f2py_success) {
+\t\t\tPy_XDECREF(capi_buildvalue);
+\t\t\tcapi_buildvalue = NULL;
+\t\t}
+\t\t}
+/*if (f2py_success) after callfortranroutine*/
+"""
+)
+
+# the actual function call. free _error as PyErr_SetString will copy it.
+f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
+    '#callfortranroutine#\n',
+    r"""
+       if(setjmp(_env)) {
+         PyErr_SetString(PyExc_RuntimeError, _error);
+         free(_error);
+       } else {
+         #callfortranroutine#
+       }
+   """)
+
+# distinguish platform to handle lib missing issues on windows
+sysname = platform.system()
+
+# change `setjmp` and `longjmp` to windows compliant versions
+# http://www.agardner.me/golang/windows/cgo/64-bit/setjmp/longjmp/2016/02/29/go-windows-setjmp-x86.html
+if sysname == 'Windows':
+    f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
+        r'setjmp(_env)',
+        r'__builtin_setjmp(_env)'
+    )
+    f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+        r'longjmp(_env)',
+        r'__builtin_longjmp(_env)'
+    )
+
+    # add an implementation of `strndup`
+    # https://github.com/noahp/cflow-mingw/blob/4e3f48c6636f4e54e2f30671eaeb3c8bc96fd4a4/cflow-1.4/gnu/strndup.c
+    f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+        r'#include <setjmp.h>',
+        r"""
+#include <setjmp.h>
+#include <stdlib.h>
+char *
+strndup (char const *s, size_t n)
+{
+  size_t len = strnlen (s, n);
+  char *new = malloc (len + 1);
+
+  if (new == NULL)
+    return NULL;
+
+  new[len] = '\0';
+  return memcpy (new, s, len);
+}
+"""
+    )
+#########################################
+# end: customised f2py
+#########################################
+
+
+
+#########################################
 # wrap OS-specific `SUEWS_driver` libs
 sysname = platform.system()
 lib_basename = "supy_driver"
@@ -295,6 +350,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "Operating System :: MacOS :: MacOS X",
