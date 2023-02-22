@@ -1,21 +1,21 @@
-import glob
 import os
-import platform
-import shutil
-import subprocess
-import sys
-from pathlib import Path
 from signal import raise_signal
-
-from numpy.distutils.core import Extension, setup
-from setuptools import Distribution, find_packages, setup
-from setuptools.command.build_ext import build_ext
+from setuptools import setup
+from pathlib import Path
 
 # write version info using git commit
 # import subprocess
 # import warnings
 # import re
 
+from setuptools import Distribution, find_packages
+from numpy.distutils.core import Extension, setup
+import platform
+import glob
+import os
+from pathlib import Path
+import subprocess
+import shutil
 
 #########################################
 # customised f2py
@@ -59,8 +59,7 @@ original header:
 import platform
 
 from numpy import f2py
-
-print("Customised f2py loaded!")
+print('Customised f2py loaded!')
 
 
 # trap the fortran STOP methods.
@@ -68,8 +67,8 @@ print("Customised f2py loaded!")
 # we do not need to free 'message'. it appears to be staticly allocated
 # by the compiler.
 
-f2py.rules.module_rules["modulebody"] = f2py.rules.module_rules["modulebody"].replace(
-    "#includes0#\n",
+f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+    '#includes0#\n',
     r"""#includes0#
 #include <setjmp.h>
 static char * _error;
@@ -82,13 +81,12 @@ void _gfortran_stop_string(char * message, int len) {
   _error = strndup(message, len);
   longjmp(_env, 1);
 }
-     """,
-)
+     """)
 
 # here we fight the leak as f2py will no longer always return.
 # the easiest way is to first construct the return tuple,
 # then free them all
-f2py.rules.routine_rules["body"] = f2py.rules.routine_rules["body"].replace(
+f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
     """\t\tif (f2py_success) {
 #pyobjfrom#
 /*end of pyobjfrom*/
@@ -97,6 +95,7 @@ f2py.rules.routine_rules["body"] = f2py.rules.routine_rules["body"].replace(
 /*closepyobjfrom*/
 #closepyobjfrom#
 \t\t} /*if (f2py_success) after callfortranroutine*/""",
+
     """\t\t{
 #pyobjfrom#
 /*end of pyobjfrom*/
@@ -110,12 +109,12 @@ f2py.rules.routine_rules["body"] = f2py.rules.routine_rules["body"].replace(
 \t\t}
 \t\t}
 /*if (f2py_success) after callfortranroutine*/
-""",
+"""
 )
 
 # the actual function call. free _error as PyErr_SetString will copy it.
-f2py.rules.routine_rules["body"] = f2py.rules.routine_rules["body"].replace(
-    "#callfortranroutine#\n",
+f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
+    '#callfortranroutine#\n',
     r"""
        if(setjmp(_env)) {
          PyErr_SetString(PyExc_RuntimeError, _error);
@@ -123,28 +122,27 @@ f2py.rules.routine_rules["body"] = f2py.rules.routine_rules["body"].replace(
        } else {
          #callfortranroutine#
        }
-   """,
-)
+   """)
 
 # distinguish platform to handle lib missing issues on windows
 sysname = platform.system()
 
 # change `setjmp` and `longjmp` to windows compliant versions
 # http://www.agardner.me/golang/windows/cgo/64-bit/setjmp/longjmp/2016/02/29/go-windows-setjmp-x86.html
-if sysname == "Windows":
-    f2py.rules.routine_rules["body"] = f2py.rules.routine_rules["body"].replace(
-        r"setjmp(_env)", r"__builtin_setjmp(_env)"
+if sysname == 'Windows':
+    f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
+        r'setjmp(_env)',
+        r'__builtin_setjmp(_env)'
     )
-    f2py.rules.module_rules["modulebody"] = f2py.rules.module_rules[
-        "modulebody"
-    ].replace(r"longjmp(_env)", r"__builtin_longjmp(_env)")
+    f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+        r'longjmp(_env)',
+        r'__builtin_longjmp(_env)'
+    )
 
     # add an implementation of `strndup`
     # https://github.com/noahp/cflow-mingw/blob/4e3f48c6636f4e54e2f30671eaeb3c8bc96fd4a4/cflow-1.4/gnu/strndup.c
-    f2py.rules.module_rules["modulebody"] = f2py.rules.module_rules[
-        "modulebody"
-    ].replace(
-        r"#include <setjmp.h>",
+    f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+        r'#include <setjmp.h>',
         r"""
 #include <setjmp.h>
 #include <stdlib.h>
@@ -160,13 +158,50 @@ strndup (char const *s, size_t n)
   new[len] = '\0';
   return memcpy (new, s, len);
 }
-""",
+"""
     )
 #########################################
 # end: customised f2py
 #########################################
 
+########################################
+# monkey patching ms visual c runtime detector
+########################################
+def get_msvcr_patch():
+    """Include the appropriate MSVC runtime library if Python was built
+    with MSVC 7.0 or later.
+    """
+    import sys
+    msc_pos = sys.version.find('MSC v.')
+    if msc_pos != -1:
+        msc_ver = sys.version[msc_pos+6:msc_pos+10]
+        if msc_ver == '1300':
+            # MSVC 7.0
+            return ['msvcr70']
+        elif msc_ver == '1310':
+            # MSVC 7.1
+            return ['msvcr71']
+        elif msc_ver == '1400':
+            # VS2005 / MSVC 8.0
+            return ['msvcr80']
+        elif msc_ver == '1500':
+            # VS2008 / MSVC 9.0
+            return ['msvcr90']
+        elif msc_ver == '1600':
+            # VS2010 / MSVC 10.0
+            return ['msvcr100']
+        elif int(msc_ver) >= 1900:
+            # VS2015 / MSVC 14.0
+            return ['msvcr140']
+        else:
+            raise ValueError("Unknown MS Compiler version %s " % msc_ver)
 
+import distutils.cygwinccompiler
+distutils.cygwinccompiler.get_msvcr = get_msvcr_patch
+
+########################################
+# end: monkey patching ms visual c runtime detector
+########################################
 ########################################
 # monkey patching ms visual c runtime detector
 ########################################
@@ -215,13 +250,10 @@ sysname = platform.system()
 lib_basename = "supy_driver"
 if sysname == "Windows":
     lib_name = lib_basename + ".pyd"
-    compiler = "mingw32"
 elif sysname == "Darwin":
     lib_name = lib_basename + ".so"
-    compiler = "gnu"
 elif sysname == "Linux":
     lib_name = lib_basename + ".so"
-    compiler = "gnu"
 
 # change compiler settings
 if sysname == "Windows":
@@ -321,22 +353,6 @@ ext_modules = [
     )
 ]
 
-
-
-
-# class CustomBuildExtCommand(build_ext):
-#     """A custom build extension command that sets the compiler for building extensions."""
-
-#     def build_extensions(self):
-#         """Override the build_extensions() method to set the compiler."""
-
-#         # set the compiler to use MinGW on Windows
-#         if sys.platform == "win32":
-#             self.compiler = "mingw32"
-
-#         super().build_extensions()
-
-
 setup(
     name="supy",
     # version=__version__,
@@ -420,5 +436,4 @@ setup(
         "Operating System :: POSIX :: Linux",
     ],
     zip_safe=False,
-    # cmdclass={"build_ext": CustomBuildExtCommand},
 )
