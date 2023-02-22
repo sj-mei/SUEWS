@@ -324,17 +324,17 @@ ext_modules = [
 
 
 
-class CustomBuildExtCommand(build_ext):
-    """A custom build extension command that sets the compiler for building extensions."""
+# class CustomBuildExtCommand(build_ext):
+#     """A custom build extension command that sets the compiler for building extensions."""
 
-    def build_extensions(self):
-        """Override the build_extensions() method to set the compiler."""
+#     def build_extensions(self):
+#         """Override the build_extensions() method to set the compiler."""
 
-        # set the compiler to use MinGW on Windows
-        if sys.platform == "win32":
-            self.compiler = "mingw32"
+#         # set the compiler to use MinGW on Windows
+#         if sys.platform == "win32":
+#             self.compiler = "mingw32"
 
-        super().build_extensions()
+#         super().build_extensions()
 
 
 setup(
