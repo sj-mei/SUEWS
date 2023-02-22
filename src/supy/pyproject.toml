@@ -78,9 +78,8 @@ skip = ['pp*']
 before-all = ["make suews"]
 before-build = [
     "cd {package}",
-    "python -m pip install numpy",
+    "python -m pip install numpy charset_normalizer",
     "python build-win-def.py",
-    "echo $env:CC",
     "python setup.py build_ext --inplace",
 ]
 archs = ["auto64"]
