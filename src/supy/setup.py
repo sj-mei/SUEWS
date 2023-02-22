@@ -1,5 +1,6 @@
 import os
 from signal import raise_signal
+import sys
 from setuptools import setup
 from pathlib import Path
 
@@ -307,7 +308,6 @@ ext_modules = [
             # '--f2cmap="f2py_f2cmap"',
             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
         ],
-        compiler=compiler,
         extra_objects=fn_other_obj,
         # "-v" under Linux is necessary because it can avoid the blank variable issue
         # ref: https://github.com/metomi/fcm/issues/220
@@ -315,6 +315,18 @@ ext_modules = [
         + [f"-L{str(path_lib)}", "-lspartacus"],
     )
 ]
+
+class CustomBuildExtCommand(build_ext):
+    """A custom build extension command that sets the compiler for building extensions."""
+
+    def build_extensions(self):
+        """Override the build_extensions() method to set the compiler."""
+
+        # set the compiler to use MinGW on Windows
+        if sys.platform == 'win32':
+            self.compiler = 'mingw32'
+
+        super().build_extensions()
 
 setup(
     name="supy",
@@ -399,4 +411,7 @@ setup(
         "Operating System :: POSIX :: Linux",
     ],
     zip_safe=False,
+    cmdclass={
+        'build_ext': CustomBuildExtCommand
+    }
 )
