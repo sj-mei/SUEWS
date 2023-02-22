@@ -209,10 +209,13 @@ sysname = platform.system()
 lib_basename = "supy_driver"
 if sysname == "Windows":
     lib_name = lib_basename + ".pyd"
+    compiler = "mingw32"
 elif sysname == "Darwin":
     lib_name = lib_basename + ".so"
+    compiler="gnu"
 elif sysname == "Linux":
     lib_name = lib_basename + ".so"
+    compiler="gnu"
 
 # change compiler settings
 if sysname == "Windows":
@@ -304,6 +307,7 @@ ext_modules = [
             # '--f2cmap="f2py_f2cmap"',
             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
         ],
+        compiler=compiler,
         extra_objects=fn_other_obj,
         # "-v" under Linux is necessary because it can avoid the blank variable issue
         # ref: https://github.com/metomi/fcm/issues/220
