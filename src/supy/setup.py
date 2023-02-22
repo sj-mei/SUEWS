@@ -199,9 +199,9 @@ def get_msvcr_patch():
 import distutils.cygwinccompiler
 distutils.cygwinccompiler.get_msvcr = get_msvcr_patch
 
-########################################
+##########################################
 # end: monkey patching ms visual c runtime detector
-########################################
+##########################################
 
 #########################################
 # wrap OS-specific `SUEWS_driver` libs
