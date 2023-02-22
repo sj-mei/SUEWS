@@ -1,0 +1,85 @@
+[build-system]
+requires = [
+    "wheel",
+    "setuptools<60",
+    "oldest-supported-numpy",
+    "setuptools-git-versioning",
+    "setuptools_scm[toml]>=6.2",
+]
+# the recommended "build_meta" does not work with nonstop f2py and hence is commented out
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supy"
+dynamic = ["version"]
+requires-python = ">3.9"
+
+# [tool.setuptools.packages]
+# find = {"where"= "src"}
+# [tool.setuptools-git-versioning]
+# enabled = true
+# template = "{tag}"
+# dev_template = "{tag}.post{ccount}"
+# # ignore "dirty" flag when building using CI for windows: seems to be a bug in the versioning tool
+# dirty_template = "{tag}"
+# version_callback = "setup:get_version"
+
+# [tool.setuptools.packages.find]
+# where = ["src"]
+
+# [tool.setuptools.package-data]
+# mypkg = ["*.txt", "*.json"]
+
+# [tool.distutils.bdist_wheel]
+# universal = true
+
+[tool.setuptools_scm]
+write_to = "src/supy/supy/_version_scm.py"
+root = "../.."
+
+
+[tool.cibuildwheel]
+# skip 32-bit and pypy builds
+skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
+# build-frontend = "pip"
+before-build = ["git describe --tags --always --dirty"]
+
+# Increase pip debugging output
+build-verbosity = 0
+
+test-requires = "pytest"
+before-test = [
+    # "sleep 100",
+    "cd {package}",
+    "ls -l .",
+    "cd supy",
+    "ls -l .",
+    "cd test",
+    "ls -l .",
+]
+test-command = "pytest -s '{package}/supy/test'"
+
+
+[tool.cibuildwheel.linux]
+# Install system library
+before-all = ["yum install -y glibc-static", "make suews"]
+archs = ["auto64"]
+
+[tool.cibuildwheel.macos]
+before-all = [
+    'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
+    "make suews",
+]
+archs = ["x86_64", "arm64"]
+skip = ['pp*']
+
+
+[tool.cibuildwheel.windows]
+before-all = ["make suews"]
+before-build = [
+    "cd {package}",
+    "python -m pip install numpy charset_normalizer",
+    "python build-win-def.py",
+    "python setup.py build_ext --inplace --compiler=mingw64",
+]
+archs = ["auto64"]
