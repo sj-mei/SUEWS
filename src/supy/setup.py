@@ -218,6 +218,8 @@ if sysname == "Windows":
     Path("setup.cfg").write_text(
         "[build_ext]\ncompiler=mingw32\n[build]\ncompiler=mingw32\n"
     )
+    print("setup.cfg created")
+    print(list(Path.cwd().glob("*")))
 elif sysname == "Darwin":
     lib_name = lib_basename + ".so"
 elif sysname == "Linux":

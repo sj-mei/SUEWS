@@ -81,6 +81,7 @@ before-build = [
     "python -m pip install numpy charset_normalizer",
     "python build-win-def.py",
     'python -c "import numpy; print(numpy.__version__)"',
-    "python setup.py build_ext --inplace --compiler=mingw32",
+    # "python setup.py build_ext --inplace --compiler=mingw32",
+    "ls -l .",
 ]
 archs = ["auto64"]
