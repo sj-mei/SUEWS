@@ -420,5 +420,5 @@ setup(
         "Operating System :: POSIX :: Linux",
     ],
     zip_safe=False,
-    cmdclass={"build_ext": CustomBuildExtCommand},
+    # cmdclass={"build_ext": CustomBuildExtCommand},
 )
