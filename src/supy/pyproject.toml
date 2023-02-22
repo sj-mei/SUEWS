@@ -58,8 +58,8 @@ before-test = [
     "ls -l .",
 ]
 test-command = "pytest -s '{package}/supy/test'"
-# only test on macOS
-test-skip = "*_arm64 *win* *manylinux*"
+# only test on macOS python 3.9
+test-skip = "*_arm64 *win* *manylinux* cp31*-*"
 
 [tool.cibuildwheel.linux]
 # Install system library
