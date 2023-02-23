@@ -5,10 +5,10 @@
 # https://github.com/actions/stale
 name: Mark stale issues and pull requests
 
-# deactivated for now: 23 Feb 2023
+# deactivated by changing the file name for now: 23 Feb 2023
 on:
-  # schedule:
-  # - cron: '24 2 * * *'
+  schedule:
+  - cron: '24 2 * * *'
 
 jobs:
   stale:
