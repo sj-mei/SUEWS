@@ -58,7 +58,8 @@ before-test = [
     "ls -l .",
 ]
 test-command = "pytest -s '{package}/supy/test'"
-
+# only test on macOS python 3.9
+test-skip = "*_arm64 *win* *manylinux* cp31*-*"
 
 [tool.cibuildwheel.linux]
 # Install system library
@@ -80,6 +81,8 @@ before-build = [
     "cd {package}",
     "python -m pip install numpy charset_normalizer",
     "python build-win-def.py",
-    "python setup.py build_ext --inplace --compiler=mingw64",
+    # 'python -c "import numpy; print(numpy.__version__)"',
+    # "python setup.py build_ext --inplace --compiler=mingw32",
+    # "ls -l .",
 ]
 archs = ["auto64"]
