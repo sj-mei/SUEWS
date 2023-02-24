@@ -63,5 +63,5 @@ local: export SETUPTOOLS_USE_DISTUTILS = stdlib
 local: clean
 	echo ${SETUPTOOLS_USE_DISTUTILS};
 	echo ${CIBUILDWHEEL};
-	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject-local-test.toml
+	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject.toml
 
