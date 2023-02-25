@@ -4,52 +4,60 @@ SUEWS-related Software
 ================================
 
 
-SuPy
-----
+SuPy: SUEWS that speaks Python
+------------------------------
 
-`SuPy <https://supy.readthedocs.io/en/latest/>`_ is a Python-enhanced urban climate model with `SUEWS`_ as its computation core.
+.. image:: https://img.shields.io/pypi/pyversions/supy.svg
+    :target: https://pypi.org/project/supy
+    :alt: Python Version Support Status
 
-The scientific rigour in SuPy results is thus gurranteed by SUEWS (see :ref:`SUEWS publications <Recent_publications>` and :ref:`Parameterisations and sub-models within SUEWS`).
+.. image:: https://img.shields.io/pypi/v/supy.svg
+    :target: https://pypi.org/project/supy
+    :alt: Latest Version Status
 
-Meanwhile, the data analysis ability of SuPy is greatly enhanced by `the Python-based SciPy Stack <https://scipy.org>`_, notably `numpy`_ and `pandas`_.
+.. image:: https://pepy.tech/badge/supy
+    :target: https://pepy.tech/project/supy
+    :alt: Downloads
+
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/UMEP-dev/SuPy/main
+    :alt: Binder Status
+
+.. .. image:: https://readthedocs.org/projects/supy/badge/?version=latest
+..     :target: https://supy.readthedocs.io/en/latest/?badge=latest
+..     :alt: Documentation Status
+
+.. .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574404.svg
+..    :target: https://doi.org/10.5281/zenodo.2574404
+..    :alt: DOI
 
 
-.. _SUEWS: https://suews.readthedocs.io/en/latest/
-.. _numpy: https://www.numpy.org
-.. _pandas: http://pandas.pydata.org/
 
 
-- **How to get SuPy?**
 
-  SuPy is available on all major platforms (macOS, Windows, Linux) for Python 3.7+
-  via `PyPI <https://pypi.org/project/supy/>`_:
+SuPy is a Python-enhanced urban climate model with `SUEWS <https://suews-docs.readthedocs.io/en/latest/>`_ as its computation core.
 
-  .. code-block:: shell
+The scientific rigour in SuPy results is thus guaranteed by SUEWS (see :ref:`SUEWS publications <Recent_publications>` and
+:ref:`Parameterisations and sub-models within SUEWS`).
 
-    python3 -m pip install supy --upgrade --user
+Meanwhile, the data analysis ability of SuPy is greatly enhanced by `the Python-based SciPy Stack <https://scipy.org>`_, notably `numpy <https://www.numpy.org>`_ and `pandas <http://pandas.pydata.org/>`_.
 
-- **How to use SuPy?**
-
-  * Please follow :ref:`Quickstart of SuPy` and :ref:`other tutorials <supy_tutorial>`.
-
-  * Please see :ref:`SuPy API <supy:api_ref>` for usage details of SuPy functions.
+More details are described in `our SuPy paper <https://doi.org/10.5194/gmd-12-2781-2019>`_.
 
 
 .. _suews_umep:
 
-SUEWS and UMEP
+SUEWS in UMEP
 --------------
 
 
-SUEWS can be run as a standalone model but also can be used within
-`UMEP <http://umep-docs.readthedocs.io/>`_. There are numerous
-tools included within UMEP to help a user get started. The `SUEWS (Simple)`_
-within UMEP is a fast way to start using SUEWS.
+SUEWS can be run as a standalone model but also can be used within `UMEP <http://umep-docs.readthedocs.io/>`_.
+There are numerous tools included within UMEP to help a user get started.
+The `SUEWS (Simple)`_ within UMEP is a fast way to start using SUEWS.
 
-The version of SUEWS within UMEP is the complete model. Thus all options
-that are listed in this manual are available to the user. In the UMEP
-`SUEWS (Simple)`_ runs all options are set to values to allow intial exploration of the
-model behaviour.
+The version of SUEWS within UMEP is the complete model.
+Thus all options that are listed in this manual are available to the user.
+In the UMEP `SUEWS (Simple)`_ runs all options are set to values to allow initial exploration of the model behaviour.
 
 
 - Pre-Processor
