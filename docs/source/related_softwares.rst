@@ -30,7 +30,7 @@ Meanwhile, the data analysis ability of SuPy is greatly enhanced by `the Python-
 
 - **How to use SuPy?**
 
-  * Please follow :ref:`Quickstart of SuPy` and :ref:`other tutorials <tutorial_index>`.
+  * Please follow :ref:`Quickstart of SuPy` and :ref:`other tutorials <supy_tutorial>`.
 
   * Please see :ref:`SuPy API <supy:api_ref>` for usage details of SuPy functions.
 

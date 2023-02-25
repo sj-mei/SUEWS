@@ -368,3 +368,4 @@ _version_scm.py
 
 # a quick test file using jupyter notebook
 test/test.ipynb
+docs/source/supy/api/supy.util/

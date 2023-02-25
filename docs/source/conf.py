@@ -185,7 +185,7 @@ extensions = [
     # 'sphinxfortran.fortran_autodoc',
     # 'sphinxfortran.fortran_domain',
     "sphinxcontrib.bibtex",
-    "sphinxcontrib.email",
+    # "sphinxcontrib.email",
     "sphinx.ext.githubpages",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -201,7 +201,7 @@ extensions = [
     # 'exhale'
 ]
 
-email_automode = True
+# email_automode = True
 
 breathe_projects = {"SUEWS": "./doxygenoutput/xml"}
 breathe_default_project = "SUEWS"

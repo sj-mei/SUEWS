@@ -34,18 +34,7 @@ Horizontal movement of water above and below ground level is allowed.
 How to get SUEWS?
 ------------------------------
 
-- **Formal releases**
-
-  Please visit the `SUEWS download page`_.
-
-
-- **Development build**
-
-  .. warning:: The development build can be highly unstable and is not recommended for production use. However, it is automatically constructed every week for testing purposes and we are happy to receive feedback on the development build.
-
-  Download the development build of SUEWS from `the GitHub Release page <https://github.com/UMEP-dev/SUEWS/releases/tag/latest-dev>`_.
-
-
+Please follow the guidance in :ref:`installation` to get SUEWS.
 
 
 How to use SUEWS?
@@ -75,7 +64,7 @@ How to get help in using SUEWS?
 ---------------------------------------------
 
 Please let us know in the `UMEP Community`_.
-The developers and other users are willing to help you :)
+The developers and other users are willing to help you.
 
 
 How has SUEWS been used?
@@ -120,6 +109,7 @@ How to support SUEWS?
    :numbered:
    :hidden:
 
+   installation
    workflow
    input_files/input_files
    output_files/output_files

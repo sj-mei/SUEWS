@@ -17,15 +17,11 @@ conda:
 sphinx:
   configuration: docs/source/conf.py
 
-# Build documentation with MkDocs
-#mkdocs:
-#  configuration: mkdocs.yml
-
 # Optionally build your docs in additional formats such as PDF and ePub
 formats: all
 
-
-# Optionally set the version of Python and requirements required to build your docs
+# install the package in the docs/ directory
 python:
   install:
-    - requirements: docs/requirements.txt # not used
+    - method: pip
+      path: src/supy
