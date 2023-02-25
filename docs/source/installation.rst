@@ -13,40 +13,36 @@ Since 2023, SUEWS is available as a command line tool via its Python wrapper pac
 
 Installing Python
 *****************
-These instructions will set you up with `miniforge <https://conda-forge.org/docs/user/introduction.html>`__, which makes it easy to install and manage Python packages.
+These instructions will set you up with `mamba`_, which makes it easy to install and manage Python packages.
 
-To install the miniforge Python distribution follow `the miniforge installation instructions <https://github.com/conda-forge/miniforge#install>`__.
+To install the ``mamba`` Python distribution follow `the mamba installation instructions <https://mamba.readthedocs.io/en/latest/installation.html>`__.
 
 This makes installing ``supy`` and many other packages in the scientific Python ecosystem much easier and quicker.
 It also provides many pre-compiled binaries that are not available on PyPI.
 
+.. tip::
+
+    ``mamba`` is a drop-in replacement for ``conda`` (another widely used Python package manager):
+    ``mamba`` is faster and solves some common problems with ``conda``.
+    More details about ``mamba`` can be found at `mamba`_.
+
+
 Installing SuPy
 ***************
 
-One can install SUEWS using ``pip``:
+One can install ``supy`` using ``pip``:
 
 .. code-block:: bash
 
-    pip install supy
+    pip install supy --upgrade --user
 
-or ``conda``:
+or ``mamba``:
 
 .. code-block:: bash
 
-    conda install -c conda-forge supy
+    mamba install -c conda-forge supy
 
 
-.. tip::
-
-    ``conda`` could be slower than ``pip`` to install SUEWS.
-    If you are using ``conda``, please consider using ``mamba`` instead:
-
-    .. code-block:: shell
-
-        mamba install -c conda-forge supy
-
-    ``mamba`` is a drop-in replacement for ``conda`` that is faster and solves some common problems with ``conda``.
-    More details about ``mamba`` can be found at `mamba`_.
 
 
 
