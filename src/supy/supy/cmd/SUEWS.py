@@ -10,14 +10,34 @@ from .._version import show_version, __version__
 
 from .._load import load_SUEWS_nml_simple
 
+
 # run the whole supy workflow mimicking SUEWS binary
-@click.command(short_help="Run SUEWS simulation using settings in PATH_RUNCONTROL")
-@click.argument(
-    "path_runcontrol", default="./RunControl.nml", type=click.Path(exists=True),
+@click.command(
+    short_help="Run SUEWS simulation using settings in PATH_RUNCONTROL",
+    help='''
+Run SUEWS simulation using settings in PATH_RUNCONTROL
+(default: "./RunControl.nml", i.e., the RunControl namelist file in the current directory).
+
+Examples:
+
+1. Run SUEWS simulation using the RunControl namelist file in the current directory:
+
+    $ suews-run -p ./RunControl.nml
+
+2. Run SUEWS simulation using an arbitray RunControl namelist file by specifying the path to the RunControl namelist file:
+
+    $ suews-run -p /path/to/RunControl.nml
+''',
+)
+@click.option(
+    "--path_runcontrol",
+    "-p",
+    default="./RunControl.nml",
+    type=click.Path(exists=True),
+    help="Path to the RunControl namelist file (default: ./RunControl.nml).",
 )
 def SUEWS(path_runcontrol):
-    """Run SUEWS simulation using settings in PATH_RUNCONTROL (default: "./RunControl.nml", i.e., the RunControl namelist file in the current directory).
-    """
+    """Run SUEWS simulation using settings in PATH_RUNCONTROL (default: "./RunControl.nml", i.e., the RunControl namelist file in the current directory)."""
 
     # show version info
     click.echo(
@@ -28,7 +48,6 @@ supy version: {__version__}
 
 Documentation sites:
 SUEWS: https://suews.readthedocs.io/
-SuPy: https://supy.readthedocs.io/
 ===========================================
     """
     )
