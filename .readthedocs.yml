@@ -13,7 +13,7 @@ build:
     pre_install:
       - git update-index --assume-unchanged environment.yml docs/source/conf.py
     post_create_environment:
-      - cd docs; make proc_csv
+      - python docs/source/related-softwares/supy/proc_var_info/gen_rst.py
 
 conda:
   environment: docs/env.yml
