@@ -152,5 +152,4 @@ How to support SUEWS?
    :hidden:
 
    GitHub discussion <https://github.com/UMEP-dev/UMEP/discussions>
-   SUEWS mailing list <https://www.lists.rdg.ac.uk/mailman/listinfo/met-suews>
 

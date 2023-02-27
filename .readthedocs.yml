@@ -12,7 +12,7 @@ build:
   jobs:
     pre_install:
       - git update-index --assume-unchanged environment.yml docs/source/conf.py
-    post_create_environment:
+    pre_build:
       - python docs/source/related-softwares/supy/proc_var_info/gen_rst.py
 
 conda:
