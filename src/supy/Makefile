@@ -35,7 +35,7 @@ test: suews dev
 	pytest -s ${MODULE}/test
 
 # install package in dev mode
-dev:
+dev: suews
 	pip install -e .
 
 # build wheel
