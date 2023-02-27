@@ -31,9 +31,12 @@ SUEWS_dir = ../suews
 
 
 # install package in dev mode and do pytest
-test: suews
-	pip install -e .
+test: suews dev
 	pytest -s ${MODULE}/test
+
+# install package in dev mode
+dev:
+	pip install -e .
 
 # build wheel
 wheel:

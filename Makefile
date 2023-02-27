@@ -47,6 +47,10 @@ suews:
 	$(MAKE) -C $(suews_dir) libdriver; # make SUEWS library
 	# -rm -rf *.o *.mod *.f95 *.a *.dSYM
 
+# make supy and install locally
+dev:
+	$(MAKE) -C $(supy_dir) dev
+
 # make supy dist and test
 test:
 	$(MAKE) -C $(supy_dir) test

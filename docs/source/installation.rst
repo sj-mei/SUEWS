@@ -85,6 +85,6 @@ To install the development build of SUEWS, you need to install ``supy`` in the d
 
 3. install the package in the development mode::
 
-    pip install -e src/supy
+    make dev
 
 
