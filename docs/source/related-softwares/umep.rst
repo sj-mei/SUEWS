@@ -1,57 +1,3 @@
-.. _suews_related_softwares:
-
-SUEWS-related Software
-================================
-
-
-SuPy: SUEWS that speaks Python
-------------------------------
-
-.. image:: https://img.shields.io/pypi/pyversions/supy.svg
-    :target: https://pypi.org/project/supy
-    :alt: Python Version Support Status
-
-.. image:: https://img.shields.io/pypi/v/supy.svg
-    :target: https://pypi.org/project/supy
-    :alt: Latest Version Status
-
-.. image:: https://pepy.tech/badge/supy
-    :target: https://pepy.tech/project/supy
-    :alt: Downloads
-
-.. image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/UMEP-dev/SuPy/main
-    :alt: Binder Status
-
-.. .. image:: https://readthedocs.org/projects/supy/badge/?version=latest
-..     :target: https://supy.readthedocs.io/en/latest/?badge=latest
-..     :alt: Documentation Status
-
-.. .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574404.svg
-..    :target: https://doi.org/10.5281/zenodo.2574404
-..    :alt: DOI
-
-
-
-SuPy is a Python-enhanced urban climate model with `SUEWS <https://suews-docs.readthedocs.io/en/latest/>`_ as its computation core.
-
-The scientific rigour in SuPy results is thus guaranteed by SUEWS (see :ref:`SUEWS publications <Recent_publications>` and
-:ref:`Parameterisations and sub-models within SUEWS`).
-
-Meanwhile, the data analysis ability of SuPy is greatly enhanced by `the Python-based SciPy Stack <https://scipy.org>`_, notably `numpy <https://www.numpy.org>`_ and `pandas <http://pandas.pydata.org/>`_.
-
-More details are described in `our SuPy paper <https://doi.org/10.5194/gmd-12-2781-2019>`_.
-
-
-.. toctree::
-  :maxdepth: 1
-
-  supy/tutorial/tutorial
-  supy/data-structure/supy-io
-  supy/api
-  supy/faq
-  supy/version-history
-
 
 .. _suews_umep:
 
@@ -177,7 +123,7 @@ with both models as an output.
 Similarities and differences between LUMPS and SUEWS.
 
 .. csv-table::
-   :file: assets/csv/comp-lumps-suews.csv
+   :file: ../assets/csv/comp-lumps-suews.csv
    :header-rows: 1
    :stub-columns: 1
    :widths: auto
@@ -194,7 +140,7 @@ Please refer to :cite:t:`LG12` for further details.
 
 
 .. csv-table::
-   :file: assets/csv/comp-fraise-lumps-suews.csv
+   :file: ../assets/csv/comp-fraise-lumps-suews.csv
    :header-rows: 1
    :stub-columns: 1
    :widths: auto

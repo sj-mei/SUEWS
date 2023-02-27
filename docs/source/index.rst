@@ -114,7 +114,7 @@ How to support SUEWS?
    input_files/input_files
    output_files/output_files
    troubleshooting
-   related_softwares
+   related-softwares/related_softwares
    sub-tutorials/tutorials
    benchmark/benchmark_report
    notation
