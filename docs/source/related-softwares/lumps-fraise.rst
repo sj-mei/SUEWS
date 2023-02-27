@@ -1,10 +1,10 @@
 
 
 
-.. _Differences_between_SUEWS_LUMPS_and_FRAISE:
+.. _Differences_between_SUEWS_LUMPS:
 
 
-Differences between SUEWS, LUMPS and FRAISE
+Differences between SUEWS and LUMPS
 --------------------------------------------------------
 
 
@@ -26,12 +26,11 @@ Similarities and differences between LUMPS and SUEWS.
 
 
 
+.. _Differences_between_SUEWS_FRAISE:
 
-
-FRAISE Flux Ratio – Active Index Surface Exchange
-*******************************************************
-
-FRAISE provides an estimate of mean midday (±3 h around solar noon) energy partitioning from information on the surface characteristics and estimates of the mean midday incoming radiative energy and anthropogenic heat release.
+Differences between SUEWS and FRAISE
+--------------------------------------------------------
+FRAISE, Flux Ratio – Active Index Surface Exchange scheme, provides an estimate of mean midday (±3 h around solar noon) energy partitioning from information on the surface characteristics and estimates of the mean midday incoming radiative energy and anthropogenic heat release.
 Please refer to :cite:t:`LG12` for further details.
 
 
