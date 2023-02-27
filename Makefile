@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs
+.PHONY: main clean test pip supy docs dev
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)

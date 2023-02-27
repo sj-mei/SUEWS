@@ -1,5 +1,5 @@
 # -*- makefile -*-
-.PHONY: main clean test pip supy
+.PHONY: main clean test pip supy suews dev
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
