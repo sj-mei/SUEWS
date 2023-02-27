@@ -44,8 +44,38 @@ from pybtex.style.template import (
     words,
 )
 
+import supy
 
 # -- processing code --------------------------------------------------------
+
+
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+sys.path.insert(0, os.path.abspath("."))
+
+print(r"this build is made by:", "\n", sys.version)
+# determine if in RTD environment
+read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
+if read_the_docs_build:
+    # update `today`
+    dt_today = datetime.today()
+    pass
+else:
+    dt_today = datetime.today()
+    print(r"this build is for:", "\n")
+    supy.show_version()
+
+
+def subprocess_cmd(command):
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    proc_stdout = process.communicate()[0].strip()
+    print(proc_stdout.decode())
+
+
+# run script to generate rst files for df_{group}
+# subprocess_cmd('cd supy/proc_var_info; python3 gen_rst.py')
+
 # load all csv as a whole df
 def load_df_csv(path_csv):
     if not path_csv.exists():
@@ -198,6 +228,7 @@ extensions = [
     # "breathe",
     "sphinx_panels",
     "sphinx_last_updated_by_git",
+    "sphinx_click.ext",
     # 'exhale'
 ]
 

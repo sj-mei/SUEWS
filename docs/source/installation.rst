@@ -32,15 +32,17 @@ Installing SuPy
 
 One can install ``supy`` using ``pip``:
 
-.. code-block:: bash
 
-    pip install supy --upgrade --user
+.. code-block:: shell
 
-or ``mamba``:
+  python3 -m pip install supy --upgrade
 
-.. code-block:: bash
+.. comment out the following section for now as supy is not yet available on conda-forge.
+.. or ``mamba``:
 
-    mamba install -c conda-forge supy
+.. .. code-block:: bash
+
+..     mamba install -c conda-forge supy
 
 
 

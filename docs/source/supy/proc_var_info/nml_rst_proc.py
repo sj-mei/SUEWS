@@ -11,37 +11,53 @@ os.getcwd()
 
 # %%
 # code version
-tag_suews_ver = sp.__version_driver__
+tag_suews_ver = sp.__version__
 
 print(f"supy_driver version required: {tag_suews_ver}")
+
 
 # list of useful URLs
 def gen_url_base(tag):
     url_repo_base = URL(
-        "https://github.com/"
-        + "UMEP-dev/"
-        + f"SUEWS/raw/{tag}/docs/source"
+        "https://github.com/" + "UMEP-dev/" + f"SUEWS/raw/{tag}/docs/source"
     )
     return url_repo_base
 
 
-url_repo_base = (
-    gen_url_base(tag_suews_ver)
-    if gen_url_base(tag_suews_ver).get().ok
-    else gen_url_base("master")
-)
-print(f'''
-=================================
-SUEWS docs source: {url_repo_base}
-=================================
-''')
+# since 26 Feb 2023, the following is deprecated as supy will be merged into SUEWS
+# url_repo_base = (
+#     gen_url_base(tag_suews_ver)
+#     if gen_url_base(tag_suews_ver).get().ok
+#     else gen_url_base("master")
+# )
+# print(
+#     f"""
+# =================================
+# SUEWS docs source: {url_repo_base}
+# =================================
+# """
+# )
+# url_repo_input = URL(url_repo_base) / "input_files"
 
-url_repo_input = URL(url_repo_base) / "input_files"
+# instead we use the following
+p_this_file = Path(__file__)
+url_repo_base = p_this_file.parent.parent.parent
+url_repo_input = url_repo_base / "input_files"
+if not url_repo_input.exists():
+    raise FileNotFoundError(f"input_files not found at {url_repo_input}")
+else:
+    print(
+        f"""
+=================================
+SUEWS input_files: {url_repo_input}
+=================================
+"""
+    )
 
 dict_base = {
-        "docs": URL("https://suews.readthedocs.io/en/latest/input_files/"),
-        "github": url_repo_input,
-    }
+    "docs": URL("https://suews.readthedocs.io/en/latest/input_files/"),
+    "github": url_repo_input,
+}
 
 # %% [markdown]
 # ### filter input variables
@@ -50,7 +66,7 @@ set_input = sp._load.set_var_input.copy()
 set_input.update(sp._load.set_var_input_multitsteps)
 df_init_sample, df_forcing_sample = sp.load_SampleData()
 set_input.difference_update(set(df_forcing_sample.columns))
-# set_input, len(set_input)
+set_input, len(set_input)
 
 # %% [markdown]
 # #### retrieve SUEWS-related variables
@@ -98,15 +114,19 @@ dict_runcontrol = sp._load.load_SUEWS_dict_ModConfig(path_runcontrol).copy()
 set_runcontrol = set(dict_runcontrol.keys())
 set_input_runcontrol = set_runcontrol.intersection(set_input)
 
-print(f'''
+print(
+    f"""
 ============================================================
 set_input_runcontrol has {len(set_input_runcontrol)} variables:
-''')
-for var in  set_input_runcontrol:
+"""
+)
+for var in set_input_runcontrol:
     print(var)
-print(f'''
+print(
+    f"""
 ============================================================
-''')
+"""
+)
 
 # %% [markdown]
 # ### filter `initialcondition` related variables
@@ -115,7 +135,7 @@ print(f'''
 dict_initcond = sp._load.dict_InitCond_default.copy()
 set_initcond = set(dict_initcond.keys())
 set_input_initcond = set_initcond.intersection(set_input)
-# set_input_initcond, len(set_input_initcond)
+set_input_initcond, len(set_input_initcond)
 
 
 # %% [markdown]
@@ -249,6 +269,7 @@ def gen_url_option(
 #             print(opt)
 #             print(url)
 
+
 # %%
 def parse_block(block):
     xx = block.reset_index(drop=True)
@@ -267,6 +288,8 @@ def parse_block(block):
 
 
 def parse_option_rst(path_rst):
+    """parse option rst file and return a dataframe"""
+    # print('parsing this rst file:',path_rst)
     ser_opts = pd.read_csv(path_rst, sep=r"\n", skipinitialspace=True, engine="python")
     ser_opts = ser_opts.iloc[:, 0]
     ind_opt = ser_opts.index[ser_opts.str.contains(".. option::")]
@@ -275,11 +298,18 @@ def parse_option_rst(path_rst):
         ser_opts.loc[slice(*x)] for x in zip(ind_opt, list(ind_opt[1:]) + [None])
     ]
     df_opt = pd.concat([parse_block(block) for block in list_block_opt], axis=1).T
+    # print('number of options parsed:',len(df_opt))
+    # print('options got:',df_opt.index)
     return df_opt
 
 
 # url_test = gen_url_option('pavedstate', source='github')
 # parse_option_rst(url_test)
 
+
+# %%
+# parse_option_rst('/Users/tingsun/Dropbox (Personal)/6.Repos/SUEWS/docs/source/input_files/RunControl/Time_related_options.rst')
+# # %%
+# parse_option_rst('/Users/tingsun/Dropbox (Personal)/6.Repos/SUEWS/docs/source/input_files/RunControl/RunControl.rst')
 
 # %%

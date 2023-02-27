@@ -20,7 +20,10 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 livehtml:
-	sphinx-autobuild -b html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
+	sphinx-autobuild --re-ignore ["supy.util.*"] -b html -a  "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
 pip:
 	pip install -e ../src/supy
+
+proc-csv:
+	python ./source/supy/proc_var_info/gen_rst.py
