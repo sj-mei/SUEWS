@@ -41,7 +41,7 @@ def gen_url_base(tag):
 
 # instead we use the following
 p_this_file = Path(__file__)
-url_repo_base = p_this_file.parent.parent.parent
+url_repo_base = p_this_file.parent.parent.parent.parent
 url_repo_input = url_repo_base / "input_files"
 if not url_repo_input.exists():
     raise FileNotFoundError(f"input_files not found at {url_repo_input}")

@@ -1321,7 +1321,7 @@
     :Dimensionality:
         (8,)
     :Dimensionality Remarks:
-        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)}
+        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)} 
     :SUEWS-related variables:
         `OHMThresh_SW`
 
@@ -1333,7 +1333,7 @@
     :Dimensionality:
         (8,)
     :Dimensionality Remarks:
-        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)}
+        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)} 
     :SUEWS-related variables:
         `OHMThresh_WD`
 
