@@ -12,6 +12,7 @@ build:
   jobs:
     pre_install:
       - git update-index --assume-unchanged docs/env.yml docs/source/conf.py
+      - make suews
     pre_build:
       - python docs/source/related-softwares/supy/proc_var_info/gen_rst.py
 
