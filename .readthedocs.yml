@@ -11,7 +11,7 @@ build:
     python: "mambaforge-4.10"
   jobs:
     pre_install:
-      - git update-index --assume-unchanged environment.yml docs/source/conf.py
+      - git update-index --assume-unchanged docs/env.yml docs/source/conf.py
     pre_build:
       - python docs/source/related-softwares/supy/proc_var_info/gen_rst.py
 
