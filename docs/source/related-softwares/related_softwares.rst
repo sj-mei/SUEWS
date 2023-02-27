@@ -10,4 +10,5 @@ SUEWS-related Software
 
   supy/index
   umep
+  lumps-fraise
 
