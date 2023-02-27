@@ -11,6 +11,12 @@ Formal releases
 
 Since 2023, SUEWS is available as a command line tool via its Python wrapper package `SuPy (SUEWS in Python) <SuPy>`_ on `PyPI`_ and `conda-forge`_.
 
+.. note::
+
+    The Fortran-based binaries build prior to 2023 are still available at the `SUEWS download page`_.
+    However, they are not maintained anymore so users are encouraged to use the Python-based packages instead.
+
+
 Installing Python
 *****************
 These instructions will set you up with `mamba`_, which makes it easy to install and manage Python packages.
@@ -48,10 +54,6 @@ One can install ``supy`` using ``pip``:
 
 
 
-.. note::
-
-    The Fortran-based binaries build prior to 2023 are still available at the `SUEWS download page`_.
-    However, they are not maintained anymore so users are encouraged to use the Python-based packages instead.
 
 
 
