@@ -7,6 +7,7 @@ SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = SUEWS
 SOURCEDIR     = source
 BUILDDIR      = build
+SUPYDIR      = ./source/related-softwares/supy
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -26,4 +27,4 @@ pip:
 	pip install -e ../src/supy
 
 proc-csv:
-	python ./source/supy/proc_var_info/gen_rst.py
+	python $(SUPYDIR)/proc_var_info/gen_rst.py

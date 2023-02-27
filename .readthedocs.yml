@@ -11,9 +11,9 @@ build:
     python: "mambaforge-4.10"
   jobs:
     pre_install:
-      - git update-index --assume-unchanged environment.yml docs/conf.py
+      - git update-index --assume-unchanged environment.yml docs/source/conf.py
     post_create_environment:
-      - python docs/source/supy/proc_var_info/gen_rst.py
+      - cd docs; make proc_csv
 
 conda:
   environment: docs/env.yml
