@@ -9,7 +9,7 @@ except:
     pass
 
 # %%
-from urlpath import URL
+# from urlpath import URL
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -32,7 +32,7 @@ print("loading in", "gen_df_forcing", "...")
 # ### load `SUEWS_***.txt` related tables
 from nml_rst_proc import url_repo_base, url_repo_input
 
-url_repo_output = URL(url_repo_base) / "output_files"
+url_repo_output = Path(url_repo_base) / "output_files"
 
 
 def gen_df_forcing(
@@ -112,7 +112,7 @@ def gen_df_output(
         df_var_info = pd.concat([pd.read_csv(f) for f in list_url_table], sort=False)
     except:
         for url in list_url_table:
-            if not url.get().ok:
+            if not url.exists():
                 print(f"{url} not existing!")
     else:
         # clean meta info

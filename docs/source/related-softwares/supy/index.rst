@@ -1,4 +1,4 @@
-.. _index_page:
+.. _supy_index:
 
 SuPy: SUEWS that speaks Python
 ------------------------------
@@ -19,30 +19,27 @@ SuPy: SUEWS that speaks Python
     :target: https://mybinder.org/v2/gh/UMEP-dev/SuPy/main
     :alt: Binder Status
 
-.. image:: https://readthedocs.org/projects/supy/badge/?version=latest
-    :target: https://supy.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+.. .. image:: https://readthedocs.org/projects/supy/badge/?version=latest
+..     :target: https://supy.readthedocs.io/en/latest/?badge=latest
+..     :alt: Documentation Status
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574404.svg
-   :target: https://doi.org/10.5281/zenodo.2574404
-   :alt: DOI
+.. .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574404.svg
+..    :target: https://doi.org/10.5281/zenodo.2574404
+..    :alt: DOI
 
 
 
 - **What is SuPy?**
 
-    SuPy is a Python-enhanced urban climate model
-    with `SUEWS <https://suews-docs.readthedocs.io/en/latest/>`_ as its computation core.
 
-    The scientific rigour in SuPy results is thus gurranteed by SUEWS
-    (see :ref:`SUEWS publications <Recent_publications>` and
-    :ref:`Parameterisations and sub-models within SUEWS`).
+SuPy is a Python-enhanced urban climate model with `SUEWS <https://suews-docs.readthedocs.io/en/latest/>`_ as its computation core.
 
-    Meanwhile, the data analysis ability of SuPy is greatly enhanced
-    by `the Python-based SciPy Stack <https://scipy.org>`_,
-    notably `numpy <https://www.numpy.org>`_ and
-    `pandas <http://pandas.pydata.org/>`_.
-    More details are described in `our SuPy paper <https://doi.org/10.5194/gmd-12-2781-2019>`_.
+The scientific rigour in SuPy results is thus guaranteed by SUEWS (see :ref:`SUEWS publications <Recent_publications>` and
+:ref:`Parameterisations and sub-models within SUEWS`).
+
+Meanwhile, the data analysis ability of SuPy is greatly enhanced by `the Python-based SciPy Stack <https://scipy.org>`_, notably `numpy <https://www.numpy.org>`_ and `pandas <http://pandas.pydata.org/>`_.
+
+More details are described in `our SuPy paper <https://doi.org/10.5194/gmd-12-2781-2019>`_.
 
 
 
@@ -57,7 +54,7 @@ SuPy: SUEWS that speaks Python
 
 - **How to use SuPy?**
 
-    * Please follow :ref:`Quickstart of SuPy` and :ref:`other tutorials <tutorial_index>`.
+    * Please follow :ref:`Quickstart of SuPy` and :ref:`other tutorials <supy_tutorial>`.
 
     * Please see `api` for details.
 

@@ -1,4 +1,4 @@
-.. _tutorial_index:
+.. _supy_tutorial:
 
 Tutorials
 =========

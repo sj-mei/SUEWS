@@ -1,12 +1,3 @@
-# %% Change working directory from the workspace root to the ipynb file location. Turn this addition off with the DataSciece.changeDirOnImportExport setting
-import os
-
-try:
-    os.chdir(os.path.join(os.getcwd(), "docs/proc_var_info"))
-    print(os.getcwd())
-except:
-    pass
-
 # %%
 from pathlib import Path
 import pandas as pd
@@ -14,7 +5,7 @@ import supy as sp
 import os
 
 try:
-    os.chdir(os.path.join(os.getcwd(), "docs/proc_var_info"))
+    os.chdir(os.path.join(os.getcwd(), "supy/proc_var_info"))
     print(os.getcwd())
 except:
     pass
@@ -36,6 +27,7 @@ from gen_df_forcing_output_csv import gen_df_forcing, gen_df_output
 # # generate option rst files
 # %% [markdown]
 # ## generate dataframes for variable groups
+path_rst_base=Path(__file__).parent.parent/'data-structure'
 
 # %%
 print("generating df_state.csv ...")
@@ -45,8 +37,9 @@ df_state = gen_df_state(
     set_runcontrol,
     set_input_runcontrol,
 )
-df_state.to_csv("df_state.csv")
-print("df_state.csv done!")
+p_csv_state = path_rst_base / "df_state.csv"
+df_state.to_csv(p_csv_state)
+print(f"{p_csv_state} done!")
 
 
 # #%%
@@ -57,8 +50,9 @@ print("df_state.csv done!")
 # %%
 print("generating df_forcing.csv ...")
 df_forcing = gen_df_forcing("SSss_YYYY_data_tt.csv")
-df_forcing.to_csv("df_forcing.csv")
-print("df_forcing.csv done!")
+p_csv_forcing = path_rst_base / "df_forcing.csv"
+df_forcing.to_csv(p_csv_forcing)
+print(f"{p_csv_forcing} done!")
 
 
 # %%
@@ -72,8 +66,9 @@ df_output = gen_df_output(
         "SSss_YYYY_SOLWEIG_TT.csv",
     ],
 )
-df_output.to_csv("df_output.csv")
-print("df_output.csv done!")
+p_csv_output = path_rst_base / "df_output.csv"
+df_output.to_csv(p_csv_output)
+print(f"{p_csv_output} done!")
 
 # %% [markdown]
 # ## generate option string for rst option file
@@ -129,7 +124,8 @@ def gen_rst(path_rst, path_df_csv, rst_title):
 
 
 # %%
-def gen_group_dict(group, path_rst_base=Path("../data-structure/")) -> dict:
+
+def gen_group_dict(group, path_rst_base=path_rst_base) -> dict:
     """generate dict of rst strings for df groups."""
 
     rst_title = f"""
@@ -151,7 +147,7 @@ def gen_group_dict(group, path_rst_base=Path("../data-structure/")) -> dict:
 
     dict_group = {
         "path_rst": path_rst_base / ("df_" + group + ".rst"),
-        "path_df_csv": "df_" + group + ".csv",
+        "path_df_csv": path_rst_base/("df_" + group + ".csv"),
         "rst_title": rst_title + rst_info_group,
     }
 

@@ -21,7 +21,8 @@ from nml_rst_proc import (
     parse_option_rst,
     url_repo_input,
 )
-from urlpath import URL
+
+# from urlpath import URL
 import urllib.request
 import numpy as np
 import pandas as pd
@@ -57,7 +58,7 @@ list_url_rst_x = list(
     gen_url_option(var, source="github") for var in sorted(list_var_nml)
 )
 # list of URLs for rst files of namelist variables
-list_url_rst = list(set(URL("/".join(url.parts)) for url in list_url_rst_x))
+list_url_rst = list(set(Path("/".join(url.parts)) for url in list_url_rst_x))
 
 
 # preload sample data for later use
@@ -113,6 +114,7 @@ def gen_df_dim(df_init_sample) -> pd.DataFrame:
 
 # gen_df_dim(df_init_sample)
 
+
 # %%
 # generate site characteristics dataframe
 def gen_df_site(list_csv_in=list_table, url_base=url_repo_input_site) -> pd.DataFrame:
@@ -143,7 +145,7 @@ def gen_df_site(list_csv_in=list_table, url_base=url_repo_input_site) -> pd.Data
         #     sort=False)
     except:
         for url in list_url_table:
-            if not url.get().ok:
+            if not url.exists():
                 print(f"{url} not existing!")
     else:
         # clean meta info
@@ -188,13 +190,17 @@ def gen_df_nml(set_initcond, set_runcontrol):
     list_url_rst_x = list(
         gen_url_option(var, source="github") for var in sorted(list_var_nml)
     )
-    list_url_rst = list(set(URL("/".join(url.parts)) for url in list_url_rst_x))
+    list_url_rst = list(set(Path("/".join(url.parts)) for url in list_url_rst_x))
 
     try:
-        df_var_nml = pd.concat(parse_option_rst(url) for url in list_url_rst)
+        print("Retrieving SUEWS namelist variables...")
+        # print(list_url_rst)
+        df_var_nml = pd.concat(
+            parse_option_rst(url.as_posix().split("#")[0]) for url in list_url_rst
+        )
     except:
         for url in list_url_rst:
-            if not url.get().ok:
+            if not url.exists():
                 print(f"{url} not existing!")
     # df_var_nml = pd.concat(parse_option_rst(url) for url in list_url_rst)
     else:
@@ -205,6 +211,7 @@ def gen_df_nml(set_initcond, set_runcontrol):
         )
         index_nml = df_var_nml_x.loc[:, "SUEWS-related variables"].str.lower()
         df_var_nml_x.index = index_nml.rename("var")
+        df_var_nml_x = df_var_nml_x.drop_duplicates()
         return df_var_nml_x
 
 
@@ -362,7 +369,7 @@ def gen_rst_url_split_opts(opts_str):
     Returns
     -------
     list
-        a list of parsed RST `:ref:` roles.
+        a list of parsed RST `` roles.
         e.g. [':option:`SUEWS_a <suews:SUEWS_a>`']
     """
     if opts_str != "None":
@@ -371,7 +378,7 @@ def gen_rst_url_split_opts(opts_str):
         list_rst = [opt.strip() for opt in list_opts]
         # list_rst = [f'`{opt}`' for opt in list_rst]
         # more properly handle SUEWS options by explicitly adding prefix `suews`:
-        list_rst = [f":option:`{opt} <suews:{opt}>`" for opt in list_rst]
+        list_rst = [f"`{opt}`" for opt in list_rst]
         list_url_rst = ", ".join(list_rst)
     else:
         list_url_rst = "None"
@@ -383,7 +390,6 @@ def proc_df_state(
     df_var_runcontrol: pd.DataFrame,
     df_var_initcond: pd.DataFrame,
 ) -> pd.DataFrame:
-
     # dataframe of descriptions
     df_var_desc = pd.concat([df_var_site, df_var_runcontrol, df_var_initcond])
     # split variables of different dimensions
@@ -399,13 +405,13 @@ def proc_df_state(
     dict_dim_anno = {
         0: "Scalar",
         (2,): "2: {Weekday, Weekend}",
-        (3,): "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}",
+        (3,): "3: { `EveTr`, `DecTr`, `Grass`}",
         (
             7,
-        ): "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}",
+        ): "7: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`}",
         (
             8,
-        ): "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)} ",
+        ): "8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)} ",
         (24, 2): sep.join(
             [
                 "24: hours of a day",
@@ -414,7 +420,7 @@ def proc_df_state(
         ),
         (8, 4, 3): sep.join(
             [
-                "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)}",
+                "8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)}",
                 "4: {SummerWet, SummerDry, WinterWet, WinterDry}",
                 "3: {a1, a2, a3}",
             ]
@@ -422,19 +428,19 @@ def proc_df_state(
         (4, 3): sep.join(
             [
                 "4: {`LeafGrowthPower1`, `LeafGrowthPower2`, `LeafOffPower1`, `LeafOffPower2`}",
-                "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}",
+                "3: { `EveTr`, `DecTr`, `Grass`}",
             ]
         ),
         (8, 6): sep.join(
             [
-                "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)}",
-                "6: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`}",
+                "8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)}",
+                "6: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`}",
             ]
         ),
         (6, 7): sep.join(
             [
                 "6: { `StorageMin`, `DrainageEq`, `DrainageCoef1`, `DrainageCoef2`, `StorageMax`, current storage}",
-                "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}",
+                "7: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`}",
             ]
         ),
     }
@@ -575,14 +581,19 @@ def gen_df_state(
     return df_var_state
 
 
-df_var_state = gen_df_state(
-    list_table,
-    set_initcond,
-    set_runcontrol,
-    set_input_runcontrol,
-)
+# df_var_state = gen_df_state(
+#     list_table,
+#     set_initcond,
+#     set_runcontrol,
+#     set_input_runcontrol,
+# )
 # print('\n===== df_var_state =====')
 # print('df_var_state shape: ', df_var_state.shape)
 # print('df_var_state head: ', df_var_state.head())
-df_var_state.to_csv("df_state.csv")
+# df_var_state.to_csv("df_state.csv")
 # print('===== df_var_state end=====\n')
+# %%
+# set_initcond
+# set_runcontrol
+gen_df_nml(set_initcond, set_runcontrol).drop_duplicates()
+# %%
