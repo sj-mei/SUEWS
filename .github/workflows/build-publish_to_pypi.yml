@@ -3,14 +3,14 @@ name: Build and Publish Python wheels to PyPI and TestPyPI
 on:
   push:
     paths: # Push events containing matching files
-      - "src/suews/*"
-      - "src/supy/*"
+      - "src/suews/**"
+      - "src/supy/**"
       - ".github/workflows/build-publish_to_pypi.yml"
 
   pull_request:
     paths: # PR events containing matching files
-      - "src/suews/*"
-      - "src/supy/*"
+      - "src/suews/**"
+      - "src/supy/**"
       - ".github/workflows/build-publish_to_pypi.yml"
 
 jobs:
