@@ -1,0 +1,27 @@
+- name: london sim
+- description: london sim
+- model:
+  - method:
+    - netradiationmethod: 1
+    - daylightsaving_method: 1
+    - storageheatmethod: 1
+
+- site:
+  - name: london
+  - lat: 51.5074
+  - lon: 0.1278
+  - land cover:
+    - decidous trees:
+      - several properties
+    - evergreen trees:
+      - several properties
+    - grass:
+      - several properties
+    - water:
+      - several properties
+    - buildings:
+      - several properties
+    - paved:
+      - several properties
+  -
+

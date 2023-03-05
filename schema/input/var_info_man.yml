@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+# split into multiple files for easier maintenance
+# including:
+# 1. physcial parameters
+# - phy_hydro.yml
+# - phy_lumps.yml
+# - phy_phenology.yml
+# - phy_qn.yml
+# - phy_qf.yml
+# - phy_qe.yml
+# - phy_qs.yml
+# - phy_snow.yml
+# 2. site properties
+# - site.yml
+# 3. meteorological forcing
+# - forcing.yml
+# 4. control methods
+# - ctrl_method.yml
+
+

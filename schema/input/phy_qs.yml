@@ -1,0 +1,103 @@
+
+- name: chanohm
+  use:
+    input: state
+  description: Bulk transfer coefficient for this surface to use in AnOHM
+  dimensions:
+    7:
+      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: "-"
+  suews table headers: :option:`AnOHM_Ch <suews:AnOHM_Ch>`
+  usage:
+    StorageHeatMethod: "3: AnOHM"
+
+- name: cpanohm
+  use:
+    input: state
+  description: Volumetric heat capacity for this surface to use in AnOHM
+  dimensions:
+    7:
+      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: J m^-3
+  suews table headers: :option:`AnOHM_Cp <suews:AnOHM_Cp>`
+  usage:
+    StorageHeatMethod: "3: AnOHM"
+
+
+- name: kkanohm
+  use:
+    input: state
+  description: Thermal conductivity for this surface to use in AnOHM
+  dimensions:
+    7:
+      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: W m |K^-1|
+  suews table headers: :option:`AnOHM_Kk <suews:AnOHM_Kk>`
+  usage:
+    StorageHeatMethod: 3:AnOHM
+
+
+
+- name: ohm_coef
+  use:
+    input: parameter
+  description: Coefficients for OHM calculation.
+  data source: "where valid values can be found: for now, link to SUEWS typical value page"
+  dimensions:
+    8:
+      "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)}"
+    4: ""
+    3: "        4: {SummerWet, SummerDry, WinterWet, WinterDry}"
+  unit: Coefficients for OHM calculation
+  suews table headers:
+    :option:`a1 <suews:a1>`, :option:`a2 <suews:a2>`, :option:`a3
+    <suews:a3>`
+  usage:
+    StorageHeatMethod: "1: OHM"
+
+
+- name: ohm_threshsw
+  use:
+    input: state
+  description:
+    Temperature threshold determining whether summer/winter OHM coefficients
+    are applied
+  dimensions:
+    8:
+      "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)} "
+  unit: degC
+  suews table headers: :option:`OHMThresh_SW <suews:OHMThresh_SW>`
+  usage:
+    StorageHeatMethod: "1: OHM"
+- name: ohm_threshwd
+  use:
+    input: state
+  description:
+    Soil moisture threshold determining whether wet/dry OHM coefficients
+    are applied
+  dimensions:
+    8:
+      "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)} "
+  unit: "-"
+  suews table headers: :option:`OHMThresh_WD <suews:OHMThresh_WD>`
+  usage:
+    StorageHeatMethod: "1: OHM"
+- name: ohmincqf
+  use:
+    input: state
+  description:
+    Determines whether the storage heat flux calculation uses |Qstar| or
+    ( |Qstar| +QF).
+  dimensions: 0
+  unit:
+    Determines whether the storage heat flux calculation uses |Qstar| or ( |Qstar|
+    +QF)
+  suews table headers: :option:`OHMIncQF <suews:OHMIncQF>`
+  usage:
+    StorageHeatMethod: "1: OHM"

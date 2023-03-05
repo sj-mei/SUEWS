@@ -1,0 +1,149 @@
+
+
+
+
+- name: g1
+  use:
+    input: state
+  description: Related to maximum surface conductance
+  dimensions: 0
+  unit: mm |s^-1|
+  suews table headers: :option:`G1 <suews:G1>`
+  usage:
+    gsModel: ALL
+- name: g2
+  use:
+    input: state
+  description: Related to Kdown dependence
+  dimensions: 0
+  unit: W m^-2
+  suews table headers: :option:`G2 <suews:G2>`
+  usage:
+    gsModel: ALL
+- name: g3
+  use:
+    input: state
+  description: Related to VPD dependence
+  dimensions: 0
+  unit: units depend on `gsModel`
+  suews table headers: :option:`G3 <suews:G3>`
+  usage:
+    gsModel: ALL
+- name: g4
+  use:
+    input: state
+  description: Related to VPD dependence
+  dimensions: 0
+  unit: units depend on `gsModel`
+  suews table headers: :option:`G4 <suews:G4>`
+  usage:
+    gsModel: ALL
+- name: g5
+  use:
+    input: state
+  description: Related to temperature dependence
+  dimensions: 0
+  unit: degC
+  suews table headers: :option:`G5 <suews:G5>`
+  usage:
+    gsModel: ALL
+- name: g6
+  use:
+    input: state
+  description: Related to soil moisture dependence
+  dimensions: 0
+  unit: "|mm^-1|"
+  suews table headers: :option:`G6 <suews:G6>`
+  usage:
+    gsModel: ALL
+
+
+- name: kmax
+  use:
+    input: state
+  description: Maximum incoming shortwave radiation
+  dimensions: 0
+  unit: W m^-2
+  suews table headers: :option:`Kmax <suews:Kmax>`
+  usage:
+    gsmodel: ALL
+
+
+- name: gsmodel
+  use:
+    input: state
+  description: Formulation choice for conductance calculation.
+  dimensions: 0
+  unit: Formulation choice for conductance calculation
+  suews table headers: :option:`gsModel <suews:gsModel>`
+  usage:
+    gsModel: Method_Selection
+
+
+- name: maxconductance
+  use:
+    input: state
+  description: The maximum conductance of each vegetation or surface type.
+  dimensions:
+    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+  unit: mm |s^-1|
+  suews table headers: :option:`MaxConductance <suews:MaxConductance>`
+  usage:
+    gsmodel: ALL
+
+
+
+- name: s1
+  use:
+    input: state
+  description: A parameter related to soil moisture dependence
+  dimensions: 0
+  unit: "-"
+  suews table headers: :option:`S1 <suews:S1>`
+  usage:
+    gsmodel: could be made internal/removed
+- name: s2
+  use:
+    input: state
+  description: A parameter related to soil moisture dependence
+  dimensions: 0
+  unit: mm
+  suews table headers: :option:`S2 <suews:S2>`
+  usage:
+    gsmodel: could be made internal/removed
+
+
+- name: wetthresh_surf
+  use:
+    input: state
+  description:
+    Depth of water which determines whether evaporation occurs from a partially
+    wet or completely wet surface
+  dimensions:
+    7:
+      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: mm]
+  suews table headers: :option:`WetThreshold <suews:WetThreshold>`
+  usage:
+    EvapMethod: "2: S78"
+
+- name: th
+  use:
+    input: state
+  description: Upper air temperature limit
+  dimensions: 0
+  unit: degC
+  suews table headers: :option:`TH <suews:TH>`
+  usage:
+    gsmodel: ALL
+
+- name: tl
+  use:
+    input: state
+  description: Lower air temperature limit
+  dimensions: 0
+  unit: degC
+  suews table headers: :option:`TL <suews:TL>`
+  usage:
+    gsModel: ALL

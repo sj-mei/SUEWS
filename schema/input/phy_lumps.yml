@@ -1,0 +1,31 @@
+
+- name: raincover
+  use:
+    input: state
+  description: Limit when surface totally covered with water for LUMPS
+  dimensions: 0
+  unit: mm
+  suews table headers: :option:`LUMPS_Cover <suews:LUMPS_Cover>`
+  usage:
+    LUMPS: ALL
+- name: rainmaxres
+  use:
+    input: state
+  description: Maximum water bucket reservoir
+  dimensions: 0
+  unit: mm] Used for LUMPS surface wetness control
+  suews table headers: :option:`LUMPS_MaxRes <suews:LUMPS_MaxRes>`
+  usage:
+    LUMPS: ALL
+
+
+
+- name: veg_type
+  use:
+    input: state
+  description: Internal use. Please DO NOT modify
+  dimensions: 0
+  unit: Internal use. Please DO NOT modif
+  suews table headers: None
+  usage:
+    LUMPS: ALL

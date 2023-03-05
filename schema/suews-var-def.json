@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "$ref": "#/definitions/var"
+  },
+  "required": [
+    "items"
+  ],
+  "definitions": {
+    "outputOptions": {
+      "type": "string",
+      "enum": [
+        "SUEWS",
+        "SPARTACUS",
+        "snow",
+        "RSL",
+        "DailyState",
+        "debug",
+        "BEERS"
+      ]
+    },
+    "input_def": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "string",
+          "description": "intention of the input, one of the following: \n - `state`: model state, updated during simulation\n- `parameter`:site property, invariant during simulation\n- `forcing`: meteorological forcing\n - `model`: model configuration, invariant during simulation",
+          "enum": [
+            "state",
+            "parameter",
+            "forcing",
+            "model",
+            "method"
+          ]
+        }
+      },
+      "required": [
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "output_def": {
+      "properties": {
+        "output": {
+          "description": "destination the variable will be written out; can be multiple text files ",
+          "oneOf": [
+            {
+              "type": "string",
+              "$ref": "#/definitions/outputOptions"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/outputOptions"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          ]
+        }
+      },
+      "required": [
+        "output"
+      ],
+      "additionalProperties": false
+    },
+    "usage_def":{
+      "properties": {
+        "usage": {
+          "oneOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "detailed use of the variable: which physical process it is used for, which scheme it is used in, etc."
+        }
+      }
+
+    },
+    "var": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the variable, e.g. 'qh' "
+        },
+        "use": {
+          "type": "object",
+          "description": "Use of the variable, either 'input' or 'output' ",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/input_def"
+            },
+            {
+              "$ref": "#/definitions/output_def"
+            }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minimum": 1,
+          "description": "full description of the variable"
+        },
+        "unit": {
+          "type": "string",
+          "description": "unit of the variable; e.g. 'W m-2'. This will be used to check the consistency of the input data and wrapped by latex notations in the documentation."
+        },
+        "usage": {
+          "$ref": "#/definitions/usage_def"
+        }
+      },
+      "required": [
+        "name",
+        "use",
+        "description",
+        "unit"
+      ],
+      "if": {
+        "properties": {
+          "use": {
+            "properties": {
+              "input": {
+              }
+            },
+            "required": [
+              "input"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "usage"
+        ]
+      },
+      "additionalProperties": {
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "use": {
+            "const": "someValue"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "property2"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "property2": {
+            "const": "otherValue"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "property3"
+        ]
+      }
+    }
+  ]
+}

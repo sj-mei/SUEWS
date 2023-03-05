@@ -1,0 +1,228 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+# ########################################
+# this file is used to define the variables used in the site description
+
+- name: evetreeh
+  use:
+    input: state
+  description: Mean height of evergreen trees
+  dimensions: 0
+  unit: m
+  suews table headers: :option:`H_EveTr <suews:H_EveTr>`
+  usage:
+    SiteDescription: SiteDescription
+- name: faibldg
+  use:
+    input: state
+  description: Frontal area index for buildings
+  dimensions: 0
+  unit: "-"
+  suews table headers: :option:`FAI_Bldgs <suews:FAI_Bldgs>`
+  usage:
+    RoughLenMomMethod: "3: MacDonald"
+- name: faidectree
+  use:
+    input: state
+  description: Frontal area index for deciduous trees
+  dimensions: 0
+  unit: "-"
+  suews table headers: :option:`FAI_DecTr <suews:FAI_DecTr>`
+  usage:
+    RoughLenMomMethod: "3: MacDonald"
+- name: faievetree
+  use:
+    input: state
+  description: Frontal area index for evergreen trees
+  dimensions: 0
+  unit: "-"
+  suews table headers: :option:`FAI_EveTr <suews:FAI_EveTr>`
+  usage:
+    RoughLenMomMethod: "3: MacDonald"
+
+- name: sfr_surf
+  use:
+    input: state
+  description: Surface cover fractions.
+  dimensions:
+    7:
+      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: Surface cover fractions
+  suews table headers:
+    :option:`Fr_Bldgs <suews:Fr_Bldgs>`, :option:`Fr_Bsoil <suews:Fr_Bsoil>`,
+    :option:`Fr_DecTr <suews:Fr_DecTr>`, :option:`Fr_EveTr <suews:Fr_EveTr>`, :option:`Fr_Grass
+    <suews:Fr_Grass>`, :option:`Fr_Paved <suews:Fr_Paved>`, :option:`Fr_Water <suews:Fr_Water>`
+  usage:
+    SiteDescription: SiteDescription
+
+- name: lat
+  use:
+    input: state
+  description: Latitude
+  dimensions: 0
+  unit: deg]
+  suews table headers: :option:`lat <suews:lat>`
+  usage:
+    SiteDescription: SiteDescription
+- name: lng
+  use:
+    input: state
+  description: longitude
+  dimensions: 0
+  unit: deg
+  suews table headers: :option:`lng <suews:lng>`
+  usage:
+    SiteDescription: SiteDescription
+
+- name: dectreeh
+  use:
+    input: state
+  description: Mean height of deciduous trees
+  dimensions: 0
+  unit: m
+  suews table headers: :option:`H_DecTr <suews:H_DecTr>`
+  usage:
+    SiteDescription: SiteDescription
+
+- name: bldgh
+  use:
+    input: state
+  description: Mean building height
+  dimensions: 0
+  unit: m
+  suews table headers: :option:`H_Bldgs <suews:H_Bldgs>`
+  usage:
+    SiteDescription: SiteDescription
+
+- name: enddls
+  use:
+    input: state
+  description: End of the day light savings
+  dimensions: 0
+  unit: DOY
+  suews table headers: :option:`EndDLS <suews:EndDLS>`
+  usage:
+    daylightsavings - all human activities:
+      NEW Option Automatic via Python Package
+      or provide
+
+- name: alt
+  use:
+    input: state
+  description: Altitude of grids
+  dimensions: 0
+  unit: m]
+  suews table headers: :option:`Alt <suews:Alt>`
+  usage:
+    SiteDescription: SiteDescription
+
+- name: faut
+  use:
+    input: state
+  description: Fraction of irrigated area that is irrigated using automated systems
+  dimensions: 0
+  unit: Fraction of irrigated area that is irrigated using automated system
+  suews table headers: :option:`Faut <suews:Faut>`
+  usage:
+    WaterUseMethod: "0: Modelled"
+
+- name: pormax_dec
+  use:
+    input: state
+  description:
+    full leaf-on summertime value Used only for `DecTr` (can affect roughness
+    calculation)
+  dimensions: 0
+  unit:
+    full leaf-on summertime value Used only for `DecTr` (can affect roughness
+    calculation
+  suews table headers: :option:`PorosityMax <suews:PorosityMax>`
+  usage:
+    RoughLenMomMethod: ALL
+- name: pormin_dec
+  use:
+    input: state
+  description:
+    leaf-off wintertime value Used only for `DecTr` (can affect roughness
+    calculation)
+  dimensions: 0
+  unit: leaf-off wintertime value Used only for `DecTr` (can affect roughness calculation
+  suews table headers: :option:`PorosityMin <suews:PorosityMin>`
+  usage:
+    RoughLenMomMethod: ALL
+- name: porosity_id
+  use:
+    input: state
+  description: Porosity of deciduous vegetation on day 0 of run.
+  dimensions: 0
+  unit: Porosity of deciduous vegetation on day 0 of run
+  suews table headers: :option:`porosity0 <suews:porosity0>`
+  usage:
+    RoughLenMomMethod: ALL
+
+- name: surfacearea
+  use:
+    input: state
+  description: Area of the grid
+  dimensions: 0
+  unit: ha]
+  suews table headers: :option:`SurfaceArea <suews:SurfaceArea>`
+  usage:
+    SiteDescription: SiteDescription
+
+- name: startdls
+  use:
+    input: parameter
+  description: Start of the day light savings
+  dimensions: 0
+  unit: DOY
+  suews table headers: :option:`StartDLS <suews:StartDLS>`
+  usage:
+    daylightsavings: .nan
+
+- name: z
+  use:
+    input: state
+  description: Measurement height
+  dimensions: 0
+  unit: m] for all atmospheric forcing variables set in `SSss_YYYY_data_tt.txt`
+  suews table headers: :option:`z <suews:z>`
+  usage:
+    SiteDescription: SiteDescription
+- name: z0m_in
+  use:
+    input: state
+  description: Roughness length for momentum
+  dimensions: 0
+  unit: m
+  suews table headers: :option:`z0 <suews:z0>`
+  usage:
+    RoughLenMomMethod: 1:provided
+- name: zdm_in
+  use:
+    input: state
+  description: Zero-plane displacement
+  dimensions: 0
+  unit: m
+  suews table headers: :option:`zd <suews:zd>`
+  usage:
+    RoughLenMomMethod: 1:provided
+
+- name: timezone
+  use:
+    input: state
+  description: Time zone. This should be set according
+    to the times given in the meteorological forcing file(s)
+  dimensions: 0
+  unit: h
+  suews table headers: :option:`Timezone <suews:Timezone>`
+  usage:
+    SiteDescription: SiteDescription

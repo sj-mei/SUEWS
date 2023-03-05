@@ -1,0 +1,179 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+# ########################################
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+# ########################################
+# this file is used to define the meteorologgical forcing variables
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# revision history:
+# TS 20230305: checked
+# ########################################
+
+- name: iy
+  use:
+    input: forcing
+  description: Year
+  unit: YYYY
+  usage: yes
+- name: id
+  use:
+    input: forcing
+  description: Day of year
+  unit: DOY
+  usage: yes
+- name: it
+  use:
+    input: forcing
+  description: Hour
+  unit: H
+  usage: yes
+- name: imin
+  use:
+    input: forcing
+  description: Minute
+  unit: M
+  usage: yes
+- name: qn
+  use:
+    input: forcing
+  description: Net all-wave radiation
+  unit: W m^-2] (Required if `NetRadiationMethod` = 0.
+  usage:
+    netradiaton: "0:Obs"
+- name: qh
+  use:
+    input: forcing
+  description: Sensible heat flux
+  unit: W m^-2
+  usage: no
+- name: qe
+  use:
+    input: forcing
+  description: Latent heat flux
+  unit: W m^-2
+  usage: no
+- name: qs
+  use:
+    input: forcing
+  description: Storage heat flux
+  unit: W m^-2
+  usage: no
+- name: qf
+  use:
+    input: forcing
+  description: Anthropogenic heat flux
+  unit: W m^-2
+  usage:
+    emission: "0:Obs"
+- name: U
+  use:
+    input: forcing
+  description: Wind speed (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+  unit: m s-1
+  usage: yes
+- name: RH
+  use:
+    input: forcing
+  description: Relative Humidity (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+  unit: "%"
+  usage: yes
+- name: Tair
+  use:
+    input: forcing
+  description: Air temperature (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+  unit: degC
+  usage: yes
+
+- name: pres
+  use:
+    input: forcing
+  description: Barometric pressure (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`
+  unit: kPa
+  usage: yes
+- name: rain
+  use:
+    input: forcing
+  description: Accumulated rainfall
+  unit: mm
+  usage: yes
+- name: kdown
+  use:
+    input: forcing
+  description: Incoming shortwave radiation
+  unit: W m^-2] Must be > 0 W m^-2
+  usage: yes
+- name: snow
+  use:
+    input: forcing
+  description: "Snow cover fraction (0 – 1)"
+  unit: -] (Required if `SnowUse` = 1
+  usage:
+    snow: "1:Obs"
+- name: ldown
+  use:
+    input: forcing
+  description: Incoming longwave radiation
+  unit: W m^-2
+  usage:
+    ldown: "0:Obs" # todo: propose to introduce a new method for ldown so to separate obs and modelled ldown
+- name: fcld
+  use:
+    input: forcing
+  description: Cloud fraction
+  unit: tenths
+  usage:
+    ldown: "1:L_cloud" # todo: propose to introduce a new method for ldown so to separate obs and modelled ldown
+- name: Wuh
+  use:
+    input: forcing
+  description: External water use
+  unit: "m^3"
+  usage:
+    wateruse: "0:Obs"
+- name: xsmd
+  use:
+    input: forcing
+  description: Observed soil moisture
+  unit: kg kg^-1 # todo: propose to simplify the input type to be only volumetric soil moisture, which seems to be more commonly measured; drop support for gravimetric soil moisture
+  usage:
+    soilmoisture: "0:Obs"
+- name: lai
+  use:
+    input: forcing
+  description: Observed leaf area index
+  unit: "m^-2 m^-2"
+  usage:
+    lai: "0:Obs"
+- name: kdiff
+  use:
+    input: forcing
+  description: Diffuse radiation
+  unit: "W m^-2"
+  usage:
+    netradiaton: "xx:BEERS" # need to assign an option for BEERS
+- name: kdir
+  use:
+    input: forcing
+  description: Direct radiation
+  unit: "W m^-2"
+  usage:
+    netradiaton: "xx:BEERS" # need to assign an option for BEERS
+- name: wdir
+  use:
+    input: forcing
+  description: Wind direction
+  unit: degrees
+  usage: no
+- name: isec
+  use:
+    input: forcing
+  description: Second
+  default: 0
+  unit: S
+  usage: yes

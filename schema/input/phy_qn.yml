@@ -1,0 +1,327 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+# ########################################
+# this file is used to define:
+#  variables used in radiation calculations
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# revision history:
+# TS 20230305: ???
+# ########################################
+
+# SPARTACUS
+- name: air_ext_lw
+  use:
+    input: parameter
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: air_ext_sw
+  use:
+    input: parameter
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: air_ssa_lw
+  use:
+    input: parameter
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: air_ssa_sw
+  use:
+    input: parameter
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+
+- name: ground_albedo_dir_mult_fact
+  use:
+    input: parameter
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: '-'
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: n_stream_lw_urban
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: n_stream_sw_urban
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: n_vegetation_region_urban
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+# NARP
+- name: narp_trans_site
+  use:
+    input: parameter
+  description: Atmospheric transmissivity for NARP
+  dimensions: 0
+  unit: "-"
+  suews table headers: :option:`NARP_Trans <suews:NARP_Trans>`
+  usage:
+    NetRadiationMethod: "<500: NARP"
+
+
+- name: emis
+  use:
+    input: state
+  description: Effective surface emissivity.
+  dimensions:
+    7:
+      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: Effective surface emissivity
+  suews table headers: :option:`Emissivity <suews:Emissivity>`
+  usage:
+    NetRadiationMethod: "<500: NARP"
+
+
+- name: alb
+  use:
+    input: parameter # for vegetated surfaces this is a state variable as it is updated daily
+  description: Effective surface albedo (middle of the day value).
+  dimensions:
+    7:
+      "seven land covers: {`suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: Effective surface albedo (middle of the day value)
+  suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
+  usage:
+    NetRadiationMethod: "<500: NARP"
+
+- name: albdectr_id # unnecessary? could be removed if albedo is a state variable
+  use:
+    input: state
+  description: Albedo of deciduous surface `DecTr`; updated daily
+  dimensions: 0
+  unit: "-"
+  suews table headers: :option:`albDecTr0 <suews:albDecTr0>`
+  usage:
+    NetRadiationMethod: ALL
+
+- name: albevetr_id # unnecessary? could be removed if albedo is a state variable
+  use:
+    input: state
+  description: Albedo of evergreen surface `EveTr` on day 0 of run
+  dimensions: 0
+  unit: Albedo of evergreen surface `EveTr` on day 0 of ru
+  suews table headers: :option:`albEveTr0 <suews:albEveTr0>`
+  usage:
+    NetRadiationMethod: ALL
+
+- name: albgrass_id # unnecessary? could be removed if albedo is a state variable
+  use:
+    input: state
+  description: Albedo of grass surface `Grass` on day 0 of run
+  dimensions: 0
+  unit: Albedo of grass surface `Grass` on day 0 of ru
+  suews table headers: :option:`albGrass0 <suews:albGrass0>`
+  usage:
+    NetRadiationMethod: ALL
+- name: albmax_dectr
+  use:
+    input: state
+  description: Effective surface albedo (middle of the day value) for summertime.
+  dimensions: 0
+  unit: Effective surface albedo (middle of the day value) for summertime
+  suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
+  usage:
+    NetRadiationMethod: ALL
+- name: albmax_evetr
+  use:
+    input: state
+  description: Effective surface albedo (middle of the day value) for summertime.
+  dimensions: 0
+  unit: Effective surface albedo (middle of the day value) for summertime
+  suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
+  usage:
+    NetRadiationMethod: ALL
+- name: albmax_grass
+  use:
+    input: state
+  description: Effective surface albedo (middle of the day value) for summertime.
+  dimensions: 0
+  unit: Effective surface albedo (middle of the day value) for summertime
+  suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
+  usage:
+    NetRadiationMethod: ALL
+- name: albmin_dectr
+  use:
+    input: state
+  description:
+    Effective surface albedo (middle of the day value) for wintertime (not
+    including snow).
+  dimensions: 0
+  unit:
+    Effective surface albedo (middle of the day value) for wintertime (not including
+    snow)
+  suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
+  usage:
+    NetRadiationMethod: ALL
+- name: albmin_evetr
+  use:
+    input: state
+  description:
+    Effective surface albedo (middle of the day value) for wintertime (not
+    including snow).
+  dimensions: 0
+  unit:
+    Effective surface albedo (middle of the day value) for wintertime (not including
+    snow)
+  suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
+  usage:
+    NetRadiationMethod: ALL
+- name: albmin_grass
+  use:
+    input: state
+  description:
+    Effective surface albedo (middle of the day value) for wintertime (not
+    including snow).
+  dimensions: 0
+  unit:
+    Effective surface albedo (middle of the day value) for wintertime (not including
+    snow)
+  suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
+  usage:
+    NetRadiationMethod: ALL
+
+
+- name: sw_dn_direct_frac
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod: ">1000:SS"
+
+- name: use_sw_direct_albedo
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: veg_contact_fraction_const
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: veg_fsd_const
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: veg_ssa_lw
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+- name: veg_ssa_sw
+  use:
+    input: state
+  description: TO ADD #TODO
+  dimensions: 0
+  unit: TO ADD #TODO
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+
