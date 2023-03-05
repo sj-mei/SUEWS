@@ -19,33 +19,24 @@
 - name: air_ext_lw
   use:
     input: parameter
-  description: TO ADD #TODO
+  description: Longwave wavelength-independent air extinction coefficient (i.e. number of radiance e-foldings per metre).
+  configuration:
+    - 0.0 is a bad approximation [Hogan, 2019] but better representation requires several band treatment which is not in SS yet.
   dimensions: 0
-  unit: TO ADD #TODO
+  unit: m^-1
   suews table headers: None
   usage:
     NetRadiationMethod:
       - "1001:SS+L_obs"
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
+
 - name: air_ext_sw
   use:
     input: parameter
-  description: TO ADD #TODO
+  description: Shortwave wavelength-independent air extinction coefficient (i.e. number of radiance e-foldings per metre)
   dimensions: 0
-  unit: TO ADD #TODO
-  suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
-- name: air_ssa_lw
-  use:
-    input: parameter
-  description: TO ADD #TODO
-  dimensions: 0
-  unit: TO ADD #TODO
+  unit: m^-1
   suews table headers: None
   usage:
     NetRadiationMethod:
@@ -53,12 +44,12 @@
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
 
-- name: air_ssa_sw
+- name: air_ssa_lw # since this is an albedo, it could be renamed to start with "albedo"? #TODO
   use:
     input: parameter
-  description: TO ADD #TODO
+  description: Longwave single scattering albedo of air
   dimensions: 0
-  unit: TO ADD #TODO
+  unit: "-"
   suews table headers: None
   usage:
     NetRadiationMethod:
@@ -66,13 +57,28 @@
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
 
+- name: air_ssa_sw # since this is an albedo, it could be renamed to start with "albedo"? #TODO
+  use:
+    input: parameter
+  description: Shortwave single scattering albedo of air
+  dimensions: 0
+  unit: "-"
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
 
 - name: ground_albedo_dir_mult_fact
   use:
     input: parameter
-  description: TO ADD #TODO
+  description: Ratio of the direct and diffuse albedo of the ground
   dimensions: 0
-  unit: '-'
+  unit: "-"
+  configuration:
+    - 1.0 (Recommended in this version.)
+    - "Can be updated from 1: if detailed knowledge of the direct and diffuse albedo is available."
   suews table headers: None
   usage:
     NetRadiationMethod:
@@ -83,19 +89,78 @@
 - name: n_stream_lw_urban
   use:
     input: state
-  description: TO ADD #TODO
+  description: "LW streams per hemisphere (note: this is the number of quadrature points so a value of 4 corresponds to an ‘8-stream scheme’)"
   dimensions: 0
-  unit: TO ADD #TODO
+  unit: "-"
   suews table headers: None
   usage:
     NetRadiationMethod:
       - "1001:SS+L_obs"
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
+
 - name: n_stream_sw_urban
   use:
     input: state
-  description: TO ADD #TODO
+  description: "SW diffuse streams per hemisphere (note: this is the number of quadrature points so a value of 4 corresponds to an ‘8-stream scheme’)"
+  dimensions: 0
+  unit: "-"
+  configuration:
+    - "4 (Recommended in this version.)"
+    - "At large computational cost small improvements in accuracy can be made by increasing from 4 [Hogan, 2019]."
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: n_vegetation_region_urban
+  use:
+    input: state
+  description: Number of regions used to describe vegetation
+  dimensions: 0
+  unit: "-"
+  configuration:
+    - "1 (default): heterogeneity of vegetation not considered. might be okay de pending on the level of accuracy needed. See Hogan et al. [2018] – details of SPARTACUS-Vegetation for more information."
+    - "2: heterogeneity of vegetation considered"
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: sw_dn_direct_frac
+  use:
+    input: parameter
+  description: Fraction of down-welling shortwave radiation that is direct
+  dimensions: 0
+  unit: "-"
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: use_sw_direct_albedo
+  use:
+    input: state
+  description: Specify ground and roof albedos separately for direct solar radiation
+  dimensions: 0
+  unit: "NA"
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: veg_contact_fraction_const # this is a fraction, so it could be renamed to start with "fraction"? #TODO
+  use:
+    input: state
+  description: Fraction of vegetation edge in contact with building walls
   dimensions: 0
   unit: TO ADD #TODO
   suews table headers: None
@@ -104,12 +169,46 @@
       - "1001:SS+L_obs"
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
-- name: n_vegetation_region_urban
+
+- name: veg_fsd_const
+  use:
+    input: parameter
+  description: Fractional standard deviation of the vegetation extinction. Determines the extinction coefficient in the inner and outer layers of the tree crown when n_vegetation_region_urban=2.
+  dimensions: 0
+  unit: "-"
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: veg_ssa_lw
   use:
     input: state
-  description: TO ADD #TODO
+  description: Longwave single scattering albedo of vegetation
   dimensions: 0
-  unit: TO ADD #TODO
+  unit: "-"
+  configuration:
+    - 0.06 (Recommended in this version.)
+    - Should be estimated using a vegetation type in https://speclib.jpl.nasa.gov/library (see Vegetation single scattering albedo (SSA) for details). - Reflectance is ~0.04 for Acer Pensylvanicum, - ~0.02 for Quercus Robur and - ~0.04 for Betula Lenta.
+    - SSA ~ 2*reflectance so 0.06 is chosen as the default.
+  suews table headers: None
+  usage:
+    NetRadiationMethod:
+      - "1001:SS+L_obs"
+      - "1002:SS+L_cloud"
+      - "1003:SS+L_RH"
+
+- name: veg_ssa_sw
+  use:
+    input: state
+  description: Shortwave single scattering albedo of leaves
+  dimensions: 0
+  unit: "-"
+  configuration:
+    - Broadband shortwave vegetation SSA values ranged between 0.41 and 0.52 for RAMI5 Järvselja birch stand forest trees. 0.46 is the default value but users can choose another value if the dominant tree type is one of the RAMI5 Järvselja birch stand forest trees (see Vegetation single scattering albedo (SSA) for details).
+
   suews table headers: None
   usage:
     NetRadiationMethod:
@@ -128,29 +227,23 @@
   usage:
     NetRadiationMethod: "<500: NARP"
 
-
 - name: emis
   use:
-    input: state
+    input: parameter
   description: Effective surface emissivity.
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "seven land covers: {`suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
   unit: Effective surface emissivity
   suews table headers: :option:`Emissivity <suews:Emissivity>`
   usage:
     NetRadiationMethod: "<500: NARP"
-
 
 - name: alb
   use:
     input: parameter # for vegetated surfaces this is a state variable as it is updated daily
   description: Effective surface albedo (middle of the day value).
   dimensions:
-    7:
-      "seven land covers: {`suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "seven land covers: {`suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
   unit: Effective surface albedo (middle of the day value)
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
   usage:
@@ -185,36 +278,40 @@
   suews table headers: :option:`albGrass0 <suews:albGrass0>`
   usage:
     NetRadiationMethod: ALL
+
 - name: albmax_dectr
   use:
-    input: state
+    input: parameter
   description: Effective surface albedo (middle of the day value) for summertime.
   dimensions: 0
   unit: Effective surface albedo (middle of the day value) for summertime
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
   usage:
     NetRadiationMethod: ALL
+
 - name: albmax_evetr
   use:
-    input: state
+    input: parameter
   description: Effective surface albedo (middle of the day value) for summertime.
   dimensions: 0
   unit: Effective surface albedo (middle of the day value) for summertime
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
   usage:
     NetRadiationMethod: ALL
+
 - name: albmax_grass
   use:
-    input: state
+    input: parameter
   description: Effective surface albedo (middle of the day value) for summertime.
   dimensions: 0
   unit: Effective surface albedo (middle of the day value) for summertime
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
   usage:
     NetRadiationMethod: ALL
+
 - name: albmin_dectr
   use:
-    input: state
+    input: parameter
   description:
     Effective surface albedo (middle of the day value) for wintertime (not
     including snow).
@@ -225,9 +322,10 @@
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
   usage:
     NetRadiationMethod: ALL
+
 - name: albmin_evetr
   use:
-    input: state
+    input: parameter
   description:
     Effective surface albedo (middle of the day value) for wintertime (not
     including snow).
@@ -238,9 +336,10 @@
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
   usage:
     NetRadiationMethod: ALL
+
 - name: albmin_grass
   use:
-    input: state
+    input: parameter
   description:
     Effective surface albedo (middle of the day value) for wintertime (not
     including snow).
@@ -251,77 +350,3 @@
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
   usage:
     NetRadiationMethod: ALL
-
-
-- name: sw_dn_direct_frac
-  use:
-    input: state
-  description: TO ADD #TODO
-  dimensions: 0
-  unit: TO ADD #TODO
-  suews table headers: None
-  usage:
-    NetRadiationMethod: ">1000:SS"
-
-- name: use_sw_direct_albedo
-  use:
-    input: state
-  description: TO ADD #TODO
-  dimensions: 0
-  unit: TO ADD #TODO
-  suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
-- name: veg_contact_fraction_const
-  use:
-    input: state
-  description: TO ADD #TODO
-  dimensions: 0
-  unit: TO ADD #TODO
-  suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
-- name: veg_fsd_const
-  use:
-    input: state
-  description: TO ADD #TODO
-  dimensions: 0
-  unit: TO ADD #TODO
-  suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
-- name: veg_ssa_lw
-  use:
-    input: state
-  description: TO ADD #TODO
-  dimensions: 0
-  unit: TO ADD #TODO
-  suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
-- name: veg_ssa_sw
-  use:
-    input: state
-  description: TO ADD #TODO
-  dimensions: 0
-  unit: TO ADD #TODO
-  suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
-
-
