@@ -7,13 +7,13 @@
 # any questions, please contact the SUEWS development team by submitting an issue:
 # https://github.com/UMEP-dev/SUEWS/issues/new
 
-# ########################################
+# ########################################################
 # this file is used to define:
-#  variables used in anthropogenic heat/other emission calculations
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#  variables used in evapotranspiration calculations
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # revision history:
 # TS 07 Mar 2023: checked
-# ########################################
+# ########################################################
 
 - name: g_max
   use:
