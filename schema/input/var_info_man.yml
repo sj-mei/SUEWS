@@ -10,13 +10,15 @@
 # split into multiple files for easier maintenance
 # including:
 # 1. physcial parameters
+# checked:
+# - phy_qn.yml
+# - phy_qf.yml
+# - phy_qs.yml
+# to be checked:
+# - phy_qe.yml
 # - phy_hydro.yml
 # - phy_lumps.yml
 # - phy_phenology.yml
-# - phy_qn.yml
-# - phy_qf.yml
-# - phy_qe.yml
-# - phy_qs.yml
 # - phy_snow.yml
 # 2. site properties
 # - site.yml
@@ -24,5 +26,3 @@
 # - forcing.yml
 # 4. control methods
 # - ctrl_method.yml
-
-
