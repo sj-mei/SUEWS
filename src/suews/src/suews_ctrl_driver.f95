@@ -61,7 +61,7 @@ CONTAINS
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
-      FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
+      FrFossilFuel_Heat, FrFossilFuel_NonHeat, g_max, g_k, g_q_base, g_q_shape, g_t, g_sm, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
       InternalWaterUse_h, &
@@ -188,12 +188,12 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: FlowChange !Difference between the input and output flow in the water body [mm]
       REAL(KIND(1D0)), INTENT(IN) :: FrFossilFuel_Heat ! fraction of fossil fuel heat [-]
       REAL(KIND(1D0)), INTENT(IN) :: FrFossilFuel_NonHeat ! fraction of fossil fuel non heat [-]
-      REAL(KIND(1D0)), INTENT(IN) :: G1 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G2 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G3 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G4 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G5 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G6 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: g_max !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: g_k !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: g_q_base !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: g_q_shape !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: g_t !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: g_sm !Fitted parameters related to surface res. calculations
       REAL(KIND(1D0)), INTENT(IN) :: H_maintain ! ponding water depth to maintain [mm]
       REAL(KIND(1D0)), INTENT(IN) :: InternalWaterUse_h !Internal water use [mm h-1]
       REAL(KIND(1D0)), INTENT(IN) :: IrrFracPaved !fraction of paved which are irrigated [-]
@@ -1156,8 +1156,8 @@ CONTAINS
             avdens, avcp, QH_Init, zzd, z0m, zdm, &
             avU1, Temp_C, VegFraction, kdown, &
             Kmax, &
-            g1, g2, g3, g4, &
-            g5, g6, s1, s2, &
+            g_max, g_k, g_q_base, g_q_shape, &
+            g_t, g_sm, s1, s2, &
             th, tl, &
             dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_prev, sfr_surf, &
             UStar, TStar, L_mod, & !output
@@ -1420,8 +1420,8 @@ CONTAINS
       ! ============ BIOGENIC CO2 FLUX =======================
       CALL SUEWS_cal_BiogenCO2( &
          alpha_bioCO2, alpha_enh_bioCO2, kdown, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
-         dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-         G5, G6, gfunc, gsmodel, id, it, Kmax, LAI_id_next, LAIMin, &
+         dectime, Diagnose, EmissionsMethod, Fc_anthro, g_max, g_k, g_q_base, g_q_shape, &
+         g_t, g_sm, gfunc, gsmodel, id, it, Kmax, LAI_id_next, LAIMin, &
          LAIMax, MaxConductance, min_res_bioCO2, Press_hPa, resp_a, &
          resp_b, S1, S2, sfr_surf, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
          Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
@@ -1679,8 +1679,8 @@ CONTAINS
    !==============BIOGENIC CO2 flux==================================================
    SUBROUTINE SUEWS_cal_BiogenCO2( &
       alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
-      dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-      G5, G6, gfunc, gsmodel, id, it, Kmax, LAI_id, LAIMin, &
+      dectime, Diagnose, EmissionsMethod, Fc_anthro, G_max, G_k, G_q_base, G_q_shape, &
+      G_t, G_sm, gfunc, gsmodel, id, it, Kmax, LAI_id, LAIMin, &
       LAIMax, MaxConductance, min_res_bioCO2, Press_hPa, resp_a, &
       resp_b, S1, S2, sfr_surf, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
       Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
@@ -1724,12 +1724,12 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: avRh !average relative humidity (%) [-]
       REAL(KIND(1D0)), INTENT(in) :: dectime !decimal time [-]
       REAL(KIND(1D0)), INTENT(in) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: G1 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G2 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G3 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G4 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G5 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G6 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_max !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_k !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_q_base !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_q_shape !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_t !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_sm !Fitted parameters related to surface res. calculations
       REAL(KIND(1D0)), INTENT(in) :: gfunc
       REAL(KIND(1D0)), INTENT(in) :: Kmax !annual maximum hourly solar radiation [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: Press_hPa !air pressure [hPa]
@@ -1783,7 +1783,7 @@ CONTAINS
                id, it, & ! input:
                SMDMethod, SnowFrac, sfr_surf, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
                LAIMax, LAI_id, gsModel, Kmax, &
-               G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
+               G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
                gfunc2, dummy10, dummy11) ! output:
          END IF
 
@@ -3236,8 +3236,11 @@ CONTAINS
       id, it, gsModel, SMDMethod, &
       avdens, avcp, QH_init, zzd, z0m, zdm, &
       avU1, Temp_C, VegFraction, &
-      avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
-      xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr_surf, &
+      avkdn, Kmax, &
+      G_max, G_k, G_q_base, G_q_shape, &
+      G_t, G_sm, S1, S2, &
+      TH, TL, &
+      dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr_surf, &
       UStar, TStar, L_mod, & !output
       zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
 
@@ -3265,12 +3268,12 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: VegFraction !Fraction of vegetation [-]
       REAL(KIND(1D0)), INTENT(in) :: avkdn !Average downwelling shortwave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: Kmax !Annual maximum hourly solar radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: G1 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G2 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G3 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G4 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G5 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: G6 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_max !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_k !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_q_base !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_q_shape !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_t !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(in) :: G_sm !Fitted parameters related to surface res. calculations
       REAL(KIND(1D0)), INTENT(in) :: S1 !a parameter related to soil moisture dependence [-]
       REAL(KIND(1D0)), INTENT(in) :: S2 !a parameter related to soil moisture dependence [mm]
       REAL(KIND(1D0)), INTENT(in) :: TH !Maximum temperature limit [degC]
@@ -3357,7 +3360,7 @@ CONTAINS
          id, it, & ! input:
          SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
          LAIMax, LAI_id, gsModel, Kmax, &
-         G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
+         G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
          gfunc, gsc, RS) ! output:
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
@@ -4094,7 +4097,7 @@ CONTAINS
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
-      FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
+      FrFossilFuel_Heat, FrFossilFuel_NonHeat, G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
       InternalWaterUse_h, &
@@ -4218,12 +4221,12 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: FlowChange !Difference between the input and output flow in the water body [mm]
       REAL(KIND(1D0)), INTENT(IN) :: FrFossilFuel_Heat ! fraction of fossil fuel heat [-]
       REAL(KIND(1D0)), INTENT(IN) :: FrFossilFuel_NonHeat ! fraction of fossil fuel non heat [-]
-      REAL(KIND(1D0)), INTENT(IN) :: G1 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G2 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G3 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G4 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G5 !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(IN) :: G6 !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: G_max !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: G_k !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: G_q_base !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: G_q_shape !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: G_t !Fitted parameters related to surface res. calculations
+      REAL(KIND(1D0)), INTENT(IN) :: G_sm !Fitted parameters related to surface res. calculations
       REAL(KIND(1D0)), INTENT(IN) :: H_maintain ! ponding water depth to maintain [mm]
       REAL(KIND(1D0)), INTENT(IN) :: InternalWaterUse_h !Internal water use [mm h-1
       REAL(KIND(1D0)), INTENT(IN) :: IrrFracPaved !fraction of paved which are irrigated [-]
@@ -4808,7 +4811,7 @@ CONTAINS
             dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
-            FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
+            FrFossilFuel_Heat, FrFossilFuel_NonHeat, G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, GDD_id, &
             GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
             IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
             InternalWaterUse_h, &

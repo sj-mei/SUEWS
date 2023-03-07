@@ -31,7 +31,10 @@ SUEWS_dir = ../suews
 
 
 # install package in dev mode and do pytest
-test: suews dev
+main: suews dev test
+
+# run pytest
+test:
 	pytest -s ${MODULE}/test
 
 # install package in dev mode
