@@ -1,66 +1,83 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
 
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
 
+# ########################################
+# this file is used to define:
+#  variables used in anthropogenic heat/other emission calculations
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# revision history:
+# TS 07 Mar 2023: checked
+# ########################################
 
-
-- name: g1
+- name: g_max
   use:
-    input: state
-  description: Related to maximum surface conductance
+    input: parameter
+  description: grid-level fitting parameter related to maximum surface conductance
   dimensions: 0
-  unit: mm |s^-1|
+  unit: mm s^-1
   suews table headers: :option:`G1 <suews:G1>`
   usage:
     gsModel: ALL
-- name: g2
+
+- name: g_k
   use:
-    input: state
-  description: Related to Kdown dependence
+    input: parameter
+  description: grid-level fitting parameter related to Kdown dependence
   dimensions: 0
   unit: W m^-2
   suews table headers: :option:`G2 <suews:G2>`
   usage:
     gsModel: ALL
-- name: g3
+
+- name: g_q_base
   use:
-    input: state
-  description: Related to VPD dependence
+    input: parameter
+  description: grid-level fitting parameter related to VPD dependence - base value
   dimensions: 0
   unit: units depend on `gsModel`
   suews table headers: :option:`G3 <suews:G3>`
   usage:
     gsModel: ALL
-- name: g4
+
+- name: g_q_shape
   use:
-    input: state
-  description: Related to VPD dependence
+    input: parameter
+  description: grid-level fitting parameter related to VPD dependence - shape value
   dimensions: 0
   unit: units depend on `gsModel`
   suews table headers: :option:`G4 <suews:G4>`
   usage:
     gsModel: ALL
-- name: g5
+
+- name: g_t
   use:
-    input: state
-  description: Related to temperature dependence
+    input: parameter
+  description: grid-level fitting parameter related to temperature dependence
   dimensions: 0
   unit: degC
   suews table headers: :option:`G5 <suews:G5>`
   usage:
     gsModel: ALL
-- name: g6
+
+- name: g_sm
   use:
-    input: state
-  description: Related to soil moisture dependence
+    input: parameter
+  description: grid-level fitting parameter related to soil moisture dependence
   dimensions: 0
-  unit: "|mm^-1|"
+  unit: mm^-1
   suews table headers: :option:`G6 <suews:G6>`
   usage:
     gsModel: ALL
 
-
 - name: kmax
   use:
-    input: state
+    input: parameter
   description: Maximum incoming shortwave radiation
   dimensions: 0
   unit: W m^-2
@@ -68,10 +85,9 @@
   usage:
     gsmodel: ALL
 
-
-- name: gsmodel
+- name: gsmodel # may rename to "conductance_model"? todo
   use:
-    input: state
+    input: method
   description: Formulation choice for conductance calculation.
   dimensions: 0
   unit: Formulation choice for conductance calculation
@@ -79,32 +95,30 @@
   usage:
     gsModel: Method_Selection
 
-
 - name: maxconductance
   use:
-    input: state
+    input: parameter
   description: The maximum conductance of each vegetation or surface type.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
-  unit: mm |s^-1|
+    3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
+  unit: mm s^-1
   suews table headers: :option:`MaxConductance <suews:MaxConductance>`
   usage:
     gsmodel: ALL
 
-
-
-- name: s1
+- name: s1 # may merge with s2 to be one parameter related to wilting point? todo
   use:
-    input: state
+    input: parameter
   description: A parameter related to soil moisture dependence
   dimensions: 0
   unit: "-"
   suews table headers: :option:`S1 <suews:S1>`
   usage:
     gsmodel: could be made internal/removed
-- name: s2
+
+- name: s2 # see comment for s1 #todo
   use:
-    input: state
+    input: parameter
   description: A parameter related to soil moisture dependence
   dimensions: 0
   unit: mm
@@ -112,17 +126,13 @@
   usage:
     gsmodel: could be made internal/removed
 
-
 - name: wetthresh_surf
   use:
-    input: state
+    input: parameter
   description:
-    Depth of water which determines whether evaporation occurs from a partially
-    wet or completely wet surface
+    Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm]
   suews table headers: :option:`WetThreshold <suews:WetThreshold>`
   usage:
@@ -130,7 +140,7 @@
 
 - name: th
   use:
-    input: state
+    input: parameter
   description: Upper air temperature limit
   dimensions: 0
   unit: degC
@@ -140,7 +150,7 @@
 
 - name: tl
   use:
-    input: state
+    input: parameter
   description: Lower air temperature limit
   dimensions: 0
   unit: degC
