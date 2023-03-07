@@ -205,22 +205,22 @@
   "frpddwe": {
     "AnthropogenicCode": "FrPDDwe"
   },
-  "g1": {
+  "g_max": {
     "CondCode": "G1"
   },
-  "g2": {
+  "g_k": {
     "CondCode": "G2"
   },
-  "g3": {
+  "g_q_base": {
     "CondCode": "G3"
   },
-  "g4": {
+  "g_q_shape": {
     "CondCode": "G4"
   },
-  "g5": {
+  "g_t": {
     "CondCode": "G5"
   },
-  "g6": {
+  "g_sm": {
     "CondCode": "G6"
   },
   "gddfull": {

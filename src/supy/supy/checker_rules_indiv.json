@@ -652,7 +652,7 @@
         },
         "unit": "1"
     },
-    "g1": {
+    "g_max": {
         "cat": "grid",
         "logic": "range",
         "param": {
@@ -661,31 +661,31 @@
         },
         "unit": "1"
     },
-    "g2": {
+    "g_k": {
         "cat": "grid",
         "logic": "NA",
         "param": {},
         "unit": "1"
     },
-    "g3": {
+    "g_q_base": {
         "cat": "grid",
         "logic": "NA",
         "param": {},
         "unit": "1"
     },
-    "g4": {
+    "g_q_shape": {
         "cat": "grid",
         "logic": "NA",
         "param": {},
         "unit": "1"
     },
-    "g5": {
+    "g_t": {
         "cat": "grid",
         "logic": "NA",
         "param": {},
         "unit": "1"
     },
-    "g6": {
+    "g_sm": {
         "cat": "grid",
         "logic": "NA",
         "param": {},
