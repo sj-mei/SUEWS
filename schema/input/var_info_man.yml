@@ -14,9 +14,9 @@
 # - phy_qn.yml
 # - phy_qf.yml
 # - phy_qs.yml
-# to be checked:
 # - phy_qe.yml
 # - phy_hydro.yml
+# to be checked:
 # - phy_lumps.yml
 # - phy_phenology.yml
 # - phy_snow.yml
