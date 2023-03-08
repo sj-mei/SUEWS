@@ -69,6 +69,7 @@
     "usage_def":{
       "properties": {
         "usage": {
+          "description": "detailed use of the variable: which physical process it is used for, which scheme it is used in, etc.",
           "oneOf": [
             {
               "type": "object"
@@ -76,8 +77,7 @@
             {
               "type": "string"
             }
-          ],
-          "description": "detailed use of the variable: which physical process it is used for, which scheme it is used in, etc."
+          ]
         }
       }
 
@@ -104,11 +104,37 @@
         "description": {
           "type": "string",
           "minimum": 1,
-          "description": "full description of the variable"
+          "description": "one-line description of the variable; so keep this concise."
         },
         "unit": {
           "type": "string",
           "description": "unit of the variable; e.g. 'W m-2'. This will be used to check the consistency of the input data and wrapped by latex notations in the documentation."
+        },
+        "dimensions":{
+          "description": "dimensions of the variable as well as related explanations, e.g. {2: ['weekday','weekend'], 3: 'height', ...}; or integer `0` for scalar variables. This will be used to check the consistency of the input data",
+          "oneOf": [
+            {
+              "type": "object",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            {
+              "type": "integer"
+
+            }
+          ]
+        },
+        "remarks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": false,
+          "description": "remarks on the variable, e.g. 'only used in the first 10 days of the simulation'.\n each item will be interpreted by Sphinx to construct documentation entries; a blank item will be interpreted as a line break."
         },
         "usage": {
           "$ref": "#/definitions/usage_def"
@@ -135,18 +161,10 @@
       },
       "then": {
         "required": [
-          "usage"
+          "usage","dimensions"
         ]
       },
       "additionalProperties": {
-        "dimensions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "uniqueItems": true
-        }
       }
     }
   },
