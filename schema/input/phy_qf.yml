@@ -251,7 +251,7 @@
     EmissionsMethod: 4:CO2-Jarvi
 
 - name: beta_enh_bioco2
-  use:s
+  use:
     input: parameter
   description: Part of the `beta` coefficient related to the fraction of vegetation.
   dimensions:
