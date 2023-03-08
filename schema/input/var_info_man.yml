@@ -17,8 +17,8 @@
 # - phy_qe.yml
 # - phy_hydro.yml
 # - phy_lumps.yml
-# to be checked:
 # - phy_phenology.yml
+# to be checked:
 # - phy_snow.yml
 # 2. site properties
 # - site.yml
