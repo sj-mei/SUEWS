@@ -19,9 +19,9 @@
 # - phy_lumps.yml
 # - phy_phenology.yml
 # - phy_snow.yml
-# to be checked:
 # 2. site properties
 # - site.yml
+# to be checked:
 # 3. control methods
 # - ctrl_method.yml
 # 4. meteorological forcing
