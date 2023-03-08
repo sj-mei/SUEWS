@@ -18,11 +18,11 @@
 # - phy_hydro.yml
 # - phy_lumps.yml
 # - phy_phenology.yml
-# to be checked:
 # - phy_snow.yml
+# to be checked:
 # 2. site properties
 # - site.yml
-# 3. meteorological forcing
-# - forcing.yml
-# 4. control methods
+# 3. control methods
 # - ctrl_method.yml
+# 4. meteorological forcing
+# - forcing.yml
