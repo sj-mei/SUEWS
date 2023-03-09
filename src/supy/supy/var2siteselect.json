@@ -83,9 +83,6 @@
     "Code_DecTr": "BaseTe",
     "Code_Grass": "BaseTe"
   },
-  "baset_hc": {
-    "AnthropogenicCode": "BaseT_HC"
-  },
   "beta_bioco2": {
     "Code_EveTr": {
       "BiogenCO2Code": "beta"

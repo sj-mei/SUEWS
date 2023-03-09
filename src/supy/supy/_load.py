@@ -1265,8 +1265,8 @@ def trim_df_state(df_state: pd.DataFrame, set_var_use=set_var_use) -> pd.DataFra
 
 # mod_config: static properties
 dict_RunControl_default = {
-    "aerodynamicresistancemethod": 2,
-    "basetmethod": 1,
+    # "aerodynamicresistancemethod": 2, #removed in SUEWS v2023
+    # "basetmethod": 1, #removed in SUEWS v2023
     "evapmethod": 2,
     "laicalcyes": 1,
     "veg_type": 1,

@@ -14,7 +14,7 @@ MODULE SUEWS_Driver
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            cal_z0V, SUEWS_cal_RoughnessParameters
+                            SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM, ESTM_ext
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
@@ -49,13 +49,12 @@ MODULE SUEWS_Driver
 CONTAINS
    ! ===================MAIN CALCULATION WRAPPER FOR ENERGY AND WATER FLUX===========
    SUBROUTINE SUEWS_cal_Main( &
-      AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
+      AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
       AH_SLOPE_Heating, &
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, kdown, avRh, avU1, BaseT, BaseTe, &
-      BaseTMethod, &
-      BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+      beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
@@ -68,7 +67,7 @@ CONTAINS
       IrrFracPaved, IrrFracBldgs, &
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       IrrFracBSoil, IrrFracWater, &
-      isec, it, EvapMethod, &
+      isec, it, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -123,8 +122,8 @@ CONTAINS
 
       ! ########################################################################################
       ! input variables
-      INTEGER, INTENT(IN) :: AerodynamicResistanceMethod !method to calculate RA [-]
-      INTEGER, INTENT(IN) :: BaseTMethod ! base t method [-]
+      INTEGER, PARAMETER :: AerodynamicResistanceMethod=2 !method to calculate RA [-]
+      INTEGER, PARAMETER :: BaseTMethod=2 ! base t method [-]
       INTEGER, INTENT(IN) :: Diagnose ! flag for printing diagnostic info during runtime [N/A]C
       INTEGER, INTENT(IN) :: DiagQN ! flag for printing diagnostic info for QN module during runtime [N/A]
       INTEGER, INTENT(IN) :: DiagQS ! flag for printing diagnostic info for QS module during runtime [N/A]
@@ -140,7 +139,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: isec ! seconds, 0-59 [s]
       INTEGER, INTENT(IN) :: imin !minutes, 0-59 [min]
       INTEGER, INTENT(IN) :: it ! hour, 0-23 [h]
-      INTEGER, INTENT(IN) :: EvapMethod ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
+      INTEGER, PARAMETER :: EvapMethod=2 ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER, INTENT(IN) :: iy ! year [y]
       INTEGER, INTENT(IN) :: LAICalcYes ! boolean to determine if calculate LAI [-]
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
@@ -168,7 +167,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: kdown !incominging shortwave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(IN) :: avRh !relative humidity [-]
       REAL(KIND(1D0)), INTENT(IN) :: avU1 !average wind speed at 1m [W m-1]
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_HC !base temperature for heating degree dayb [degC]
+      REAL(KIND(1D0)), PARAMETER :: BaseT_HC=18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
       REAL(KIND(1D0)), INTENT(IN) :: bldgH !average building height [m]
       REAL(KIND(1D0)), INTENT(IN) :: CapMax_dec !maximum water storage capacity for upper surfaces (i.e. canopy)
       REAL(KIND(1D0)), INTENT(IN) :: CapMin_dec !minimum water storage capacity for upper surfaces (i.e. canopy)
@@ -4085,13 +4084,12 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_multitsteps( &
       MetForcingBlock, len_sim, &
-      AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
+      AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
       AH_SLOPE_Heating, &
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, BaseT, BaseTe, &
-      BaseTMethod, &
-      BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+      beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
@@ -4104,7 +4102,6 @@ CONTAINS
       IrrFracPaved, IrrFracBldgs, &
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       IrrFracBSoil, IrrFracWater, &
-      EvapMethod, &
       kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
       LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -4159,8 +4156,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: len_sim
       ! input variables
       INTEGER, INTENT(IN) :: nlayer ! number of vertical layers in urban canyon
-      INTEGER, INTENT(IN) :: AerodynamicResistanceMethod !method to calculate RA [-]
-      INTEGER, INTENT(IN) :: BaseTMethod ! base t method [-]
+      ! INTEGER, INTENT(IN) :: AerodynamicResistanceMethod !method to calculate RA [-]
       INTEGER, INTENT(IN) :: Diagnose
       INTEGER, INTENT(IN) :: DiagQN
       INTEGER, INTENT(IN) :: DiagQS
@@ -4171,7 +4167,6 @@ CONTAINS
       INTEGER, INTENT(IN) :: gsModel !choice of gs parameterisation (1 = Ja11, 2 = Wa16)
       INTEGER, INTENT(IN) :: Ie_end !ending time of water use [DOY]
       INTEGER, INTENT(IN) :: Ie_start !starting time of water use [DOY]
-      INTEGER, INTENT(IN) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER, INTENT(IN) :: LAICalcYes !boolean to determine if calculate LAI [-]
       INTEGER, INTENT(in) :: DiagMethod !Defines how near surface diagnostics are calculated [-]
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
@@ -4201,7 +4196,6 @@ CONTAINS
       ! REAL(KIND(1D0)),INTENT(IN)::avkdn
       ! REAL(KIND(1D0)),INTENT(IN)::avRh
       ! REAL(KIND(1D0)),INTENT(IN)::avU1
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_HC !base temperature for heating degree dayb [degC]
       REAL(KIND(1D0)), INTENT(IN) :: bldgH !average building height [m]
       REAL(KIND(1D0)), INTENT(IN) :: CapMax_dec !maximum water storage capacity for upper surfaces (i.e. canopy)
       REAL(KIND(1D0)), INTENT(IN) :: CapMin_dec !minimum water storage capacity for upper surfaces (i.e. canopy)
@@ -4799,13 +4793,12 @@ CONTAINS
          ! !================================================
 
          CALL SUEWS_cal_Main( &
-            AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
+            AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
             AH_SLOPE_Heating, &
             alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
             AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-            BaseTMethod, &
-            BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+            beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
             DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
             dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
@@ -4818,7 +4811,7 @@ CONTAINS
             IrrFracPaved, IrrFracBldgs, &
             IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
             IrrFracBSoil, IrrFracWater, &
-            isec, it, EvapMethod, &
+            isec, it, &
             iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
             LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
             SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
