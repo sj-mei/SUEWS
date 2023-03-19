@@ -46,8 +46,132 @@ MODULE SUEWS_Driver
 
    IMPLICIT NONE
 
+   TYPE, PUBLIC :: config
+      INTEGER :: var1
+      INTEGER :: var2
+
+      ! private
+
+      ! contains
+
+   END TYPE config
+
+   TYPE, PUBLIC :: array_m
+      INTEGER, DIMENSION(2, 3) :: var1
+      INTEGER, DIMENSION(3, 2) :: var2
+
+      ! private
+
+      ! contains
+
+   END TYPE array_m
+
+   TYPE, PUBLIC :: output_block
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSUEWS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSnow
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockESTM
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockESTMExt
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockRSL
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockBEERS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDebug
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDailyState
+      ! contains
+      !    ! Procedures
+      !    PROCEDURE :: init => output_block_init
+      !    PROCEDURE :: finalize => output_block_finalize
+   END TYPE output_block
+
+   TYPE, PUBLIC :: output_line
+      REAL(KIND(1D0)), DIMENSION(5) :: datetimeLine !date & time
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS) :: dataOutLineSUEWS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow) :: dataOutLineSnow
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL) :: dataoutLineRSL
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS) :: dataOutLineBEERS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug) :: dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS) :: dataOutLineSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
+   END TYPE output_line
+
 CONTAINS
-   ! ===================MAIN CALCULATION WRAPPER FOR ENERGY AND WATER FLUX===========
+
+   SUBROUTINE output_line_init(this_line)
+      TYPE(output_line), INTENT(inout) :: this_line
+
+      ! Set default values
+      this_line%datetimeLine = -999.0
+      this_line%dataOutLineSUEWS = -999.0
+      this_line%dataOutLineSnow = -999.0
+      this_line%dataOutLineESTM = -999.0
+      this_line%dataOutLineESTMExt = -999.0
+      this_line%dataOutLineRSL = -999.0
+      this_line%dataOutLineBEERS = -999.0
+      this_line%dataOutLineDebug = -999.0
+      this_line%dataOutLineSPARTACUS = -999.0
+      this_line%dataOutLineDailyState = -999.0
+   END SUBROUTINE output_line_init
+
+   SUBROUTINE output_block_init(this_block, len)
+      TYPE(output_block), INTENT(inout) :: this_block
+      INTEGER, INTENT(in) :: len
+
+      ! Allocate memory for the arrays
+      ALLOCATE (this_block%dataOutBlockSUEWS(len, ncolumnsDataOutSUEWS))
+      ALLOCATE (this_block%dataOutBlockSnow(len, ncolumnsDataOutSnow))
+      ALLOCATE (this_block%dataOutBlockESTM(len, ncolumnsDataOutESTM))
+      ALLOCATE (this_block%dataOutBlockESTMExt(len, ncolumnsDataOutESTMExt))
+      ALLOCATE (this_block%dataOutBlockRSL(len, ncolumnsDataOutRSL))
+      ALLOCATE (this_block%dataOutBlockBEERS(len, ncolumnsDataOutBEERS))
+      ALLOCATE (this_block%dataOutBlockDebug(len, ncolumnsDataOutDebug))
+      ALLOCATE (this_block%dataOutBlockSPARTACUS(len, ncolumnsDataOutSPARTACUS))
+      ALLOCATE (this_block%dataOutBlockDailyState(len, ncolumnsDataOutDailyState))
+
+      ! Set default values
+      this_block%dataOutBlockSUEWS = -999.0
+      this_block%dataOutBlockSnow = -999.0
+      this_block%dataOutBlockESTM = -999.0
+      this_block%dataOutBlockESTMExt = -999.0
+      this_block%dataOutBlockRSL = -999.0
+      this_block%dataOutBlockBEERS = -999.0
+      this_block%dataOutBlockDebug = -999.0
+      this_block%dataOutBlockSPARTACUS = -999.0
+      this_block%dataOutBlockDailyState = -999.0
+   END SUBROUTINE output_block_init
+
+   SUBROUTINE output_block_finalize(this_line)
+      TYPE(output_block), INTENT(inout) :: this_line
+
+      ! Deallocate memory for the arrays
+      IF (ALLOCATED(this_line%dataOutBlockSUEWS)) DEALLOCATE (this_line%dataOutBlockSUEWS)
+      IF (ALLOCATED(this_line%dataOutBlockSnow)) DEALLOCATE (this_line%dataOutBlockSnow)
+      IF (ALLOCATED(this_line%dataOutBlockESTM)) DEALLOCATE (this_line%dataOutBlockESTM)
+      IF (ALLOCATED(this_line%dataOutBlockESTMExt)) DEALLOCATE (this_line%dataOutBlockESTMExt)
+      IF (ALLOCATED(this_line%dataOutBlockRSL)) DEALLOCATE (this_line%dataOutBlockRSL)
+      IF (ALLOCATED(this_line%dataOutBlockBEERS)) DEALLOCATE (this_line%dataOutBlockBEERS)
+      IF (ALLOCATED(this_line%dataOutBlockDebug)) DEALLOCATE (this_line%dataOutBlockDebug)
+      IF (ALLOCATED(this_line%dataOutBlockSPARTACUS)) DEALLOCATE (this_line%dataOutBlockSPARTACUS)
+      IF (ALLOCATED(this_line%dataOutBlockDailyState)) DEALLOCATE (this_line%dataOutBlockDailyState)
+
+   END SUBROUTINE output_block_finalize
+
+   SUBROUTINE var2add_two(arg_type, res_type)
+      TYPE(config), INTENT(in) :: arg_type
+      TYPE(config), INTENT(out) :: res_type
+      res_type%var1 = arg_type%var1 + arg_type%var2
+      res_type%var2 = arg_type%var1 - arg_type%var2
+
+   END SUBROUTINE var2add_two
+
+   SUBROUTINE arr2add_two(arg_type, res_type)
+      TYPE(array_m), INTENT(in) :: arg_type
+      TYPE(array_m), INTENT(out) :: res_type
+      res_type%var1 = arg_type%var1*2
+      res_type%var2 = arg_type%var2 + 3
+
+   END SUBROUTINE arr2add_two
+! ===================MAIN CALCULATION WRAPPER FOR ENERGY AND WATER FLUX===========
    SUBROUTINE SUEWS_cal_Main( &
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
       AH_SLOPE_Heating, &
@@ -56,7 +180,7 @@ CONTAINS
       alpha_bioCO2, alpha_enh_bioCO2, alt, kdown, avRh, avU1, BaseT, BaseTe, &
       beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-      DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
+      DecTreeH, DiagMethod, Diagnose, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
@@ -68,9 +192,9 @@ CONTAINS
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       IrrFracBSoil, IrrFracWater, &
       isec, it, &
-      iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
+      iy, kkAnOHM, Kmax, LAI_id, LAIMax, LAIMin, LAI_obs, &
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
-      SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
+      SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
       nlayer, &
       n_vegetation_region_urban, &
@@ -112,21 +236,22 @@ CONTAINS
       WaterDist, WaterUseMethod, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
-      dataOutLineBEERS, & !output
-      dataOutLineDebug, dataOutLineSPARTACUS, &
-      dataOutLineESTMExt, &
-      DailyStateLine) !output
+      output_line_suews) ! output
+      ! datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
+      ! dataOutLineBEERS, & !output
+      ! dataOutLineDebug, dataOutLineSPARTACUS, &
+      ! dataOutLineESTMExt, &
+      ! dataOutLineDailyState) !output
 
       IMPLICIT NONE
 
       ! ########################################################################################
       ! input variables
-      INTEGER, PARAMETER :: AerodynamicResistanceMethod=2 !method to calculate RA [-]
-      INTEGER, PARAMETER :: BaseTMethod=2 ! base t method [-]
+      INTEGER, PARAMETER :: AerodynamicResistanceMethod = 2 !method to calculate RA [-]
+      INTEGER, PARAMETER :: BaseTMethod = 2 ! base t method [-]
       INTEGER, INTENT(IN) :: Diagnose ! flag for printing diagnostic info during runtime [N/A]C
-      INTEGER, INTENT(IN) :: DiagQN ! flag for printing diagnostic info for QN module during runtime [N/A]
-      INTEGER, INTENT(IN) :: DiagQS ! flag for printing diagnostic info for QS module during runtime [N/A]
+      INTEGER, PARAMETER :: DiagQN = 0 ! flag for printing diagnostic info for QN module during runtime [N/A] ! not used and will be removed
+      INTEGER, PARAMETER :: DiagQS = 0 ! flag for printing diagnostic info for QS module during runtime [N/A] ! not used and will be removed
       INTEGER, INTENT(IN) :: startDLS !start of daylight saving  [DOY]
       INTEGER, INTENT(IN) :: endDLS !end of daylight saving [DOY]
       INTEGER, INTENT(IN) :: EmissionsMethod !method to calculate anthropogenic heat [-]
@@ -139,9 +264,9 @@ CONTAINS
       INTEGER, INTENT(IN) :: isec ! seconds, 0-59 [s]
       INTEGER, INTENT(IN) :: imin !minutes, 0-59 [min]
       INTEGER, INTENT(IN) :: it ! hour, 0-23 [h]
-      INTEGER, PARAMETER :: EvapMethod=2 ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
+      INTEGER, PARAMETER :: EvapMethod = 2 ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER, INTENT(IN) :: iy ! year [y]
-      INTEGER, INTENT(IN) :: LAICalcYes ! boolean to determine if calculate LAI [-]
+      INTEGER, PARAMETER :: LAICalcYes = 1 ! boolean to determine if calculate LAI [-]
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
       INTEGER, INTENT(IN) :: OHMIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
       INTEGER, INTENT(IN) :: RoughLenHeatMethod ! method to calculate heat roughness length [-]
@@ -167,7 +292,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: kdown !incominging shortwave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(IN) :: avRh !relative humidity [-]
       REAL(KIND(1D0)), INTENT(IN) :: avU1 !average wind speed at 1m [W m-1]
-      REAL(KIND(1D0)), PARAMETER :: BaseT_HC=18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
+      REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
       REAL(KIND(1D0)), INTENT(IN) :: bldgH !average building height [m]
       REAL(KIND(1D0)), INTENT(IN) :: CapMax_dec !maximum water storage capacity for upper surfaces (i.e. canopy)
       REAL(KIND(1D0)), INTENT(IN) :: CapMin_dec !minimum water storage capacity for upper surfaces (i.e. canopy)
@@ -304,7 +429,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf + 1, 4, 3), INTENT(IN) :: OHM_coef !Coefficients for OHM calculation
       REAL(KIND(1D0)), DIMENSION(NSURF + 1, NSURF - 1), INTENT(IN) :: WaterDist !Fraction of water redistribution [-]
       REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: Ts5mindata_ir !surface temperature input data[degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(IN) :: MetForcingData_grid ! met forcing array of grid
+      REAL(KIND(1D0)), DIMENSION(10) :: MetForcingData_grid ! met forcing array of grid
 
       ! diurnal profile values for 24hr
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) :: AHProf_24hr !Hourly profile values used in energy use calculation [-]
@@ -403,16 +528,18 @@ CONTAINS
 
       ! ########################################################################################
       ! output variables
-      REAL(KIND(1D0)), DIMENSION(5), INTENT(OUT) :: datetimeLine !date & time
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(OUT) :: dataOutLineSUEWS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT) :: dataOutLineSnow
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(OUT) :: dataOutLineESTMExt
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT) :: dataoutLineRSL
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5), INTENT(OUT) :: dataOutLineBEERS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5), INTENT(OUT) :: dataOutLineDebug
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT) :: DailyStateLine
+      REAL(KIND(1D0)), DIMENSION(5) :: datetimeLine !date & time
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5) :: dataOutLineSnow
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataoutLineRSL
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
+      ! save all output variables in a single derived type
+      TYPE(output_line), INTENT(OUT) :: output_line_suews
       ! ########################################################################################
 
       ! ########################################################################################
@@ -856,7 +983,7 @@ CONTAINS
       dataOutLineBEERS = -999.
       dataOutLineDebug = -999.
       dataOutLineSPARTACUS = -999.
-      DailyStateLine = -999.
+      dataOutLineDailyState = -999.
 
       !########################################################################################
       !           main calculation starts here
@@ -1553,7 +1680,7 @@ CONTAINS
          deltaLAI, VegPhenLumps, &
          SnowAlb, SnowDens, &
          a1, a2, a3, &
-         DailyStateLine) !out
+         dataOutLineDailyState) !out
 
       !==============translation end ================
 
@@ -1565,10 +1692,23 @@ CONTAINS
           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
           i_iter*1D0, dqndt]
 
-   END SUBROUTINE SUEWS_cal_Main
-   ! ================================================================================
+      !==============output==========================
+      CALL output_line_init(output_line_suews)
+      output_line_suews%datetimeLine = datetimeLine
+      output_line_suews%dataOutLineSUEWS = [datetimeLine, dataOutLineSUEWS]
+      output_line_suews%dataOutLineESTMExt = [datetimeLine, dataOutLineESTMExt]
+      output_line_suews%dataOutLineDailyState = [datetimeLine, dataOutLineDailyState]
+      output_line_suews%dataOutLineBEERS = [datetimeLine, dataOutLineBEERS]
+      output_line_suews%dataOutLineDebug = [datetimeLine, dataOutLineDebug]
+      output_line_suews%dataOutLineSPARTACUS = [datetimeLine, dataOutLineSPARTACUS]
+      output_line_suews%dataOutLineSnow = [datetimeLine, dataOutLineSnow]
+      output_line_suews%dataoutLineRSL = [datetimeLine, dataOutLineRSL]
+      output_line_suews%dataOutLineESTM = [datetimeLine, dataOutLineESTM]
 
-   ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
+   END SUBROUTINE SUEWS_cal_Main
+! ================================================================================
+
+! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
    SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
       dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
@@ -1673,9 +1813,9 @@ CONTAINS
       END IF
 
    END SUBROUTINE SUEWS_cal_AnthropogenicEmission
-   ! ================================================================================
+! ================================================================================
 
-   !==============BIOGENIC CO2 flux==================================================
+!==============BIOGENIC CO2 flux==================================================
    SUBROUTINE SUEWS_cal_BiogenCO2( &
       alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, & ! input:
       dectime, Diagnose, EmissionsMethod, Fc_anthro, G_max, G_k, G_q_base, G_q_shape, &
@@ -1805,9 +1945,9 @@ CONTAINS
       Fc = Fc_anthro + Fc_biogen
 
    END SUBROUTINE SUEWS_cal_BiogenCO2
-   !========================================================================
+!========================================================================
 
-   !=============net all-wave radiation=====================================
+!=============net all-wave radiation=====================================
    SUBROUTINE SUEWS_cal_Qn( &
       storageheatmethod, NetRadiationMethod, SnowUse, & !input
       tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
@@ -2059,9 +2199,9 @@ CONTAINS
       SnowAlb_next = SnowAlb
 
    END SUBROUTINE SUEWS_cal_Qn
-   !========================================================================
+!========================================================================
 
-   !=============storage heat flux=========================================
+!=============storage heat flux=========================================
    SUBROUTINE SUEWS_cal_Qs( &
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, & !input
       id, tstep, dt_since_start, Diagnose, &
@@ -2120,7 +2260,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: chAnOHM ! bulk transfer coef [J m-3 K-1]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac ! snow fractions of each surface [-]
 
-      REAL(KIND(1D0)), DIMENSION(:, :), INTENT(in) :: MetForcingData_grid !< met forcing array of grid
+      REAL(KIND(1D0)), DIMENSION(10), INTENT(in) :: MetForcingData_grid !< met forcing array of grid
 
       REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: Ts5mindata_ir !surface temperature input data [degC]
 
@@ -2242,14 +2382,14 @@ CONTAINS
          !      sfr_surf,nsurf,nsh,EmissionsMethod,id,Gridiv,&
          !      a1,a2,a3,qs,deltaQi)
          moist_surf = state_id/StoreDrainPrm(6, :)
-         CALL AnOHM( &
-            tstep, dt_since_start, &
-            qn_use, qn_av_prev, dqndt_prev, qf, &
-            MetForcingData_grid, moist_surf, &
-            alb, emis, cpAnOHM, kkAnOHM, chAnOHM, & ! input
-            sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
-            qn_av_next, dqndt_next, &
-            a1, a2, a3, qs, deltaQi) ! output
+         ! CALL AnOHM( &
+         !    tstep, dt_since_start, &
+         !    qn_use, qn_av_prev, dqndt_prev, qf, &
+         !    MetForcingData_grid, moist_surf, &
+         !    alb, emis, cpAnOHM, kkAnOHM, chAnOHM, & ! input
+         !    sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
+         !    qn_av_next, dqndt_next, &
+         !    a1, a2, a3, qs, deltaQi) ! output
          QS_surf = qs
          QS_roof = qs
          QS_wall = qs
@@ -2301,9 +2441,9 @@ CONTAINS
       END IF
 
    END SUBROUTINE SUEWS_cal_Qs
-   !=======================================================================
+!=======================================================================
 
-   !==========================drainage and runoff================================
+!==========================drainage and runoff================================
    SUBROUTINE SUEWS_cal_Water( &
       Diagnose, & !input
       SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
@@ -2398,9 +2538,9 @@ CONTAINS
          frac_water2runoff, AddWater) ! output
 
    END SUBROUTINE SUEWS_cal_Water
-   !=======================================================================
+!=======================================================================
 
-   !===============initialize sensible heat flux============================
+!===============initialize sensible heat flux============================
    SUBROUTINE SUEWS_init_QH( &
       avdens, avcp, h_mod, qn1, dectime, & !input
       H_init) !output
@@ -2430,7 +2570,7 @@ CONTAINS
       ! ENDIF
 
    END SUBROUTINE SUEWS_init_QH
-   !========================================================================
+!========================================================================
    SUBROUTINE SUEWS_cal_snow( &
       Diagnose, nlayer, & !input
       tstep, imin, it, EvapMethod, dayofWeek_id, CRWmin, CRWmax, &
@@ -2806,8 +2946,8 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_snow
 
-   !================latent heat flux and surface wetness===================
-   ! TODO: optimise the structure of this function
+!================latent heat flux and surface wetness===================
+! TODO: optimise the structure of this function
    SUBROUTINE SUEWS_cal_QE( &
       Diagnose, storageheatmethod, nlayer, & !input
       tstep, &
@@ -3137,9 +3277,9 @@ CONTAINS
       IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf_out
 
    END SUBROUTINE SUEWS_cal_QE
-   !========================================================================
+!========================================================================
 
-   !===============sensible heat flux======================================
+!===============sensible heat flux======================================
    SUBROUTINE SUEWS_cal_QH( &
       QHMethod, nlayer, storageheatmethod, & !input
       qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
@@ -3226,9 +3366,9 @@ CONTAINS
       END SELECT
 
    END SUBROUTINE SUEWS_cal_QH
-   !========================================================================
+!========================================================================
 
-   !===============Resistance Calculations=======================
+!===============Resistance Calculations=======================
    SUBROUTINE SUEWS_cal_Resistance( &
       StabilityMethod, & !input:
       Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, SnowUse, &
@@ -3371,9 +3511,9 @@ CONTAINS
          RB) ! output:
 
    END SUBROUTINE SUEWS_cal_Resistance
-   !========================================================================
+!========================================================================
 
-   !==============Update output arrays=========================
+!==============Update output arrays=========================
    SUBROUTINE SUEWS_update_outputLine( &
       AdditionalWater, alb, avkdn, avU10_ms, azimuth, & !input
       chSnow_per_interval, dectime, &
@@ -3559,9 +3699,9 @@ CONTAINS
       !====================update output line end==============================
 
    END SUBROUTINE SUEWS_update_outputLine
-   !========================================================================
+!========================================================================
 
-   !==============Update output arrays=========================
+!==============Update output arrays=========================
    SUBROUTINE ESTMExt_update_outputLine( &
       iy, id, it, imin, dectime, nlayer, & !input
       tsfc_out_surf, qs_surf, &
@@ -3636,20 +3776,20 @@ CONTAINS
       !Define the overall output matrix to be printed out step by step
       dataoutlineESTMExt = [ &
                            tsfc_out_surf, qs_surf, & !output
-                           fill_result(tsfc_out_roof, n_fill), &
-                           fill_result(Qn_roof, n_fill), &
-                           fill_result(QS_roof, n_fill), &
-                           fill_result(QE_roof, n_fill), &
-                           fill_result(QH_roof, n_fill), &
-                           fill_result(state_roof, n_fill), &
-                           fill_result(soilstore_roof, n_fill), &
-                           fill_result(tsfc_out_wall, n_fill), &
-                           fill_result(Qn_wall, n_fill), &
-                           fill_result(QS_wall, n_fill), &
-                           fill_result(QE_wall, n_fill), &
-                           fill_result(QH_wall, n_fill), &
-                           fill_result(state_wall, n_fill), &
-                           fill_result(soilstore_wall, n_fill) &
+                           fill_result_x(tsfc_out_roof, n_fill), &
+                           fill_result_x(Qn_roof, n_fill), &
+                           fill_result_x(QS_roof, n_fill), &
+                           fill_result_x(QE_roof, n_fill), &
+                           fill_result_x(QH_roof, n_fill), &
+                           fill_result_x(state_roof, n_fill), &
+                           fill_result_x(soilstore_roof, n_fill), &
+                           fill_result_x(tsfc_out_wall, n_fill), &
+                           fill_result_x(Qn_wall, n_fill), &
+                           fill_result_x(QS_wall, n_fill), &
+                           fill_result_x(QE_wall, n_fill), &
+                           fill_result_x(QH_wall, n_fill), &
+                           fill_result_x(state_wall, n_fill), &
+                           fill_result_x(soilstore_wall, n_fill) &
                            ]
       ! set invalid values to NAN
       ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
@@ -3657,9 +3797,9 @@ CONTAINS
       !====================update output line end==============================
 
    END SUBROUTINE ESTMExt_update_outputLine
-   !========================================================================
+!========================================================================
 
-   FUNCTION fill_result(res_valid, n_fill) RESULT(res_filled)
+   FUNCTION fill_result_x(res_valid, n_fill) RESULT(res_filled)
       IMPLICIT NONE
       REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: res_valid
       INTEGER, INTENT(IN) :: n_fill
@@ -3668,14 +3808,14 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
 
       res_filled = RESHAPE(res_valid, [n_fill], pad=[NAN])
-   END FUNCTION fill_result
+   END FUNCTION fill_result_x
 
-   !==============Update output arrays=========================
+!==============Update output arrays=========================
    SUBROUTINE SUEWS_update_output( &
       SnowUse, storageheatmethod, & !input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
+      dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
       dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineESTMExt, & !input
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS, &
       dataOutESTMExt) !inout
@@ -3688,15 +3828,15 @@ CONTAINS
       INTEGER, INTENT(in) :: storageheatmethod
       INTEGER, INTENT(in) :: ir
 
-      REAL(KIND(1D0)), DIMENSION(5), INTENT(in) :: datetimeLine
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(in) :: dataOutLineSUEWS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(in) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(in) :: dataOutLineESTMExt
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(in) :: dataOutLineSnow
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
-      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS - 5), INTENT(in) :: dataOutLineBEERS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutDebug - 5), INTENT(in) :: dataOutLineDebug
-      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSPARTACUS - 5), INTENT(in) :: dataOutLineSPARTACUS
+      ! REAL(KIND(1D0)), DIMENSION(5), INTENT(in) :: datetimeLine
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS), INTENT(in) :: dataOutLineSUEWS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM), INTENT(in) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt), INTENT(in) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow), INTENT(in) :: dataOutLineSnow
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL), INTENT(in) :: dataoutLineRSL
+      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS), INTENT(in) :: dataOutLineBEERS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutDebug), INTENT(in) :: dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSPARTACUS), INTENT(in) :: dataOutLineSPARTACUS
 
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
@@ -3709,103 +3849,103 @@ CONTAINS
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
-      dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, (dataOutLineSUEWS)]
-      ! dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
-      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, (dataoutLineRSL)]
-      dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [datetimeLine, (dataOutLineDebug)]
-      dataOutSPARTACUS(ir, 1:ncolumnsDataOutSPARTACUS, Gridiv) = [datetimeLine, (dataOutLineSPARTACUS)]
-      ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
-      dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [datetimeLine, set_nan(dataOutLineBEERS)]
+      dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [(dataOutLineSUEWS)]
+      ! dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [ set_nan(dataOutLineSUEWS)]
+      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [ (dataoutLineRSL)]
+      dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [ (dataOutLineDebug)]
+      dataOutSPARTACUS(ir, 1:ncolumnsDataOutSPARTACUS, Gridiv) = [ (dataOutLineSPARTACUS)]
+      ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [ set_nan(dataoutLineRSL)]
+      dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [ set_nan(dataOutLineBEERS)]
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
 
       IF (SnowUse == 1) THEN
-         dataOutSnow(ir, 1:ncolumnsDataOutSnow, Gridiv) = [datetimeLine, set_nan(dataOutLineSnow)]
+         dataOutSnow(ir, 1:ncolumnsDataOutSnow, Gridiv) = [ set_nan(dataOutLineSnow)]
       END IF
 
       IF (storageheatmethod == 4) THEN
-         dataOutESTM(ir, 1:ncolumnsDataOutESTM, Gridiv) = [datetimeLine, set_nan(dataOutLineESTM)]
+         dataOutESTM(ir, 1:ncolumnsDataOutESTM, Gridiv) = [ set_nan(dataOutLineESTM)]
       END IF
 
       IF (storageheatmethod == 5) THEN
-         dataOutESTMExt(ir, 1:ncolumnsDataOutESTMExt, Gridiv) = [datetimeLine, set_nan(dataOutLineESTMExt)]
+         dataOutESTMExt(ir, 1:ncolumnsDataOutESTMExt, Gridiv) = [ set_nan(dataOutLineESTMExt)]
       END IF
 
       !====================update output arrays end==============================
 
    END SUBROUTINE SUEWS_update_output
 
-   ! !========================================================================
-   ! SUBROUTINE SUEWS_cal_Diagnostics( &
-   !    dectime, &!input
-   !    avU1, Temp_C, avRH, Press_hPa, &
-   !    qh, qe, &
-   !    VegFraction, zMeas, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
-   !    RoughLenHeatMethod, StabilityMethod, &
-   !    avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
-   !    ! TS 03 Aug 2018: added limit on q2 by restricting RH2_max to 100%
-   !    ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
-   !    ! TS 26 Jul 2018: improved the calculation logic
-   !    ! TS 05 Sep 2017: improved interface
-   !    ! TS 20 May 2017: calculate surface-level diagonostics
-   !    IMPLICIT NONE
-   !    REAL(KIND(1d0)), INTENT(in) ::dectime
-   !    REAL(KIND(1d0)), INTENT(in) ::avU1, Temp_C, avRH
-   !    REAL(KIND(1d0)), INTENT(in) ::qh
-   !    REAL(KIND(1d0)), INTENT(in) ::Press_hPa, qe
-   !    REAL(KIND(1d0)), INTENT(in) :: VegFraction, z0m, RA, avdens, avcp, lv_J_kg, tstep_real
-   !    REAL(KIND(1d0)), INTENT(in) :: zMeas! height for measurement
-   !    REAL(KIND(1d0)), INTENT(in) :: zdm ! displacement height
+! !========================================================================
+! SUBROUTINE SUEWS_cal_Diagnostics( &
+!    dectime, &!input
+!    avU1, Temp_C, avRH, Press_hPa, &
+!    qh, qe, &
+!    VegFraction, zMeas, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
+!    RoughLenHeatMethod, StabilityMethod, &
+!    avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
+!    ! TS 03 Aug 2018: added limit on q2 by restricting RH2_max to 100%
+!    ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
+!    ! TS 26 Jul 2018: improved the calculation logic
+!    ! TS 05 Sep 2017: improved interface
+!    ! TS 20 May 2017: calculate surface-level diagonostics
+!    IMPLICIT NONE
+!    REAL(KIND(1d0)), INTENT(in) ::dectime
+!    REAL(KIND(1d0)), INTENT(in) ::avU1, Temp_C, avRH
+!    REAL(KIND(1d0)), INTENT(in) ::qh
+!    REAL(KIND(1d0)), INTENT(in) ::Press_hPa, qe
+!    REAL(KIND(1d0)), INTENT(in) :: VegFraction, z0m, RA, avdens, avcp, lv_J_kg, tstep_real
+!    REAL(KIND(1d0)), INTENT(in) :: zMeas! height for measurement
+!    REAL(KIND(1d0)), INTENT(in) :: zdm ! displacement height
 
-   !    ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-   !    INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
+!    ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+!    INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
 
-   !    REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C, RH2
-   !    REAL(KIND(1d0))::qa_gkg
-   !    REAL(KIND(1d0)), PARAMETER::k = 0.4
+!    REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C, RH2
+!    REAL(KIND(1d0))::qa_gkg
+!    REAL(KIND(1d0)), PARAMETER::k = 0.4
 
-   !    ! wind speed:
-   !    CALL diagSfc( &
-   !       0, &
-   !       zMeas, avU1, 0d0, 10d0, avU10_ms, &
-   !       VegFraction, &
-   !       z0m, zdm, avdens, avcp, lv_J_kg, &
-   !       avU1, Temp_C, qh, &
-   !       RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
+!    ! wind speed:
+!    CALL diagSfc( &
+!       0, &
+!       zMeas, avU1, 0d0, 10d0, avU10_ms, &
+!       VegFraction, &
+!       z0m, zdm, avdens, avcp, lv_J_kg, &
+!       avU1, Temp_C, qh, &
+!       RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
 
-   !    ! temperature at 2 m agl:
-   !    CALL diagSfc( &
-   !       1, &
-   !       zMeas, Temp_C, qh, 2d0, t2_C, &
-   !       VegFraction, &
-   !       z0m, zdm, avdens, avcp, lv_J_kg, &
-   !       avU1, Temp_C, qh, &
-   !       RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
+!    ! temperature at 2 m agl:
+!    CALL diagSfc( &
+!       1, &
+!       zMeas, Temp_C, qh, 2d0, t2_C, &
+!       VegFraction, &
+!       z0m, zdm, avdens, avcp, lv_J_kg, &
+!       avU1, Temp_C, qh, &
+!       RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
 
-   !    ! skin temperature:
-   !    tskin_C = qh/(avdens*avcp)*RA + temp_C
+!    ! skin temperature:
+!    tskin_C = qh/(avdens*avcp)*RA + temp_C
 
-   !    ! humidity:
-   !    qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
-   !    CALL diagSfc( &
-   !       2, &
-   !       zMeas, qa_gkg, qe, 2d0, q2_gkg, &
-   !       VegFraction, &
-   !       z0m, zdm, avdens, avcp, lv_J_kg, &
-   !       avU1, Temp_C, qh, &
-   !       RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
-   !    ! re-examine if the diagnostic RH2 > 100% ?
-   !    RH2 = qa2RH(q2_gkg, Press_hPa, Temp_c)
-   !    IF (RH2 > 1) THEN
-   !       ! if so, limit RH2 to 100%
-   !       RH2 = 1d0
-   !       ! and adjust the diagnostic q2_gkg
-   !       q2_gkg = RH2qa(RH2, Press_hPa, Temp_c)
-   !    END IF
+!    ! humidity:
+!    qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
+!    CALL diagSfc( &
+!       2, &
+!       zMeas, qa_gkg, qe, 2d0, q2_gkg, &
+!       VegFraction, &
+!       z0m, zdm, avdens, avcp, lv_J_kg, &
+!       avU1, Temp_C, qh, &
+!       RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
+!    ! re-examine if the diagnostic RH2 > 100% ?
+!    RH2 = qa2RH(q2_gkg, Press_hPa, Temp_c)
+!    IF (RH2 > 1) THEN
+!       ! if so, limit RH2 to 100%
+!       RH2 = 1d0
+!       ! and adjust the diagnostic q2_gkg
+!       q2_gkg = RH2qa(RH2, Press_hPa, Temp_c)
+!    END IF
 
-   ! END SUBROUTINE SUEWS_cal_Diagnostics
+! END SUBROUTINE SUEWS_cal_Diagnostics
 
-   ! calculate several surface fraction related parameters
+! calculate several surface fraction related parameters
    SUBROUTINE SUEWS_cal_surf( &
       StorageHeatMethod, NetRadiationMethod, & !input
       nlayer, sfr_surf, & !input
@@ -3865,143 +4005,143 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_surf
 
-   ! SUBROUTINE diagSfc( &
-   !    opt, &
-   !    zMeas, xMeas, xFlux, zDiag, xDiag, &
-   !    VegFraction, &
-   !    z0m, zd, avdens, avcp, lv_J_kg, &
-   !    avU1, Temp_C, qh, &
-   !    RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
-   !    ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
-   !    ! TS 26 Jul 2018: improved the calculation logic
-   !    ! TS 05 Sep 2017: improved interface
-   !    ! TS 20 May 2017: calculate surface-level diagonostics
+! SUBROUTINE diagSfc( &
+!    opt, &
+!    zMeas, xMeas, xFlux, zDiag, xDiag, &
+!    VegFraction, &
+!    z0m, zd, avdens, avcp, lv_J_kg, &
+!    avU1, Temp_C, qh, &
+!    RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
+!    ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
+!    ! TS 26 Jul 2018: improved the calculation logic
+!    ! TS 05 Sep 2017: improved interface
+!    ! TS 20 May 2017: calculate surface-level diagonostics
 
-   !    IMPLICIT NONE
-   !    REAL(KIND(1d0)), INTENT(in) :: dectime
-   !    REAL(KIND(1d0)), INTENT(in) :: qh ! sensible heat flux
-   !    REAL(KIND(1d0)), INTENT(in) :: z0m, avdens, avcp, lv_J_kg, tstep_real
-   !    REAL(KIND(1d0)), INTENT(in) :: avU1, Temp_C ! atmospheric level variables
-   !    REAL(KIND(1d0)), INTENT(in) :: zDiag ! height for diagonostics
-   !    REAL(KIND(1d0)), INTENT(in) :: zMeas! height for measurement
-   !    REAL(KIND(1d0)), INTENT(in) :: zd ! displacement height
-   !    REAL(KIND(1d0)), INTENT(in) :: xMeas ! measurement at height
-   !    REAL(KIND(1d0)), INTENT(in) :: xFlux!
-   !    REAL(KIND(1d0)), INTENT(in) :: VegFraction ! vegetation fraction
+!    IMPLICIT NONE
+!    REAL(KIND(1d0)), INTENT(in) :: dectime
+!    REAL(KIND(1d0)), INTENT(in) :: qh ! sensible heat flux
+!    REAL(KIND(1d0)), INTENT(in) :: z0m, avdens, avcp, lv_J_kg, tstep_real
+!    REAL(KIND(1d0)), INTENT(in) :: avU1, Temp_C ! atmospheric level variables
+!    REAL(KIND(1d0)), INTENT(in) :: zDiag ! height for diagonostics
+!    REAL(KIND(1d0)), INTENT(in) :: zMeas! height for measurement
+!    REAL(KIND(1d0)), INTENT(in) :: zd ! displacement height
+!    REAL(KIND(1d0)), INTENT(in) :: xMeas ! measurement at height
+!    REAL(KIND(1d0)), INTENT(in) :: xFlux!
+!    REAL(KIND(1d0)), INTENT(in) :: VegFraction ! vegetation fraction
 
-   !    INTEGER, INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-   !    INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
+!    INTEGER, INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+!    INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
 
-   !    REAL(KIND(1d0)), INTENT(out):: xDiag
+!    REAL(KIND(1d0)), INTENT(out):: xDiag
 
-   !    REAL(KIND(1d0)) :: L_mod
-   !    REAL(KIND(1d0)) :: psimz0, psihzDiag, psihzMeas, psihz0, psimzDiag ! stability correction functions
-   !    REAL(KIND(1d0)) :: z0h ! Roughness length for heat
-   !    REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
-   !    REAL(KIND(1d0)) :: zMeaszd
-   !    REAL(KIND(1d0)) :: tlv, H_kms, TStar, zL, UStar
-   !    REAL(KIND(1d0)), PARAMETER :: muu = 1.46e-5 !molecular viscosity
-   !    REAL(KIND(1d0)), PARAMETER :: nan = -999
-   !    REAL(KIND(1d0)), PARAMETER :: zdm = 0 ! assuming Displacement height is ZERO
-   !    REAL(KIND(1d0)), PARAMETER::k = 0.4
+!    REAL(KIND(1d0)) :: L_mod
+!    REAL(KIND(1d0)) :: psimz0, psihzDiag, psihzMeas, psihz0, psimzDiag ! stability correction functions
+!    REAL(KIND(1d0)) :: z0h ! Roughness length for heat
+!    REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
+!    REAL(KIND(1d0)) :: zMeaszd
+!    REAL(KIND(1d0)) :: tlv, H_kms, TStar, zL, UStar
+!    REAL(KIND(1d0)), PARAMETER :: muu = 1.46e-5 !molecular viscosity
+!    REAL(KIND(1d0)), PARAMETER :: nan = -999
+!    REAL(KIND(1d0)), PARAMETER :: zdm = 0 ! assuming Displacement height is ZERO
+!    REAL(KIND(1d0)), PARAMETER::k = 0.4
 
-   !    tlv = lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-   !    zDiagzd = zDiag + z0m ! height at hgtX assuming Displacement height is ZERO; set lower limit as z0 to prevent arithmetic error, zd=0
+!    tlv = lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+!    zDiagzd = zDiag + z0m ! height at hgtX assuming Displacement height is ZERO; set lower limit as z0 to prevent arithmetic error, zd=0
 
-   !    ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-   !    CALL SUEWS_init_QH( &
-   !       avdens, avcp, qh, 0d0, dectime, & ! use qh as qh_obs to initialise H_init
-   !       H_kms)!output
+!    ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+!    CALL SUEWS_init_QH( &
+!       avdens, avcp, qh, 0d0, dectime, & ! use qh as qh_obs to initialise H_init
+!       H_kms)!output
 
-   !    ! redo the calculation for stability correction
-   !    CALL cal_Stab( &
-   !       ! input
-   !       StabilityMethod, &
-   !       dectime, & !Decimal time
-   !       zDiagzd, &     !Active measurement height (meas. height-displac. height)
-   !       z0m, &     !Aerodynamic roughness length
-   !       zdm, &     !Displacement height
-   !       avU1, &    !Average wind speed
-   !       Temp_C, &  !Air temperature
-   !       H_kms, & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-   !       ! output:
-   !       L_MOD, & !Obukhov length
-   !       TStar, & !T*
-   !       UStar, & !Friction velocity
-   !       zL)!Stability scale
+!    ! redo the calculation for stability correction
+!    CALL cal_Stab( &
+!       ! input
+!       StabilityMethod, &
+!       dectime, & !Decimal time
+!       zDiagzd, &     !Active measurement height (meas. height-displac. height)
+!       z0m, &     !Aerodynamic roughness length
+!       zdm, &     !Displacement height
+!       avU1, &    !Average wind speed
+!       Temp_C, &  !Air temperature
+!       H_kms, & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+!       ! output:
+!       L_MOD, & !Obukhov length
+!       TStar, & !T*
+!       UStar, & !Friction velocity
+!       zL)!Stability scale
 
-   !    !***************************************************************
-   !    ! log-law based stability corrections:
-   !    ! Roughness length for heat
-   !    z0h = cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar)
+!    !***************************************************************
+!    ! log-law based stability corrections:
+!    ! Roughness length for heat
+!    z0h = cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar)
 
-   !    ! stability correction functions
-   !    ! momentum:
-   !    psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
-   !    ! psimz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-   !    psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
+!    ! stability correction functions
+!    ! momentum:
+!    psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
+!    ! psimz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+!    psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
 
-   !    ! heat and vapor: assuming both are the same
-   !    ! psihz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-   !    psihz0 = stab_psi_heat(StabilityMethod, z0h/L_mod)
+!    ! heat and vapor: assuming both are the same
+!    ! psihz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+!    psihz0 = stab_psi_heat(StabilityMethod, z0h/L_mod)
 
-   !    !***************************************************************
-   !    SELECT CASE (opt)
-   !    CASE (0) ! wind (momentum) at hgtX=10 m
-   !       zDiagzd = zDiag + z0m! set lower limit as z0h to prevent arithmetic error, zd=0
+!    !***************************************************************
+!    SELECT CASE (opt)
+!    CASE (0) ! wind (momentum) at hgtX=10 m
+!       zDiagzd = zDiag + z0m! set lower limit as z0h to prevent arithmetic error, zd=0
 
-   !       ! stability correction functions
-   !       ! momentum:
-   !       psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
-   !       psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
-   !       xDiag = UStar/k*(LOG(zDiagzd/z0m) - psimzDiag + psimz0) ! Brutsaert (2005), p51, eq.2.54
+!       ! stability correction functions
+!       ! momentum:
+!       psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
+!       psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
+!       xDiag = UStar/k*(LOG(zDiagzd/z0m) - psimzDiag + psimz0) ! Brutsaert (2005), p51, eq.2.54
 
-   !    CASE (1) ! temperature at hgtX=2 m
-   !       zMeaszd = zMeas - zd
-   !       zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
+!    CASE (1) ! temperature at hgtX=2 m
+!       zMeaszd = zMeas - zd
+!       zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
-   !       ! heat and vapor: assuming both are the same
-   !       psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod)
-   !       psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod)
-   !       ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
-   !       xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.55
-   !       !  IF ( ABS((LOG(z2zd/z0h)-psihz2+psihz0))>10 ) THEN
-   !       !     PRINT*, '#####################################'
-   !       !     PRINT*, 'xSurf',xSurf
-   !       !     PRINT*, 'xFlux',xFlux
-   !       !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
-   !       !     PRINT*, 'k',k
-   !       !     PRINT*, 'us',us
-   !       !     PRINT*, 'avdens',avdens
-   !       !     PRINT*, 'avcp',avcp
-   !       !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
-   !       !     PRINT*, 'stab',(LOG(z2zd/z0h)-psihz2+psihz0)
-   !       !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
-   !       !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
-   !       !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
-   !       !     PRINT*, 'psihz2',psihz2
-   !       !     PRINT*, 'psihz0',psihz0
-   !       !     PRINT*, 'psihz2-psihz0',psihz2-psihz0
-   !       !     PRINT*, 'xDiag',xDiag
-   !       !     PRINT*, '*************************************'
-   !       !  END IF
+!       ! heat and vapor: assuming both are the same
+!       psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod)
+!       psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod)
+!       ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+!       xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.55
+!       !  IF ( ABS((LOG(z2zd/z0h)-psihz2+psihz0))>10 ) THEN
+!       !     PRINT*, '#####################################'
+!       !     PRINT*, 'xSurf',xSurf
+!       !     PRINT*, 'xFlux',xFlux
+!       !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
+!       !     PRINT*, 'k',k
+!       !     PRINT*, 'us',us
+!       !     PRINT*, 'avdens',avdens
+!       !     PRINT*, 'avcp',avcp
+!       !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
+!       !     PRINT*, 'stab',(LOG(z2zd/z0h)-psihz2+psihz0)
+!       !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
+!       !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
+!       !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
+!       !     PRINT*, 'psihz2',psihz2
+!       !     PRINT*, 'psihz0',psihz0
+!       !     PRINT*, 'psihz2-psihz0',psihz2-psihz0
+!       !     PRINT*, 'xDiag',xDiag
+!       !     PRINT*, '*************************************'
+!       !  END IF
 
-   !    CASE (2) ! humidity at hgtX=2 m
-   !       zMeaszd = zMeas - zd
-   !       zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
+!    CASE (2) ! humidity at hgtX=2 m
+!       zMeaszd = zMeas - zd
+!       zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
-   !       ! heat and vapor: assuming both are the same
-   !       psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod)
-   !       psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod)
-   !       ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+!       ! heat and vapor: assuming both are the same
+!       psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod)
+!       psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod)
+!       ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
 
-   !       xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.56
+!       xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.56
 
-   !    END SELECT
+!    END SELECT
 
-   ! END SUBROUTINE diagSfc
+! END SUBROUTINE diagSfc
 
-   !===============set variable of invalid value to NAN=====================
+!===============set variable of invalid value to NAN=====================
    ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
       IMPLICIT NONE
       REAL(KIND(1D0)), PARAMETER :: pNAN = 30000 ! 30000 to prevent water_state being filtered out as it can be large
@@ -4019,9 +4159,9 @@ CONTAINS
       END IF
 
    END FUNCTION set_nan
-   !========================================================================
+!========================================================================
 
-   !===============the functions below are only for test in f2py conversion===
+!===============the functions below are only for test in f2py conversion===
    FUNCTION square(x) RESULT(xx)
       IMPLICIT NONE
       REAL(KIND(1D0)), PARAMETER :: pNAN = 9999
@@ -4091,7 +4231,7 @@ CONTAINS
       alpha_bioCO2, alpha_enh_bioCO2, alt, BaseT, BaseTe, &
       beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-      DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
+      DecTreeH, DiagMethod, Diagnose, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
@@ -4102,7 +4242,7 @@ CONTAINS
       IrrFracPaved, IrrFracBldgs, &
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       IrrFracBSoil, IrrFracWater, &
-      kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
+      kkAnOHM, Kmax, LAI_id, LAIMax, LAIMin, &
       LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
@@ -4145,9 +4285,10 @@ CONTAINS
       WaterDist, WaterUseMethod, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, & !output
-      dataOutBlockDebug, dataOutBlockSPARTACUS, dataOutBlockESTMExt, &
-      DailyStateBlock)
+      output_block_suews) !output
+      ! dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, & !output
+      ! dataOutBlockDebug, dataOutBlockSPARTACUS, dataOutBlockESTMExt, &
+      ! DailyStateBlock)
 
       IMPLICIT NONE
       ! input:
@@ -4158,8 +4299,8 @@ CONTAINS
       INTEGER, INTENT(IN) :: nlayer ! number of vertical layers in urban canyon
       ! INTEGER, INTENT(IN) :: AerodynamicResistanceMethod !method to calculate RA [-]
       INTEGER, INTENT(IN) :: Diagnose
-      INTEGER, INTENT(IN) :: DiagQN
-      INTEGER, INTENT(IN) :: DiagQS
+      ! INTEGER, INTENT(IN) :: DiagQN
+      ! INTEGER, INTENT(IN) :: DiagQS
       INTEGER, INTENT(IN) :: startDLS !start of daylight saving  [DOY]
       INTEGER, INTENT(IN) :: endDLS !end of daylight saving [DOY]
       INTEGER, INTENT(IN) :: EmissionsMethod !method to calculate anthropogenic heat [-]
@@ -4167,7 +4308,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: gsModel !choice of gs parameterisation (1 = Ja11, 2 = Wa16)
       INTEGER, INTENT(IN) :: Ie_end !ending time of water use [DOY]
       INTEGER, INTENT(IN) :: Ie_start !starting time of water use [DOY]
-      INTEGER, INTENT(IN) :: LAICalcYes !boolean to determine if calculate LAI [-]
+      ! INTEGER, INTENT(IN) :: LAICalcYes !boolean to determine if calculate LAI [-]
       INTEGER, INTENT(in) :: DiagMethod !Defines how near surface diagnostics are calculated [-]
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
       INTEGER, INTENT(IN) :: OHMIncQF !Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
@@ -4451,16 +4592,17 @@ CONTAINS
 
       ! ########################################################################################
       ! output variables
+      TYPE(output_line) :: output_line_suews
       ! REAL(KIND(1D0)),DIMENSION(:,:,:),ALLOCATABLE,INTENT(OUT) ::datetimeBlock
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS), INTENT(OUT) :: dataOutBlockSUEWS
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) :: dataOutBlockSnow
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) :: dataOutBlockESTM
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt), INTENT(OUT) :: dataOutBlockESTMExt
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) :: dataOutBlockRSL
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS), INTENT(OUT) :: dataOutBlockBEERS
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug), INTENT(OUT) :: dataOutBlockDebug
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS), INTENT(OUT) :: dataOutBlockSPARTACUS
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) :: DailyStateBlock
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS) :: dataOutBlockSUEWS
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow) :: dataOutBlockSnow
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM) :: dataOutBlockESTM
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt) :: dataOutBlockESTMExt
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL) :: dataOutBlockRSL
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS) :: dataOutBlockBEERS
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug) :: dataOutBlockDebug
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS) :: dataOutBlockSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState) :: dataOutBlockDailyState
       ! ########################################################################################
 
       ! internal temporal iteration related variables
@@ -4509,7 +4651,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLinedebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: DailyStateLine
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) :: dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) :: dataOutBlockSnow_X
@@ -4519,17 +4661,13 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS, 1) :: dataOutBlockBEERS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) :: dataOutBlockDebug_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS, 1) :: dataOutBlockSPARTACUS_X
-      ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState, 1) :: dataOutBlockDailyState_X
 
-      REAL(KIND(1D0)), DIMENSION(10, 10) :: MetForcingData_grid ! fake array as a placeholder
+      ! REAL(KIND(1D0)), DIMENSION(10) :: MetForcingData_grid ! fake array as a placeholder
 
-      ! CHARACTER(len=150):: FileStateInit
-      ! CHARACTER(len=4):: year_txt
-      ! CHARACTER(len=3):: id_text
-      ! CHARACTER(len=2):: it_text, imin_text
+      TYPE(output_block), INTENT(OUT) :: output_block_suews
 
-      ! get initial dt_since_start_x from dt_since_start, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-      ! dt_since_start = dt_since_start
+      !   allocate output arrays
 
       DO ir = 1, len_sim, 1
          ! =============================================================================
@@ -4800,7 +4938,7 @@ CONTAINS
             alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
             beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-            DecTreeH, DiagMethod, Diagnose, DiagQN, DiagQS, DRAINRT, &
+            DecTreeH, DiagMethod, Diagnose, DRAINRT, &
             dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
@@ -4812,9 +4950,9 @@ CONTAINS
             IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
             IrrFracBSoil, IrrFracWater, &
             isec, it, &
-            iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
+            iy, kkAnOHM, Kmax, LAI_id, LAIMax, LAIMin, LAI_obs, &
             LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
-            SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
+            SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
             NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
             nlayer, &
             n_vegetation_region_urban, &
@@ -4856,25 +4994,33 @@ CONTAINS
             WaterDist, WaterUseMethod, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
-            dataOutLineBEERS, & !output
-            dataOutLineDebug, dataOutLineSPARTACUS, &
-            dataOutLineESTMExt, &
-            DailyStateLine) !output
+            output_line_suews) !output
+         ! datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
+         ! dataOutLineBEERS, & !output
+         ! dataOutLineDebug, dataOutLineSPARTACUS, &
+         ! dataOutLineESTMExt, &
+         ! dataOutLineDailyState) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
          dt_since_start = dt_since_start + tstep
 
          !============ update DailyStateBlock ===============
-         DailyStateBlock(ir, :) = [datetimeLine, DailyStateLine]
+         dataOutBlockDailyState(ir, :) = [output_line_suews%dataOutLineDailyState]
 
          !============ write out results ===============
          ! works at each timestep
          CALL SUEWS_update_output( &
             SnowUse, storageheatmethod, & !input
             len_sim, 1, &
-            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, & !input
-            dataoutLineRSL, dataOutLineBEERS, dataOutLinedebug, dataOutLineSPARTACUS, dataOutLineESTMExt, & !input
+            ir, gridiv_x, &
+            output_line_suews%dataOutLineSUEWS, &
+            output_line_suews%dataOutLineSnow, &
+            output_line_suews%dataOutLineESTM, & !input
+            output_line_suews%dataoutLineRSL, &
+            output_line_suews%dataOutLineBEERS, &
+            output_line_suews%dataOutLinedebug, &
+            output_line_suews%dataOutLineSPARTACUS, &
+            output_line_suews%dataOutLineESTMExt, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
             dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockESTMExt_X) !inout
 
@@ -4888,11 +5034,25 @@ CONTAINS
       dataOutBlockBEERS = dataOutBlockBEERS_X(:, :, 1)
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
       dataOutBlockSPARTACUS = dataOutBlockSPARTACUS_X(:, :, 1)
-      ! DailyStateBlock=DailyStateBlock_X(:,:,1)
+      dataOutBlockDailyState = dataOutBlockDailyState_X(:, :, 1)
+
+      ! initialize output block
+      CALL output_block_finalize(output_block_suews)
+      CALL output_block_init(output_block_suews, len_sim)
+      ! transfer data to output block
+      output_block_suews%dataOutBlockSUEWS = dataOutBlockSUEWS
+      output_block_suews%dataOutBlockSnow = dataOutBlockSnow
+      output_block_suews%dataOutBlockESTM = dataOutBlockESTM
+      output_block_suews%dataOutBlockESTMExt = dataOutBlockESTMExt
+      output_block_suews%dataOutBlockRSL = dataOutBlockRSL
+      output_block_suews%dataOutBlockBEERS = dataOutBlockBEERS
+      output_block_suews%dataOutBlockDebug = dataOutBlockDebug
+      output_block_suews%dataOutBlockSPARTACUS = dataOutBlockSPARTACUS
+      output_block_suews%dataOutBlockDailyState = dataOutBlockDailyState
 
    END SUBROUTINE SUEWS_cal_multitsteps
 
-   ! a wrapper of NARP_cal_SunPosition used by supy
+! a wrapper of NARP_cal_SunPosition used by supy
    SUBROUTINE SUEWS_cal_sunposition( &
       year, idectime, UTC, locationlatitude, locationlongitude, locationaltitude, & !input
       sunazimuth, sunzenith) !output
@@ -4908,12 +5068,12 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_sunposition
 
-   ! function func(arg) result(retval)
-   !    implicit none
-   !    type :: arg
-   !    type :: retval
+! function func(arg) result(retval)
+!    implicit none
+!    type :: arg
+!    type :: retval
 
-   ! end function func
+! end function func
 
    FUNCTION cal_tair_av(tair_av_prev, dt_since_start, tstep, temp_c) RESULT(tair_av_next)
       ! calculate mean air temperature of past 24 hours

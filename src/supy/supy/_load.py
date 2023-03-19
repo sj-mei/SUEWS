@@ -5,18 +5,24 @@ from pathlib import Path
 import f90nml
 import numpy as np
 import pandas as pd
-# import .supy_driver as spd
+
+
 # from .supy_driver import suews_driver as sd
-from .supy_driver.suews_driver import suews_driver as sd
+# from ._supy_driver_wrapper import suews_driver as sd
+from . import _supy_driver as _sd
 
 from ._env import logger_supy, trv_supy_module
 from ._misc import path_insensitive
+
+# print("Loading supy module ...")
+# print(dir(sd))
+# print(sd.f90wrap_suews_cal_main.__doc__)
 
 
 ########################################################################
 # get_args_suews can get the interface information
 # of the f2py-converted Fortran interface
-def get_args_suews(docstring=sd.suews_cal_main.__doc__):
+def get_args_suews(docstring=_sd.f90wrap_suews_cal_main.__doc__):
     # split doc lines for processing
     docLines = np.array(docstring.splitlines(), dtype=str)
 
@@ -32,15 +38,26 @@ def extract_dict_docs(docLines):
     varInputInfo = np.array(
         [[xx.rstrip() for xx in x.split(":")] for x in varInputLines]
     )
+    # varInputInfo
     dict_InputInfo = {xx[0]: xx[1] for xx in varInputInfo}
     dict_InOutInfo = {xx[0]: xx[1] for xx in varInputInfo if "in/out" in xx[1]}
+
+    list_var_inout = tuple(dict_InOutInfo.keys())
+    list_var_in = tuple(set(dict_InputInfo.keys()))
+    # dict_InOutInfo
     # get the information of output variables for SUEWS_driver
-    posOutput = np.where(docLines == "Returns")
-    varOutputLines = docLines[posOutput[0][0] + 2 :]
+
+    varOutputLines = ser_docs[ser_docs.str.startswith(("dataout", "dailystate"))].values
+
+    # varOutputLines = docLines[posOutput[0][0] + 2 :]
     varOutputInfo = np.array(
         [[xx.rstrip() for xx in x.split(":")] for x in varOutputLines]
     )
+    # varOutputInfo
     dict_OutputInfo = {xx[0]: xx[1] for xx in varOutputInfo}
+    list_var_out = tuple(dict_OutputInfo.keys())
+    list_var_inout = set(list_var_inout) - set(list_var_out)
+    # list_var_in= set(list_var_in) - set(list_var_out)
     # pack in/out results:
     dict_inout_sd = {
         # 'input' and 'output' are dict's that store variable information:
@@ -50,9 +67,9 @@ def extract_dict_docs(docLines):
         "output": dict_OutputInfo,
         # 'var_input' and 'var_output' are tuples,
         # that keep the order of arguments as in the Fortran subroutine
-        "var_input": tuple(varInputInfo[:, 0]),
-        "var_inout": tuple(dict_InOutInfo.keys()),
-        "var_output": tuple(varOutputInfo[:, 0]),
+        "var_input": list_var_in,
+        "var_inout": list_var_inout,
+        "var_output": list_var_out,
     }
     return dict_inout_sd
 
@@ -60,7 +77,7 @@ def extract_dict_docs(docLines):
 # for `suews_cal_multitsteps`
 def get_args_suews_multitsteps():
     # split doc lines for processing
-    docLines = np.array(sd.suews_cal_multitsteps.__doc__.splitlines(), dtype=str)
+    docLines = np.array(_sd.f90wrap_suews_cal_multitsteps.__doc__.splitlines(), dtype=str)
 
     dict_inout_sd = extract_dict_docs(docLines)
 
@@ -88,7 +105,7 @@ set_var_use = set_var_input.intersection(set_var_input_multitsteps)
 ##############################################################################
 # input processor
 # 1. surface properties will be retrieved and packed together for later use
-# 2. met forcing conditions will splitted into time steps and used to derive
+# 2. met forcing conditions will split into time steps and used to derive
 # other information
 
 ######################################################################
@@ -215,15 +232,20 @@ def gen_suews_arg_info_df(docstring):
     df_info = pd.DataFrame(dict_info).T
     return df_info
 
+
 # note: infer data types for variables to avoid type conversion
-df_info_suews_cal_main = gen_suews_arg_info_df(sd.suews_cal_main.__doc__).infer_objects()
-df_info_suews_cal_multitsteps = gen_suews_arg_info_df(sd.suews_cal_multitsteps.__doc__).infer_objects()
+df_info_suews_cal_main = gen_suews_arg_info_df(
+    _sd.f90wrap_suews_cal_main.__doc__
+).infer_objects()
+df_info_suews_cal_multitsteps = gen_suews_arg_info_df(
+    _sd.f90wrap_suews_cal_multitsteps.__doc__
+).infer_objects()
 
 df_var_info = df_info_suews_cal_multitsteps.merge(
     df_info_suews_cal_main,
     how="outer",
 )
-df_var_info=df_var_info.set_index("name")
+df_var_info = df_var_info.set_index("name")
 
 
 # load model settings
@@ -1268,7 +1290,7 @@ dict_RunControl_default = {
     # "aerodynamicresistancemethod": 2, #removed in SUEWS v2023
     # "basetmethod": 1, #removed in SUEWS v2023
     "evapmethod": 2,
-    "laicalcyes": 1,
+    # "laicalcyes": 1, #removed in SUEWS v2023
     "veg_type": 1,
     "diagnose": 0,
     "diagnosedisagg": 0,

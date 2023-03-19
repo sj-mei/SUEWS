@@ -357,7 +357,7 @@ setup(
         ]
     },
     distclass=BinaryDistribution,
-    ext_modules=ext_modules,
+    # ext_modules=ext_modules,
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
         "pandas; python_version > '3.9'",

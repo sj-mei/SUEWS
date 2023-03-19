@@ -28,17 +28,25 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 MODULE = supy
 SUEWS_dir = ../suews
+supy_driver_dir = ../supy_driver
 
 
 # install package in dev mode and do pytest
-main: suews dev test
+main: dev test
+
+driver: suews
+	rm -rf supy_driver
+	$(MAKE) -C $(supy_driver_dir) clean
+	$(MAKE) -C $(supy_driver_dir) test
+	mv $(supy_driver_dir)/_supy_driver*.so $(MODULE)/
+	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
 
 # run pytest
 test:
 	pytest -s ${MODULE}/test
 
 # install package in dev mode
-dev: suews
+dev: driver
 	pip install -e .
 
 # build wheel

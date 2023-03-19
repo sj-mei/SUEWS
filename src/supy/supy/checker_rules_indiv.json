@@ -1,10 +1,4 @@
 {
-    "aerodynamicresistancemethod": {
-        "cat": "cfg",
-        "logic": "NA",
-        "param": {},
-        "unit": "1"
-    },
     "ah_min": {
         "cat": "grid",
         "logic": "range",
@@ -224,15 +218,6 @@
         },
         "unit": "1"
     },
-    "baset_hc": {
-        "cat": "grid",
-        "logic": "range",
-        "param": {
-            "max": "inf",
-            "min": "-inf"
-        },
-        "unit": "1"
-    },
     "baset_heating": {
         "cat": "grid",
         "logic": "range",
@@ -251,17 +236,7 @@
         },
         "unit": "1"
     },
-    "basetmethod": {
-        "cat": "grid",
-        "logic": "method",
-        "param": {
-            "allowed": [
-                1,
-                2
-            ]
-        },
-        "unit": "1"
-    },
+
     "beta_bioco2": {
         "cat": "grid",
         "logic": "NA",
@@ -438,18 +413,8 @@
         "param": {},
         "unit": "1"
     },
-    "diagqn": {
-        "cat": "grid",
-        "logic": "NA",
-        "param": {},
-        "unit": "1"
-    },
-    "diagqs": {
-        "cat": "grid",
-        "logic": "NA",
-        "param": {},
-        "unit": "1"
-    },
+
+
     "dqndt": {
         "cat": "grid",
         "logic": "NA",
@@ -557,12 +522,6 @@
         "unit": "1"
     },
     "enef_v_jkm": {
-        "cat": "grid",
-        "logic": "NA",
-        "param": {},
-        "unit": "1"
-    },
-    "evapmethod": {
         "cat": "grid",
         "logic": "NA",
         "param": {},
@@ -944,12 +903,6 @@
             "max": "inf",
             "min": 0
         },
-        "unit": "1"
-    },
-    "laicalcyes": {
-        "cat": "grid",
-        "logic": "NA",
-        "param": {},
         "unit": "1"
     },
     "laimax": {
