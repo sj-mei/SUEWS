@@ -934,7 +934,7 @@ Input Options
 .. option:: EF_umolCO2perJ
 
 	:Description:
-		Emission factor for fuels used for building heating.
+		Emission factor for fuels used for building heating. [umol CO2 |J^-1|]
 
 	:Configuration:
 		.. csv-table::
@@ -2591,7 +2591,7 @@ Input Options
 
 	:Description:
 
-		Maximum (day) CO2 from human metabolism. [W |m^-2|]
+		Maximum (day) CO2 from human metabolism. [umol |s^-1| |cap^-1|]
 
 	:Configuration:
 		.. csv-table::
@@ -2633,7 +2633,7 @@ Input Options
 
 	:Description:
 
-		Minimum (night) CO2 from human metabolism. [W |m^-2|]
+		Minimum (night) CO2 from human metabolism. [umol |s^-1| |cap^-1|]
 
 	:Configuration:
 		.. csv-table::
