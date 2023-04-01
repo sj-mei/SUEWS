@@ -57,26 +57,26 @@ test-requires = "pytest"
 #     "cd test",
 #     "ls -l .",
 # ]
-test-command = "pytest -s '{package}/supy/test'"
+test-command = "TEST_DATA_DIR='{project}/supy/test/data_test' pytest -s '{package}/supy/test'"
 # only test on macOS python 3.9
 test-skip = "*win* *manylinux* cp31*-*"
 
 [tool.cibuildwheel.linux]
 # Install system library
-before-all = ["yum install -y glibc-static", "make suews"]
+before-all = ["yum install -y glibc-static", "make driver"]
 archs = ["auto64"]
 
 [tool.cibuildwheel.macos]
 before-all = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
-    "make suews",
+    "make driver",
 ]
 archs = ["auto", "arm64"]
 skip = ['pp*']
 
 
 [tool.cibuildwheel.windows]
-before-all = ["make suews"]
+before-all = ["make driver"]
 before-build = [
     "cd {package}",
     "python -m pip install numpy charset_normalizer",

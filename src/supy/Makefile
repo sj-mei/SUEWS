@@ -55,7 +55,7 @@ wheel:
 
 # If wanted, clean all *.o files after build
 clean:
-	rm -rf ${MODULE}/*.so ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
+	rm -rf ${MODULE}/*.so ${MODULE}/supy_driver.py ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	rm -rf ${MODULE}/test/*.pyc ${MODULE}/test/__pycache__
 	rm -rf ${MODULE}/util/*.pyc ${MODULE}/util/__pycache__
 	rm -rf ${MODULE}/cmd/*.pyc ${MODULE}/cmd/__pycache__

@@ -13,6 +13,14 @@ import pandas as pd
 import supy as sp
 import platform
 
+from pathlib import Path
+
+# Get the test data directory from the environment variable
+test_data_dir = os.environ.get('TEST_DATA_DIR', Path(__file__).parent / 'data_test')
+
+# Construct the file path for the data file
+p_df_sample = Path(test_data_dir) / 'sample_output.pkl'
+
 
 class TestSuPy(TestCase):
     def setUp(self):
@@ -258,7 +266,7 @@ class TestSuPy(TestCase):
         )
 
         # load sample output
-        df_res_sample = pd.read_pickle("./supy/test/data_test/sample_output.pkl")
+        df_res_sample = pd.read_pickle(p_df_sample)
 
         # choose the same columns as the testing group
         df_res_s = df_output_s.SUEWS.loc[df_res_sample.index, df_res_sample.columns]

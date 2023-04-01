@@ -113,7 +113,8 @@ CONTAINS
       SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
       LAIMax, LAI_id, gsModel, Kmax, &
       G_max, G_k, g_q_base, g_q_shape, G_t, G_sm, TH, TL, S1, S2, &
-      gfunc, gsc, ResistSurf) ! output:
+      g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
+      gfunc, gsc, RS) ! output:
       ! Calculates bulk surface resistance (ResistSurf [s m-1]) based on Jarvis 1976 approach
       ! Last modified -----------------------------------------------------
       ! MH  01 Feb 2019: gsModel choices to model with air temperature or 2 meter temperature. Added gfunc for photosynthesis calculations
@@ -180,21 +181,26 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(3), INTENT(in) :: LAI_id !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac !Surface fraction of snow cover
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf !Surface fractions [-]
-
+      ! g_kdown*g_dq*g_ta*g_smd*g_lai
+      REAL(KIND(1D0)), INTENT(out) :: g_kdown !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_dq !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_ta !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
       REAL(KIND(1D0)), INTENT(out) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
       REAL(KIND(1D0)), INTENT(out) :: gsc !Surface Layer Conductance
-      REAL(KIND(1D0)), INTENT(out) :: ResistSurf !Surface resistance
+      REAL(KIND(1D0)), INTENT(out) :: RS !Surface resistance
 
       REAL(KIND(1D0)) :: &
-         g_lai, & !G(LAI)
+         ! g_lai, & !G(LAI)
          QNM, & !QMAX/(QMAX+G2)
-         g_kdown, & !G(Q*)
-         g_dq, & !G(dq)
+         ! g_kdown, & !G(Q*)
+         ! g_dq, & !G(dq)
          TC, & !Temperature parameter 1
          TC2, & !Temperature parameter 2
-         g_ta, & !G(T)
-         sdp, & !S1/G6+S2
-         g_smd !G(Soil moisture deficit)
+         ! g_ta, & !G(T)
+         sdp !S1/G6+S2
+         ! g_smd !G(Soil moisture deficit)
 
       INTEGER :: iv
       REAL(KIND(1D0)) :: id_real
@@ -256,7 +262,7 @@ CONTAINS
                g_smd = 0 !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
             END IF
          END IF
-         !gs = gs*(1 - SUM(SnowFrac(1:6))/6)
+
          IF (g_smd < 0) THEN
             CALL errorHint(65, &
                            'subroutine SurfaceResistance.f95 (gsModel=1): g(smd) < 0 calculated, setting to 0.0001', &
@@ -366,7 +372,7 @@ CONTAINS
          CALL errorHint(71, 'Value of gsModel not recognised.', notUsed, NotUsed, gsModel)
       END IF
 
-      ResistSurf = 1/(gsc/1000) ![s m-1]
+      RS = 1/(gsc/1000) ![s m-1]
       gfunc = g_dq*g_ta*g_smd*g_kdown
 
       RETURN

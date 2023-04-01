@@ -296,7 +296,8 @@ class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
 
-
+########################################
+# below is the f2py based extension
 ext_modules = [
     Extension(
         "supy.supy_driver.suews_driver",
@@ -322,6 +323,12 @@ ext_modules = [
         + [f"-L{str(path_lib)}", "-lspartacus"],
     )
 ]
+########################################
+
+
+# this is just a placeholder for the f90wrap based extension
+ext_module_f90wrap = [Extension('supy_driver',[])]
+
 
 setup(
     name="supy",
@@ -353,16 +360,18 @@ setup(
             "*.json",
             "util/*",
             "cmd/*",
-            "supy_driver/*",
+            "_supy_driver*.so",
         ]
     },
     distclass=BinaryDistribution,
+    ext_modules=ext_module_f90wrap,
     # ext_modules=ext_modules,
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
         "pandas; python_version > '3.9'",
         "matplotlib",
         "chardet",
+        "f90wrap",
         "scipy",
         "dask",  # needs dask for parallel tasks
         "f90nml",  # utility for namelist files

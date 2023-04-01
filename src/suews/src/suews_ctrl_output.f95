@@ -689,6 +689,15 @@ MODULE ctrl_output
       varAttr('RSS_Grass', 's m-1', f104, 'Wetness-corrected surface conductance for grass surface', aA, 'debug', 0), &
       varAttr('RSS_BSoil', 's m-1', f104, 'Wetness-corrected surface conductance for bare soil surface', aA, 'debug', 0), &
       varAttr('RSS_Water', 's m-1', f104, 'Wetness-corrected surface conductance for water surface', aA, 'debug', 0), &
+      varAttr('vsmd', 'mm', f104, 'vsmd', aA, 'debug', 0), &
+      varAttr('dsp', 'mm', f104, 'dsp', aA, 'debug', 0), &
+      varAttr('G_sm', 'mm-1', f104, 'G_sm', aA, 'debug', 0), &
+      varAttr('x_exp', '-', f104, 'x_exp', aA, 'debug', 0), &
+      varAttr('g_kdown', 'mm s-1', f104, 'gs component: kdown', aA, 'debug', 0), &
+      varAttr('g_dq', 'mm s-1', f104, 'gs component: vpd', aA, 'debug', 0), &
+      varAttr('g_ta', 'mm s-1', f104, 'gs component: ta', aA, 'debug', 0), &
+      varAttr('g_smd', 'mm s-1', f104, 'gs component: smd', aA, 'debug', 0), &
+      varAttr('g_lai', 'mm s-1', f104, 'gs component: lai', aA, 'debug', 0), &
       varAttr('vpd_hPa', 'hPa', f104, 'vapour pressure deficit', aA, 'debug', 0), &
       varAttr('lv_J_kg', 'J kg-1', f104, 'latent heat of vaporisation', aA, 'debug', 0), &
       varAttr('avdens', 'kg m-3', f104, 'air density', aA, 'debug', 0), &

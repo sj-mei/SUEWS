@@ -857,6 +857,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: roof_albedo_dir_mult_fact !Ratio of the direct and diffuse albedo of the roof[-]
       REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac ! Fraction of wall reflection that is specular [-]
 
+      REAL(KIND(1D0)) :: g_kdown !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)) :: g_dq !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)) :: g_ta !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
+
       ! ####
       ! set initial values for output arrays
       SWE = 0.
@@ -1286,6 +1292,7 @@ CONTAINS
             g_t, g_sm, s1, s2, &
             th, tl, &
             dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_prev, sfr_surf, &
+            g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
             UStar, TStar, L_mod, & !output
             zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
 
@@ -1689,6 +1696,8 @@ CONTAINS
           qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
           wu_surf, ev0_surf, ev_surf, drain_surf, state_surf_prev, state_surf_next, soilstore_surf_prev, soilstore_surf_next, & ! water balance
           RS, RA_h, RB, RAsnow, rss_surf, & ! for debugging QE
+          vsmd, S1/G_sm + S2, G_sm, G_sm*(vsmd - S1/G_sm + S2), & ! debug g_smd
+          g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
           i_iter*1D0, dqndt]
 
@@ -1923,6 +1932,7 @@ CONTAINS
                SMDMethod, SnowFrac, sfr_surf, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
                LAIMax, LAI_id, gsModel, Kmax, &
                G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
+               dummy10, dummy10, dummy10, dummy10, dummy10, & ! output:
                gfunc2, dummy10, dummy11) ! output:
          END IF
 
@@ -3380,6 +3390,7 @@ CONTAINS
       G_t, G_sm, S1, S2, &
       TH, TL, &
       dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr_surf, &
+      g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
       UStar, TStar, L_mod, & !output
       zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
 
@@ -3439,6 +3450,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: z0vSnow !roughness for heat [m]
       REAL(KIND(1D0)), INTENT(out) :: RB !boundary layer resistance shuttleworth
       REAL(KIND(1D0)), INTENT(out) :: L_mod !Obukhov length [m]
+
+      REAL(KIND(1D0)), INTENT(out) :: g_kdown !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_dq !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_ta !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)), INTENT(out) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
+
       REAL(KIND(1D0)) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
       ! REAL(KIND(1d0))              ::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
@@ -3500,6 +3518,7 @@ CONTAINS
          SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
          LAIMax, LAI_id, gsModel, Kmax, &
          G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
+         g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
          gfunc, gsc, RS) ! output:
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
