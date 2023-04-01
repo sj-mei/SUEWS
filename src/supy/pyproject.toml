@@ -65,7 +65,7 @@ test-skip = "*win* *manylinux* cp31*-*"
 # Install system library
 before-all = [
     "yum install -y glibc-static",
-    'ln -sf "$(which gcc-11)" /usr/local/bin/gcc',
+    'ln -sf "$(which gcc-10)" /usr/local/bin/gcc',
     "python3 -m pip install f90wrap",
     "make -C '{package}' driver",
 ]
