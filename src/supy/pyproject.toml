@@ -82,7 +82,8 @@ skip = ['pp*']
 
 [tool.cibuildwheel.windows]
 before-all = [
-    "make -C '{package}' driver",
+    "cd {package}",
+    "make driver",
 ]
 before-build = [
     "cd {package}",
