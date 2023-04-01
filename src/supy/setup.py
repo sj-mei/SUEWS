@@ -329,7 +329,6 @@ ext_modules = [
 # this is just a placeholder for the f90wrap based extension
 ext_module_f90wrap = [Extension('supy_driver',[])]
 
-
 setup(
     name="supy",
     # version=__version__,
