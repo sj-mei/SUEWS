@@ -200,7 +200,7 @@ CONTAINS
          TC2, & !Temperature parameter 2
          ! g_ta, & !G(T)
          sdp !S1/G6+S2
-         ! g_smd !G(Soil moisture deficit)
+      ! g_smd !G(Soil moisture deficit)
 
       INTEGER :: iv
       REAL(KIND(1D0)) :: id_real
