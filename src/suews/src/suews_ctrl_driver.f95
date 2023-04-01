@@ -3851,24 +3851,24 @@ CONTAINS
       !Define the overall output matrix to be printed out step by step
       dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [(dataOutLineSUEWS)]
       ! dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [ set_nan(dataOutLineSUEWS)]
-      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [ (dataoutLineRSL)]
-      dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [ (dataOutLineDebug)]
-      dataOutSPARTACUS(ir, 1:ncolumnsDataOutSPARTACUS, Gridiv) = [ (dataOutLineSPARTACUS)]
+      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [(dataoutLineRSL)]
+      dataOutDebug(ir, 1:ncolumnsDataOutDebug, Gridiv) = [(dataOutLineDebug)]
+      dataOutSPARTACUS(ir, 1:ncolumnsDataOutSPARTACUS, Gridiv) = [(dataOutLineSPARTACUS)]
       ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [ set_nan(dataoutLineRSL)]
-      dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [ set_nan(dataOutLineBEERS)]
+      dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [set_nan(dataOutLineBEERS)]
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
 
       IF (SnowUse == 1) THEN
-         dataOutSnow(ir, 1:ncolumnsDataOutSnow, Gridiv) = [ set_nan(dataOutLineSnow)]
+         dataOutSnow(ir, 1:ncolumnsDataOutSnow, Gridiv) = [set_nan(dataOutLineSnow)]
       END IF
 
       IF (storageheatmethod == 4) THEN
-         dataOutESTM(ir, 1:ncolumnsDataOutESTM, Gridiv) = [ set_nan(dataOutLineESTM)]
+         dataOutESTM(ir, 1:ncolumnsDataOutESTM, Gridiv) = [set_nan(dataOutLineESTM)]
       END IF
 
       IF (storageheatmethod == 5) THEN
-         dataOutESTMExt(ir, 1:ncolumnsDataOutESTMExt, Gridiv) = [ set_nan(dataOutLineESTMExt)]
+         dataOutESTMExt(ir, 1:ncolumnsDataOutESTMExt, Gridiv) = [set_nan(dataOutLineESTMExt)]
       END IF
 
       !====================update output arrays end==============================
