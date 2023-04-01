@@ -454,8 +454,8 @@ MODULE mod_datetime
 
    USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL32, REAL64
    USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR, C_INT, C_NULL_CHAR
-   USE mod_timedelta, ONLY:timedelta
-   USE mod_strftime, ONLY:tm_struct, c_strftime, c_strptime
+   USE mod_timedelta, ONLY: timedelta
+   USE mod_strftime, ONLY: tm_struct, c_strftime, c_strptime
    USE mod_constants
 
    IMPLICIT NONE
@@ -1667,8 +1667,8 @@ MODULE mod_clock
 
    USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL32, REAL64
    USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR, C_INT, C_NULL_CHAR
-   USE mod_datetime, ONLY:datetime
-   USE mod_timedelta, ONLY:timedelta
+   USE mod_datetime, ONLY: datetime
+   USE mod_timedelta, ONLY: timedelta
 
    IMPLICIT NONE
 
