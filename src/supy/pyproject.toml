@@ -83,8 +83,8 @@ skip = ['pp*']
 [tool.cibuildwheel.windows]
 before-build = [
     "cd {package}",
-    "make driver",
     "python3 -m pip install numpy charset_normalizer f90wrap",
+    "make driver",
     # "python3 build-win-def.py",
     # 'python -c "import numpy; print(numpy.__version__)"',
     # "python setup.py build_ext --inplace --compiler=mingw32",
