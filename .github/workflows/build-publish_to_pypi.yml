@@ -5,13 +5,15 @@ on:
     paths: # Push events containing matching files
       - "src/suews/**"
       - "src/supy/**"
+      - "src/supy_driver/**"
       - ".github/workflows/build-publish_to_pypi.yml"
 
-  pull_request:
-    paths: # PR events containing matching files
-      - "src/suews/**"
-      - "src/supy/**"
-      - ".github/workflows/build-publish_to_pypi.yml"
+      pull_request:
+        paths: # PR events containing matching files
+        - "src/suews/**"
+        - "src/supy/**"
+        - "src/supy_driver/**"
+        - ".github/workflows/build-publish_to_pypi.yml"
 
 jobs:
   build_wheels:
@@ -47,6 +49,12 @@ jobs:
     #     pip install pandas wheel pytest tables build
     #     make test
     #     make wheel
+    # Add this step to set up environment variables for GCC on Windows only.
+    - name: Setup Environment Variables for GCC (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        echo "CC=gcc" >> $GITHUB_ENV
+        echo "CXX=g++" >> $GITHUB_ENV
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.9.0
