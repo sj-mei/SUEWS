@@ -8,6 +8,12 @@ F90      = gfortran
 #F90      =  /opt/intel/composer_xe_2015.3.187/bin/intel64/ifort
 PYTHON   = python3
 
+# Detect platform
+ifeq ($(OS),Windows_NT)
+    # Set compiler to mingw32 on Windows
+    CC = mingw32
+endif
+
 #=======================================================================
 #                     additional flags
 #=======================================================================
@@ -182,11 +188,11 @@ libsrc.a: ${LIBSRC_OBJECTS}
 
 
 _${PYTHON_MODN}.so: libsrc.a ${LIBSRC_FPP_FILES}
-	CC="gcc -fPIC -fbracket-depth=1024 -D_POSIX_C_SOURCE=200809L" \
 	f90wrap -m ${PYTHON_MODN} ${LIBSRC_WRAP_FPP_FILES} -k ${KIND_MAP} -v \
 	--skip error_hint
-	CC="gcc -fPIC -fbracket-depth=1024 -D_POSIX_C_SOURCE=200809L" \
-	f2py-f90wrap --fcompiler=$(FCOMP) \
+	CC="$(CC) $(CFLAGS)" \
+	f2py-f90wrap \
+	--fcompiler=$(FCOMP) \
 	--f90flags="-cpp -I../suews/mod" \
 	--build-dir . -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
 	-L../suews/lib -lspartacus -lsuewsdriver
