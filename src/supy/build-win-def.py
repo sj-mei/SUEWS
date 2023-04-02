@@ -8,8 +8,11 @@ from numpy.distutils.mingw32ccompiler import find_python_dll,generate_def
 import sys,os
 from pathlib import Path
 from time import sleep
+import platform
 
-if sys.platform != 'win32':
+sysname = platform.system()
+
+if sysname != "Windows":
     print("This script is for Windows only")
 else:
     print("Fixing def file for Windows")

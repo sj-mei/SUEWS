@@ -63,7 +63,7 @@ test-skip = "*win* *manylinux* cp31*-*"
 
 [tool.cibuildwheel.linux]
 # Install system library
-before-all = [
+before-build = [
     "yum install -y glibc-static",
     "python3 -m pip install f90wrap",
     "make -C '{package}' driver",
@@ -71,7 +71,7 @@ before-all = [
 archs = ["auto64"]
 
 [tool.cibuildwheel.macos]
-before-all = [
+before-build = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
     "python3 -m pip install f90wrap",
     "make -C '{package}' driver",
@@ -85,7 +85,7 @@ before-build = [
     "cd {package}",
     "python3 -m pip install numpy charset_normalizer f90wrap",
     "make driver",
-    # "python3 build-win-def.py",
+    "python3 build-win-def.py",
     # 'python -c "import numpy; print(numpy.__version__)"',
     # "python setup.py build_ext --inplace --compiler=mingw32",
     # "ls -l .",
