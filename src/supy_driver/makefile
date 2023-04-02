@@ -188,6 +188,7 @@ libsrc.a: ${LIBSRC_OBJECTS}
 
 
 _${PYTHON_MODN}.so: libsrc.a ${LIBSRC_FPP_FILES}
+	${PYTHON} gen-setup_cfg.py
 	f90wrap -m ${PYTHON_MODN} ${LIBSRC_WRAP_FPP_FILES} -k ${KIND_MAP} -v \
 	--skip error_hint
 	CC="$(CC) $(CFLAGS)" \
