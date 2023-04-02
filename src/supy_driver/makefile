@@ -142,7 +142,7 @@ LIBSRC_WRAP_FPP_FILES = $(addsuffix .fpp,${LIBSRC_WRAP_SOURCES})
 .PHONY: all clean cfg
 
 
-all: _${PYTHON_MODN}.so
+all: _${PYTHON_MODN}.so cfg
 # all: _${PYTHON_MODN}.so _${PYTHON_MODN}_pkg.so
 
 cfg: gen-setup_cfg.py
@@ -190,8 +190,8 @@ libsrc.a: ${LIBSRC_OBJECTS}
 _${PYTHON_MODN}.so: libsrc.a ${LIBSRC_FPP_FILES}
 	f90wrap -m ${PYTHON_MODN} ${LIBSRC_WRAP_FPP_FILES} -k ${KIND_MAP} -v \
 	--skip error_hint
+	CC="$(CC) $(CFLAGS)" \
 	f2py-f90wrap \
-	--compiler="$(CC) $(CFLAGS)" \
 	--fcompiler=$(FCOMP) \
 	--f90flags="-cpp -I../suews/mod" \
 	--build-dir . -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \

@@ -13,5 +13,7 @@ if sysname == "Windows":
     print(list(Path.cwd().glob("*")))
 elif sysname == "Darwin":
     lib_name = lib_basename + ".so"
+    print("setup.cfg is not necessary for Mac")
 elif sysname == "Linux":
     lib_name = lib_basename + ".so"
+    print("setup.cfg is not necessary for Linux")
