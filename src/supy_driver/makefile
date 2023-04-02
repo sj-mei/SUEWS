@@ -179,6 +179,7 @@ libsrc.a: ${LIBSRC_OBJECTS}
 
 
 _${PYTHON_MODN}.so: libsrc.a ${LIBSRC_FPP_FILES}
+	CC="gcc -fPIC -fbracket-depth=1024 -D_POSIX_C_SOURCE=200809L" \
 	f90wrap -m ${PYTHON_MODN} ${LIBSRC_WRAP_FPP_FILES} -k ${KIND_MAP} -v \
 	--skip error_hint
 	CC="gcc -fPIC -fbracket-depth=1024 -D_POSIX_C_SOURCE=200809L" \
