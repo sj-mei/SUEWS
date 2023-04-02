@@ -133,11 +133,14 @@ LIBSRC_WRAP_FPP_FILES = $(addsuffix .fpp,${LIBSRC_WRAP_SOURCES})
 #
 #=======================================================================
 
-.PHONY: all clean
+.PHONY: all clean cfg
 
 
 all: _${PYTHON_MODN}.so
 # all: _${PYTHON_MODN}.so _${PYTHON_MODN}_pkg.so
+
+cfg: gen-setup_cfg.py
+	${PYTHON} gen-setup_cfg.py
 
 
 clean:
@@ -164,7 +167,7 @@ $(LINKS):
 # suews_phys_spartacus.o: suews_phys_spartacus.f95 libspartacus
 # 	${F90} ${F90FLAGS} -c $< -o $@
 
-%.o: %.c
+%.o: %.c cfg
 	${CC} ${CFLAGS} -c $< -o $@
 	rm $<
 
