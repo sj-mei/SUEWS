@@ -8,12 +8,12 @@ on:
       - "src/supy_driver/**"
       - ".github/workflows/build-publish_to_pypi.yml"
 
-      pull_request:
-        paths: # PR events containing matching files
-        - "src/suews/**"
-        - "src/supy/**"
-        - "src/supy_driver/**"
-        - ".github/workflows/build-publish_to_pypi.yml"
+  pull_request:
+    paths: # PR events containing matching files
+      - "src/suews/**"
+      - "src/supy/**"
+      - "src/supy_driver/**"
+      - ".github/workflows/build-publish_to_pypi.yml"
 
 jobs:
   build_wheels:
