@@ -4,9 +4,11 @@
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
 	PYTHON_exe = python.exe
+	lib_suffix = pyd
 
 else
 	UNAME_S := $(shell uname -s)
+	lib_suffix = so
 
 
 
@@ -38,7 +40,7 @@ driver: suews
 	rm -rf supy_driver
 	$(MAKE) -C $(supy_driver_dir) clean
 	$(MAKE) -C $(supy_driver_dir) test
-	mv $(supy_driver_dir)/_supy_driver*.so $(MODULE)/
+	mv $(supy_driver_dir)/_supy_driver*.$(lib_suffix) $(MODULE)/
 	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
 
 # run pytest
