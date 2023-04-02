@@ -216,7 +216,7 @@ sysname = platform.system()
 lib_basename = "supy_driver"
 if sysname == "Windows":
     from numpy.distutils.mingw32ccompiler import find_python_dll, generate_def
-    lib_name = lib_basename + ".pyd"
+    lib_suffix = ".pyd"
     Path("setup.cfg").write_text(
         "[build_ext]\ncompiler=mingw32\n[build]\ncompiler=mingw32\n"
     )
@@ -243,10 +243,10 @@ if sysname == "Windows":
     generate_def(dll_file, def_file)
     print(list(Path.cwd().glob("*")))
 elif sysname == "Darwin":
-    lib_name = lib_basename + ".so"
+    lib_suffix = ".so"
 elif sysname == "Linux":
-    lib_name = lib_basename + ".so"
-
+    lib_suffix = ".so"
+lib_name = lib_basename + lib_suffix
 # change compiler settings
 if sysname == "Windows":
     pfn = Path.cwd() / "setup.cfg"
@@ -381,7 +381,7 @@ setup(
             "*.json",
             "util/*",
             "cmd/*",
-            "_supy_driver*.so",
+            f"_supy_driver*{lib_suffix}",
         ]
     },
     distclass=BinaryDistribution,
