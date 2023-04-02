@@ -8,11 +8,6 @@ F90      = gfortran
 #F90      =  /opt/intel/composer_xe_2015.3.187/bin/intel64/ifort
 PYTHON   = python3
 
-# Detect platform
-ifeq ($(OS),Windows_NT)
-    # Set compiler to mingw32 on Windows
-    CC = mingw32
-endif
 
 #=======================================================================
 #                     additional flags
@@ -191,6 +186,7 @@ _${PYTHON_MODN}.so: libsrc.a ${LIBSRC_FPP_FILES}
 	${PYTHON} gen-setup_cfg.py
 	f90wrap -m ${PYTHON_MODN} ${LIBSRC_WRAP_FPP_FILES} -k ${KIND_MAP} -v \
 	--skip error_hint
+	$(CC) --version
 	CC="$(CC) $(CFLAGS)" \
 	f2py-f90wrap \
 	--fcompiler=$(FCOMP) \

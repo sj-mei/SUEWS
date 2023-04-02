@@ -40,7 +40,7 @@ driver: suews
 	rm -rf supy_driver
 	$(MAKE) -C $(supy_driver_dir) clean
 	$(MAKE) -C $(supy_driver_dir) test
-	mv $(supy_driver_dir)/_supy_driver*.$(lib_suffix) $(MODULE)/
+	mv $(supy_driver_dir)/_supy_driver* $(MODULE)/
 	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
 
 # run pytest
