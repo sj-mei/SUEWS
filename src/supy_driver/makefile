@@ -30,7 +30,7 @@ ifeq ($(F90),ifort)
     LIBS =
 endif
 
-CFLAGS = -fPIC -fbracket-depth=1024 -D_POSIX_C_SOURCE=200809L#     ==> universal for ifort, gfortran, pgi
+CFLAGS = -fPIC -D_POSIX_C_SOURCE=200809L#     ==> universal for ifort, gfortran, pgi
 
 #=======================================================================
 #=======================================================================
@@ -39,6 +39,7 @@ UNAME = $(shell uname)
 
 ifeq (${UNAME}, Darwin)
   LIBTOOL = libtool -static -o
+  CFLAGS += -fbracket-depth=1024
 else
   LIBTOOL = ar src
 endif
