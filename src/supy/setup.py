@@ -1,5 +1,6 @@
 import os
 from signal import raise_signal
+import sys
 from setuptools import setup
 from pathlib import Path
 
