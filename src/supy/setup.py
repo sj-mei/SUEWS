@@ -214,13 +214,32 @@ distutils.cygwinccompiler.get_msvcr = get_msvcr_patch
 sysname = platform.system()
 lib_basename = "supy_driver"
 if sysname == "Windows":
+    from numpy.distutils.mingw32ccompiler import find_python_dll, generate_def
     lib_name = lib_basename + ".pyd"
     Path("setup.cfg").write_text(
         "[build_ext]\ncompiler=mingw32\n[build]\ncompiler=mingw32\n"
     )
     print("setup.cfg created")
     # create missing def file on windows virtual env
-    subprocess.run(["python3", "build-win-def.py"])
+    print("Fixing def file for Windows")
+
+    dll_file = find_python_dll()
+    p_dll = Path(dll_file)
+    print("Here is the pythonlib.dll:", dll_file)
+
+    # generate symbol list from this library
+    def_name = "python%d%d.def" % tuple(sys.version_info[:2])
+    def_file = os.path.join(sys.prefix, "libs", def_name)
+
+    # fix path for def file
+    Path(def_file).parent.mkdir(parents=True, exist_ok=True)
+    print("OK to create? ", Path(def_file).parent.exists())
+
+    # t_sleep_sec=1
+    # print(f'sleeping for {t_sleep_sec} seconds')
+    # sleep(t_sleep_sec)
+
+    generate_def(dll_file, def_file)
     print(list(Path.cwd().glob("*")))
 elif sysname == "Darwin":
     lib_name = lib_basename + ".so"
