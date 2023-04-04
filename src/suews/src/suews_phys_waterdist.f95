@@ -857,14 +857,21 @@ CONTAINS
 
       ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
       vsmd = 0
-      ! fveg: total fraction of vegetated surfaces
-      fveg = (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
-      IF (fveg > 0) THEN
-         DO is = ConifSurf, GrassSurf !Vegetated surfaces only
-            vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
-            !write(*,*) is, vsmd, smd
-         END DO
+      IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
+
+         fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
+      ELSE
+         fveg = 0
       END IF
+      DO is = ConifSurf, GrassSurf !Vegetated surfaces only
+         IF (fveg == 0) THEN
+            vsmd = 0
+         ELSE
+            vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
+         END IF
+         !write(*,*) is, vsmd, smd
+      END DO
+
 
    END SUBROUTINE SUEWS_update_SoilMoist
    !------------------------------------------------------------------------------
