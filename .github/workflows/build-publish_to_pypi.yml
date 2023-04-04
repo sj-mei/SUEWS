@@ -44,18 +44,6 @@ jobs:
         git status
         git describe --tags --dirty --match "2[0-9]*"
 
-    # - name: test and build
-    #   run: |
-    #     pip install pandas wheel pytest tables build
-    #     make test
-    #     make wheel
-    # Add this step to set up environment variables for GCC on Windows only.
-    - name: Setup Environment Variables for GCC (Windows)
-      if: ${{ runner.os == 'Windows' }}
-      run: |
-        echo "CC=gcc" >> $GITHUB_ENV
-        echo "CXX=g++" >> $GITHUB_ENV
-
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.9.0
       env:
