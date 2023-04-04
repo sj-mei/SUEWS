@@ -872,7 +872,6 @@ CONTAINS
          !write(*,*) is, vsmd, smd
       END DO
 
-
    END SUBROUTINE SUEWS_update_SoilMoist
    !------------------------------------------------------------------------------
 
