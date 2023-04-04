@@ -16,7 +16,8 @@ import platform
 from pathlib import Path
 
 # Get the test data directory from the environment variable
-test_data_dir = os.environ.get('TEST_DATA_DIR', Path(__file__).parent / 'data_test')
+test_data_dir = Path(__file__).parent / 'data_test'
+# test_data_dir = os.environ.get('TEST_DATA_DIR', Path(__file__).parent / 'data_test')
 
 # Construct the file path for the data file
 p_df_sample = Path(test_data_dir) / 'sample_output.pkl'
