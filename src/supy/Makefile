@@ -38,11 +38,11 @@ main: dev test
 
 driver: suews
 	python3 build-win-def.py
-	rm -rf supy_driver
+	rm -rf _supy_driver*.* supy_driver.py
 	$(MAKE) -C $(supy_driver_dir) clean
 	$(MAKE) -C $(supy_driver_dir) all
-	mv $(supy_driver_dir)/_supy_driver* $(MODULE)/
-	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
+	# mv $(supy_driver_dir)/_supy_driver* $(MODULE)/
+	# mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
 
 # run pytest
 test:

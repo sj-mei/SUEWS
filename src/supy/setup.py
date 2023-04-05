@@ -1,6 +1,7 @@
 import os
 from signal import raise_signal
 import sys
+from time import sleep
 from setuptools import setup
 from pathlib import Path
 
@@ -387,6 +388,7 @@ import subprocess
 import os
 import os
 from distutils.dir_util import mkpath
+from pathlib import Path
 
 
 class CustomBuildExtCommand(build_ext):
@@ -401,18 +403,49 @@ class CustomBuildExtCommand(build_ext):
         if ext.name == "supy_driver":
             print("Skipping actual compilation for", ext.name)
             return
-
         super().build_extension(ext)
+
+    def get_outputs(self):
+        outputs = super().get_outputs()
+
+        # Assuming that your .so file is located at "../external/my_extension.so"
+        so_file_path = sorted[Path.cwd().glob("_supy_driver*.so")][0]
+
+        if not os.path.exists(so_file_path):
+            raise FileNotFoundError(f"Cannot find .so file at {so_file_path}")
+
+        outputs.append(so_file_path)
+        outputs.append(Path.cwd() / "supy_driver.py")
+        print(outputs)
+
+        return outputs
 
     def run_external_make(self):
         # Assuming your Makefile is located at "../external/Makefile"
         makefile_dir = os.path.abspath(os.path.dirname(__file__))
         make_file_path = os.path.join(makefile_dir, "Makefile")
 
+        print("Current working directory:", os.getcwd())
+        sleep(10)
+
         if not os.path.exists(make_file_path):
             raise FileNotFoundError(f"Cannot find Makefile at {make_file_path}")
-
+        subprocess.run(["pwd"])
         subprocess.run(["make", "-f", make_file_path, "driver"], check=True)
+
+        p_dir_ext = Path.cwd().parent / "supy_driver"
+        fn_lib = list(p_dir_ext.glob("_supy_driver*.*"))[0]
+        fn_wrapper = p_dir_ext / "supy_driver.py"
+        ext_files = [
+            fn_lib,
+            fn_wrapper,
+        ]
+        print(f"ext_files: {ext_files}")
+        print(f"build_lib: {self.build_lib}")
+
+        for fn_src in ext_files:
+            fn_dst = Path(self.build_lib) / "supy" / fn_src.name
+            shutil.copy(fn_src, fn_dst)
 
 
 # class CustomBuildExtCommand(build_ext):
@@ -441,7 +474,6 @@ class CustomBuildExtCommand(build_ext):
 
 #         super().run()
 
-
 setup(
     name="supy",
     # version=__version__,
@@ -465,6 +497,7 @@ setup(
     ),
     license="GPL-V3.0",
     packages=["supy"],
+    include_package_data=True,
     package_data={
         "supy": [
             "sample_run/*",
@@ -514,7 +547,6 @@ setup(
             "suews-convert=supy.cmd.table_converter:convert_table_cmd",
         ]
     },
-    include_package_data=True,
     python_requires="~=3.7",
     classifiers=[
         "Programming Language :: Python :: 3 :: Only",

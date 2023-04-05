@@ -49,15 +49,6 @@ before-build = ["git describe --tags --always --dirty"]
 build-verbosity = 0
 
 test-requires = "pytest"
-# before-test = [
-#     # "sleep 100",
-#     "cd {package}",
-#     "ls -l .",
-#     "cd supy",
-#     "ls -l .",
-#     "cd test",
-#     "ls -l .",
-# ]
 test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
 # only test on macOS python 3.9
 test-skip = "*win* *manylinux* cp31*-*"
@@ -77,6 +68,9 @@ before-build = [
     "python3 -m pip install f90wrap",
     # "make -C '{package}' driver",
 ]
+# before-test = [
+#     "sleep 1000"
+# ]
 # archs = ["universal2"]
 build-verbosity = 10
 archs = ["auto", "arm64"] # skip this for now in gh actions as it takes too long
