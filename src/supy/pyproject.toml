@@ -72,7 +72,7 @@ before-build = [
 #     "sleep 1000"
 # ]
 # archs = ["universal2"]
-build-verbosity = 10
+# build-verbosity = 10
 archs = ["auto", "arm64"] # skip this for now in gh actions as it takes too long
 skip = ['pp*']
 

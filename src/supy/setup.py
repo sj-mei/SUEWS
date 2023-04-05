@@ -433,7 +433,8 @@ class CustomBuildExtCommand(build_ext):
         subprocess.run(["pwd"])
         subprocess.run(["make", "-f", make_file_path, "driver"], check=True)
 
-        p_dir_ext = Path.cwd().parent / "supy_driver"
+        p_dir_ext = Path.cwd() / "supy"
+        print(f"p_dir_ext: {p_dir_ext}")
         fn_lib = list(p_dir_ext.glob("_supy_driver*.*"))[0]
         fn_wrapper = p_dir_ext / "supy_driver.py"
         ext_files = [
@@ -447,32 +448,11 @@ class CustomBuildExtCommand(build_ext):
             fn_dst = Path(self.build_lib) / "supy" / fn_src.name
             shutil.copy(fn_src, fn_dst)
 
+if platform.system() == "Darwin":
+    cmdclass = {"build_ext": CustomBuildExtCommand}
+else:
+    cmdclass = {}
 
-# class CustomBuildExtCommand(build_ext):
-#     def run(self):
-#         # Create necessary directories for building.
-#         if not self.dry_run:
-#             mkpath(self.build_temp)
-#             mkpath(self.build_lib)
-
-#         makefile_dir = os.path.abspath(os.path.dirname(__file__))
-#         make_command = ['make', '-C', makefile_dir,'driver']
-
-
-#         with open("build.log", "w") as log_file:
-#             retcode = subprocess.call(
-#                 make_command,
-#                 cwd=self.build_temp,
-#                 stdout=log_file,
-#                 stderr=subprocess.STDOUT,
-#             )
-
-#             if retcode != 0:
-#                 raise RuntimeError(
-#                     f"custom build failed with exit code {retcode}. Check 'build.log' for more details."
-#                 )
-
-#         super().run()
 
 setup(
     name="supy",
@@ -510,9 +490,7 @@ setup(
     },
     distclass=BinaryDistribution,
     ext_modules=ext_module_f90wrap,
-    cmdclass={
-        "build_ext": CustomBuildExtCommand,
-    },
+    cmdclass=cmdclass,
     # ext_modules=ext_modules,
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
