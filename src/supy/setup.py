@@ -451,7 +451,7 @@ class CustomBuildExtCommand(build_ext):
 if platform.system() == "Darwin":
     cmdclass = {"build_ext": CustomBuildExtCommand}
 else:
-    cmdclass = {}
+    cmdclass = None
 
 
 setup(
