@@ -40,7 +40,7 @@ driver: suews
 	python3 build-win-def.py
 	rm -rf supy_driver
 	$(MAKE) -C $(supy_driver_dir) clean
-	$(MAKE) -C $(supy_driver_dir) test
+	$(MAKE) -C $(supy_driver_dir) all
 	mv $(supy_driver_dir)/_supy_driver* $(MODULE)/
 	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
 
