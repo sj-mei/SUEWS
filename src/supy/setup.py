@@ -10,6 +10,7 @@ from pathlib import Path
 # import re
 
 from setuptools import Distribution, find_packages
+
 from numpy.distutils.core import Extension, setup
 import platform
 import glob
@@ -216,6 +217,7 @@ sysname = platform.system()
 lib_basename = "supy_driver"
 if sysname == "Windows":
     from numpy.distutils.mingw32ccompiler import find_python_dll, generate_def
+
     lib_suffix = ".pyd"
     Path("setup.cfg").write_text(
         "[build_ext]\ncompiler=mingw32\n[build]\ncompiler=mingw32\n"
@@ -318,38 +320,127 @@ class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
 
+
 ########################################
 # below is the f2py based extension
-ext_modules = [
-    Extension(
-        "supy.supy_driver.suews_driver",
-        [str(p) for p in path_target_f95],
-        extra_compile_args=[
-            "-D_POSIX_C_SOURCE=200809L",
-            "-fbracket-depth=1024"
-            if sysname == "Darwin"
-            else "-Wall",  # for clang on MacOS
-        ],
-        extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
-        f2py_options=[
-            # '--quiet',
-            # "--verbose",
-            # "--debug-capi",  # this is for debugging data types
-            # '--f2cmap="f2py_f2cmap"',
-            # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
-        ],
-        extra_objects=fn_other_obj,
-        # "-v" under Linux is necessary because it can avoid the blank variable issue
-        # ref: https://github.com/metomi/fcm/issues/220
-        extra_link_args=["-v" if sysname == "Linux" else "-static"]
-        + [f"-L{str(path_lib)}", "-lspartacus"],
-    )
-]
+# from setuptools import setup, Extension
+# ext_modules = [
+#     Extension(
+#         "supy.supy_driver.suews_driver",
+#         [str(p) for p in path_target_f95],
+#         extra_compile_args=[
+#             "-D_POSIX_C_SOURCE=200809L",
+#             "-fbracket-depth=1024"
+#             if sysname == "Darwin"
+#             else "-Wall",  # for clang on MacOS
+#         ],
+#         extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
+#         f2py_options=[
+#             # '--quiet',
+#             # "--verbose",
+#             # "--debug-capi",  # this is for debugging data types
+#             # '--f2cmap="f2py_f2cmap"',
+#             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
+#         ],
+#         extra_objects=fn_other_obj,
+#         # "-v" under Linux is necessary because it can avoid the blank variable issue
+#         # ref: https://github.com/metomi/fcm/issues/220
+#         extra_link_args=["-v" if sysname == "Linux" else "-static"]
+#         + [f"-L{str(path_lib)}", "-lspartacus"],
+#     )
+# ]
 ########################################
 
 
 # this is just a placeholder for the f90wrap based extension
-ext_module_f90wrap = [Extension('supy_driver',[])]
+from setuptools import setup, Extension
+import os
+import glob
+
+
+def find_sources(directories):
+    sources = []
+
+    for directory in directories:
+        f95_files = glob.glob(os.path.join(directory, "*.f95"))
+        c_files = glob.glob(os.path.join(directory, "*.c"))
+        # cpp_files = glob.glob(os.path.join(directory, '*.cpp'))
+
+        sources.extend(f95_files)
+        sources.extend(c_files)
+
+    return sources
+
+
+source_directories = ["../suews/src", "../supy_driver"]
+
+ext_module_f90wrap = [
+    Extension(
+        "supy_driver",
+        sources=[],  # just a placeholder
+        # sources=find_sources(source_directories) + ["Makefile"],
+    ),
+]
+
+from setuptools.command.build_ext import build_ext
+import subprocess
+import os
+import os
+from distutils.dir_util import mkpath
+
+
+class CustomBuildExtCommand(build_ext):
+    def run(self):
+        # Call the external Makefile here.
+        self.run_external_make()
+
+        # Now let the original build_ext command do its work.
+        super().run()
+
+    def build_extension(self, ext):
+        if ext.name == "supy_driver":
+            print("Skipping actual compilation for", ext.name)
+            return
+
+        super().build_extension(ext)
+
+    def run_external_make(self):
+        # Assuming your Makefile is located at "../external/Makefile"
+        makefile_dir = os.path.abspath(os.path.dirname(__file__))
+        make_file_path = os.path.join(makefile_dir, "Makefile")
+
+        if not os.path.exists(make_file_path):
+            raise FileNotFoundError(f"Cannot find Makefile at {make_file_path}")
+
+        subprocess.run(["make", "-f", make_file_path, "driver"], check=True)
+
+
+# class CustomBuildExtCommand(build_ext):
+#     def run(self):
+#         # Create necessary directories for building.
+#         if not self.dry_run:
+#             mkpath(self.build_temp)
+#             mkpath(self.build_lib)
+
+#         makefile_dir = os.path.abspath(os.path.dirname(__file__))
+#         make_command = ['make', '-C', makefile_dir,'driver']
+
+
+#         with open("build.log", "w") as log_file:
+#             retcode = subprocess.call(
+#                 make_command,
+#                 cwd=self.build_temp,
+#                 stdout=log_file,
+#                 stderr=subprocess.STDOUT,
+#             )
+
+#             if retcode != 0:
+#                 raise RuntimeError(
+#                     f"custom build failed with exit code {retcode}. Check 'build.log' for more details."
+#                 )
+
+#         super().run()
+
 
 setup(
     name="supy",
@@ -386,6 +477,9 @@ setup(
     },
     distclass=BinaryDistribution,
     ext_modules=ext_module_f90wrap,
+    cmdclass={
+        "build_ext": CustomBuildExtCommand,
+    },
     # ext_modules=ext_modules,
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9

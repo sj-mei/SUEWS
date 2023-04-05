@@ -36,13 +36,22 @@ CFLAGS = -fPIC -D_POSIX_C_SOURCE=200809L#     ==> universal for ifort, gfortran,
 #=======================================================================
 
 UNAME = $(shell uname)
-
 ifeq (${UNAME}, Darwin)
   LIBTOOL = libtool -static -o
   CFLAGS += -fbracket-depth=1024
 else
   LIBTOOL = ar src
 endif
+
+# ARCH := $(shell uname -m)
+# ifeq ($(ARCH), arm64)
+#     ARCH_FLAGS = -arch arm64
+# 	CFLAGS += $(ARCH_FLAGS)
+# 	F90FLAGS += $(ARCH_FLAGS)
+# else ifeq ($(ARCH), x86_64)
+#     ARCH_FLAGS = -arch x86_64
+# endif
+
 
 # ======================================================================
 # PROJECT CONFIG, do not put spaced behind the variables
@@ -151,6 +160,7 @@ clean:
 	-rm -rf ${PYTHON_MODN}
 	-rm -rf src.*/ .f2py_f2cmap .libs/ __pycache__/
 	-rm  *f95 f90wrap*.f90
+	-rm *.log
 
 %.o: %$(suffix_code)
 	@echo $^
@@ -194,7 +204,6 @@ _${PYTHON_MODN}.so: libsrc.a ${LIBSRC_FPP_FILES}
 	--f90flags="-cpp -I../suews/mod" \
 	--build-dir . -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
 	-L../suews/lib -lspartacus -lsuewsdriver
-
 
 
 test: all

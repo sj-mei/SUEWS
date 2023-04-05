@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "wheel",
+    "f90wrap",
     "setuptools<60",
     "oldest-supported-numpy",
     "setuptools-git-versioning",
@@ -74,11 +75,11 @@ archs = ["auto64"]
 before-build = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
     "python3 -m pip install f90wrap",
-    "make -C '{package}' driver",
+    # "make -C '{package}' driver",
 ]
-archs = ["arm64"]
+# archs = ["universal2"]
 build-verbosity = 10
-# archs = ["auto", "arm64"] # skip this for now in gh actions as it takes too long
+archs = ["auto", "arm64"] # skip this for now in gh actions as it takes too long
 skip = ['pp*']
 
 
