@@ -67,6 +67,7 @@ before-build = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
     "python3 -m pip install f90wrap",
     "make -C '{package}' driver",
+    "echo $ARCHFLAGS",
 ]
 
 # archs = ["universal2"]
