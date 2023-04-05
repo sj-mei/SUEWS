@@ -400,27 +400,6 @@ class CustomBuildExtCommand(build_ext):
             # Now let the original build_ext command do its work.
             super().run()
 
-    def build_extension(self, ext):
-        if ext.name == "supy_driver":
-            print("Skipping actual compilation for", ext.name)
-            return
-        super().build_extension(ext)
-
-    def get_outputs(self):
-        outputs = super().get_outputs()
-
-        # Assuming that your .so file is located at "../external/my_extension.so"
-        so_file_path = sorted[Path.cwd().glob("_supy_driver*.so")][0]
-
-        if not os.path.exists(so_file_path):
-            raise FileNotFoundError(f"Cannot find .so file at {so_file_path}")
-
-        outputs.append(so_file_path)
-        outputs.append(Path.cwd() / "supy_driver.py")
-        print(outputs)
-
-        return outputs
-
     def run_external_make(self):
         # Assuming your Makefile is located at "../external/Makefile"
         makefile_dir = os.path.abspath(os.path.dirname(__file__))
