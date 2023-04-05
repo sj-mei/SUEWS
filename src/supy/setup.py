@@ -393,11 +393,12 @@ from pathlib import Path
 
 class CustomBuildExtCommand(build_ext):
     def run(self):
-        # Call the external Makefile here.
-        self.run_external_make()
+        if platform.system() == 'Darwin':
+            # Call the external Makefile here.
+            self.run_external_make()
 
-        # Now let the original build_ext command do its work.
-        super().run()
+            # Now let the original build_ext command do its work.
+            super().run()
 
     def build_extension(self, ext):
         if ext.name == "supy_driver":
