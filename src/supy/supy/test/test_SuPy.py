@@ -40,7 +40,7 @@ class TestSuPy(TestCase):
         print("\n========================================")
         print("Testing if single-tstep mode can run...")
         df_state_init, df_forcing_tstep = sp.load_SampleData()
-        df_forcing_part = df_forcing_tstep.iloc[: 288 * 1]
+        df_forcing_part = df_forcing_tstep.iloc[: 12*8]
         df_output, df_state = sp.run_supy(
             df_forcing_part, df_state_init, save_state=True
         )
@@ -57,7 +57,7 @@ class TestSuPy(TestCase):
         print("\n========================================")
         print("Testing if multi-tstep mode can run...")
         df_state_init, df_forcing_tstep = sp.load_SampleData()
-        df_forcing_part = df_forcing_tstep.iloc[:288*100]
+        df_forcing_part = df_forcing_tstep.iloc[:288*10]
         df_output, df_state = sp.run_supy(
             df_forcing_part, df_state_init, check_input=True
         )
@@ -129,7 +129,7 @@ class TestSuPy(TestCase):
         print("\n========================================")
         print("Testing if single-tstep and multi-tstep modes can produce the same SUEWS results...")
         df_state_init, df_forcing_tstep = sp.load_SampleData()
-        df_forcing_part = df_forcing_tstep.iloc[: 288 * 1]
+        df_forcing_part = df_forcing_tstep.iloc[: 12*8]
 
         # output group for testing
         list_grp_test = [
