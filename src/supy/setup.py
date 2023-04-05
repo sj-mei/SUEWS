@@ -428,13 +428,9 @@ class CustomBuildExtCommand(build_ext):
             fn_dst = Path(self.build_lib) / "supy" / fn_src.name
             shutil.copy(fn_src, fn_dst)
 
-if platform.system() == "Darwin":
-    cmdclass = {"build_ext": CustomBuildExtCommand}
-else:
-    cmdclass = {}
 
 
-setup(
+dict_setup=dict(
     name="supy",
     # version=__version__,
     description="the SUEWS model that speaks python",
@@ -470,7 +466,6 @@ setup(
     },
     distclass=BinaryDistribution,
     ext_modules=ext_module_f90wrap,
-    cmdclass=cmdclass,
     # ext_modules=ext_modules,
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
@@ -521,3 +516,10 @@ setup(
     ],
     zip_safe=False,
 )
+
+
+if platform.system() == "Darwin":
+    cmdclass = {"build_ext": CustomBuildExtCommand}
+    dict_setup["cmdclass"] = cmdclass
+
+setup(**dict_setup)
