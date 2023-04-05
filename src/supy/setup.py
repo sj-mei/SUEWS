@@ -353,84 +353,62 @@ class BinaryDistribution(Distribution):
 ########################################
 
 
-# this is just a placeholder for the f90wrap based extension
-from setuptools import setup, Extension
-import os
-import glob
-
-
-def find_sources(directories):
-    sources = []
-
-    for directory in directories:
-        f95_files = glob.glob(os.path.join(directory, "*.f95"))
-        c_files = glob.glob(os.path.join(directory, "*.c"))
-        # cpp_files = glob.glob(os.path.join(directory, '*.cpp'))
-
-        sources.extend(f95_files)
-        sources.extend(c_files)
-
-    return sources
-
-
-source_directories = ["../suews/src", "../supy_driver"]
-
 ext_module_f90wrap = [
     Extension(
         "supy_driver",
         sources=[],  # just a placeholder
-        # sources=find_sources(source_directories) + ["Makefile"],
     ),
 ]
 
 from setuptools.command.build_ext import build_ext
 import subprocess
 import os
-import os
 from distutils.dir_util import mkpath
 from pathlib import Path
 
 
-class CustomBuildExtCommand(build_ext):
-    def run(self):
-        if platform.system() == 'Darwin':
-            # Call the external Makefile here.
-            self.run_external_make()
+# class CustomBuildExtCommand(build_ext):
+#     def run(self):
+#         if platform.system() == "Darwin":
+#             # Call the external Makefile here.
+#             self.run_external_make()
 
-            # Now let the original build_ext command do its work.
-            super().run()
+#             # Now let the original build_ext command do its work.
+#             # super().run()
 
-    def run_external_make(self):
-        # Assuming your Makefile is located at "../external/Makefile"
-        makefile_dir = os.path.abspath(os.path.dirname(__file__))
-        make_file_path = os.path.join(makefile_dir, "Makefile")
+#     def run_external_make(self):
+#         # Assuming your Makefile is located at "../external/Makefile"
+#         makefile_dir = os.path.abspath(os.path.dirname(__file__))
+#         make_file_path = os.path.join(makefile_dir, "Makefile")
 
-        print("Current working directory:", os.getcwd())
-        sleep(10)
+#         print("Current working directory:", os.getcwd())
+#         sleep(10)
 
-        if not os.path.exists(make_file_path):
-            raise FileNotFoundError(f"Cannot find Makefile at {make_file_path}")
-        subprocess.run(["pwd"])
-        subprocess.run(["make", "-f", make_file_path, "driver"], check=True)
+#         if not os.path.exists(make_file_path):
+#             raise FileNotFoundError(f"Cannot find Makefile at {make_file_path}")
+#         subprocess.run(["pwd"])
+#         subprocess.run(["make", "-f", make_file_path, "driver"], check=True)
 
-        p_dir_ext = Path.cwd() / "supy"
-        print(f"p_dir_ext: {p_dir_ext}")
-        fn_lib = list(p_dir_ext.glob("_supy_driver*.*"))[0]
-        fn_wrapper = p_dir_ext / "supy_driver.py"
-        ext_files = [
-            fn_lib,
-            fn_wrapper,
-        ]
-        print(f"ext_files: {ext_files}")
-        print(f"build_lib: {self.build_lib}")
+#         p_dir_ext = Path.cwd() / "supy"
+#         print(f"p_dir_ext: {p_dir_ext}")
+#         fn_lib = list(p_dir_ext.glob("_supy_driver*.*"))[0]
+#         fn_wrapper = p_dir_ext / "supy_driver.py"
+#         ext_files = [
+#             fn_lib,
+#             fn_wrapper,
+#         ]
+#         print(f"ext_files: {ext_files}")
+#         print(f"build_lib: {self.build_lib}")
 
-        for fn_src in ext_files:
-            fn_dst = Path(self.build_lib) / "supy" / fn_src.name
-            shutil.copy(fn_src, fn_dst)
+#         for fn_src in ext_files:
+#             fn_dst = Path(self.build_lib) / "supy" / fn_src.name
+#             shutil.copy(fn_src, fn_dst)
+
+# if platform.system() == "Darwin":
+#     cmdclass = {"build_ext": CustomBuildExtCommand}
 
 
-
-dict_setup=dict(
+setup(
     name="supy",
     # version=__version__,
     description="the SUEWS model that speaks python",
@@ -466,6 +444,7 @@ dict_setup=dict(
     },
     distclass=BinaryDistribution,
     ext_modules=ext_module_f90wrap,
+    # cmdclass=cmdclass,
     # ext_modules=ext_modules,
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
@@ -518,8 +497,5 @@ dict_setup=dict(
 )
 
 
-if platform.system() == "Darwin":
-    cmdclass = {"build_ext": CustomBuildExtCommand}
-    dict_setup["cmdclass"] = cmdclass
 
-setup(**dict_setup)
+
