@@ -37,6 +37,7 @@ requires-python = ">3.9"
 [tool.setuptools_scm]
 write_to = "src/supy/supy/_version_scm.py"
 root = "../.."
+local_scheme = "no-local-version"
 
 
 [tool.cibuildwheel]
@@ -59,6 +60,8 @@ before-build = [
     "yum install -y glibc-static",
     "python3 -m pip install f90wrap",
     "make -C '{package}' driver",
+    "echo $ARCHFLAGS",
+    "file '{package}'/supy/_supy_driver*.so",
 ]
 archs = ["auto64"]
 
