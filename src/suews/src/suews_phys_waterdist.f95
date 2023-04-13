@@ -882,11 +882,10 @@ CONTAINS
       IMPLICIT NONE
 
       REAL(KIND(1D0)), INTENT(in), DIMENSION(nsurf) :: SoilStoreCap, soilstore_id, sfr_surf
-      REAL(KIND(1D0)):: vsmd
+      REAL(KIND(1D0)) :: vsmd
 
-
-      REAL(KIND(1D0)),DIMENSION(nsurf):: smd_surf
-      REAL(KIND(1D0)),DIMENSION(3):: surf_veg,smd_veg
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: smd_surf
+      REAL(KIND(1D0)), DIMENSION(3) :: surf_veg, smd_veg
       INTEGER :: is
 
       vsmd = 0
@@ -897,10 +896,10 @@ CONTAINS
 
       ! calculate the fraction of each vegetated surface among all vegetated surfaces
       surf_veg = [(sfr_surf(is), is=ConifSurf, GrassSurf)]
-      surf_veg = surf_veg/sum(surf_veg)
+      surf_veg = surf_veg/SUM(surf_veg)
 
       ! calculate the weighted soil moisture deficit for vegetated surfaces
-      vsmd=DOT_PRODUCT(smd_veg,surf_veg)
+      vsmd = DOT_PRODUCT(smd_veg, surf_veg)
 
    END FUNCTION cal_smd_veg
 
