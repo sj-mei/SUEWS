@@ -7,20 +7,20 @@
 # any questions, please contact the SUEWS development team by submitting an issue:
 # https://github.com/UMEP-dev/SUEWS/issues/new
 
-# ########################################
+# ################################################################################
 # this file is used to define:
 #  variables used in radiation calculations
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # revision history:
-# TS 20230305: ???
-# ########################################
+# TS 07 Mar 2023: checked and left multiple comments for further discussion
+# ################################################################################
 
 # SPARTACUS
 - name: air_ext_lw
   use:
     input: parameter
   description: Longwave wavelength-independent air extinction coefficient (i.e. number of radiance e-foldings per metre).
-  configuration:
+  remarks:
     - 0.0 is a bad approximation [Hogan, 2019] but better representation requires several band treatment which is not in SS yet.
   dimensions: 0
   unit: m^-1
@@ -76,7 +76,7 @@
   description: Ratio of the direct and diffuse albedo of the ground
   dimensions: 0
   unit: "-"
-  configuration:
+  remarks:
     - 1.0 (Recommended in this version.)
     - "Can be updated from 1: if detailed knowledge of the direct and diffuse albedo is available."
   suews table headers: None
@@ -86,9 +86,9 @@
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
 
-- name: n_stream_lw_urban
+- name: n_stream_lw_urban # should be a sub-option under NetRadiationMethod = SS #TODO
   use:
-    input: state
+    input: parameter
   description: "LW streams per hemisphere (note: this is the number of quadrature points so a value of 4 corresponds to an ‘8-stream scheme’)"
   dimensions: 0
   unit: "-"
@@ -99,13 +99,13 @@
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
 
-- name: n_stream_sw_urban
+- name: n_stream_sw_urban # should be a sub-option under NetRadiationMethod = SS #TODO
   use:
-    input: state
+    input: parameter
   description: "SW diffuse streams per hemisphere (note: this is the number of quadrature points so a value of 4 corresponds to an ‘8-stream scheme’)"
   dimensions: 0
   unit: "-"
-  configuration:
+  remarks:
     - "4 (Recommended in this version.)"
     - "At large computational cost small improvements in accuracy can be made by increasing from 4 [Hogan, 2019]."
   suews table headers: None
@@ -115,13 +115,13 @@
       - "1002:SS+L_cloud"
       - "1003:SS+L_RH"
 
-- name: n_vegetation_region_urban
+- name: n_vegetation_region_urban # should be a sub-option under NetRadiationMethod = SS #TODO
   use:
     input: state
   description: Number of regions used to describe vegetation
   dimensions: 0
   unit: "-"
-  configuration:
+  remarks:
     - "1 (default): heterogeneity of vegetation not considered. might be okay de pending on the level of accuracy needed. See Hogan et al. [2018] – details of SPARTACUS-Vegetation for more information."
     - "2: heterogeneity of vegetation considered"
   suews table headers: None
@@ -162,7 +162,7 @@
     input: state
   description: Fraction of vegetation edge in contact with building walls
   dimensions: 0
-  unit: TO ADD #TODO
+  unit: "-"
   suews table headers: None
   usage:
     NetRadiationMethod:
@@ -185,11 +185,11 @@
 
 - name: veg_ssa_lw
   use:
-    input: state
+    input: parameter
   description: Longwave single scattering albedo of vegetation
   dimensions: 0
   unit: "-"
-  configuration:
+  remarks:
     - 0.06 (Recommended in this version.)
     - Should be estimated using a vegetation type in https://speclib.jpl.nasa.gov/library (see Vegetation single scattering albedo (SSA) for details). - Reflectance is ~0.04 for Acer Pensylvanicum, - ~0.02 for Quercus Robur and - ~0.04 for Betula Lenta.
     - SSA ~ 2*reflectance so 0.06 is chosen as the default.
@@ -202,13 +202,13 @@
 
 - name: veg_ssa_sw
   use:
-    input: state
+    input: parameter
   description: Shortwave single scattering albedo of leaves
   dimensions: 0
   unit: "-"
-  configuration:
-    - Broadband shortwave vegetation SSA values ranged between 0.41 and 0.52 for RAMI5 Järvselja birch stand forest trees. 0.46 is the default value but users can choose another value if the dominant tree type is one of the RAMI5 Järvselja birch stand forest trees (see Vegetation single scattering albedo (SSA) for details).
-
+  remarks:
+    - Broadband shortwave vegetation SSA values ranged between 0.41 and 0.52 for RAMI5 Järvselja birch stand forest trees.
+    - 0.46 is the default value but users can choose another value if the dominant tree type is one of the RAMI5 Järvselja birch stand forest trees (see Vegetation single scattering albedo (SSA) for details).
   suews table headers: None
   usage:
     NetRadiationMethod:
@@ -313,12 +313,10 @@
   use:
     input: parameter
   description:
-    Effective surface albedo (middle of the day value) for wintertime (not
-    including snow).
+    Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
   unit:
-    Effective surface albedo (middle of the day value) for wintertime (not including
-    snow)
+    Effective surface albedo (middle of the day value) for wintertime (not including snow)
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
   usage:
     NetRadiationMethod: ALL
@@ -327,12 +325,10 @@
   use:
     input: parameter
   description:
-    Effective surface albedo (middle of the day value) for wintertime (not
-    including snow).
+    Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
   unit:
-    Effective surface albedo (middle of the day value) for wintertime (not including
-    snow)
+    Effective surface albedo (middle of the day value) for wintertime (not including snow)
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
   usage:
     NetRadiationMethod: ALL
@@ -341,12 +337,10 @@
   use:
     input: parameter
   description:
-    Effective surface albedo (middle of the day value) for wintertime (not
-    including snow).
+    Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
   unit:
-    Effective surface albedo (middle of the day value) for wintertime (not including
-    snow)
+    Effective surface albedo (middle of the day value) for wintertime (not including snow)
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
   usage:
     NetRadiationMethod: ALL

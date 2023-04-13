@@ -1,50 +1,68 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+# #########################################################################
+# this file is used to define:
+#  variables used in snow calculations
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# revision history:
+# TS 08 Mar 2023: checked
+# #########################################################################
+
 - name: crwmax
   use:
-    input: state
+    input: parameter
   description: Maximum water holding capacity of snow
   dimensions: 0
   unit: mm
-  suews table headers: :option:`CRWMax <suews:CRWMax>`
+  suews table headers: :option:`CRWMax <CRWMax>`
   usage:
     snowuse: "1: SnowCalc"
+
 - name: crwmin
   use:
-    input: state
+    input: parameter
   description: Minimum water holding capacity of snow
   dimensions: 0
   unit: mm
-  suews table headers: :option:`CRWMin <suews:CRWMin>`
+  suews table headers: :option:`CRWMin <CRWMin>`
   usage:
     snowuse: "1: SnowCalc"
 
 - name: narp_emis_snow
   use:
-    input: state
+    input: parameter
   description: Effective surface emissivity.
   dimensions: 0
   unit: Effective surface emissivity
-  suews table headers: :option:`Emissivity <suews:Emissivity>`
+  suews table headers: :option:`Emissivity <Emissivity>`
   usage:
     NetRadiationMethod: "<500: NARP"
 
 - name: preciplimit
   use:
-    input: state
+    input: parameter
   description: Temperature limit when precipitation falls as snow
   dimensions: 0
   unit: degC
-  suews table headers: :option:`PrecipLimSnow <suews:PrecipLimSnow>`
+  suews table headers: :option:`PrecipLimSnow <PrecipLimSnow>`
   usage:
     SnowUse: 1:SnowCalc
+
 - name: preciplimitalb
   use:
-    input: state
+    input: parameter
   description:
-    Limit for hourly precipitation when the ground is fully covered with
-    snow
+    Limit for hourly precipitation when the ground is fully covered with snow and the snow albedo is reset to AlbedoMax as.
   dimensions: 0
   unit: mm
-  suews table headers: :option:`PrecipLimAlb <suews:PrecipLimAlb>`
+  suews table headers: :option:`PrecipLimAlb <PrecipLimAlb>`
   usage:
     SnowUse: 1:SnowCalc
 
@@ -54,179 +72,190 @@
   description: Initial snow albedo
   dimensions: 0
   unit: Initial snow albed
-  suews table headers: :option:`SnowAlb0 <suews:SnowAlb0>`
+  suews table headers: :option:`SnowAlb0 <SnowAlb0>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowalbmax
   use:
-    input: state
+    input: parameter
   description: Effective surface albedo (middle of the day value) for summertime.
   dimensions: 0
-  unit: Effective surface albedo (middle of the day value) for summertime
-  suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
+  unit:  "-"
+  suews table headers: :option:`AlbedoMax <AlbedoMax>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowalbmin
   use:
-    input: state
+    input: parameter
   description:
-    Effective surface albedo (middle of the day value) for wintertime (not
-    including snow).
+    Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
-  unit:
-    Effective surface albedo (middle of the day value) for wintertime (not including
-    snow)
-  suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
+  unit: "-"
+  suews table headers: :option:`AlbedoMin <AlbedoMin>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowdens
   use:
     input: state
   description: Initial snow density of each land cover.
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: Initial snow density of each land cover
   suews table headers:
-    :option:`SnowDensBldgs <suews:SnowDensBldgs>`, :option:`SnowDensPaved
-    <suews:SnowDensPaved>`, :option:`SnowDensDecTr <suews:SnowDensDecTr>`, :option:`SnowDensEveTr
-    <suews:SnowDensEveTr>`, :option:`SnowDensGrass <suews:SnowDensGrass>`, :option:`SnowDensBSoil
-    <suews:SnowDensBSoil>`, :option:`SnowDensWater <suews:SnowDensWater>`
+    :option:`SnowDensBldgs <SnowDensBldgs>`, :option:`SnowDensPaved
+    <SnowDensPaved>`, :option:`SnowDensDecTr <SnowDensDecTr>`, :option:`SnowDensEveTr
+    <SnowDensEveTr>`, :option:`SnowDensGrass <SnowDensGrass>`, :option:`SnowDensBSoil
+    <SnowDensBSoil>`, :option:`SnowDensWater <SnowDensWater>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowdensmax
   use:
-    input: state
+    input: parameter
   description: Maximum snow density
   dimensions: 0
   unit: kg m^-3
-  suews table headers: :option:`SnowDensMax <suews:SnowDensMax>`
+  suews table headers: :option:`SnowDensMax <SnowDensMax>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowdensmin
   use:
-    input: state
+    input: parameter
   description: Fresh snow density
   dimensions: 0
   unit: kg m^-3
-  suews table headers: :option:`SnowDensMin <suews:SnowDensMin>`
+  suews table headers: :option:`SnowDensMin <SnowDensMin>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowfrac
   use:
     input: state
   description: Initial plan area fraction of snow on each land cover`
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: Initial plan area fraction of snow on each land cover
   suews table headers:
-    :option:`SnowFracBldgs <suews:SnowFracBldgs>`, :option:`SnowFracPaved
-    <suews:SnowFracPaved>`, :option:`SnowFracDecTr <suews:SnowFracDecTr>`, :option:`SnowFracEveTr
-    <suews:SnowFracEveTr>`, :option:`SnowFracGrass <suews:SnowFracGrass>`, :option:`SnowFracBSoil
-    <suews:SnowFracBSoil>`, :option:`SnowFracWater <suews:SnowFracWater>`
+    :option:`SnowFracBldgs <SnowFracBldgs>`, :option:`SnowFracPaved
+    <SnowFracPaved>`, :option:`SnowFracDecTr <SnowFracDecTr>`, :option:`SnowFracEveTr
+    <SnowFracEveTr>`, :option:`SnowFracGrass <SnowFracGrass>`, :option:`SnowFracBSoil
+    <SnowFracBSoil>`, :option:`SnowFracWater <SnowFracWater>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowlimbldg
   use:
-    input: state
+    input: parameter
   description:
-    Limit of the snow water equivalent for snow removal from roads and
-    roofs
+    Limit of the snow water equivalent for snow removal from roads and roofs
   dimensions: 0
   unit: mm
-  suews table headers: :option:`SnowLimRemove <suews:SnowLimRemove>`
+  suews table headers: :option:`SnowLimRemove <SnowLimRemove>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowlimpaved
   use:
-    input: state
+    input: parameter
   description:
-    Limit of the snow water equivalent for snow removal from roads and
-    roofs
+    Limit of the snow water equivalent for snow removal from roads and roofs
   dimensions: 0
   unit: mm
-  suews table headers: :option:`SnowLimRemove <suews:SnowLimRemove>`
+  suews table headers: :option:`SnowLimRemove <SnowLimRemove>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowpack
   use:
     input: state
   description: Initial snow water equivalent on each land cover
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: Initial snow water equivalent on each land cove
   suews table headers:
-    :option:`SnowPackBldgs <suews:SnowPackBldgs>`, :option:`SnowPackPaved
-    <suews:SnowPackPaved>`, :option:`SnowPackDecTr <suews:SnowPackDecTr>`, :option:`SnowPackEveTr
-    <suews:SnowPackEveTr>`, :option:`SnowPackGrass <suews:SnowPackGrass>`, :option:`SnowPackBSoil
-    <suews:SnowPackBSoil>`, :option:`SnowPackWater <suews:SnowPackWater>`
+    :option:`SnowPackBldgs <SnowPackBldgs>`, :option:`SnowPackPaved
+    <SnowPackPaved>`, :option:`SnowPackDecTr <SnowPackDecTr>`, :option:`SnowPackEveTr
+    <SnowPackEveTr>`, :option:`SnowPackGrass <SnowPackGrass>`, :option:`SnowPackBSoil
+    <SnowPackBSoil>`, :option:`SnowPackWater <SnowPackWater>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowpacklimit
   use:
-    input: state
+    input: parameter
   description: Limit for the snow water equivalent when snow cover starts to be patchy
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm
-  suews table headers: :option:`SnowLimPatch <suews:SnowLimPatch>`
+  suews table headers: :option:`SnowLimPatch <SnowLimPatch>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: snowprof_24hr
   use:
-    input: state
+    input: parameter
   description: Hourly profile values used in snow clearing.
   dimensions:
-    24: "24: hours of a day"
-    2: ""
+    24: "24 hours of a day"
+    2: "{Weekday, Weekend}"
   unit: Hourly profile values used in snow clearing
   suews table headers:
-    :option:`SnowClearingProfWD <suews:SnowClearingProfWD>`, :option:`SnowClearingProfWE
-    <suews:SnowClearingProfWE>`
+    :option:`SnowClearingProfWD <SnowClearingProfWD>`, :option:`SnowClearingProfWE
+    <SnowClearingProfWE>`
   usage:
     SnowUse: "1: SnowCalc"
 
 - name: tau_a
   use:
-    input: state
+    input: parameter
   description: Time constant for snow albedo aging in cold snow
   dimensions: 0
   unit: "-"
-  suews table headers: :option:`tau_a <suews:tau_a>`
+  suews table headers: :option:`tau_a <tau_a>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: tau_f
   use:
-    input: state
+    input: parameter
   description: Time constant for snow albedo aging in melting snow
   dimensions: 0
   unit: "-"
-  suews table headers: :option:`tau_f <suews:tau_f>`
+  suews table headers: :option:`tau_f <tau_f>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: tau_r
   use:
-    input: state
+    input: parameter
   description: Time constant for snow density ageing
   dimensions: 0
   unit: "-"
-  suews table headers: :option:`tau_r <suews:tau_r>`
+  suews table headers: :option:`tau_r <tau_r>`
   usage:
     SnowUse: "1: SnowCalc"
+
 - name: tempmeltfact
   use:
-    input: state
+    input: parameter
   description: Hourly temperature melt factor of snow
   dimensions: 0
-  unit: mm |K^-1| h^-1
-  suews table headers: :option:`TempMeltFactor <suews:TempMeltFactor>`
+  unit: mm K^-1 h^-1
+  suews table headers: :option:`TempMeltFactor <TempMeltFactor>`
+  usage:
+    SnowUse: "1: SnowCalc"
+
+- name: radmeltfact
+  use:
+    input: parameter
+  description: Hourly radiation melt factor of snow
+  dimensions: 0
+  unit: mm W^-1 h^-1
+  suews table headers: :option:`RadMeltFactor <RadMeltFactor>`
   usage:
     SnowUse: "1: SnowCalc"
 
@@ -235,25 +264,13 @@
     input: state
   description: Initial amount of liquid water in the snow on each land cover
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: Initial amount of liquid water in the snow on each land cove
   suews table headers:
-    :option:`SnowWaterBldgsState <suews:SnowWaterBldgsState>`,
-    :option:`SnowWaterPavedState <suews:SnowWaterPavedState>`, :option:`SnowWaterDecTrState
-    <suews:SnowWaterDecTrState>`, :option:`SnowWaterEveTrState <suews:SnowWaterEveTrState>`,
-    :option:`SnowWaterGrassState <suews:SnowWaterGrassState>`, :option:`SnowWaterBSoilState
-    <suews:SnowWaterBSoilState>`, :option:`SnowWaterWaterState <suews:SnowWaterWaterState>`
-  usage:
-    SnowUse: "1: SnowCalc"
-
-- name: radmeltfact
-  use:
-    input: state
-  description: Hourly radiation melt factor of snow
-  dimensions: 0
-  unit: mm |w^-1| h^-1
-  suews table headers: :option:`RadMeltFactor <suews:RadMeltFactor>`
+    :option:`SnowWaterBldgsState <SnowWaterBldgsState>`,
+    :option:`SnowWaterPavedState <SnowWaterPavedState>`, :option:`SnowWaterDecTrState
+    <SnowWaterDecTrState>`, :option:`SnowWaterEveTrState <SnowWaterEveTrState>`,
+    :option:`SnowWaterGrassState <SnowWaterGrassState>`, :option:`SnowWaterBSoilState
+    <SnowWaterBSoilState>`, :option:`SnowWaterWaterState <SnowWaterWaterState>`
   usage:
     SnowUse: "1: SnowCalc"

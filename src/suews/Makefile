@@ -172,6 +172,7 @@ PHYS =	suews_phys_narp.o \
 	suews_phys_spartacus.o \
 	suews_phys_atmmoiststab.o \
 	suews_phys_resist.o \
+	suews_ctrl_error.o  \
 	suews_ctrl_input.o  \
 	suews_phys_bluews.o \
 	suews_phys_waterdist.o \
@@ -194,10 +195,10 @@ PHYS =	suews_phys_narp.o \
 DRIVER = suews_ctrl_driver.o
 
 # Rest of the files including modules and functions which are independent
-OTHERS =  suews_ctrl_translate.o \
-	suews_ctrl_error.o \
-	suews_ctrl_init.o \
-	suews_ctrl_calculations.o
+# OTHERS =  suews_ctrl_translate.o \
+# 	suews_ctrl_error.o \
+# 	suews_ctrl_init.o \
+# 	suews_ctrl_calculations.o
 
 # modules under rapid development
 TEST =

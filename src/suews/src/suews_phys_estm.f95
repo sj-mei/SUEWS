@@ -362,20 +362,20 @@ CONTAINS
    END FUNCTION kdown_surface
 
    !=======================================================
-   FUNCTION SmithLambda(lat) RESULT(G)
-      !read kriged data based on Smith 1966 (JAM)
-      INTEGER :: lat, ios
-      REAL, DIMENSION(365) :: G
+   ! FUNCTION SmithLambda(lat) RESULT(G)
+   !    !read kriged data based on Smith 1966 (JAM)
+   !    INTEGER :: lat, ios
+   !    REAL, DIMENSION(365) :: G
 
-      OPEN (99, file="Smith1966.grd", access="direct", action="read", recl=365*4, iostat=ios)
-      IF (ios /= 0) THEN
-         PRINT *, "Iostat=", ios, " reading Smith1966.grd"
-         STOP
-      END IF
-      READ (99, rec=lat + 1, iostat=ios) G
-      IF (ios /= 0) PRINT *, "Iostat=", ios, " reading Smith1966.grd"
-      CLOSE (99)
-   END FUNCTION SmithLambda
+   !    OPEN (99, file="Smith1966.grd", access="direct", action="read", recl=365*4, iostat=ios)
+   !    IF (ios /= 0) THEN
+   !       PRINT *, "Iostat=", ios, " reading Smith1966.grd"
+   !       STOP
+   !    END IF
+   !    READ (99, rec=lat + 1, iostat=ios) G
+   !    IF (ios /= 0) PRINT *, "Iostat=", ios, " reading Smith1966.grd"
+   !    CLOSE (99)
+   ! END FUNCTION SmithLambda
    !=======================================================
    FUNCTION transmissivity_CD(P, Td, G, zenith) RESULT(trans) !!!!!FO!!!!! ,doy
       ! bulk atmospheric transmissivity (Crawford and Duchon, 1999)

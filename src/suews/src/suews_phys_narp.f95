@@ -266,7 +266,7 @@ CONTAINS
       tsurf_0_K = tsurf_0 + 273.16
       Temp_K = Temp_C + 273.16
       SIGMATK4 = SIGMA_SB*Temp_K**4
-      TD = DEWPOINT(Temp_C, RH)
+      TD = dewpoint_narp(Temp_C, RH)
       ! Sun postition is now calculated in the main loop, FL
       !ZENITH=SOLAR_ZENITH(NARP_LAT,NARP_LONG,NARP_TZ,DTIME)
       !call NARP_cal_SunPosition(NARP_YEAR,DTIME,NARP_TZ,NARP_LAT,NARP_LONG,Alt,AZIMUTH,ZENITH)
@@ -1298,7 +1298,7 @@ CONTAINS
    END FUNCTION set_to_range
 
    !==============================================================================
-   FUNCTION dewpoint(Temp_C, rh) RESULT(td)
+   FUNCTION dewpoint_narp(Temp_C, rh) RESULT(td)
       ! ea = vapor pressure (hPa)
       ! td = dewpoint (oC)
       ! calculates dewpoint in degC from
@@ -1310,7 +1310,7 @@ CONTAINS
       g = ((17.27*Temp_C)/(237.7 + Temp_C)) + LOG(rh/100)
       Td = (237.7*g)/(17.27 - g)
       !td = (237.3 * LOG(ea_hPa/6.1078)) / (17.27 - (LOG(ea_hPa/6.1078)))
-   END FUNCTION dewpoint
+   END FUNCTION dewpoint_narp
    !===============================================================================
    FUNCTION PRATA_EMIS(Temp_K, EA_hPa) RESULT(EMIS_A)
       ! clear sky emissivity function Prata 1996

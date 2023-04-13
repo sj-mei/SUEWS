@@ -19,30 +19,35 @@
   use:
     input: forcing
   description: Year
+  dimensions: 0
   unit: YYYY
   usage: yes
 - name: id
   use:
     input: forcing
   description: Day of year
+  dimensions: 0
   unit: DOY
   usage: yes
 - name: it
   use:
     input: forcing
   description: Hour
+  dimensions: 0
   unit: H
   usage: yes
 - name: imin
   use:
     input: forcing
   description: Minute
+  dimensions: 0
   unit: M
   usage: yes
 - name: qn
   use:
     input: forcing
   description: Net all-wave radiation
+  dimensions: 0
   unit: W m^-2] (Required if `NetRadiationMethod` = 0.
   usage:
     netradiaton: "0:Obs"
@@ -50,24 +55,28 @@
   use:
     input: forcing
   description: Sensible heat flux
+  dimensions: 0
   unit: W m^-2
   usage: no
 - name: qe
   use:
     input: forcing
   description: Latent heat flux
+  dimensions: 0
   unit: W m^-2
   usage: no
 - name: qs
   use:
     input: forcing
   description: Storage heat flux
+  dimensions: 0
   unit: W m^-2
   usage: no
 - name: qf
   use:
     input: forcing
   description: Anthropogenic heat flux
+  dimensions: 0
   unit: W m^-2
   usage:
     emission: "0:Obs"
@@ -75,18 +84,21 @@
   use:
     input: forcing
   description: Wind speed (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+  dimensions: 0
   unit: m s-1
   usage: yes
 - name: RH
   use:
     input: forcing
   description: Relative Humidity (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+  dimensions: 0
   unit: "%"
   usage: yes
 - name: Tair
   use:
     input: forcing
   description: Air temperature (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`)
+  dimensions: 0
   unit: degC
   usage: yes
 
@@ -94,24 +106,28 @@
   use:
     input: forcing
   description: Barometric pressure (measurement height (`z`) is needed in `SUEWS_SiteSelect.txt`
+  dimensions: 0
   unit: kPa
   usage: yes
 - name: rain
   use:
     input: forcing
   description: Accumulated rainfall
+  dimensions: 0
   unit: mm
   usage: yes
 - name: kdown
   use:
     input: forcing
   description: Incoming shortwave radiation
+  dimensions: 0
   unit: W m^-2] Must be > 0 W m^-2
   usage: yes
 - name: snow
   use:
     input: forcing
   description: "Snow cover fraction (0 – 1)"
+  dimensions: 0
   unit: -] (Required if `SnowUse` = 1
   usage:
     snow: "1:Obs"
@@ -119,6 +135,7 @@
   use:
     input: forcing
   description: Incoming longwave radiation
+  dimensions: 0
   unit: W m^-2
   usage:
     ldown: "0:Obs" # todo: propose to introduce a new method for ldown so to separate obs and modelled ldown
@@ -126,6 +143,7 @@
   use:
     input: forcing
   description: Cloud fraction
+  dimensions: 0
   unit: tenths
   usage:
     ldown: "1:L_cloud" # todo: propose to introduce a new method for ldown so to separate obs and modelled ldown
@@ -133,6 +151,7 @@
   use:
     input: forcing
   description: External water use
+  dimensions: 0
   unit: "m^3"
   usage:
     wateruse: "0:Obs"
@@ -140,6 +159,7 @@
   use:
     input: forcing
   description: Observed soil moisture
+  dimensions: 0
   unit: kg kg^-1 # todo: propose to simplify the input type to be only volumetric soil moisture, which seems to be more commonly measured; drop support for gravimetric soil moisture
   usage:
     soilmoisture: "0:Obs"
@@ -147,6 +167,7 @@
   use:
     input: forcing
   description: Observed leaf area index
+  dimensions: 0
   unit: "m^-2 m^-2"
   usage:
     lai: "0:Obs"
@@ -154,6 +175,7 @@
   use:
     input: forcing
   description: Diffuse radiation
+  dimensions: 0
   unit: "W m^-2"
   usage:
     netradiaton: "xx:BEERS" # need to assign an option for BEERS
@@ -161,6 +183,7 @@
   use:
     input: forcing
   description: Direct radiation
+  dimensions: 0
   unit: "W m^-2"
   usage:
     netradiaton: "xx:BEERS" # need to assign an option for BEERS
@@ -168,6 +191,7 @@
   use:
     input: forcing
   description: Wind direction
+  dimensions: 0
   unit: degrees
   usage: no
 - name: isec
@@ -175,5 +199,6 @@
     input: forcing
   description: Second
   default: 0
+  dimensions: 0
   unit: S
   usage: yes

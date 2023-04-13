@@ -388,3 +388,7 @@ Backup of *.doc*
 
 # Visio autosave temporary files
 *.~vsd*
+
+# supy-driver wrapper
+src/supy/supy/supy_driver.py
+src/supy_driver/supy_driver.py

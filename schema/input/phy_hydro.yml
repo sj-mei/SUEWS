@@ -7,30 +7,30 @@
 # any questions, please contact the SUEWS development team by submitting an issue:
 # https://github.com/UMEP-dev/SUEWS/issues/new
 
-
-- name: drainrt
-  use:
-    input: state
-  description: Drainage rate of bucket for LUMPS
-  dimensions: 0
-  unit: mm h^-1
-  suews table headers: :option:`LUMPS_DrRate <suews:LUMPS_DrRate>`
-  usage:
-    runoff: LUMPs bucket
+# #################################################################################
+# this file is used to define:
+#  variables used in hydrological processes
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# revision history:
+# TS 07 Mar 2023: checked
+# ################################################################################
 
 
+# ##############################
+# the following three variables more related to phenology?
 - name: decidcap_id
   use:
     input: state
-  description: Storage capacity of deciduous surface `DecTr` on day 0 of run.
+  description: Storage capacity of deciduous surface `DecTr`; updated each day in simulaiton due to changes in LAI.
   dimensions: 0
   unit: Storage capacity of deciduous surface `DecTr` on day 0 of run
   suews table headers: :option:`decidCap0 <suews:decidCap0>`
   usage:
-    "WaterStorageFlux: Interception": .nan
+    "WaterStorageFlux: Interception": yes
+
 - name: capmax_dec
   use:
-    input: state
+    input: parameter
   description: Maximum water storage capacity for upper surfaces (i.e. canopy)
   dimensions: 0
   unit: Maximum water storage capacity for upper surfaces (i.e. canopy
@@ -39,9 +39,22 @@
     interception: ALL
 
 
+- name: capmin_dec
+  use:
+    input: parameter
+  description: Minimum water storage capacity for upper surfaces (i.e. canopy).
+  dimensions: 0
+  unit: Minimum water storage capacity for upper surfaces (i.e. canopy)
+  suews table headers: :option:`StorageMin <suews:StorageMin>`
+  usage:
+    interception: ALL
+# ##############################
+
+# ##############################
+# irrigation related variables
 - name: h_maintain
   use:
-    input: state
+    input: parameter
   description:
     water depth to maintain used in automatic irrigation (e.g., ponding
     water due to flooding irrigation in rice crop-field)
@@ -53,113 +66,124 @@
 
 - name: ie_a
   use:
-    input: state
+    input: parameter
   description: Coefficient for automatic irrigation model.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+    3: "{base value, coefficient related to temperature, coefficient related to days since rain}"
   unit: Coefficient for automatic irrigation model
   suews table headers:
     :option:`Ie_a1 <suews:Ie_a1>`, :option:`Ie_a2 <suews:Ie_a2>`,
     :option:`Ie_a3 <suews:Ie_a3>`
   usage:
     WaterUseMethod: 0:Modelled
+
 - name: ie_end
   use:
-    input: state
+    input: parameter
   description: Day when irrigation ends
   dimensions: 0
   unit: DOY
   suews table headers: :option:`Ie_end <suews:Ie_end>`
   usage:
     WaterUseMethod: 0:Modelled
+
 - name: ie_m
   use:
-    input: state
+    input: parameter
   description: Coefficient for manual irrigation model.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+    3: "{base value, coefficient related to temperature, coefficient related to days since rain}"
   unit: Coefficient for manual irrigation model
   suews table headers:
     :option:`Ie_m1 <suews:Ie_m1>`, :option:`Ie_m2 <suews:Ie_m2>`,
     :option:`Ie_m3 <suews:Ie_m3>`
   usage:
     WaterUseMethod: 0:Modelled
+
 - name: ie_start
   use:
-    input: state
+    input: parameter
   description: Day when irrigation starts
   dimensions: 0
   unit: DOY
   suews table headers: :option:`Ie_start <suews:Ie_start>`
   usage:
     WaterUseMethod: All
+
 - name: internalwateruse_h
   use:
-    input: state
+    input: parameter
   description: Internal water use
   dimensions: 0
   unit: mm h^-1
   suews table headers: :option:`InternalWaterUse <suews:InternalWaterUse>`
   usage:
     WaterUseMethod: ALL
+
 - name: irrfracbldgs
   use:
-    input: state
+    input: parameter
   description: Fraction of `Bldgs` that is irrigated
   dimensions: 0
   unit: "-"
   suews table headers: :option:`IrrFr_Bldgs <suews:IrrFr_Bldgs>`
   usage:
     WaterUseMethod: All
+
 - name: irrfracbsoil
   use:
-    input: state
+    input: parameter
   description: Fraction of `BSoil` that is irrigated
   dimensions: 0
   unit: "-"
   suews table headers: :option:`IrrFr_BSoil <suews:IrrFr_BSoil>`
   usage:
     WaterUseMethod: All
+
 - name: irrfracdectr
   use:
-    input: state
+    input: parameter
   description: Fraction of `DecTr` that is irrigated
   dimensions: 0
   unit: "-"
   suews table headers: :option:`IrrFr_DecTr <suews:IrrFr_DecTr>`
   usage:
     WaterUseMethod: All
+
 - name: irrfracevetr
   use:
-    input: state
+    input: parameter
   description: Fraction of `EveTr` that is irrigated
   dimensions: 0
   unit: "-"
   suews table headers: :option:`IrrFr_EveTr <suews:IrrFr_EveTr>`
   usage:
     WaterUseMethod: All
+
 - name: irrfracgrass
   use:
-    input: state
+    input: parameter
   description: Fraction of `Grass` that is irrigated
   dimensions: 0
   unit: "-"
   suews table headers: :option:`IrrFr_Grass <suews:IrrFr_Grass>`
   usage:
     WaterUseMethod: All
+
 - name: irrfracpaved
   use:
-    input: state
+    input: parameter
   description: Fraction of `Paved` that is irrigated
   dimensions: 0
   unit: "-"
   suews table headers: :option:`IrrFr_Paved <suews:IrrFr_Paved>`
   usage:
     WaterUseMethod: All
+
 - name: irrfracwater
   use:
-    input: state
-  description: Fraction of `Water` that is irrigated
+    input: parameter
+  description: Fraction of `Water` that is irrigated (not used)
   dimensions: 0
   unit: "-"
   suews table headers: :option:`IrrFr_Water <suews:IrrFr_Water>`
@@ -168,10 +192,10 @@
 
 - name: daywatper
   use:
-    input: state
+    input: parameter
   description: Fraction of properties using irrigation for each day of a week.
   dimensions:
-    7: "7: {Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday}"
+    7: "{Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday}"
   unit: Fraction of properties using irrigation for each day of a week
   suews table headers:
     :option:`DayWatPer(1) <suews:DayWatPer(1)>`, :option:`DayWatPer(2)
@@ -180,43 +204,6 @@
     <suews:DayWatPer(6)>`, :option:`DayWatPer(7) <suews:DayWatPer(7)>`
   usage:
     WaterUseMethod: 0:Modelled
-
-
-- name: capmin_dec
-  use:
-    input: state
-  description: Minimum water storage capacity for upper surfaces (i.e. canopy).
-  dimensions: 0
-  unit: Minimum water storage capacity for upper surfaces (i.e. canopy)
-  suews table headers: :option:`StorageMin <suews:StorageMin>`
-  usage:
-    interception: ALL
-
-- name: flowchange
-  use:
-    input: state
-  description: Difference in input and output flows for water surface
-  dimensions: 0
-  unit: mm h^-1
-  suews table headers: :option:`FlowChange <suews:FlowChange>`
-  usage:
-    surfacewater: .nan
-
-
-
-- name: sathydraulicconduct
-  use:
-    input: parameter
-  description: Hydraulic conductivity for saturated soil
-  dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
-  unit: mm |s^-1|
-  suews table headers: :option:`SatHydraulicCond <suews:SatHydraulicCond>`
-  usage:
-    smd; Runoff: SiteDescription
-
 
 - name: daywat
   use:
@@ -232,7 +219,31 @@
     :option:`DayWat(7) <suews:DayWat(7)>`
   usage:
     WaterUseMethod: 0:Modelled
+# end of irrigation parameters
+# ##############################
 
+- name: flowchange
+  use:
+    input: state
+  description: Difference in input and output flows for water surface
+  dimensions: 0
+  unit: mm h^-1
+  suews table headers: :option:`FlowChange <suews:FlowChange>`
+  usage:
+    surfacewater: .nan
+
+- name: sathydraulicconduct
+  use:
+    input: parameter
+  description: Hydraulic conductivity for saturated soil
+  dimensions:
+    7:
+      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
+      `suews:BSoil`, `suews:Water`}"
+  unit: mm |s^-1|
+  suews table headers: :option:`SatHydraulicCond <suews:SatHydraulicCond>`
+  usage:
+    smd; Runoff: SiteDescription
 
 
 - name: pipecapacity
@@ -245,16 +256,13 @@
   usage:
     runoff: ALL
 
-
 - name: waterdist
   use:
     input: state
   description: Fraction of water redistribution
   dimensions:
-    8:
-      "8: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`, one extra land cover type (currently NOT used)}"
-    6: ""
+    8: "SUEWS land covers: {`Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`, one extra land cover type (currently NOT used)}"
+    6: "{ `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`}"
   unit: Fraction of water redistributio
   suews table headers:
     :option:`ToBSoil <suews:ToBSoil>`, :option:`ToBldgs <suews:ToBldgs>`,
@@ -263,7 +271,6 @@
     :option:`ToSoilStore <suews:ToSoilStore>`, :option:`ToWater <suews:ToWater>`
   usage:
     runoff: ALL
-
 
 - name: runofftowater
   use:
@@ -275,15 +282,12 @@
   usage:
     runoff: ALL
 
-
 - name: soildepth
   use:
     input: parameter
   description: Depth of soil beneath the surface
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm
   suews table headers: :option:`SoilDepth <suews:SoilDepth>`
   usage:
@@ -294,9 +298,7 @@
     input: state
   description: Initial water stored in soil beneath `Bldgs` surface
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm
   suews table headers:
     :option:`SoilstoreBldgsState <suews:SoilstoreBldgsState>`,
@@ -306,31 +308,25 @@
     <suews:SoilstoreBSoilState>`
   usage:
     smd: SiteDescription
+
 - name: soilstorecap_surf
   use:
-    input: state
+    input: parameter
   description: Limit value for `SoilDepth`
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm
   suews table headers: :option:`SoilStoreCap <suews:SoilStoreCap>`
   usage:
     smd: SiteDescription
-
-
-
 
 - name: storedrainprm
   use:
     input: state # TODO: mixed - need to change the code to separate different uses of this compound variable
   description: Coefficients used in drainage calculation.
   dimensions:
-    6:
-      "6: { `StorageMin`, `DrainageEq`, `DrainageCoef1`, `DrainageCoef2`, `StorageMax`,
-      current storage}"
-    7: ""
+    6: "{ `StorageMin`, `DrainageEq`, `DrainageCoef1`, `DrainageCoef2`, `StorageMax`, current storage}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: Coefficients used in drainage calculation
   suews table headers:
     :option:`DrainageCoef1 <suews:DrainageCoef1>`, :option:`DrainageCoef2
@@ -339,15 +335,12 @@
   usage:
     runoff: ALL
 
-
 - name: statelimit_surf
   use:
-    input: state
+    input: parameter
   description: Upper limit to the surface state.
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm
   suews table headers: :option:`StateLimit <suews:StateLimit>`
   usage:
@@ -357,19 +350,10 @@
   use:
     input: state
   description:
-    Initial wetness condition on `Bldgs`;;Initial wetness condition on
-    `Paved`;;Initial wetness condition on `DecTr`;;Initial wetness condition on `EveTr`;;Initial
-    wetness condition on `Grass`;;Initial wetness condition on `BSoil`;;Initial wetness
-    condition on `Water`
+    Initial wetness condition on SUEWS land covers.
   dimensions:
-    7:
-      "7: { `suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`,
-      `suews:BSoil`, `suews:Water`}"
-  unit:
-    Initial wetness condition on `Bldgs`;;Initial wetness condition on `Paved`;;Initial
-    wetness condition on `DecTr`;;Initial wetness condition on `EveTr`;;Initial wetness
-    condition on `Grass`;;Initial wetness condition on `BSoil`;;Initial wetness condition
-    on `Water
+    7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
+  unit: mm
   suews table headers:
     :option:`BldgsState <suews:BldgsState>`, :option:`PavedState
     <suews:PavedState>`, :option:`DecTrState <suews:DecTrState>`, :option:`EveTrState

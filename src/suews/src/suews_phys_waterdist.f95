@@ -856,24 +856,52 @@ CONTAINS
       !endif
 
       ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
-      vsmd = 0
-      IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
+      ! vsmd = 0
+      ! IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
 
-         fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
-      ELSE
-         fveg = 0
-      END IF
-      DO is = ConifSurf, GrassSurf !Vegetated surfaces only
-         IF (fveg == 0) THEN
-            vsmd = 0
-         ELSE
-            vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
-         END IF
-         !write(*,*) is, vsmd, smd
-      END DO
+      !    fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
+      ! ELSE
+      !    fveg = 0
+      ! END IF
+      ! DO is = ConifSurf, GrassSurf !Vegetated surfaces only
+      !    IF (fveg == 0) THEN
+      !       vsmd = 0
+      !    ELSE
+      !       vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
+      !    END IF
+      !    !write(*,*) is, vsmd, smd
+      ! END DO
+
+      vsmd = cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf)
 
    END SUBROUTINE SUEWS_update_SoilMoist
    !------------------------------------------------------------------------------
+
+   ! calculate soil moisture deficit for vegetated surfaces only (for use in surface conductance)
+   FUNCTION cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf) RESULT(vsmd)
+      IMPLICIT NONE
+
+      REAL(KIND(1D0)), INTENT(in), DIMENSION(nsurf) :: SoilStoreCap, soilstore_id, sfr_surf
+      REAL(KIND(1D0)) :: vsmd
+
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: smd_surf
+      REAL(KIND(1D0)), DIMENSION(3) :: surf_veg, smd_veg
+      INTEGER :: is
+
+      vsmd = 0
+
+      ! calculate the soil moisture deficit for each vegetated surface
+      smd_surf = SoilStoreCap - soilstore_id
+      smd_veg = [(smd_surf(is), is=ConifSurf, GrassSurf)]
+
+      ! calculate the fraction of each vegetated surface among all vegetated surfaces
+      surf_veg = [(sfr_surf(is), is=ConifSurf, GrassSurf)]
+      surf_veg = surf_veg/SUM(surf_veg)
+
+      ! calculate the weighted soil moisture deficit for vegetated surfaces
+      vsmd = DOT_PRODUCT(smd_veg, surf_veg)
+
+   END FUNCTION cal_smd_veg
 
    !========== Calculate soil moisture of a whole grid ============
    SUBROUTINE SUEWS_cal_SoilState( &
@@ -1254,9 +1282,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: IrrFrac !faction of irrigated part in each surface [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: WUArea !water use area [m2] for each surface type
 
-      ! REAL(KIND(1d0)):: WUAreaEveTr_m2
-      ! REAL(KIND(1d0)):: WUAreaDecTr_m2
-      ! REAL(KIND(1d0)):: WUAreaGrass_m2
       REAL(KIND(1D0)) :: WUAreaTotal_m2
       REAL(KIND(1D0)) :: InternalWaterUse !Internal water use for the model timestep [mm]
       REAL(KIND(1D0)) :: flag_WuM = 1
@@ -1300,10 +1325,6 @@ CONTAINS
       ! Divide observed water use (in m3) by water use area to find water use (in mm)
       IF (WaterUseMethod == 1) THEN !If water use is observed
          ! Calculate water use area [m2] for each surface type
-         ! WUAreaEveTr_m2 = IrrFracEveTr*sfr_surf(ConifSurf)*SurfaceArea
-         ! WUAreaDecTr_m2 = IrrFracDecTr*sfr_surf(DecidSurf)*SurfaceArea
-         ! WUAreaGrass_m2 = IrrFracGrass*sfr_surf(GrassSurf)*SurfaceArea
-         ! WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
          WUArea = IrrFrac*sfr_surf*SurfaceArea
          WUAreaTotal_m2 = SUM(WUArea)
@@ -1320,18 +1341,6 @@ CONTAINS
          ELSE !If water use
             IF (WUAreaTotal_m2 > 0) THEN
                wu = (wu_m3/WUAreaTotal_m2*1000) !Water use in mm for the whole irrigated area
-               ! IF (WUAreaEveTr_m2 > 0) THEN
-               !    wu_EveTr = wu                    !Water use for Irr EveTr in mm - these are all the same at the moment
-               !    wu_EveTr = wu_EveTr*IrrFracEveTr !Water use for EveTr in mm
-               ! ENDIF
-               ! IF (WUAreaDecTr_m2 > 0) THEN
-               !    wu_DecTr = wu                        !Water use for Irr DecTr in mm - these are all the same at the moment
-               !    wu_DecTr = wu_DecTr*IrrFracDecTr     !Water use for DecTr in mm
-               ! ENDIF
-               ! IF (WUAreaGrass_m2 > 0) THEN
-               !    wu_Grass = wu                    !Water use for Irr Grass in mm - these are all the same at the moment
-               !    wu_Grass = wu_Grass*IrrFracGrass !Water use for Grass in mm
-               ! ENDIF
 
                wu_surf = wu*IrrFrac
 
@@ -1408,9 +1417,6 @@ CONTAINS
 
       ! Decrease the water use for each surface by the same proportion
       IF (wu_ext /= 0 .AND. wu /= 0) THEN
-         ! wu_EveTr = wu_EveTr*wu_ext/wu
-         ! wu_DecTr = wu_DecTr*wu_ext/wu
-         ! wu_Grass = wu_Grass*wu_ext/wu
          wu_surf = wu_surf*wu_ext/wu
       END IF
 

@@ -1,14 +1,29 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+# #########################################################################
+# this file is used to define:
+#  variables used in LAI/phenology calculations
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# revision history:
+# TS 08 Mar 2023: checked
+# #########################################################################
 
 - name: baset
   use:
-    input: state
+    input: parameter
   description:
-    Base Temperature for initiating growing degree days (GDD) for leaf
-    growth.
+    Base Temperature for initiating growing degree days (GDD) for leaf growth.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+    3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: degC
-  suews table headers: :option:`BaseT <suews:BaseT>`
+  suews table headers: :option:`BaseT <BaseT>`
   usage:
     LAI: needs to be linked to a method
 
@@ -16,12 +31,12 @@
 
 - name: sddfull
   use:
-    input: state
+    input: parameter
   description: The sensesence degree days (SDD) needed to initiate leaf off.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
-  unit: degC
-  suews table headers: :option:`SDDFull <suews:SDDFull>`
+    3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
+  unit: degC d
+  suews table headers: :option:`SDDFull <SDDFull>`
   usage:
     LAI: needs to be linked to a method
 
@@ -32,84 +47,85 @@
     input: state
   description: Initial LAI values.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
-  unit: Initial LAI values
+    3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
+  unit: "m2 m^-2"
   suews table headers:
-    :option:`LAIinitialDecTr <suews:LAIinitialDecTr>`, :option:`LAIinitialEveTr
-    <suews:LAIinitialEveTr>`, :option:`LAIinitialGrass <suews:LAIinitialGrass>`
+    :option:`LAIinitialDecTr <LAIinitialDecTr>`, :option:`LAIinitialEveTr
+    <LAIinitialEveTr>`, :option:`LAIinitialGrass <LAIinitialGrass>`
   usage:
     LAIcalcyes: needs to be linked to a method
 
 - name: laimax
   use:
-    input: state
+    input: parameter
   description: full leaf-on summertime value
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+    3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: full leaf-on summertime valu
-  suews table headers: :option:`LAIMax <suews:LAIMax>`
+  suews table headers: :option:`LAIMax <LAIMax>`
   usage:
     LAI: needs to be linked to a method
+
 - name: laimin
   use:
-    input: state
+    input: parameter
   description: leaf-off wintertime value
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+    3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: leaf-off wintertime valu
-  suews table headers: :option:`LAIMin <suews:LAIMin>`
+  suews table headers: :option:`LAIMin <LAIMin>`
   usage:
     LAI: needs to be linked to a method
+
 - name: laipower
   use:
-    input: state
+    input: parameter
   description: parameters required by LAI calculation.
   dimensions:
     4: "4: {`LeafGrowthPower1`, `LeafGrowthPower2`, `LeafOffPower1`, `LeafOffPower2`}"
     3: ""
   unit: parameters required by LAI calculation
   suews table headers:
-    :option:`LeafGrowthPower1 <suews:LeafGrowthPower1>`, :option:`LeafGrowthPower2
-    <suews:LeafGrowthPower2>`, :option:`LeafOffPower1 <suews:LeafOffPower1>`, :option:`LeafOffPower2
-    <suews:LeafOffPower2>`
+    :option:`LeafGrowthPower1 <LeafGrowthPower1>`, :option:`LeafGrowthPower2
+    <LeafGrowthPower2>`, :option:`LeafOffPower1 <LeafOffPower1>`, :option:`LeafOffPower2
+    <LeafOffPower2>`
   usage:
     LAI: needs to be linked to a method
-- name: laitype
+
+- name: laitype # this could be combined with laicalcyes as a single variable: lai_method? TODO
   use:
-    input: state
+    input: parameter
   description: LAI calculation choice.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+    3: "3: { `EveTr`, `DecTr`, `Grass`}"
   unit: LAI calculation choice
-  suews table headers: :option:`LAIEq <suews:LAIEq>`
+  suews table headers: :option:`LAIEq <LAIEq>`
   usage:
     LAI: Method_Selection
 
 
 - name: basete
   use:
-    input: state
+    input: parameter
   description:
-    Base temperature for initiating sensesance degree days (SDD) for leaf
-    off.
+    Base temperature for initiating sensesance degree days (SDD) for leaf off.
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
+    3: "3: { `EveTr`, `DecTr`, `Grass`}"
   unit: degC
-  suews table headers: :option:`BaseTe <suews:BaseTe>`
+  suews table headers: :option:`BaseTe <BaseTe>`
   usage:
     LAI: needs to be linked to a method
 
 
 - name: gddfull
   use:
-    input: state
+    input: parameter
   description:
-    The growing degree days (GDD) needed for full capacity of the leaf
-    area index (LAI)
+    The growing degree days (GDD) needed for full capacity of the leaf area index (LAI)
   dimensions:
-    3: "3: { `suews:EveTr`, `suews:DecTr`, `suews:Grass`}"
-  unit: "\xB0C]"
-  suews table headers: :option:`GDDFull <suews:GDDFull>`
+    3: "3: { `EveTr`, `DecTr`, `Grass`}"
+  unit: degC d
+  suews table headers: :option:`GDDFull <GDDFull>`
   usage:
     LAI: needs to be linked to a method
 

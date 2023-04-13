@@ -87,7 +87,7 @@ def pack_df_grid(dict_output):
 
 # generate MultiIndex for variable groups
 def gen_index(varline_x):
-    var_x = varline_x.replace("dataoutline", "").replace("line", "")
+    var_x = varline_x.replace("dataout", "").replace("block", "").replace("line", "")
     group = var_df_lower[var_x]
     var = var_df.loc[group].index.tolist()
     mindex = pd.MultiIndex.from_product([[group], var], names=["group", "var"])
@@ -116,7 +116,11 @@ def comb_gen_Series(dict_x):
 
 
 # pack up output of `run_suews`
-def pack_df_output(dict_output):
+def pack_df_output_line(dict_output):
+    import pickle
+
+    pickle.dump(dict_output, open("dict_output.pkl", "wb"))
+    print("dict_output saved to dict_output.pkl")
     # TODO: add output levels as in the Fortran version
     df_output = pd.DataFrame(dict_output).T
     # df_output = pd.concat(dict_output).to_frame().unstack()
@@ -158,9 +162,17 @@ def pack_df_output_array(dict_output_array, df_forcing):
     return df_grid_res
 
 
+def pack_df_output_block(dict_output_block, df_forcing_block):
+    col_df = gen_MultiIndex(dict_output_block)
+    val_df = np.hstack([ar[:, 5:] for ar in dict_output_block.values()])
+    ind_df = df_forcing_block.index.rename("datetime")
+    df_out = pd.DataFrame(val_df, columns=col_df, index=ind_df)
+
+    return df_out
+
+
 # resample supy output
 def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
-
     # get grid and group names
     list_grid = df_output.index.get_level_values("grid").unique()
     list_group = df_output.columns.get_level_values("group").unique()
@@ -174,7 +186,11 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
             grid: pd.concat(
                 {
                     group: df_output.loc[grid, group]
-                    .resample(freq, closed="right", label="right",)
+                    .resample(
+                        freq,
+                        closed="right",
+                        label="right",
+                    )
                     .agg(dict_aggm[group])
                     for group in list_group
                 },

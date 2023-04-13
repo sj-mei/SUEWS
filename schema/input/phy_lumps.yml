@@ -1,31 +1,56 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+# #########################################################################
+# this file is used to define:
+#  variables used in lumps
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# revision history:
+# TS 07 Mar 2023: checked
+# #########################################################################
 
 - name: raincover
   use:
-    input: state
+    input: parameter
   description: Limit when surface totally covered with water for LUMPS
   dimensions: 0
   unit: mm
   suews table headers: :option:`LUMPS_Cover <suews:LUMPS_Cover>`
   usage:
     LUMPS: ALL
+
 - name: rainmaxres
   use:
-    input: state
-  description: Maximum water bucket reservoir
+    input: parameter
+  description: Maximum water bucket reservoir; Used for LUMPS surface wetness control
   dimensions: 0
-  unit: mm] Used for LUMPS surface wetness control
+  unit: mm
   suews table headers: :option:`LUMPS_MaxRes <suews:LUMPS_MaxRes>`
   usage:
     LUMPS: ALL
 
-
+- name: drainrt
+  use:
+    input: parameter
+  description: Drainage rate of bucket for LUMPS
+  dimensions: 0
+  unit: mm h^-1
+  suews table headers: :option:`LUMPS_DrRate <suews:LUMPS_DrRate>`
+  usage:
+    LUMPS: ALL
 
 - name: veg_type
   use:
-    input: state
+    input: parameter
   description: Internal use. Please DO NOT modify
   dimensions: 0
-  unit: Internal use. Please DO NOT modif
+  unit: "-"
   suews table headers: None
   usage:
     LUMPS: ALL
