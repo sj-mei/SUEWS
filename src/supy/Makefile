@@ -66,10 +66,11 @@ clean:
 	rm -rf SuPy.log SuPy.log.*
 	rm -rf build dist
 	rm -rf .eggs .pytest_cache
+	rm -rf wheelhouse
 
 # upload wheels to pypi using twine
 upload:
-	twine upload --skip-existing dist/*whl
+	twine upload --skip-existing wheelhouse/*whl
 
 # make fortran exe
 suews:

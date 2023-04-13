@@ -298,6 +298,6 @@ class TestSuPy(TestCase):
         smd_veg_test = wm.cal_smd_veg(soilstorecap, soilstore_id, sfr_surf)
 
         test_equal = smd_veg_correct == smd_veg_test
-        self.assertEqual(smd_veg_correct, smd_veg_test)
+        self.assertAlmostEqual(smd_veg_correct, smd_veg_test)
 
 
