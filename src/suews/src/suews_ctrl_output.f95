@@ -400,7 +400,6 @@ MODULE ctrl_output
       varAttr('WU_Grass1', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('WU_Grass2', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('WU_Grass3', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('deltaLAI', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('LAIlumps', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('AlbSnow', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('DensSnow_Paved', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &

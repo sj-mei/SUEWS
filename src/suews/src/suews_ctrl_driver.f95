@@ -266,7 +266,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: it ! hour, 0-23 [h]
       INTEGER, PARAMETER :: EvapMethod = 2 ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER, INTENT(IN) :: iy ! year [y]
-      INTEGER, PARAMETER :: LAICalcYes = 1 ! boolean to determine if calculate LAI [-]
+      INTEGER, PARAMETER :: LAImethod = 1 ! boolean to determine if calculate LAI [-]
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
       INTEGER, INTENT(IN) :: OHMIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
       INTEGER, INTENT(IN) :: RoughLenHeatMethod ! method to calculate heat roughness length [-]
@@ -1076,7 +1076,7 @@ CONTAINS
             Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
             BaseTMethod, &
             WaterUseMethod, Ie_start, Ie_end, &
-            LAICalcYes, LAIType, &
+            LAImethod, LAIType, &
             nsh_real, kdown, Temp_C, Precip, BaseT_HC, &
             BaseT_Heating, BaseT_Cooling, &
             lat, Faut, LAI_obs, &
@@ -1092,7 +1092,7 @@ CONTAINS
             HDD_id_next, & !output
             Tmin_id_next, Tmax_id_next, lenDay_id_next, &
             albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, & !output
-            DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id_next) !output
+            DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, WUDay_id_next) !output
 
          !=================Calculation of density and other water related parameters=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
@@ -1684,7 +1684,7 @@ CONTAINS
          albGrass_id, &
          porosity_id, &
          WUDay_id, &
-         deltaLAI, VegPhenLumps, &
+         VegPhenLumps, &
          SnowAlb, SnowDens, &
          a1, a2, a3, &
          dataOutLineDailyState) !out

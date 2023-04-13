@@ -316,6 +316,7 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
         "statelimit": "statelimit_surf",
         "qn1_av": "qn_av",
         "qn1_s_av": "qn_s_av",
+
         # these columns are renamed since v2022.4.13
         "g1": "g_max",
         "g2": "g_k",
