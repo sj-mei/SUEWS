@@ -78,8 +78,7 @@ before-build = [
 archs = ["auto"] # skip this for now in gh actions as it takes too long
 skip = ['pp*']
 
-# Don't repair macOS wheels
-repair-wheel-command = ""
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 
 [tool.cibuildwheel.windows]
