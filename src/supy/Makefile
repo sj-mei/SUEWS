@@ -58,6 +58,7 @@ wheel:
 
 # If wanted, clean all *.o files after build
 clean:
+	$(MAKE) -C $(supy_driver_dir) clean
 	rm -rf ${MODULE}/*.so ${MODULE}/supy_driver.py ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	rm -rf ${MODULE}/test/*.pyc ${MODULE}/test/__pycache__
 	rm -rf ${MODULE}/util/*.pyc ${MODULE}/util/__pycache__
@@ -81,4 +82,9 @@ local: clean
 	echo ${SETUPTOOLS_USE_DISTUTILS};
 	echo ${CIBUILDWHEEL};
 	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject.toml
+
+# produce sample_output.pkl for testing
+# (only run this if you have changed the test data)
+sample_output:
+	python gen_sample_output.py
 

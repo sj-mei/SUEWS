@@ -856,24 +856,53 @@ CONTAINS
       !endif
 
       ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
-      vsmd = 0
-      IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
+      ! vsmd = 0
+      ! IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
 
-         fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
-      ELSE
-         fveg = 0
-      END IF
-      DO is = ConifSurf, GrassSurf !Vegetated surfaces only
-         IF (fveg == 0) THEN
-            vsmd = 0
-         ELSE
-            vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
-         END IF
-         !write(*,*) is, vsmd, smd
-      END DO
+      !    fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
+      ! ELSE
+      !    fveg = 0
+      ! END IF
+      ! DO is = ConifSurf, GrassSurf !Vegetated surfaces only
+      !    IF (fveg == 0) THEN
+      !       vsmd = 0
+      !    ELSE
+      !       vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
+      !    END IF
+      !    !write(*,*) is, vsmd, smd
+      ! END DO
+
+      vsmd = cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf)
 
    END SUBROUTINE SUEWS_update_SoilMoist
    !------------------------------------------------------------------------------
+
+   ! calculate soil moisture deficit for vegetated surfaces only (for use in surface conductance)
+   FUNCTION cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf) RESULT(vsmd)
+      IMPLICIT NONE
+
+      REAL(KIND(1D0)), INTENT(in), DIMENSION(nsurf) :: SoilStoreCap, soilstore_id, sfr_surf
+      REAL(KIND(1D0)):: vsmd
+
+
+      REAL(KIND(1D0)),DIMENSION(nsurf):: smd_surf
+      REAL(KIND(1D0)),DIMENSION(3):: surf_veg,smd_veg
+      INTEGER :: is
+
+      vsmd = 0
+
+      ! calculate the soil moisture deficit for each vegetated surface
+      smd_surf = SoilStoreCap - soilstore_id
+      smd_veg = [(smd_surf(is), is=ConifSurf, GrassSurf)]
+
+      ! calculate the fraction of each vegetated surface among all vegetated surfaces
+      surf_veg = [(sfr_surf(is), is=ConifSurf, GrassSurf)]
+      surf_veg = surf_veg/sum(surf_veg)
+
+      ! calculate the weighted soil moisture deficit for vegetated surfaces
+      vsmd=DOT_PRODUCT(smd_veg,surf_veg)
+
+   END FUNCTION cal_smd_veg
 
    !========== Calculate soil moisture of a whole grid ============
    SUBROUTINE SUEWS_cal_SoilState( &

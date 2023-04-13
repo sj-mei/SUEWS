@@ -118,6 +118,7 @@ LIBSRC_FPP_FILES = $(addsuffix .fpp,${LIBSRC_SOURCES})
 LIBSRC_WRAP_SOURCES = suews_ctrl_driver \
 	suews_phys_narp \
 	suews_phys_atmmoiststab \
+	suews_phys_waterdist \
 	suews_phys_resist \
 	suews_phys_evap \
 	suews_phys_dailystate \
