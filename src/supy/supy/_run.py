@@ -133,10 +133,12 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
             "len_sim": np.array(df_forcing_block.shape[0], dtype=int),
         }
     )
+    # print("list_var_input_multitsteps", sorted(list_var_input_multitsteps))
+    # print("dict_input.keys()", sorted(dict_input.keys()))
+    # set_dif=set(dict_input.keys()) - set(list_var_input_multitsteps)
+    # print("set_dif", sorted(set_dif))
     dict_input = {k: dict_input[k] for k in list_var_input_multitsteps}
     # dict_input = {k: dict_input[k] if k in dict_input else np.array([0.0]) for k in list_var_input_multitsteps}
-
-    # print('list_var_input_multitsteps',list_var_input_multitsteps)
 
     # main calculation:
 
@@ -179,7 +181,6 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
         list_arr = [getattr(res_suews_tstep_multi, var) for var in sorted(list_var)]
         dict_output_array = dict(zip(list_var, list_arr))
         df_output_block = pack_df_output_block(dict_output_array, df_forcing_block)
-
 
         return dict_state_end, df_output_block
 

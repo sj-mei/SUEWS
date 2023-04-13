@@ -11,3 +11,4 @@
 - 13 Apr 2023:
   - [bugfix] fixed a bug in the calculation of the soil moisture deficit weighted by vegetation fractions (#174)
   - [maintenance] added [script](src/supy/gen_sample_output.py) to update sample output for testing
+  - [feature] added more upgrade options to the `upgrade_df_state` function
