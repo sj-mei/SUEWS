@@ -148,7 +148,7 @@ LIBSRC_WRAP_FPP_FILES = $(addsuffix .fpp,${LIBSRC_WRAP_SOURCES})
 .PHONY: all clean cfg
 
 
-all: _${PYTHON_MODN}.so cfg
+all: _${PYTHON_MODN} cfg
 # all: _${PYTHON_MODN}.so _${PYTHON_MODN}_pkg.so
 
 cfg: gen-setup_cfg.py
@@ -156,8 +156,8 @@ cfg: gen-setup_cfg.py
 
 
 clean:
-	-rm -f ${LIBSRC_OBJECTS} ${LIBSRC_FPP_FILES} libsrc.a _${PYTHON_MODN}*.so \
-	_${PYTHON_MODN}_pkg.so *.mod *.fpp f90wrap*.f95 f90wrap*.o *.o ${PYTHON_MODN}.py
+	-rm -f ${LIBSRC_OBJECTS} ${LIBSRC_FPP_FILES} libsrc.a _${PYTHON_MODN}*.* \
+	*.mod *.fpp f90wrap*.f95 f90wrap*.o *.o ${PYTHON_MODN}.py
 	-rm -rf ${PYTHON_MODN}
 	-rm -rf src.*/ .f2py_f2cmap .libs/ __pycache__/
 	-rm  *f95 f90wrap*.f90
@@ -194,7 +194,7 @@ libsrc.a: ${LIBSRC_OBJECTS}
 	${LIBTOOL} $@ $?
 
 
-_${PYTHON_MODN}.so: libsrc.a ${LIBSRC_FPP_FILES}
+_${PYTHON_MODN}: libsrc.a ${LIBSRC_FPP_FILES}
 	${PYTHON} gen-setup_cfg.py
 	f90wrap -m ${PYTHON_MODN} ${LIBSRC_WRAP_FPP_FILES} -k ${KIND_MAP} -v \
 	--skip error_hint
