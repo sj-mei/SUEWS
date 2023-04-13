@@ -1254,9 +1254,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: IrrFrac !faction of irrigated part in each surface [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: WUArea !water use area [m2] for each surface type
 
-      ! REAL(KIND(1d0)):: WUAreaEveTr_m2
-      ! REAL(KIND(1d0)):: WUAreaDecTr_m2
-      ! REAL(KIND(1d0)):: WUAreaGrass_m2
       REAL(KIND(1D0)) :: WUAreaTotal_m2
       REAL(KIND(1D0)) :: InternalWaterUse !Internal water use for the model timestep [mm]
       REAL(KIND(1D0)) :: flag_WuM = 1
@@ -1300,10 +1297,6 @@ CONTAINS
       ! Divide observed water use (in m3) by water use area to find water use (in mm)
       IF (WaterUseMethod == 1) THEN !If water use is observed
          ! Calculate water use area [m2] for each surface type
-         ! WUAreaEveTr_m2 = IrrFracEveTr*sfr_surf(ConifSurf)*SurfaceArea
-         ! WUAreaDecTr_m2 = IrrFracDecTr*sfr_surf(DecidSurf)*SurfaceArea
-         ! WUAreaGrass_m2 = IrrFracGrass*sfr_surf(GrassSurf)*SurfaceArea
-         ! WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
          WUArea = IrrFrac*sfr_surf*SurfaceArea
          WUAreaTotal_m2 = SUM(WUArea)
@@ -1320,18 +1313,6 @@ CONTAINS
          ELSE !If water use
             IF (WUAreaTotal_m2 > 0) THEN
                wu = (wu_m3/WUAreaTotal_m2*1000) !Water use in mm for the whole irrigated area
-               ! IF (WUAreaEveTr_m2 > 0) THEN
-               !    wu_EveTr = wu                    !Water use for Irr EveTr in mm - these are all the same at the moment
-               !    wu_EveTr = wu_EveTr*IrrFracEveTr !Water use for EveTr in mm
-               ! ENDIF
-               ! IF (WUAreaDecTr_m2 > 0) THEN
-               !    wu_DecTr = wu                        !Water use for Irr DecTr in mm - these are all the same at the moment
-               !    wu_DecTr = wu_DecTr*IrrFracDecTr     !Water use for DecTr in mm
-               ! ENDIF
-               ! IF (WUAreaGrass_m2 > 0) THEN
-               !    wu_Grass = wu                    !Water use for Irr Grass in mm - these are all the same at the moment
-               !    wu_Grass = wu_Grass*IrrFracGrass !Water use for Grass in mm
-               ! ENDIF
 
                wu_surf = wu*IrrFrac
 
@@ -1408,9 +1389,6 @@ CONTAINS
 
       ! Decrease the water use for each surface by the same proportion
       IF (wu_ext /= 0 .AND. wu /= 0) THEN
-         ! wu_EveTr = wu_EveTr*wu_ext/wu
-         ! wu_DecTr = wu_DecTr*wu_ext/wu
-         ! wu_Grass = wu_Grass*wu_ext/wu
          wu_surf = wu_surf*wu_ext/wu
       END IF
 

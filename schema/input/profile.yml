@@ -1,0 +1,27 @@
+
+- name: wuprofa_24hr
+  use:
+    input: state
+  description: Hourly profile values used in automatic irrigation.
+  dimensions:
+    24: "24: hours of a day"
+    2: ""
+  unit: Hourly profile values used in automatic irrigation
+  suews table headers:
+    :option:`WaterUseProfAutoWD <suews:WaterUseProfAutoWD>`, :option:`WaterUseProfAutoWE
+    <suews:WaterUseProfAutoWE>`
+  usage:
+    WaterUseMethod: 0:Modelled
+- name: wuprofm_24hr
+  use:
+    input: state
+  description: Hourly profile values used in manual irrigation.
+  dimensions:
+    24: "24: hours of a day"
+    2: ""
+  unit: Hourly profile values used in manual irrigation
+  suews table headers:
+    :option:`WaterUseProfManuWD <suews:WaterUseProfManuWD>`, :option:`WaterUseProfManuWE
+    <suews:WaterUseProfManuWE>`
+  usage:
+    WaterUseMethod: 0:Modelled

@@ -1,0 +1,179 @@
+# yaml-language-server: $schema=../suews-var-def.json
+# use the above definition to enable schema validation in VSCode
+
+# NB: This file is manually curated by the SUEWS development team and is used in the following places:
+# - SUEWS documentation: https://suews.readthedocs.io/en/latest/variables.html
+# - SUEWS variable json schema file to enable schema validation (via `convert_var_info_to_json_schema.py` in this repo)
+# any questions, please contact the SUEWS development team by submitting an issue:
+# https://github.com/UMEP-dev/SUEWS/issues/new
+
+
+- name: aerodynamicresistancemethod
+  use:
+    input: method
+  description: method for aerodynamic resistance calculation
+  dimensions: 0
+  unit: NA
+  suews table headers: None
+  usage: model configuration
+
+- name: basetmethod
+  use:
+    input: method
+  description: Determines method for base temperature used in HDD/CDD calculations.
+  dimensions: 0
+  unit: Determines method for base temperature used in HDD/CDD calculations
+  suews table headers: :option:`BaseTMethod <suews:BaseTMethod>`
+  usage:
+    BaseTMethod; EmissionsMethod: Method_Selection
+
+- name: emissionsmethod
+  use:
+    input: method
+  description: Determines method for QF calculation.
+  dimensions: 0
+  unit: Determines method for QF calculation
+  suews table headers: :option:`EmissionsMethod <suews:EmissionsMethod>`
+  usage:
+    DiagMethod: Method_Selection
+
+- name: evapmethod
+  use:
+    input: method
+  description: Internal use. Please DO NOT modify
+  dimensions: 0
+  unit: Internal use. Please DO NOT modif
+  suews table headers: None
+  usage:
+    EvapMethod: Method_Selection
+
+- name: laicalcyes # rename to laimethod
+  use:
+    input: method
+  description: Internal use. Please DO NOT modify
+  dimensions: 0
+  unit: Internal use. Please DO NOT modif
+  suews table headers: None
+  usage:
+    LAI: Method_Selection
+
+- name: netradiationmethod
+  use:
+    input: method
+  description: Determines method for calculation of radiation fluxes.
+  dimensions: 0
+  unit: Determines method for calculation of radiation fluxes
+  suews table headers: :option:`NetRadiationMethod <suews:NetRadiationMethod>`
+  usage:
+    NetRadiationMethod: Method_Selection
+
+- name: roughlenheatmethod
+  use:
+    input: method
+  description: Determines method for calculating roughness length for heat.
+  dimensions: 0
+  unit: Determines method for calculating roughness length for heat
+  suews table headers: :option:`RoughLenHeatMethod <suews:RoughLenHeatMethod>`
+  usage:
+    RoughLenHeatMethod: Method_Selection
+
+
+- name: roughlenmommethod
+  use:
+    input: method
+  description:
+    Determines how aerodynamic roughness length (z0m) and zero displacement
+    height (zdm) are calculated.
+  dimensions: 0
+  unit:
+    Determines how aerodynamic roughness length (z0m) and zero displacement height
+    (zdm) are calculated
+  suews table headers: :option:`RoughLenMomMethod <suews:RoughLenMomMethod>`
+  usage:
+    RoughLenMomMethod: Method_Selection
+
+- name: smdmethod
+  use:
+    input: method
+  description: Determines method for calculating soil moisture deficit (SMD).
+  dimensions: 0
+  unit: Determines method for calculating soil moisture deficit (SMD)
+  suews table headers: :option:`SMDMethod <suews:SMDMethod>`
+  usage:
+    SmdMethod: Method_Selection
+
+- name: stabilitymethod
+  use:
+    input: method
+  description: Defines which atmospheric stability functions are used.
+  dimensions: 0
+  unit: Defines which atmospheric stability functions are used
+  suews table headers: :option:`StabilityMethod <suews:StabilityMethod>`
+  usage:
+    StabilityMethod: Method_Selection
+
+- name: storageheatmethod
+  use:
+    input: method
+  description: "Determines method for calculating storage heat flux \u0394QS."
+  dimensions: 0
+  unit: "Determines method for calculating storage heat flux \u0394QS"
+  suews table headers: :option:`StorageHeatMethod <suews:StorageHeatMethod>`
+  usage:
+    StorageHeatMethod: Method_Selection
+
+- name: waterusemethod
+  use:
+    input: method
+  description: Defines how external water use is calculated.
+  dimensions: 0
+  unit: Defines how external water use is calculated
+  suews table headers: :option:`WaterUseMethod <suews:WaterUseMethod>`
+  usage:
+    WaterUseMethod: Method_Selection
+
+
+- name: diagmethod # todo: do we need this? unnecessary in supy
+  use:
+    input: method
+  description: Defines how near surface diagnostics are calculated.
+  dimensions: 0
+  unit: Defines how near surface diagnostics are calculated
+  suews table headers: :option:`DiagMethod <suews:DiagMethod>`
+  usage:
+    EvapMethod: Method_Selection
+
+
+- name: diagqn # todo: do we need this? unnecessary in supy
+  use:
+    input: state
+  description: Internal use. Please DO NOT modify
+  dimensions: 0
+  unit: Internal use. Please DO NOT modif
+  suews table headers: None
+  usage:
+    DiagMethod: Internal
+
+- name: diagqs # todo: do we need this? unnecessary in supy
+  use:
+    input: state
+  description: Internal use. Please DO NOT modify
+  dimensions: 0
+  unit: Internal use. Please DO NOT modif
+  suews table headers: None
+  usage:
+    StorageHeatMethod: Internal
+
+
+- name: snowuse
+  use:
+    input: state
+  description: Determines whether the snow part of the model runs.
+  dimensions: 0
+  unit: Determines whether the snow part of the model runs
+  suews table headers: :option:`SnowUse <suews:SnowUse>`
+  usage:
+    SnowUse: "1: SnowCalc"
+
+
+

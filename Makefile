@@ -53,7 +53,7 @@ dev:
 
 # make supy dist and test
 test:
-	$(MAKE) -C $(supy_dir) test
+	$(MAKE) -C $(supy_dir) main
 
 # make supy wheels using cibuild
 wheel:

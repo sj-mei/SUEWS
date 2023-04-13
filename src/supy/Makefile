@@ -4,9 +4,11 @@
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
 	PYTHON_exe = python.exe
+	lib_suffix = pyd
 
 else
 	UNAME_S := $(shell uname -s)
+	lib_suffix = so
 
 
 
@@ -28,14 +30,26 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 MODULE = supy
 SUEWS_dir = ../suews
+supy_driver_dir = ../supy_driver
 
 
 # install package in dev mode and do pytest
-test: suews dev
+main: dev test
+
+driver: suews
+	python3 build-win-def.py
+	rm -rf _supy_driver*.* supy_driver.py
+	$(MAKE) -C $(supy_driver_dir) clean
+	$(MAKE) -C $(supy_driver_dir) all
+	mv $(supy_driver_dir)/_supy_driver* $(MODULE)/
+	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
+
+# run pytest
+test:
 	pytest -s ${MODULE}/test
 
 # install package in dev mode
-dev: suews
+dev: driver
 	pip install -e .
 
 # build wheel
@@ -44,7 +58,7 @@ wheel:
 
 # If wanted, clean all *.o files after build
 clean:
-	rm -rf ${MODULE}/*.so ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
+	rm -rf ${MODULE}/*.so ${MODULE}/supy_driver.py ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	rm -rf ${MODULE}/test/*.pyc ${MODULE}/test/__pycache__
 	rm -rf ${MODULE}/util/*.pyc ${MODULE}/util/__pycache__
 	rm -rf ${MODULE}/cmd/*.pyc ${MODULE}/cmd/__pycache__

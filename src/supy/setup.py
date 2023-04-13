@@ -1,5 +1,7 @@
 import os
 from signal import raise_signal
+import sys
+from time import sleep
 from setuptools import setup
 from pathlib import Path
 
@@ -9,6 +11,7 @@ from pathlib import Path
 # import re
 
 from setuptools import Distribution, find_packages
+
 from numpy.distutils.core import Extension, setup
 import platform
 import glob
@@ -214,17 +217,39 @@ distutils.cygwinccompiler.get_msvcr = get_msvcr_patch
 sysname = platform.system()
 lib_basename = "supy_driver"
 if sysname == "Windows":
-    lib_name = lib_basename + ".pyd"
+    from numpy.distutils.mingw32ccompiler import find_python_dll, generate_def
+
+    lib_suffix = ".pyd"
     Path("setup.cfg").write_text(
         "[build_ext]\ncompiler=mingw32\n[build]\ncompiler=mingw32\n"
     )
     print("setup.cfg created")
+    # create missing def file on windows virtual env
+    print("Fixing def file for Windows")
+
+    dll_file = find_python_dll()
+    p_dll = Path(dll_file)
+    print("Here is the pythonlib.dll:", dll_file)
+
+    # generate symbol list from this library
+    def_name = "python%d%d.def" % tuple(sys.version_info[:2])
+    def_file = os.path.join(sys.prefix, "libs", def_name)
+
+    # fix path for def file
+    Path(def_file).parent.mkdir(parents=True, exist_ok=True)
+    print("OK to create? ", Path(def_file).parent.exists())
+
+    # t_sleep_sec=1
+    # print(f'sleeping for {t_sleep_sec} seconds')
+    # sleep(t_sleep_sec)
+
+    generate_def(dll_file, def_file)
     print(list(Path.cwd().glob("*")))
 elif sysname == "Darwin":
-    lib_name = lib_basename + ".so"
+    lib_suffix = ".so"
 elif sysname == "Linux":
-    lib_name = lib_basename + ".so"
-
+    lib_suffix = ".so"
+lib_name = lib_basename + lib_suffix
 # change compiler settings
 if sysname == "Windows":
     pfn = Path.cwd() / "setup.cfg"
@@ -297,31 +322,91 @@ class BinaryDistribution(Distribution):
         return False
 
 
-ext_modules = [
+########################################
+# below is the f2py based extension
+# from setuptools import setup, Extension
+# ext_modules = [
+#     Extension(
+#         "supy.supy_driver.suews_driver",
+#         [str(p) for p in path_target_f95],
+#         extra_compile_args=[
+#             "-D_POSIX_C_SOURCE=200809L",
+#             "-fbracket-depth=1024"
+#             if sysname == "Darwin"
+#             else "-Wall",  # for clang on MacOS
+#         ],
+#         extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
+#         f2py_options=[
+#             # '--quiet',
+#             # "--verbose",
+#             # "--debug-capi",  # this is for debugging data types
+#             # '--f2cmap="f2py_f2cmap"',
+#             # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
+#         ],
+#         extra_objects=fn_other_obj,
+#         # "-v" under Linux is necessary because it can avoid the blank variable issue
+#         # ref: https://github.com/metomi/fcm/issues/220
+#         extra_link_args=["-v" if sysname == "Linux" else "-static"]
+#         + [f"-L{str(path_lib)}", "-lspartacus"],
+#     )
+# ]
+########################################
+
+
+ext_module_f90wrap = [
     Extension(
-        "supy.supy_driver.suews_driver",
-        [str(p) for p in path_target_f95],
-        extra_compile_args=[
-            "-D_POSIX_C_SOURCE=200809L",
-            "-fbracket-depth=1024"
-            if sysname == "Darwin"
-            else "-Wall",  # for clang on MacOS
-        ],
-        extra_f90_compile_args=["-cpp", f"-I{str(path_mod)}"],
-        f2py_options=[
-            # '--quiet',
-            # "--verbose",
-            # "--debug-capi",  # this is for debugging data types
-            # '--f2cmap="f2py_f2cmap"',
-            # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
-        ],
-        extra_objects=fn_other_obj,
-        # "-v" under Linux is necessary because it can avoid the blank variable issue
-        # ref: https://github.com/metomi/fcm/issues/220
-        extra_link_args=["-v" if sysname == "Linux" else "-static"]
-        + [f"-L{str(path_lib)}", "-lspartacus"],
-    )
+        "supy_driver",
+        sources=[],  # just a placeholder
+    ),
 ]
+
+from setuptools.command.build_ext import build_ext
+import subprocess
+import os
+from distutils.dir_util import mkpath
+from pathlib import Path
+
+
+# class CustomBuildExtCommand(build_ext):
+#     def run(self):
+#         if platform.system() == "Darwin":
+#             # Call the external Makefile here.
+#             self.run_external_make()
+
+#             # Now let the original build_ext command do its work.
+#             # super().run()
+
+#     def run_external_make(self):
+#         # Assuming your Makefile is located at "../external/Makefile"
+#         makefile_dir = os.path.abspath(os.path.dirname(__file__))
+#         make_file_path = os.path.join(makefile_dir, "Makefile")
+
+#         print("Current working directory:", os.getcwd())
+#         sleep(10)
+
+#         if not os.path.exists(make_file_path):
+#             raise FileNotFoundError(f"Cannot find Makefile at {make_file_path}")
+#         subprocess.run(["pwd"])
+#         subprocess.run(["make", "-f", make_file_path, "driver"], check=True)
+
+#         p_dir_ext = Path.cwd() / "supy"
+#         print(f"p_dir_ext: {p_dir_ext}")
+#         fn_lib = list(p_dir_ext.glob("_supy_driver*.*"))[0]
+#         fn_wrapper = p_dir_ext / "supy_driver.py"
+#         ext_files = [
+#             fn_lib,
+#             fn_wrapper,
+#         ]
+#         print(f"ext_files: {ext_files}")
+#         print(f"build_lib: {self.build_lib}")
+
+#         for fn_src in ext_files:
+#             fn_dst = Path(self.build_lib) / "supy" / fn_src.name
+#             shutil.copy(fn_src, fn_dst)
+
+# if platform.system() == "Darwin":
+#     cmdclass = {"build_ext": CustomBuildExtCommand}
+
 
 setup(
     name="supy",
@@ -346,6 +431,7 @@ setup(
     ),
     license="GPL-V3.0",
     packages=["supy"],
+    include_package_data=True,
     package_data={
         "supy": [
             "sample_run/*",
@@ -353,16 +439,19 @@ setup(
             "*.json",
             "util/*",
             "cmd/*",
-            "supy_driver/*",
+            f"_supy_driver*{lib_suffix}",
         ]
     },
     distclass=BinaryDistribution,
-    ext_modules=ext_modules,
+    ext_modules=ext_module_f90wrap,
+    # cmdclass=cmdclass,
+    # ext_modules=ext_modules,
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
         "pandas; python_version > '3.9'",
         "matplotlib",
         "chardet",
+        "f90wrap",
         "scipy",
         "dask",  # needs dask for parallel tasks
         "f90nml",  # utility for namelist files
@@ -390,7 +479,6 @@ setup(
             "suews-convert=supy.cmd.table_converter:convert_table_cmd",
         ]
     },
-    include_package_data=True,
     python_requires="~=3.7",
     classifiers=[
         "Programming Language :: Python :: 3 :: Only",
@@ -407,3 +495,7 @@ setup(
     ],
     zip_safe=False,
 )
+
+
+
+
