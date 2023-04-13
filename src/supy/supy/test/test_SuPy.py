@@ -276,3 +276,28 @@ class TestSuPy(TestCase):
             left=df_res_s,
             right=df_res_sample,
         )
+
+    # test if the weighted SMD of vegetated surfaces are properly calculated
+    def test_is_smd_veg_weighted(self):
+        print("\n========================================")
+        print("Testing if SMD of vegetated surfaces are properly calculated...")
+        soilstorecap = np.ones(7) * 100
+        sfr_surf = np.random.random(7)
+        soilstore_id = np.random.random(7) * 80
+        nonwaterfraction = sfr_surf[:-1].sum()
+
+        # correct SMD_veg
+        smd = soilstorecap - soilstore_id
+        smd_veg = smd[2:5]
+        surf_veg = sfr_surf[2:5]
+        surf_veg = surf_veg / surf_veg.sum()
+        smd_veg_correct = np.dot(surf_veg, smd_veg)
+
+        # test SMD_veg
+        from supy.supy_driver import Waterdist_Module as wm
+        smd_veg_test = wm.cal_smd_veg(soilstorecap, soilstore_id, sfr_surf)
+
+        test_equal = smd_veg_correct == smd_veg_test
+        self.assertEqual(smd_veg_correct, smd_veg_test)
+
+
