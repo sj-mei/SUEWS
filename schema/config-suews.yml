@@ -1,3 +1,6 @@
+# this is a sample config file for suews simulations
+# suitable for versions >= 2023.5
+
 - name: london sim
 - description: london sim
 - model:
