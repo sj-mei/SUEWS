@@ -85,9 +85,11 @@ repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest
 [tool.cibuildwheel.windows]
 before-build = [
     "cd {package}",
+    "where python",
     "python -m pip install numpy charset_normalizer f90wrap",
-    "make driver",
+    "python -v",
     "python build-win-def.py",
+    "make driver",
     # 'python -c "import numpy; print(numpy.__version__)"',
     # "python setup.py build_ext --inplace --compiler=mingw32",
     # "ls -l .",
