@@ -159,7 +159,7 @@ cfg: gen-setup_cfg.py
 clean:
 	-rm -f ${LIBSRC_OBJECTS} ${LIBSRC_FPP_FILES} libsrc.a _${PYTHON_MODN}*.* \
 	*.mod *.fpp f90wrap*.f95 f90wrap*.o *.o ${PYTHON_MODN}.py
-	-rm -rf ${PYTHON_MODN}
+	-rm -rf _${PYTHON_MODN}*.*
 	-rm -rf src.*/ .f2py_f2cmap .libs/ __pycache__/
 	-rm  *f95 f90wrap*.f90
 	-rm *.log
