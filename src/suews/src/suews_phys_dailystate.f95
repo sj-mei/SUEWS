@@ -613,7 +613,6 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(inout) :: StoreDrainPrm
 
-
       INTEGER :: iv
 
       REAL(KIND(1D0)) :: albChangeDecTr
