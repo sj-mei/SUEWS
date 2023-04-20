@@ -42,7 +42,6 @@ driver: suews
 	$(MAKE) -C $(supy_driver_dir) clean
 	ll $(supy_driver_dir)/_supy_driver*.so
 	$(MAKE) -C $(supy_driver_dir) all
-	ll $(supy_driver_dir)/_supy_driver*.so
 	mv $(supy_driver_dir)/_supy_driver* $(MODULE)/
 	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
 
