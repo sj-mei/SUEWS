@@ -60,7 +60,7 @@ wheel:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) -C $(supy_driver_dir) clean
-	rm -rf ${MODULE}/*.so ${MODULE}/supy_driver.py ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
+	rm -rf ${MODULE}/_supy_driver*.* ${MODULE}/supy_driver.py ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	rm -rf ${MODULE}/test/*.pyc ${MODULE}/test/__pycache__
 	rm -rf ${MODULE}/util/*.pyc ${MODULE}/util/__pycache__
 	rm -rf ${MODULE}/cmd/*.pyc ${MODULE}/cmd/__pycache__

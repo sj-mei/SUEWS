@@ -59,6 +59,7 @@ test-skip = "*win* *manylinux* cp31*-*"
 before-build = [
     "yum install -y glibc-static",
     "python3 -m pip install f90wrap",
+    "make -C '{package}' clean",
     "make -C '{package}' driver",
     "echo $ARCHFLAGS",
     "file '{package}'/supy/_supy_driver*.so",
