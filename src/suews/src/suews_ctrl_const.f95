@@ -84,7 +84,7 @@ MODULE allocateArray
                          ncolumnsdataOutBL = 22, &
                          ncolumnsDataOutESTM = 5 + 27, &
                          ncolumnsDataOutESTMExt = 5 + 7*2 + 15*(1 + 4 + 2)*2, &
-                         ncolumnsDataOutDailyState = 50, &
+                         ncolumnsDataOutDailyState = 49, &
                          ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                          ncolumnsDataOutDebug = 5 + 103 + 14 + 5 + 4, &
                          ncolumnsDataOutSPARTACUS = 5 + 7 + 4*15 + 3 + 6*15 + 2*15 + 4

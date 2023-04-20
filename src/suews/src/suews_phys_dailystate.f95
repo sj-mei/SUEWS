@@ -75,7 +75,7 @@ CONTAINS
       HDD_id_next, & !output
       Tmin_id_next, Tmax_id_next, lenDay_id_next, &
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, & !output
-      DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id) !output
+      DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, WUDay_id) !output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
@@ -222,7 +222,7 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
       INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
 
-      REAL(KIND(1D0)), INTENT(OUT) :: deltaLAI
+      ! REAL(KIND(1D0)), INTENT(OUT) :: deltaLAI
 
       REAL(KIND(1D0)) :: DecidCap_id
       REAL(KIND(1D0)), INTENT(IN) :: DecidCap_id_prev
@@ -327,7 +327,7 @@ CONTAINS
             albGrass_id, &
             porosity_id, &
             StoreDrainPrm, &
-            WUDay_id, deltaLAI) !output
+            WUDay_id) !output
       END IF !End of section done only at the end of each day (i.e. only once per day)
 
       ! translate values back
@@ -370,7 +370,7 @@ CONTAINS
       albGrass_id, &
       porosity_id, &
       StoreDrainPrm, &
-      WUDay_id, deltaLAI) !output
+      WUDay_id) !output
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: id
@@ -426,7 +426,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAI_id_in ! LAI of previous day
 
       REAL(KIND(1D0)), DIMENSION(9), INTENT(OUT) :: WUDay_id
-      REAL(KIND(1D0)), INTENT(OUT) :: deltaLAI
 
       REAL(KIND(1D0)), INTENT(INOUT) :: DecidCap_id
       REAL(KIND(1D0)), INTENT(INOUT) :: albDecTr_id
@@ -482,8 +481,7 @@ CONTAINS
          albEveTr_id, &
          albGrass_id, &
          porosity_id, &
-         StoreDrainPrm, &
-         deltaLAI) !output
+         StoreDrainPrm)
 
       ! PRINT*, 'DecidCap',DecidCap(id),DecidCap_id
       ! PRINT*, 'albDecTr',albDecTr(id),albDecTr_id
@@ -587,8 +585,7 @@ CONTAINS
       albEveTr_id, &
       albGrass_id, &
       porosity_id, &
-      StoreDrainPrm, &
-      deltaLAI) !output
+      StoreDrainPrm) !output
 
       IMPLICIT NONE
 
@@ -616,8 +613,6 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(inout) :: StoreDrainPrm
 
-      REAL(KIND(1D0)), INTENT(OUT) :: deltaLAI
-
       INTEGER :: iv
 
       REAL(KIND(1D0)) :: albChangeDecTr
@@ -625,6 +620,7 @@ CONTAINS
       REAL(KIND(1D0)) :: albChangeGrass
       REAL(KIND(1D0)) :: CapChange
 
+      REAL(KIND(1D0)) :: deltaLAIDecTr
       REAL(KIND(1D0)) :: deltaLAIEveTr
       REAL(KIND(1D0)) :: deltaLAIGrass
       REAL(KIND(1D0)) :: porChange
@@ -634,7 +630,7 @@ CONTAINS
       ! Storage capacity and porosity are updated based on DecTr LAI only (seasonal variation in Grass and EveTr assumed small)
       ! If only LUMPS is used, set deciduous capacities to 0
       ! QUESTION: Assume porosity Change based on GO99- Heisler?
-      deltaLAI = 0
+      deltaLAIDecTr = 0
       deltaLAIEveTr = 0
       deltaLAIGrass = 0
       CapChange = 0
@@ -645,10 +641,10 @@ CONTAINS
 
       iv = ivDecid
       IF ((LAI_id(iv) - LAI_id_prev(iv)) /= 0) THEN
-         deltaLAI = (LAI_id(iv) - LAI_id_prev(iv))/(LAImax(iv) - LAIMin(iv))
-         albChangeDecTr = (AlbMax_DecTr - AlbMin_DecTr)*deltaLAI
-         CapChange = (CapMin_dec - CapMax_dec)*deltaLAI
-         porChange = (PorMin_dec - PorMax_dec)*deltaLAI
+         deltaLAIDecTr = (LAI_id(iv) - LAI_id_prev(iv))/(LAImax(iv) - LAIMin(iv))
+         albChangeDecTr = (AlbMax_DecTr - AlbMin_DecTr)*deltaLAIDecTr
+         CapChange = (CapMin_dec - CapMax_dec)*deltaLAIDecTr
+         porChange = (PorMin_dec - PorMax_dec)*deltaLAIDecTr
       END IF
 
       iv = ivConif
@@ -1052,7 +1048,7 @@ CONTAINS
       albGrass_id, &
       porosity_id, &
       WUDay_id, &
-      deltaLAI, VegPhenLumps, &
+      VegPhenLumps, &
       SnowAlb, SnowDens, &
       a1, a2, a3, &
       DailyStateLine) !out
@@ -1080,7 +1076,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: lenday_id
       REAL(KIND(1D0)), DIMENSION(9), INTENT(IN) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
-      REAL(KIND(1D0)), INTENT(IN) :: deltaLAI
+      ! REAL(KIND(1D0)), INTENT(IN) :: deltaLAI
       REAL(KIND(1D0)), INTENT(IN) :: VegPhenLumps
       REAL(KIND(1D0)), INTENT(IN) :: SnowAlb
       REAL(KIND(1D0)), DIMENSION(7), INTENT(IN) :: SnowDens
@@ -1105,7 +1101,7 @@ CONTAINS
          ! DailyStateLine(30 + 1:30 + 8) = [SnowAlb, SnowDens(1:7)]
          ! DailyStateLine(38 + 1:38 + 3) = [a1, a2, a3]
          DailyStateLine = [HDD_id, GDD_id, SDD_id, Tmin_id, Tmax_id, lenday_id, LAI_id, DecidCap_id, Porosity_id, &
-                           AlbEveTr_id, AlbDecTr_id, AlbGrass_id, WUDay_id, deltaLAI, VegPhenLumps, SnowAlb, SnowDens, &
+                           AlbEveTr_id, AlbDecTr_id, AlbGrass_id, WUDay_id, VegPhenLumps, SnowAlb, SnowDens, &
                            a1, a2, a3]
 
       END IF

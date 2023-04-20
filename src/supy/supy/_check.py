@@ -303,16 +303,59 @@ def flatten_col(df_state: pd.DataFrame):
 # upgrade df_state from earlier versions of SuPy
 def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
     df_state_deprecated = df_state.copy()
+    df_state_deprecated.columns = df_state_deprecated.columns.remove_unused_levels()
+
+    # columns to rename
+    dict_col_rename = {
+        # these columns are renamed since v2021a7
+        "sfr": "sfr_surf",
+        "wetthresh": "wetthresh_surf",
+        "soilstore_id": "soilstore_surf",
+        "soilstorecap": "soilstorecap_surf",
+        "state_id": "state_surf",
+        "statelimit": "statelimit_surf",
+        "qn1_av": "qn_av",
+        "qn1_s_av": "qn_s_av",
+
+        # these columns are renamed since v2022.4.13
+        "g1": "g_max",
+        "g2": "g_k",
+        "g3": "g_q_base",
+        "g4": "g_q_shape",
+        "g5": "g_t",
+        "g6": "g_sm",
+    }
+
+    # columns to remove
+    list_col_remove = ["aerodynamicresistancemethod"]
+
+    # list of deprecated columns
+    list_col_deprecated = list(dict_col_rename.keys()) + list_col_remove
+
     # check if a df_state is before v2021a7
-    if "sfr" in df_state.columns:
-        logger_supy.info("A deprecated df_state is detected. Upgrading...")
-        flag_upgrade = True
+    flag_deprecated = False
+    list_col_deprecated_use = df_state_deprecated.columns.levels[0].tolist()
+    set_col_deprecated_use = sorted(
+        set(list_col_deprecated_use).intersection(set(list_col_deprecated))
+    )
+    print(set_col_deprecated_use)
+    if set_col_deprecated_use:
+        logger_supy.info("A deprecated df_state is detected.")
+        logger_supy.info(
+            f"The following columns are deprecated: {set_col_deprecated_use}"
+        )
+        logger_supy.info("Upgrading...")
+        flag_deprecated = True
     else:
         logger_supy.info("The df_state is up to date. No upgrade required.")
-        flag_upgrade = False
+        flag_deprecated = False
+    # for var in list_col_deprecated:
+    #     if var in df_state_deprecated.columns:
+    #         flag_deprecated = True
+    #         break
 
     # if so, upgrade it
-    if flag_upgrade:
+    if flag_deprecated:
         from ._supy_module import init_supy
 
         # load base df_state
@@ -321,20 +364,22 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
         df_state_base = init_supy(path_runcontrol, force_reload=False)
 
         # rename columns
-        dict_col_rename = {
-            # these columns are renamed since v2021a7
-            "sfr": "sfr_surf",
-            "wetthresh": "wetthresh_surf",
-            "soilstore_id": "soilstore_surf",
-            "soilstorecap": "soilstorecap_surf",
-            "state_id": "state_surf",
-            "statelimit": "statelimit_surf",
-            "qn1_av": "qn_av",
-            "qn1_s_av": "qn_s_av",
-        }
-        for c_old, c_new in dict_col_rename.items():
+        list_col_rename = [
+            c for c in set_col_deprecated_use if c in dict_col_rename.keys()
+        ]
+        for c_old in list_col_rename:
+            c_new = dict_col_rename[c_old]
             logger_supy.info(f"Column `{c_old}` is renamed to: `{c_new}`")
         df_state_upgrade = df_state_deprecated.rename(columns=dict_col_rename)
+
+        # remove columns
+        for c in set_col_deprecated_use:
+            if c in list_col_remove:
+                print(c)
+                print(df_state_upgrade[c])
+                logger_supy.info(f"Column `{c}` is removed")
+                df_state_upgrade = df_state_upgrade.drop(columns=c, level=0)
+        # print(df_state_upgrade[list_col_remove])
 
         # expand df_state_init to match df_state_init_test
         n_row, n_col = df_state_upgrade.shape
@@ -353,8 +398,9 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
                 )
 
         # merge processed dataframes
-        df_state_init_add = pd.concat(dict_col_add, axis=1)
-        df_state_upgrade = pd.concat([df_state_init_add, df_state_upgrade], axis=1)
+        if len(dict_col_add) > 0:
+            df_state_init_add = pd.concat(dict_col_add, axis=1)
+            df_state_upgrade = pd.concat([df_state_init_add, df_state_upgrade], axis=1)
 
         # add column levels
         df_state_upgrade.columns = df_state_upgrade.columns.set_names(

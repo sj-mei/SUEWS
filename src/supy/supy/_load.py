@@ -1289,14 +1289,14 @@ def trim_df_state(df_state: pd.DataFrame, set_var_use=set_var_use) -> pd.DataFra
 dict_RunControl_default = {
     # "aerodynamicresistancemethod": 2, #removed in SUEWS v2023
     # "basetmethod": 1, #removed in SUEWS v2023
-    "evapmethod": 2,
+    # "evapmethod": 2, #removed in SUEWS v2023
     # "laicalcyes": 1, #removed in SUEWS v2023
     "veg_type": 1,
     "diagnose": 0,
     "diagnosedisagg": 0,
     "diagnosedisaggestm": 0,
-    "diagqn": 0,
-    "diagqs": 0,
+    # "diagqn": 0, #removed in SUEWS v2023
+    # "diagqs": 0, #removed in SUEWS v2023
     "keeptstepfilesin": 0,
     "keeptstepfilesout": 0,
     "writeoutoption": 0,
