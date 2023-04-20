@@ -37,7 +37,6 @@ supy_driver_dir = ../supy_driver
 main: dev test
 
 driver: suews
-	python3 build-win-def.py
 	rm -rf _supy_driver*.* supy_driver.py
 	$(MAKE) -C $(supy_driver_dir) clean
 	$(MAKE) -C $(supy_driver_dir) all
