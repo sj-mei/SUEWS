@@ -83,7 +83,6 @@ local: export SETUPTOOLS_USE_DISTUTILS = stdlib
 local: clean
 	echo ${SETUPTOOLS_USE_DISTUTILS};
 	echo ${CIBUILDWHEEL};
-	mkdir -p wheelhouse
 	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject.toml
 
 # produce sample_output.pkl for testing
