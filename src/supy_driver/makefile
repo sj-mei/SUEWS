@@ -201,7 +201,7 @@ _${PYTHON_MODN}: libsrc.a ${LIBSRC_FPP_FILES}
 	--skip error_hint
 	$(CC) --version
 	CC="$(CC) $(CFLAGS)" \
-	f2py-f90wrap \
+	${PYTHON} f2py-f90wrap-patched.py \
 	--fcompiler=$(FCOMP) \
 	--f90flags="-cpp -I../suews/mod" \
 	--build-dir . -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
