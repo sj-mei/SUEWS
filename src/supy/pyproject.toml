@@ -50,11 +50,11 @@ before-build = ["git describe --tags --always --dirty"]
 build-verbosity = 0
 
 test-requires = "pytest"
-test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
-# only test on macOS python 3.9
+
+# only test on python 3.9
 test-skip = [
-    # "*win*",
-    # "*manylinux*",
+    "*win*",
+    "*manylinux*",
     "cp38*-*",
     "cp31*-*",
     ]
@@ -69,6 +69,7 @@ before-build = [
     "echo $ARCHFLAGS",
     "file '{package}'/supy/_supy_driver*.so",
 ]
+test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
 archs = ["auto64"]
 
 [tool.cibuildwheel.macos]
@@ -78,6 +79,7 @@ before-build = [
     "make -C '{package}' driver",
     "echo $ARCHFLAGS",
 ]
+test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
 
 # archs = ["universal2"]
 # build-verbosity = 10
@@ -100,3 +102,5 @@ before-build = [
     # "ls -l .",
 ]
 archs = ["auto64"]
+test-command = 'set "TEST_DATA_DIR={project}/src/supy/supy/test/data_test" && pytest -s "{package}/supy/test"'
+
