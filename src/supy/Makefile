@@ -36,8 +36,7 @@ supy_driver_dir = ../supy_driver
 # install package in dev mode and do pytest
 main: dev test
 
-driver: suews
-	rm -rf _supy_driver.*.* supy_driver.py
+driver: clean suews
 	$(MAKE) -C $(supy_driver_dir) clean
 	$(MAKE) -C $(supy_driver_dir) all
 	ls -l $(supy_driver_dir)/_supy_driver*.*

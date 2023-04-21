@@ -52,7 +52,12 @@ build-verbosity = 0
 test-requires = "pytest"
 test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
 # only test on macOS python 3.9
-test-skip = "*win* *manylinux* cp31*-*"
+test-skip = [
+    "*win*",
+    "*manylinux*",
+    "cp38*-*",
+    "cp31*-*",
+    ]
 
 [tool.cibuildwheel.linux]
 # Install system library
