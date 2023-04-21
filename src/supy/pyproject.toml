@@ -53,8 +53,8 @@ test-requires = "pytest"
 test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
 # only test on macOS python 3.9
 test-skip = [
-    "*win*",
-    "*manylinux*",
+    # "*win*",
+    # "*manylinux*",
     "cp38*-*",
     "cp31*-*",
     ]
