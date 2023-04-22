@@ -53,7 +53,7 @@ test-requires = "pytest"
 
 # only test on python 3.9
 test-skip = [
-    "*win*",
+    # "*win*",
     "*manylinux*",
     "cp38*-*",
     "cp31*-*",
