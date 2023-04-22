@@ -68,6 +68,8 @@ before-build = [
     "make -C '{package}' driver",
     "echo $ARCHFLAGS",
     "file '{package}'/supy/_supy_driver*.so",
+    "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
+    "echo '===> gfortran version:', $(gfortran --version)",
 ]
 test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
 archs = ["auto64"]
