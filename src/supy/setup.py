@@ -449,6 +449,7 @@ setup(
     install_requires=[
         "pandas< 1.5; python_version <= '3.9'",  # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
         "pandas; python_version > '3.9'",
+        "importlib_resources; python_version < '3.9'", # to fix importlib issue in UMEP under QGIS3
         "matplotlib",
         "chardet",
         "f90wrap",
