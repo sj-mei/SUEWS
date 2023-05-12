@@ -512,7 +512,7 @@ CONTAINS
          T1(i) = &
             (dt/rhocp(i)) &
             *(w(i - 1) - 2*T(i) + w(i)) &
-            *2*a(i)/dx(i) &
+            *a(i)/dx(i) &
             + T(i)
       END DO
       !!FO!!
