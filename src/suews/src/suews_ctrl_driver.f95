@@ -1483,6 +1483,7 @@ CONTAINS
          ! ====test===
          ! see if this converges better
          ratio_iter = .4
+         ! ratio_iter = .3
          tsfc_out_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_out_surf*ratio_iter)
          tsfc_out_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_out_roof*ratio_iter)
          tsfc_out_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_out_wall*ratio_iter)
