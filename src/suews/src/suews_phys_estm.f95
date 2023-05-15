@@ -622,7 +622,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
       LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
       LOGICAL, INTENT(in) :: debug
-      INTEGER :: i, n !,j       !!!!!FO!!!!!
+      INTEGER :: i, n
       REAL(KIND(1D0)), ALLOCATABLE :: w(:), a(:), T1(:), cfl(:)
 
       REAL(KIND(1D0)) :: cfl_max
