@@ -15,7 +15,8 @@ MODULE SUEWS_Driver
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters
-   USE ESTM_module, ONLY: ESTM, ESTM_ehc
+   USE ESTM_module, ONLY: ESTM
+   USE EHC_module, ONLY: ESTM_ehc
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: &
