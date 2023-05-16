@@ -524,7 +524,7 @@ CONTAINS
       T = T1
    END SUBROUTINE heatcond1d
 
-   ! modified from heatcond1d for ESTM_ext
+   ! modified from heatcond1d for ESTM_ehc
    ! TS 17 Feb 2022
    RECURSIVE SUBROUTINE heatcond1d_ext(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
@@ -1196,7 +1196,7 @@ CONTAINS
    END SUBROUTINE load_GridLayout
 
    !======================================================================================
-   SUBROUTINE ESTM_ext_initialise
+   SUBROUTINE ESTM_ehc_initialise
 
       ! Last modified HCW 30 Jun 2016 - reading in now done by SUEWS_GetESTMData subroutine.
       !                                 ESTM_initials now only runs once per run at the very start.
@@ -1274,9 +1274,9 @@ CONTAINS
          CALL load_GridLayout(i_grid, flag_mutiple_layout_files, diagnose)
       END DO
 
-   END SUBROUTINE ESTM_ext_initialise
+   END SUBROUTINE ESTM_ehc_initialise
 
-   SUBROUTINE ESTM_ext_finalise
+   SUBROUTINE ESTM_ehc_finalise
       USE allocateArray
       IMPLICIT NONE
 
@@ -1324,7 +1324,7 @@ CONTAINS
       ! IF (ALLOCATED(tin_surf_grids)) DEALLOCATE (tin_surf_grids)
       IF (ALLOCATED(temp_surf_grids)) DEALLOCATE (temp_surf_grids)
 
-   END SUBROUTINE ESTM_ext_finalise
+   END SUBROUTINE ESTM_ehc_finalise
    !======================================================================================
 
    SUBROUTINE ESTM_translate(Gridiv)
@@ -2308,10 +2308,10 @@ CONTAINS
 
    ! ===============================================================================================
    ! extended ESTM, TS 20 Jan 2022
-   ! ESTM_ext accoutns for
+   ! ESTM_ehc accoutns for
    ! 1. heterogeneous building facets (roofs, walls) at different vertical levels
    ! 2. all standard ground-level surfaces (dectr, evetr, grass, bsoil and water)
-   SUBROUTINE ESTM_ext( &
+   SUBROUTINE ESTM_ehc( &
       tstep, & !input
       nlayer, &
       QG_surf, qg_roof, qg_wall, &
@@ -2332,7 +2332,7 @@ CONTAINS
       INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: QG_surf ! ground heat flux
-      ! extended for ESTM_ext
+      ! extended for ESTM_ehc
 
       ! keys:
       ! tsfc: surface temperature
@@ -2499,7 +2499,7 @@ CONTAINS
          DO i_facet = 1, nfacet
             ! PRINT *, 'i_facet: ', i_facet
             ! ASSOCIATE (v => dz_cal(i_facet, 1:ndepth))
-            !    PRINT *, 'dz_cal in estm_ext', v, SIZE(v)
+            !    PRINT *, 'dz_cal in ESTM_ehc', v, SIZE(v)
             ! END ASSOCIATE
 
             ! determine the calculation method
@@ -2639,8 +2639,8 @@ CONTAINS
 
       ! aggregated results
       ! building surface
-      ! PRINT *, 'QS_roof in estm_ext', DOT_PRODUCT(QS_roof, sfr_roof), 'for', sfr_roof
-      ! PRINT *, 'QS_wall in estm_ext', DOT_PRODUCT(QS_wall, sfr_wall), 'for', sfr_wall
+      ! PRINT *, 'QS_roof in ESTM_ehc', DOT_PRODUCT(QS_roof, sfr_roof), 'for', sfr_roof
+      ! PRINT *, 'QS_wall in ESTM_ehc', DOT_PRODUCT(QS_wall, sfr_wall), 'for', sfr_wall
       IF (sfr_surf(BldgSurf) < 1.0E-8) THEN
          QS_surf(BldgSurf) = 0.0
       ELSE
@@ -2657,7 +2657,7 @@ CONTAINS
       ! all standard suews surfaces
       qs = DOT_PRODUCT(QS_surf, sfr_surf)
 
-   END SUBROUTINE ESTM_ext
+   END SUBROUTINE ESTM_ehc
    ! ===============================================================================================
    !===============set variable of invalid value to NAN====================================
    ELEMENTAL FUNCTION set_nan(x) RESULT(xx)

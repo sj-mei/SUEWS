@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters
-   USE ESTM_module, ONLY: ESTM, ESTM_ext
+   USE ESTM_module, ONLY: ESTM, ESTM_ehc
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: &
@@ -440,7 +440,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) :: WUProfM_24hr !Hourly profile values used in manual irrigation[-]
 
       ! ####################################################################################
-      ! ESTM_EXT
+      ! ESTM_ehc
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: SoilStoreCap_roof !Capacity of soil store for roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: StateLimit_roof !Limit for state_id of roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: wetthresh_roof ! wetness threshold  of roof[mm]
@@ -500,7 +500,7 @@ CONTAINS
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av !average air temperature [degC]
 
-      ! ESTM_ext related:
+      ! ESTM_ehc related:
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(INOUT) :: temp_roof !interface temperature between depth layers in roof [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(INOUT) :: temp_wall !interface temperature between depth layers in wall [degC]
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(INOUT) :: temp_surf !interface temperature between depth layers [degC]
@@ -767,7 +767,7 @@ CONTAINS
       INTEGER :: i_iter
 
       ! ########################################################################################
-      !  ! extended for ESTM_ext, TS 20 Jan 2022
+      !  ! extended for ESTM_ehc, TS 20 Jan 2022
       !
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_out_roof, tsfc0_out_roof !surface temperature of roof[degC]
@@ -802,7 +802,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_roof !interface temperature between depth layers [degC]
 
       ! energy fluxes of individual surfaces
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_roof ! heat flux used in ESTM_ext as forcing of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_roof ! heat flux used in ESTM_ehc as forcing of roof surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: QN_roof ! net all-wave radiation of roof surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_roof ! latent heat flux of roof surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_roof ! sensible heat flux of roof surface [W m-2]
@@ -815,7 +815,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_wall !interface temperature between depth layers [degC]
 
       ! energy fluxes of individual surfaces
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_wall ! heat flux used in ESTM_ext as forcing of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: QG_wall ! heat flux used in ESTM_ehc as forcing of wall surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: QN_wall ! net all-wave radiation of wall surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qe_wall ! latent heat flux of wall surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: qh_wall ! sensible heat flux of wall surface [W m-2]
@@ -826,7 +826,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_out_surf !interface temperature between depth layers[degC]
 
       ! energy fluxes of individual surfaces
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: QG_surf ! heat flux used in ESTM_ext as forcing of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: QG_surf ! heat flux used in ESTM_ehc as forcing of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf ! net all-wave radiation of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe0_surf ! latent heat flux from PM of individual surface [W m-2]
@@ -928,7 +928,7 @@ CONTAINS
       HDD_id_prev = HDD_id
       WUDay_id_prev = WUDay_id
 
-      ! ESTM_ext related
+      ! ESTM_ehc related
       ! save initial values of inout variables
       IF (StorageHeatMethod == 5) THEN
          temp_in_roof = temp_roof
@@ -1597,7 +1597,7 @@ CONTAINS
       WUDay_id = WUDay_id_next
 
       IF (StorageHeatMethod == 5) THEN
-         ! ESTM_ext related
+         ! ESTM_ehc related
          temp_roof = temp_out_roof
          temp_wall = temp_out_wall
          temp_surf = temp_out_surf
@@ -2301,7 +2301,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: a2 !< AnOHM coefficients of grid [h]
       REAL(KIND(1D0)), INTENT(out) :: a3 !< AnOHM coefficients of grid [W m-2]
 
-      ! extended for ESTM_ext
+      ! extended for ESTM_ehc
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_roof ! conductive heat flux through roof [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof ! indoor/deep bottom temperature for roof [degC]
@@ -2429,7 +2429,7 @@ CONTAINS
          ! ASSOCIATE (v => dz_wall(1, 1:ndepth))
          !    PRINT *, 'dz_wall in cal_qs', v, SIZE(v)
          ! END ASSOCIATE
-         CALL ESTM_ext( &
+         CALL ESTM_ehc( &
             tstep, & !input
             nlayer, &
             QG_surf, qg_roof, qg_wall, &
@@ -2443,10 +2443,10 @@ CONTAINS
 
          ! TODO: add deltaQi to output for snow heat storage
 
-         ! PRINT *, 'QS after ESTM_ext', QS
-         ! PRINT *, 'QS_roof after ESTM_ext', QS_roof
-         ! PRINT *, 'QS_wall after ESTM_ext', QS_wall
-         ! PRINT *, 'QS_surf after ESTM_ext', QS_surf
+         ! PRINT *, 'QS after ESTM_ehc', QS
+         ! PRINT *, 'QS_roof after ESTM_ehc', QS_roof
+         ! PRINT *, 'QS_wall after ESTM_ehc', QS_wall
+         ! PRINT *, 'QS_surf after ESTM_ehc', QS_surf
          ! PRINT *, '------------------------------------'
          ! PRINT *, ''
       END IF
@@ -3224,7 +3224,12 @@ CONTAINS
          ! update QE based on the water balance
          qe_roof = tlv*ev_roof
          qe_wall = tlv*ev_wall
-         qe_building = (DOT_PRODUCT(qe_roof, sfr_roof) + DOT_PRODUCT(qe_wall, sfr_wall))/sfr_surf(BldgSurf)
+
+         IF (sfr_surf(BldgSurf) < 1.0E-8) THEN
+            qe_building = 0.0
+         ELSE
+            qe_building = (DOT_PRODUCT(qe_roof, sfr_roof) + DOT_PRODUCT(qe_wall, sfr_wall))/sfr_surf(BldgSurf)
+         END IF
       END IF
       ! --- general suews surfaces ---
       CALL cal_water_storage_surf( &
@@ -4547,7 +4552,7 @@ CONTAINS
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av !average air temperature [degC]
 
-      !  ! extended for ESTM_ext, TS 20 Jan 2022
+      !  ! extended for ESTM_ehc, TS 20 Jan 2022
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nroof) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: tsfc_roof !roof surface temperature [degC]
@@ -4597,7 +4602,7 @@ CONTAINS
       ! ########################################################################################
 
       ! ####################################################################################
-      ! ESTM_EXT
+      ! ESTM_ehc
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: SoilStoreCap_roof !Capacity of soil store for roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: StateLimit_roof !Limit for state_id of roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: wetthresh_roof ! wetness threshold  of roof[mm]
