@@ -13,6 +13,7 @@
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # revision history:
 # TS 07 Mar 2023: checked and left multiple comments for further discussion
+# TS 08 May 2023: all variables are included in the yaml file
 # ################################################################################
 
 # SPARTACUS
@@ -25,11 +26,10 @@
   dimensions: 0
   unit: m^-1
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: air_ext_sw
   use:
@@ -38,11 +38,10 @@
   dimensions: 0
   unit: m^-1
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: air_ssa_lw # since this is an albedo, it could be renamed to start with "albedo"? #TODO
   use:
@@ -51,11 +50,10 @@
   dimensions: 0
   unit: "-"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: air_ssa_sw # since this is an albedo, it could be renamed to start with "albedo"? #TODO
   use:
@@ -64,11 +62,10 @@
   dimensions: 0
   unit: "-"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: ground_albedo_dir_mult_fact
   use:
@@ -80,11 +77,10 @@
     - 1.0 (Recommended in this version.)
     - "Can be updated from 1: if detailed knowledge of the direct and diffuse albedo is available."
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: n_stream_lw_urban # should be a sub-option under NetRadiationMethod = SS #TODO
   use:
@@ -93,11 +89,10 @@
   dimensions: 0
   unit: "-"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: n_stream_sw_urban # should be a sub-option under NetRadiationMethod = SS #TODO
   use:
@@ -109,11 +104,10 @@
     - "4 (Recommended in this version.)"
     - "At large computational cost small improvements in accuracy can be made by increasing from 4 [Hogan, 2019]."
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: n_vegetation_region_urban # should be a sub-option under NetRadiationMethod = SS #TODO
   use:
@@ -125,11 +119,10 @@
     - "1 (default): heterogeneity of vegetation not considered. might be okay de pending on the level of accuracy needed. See Hogan et al. [2018] – details of SPARTACUS-Vegetation for more information."
     - "2: heterogeneity of vegetation considered"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: sw_dn_direct_frac
   use:
@@ -138,11 +131,10 @@
   dimensions: 0
   unit: "-"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: use_sw_direct_albedo
   use:
@@ -151,11 +143,10 @@
   dimensions: 0
   unit: "NA"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: veg_contact_fraction_const # this is a fraction, so it could be renamed to start with "fraction"? #TODO
   use:
@@ -164,12 +155,10 @@
   dimensions: 0
   unit: "-"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
-
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 - name: veg_fsd_const
   use:
     input: parameter
@@ -177,11 +166,10 @@
   dimensions: 0
   unit: "-"
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: veg_ssa_lw
   use:
@@ -194,11 +182,10 @@
     - Should be estimated using a vegetation type in https://speclib.jpl.nasa.gov/library (see Vegetation single scattering albedo (SSA) for details). - Reflectance is ~0.04 for Acer Pensylvanicum, - ~0.02 for Quercus Robur and - ~0.04 for Betula Lenta.
     - SSA ~ 2*reflectance so 0.06 is chosen as the default.
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: veg_ssa_sw
   use:
@@ -210,11 +197,10 @@
     - Broadband shortwave vegetation SSA values ranged between 0.41 and 0.52 for RAMI5 Järvselja birch stand forest trees.
     - 0.46 is the default value but users can choose another value if the dominant tree type is one of the RAMI5 Järvselja birch stand forest trees (see Vegetation single scattering albedo (SSA) for details).
   suews table headers: None
-  usage:
-    NetRadiationMethod:
-      - "1001:SS+L_obs"
-      - "1002:SS+L_cloud"
-      - "1003:SS+L_RH"
+  requisite:
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 # NARP
 - name: narp_trans_site
@@ -224,8 +210,13 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`NARP_Trans <suews:NARP_Trans>`
-  usage:
-    NetRadiationMethod: "<500: NARP"
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
 
 - name: emis
   use:
@@ -235,8 +226,13 @@
     7: "seven land covers: {`suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
   unit: Effective surface emissivity
   suews table headers: :option:`Emissivity <suews:Emissivity>`
-  usage:
-    NetRadiationMethod: "<500: NARP"
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
 
 - name: alb
   use:
@@ -246,8 +242,13 @@
     7: "seven land covers: {`suews:Paved`, `suews:Bldgs`, `suews:EveTr`, `suews:DecTr`, `suews:Grass`, `suews:BSoil`, `suews:Water`}"
   unit: Effective surface albedo (middle of the day value)
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
-  usage:
-    NetRadiationMethod: "<500: NARP"
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
 
 - name: albdectr_id # unnecessary? could be removed if albedo is a state variable
   use:
@@ -256,8 +257,16 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`albDecTr0 <suews:albDecTr0>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albevetr_id # unnecessary? could be removed if albedo is a state variable
   use:
@@ -266,8 +275,16 @@
   dimensions: 0
   unit: Albedo of evergreen surface `EveTr` on day 0 of ru
   suews table headers: :option:`albEveTr0 <suews:albEveTr0>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albgrass_id # unnecessary? could be removed if albedo is a state variable
   use:
@@ -276,8 +293,16 @@
   dimensions: 0
   unit: Albedo of grass surface `Grass` on day 0 of ru
   suews table headers: :option:`albGrass0 <suews:albGrass0>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albmax_dectr
   use:
@@ -286,8 +311,16 @@
   dimensions: 0
   unit: Effective surface albedo (middle of the day value) for summertime
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albmax_evetr
   use:
@@ -296,8 +329,16 @@
   dimensions: 0
   unit: Effective surface albedo (middle of the day value) for summertime
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albmax_grass
   use:
@@ -306,41 +347,67 @@
   dimensions: 0
   unit: Effective surface albedo (middle of the day value) for summertime
   suews table headers: :option:`AlbedoMax <suews:AlbedoMax>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albmin_dectr
   use:
     input: parameter
-  description:
-    Effective surface albedo (middle of the day value) for wintertime (not including snow).
+  description: Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
-  unit:
-    Effective surface albedo (middle of the day value) for wintertime (not including snow)
+  unit: Effective surface albedo (middle of the day value) for wintertime (not including snow)
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albmin_evetr
   use:
     input: parameter
-  description:
-    Effective surface albedo (middle of the day value) for wintertime (not including snow).
+  description: Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
-  unit:
-    Effective surface albedo (middle of the day value) for wintertime (not including snow)
+  unit: Effective surface albedo (middle of the day value) for wintertime (not including snow)
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH
 
 - name: albmin_grass
   use:
     input: parameter
-  description:
-    Effective surface albedo (middle of the day value) for wintertime (not including snow).
+  description: Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
-  unit:
-    Effective surface albedo (middle of the day value) for wintertime (not including snow)
+  unit: Effective surface albedo (middle of the day value) for wintertime (not including snow)
   suews table headers: :option:`AlbedoMin <suews:AlbedoMin>`
-  usage:
-    NetRadiationMethod: ALL
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
+    - NetRadiationMethod.1001-SS+L_obs
+    - NetRadiationMethod.1002-SS+L_cloud
+    - NetRadiationMethod.1003-SS+L_RH

@@ -96,6 +96,284 @@ MODULE SUEWS_Driver
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
    END TYPE output_line
 
+   ! ********** SUEWS_parameters schema (basic) **********
+   TYPE, PUBLIC :: SURF_STORE_PRM
+      REAL(KIND(1D0)) :: store_min
+      REAL(KIND(1D0)) :: store_max
+      REAL(KIND(1D0)) :: store_cap
+      INTEGER :: drain_eq
+      REAL(KIND(1D0)) :: drain_coef_1
+      REAL(KIND(1D0)) :: drain_coef_2
+   END TYPE SURF_STORE_PRM
+
+   TYPE, PUBLIC :: WATER_DIST_PRM
+      REAL(KIND(1D0)) :: to_paved
+      REAL(KIND(1D0)) :: to_bldgs
+      REAL(KIND(1D0)) :: to_evetr
+      REAL(KIND(1D0)) :: to_dectr
+      REAL(KIND(1D0)) :: to_grass
+      REAL(KIND(1D0)) :: to_bsoil
+      REAL(KIND(1D0)) :: to_water
+      REAL(KIND(1D0)) :: to_soilstore
+   END TYPE WATER_DIST_PRM
+
+   TYPE, PUBLIC :: bioCO2_PRM
+      REAL(KIND(1D0)) :: beta_bioco2
+      REAL(KIND(1D0)) :: beta_enh_bioco2
+      REAL(KIND(1D0)) :: alpha_bioco2
+      REAL(KIND(1D0)) :: alpha_enh_bioco2
+      REAL(KIND(1D0)) :: resp_a
+      REAL(KIND(1D0)) :: resp_b
+      REAL(KIND(1D0)) :: theta_bioco2
+   END TYPE bioCO2_PRM
+
+   TYPE, PUBLIC :: CONDUCTANCE_PRM
+      REAL(KIND(1D0)) :: g_max
+      REAL(KIND(1D0)) :: g_k
+      REAL(KIND(1D0)) :: g_q_base
+      REAL(KIND(1D0)) :: g_q_shape
+      REAL(KIND(1D0)) :: g_t
+      REAL(KIND(1D0)) :: g_sm
+      REAL(KIND(1D0)) :: kmax
+      INTEGER :: gsmodel
+      REAL(KIND(1D0)) :: maxconductance
+      REAL(KIND(1D0)) :: s1
+      REAL(KIND(1D0)) :: s2
+   END TYPE CONDUCTANCE_PRM
+
+   TYPE, PUBLIC :: LAI_PRM   ! do we need `lai_id` here?
+      REAL(KIND(1D0)) :: baset       ! Base Temperature for initiating growing degree days (GDD) for leaf growth.
+      REAL(KIND(1D0)) :: gddfull     ! GDD at which LAI reaches its maximum value.
+      REAL(KIND(1D0)) :: basete       ! Base temperature for initiating sensesance degree days (SDD) for leaf off.
+      REAL(KIND(1D0)) :: sddfull      ! The sensesence degree days (SDD) needed to initiate leaf off.
+      REAL(KIND(1D0)) :: laimin       ! leaf-off wintertime value
+      REAL(KIND(1D0)) :: laimax       ! full leaf-on summertime value
+      REAL(KIND(1D0)) :: laipower     ! parameters required by LAI calculation.
+      INTEGER :: laitype      ! LAI calculation choice.
+   END TYPE LAI_PRM
+
+   TYPE, PUBLIC :: OHM_COEF
+      REAL(KIND(1D0)) :: summer_dry
+      REAL(KIND(1D0)) :: summer_wet
+      REAL(KIND(1D0)) :: winter_dry
+      REAL(KIND(1D0)) :: winter_wet
+   END TYPE OHM_COEF
+
+   TYPE, PUBLIC :: OHM_PRM
+      REAL(KIND(1D0)) :: chanohm    ! Bulk transfer coefficient for this surface to use in AnOHM
+      REAL(KIND(1D0)) :: cpanohm    ! Volumetric heat capacity for this surface to use in AnOHM
+      REAL(KIND(1D0)) :: kkanohm    ! Thermal conductivity for this surface to use in AnOHM
+      REAL(KIND(1D0)) :: ohm_threshsw     ! Temperature threshold determining whether summer/winter OHM coefficients are applied
+      REAL(KIND(1D0)) :: ohm_threshwd     ! Soil moisture threshold determining whether wet/dry OHM coefficients are applied
+      TYPE(OHM_COEF), DIMENSION(3) :: ohm_coef
+   END TYPE OHM_PRM
+
+   TYPE, PUBLIC :: SOIL_PRM
+      REAL(KIND(1D0)) :: soildepth
+      REAL(KIND(1D0)) :: soilstore
+      REAL(KIND(1D0)) :: soilstorecap
+      REAL(KIND(1D0)) :: state
+      REAL(KIND(1D0)) :: statelimit
+      REAL(KIND(1D0)) :: sathydraulicconduct
+   END TYPE SOIL_PRM
+
+   TYPE, PUBLIC :: anthroHEAT_PRM
+      REAL(KIND(1D0)) :: qf0_beu_working
+      REAL(KIND(1D0)) :: qf0_beu_holiday
+      REAL(KIND(1D0)) :: qf_a_working
+      REAL(KIND(1D0)) :: qf_a_holiday
+      REAL(KIND(1D0)) :: qf_b_working
+      REAL(KIND(1D0)) :: qf_b_holiday
+      REAL(KIND(1D0)) :: qf_c_working
+      REAL(KIND(1D0)) :: qf_c_holiday
+      REAL(KIND(1D0)) :: baset_cooling_working
+      REAL(KIND(1D0)) :: baset_cooling_holiday
+      REAL(KIND(1D0)) :: baset_heating_working
+      REAL(KIND(1D0)) :: baset_heating_holiday
+      REAL(KIND(1D0)) :: ah_min
+      REAL(KIND(1D0)) :: ah_slope_cooling
+      REAL(KIND(1D0)) :: ah_slope_heating
+      REAL(KIND(1D0)), DIMENSION(24) :: ahprof_24hr_working
+      REAL(KIND(1D0)), DIMENSION(24) :: ahprof_24hr_holiday
+      REAL(KIND(1D0)) :: popdensdaytime_working
+      REAL(KIND(1D0)) :: popdensdaytime_holiday
+      REAL(KIND(1D0)) :: popdensnighttime_working
+      REAL(KIND(1D0)) :: popdensnighttime_holiday
+      REAL(KIND(1D0)), DIMENSION(24) :: popprof_24hr_working
+      REAL(KIND(1D0)), DIMENSION(24) :: popprof_24hr_holiday
+   END TYPE anthroHEAT_PRM
+
+   TYPE, PUBLIC :: IRRIG_daywater
+      INTEGER :: monday_flag              ! Irrigation flag: 1 for on and 0 for off.
+      REAL(KIND(1D0)) :: monday_percent   ! Fraction of properties using irrigation for each day of a week.
+      INTEGER :: tuesday_flag
+      REAL(KIND(1D0)) :: tuesday_percent
+      INTEGER :: wednesday_flag
+      REAL(KIND(1D0)) :: wednesday_percent
+      INTEGER :: thursday_flag
+      REAL(KIND(1D0)) :: thursday_percent
+      INTEGER :: friday_flag
+      REAL(KIND(1D0)) :: friday_percent
+      INTEGER :: saturday_flag
+      REAL(KIND(1D0)) :: saturday_percent
+      INTEGER :: sunday_flag
+      REAL(KIND(1D0)) :: sunday_percent
+   END TYPE IRRIG_daywater
+
+   TYPE, PUBLIC :: IRRIGATION_PRM     ! used in irrigation
+      REAL(KIND(1D0)) :: h_maintain
+      REAL(KIND(1D0)) :: faut
+      REAL(KIND(1D0)), DIMENSION(3) :: ie_a
+      REAL(KIND(1D0)), DIMENSION(3) :: ie_m
+      INTEGER :: ie_start
+      INTEGER :: ie_end
+      REAL(KIND(1D0)) :: internalwateruse_h
+      TYPE(IRRIG_daywater) :: irr_daywater
+      REAL(KIND(1D0)), DIMENSION(24) :: wuprofa_24hr_working
+      REAL(KIND(1D0)), DIMENSION(24) :: wuprofa_24hr_holiday
+      REAL(KIND(1D0)), DIMENSION(24) :: wuprofm_24hr_working
+      REAL(KIND(1D0)), DIMENSION(24) :: wuprofm_24hr_holiday
+   END TYPE IRRIGATION_PRM
+
+   TYPE, PUBLIC :: anthroEMIS_PRM
+      INTEGER :: startdls
+      INTEGER :: enddls
+      TYPE(anthroHEAT_PRM) :: anthroheat
+   END TYPE anthroEMIS_PRM
+
+   TYPE, PUBLIC :: SNOW_PRM
+      REAL(KIND(1D0)) :: crwmax
+      REAL(KIND(1D0)) :: crwmin
+      REAL(KIND(1D0)) :: narp_emis_snow
+      REAL(KIND(1D0)) :: preciplimit
+      REAL(KIND(1D0)) :: preciplimitalb
+      REAL(KIND(1D0)) :: snowalbmax
+      REAL(KIND(1D0)) :: snowalbmin
+      REAL(KIND(1D0)) :: snowdensmin
+      REAL(KIND(1D0)) :: snowlimbldg
+      REAL(KIND(1D0)) :: snowlimpaved
+      REAL(KIND(1D0)) :: snowpacklimit
+      REAL(KIND(1D0)), DIMENSION(24) :: snowprof_24hr_working
+      REAL(KIND(1D0)), DIMENSION(24) :: snowprof_24hr_holiday
+      REAL(KIND(1D0)) :: tau_a
+      REAL(KIND(1D0)) :: tau_r
+      REAL(KIND(1D0)) :: tempmeltfact
+      REAL(KIND(1D0)) :: radmeltfact
+   END TYPE SNOW_PRM
+
+   ! ********** SUEWS_parameters schema (derived) **********
+   TYPE, PUBLIC :: LC_PAVED_PRM
+      REAL(KIND(1D0)) :: sfr
+      REAL(KIND(1D0)) :: emis
+      REAL(KIND(1D0)) :: alb
+      TYPE(OHM_PRM) :: ohm
+      TYPE(SOIL_PRM) :: soil
+      REAL(KIND(1D0)) :: irrfracpaved
+      REAL(KIND(1D0)) :: wetthresh
+      TYPE(SURF_STORE_PRM) :: storedrainprm
+      TYPE(WATER_DIST_PRM) :: waterdist
+   END TYPE LC_PAVED_PRM
+
+   TYPE, PUBLIC :: LC_BLDG_PRM
+      REAL(KIND(1D0)) :: sfr
+      REAL(KIND(1D0)) :: faibldg
+      REAL(KIND(1D0)) :: bldgh
+      REAL(KIND(1D0)) :: emis
+      REAL(KIND(1D0)) :: alb
+      TYPE(OHM_PRM) :: ohm
+      TYPE(SOIL_PRM) :: soil
+      REAL(KIND(1D0)) :: irrfracbldgs
+      REAL(KIND(1D0)) :: wetthresh
+      TYPE(SURF_STORE_PRM) :: storedrainprm
+      TYPE(WATER_DIST_PRM) :: waterdist
+   END TYPE LC_BLDG_PRM
+
+   TYPE, PUBLIC :: LC_DECTR_PRM
+      REAL(KIND(1D0)) :: sfr
+      REAL(KIND(1D0)) :: emis
+      REAL(KIND(1D0)) :: faidectree
+      REAL(KIND(1D0)) :: dectreeh
+      REAL(KIND(1D0)) :: pormin_dec  ! absent for evergreen trees ??
+      REAL(KIND(1D0)) :: pormax_dec
+      REAL(KIND(1D0)) :: alb_min
+      REAL(KIND(1D0)) :: alb_max
+      TYPE(OHM_PRM) :: ohm
+      TYPE(SOIL_PRM) :: soil
+      REAL(KIND(1D0)) :: capmax_dec   ! Maximum water storage capacity for upper surfaces (i.e. canopy) (absent for evergreen trees ??)
+      REAL(KIND(1D0)) :: capmin_dec   ! Minimum water storage capacity for upper surfaces (i.e. canopy).
+      REAL(KIND(1D0)) :: irrfracdectr
+      REAL(KIND(1D0)) :: wetthresh
+      TYPE(bioCO2_PRM) :: bioco2
+      TYPE(CONDUCTANCE_PRM) :: conductance
+      TYPE(LAI_PRM) :: lai
+      TYPE(SURF_STORE_PRM) :: storedrainprm
+      TYPE(WATER_DIST_PRM) :: waterdist
+   END TYPE LC_DECTR_PRM
+
+   TYPE, PUBLIC :: LC_EVETR_PRM
+      REAL(KIND(1D0)) :: sfr
+      REAL(KIND(1D0)) :: emis
+      REAL(KIND(1D0)) :: faievetree
+      REAL(KIND(1D0)) :: evetreeh
+      REAL(KIND(1D0)) :: alb_min
+      REAL(KIND(1D0)) :: alb_max
+      TYPE(OHM_PRM) :: ohm
+      TYPE(SOIL_PRM) :: soil
+      REAL(KIND(1D0)) :: irrfracevetr
+      REAL(KIND(1D0)) :: wetthresh
+      TYPE(bioCO2_PRM) :: bioco2
+      TYPE(CONDUCTANCE_PRM) :: conductance
+      TYPE(LAI_PRM) :: lai
+      TYPE(SURF_STORE_PRM) :: storedrainprm
+      TYPE(WATER_DIST_PRM) :: waterdist
+   END TYPE LC_EVETR_PRM
+
+   TYPE, PUBLIC :: LC_GRASS_PRM
+      REAL(KIND(1D0)) :: sfr
+      REAL(KIND(1D0)) :: emis
+      REAL(KIND(1D0)) :: alb_min
+      REAL(KIND(1D0)) :: alb_max
+      TYPE(OHM_PRM) :: ohm
+      TYPE(SOIL_PRM) :: soil
+      REAL(KIND(1D0)) :: irrfracgrass
+      REAL(KIND(1D0)) :: wetthresh
+      TYPE(bioCO2_PRM) :: bioco2
+      TYPE(CONDUCTANCE_PRM) :: conductance
+      TYPE(LAI_PRM) :: lai
+      TYPE(SURF_STORE_PRM) :: storedrainprm
+      TYPE(WATER_DIST_PRM) :: waterdist
+   END TYPE LC_GRASS_PRM
+
+   TYPE, PUBLIC :: LC_BSOIL_PRM
+      REAL(KIND(1D0)) :: sfr
+      REAL(KIND(1D0)) :: emis
+      REAL(KIND(1D0)) :: alb
+      TYPE(OHM_PRM) :: ohm
+      TYPE(SOIL_PRM) :: soil
+      REAL(KIND(1D0)) :: irrfracbsoil
+      REAL(KIND(1D0)) :: wetthresh
+      TYPE(SURF_STORE_PRM) :: storedrainprm
+      TYPE(WATER_DIST_PRM) :: waterdist
+   END TYPE LC_BSOIL_PRM
+
+   TYPE, PUBLIC :: LC_WATER_PRM
+      REAL(KIND(1D0)) :: sfr
+      REAL(KIND(1D0)) :: emis
+      REAL(KIND(1D0)) :: alb
+      TYPE(OHM_PRM) :: ohm
+      TYPE(SOIL_PRM) :: soil
+      REAL(KIND(1D0)) :: irrfracbsoil
+      REAL(KIND(1D0)) :: flowchange   ! special term in water
+      TYPE(SURF_STORE_PRM) :: storedrainprm
+   END TYPE LC_WATER_PRM
+
+   ! ********** SUEWS_stateVars schema **********
+   TYPE, PUBLIC :: HYDRO_STATE
+      REAL(KIND(1D0)) :: flowchange      ! Difference in input and output flows for water surface
+      REAL(KIND(1D0)) :: runofftowater   ! Fraction of above-ground runoff flowing to water surface during flooding
+      REAL(KIND(1D0)) :: soilstore_surf  ! Initial water stored in soil beneath `Bldgs` surface
+      REAL(KIND(1D0)) :: state_surf      ! Initial wetness condition on SUEWS land covers.
+   END TYPE HYDRO_STATE
 CONTAINS
 
    SUBROUTINE output_line_init(this_line)

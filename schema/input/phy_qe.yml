@@ -13,6 +13,7 @@
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # revision history:
 # TS 07 Mar 2023: checked
+# TS 06 May 2023: all variables are included in the yaml file
 # ########################################################
 
 - name: g_max
@@ -22,8 +23,8 @@
   dimensions: 0
   unit: mm s^-1
   suews table headers: :option:`G1 <suews:G1>`
-  usage:
-    gsModel: ALL
+  requisite:
+    essential.4-gs
 
 - name: g_k
   use:
@@ -32,8 +33,8 @@
   dimensions: 0
   unit: W m^-2
   suews table headers: :option:`G2 <suews:G2>`
-  usage:
-    gsModel: ALL
+  requisite:
+    essential.4-gs
 
 - name: g_q_base
   use:
@@ -42,8 +43,8 @@
   dimensions: 0
   unit: units depend on `gsModel`
   suews table headers: :option:`G3 <suews:G3>`
-  usage:
-    gsModel: ALL
+  requisite:
+    essential.4-gs
 
 - name: g_q_shape
   use:
@@ -52,8 +53,8 @@
   dimensions: 0
   unit: units depend on `gsModel`
   suews table headers: :option:`G4 <suews:G4>`
-  usage:
-    gsModel: ALL
+  requisite:
+    essential.4-gs
 
 - name: g_t
   use:
@@ -62,8 +63,8 @@
   dimensions: 0
   unit: degC
   suews table headers: :option:`G5 <suews:G5>`
-  usage:
-    gsModel: ALL
+  requisite:
+    essential.4-gs
 
 - name: g_sm
   use:
@@ -72,8 +73,8 @@
   dimensions: 0
   unit: mm^-1
   suews table headers: :option:`G6 <suews:G6>`
-  usage:
-    gsModel: ALL
+  requisite:
+    essential.4-gs
 
 - name: kmax
   use:
@@ -82,18 +83,18 @@
   dimensions: 0
   unit: W m^-2
   suews table headers: :option:`Kmax <suews:Kmax>`
-  usage:
-    gsmodel: ALL
+  requisite:
+    essential.4-gs
 
 - name: gsmodel # may rename to "conductance_model"? todo
   use:
-    input: method
+    input: parameter
   description: Formulation choice for conductance calculation.
   dimensions: 0
   unit: Formulation choice for conductance calculation
   suews table headers: :option:`gsModel <suews:gsModel>`
-  usage:
-    gsModel: Method_Selection
+  requisite:
+    essential.4-gs
 
 - name: maxconductance
   use:
@@ -103,8 +104,8 @@
     3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: mm s^-1
   suews table headers: :option:`MaxConductance <suews:MaxConductance>`
-  usage:
-    gsmodel: ALL
+  requisite:
+    essential.4-gs
 
 - name: s1 # may merge with s2 to be one parameter related to wilting point? todo
   use:
@@ -113,8 +114,8 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`S1 <suews:S1>`
-  usage:
-    gsmodel: could be made internal/removed
+  requisite:
+    essential.4-gs
 
 - name: s2 # see comment for s1 #todo
   use:
@@ -123,8 +124,8 @@
   dimensions: 0
   unit: mm
   suews table headers: :option:`S2 <suews:S2>`
-  usage:
-    gsmodel: could be made internal/removed
+  requisite:
+    essential.4-gs
 
 - name: wetthresh_surf
   use:
@@ -135,8 +136,8 @@
     7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm]
   suews table headers: :option:`WetThreshold <suews:WetThreshold>`
-  usage:
-    EvapMethod: "2: S78"
+  requisite:
+    essential.5-qe
 
 - name: th
   use:
@@ -145,8 +146,8 @@
   dimensions: 0
   unit: degC
   suews table headers: :option:`TH <suews:TH>`
-  usage:
-    gsmodel: ALL
+  requisite:
+    essential.4-gs
 
 - name: tl
   use:
@@ -155,5 +156,5 @@
   dimensions: 0
   unit: degC
   suews table headers: :option:`TL <suews:TL>`
-  usage:
-    gsModel: ALL
+  requisite:
+    essential.4-gs
