@@ -141,15 +141,15 @@ MODULE SUEWS_Driver
       REAL(KIND(1D0)) :: s2
    END TYPE CONDUCTANCE_PRM
 
-   TYPE, PUBLIC :: LAI_PRM   ! do we need `lai_id` here?
-      REAL(KIND(1D0)) :: baset       ! Base Temperature for initiating growing degree days (GDD) for leaf growth.
-      REAL(KIND(1D0)) :: gddfull     ! GDD at which LAI reaches its maximum value.
-      REAL(KIND(1D0)) :: basete       ! Base temperature for initiating sensesance degree days (SDD) for leaf off.
-      REAL(KIND(1D0)) :: sddfull      ! The sensesence degree days (SDD) needed to initiate leaf off.
-      REAL(KIND(1D0)) :: laimin       ! leaf-off wintertime value
-      REAL(KIND(1D0)) :: laimax       ! full leaf-on summertime value
-      REAL(KIND(1D0)) :: laipower     ! parameters required by LAI calculation.
-      INTEGER :: laitype      ! LAI calculation choice.
+   TYPE, PUBLIC :: LAI_PRM ! do we need `lai_id` here?
+      REAL(KIND(1D0)) :: baset ! Base Temperature for initiating growing degree days (GDD) for leaf growth.
+      REAL(KIND(1D0)) :: gddfull ! GDD at which LAI reaches its maximum value.
+      REAL(KIND(1D0)) :: basete ! Base temperature for initiating sensesance degree days (SDD) for leaf off.
+      REAL(KIND(1D0)) :: sddfull ! The sensesence degree days (SDD) needed to initiate leaf off.
+      REAL(KIND(1D0)) :: laimin ! leaf-off wintertime value
+      REAL(KIND(1D0)) :: laimax ! full leaf-on summertime value
+      REAL(KIND(1D0)) :: laipower ! parameters required by LAI calculation.
+      INTEGER :: laitype ! LAI calculation choice.
    END TYPE LAI_PRM
 
    TYPE, PUBLIC :: OHM_COEF
@@ -160,11 +160,11 @@ MODULE SUEWS_Driver
    END TYPE OHM_COEF
 
    TYPE, PUBLIC :: OHM_PRM
-      REAL(KIND(1D0)) :: chanohm    ! Bulk transfer coefficient for this surface to use in AnOHM
-      REAL(KIND(1D0)) :: cpanohm    ! Volumetric heat capacity for this surface to use in AnOHM
-      REAL(KIND(1D0)) :: kkanohm    ! Thermal conductivity for this surface to use in AnOHM
-      REAL(KIND(1D0)) :: ohm_threshsw     ! Temperature threshold determining whether summer/winter OHM coefficients are applied
-      REAL(KIND(1D0)) :: ohm_threshwd     ! Soil moisture threshold determining whether wet/dry OHM coefficients are applied
+      REAL(KIND(1D0)) :: chanohm ! Bulk transfer coefficient for this surface to use in AnOHM
+      REAL(KIND(1D0)) :: cpanohm ! Volumetric heat capacity for this surface to use in AnOHM
+      REAL(KIND(1D0)) :: kkanohm ! Thermal conductivity for this surface to use in AnOHM
+      REAL(KIND(1D0)) :: ohm_threshsw ! Temperature threshold determining whether summer/winter OHM coefficients are applied
+      REAL(KIND(1D0)) :: ohm_threshwd ! Soil moisture threshold determining whether wet/dry OHM coefficients are applied
       TYPE(OHM_COEF), DIMENSION(3) :: ohm_coef
    END TYPE OHM_PRM
 
@@ -204,8 +204,8 @@ MODULE SUEWS_Driver
    END TYPE anthroHEAT_PRM
 
    TYPE, PUBLIC :: IRRIG_daywater
-      INTEGER :: monday_flag              ! Irrigation flag: 1 for on and 0 for off.
-      REAL(KIND(1D0)) :: monday_percent   ! Fraction of properties using irrigation for each day of a week.
+      INTEGER :: monday_flag ! Irrigation flag: 1 for on and 0 for off.
+      REAL(KIND(1D0)) :: monday_percent ! Fraction of properties using irrigation for each day of a week.
       INTEGER :: tuesday_flag
       REAL(KIND(1D0)) :: tuesday_percent
       INTEGER :: wednesday_flag
@@ -220,7 +220,7 @@ MODULE SUEWS_Driver
       REAL(KIND(1D0)) :: sunday_percent
    END TYPE IRRIG_daywater
 
-   TYPE, PUBLIC :: IRRIGATION_PRM     ! used in irrigation
+   TYPE, PUBLIC :: IRRIGATION_PRM ! used in irrigation
       REAL(KIND(1D0)) :: h_maintain
       REAL(KIND(1D0)) :: faut
       REAL(KIND(1D0)), DIMENSION(3) :: ie_a
@@ -293,14 +293,14 @@ MODULE SUEWS_Driver
       REAL(KIND(1D0)) :: emis
       REAL(KIND(1D0)) :: faidectree
       REAL(KIND(1D0)) :: dectreeh
-      REAL(KIND(1D0)) :: pormin_dec  ! absent for evergreen trees ??
+      REAL(KIND(1D0)) :: pormin_dec ! absent for evergreen trees ??
       REAL(KIND(1D0)) :: pormax_dec
       REAL(KIND(1D0)) :: alb_min
       REAL(KIND(1D0)) :: alb_max
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
-      REAL(KIND(1D0)) :: capmax_dec   ! Maximum water storage capacity for upper surfaces (i.e. canopy) (absent for evergreen trees ??)
-      REAL(KIND(1D0)) :: capmin_dec   ! Minimum water storage capacity for upper surfaces (i.e. canopy).
+      REAL(KIND(1D0)) :: capmax_dec ! Maximum water storage capacity for upper surfaces (i.e. canopy) (absent for evergreen trees ??)
+      REAL(KIND(1D0)) :: capmin_dec ! Minimum water storage capacity for upper surfaces (i.e. canopy).
       REAL(KIND(1D0)) :: irrfracdectr
       REAL(KIND(1D0)) :: wetthresh
       TYPE(bioCO2_PRM) :: bioco2
@@ -363,16 +363,16 @@ MODULE SUEWS_Driver
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
       REAL(KIND(1D0)) :: irrfracbsoil
-      REAL(KIND(1D0)) :: flowchange   ! special term in water
+      REAL(KIND(1D0)) :: flowchange ! special term in water
       TYPE(SURF_STORE_PRM) :: storedrainprm
    END TYPE LC_WATER_PRM
 
    ! ********** SUEWS_stateVars schema **********
    TYPE, PUBLIC :: HYDRO_STATE
-      REAL(KIND(1D0)) :: flowchange      ! Difference in input and output flows for water surface
-      REAL(KIND(1D0)) :: runofftowater   ! Fraction of above-ground runoff flowing to water surface during flooding
-      REAL(KIND(1D0)) :: soilstore_surf  ! Initial water stored in soil beneath `Bldgs` surface
-      REAL(KIND(1D0)) :: state_surf      ! Initial wetness condition on SUEWS land covers.
+      REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
+      REAL(KIND(1D0)) :: runofftowater ! Fraction of above-ground runoff flowing to water surface during flooding
+      REAL(KIND(1D0)) :: soilstore_surf ! Initial water stored in soil beneath `Bldgs` surface
+      REAL(KIND(1D0)) :: state_surf ! Initial wetness condition on SUEWS land covers.
    END TYPE HYDRO_STATE
 CONTAINS
 
