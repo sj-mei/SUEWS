@@ -52,7 +52,7 @@ class TestSuPy(TestCase):
                 not df_state.empty,
             ]
         )
-        self.assertTrue(test_non_empty)
+        self.assertTrue((test_non_empty and not df_state.isnull().values.any()))
 
     # test if multi-tstep mode can run
     def test_is_supy_running_multi_step(self):
@@ -80,7 +80,7 @@ class TestSuPy(TestCase):
                 not df_state.empty,
             ]
         )
-        self.assertTrue(test_non_empty)
+        self.assertTrue((test_non_empty and not df_state.isnull().values.any()))
 
     # test if multi-grid simulation can run in parallel
     # def test_is_supy_sim_save_multi_grid_par(self):
