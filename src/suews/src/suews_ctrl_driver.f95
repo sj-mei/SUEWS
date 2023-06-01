@@ -2614,19 +2614,19 @@ CONTAINS
       irrPrm%ie_end = Ie_end
       irrPrm%internalwateruse_h = InternalWaterUse_h
       irrPrm%irr_daywater%monday_flag = DayWat(1)
-      irrPrm%irr_daywater%monday = DayWatPer(1)
+      irrPrm%irr_daywater%monday_percent = DayWatPer(1)
       irrPrm%irr_daywater%tuesday_flag = DayWat(2)
-      irrPrm%irr_daywater%tuesday = DayWatPer(2)
+      irrPrm%irr_daywater%tuesday_percent = DayWatPer(2)
       irrPrm%irr_daywater%wednesday_flag = DayWat(3)
-      irrPrm%irr_daywater%wednesday = DayWatPer(3)
+      irrPrm%irr_daywater%wednesday_percent = DayWatPer(3)
       irrPrm%irr_daywater%thursday_flag = DayWat(4)
-      irrPrm%irr_daywater%thursday = DayWatPer(4)
+      irrPrm%irr_daywater%thursday_percent = DayWatPer(4)
       irrPrm%irr_daywater%friday_flag = DayWat(5)
-      irrPrm%irr_daywater%friday = DayWatPer(5)
+      irrPrm%irr_daywater%friday_percent = DayWatPer(5)
       irrPrm%irr_daywater%saturday_flag = DayWat(6)
-      irrPrm%irr_daywater%saturday = DayWatPer(6)
+      irrPrm%irr_daywater%saturday_percent = DayWatPer(6)
       irrPrm%irr_daywater%sunday_flag = DayWat(7)
-      irrPrm%irr_daywater%sunday = DayWatPer(7)
+      irrPrm%irr_daywater%sunday_percent = DayWatPer(7)
       irrPrm%wuprofa_24hr_working = WUProfA_24hr(:, 1)
       irrPrm%wuprofa_24hr_holiday = WUProfA_24hr(:, 2)
       irrPrm%wuprofm_24hr_working = WUProfM_24hr(:, 1)
@@ -3648,21 +3648,44 @@ CONTAINS
   
          !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
+         ! CALL SUEWS_cal_DailyState( &
+         !    iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, & !input
+         !    Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
+         !    BaseTMethod, &
+         !    WaterUseMethod, Ie_start, Ie_end, &
+         !    LAImethod, LAIType, &
+         !    nsh_real, kdown, Temp_C, Precip, BaseT_HC, &
+         !    BaseT_Heating, BaseT_Cooling, &
+         !    lat, Faut, LAI_obs, &
+         !    AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+         !    AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+         !    CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
+         !    Ie_a, Ie_m, DayWatPer, DayWat, &
+         !    BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
+         !    DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
+         !    albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, & !input
+         !    HDD_id_prev, & !input
+         !    state_surf_prev, soilstore_surf_prev, SoilStoreCap_surf, H_maintain, & !input
+         !    HDD_id_next, & !output
+         !    Tmin_id_next, Tmax_id_next, lenDay_id_next, &
+         !    albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, & !output
+         !    DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, WUDay_id_next) !output
+
          CALL SUEWS_cal_DailyState( &
-            iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, & !input
-            Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
-            BaseTMethod, &
-            WaterUseMethod, Ie_start, Ie_end, &
+            timer%iy, timer%id, timer%it, timer%imin, timer%isec, timer%tstep, timer%tstep_prev, timer%dt_since_start, DayofWeek_id, & !input
+            phenState_prev%Tmin_id, phenState_prev%Tmax_id, phenState_prev%lenDay_id, &
+            methodPrm%BaseTMethod, &
+            methodPrm%WaterUseMethod, irrPrm%Ie_start, irrPrm%Ie_end, &
             LAImethod, LAIType, &
-            nsh_real, kdown, Temp_C, Precip, BaseT_HC, &
+            nsh_real, kdown, Temp_C, forcing%pres, BaseT_HC, &
             BaseT_Heating, BaseT_Cooling, &
-            lat, Faut, LAI_obs, &
-            AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-            AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-            CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
-            Ie_a, Ie_m, DayWatPer, DayWat, &
+            lat, irrPrm%Faut, forcing%LAI_obs, &
+            dectrPrm%Alb_Max, evetrPrm%Alb_Max, grassPrm%Alb_Max, &
+            dectrPrm%Alb_Min, evetrPrm%Alb_Min, grassPrm%Alb_Min, &
+            dectrPrm%CapMax_dec, dectrPrm%CapMin_dec, dectrPrm%PorMax_dec, dectrPrm%PorMin_dec, &
+            irrPrm%Ie_a, irrPrm%Ie_m, DayWatPer, DayWat, &
             BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-            DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
+            phenState_prev%DecidCap_id, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
             albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, & !input
             HDD_id_prev, & !input
             state_surf_prev, soilstore_surf_prev, SoilStoreCap_surf, H_maintain, & !input
