@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "wheel",
-    "f90wrap",
+    "f90wrap==0.2.12",
     "setuptools<60",
     "oldest-supported-numpy",
     "setuptools-git-versioning",
