@@ -18,3 +18,6 @@
 - 15 May 2023:
   - [bugfix] fixed a bug in heat flux calculation (#182)
   - [bugfix] fixed a bug in `table-converter` (#186)
+
+- 03 Jun 2023:
+  - [bugfix] fixed a bug in writing out `DailyState` - all rows were written as zero (#190)

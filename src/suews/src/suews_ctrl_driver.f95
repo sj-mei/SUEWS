@@ -5054,7 +5054,7 @@ CONTAINS
       dataOutBlockBEERS = dataOutBlockBEERS_X(:, :, 1)
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
       dataOutBlockSPARTACUS = dataOutBlockSPARTACUS_X(:, :, 1)
-      dataOutBlockDailyState = dataOutBlockDailyState_X(:, :, 1)
+      ! dataOutBlockDailyState = dataOutBlockDailyState_X(:, :, 1)
 
       ! initialize output block
       CALL output_block_finalize(output_block_suews)
