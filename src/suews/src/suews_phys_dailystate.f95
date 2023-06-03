@@ -666,6 +666,7 @@ CONTAINS
       DecidCap_id = DecidCap_id - CapChange
       StoreDrainPrm(6, DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
       porosity_id = porosity_id + porChange !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)
+      porosity_id = min(max(porosity_id, PorMin_dec), PorMax_dec) ! limit porosity to valid range, TS 04 Jun 2023
 
       ! update albedo values while limiting these to valid ranges
       !albDecTr_id = min(max(albDecTr_id + albChangeDecTr, AlbMin_DecTr), AlbMax_DecTr)
