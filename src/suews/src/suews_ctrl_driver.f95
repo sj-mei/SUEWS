@@ -167,7 +167,7 @@ MODULE SUEWS_Driver
       REAL(KIND(1D0)) :: sddfull !the sensesence degree days (SDD) needed to initiate leaf off [degC]
       REAL(KIND(1D0)) :: laimin !leaf-off wintertime value [m2 m-2]
       REAL(KIND(1D0)) :: laimax !full leaf-on summertime value [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(5) :: laipower ! parameters required by LAI calculation.
+      REAL(KIND(1D0)), DIMENSION(4) :: laipower ! parameters required by LAI calculation.
       INTEGER :: laitype ! LAI calculation choice.
    END TYPE LAI_PRM
 
@@ -3594,55 +3594,88 @@ CONTAINS
          ! PRINT *, 'Ts_iter of ', i_iter, ' is:', Ts_iter
 
          ! calculate dectime
+         ! CALL SUEWS_cal_dectime( &
+         !    id, it, imin, isec, & ! input
+         !    dectime) ! output
          CALL SUEWS_cal_dectime( &
-            id, it, imin, isec, & ! input
-            dectime) ! output
+             timer%id, timer%it, timer%imin, timer%isec, & ! input
+             dectime) ! output
 
          ! calculate tstep related VARIABLES
+         ! CALL SUEWS_cal_tstep( &
+         !    tstep, & ! input
+         !    nsh, nsh_real, tstep_real) ! output
          CALL SUEWS_cal_tstep( &
-            tstep, & ! input
+            timer%tstep, & ! input
             nsh, nsh_real, tstep_real) ! output
 
          ! calculate surface fraction related VARIABLES
-         CALL SUEWS_cal_surf( &
-            StorageHeatMethod, NetRadiationMethod, & !input
-            nlayer, sfr_surf, & !input
-            building_frac, building_scale, height, & !input
+         ! CALL SUEWS_cal_surf( &
+         !    StorageHeatMethod, NetRadiationMethod, & !input
+         !    nlayer, sfr_surf, & !input
+         !    building_frac, building_scale, height, & !input
+         !    VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
+         !    sfr_roof, sfr_wall) ! output
+         CALL SUEWS_cal_surf_DTS( &
+            methodPrm%StorageHeatMethod, methodPrm%NetRadiationMethod, & !input
+            nlayer, &
+            pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, & !input
+            spartacusLayerPrm%building_frac, spartacusLayerPrm%building_scale, spartacusLayerPrm%height, & !input
             VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
-            sfr_roof, sfr_wall) ! output
+            sfr_roof, sfr_wall) ! output            
 
          ! calculate dayofweek information
+         ! CALL SUEWS_cal_weekday( &
+         !    iy, id, lat, & !input
+         !    dayofWeek_id) !output
          CALL SUEWS_cal_weekday( &
-            iy, id, lat, & !input
+            timer%iy, timer%id, siteInfo%lat, & !input
             dayofWeek_id) !output
 
          ! calculate dayofweek information
+         ! CALL SUEWS_cal_DLS( &
+         !    id, startDLS, endDLS, & !input
+         !    DLS) !output
          CALL SUEWS_cal_DLS( &
-            id, startDLS, endDLS, & !input
+            timer%id, ahemisPrm%startDLS, ahemisPrm%endDLS, & !input
             DLS) !output
 
          ! calculate mean air temperature of past 24 hours
-         Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
+         ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
+         Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
 
          !==============main calculation start=======================
 
          !==============surface roughness calculation=======================
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
          IF (Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
-         CALL SUEWS_cal_RoughnessParameters( &
-            RoughLenMomMethod, sfr_surf, & !input
-            bldgH, EveTreeH, DecTreeH, &
-            porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
-            z0m_in, zdm_in, Z, &
+         ! CALL SUEWS_cal_RoughnessParameters( &
+         !    RoughLenMomMethod, sfr_surf, & !input
+         !    bldgH, EveTreeH, DecTreeH, &
+         !    porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
+         !    z0m_in, zdm_in, Z, &
+         !    FAI, PAI, & !output
+         !    zH, z0m, zdm, ZZD)
+         CALL SUEWS_cal_RoughnessParameters_DTS( &
+            methodPrm%RoughLenMomMethod, &
+            pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, & !input
+            bldgPrm%bldgH, evetrPrm%EveTreeH, dectrPrm%DecTreeH, &
+            phenState%porosity_id, bldgPrm%FAIBldg, evetrPrm%FAIEveTree, dectrPrm%FAIDecTree, &
+            siteInfo%z0m_in, siteInfo%zdm_in, siteInfo%Z, &
             FAI, PAI, & !output
             zH, z0m, zdm, ZZD)
 
          !=================Calculate sun position=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
+         ! CALL NARP_cal_SunPosition( &
+         !    REAL(iy, KIND(1D0)), & !input:
+         !    dectime - tstep/2/86400, & ! sun position at middle of timestep before
+         !    timezone, lat, lng, alt, &
+         !    azimuth, zenith_deg) !output:
          CALL NARP_cal_SunPosition( &
-            REAL(iy, KIND(1D0)), & !input:
-            dectime - tstep/2/86400, & ! sun position at middle of timestep before
-            timezone, lat, lng, alt, &
+            REAL(timer%iy, KIND(1D0)), & !input:
+            dectime - timer%tstep/2/86400, & ! sun position at middle of timestep before
+            siteInfo%timezone, siteInfo%lat, siteInfo%lng, siteInfo%alt, &
             azimuth, zenith_deg) !output:
 
          !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
@@ -3670,41 +3703,65 @@ CONTAINS
          !    albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, & !output
          !    DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, WUDay_id_next) !output
 
-         CALL SUEWS_cal_DailyState( &
-   timer%iy, timer%id, timer%it, timer%imin, timer%isec, timer%tstep, timer%tstep_prev, timer%dt_since_start, DayofWeek_id, & !input
+         !!! Do we need to separate the phenology parameters from the land cover parameters?
+         CALL SUEWS_cal_DailyState_DTS( &
+            timer%iy, timer%id, timer%it, timer%imin, timer%isec, timer%tstep, timer%tstep_prev, timer%dt_since_start, DayofWeek_id, & !input
             phenState_prev%Tmin_id, phenState_prev%Tmax_id, phenState_prev%lenDay_id, &
             methodPrm%BaseTMethod, &
             methodPrm%WaterUseMethod, irrPrm%Ie_start, irrPrm%Ie_end, &
-            LAImethod, LAIType, &
+            LAImethod, &
+            dectrPrm%lai%laitype, evetrPrm%lai%laitype, grassPrm%lai%laitype, &
             nsh_real, kdown, Temp_C, forcing%pres, BaseT_HC, &
-            BaseT_Heating, BaseT_Cooling, &
+            BaseT_Heating_working, BaseT_Heating_holiday, &
+            BaseT_Cooling_working, BaseT_Cooling_holiday, &
             lat, irrPrm%Faut, forcing%LAI_obs, &
             dectrPrm%Alb_Max, evetrPrm%Alb_Max, grassPrm%Alb_Max, &
             dectrPrm%Alb_Min, evetrPrm%Alb_Min, grassPrm%Alb_Min, &
             dectrPrm%CapMax_dec, dectrPrm%CapMin_dec, dectrPrm%PorMax_dec, dectrPrm%PorMin_dec, &
-            irrPrm%Ie_a, irrPrm%Ie_m, DayWatPer, DayWat, &
-            BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-            phenState_prev%DecidCap_id, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
-            albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, & !input
-            HDD_id_prev, & !input
-            state_surf_prev, soilstore_surf_prev, SoilStoreCap_surf, H_maintain, & !input
-            HDD_id_next, & !output
-            Tmin_id_next, Tmax_id_next, lenDay_id_next, &
-            albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, & !output
-            DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, WUDay_id_next) !output
+            irrPrm%Ie_a, irrPrm%Ie_m, &
+            irrPrm%irr_daywater%monday_percent, irrPrm%irr_daywater%tuesday_percent, irrPrm%irr_daywater%wednesday_percent, &
+            irrPrm%irr_daywater%thursday_percent, irrPrm%irr_daywater%friday_percent, irrPrm%irr_daywater%saturday_percent,  irrPrm%irr_daywater%sunday_percent, & 
+            irrPrm%irr_daywater%monday_flag, irrPrm%irr_daywater%tuesday_flag, irrPrm%irr_daywater%wednesday_flag, &
+            irrPrm%irr_daywater%thursday_flag, irrPrm%irr_daywater%friday_flag, irrPrm%irr_daywater%saturday_flag, irrPrm%irr_daywater%sunday_flag, &
+            dectrPrm%BaseT, evetrPrm%BaseT, grassPrm%BaseT   ! LAI-related input
+            dectrPrm%BaseTe, evetrPrm%BaseTe, grassPrm%BaseTe, & 
+            dectrPrm%gddfull, evetrPrm%gddfull, grassPrm%gddfull, & 
+            dectrPrm%lai%sddfull, evetrPrm%lai%sddfull, grassPrm%lai%sddfull, & 
+            dectrPrm%lai%laimin, evetrPrm%lai%laimin, grassPrm%lai%laimin, &
+            dectrPrm%lai%laimax, evetrPrm%lai%laimax, grassPrm%lai%laimax, & 
+            dectrPrm%lai%laipower, evetrPrm%lai%laipower, grassPrm%lai%laipower, &
+            phenState_prev%DecidCap_id, phenState_prev%StoreDrainPrm, phenState_prev%LAI_id, phenState_prev%GDD_id, phenState_prev%SDD_id, &
+            phenState_prev%albDecTr_id, phenState_prev%albEveTr_id, phenState_prev%albGrass_id, phenState_prev%porosity_id, & !input
+            anthroHeatState_prev%HDD_id, & !input
+            hydroState_prev%state_surf, hydroState_prev%soilstore_surf, SoilStoreCap_surf, irrPrm%H_maintain, & !input
+            anthroHeatState_next%HDD_id, & !output
+            phenState_next%Tmin_id, phenState_next%Tmax_id, phenState_next%lenDay_id, &
+            phenState_next%albDecTr_id, phenState_next%albEveTr_id, phenState_next%albGrass_id, phenState_next%porosity_id, & !output
+            phenState_next%DecidCap_id, phenState_next%StoreDrainPrm, phenState_next%LAI_id, phenState_next%GDD_id, phenState_next%SDD_id, hydroState_next%WUDay_id) !output
 
          !=================Calculation of density and other water related parameters=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
+         ! CALL cal_AtmMoist( &
+         !    Temp_C, Press_hPa, avRh, dectime, & ! input:
+         !    lv_J_kg, lvS_J_kg, & ! output:
+         !    es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
          CALL cal_AtmMoist( &
-            Temp_C, Press_hPa, avRh, dectime, & ! input:
+            forcing%Temp_C, forcing%Press_hPa, forcing%RH, dectime, & ! input:
             lv_J_kg, lvS_J_kg, & ! output:
             es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
 
          !======== Calculate soil moisture =========
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
-         CALL SUEWS_update_SoilMoist( &
-            NonWaterFraction, & !input
-            SoilStoreCap_surf, sfr_surf, soilstore_surf_prev, &
+         ! CALL SUEWS_update_SoilMoist( &
+         !    NonWaterFraction, & !input
+         !    SoilStoreCap_surf, sfr_surf, soilstore_surf_prev, &
+         !    SoilMoistCap, SoilState, & !output
+         !    vsmd, smd)
+         CALL SUEWS_update_SoilMoist_DTS( &
+            NonWaterFraction, & 
+            pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, &
+            pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, evetrPrm%soil%soilstorecap, grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, & !input
+            hydroState_prev%soilstore_surf, &
             SoilMoistCap, SoilState, & !output
             vsmd, smd)
 
@@ -6628,6 +6685,77 @@ CONTAINS
       END IF
 
    END SUBROUTINE SUEWS_cal_surf
+
+   SUBROUTINE SUEWS_cal_surf_DTS( &
+      StorageHeatMethod, NetRadiationMethod, & !input
+      nlayer, &
+      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & !input
+      building_frac, building_scale, height, & !input
+      vegfraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
+      sfr_roof, sfr_wall) ! output
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: StorageHeatMethod ! method for storage heat calculations [-]
+      INTEGER, INTENT(IN) :: NetRadiationMethod ! method for net radiation calculations [-]
+      INTEGER, INTENT(IN) :: nlayer !number of vertical layers[-]
+
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_water
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
+
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac !cumulative surface fraction of buildings across vertical layers [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale !building scales of each vertical layer  [m]
+      REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height !building height of each layer[-]
+      REAL(KIND(1D0)), INTENT(OUT) :: VegFraction ! fraction of vegetation [-]
+      REAL(KIND(1D0)), INTENT(OUT) :: ImpervFraction !fractioin of impervious surface [-]
+      REAL(KIND(1D0)), INTENT(OUT) :: PervFraction !fraction of pervious surfaces [-]
+      REAL(KIND(1D0)), INTENT(OUT) :: NonWaterFraction !fraction of non-water [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: sfr_roof !fraction of roof facets [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: sfr_wall !fraction of wall facets [-]
+
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof ! individual building fraction at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: dz_ind ! individual net building height at each layer
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall ! individual net building height at each layer
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: perimeter_ind ! individual building perimeter at each layer
+
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+
+      VegFraction = sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)
+      ImpervFraction = sfr_surf(PavSurf) + sfr_surf(BldgSurf)
+      PervFraction = 1 - ImpervFraction
+      NonWaterFraction = 1 - sfr_surf(WaterSurf)
+
+      IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
+         ! get individual building fractions of each layer
+         ! NB.: sum(sfr_roof) = building_frac(1)
+         sfr_roof = 0.
+         IF (nlayer > 1) sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
+         sfr_roof(nlayer) = building_frac(nlayer)
+
+         ! get individual net building height of each layer
+         dz_ind = 0.
+         dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
+
+         ! get individual building perimeter of each layer
+         ! this is from eq. 8 in SS documentation:
+         ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
+         perimeter_ind = 0.
+         perimeter_ind(1:nlayer) = 4.*building_frac(1:nlayer)/building_scale(1:nlayer)
+
+         ! sfr_wall stands for individual wall area
+         ! get individual wall area at each layer
+         sfr_wall = 0.
+         ! this is from eq. 1 in SS documentation:
+         ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
+         sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)
+      END IF
+
+   END SUBROUTINE SUEWS_cal_surf_DTS
 
 ! SUBROUTINE diagSfc( &
 !    opt, &

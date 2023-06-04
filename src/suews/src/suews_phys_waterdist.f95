@@ -875,6 +875,83 @@ CONTAINS
       vsmd = cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf)
 
    END SUBROUTINE SUEWS_update_SoilMoist
+
+
+   SUBROUTINE SUEWS_update_SoilMoist_DTS( &
+      NonWaterFraction, &
+      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & !input
+      SoilStoreCap_paved, SoilStore_bldg, SoilStore_dectr, SoilStore_evetr, SoilStore_grass, SoilStore_bsoil, SoilStore_water, &
+      soilstore_id, &
+      SoilMoistCap, SoilState, & !output
+      vsmd, smd)
+      IMPLICIT NONE
+
+      ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
+      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
+      REAL(KIND(1D0)), INTENT(in), DIMENSION(nsurf) :: soilstore_id
+
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_water
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf
+
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_paved
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_bldg
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_grass
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_bsoil
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_water
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap
+
+      REAL(KIND(1D0)), INTENT(out) :: SoilMoistCap, SoilState
+      REAL(KIND(1D0)), INTENT(out) :: vsmd, smd
+
+      INTEGER :: is
+      REAL(KIND(1D0)) :: fveg
+
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+      SoilStoreCap = [SoilStoreCap_paved, SoilStore_bldg, SoilStore_dectr, SoilStore_evetr, SoilStore_grass, SoilStore_bsoil, SoilStore_water]
+      
+      SoilMoistCap = 0 !Maximum capacity of soil store [mm] for whole surface
+      SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
+
+      IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
+         DO is = 1, nsurf - 1 !No water body included
+            SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr_surf(is)/NonWaterFraction)
+            SoilState = SoilState + (soilstore_id(is)*sfr_surf(is)/NonWaterFraction)
+         END DO
+      END IF
+
+      !If loop removed HCW 26 Feb 2015
+      !if (ir==1) then  !Calculate initial smd
+      smd = SoilMoistCap - SoilState
+      !endif
+
+      ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
+      ! vsmd = 0
+      ! IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
+
+      !    fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
+      ! ELSE
+      !    fveg = 0
+      ! END IF
+      ! DO is = ConifSurf, GrassSurf !Vegetated surfaces only
+      !    IF (fveg == 0) THEN
+      !       vsmd = 0
+      !    ELSE
+      !       vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
+      !    END IF
+      !    !write(*,*) is, vsmd, smd
+      ! END DO
+
+      vsmd = cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf)
+
+   END SUBROUTINE SUEWS_update_SoilMoist_DTS
    !------------------------------------------------------------------------------
 
    ! calculate soil moisture deficit for vegetated surfaces only (for use in surface conductance)

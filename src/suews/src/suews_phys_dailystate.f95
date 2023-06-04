@@ -357,15 +357,25 @@ CONTAINS
       Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
       BaseTMethod, &
       WaterUseMethod, Ie_start, Ie_end, &
-      LAICalcYes, LAIType, &
+      LAICalcYes, &
+      dectrLAIType, evetrLAIType, grassLAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
-      BaseT_Heating, BaseT_Cooling, &
+      BaseT_Heating_working, BaseT_Heating_holiday, &
+      BaseT_Cooling_working, BaseT_Cooling_holiday, &
       lat, Faut, LAI_obs, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
-      Ie_a, Ie_m, DayWatPer, DayWat, &
-      BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
+      Ie_a, Ie_m, &
+      DayWatPer_mon, DayWatPer_tues, DayWatPer_wed, DayWatPer_thur, DayWatPer_fri, DayWatPer_sat, DayWatPer_sun, &
+      DayWat_mon, DayWat_tues, DayWat_wed, DayWat_thur, DayWat_fri, DayWat_sat, DayWat_sun, &
+      dectrBaseT, evetrBaseT, grassBaseT, &
+      dectrBaseTe, evetrBaseTe, grassBaseTe, &
+      dectrGDDFull, evetrGDDFull, grassGDDFull, &
+      dectrSDDFull, evetrSDDFull, grassSDDFull, &
+      dectrLAIMin, evetrLAIMin, grassLAIMin, &
+      dectrLAIMax, evetrLAIMax, grassLAIMax, & 
+      dectrLAIPower, evetrLAIPower, grassLAIPower, &
       DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, & !input
       HDD_id_prev, & !input
@@ -395,15 +405,25 @@ CONTAINS
       INTEGER, INTENT(IN) :: Ie_end !Ending time of water use (DOY)
       INTEGER, INTENT(IN) :: LAICalcYes
 
-      INTEGER, DIMENSION(nvegsurf), INTENT(IN) :: LAIType !LAI equation to use: original (0) or new (1)
+      INTEGER, INTENT(IN) :: dectrLAIType
+      INTEGER, INTENT(IN) :: evetrLAIType
+      INTEGER, INTENT(IN) :: grassLAIType
+      INTEGER, DIMENSION(nvegsurf) :: LAIType !LAI equation to use: original (0) or new (1)
 
       REAL(KIND(1D0)), INTENT(IN) :: nsh_real
       REAL(KIND(1D0)), INTENT(IN) :: avkdn
       REAL(KIND(1D0)), INTENT(IN) :: Temp_C
       REAL(KIND(1D0)), INTENT(IN) :: Precip
       REAL(KIND(1D0)), INTENT(IN) :: BaseT_HC
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN) :: BaseT_Heating
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN) :: BaseT_Cooling
+
+      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Heating_working
+      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Heating_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Heating
+
+      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Cooling_working
+      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Cooling_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Cooling
+
       REAL(KIND(1D0)), INTENT(IN) :: lat
       REAL(KIND(1D0)), INTENT(IN) :: Faut
       REAL(KIND(1D0)), INTENT(IN) :: LAI_obs
@@ -428,8 +448,24 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: Ie_a
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: Ie_m !Coefficients for automatic and manual irrigation models
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN) :: DayWatPer !% of houses following daily water
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN) :: DayWat !Days of watering allowed
+
+      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_mon
+      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_tues
+      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_wed
+      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_thur
+      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_fri
+      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_sat
+      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_sun
+      REAL(KIND(1D0)), DIMENSION(7) :: DayWatPer !% of houses following daily water
+
+      REAL(KIND(1D0)), INTENT(IN) :: DayWat_mon
+      REAL(KIND(1D0)), INTENT(IN) :: DayWat_tues
+      REAL(KIND(1D0)), INTENT(IN) :: DayWat_wed
+      REAL(KIND(1D0)), INTENT(IN) :: DayWat_thur
+      REAL(KIND(1D0)), INTENT(IN) :: DayWat_fri
+      REAL(KIND(1D0)), INTENT(IN) :: DayWat_sat
+      REAL(KIND(1D0)), INTENT(IN) :: DayWat_sun
+      REAL(KIND(1D0)), DIMENSION(7) :: DayWat !Days of watering allowed
 
       ! ponding-water related
       REAL(KIND(1D0)), INTENT(IN) :: H_maintain ! ponding water depth to maintain [mm]
@@ -438,13 +474,40 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseT !Base temperature for growing degree days [degC]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseTe !Base temperature for senescence degree days [degC]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: GDDFull !Growing degree days needed for full capacity [degC]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: SDDFull !Senescence degree days needed to initiate leaf off [degC]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: LAIMin !Min LAI [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: LAIMax !Max LAI [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(4, nvegsurf), INTENT(IN) :: LAIPower !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseT
+      REAL(KIND(1D0)), INTENT(IN) :: evetrBaseT
+      REAL(KIND(1D0)), INTENT(IN) :: grassBaseT
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseT !Base temperature for growing degree days [degC]
+
+      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseTe
+      REAL(KIND(1D0)), INTENT(IN) :: evetrBaseTe
+      REAL(KIND(1D0)), INTENT(IN) :: grassBaseTe
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseTe !Base temperature for senescence degree days [degC]
+
+      REAL(KIND(1D0)), INTENT(IN) :: dectrGDDFull
+      REAL(KIND(1D0)), INTENT(IN) :: evetrGDDFull
+      REAL(KIND(1D0)), INTENT(IN) :: grassGDDFull
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDDFull !Growing degree days needed for full capacity [degC]
+
+      REAL(KIND(1D0)), INTENT(IN) :: dectrSDDFull
+      REAL(KIND(1D0)), INTENT(IN) :: evetrSDDFull
+      REAL(KIND(1D0)), INTENT(IN) :: grassSDDFull
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDDFull !Senescence degree days needed to initiate leaf off [degC]
+
+      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMin
+      REAL(KIND(1D0)), INTENT(IN) :: evetrLAIMin
+      REAL(KIND(1D0)), INTENT(IN) :: grassLAIMin
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMin !Min LAI [m2 m-2]
+
+      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMax
+      REAL(KIND(1D0)), INTENT(IN) :: evetrLAIMax
+      REAL(KIND(1D0)), INTENT(IN) :: grassLAIMax
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMax !Max LAI [m2 m-2]
+
+      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: dectrLAIPower
+      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: evetrLAIPower
+      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: grassLAIPower
+      REAL(KIND(1D0)), DIMENSION(4, nvegsurf) :: LAIPower !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
 
       ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
@@ -544,6 +607,59 @@ CONTAINS
       LOGICAL :: first_tstep_Q ! if this is the first tstep of a day
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
       TYPE(datetime) :: time_now, time_prev, time_next
+
+      DayWatPer(1) = DayWatPer_mon
+      DayWatPer(2) = DayWatPer_tues
+      DayWatPer(3) = DayWatPer_wed
+      DayWatPer(4) = DayWatPer_thur
+      DayWatPer(5) = DayWatPer_fri
+      DayWatPer(6) = DayWatPer_sat
+      DayWatPer(7) = DayWatPer_sun
+
+      DayWat(1) = DayWat_mon
+      DayWat(2) = DayWat_tues
+      DayWat(3) = DayWat_wed
+      DayWat(4) = DayWat_thur
+      DayWat(5) = DayWat_fri
+      DayWat(6) = DayWat_sat
+      DayWat(7) = DayWat_sun
+
+      LAIType(1) = dectrLAIType
+      LAIType(2) = evetrLAIType
+      LAIType(3) = grassLAIType
+      
+      BaseT_Heating(1) = BaseT_Heating_working
+      BaseT_Heating(2) = BaseT_Heating_holiday
+      BaseT_Cooling(1) = BaseT_Cooling_working
+      BaseT_Cooling(2) = BaseT_Cooling_holiday
+      
+      BaseT(1) = dectrBaseT
+      BaseT(2) = evetrBaseT
+      BaseT(3) = grassBaseT
+
+      BaseTe(1) = dectrBaseTe
+      BaseTe(2) = evetrBaseTe
+      BaseTe(3) = grassBaseTe
+
+      GDDFull(1) = dectrGDDFull
+      GDDFull(2) = evetrGDDFull
+      GDDFull(3) = grassGDDFull
+
+      SDDFull(1) = dectrSDDFull
+      SDDFull(2) = evetrSDDFull
+      SDDFull(3) = grassSDDFull
+
+      LAIMin(1) = dectrLAIMin
+      LAIMin(2) = evetrLAIMin
+      LAIMin(3) = grassLAIMin
+
+      LAIMax(1) = dectrLAIMax
+      LAIMax(2) = evetrLAIMax
+      LAIMax(3) = grassLAIMax
+
+      LAIPower(:, 1) = dectrLAIPower
+      LAIPower(:, 2) = evetrLAIPower
+      LAIPower(:, 3) = grassLAIPower
 
       ! transfer values
       LAI_id = LAI_id_prev
