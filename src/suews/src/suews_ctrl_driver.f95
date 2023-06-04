@@ -3598,8 +3598,8 @@ CONTAINS
          !    id, it, imin, isec, & ! input
          !    dectime) ! output
          CALL SUEWS_cal_dectime( &
-             timer%id, timer%it, timer%imin, timer%isec, & ! input
-             dectime) ! output
+            timer%id, timer%it, timer%imin, timer%isec, & ! input
+            dectime) ! output
 
          ! calculate tstep related VARIABLES
          ! CALL SUEWS_cal_tstep( &
@@ -3622,7 +3622,7 @@ CONTAINS
             pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, & !input
             spartacusLayerPrm%building_frac, spartacusLayerPrm%building_scale, spartacusLayerPrm%height, & !input
             VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
-            sfr_roof, sfr_wall) ! output            
+            sfr_roof, sfr_wall) ! output
 
          ! calculate dayofweek information
          ! CALL SUEWS_cal_weekday( &
@@ -3705,7 +3705,7 @@ CONTAINS
 
          !!! Do we need to separate the phenology parameters from the land cover parameters?
          CALL SUEWS_cal_DailyState_DTS( &
-            timer%iy, timer%id, timer%it, timer%imin, timer%isec, timer%tstep, timer%tstep_prev, timer%dt_since_start, DayofWeek_id, & !input
+   timer%iy, timer%id, timer%it, timer%imin, timer%isec, timer%tstep, timer%tstep_prev, timer%dt_since_start, DayofWeek_id, & !input
             phenState_prev%Tmin_id, phenState_prev%Tmax_id, phenState_prev%lenDay_id, &
             methodPrm%BaseTMethod, &
             methodPrm%WaterUseMethod, irrPrm%Ie_start, irrPrm%Ie_end, &
@@ -3723,14 +3723,14 @@ CONTAINS
             irrPrm%irr_daywater%thursday_percent, irrPrm%irr_daywater%friday_percent, irrPrm%irr_daywater%saturday_percent,  irrPrm%irr_daywater%sunday_percent, & 
             irrPrm%irr_daywater%monday_flag, irrPrm%irr_daywater%tuesday_flag, irrPrm%irr_daywater%wednesday_flag, &
             irrPrm%irr_daywater%thursday_flag, irrPrm%irr_daywater%friday_flag, irrPrm%irr_daywater%saturday_flag, irrPrm%irr_daywater%sunday_flag, &
-            dectrPrm%BaseT, evetrPrm%BaseT, grassPrm%BaseT   ! LAI-related input
-            dectrPrm%BaseTe, evetrPrm%BaseTe, grassPrm%BaseTe, & 
-            dectrPrm%gddfull, evetrPrm%gddfull, grassPrm%gddfull, & 
-            dectrPrm%lai%sddfull, evetrPrm%lai%sddfull, grassPrm%lai%sddfull, & 
+            dectrPrm%BaseT, evetrPrm%BaseT, grassPrm%BaseT ! LAI-related input
+         dectrPrm%BaseTe, evetrPrm%BaseTe, grassPrm%BaseTe, &
+            dectrPrm%gddfull, evetrPrm%gddfull, grassPrm%gddfull, &
+            dectrPrm%lai%sddfull, evetrPrm%lai%sddfull, grassPrm%lai%sddfull, &
             dectrPrm%lai%laimin, evetrPrm%lai%laimin, grassPrm%lai%laimin, &
-            dectrPrm%lai%laimax, evetrPrm%lai%laimax, grassPrm%lai%laimax, & 
+            dectrPrm%lai%laimax, evetrPrm%lai%laimax, grassPrm%lai%laimax, &
             dectrPrm%lai%laipower, evetrPrm%lai%laipower, grassPrm%lai%laipower, &
-            phenState_prev%DecidCap_id, phenState_prev%StoreDrainPrm, phenState_prev%LAI_id, phenState_prev%GDD_id, phenState_prev%SDD_id, &
+    phenState_prev%DecidCap_id, phenState_prev%StoreDrainPrm, phenState_prev%LAI_id, phenState_prev%GDD_id, phenState_prev%SDD_id, &
             phenState_prev%albDecTr_id, phenState_prev%albEveTr_id, phenState_prev%albGrass_id, phenState_prev%porosity_id, & !input
             anthroHeatState_prev%HDD_id, & !input
             hydroState_prev%state_surf, hydroState_prev%soilstore_surf, SoilStoreCap_surf, irrPrm%H_maintain, & !input
@@ -3758,7 +3758,7 @@ CONTAINS
          !    SoilMoistCap, SoilState, & !output
          !    vsmd, smd)
          CALL SUEWS_update_SoilMoist_DTS( &
-            NonWaterFraction, & 
+            NonWaterFraction, &
             pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, &
             pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, evetrPrm%soil%soilstorecap, grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, & !input
             hydroState_prev%soilstore_surf, &
