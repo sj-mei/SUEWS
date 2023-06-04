@@ -495,7 +495,8 @@ CONTAINS
             z0m = 0.1*Zh
             zdm = 0.7*Zh
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
-            zdm = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
+            ! zdm = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
+            zdm = (1 + 4.43**(-PAI)*(PAI - 1))*Zh ! changed sfr_surf(BldgSurf) to PAI to be consistent with z0m calculation, TS 04 Jun 2023
             z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
          ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
             ! these are derived using digitalised points
