@@ -308,4 +308,22 @@ class TestSuPy(TestCase):
         test_equal = smd_veg_correct == smd_veg_test
         self.assertAlmostEqual(smd_veg_correct, smd_veg_test)
 
+    # test if dailystate are written out correctly
+    def test_dailystate_meaningful(self):
+        print("\n========================================")
+        print("Testing if dailystate are written out correctly...")
+        df_state_init, df_forcing_tstep = sp.load_SampleData()
+        n_days = 10
+        df_forcing_part = df_forcing_tstep.iloc[: 288 * n_days]
+
+        # single-step results
+        df_output, df_state = sp.run_supy(
+            df_forcing_part, df_state_init
+        )
+        df_dailystate=df_output.DailyState
+        n_days_test= df_dailystate.dropna().drop_duplicates().shape[0]
+        self.assertEqual(n_days_test,n_days)
+
+
+
 
