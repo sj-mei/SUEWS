@@ -182,7 +182,7 @@ CONTAINS
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, DiagMethod, Diagnose, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
-      EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH,  FAIBldg, &
+      EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, FAIMethod, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, g_max, g_k, g_q_base, g_q_shape, g_t, g_sm, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
@@ -1055,7 +1055,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
          IF (Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
          CALL SUEWS_cal_RoughnessParameters( &
-            RoughLenMomMethod, FAImethod,&
+            RoughLenMomMethod, FAImethod, &
             sfr_surf, & !input
             surfacearea, & !input
             bldgH, EveTreeH, DecTreeH, &
