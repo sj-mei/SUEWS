@@ -218,6 +218,11 @@ class TestSuPy(TestCase):
 
         # test if common variables are all those in `df_state_init`
         test_common_all = set_var_df_init == set_var_common
+        if not test_common_all:
+            print("Variables not in `dict_rules` but in `df_state_init`:")
+            print(set_var_df_init.difference(set_var_common))
+            print("Variables not in `df_state_init` but in `dict_rules`:")
+            print(set_var_common.difference(set_var_df_init))
         self.assertTrue(test_common_all)
 
     # test ERA5 forcing generation

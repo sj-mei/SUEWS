@@ -407,8 +407,9 @@ CONTAINS
    END SUBROUTINE BoundaryLayerResistance
 
    SUBROUTINE SUEWS_cal_RoughnessParameters( &
-      RoughLenMomMethod, & ! input:
+      RoughLenMomMethod, FAImethod, & ! input:
       sfr_surf, & ! surface fractions
+      surfacearea, & ! surface area of whole grid cell
       bldgH, EveTreeH, DecTreeH, &
       porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
@@ -435,9 +436,11 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: porosity_evetr = 0.32 ! assumed porosity of evergreen trees, ref: Lai et al. (2022), http://dx.doi.org/10.2139/ssrn.4058842
 
       INTEGER, INTENT(in) :: RoughLenMomMethod
+      INTEGER, INTENT(in) :: FAImethod ! 0 = use FAI provided, 1 = use the simple scheme
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: sfr_surf ! surface fractions
 
+      REAL(KIND(1D0)), INTENT(in) :: surfaceArea ! surface area of whole grid cell
       REAL(KIND(1D0)), INTENT(in) :: bldgH
       REAL(KIND(1D0)), INTENT(in) :: EveTreeH
       REAL(KIND(1D0)), INTENT(in) :: DecTreeH
@@ -460,6 +463,11 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
       REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
 
+      ! calculated values of FAI
+      REAL(KIND(1D0)) :: FAIBldg_use
+      REAL(KIND(1D0)) :: FAIEveTree_use
+      REAL(KIND(1D0)) :: FAIDecTree_use
+
       !Total area of buildings and trees
       ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
       ! TS 19 Jun 2022: take porosity of trees into account; to be consistent with PAI calculation in RSL
@@ -477,10 +485,28 @@ CONTAINS
          Zh = DOT_PRODUCT( &
               [bldgH, EveTreeH*(1 - porosity_evetr), DecTreeH*(1 - porosity_dectr)], &
               sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/PAI
-         FAI = SUM(MERGE([FAIBldg, FAIEveTree*(1 - porosity_evetr), FAIDecTree*(1 - porosity_dectr)], &
+         IF (FAImethod == 0) THEN
+            ! use FAI provided
+            FAIBldg_use = FAIBldg
+            FAIEveTree_use = FAIEveTree*(1 - porosity_evetr)
+            FAIDecTree_use = FAIDecTree*(1 - porosity_dectr)
+
+         ELSEIF (FAImethod == 1) THEN
+            ! use the simple scheme, details in #192
+
+            ! buildings
+            FAIBldg_use = SQRT(sfr_surf(BldgSurf)/surfaceArea)*bldgH
+
+            ! evergreen trees
+            FAIEveTree_use = 1.07*sfr_surf(ConifSurf)
+
+            ! deciduous trees
+            FAIDecTree_use = 1.66*(1 - porosity_dectr)*sfr_surf(DecidSurf)
+
+         END IF
+         FAI = SUM(MERGE([FAIBldg_use, FAIEveTree_use, FAIDecTree_use], &
                          [0D0, 0D0, 0D0], &
                          sfr_surf([BldgSurf, ConifSurf, DecidSurf]) > 0))
-
          ! `1e-5` set to avoid numerical difficulty
          FAI = MAX(FAI, 1E-5)
 
