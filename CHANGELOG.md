@@ -21,3 +21,6 @@
 
 - 03 Jun 2023:
   - [bugfix] fixed a bug in writing out `DailyState` - all rows were written as zero (#190)
+
+- 05 Jun 2023:
+  - [feature] added `FAIMethod` to help determine the FAI (#192)
