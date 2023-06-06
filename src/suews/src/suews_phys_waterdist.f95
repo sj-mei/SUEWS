@@ -876,7 +876,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_update_SoilMoist
 
-
    SUBROUTINE SUEWS_update_SoilMoist_DTS( &
       NonWaterFraction, &
       sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & !input
@@ -916,7 +915,7 @@ CONTAINS
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
       SoilStoreCap = [SoilStoreCap_paved, SoilStore_bldg, SoilStore_dectr, SoilStore_evetr, SoilStore_grass, SoilStore_bsoil, SoilStore_water]
-      
+
       SoilMoistCap = 0 !Maximum capacity of soil store [mm] for whole surface
       SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
 

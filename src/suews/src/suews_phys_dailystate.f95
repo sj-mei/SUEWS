@@ -374,7 +374,7 @@ CONTAINS
       dectrGDDFull, evetrGDDFull, grassGDDFull, &
       dectrSDDFull, evetrSDDFull, grassSDDFull, &
       dectrLAIMin, evetrLAIMin, grassLAIMin, &
-      dectrLAIMax, evetrLAIMax, grassLAIMax, & 
+      dectrLAIMax, evetrLAIMax, grassLAIMax, &
       dectrLAIPower, evetrLAIPower, grassLAIPower, &
       DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, & !input
@@ -627,12 +627,12 @@ CONTAINS
       LAIType(1) = dectrLAIType
       LAIType(2) = evetrLAIType
       LAIType(3) = grassLAIType
-      
+
       BaseT_Heating(1) = BaseT_Heating_working
       BaseT_Heating(2) = BaseT_Heating_holiday
       BaseT_Cooling(1) = BaseT_Cooling_working
       BaseT_Cooling(2) = BaseT_Cooling_holiday
-      
+
       BaseT(1) = dectrBaseT
       BaseT(2) = evetrBaseT
       BaseT(3) = grassBaseT
