@@ -2511,7 +2511,7 @@ CONTAINS
       ALLOCATE (spartacusLayerPrm%alb_wall(nlayer))
       ALLOCATE (spartacusLayerPrm%emis_wall(nlayer))
       ALLOCATE (spartacusLayerPrm%roof_albedo_dir_mult_fact(nspec, nlayer))
-      ALLOCATE (spartacusLayerPrm%wall_albedo_dir_mult_fact(nspec, nlayer))
+      ALLOCATE (spartacusLayerPrm%wall_specular_frac(nspec, nlayer))
       spartacusLayerPrm%building_frac = building_frac
       spartacusLayerPrm%building_scale = building_scale
       spartacusLayerPrm%veg_frac = veg_frac
@@ -2521,7 +2521,7 @@ CONTAINS
       spartacusLayerPrm%alb_wall = alb_wall
       spartacusLayerPrm%emis_wall = emis_wall
       spartacusLayerPrm%roof_albedo_dir_mult_fact = roof_albedo_dir_mult_fact
-      spartacusLayerPrm%wall_albedo_dir_mult_fact = wall_specular_frac
+      spartacusLayerPrm%wall_specular_frac = wall_specular_frac
 
       INTEGER, INTENT(IN) :: startDLS !start of daylight saving  [DOY]
       INTEGER, INTENT(IN) :: endDLS !end of daylight saving [DOY]
@@ -3767,26 +3767,63 @@ CONTAINS
 
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
          !=================Gives the external and internal water uses per timestep=================
-         CALL SUEWS_cal_WaterUse( &
+         ! CALL SUEWS_cal_WaterUse( &
+         !    nsh_real, & ! input:
+         !    wu_m3, SurfaceArea, sfr_surf, &
+         !    IrrFracPaved, IrrFracBldgs, &
+         !    IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+         !    IrrFracBSoil, IrrFracWater, &
+         !    DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
+         !    InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
+         !    WaterUseMethod, NSH, it, imin, DLS, &
+         !    wu_surf, wu_int, wu_ext) ! output:
+         CALL SUEWS_cal_WaterUse_DTS( &
             nsh_real, & ! input:
-            wu_m3, SurfaceArea, sfr_surf, &
-            IrrFracPaved, IrrFracBldgs, &
-            IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
-            IrrFracBSoil, IrrFracWater, &
-            DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
-            InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
-            WaterUseMethod, NSH, it, imin, DLS, &
-            wu_surf, wu_int, wu_ext) ! output:
+            wu_m3, siteInfo%SurfaceArea, &
+            pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
+            pavedPrm%IrrFracPaved, bldgPrm%IrrFracBldgs, &
+            evetrPrm%IrrFracEveTr, dectrPrm%IrrFracDecTr, grassPrm%IrrFracGrass, &
+            bsoilPrm%IrrFracBSoil, waterPrm%IrrFracWater, &
+            DayofWeek_id, &
+            irrPrm%wuprofa_24hr_working, irrPrm%wuprofa_24hr_holiday, &
+            irrPrm%wuprofm_24hr_working, irrPrm%wuprofm_24hr_holiday, &
+            irrPrm%InternalWaterUse_h, &
+            anthroHeatState_next%HDD_id, hydroState_next%WUDay_id, & ! output:
+            methodPrm%WaterUseMethod, NSH, timer%it, timer%imin, DLS, &
+            wu_surf, wu_int, wu_ext) 
 
          ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
-         CALL SUEWS_cal_AnthropogenicEmission( &
-            AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
-            dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
-            FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
-            imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
-            PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-            QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
-            Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
+         ! CALL SUEWS_cal_AnthropogenicEmission( &
+         !    AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
+         !    dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
+         !    FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
+         !    imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
+         !    PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
+         !    QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
+         !    Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
+         !    Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
+
+         CALL SUEWS_cal_AnthropogenicEmission_DTS( &
+            ahemisPrm%anthroheat%AH_MIN, &
+            ahemisPrm&anthroheat%ahprof_24hr_working, ahemisPrm%anthroheat%ahprof_24hr_holiday, &
+            ahemisPrm%anthroheat%AH_SLOPE_Cooling, ahemisPrm%anthroheat%AH_SLOPE_Heating, siteInfo%CO2PointSource, & ! input:
+            dayofWeek_id, DLS, ahemisPrm%EF_umolCO2perJ, methodPrm%EmissionsMethod, ahemisPrm%EnEF_v_Jkm, &
+            ahemisPrm%FcEF_v_kgkm, ahemisPrm%FrFossilFuel_Heat, ahemisPrm%FrFossilFuel_NonHeat, &
+            anthroHeatState_next%HDD_id, &
+            ahemisPrm%HumActivity_24hr_working, ahemisPrm%HumActivity_24hr_holiday, &
+            timer%imin, timer%it, ahemisPrm%MaxFCMetab, ahemisPrm%MaxQFMetab, ahemisPrm%MinFCMetab, ahemisPrm%MinQFMetab, &
+            ahemisPrm%anthroheat%popdensdaytime_working, ahemisPrm%anthroheat%popdensdaytime_holiday, ahemisPrm%anthroheat%popdensnighttime, &
+            ahemisPrm%anthroheat%popprof_24hr_working, ahemisPrm%anthroheat%popprof_24hr_holiday, &
+            QF, &
+            ahemisPrm%anthroheat%qf0_beu_working, ahemisPrm%anthroheat%qf0_beu_holiday, &
+            ahemisPrm%anthroheat%qf_a_working, ahemisPrm%anthroheat%qf_a_holiday, &
+            ahemisPrm%anthroheat%qf_b_working, ahemisPrm%anthroheat%qf_b_holiday, &
+            ahemisPrm%anthroheat%qf_c_working, ahemisPrm%anthroheat%qf_c_holiday, &
+            forcing%QF_obs, QF_SAHP, siteInfo%SurfaceArea, 
+            ahemisPrm%anthroheat%baset_cooling_working, ahemisPrm%anthroheat%baset_cooling_holiday, &
+            ahemisPrm%anthroheat%baset_heating_working, ahemisPrm%anthroheat%baset_heating_holiday, &
+            forcing%Temp_C, ahemisPrm%TrafficRate, ahemisPrm%TrafficUnits, &
+            ahemisPrm%TraffProf_24hr_working, ahemisPrm%TraffProf_24hr_holiday, &
             Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
          ! ========================================================================
@@ -3797,31 +3834,60 @@ CONTAINS
          !    snowFrac_prev=-999
          !    print *, 'snowFrac_prev=', snowFrac_prev
          ! endif
-         CALL SUEWS_cal_Qn( &
-            StorageHeatMethod, NetRadiationMethod, SnowUse, & !input
-            tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
-            Diagnose, ldown_obs, fcld_obs, &
-            dectime, ZENITH_deg, Ts_iter, kdown, Temp_C, avRH, ea_hPa, qn1_obs, &
-            SnowAlb_prev, snowFrac_prev, DiagQN, &
-            NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, &
-            sfr_surf, sfr_roof, sfr_wall, &
-            tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
-            emis, alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
-            LAI_id, & !input
-            n_vegetation_region_urban, &
-            n_stream_sw_urban, n_stream_lw_urban, &
-            sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
-            veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
-            veg_fsd_const, veg_contact_fraction_const, &
-            ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
-            height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
-            alb_roof, emis_roof, alb_wall, emis_wall, &
-            roof_albedo_dir_mult_fact, wall_specular_frac, &
-            alb_next, ldown, fcld, & !output
+         ! CALL SUEWS_cal_Qn( &
+         !    StorageHeatMethod, NetRadiationMethod, SnowUse, & !input
+         !    tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
+         !    Diagnose, ldown_obs, fcld_obs, &
+         !    dectime, ZENITH_deg, Ts_iter, kdown, Temp_C, avRH, ea_hPa, qn1_obs, &
+         !    SnowAlb_prev, snowFrac_prev, DiagQN, &
+         !    NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, &
+         !    sfr_surf, sfr_roof, sfr_wall, &
+         !    tsfc_out_surf, tsfc_out_roof, tsfc_out_wall, &
+         !    emis, alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &
+         !    LAI_id, & !input
+         !    n_vegetation_region_urban, &
+         !    n_stream_sw_urban, n_stream_lw_urban, &
+         !    sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+         !    veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+         !    veg_fsd_const, veg_contact_fraction_const, &
+         !    ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+         !    height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+         !    alb_roof, emis_roof, alb_wall, emis_wall, &
+         !    roof_albedo_dir_mult_fact, wall_specular_frac, &
+         !    alb_next, ldown, fcld, & !output
+         !    QN_surf, QN_roof, QN_wall, &
+         !    qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
+         !    qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
+         !    albedo_snow, SnowAlb_next, &
+         !    dataOutLineSPARTACUS)
+
+         CALL SUEWS_cal_Qn_DTS( &
+            methodPrm%StorageHeatMethod, methodPrm%NetRadiationMethod, methodPrm%SnowUse, & !input
+            timer%tstep, nlayer, snowState_prev%SnowPack, snowPrm%tau_a, snowPrm%tau_f, snowPrm%SnowAlbMax, snowPrm%SnowAlbMin, &
+            methodPrm%Diagnose, forcing%ldown, forcing%fcld, &
+            dectime, ZENITH_deg, Ts_iter, forcing%kdown, forcing%Temp_C, forcing%RH, ea_hPa, qn1_obs, &
+            SnowAlb_prev, snowState_prev%snowFrac, DiagQN, &
+            siteInfo%NARP_TRANS_SITE, snowPrm%NARP_EMIS_SNOW, snowState_prev%IceFrac, &
+            pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
+            sfr_roof, sfr_wall, &
+            heatState_out%tsfc_surf, heatState_out%tsfc_roof, heatState_out%tsfc_wall, &
+            pavedPrm%emis, bldgPrm%emis, dectrPrm%emis, evetrPrm%emis, grassPrm%emis, bsoilPrm%emis, waterPrm%emis, &
+            phenState_prev%alb, phenState_next%albDecTr_id, phenState_next%albEveTr_id, phenState_next%albGrass_id, &
+            phenState%LAI_id, & !input
+            spartacusPrm%n_vegetation_region_urban, &
+            spartacusPrm%n_stream_sw_urban, spartacusPrm%n_stream_lw_urban, &
+            spartacusPrm%sw_dn_direct_frac, spartacusPrm%air_ext_sw, spartacusPrm%air_ssa_sw, &
+            spartacusPrm%veg_ssa_sw, spartacusPrm%air_ext_lw, spartacusPrm%air_ssa_lw, spartacusPrm%veg_ssa_lw, &
+            spartacusPrm%veg_fsd_const, spartacusPrm%veg_contact_fraction_const, &
+            spartacusPrm%ground_albedo_dir_mult_fact, methodPrm%use_sw_direct_albedo, & !input
+            spartacusPrm%height, spartacusLayerPrm%building_frac, spartacusLayerPrm%veg_frac, spartacusLayerPrm%building_scale, spartacusLayerPrm%veg_scale, & !input: SPARTACUS
+            spartacusLayerPrm%alb_roof, spartacusLayerPrm%emis_roof, spartacusLayerPrm%alb_wall, spartacusLayerPrm%emis_wall, &
+            spartacusLayerPrm%roof_albedo_dir_mult_fact, spartacusLayerPrm%wall_specular_frac, &
+            phenState_next%alb, ldown, fcld, & !output
             QN_surf, QN_roof, QN_wall, &
             qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
             qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            albedo_snow, SnowAlb_next, &
+            albedo_snow, snowState_next%SnowAlb, &
             dataOutLineSPARTACUS)
 
          ! IF (qn < -300) THEN
@@ -4479,6 +4545,175 @@ CONTAINS
       END IF
 
    END SUBROUTINE SUEWS_cal_AnthropogenicEmission
+
+   SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS( &
+      AH_MIN, &
+      AHProf_24hr_working, AHProf_24hr_holiday, &
+      AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
+      dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
+      FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, &
+      HumActivity_24hr_working, HumActivity_24hr_holiday, &
+      imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
+      PopDensDaytime_working, PopDensDaytime_holiday, PopDensNighttime, &
+      PopProf_24hr_working, PopProf_24hr_holiday, QF, &
+      QF0_BEU_working, QF0_BEU_holiday, & 
+      Qf_A_working, Qf_A_holiday, & 
+      Qf_B_working, Qf_B_holiday, & 
+      Qf_C_working, Qf_C_holiday, &
+      QF_obs, QF_SAHP, SurfaceArea, &
+      BaseT_Cooling_working, BaseT_Cooling_holiday, & 
+      BaseT_Heating_working, BaseT_Heating_holiday, &
+      Temp_C, TrafficRate, TrafficUnits, &
+      TraffProf_24hr_working, TraffProf_24hr_holiday, &
+      Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
+
+      IMPLICIT NONE
+
+      ! INTEGER, INTENT(in)::Diagnose
+      INTEGER, INTENT(in) :: DLS ! daylighting savings
+      INTEGER, INTENT(in) :: EmissionsMethod !0 - Use values in met forcing file, or default QF;1 - Method according to Loridan et al. (2011) : SAHP; 2 - Method according to Jarvi et al. (2011)   : SAHP_2
+      ! INTEGER, INTENT(in) :: id
+      INTEGER, INTENT(in) :: it ! hour [H]
+      INTEGER, INTENT(in) :: imin ! minutes [M]
+      ! INTEGER, INTENT(in) :: nsh
+      INTEGER, DIMENSION(3), INTENT(in) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
+
+      REAL(KIND(1D0)), DIMENSION(6, 2), INTENT(in) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
+
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: AH_MIN ! miniumum anthropogenic heat flux [W m-2]
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: AH_SLOPE_Heating ! heating slope for the anthropogenic heat flux calculation [W m-2 K-1]
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: AH_SLOPE_Cooling ! cooling slope for the anthropogenic heat flux calculation [W m-2 K-1]
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: FcEF_v_kgkm ! CO2 Emission factor [kg km-1]
+      ! REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::NumCapita
+
+      REAL(KIND(1D0)), INTENT(in) :: PopDensDaytime_working
+      REAL(KIND(1D0)), INTENT(in) :: PopDensDaytime_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: PopDensDaytime ! Daytime population density [people ha-1] (i.e. workers)
+
+      REAL(KIND(1D0)), INTENT(in) :: QF0_BEU_working
+      REAL(KIND(1D0)), INTENT(in) :: QF0_BEU_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: QF0_BEU ! Fraction of base value coming from buildings [-]
+      REAL(KIND(1D0)), INTENT(in) :: Qf_A_working
+      REAL(KIND(1D0)), INTENT(in) :: Qf_A_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: Qf_A ! Base value for QF [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: Qf_B_working
+      REAL(KIND(1D0)), INTENT(in) :: Qf_B_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: Qf_B ! Parameter related to heating degree days [W m-2 K-1 (Cap ha-1 )-1]
+      REAL(KIND(1D0)), INTENT(in) :: Qf_C_working
+      REAL(KIND(1D0)), INTENT(in) :: Qf_C_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: Qf_C ! Parameter related to cooling degree days [W m-2 K-1 (Cap ha-1 )-1]
+
+      REAL(KIND(1D0)), INTENT(in) :: BaseT_Heating_working
+      REAL(KIND(1D0)), INTENT(in) :: BaseT_Heating_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Heating ! base temperatrue for heating degree day [degC]
+      REAL(KIND(1D0)), INTENT(in) :: BaseT_Cooling_working
+      REAL(KIND(1D0)), INTENT(in) :: BaseT_Cooling_holiday
+      REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Cooling ! base temperature for cooling degree day [degC]
+
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: TrafficRate ! Traffic rate [veh km m-2 s-1]
+
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: AHProf_24hr_working
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: AHProf_24hr_holiday
+      REAL(KIND(1D0)), DIMENSION(0:23, 2) :: AHProf_24hr ! diurnal profile of anthropogenic heat flux (AVERAGE of the multipliers is equal to 1) [-]
+      
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: HumActivity_24hr_working
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: HumActivity_24hr_holiday
+      REAL(KIND(1D0)), DIMENSION(0:23, 2) :: HumActivity_24hr ! diurnal profile of human activity [-]
+      
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: TraffProf_24hr_working
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: TraffProf_24hr_holiday
+      REAL(KIND(1D0)), DIMENSION(0:23, 2) :: TraffProf_24hr ! diurnal profile of traffic activity calculation[-]
+
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: PopProf_24hr_working
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: PopProf_24hr_holiday
+      REAL(KIND(1D0)), DIMENSION(0:23, 2) :: PopProf_24hr ! diurnal profile of population [-]
+
+      REAL(KIND(1D0)), INTENT(in) :: CO2PointSource ! point source [kgC day-1]
+      REAL(KIND(1D0)), INTENT(in) :: EF_umolCO2perJ !co2 emission factor [umol J-1]
+      REAL(KIND(1D0)), INTENT(in) :: EnEF_v_Jkm ! energy emission factor [J K m-1]
+      REAL(KIND(1D0)), INTENT(in) :: FrFossilFuel_Heat ! fraction of fossil fuel heat [-]
+      REAL(KIND(1D0)), INTENT(in) :: FrFossilFuel_NonHeat ! fraction of fossil fuel non heat [-]
+      REAL(KIND(1D0)), INTENT(in) :: MaxFCMetab ! maximum FC metabolism [umol m-2 s-1]
+      REAL(KIND(1D0)), INTENT(in) :: MaxQFMetab ! maximum QF Metabolism [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: MinFCMetab ! minimum QF metabolism [umol m-2 s-1]
+      REAL(KIND(1D0)), INTENT(in) :: MinQFMetab ! minimum FC metabolism [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: PopDensNighttime ! nighttime population density [ha-1] (i.e. residents)
+      REAL(KIND(1D0)), INTENT(in) :: QF_obs ! observed anthropogenic heat flux from met forcing file when EmissionMethod=0 [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: Temp_C ! air temperature [degC]
+      REAL(KIND(1D0)), INTENT(in) :: TrafficUnits ! traffic units choice [-]
+
+      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr_surf
+      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac
+      REAL(KIND(1D0)), INTENT(IN) :: SurfaceArea !surface area [m-2]
+
+      REAL(KIND(1D0)), INTENT(out) :: Fc_anthro ! anthropogenic co2 flux  [umol m-2 s-1]
+      REAL(KIND(1D0)), INTENT(out) :: Fc_build ! co2 emission from building component [umol m-2 s-1]
+      REAL(KIND(1D0)), INTENT(out) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
+      REAL(KIND(1D0)), INTENT(out) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
+      REAL(KIND(1D0)), INTENT(out) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
+      REAL(KIND(1D0)), INTENT(out) :: QF ! anthropogeic heat flux when EmissionMethod = 0 [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
+
+      INTEGER, PARAMETER :: notUsedI = -999
+      REAL(KIND(1D0)), PARAMETER :: notUsed = -999
+
+      PopDensDaytime(1) = PopDensDaytime_working
+      PopDensDaytime(2) = PopDensDaytime_holiday
+      QF0_BEU(1) = QF0_BEU_working
+      QF0_BEU(2) = QF0_BEU_holiday
+      Qf_A(1) = Qf_A_working
+      Qf_A(2) = Qf_A_holiday
+      Qf_B(1) = Qf_B_working
+      Qf_B(2) = Qf_B_holiday
+      Qf_C(1) = Qf_C_working
+      Qf_C(2) = Qf_C_holiday
+      BaseT_Heating(1) = BaseT_Heating_working
+      BaseT_Heating(2) = BaseT_Heating_holiday
+      BaseT_Cooling(1) = BaseT_Cooling_working
+      BaseT_Cooling(2) = BaseT_Cooling_holiday
+
+      AHProf_24hr(:, 1) = AHProf_24hr_working
+      AHProf_24hr(:, 2) = AHProf_24hr_holiday
+      HumActivity_24hr(:, 1) = HumActivity_24hr_working
+      HumActivity_24hr(:, 2) = HumActivity_24hr_holiday
+      PopProf_24hr(:, 1) = PopProf_24hr_working
+      PopProf_24hr(:, 2) = PopProf_24hr_holiday
+      TraffProf_24hr(:, 1) = TraffProf_24hr_working
+      TraffProf_24hr(:, 2) = TraffProf_24hr_holiday
+
+      IF (EmissionsMethod == 0) THEN ! use observed qf
+         qf = QF_obs
+      ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
+         CALL AnthropogenicEmissions( &
+            CO2PointSource, EmissionsMethod, &
+            it, imin, DLS, DayofWeek_id, &
+            EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
+            FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
+            MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
+            PopDensDaytime, PopDensNighttime, &
+            Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
+            AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
+            BaseT_Heating, BaseT_Cooling, &
+            TrafficRate, &
+            QF0_BEU, QF_SAHP, &
+            Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
+            AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr, SurfaceArea)
+
+      ELSE
+         CALL ErrorHint(73, 'RunControl.nml:EmissionsMethod unusable', notUsed, notUsed, EmissionsMethod)
+      END IF
+
+      IF (EmissionsMethod >= 1) qf = QF_SAHP
+
+      IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
+         Fc_anthro = 0
+         Fc_metab = 0
+         Fc_traff = 0
+         Fc_build = 0
+         Fc_point = 0
+      END IF
+
+   END SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS
 ! ================================================================================
 
 !==============BIOGENIC CO2 flux==================================================
@@ -4866,6 +5101,279 @@ CONTAINS
       SnowAlb_next = SnowAlb
 
    END SUBROUTINE SUEWS_cal_Qn
+
+   SUBROUTINE SUEWS_cal_Qn_DTS( &
+      storageheatmethod, NetRadiationMethod, SnowUse, & !input
+      tstep, nlayer, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
+      Diagnose, ldown_obs, fcld_obs, &
+      dectime, ZENITH_deg, Tsurf_0, kdown, Tair_C, avRH, ea_hPa, qn1_obs, &
+      SnowAlb_prev, snowFrac_prev, DiagQN, &
+      NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, &
+      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, &
+      sfr_roof, sfr_wall, &
+      tsfc_surf, tsfc_roof, tsfc_wall, &
+      emis_paved, emis_bldg, emis_dectr, emis_evetr, emis_grass, emis_bsoil, emis_water, &
+      alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &
+      LAI_id, & !input
+      n_vegetation_region_urban, &
+      n_stream_sw_urban, n_stream_lw_urban, & !input: SPARTACUS
+      sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+      veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+      veg_fsd_const, veg_contact_fraction_const, &
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input: SPARTACUS
+      height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
+      alb_roof, emis_roof, alb_wall, emis_wall, &
+      roof_albedo_dir_mult_fact, wall_specular_frac, &
+      alb_next, ldown, fcld, & !output
+      qn_surf, qn_roof, qn_wall, &
+      qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
+      qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
+      albedo_snow, SnowAlb_next, &
+      dataOutLineSPARTACUS)
+      USE NARP_MODULE, ONLY: RadMethod, NARP
+      USE SPARTACUS_MODULE, ONLY: SPARTACUS
+
+      IMPLICIT NONE
+      ! INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
+      ! INTEGER,PARAMETER ::ConifSurf = 3 !New surface classes: Grass = 5th/7 surfaces
+      ! INTEGER,PARAMETER ::DecidSurf = 4 !New surface classes: Grass = 5th/7 surfaces
+      ! INTEGER,PARAMETER ::GrassSurf = 5
+
+      INTEGER, INTENT(in) :: storageheatmethod !Determines method for calculating storage heat flux ΔQS
+      INTEGER, INTENT(in) :: NetRadiationMethod !Determines method for calculation of radiation fluxes
+      INTEGER, INTENT(in) :: SnowUse !Determines whether the snow part of the model runs; 0-Snow calculations are not performed.1-Snow calculations are performed.
+      INTEGER, INTENT(in) :: Diagnose
+      INTEGER, INTENT(in) :: DiagQN
+      INTEGER, INTENT(in) :: tstep !timestep [s]
+      INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
+
+      ! REAL(KIND(1D0)), INTENT(in) :: snowFrac_obs
+      REAL(KIND(1D0)), INTENT(in) :: ldown_obs !observed incoming longwave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: fcld_obs !observed cloud fraction [-]
+      REAL(KIND(1D0)), INTENT(in) :: dectime !decimal time [-]
+      REAL(KIND(1D0)), INTENT(in) :: ZENITH_deg !solar zenith angle in degree [°]
+      REAL(KIND(1D0)), INTENT(in) :: Tsurf_0
+      REAL(KIND(1D0)), INTENT(in) :: kdown !incoming shortwave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: Tair_C !Air temperature in degree C [degC]
+      REAL(KIND(1D0)), INTENT(in) :: avRH !average relative humidity (%) in each layer [-]
+      REAL(KIND(1D0)), INTENT(in) :: ea_hPa !vapor pressure [hPa]
+      REAL(KIND(1D0)), INTENT(in) :: qn1_obs !observed net wall-wave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: SnowAlb_prev ! snow albedo at previous timestep [-]
+      REAL(KIND(1D0)), INTENT(in) :: NARP_EMIS_SNOW ! snow emissivity in NARP model [-]
+      REAL(KIND(1D0)), INTENT(in) :: NARP_TRANS_SITE !Atmospheric transmissivity for NARP [-]
+      REAL(KIND(1D0)), INTENT(in) :: tau_a, tau_f, SnowAlbMax, SnowAlbMin !tau_a=Time constant for snow albedo aging in cold snow [-], tau_f=Time constant for snow albedo aging in melting snow [-], SnowAlbMax=maxmimum snow albedo, SnowAlbMin=minimum snow albedo
+
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAI_id !LAI for day of year [m2 m-3]
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac !fraction of ice in snowpack [-]
+      
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_water
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
+      
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf ! surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !  surface fraction of roofs at each surfaces [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof ! roof surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall ! surface fraction of walls at each surfaces [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall ! wall surface temperature [degC]
+
+      REAL(KIND(1D0)), INTENT(IN) :: emis_paved
+      REAL(KIND(1D0)), INTENT(IN) :: emis_bldg
+      REAL(KIND(1D0)), INTENT(IN) :: emis_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: emis_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: emis_grass
+      REAL(KIND(1D0)), INTENT(IN) :: emis_bsoil
+      REAL(KIND(1D0)), INTENT(IN) :: emis_water
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: emis ! Effective surface emissivity. [-]
+
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: alb ! surface albedo [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: alb_prev ! input surface albedo [-]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: alb_next ! output surface albedo [-]
+      REAL(KIND(1D0)), INTENT(in) :: albDecTr_id !!albedo for deciduous trees on day of year [-]
+      ! REAL(KIND(1d0)), INTENT(in)  ::DecidCap_id
+      REAL(KIND(1D0)), INTENT(in) :: albEveTr_id !albedo for evergreen trees and shrubs on day of year [-]
+      REAL(KIND(1D0)), INTENT(in) :: albGrass_id !albedo for grass on day of year [-]
+
+      ! REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPack_prev !initial snow water equivalent on each land cover [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: snowFrac_prev !initial snow fraction [-]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: snowFrac_next
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac ! snow fractions of each surface [-]
+
+      REAL(KIND(1D0)), INTENT(out) :: ldown ! output incoming longwave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: fcld ! estimated cloud fraction [-](used only for emissivity estimate)
+      REAL(KIND(1D0)), INTENT(out) :: qn !  output net all-wave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: qn_snowfree !output net all-wave radiation for snow free surface [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: qn_snow ! output net all-wave radiation for snowpack [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: kclear !output clear sky incoming shortwave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: kup !output outgoing shortwave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: lup !output outgoing longwave radiation [W m-2]
+      REAL(KIND(1D0)), INTENT(out) :: tsurf !output surface temperature [degC]
+      REAL(KIND(1D0)), INTENT(out) :: albedo_snow !estimated albedo of snow [-]
+      REAL(KIND(1D0)), INTENT(out) :: SnowAlb_next !output snow albedo [-]
+      REAL(KIND(1D0)) :: albedo_snowfree !estimated albedo for snow-free surface [-]
+      REAL(KIND(1D0)) :: SnowAlb ! updated snow albedo [-]
+
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_surf !net all-wave radiation on each surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind_snow !snowpack surface temperature [C]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: tsurf_ind !snow-free surface temperature [C]
+
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind !outgoing longwave radiation from observation [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind !outgoing shortwave radiation from observation [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind !net all-wave radiation from observation [W m-2]
+
+      REAL(KIND(1D0)), PARAMETER :: NAN = -999
+      INTEGER :: NetRadiationMethod_use
+      INTEGER :: AlbedoChoice, ldown_option
+
+      ! SPARTACUS output variables
+      ! REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
+      ! REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
+      ! REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
+      !                                                roof_in_lw_spc
+      ! REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
+      ! REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
+      !                                                roof_in_sw_spc
+
+      ! SPARTACUS input variables
+      INTEGER, INTENT(IN) :: n_vegetation_region_urban, &
+                             n_stream_sw_urban, n_stream_lw_urban
+      REAL(KIND(1D0)), INTENT(IN) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+                                     veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+                                     veg_fsd_const, veg_contact_fraction_const, &
+                                     ground_albedo_dir_mult_fact
+      LOGICAL, INTENT(IN) :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
+
+      REAL(KIND(1D0)), DIMENSION(nlayer + 1), INTENT(IN) :: height ! height in spartacus [m]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_frac ! building fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_frac !vegetation fraction [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: building_scale ! diameter of buildings [[m]. The only L method for buildings is Eq. 19 Hogan et al. 2018.
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: veg_scale ! scale of tree crowns [m]. Using the default use_symmetric_vegetation_scale_urban=.TRUE. so that Eq. 20 Hogan et al. 2018 is used for L.
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_roof !albedo of roof [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_roof ! emissivity of roof [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: alb_wall !albedo of wall [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: emis_wall ! emissivity of wall [-]
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: roof_albedo_dir_mult_fact !Ratio of the direct and diffuse albedo of the roof [-]
+      REAL(KIND(1D0)), DIMENSION(nspec, nlayer), INTENT(IN) :: wall_specular_frac ! Fraction of wall reflection that is specular [-]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_wall ! net all-wave radiation on the wall [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_roof ! net all-wave radiation on the roof [W m-2]
+
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
+
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+      emis = [emis_paved, emis_bldg, emis_dectr, emis_evetr, emis_grass, emis_bsoil, emis_water]
+      ! translate values
+      alb = alb_prev
+
+      ! update snow albedo
+      SnowAlb = update_snow_albedo( &
+                tstep, SnowPack_prev, SnowAlb_prev, Tair_C, &
+                tau_a, tau_f, SnowAlbMax, SnowAlbMin)
+
+      CALL RadMethod( &
+         NetRadiationMethod, & !input
+         SnowUse, & !input
+         NetRadiationMethod_use, AlbedoChoice, ldown_option) !output
+
+      SnowFrac = snowFrac_prev
+      IF (NetRadiationMethod_use > 0) THEN
+
+         ! IF (SnowUse==0) SnowFrac=snowFrac_obs
+         IF (SnowUse == 0) SnowFrac = 0
+
+         IF (ldown_option == 2) THEN !observed cloud fraction provided as forcing
+            fcld = fcld_obs
+         END IF
+
+         !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
+
+         ! Update variables that change daily and represent seasonal variability
+         alb(DecidSurf) = albDecTr_id !Change deciduous albedo
+         ! StoreDrainPrm(6, DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
+         ! Change EveTr and Grass albedo too
+         alb(ConifSurf) = albEveTr_id
+         alb(GrassSurf) = albGrass_id
+
+         IF (Diagnose == 1) WRITE (*, *) 'Calling NARP...'
+         IF (Diagqn == 1) WRITE (*, *) 'NetRadiationMethodX:', NetRadiationMethod_use
+         IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:', AlbedoChoice
+
+         ! TODO: TS 14 Feb 2022, ESTM development:
+         ! here we use uniform `tsurf_0` for all land covers, which should be distinguished in future developments
+
+         CALL NARP( &
+            storageheatmethod, & !input:
+            nsurf, sfr_surf, tsfc_surf, SnowFrac, alb, emis, IceFrac, & !
+            NARP_TRANS_SITE, NARP_EMIS_SNOW, &
+            dectime, ZENITH_deg, tsurf_0, kdown, Tair_C, avRH, ea_hPa, qn1_obs, ldown_obs, &
+            SnowAlb, &
+            AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
+            qn_surf, & ! output:
+            qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, & ! output:
+            qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
+
+         IF (Diagqn == 1) WRITE (*, *) 'Calling SPARTACUS:'
+         IF (NetRadiationMethod > 1000) THEN
+            ! TODO: TS 14 Feb 2022, ESTM development: introduce facet surface temperatures
+            CALL SPARTACUS( &
+               Diagqn, & !input:
+               sfr_surf, zenith_deg, nlayer, & !input:
+               tsfc_surf, tsfc_roof, tsfc_wall, &
+               kdown, ldown, Tair_C, alb, emis, LAI_id, &
+               n_vegetation_region_urban, &
+               n_stream_sw_urban, n_stream_lw_urban, &
+               sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
+               veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+               veg_fsd_const, veg_contact_fraction_const, &
+               ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
+               height, building_frac, veg_frac, sfr_roof, sfr_wall, &
+               building_scale, veg_scale, & !input:
+               alb_roof, emis_roof, alb_wall, emis_wall, &
+               roof_albedo_dir_mult_fact, wall_specular_frac, &
+               qn, kup, lup, qn_roof, qn_wall, qn_surf, & !output:
+               dataOutLineSPARTACUS)
+         ELSE
+            qn_roof = qn_surf(BldgSurf)
+            qn_wall = qn_surf(BldgSurf)
+         END IF
+
+      ELSE ! NetRadiationMethod==0
+         ! SnowFrac = snowFrac_obs
+         qn = qn1_obs
+         qn_snowfree = qn1_obs
+         qn_snow = qn1_obs
+         ldown = NAN
+         lup = NAN
+         kup = NAN
+         tsurf = NAN
+         lup_ind = NAN
+         kup_ind = NAN
+         tsurf_ind = NAN
+         qn1_ind = NAN
+         Fcld = NAN
+         qn_surf = qn
+         qn_roof = qn_surf(BldgSurf)
+         qn_wall = qn_surf(BldgSurf)
+      END IF
+      ! snowFrac_next = SnowFrac
+
+      IF (ldown_option == 1) THEN
+         Fcld = NAN
+      END IF
+
+      ! translate values
+      alb_next = alb
+      SnowAlb_next = SnowAlb
+
+   END SUBROUTINE SUEWS_cal_Qn_DTS
 !========================================================================
 
 !=============storage heat flux=========================================
