@@ -1549,7 +1549,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: WUProfM_24hr_working
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: WUProfM_24hr_holiday
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: WUProfM_24hr !Manual water use profiles at hourly scales
-      
+
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
       REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
