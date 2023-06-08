@@ -481,7 +481,7 @@ CONTAINS
 
       !------------------------------------------------------------------------------
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
-      IF (PAI /= 0) THEN
+      IF (PAI > 0.02) THEN ! 0.02 is a threshold value, below which we assume no buildings and trees, TS 06 Jun 2023
          Zh = DOT_PRODUCT( &
               [bldgH, EveTreeH*(1 - porosity_evetr), DecTreeH*(1 - porosity_dectr)], &
               sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/PAI
