@@ -1048,7 +1048,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_SoilState
 
-
    SUBROUTINE SUEWS_cal_SoilState_DTS( &
       SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
       SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
@@ -1068,7 +1067,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: surf_chang_per_tstep
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id !Soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstoreOld !Soil moisture of each surface type from previous timestep [mm]
-      
+
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
       REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
@@ -1489,7 +1488,7 @@ CONTAINS
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
       SoilStoreCap = [SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water]
-      SoilDepth = [SoilDepth_paved, SoilDepth_bldg, SoilDepth_dectr, SoilDepth_evetr, SoilDepth_grass, SoilDepth_bsoil, SoilDepth_water]
+  SoilDepth = [SoilDepth_paved, SoilDepth_bldg, SoilDepth_dectr, SoilDepth_evetr, SoilDepth_grass, SoilDepth_bsoil, SoilDepth_water]
       SatHydraulicConduct = [SatHydraulicConduct_paved, SatHydraulicConduct_bldg, SatHydraulicConduct_dectr, SatHydraulicConduct_evetr, SatHydraulicConduct_grass, SatHydraulicConduct_bsoil, SatHydraulicConduct_water]
 
       DO is = 1, nsurf - 1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)

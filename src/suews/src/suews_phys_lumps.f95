@@ -239,7 +239,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
       REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(in) :: LAI_id_prev ! LAI(id-1,iv), LAI at the beginning of today
-      
+
       REAL(KNID(1D0)), INTENT(IN) :: LAImax_dectr
       REAL(KNID(1D0)), INTENT(IN) :: LAImax_evetr
       REAL(KNID(1D0)), INTENT(IN) :: LAImax_grass
