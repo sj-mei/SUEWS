@@ -3778,7 +3778,7 @@ CONTAINS
             irrPrm%InternalWaterUse_h, &
             anthroHeatState_next%HDD_id, hydroState_next%WUDay_id, & ! output:
             methodPrm%WaterUseMethod, NSH, timer%it, timer%imin, DLS, &
-            wu_surf, wu_int, wu_ext) 
+            wu_surf, wu_int, wu_ext)
 
          ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
          ! CALL SUEWS_cal_AnthropogenicEmission( &
@@ -3800,15 +3800,15 @@ CONTAINS
             anthroHeatState_next%HDD_id, &
             ahemisPrm%HumActivity_24hr_working, ahemisPrm%HumActivity_24hr_holiday, &
             timer%imin, timer%it, ahemisPrm%MaxFCMetab, ahemisPrm%MaxQFMetab, ahemisPrm%MinFCMetab, ahemisPrm%MinQFMetab, &
-            ahemisPrm%anthroheat%popdensdaytime_working, ahemisPrm%anthroheat%popdensdaytime_holiday, ahemisPrm%anthroheat%popdensnighttime, &
+  ahemisPrm%anthroheat%popdensdaytime_working, ahemisPrm%anthroheat%popdensdaytime_holiday, ahemisPrm%anthroheat%popdensnighttime, &
             ahemisPrm%anthroheat%popprof_24hr_working, ahemisPrm%anthroheat%popprof_24hr_holiday, &
             QF, &
             ahemisPrm%anthroheat%qf0_beu_working, ahemisPrm%anthroheat%qf0_beu_holiday, &
             ahemisPrm%anthroheat%qf_a_working, ahemisPrm%anthroheat%qf_a_holiday, &
             ahemisPrm%anthroheat%qf_b_working, ahemisPrm%anthroheat%qf_b_holiday, &
             ahemisPrm%anthroheat%qf_c_working, ahemisPrm%anthroheat%qf_c_holiday, &
-            forcing%QF_obs, QF_SAHP, siteInfo%SurfaceArea, 
-            ahemisPrm%anthroheat%baset_cooling_working, ahemisPrm%anthroheat%baset_cooling_holiday, &
+            forcing%QF_obs, QF_SAHP, siteInfo%SurfaceArea,
+         ahemisPrm%anthroheat%baset_cooling_working, ahemisPrm%anthroheat%baset_cooling_holiday, &
             ahemisPrm%anthroheat%baset_heating_working, ahemisPrm%anthroheat%baset_heating_holiday, &
             forcing%Temp_C, ahemisPrm%TrafficRate, ahemisPrm%TrafficUnits, &
             ahemisPrm%TraffProf_24hr_working, ahemisPrm%TraffProf_24hr_holiday, &
@@ -4812,12 +4812,12 @@ CONTAINS
       imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
       PopDensDaytime_working, PopDensDaytime_holiday, PopDensNighttime, &
       PopProf_24hr_working, PopProf_24hr_holiday, QF, &
-      QF0_BEU_working, QF0_BEU_holiday, & 
-      Qf_A_working, Qf_A_holiday, & 
-      Qf_B_working, Qf_B_holiday, & 
+      QF0_BEU_working, QF0_BEU_holiday, &
+      Qf_A_working, Qf_A_holiday, &
+      Qf_B_working, Qf_B_holiday, &
       Qf_C_working, Qf_C_holiday, &
       QF_obs, QF_SAHP, SurfaceArea, &
-      BaseT_Cooling_working, BaseT_Cooling_holiday, & 
+      BaseT_Cooling_working, BaseT_Cooling_holiday, &
       BaseT_Heating_working, BaseT_Heating_holiday, &
       Temp_C, TrafficRate, TrafficUnits, &
       TraffProf_24hr_working, TraffProf_24hr_holiday, &
@@ -4871,11 +4871,11 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: AHProf_24hr_working
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: AHProf_24hr_holiday
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: AHProf_24hr ! diurnal profile of anthropogenic heat flux (AVERAGE of the multipliers is equal to 1) [-]
-      
+
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: HumActivity_24hr_working
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: HumActivity_24hr_holiday
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: HumActivity_24hr ! diurnal profile of human activity [-]
-      
+
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: TraffProf_24hr_working
       REAL(KIND(1D0)), DIMENSION(0:23), INTENT(in) :: TraffProf_24hr_holiday
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: TraffProf_24hr ! diurnal profile of traffic activity calculation[-]
@@ -5631,7 +5631,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(in) :: LAI_id !LAI for day of year [m2 m-3]
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: IceFrac !fraction of ice in snowpack [-]
-      
+
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
       REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
@@ -5640,7 +5640,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
-      
+
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf ! surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !  surface fraction of roofs at each surfaces [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof ! roof surface temperature [degC]
