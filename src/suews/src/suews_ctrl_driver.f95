@@ -6981,102 +6981,54 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
       WaterDist(1, 1) = WaterDist_paved_toPaved
-      WRITE (*, *) 'WaterDist(1,1)', WaterDist(1, 1)
       WaterDist(1, 2) = WaterDist_paved_toBldg
-      WRITE (*, *) 'WaterDist(1,2)', WaterDist(1, 2)
       WaterDist(1, 3) = WaterDist_paved_toDectr
-      WRITE (*, *) 'WaterDist(1,3)', WaterDist(1, 3)
       WaterDist(1, 4) = WaterDist_paved_toEvetr
-      WRITE (*, *) 'WaterDist(1,4)', WaterDist(1, 4)
       WaterDist(1, 5) = WaterDist_paved_toGrass
-      WRITE (*, *) 'WaterDist(1,5)', WaterDist(1, 5)
       WaterDist(1, 6) = WaterDist_paved_toBSoil
-      WRITE (*, *) 'WaterDist(1,6)', WaterDist(1, 6)
       WaterDist(1, 7) = WaterDist_paved_toWater
-      WRITE (*, *) 'WaterDist(1,7)', WaterDist(1, 7)
       WaterDist(1, 8) = WaterDist_paved_toSoilstore
-      WRITE (*, *) 'WaterDist(1,8)', WaterDist(1, 8)
       WaterDist(2, 1) = WaterDist_bldg_toPaved
-      WRITE (*, *) 'WaterDist(2,1)', WaterDist(2, 1)
       WaterDist(2, 2) = WaterDist_bldg_toBldg
-      WRITE (*, *) 'WaterDist(2,2)', WaterDist(2, 2)
       WaterDist(2, 3) = WaterDist_bldg_toDectr
-      WRITE (*, *) 'WaterDist(2,3)', WaterDist(2, 3)
       WaterDist(2, 4) = WaterDist_bldg_toEvetr
-      WRITE (*, *) 'WaterDist(2,4)', WaterDist(2, 4)
       WaterDist(2, 5) = WaterDist_bldg_toGrass
-      WRITE (*, *) 'WaterDist(2,5)', WaterDist(2, 5)
       WaterDist(2, 6) = WaterDist_bldg_toBSoil
-      WRITE (*, *) 'WaterDist(2,6)', WaterDist(2, 6)
       WaterDist(2, 7) = WaterDist_bldg_toWater
-      WRITE (*, *) 'WaterDist(2,7)', WaterDist(2, 7)
       WaterDist(2, 8) = WaterDist_bldg_toSoilstore
-      WRITE (*, *) 'WaterDist(2,8)', WaterDist(2, 8)
       WaterDist(3, 1) = WaterDist_dectr_toPaved
-      WRITE (*, *) 'WaterDist(3,1)', WaterDist(3, 1)
       WaterDist(3, 2) = WaterDist_dectr_toBldg
-      WRITE (*, *) 'WaterDist(3,2)', WaterDist(3, 2)
       WaterDist(3, 3) = WaterDist_dectr_toDectr
-      WRITE (*, *) 'WaterDist(3,3)', WaterDist(3, 3)
       WaterDist(3, 4) = WaterDist_dectr_toEvetr
-      WRITE (*, *) 'WaterDist(3,4)', WaterDist(3, 4)
       WaterDist(3, 5) = WaterDist_dectr_toGrass
-      WRITE (*, *) 'WaterDist(3,5)', WaterDist(3, 5)
       WaterDist(3, 6) = WaterDist_dectr_toBSoil
-      WRITE (*, *) 'WaterDist(3,6)', WaterDist(3, 6)
       WaterDist(3, 7) = WaterDist_dectr_toWater
-      WRITE (*, *) 'WaterDist(3,7)', WaterDist(3, 7)
       WaterDist(3, 8) = WaterDist_dectr_toSoilstore
-      WRITE (*, *) 'WaterDist(3,8)', WaterDist(3, 8)
       WaterDist(4, 1) = WaterDist_evetr_toPaved
-      WRITE (*, *) 'WaterDist(4,1)', WaterDist(4, 1)
       WaterDist(4, 2) = WaterDist_evetr_toBldg
-      WRITE (*, *) 'WaterDist(4,2)', WaterDist(4, 2)
       WaterDist(4, 3) = WaterDist_evetr_toDectr
-      WRITE (*, *) 'WaterDist(4,3)', WaterDist(4, 3)
       WaterDist(4, 4) = WaterDist_evetr_toEvetr
-      WRITE (*, *) 'WaterDist(4,4)', WaterDist(4, 4)
       WaterDist(4, 5) = WaterDist_evetr_toGrass
-      WRITE (*, *) 'WaterDist(4,5)', WaterDist(4, 5)
       WaterDist(4, 6) = WaterDist_evetr_toBSoil
-      WRITE (*, *) 'WaterDist(4,6)', WaterDist(4, 6)
       WaterDist(4, 7) = WaterDist_evetr_toWater
-      WRITE (*, *) 'WaterDist(4,7)', WaterDist(4, 7)
       WaterDist(4, 8) = WaterDist_evetr_toSoilstore
-      WRITE (*, *) 'WaterDist(4,8)', WaterDist(4, 8)
       WaterDist(5, 1) = WaterDist_grass_toPaved
-      WRITE (*, *) 'WaterDist(5,1)', WaterDist(5, 1)
       WaterDist(5, 2) = WaterDist_grass_toBldg
-      WRITE (*, *) 'WaterDist(5,2)', WaterDist(5, 2)
       WaterDist(5, 3) = WaterDist_grass_toDectr
-      WRITE (*, *) 'WaterDist(5,3)', WaterDist(5, 3)
       WaterDist(5, 4) = WaterDist_grass_toEvetr
-      WRITE (*, *) 'WaterDist(5,4)', WaterDist(5, 4)
       WaterDist(5, 5) = WaterDist_grass_toGrass
-      WRITE (*, *) 'WaterDist(5,5)', WaterDist(5, 5)
       WaterDist(5, 6) = WaterDist_grass_toBSoil
-      WRITE (*, *) 'WaterDist(5,6)', WaterDist(5, 6)
       WaterDist(5, 7) = WaterDist_grass_toWater
-      WRITE (*, *) 'WaterDist(5,7)', WaterDist(5, 7)
       WaterDist(5, 8) = WaterDist_grass_toSoilstore
-      WRITE (*, *) 'WaterDist(5,8)', WaterDist(5, 8)
 
       WaterDist(6, 1) = WaterDist_bsoil_toPaved
-      WRITE (*, *) 'WaterDist(6,1)', WaterDist(6, 1)
       WaterDist(6, 2) = WaterDist_bsoil_toBldg
-      WRITE (*, *) 'WaterDist(6,2)', WaterDist(6, 2)
       WaterDist(6, 3) = WaterDist_bsoil_toDectr
-      WRITE (*, *) 'WaterDist(6,3)', WaterDist(6, 3)
       WaterDist(6, 4) = WaterDist_bsoil_toEvetr
-      WRITE (*, *) 'WaterDist(6,4)', WaterDist(6, 4)
       WaterDist(6, 5) = WaterDist_bsoil_toGrass
-      WRITE (*, *) 'WaterDist(6,5)', WaterDist(6, 5)
       WaterDist(6, 6) = WaterDist_bsoil_toBSoil
-      WRITE (*, *) 'WaterDist(6,6)', WaterDist(6, 6)
       WaterDist(6, 7) = WaterDist_bsoil_toWater
-      WRITE (*, *) 'WaterDist(6,7)', WaterDist(6, 7)
       WaterDist(6, 8) = WaterDist_bsoil_toSoilStore
-      WRITE (*, *) 'WaterDist(6,8)', WaterDist(6, 8)
 
       ! Retain previous surface state_id and soil moisture state_id
       ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
