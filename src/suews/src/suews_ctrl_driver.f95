@@ -2269,7 +2269,7 @@ CONTAINS
       ! dataOutLineESTMExt, &
       ! dataOutLineDailyState) !output
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       ! input variables
       REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: Ts5mindata_ir !surface temperature input data[degC]
@@ -2630,7 +2630,7 @@ CONTAINS
       REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
       REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
       REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
-      REAL(KIND(1D0)) :: AdditionalWater !!Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
+      REAL(KIND(1D0)) :: AdditionalWater = 0 !!Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
       REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
       REAL(KIND(1D0)) :: azimuth !solar azimuth [angle]
       REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
@@ -3726,8 +3726,8 @@ CONTAINS
          !==============main calculation start=======================
 
          !==============surface roughness calculation=======================
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
-         IF (Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
+         IF (methodPrm%Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
          ! CALL SUEWS_cal_RoughnessParameters( &
          !    RoughLenMomMethod, sfr_surf, & !input
          !    bldgH, EveTreeH, DecTreeH, &
@@ -3745,7 +3745,7 @@ CONTAINS
             zH, z0m, zdm, ZZD)
 
          !=================Calculate sun position=================
-         IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
          ! CALL NARP_cal_SunPosition( &
          !    REAL(iy, KIND(1D0)), & !input:
          !    dectime - tstep/2/86400, & ! sun position at middle of timestep before
@@ -3758,7 +3758,7 @@ CONTAINS
             azimuth, zenith_deg) !output:
 
          !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
          ! CALL SUEWS_cal_DailyState( &
          !    iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, & !input
          !    Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
@@ -3824,7 +3824,7 @@ CONTAINS
             hydroState_next%WUDay_id) !output
 
          !=================Calculation of density and other water related parameters=================
-         IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
          ! CALL cal_AtmMoist( &
          !    Temp_C, Press_hPa, avRh, dectime, & ! input:
          !    lv_J_kg, lvS_J_kg, & ! output:
@@ -3835,7 +3835,7 @@ CONTAINS
             es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
 
          !======== Calculate soil moisture =========
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
          ! CALL SUEWS_update_SoilMoist( &
          !    NonWaterFraction, & !input
          !    SoilStoreCap_surf, sfr_surf, soilstore_surf_prev, &
@@ -3851,7 +3851,7 @@ CONTAINS
             SoilMoistCap, SoilState, & !output
             vsmd, smd)
 
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
          !=================Gives the external and internal water uses per timestep=================
          ! CALL SUEWS_cal_WaterUse( &
          !    nsh_real, & ! input:
@@ -4141,6 +4141,7 @@ CONTAINS
          END IF
 
          !============= calculate water balance =============
+         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
          ! CALL SUEWS_cal_Water( &
          !    Diagnose, & !input
          !    SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
@@ -4149,6 +4150,7 @@ CONTAINS
          !    drain_surf, frac_water2runoff, &
          !    AdditionalWater, runoffPipes, runoff_per_interval, &
          !    AddWater)
+         methodPrm%Diagnose = 1
          CALL SUEWS_cal_Water_DTS( &
             methodPrm%Diagnose, & !input
             methodPrm%SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
@@ -4182,6 +4184,7 @@ CONTAINS
          !============= calculate water balance end =============
 
          !===============Resistance Calculations=======================
+         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
          ! CALL SUEWS_cal_Resistance( &
          !    StabilityMethod, & !input:
          !    Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, SnowUse, &
@@ -4196,7 +4199,6 @@ CONTAINS
          !    g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
          !    UStar, TStar, L_mod, & !output
          !    zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
-
          CALL SUEWS_cal_Resistance_DTS( &
             methodPrm%StabilityMethod, & !input:
             methodPrm%Diagnose, AerodynamicResistanceMethod, methodPrm%RoughLenHeatMethod, methodPrm%SnowUse, &
@@ -4287,6 +4289,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
             ! N.B.: snow-related calculations end here.
             !===================================================
          ELSE
+            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QE...'
             !======== Evaporation and surface state_id for snow-free conditions ========
             ! CALL SUEWS_cal_QE( &
             !    Diagnose, storageheatmethod, nlayer, & !input
@@ -4979,7 +4982,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       TraffProf_24hr_working, TraffProf_24hr_holiday, &
       Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       ! INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in) :: DLS ! daylighting savings
@@ -5300,7 +5303,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       TH, TL, vsmd, xsmd, &
       Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       REAL(KIND(1D0)), INTENT(in) :: alpha_bioCO2_dectr
       REAL(KIND(1D0)), INTENT(in) :: alpha_bioCO2_evetr
@@ -5772,7 +5775,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
       ! INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
       ! INTEGER,PARAMETER ::ConifSurf = 3 !New surface classes: Grass = 5th/7 surfaces
       ! INTEGER,PARAMETER ::DecidSurf = 4 !New surface classes: Grass = 5th/7 surfaces
@@ -6295,7 +6298,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       temp_out_wall, QS_wall, & !output
       temp_out_surf, QS_surf) !output
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       INTEGER, INTENT(in) :: StorageHeatMethod !heat storage calculation option [-]
       INTEGER, INTENT(in) :: OHMIncQF !Determines whether the storage heat flux calculation uses Q* or ( Q* +QF)
@@ -6878,7 +6881,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       AdditionalWater, runoffPipes, runoff_per_interval, &
       AddWater)
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
       ! INTEGER,PARAMETER :: nsurf=7! number of surface types
       ! INTEGER,PARAMETER ::WaterSurf = 7
       INTEGER, INTENT(in) :: Diagnose
@@ -6967,47 +6970,113 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       REAL(KIND(1D0)), INTENT(out) :: runoff_per_interval !run-off at each time interval [mm]
       INTEGER :: is
 
+      AdditionalWater = 0.0
+      AdditionalWater = addPipes + addImpervious + addVeg + addWaterBody ![mm]
+
+      WRITE (*, *) 'AdditionalWater', AdditionalWater
+      WRITE (*, *) 'addPipes', addPipes
+      WRITE (*, *) 'addImpervious', addImpervious
+      WRITE (*, *) 'addVeg', addVeg
+      WRITE (*, *) 'addWaterBody', addWaterBody
+
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
       WaterDist(1, 1) = WaterDist_paved_toPaved
+      WRITE (*, *) 'WaterDist(1,1)', WaterDist(1, 1)
       WaterDist(1, 2) = WaterDist_paved_toBldg
+      WRITE (*, *) 'WaterDist(1,2)', WaterDist(1, 2)
       WaterDist(1, 3) = WaterDist_paved_toDectr
+      WRITE (*, *) 'WaterDist(1,3)', WaterDist(1, 3)
       WaterDist(1, 4) = WaterDist_paved_toEvetr
+      WRITE (*, *) 'WaterDist(1,4)', WaterDist(1, 4)
       WaterDist(1, 5) = WaterDist_paved_toGrass
+      WRITE (*, *) 'WaterDist(1,5)', WaterDist(1, 5)
       WaterDist(1, 6) = WaterDist_paved_toBSoil
+      WRITE (*, *) 'WaterDist(1,6)', WaterDist(1, 6)
       WaterDist(1, 7) = WaterDist_paved_toWater
+      WRITE (*, *) 'WaterDist(1,7)', WaterDist(1, 7)
       WaterDist(1, 8) = WaterDist_paved_toSoilstore
+      WRITE (*, *) 'WaterDist(1,8)', WaterDist(1, 8)
       WaterDist(2, 1) = WaterDist_bldg_toPaved
+      WRITE (*, *) 'WaterDist(2,1)', WaterDist(2, 1)
       WaterDist(2, 2) = WaterDist_bldg_toBldg
+      WRITE (*, *) 'WaterDist(2,2)', WaterDist(2, 2)
       WaterDist(2, 3) = WaterDist_bldg_toDectr
+      WRITE (*, *) 'WaterDist(2,3)', WaterDist(2, 3)
       WaterDist(2, 4) = WaterDist_bldg_toEvetr
+      WRITE (*, *) 'WaterDist(2,4)', WaterDist(2, 4)
       WaterDist(2, 5) = WaterDist_bldg_toGrass
+      WRITE (*, *) 'WaterDist(2,5)', WaterDist(2, 5)
       WaterDist(2, 6) = WaterDist_bldg_toBSoil
+      WRITE (*, *) 'WaterDist(2,6)', WaterDist(2, 6)
       WaterDist(2, 7) = WaterDist_bldg_toWater
+      WRITE (*, *) 'WaterDist(2,7)', WaterDist(2, 7)
       WaterDist(2, 8) = WaterDist_bldg_toSoilstore
+      WRITE (*, *) 'WaterDist(2,8)', WaterDist(2, 8)
       WaterDist(3, 1) = WaterDist_dectr_toPaved
+      WRITE (*, *) 'WaterDist(3,1)', WaterDist(3, 1)
       WaterDist(3, 2) = WaterDist_dectr_toBldg
+      WRITE (*, *) 'WaterDist(3,2)', WaterDist(3, 2)
       WaterDist(3, 3) = WaterDist_dectr_toDectr
+      WRITE (*, *) 'WaterDist(3,3)', WaterDist(3, 3)
       WaterDist(3, 4) = WaterDist_dectr_toEvetr
+      WRITE (*, *) 'WaterDist(3,4)', WaterDist(3, 4)
       WaterDist(3, 5) = WaterDist_dectr_toGrass
+      WRITE (*, *) 'WaterDist(3,5)', WaterDist(3, 5)
       WaterDist(3, 6) = WaterDist_dectr_toBSoil
+      WRITE (*, *) 'WaterDist(3,6)', WaterDist(3, 6)
       WaterDist(3, 7) = WaterDist_dectr_toWater
+      WRITE (*, *) 'WaterDist(3,7)', WaterDist(3, 7)
       WaterDist(3, 8) = WaterDist_dectr_toSoilstore
+      WRITE (*, *) 'WaterDist(3,8)', WaterDist(3, 8)
       WaterDist(4, 1) = WaterDist_evetr_toPaved
+      WRITE (*, *) 'WaterDist(4,1)', WaterDist(4, 1)
       WaterDist(4, 2) = WaterDist_evetr_toBldg
+      WRITE (*, *) 'WaterDist(4,2)', WaterDist(4, 2)
       WaterDist(4, 3) = WaterDist_evetr_toDectr
+      WRITE (*, *) 'WaterDist(4,3)', WaterDist(4, 3)
       WaterDist(4, 4) = WaterDist_evetr_toEvetr
+      WRITE (*, *) 'WaterDist(4,4)', WaterDist(4, 4)
       WaterDist(4, 5) = WaterDist_evetr_toGrass
+      WRITE (*, *) 'WaterDist(4,5)', WaterDist(4, 5)
       WaterDist(4, 6) = WaterDist_evetr_toBSoil
+      WRITE (*, *) 'WaterDist(4,6)', WaterDist(4, 6)
       WaterDist(4, 7) = WaterDist_evetr_toWater
+      WRITE (*, *) 'WaterDist(4,7)', WaterDist(4, 7)
       WaterDist(4, 8) = WaterDist_evetr_toSoilstore
+      WRITE (*, *) 'WaterDist(4,8)', WaterDist(4, 8)
       WaterDist(5, 1) = WaterDist_grass_toPaved
+      WRITE (*, *) 'WaterDist(5,1)', WaterDist(5, 1)
       WaterDist(5, 2) = WaterDist_grass_toBldg
+      WRITE (*, *) 'WaterDist(5,2)', WaterDist(5, 2)
       WaterDist(5, 3) = WaterDist_grass_toDectr
+      WRITE (*, *) 'WaterDist(5,3)', WaterDist(5, 3)
       WaterDist(5, 4) = WaterDist_grass_toEvetr
+      WRITE (*, *) 'WaterDist(5,4)', WaterDist(5, 4)
       WaterDist(5, 5) = WaterDist_grass_toGrass
+      WRITE (*, *) 'WaterDist(5,5)', WaterDist(5, 5)
       WaterDist(5, 6) = WaterDist_grass_toBSoil
+      WRITE (*, *) 'WaterDist(5,6)', WaterDist(5, 6)
       WaterDist(5, 7) = WaterDist_grass_toWater
+      WRITE (*, *) 'WaterDist(5,7)', WaterDist(5, 7)
       WaterDist(5, 8) = WaterDist_grass_toSoilstore
+      WRITE (*, *) 'WaterDist(5,8)', WaterDist(5, 8)
+
+      WaterDist(6, 1) = WaterDist_bsoil_toPaved
+      WRITE (*, *) 'WaterDist(6,1)', WaterDist(6, 1)
+      WaterDist(6, 2) = WaterDist_bsoil_toBldg
+      WRITE (*, *) 'WaterDist(6,2)', WaterDist(6, 2)
+      WaterDist(6, 3) = WaterDist_bsoil_toDectr
+      WRITE (*, *) 'WaterDist(6,3)', WaterDist(6, 3)
+      WaterDist(6, 4) = WaterDist_bsoil_toEvetr
+      WRITE (*, *) 'WaterDist(6,4)', WaterDist(6, 4)
+      WaterDist(6, 5) = WaterDist_bsoil_toGrass
+      WRITE (*, *) 'WaterDist(6,5)', WaterDist(6, 5)
+      WaterDist(6, 6) = WaterDist_bsoil_toBSoil
+      WRITE (*, *) 'WaterDist(6,6)', WaterDist(6, 6)
+      WaterDist(6, 7) = WaterDist_bsoil_toWater
+      WRITE (*, *) 'WaterDist(6,7)', WaterDist(6, 7)
+      WaterDist(6, 8) = WaterDist_bsoil_toSoilStore
+      WRITE (*, *) 'WaterDist(6,8)', WaterDist(6, 8)
 
       ! Retain previous surface state_id and soil moisture state_id
       ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
@@ -7019,7 +7088,9 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       !call RunoffFromGrid(GridFromFrac)  !!Need to code between-grid water transfer
 
       ! Sum water coming from other grids (these are expressed as depths over the whole surface)
-      AdditionalWater = addPipes + addImpervious + addVeg + addWaterBody ![mm]
+      WRITE (*, *) 'addWaterBody', addWaterBody
+
+      WRITE (*, *) 'AdditionalWater', AdditionalWater
 
       ! Initialise runoff in pipes
       runoffPipes = addPipes !Water flowing in pipes from other grids. QUESTION: No need for scaling?
@@ -7505,7 +7576,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       runoffAGveg, runoffAGimpervious, rss_surf, &
       dataOutLineSnow)
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       INTEGER, INTENT(in) :: Diagnose
       INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
@@ -8262,7 +8333,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       runoffWaterBody_grid, &
       runoffAGveg_grid, runoffAGimpervious_grid, rss_surf)
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       INTEGER, INTENT(in) :: Diagnose
       INTEGER, INTENT(in) :: storageheatmethod !Determines method for calculating storage heat flux ΔQS [-]
@@ -8706,7 +8777,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       RA, &
       qh, qh_residual, qh_resist, & !output
       qh_resist_surf, qh_resist_roof, qh_resist_wall)
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       INTEGER, INTENT(in) :: QHMethod ! option for QH calculation: 1, residual; 2, resistance-based
       INTEGER, INTENT(in) :: storageheatmethod !Determines method for calculating storage heat flux ΔQS [-]
@@ -8967,7 +9038,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       UStar, TStar, L_mod, & !output
       zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
 
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       INTEGER, INTENT(in) :: StabilityMethod !method to calculate atmospheric stability [-]
       INTEGER, INTENT(in) :: Diagnose
@@ -9630,7 +9701,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       building_frac, building_scale, height, & !input
       vegfraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
       sfr_roof, sfr_wall) ! output
-      ! IMPLICIT NONE
+      IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: StorageHeatMethod ! method for storage heat calculations [-]
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for net radiation calculations [-]
@@ -9987,7 +10058,8 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       ! input variables
       INTEGER, INTENT(IN) :: nlayer ! number of vertical layers in urban canyon
       ! INTEGER, INTENT(IN) :: AerodynamicResistanceMethod !method to calculate RA [-]
-      INTEGER, INTENT(IN) :: Diagnose
+      ! INTEGER, INTENT(IN) :: Diagnose
+      INTEGER, INTENT(INOUT) :: Diagnose
       ! INTEGER, INTENT(IN) :: DiagQN
       ! INTEGER, INTENT(IN) :: DiagQS
       INTEGER, INTENT(IN) :: startDLS !start of daylight saving  [DOY]
@@ -10357,6 +10429,8 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
       TYPE(output_block), INTENT(OUT) :: output_block_suews
 
       !   allocate output arrays
+
+      Diagnose = 1
 
       DO ir = 1, len_sim, 1
          ! =============================================================================
