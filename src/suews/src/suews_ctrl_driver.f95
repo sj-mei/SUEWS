@@ -478,7 +478,7 @@ MODULE SUEWS_Driver
       TYPE(SOIL_PRM) :: soil
       REAL(KIND(1D0)) :: statelimit
       REAL(KIND(1D0)) :: irrfracwater
-      REAL(KIND(1D0)) :: wetthresh    ! ******* dummy variable *******
+      REAL(KIND(1D0)) :: wetthresh ! ******* dummy variable *******
       REAL(KIND(1D0)) :: flowchange ! special term in water
    END TYPE LC_WATER_PRM
 
@@ -2347,7 +2347,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: RainMaxRes !maximum water bucket reservoir. Used for LUMPS surface wetness control. [mm]
       REAL(KIND(1D0)), INTENT(IN) :: DRAINRT !Drainage rate of the water bucket [mm hr-1]
       INTEGER, INTENT(IN) :: veg_type !Defines how vegetation is calculated for LUMPS [-]
-      
+
       ! ---ehc-related variables
       TYPE(EHC_PRM) :: ehcPrm
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(IN) :: SoilStoreCap_roof !Capacity of soil store for roof [mm]
@@ -2930,7 +2930,7 @@ CONTAINS
       siteInfo%narp_trans_site = NARP_TRANS_SITE
       siteInfo%CO2PointSource = CO2PointSource
       siteInfo%flowchange = FlowChange
-      
+
       forcing%kdown = kdown
       forcing%ldown = ldown_obs
       forcing%RH = avRh
@@ -2947,7 +2947,7 @@ CONTAINS
       forcing%qf_obs = qf_obs
       forcing%Tair = Tair_av
       forcing%temp_c = Temp_C
-      
+
       timer%id = id
       timer%imin = imin
       timer%isec = isec
@@ -3050,7 +3050,7 @@ CONTAINS
       spartacusLayerPrm%emis_wall = emis_wall
       spartacusLayerPrm%roof_albedo_dir_mult_fact = roof_albedo_dir_mult_fact
       spartacusLayerPrm%wall_specular_frac = wall_specular_frac
-   
+
       ahemisPrm%startdls = startDLS
       ahemisPrm%enddls = endDLS
       ahemisPrm%anthroheat%qf0_beu_working = QF0_BEU(1)
@@ -3120,7 +3120,7 @@ CONTAINS
       irrPrm%wuprofa_24hr_holiday = WUProfA_24hr(:, 2)
       irrPrm%wuprofm_24hr_working = WUProfM_24hr(:, 1)
       irrPrm%wuprofm_24hr_holiday = WUProfM_24hr(:, 2)
-      
+
       snowPrm%crwmax = CRWmax
       snowPrm%crwmin = CRWmin
       snowPrm%narp_emis_snow = NARP_EMIS_SNOW
@@ -3800,13 +3800,13 @@ CONTAINS
             irrPrm%Ie_a, irrPrm%Ie_m, &
             irrPrm%irr_daywater%monday_percent, irrPrm%irr_daywater%tuesday_percent, &
             irrPrm%irr_daywater%wednesday_percent, irrPrm%irr_daywater%thursday_percent, &
-            irrPrm%irr_daywater%friday_percent, irrPrm%irr_daywater%saturday_percent,  &
-            irrPrm%irr_daywater%sunday_percent, & 
+            irrPrm%irr_daywater%friday_percent, irrPrm%irr_daywater%saturday_percent, &
+            irrPrm%irr_daywater%sunday_percent, &
             irrPrm%irr_daywater%monday_flag, irrPrm%irr_daywater%tuesday_flag, irrPrm%irr_daywater%wednesday_flag, &
             irrPrm%irr_daywater%thursday_flag, irrPrm%irr_daywater%friday_flag, irrPrm%irr_daywater%saturday_flag, &
             irrPrm%irr_daywater%sunday_flag, &
-            dectrPrm%lai%BaseT, evetrPrm%lai%BaseT, grassPrm%lai%BaseT, &! LAI-related input
-         dectrPrm%lai%BaseTe, evetrPrm%lai%BaseTe, grassPrm%lai%BaseTe, &
+            dectrPrm%lai%BaseT, evetrPrm%lai%BaseT, grassPrm%lai%BaseT, & ! LAI-related input
+            dectrPrm%lai%BaseTe, evetrPrm%lai%BaseTe, grassPrm%lai%BaseTe, &
             dectrPrm%lai%gddfull, evetrPrm%lai%gddfull, grassPrm%lai%gddfull, &
             dectrPrm%lai%sddfull, evetrPrm%lai%sddfull, grassPrm%lai%sddfull, &
             dectrPrm%lai%laimin, evetrPrm%lai%laimin, grassPrm%lai%laimin, &
@@ -3892,7 +3892,7 @@ CONTAINS
          CALL SUEWS_cal_AnthropogenicEmission_DTS( &
             ahemisPrm%anthroheat%ah_min_working, ahemisPrm%anthroheat%ah_min_holiday, &
             ahemisPrm%anthroheat%ahprof_24hr_working, ahemisPrm%anthroheat%ahprof_24hr_holiday, &
-            ahemisPrm%anthroheat%ah_slope_cooling_working, ahemisPrm%anthroheat%ah_slope_cooling_holiday, & 
+            ahemisPrm%anthroheat%ah_slope_cooling_working, ahemisPrm%anthroheat%ah_slope_cooling_holiday, &
             ahemisPrm%anthroheat%ah_slope_heating_working, ahemisPrm%anthroheat%ah_slope_heating_holiday, &
             siteInfo%CO2PointSource, & ! input:
             dayofWeek_id, DLS, ahemisPrm%EF_umolCO2perJ, methodPrm%EmissionsMethod, ahemisPrm%EnEF_v_Jkm, &
@@ -3908,9 +3908,9 @@ CONTAINS
             ahemisPrm%anthroheat%qf_b_working, ahemisPrm%anthroheat%qf_b_holiday, &
             ahemisPrm%anthroheat%qf_c_working, ahemisPrm%anthroheat%qf_c_holiday, &
             forcing%QF_obs, QF_SAHP, siteInfo%SurfaceArea, &
-         ahemisPrm%anthroheat%baset_cooling_working, ahemisPrm%anthroheat%baset_cooling_holiday, &
+            ahemisPrm%anthroheat%baset_cooling_working, ahemisPrm%anthroheat%baset_cooling_holiday, &
             ahemisPrm%anthroheat%baset_heating_working, ahemisPrm%anthroheat%baset_heating_holiday, &
-            forcing%Temp_C, ahemisPrm%TrafficRate_working, ahemisPrm%TrafficRate_holiday, & 
+            forcing%Temp_C, ahemisPrm%TrafficRate_working, ahemisPrm%TrafficRate_holiday, &
             ahemisPrm%TrafficUnits, &
             ahemisPrm%TraffProf_24hr_working, ahemisPrm%TraffProf_24hr_holiday, &
             Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
@@ -4037,7 +4037,7 @@ CONTAINS
             timer%id, timer%tstep, timer%dt_since_start, methodPrm%Diagnose, &
             nlayer, &
             Qg_surf, Qg_roof, Qg_wall, &
-            heatState_out%tsfc_roof, ehcPrm%tin_roof, & 
+            heatState_out%tsfc_roof, ehcPrm%tin_roof, &
             heatState_in%temp_roof, ehcPrm%k_roof, &
             ehcPrm%cp_roof, ehcPrm%dz_roof, sfr_roof, & !input
             heatState_out%tsfc_wall, ehcPrm%tin_wall, &
@@ -4153,7 +4153,7 @@ CONTAINS
             methodPrm%Diagnose, & !input
             methodPrm%SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
             hydroState_prev%state_surf, &
-         pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
+            pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
             phenState_next%StoreDrainPrm, &
             pavedPrm%waterdist%to_paved, pavedPrm%waterdist%to_bldg, pavedPrm%waterdist%to_dectr, &
             pavedPrm%waterdist%to_evetr, pavedPrm%waterdist%to_grass, pavedPrm%waterdist%to_bsoil, pavedPrm%waterdist%to_water, &
@@ -4201,7 +4201,7 @@ CONTAINS
             methodPrm%StabilityMethod, & !input:
             methodPrm%Diagnose, AerodynamicResistanceMethod, methodPrm%RoughLenHeatMethod, methodPrm%SnowUse, &
             timer%id, timer%it, &
-         gsModel, &
+            gsModel, &
             methodPrm%SMDMethod, &
             avdens, avcp, QH_Init, zzd, z0m, zdm, &
             forcing%U, forcing%Temp_C, VegFraction, forcing%kdown, &
@@ -4500,16 +4500,16 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
          ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
          IF (methodPrm%diagnose == 1) PRINT *, &
             'tsfc_surf abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_surf - tsfc0_out_surf)), &
-                                       MAXLOC(ABS(heatState_out%tsfc_surf - tsfc0_out_surf))
+            MAXLOC(ABS(heatState_out%tsfc_surf - tsfc0_out_surf))
          dif_tsfc_iter = MAXVAL(ABS(heatState_out%tsfc_surf - tsfc0_out_surf))
          IF (methodPrm%StorageHeatMethod == 5) THEN
             IF (methodPrm%diagnose == 1) PRINT *, &
                'tsfc_roof abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_roof - tsfc0_out_roof)), &
-                                       MAXLOC(ABS(heatState_out%tsfc_roof - tsfc0_out_roof))
+               MAXLOC(ABS(heatState_out%tsfc_roof - tsfc0_out_roof))
             dif_tsfc_iter = MAX(MAXVAL(ABS(heatState_out%tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
             IF (methodPrm%diagnose == 1) PRINT *, &
                'tsfc_wall abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_wall - tsfc0_out_wall)), &
-                                       MAXLOC(ABS(heatState_out%tsfc_wall - tsfc0_out_wall))
+               MAXLOC(ABS(heatState_out%tsfc_wall - tsfc0_out_wall))
             dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - heatState_out%tsfc_wall)), dif_tsfc_iter)
          END IF
 
@@ -4588,7 +4588,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
          methodPrm%DiagMethod, &
          zH, z0m, zdm, z0v, &
          L_MOD, &
-      pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
+         pavedPrm%sfr, bldgPrm%sfr, dectrPrm%sfr, evetrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
          FAI, PAI, &
          methodPrm%StabilityMethod, RA_h, &
          avcp, lv_J_kg, avdens, &
@@ -4611,7 +4611,7 @@ snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, snow
          forcing%kdown, forcing%RH, &
          dectrPrm%bioco2%beta_bioCO2, evetrPrm%bioco2%beta_bioCO2, grassPrm%bioco2%beta_bioCO2, &
          dectrPrm%bioco2%beta_enh_bioco2, evetrPrm%bioco2%beta_enh_bioco2, grassPrm%bioco2%beta_enh_bioco2, &
-dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
+         dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
          conductancePrm%g_max, conductancePrm%g_k, conductancePrm%g_q_base, conductancePrm%g_q_shape, &
          conductancePrm%g_t, conductancePrm%g_sm, gfunc, conductancePrm%gsmodel, &
          timer%id, timer%it, conductancePrm%Kmax, &
@@ -4744,7 +4744,7 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, &
          sfr_surf, &
-      smd, smd_nsurf, snowState%SnowAlb, SnowRemoval, &
+         smd, smd_nsurf, snowState%SnowAlb, SnowRemoval, &
          hydroState%state_surf, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
          tot_chang_per_tstep, tsurf, UStar, &
          wu_surf, &
@@ -4959,8 +4959,8 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
    SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS( &
       AH_MIN_working, AH_MIN_holiday, &
       AHProf_24hr_working, AHProf_24hr_holiday, &
-      AH_SLOPE_Cooling_working, AH_SLOPE_Cooling_holiday, & 
-      AH_SLOPE_Heating_working, AH_SLOPE_Heating_holiday, & 
+      AH_SLOPE_Cooling_working, AH_SLOPE_Cooling_holiday, &
+      AH_SLOPE_Heating_working, AH_SLOPE_Heating_holiday, &
       CO2PointSource, & ! input:
       dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
       FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, &
@@ -6273,7 +6273,7 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
       OHM_threshWD_evetr, OHM_threshWD_grass, OHM_threshWD_bsoil, OHM_threshWD_water, &
       soilstore_id, &
       SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, &
-      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, & 
+      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
       state_id, SnowUse, SnowFrac, DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
@@ -6446,7 +6446,7 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall ! thickness of each layer in wall [m]
       ! input arrays: standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tin_surf !deep bottom temperature for each surface [degC]
-      
+
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
       REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
@@ -6455,7 +6455,7 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
-      
+
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: temp_in_surf ! temperature at inner interfaces of of each surface [degC]
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: k_surf ! thermal conductivity of v [W m-1 K]
       REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(in) :: cp_surf ! Heat capacity of each surface [J m-3 K-1]
@@ -6526,7 +6526,7 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
       OHM_coef(3, 2, 3) = OHM_coef_dectr(3)%summer_dry
       OHM_coef(3, 3, 3) = OHM_coef_dectr(3)%winter_wet
       OHM_coef(3, 4, 3) = OHM_coef_dectr(3)%winter_dry
-      
+
       OHM_coef(4, 1, 1) = OHM_coef_evetr(1)%summer_wet
       OHM_coef(4, 2, 1) = OHM_coef_evetr(1)%summer_dry
       OHM_coef(4, 3, 1) = OHM_coef_evetr(1)%winter_wet
@@ -7726,9 +7726,9 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(out) :: dataOutLineSnow
 
       WetThresh_surf = [WetThresh_paved, WetThresh_bldg, WetThresh_dectr, WetThresh_evetr, &
-                           WetThresh_grass, WetThresh_bsoil, WetThresh_water]
+                        WetThresh_grass, WetThresh_bsoil, WetThresh_water]
       SoilStoreCap = [SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, &
-                           SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water]
+                      SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water]
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
       SnowProf_24hr(:, 1) = SnowProf_24hr_working
       SnowProf_24hr(:, 2) = SnowProf_24hr_holiday
@@ -8467,11 +8467,11 @@ dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
       StateLimit_surf = [StateLimit_paved, StateLimit_bldg, StateLimit_dectr, StateLimit_evetr, &
-                           StateLimit_grass, StateLimit_bsoil, StateLimit_water]
+                         StateLimit_grass, StateLimit_bsoil, StateLimit_water]
       SoilStoreCap_surf = [SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, &
                            SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water]
       WetThresh_surf = [WetThresh_paved, WetThresh_bldg, WetThresh_dectr, WetThresh_evetr, &
-                           WetThresh_grass, WetThresh_bsoil, WetThresh_water]
+                        WetThresh_grass, WetThresh_bsoil, WetThresh_water]
 
       ! runoff_per_interval = runoff_per_interval_in
       state_surf_out = state_surf_in
