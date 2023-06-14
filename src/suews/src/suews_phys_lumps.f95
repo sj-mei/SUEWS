@@ -240,14 +240,14 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(in) :: LAI_id_prev ! LAI(id-1,iv), LAI at the beginning of today
 
-      REAL(KNID(1D0)), INTENT(IN) :: LAImax_dectr
-      REAL(KNID(1D0)), INTENT(IN) :: LAImax_evetr
-      REAL(KNID(1D0)), INTENT(IN) :: LAImax_grass
+      REAL(KIND(1D0)), INTENT(IN) :: LAImax_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: LAImax_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: LAImax_grass
       REAL(KIND(1D0)), DIMENSION(3) :: LAImax !Max LAI [m2 m-2]
 
-      REAL(KNID(1D0)), INTENT(IN) :: LAImin_dectr
-      REAL(KNID(1D0)), INTENT(IN) :: LAImin_evetr
-      REAL(KNID(1D0)), INTENT(IN) :: LAImin_grass
+      REAL(KIND(1D0)), INTENT(IN) :: LAImin_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: LAImin_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: LAImin_grass
       REAL(KIND(1D0)), DIMENSION(3) :: LAImin !Min LAI [m2 m-2]
 
       REAL(KIND(1D0)), INTENT(out) :: QH_LUMPS

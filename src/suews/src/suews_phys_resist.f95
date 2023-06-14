@@ -592,11 +592,11 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: zdm ! zero-plance displacement
       REAL(KIND(1D0)), INTENT(out) :: ZZD ! z-zdm
 
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
-
       INTEGER, PARAMETER :: notUsedI = -55
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
       REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
+
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
 
       !Total area of buildings and trees
       ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
@@ -671,7 +671,7 @@ CONTAINS
       IF (z0m < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, z0 < 0 m.', z0m, notUsed, notUsedI)
       IF (zdm < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, zd < 0 m.', zdm, notUsed, notUsedI)
       IF (zzd < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, (z-zd) < 0 m.', zzd, notUsed, notUsedI)
-   END SUBROUTINE SUEWS_cal_RoughnessParameters
+   END SUBROUTINE SUEWS_cal_RoughnessParameters_DTS
 
    FUNCTION cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar) RESULT(z0V)
       ! TS 31 Jul 2018: make this a separate funciton for reuse

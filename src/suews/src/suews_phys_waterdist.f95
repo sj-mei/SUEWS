@@ -879,7 +879,8 @@ CONTAINS
    SUBROUTINE SUEWS_update_SoilMoist_DTS( &
       NonWaterFraction, &
       sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & !input
-      SoilStoreCap_paved, SoilStore_bldg, SoilStore_dectr, SoilStore_evetr, SoilStore_grass, SoilStore_bsoil, SoilStore_water, &
+      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, &
+      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
       soilstore_id, &
       SoilMoistCap, SoilState, & !output
       vsmd, smd)
@@ -899,12 +900,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf
 
       REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_paved
-      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_dectr
-      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_evetr
-      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_grass
-      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_bsoil
-      REAL(KIND(1D0)), INTENT(IN) :: SoilStore_water
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_bldg
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_dectr
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_grass
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_bsoil
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_water
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap
 
       REAL(KIND(1D0)), INTENT(out) :: SoilMoistCap, SoilState
@@ -914,7 +915,13 @@ CONTAINS
       REAL(KIND(1D0)) :: fveg
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
-      SoilStoreCap = [SoilStoreCap_paved, SoilStore_bldg, SoilStore_dectr, SoilStore_evetr, SoilStore_grass, SoilStore_bsoil, SoilStore_water]
+      SoilStoreCap(1) = SoilStoreCap_paved
+      SoilStoreCap(2) = SoilStoreCap_bldg
+      SoilStoreCap(3) = SoilStoreCap_dectr
+      SoilStoreCap(4) = SoilStoreCap_evetr
+      SoilStoreCap(5) = SoilStoreCap_grass
+      SoilStoreCap(6) = SoilStoreCap_bsoil
+      SoilStoreCap(7) = SoilStoreCap_water
 
       SoilMoistCap = 0 !Maximum capacity of soil store [mm] for whole surface
       SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
@@ -1050,7 +1057,8 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_SoilState_DTS( &
       SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
-      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
+      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, &
+      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
       surf_chang_per_tstep, &
       soilstore_id, soilstoreOld, &
       sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, &
@@ -1096,7 +1104,13 @@ CONTAINS
       INTEGER :: is
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
-      SoilStoreCap = [SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water]
+      SoilStoreCap(1) = SoilStoreCap_paved
+      SoilStoreCap(2) = SoilStoreCap_bldg
+      SoilStoreCap(3) = SoilStoreCap_dectr
+      SoilStoreCap(4) = SoilStoreCap_evetr
+      SoilStoreCap(5) = SoilStoreCap_grass
+      SoilStoreCap(6) = SoilStoreCap_bsoil
+      SoilStoreCap(7) = SoilStoreCap_water
 
       SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
       IF (NonWaterFraction /= 0) THEN !Fixed for water surfaces only
@@ -1379,9 +1393,12 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_HorizontalSoilWater_DTS( &
       sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & ! input: ! surface fractions
-      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, & !Capacity of soil store for each surface [mm]
+      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, &
+      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, & !Capacity of soil store for each surface [mm]
       SoilDepth_paved, SoilDepth_bldg, SoilDepth_dectr, SoilDepth_evetr, SoilDepth_grass, SoilDepth_bsoil, SoilDepth_water, & !Depth of sub-surface soil store for each surface [mm]
-      SatHydraulicConduct_paved, SatHydraulicConduct_bldg, SatHydraulicConduct_dectr, SatHydraulicConduct_evetr, SatHydraulicConduct_grass, SatHydraulicConduct_bsoil, SatHydraulicConduct_water, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+      SatHydraulicConduct_paved, SatHydraulicConduct_bldg, &
+      SatHydraulicConduct_dectr, SatHydraulicConduct_evetr, &
+      SatHydraulicConduct_grass, SatHydraulicConduct_bsoil, SatHydraulicConduct_water, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
       SurfaceArea, & !Surface area of the study area [m2]
       NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
       tstep_real, & !tstep cast as a real for use in calculations
@@ -1487,9 +1504,29 @@ CONTAINS
       runoffSoil_per_tstep = 0
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
-      SoilStoreCap = [SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water]
-  SoilDepth = [SoilDepth_paved, SoilDepth_bldg, SoilDepth_dectr, SoilDepth_evetr, SoilDepth_grass, SoilDepth_bsoil, SoilDepth_water]
-      SatHydraulicConduct = [SatHydraulicConduct_paved, SatHydraulicConduct_bldg, SatHydraulicConduct_dectr, SatHydraulicConduct_evetr, SatHydraulicConduct_grass, SatHydraulicConduct_bsoil, SatHydraulicConduct_water]
+      SoilStoreCap(1) = SoilStoreCap_paved
+      SoilStoreCap(2) = SoilStoreCap_bldg
+      SoilStoreCap(3) = SoilStoreCap_dectr
+      SoilStoreCap(4) = SoilStoreCap_evetr
+      SoilStoreCap(5) = SoilStoreCap_grass
+      SoilStoreCap(6) = SoilStoreCap_bsoil
+      SoilStoreCap(7) = SoilStoreCap_water
+
+      SoilDepth(1) = SoilDepth_paved
+      SoilDepth(2) = SoilDepth_bldg
+      SoilDepth(3) = SoilDepth_dectr
+      SoilDepth(4) = SoilDepth_evetr
+      SoilDepth(5) = SoilDepth_grass
+      SoilDepth(6) = SoilDepth_bsoil
+      SoilDepth(7) = SoilDepth_water
+
+      SatHydraulicConduct(1) = SatHydraulicConduct_paved
+      SatHydraulicConduct(2) = SatHydraulicConduct_bldg
+      SatHydraulicConduct(3) = SatHydraulicConduct_dectr
+      SatHydraulicConduct(4) = SatHydraulicConduct_evetr
+      SatHydraulicConduct(5) = SatHydraulicConduct_grass
+      SatHydraulicConduct(6) = SatHydraulicConduct_bsoil
+      SatHydraulicConduct(7) = SatHydraulicConduct_water
 
       DO is = 1, nsurf - 1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)
 
