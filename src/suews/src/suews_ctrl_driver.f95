@@ -3165,7 +3165,7 @@ CONTAINS
       pavedPrm%ohm%ohm_threshwd = OHM_threshWD(PavSurf)
 
       !WRITE(*, *) 'OHM_COEF_pav', OHM_coef
-      
+
       pavedPrm%ohm%ohm_coef_lc(1)%summer_wet = OHM_coef(PavSurf, 1, 1)
       !WRITE(*, *) 'PavSurf_OHM_COEF_A1_SUMMER_WET', OHM_coef(PavSurf, 1, 1)
       pavedPrm%ohm%ohm_coef_lc(1)%summer_dry = OHM_coef(PavSurf, 2, 1)
@@ -3173,8 +3173,8 @@ CONTAINS
       pavedPrm%ohm%ohm_coef_lc(1)%winter_wet = OHM_coef(PavSurf, 3, 1)
       !WRITE(*, *) 'PavSurf_OHM_COEF_A1_WINTER_WRT', OHM_coef(PavSurf, 3, 1)
       pavedPrm%ohm%ohm_coef_lc(1)%winter_dry = OHM_coef(PavSurf, 4, 1)
-      ! WRITE(*, *) 'PavSurf_OHM_COEF_A1_WINTER_DRY', OHM_coef(PavSurf, 4, 1), 
-      
+      ! WRITE(*, *) 'PavSurf_OHM_COEF_A1_WINTER_DRY', OHM_coef(PavSurf, 4, 1),
+
       pavedPrm%ohm%ohm_coef_lc(2)%summer_wet = OHM_coef(PavSurf, 1, 2)
       pavedPrm%ohm%ohm_coef_lc(2)%summer_dry = OHM_coef(PavSurf, 2, 2)
       pavedPrm%ohm%ohm_coef_lc(2)%winter_wet = OHM_coef(PavSurf, 3, 2)
@@ -3206,7 +3206,6 @@ CONTAINS
       pavedPrm%waterdist%to_bsoil = WaterDist(6, PavSurf)
       pavedPrm%waterdist%to_water = WaterDist(7, PavSurf)
       pavedPrm%waterdist%to_soilstore = WaterDist(8, PavSurf)
-
 
       bldgPrm%sfr = sfr_surf(BldgSurf)
       bldgPrm%faibldg = FAIBldg
@@ -3255,7 +3254,6 @@ CONTAINS
       bldgPrm%waterdist%to_bsoil = WaterDist(6, BldgSurf)
       bldgPrm%waterdist%to_water = WaterDist(7, BldgSurf)
       bldgPrm%waterdist%to_soilstore = WaterDist(8, BldgSurf)
-
 
       dectrPrm%sfr = sfr_surf(DecidSurf)
       dectrPrm%emis = emis(DecidSurf)
@@ -4119,7 +4117,7 @@ CONTAINS
             waterPrm%ohm%ohm_threshwd, & !input
             hydroState_prev%soilstore_surf, &
             pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
-            evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap,  &
+            evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
             grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap, & !input
             hydroState_prev%state_surf, methodPrm%SnowUse, snowState_prev%SnowFrac, DiagQS, &
             anthroHeatState%HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
@@ -4784,9 +4782,9 @@ CONTAINS
       porosity_id = phenState_next%porosity_id
       StoreDrainPrm = phenState_next%StoreDrainPrm
       ! Tair_av = Tair_av_next
-      
+
       HDD_id = anthroHeatState_next%HDD_id
-      
+
       IF (methodPrm%StorageHeatMethod == 5) THEN
          ! ESTM_ehc related
          temp_roof = heatState_out%temp_roof
@@ -4801,7 +4799,6 @@ CONTAINS
          soilstore_wall = hydroState_next%soilstore_wall
          state_wall = hydroState_next%state_wall
       END IF
-
 
       !==============use SOLWEIG to get localised radiation flux==================
       ! if (sfr_surf(BldgSurf) > 0) then
