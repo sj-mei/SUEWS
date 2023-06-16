@@ -358,24 +358,24 @@ CONTAINS
       BaseTMethod, &
       WaterUseMethod, Ie_start, Ie_end, &
       LAICalcYes, &
-      dectrLAIType, evetrLAIType, grassLAIType, &
+      evetrLAIType, dectrLAIType, grassLAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
       BaseT_Heating_working, BaseT_Heating_holiday, &
       BaseT_Cooling_working, BaseT_Cooling_holiday, &
       lat, Faut, LAI_obs, &
-      AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-      AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+      AlbMax_EveTr, AlbMax_DecTr, AlbMax_Grass, &
+      AlbMin_EveTr, AlbMin_DecTr, AlbMin_Grass, &
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
       Ie_a, Ie_m, &
       DayWatPer_mon, DayWatPer_tues, DayWatPer_wed, DayWatPer_thur, DayWatPer_fri, DayWatPer_sat, DayWatPer_sun, &
       DayWat_mon, DayWat_tues, DayWat_wed, DayWat_thur, DayWat_fri, DayWat_sat, DayWat_sun, &
-      dectrBaseT, evetrBaseT, grassBaseT, &
-      dectrBaseTe, evetrBaseTe, grassBaseTe, &
-      dectrGDDFull, evetrGDDFull, grassGDDFull, &
-      dectrSDDFull, evetrSDDFull, grassSDDFull, &
-      dectrLAIMin, evetrLAIMin, grassLAIMin, &
-      dectrLAIMax, evetrLAIMax, grassLAIMax, &
-      dectrLAIPower, evetrLAIPower, grassLAIPower, &
+      evetrBaseT, dectrBaseT, grassBaseT, &
+      evetrBaseTe, dectrBaseTe, grassBaseTe, &
+      evetrGDDFull, dectrGDDFull, grassGDDFull, &
+      evetrSDDFull, dectrSDDFull, grassSDDFull, &
+      evetrLAIMin, dectrLAIMin, grassLAIMin, &
+      evetrLAIMax, dectrLAIMax, grassLAIMax, &
+      evetrLAIPower, dectrLAIPower, grassLAIPower, &
       DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, & !input
       HDD_id_prev, & !input
@@ -434,11 +434,11 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
       ! REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
       ! REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMax_DecTr
       REAL(KIND(1D0)), INTENT(IN) :: AlbMax_EveTr
+      REAL(KIND(1D0)), INTENT(IN) :: AlbMax_DecTr
       REAL(KIND(1D0)), INTENT(IN) :: AlbMax_Grass
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMin_DecTr
       REAL(KIND(1D0)), INTENT(IN) :: AlbMin_EveTr
+      REAL(KIND(1D0)), INTENT(IN) :: AlbMin_DecTr
       REAL(KIND(1D0)), INTENT(IN) :: AlbMin_Grass
       REAL(KIND(1D0)), INTENT(IN) :: CapMax_dec
       REAL(KIND(1D0)), INTENT(IN) :: CapMin_dec
@@ -474,38 +474,38 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
-      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseT
       REAL(KIND(1D0)), INTENT(IN) :: evetrBaseT
+      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseT
       REAL(KIND(1D0)), INTENT(IN) :: grassBaseT
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseT !Base temperature for growing degree days [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseTe
       REAL(KIND(1D0)), INTENT(IN) :: evetrBaseTe
+      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseTe
       REAL(KIND(1D0)), INTENT(IN) :: grassBaseTe
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseTe !Base temperature for senescence degree days [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: dectrGDDFull
       REAL(KIND(1D0)), INTENT(IN) :: evetrGDDFull
+      REAL(KIND(1D0)), INTENT(IN) :: dectrGDDFull
       REAL(KIND(1D0)), INTENT(IN) :: grassGDDFull
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDDFull !Growing degree days needed for full capacity [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: dectrSDDFull
       REAL(KIND(1D0)), INTENT(IN) :: evetrSDDFull
+      REAL(KIND(1D0)), INTENT(IN) :: dectrSDDFull
       REAL(KIND(1D0)), INTENT(IN) :: grassSDDFull
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDDFull !Senescence degree days needed to initiate leaf off [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMin
       REAL(KIND(1D0)), INTENT(IN) :: evetrLAIMin
+      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMin
       REAL(KIND(1D0)), INTENT(IN) :: grassLAIMin
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMin !Min LAI [m2 m-2]
 
-      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMax
       REAL(KIND(1D0)), INTENT(IN) :: evetrLAIMax
+      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMax
       REAL(KIND(1D0)), INTENT(IN) :: grassLAIMax
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMax !Max LAI [m2 m-2]
 
-      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: dectrLAIPower
       REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: evetrLAIPower
+      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: dectrLAIPower
       REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: grassLAIPower
       REAL(KIND(1D0)), DIMENSION(4, nvegsurf) :: LAIPower !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
 
@@ -624,8 +624,8 @@ CONTAINS
       DayWat(6) = DayWat_sat
       DayWat(7) = DayWat_sun
 
-      LAIType(1) = dectrLAIType
-      LAIType(2) = evetrLAIType
+      LAIType(1) = evetrLAIType
+      LAIType(2) = dectrLAIType
       LAIType(3) = grassLAIType
 
       BaseT_Heating(1) = BaseT_Heating_working
@@ -633,32 +633,32 @@ CONTAINS
       BaseT_Cooling(1) = BaseT_Cooling_working
       BaseT_Cooling(2) = BaseT_Cooling_holiday
 
-      BaseT(1) = dectrBaseT
-      BaseT(2) = evetrBaseT
+      BaseT(1) = evetrBaseT
+      BaseT(2) = dectrBaseT
       BaseT(3) = grassBaseT
 
-      BaseTe(1) = dectrBaseTe
-      BaseTe(2) = evetrBaseTe
+      BaseTe(1) = evetrBaseTe
+      BaseTe(2) = dectrBaseTe
       BaseTe(3) = grassBaseTe
 
-      GDDFull(1) = dectrGDDFull
-      GDDFull(2) = evetrGDDFull
+      GDDFull(1) = evetrGDDFull
+      GDDFull(2) = dectrGDDFull
       GDDFull(3) = grassGDDFull
 
-      SDDFull(1) = dectrSDDFull
-      SDDFull(2) = evetrSDDFull
+      SDDFull(1) = evetrSDDFull
+      SDDFull(2) = dectrSDDFull
       SDDFull(3) = grassSDDFull
 
-      LAIMin(1) = dectrLAIMin
-      LAIMin(2) = evetrLAIMin
+      LAIMin(1) = evetrLAIMin
+      LAIMin(2) = dectrLAIMin
       LAIMin(3) = grassLAIMin
 
-      LAIMax(1) = dectrLAIMax
-      LAIMax(2) = evetrLAIMax
+      LAIMax(1) = evetrLAIMax
+      LAIMax(2) = dectrLAIMax
       LAIMax(3) = grassLAIMax
 
-      LAIPower(:, 1) = dectrLAIPower
-      LAIPower(:, 2) = evetrLAIPower
+      LAIPower(:, 1) = evetrLAIPower
+      LAIPower(:, 2) = dectrLAIPower
       LAIPower(:, 3) = grassLAIPower
 
       ! transfer values

@@ -181,10 +181,10 @@ CONTAINS
       SnowUse, qn1, qf, qs, Temp_C, VegFraction, avcp, Press_hPa, lv_J_kg, &
       tstep_real, DRAINRT, nsh_real, &
       Precip, RainMaxRes, RAINCOVER, &
-      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & !input
+      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, & !input
       LAI_id_prev, &
-      LAImax_dectr, LAImax_evetr, LAImax_grass, &
-      LAImin_dectr, LAImin_evetr, LAImin_grass, &
+      LAImax_evetr, LAImax_dectr, LAImax_grass, &
+      LAImin_evetr, LAImin_dectr, LAImin_grass, &
       QH_LUMPS, & !output
       QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, Veg_Fr_temp, VegPhenLumps)
       !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
@@ -231,8 +231,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
@@ -240,13 +240,13 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(in) :: LAI_id_prev ! LAI(id-1,iv), LAI at the beginning of today
 
-      REAL(KIND(1D0)), INTENT(IN) :: LAImax_dectr
       REAL(KIND(1D0)), INTENT(IN) :: LAImax_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: LAImax_dectr
       REAL(KIND(1D0)), INTENT(IN) :: LAImax_grass
       REAL(KIND(1D0)), DIMENSION(3) :: LAImax !Max LAI [m2 m-2]
 
-      REAL(KIND(1D0)), INTENT(IN) :: LAImin_dectr
       REAL(KIND(1D0)), INTENT(IN) :: LAImin_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: LAImin_dectr
       REAL(KIND(1D0)), INTENT(IN) :: LAImin_grass
       REAL(KIND(1D0)), DIMENSION(3) :: LAImin !Min LAI [m2 m-2]
 
@@ -268,9 +268,9 @@ CONTAINS
                          alpha_qhqe, RAINRES, RainBucket, tlv
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
 
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
-      LAImax = [LAImax_dectr, LAImax_evetr, LAImax_grass]
-      LAImin = [LAImin_dectr, LAImin_evetr, LAImin_grass]
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
+      LAImax = [LAImax_evetr, LAImax_dectr, LAImax_grass]
+      LAImin = [LAImin_evetr, LAImin_dectr, LAImin_grass]
 
       tlv = lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
       ! initialize VegPhenLumps to output

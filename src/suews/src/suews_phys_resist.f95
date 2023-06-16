@@ -537,7 +537,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_RoughnessParameters_DTS( &
       RoughLenMomMethod, & ! input:
-      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & ! surface fractions
+      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, & ! surface fractions
       bldgH, EveTreeH, DecTreeH, &
       porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
@@ -567,8 +567,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
@@ -596,7 +596,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
       REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
 
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
 
       !Total area of buildings and trees
       ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))

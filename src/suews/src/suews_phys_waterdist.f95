@@ -878,9 +878,9 @@ CONTAINS
 
    SUBROUTINE SUEWS_update_SoilMoist_DTS( &
       NonWaterFraction, &
-      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & !input
-      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, &
-      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
+      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, & !input
+      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_evetr, &
+      SoilStoreCap_dectr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
       soilstore_id, &
       SoilMoistCap, SoilState, & !output
       vsmd, smd)
@@ -892,8 +892,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
@@ -901,8 +901,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_paved
       REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_dectr
       REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_dectr
       REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_grass
       REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: SoilStoreCap_water
@@ -914,11 +914,11 @@ CONTAINS
       INTEGER :: is
       REAL(KIND(1D0)) :: fveg
 
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
       SoilStoreCap(1) = SoilStoreCap_paved
       SoilStoreCap(2) = SoilStoreCap_bldg
-      SoilStoreCap(3) = SoilStoreCap_dectr
-      SoilStoreCap(4) = SoilStoreCap_evetr
+      SoilStoreCap(3) = SoilStoreCap_evetr
+      SoilStoreCap(4) = SoilStoreCap_dectr
       SoilStoreCap(5) = SoilStoreCap_grass
       SoilStoreCap(6) = SoilStoreCap_bsoil
       SoilStoreCap(7) = SoilStoreCap_water
@@ -1057,11 +1057,11 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_SoilState_DTS( &
       SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
-      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, &
-      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
+      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_evetr, &
+      SoilStoreCap_dectr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, &
       surf_chang_per_tstep, &
       soilstore_id, soilstoreOld, &
-      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, &
+      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, &
       smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
       IMPLICIT NONE
@@ -1078,8 +1078,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
@@ -1087,8 +1087,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_paved
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_bldg
-      REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_dectr
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_evetr
+      REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_dectr
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_grass
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_bsoil
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_water
@@ -1103,11 +1103,11 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER :: is
 
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
       SoilStoreCap(1) = SoilStoreCap_paved
       SoilStoreCap(2) = SoilStoreCap_bldg
-      SoilStoreCap(3) = SoilStoreCap_dectr
-      SoilStoreCap(4) = SoilStoreCap_evetr
+      SoilStoreCap(3) = SoilStoreCap_evetr
+      SoilStoreCap(4) = SoilStoreCap_dectr
       SoilStoreCap(5) = SoilStoreCap_grass
       SoilStoreCap(6) = SoilStoreCap_bsoil
       SoilStoreCap(7) = SoilStoreCap_water
@@ -1392,12 +1392,12 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_HorizontalSoilWater
 
    SUBROUTINE SUEWS_cal_HorizontalSoilWater_DTS( &
-      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, & ! input: ! surface fractions
-      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_dectr, &
-      SoilStoreCap_evetr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, & !Capacity of soil store for each surface [mm]
-      SoilDepth_paved, SoilDepth_bldg, SoilDepth_dectr, SoilDepth_evetr, SoilDepth_grass, SoilDepth_bsoil, SoilDepth_water, & !Depth of sub-surface soil store for each surface [mm]
+      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, & ! input: ! surface fractions
+      SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_evetr, &
+      SoilStoreCap_dectr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, & !Capacity of soil store for each surface [mm]
+      SoilDepth_paved, SoilDepth_bldg, SoilDepth_evetr, SoilDepth_dectr, SoilDepth_grass, SoilDepth_bsoil, SoilDepth_water, & !Depth of sub-surface soil store for each surface [mm]
       SatHydraulicConduct_paved, SatHydraulicConduct_bldg, &
-      SatHydraulicConduct_dectr, SatHydraulicConduct_evetr, &
+      SatHydraulicConduct_evetr, SatHydraulicConduct_dectr, &
       SatHydraulicConduct_grass, SatHydraulicConduct_bsoil, SatHydraulicConduct_water, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
       SurfaceArea, & !Surface area of the study area [m2]
       NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
@@ -1429,8 +1429,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
@@ -1438,8 +1438,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_paved
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_bldg
-      REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_dectr
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_evetr
+      REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_dectr
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_grass
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_bsoil
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_water
@@ -1447,8 +1447,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) :: SoilDepth_paved
       REAL(KIND(1D0)), INTENT(in) :: SoilDepth_bldg
-      REAL(KIND(1D0)), INTENT(in) :: SoilDepth_dectr
       REAL(KIND(1D0)), INTENT(in) :: SoilDepth_evetr
+      REAL(KIND(1D0)), INTENT(in) :: SoilDepth_dectr
       REAL(KIND(1D0)), INTENT(in) :: SoilDepth_grass
       REAL(KIND(1D0)), INTENT(in) :: SoilDepth_bsoil
       REAL(KIND(1D0)), INTENT(in) :: SoilDepth_water
@@ -1456,8 +1456,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_paved
       REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_bldg
-      REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_dectr
       REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_evetr
+      REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_dectr
       REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_grass
       REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_bsoil
       REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_water
@@ -1503,27 +1503,27 @@ CONTAINS
       runoffSoil = 0
       runoffSoil_per_tstep = 0
 
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
       SoilStoreCap(1) = SoilStoreCap_paved
       SoilStoreCap(2) = SoilStoreCap_bldg
-      SoilStoreCap(3) = SoilStoreCap_dectr
-      SoilStoreCap(4) = SoilStoreCap_evetr
+      SoilStoreCap(3) = SoilStoreCap_evetr
+      SoilStoreCap(4) = SoilStoreCap_dectr
       SoilStoreCap(5) = SoilStoreCap_grass
       SoilStoreCap(6) = SoilStoreCap_bsoil
       SoilStoreCap(7) = SoilStoreCap_water
 
       SoilDepth(1) = SoilDepth_paved
       SoilDepth(2) = SoilDepth_bldg
-      SoilDepth(3) = SoilDepth_dectr
-      SoilDepth(4) = SoilDepth_evetr
+      SoilDepth(3) = SoilDepth_evetr
+      SoilDepth(4) = SoilDepth_dectr
       SoilDepth(5) = SoilDepth_grass
       SoilDepth(6) = SoilDepth_bsoil
       SoilDepth(7) = SoilDepth_water
 
       SatHydraulicConduct(1) = SatHydraulicConduct_paved
       SatHydraulicConduct(2) = SatHydraulicConduct_bldg
-      SatHydraulicConduct(3) = SatHydraulicConduct_dectr
-      SatHydraulicConduct(4) = SatHydraulicConduct_evetr
+      SatHydraulicConduct(3) = SatHydraulicConduct_evetr
+      SatHydraulicConduct(4) = SatHydraulicConduct_dectr
       SatHydraulicConduct(5) = SatHydraulicConduct_grass
       SatHydraulicConduct(6) = SatHydraulicConduct_bsoil
       SatHydraulicConduct(7) = SatHydraulicConduct_water
@@ -1903,7 +1903,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_WaterUse_DTS( &
       nsh_real, & ! input:
       wu_m3, SurfaceArea, &
-      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, &
+      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, &
       IrrFracPaved, IrrFracBldgs, &
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       IrrFracBSoil, IrrFracWater, &
@@ -1954,8 +1954,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water

@@ -376,7 +376,7 @@ CONTAINS
       DiagMethod, &
       Zh, z0m, zdm, z0v, &
       L_MOD, &
-      sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water, &
+      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, &
       FAI, PAI, &
       StabilityMethod, RA_h, &
       avcp, lv_J_kg, avdens, &
@@ -398,8 +398,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
+      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
       REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
       REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
       REAL(KIND(1D0)), INTENT(IN) :: sfr_water
@@ -516,7 +516,7 @@ CONTAINS
 !          Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
 
       ! Step 1: determine if RSL should be used
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_dectr, sfr_evetr, sfr_grass, sfr_bsoil, sfr_water]
+      sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
 
       IF (DiagMethod == 0) THEN
          ! force MOST to be used
