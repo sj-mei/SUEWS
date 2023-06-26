@@ -13,21 +13,18 @@
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # revision history:
 # TS 08 Mar 2023: checked
+# TS 06 May 2023: all added to the newly created file config-suews.yml
 # #########################################################################
 
 - name: baset
   use:
     input: parameter
-  description:
-    Base Temperature for initiating growing degree days (GDD) for leaf growth.
+  description: Base Temperature for initiating growing degree days (GDD) for leaf growth.
   dimensions:
     3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: degC
   suews table headers: :option:`BaseT <BaseT>`
-  usage:
-    LAI: needs to be linked to a method
-
-
+  requisite: essential.2-lai
 
 - name: sddfull
   use:
@@ -37,10 +34,7 @@
     3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: degC d
   suews table headers: :option:`SDDFull <SDDFull>`
-  usage:
-    LAI: needs to be linked to a method
-
-
+  requisite: essential.2-lai
 
 - name: lai_id
   use:
@@ -52,8 +46,7 @@
   suews table headers:
     :option:`LAIinitialDecTr <LAIinitialDecTr>`, :option:`LAIinitialEveTr
     <LAIinitialEveTr>`, :option:`LAIinitialGrass <LAIinitialGrass>`
-  usage:
-    LAIcalcyes: needs to be linked to a method
+  requisite: essential.2-lai
 
 - name: laimax
   use:
@@ -63,8 +56,7 @@
     3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: full leaf-on summertime valu
   suews table headers: :option:`LAIMax <LAIMax>`
-  usage:
-    LAI: needs to be linked to a method
+  requisite: essential.2-lai
 
 - name: laimin
   use:
@@ -74,8 +66,7 @@
     3: "vegetated land covers: { `EveTr`, `DecTr`, `Grass`}"
   unit: leaf-off wintertime valu
   suews table headers: :option:`LAIMin <LAIMin>`
-  usage:
-    LAI: needs to be linked to a method
+  requisite: essential.2-lai
 
 - name: laipower
   use:
@@ -89,8 +80,7 @@
     :option:`LeafGrowthPower1 <LeafGrowthPower1>`, :option:`LeafGrowthPower2
     <LeafGrowthPower2>`, :option:`LeafOffPower1 <LeafOffPower1>`, :option:`LeafOffPower2
     <LeafOffPower2>`
-  usage:
-    LAI: needs to be linked to a method
+  requisite: essential.2-lai
 
 - name: laitype # this could be combined with laicalcyes as a single variable: lai_method? TODO
   use:
@@ -100,36 +90,25 @@
     3: "3: { `EveTr`, `DecTr`, `Grass`}"
   unit: LAI calculation choice
   suews table headers: :option:`LAIEq <LAIEq>`
-  usage:
+  requisite:
     LAI: Method_Selection
-
 
 - name: basete
   use:
     input: parameter
-  description:
-    Base temperature for initiating sensesance degree days (SDD) for leaf off.
+  description: Base temperature for initiating sensesance degree days (SDD) for leaf off.
   dimensions:
     3: "3: { `EveTr`, `DecTr`, `Grass`}"
   unit: degC
   suews table headers: :option:`BaseTe <BaseTe>`
-  usage:
-    LAI: needs to be linked to a method
-
+  requisite: essential.2-lai
 
 - name: gddfull
   use:
     input: parameter
-  description:
-    The growing degree days (GDD) needed for full capacity of the leaf area index (LAI)
+  description: The growing degree days (GDD) needed for full capacity of the leaf area index (LAI)
   dimensions:
     3: "3: { `EveTr`, `DecTr`, `Grass`}"
   unit: degC d
   suews table headers: :option:`GDDFull <GDDFull>`
-  usage:
-    LAI: needs to be linked to a method
-
-
-
-
-
+  requisite: essential.2-lai

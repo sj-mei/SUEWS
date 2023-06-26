@@ -22,8 +22,7 @@
   dimensions: 0
   unit: mm
   suews table headers: :option:`CRWMax <CRWMax>`
-  usage:
-    snowuse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: crwmin
   use:
@@ -32,8 +31,7 @@
   dimensions: 0
   unit: mm
   suews table headers: :option:`CRWMin <CRWMin>`
-  usage:
-    snowuse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: narp_emis_snow
   use:
@@ -42,8 +40,13 @@
   dimensions: 0
   unit: Effective surface emissivity
   suews table headers: :option:`Emissivity <Emissivity>`
-  usage:
-    NetRadiationMethod: "<500: NARP"
+  requisite:
+    - NetRadiationMethod.1-NARP+L_obs
+    - NetRadiationMethod.2-NARP+L_cloud
+    - NetRadiationMethod.3-NARP+L_RH
+    - NetRadiationMethod.11-NARP+Ts+L_obs
+    - NetRadiationMethod.12-NARP+Ts+L_cloud
+    - NetRadiationMethod.13-NARP+Ts+L_RH
 
 - name: preciplimit
   use:
@@ -52,19 +55,16 @@
   dimensions: 0
   unit: degC
   suews table headers: :option:`PrecipLimSnow <PrecipLimSnow>`
-  usage:
-    SnowUse: 1:SnowCalc
+  requisite: SnowUse.1-SnowCalc
 
 - name: preciplimitalb
   use:
     input: parameter
-  description:
-    Limit for hourly precipitation when the ground is fully covered with snow and the snow albedo is reset to AlbedoMax as.
+  description: Limit for hourly precipitation when the ground is fully covered with snow and the snow albedo is reset to AlbedoMax as.
   dimensions: 0
   unit: mm
   suews table headers: :option:`PrecipLimAlb <PrecipLimAlb>`
-  usage:
-    SnowUse: 1:SnowCalc
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowalb
   use:
@@ -73,29 +73,25 @@
   dimensions: 0
   unit: Initial snow albed
   suews table headers: :option:`SnowAlb0 <SnowAlb0>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowalbmax
   use:
     input: parameter
   description: Effective surface albedo (middle of the day value) for summertime.
   dimensions: 0
-  unit:  "-"
+  unit: "-"
   suews table headers: :option:`AlbedoMax <AlbedoMax>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowalbmin
   use:
     input: parameter
-  description:
-    Effective surface albedo (middle of the day value) for wintertime (not including snow).
+  description: Effective surface albedo (middle of the day value) for wintertime (not including snow).
   dimensions: 0
   unit: "-"
   suews table headers: :option:`AlbedoMin <AlbedoMin>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowdens
   use:
@@ -109,8 +105,7 @@
     <SnowDensPaved>`, :option:`SnowDensDecTr <SnowDensDecTr>`, :option:`SnowDensEveTr
     <SnowDensEveTr>`, :option:`SnowDensGrass <SnowDensGrass>`, :option:`SnowDensBSoil
     <SnowDensBSoil>`, :option:`SnowDensWater <SnowDensWater>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowdensmax
   use:
@@ -119,8 +114,7 @@
   dimensions: 0
   unit: kg m^-3
   suews table headers: :option:`SnowDensMax <SnowDensMax>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowdensmin
   use:
@@ -129,8 +123,7 @@
   dimensions: 0
   unit: kg m^-3
   suews table headers: :option:`SnowDensMin <SnowDensMin>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowfrac
   use:
@@ -144,30 +137,25 @@
     <SnowFracPaved>`, :option:`SnowFracDecTr <SnowFracDecTr>`, :option:`SnowFracEveTr
     <SnowFracEveTr>`, :option:`SnowFracGrass <SnowFracGrass>`, :option:`SnowFracBSoil
     <SnowFracBSoil>`, :option:`SnowFracWater <SnowFracWater>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowlimbldg
   use:
     input: parameter
-  description:
-    Limit of the snow water equivalent for snow removal from roads and roofs
+  description: Limit of the snow water equivalent for snow removal from roads and roofs
   dimensions: 0
   unit: mm
   suews table headers: :option:`SnowLimRemove <SnowLimRemove>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowlimpaved
   use:
     input: parameter
-  description:
-    Limit of the snow water equivalent for snow removal from roads and roofs
+  description: Limit of the snow water equivalent for snow removal from roads and roofs
   dimensions: 0
   unit: mm
   suews table headers: :option:`SnowLimRemove <SnowLimRemove>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowpack
   use:
@@ -181,8 +169,7 @@
     <SnowPackPaved>`, :option:`SnowPackDecTr <SnowPackDecTr>`, :option:`SnowPackEveTr
     <SnowPackEveTr>`, :option:`SnowPackGrass <SnowPackGrass>`, :option:`SnowPackBSoil
     <SnowPackBSoil>`, :option:`SnowPackWater <SnowPackWater>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowpacklimit
   use:
@@ -192,8 +179,7 @@
     7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: mm
   suews table headers: :option:`SnowLimPatch <SnowLimPatch>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowprof_24hr
   use:
@@ -206,8 +192,7 @@
   suews table headers:
     :option:`SnowClearingProfWD <SnowClearingProfWD>`, :option:`SnowClearingProfWE
     <SnowClearingProfWE>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: tau_a
   use:
@@ -216,8 +201,7 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`tau_a <tau_a>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: tau_f
   use:
@@ -226,8 +210,7 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`tau_f <tau_f>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: tau_r
   use:
@@ -236,8 +219,7 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`tau_r <tau_r>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: tempmeltfact
   use:
@@ -246,8 +228,7 @@
   dimensions: 0
   unit: mm K^-1 h^-1
   suews table headers: :option:`TempMeltFactor <TempMeltFactor>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: radmeltfact
   use:
@@ -256,8 +237,7 @@
   dimensions: 0
   unit: mm W^-1 h^-1
   suews table headers: :option:`RadMeltFactor <RadMeltFactor>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc
 
 - name: snowwater
   use:
@@ -266,11 +246,9 @@
   dimensions:
     7: "SUEWS land covers: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`,`BSoil`, `Water`}"
   unit: Initial amount of liquid water in the snow on each land cove
-  suews table headers:
-    :option:`SnowWaterBldgsState <SnowWaterBldgsState>`,
+  suews table headers: :option:`SnowWaterBldgsState <SnowWaterBldgsState>`,
     :option:`SnowWaterPavedState <SnowWaterPavedState>`, :option:`SnowWaterDecTrState
     <SnowWaterDecTrState>`, :option:`SnowWaterEveTrState <SnowWaterEveTrState>`,
     :option:`SnowWaterGrassState <SnowWaterGrassState>`, :option:`SnowWaterBSoilState
     <SnowWaterBSoilState>`, :option:`SnowWaterWaterState <SnowWaterWaterState>`
-  usage:
-    SnowUse: "1: SnowCalc"
+  requisite: SnowUse.1-SnowCalc

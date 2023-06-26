@@ -12,7 +12,8 @@
 #  variables used in anthropogenic heat/other emission calculations
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # revision history:
-# TS 20230304: checked
+# TS 04 Mar 2023: checked
+# TS 06 May 2023: all variables are included in the yaml file
 # ########################################
 
 - name: ah_min
@@ -23,10 +24,9 @@
     2: "{Weekday, Weekend}"
   unit: "W m^-2"
   suews table headers: :option:`AHMin_WD <suews:AHMin_WD>`, :option:`AHMin_WE <suews:AHMin_WE>`
-  usage:
-    EmissionsMethod:
-      - "1:QF-Loridan"
-      - "2:QF-Jarvi"
+  requisite:
+    - EmissionsMethod.1-QF-Loridan
+    - EmissionsMethod.2-QF-Jarvi
 
 - name: ah_slope_cooling
   use:
@@ -38,10 +38,9 @@
   suews table headers:
     :option:`AHSlope_Cooling_WD <suews:AHSlope_Cooling_WD>`, :option:`AHSlope_Cooling_WE
     <suews:AHSlope_Cooling_WE>`
-  usage:
-    EmissionsMethod:
-      - "1:QF-Loridan"
-      - "2:QF-Jarvi"
+  requisite:
+    - EmissionsMethod.1-QF-Loridan
+    - EmissionsMethod.2-QF-Jarvi
 
 - name: ah_slope_heating
   use:
@@ -53,10 +52,9 @@
   suews table headers:
     :option:`AHSlope_Heating_WD <suews:AHSlope_Heating_WD>`, :option:`AHSlope_Heating_WE
     <suews:AHSlope_Heating_WE>`
-  usage:
-    EmissionsMethod:
-      - "1:QF-Loridan"
-      - "2:QF-Jarvi"
+  requisite:
+    - EmissionsMethod.1-QF-Loridan
+    - EmissionsMethod.2-QF-Jarvi
 
 - name: ahprof_24hr
   use:
@@ -69,8 +67,8 @@
   suews table headers:
     :option:`EnergyUseProfWD <suews:EnergyUseProfWD>`, :option:`EnergyUseProfWE
     <suews:EnergyUseProfWE>`
-  usage:
-    EmissionsMethod: "2:QF-Jarvi"
+  requisite:
+    EmissionsMethod.2-QF-Jarvi
 
 - name: co2pointsource
   use:
@@ -79,8 +77,8 @@
   dimensions: 0
   unit: kg km^-1
   suews table headers: :option:`CO2PointSource <suews:CO2PointSource>`
-  usage:
-    EmissionsMethod: 4:CO2-Jarvi
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: ef_umolco2perj
   use:
@@ -89,8 +87,8 @@
   dimensions: 0
   unit: Emission factor for fuels used for building heating
   suews table headers: :option:`EF_umolCO2perJ <suews:EF_umolCO2perJ>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: enef_v_jkm
   use:
@@ -99,8 +97,8 @@
   dimensions: 0
   unit: J k m^-1
   suews table headers: :option:`EnEF_v_Jkm <suews:EnEF_v_Jkm>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: fcef_v_kgkm
   use:
@@ -112,8 +110,8 @@
   suews table headers:
     :option:`FcEF_v_kgkmWD <suews:FcEF_v_kgkmWD>`, :option:`FcEF_v_kgkmWE
     <suews:FcEF_v_kgkmWE>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: frfossilfuel_heat
   use:
@@ -122,8 +120,8 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`FrFossilFuel_Heat <suews:FrFossilFuel_Heat>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: frfossilfuel_nonheat
   use:
@@ -132,8 +130,8 @@
   dimensions: 0
   unit: "-"
   suews table headers: :option:`FrFossilFuel_NonHeat <suews:FrFossilFuel_NonHeat>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: maxfcmetab
   use:
@@ -142,8 +140,8 @@
   dimensions: 0
   unit: W m^-2
   suews table headers: :option:`MaxFCMetab <suews:MaxFCMetab>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: maxqfmetab
   use:
@@ -152,8 +150,8 @@
   dimensions: 0
   unit: W m^-2
   suews table headers: :option:`MaxQFMetab <suews:MaxQFMetab>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: min_res_bioco2
   use:
@@ -163,8 +161,8 @@
     3: "vegetated land covers: {`EveTr`, `DecTr`, `Grass`}"
   unit: umol m^-2 s^-1
   suews table headers: :option:`min_respi <suews:min_respi>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: minfcmetab
   use:
@@ -173,8 +171,8 @@
   dimensions: 0
   unit: W m^-2
   suews table headers: :option:`MinFCMetab <suews:MinFCMetab>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: minqfmetab
   use:
@@ -183,8 +181,8 @@
   dimensions: 0
   unit: W m^-2
   suews table headers: :option:`MinQFMetab <suews:MinQFMetab>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: humactivity_24hr
   use:
@@ -197,8 +195,8 @@
   suews table headers:
     :option:`ActivityProfWD <suews:ActivityProfWD>`, :option:`ActivityProfWE
     <suews:ActivityProfWE>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: popdensdaytime
   use:
@@ -208,10 +206,9 @@
     2: "{Weekday, Weekend}"
   unit: people ha^-1
   suews table headers: :option:`PopDensDay <suews:PopDensDay>`
-  usage:
-    EmissionsMethod:
-    - "1:Loridan"
-    - "2:Jarvi"
+  requisite:
+    - EmissionsMethod.1-QF-Loridan
+    - EmissionsMethod.2-QF-Jarvi
 
 - name: popdensnighttime
   use:
@@ -220,10 +217,9 @@
   dimensions: 0
   unit: people ha^-1
   suews table headers: :option:`PopDensNight <suews:PopDensNight>`
-  usage:
-    EmissionsMethod:
-      - 1:Loridan
-      - 2:Jarvi
+  requisite:
+    - EmissionsMethod.1-QF-Loridan
+    - EmissionsMethod.2-QF-Jarvi
 
 - name: popprof_24hr
   use:
@@ -234,10 +230,9 @@
     2: "{Weekday, Weekend}"
   unit: Hourly profile values used in dynamic population estimation
   suews table headers: :option:`PopProfWD <suews:PopProfWD>`, :option:`PopProfWE <suews:PopProfWE>`
-  usage:
-    EmissionsMethod:
-      - "2:Jarvi"
-      - "3:Loridan"
+  requisite:
+    - EmissionsMethod.2-QF-Jarvi
+    - EmissionsMethod.3-QF-Loridan
 
 - name: beta_bioco2
   use:
@@ -247,8 +242,8 @@
     3: "vegetated land covers: {`EveTr`, `DecTr`, `Grass`}"
   unit: "umol m^-2 s^-1 "
   suews table headers: :option:`beta <suews:beta>`
-  usage:
-    EmissionsMethod: 4:CO2-Jarvi
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: beta_enh_bioco2
   use:
@@ -258,8 +253,8 @@
     3: "vegetated land covers: {`EveTr`, `DecTr`, `Grass`}"
   unit: Part of the `beta` coefficient related to the fraction of vegetation
   suews table headers: :option:`beta_enh <suews:beta_enh>`
-  usage:
-    EmissionsMethod: 4:CO2-Jarvi
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: alpha_bioco2
   use:
@@ -273,8 +268,8 @@
     The mean apparent ecosystem quantum. Represents the initial slope of the light-response
     curve
   suews table headers: :option:`alpha <suews:alpha>`
-  usage:
-    EmissionsMethod: 4:CO2-Jarvi
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: alpha_enh_bioco2
   use:
@@ -284,8 +279,8 @@
     3: "vegetated land covers: {`EveTr`, `DecTr`, `Grass`}"
   unit: Part of the `alpha` coefficient related to the fraction of vegetation
   suews table headers: :option:`alpha_enh <suews:alpha_enh>`
-  usage:
-    EmissionsMethod: 4:CO2-Jarvi
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: resp_a
   use:
@@ -295,8 +290,8 @@
     3: "vegetated land covers: {`EveTr`, `DecTr`, `Grass`}"
   unit: Respiration coefficient a
   suews table headers: :option:`resp_a <suews:resp_a>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: resp_b
   use:
@@ -306,8 +301,8 @@
     3: "vegetated land covers: {`EveTr`, `DecTr`, `Grass`}"
   unit: Respiration coefficient b - related to air temperature dependency
   suews table headers: :option:`resp_b <suews:resp_b>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: qf0_beu
   use:
@@ -319,8 +314,8 @@
   suews table headers:
     :option:`QF0_BEU_WD <suews:QF0_BEU_WD>`, :option:`QF0_BEU_WE
     <suews:QF0_BEU_WE>`
-  usage:
-    emissionsMethod: ALL
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: qf_a
   use:
@@ -330,10 +325,9 @@
     2: "{Weekday, Weekend}"
   unit: Base value for QF calculation
   suews table headers: :option:`QF_A_WD <suews:QF_A_WD>`, :option:`QF_A_WE <suews:QF_A_WE>`
-  usage:
-    EmissionsMethod:
-    - "2:Jarvi"
-    - "3:Loridan"
+  requisite:
+    - EmissionsMethod.2-QF-Jarvi
+    - EmissionsMethod.3-QF-Loridan
 
 - name: qf_b
   use:
@@ -343,8 +337,9 @@
     2: "{Weekday, Weekend}"
   unit: Parameter related to heating degree days
   suews table headers: :option:`QF_B_WD <suews:QF_B_WD>`, :option:`QF_B_WE <suews:QF_B_WE>`
-  usage:
-    EmissionsMethod: "2: Jarvi; 3:Loridan"
+  requisite:
+    - EmissionsMethod.2-QF-Jarvi
+    - EmissionsMethod.3-QF-Loridan
 
 - name: qf_c
   use:
@@ -354,8 +349,9 @@
     2: "{Weekday, Weekend}"
   unit: Parameter related to heating degree days
   suews table headers: :option:`QF_C_WD <suews:QF_C_WD>`, :option:`QF_C_WE <suews:QF_C_WE>`
-  usage:
-    EmissionsMethod: "2: Jarvi; 3:Loridan"
+  requisite:
+    - EmissionsMethod.2-QF-Jarvi
+    - EmissionsMethod.3-QF-Loridan
 
 - name: baset_cooling
   use:
@@ -367,20 +363,22 @@
   suews table headers:
     :option:`TCritic_Cooling_WD <suews:TCritic_Cooling_WD>`, :option:`TCritic_Cooling_WE
     <suews:TCritic_Cooling_WE>`
-  usage:
+  requisite:
     # BaseTMethod can be removed to simplify the setting
-    BaseTMethod; EmissionsMethod: "<4: QF Loridan, Jarvi"
+    - EmissionsMethod.1-QF-Loridan
+    - EmissionsMethod.2-QF-Jarvi
+    - EmissionsMethod.3-QF-Loridan
 
-- name: baset_hc # this can be removed as its function is covered by baset_cooling and baset_heating
-  use:
-    input: parameter
-  description: Base temperature for heating degree days
-  dimensions: 0
-  unit: degC
-  suews table headers: :option:`BaseT_HC <suews:BaseT_HC>`
-  usage:
-  # BaseTMethod can be removed to simplify the setting
-    BaseTMethod; EmissionsMethod: "<4: QF Loridan, Jarvi"
+# - name: baset_hc #remvoed to simplify the setting since v2023.5
+#   use:
+#     input: parameter
+#   description: Base temperature for heating degree days
+#   dimensions: 0
+#   unit: degC
+#   suews table headers: :option:`BaseT_HC <suews:BaseT_HC>`
+#   requisite:
+#     # BaseTMethod can be removed to simplify the setting
+#     BaseTMethod; EmissionsMethod: "<4: QF Loridan, Jarvi"
 
 - name: baset_heating
   use:
@@ -392,9 +390,11 @@
   suews table headers:
     :option:`TCritic_Heating_WD <suews:TCritic_Heating_WD>`, :option:`TCritic_Heating_WE
     <suews:TCritic_Heating_WE>`
-  usage:
-  # BaseTMethod can be removed to simplify the setting
-    BaseTMethod; EmissionsMethod: "<4: QF Loridan, Jarvi"
+  requisite:
+    # BaseTMethod can be removed to simplify the setting
+    - EmissionsMethod.1-QF-Loridan
+    - EmissionsMethod.2-QF-Jarvi
+    - EmissionsMethod.3-QF-Loridan
 
 - name: trafficrate
   use:
@@ -406,8 +406,8 @@
   suews table headers:
     :option:`TrafficRate_WD <suews:TrafficRate_WD>`, :option:`TrafficRate_WE
     <suews:TrafficRate_WE>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: trafficunits
   use:
@@ -416,9 +416,8 @@
   dimensions: 0
   unit: Units for the traffic rate for the study area. Not used in v2018a
   suews table headers: :option:`TrafficUnits <suews:TrafficUnits>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
-
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 - name: traffprof_24hr
   use:
     input: parameter
@@ -430,8 +429,8 @@
   suews table headers:
     :option:`TraffProfWD <suews:TraffProfWD>`, :option:`TraffProfWE
     <suews:TraffProfWE>`
-  usage:
-    EmissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
 
 - name: theta_bioco2
   use:
@@ -441,5 +440,5 @@
     3: "vegetated land covers: {`EveTr`, `DecTr`, `Grass`}"
   unit: The convexity of the curve at light saturation
   suews table headers: :option:`theta <suews:theta>`
-  usage:
-    emissionsMethod: "4:CO2+QF Jarvi"
+  requisite:
+    EmissionsMethod.4-CO2-Jarvi
