@@ -100,18 +100,19 @@ MODULE SUEWS_Driver
 
    ! ********** SUEWS_parameters schema (basic) **********
    TYPE, PUBLIC :: METHOD_PRM
-      INTEGER DiagMethod ! Defines how near surface diagnostics are calculated
-      INTEGER EmissionsMethod ! method to calculate anthropogenic heat [-]
-      INTEGER RoughLenHeatMethod ! method to calculate heat roughness length [-]
-      INTEGER RoughLenMomMethod ! Determines how aerodynamic roughness length (z0m) and zero displacement height (zdm) are calculated [-]
-      INTEGER SMDMethod ! Determines method for calculating soil moisture deficit [-]
-      INTEGER WaterUseMethod ! Defines how external water use is calculated[-]
-      INTEGER NetRadiationMethod ! method for calculation of radiation fluxes [-]
-      INTEGER StabilityMethod ! method to calculate atmospheric stability [-]
-      INTEGER StorageHeatMethod ! !Determines method for calculating storage heat flux ΔQS [-]
-      INTEGER Diagnose ! flag for printing diagnostic info during runtime [N/A]C
-      INTEGER SnowUse !
-      LOGICAL use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
+      INTEGER :: DiagMethod ! Defines how near surface diagnostics are calculated
+      INTEGER :: EmissionsMethod ! method to calculate anthropogenic heat [-]
+      INTEGER :: RoughLenHeatMethod ! method to calculate heat roughness length [-]
+      INTEGER :: RoughLenMomMethod ! Determines how aerodynamic roughness length (z0m) and zero displacement height (zdm) are calculated [-]
+      INTEGER :: FAIMethod !Determines how FAI is calculated [-]
+      INTEGER :: SMDMethod ! Determines method for calculating soil moisture deficit [-]
+      INTEGER :: WaterUseMethod ! Defines how external water use is calculated[-]
+      INTEGER :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
+      INTEGER :: StabilityMethod ! method to calculate atmospheric stability [-]
+      INTEGER :: StorageHeatMethod ! !Determines method for calculating storage heat flux ΔQS [-]
+      INTEGER :: Diagnose ! flag for printing diagnostic info during runtime [N/A]C
+      INTEGER :: SnowUse !
+      LOGICAL :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER :: ohmIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
    END TYPE METHOD_PRM
 
@@ -2208,7 +2209,7 @@ CONTAINS
       DecTreeH, DiagMethod, Diagnose, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-      FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
+      FAIDecTree, FAIEveTree,FAIMethod, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, g_max, g_k, g_q_base, g_q_shape, g_t, g_sm, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
@@ -2337,6 +2338,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: EmissionsMethod !method to calculate anthropogenic heat [-]
       INTEGER, INTENT(IN) :: RoughLenHeatMethod ! method to calculate heat roughness length [-]
       INTEGER, INTENT(IN) :: RoughLenMomMethod ! Determines how aerodynamic roughness length (z0m) and zero displacement height (zdm) are calculated [-]
+      INTEGER, INTENT(IN) :: FAIMethod !Determines how FAI is calculated [-]
       INTEGER, INTENT(IN) :: SMDMethod ! Determines method for calculating soil moisture deficit [-]
       INTEGER, INTENT(IN) :: WaterUseMethod !Defines how external water use is calculated[-]
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
@@ -2967,6 +2969,7 @@ CONTAINS
       methodPrm%EmissionsMethod = EmissionsMethod
       methodPrm%RoughLenHeatMethod = RoughLenHeatMethod
       methodPrm%RoughLenMomMethod = RoughLenMomMethod
+      methodPrm%FAIMethod = FAIMethod
       methodPrm%SMDMethod = SMDMethod
       methodPrm%WaterUseMethod = WaterUseMethod
       methodPrm%NetRadiationMethod = NetRadiationMethod
@@ -3795,7 +3798,9 @@ CONTAINS
          !    zH, z0m, zdm, ZZD)
          CALL SUEWS_cal_RoughnessParameters_DTS( &
             methodPrm%RoughLenMomMethod, &
+            methodPrm%FAIMethod, &
             pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, & !input
+            siteInfo%SurfaceArea, &
             bldgPrm%bldgH, evetrPrm%EveTreeH, dectrPrm%DecTreeH, &
             phenState_prev%porosity_id, bldgPrm%FAIBldg, evetrPrm%FAIEveTree, dectrPrm%FAIDecTree, &
             siteInfo%z0m_in, siteInfo%zdm_in, siteInfo%Z, &

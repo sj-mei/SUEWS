@@ -28,7 +28,7 @@ import pandas as pd
 from chardet import detect
 
 from .._env import logger_supy, trv_supy_module
-from .._load import load_SUEWS_nml, load_SUEWS_nml_simple_simple
+from .._load import load_SUEWS_nml_simple
 
 warnings.filterwarnings("ignore")
 ########################################################
