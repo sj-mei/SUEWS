@@ -183,7 +183,7 @@ CONTAINS
       DecTreeH, DiagMethod, Diagnose, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-      FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
+      FAIDecTree, FAIEveTree, FAIMethod, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, g_max, g_k, g_q_base, g_q_shape, g_t, g_sm, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
@@ -271,6 +271,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: OHMIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
       INTEGER, INTENT(IN) :: RoughLenHeatMethod ! method to calculate heat roughness length [-]
       INTEGER, INTENT(IN) :: RoughLenMomMethod ! Determines how aerodynamic roughness length (z0m) and zero displacement height (zdm) are calculated [-]
+      INTEGER, INTENT(IN) :: FAIMethod ! Determines how FAI is calculated [-]
       INTEGER, INTENT(IN) :: SMDMethod ! Determines method for calculating soil moisture deficit [-]
       INTEGER, INTENT(IN) :: SnowUse ! Determines whether the snow part of the model runs[-]
       INTEGER, INTENT(IN) :: StabilityMethod !method to calculate atmospheric stability [-]
@@ -1054,7 +1055,9 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
          IF (Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
          CALL SUEWS_cal_RoughnessParameters( &
-            RoughLenMomMethod, sfr_surf, & !input
+            RoughLenMomMethod, FAImethod, &
+            sfr_surf, & !input
+            surfacearea, & !input
             bldgH, EveTreeH, DecTreeH, &
             porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
@@ -4254,7 +4257,7 @@ CONTAINS
       DecTreeH, DiagMethod, Diagnose, DRAINRT, &
       dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-      FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
+      FAIDecTree, FAIEveTree, FAIMethod, Faut, FcEF_v_kgkm, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
@@ -4334,6 +4337,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: OHMIncQF !Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
       INTEGER, INTENT(IN) :: RoughLenHeatMethod !method to calculate heat roughness length [-]
       INTEGER, INTENT(IN) :: RoughLenMomMethod !Determines how aerodynamic roughness length (z0m) and zero displacement height (zdm) are calculated [-]
+      INTEGER, INTENT(IN) :: FAIMethod !Determines how FAI is calculated [-]
       INTEGER, INTENT(IN) :: SMDMethod !Determines method for calculating soil moisture deficit [-]
       INTEGER, INTENT(IN) :: SnowUse !Determines whether the snow part of the model runs[-]
       INTEGER, INTENT(IN) :: StabilityMethod !method to calculate atmospheric stability [-]
@@ -4961,7 +4965,7 @@ CONTAINS
             DecTreeH, DiagMethod, Diagnose, DRAINRT, &
             dt_since_start, dqndt, qn_av, dqnsdt, qn_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-            FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
+            FAIDecTree, FAIEveTree, FAIMethod, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, GDD_id, &
             GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
             IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &

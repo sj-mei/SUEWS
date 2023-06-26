@@ -560,6 +560,17 @@
         },
         "unit": "1"
     },
+    "faimethod": {
+        "cat": "grid",
+        "logic": "method",
+        "param": {
+            "allowed": [
+                0,
+                1
+            ]
+        },
+        "unit": "1"
+    },
     "faut": {
         "cat": "grid",
         "logic": "range",
