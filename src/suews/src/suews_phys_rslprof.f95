@@ -157,6 +157,7 @@ CONTAINS
             ! zd>0 subject to FAI > beta**2*(1-PAI); also beta<0.5;
             ! hence the lower limit of FAI below
             FAI > 0.25*(1 - PAI) .AND. FAI < 0.45 .AND. & ! FAI
+            ! FAI < 0.45 .AND. & ! remove the lower limit of FAI
             ! PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
             PAI > 0.1 .AND. PAI < 0.68 .AND. & ! PAI
             zH > 2 ! effective canopy height

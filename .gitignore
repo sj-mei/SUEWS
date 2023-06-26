@@ -393,3 +393,9 @@ Backup of *.doc*
 # supy-driver wrapper
 src/supy/supy/supy_driver.py
 src/supy_driver/supy_driver.py
+
+# debug files
+supy_debug*.zip
+df_forcing.pkl
+df_state_init.pkl
+supy_info.json
