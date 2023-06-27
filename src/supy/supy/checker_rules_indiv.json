@@ -1169,8 +1169,8 @@
         "cat": "grid",
         "logic": "range",
         "param": {
-            "max": "inf",
-            "min": 0
+            "max": 0.9,
+            "min": 0.1
         },
         "unit": "1"
     },
@@ -1178,8 +1178,8 @@
         "cat": "grid",
         "logic": "range",
         "param": {
-            "max": "inf",
-            "min": 0
+            "max": 0.9,
+            "min": 0.1
         },
         "unit": "1"
     },
@@ -1187,7 +1187,7 @@
         "cat": "grid",
         "logic": "range",
         "param": {
-            "max": 0.99,
+            "max": 0.9,
             "min": 0
         },
         "unit": "1"
