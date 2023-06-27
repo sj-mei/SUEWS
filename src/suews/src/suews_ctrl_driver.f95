@@ -1341,6 +1341,11 @@ CONTAINS
       REAL(KIND(1D0)) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
       REAL(KIND(1D0)) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
 
+      ! calculated values of FAI
+      REAL(KIND(1D0)) :: FAIBldg_use
+      REAL(KIND(1D0)) :: FAIEveTree_use
+      REAL(KIND(1D0)) :: FAIDecTree_use
+
       ! ####
       ! set initial values for output arrays
       SWE = 0.
@@ -2182,7 +2187,9 @@ CONTAINS
           vsmd, S1/G_sm + S2, G_sm, G_sm*(vsmd - S1/G_sm + S2), & ! debug g_smd
           g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
-          i_iter*1D0, dqndt]
+          i_iter*1D0, &
+         FAIBldg_use,FAIEveTree_use,FAIDecTree_use,FAI,&
+          dqndt]
 
       !==============output==========================
       CALL output_line_init(output_line_suews)
@@ -2897,6 +2904,11 @@ CONTAINS
       INTEGER, PARAMETER :: EvapMethod = 2 ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER, PARAMETER :: LAImethod = 1 ! boolean to determine if calculate LAI [-]
       REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
+
+      ! calculated values of FAI
+      REAL(KIND(1D0)) :: FAIBldg_use
+      REAL(KIND(1D0)) :: FAIEveTree_use
+      REAL(KIND(1D0)) :: FAIDecTree_use
 
       ! ####################################################################################
       ALLOCATE (hydroState_prev%soilstore_roof(nlayer))
@@ -3804,6 +3816,7 @@ CONTAINS
             bldgPrm%bldgH, evetrPrm%EveTreeH, dectrPrm%DecTreeH, &
             phenState_prev%porosity_id, bldgPrm%FAIBldg, evetrPrm%FAIEveTree, dectrPrm%FAIDecTree, &
             siteInfo%z0m_in, siteInfo%zdm_in, siteInfo%Z, &
+            FAIBldg_use,FAIEveTree_use,FAIDecTree_use,& ! output:
             FAI, PAI, & !output
             zH, z0m, zdm, ZZD)
          ! print *, 'day =', timer%id, 'hour =', timer%it, 'porosity_id = ', phenState_prev%porosity_id
@@ -4957,7 +4970,9 @@ CONTAINS
           vsmd, S1/G_sm + S2, G_sm, G_sm*(vsmd - S1/G_sm + S2), & ! debug g_smd
           g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
-          i_iter*1D0, ohmState%dqndt]
+          i_iter*1D0, &
+          FAIBldg_use,FAIEveTree_use,FAIDecTree_use,FAI, &
+          ohmState%dqndt]
 
       !==============output==========================
       CALL output_line_init(output_line_suews)
