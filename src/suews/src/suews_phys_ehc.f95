@@ -97,10 +97,11 @@ MODULE EHC_module
 CONTAINS
    ! ===============================================================================================
    ! extended ESTM, TS 20 Jan 2022
+   ! renamed to EHC (explicit heat conduction) to avoid confusion with ESTM
    ! ESTM_ehc accoutns for
    ! 1. heterogeneous building facets (roofs, walls) at different vertical levels
    ! 2. all standard ground-level surfaces (dectr, evetr, grass, bsoil and water)
-   SUBROUTINE ESTM_ehc( &
+   SUBROUTINE EHC( &
       tstep, & !input
       nlayer, &
       QG_surf, qg_roof, qg_wall, &
@@ -446,6 +447,6 @@ CONTAINS
       ! all standard suews surfaces
       qs = DOT_PRODUCT(QS_surf, sfr_surf)
 
-   END SUBROUTINE ESTM_ehc
+   END SUBROUTINE EHC
 
 END MODULE EHC_module

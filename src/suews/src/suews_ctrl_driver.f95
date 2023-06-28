@@ -16,7 +16,7 @@ MODULE SUEWS_Driver
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters, SUEWS_cal_RoughnessParameters_DTS
    USE ESTM_module, ONLY: ESTM
-   USE EHC_module, ONLY: ESTM_ehc
+   USE EHC_module, ONLY: EHC
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine, SUEWS_cal_DailyState_DTS
    USE WaterDist_module, ONLY: &
@@ -6374,7 +6374,7 @@ CONTAINS
          ! ASSOCIATE (v => dz_wall(1, 1:ndepth))
          !    PRINT *, 'dz_wall in cal_qs', v, SIZE(v)
          ! END ASSOCIATE
-         CALL ESTM_ehc( &
+         CALL EHC( &
             tstep, & !input
             nlayer, &
             QG_surf, qg_roof, qg_wall, &
@@ -6888,7 +6888,7 @@ CONTAINS
          ! ASSOCIATE (v => dz_wall(1, 1:ndepth))
          !    PRINT *, 'dz_wall in cal_qs', v, SIZE(v)
          ! END ASSOCIATE
-         CALL ESTM_ehc( &
+         CALL EHC( &
             tstep, & !input
             nlayer, &
             QG_surf, qg_roof, qg_wall, &

@@ -670,7 +670,7 @@ CONTAINS
             FAIDecTree_use = 1.66*(1 - porosity_dectr)*sfr_surf(DecidSurf)
 
          END IF
-         FAI = SUM(MERGE([FAIBldg_use, FAIEveTree_use*(1 - porosity_evetr), FAIDecTree_use*(1 - porosity_dectr)], &
+         FAI = SUM(MERGE([FAIBldg_use, FAIEveTree_use, FAIDecTree_use], &
                          [0D0, 0D0, 0D0], &
                          sfr_surf([BldgSurf, ConifSurf, DecidSurf]) > 0))
 
