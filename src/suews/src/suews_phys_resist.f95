@@ -569,6 +569,7 @@ CONTAINS
       bldgH, EveTreeH, DecTreeH, &
       porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
+      FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
       FAI, PAI, & ! output:
       Zh, z0m, zdm, ZZD)
       ! Get surface covers and frontal area fractions (LJ 11/2010)
@@ -627,9 +628,9 @@ CONTAINS
       REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
 
       ! calculated values of FAI
-      REAL(KIND(1D0)) :: FAIBldg_use
-      REAL(KIND(1D0)) :: FAIEveTree_use
-      REAL(KIND(1D0)) :: FAIDecTree_use
+      REAL(KIND(1D0)), INTENT(out) :: FAIBldg_use
+      REAL(KIND(1D0)), INTENT(out) :: FAIEveTree_use
+      REAL(KIND(1D0)), INTENT(out) :: FAIDecTree_use
 
       sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
 
@@ -669,7 +670,7 @@ CONTAINS
             FAIDecTree_use = 1.66*(1 - porosity_dectr)*sfr_surf(DecidSurf)
 
          END IF
-         FAI = SUM(MERGE([FAIBldg, FAIEveTree*(1 - porosity_evetr), FAIDecTree*(1 - porosity_dectr)], &
+         FAI = SUM(MERGE([FAIBldg_use, FAIEveTree_use, FAIDecTree_use], &
                          [0D0, 0D0, 0D0], &
                          sfr_surf([BldgSurf, ConifSurf, DecidSurf]) > 0))
 
