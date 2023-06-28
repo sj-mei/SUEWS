@@ -2188,7 +2188,7 @@ CONTAINS
           g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
           i_iter*1D0, &
-         FAIBldg_use,FAIEveTree_use,FAIDecTree_use,FAI,&
+          FAIBldg_use, FAIEveTree_use, FAIDecTree_use, FAI, &
           dqndt]
 
       !==============output==========================
@@ -3816,7 +3816,7 @@ CONTAINS
             bldgPrm%bldgH, evetrPrm%EveTreeH, dectrPrm%DecTreeH, &
             phenState_prev%porosity_id, bldgPrm%FAIBldg, evetrPrm%FAIEveTree, dectrPrm%FAIDecTree, &
             siteInfo%z0m_in, siteInfo%zdm_in, siteInfo%Z, &
-            FAIBldg_use,FAIEveTree_use,FAIDecTree_use,& ! output:
+            FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
             FAI, PAI, & !output
             zH, z0m, zdm, ZZD)
          ! print *, 'day =', timer%id, 'hour =', timer%it, 'porosity_id = ', phenState_prev%porosity_id
@@ -4971,7 +4971,7 @@ CONTAINS
           g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
           vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
           i_iter*1D0, &
-          FAIBldg_use,FAIEveTree_use,FAIDecTree_use,FAI, &
+          FAIBldg_use, FAIEveTree_use, FAIDecTree_use, FAI, &
           ohmState%dqndt]
 
       !==============output==========================

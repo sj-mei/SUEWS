@@ -569,7 +569,7 @@ CONTAINS
       bldgH, EveTreeH, DecTreeH, &
       porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
-      FAIBldg_use,FAIEveTree_use,FAIDecTree_use,& ! output:
+      FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
       FAI, PAI, & ! output:
       Zh, z0m, zdm, ZZD)
       ! Get surface covers and frontal area fractions (LJ 11/2010)
