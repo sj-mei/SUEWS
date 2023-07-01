@@ -6273,7 +6273,7 @@ CONTAINS
 
       REAL(KIND(1D0)) :: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
-      WRITE (*, *) 'OHM_coef = ', OHM_coef
+      ! WRITE (*, *) 'OHM_coef = ', OHM_coef
 
       ! initialise output variables
       deltaQi = 0
@@ -10784,8 +10784,8 @@ CONTAINS
          ! CLOSE (12)
          ! !================================================
 
-         ! CALL SUEWS_cal_Main( &
-         CALL SUEWS_cal_Main_DTS( &
+         CALL SUEWS_cal_Main( &
+         ! CALL SUEWS_cal_Main_DTS( &
             AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
             AH_SLOPE_Heating, &
             alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
