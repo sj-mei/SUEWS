@@ -2,6 +2,7 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 
+
 def get_spinup_state(
     df_state: pd.DataFrame,
     df_forcing: pd.DataFrame,
@@ -31,8 +32,9 @@ def get_spinup_state(
         Dataframe containing the spin-up state for the model if `save_spinup` is False.
     Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
         A tuple of dataframes containing the spin-up output, state, and forcing data if `save_spinup` is True.
-  """
-    from .._supy_module import run_supy # import this here to avoid circular import
+    """
+    # this function is inspired by the spinup function in the supy-lcz project led by @matthiasdemuzere
+    from .._supy_module import run_supy  # import this here to avoid circular import
 
     # if df_forcing is shorter than one year, raise error
     len_forcing = df_forcing.index.max() - df_forcing.index.min()
@@ -44,13 +46,11 @@ def get_spinup_state(
     # if df_forcing is longer than one year but shorter than two years
     # then duplicate the forcing dataframe to two years
     if len_forcing < pd.Timedelta(days=365 * 2):
-        n_year=np.ceil(spinup_days / 365).astype(int)
+        n_year = np.ceil(spinup_days / 365).astype(int)
         print(
             f"The forcing dataframe is longer than one year but shorter than two years, duplicating the forcing dataframe to {n_year} years"
         )
-        df_forcing_spinup = pd.concat(
-            [df_forcing] * n_year, ignore_index=True
-        )
+        df_forcing_spinup = pd.concat([df_forcing] * n_year, ignore_index=True)
         df_forcing_spinup.index = pd.date_range(
             df_forcing.index.max()
             - (df_forcing_spinup.index.size - 1) * df_forcing.index.freq,
