@@ -1,7 +1,6 @@
 from typing import Tuple, Union
 import numpy as np
 import pandas as pd
-from .._supy_module import run_supy
 
 def get_spinup_state(
     df_state: pd.DataFrame,
@@ -33,11 +32,7 @@ def get_spinup_state(
     Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
         A tuple of dataframes containing the spin-up output, state, and forcing data if `save_spinup` is True.
   """
-
-    # Store states after spin-up
-    # lai_id: https://suews.readthedocs.io/en/latest/related-softwares/supy/data-structure/df_state.html?highlight=state_surf#cmdoption-arg-lai_id
-    # soilstore_surf (sss): https://suews.readthedocs.io/en/latest/related-softwares/supy/data-structure/df_state.html?highlight=state_surf#cmdoption-arg-soilstore_surf
-    # state_surf (ss): https://suews.readthedocs.io/en/latest/related-softwares/supy/data-structure/df_state.html?highlight=state_surf#cmdoption-arg-state_surf
+    from .._supy_module import run_supy # import this here to avoid circular import
 
     # if df_forcing is shorter than one year, raise error
     len_forcing = df_forcing.index.max() - df_forcing.index.min()
@@ -86,16 +81,8 @@ def get_spinup_state(
     df_state_lc_init["pormin_dec"] = 0.1
 
     # construct forcing for spin-up
-    # Times in UTC
     end_spinup = pd.to_datetime(start_analysis)
     start_spinup = end_spinup - pd.Timedelta(days=spinup_days)
-
-    # Offset from UTC to Local
-    # utc_offset = int(site_info['local_utc_offset_hours'])
-
-    # # Times in Local Time
-    # start_spinup_lt = pd.to_datetime(start_spinup) + pd.Timedelta(hours=utc_offset)
-    # end_spinup_lt = pd.to_datetime(end_spinup) + pd.Timedelta(hours=utc_offset)
 
     print(f"==> starting spin-up simulations from {start_spinup} to {end_spinup}!")
 
@@ -107,10 +94,7 @@ def get_spinup_state(
         df_forcing=df_forcing_spinup,
         df_state_init=df_state_lc_init,
     )
-    # df_forcing_spinup.to_pickle('df_forcing_spinup.pkl')
-    # df_output_spinup.to_pickle('df_output_spinup.pkl')
-    # df_state_spinup.to_pickle('df_state_spinup.pkl')
-    # print(f"==> saving spin-up output and state to pickle files for debugging!")
+
     print(f"==> spin-up simulations completed, assigning spin-up states!")
     # retrieve the state after spin-up
     idx_spinup = df_forcing_spinup.index[-1] + df_forcing_spinup.index.freq
