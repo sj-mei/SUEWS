@@ -966,10 +966,10 @@ CONTAINS
       SoilMoistCap, SoilState, & !output
       vsmd, smd)
 
-      USE SUEWS_DEF_DTS, only: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
-                                 LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 HYDRO_STATE
-      
+      USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
+                               HYDRO_STATE
+
       IMPLICIT NONE
 
       ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
@@ -2237,10 +2237,10 @@ CONTAINS
       ! To Do:
       !        - Add functionality for water on paved surfaces (street cleaning, fountains)
 
-      USE SUEWS_DEF_DTS, only: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
-                                 LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 IRRIGATION_PRM, anthroHEAT_STATE, &
-                                 HYDRO_STATE, METHOD_PRM, SUEWS_TIMER, SITE_PRM
+      USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
+                               IRRIGATION_PRM, anthroHEAT_STATE, &
+                               HYDRO_STATE, METHOD_PRM, SUEWS_TIMER, SITE_PRM
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
@@ -2343,8 +2343,8 @@ CONTAINS
       ! Irrigated Fraction of each surface
       ! TS: 20200409, add irrigation fractions for all surfaces
       IrrFrac = [pavedPrm%IrrFracPaved, bldgPrm%IrrFracBldgs, &
-                  evetrPrm%IrrFracEveTr, dectrPrm%IrrFracDecTr, grassPrm%IrrFracGrass, &
-                  bsoilPrm%IrrFracBSoil, waterPrm%IrrFracWater]
+                 evetrPrm%IrrFracEveTr, dectrPrm%IrrFracDecTr, grassPrm%IrrFracGrass, &
+                 bsoilPrm%IrrFracBSoil, waterPrm%IrrFracWater]
 
       ! --------------------------------------------------------------------------------
       ! If water used is observed and provided in the met forcing file, units are m3

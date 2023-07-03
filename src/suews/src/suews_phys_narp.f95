@@ -627,10 +627,9 @@ CONTAINS
 
    END SUBROUTINE NARP_cal_SunPosition
 
-
    SUBROUTINE NARP_cal_SunPosition_DTS(timer, dectime, &
-      siteInfo, &
-      sunazimuth, sunzenith)
+                                       siteInfo, &
+                                       sunazimuth, sunzenith)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SITE_PRM
 
@@ -647,9 +646,9 @@ CONTAINS
       INTEGER :: month, day, hour, min, seas, dayofyear, year_int
 
       REAL(KIND(1D0)) :: juliancentury, julianday, julianephemeris_century, julianephemeris_day, &
-      julianephemeris_millenium
+                         julianephemeris_millenium
       REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude, earth_heliocentric_positionlongitude, &
-      earth_heliocentric_positionradius
+                         earth_heliocentric_positionradius
       REAL(KIND(1D0)) :: sun_geocentric_positionlatitude, sun_geocentric_positionlongitude
       REAL(KIND(1D0)) :: nutationlongitude, nutationobliquity
       REAL(KIND(1D0)) :: corr_obliquity
@@ -664,7 +663,7 @@ CONTAINS
       REAL(KIND(1D0)) :: topocentric_local_hour
 
       year = REAL(timer%iy, KIND(1D0))
-      idectime =  dectime - timer%tstep/2/86400
+      idectime = dectime - timer%tstep/2/86400
       UTC = siteInfo%timezone
       locationlatitude = siteInfo%lat
       locationlongitude = siteInfo%lon
@@ -694,7 +693,7 @@ CONTAINS
       ! 1. Calculate the Julian Day, and Century. Julian Ephemeris day, century
       ! and millenium are calculated using a mean delta_t of 33.184 seconds.
       CALL julian_calculation(year, month, day, hour, min, sec, UTC, juliancentury, julianday, julianephemeris_century, &
-      julianephemeris_day, julianephemeris_millenium)
+                              julianephemeris_day, julianephemeris_millenium)
 
       ! 2. Calculate the Earth heliocentric longitude, latitude, and radius
       ! vector (L, B, and R)

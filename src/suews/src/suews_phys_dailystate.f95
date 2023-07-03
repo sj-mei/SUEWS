@@ -785,8 +785,8 @@ CONTAINS
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
       USE SUEWS_DEF_DTS, ONLY: SITE_PRM, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
-                                 PHENOLOGY_STATE, anthroHEAT_STATE, HYDRO_STATE, METHOD_PRM, &
-                                 IRRIGATION_PRM, LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM
+                               PHENOLOGY_STATE, anthroHEAT_STATE, HYDRO_STATE, METHOD_PRM, &
+                               IRRIGATION_PRM, LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM
 
       IMPLICIT NONE
 
@@ -837,7 +837,7 @@ CONTAINS
 
       TYPE(SITE_PRM), INTENT(IN) :: siteInfo
       REAL(KIND(1D0)) :: lat
-      
+
       ! REAL(KIND(1D0)), INTENT(IN)::tau_a
       ! REAL(KIND(1D0)), INTENT(IN)::tau_f
       ! REAL(KIND(1D0)), INTENT(IN)::tau_r

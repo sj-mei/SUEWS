@@ -282,7 +282,6 @@ SUBROUTINE SUEWS_cal_dectime( &
 
 END SUBROUTINE SUEWS_cal_dectime
 
-
 SUBROUTINE SUEWS_cal_dectime_DTS( &
    timer, & ! input
    dectime) ! output
@@ -374,7 +373,6 @@ SUBROUTINE SUEWS_cal_weekday( &
 
 END SUBROUTINE SUEWS_cal_weekday
 
-
 SUBROUTINE SUEWS_cal_weekday_DTS( &
    timer, siteInfo, & !input
    dayofWeek_id) !output
@@ -422,7 +420,6 @@ SUBROUTINE SUEWS_cal_DLS( &
    IF (id > startDLS .AND. id < endDLS) dls = 1
 
 END SUBROUTINE SUEWS_cal_DLS
-
 
 SUBROUTINE SUEWS_cal_DLS_DTS( &
    timer, ahemisPrm, & !input

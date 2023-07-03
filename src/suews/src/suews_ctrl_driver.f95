@@ -8,11 +8,11 @@ MODULE SUEWS_Driver
    ! 1. functions/subroutines
    ! 2. constant variables
    USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SURF_STORE_PRM, WATER_DIST_PRM, bioCO2_PRM, CONDUCTANCE_PRM, &
-                              LAI_PRM, OHM_COEF_LC, OHM_PRM, SOIL_PRM, anthroHEAT_PRM, IRRIG_daywater, &
-                              IRRIGATION_PRM, anthroEMIS_PRM, SNOW_PRM, SPARTACUS_PRM, SPARTACUS_LAYER_PRM, &
-                              SITE_PRM, LUMPS_PRM, EHC_PRM, LC_PAVED_PRM, LC_BLDG_PRM, LC_DECTR_PRM, LC_EVETR_PRM, &
-                              LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, HYDRO_STATE, HEAT_STATE, &
-                              OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER
+                            LAI_PRM, OHM_COEF_LC, OHM_PRM, SOIL_PRM, anthroHEAT_PRM, IRRIG_daywater, &
+                            IRRIGATION_PRM, anthroEMIS_PRM, SNOW_PRM, SPARTACUS_PRM, SPARTACUS_LAYER_PRM, &
+                            SITE_PRM, LUMPS_PRM, EHC_PRM, LC_PAVED_PRM, LC_BLDG_PRM, LC_DECTR_PRM, LC_EVETR_PRM, &
+                            LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, HYDRO_STATE, HEAT_STATE, &
+                            OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition, NARP_cal_SunPosition_DTS
@@ -3328,8 +3328,8 @@ CONTAINS
          !    timer%iy, timer%id, siteInfo%lat, & !input
          !    dayofWeek_id) !output
          CALL SUEWS_cal_weekday_DTS( &
-               timer, siteInfo, & !input
-               dayofWeek_id) !output
+            timer, siteInfo, & !input
+            dayofWeek_id) !output
 
          ! calculate dayofweek information
          ! CALL SUEWS_cal_DLS( &
@@ -4674,8 +4674,8 @@ CONTAINS
       forcing, QF_SAHP, &
       Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
-      USE SUEWS_DEF_DTS, only: anthroEMIS_PRM, SITE_PRM, anthroHEAT_STATE, &
-                                 SUEWS_TIMER, SUEWS_FORCING
+      USE SUEWS_DEF_DTS, ONLY: anthroEMIS_PRM, SITE_PRM, anthroHEAT_STATE, &
+                               SUEWS_TIMER, SUEWS_FORCING
 
       IMPLICIT NONE
 
@@ -4752,7 +4752,7 @@ CONTAINS
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
-      
+
       EF_umolCO2perJ = ahemisPrm%EF_umolCO2perJ
       EmissionsMethod = methodPrm%EmissionsMethod
       EnEF_v_Jkm = ahemisPrm%EnEF_v_Jkm
@@ -5734,11 +5734,11 @@ CONTAINS
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, SNOW_STATE, SNOW_PRM, &
-                                 SUEWS_FORCING, SITE_PRM, &
-                                 LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
-                                 LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 PHENOLOGY_STATE, SPARTACUS_PRM, &
-                                 SPARTACUS_LAYER_PRM, HEAT_STATE
+                               SUEWS_FORCING, SITE_PRM, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
+                               PHENOLOGY_STATE, SPARTACUS_PRM, &
+                               SPARTACUS_LAYER_PRM, HEAT_STATE
 
       IMPLICIT NONE
       ! INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
@@ -5859,11 +5859,11 @@ CONTAINS
 
       ! SPARTACUS input variables
       INTEGER :: n_vegetation_region_urban, &
-                             n_stream_sw_urban, n_stream_lw_urban
+                 n_stream_sw_urban, n_stream_lw_urban
       REAL(KIND(1D0)) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
-                           veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
-                           veg_fsd_const, veg_contact_fraction_const, &
-                           ground_albedo_dir_mult_fact
+                         veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
+                         veg_fsd_const, veg_contact_fraction_const, &
+                         ground_albedo_dir_mult_fact
       LOGICAL :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
 
       REAL(KIND(1D0)), DIMENSION(nlayer + 1) :: height ! height in spartacus [m]
@@ -5887,20 +5887,20 @@ CONTAINS
       SnowUse = methodPrm%SnowUse
       Diagnose = methodPrm%Diagnose
       use_sw_direct_albedo = methodPrm%use_sw_direct_albedo
-      
+
       tstep = timer%tstep
 
       SnowPack_prev = snowState_prev%SnowPack
       SnowAlb_prev = snowState_prev%snowalb
       snowFrac_prev = snowState_prev%snowFrac
       IceFrac = snowState_prev%IceFrac
-      
+
       tau_a = snowPrm%tau_a
       tau_f = snowPrm%tau_f
       SnowAlbMax = snowPrm%SnowAlbMax
       SnowAlbMin = snowPrm%SnowAlbMin
       NARP_EMIS_SNOW = snowPrm%NARP_EMIS_SNOW
-      
+
       ldown_obs = forcing%ldown
       fcld_obs = forcing%fcld
       kdown = forcing%kdown
@@ -5909,11 +5909,11 @@ CONTAINS
       qn1_obs = forcing%qn1_obs
 
       NARP_TRANS_SITE = siteInfo%NARP_TRANS_SITE
-      
+
       tsfc_surf = heatState_out%tsfc_surf
       tsfc_roof = heatState_out%tsfc_roof
       tsfc_wall = heatState_out%tsfc_wall
-      
+
       alb_prev = phenState_prev%alb
       albDecTr_id = phenState_next%albDecTr_id
       albEveTr_id = phenState_next%albEveTr_id
@@ -5947,9 +5947,9 @@ CONTAINS
       wall_specular_frac = spartacusLayerPrm%wall_specular_frac
 
       sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, &
-                     grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+                  grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
       emis = [pavedPrm%emis, bldgPrm%emis, evetrPrm%emis, dectrPrm%emis, &
-                     grassPrm%emis, bsoilPrm%emis, waterPrm%emis]
+              grassPrm%emis, bsoilPrm%emis, waterPrm%emis]
       ! translate values
       alb = alb_prev
 

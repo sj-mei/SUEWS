@@ -745,8 +745,8 @@ CONTAINS
       !--------------------------------------------------------------------------------
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SITE_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
-                                 LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 LC_BSOIL_PRM, LC_WATER_PRM, PHENOLOGY_STATE
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, PHENOLOGY_STATE
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: nsurf = 7 ! number of surface types
