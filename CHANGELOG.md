@@ -24,3 +24,6 @@
 
 - 05 Jun 2023:
   - [feature] added `FAIMethod` to help determine the FAI (#192)
+
+- 01 Jul 2023:
+  - [feature] Added a function `supy.util.get_spinup_state` to retrieve the spin-up state for the model, which can be used for debugging and initialising the model for simulation.
