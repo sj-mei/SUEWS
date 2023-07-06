@@ -1970,7 +1970,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_update_DailyState
 
-   ! transfer results to a one-line output for SUEWS_cal_DailyState
    SUBROUTINE update_DailyStateLine( &
       it, imin, nsh_real, & !input
       GDD_id, HDD_id, LAI_id, &
@@ -2041,5 +2040,102 @@ CONTAINS
       END IF
 
    END SUBROUTINE update_DailyStateLine
+
+   ! transfer results to a one-line output for SUEWS_cal_DailyState
+   SUBROUTINE update_DailyStateLine_DTS( &
+      timer, phenState, anthroHeatState, &
+      hydroState, &
+      snowState, &
+      nsh_real, & !input
+      VegPhenLumps, &
+      a1, a2, a3, &
+      DailyStateLine) !out
+
+      USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, anthroHEAT_STATE, HYDRO_STATE, &
+                                 SNOW_STATE, SUEWS_TIMER
+
+      IMPLICIT NONE
+
+      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
+      TYPE(anthroHEAT_STATE), INTENT(IN) :: anthroHeatState
+
+      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
+
+      TYPE(SNOW_STATE), INTENT(IN) :: snowState
+
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+
+      ! INTEGER,INTENT(IN) ::iy
+      ! INTEGER,INTENT(IN) ::id
+      INTEGER :: it
+      INTEGER :: imin
+      REAL(KIND(1D0)), INTENT(IN) :: nsh_real
+
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAI_id !LAI for each veg surface [m2 m-2]
+
+      REAL(KIND(1D0)) :: DecidCap_id
+      REAL(KIND(1D0)) :: albDecTr_id
+      REAL(KIND(1D0)) :: albEveTr_id
+      REAL(KIND(1D0)) :: albGrass_id
+      REAL(KIND(1D0)) :: porosity_id
+      REAL(KIND(1D0)) :: Tmin_id
+      REAL(KIND(1D0)) :: Tmax_id
+      REAL(KIND(1D0)) :: lenday_id
+      REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+
+      ! REAL(KIND(1D0)), INTENT(IN) :: deltaLAI
+      REAL(KIND(1D0)), INTENT(IN) :: VegPhenLumps
+      REAL(KIND(1D0)) :: SnowAlb
+      REAL(KIND(1D0)), DIMENSION(7) :: SnowDens
+      REAL(KIND(1D0)), INTENT(IN) :: a1
+      REAL(KIND(1D0)), INTENT(IN) :: a2
+      REAL(KIND(1D0)), INTENT(IN) :: a3
+
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT) :: DailyStateLine
+
+      GDD_id = phenState%GDD_id
+      LAI_id = phenState%LAI_id
+      SDD_id = phenState%SDD_id
+      Tmin_id = phenState%Tmin_id
+      Tmax_id = phenState%Tmax_id
+      lenday_id = phenState%lenday_id
+      DecidCap_id = phenState%DecidCap_id
+      albDecTr_id = phenState%albDecTr_id
+      albEveTr_id = phenState%albEveTr_id
+      albGrass_id = phenState%albGrass_id
+      porosity_id = phenState%porosity_id
+      WUDay_id = hydroState%WUDay_id
+      SnowAlb = snowState%SnowAlb
+      SnowDens = snowState%SnowDens
+      
+      HDD_id = anthroHeatState%HDD_id
+
+      it = timer%it
+      imin = timer%imin
+
+      ! initialise DailyStateLine
+      DailyStateLine = -999
+      IF (it == 23 .AND. imin == (nsh_real - 1)/nsh_real*60) THEN
+         ! Write actual data only at the last timesstep of each day
+         ! DailyStateLine(1:2)   = [iy,id]
+         ! DailyStateLine(1:6) = HDD_id
+         ! DailyStateLine(6 + 1:6 + 5) = GDD_id
+         ! DailyStateLine(11 + 1:11 + 3) = LAI_id
+         ! DailyStateLine(14 + 1:14 + 5) = [DecidCap_id, Porosity_id, AlbEveTr_id, AlbDecTr_id, AlbGrass_id]
+         ! DailyStateLine(19 + 1:19 + 9) = WUDay_id(1:9)
+         ! DailyStateLine(28 + 1) = deltaLAI
+         ! DailyStateLine(29 + 1) = VegPhenLumps
+         ! DailyStateLine(30 + 1:30 + 8) = [SnowAlb, SnowDens(1:7)]
+         ! DailyStateLine(38 + 1:38 + 3) = [a1, a2, a3]
+         DailyStateLine = [HDD_id(1:6), GDD_id, SDD_id, Tmin_id, Tmax_id, lenday_id, LAI_id, DecidCap_id, Porosity_id, &
+                           AlbEveTr_id, AlbDecTr_id, AlbGrass_id, WUDay_id, VegPhenLumps, SnowAlb, SnowDens, &
+                           a1, a2, a3]
+
+      END IF
+
+   END SUBROUTINE update_DailyStateLine_DTS
 
 END MODULE DailyState_module
