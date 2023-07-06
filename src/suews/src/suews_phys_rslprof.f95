@@ -768,16 +768,16 @@ CONTAINS
       !
       !-----------------------------------------------------
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
-                                 LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 SITE_PRM
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
+                               SITE_PRM
 
       IMPLICIT NONE
 
       TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SITE_PRM), INTENT(IN) :: siteInfo
-      
+
       TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
       TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm

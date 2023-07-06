@@ -2052,7 +2052,7 @@ CONTAINS
       DailyStateLine) !out
 
       USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, anthroHEAT_STATE, HYDRO_STATE, &
-                                 SNOW_STATE, SUEWS_TIMER
+                               SNOW_STATE, SUEWS_TIMER
 
       IMPLICIT NONE
 
@@ -2110,7 +2110,7 @@ CONTAINS
       WUDay_id = hydroState%WUDay_id
       SnowAlb = snowState%SnowAlb
       SnowDens = snowState%SnowDens
-      
+
       HDD_id = anthroHeatState%HDD_id
 
       it = timer%it

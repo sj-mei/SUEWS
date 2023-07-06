@@ -340,9 +340,9 @@ CONTAINS
                                  Tsurf, siteInfo, zenith_deg, azimuth, &
                                  pavedPrm, bldgPrm, phenState, &
                                  dataOutLineBEERS) ! output
-      
+
       USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_FORCING, SITE_PRM, &
-                                 PHENOLOGY_STATE, LC_PAVED_PRM, LC_BLDG_PRM
+                               PHENOLOGY_STATE, LC_PAVED_PRM, LC_BLDG_PRM
 
       IMPLICIT NONE
 
@@ -442,17 +442,17 @@ CONTAINS
 
       iy = timer%iy
       id = timer%id
-      
+
       avkdn = forcing%kdown
       Temp_C = forcing%Temp_C
       avrh = forcing%RH
       Press_hPa = forcing%Pres
-      
+
       lat = siteInfo%lat
       lng = siteInfo%lon
       alt = siteInfo%alt
       timezone = siteInfo%timezone
-      
+
       emis_ground = pavedPrm%emis
       emis_wall = bldgPrm%emis
 
@@ -516,12 +516,12 @@ CONTAINS
          !Clearness Index on Earth's surface after Crawford and Dunchon (1999) with a correction
          !factor for low sun elevations after Lindberg et al. (2008)
          CALL clearnessindex_2013b(zen, DOY, Ta, RH/100., radG, lat, P/10., & !input
-                     I0, CI, Kt, I0et, CIuncorr) !output
+                                   I0, CI, Kt, I0et, CIuncorr) !output
          ! IF (CI > 1) CI = 1
 
          !Estimation of radD and radI if not measured after Reindl et al. (1990)
          IF (onlyglobal == 1) THEN
-         CALL diffusefraction(radG, altitude, Kt, Ta, RH, radI, radD)
+            CALL diffusefraction(radG, altitude, Kt, Ta, RH, radI, radD)
          END IF
 
          CALL shadowGroundKusaka(HW, azimuth, zen, shadowground, shadowwalls)
@@ -537,23 +537,23 @@ CONTAINS
          !          + alb_bldg*(1 - svfr)*(radG*(1 - F_sh) + radD*F_sh)
 
          Kup2d = alb_ground*( &
-         radI*shadowground*SIN(altitude*DEG2RAD) & ! gvf not defined TODO #2 FIXED
-         + radD*svf_bldg_veg &
-         + alb_bldg*(1 - svf_bldg_veg)*(radG*(1 - F_sh) + radD*F_sh))
+                 radI*shadowground*SIN(altitude*DEG2RAD) & ! gvf not defined TODO #2 FIXED
+                 + radD*svf_bldg_veg &
+                 + alb_bldg*(1 - svf_bldg_veg)*(radG*(1 - F_sh) + radD*F_sh))
 
          ! TODO: #7 check consistency with python code
          CALL KWalls( &
-         svf_ground, svf_veg, shadowground, F_sh, &
-         radI, radG, radD, azimuth, altitude, psi, t, alb_ground, alb_bldg, & ! input
-         Keast, Knorth, Ksouth, Kwest) ! output
+            svf_ground, svf_veg, shadowground, F_sh, &
+            radI, radG, radD, azimuth, altitude, psi, t, alb_ground, alb_bldg, & ! input
+            Keast, Knorth, Ksouth, Kwest) ! output
 
          IF (BEERS_tsurf == 1) THEN
-         CALL tSurfBEERS(iy, Ta, RH, radI, I0, dectime, SNUP, altitude, zen, timezone, lat, lng, alt, &
-            Tg, Tw, altmax)
+            CALL tSurfBEERS(iy, Ta, RH, radI, I0, dectime, SNUP, altitude, zen, timezone, lat, lng, alt, &
+                            Tg, Tw, altmax)
          ELSE
-         Tg = Tsurf - Ta !TODO: Tg is the difference (added temperature between TA and Tg) in BEERS
-         ! Tg = Tsurf ! changed to absolute sense
-         Tw = Tg
+            Tg = Tsurf - Ta !TODO: Tg is the difference (added temperature between TA and Tg) in BEERS
+            ! Tg = Tsurf ! changed to absolute sense
+            Tw = Tg
          END IF
 
          !!!! Lup, daytime !!!!
@@ -562,7 +562,7 @@ CONTAINS
       !!!!!!! NIGHTTIME !!!!!!!!
       ELSE
          CALL cal_CI_latenight(iy, DOY, Ta, RH/100., radG, lat, P/10., & !input
-               CIlatenight, dectime_sunrise, zen_sunrise, I0_sunrise) !output
+                               CIlatenight, dectime_sunrise, zen_sunrise, I0_sunrise) !output
          CI = CIlatenight
          I0 = I0_sunrise
          shadowground = 0
@@ -571,11 +571,11 @@ CONTAINS
          ! Tg = Temp_C !TODO: #11 This need some thought. Use ESTM to improve?
          ! Tw = Temp_C !TODO: This need some thought. Use ESTM to improve?
          IF (BEERS_tsurf == 1) THEN
-         Tw = 0
-         Tg = 0
+            Tw = 0
+            Tg = 0
          ELSE
-         Tg = Tsurf - Ta !TODO: Tg is the difference (added temperature between Ta and Tg) in BEERS
-         Tw = Tg
+            Tg = Tsurf - Ta !TODO: Tg is the difference (added temperature between Ta and Tg) in BEERS
+            Tw = Tg
          END IF
          radI = 0
          radD = 0
@@ -583,25 +583,25 @@ CONTAINS
 
          !Nocturnal cloud fraction from Offerle et al. 2003
          IF (dectime < (DOY + 0.5) .AND. dectime > DOY .AND. altitude < 1.0) THEN !TODO: THIS (STILL, 20201117) NEED SOME THOUGHT 20150211
-         !j=0
-         !do while (dectime<(DOY+SNUP/24))
+            !j=0
+            !do while (dectime<(DOY+SNUP/24))
          !!    call ConvertMetData(ith+j) ! read data at sunrise ??
-         !    j=j+1
-         !end do
-         !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
-         !zen=zenith_deg*DEG2RAD
-         !call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
+            !    j=j+1
+            !end do
+            !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+            !zen=zenith_deg*DEG2RAD
+            !call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
          !!call ConvertMetData(ith) ! read data at current timestep again ??
-         !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+            !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
 
-         CI = 1.0
+            CI = 1.0
          ELSE
-         ! IF (SolweigCount == 1) THEN
-         !    CI = 1.0
-         ! ELSE
-         !    CI = CIlatenight
-         ! END IF
-         CI = CIlatenight
+            ! IF (SolweigCount == 1) THEN
+            !    CI = 1.0
+            ! ELSE
+            !    CI = CIlatenight
+            ! END IF
+            CI = CIlatenight
          END IF
 
          radI = 0
@@ -623,24 +623,24 @@ CONTAINS
       !!! Ldown !!!
       IF (SOLWEIG_ldown == 1) THEN ! Third
          Ldown2d = (svf_roof + svf_veg - 1)*emis_sky*SBC*((Ta + 273.15)**4) &
-         + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-         + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-         + (2 - svf_roof - svf_veg)*(1 - emis_wall)*emis_sky*SBC*((Ta + 273.15)**4)
+                   + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                   + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                   + (2 - svf_roof - svf_veg)*(1 - emis_wall)*emis_sky*SBC*((Ta + 273.15)**4)
 
-      IF (CI < 0.95) THEN !non-clear conditions
-         c = 1 - CI
-         Ldown2d = Ldown2d*(1 - c) + c*( &
-         (svf_roof + svf_veg - 1)*SBC*((Ta + 273.15)**4) &
-         + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-         + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-         + (2 - svf_roof - svf_veg)*(1 - emis_wall)*SBC*((Ta + 273.15)**4))
-      END IF
+         IF (CI < 0.95) THEN !non-clear conditions
+            c = 1 - CI
+            Ldown2d = Ldown2d*(1 - c) + c*( &
+                      (svf_roof + svf_veg - 1)*SBC*((Ta + 273.15)**4) &
+                      + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                      + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                      + (2 - svf_roof - svf_veg)*(1 - emis_wall)*SBC*((Ta + 273.15)**4))
+         END IF
 
       ELSE
          Ldown2d = (svf_roof + svf_veg - 1)*ldown &
-         + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-         + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-         + (2 - svf_roof - svf_veg)*(1 - emis_wall)*ldown
+                   + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                   + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                   + (2 - svf_roof - svf_veg)*(1 - emis_wall)*ldown
       END IF
 
       !!! Lside !!!
@@ -652,20 +652,20 @@ CONTAINS
 
       !!! Calculation of radiant flux density and Tmrt (Mean radiant temperature) !!!
       Sstr = absK*(Kdown*Fup + Kup2d*Fup + Knorth*Fside + Keast*Fside + Ksouth*Fside + Kwest*Fside) &
-      + absL*(Ldown2d*Fup + Lup2d*Fup + Lnorth*Fside + Least*Fside + Lsouth*Fside + Lwest*Fside)
+             + absL*(Ldown2d*Fup + Lup2d*Fup + Lnorth*Fside + Least*Fside + Lsouth*Fside + Lwest*Fside)
       Tmrt = SQRT(SQRT((Sstr/(absL*SBC)))) - 273.15
 
       dataOutLineBEERS = [azimuth, altitude, radG, radI, radD, &
-                           Kdown, Kup2d, Ksouth, Kwest, Knorth, Keast, &
-                           Ldown2d, Lup2d, Lsouth, Lwest, Lnorth, Least, &
-                           Tmrt, I0, CI, shadowground, shadowwalls, svf_ground, svf_roof, svf_bldg_veg, &
-                           emis_sky, &
-                           Ta, Tg, Tw]
+                          Kdown, Kup2d, Ksouth, Kwest, Knorth, Keast, &
+                          Ldown2d, Lup2d, Lsouth, Lwest, Lnorth, Least, &
+                          Tmrt, I0, CI, shadowground, shadowwalls, svf_ground, svf_roof, svf_bldg_veg, &
+                          emis_sky, &
+                          Ta, Tg, Tw]
 
       ! DEALLOCATE (tmp)
       ! DEALLOCATE (svfbuveg)
 
-      END SUBROUTINE BEERS_cal_main_DTS
+   END SUBROUTINE BEERS_cal_main_DTS
 
    SUBROUTINE cal_CI_latenight(iy, DOY, Ta_degC, RH_frac, radG, lat, P_kPa, &
                                CIlatenight, dectime_sunrise, zen_sunrise, I0_sunrise)

@@ -1241,9 +1241,9 @@ CONTAINS
       smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
-                                 LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 HYDRO_STATE
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
+                               HYDRO_STATE
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
@@ -1282,9 +1282,9 @@ CONTAINS
       INTEGER :: is
 
       SMDMethod = methodPrm%SMDMethod
-      
+
       xsmd = forcing%xsmd
-      
+
       soilstore_id = hydroState_next%soilstore_surf
       soilstoreOld = hydroState_prev%soilstore_surf
 
@@ -1905,13 +1905,13 @@ CONTAINS
       ! use allocateArray
 
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, &
-                                 LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 LC_BSOIL_PRM, LC_WATER_PRM, SITE_PRM, HYDRO_STATE
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, SITE_PRM, HYDRO_STATE
 
       IMPLICIT NONE
 
       TYPE(SITE_PRM), INTENT(IN) :: siteInfo
-      
+
       TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
       TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
@@ -2112,20 +2112,20 @@ CONTAINS
 
                   ! If there is sufficient water in both surfaces, allow movement of dI to occur
                   IF ((hydroState_next%soilstore_surf(jj) >= dI*sfr_surf(is)/sfr_surf(jj)) .AND. &
-                        ((hydroState_next%soilstore_surf(is) + dI) >= 0)) THEN
+                      ((hydroState_next%soilstore_surf(is) + dI) >= 0)) THEN
                      hydroState_next%soilstore_surf(is) = hydroState_next%soilstore_surf(is) + dI
                      hydroState_next%soilstore_surf(jj) = hydroState_next%soilstore_surf(jj) - dI*sfr_surf(is)/sfr_surf(jj) !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
 
                      ! If insufficient water in first surface to move dI, instead move as much as possible
                   ELSEIF ((hydroState_next%soilstore_surf(is) + dI) < 0) THEN
                      hydroState_next%soilstore_surf(jj) = hydroState_next%soilstore_surf(jj) + &
-                                                            hydroState_next%soilstore_surf(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
+                                                          hydroState_next%soilstore_surf(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
                      hydroState_next%soilstore_surf(is) = 0 !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
 
                      ! If insufficient water in second surface to move dI, instead move as much as possible
                   ELSE
                      hydroState_next%soilstore_surf(is) = hydroState_next%soilstore_surf(is) + &
-                                                            hydroState_next%soilstore_surf(jj)*sfr_surf(jj)/sfr_surf(is)
+                                                          hydroState_next%soilstore_surf(jj)*sfr_surf(jj)/sfr_surf(is)
                      hydroState_next%soilstore_surf(jj) = 0
                   END IF
 

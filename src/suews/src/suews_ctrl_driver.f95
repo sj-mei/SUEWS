@@ -4128,7 +4128,7 @@ CONTAINS
             hydroState_next, & ! inout:!Soil moisture of each surface type [mm]
             runoffSoil, & !Soil runoff from each soil sub-surface [mm]
             runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-         )
+            )
 
          !========== Calculate soil moisture ============
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
@@ -4529,9 +4529,9 @@ CONTAINS
          !                     phenState%alb(1), phenState%alb(2), pavedPrm%emis, bldgPrm%emis, &
          !                     dataOutLineBEERS) ! output
          CALL BEERS_cal_main_DTS(timer, dectime, PAI, FAI, forcing, ldown, &
-                              TSfc_C, siteInfo, zenith_deg, azimuth, &
-                              pavedPrm, bldgPrm, phenState, &
-                              dataOutLineBEERS) ! output
+                                 TSfc_C, siteInfo, zenith_deg, azimuth, &
+                                 pavedPrm, bldgPrm, phenState, &
+                                 dataOutLineBEERS) ! output
          ! CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
          ! lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
       ELSE
@@ -5323,8 +5323,8 @@ CONTAINS
       Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
       USE SUEWS_DEF_DTS, ONLY: LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 METHOD_PRM, CONDUCTANCE_PRM, SUEWS_FORCING, &
-                                 SUEWS_TIMER, PHENOLOGY_STATE, SNOW_STATE
+                               METHOD_PRM, CONDUCTANCE_PRM, SUEWS_FORCING, &
+                               SUEWS_TIMER, PHENOLOGY_STATE, SNOW_STATE
 
       IMPLICIT NONE
 
@@ -5426,7 +5426,7 @@ CONTAINS
       Press_hPa = forcing%Pres
       Temp_C = forcing%Temp_C
       xsmd = forcing%xsmd
-      
+
       Diagnose = methodPrm%Diagnose
       EmissionsMethod = methodPrm%EmissionsMethod
       SMDMethod = methodPrm%SMDMethod
@@ -5446,7 +5446,7 @@ CONTAINS
       TL = conductancePrm%TL
 
       LAI_id = phenState_next%LAI_id
-      
+
       id = timer%id
       it = timer%it
 
@@ -7158,10 +7158,10 @@ CONTAINS
       QS_surf) !output
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, SITE_PRM, SUEWS_TIMER, &
-                                 HEAT_STATE, HYDRO_STATE, SNOW_STATE, EHC_PRM, &
-                                 anthroHEAT_STATE, PHENOLOGY_STATE, OHM_STATE, &
-                                 LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
-                                 LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM
+                               HEAT_STATE, HYDRO_STATE, SNOW_STATE, EHC_PRM, &
+                               anthroHEAT_STATE, PHENOLOGY_STATE, OHM_STATE, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM
 
       IMPLICIT NONE
 
@@ -7193,7 +7193,6 @@ CONTAINS
       TYPE(OHM_STATE), INTENT(in) :: ohmState_prev
       TYPE(OHM_STATE), INTENT(OUT) :: ohmState_next
 
-
       INTEGER :: StorageHeatMethod !heat storage calculation option [-]
       INTEGER :: OHMIncQF !Determines whether the storage heat flux calculation uses Q* or ( Q* +QF)
       INTEGER :: Gridiv ! grid id [-]
@@ -7207,7 +7206,6 @@ CONTAINS
       INTEGER :: EmissionsMethod ! AnthropHeat option [-]
       INTEGER :: nlayer ! number of vertical levels in urban canopy [-]
 
-      
       REAL(KIND(1D0)) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients [-]
       REAL(KIND(1D0)) :: OHM_threshSW(nsurf + 1) ! Temperature threshold determining whether summer/winter OHM coefficients are applied [degC]
       REAL(KIND(1D0)) :: OHM_threshWD(nsurf + 1) ! Soil moisture threshold determining whether wet/dry OHM coefficients are applied [-]
@@ -7314,9 +7312,9 @@ CONTAINS
       Diagnose = methodPrm%Diagnose
       SnowUse = methodPrm%SnowUse
       EmissionsMethod = methodPrm%EmissionsMethod
-      
+
       Gridiv = siteInfo%Gridiv
-      
+
       qs_obs = forcing%qs_obs
       avkdn = forcing%kdown
       avu1 = forcing%U
@@ -7324,18 +7322,18 @@ CONTAINS
       avrh = forcing%RH
       press_hpa = forcing%pres
       Tair_av = forcing%Tair
-      
+
       id = timer%id
       tstep = timer%tstep
       dt_since_start = timer%dt_since_start
-      
+
       tsfc_roof = heatState_out%tsfc_roof
       tsfc_wall = heatState_out%tsfc_wall
       tsfc_surf = heatState_out%tsfc_surf
       temp_in_roof = heatState_in%temp_roof
       temp_in_wall = heatState_in%temp_wall
       temp_in_surf = heatState_in%temp_surf
-      
+
       tin_roof = ehcPrm%tin_roof
       k_roof = ehcPrm%k_roof
       cp_roof = ehcPrm%cp_roof
@@ -7350,14 +7348,14 @@ CONTAINS
       dz_surf = ehcPrm%dz_surf
 
       bldgh = bldgPrm%bldgh
-      
+
       soilstore_id = hydroState_prev%soilstore_surf
       state_id = hydroState_prev%state_surf
-      
+
       SnowFrac = snowState_prev%SnowFrac
-      
+
       HDD_id = anthroHeatState%HDD_id
-      
+
       alb = phenState%alb
       StoreDrainPrm = phenState%StoreDrainPrm
 
@@ -7994,8 +7992,8 @@ CONTAINS
       AddWater)
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, HYDRO_STATE, PHENOLOGY_STATE, &
-                                 LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
-                                 LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM
 
       IMPLICIT NONE
 
@@ -8049,7 +8047,7 @@ CONTAINS
 
       Diagnose = methodPrm%Diagnose
       SnowUse = methodPrm%SnowUse
-      
+
       state_id = hydroState_prev%state_surf
       StoreDrainPrm = phenState_next%StoreDrainPrm
 
@@ -9735,11 +9733,11 @@ CONTAINS
       runoffAGveg_grid, runoffAGimpervious_grid, rss_surf)
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, SUEWS_FORCING, &
-                                 SITE_PRM, EHC_PRM, &
-                                 LC_PAVED_PRM, LC_BLDG_PRM, &
-                                 LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 PHENOLOGY_STATE, HYDRO_STATE
+                               SITE_PRM, EHC_PRM, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, &
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
+                               PHENOLOGY_STATE, HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -9761,7 +9759,7 @@ CONTAINS
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_prev
 
       TYPE(EHC_PRM), INTENT(IN) :: ehcPrm
-      
+
       TYPE(HYDRO_STATE), INTENT(OUT) :: hydroState_next
 
       INTEGER :: Diagnose
@@ -9938,22 +9936,22 @@ CONTAINS
       storageheatmethod = methodPrm%storageheatmethod
 
       tstep = timer%tstep
-      
+
       precip = forcing%rain
-      
+
       PipeCapacity = siteInfo%pipecapacity
       RunoffToWater = siteInfo%runofftowater
       FlowChange = siteInfo%flowchange
-      
+
       StoreDrainPrm = phenState_next%StoreDrainPrm
-      
+
       state_surf_in = hydroState_prev%state_surf
       soilstore_surf_in = hydroState_prev%soilstore_surf
       state_roof_in = hydroState_prev%state_roof
       soilstore_roof_in = hydroState_prev%soilstore_roof
       state_wall_in = hydroState_prev%state_wall
       soilstore_wall_in = hydroState_prev%soilstore_wall
-      
+
       StateLimit_roof = ehcPrm%state_limit_roof
       SoilStoreCap_roof = ehcPrm%soil_storecap_roof
       WetThresh_roof = ehcPrm%wet_thresh_roof
@@ -9963,12 +9961,12 @@ CONTAINS
 
       sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
       StateLimit_surf = [pavedPrm%statelimit, bldgPrm%statelimit, evetrPrm%statelimit, &
-                           dectrPrm%statelimit, grassPrm%statelimit, bsoilPrm%statelimit, waterPrm%statelimit]
+                         dectrPrm%statelimit, grassPrm%statelimit, bsoilPrm%statelimit, waterPrm%statelimit]
       SoilStoreCap_surf = [pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
                            evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
                            grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap]
       WetThresh_surf = [pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, &
-                           dectrPrm%wetthresh, grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh]
+                        dectrPrm%wetthresh, grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh]
 
       ! runoff_per_interval = runoff_per_interval_in
       hydroState_next%state_surf = state_surf_in
@@ -10303,9 +10301,9 @@ CONTAINS
       qh_resist_surf, qh_resist_roof, qh_resist_wall)
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
-                                 LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 HEAT_STATE
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
+                               HEAT_STATE
 
       IMPLICIT NONE
 
@@ -10759,11 +10757,11 @@ CONTAINS
       zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, CONDUCTANCE_PRM, &
-                                 SUEWS_FORCING, &
-                                 LC_PAVED_PRM, LC_BLDG_PRM, &
-                                 LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                                 LC_BSOIL_PRM, LC_WATER_PRM, &
-                                 PHENOLOGY_STATE, SNOW_STATE
+                               SUEWS_FORCING, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, &
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
+                               PHENOLOGY_STATE, SNOW_STATE
 
       IMPLICIT NONE
 
@@ -10859,10 +10857,10 @@ CONTAINS
       RoughLenHeatMethod = methodPrm%RoughLenHeatMethod
       SnowUse = methodPrm%SnowUse
       SMDMethod = methodPrm%SMDMethod
-      
+
       id = timer%id
       it = timer%it
-      
+
       gsModel = conductancePrm%gsModel
       Kmax = conductancePrm%Kmax
       G_max = conductancePrm%g_max
@@ -10875,14 +10873,14 @@ CONTAINS
       S2 = conductancePrm%s2
       TH = conductancePrm%th
       TL = conductanceprm%tl
-      
+
       avU1 = forcing%U
       Temp_C = forcing%Temp_C
       avkdn = forcing%kdown
       xsmd = forcing%xsmd
-      
+
       LAI_id = phenState_next%LAI_id
-      
+
       SnowFrac = snowState_prev%SnowFrac
 
       RAsnow = 0.0
@@ -11171,7 +11169,7 @@ CONTAINS
       datetimeLine, dataOutLineSUEWS) !output
 
       USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, SITE_PRM, SUEWS_TIMER, &
-                                 SNOW_STATE, HYDRO_STATE, SUEWS_FORCING
+                               SNOW_STATE, HYDRO_STATE, SUEWS_FORCING
 
       IMPLICIT NONE
 
@@ -11289,18 +11287,18 @@ CONTAINS
 
       alb = phenState%alb
       LAI_id = phenState%LAI_id
-      
+
       FlowChange = siteInfo%FlowChange
-      
+
       avkdn = forcing%kdown
-      
+
       id = timer%id
       imin = timer%imin
       it = timer%it
       iy = timer%iy
-      
+
       SnowAlb = snowState%SnowAlb
-      
+
       state_id = hydroState%state_surf
 
       ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
@@ -11538,11 +11536,11 @@ CONTAINS
       id = timer%id
       it = timer%it
       imin = timer%imin
-      
+
       tsfc_out_surf = heatState_out%tsfc_surf
       tsfc_out_roof = heatState_out%tsfc_roof
       tsfc_out_wall = heatState_out%tsfc_wall
-      
+
       state_roof = hydroState%state_roof
       soilstore_roof = hydroState%soilstore_roof
       state_wall = hydroState%state_wall
