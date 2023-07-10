@@ -120,7 +120,7 @@ CONTAINS
    !==============================================================================
    SUBROUTINE NARP( &
       storageheatmethod, & !input
-      nsurf, sfr_surf, tsfc_surf, SnowFrac, alb, emis, IceFrac, & ! input:
+      nsurf, sfr_surf,  tsfc_surf, SnowFrac, alb, emis, IceFrac, & ! input:
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &

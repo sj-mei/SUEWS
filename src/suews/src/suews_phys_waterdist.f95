@@ -2600,7 +2600,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_WaterUse_DTS( &
       nsh_real, & ! input:
-      wu_m3, siteInfo, &
+      forcing, siteInfo, &
       pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
       DayofWeek_id, &
       irrPrm, &
@@ -2627,15 +2627,16 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                IRRIGATION_PRM, anthroHEAT_STATE, &
-                               HYDRO_STATE, METHOD_PRM, SUEWS_TIMER, SITE_PRM
+                               HYDRO_STATE, METHOD_PRM, SUEWS_TIMER, SITE_PRM, SUEWS_FORCING
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
 
       TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
       TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       REAL(KIND(1D0)), INTENT(in) :: nsh_real
-      REAL(KIND(1D0)), INTENT(in) :: wu_m3 ! external water input (e.g., irrigation)  [m3]
+      REAL(KIND(1D0)) :: wu_m3 ! external water input (e.g., irrigation)  [m3]
       REAL(KIND(1D0)) :: SurfaceArea !Surface area of the study area [m2]
       REAL(KIND(1D0)) :: InternalWaterUse_h !Internal water use [mm h-1]
 
@@ -2702,6 +2703,8 @@ CONTAINS
       WUDay_id = hydroState_next%WUDay_id
 
       WaterUseMethod = methodPrm%WaterUseMethod
+
+      wu_m3 = forcing%Wuh
 
       it = timer%it
       imin = timer%imin

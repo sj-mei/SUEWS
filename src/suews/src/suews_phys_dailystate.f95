@@ -772,12 +772,14 @@ CONTAINS
       BaseTMethod, &
       methodPrm, irrPrm, &
       LAICalcYes, &
+      pavedPrm, bldgPrm, &
       evetrPrm, dectrPrm, grassPrm, &
+      bsoilPrm, waterPrm, &
       nsh_real, forcing, BaseT_HC, &
       ahemisPrm, &
       siteInfo, &
       anthroHeatState_prev, &
-      hydroState_prev, SoilStoreCap, & !input
+      hydroState_prev, & !input
       anthroHeatState_next, & !output
       phenState_next, & !output
       hydroState_next) !output
@@ -786,7 +788,9 @@ CONTAINS
       USE datetime_module, ONLY: datetime, timedelta
       USE SUEWS_DEF_DTS, ONLY: SITE_PRM, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
                                PHENOLOGY_STATE, anthroHEAT_STATE, HYDRO_STATE, METHOD_PRM, &
-                               IRRIGATION_PRM, LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM
+                               IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM
 
       IMPLICIT NONE
 
@@ -810,9 +814,13 @@ CONTAINS
       REAL(KIND(1D0)) :: Faut
       INTEGER, INTENT(IN) :: LAICalcYes
 
+      TYPE(LC_PAVED_PRM) :: pavedPrm
+      TYPE(LC_BLDG_PRM) :: bldgPrm
       TYPE(LC_EVETR_PRM) :: evetrPrm
       TYPE(LC_DECTR_PRM) :: dectrPrm
       TYPE(LC_GRASS_PRM) :: grassPrm
+      TYPE(LC_BSOIL_PRM) :: bsoilPrm
+      TYPE(LC_WATER_PRM) :: waterPrm
       INTEGER :: dectrLAIType
       INTEGER :: evetrLAIType
       INTEGER :: grassLAIType
@@ -882,7 +890,7 @@ CONTAINS
       REAL(KIND(1D0)) :: H_maintain ! ponding water depth to maintain [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id ! surface wetness [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id ! soil water store [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap !Capacity of soil store for each surface [mm]
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
       REAL(KIND(1D0)) :: evetrBaseT
@@ -1179,6 +1187,14 @@ CONTAINS
       LAIPower(:, 1) = evetrLAIPower
       LAIPower(:, 2) = dectrLAIPower
       LAIPower(:, 3) = grassLAIPower
+
+      SoilStoreCap(1) = pavedPrm%soil%soilstorecap
+      SoilStoreCap(2) = bldgPrm%soil%soilstorecap
+      SoilStoreCap(3) = evetrPrm%soil%soilstorecap
+      SoilStoreCap(4) = dectrPrm%soil%soilstorecap
+      SoilStoreCap(5) = grassPrm%soil%soilstorecap
+      SoilStoreCap(6) = bsoilPrm%soil%soilstorecap
+      SoilStoreCap(7) = waterPrm%soil%soilstorecap
 
       ! transfer values
       LAI_id = LAI_id_prev
@@ -2058,9 +2074,7 @@ CONTAINS
 
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
       TYPE(anthroHEAT_STATE), INTENT(IN) :: anthroHeatState
-
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
-
       TYPE(SNOW_STATE), INTENT(IN) :: snowState
 
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
@@ -2107,7 +2121,9 @@ CONTAINS
       albEveTr_id = phenState%albEveTr_id
       albGrass_id = phenState%albGrass_id
       porosity_id = phenState%porosity_id
+      
       WUDay_id = hydroState%WUDay_id
+
       SnowAlb = snowState%SnowAlb
       SnowDens = snowState%SnowDens
 
