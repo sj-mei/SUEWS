@@ -2121,7 +2121,7 @@ CONTAINS
       albEveTr_id = phenState%albEveTr_id
       albGrass_id = phenState%albGrass_id
       porosity_id = phenState%porosity_id
-      
+
       WUDay_id = hydroState%WUDay_id
 
       SnowAlb = snowState%SnowAlb

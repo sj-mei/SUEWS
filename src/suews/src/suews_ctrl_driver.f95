@@ -7704,10 +7704,10 @@ CONTAINS
       dataOutLineSnow)
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, SNOW_PRM, &
-                                 SUEWS_FORCING, PHENOLOGY_STATE, HYDRO_STATE, &
-                                 LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, &
-                                 LC_DECTR_PRM, LC_GRASS_PRM, LC_BSOIL_PRM, &
-                                 LC_WATER_PRM, SITE_PRM, SNOW_STATE
+                               SUEWS_FORCING, PHENOLOGY_STATE, HYDRO_STATE, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, &
+                               LC_DECTR_PRM, LC_GRASS_PRM, LC_BSOIL_PRM, &
+                               LC_WATER_PRM, SITE_PRM, SNOW_STATE
 
       IMPLICIT NONE
 
@@ -7931,11 +7931,11 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(out) :: dataOutLineSnow
 
       Diagnose = methodPrm%Diagnose
-      
+
       imin = timer%imin
       it = timer%it
       tstep = timer%tstep
-      
+
       CRWmin = snowPrm%CRWmin
       CRWmax = snowPrm%CRWmax
       SnowAlbMax = snowPrm%SnowAlbMax
@@ -7952,7 +7952,7 @@ CONTAINS
       SnowPackLimit = snowPrm%SnowPackLimit
       SnowProf_24hr_working = snowPrm%snowprof_24hr_working
       SnowProf_24hr_holiday = snowPrm%snowprof_24hr_holiday
-      
+
       state_id_in = hydroState_prev%state_surf
       soilstore_id_in = hydroState_prev%soilstore_surf
 
@@ -7964,15 +7964,15 @@ CONTAINS
       iceFrac_in = snowState_prev%IceFrac
       SnowDens_in = snowState_prev%SnowDens
       SnowfallCum_in = snowState_prev%SnowfallCum
-      
+
       SnowAlb_in = snowState_next%SnowAlb
-      
+
       avRh = forcing%RH
       Press_hPa = forcing%Pres
       Temp_C = forcing%Temp_C
       tau_r = snowPrm%tau_r
       precip = forcing%rain
-      
+
       PipeCapacity = siteInfo%PipeCapacity
       RunoffToWater = siteInfo%RunoffToWater
       FlowChange = siteInfo%FlowChange
@@ -7980,8 +7980,8 @@ CONTAINS
       WetThresh_surf = [pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, dectrPrm%wetthresh, &
                         grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh]
       SoilStoreCap = [pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
-                        evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
-                        grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap]
+                      evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
+                      grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap]
       sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
       SnowProf_24hr(:, 1) = SnowProf_24hr_working
       SnowProf_24hr(:, 2) = SnowProf_24hr_holiday
@@ -12025,7 +12025,7 @@ CONTAINS
          ! !================================================
 
          CALL SUEWS_cal_Main( &
-         !CALL SUEWS_cal_Main_DTS( &
+            !CALL SUEWS_cal_Main_DTS( &
             AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
             AH_SLOPE_Heating, &
             alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
@@ -12254,8 +12254,7 @@ CONTAINS
 
       REAL(KIND(1D0)) :: LAI_obs !observed LAI [m2 m-2]
       REAL(KIND(1D0)) :: xsmd ! observed soil moisture; can be provided either as volumetric ([m3 m-3] when SMDMethod = 1) or gravimetric quantity ([kg kg-1] when SMDMethod = 2
-      
-      
+
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av !average air temperature [degC]
 
@@ -12266,7 +12265,7 @@ CONTAINS
       INTEGER :: it ! hour, 0-23 [h]
       INTEGER :: imin !minutes, 0-59 [min]
       INTEGER :: isec ! seconds, 0-59 [s]
-      
+
       INTEGER, INTENT(IN) :: tstep !timestep [s]
       INTEGER, INTENT(IN) :: tstep_prev ! tstep size of the previous step [s]
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
@@ -12647,7 +12646,7 @@ CONTAINS
       TYPE(output_block), INTENT(OUT) :: output_block_suews
 
       ! ############# memory allocation for DTS variables (start) #############
-      
+
       ! ############# memory allocation for DTS variables (end) #############
 
       ! ############# evaluation for DTS variables (start) #############
@@ -13322,7 +13321,7 @@ CONTAINS
          timer%it = INT(MetForcingBlock(ir, 3))
          timer%imin = INT(MetForcingBlock(ir, 4))
          timer%isec = 0 ! NOT used by SUEWS but by WRF-SUEWS via the cal_main interface
-         
+
          forcing%qn1_obs = MetForcingBlock(ir, 5) !Real values (kind(1d0))
          forcing%qs_obs = MetForcingBlock(ir, 8)
          forcing%qf_obs = MetForcingBlock(ir, 9)
