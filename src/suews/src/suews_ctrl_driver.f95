@@ -2879,7 +2879,7 @@ CONTAINS
                runoffAGveg, runoffAGimpervious, rss_surf)
             !======== Evaporation and surface state_id end========
          END IF
-         
+
          ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
          IF (methodPrm%Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState_next%soilstore_surf
 
