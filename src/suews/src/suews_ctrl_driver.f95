@@ -2086,6 +2086,11 @@ CONTAINS
       REAL(KIND(1D0)) :: FAIEveTree_use
       REAL(KIND(1D0)) :: FAIDecTree_use
 
+      WRITE (*, *) "hydroState%state_roof", hydroState%state_roof
+      WRITE (*, *) "hydroState%soilstore_roof", hydroState%soilstore_roof
+      WRITE (*, *) "hydroState%state_wall", hydroState%state_wall
+      WRITE (*, *) "hydroState%soilstore_wall", hydroState%soilstore_wall
+
       ! ############# memory allocation for DTS variables (start) #############
       ALLOCATE (hydroState_prev%soilstore_roof(nlayer))
       ALLOCATE (hydroState_prev%state_roof(nlayer))
@@ -2178,10 +2183,15 @@ CONTAINS
       ohmState_next = ohmState
       snowState_next = snowState
       hydroState_next = hydroState
+
+      WRITE (*, *) "hydroState_next%state_roof", hydroState_next%state_roof
+      WRITE (*, *) "hydroState_next%soilstore_roof", hydroState_next%soilstore_roof
+      WRITE (*, *) "hydroState_next%state_wall", hydroState_next%state_wall
+      WRITE (*, *) "hydroState_next%soilstore_wall", hydroState_next%soilstore_wall
       ! state_surf_next = state_surf
       ! soilstore_surf_next = soilstore_surf
 
-      hydroState_next = hydroState
+      !hydroState_next = hydroState
       ! IF (StorageHeatMethod == 5) THEN
 
       !    soilstore_roof_next = soilstore_roof
@@ -2597,9 +2607,9 @@ CONTAINS
          ! temp_in_wall = temp_out_wall
          ! temp_in_surf = temp_out_surf
          ! Ts_iter = DOT_PRODUCT(tsfc_out_surf, sfr_surf)
-         ! PRINT *, 'QS_surf after cal_qs', QS_surf
-         ! PRINT *, 'QS_roof after cal_qs', QS_roof
-         ! PRINT *, 'QS_wall after cal_qs', QS_wall
+         !PRINT *, 'QS_surf after cal_qs', QS_surf
+         !PRINT *, 'QS_roof after cal_qs', QS_roof
+         !PRINT *, 'QS_wall after cal_qs', QS_wall
 
          ! PRINT *, ''
 
@@ -2651,6 +2661,8 @@ CONTAINS
             ! use SUEWS QH to do stability correction
             QH_Init = QH
          END IF
+
+         !print *, 'QH_Init=', QH_Init
 
          !============= calculate water balance =============
          IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
@@ -2731,7 +2743,7 @@ CONTAINS
             g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
             UStar, TStar, L_mod, & !output
             zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
-         ! WRITE (*, *) 'UStar=', UStar, ' TStar=', TStar, ' QH_Init=', QH_Init, "kdown=", forcing%kdown, "L_mod=", L_mod
+         !WRITE (*, *) 'UStar=', UStar, ' TStar=', TStar, ' QH_Init=', QH_Init, "kdown=", forcing%kdown, "L_mod=", L_mod
          !===================Resistance Calculations End=======================
 
          !===================Calculate surface hydrology and related soil water=======================
@@ -2867,6 +2879,7 @@ CONTAINS
                runoffAGveg, runoffAGimpervious, rss_surf)
             !======== Evaporation and surface state_id end========
          END IF
+         
          ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
          IF (methodPrm%Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState_next%soilstore_surf
 
@@ -2941,7 +2954,7 @@ CONTAINS
             RA_h, &
             qh, qh_residual, qh_resist, & !output
             qh_resist_surf, qh_resist_roof, qh_resist_wall)
-         ! PRINT *, 'qn: ', qn, "qf: ", qf, "qe: ", qe, "qs: ", qs
+         PRINT *, 'qn: ', qn, "qf: ", qf, "qe: ", qe, "qs: ", qs
          ! PRINT *, 'qn_surf after SUEWS_cal_QH', qn_surf
          ! PRINT *, 'qs_surf after SUEWS_cal_QH', qs_surf
          ! PRINT *, 'qe_surf after SUEWS_cal_QH', qe_surf
@@ -9174,6 +9187,21 @@ CONTAINS
             vpd_hPa, avdens, avcp, qn_e_wall, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
             rss_wall, ev_wall, qe_wall) !output
 
+         WRITE (*, *) 'StateLimit_roof', StateLimit_roof
+         WRITE (*, *) 'SoilStoreCap_roof', SoilStoreCap_roof
+         WRITE (*, *) 'WetThresh_roof', WetThresh_roof
+         WRITE (*, *) 'state_roof_in', state_roof_in
+         WRITE (*, *) 'soilstore_roof_in', soilstore_roof_in
+         WRITE (*, *) 'StateLimit_wall', StateLimit_wall
+         WRITE (*, *) 'SoilStoreCap_wall', SoilStoreCap_wall
+         WRITE (*, *) 'WetThresh_wall', WetThresh_wall
+         WRITE (*, *) 'state_wall_in', state_wall_in
+         WRITE (*, *) 'soilstore_wall_in', soilstore_wall_in
+
+         WRITE (*, *) "hydroState_next%state_roof", hydroState_next%state_roof
+         WRITE (*, *) "hydroState_next%soilstore_roof", hydroState_next%soilstore_roof
+         WRITE (*, *) "hydroState_next%state_wall", hydroState_next%state_wall
+         WRITE (*, *) "hydroState_next%soilstore_wall", hydroState_next%soilstore_wall
          ! == calculate water balance ==
          ! --- building facets: roofs and walls ---
          CALL cal_water_storage_building( &
@@ -13265,17 +13293,16 @@ CONTAINS
 
       ALLOCATE (heatState%temp_roof(nlayer, ndepth))
       ALLOCATE (heatState%temp_wall(nlayer, ndepth))
+      ALLOCATE (heatState%temp_surf(nsurf, ndepth))
       ALLOCATE (heatState%tsfc_roof(nlayer))
       ALLOCATE (heatState%tsfc_wall(nlayer))
       ALLOCATE (heatState%tsfc_surf(nsurf))
-      ALLOCATE (heatState%temp_surf(nsurf, ndepth))
       heatState%temp_roof = temp_roof
       heatState%temp_wall = temp_wall
       heatState%temp_surf = temp_surf
       heatState%tsfc_roof = tsfc_roof
       heatState%tsfc_wall = tsfc_wall
       heatState%tsfc_surf = tsfc_surf
-      heatState%temp_surf = temp_surf
 
       ! OHM related:
       ohmState%qn_av = qn_av

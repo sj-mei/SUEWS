@@ -242,7 +242,6 @@ CONTAINS
             ! PRINT *, 'translation for roof! '
             ! TODO: to update with actual values from input files
             tsfc_cal(1:nfacet) = tsfc_roof(1:nfacet)
-            ! PRINT *, 'tsfc_cal for roof! ', tsfc_cal
             tin_cal(1:nfacet) = tin_roof(1:nfacet)
             ! PRINT *, 'tin_cal for roof! ', tin_cal
             temp_cal(1:nfacet, 1:ndepth) = temp_in_roof(1:nfacet, 1:ndepth)
@@ -446,6 +445,7 @@ CONTAINS
 
       ! all standard suews surfaces
       qs = DOT_PRODUCT(QS_surf, sfr_surf)
+      !PRINT *, 'QS_surf in ESTM_ehc', QS_surf
 
    END SUBROUTINE EHC
 
