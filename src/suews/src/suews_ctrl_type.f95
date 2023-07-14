@@ -1,5 +1,7 @@
 MODULE SUEWS_DEF_DTS
-   USE allocateArray, ONLY: nsurf, nvegsurf, ndepth
+   USE allocateArray, ONLY: nsurf, nvegsurf
+
+   implicit none
    ! ********** SUEWS_parameters schema (basic) **********
    TYPE, PUBLIC :: METHOD_PRM
       INTEGER :: DiagMethod ! Defines how near surface diagnostics are calculated
@@ -389,26 +391,6 @@ MODULE SUEWS_DEF_DTS
    TYPE, PUBLIC :: anthroHEAT_STATE
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !Heating Degree Days [degC d]
    END TYPE anthroHEAT_STATE
-
-   TYPE, PUBLIC :: HYDRO_STATE
-      ! REAL(KIND(1D0)) :: runofftowater   ! Fraction of above-ground runoff flowing to water surface during flooding
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf ! Initial water stored in soil beneath `Bldgs` surface
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf ! Initial wetness condition on SUEWS land covers.
-      REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id ! Daily water use for EveTr, DecTr, Grass [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof ! Soil moisture of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall ! wetness status of wall [mm]
-   END TYPE HYDRO_STATE
-
-   TYPE, PUBLIC :: HEAT_STATE
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof ! interface temperature between depth layers in roof [degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall ! interface temperature between depth layers in wall [degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf ! interface temperature between depth layers [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof ! roof surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
-   END TYPE HEAT_STATE
 
    TYPE, PUBLIC :: OHM_STATE
       REAL(KIND(1D0)) :: qn_av ! weighted average of net all-wave radiation [W m-2]

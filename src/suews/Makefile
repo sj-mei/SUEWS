@@ -161,6 +161,7 @@ sumin: FFLAGS += -Dwrf=1
 # utilities
 UTILS = suews_ctrl_const.o \
 	suews_ctrl_type.o \
+	suews_ctrl_typeII.o \
 	suews_util_stringmod.o \
 	suews_util_qsort.o\
 	suews_util_time.o \

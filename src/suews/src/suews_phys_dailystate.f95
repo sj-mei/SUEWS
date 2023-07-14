@@ -787,10 +787,11 @@ CONTAINS
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
       USE SUEWS_DEF_DTS, ONLY: SITE_PRM, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
-                               PHENOLOGY_STATE, anthroHEAT_STATE, HYDRO_STATE, METHOD_PRM, &
+                               PHENOLOGY_STATE, anthroHEAT_STATE, METHOD_PRM, &
                                IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM
+      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -2067,8 +2068,9 @@ CONTAINS
       a1, a2, a3, &
       DailyStateLine) !out
 
-      USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, anthroHEAT_STATE, HYDRO_STATE, &
+      USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, anthroHEAT_STATE, &
                                SNOW_STATE, SUEWS_TIMER
+      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
 
       IMPLICIT NONE
 

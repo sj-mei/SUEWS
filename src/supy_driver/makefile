@@ -76,6 +76,7 @@ suffix_code = .f95
 # names (without suffix), f90 sources
 LIBSRC_SOURCES = suews_ctrl_const \
 	suews_ctrl_type \
+	suews_ctrl_typeII \
 	suews_util_stringmod \
 	suews_ctrl_input \
 	suews_ctrl_output \
@@ -118,6 +119,7 @@ LIBSRC_FPP_FILES = $(addsuffix .fpp,${LIBSRC_SOURCES})
 # names (without suffix), f90 sources
 LIBSRC_WRAP_SOURCES = suews_ctrl_driver \
 	suews_ctrl_type \
+	suews_ctrl_typeII \
 	suews_phys_narp \
 	suews_phys_atmmoiststab \
 	suews_phys_waterdist \

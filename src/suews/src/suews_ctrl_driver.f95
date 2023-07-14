@@ -7,11 +7,12 @@ MODULE SUEWS_Driver
    ! only the following immutable objects are imported:
    ! 1. functions/subroutines
    ! 2. constant variables
+   USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE, HEAT_STATE
    USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SURF_STORE_PRM, WATER_DIST_PRM, bioCO2_PRM, CONDUCTANCE_PRM, &
                             LAI_PRM, OHM_COEF_LC, OHM_PRM, SOIL_PRM, anthroHEAT_PRM, IRRIG_daywater, &
                             IRRIGATION_PRM, anthroEMIS_PRM, SNOW_PRM, SPARTACUS_PRM, SPARTACUS_LAYER_PRM, &
                             SITE_PRM, LUMPS_PRM, EHC_PRM, LC_PAVED_PRM, LC_BLDG_PRM, LC_DECTR_PRM, LC_EVETR_PRM, &
-                            LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, HYDRO_STATE, HEAT_STATE, &
+                            LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
@@ -2092,28 +2093,11 @@ CONTAINS
       WRITE (*, *) "hydroState%soilstore_wall", hydroState%soilstore_wall
 
       ! ############# memory allocation for DTS variables (start) #############
-      ALLOCATE (hydroState_prev%soilstore_roof(nlayer))
-      ALLOCATE (hydroState_prev%state_roof(nlayer))
-      ALLOCATE (hydroState_prev%soilstore_wall(nlayer))
-      ALLOCATE (hydroState_prev%state_wall(nlayer))
-      ALLOCATE (hydroState_next%soilstore_roof(nlayer))
-      ALLOCATE (hydroState_next%state_roof(nlayer))
-      ALLOCATE (hydroState_next%soilstore_wall(nlayer))
-      ALLOCATE (hydroState_next%state_wall(nlayer))
+      CALL hydroState_prev%allocHydro(nlayer)
+      CALL hydroState_next%allocHydro(nlayer)
 
-      ALLOCATE (heatState_in%temp_roof(nlayer, ndepth))
-      ALLOCATE (heatState_in%temp_wall(nlayer, ndepth))
-      ALLOCATE (heatState_in%tsfc_roof(nlayer))
-      ALLOCATE (heatState_in%tsfc_wall(nlayer))
-      ALLOCATE (heatState_in%tsfc_surf(nsurf))
-      ALLOCATE (heatState_in%temp_surf(nsurf, ndepth))
-
-      ALLOCATE (heatState_out%temp_roof(nlayer, ndepth))
-      ALLOCATE (heatState_out%temp_wall(nlayer, ndepth))
-      ALLOCATE (heatState_out%tsfc_roof(nlayer))
-      ALLOCATE (heatState_out%tsfc_wall(nlayer))
-      ALLOCATE (heatState_out%tsfc_surf(nsurf))
-      ALLOCATE (heatState_out%temp_surf(nsurf, ndepth))
+      CALL heatState_in%allocHeat(nsurf, nlayer, ndepth)
+      CALL heatState_out%allocHeat(nsurf, nlayer, ndepth)
       ! ############# memory allocation for DTS variables (end) #############
 
       ! ####################################################################################
@@ -4768,7 +4752,8 @@ CONTAINS
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                PHENOLOGY_STATE, SPARTACUS_PRM, &
-                               SPARTACUS_LAYER_PRM, HEAT_STATE
+                               SPARTACUS_LAYER_PRM
+      USE SUEWS_HydroHeat_DTS, ONLY: HEAT_STATE
 
       IMPLICIT NONE
       ! INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
@@ -5865,10 +5850,11 @@ CONTAINS
       QS_surf) !output
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, SITE_PRM, SUEWS_TIMER, &
-                               HEAT_STATE, HYDRO_STATE, SNOW_STATE, EHC_PRM, &
+                               SNOW_STATE, EHC_PRM, &
                                anthroHEAT_STATE, PHENOLOGY_STATE, OHM_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM
+      USE SUEWS_HydroHeat_DTS, ONLY: HEAT_STATE, HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -6696,9 +6682,10 @@ CONTAINS
       AdditionalWater, runoffPipes, runoff_per_interval, &
       AddWater)
 
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, HYDRO_STATE, PHENOLOGY_STATE, &
+      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, PHENOLOGY_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM
+      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -7717,10 +7704,11 @@ CONTAINS
       dataOutLineSnow)
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, SNOW_PRM, &
-                               SUEWS_FORCING, PHENOLOGY_STATE, HYDRO_STATE, &
+                               SUEWS_FORCING, PHENOLOGY_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, &
                                LC_DECTR_PRM, LC_GRASS_PRM, LC_BSOIL_PRM, &
                                LC_WATER_PRM, SITE_PRM, SNOW_STATE
+      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -8907,7 +8895,8 @@ CONTAINS
                                LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
-                               PHENOLOGY_STATE, HYDRO_STATE
+                               PHENOLOGY_STATE
+      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -9101,6 +9090,8 @@ CONTAINS
       REAL(KIND(1D0)) :: qe_building !aggregated qe of building facets[W m-2]
 
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
+
+      CALL hydroState_next%allocHydro(nlayer)
 
       Diagnose = methodPrm%Diagnose
       storageheatmethod = methodPrm%storageheatmethod
@@ -9487,8 +9478,8 @@ CONTAINS
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM, &
-                               HEAT_STATE
+                               LC_BSOIL_PRM, LC_WATER_PRM
+      USE SUEWS_HydroHeat_DTS, ONLY: HEAT_STATE
 
       IMPLICIT NONE
 
@@ -10354,7 +10345,8 @@ CONTAINS
       datetimeLine, dataOutLineSUEWS) !output
 
       USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, SITE_PRM, SUEWS_TIMER, &
-                               SNOW_STATE, HYDRO_STATE, SUEWS_FORCING
+                               SNOW_STATE, SUEWS_FORCING
+      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -10662,7 +10654,8 @@ CONTAINS
       QH_wall, &
       datetimeLine, dataOutLineESTMExt) !output
 
-      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, HEAT_STATE, HYDRO_STATE
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER
+      USE SUEWS_HydroHeat_DTS, ONLY: HEAT_STATE, HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -13279,10 +13272,7 @@ CONTAINS
 
       ! ESTM_ehc related:
       ! water balance related:
-      ALLOCATE (hydroState%soilstore_roof(nlayer))
-      ALLOCATE (hydroState%state_roof(nlayer))
-      ALLOCATE (hydroState%soilstore_wall(nlayer))
-      ALLOCATE (hydroState%state_wall(nlayer))
+      CALL hydroState%allocHydro(nlayer)
       hydroState%soilstore_roof = soilstore_roof
       hydroState%state_roof = state_roof
       hydroState%soilstore_wall = soilstore_wall
@@ -13291,12 +13281,7 @@ CONTAINS
       hydroState%state_surf = state_surf
       hydroState%WUDay_id = WUDay_id
 
-      ALLOCATE (heatState%temp_roof(nlayer, ndepth))
-      ALLOCATE (heatState%temp_wall(nlayer, ndepth))
-      ALLOCATE (heatState%temp_surf(nsurf, ndepth))
-      ALLOCATE (heatState%tsfc_roof(nlayer))
-      ALLOCATE (heatState%tsfc_wall(nlayer))
-      ALLOCATE (heatState%tsfc_surf(nsurf))
+      CALL heatState%allocHeat(nsurf, nlayer, ndepth)
       heatState%temp_roof = temp_roof
       heatState%temp_wall = temp_wall
       heatState%temp_surf = temp_surf
