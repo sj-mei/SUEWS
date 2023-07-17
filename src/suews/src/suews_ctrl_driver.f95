@@ -2191,10 +2191,10 @@ CONTAINS
       snowState_next = snowState
       hydroState_next = hydroState
 
-      WRITE (*, *) "hydroState_next%state_roof", hydroState_next%state_roof
-      WRITE (*, *) "hydroState_next%soilstore_roof", hydroState_next%soilstore_roof
-      WRITE (*, *) "hydroState_next%state_wall", hydroState_next%state_wall
-      WRITE (*, *) "hydroState_next%soilstore_wall", hydroState_next%soilstore_wall
+      ! WRITE (*, *) "hydroState_next%state_roof", hydroState_next%state_roof
+      ! WRITE (*, *) "hydroState_next%soilstore_roof", hydroState_next%soilstore_roof
+      ! WRITE (*, *) "hydroState_next%state_wall", hydroState_next%state_wall
+      ! WRITE (*, *) "hydroState_next%soilstore_wall", hydroState_next%soilstore_wall
       ! state_surf_next = state_surf
       ! soilstore_surf_next = soilstore_surf
 
