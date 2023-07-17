@@ -13,9 +13,9 @@ MODULE SUEWS_HydroHeat_DTS
        REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
        REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]
        REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall ! wetness status of wall [mm]
-       CONTAINS
-         procedure :: allocHydro => allocHydroState_c
-         procedure :: deallocHydro => deallocHydroState_c
+      !  CONTAINS
+      !    procedure :: allocHydro => allocHydroState_c
+      !    procedure :: deallocHydro => deallocHydroState_c
     END TYPE HYDRO_STATE
  
     TYPE, PUBLIC :: HEAT_STATE
@@ -25,162 +25,162 @@ MODULE SUEWS_HydroHeat_DTS
        REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof ! roof surface temperature [degC]
        REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
        REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
-       CONTAINS
-         procedure :: allocHeat => allocHeatState_c
-         procedure :: deallocHeat => deallocHeatState_c
+      !  CONTAINS
+      !    procedure :: allocHeat => allocHeatState_c
+      !    procedure :: deallocHeat => deallocHeatState_c
     END TYPE HEAT_STATE
  
-    CONTAINS
-       SUBROUTINE allocate_hydro_state(self, nlayer)
-            implicit none
-            type(HYDRO_STATE), intent(inout) :: self
-            INTEGER, intent(in) :: nlayer
-            !
-            IF (ALLOCATED(self%soilstore_roof)) THEN
-               DEALLOCATE (self%soilstore_roof)
-            END IF
+   !  CONTAINS
+   !     SUBROUTINE allocate_hydro_state(self, nlayer)
+   !          implicit none
+   !          type(HYDRO_STATE), intent(inout) :: self
+   !          INTEGER, intent(in) :: nlayer
+   !          !
+   !          IF (ALLOCATED(self%soilstore_roof)) THEN
+   !             DEALLOCATE (self%soilstore_roof)
+   !          END IF
 
-            IF (ALLOCATED(self%state_roof)) THEN
-               DEALLOCATE (self%state_roof)
-            END IF
+   !          IF (ALLOCATED(self%state_roof)) THEN
+   !             DEALLOCATE (self%state_roof)
+   !          END IF
             
-            IF (ALLOCATED(self%soilstore_wall)) THEN
-               DEALLOCATE (self%soilstore_wall)
-            END IF
+   !          IF (ALLOCATED(self%soilstore_wall)) THEN
+   !             DEALLOCATE (self%soilstore_wall)
+   !          END IF
             
-            IF (ALLOCATED(self%state_wall)) THEN
-               DEALLOCATE (self%state_wall)
-            END IF
+   !          IF (ALLOCATED(self%state_wall)) THEN
+   !             DEALLOCATE (self%state_wall)
+   !          END IF
 
-            ALLOCATE (self%soilstore_roof(nlayer))
-            ALLOCATE (self%state_roof(nlayer))
-            ALLOCATE (self%soilstore_wall(nlayer))
-            ALLOCATE (self%state_wall(nlayer))
-            !
-       END SUBROUTINE allocate_hydro_state
+   !          ALLOCATE (self%soilstore_roof(nlayer))
+   !          ALLOCATE (self%state_roof(nlayer))
+   !          ALLOCATE (self%soilstore_wall(nlayer))
+   !          ALLOCATE (self%state_wall(nlayer))
+   !          !
+   !     END SUBROUTINE allocate_hydro_state
  
-       SUBROUTINE allocHydroState_c(self, nlayer)
-            implicit none
-            class(HYDRO_STATE), intent(inout) :: self
-            INTEGER, intent(in) :: nlayer
-            !
-            call allocate_hydro_state(self, nlayer)
-            !
-       END SUBROUTINE allocHydroState_c
+   !     SUBROUTINE allocHydroState_c(self, nlayer)
+   !          implicit none
+   !          class(HYDRO_STATE), intent(inout) :: self
+   !          INTEGER, intent(in) :: nlayer
+   !          !
+   !          call allocate_hydro_state(self, nlayer)
+   !          !
+   !     END SUBROUTINE allocHydroState_c
  
-       SUBROUTINE dealloc_hydro_state(self)
-            implicit none
-            type(HYDRO_STATE), intent(inout) :: self
-            !
-            IF (ALLOCATED(self%soilstore_roof)) THEN
-               DEALLOCATE (self%soilstore_roof)
-            END IF
+   !     SUBROUTINE dealloc_hydro_state(self)
+   !          implicit none
+   !          type(HYDRO_STATE), intent(inout) :: self
+   !          !
+   !          IF (ALLOCATED(self%soilstore_roof)) THEN
+   !             DEALLOCATE (self%soilstore_roof)
+   !          END IF
 
-            IF (ALLOCATED(self%state_roof)) THEN
-               DEALLOCATE (self%state_roof)
-            END IF
+   !          IF (ALLOCATED(self%state_roof)) THEN
+   !             DEALLOCATE (self%state_roof)
+   !          END IF
             
-            IF (ALLOCATED(self%soilstore_wall)) THEN
-               DEALLOCATE (self%soilstore_wall)
-            END IF
+   !          IF (ALLOCATED(self%soilstore_wall)) THEN
+   !             DEALLOCATE (self%soilstore_wall)
+   !          END IF
             
-            IF (ALLOCATED(self%state_wall)) THEN
-               DEALLOCATE (self%state_wall)
-            END IF
-            !
-       END SUBROUTINE dealloc_hydro_state
+   !          IF (ALLOCATED(self%state_wall)) THEN
+   !             DEALLOCATE (self%state_wall)
+   !          END IF
+   !          !
+   !     END SUBROUTINE dealloc_hydro_state
  
-       SUBROUTINE deallocHydroState_c(self)
-            implicit none
-            class(HYDRO_STATE), intent(inout) :: self
-            !
-            call dealloc_hydro_state(self)
-            !
-       END SUBROUTINE deallocHydroState_c
+   !     SUBROUTINE deallocHydroState_c(self)
+   !          implicit none
+   !          class(HYDRO_STATE), intent(inout) :: self
+   !          !
+   !          call dealloc_hydro_state(self)
+   !          !
+   !     END SUBROUTINE deallocHydroState_c
  
-       SUBROUTINE allocate_heat_state(self, num_surf, num_layer, num_depth)
-            implicit none
-            type(HEAT_STATE), intent(inout) :: self
-            INTEGER, intent(in) :: num_surf, num_layer, num_depth
-            !
-            IF (ALLOCATED(self%temp_roof)) THEN
-               DEALLOCATE (self%temp_roof)
-            END IF
+   !     SUBROUTINE allocate_heat_state(self, num_surf, num_layer, num_depth)
+   !          implicit none
+   !          type(HEAT_STATE), intent(inout) :: self
+   !          INTEGER, intent(in) :: num_surf, num_layer, num_depth
+   !          !
+   !          IF (ALLOCATED(self%temp_roof)) THEN
+   !             DEALLOCATE (self%temp_roof)
+   !          END IF
 
-            IF (ALLOCATED(self%temp_wall)) THEN
-               DEALLOCATE (self%temp_wall)
-            END IF
+   !          IF (ALLOCATED(self%temp_wall)) THEN
+   !             DEALLOCATE (self%temp_wall)
+   !          END IF
             
-            IF (ALLOCATED(self%tsfc_roof)) THEN
-               DEALLOCATE (self%tsfc_roof)
-            END IF
+   !          IF (ALLOCATED(self%tsfc_roof)) THEN
+   !             DEALLOCATE (self%tsfc_roof)
+   !          END IF
             
-            IF (ALLOCATED(self%tsfc_wall)) THEN
-               DEALLOCATE (self%tsfc_wall)
-            END IF
+   !          IF (ALLOCATED(self%tsfc_wall)) THEN
+   !             DEALLOCATE (self%tsfc_wall)
+   !          END IF
             
-            IF (ALLOCATED(self%tsfc_surf)) THEN
-               DEALLOCATE (self%tsfc_surf)
-            END IF
+   !          IF (ALLOCATED(self%tsfc_surf)) THEN
+   !             DEALLOCATE (self%tsfc_surf)
+   !          END IF
             
-            IF (ALLOCATED(self%temp_surf)) THEN
-               DEALLOCATE (self%temp_surf)
-            END IF
+   !          IF (ALLOCATED(self%temp_surf)) THEN
+   !             DEALLOCATE (self%temp_surf)
+   !          END IF
 
-            ALLOCATE (self%temp_roof(num_layer, num_depth))
-            ALLOCATE (self%temp_wall(num_layer, num_depth))
-            ALLOCATE (self%tsfc_roof(num_layer))
-            ALLOCATE (self%tsfc_wall(num_layer))
-            ALLOCATE (self%tsfc_surf(num_surf))
-            ALLOCATE (self%temp_surf(num_surf, num_depth))
-            !
-       END SUBROUTINE allocate_heat_state
+   !          ALLOCATE (self%temp_roof(num_layer, num_depth))
+   !          ALLOCATE (self%temp_wall(num_layer, num_depth))
+   !          ALLOCATE (self%tsfc_roof(num_layer))
+   !          ALLOCATE (self%tsfc_wall(num_layer))
+   !          ALLOCATE (self%tsfc_surf(num_surf))
+   !          ALLOCATE (self%temp_surf(num_surf, num_depth))
+   !          !
+   !     END SUBROUTINE allocate_heat_state
  
-       SUBROUTINE allocHeatState_c(self, num_surf, num_layer, num_depth)
-            implicit none
-            class(HEAT_STATE), intent(inout) :: self
-            INTEGER, intent(in) :: num_surf, num_layer, num_depth
-            !
-            call allocate_heat_state(self, num_surf, num_layer, num_depth)
-            !
-       END SUBROUTINE allocHeatState_c
+   !     SUBROUTINE allocHeatState_c(self, num_surf, num_layer, num_depth)
+   !          implicit none
+   !          class(HEAT_STATE), intent(inout) :: self
+   !          INTEGER, intent(in) :: num_surf, num_layer, num_depth
+   !          !
+   !          call allocate_heat_state(self, num_surf, num_layer, num_depth)
+   !          !
+   !     END SUBROUTINE allocHeatState_c
  
-       SUBROUTINE deallocHeatState_c(self)
-            implicit none
-            class(HEAT_STATE), intent(inout) :: self
-            !
-            call dealloc_heat_state(self)
-            !
-       END SUBROUTINE deallocHeatState_c
+   !     SUBROUTINE deallocHeatState_c(self)
+   !          implicit none
+   !          class(HEAT_STATE), intent(inout) :: self
+   !          !
+   !          call dealloc_heat_state(self)
+   !          !
+   !     END SUBROUTINE deallocHeatState_c
        
-       SUBROUTINE dealloc_heat_state(self)
-            implicit none
-            type(HEAT_STATE), intent(inout) :: self
-            !
-            IF (ALLOCATED(self%temp_roof)) THEN
-               DEALLOCATE (self%temp_roof)
-            END IF
+   !     SUBROUTINE dealloc_heat_state(self)
+   !          implicit none
+   !          type(HEAT_STATE), intent(inout) :: self
+   !          !
+   !          IF (ALLOCATED(self%temp_roof)) THEN
+   !             DEALLOCATE (self%temp_roof)
+   !          END IF
 
-            IF (ALLOCATED(self%temp_wall)) THEN
-               DEALLOCATE (self%temp_wall)
-            END IF
+   !          IF (ALLOCATED(self%temp_wall)) THEN
+   !             DEALLOCATE (self%temp_wall)
+   !          END IF
             
-            IF (ALLOCATED(self%tsfc_roof)) THEN
-               DEALLOCATE (self%tsfc_roof)
-            END IF
+   !          IF (ALLOCATED(self%tsfc_roof)) THEN
+   !             DEALLOCATE (self%tsfc_roof)
+   !          END IF
             
-            IF (ALLOCATED(self%tsfc_wall)) THEN
-               DEALLOCATE (self%tsfc_wall)
-            END IF
+   !          IF (ALLOCATED(self%tsfc_wall)) THEN
+   !             DEALLOCATE (self%tsfc_wall)
+   !          END IF
             
-            IF (ALLOCATED(self%tsfc_surf)) THEN
-               DEALLOCATE (self%tsfc_surf)
-            END IF
+   !          IF (ALLOCATED(self%tsfc_surf)) THEN
+   !             DEALLOCATE (self%tsfc_surf)
+   !          END IF
             
-            IF (ALLOCATED(self%temp_surf)) THEN
-               DEALLOCATE (self%temp_surf)
-            END IF
-            !
-         END SUBROUTINE dealloc_heat_state
+   !          IF (ALLOCATED(self%temp_surf)) THEN
+   !             DEALLOCATE (self%temp_surf)
+   !          END IF
+   !          !
+   !       END SUBROUTINE dealloc_heat_state
  
  END MODULE SUEWS_HydroHeat_DTS

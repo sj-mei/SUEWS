@@ -2087,17 +2087,40 @@ CONTAINS
       REAL(KIND(1D0)) :: FAIEveTree_use
       REAL(KIND(1D0)) :: FAIDecTree_use
 
-      WRITE (*, *) "hydroState%state_roof", hydroState%state_roof
-      WRITE (*, *) "hydroState%soilstore_roof", hydroState%soilstore_roof
-      WRITE (*, *) "hydroState%state_wall", hydroState%state_wall
-      WRITE (*, *) "hydroState%soilstore_wall", hydroState%soilstore_wall
+      ! WRITE (*, *) "hydroState%state_roof", hydroState%state_roof
+      ! WRITE (*, *) "hydroState%soilstore_roof", hydroState%soilstore_roof
+      ! WRITE (*, *) "hydroState%state_wall", hydroState%state_wall
+      ! WRITE (*, *) "hydroState%soilstore_wall", hydroState%soilstore_wall
 
       ! ############# memory allocation for DTS variables (start) #############
-      CALL hydroState_prev%allocHydro(nlayer)
-      CALL hydroState_next%allocHydro(nlayer)
+      !CALL hydroState_prev%allocHydro(nlayer)
+      ALLOCATE (hydroState_prev%soilstore_roof(nlayer))
+      ALLOCATE (hydroState_prev%state_roof(nlayer))
+      ALLOCATE (hydroState_prev%soilstore_wall(nlayer))
+      ALLOCATE (hydroState_prev%state_wall(nlayer))
 
-      CALL heatState_in%allocHeat(nsurf, nlayer, ndepth)
-      CALL heatState_out%allocHeat(nsurf, nlayer, ndepth)
+      !CALL hydroState_next%allocHydro(nlayer)
+      ALLOCATE (hydroState_next%soilstore_roof(nlayer))
+      ALLOCATE (hydroState_next%state_roof(nlayer))
+      ALLOCATE (hydroState_next%soilstore_wall(nlayer))
+      ALLOCATE (hydroState_next%state_wall(nlayer))
+
+      !CALL heatState_in%allocHeat(nsurf, nlayer, ndepth)
+      ALLOCATE (heatState_in%temp_roof(nlayer, ndepth))
+      ALLOCATE (heatState_in%temp_wall(nlayer, ndepth))
+      ALLOCATE (heatState_in%tsfc_roof(nlayer))
+      ALLOCATE (heatState_in%tsfc_wall(nlayer))
+      ALLOCATE (heatState_in%tsfc_surf(nsurf))
+      ALLOCATE (heatState_in%temp_surf(nsurf, ndepth))
+
+      !CALL heatState_out%allocHeat(nsurf, nlayer, ndepth)
+      ALLOCATE (heatState_out%temp_roof(nlayer, ndepth))
+      ALLOCATE (heatState_out%temp_wall(nlayer, ndepth))
+      ALLOCATE (heatState_out%tsfc_roof(nlayer))
+      ALLOCATE (heatState_out%tsfc_wall(nlayer))
+      ALLOCATE (heatState_out%tsfc_surf(nsurf))
+      ALLOCATE (heatState_out%temp_surf(nsurf, ndepth))
+
       ! ############# memory allocation for DTS variables (end) #############
 
       ! ####################################################################################
@@ -2938,7 +2961,7 @@ CONTAINS
             RA_h, &
             qh, qh_residual, qh_resist, & !output
             qh_resist_surf, qh_resist_roof, qh_resist_wall)
-         PRINT *, 'qn: ', qn, "qf: ", qf, "qe: ", qe, "qs: ", qs
+         ! PRINT *, 'qn: ', qn, "qf: ", qf, "qe: ", qe, "qs: ", qs
          ! PRINT *, 'qn_surf after SUEWS_cal_QH', qn_surf
          ! PRINT *, 'qs_surf after SUEWS_cal_QH', qs_surf
          ! PRINT *, 'qe_surf after SUEWS_cal_QH', qe_surf
@@ -9091,7 +9114,11 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
-      CALL hydroState_next%allocHydro(nlayer)
+      ! CALL hydroState_next%allocHydro(nlayer)
+      ALLOCATE (hydroState_next%soilstore_roof(nlayer))
+      ALLOCATE (hydroState_next%state_roof(nlayer))
+      ALLOCATE (hydroState_next%soilstore_wall(nlayer))
+      ALLOCATE (hydroState_next%state_wall(nlayer))
 
       Diagnose = methodPrm%Diagnose
       storageheatmethod = methodPrm%storageheatmethod
@@ -9178,21 +9205,6 @@ CONTAINS
             vpd_hPa, avdens, avcp, qn_e_wall, s_hPa, psyc_hPa, RS, RA_h, RB, tlv, &
             rss_wall, ev_wall, qe_wall) !output
 
-         WRITE (*, *) 'StateLimit_roof', StateLimit_roof
-         WRITE (*, *) 'SoilStoreCap_roof', SoilStoreCap_roof
-         WRITE (*, *) 'WetThresh_roof', WetThresh_roof
-         WRITE (*, *) 'state_roof_in', state_roof_in
-         WRITE (*, *) 'soilstore_roof_in', soilstore_roof_in
-         WRITE (*, *) 'StateLimit_wall', StateLimit_wall
-         WRITE (*, *) 'SoilStoreCap_wall', SoilStoreCap_wall
-         WRITE (*, *) 'WetThresh_wall', WetThresh_wall
-         WRITE (*, *) 'state_wall_in', state_wall_in
-         WRITE (*, *) 'soilstore_wall_in', soilstore_wall_in
-
-         WRITE (*, *) "hydroState_next%state_roof", hydroState_next%state_roof
-         WRITE (*, *) "hydroState_next%soilstore_roof", hydroState_next%soilstore_roof
-         WRITE (*, *) "hydroState_next%state_wall", hydroState_next%state_wall
-         WRITE (*, *) "hydroState_next%soilstore_wall", hydroState_next%soilstore_wall
          ! == calculate water balance ==
          ! --- building facets: roofs and walls ---
          CALL cal_water_storage_building( &
@@ -13272,7 +13284,12 @@ CONTAINS
 
       ! ESTM_ehc related:
       ! water balance related:
-      CALL hydroState%allocHydro(nlayer)
+      !CALL hydroState%allocHydro(nlayer)
+      ALLOCATE (hydroState%soilstore_roof(nlayer))
+      ALLOCATE (hydroState%state_roof(nlayer))
+      ALLOCATE (hydroState%soilstore_wall(nlayer))
+      ALLOCATE (hydroState%state_wall(nlayer))
+
       hydroState%soilstore_roof = soilstore_roof
       hydroState%state_roof = state_roof
       hydroState%soilstore_wall = soilstore_wall
@@ -13281,7 +13298,14 @@ CONTAINS
       hydroState%state_surf = state_surf
       hydroState%WUDay_id = WUDay_id
 
-      CALL heatState%allocHeat(nsurf, nlayer, ndepth)
+      !CALL heatState%allocHeat(nsurf, nlayer, ndepth)
+      ALLOCATE (heatState%temp_roof(nlayer, ndepth))
+      ALLOCATE (heatState%temp_wall(nlayer, ndepth))
+      ALLOCATE (heatState%tsfc_roof(nlayer))
+      ALLOCATE (heatState%tsfc_wall(nlayer))
+      ALLOCATE (heatState%tsfc_surf(nsurf))
+      ALLOCATE (heatState%temp_surf(nsurf, ndepth))
+
       heatState%temp_roof = temp_roof
       heatState%temp_wall = temp_wall
       heatState%temp_surf = temp_surf
