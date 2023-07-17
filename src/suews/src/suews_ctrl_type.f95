@@ -1,7 +1,7 @@
 MODULE SUEWS_DEF_DTS
    USE allocateArray, ONLY: nsurf, nvegsurf
 
-   implicit none
+   IMPLICIT NONE
    ! ********** SUEWS_parameters schema (basic) **********
    TYPE, PUBLIC :: METHOD_PRM
       INTEGER :: DiagMethod ! Defines how near surface diagnostics are calculated
