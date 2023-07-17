@@ -13,9 +13,9 @@ MODULE SUEWS_HydroHeat_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall ! wetness status of wall [mm]
-   ! CONTAINS
-   !    PROCEDURE :: allocHydro => allocHydroState_c
-   !    PROCEDURE :: deallocHydro => deallocHydroState_c
+      ! CONTAINS
+      !    PROCEDURE :: allocHydro => allocHydroState_c
+      !    PROCEDURE :: deallocHydro => deallocHydroState_c
    END TYPE HYDRO_STATE
 
    TYPE, PUBLIC :: HEAT_STATE
@@ -25,9 +25,9 @@ MODULE SUEWS_HydroHeat_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof ! roof surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
-   ! CONTAINS
-   !    PROCEDURE :: allocHeat => allocHeatState_c
-   !    PROCEDURE :: deallocHeat => deallocHeatState_c
+      ! CONTAINS
+      !    PROCEDURE :: allocHeat => allocHeatState_c
+      !    PROCEDURE :: deallocHeat => deallocHeatState_c
    END TYPE HEAT_STATE
 
 ! CONTAINS
