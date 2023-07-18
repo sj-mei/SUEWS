@@ -1,29 +1,29 @@
 MODULE heatflux
    IMPLICIT NONE
 CONTAINS
-   subroutine thomas_triMat(lw, diag, up, rhs, n, x)
-      implicit none
-      integer, intent(in) :: n
-      REAL(KIND(1D0)), dimension(:), intent(in) :: lw, diag, up, rhs
-      REAL(KIND(1D0)), dimension(:), intent(out) :: x
-      REAL(KIND(1D0)), dimension(n-1) :: c_prime
-      REAL(KIND(1D0)), dimension(n) :: d_prime
-      integer :: i
+   SUBROUTINE thomas_triMat(lw, diag, up, rhs, n, x)
+      IMPLICIT NONE
+      INTEGER, INTENT(in) :: n
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: lw, diag, up, rhs
+      REAL(KIND(1D0)), DIMENSION(:), INTENT(out) :: x
+      REAL(KIND(1D0)), DIMENSION(n - 1) :: c_prime
+      REAL(KIND(1D0)), DIMENSION(n) :: d_prime
+      INTEGER :: i
 
-      c_prime(1) = up(1) / diag(1)
-      d_prime(1) = rhs(1) / diag(1)
-      do i = 2, n - 1
-         c_prime(i) = up(i) / (diag(i) - lw(i) * c_prime(i - 1))
-         d_prime(i) = (rhs(i) - lw(i) * d_prime(i - 1)) / (diag(i) - lw(i) * c_prime(i - 1))
-      end do
+      c_prime(1) = up(1)/diag(1)
+      d_prime(1) = rhs(1)/diag(1)
+      DO i = 2, n - 1
+         c_prime(i) = up(i)/(diag(i) - lw(i)*c_prime(i - 1))
+         d_prime(i) = (rhs(i) - lw(i)*d_prime(i - 1))/(diag(i) - lw(i)*c_prime(i - 1))
+      END DO
 
-      d_prime(n) = (rhs(n) - lw(n - 1) * d_prime(n - 1)) / (diag(n) - lw(n - 1) * c_prime(n - 1))
+      d_prime(n) = (rhs(n) - lw(n - 1)*d_prime(n - 1))/(diag(n) - lw(n - 1)*c_prime(n - 1))
 
       x(n) = d_prime(n)
-      do i = n-1, 1, -1
-         x(i) = d_prime(i) - c_prime(i) * x(i + 1)
-      end do
-   end subroutine thomas_triMat
+      DO i = n - 1, 1, -1
+         x(i) = d_prime(i) - c_prime(i)*x(i + 1)
+      END DO
+   END SUBROUTINE thomas_triMat
 
    SUBROUTINE heatcond1d_vstep(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
@@ -130,14 +130,14 @@ CONTAINS
       REAL(KIND(1D0)) :: dt_x ! for recursion
       INTEGER :: n_div ! for recursion
       n = SIZE(T)
-      
+
       ALLOCATE (T_tmp(1:n))
       ALLOCATE (T_in(1:n))
       ALLOCATE (T_out(1:n))
-      ALLOCATE (k_itf(1:n-1))
+      ALLOCATE (k_itf(1:n - 1))
 
-      ALLOCATE (vec_lw(1:n-1))
-      ALLOCATE (vec_up(1:n-1))
+      ALLOCATE (vec_lw(1:n - 1))
+      ALLOCATE (vec_up(1:n - 1))
       ALLOCATE (vec_diag(1:n))
       ALLOCATE (vec_rhs(1:n))
 
@@ -151,36 +151,36 @@ CONTAINS
 
       ! calculate the depth-averaged thermal conductivity
       DO i = 1, n - 1
-         k_itf(i) = (k(i) * k(i+1) * (dx(i) + dx(i+1)))/(k(i) * dx(i+1) + k(i+1) * dx(i))
+         k_itf(i) = (k(i)*k(i + 1)*(dx(i) + dx(i + 1)))/(k(i)*dx(i + 1) + k(i + 1)*dx(i))
       END DO
 
       dt_remain = dt
-      dt_step_cfl = 0.1 * MINVAL(dx**2/(k/rhocp))
+      dt_step_cfl = 0.1*MINVAL(dx**2/(k/rhocp))
       DO WHILE (dt_remain > 1E-10)
          dt_step = MIN(dt_step_cfl, dt_remain)
          ! set the tridiagonal matrix for 1D heat conduction solver based on Crank-Nicholson method
          DO i = 1, n
             IF (i == 1) THEN
-               vec_up(i) = (1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i)))
-               vec_diag(i) = -(1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) &
-                                 - rhocp(i) * dx(i) / dt
-               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
-                              + alpha * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) * (T_tmp(i) - T_tmp(i+1))
+               vec_up(i) = (1.0 - alpha)*k_itf(i)/(0.5*(dx(i + 1) + dx(i)))
+               vec_diag(i) = -(1.0 - alpha)*k_itf(i)/(0.5*(dx(i + 1) + dx(i))) &
+                             - rhocp(i)*dx(i)/dt
+               vec_rhs(i) = -rhocp(i)*dx(i)/dt*T_tmp(i) &
+                            + alpha*k_itf(i)/(0.5*(dx(i + 1) + dx(i)))*(T_tmp(i) - T_tmp(i + 1))
             ELSE IF (i == n) THEN
-               vec_lw(i-1) = (1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i)))
-               vec_diag(i) = -(1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) &
-                                 - rhocp(i) * dx(i) / dt
-               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
-                              - alpha * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) * (T_tmp(i-1) - T_tmp(i))
+               vec_lw(i - 1) = (1.0 - alpha)*k_itf(i - 1)/(0.5*(dx(i - 1) + dx(i)))
+               vec_diag(i) = -(1.0 - alpha)*k_itf(i - 1)/(0.5*(dx(i - 1) + dx(i))) &
+                             - rhocp(i)*dx(i)/dt
+               vec_rhs(i) = -rhocp(i)*dx(i)/dt*T_tmp(i) &
+                            - alpha*k_itf(i - 1)/(0.5*(dx(i - 1) + dx(i)))*(T_tmp(i - 1) - T_tmp(i))
             ELSE
-               vec_lw(i-1) = (1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i)))
-               vec_up(i) = (1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i)))
-               vec_diag(i) = -(1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) &
-                                 -(1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) &
-                                 - rhocp(i) * dx(i) / dt
-               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
-                              - alpha * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) * (T_tmp(i-1) - T_tmp(i)) &
-                              + alpha * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) * (T_tmp(i) - T_tmp(i+1))
+               vec_lw(i - 1) = (1.0 - alpha)*k_itf(i - 1)/(0.5*(dx(i - 1) + dx(i)))
+               vec_up(i) = (1.0 - alpha)*k_itf(i)/(0.5*(dx(i + 1) + dx(i)))
+               vec_diag(i) = -(1.0 - alpha)*k_itf(i - 1)/(0.5*(dx(i - 1) + dx(i))) &
+                             - (1.0 - alpha)*k_itf(i)/(0.5*(dx(i + 1) + dx(i))) &
+                             - rhocp(i)*dx(i)/dt
+               vec_rhs(i) = -rhocp(i)*dx(i)/dt*T_tmp(i) &
+                            - alpha*k_itf(i - 1)/(0.5*(dx(i - 1) + dx(i)))*(T_tmp(i - 1) - T_tmp(i)) &
+                            + alpha*k_itf(i)/(0.5*(dx(i + 1) + dx(i)))*(T_tmp(i) - T_tmp(i + 1))
             END IF
          END DO
 
@@ -456,7 +456,7 @@ CONTAINS
                ! END IF
                ! CALL heatcond1d_ext( &
                ! CALL heatcond1d_vstep( &
-               Call heatcond1d_CN( &
+               CALL heatcond1d_CN( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   tsfc_cal(i_facet), &

@@ -2191,7 +2191,7 @@ CONTAINS
       snowState_next = snowState
       hydroState_next = hydroState
 
-      ! 
+      !
       ! state_surf_next = state_surf
       ! soilstore_surf_next = soilstore_surf
 
