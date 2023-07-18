@@ -1,6 +1,30 @@
 MODULE heatflux
    IMPLICIT NONE
 CONTAINS
+   subroutine thomas_triMat(lw, diag, up, rhs, n, x)
+      implicit none
+      integer, intent(in) :: n
+      REAL(KIND(1D0)), dimension(:), intent(in) :: lw, diag, up, rhs
+      REAL(KIND(1D0)), dimension(:), intent(out) :: x
+      REAL(KIND(1D0)), dimension(n-1) :: c_prime
+      REAL(KIND(1D0)), dimension(n) :: d_prime
+      integer :: i
+
+      c_prime(1) = up(1) / diag(1)
+      d_prime(1) = rhs(1) / diag(1)
+      do i = 2, n - 1
+         c_prime(i) = up(i) / (diag(i) - lw(i) * c_prime(i - 1))
+         d_prime(i) = (rhs(i) - lw(i) * d_prime(i - 1)) / (diag(i) - lw(i) * c_prime(i - 1))
+      end do
+
+      d_prime(n) = (rhs(n) - lw(n - 1) * d_prime(n - 1)) / (diag(n) - lw(n - 1) * c_prime(n - 1))
+
+      x(n) = d_prime(n)
+      do i = n-1, 1, -1
+         x(i) = d_prime(i) - c_prime(i) * x(i + 1)
+      end do
+   end subroutine thomas_triMat
+
    SUBROUTINE heatcond1d_vstep(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
@@ -85,6 +109,95 @@ CONTAINS
             -([bc(1), T_in(1:n - 1)] + T_in)/2) & ! initial temperature
            *rhocp*dx/dt)
    END SUBROUTINE heatcond1d_vstep
+
+   SUBROUTINE heatcond1d_CN(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
+      REAL(KIND(1D0)), INTENT(inout) :: T(:)
+      REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
+      REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
+      LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
+      LOGICAL, INTENT(in) :: debug
+      INTEGER :: i, n
+      REAL(KIND(1D0)), ALLOCATABLE :: T_tmp(:), k_itf(:)
+      REAL(KIND(1D0)), ALLOCATABLE :: vec_lw(:), vec_up(:), vec_diag(:), vec_rhs(:)
+
+      REAL(KIND(1D0)) :: alpha, T_lw, T_up
+
+      REAL(KIND(1D0)) :: dt_remain
+      REAL(KIND(1D0)) :: dt_step
+      REAL(KIND(1D0)) :: dt_step_cfl
+
+      REAL(KIND(1D0)), ALLOCATABLE :: T_in(:), T_out(:)
+      REAL(KIND(1D0)) :: dt_x ! for recursion
+      INTEGER :: n_div ! for recursion
+      n = SIZE(T)
+      
+      ALLOCATE (T_tmp(1:n))
+      ALLOCATE (T_in(1:n))
+      ALLOCATE (T_out(1:n))
+      ALLOCATE (k_itf(1:n-1))
+
+      ALLOCATE (vec_lw(1:n-1))
+      ALLOCATE (vec_up(1:n-1))
+      ALLOCATE (vec_diag(1:n))
+      ALLOCATE (vec_rhs(1:n))
+
+      alpha = 0.5
+      T_up = bc(1)
+      T_lw = bc(2)
+
+      ! save initial temperatures
+      T_in = T
+      T_tmp = T
+
+      ! calculate the depth-averaged thermal conductivity
+      DO i = 1, n - 1
+         k_itf(i) = (k(i) * k(i+1) * (dx(i) + dx(i+1)))/(k(i) * dx(i+1) + k(i+1) * dx(i))
+      END DO
+
+      dt_remain = dt
+      dt_step_cfl = 0.1 * MINVAL(dx**2/(k/rhocp))
+      DO WHILE (dt_remain > 1E-10)
+         dt_step = MIN(dt_step_cfl, dt_remain)
+         ! set the tridiagonal matrix for 1D heat conduction solver based on Crank-Nicholson method
+         DO i = 1, n
+            IF (i == 1) THEN
+               vec_up(i) = (1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i)))
+               vec_diag(i) = -(1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) &
+                                 - rhocp(i) * dx(i) / dt
+               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
+                              + alpha * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) * (T_tmp(i) - T_tmp(i+1))
+            ELSE IF (i == n) THEN
+               vec_lw(i-1) = (1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i)))
+               vec_diag(i) = -(1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) &
+                                 - rhocp(i) * dx(i) / dt
+               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
+                              - alpha * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) * (T_tmp(i-1) - T_tmp(i))
+            ELSE
+               vec_lw(i-1) = (1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i)))
+               vec_up(i) = (1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i)))
+               vec_diag(i) = -(1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) &
+                                 -(1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) &
+                                 - rhocp(i) * dx(i) / dt
+               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
+                              - alpha * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) * (T_tmp(i-1) - T_tmp(i)) &
+                              + alpha * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) * (T_tmp(i) - T_tmp(i+1))
+            END IF
+         END DO
+
+         ! solve the tridiagonal matrix using Thomas algorithm
+         CALL thomas_triMat(vec_lw, vec_diag, vec_up, vec_rhs, n, T_tmp)
+         dt_remain = dt_remain - dt_step
+      END DO
+
+      T_out = T_tmp
+
+      ! new way for calcualating heat storage
+      Qs = SUM( &
+           (([bc(1), T_out(1:n - 1)] + T_out)/2. & ! updated temperature
+            -([bc(1), T_in(1:n - 1)] + T_in)/2) & ! initial temperature
+           *rhocp*dx/dt)
+   END SUBROUTINE heatcond1d_CN
+
 END MODULE heatflux
 
 MODULE EHC_module
@@ -115,7 +228,7 @@ CONTAINS
       USE allocateArray, ONLY: &
          nsurf, ndepth, &
          PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf
-      USE heatflux, ONLY: heatcond1d_vstep
+      USE heatflux, ONLY: heatcond1d_vstep, heatcond1d_CN
 
       IMPLICIT NONE
       INTEGER, INTENT(in) :: tstep
@@ -342,7 +455,8 @@ CONTAINS
                !    debug = .FALSE.
                ! END IF
                ! CALL heatcond1d_ext( &
-               CALL heatcond1d_vstep( &
+               ! CALL heatcond1d_vstep( &
+               Call heatcond1d_CN( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   tsfc_cal(i_facet), &
@@ -383,7 +497,8 @@ CONTAINS
                ! 1D heat conduction for finite depth layers
                ! TODO: this should be a water specific heat conduction solver: to implement
                ! CALL heatcond1d_ext( &
-               CALL heatcond1d_vstep( &
+               ! CALL heatcond1d_vstep( &
+               CALL heatcond1d_CN( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   tsfc_cal(i_facet), &
