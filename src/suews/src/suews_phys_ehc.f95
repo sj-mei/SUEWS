@@ -13,8 +13,8 @@ CONTAINS
       c_prime(1) = up(1) / diag(1)
       d_prime(1) = rhs(1) / diag(1)
       do i = 2, n - 1
-         c_prime(i) = up(i) / (diag(i) - lw(i) * c_prime(i - 1))
-         d_prime(i) = (rhs(i) - lw(i) * d_prime(i - 1)) / (diag(i) - lw(i) * c_prime(i - 1))
+         c_prime(i) = up(i) / (diag(i) - lw(i - 1) * c_prime(i - 1))
+         d_prime(i) = (rhs(i) - lw(i - 1) * d_prime(i - 1)) / (diag(i) - lw(i - 1) * c_prime(i - 1))
       end do
 
       d_prime(n) = (rhs(n) - lw(n - 1) * d_prime(n - 1)) / (diag(n) - lw(n - 1) * c_prime(n - 1))
@@ -115,27 +115,30 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
       REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
       LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
+      REAL(KIND(1D0)) :: alpha, T_lw, T_up
+
       LOGICAL, INTENT(in) :: debug
       INTEGER :: i, n
       REAL(KIND(1D0)), ALLOCATABLE :: T_tmp(:), k_itf(:)
+      REAL(KIND(1D0)), ALLOCATABLE :: T_in(:), T_out(:)
       REAL(KIND(1D0)), ALLOCATABLE :: vec_lw(:), vec_up(:), vec_diag(:), vec_rhs(:)
-
-      REAL(KIND(1D0)) :: alpha, T_lw, T_up
+      !REAL(KIND(1D0)), ALLOCATABLE :: dx_tmp(:), k_tmp(:), rhocp_tmp(:)
 
       REAL(KIND(1D0)) :: dt_remain
       REAL(KIND(1D0)) :: dt_step
       REAL(KIND(1D0)) :: dt_step_cfl
 
-      REAL(KIND(1D0)), ALLOCATABLE :: T_in(:), T_out(:)
-      REAL(KIND(1D0)) :: dt_x ! for recursion
-      INTEGER :: n_div ! for recursion
       n = SIZE(T)
       
-      ALLOCATE (T_tmp(1:n))
-      ALLOCATE (T_in(1:n))
-      ALLOCATE (T_out(1:n))
-      ALLOCATE (k_itf(1:n-1))
+      ALLOCATE (T_tmp(1:n))      ! temporary temperature array
+      ALLOCATE (k_itf(1:n-1))    ! thermal conductivity at interfaces
+      ALLOCATE (T_in(1:n))       ! initial temperature array
+      ALLOCATE (T_out(1:n))      ! output temperature array
 
+      ! ALLOCATE (dx_tmp(1:n-1))
+      ! ALLOCATE (k_tmp(1:n-1))
+      ! ALLOCATE (rhocp_tmp(1:n-1))
+   
       ALLOCATE (vec_lw(1:n-1))
       ALLOCATE (vec_up(1:n-1))
       ALLOCATE (vec_diag(1:n))
@@ -146,8 +149,12 @@ CONTAINS
       T_lw = bc(2)
 
       ! save initial temperatures
+      !T_in(2:n-1) = T
+      !T_in(1) = T_up
+      !T_in(n) = T_lw
       T_in = T
-      T_tmp = T
+      T_tmp = T_in
+      ! T_tmp = T
 
       ! calculate the depth-averaged thermal conductivity
       DO i = 1, n - 1
@@ -155,30 +162,39 @@ CONTAINS
       END DO
 
       dt_remain = dt
-      dt_step_cfl = 0.1 * MINVAL(dx**2/(k/rhocp))
+      dt_step_cfl = 0.005 * MINVAL(dx**2/(k/rhocp))
+      !PRINT *, 'dt_step_cfl: ', dt_step_cfl
       DO WHILE (dt_remain > 1E-10)
          dt_step = MIN(dt_step_cfl, dt_remain)
+         T_tmp(1) = T_up
+         T_tmp(n) = T_lw
          ! set the tridiagonal matrix for 1D heat conduction solver based on Crank-Nicholson method
          DO i = 1, n
             IF (i == 1) THEN
                vec_up(i) = (1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i)))
-               vec_diag(i) = -(1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) &
-                                 - rhocp(i) * dx(i) / dt
-               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
-                              + alpha * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) * (T_tmp(i) - T_tmp(i+1))
+               vec_diag(i) = -(1.0 - alpha) * k(1) / (0.5 * (dx(i))) &
+                                 -(1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) &
+                                 - rhocp(i) * dx(i) / dt_step
+               vec_rhs(i) = -rhocp(i) * dx(i) / dt_step * T_tmp(i) &
+                              - alpha * k(1) / (0.5 * (dx(i))) * (T_up - T_tmp(i)) &
+                              + alpha * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) * (T_tmp(i) - T_tmp(i+1)) &
+                              - (1.0 - alpha) * k(1) / (0.5 * (dx(i))) * T_up
             ELSE IF (i == n) THEN
                vec_lw(i-1) = (1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i)))
                vec_diag(i) = -(1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) &
-                                 - rhocp(i) * dx(i) / dt
-               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
-                              - alpha * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) * (T_tmp(i-1) - T_tmp(i))
+                                 - (1.0 - alpha) * k(n) / (0.5 * (dx(i))) &
+                                 - rhocp(i) * dx(i) / dt_step
+               vec_rhs(i) = -rhocp(i) * dx(i) / dt_step * T_tmp(i) &
+                              - alpha * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) * (T_tmp(i-1) - T_tmp(i)) &
+                              + alpha * k(n) / (0.5 * (dx(i))) * (T_tmp(i) - T_lw) &
+                              - (1.0 - alpha) * k(n) / (0.5 * (dx(i))) * T_lw
             ELSE
                vec_lw(i-1) = (1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i)))
                vec_up(i) = (1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i)))
                vec_diag(i) = -(1.0 - alpha) * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) &
                                  -(1.0 - alpha) * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) &
-                                 - rhocp(i) * dx(i) / dt
-               vec_rhs(i) = -rhocp(i) * dx(i) / dt * T_tmp(i) &
+                                 - rhocp(i) * dx(i) / dt_step
+               vec_rhs(i) = -rhocp(i) * dx(i) / dt_step * T_tmp(i) &
                               - alpha * k_itf(i-1) / (0.5 * (dx(i-1) + dx(i))) * (T_tmp(i-1) - T_tmp(i)) &
                               + alpha * k_itf(i) / (0.5 * (dx(i+1) + dx(i))) * (T_tmp(i) - T_tmp(i+1))
             END IF
@@ -190,6 +206,11 @@ CONTAINS
       END DO
 
       T_out = T_tmp
+      Tsfc = T_out(1)
+      T = T_out
+
+      !PRINT *, "T_up: ", T_up, "T_lw: ", T_lw
+      !PRINT *, 'T: ', T
 
       ! new way for calcualating heat storage
       Qs = SUM( &
@@ -439,11 +460,11 @@ CONTAINS
                bctype(2) = .FALSE.
 
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
-               ! PRINT *, 'temp_cal before: ', temp_cal(i_facet, :)
+               PRINT *, i_facet, ' temp_cal before: ', temp_cal(i_facet, :)
                ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
                ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
                ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
-               ! PRINT *, 'bc: ', bc
+               PRINT *, i_facet, ' bc: ', bc
 
                ! END IF
 
@@ -455,7 +476,7 @@ CONTAINS
                !    debug = .FALSE.
                ! END IF
                ! CALL heatcond1d_ext( &
-               ! CALL heatcond1d_vstep( &
+               !CALL heatcond1d_vstep( &
                Call heatcond1d_CN( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
@@ -470,7 +491,8 @@ CONTAINS
                ! update temperature at all inner interfaces
                ! tin_cal(i_facet, :) = temp_all_cal
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
-               ! PRINT *, 'temp_cal after: ', temp_cal(i_facet, :)
+               PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
+               PRINT *, i_facet, 'tsfc_cal after: ', tsfc_cal(i_facet)
                ! PRINT *, 'QS_cal after: ', QS_cal(i_facet)
                ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
                ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
@@ -497,7 +519,7 @@ CONTAINS
                ! 1D heat conduction for finite depth layers
                ! TODO: this should be a water specific heat conduction solver: to implement
                ! CALL heatcond1d_ext( &
-               ! CALL heatcond1d_vstep( &
+               !CALL heatcond1d_vstep( &
                CALL heatcond1d_CN( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
