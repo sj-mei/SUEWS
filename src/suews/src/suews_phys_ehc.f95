@@ -460,11 +460,11 @@ CONTAINS
                bctype(2) = .FALSE.
 
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
-               PRINT *, i_facet, ' temp_cal before: ', temp_cal(i_facet, :)
+               !PRINT *, i_facet, ' temp_cal before: ', temp_cal(i_facet, :)
                ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
                ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
                ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
-               PRINT *, i_facet, ' bc: ', bc
+               !PRINT *, i_facet, ' bc: ', bc
 
                ! END IF
 
@@ -491,8 +491,8 @@ CONTAINS
                ! update temperature at all inner interfaces
                ! tin_cal(i_facet, :) = temp_all_cal
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
-               PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
-               PRINT *, i_facet, 'tsfc_cal after: ', tsfc_cal(i_facet)
+               ! PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
+               ! PRINT *, i_facet, 'tsfc_cal after: ', tsfc_cal(i_facet)
                ! PRINT *, 'QS_cal after: ', QS_cal(i_facet)
                ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
                ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
