@@ -2606,13 +2606,13 @@ CONTAINS
          ! temp_in_wall = temp_out_wall
          ! temp_in_surf = temp_out_surf
          ! Ts_iter = DOT_PRODUCT(tsfc_out_surf, sfr_surf)
-         PRINT *, 'QS_surf after cal_qs', QS_surf
+         ! PRINT *, 'QS_surf after cal_qs', QS_surf
          !PRINT *, 'QS_roof after cal_qs', QS_roof
          !PRINT *, 'QS_wall after cal_qs', QS_wall
 
          ! PRINT *, ''
 
-         PRINT *, 'tsfc_surf after cal_qs', tsfc_out_surf
+         ! PRINT *, 'tsfc_surf after cal_qs', heatState_out%tsfc_surf
          ! PRINT *, 'tsfc_roof after cal_qs', tsfc_out_roof
          ! PRINT *, 'tsfc_wall after cal_qs', tsfc_out_wall
          ! PRINT *, ''
@@ -3006,6 +3006,7 @@ CONTAINS
          DO i_surf = 1, nsurf
             ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
             heatState_out%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
+            ! PRINT *, 'tsfc_surf after QH back env.:', heatState_out%tsfc_surf(i_surf)
             ! if ( i_surf==1 ) then
             !    tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
             ! else

@@ -122,8 +122,7 @@ CONTAINS
       REAL(KIND(1D0)), ALLOCATABLE :: T_tmp(:), k_itf(:)
       REAL(KIND(1D0)), ALLOCATABLE :: T_in(:), T_out(:)
       REAL(KIND(1D0)), ALLOCATABLE :: vec_lw(:), vec_up(:), vec_diag(:), vec_rhs(:)
-      !REAL(KIND(1D0)), ALLOCATABLE :: dx_tmp(:), k_tmp(:), rhocp_tmp(:)
-
+      
       REAL(KIND(1D0)) :: dt_remain
       REAL(KIND(1D0)) :: dt_step
       REAL(KIND(1D0)) :: dt_step_cfl
@@ -135,10 +134,6 @@ CONTAINS
       ALLOCATE (T_in(1:n)) ! initial temperature array
       ALLOCATE (T_out(1:n)) ! output temperature array
 
-      ! ALLOCATE (dx_tmp(1:n-1))
-      ! ALLOCATE (k_tmp(1:n-1))
-      ! ALLOCATE (rhocp_tmp(1:n-1))
-
       ALLOCATE (vec_lw(1:n - 1))
       ALLOCATE (vec_up(1:n - 1))
       ALLOCATE (vec_diag(1:n))
@@ -149,12 +144,8 @@ CONTAINS
       T_lw = bc(2)
 
       ! save initial temperatures
-      !T_in(2:n-1) = T
-      !T_in(1) = T_up
-      !T_in(n) = T_lw
       T_in = T
       T_tmp = T_in
-      ! T_tmp = T
 
       ! calculate the depth-averaged thermal conductivity
       DO i = 1, n - 1
@@ -162,7 +153,7 @@ CONTAINS
       END DO
 
       dt_remain = dt
-      dt_step_cfl = 0.005*MINVAL(dx**2/(k/rhocp))
+      dt_step_cfl = 0.002 * MINVAL(dx**2/(k/rhocp))
       !PRINT *, 'dt_step_cfl: ', dt_step_cfl
       DO WHILE (dt_remain > 1E-10)
          dt_step = MIN(dt_step_cfl, dt_remain)
@@ -209,14 +200,25 @@ CONTAINS
       Tsfc = T_out(1)
       T = T_out
 
-      !PRINT *, "T_up: ", T_up, "T_lw: ", T_lw
-      !PRINT *, 'T: ', T
+      if (debug) then
+         PRINT *, "T_up: ", T_up, "T_lw: ", T_lw
+         PRINT *, "T_out: ", T_out
+         PRINT *, "T_in: ", T_in
+      end if
 
       ! new way for calcualating heat storage
-      Qs = SUM( &
-           (([bc(1), T_out(1:n - 1)] + T_out)/2. & ! updated temperature
-            -([bc(1), T_in(1:n - 1)] + T_in)/2) & ! initial temperature
-           *rhocp*dx/dt)
+      ! Qs = SUM( &
+      !      (([bc(1), T_out(1:n - 1)] + T_out)/2. & ! updated temperature
+      !       -([bc(1), T_in(1:n - 1)] + T_in)/2) & ! initial temperature
+      !      *rhocp*dx/dt)
+      ! Qs = SUM( &
+      !      (T_out - T_in) & ! initial temperature
+      !      *rhocp*dx/dt)
+      ! ---Here we use the outermost surface temperatures to calculate 
+      ! ------the heat flux from the surface as the change of Qs for SEB
+      ! ------considering there might be fluxes going out from the lower boundary
+      Qs = (T_up - T_out(1)) * k(1) / (dx(1) * 0.5)
+      ! Qs = (T_out(1) - T_out(2)) * k(1) / dx(1)
    END SUBROUTINE heatcond1d_CN
 
 END MODULE heatflux
@@ -446,10 +448,13 @@ CONTAINS
                ! surface heat flux
                IF (i_group == 1) THEN
                   bc(1) = qg_roof(i_facet)
+                  !debug = .FALSE.
                ELSE IF (i_group == 2) THEN
                   bc(1) = qg_wall(i_facet)
+                  !debug = .FALSE.
                ELSE IF (i_group == 3) THEN
                   bc(1) = QG_surf(i_facet)
+                  !debug = .True.
                END IF
                ! bctype(1) = .TRUE.
                bc(1) = tsfc_cal(i_facet)
