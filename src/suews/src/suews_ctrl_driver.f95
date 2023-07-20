@@ -10621,22 +10621,22 @@ CONTAINS
                      REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), dectime]
       !Define the overall output matrix to be printed out step by step
       dataOutLineECH = [ &
-                           tsfc_out_surf, qs_surf, & !output
-                           fill_result_x(tsfc_out_roof, n_fill), &
-                           fill_result_x(Qn_roof, n_fill), &
-                           fill_result_x(QS_roof, n_fill), &
-                           fill_result_x(QE_roof, n_fill), &
-                           fill_result_x(QH_roof, n_fill), &
-                           fill_result_x(state_roof, n_fill), &
-                           fill_result_x(soilstore_roof, n_fill), &
-                           fill_result_x(tsfc_out_wall, n_fill), &
-                           fill_result_x(Qn_wall, n_fill), &
-                           fill_result_x(QS_wall, n_fill), &
-                           fill_result_x(QE_wall, n_fill), &
-                           fill_result_x(QH_wall, n_fill), &
-                           fill_result_x(state_wall, n_fill), &
-                           fill_result_x(soilstore_wall, n_fill) &
-                           ]
+                       tsfc_out_surf, qs_surf, & !output
+                       fill_result_x(tsfc_out_roof, n_fill), &
+                       fill_result_x(Qn_roof, n_fill), &
+                       fill_result_x(QS_roof, n_fill), &
+                       fill_result_x(QE_roof, n_fill), &
+                       fill_result_x(QH_roof, n_fill), &
+                       fill_result_x(state_roof, n_fill), &
+                       fill_result_x(soilstore_roof, n_fill), &
+                       fill_result_x(tsfc_out_wall, n_fill), &
+                       fill_result_x(Qn_wall, n_fill), &
+                       fill_result_x(QS_wall, n_fill), &
+                       fill_result_x(QE_wall, n_fill), &
+                       fill_result_x(QH_wall, n_fill), &
+                       fill_result_x(state_wall, n_fill), &
+                       fill_result_x(soilstore_wall, n_fill) &
+                       ]
       ! set invalid values to NAN
       ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
 
@@ -10734,22 +10734,22 @@ CONTAINS
                      REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), dectime]
       !Define the overall output matrix to be printed out step by step
       dataOutLineECH = [ &
-                           tsfc_out_surf, qs_surf, & !output
-                           fill_result_x(tsfc_out_roof, n_fill), &
-                           fill_result_x(Qn_roof, n_fill), &
-                           fill_result_x(QS_roof, n_fill), &
-                           fill_result_x(QE_roof, n_fill), &
-                           fill_result_x(QH_roof, n_fill), &
-                           fill_result_x(state_roof, n_fill), &
-                           fill_result_x(soilstore_roof, n_fill), &
-                           fill_result_x(tsfc_out_wall, n_fill), &
-                           fill_result_x(Qn_wall, n_fill), &
-                           fill_result_x(QS_wall, n_fill), &
-                           fill_result_x(QE_wall, n_fill), &
-                           fill_result_x(QH_wall, n_fill), &
-                           fill_result_x(state_wall, n_fill), &
-                           fill_result_x(soilstore_wall, n_fill) &
-                           ]
+                       tsfc_out_surf, qs_surf, & !output
+                       fill_result_x(tsfc_out_roof, n_fill), &
+                       fill_result_x(Qn_roof, n_fill), &
+                       fill_result_x(QS_roof, n_fill), &
+                       fill_result_x(QE_roof, n_fill), &
+                       fill_result_x(QH_roof, n_fill), &
+                       fill_result_x(state_roof, n_fill), &
+                       fill_result_x(soilstore_roof, n_fill), &
+                       fill_result_x(tsfc_out_wall, n_fill), &
+                       fill_result_x(Qn_wall, n_fill), &
+                       fill_result_x(QS_wall, n_fill), &
+                       fill_result_x(QE_wall, n_fill), &
+                       fill_result_x(QH_wall, n_fill), &
+                       fill_result_x(state_wall, n_fill), &
+                       fill_result_x(soilstore_wall, n_fill) &
+                       ]
       ! set invalid values to NAN
       ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
 
@@ -12236,7 +12236,6 @@ CONTAINS
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       output_block_suews) !output
-
 
       IMPLICIT NONE
 
