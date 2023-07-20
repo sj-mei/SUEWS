@@ -162,7 +162,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSPARTACUS !SPARTACUS output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSnow !Main data output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTM !ESTM output matrix
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTMExt !ESTM output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutECH !ESTM output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutDailyState !DailyState output array
 
    ! -------- output per each timestep ----------------------------------------------------------------
@@ -206,7 +206,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM !ESTM output for the current timestep and grid
 
    ! ---- For ESTM_ext
-   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutECH - 5) :: dataOutLineESTMExt !ESTM output for the current timestep and grid
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutECH - 5) :: dataOutLineECH !ESTM output for the current timestep and grid
 
    ! Column numbers for TstepProfiles
    INTEGER :: cTP_EnUseWD = 1, &

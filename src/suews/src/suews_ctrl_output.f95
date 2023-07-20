@@ -1316,7 +1316,7 @@ CONTAINS
          dataOutX = dataOutSPARTACUS(1:irMax, 1:n_var, Gridiv)
 
       CASE ('ECH') !ESTMExt
-         dataOutX = dataOutESTMExt(1:irMax, 1:n_var, Gridiv)
+         dataOutX = dataOutECH(1:irMax, 1:n_var, Gridiv)
 
       CASE ('DailyState') !DailyState
          ! get correct day index
