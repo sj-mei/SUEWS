@@ -157,7 +157,7 @@ CONTAINS
       dt_step_cfl = 0.002*MINVAL(dx**2/(k/rhocp))
       !PRINT *, 'dt_step_cfl: ', dt_step_cfl
 
-      Qs_acc = 0.0    ! accumulated heat storage
+      Qs_acc = 0.0 ! accumulated heat storage
       DO WHILE (dt_remain > 1E-10)
          dt_step = MIN(dt_step_cfl, dt_remain)
          !T_tmp(1) = T_up
@@ -197,7 +197,7 @@ CONTAINS
          ! solve the tridiagonal matrix using Thomas algorithm
          CALL thomas_triMat(vec_lw, vec_diag, vec_up, vec_rhs, n, T_tmp)
          dt_remain = dt_remain - dt_step
-         Qs_acc = Qs_acc + (T_up - T_tmp(1)) * k(1) / (dx(1)*0.5) * dt_step
+         Qs_acc = Qs_acc + (T_up - T_tmp(1))*k(1)/(dx(1)*0.5)*dt_step
       END DO
 
       T_out = T_tmp
@@ -226,7 +226,6 @@ CONTAINS
       ! Qs = Qs_acc / dt
    END SUBROUTINE heatcond1d_CN
 
-
    SUBROUTINE heatcond1d_CN_dense(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
@@ -247,9 +246,9 @@ CONTAINS
       REAL(KIND(1D0)) :: dt_step
       REAL(KIND(1D0)) :: dt_step_cfl
 
-      ratio = 3   ! ratio between the number of layers in the used dense and input coarse grids
-      n = SIZE(T) 
-      n_tmp = n * ratio
+      ratio = 3 ! ratio between the number of layers in the used dense and input coarse grids
+      n = SIZE(T)
+      n_tmp = n*ratio
 
       ALLOCATE (T_tmp(1:n_tmp)) ! temporary temperature array
       ALLOCATE (T_in(1:n_tmp)) ! initial temperature array
@@ -274,7 +273,7 @@ CONTAINS
          T_tmp((i - 1)*ratio + 1:i*ratio) = T(i)
          k_tmp((i - 1)*ratio + 1:i*ratio) = k(i)
          rhocp_tmp((i - 1)*ratio + 1:i*ratio) = rhocp(i)
-         dx_tmp((i - 1)*ratio + 1:i*ratio) = dx(i) / ratio
+         dx_tmp((i - 1)*ratio + 1:i*ratio) = dx(i)/ratio
       END DO
 
       ! calculate the depth-averaged thermal conductivity
@@ -286,7 +285,7 @@ CONTAINS
       dt_step_cfl = 0.01*MINVAL(dx_tmp**2/(k_tmp/rhocp_tmp))
       !PRINT *, 'dt_step_cfl: ', dt_step_cfl
 
-      Qs_acc = 0.0    ! accumulated heat storage
+      Qs_acc = 0.0 ! accumulated heat storage
       DO WHILE (dt_remain > 1E-10)
          dt_step = MIN(dt_step_cfl, dt_remain)
          !T_tmp(1) = T_up
@@ -294,26 +293,26 @@ CONTAINS
          ! set the tridiagonal matrix for 1D heat conduction solver based on Crank-Nicholson method
          DO i = 1, n_tmp
             IF (i == 1) THEN
-               vec_up(i) = (1.0 - alpha) * k_itf(i) / (0.5*(dx_tmp(i + 1) + dx_tmp(i)))
-               vec_diag(i) = -(1.0 - alpha)* k_tmp(1) / (0.5*(dx_tmp(i))) &
-                             - (1.0 - alpha) * k_itf(i)/(0.5*(dx_tmp(i + 1) + dx_tmp(i))) &
-                             - rhocp_tmp(i) * dx_tmp(i) / dt_step
-               vec_rhs(i) = -rhocp_tmp(i) * dx_tmp(i) / dt_step * T_tmp(i) &
-                            - alpha * k_tmp(1)/(0.5 * dx_tmp(i)) * (T_up - T_tmp(i)) &
-                            + alpha * k_itf(i)/(0.5 * (dx_tmp(i + 1) + dx_tmp(i)))*(T_tmp(i) - T_tmp(i + 1)) &
-                            - (1.0 - alpha) * k_tmp(1) / (0.5*(dx_tmp(i)))*T_up
+               vec_up(i) = (1.0 - alpha)*k_itf(i)/(0.5*(dx_tmp(i + 1) + dx_tmp(i)))
+               vec_diag(i) = -(1.0 - alpha)*k_tmp(1)/(0.5*(dx_tmp(i))) &
+                             - (1.0 - alpha)*k_itf(i)/(0.5*(dx_tmp(i + 1) + dx_tmp(i))) &
+                             - rhocp_tmp(i)*dx_tmp(i)/dt_step
+               vec_rhs(i) = -rhocp_tmp(i)*dx_tmp(i)/dt_step*T_tmp(i) &
+                            - alpha*k_tmp(1)/(0.5*dx_tmp(i))*(T_up - T_tmp(i)) &
+                            + alpha*k_itf(i)/(0.5*(dx_tmp(i + 1) + dx_tmp(i)))*(T_tmp(i) - T_tmp(i + 1)) &
+                            - (1.0 - alpha)*k_tmp(1)/(0.5*(dx_tmp(i)))*T_up
             ELSE IF (i == n_tmp) THEN
-               vec_lw(i - 1) = (1.0 - alpha) * k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i)))
-               vec_diag(i) = -(1.0 - alpha) * k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i))) &
-                             - (1.0 - alpha) * k_tmp(n)/(0.5*(dx_tmp(i))) &
-                             - rhocp_tmp(i) * dx_tmp(i) / dt_step
-               vec_rhs(i) = -rhocp_tmp(i) * dx_tmp(i) / dt_step * T_tmp(i) &
-                            - alpha * k_itf(i - 1) / (0.5*(dx_tmp(i - 1) + dx_tmp(i)))*(T_tmp(i - 1) - T_tmp(i)) &
-                            + alpha * k_tmp(n) / (0.5*(dx_tmp(i)))*(T_tmp(i) - T_lw) &
-                            - (1.0 - alpha) * k_tmp(n) / (0.5*(dx_tmp(i))) * T_lw
+               vec_lw(i - 1) = (1.0 - alpha)*k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i)))
+               vec_diag(i) = -(1.0 - alpha)*k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i))) &
+                             - (1.0 - alpha)*k_tmp(n)/(0.5*(dx_tmp(i))) &
+                             - rhocp_tmp(i)*dx_tmp(i)/dt_step
+               vec_rhs(i) = -rhocp_tmp(i)*dx_tmp(i)/dt_step*T_tmp(i) &
+                            - alpha*k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i)))*(T_tmp(i - 1) - T_tmp(i)) &
+                            + alpha*k_tmp(n)/(0.5*(dx_tmp(i)))*(T_tmp(i) - T_lw) &
+                            - (1.0 - alpha)*k_tmp(n)/(0.5*(dx_tmp(i)))*T_lw
             ELSE
-               vec_lw(i - 1) = (1.0 - alpha) * k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i)))
-               vec_up(i) = (1.0 - alpha) * k_itf(i)/(0.5*(dx_tmp(i + 1) + dx_tmp(i)))
+               vec_lw(i - 1) = (1.0 - alpha)*k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i)))
+               vec_up(i) = (1.0 - alpha)*k_itf(i)/(0.5*(dx_tmp(i + 1) + dx_tmp(i)))
                vec_diag(i) = -(1.0 - alpha)*k_itf(i - 1)/(0.5*(dx_tmp(i - 1) + dx_tmp(i))) &
                              - (1.0 - alpha)*k_itf(i)/(0.5*(dx_tmp(i + 1) + dx_tmp(i))) &
                              - rhocp_tmp(i)*dx_tmp(i)/dt_step
@@ -326,11 +325,11 @@ CONTAINS
          ! solve the tridiagonal matrix using Thomas algorithm
          CALL thomas_triMat(vec_lw, vec_diag, vec_up, vec_rhs, n, T_tmp)
          dt_remain = dt_remain - dt_step
-         Qs_acc = Qs_acc + (T_up - T_tmp(1)) * k_tmp(1) / (dx_tmp(1) * 0.5) * dt_step
+         Qs_acc = Qs_acc + (T_up - T_tmp(1))*k_tmp(1)/(dx_tmp(1)*0.5)*dt_step
       END DO
 
       DO i = 1, n
-         ids_new = (i - 1)*ratio + (ratio - 1) / 2 + 1
+         ids_new = (i - 1)*ratio + (ratio - 1)/2 + 1
          T_out(i) = T_tmp(ids_new)
       END DO
       Tsfc = T_out(1)
@@ -347,7 +346,7 @@ CONTAINS
       ! ---Here we use the outermost surface temperatures to calculate
       ! ------the heat flux from the surface as the change of Qs for SEB
       ! ------considering there might be fluxes going out from the lower boundary
-      Qs = (T_up - T_tmp(1)) * k_tmp(1)/(dx_tmp(1)*0.5)
+      Qs = (T_up - T_tmp(1))*k_tmp(1)/(dx_tmp(1)*0.5)
       ! Qs = (T_out(1) - T_out(2)) * k(1) / dx(1)
       ! Qs = Qs_acc / dt
       IF (debug) THEN
@@ -586,7 +585,7 @@ CONTAINS
                ! surface heat flux
                IF (i_group == 1) THEN
                   bc(1) = qg_roof(i_facet)
-                  debug = .True.
+                  debug = .TRUE.
                ELSE IF (i_group == 2) THEN
                   bc(1) = qg_wall(i_facet)
                   debug = .FALSE.
@@ -621,7 +620,7 @@ CONTAINS
                ! CALL heatcond1d_ext( &
                !CALL heatcond1d_vstep( &
                CALL heatcond1d_CN( &
-               ! CALL heatcond1d_CN_dense( &
+                  ! CALL heatcond1d_CN_dense( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   tsfc_cal(i_facet), &
@@ -636,15 +635,15 @@ CONTAINS
                ! tin_cal(i_facet, :) = temp_all_cal
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
                IF (i_facet == 1) THEN
-                     PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
-                     PRINT *, 'QS_cal after: ', QS_cal(i_facet)
-               ! PRINT *, i_facet, 'tsfc_cal after: ', tsfc_cal(i_facet)
-               
-               ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
-               ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
-               ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
-               ! PRINT *, 'bc: ', bc
-               ! PRINT *, ''
+                  PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
+                  PRINT *, 'QS_cal after: ', QS_cal(i_facet)
+                  ! PRINT *, i_facet, 'tsfc_cal after: ', tsfc_cal(i_facet)
+
+                  ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
+                  ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
+                  ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
+                  ! PRINT *, 'bc: ', bc
+                  ! PRINT *, ''
 
                END IF
             END IF
@@ -667,7 +666,7 @@ CONTAINS
                ! CALL heatcond1d_ext( &
                !CALL heatcond1d_vstep( &
                CALL heatcond1d_CN( &
-               ! CALL heatcond1d_CN_dense( &
+                  ! CALL heatcond1d_CN_dense( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   tsfc_cal(i_facet), &
