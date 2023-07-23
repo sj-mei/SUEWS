@@ -110,14 +110,15 @@ CONTAINS
            *rhocp*dx/dt)
    END SUBROUTINE heatcond1d_vstep
 
-   SUBROUTINE heatcond1d_CN(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
+   recursive SUBROUTINE heatcond1d_CN(T, Qs, dx, dt, k, rhocp, bc)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
-      REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
-      LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
+      ! REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
+      REAL(KIND(1D0)), INTENT(out) :: Qs
+      ! LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
       REAL(KIND(1D0)) :: alpha, T_lw, T_up
 
-      LOGICAL, INTENT(in) :: debug
+      ! LOGICAL, INTENT(in) :: debug
       INTEGER :: i, n
       REAL(KIND(1D0)), ALLOCATABLE :: T_tmp(:), k_itf(:)
       REAL(KIND(1D0)), ALLOCATABLE :: T_in(:), T_out(:)
@@ -153,9 +154,10 @@ CONTAINS
       END DO
 
       dt_remain = dt
-      dt_step_cfl = 0.002*MINVAL(dx**2/(k/rhocp))
+      ! dt_step_cfl = 0.002*MINVAL(dx**2/(k/rhocp))
+      dt_step_cfl = MINVAL(dx**2/(k/rhocp))
       !PRINT *, 'dt_step_cfl: ', dt_step_cfl
-      DO WHILE (dt_remain > 1E-10)
+      DO WHILE (dt_remain > .5)
          dt_step = MIN(dt_step_cfl, dt_remain)
          T_tmp(1) = T_up
          T_tmp(n) = T_lw
@@ -197,14 +199,8 @@ CONTAINS
       END DO
 
       T_out = T_tmp
-      Tsfc = T_out(1)
+      ! Tsfc = T_out(1)
       T = T_out
-
-      IF (debug) THEN
-         PRINT *, "T_up: ", T_up, "T_lw: ", T_lw
-         PRINT *, "T_out: ", T_out
-         PRINT *, "T_in: ", T_in
-      END IF
 
       ! new way for calcualating heat storage
       ! Qs = SUM( &
@@ -212,13 +208,19 @@ CONTAINS
       !       -([bc(1), T_in(1:n - 1)] + T_in)/2) & ! initial temperature
       !      *rhocp*dx/dt)
       ! Qs = SUM( &
-      !      (T_out - T_in) & ! initial temperature
-      !      *rhocp*dx/dt)
+      !      (T_out - T_in) & ! temperature changes over dt
+      !      *rhocp*dx)/dt
       ! ---Here we use the outermost surface temperatures to calculate
       ! ------the heat flux from the surface as the change of Qs for SEB
       ! ------considering there might be fluxes going out from the lower boundary
-      Qs = (T_up - T_out(1))*k(1)/(dx(1)*0.5)
+      Qs = (T_up - T_out(1))*k(1)/(dx(1)*0.5)- (T_out(n) - T_lw)*k(n)/(dx(n)*0.5)
       ! Qs = (T_out(1) - T_out(2)) * k(1) / dx(1)
+      ! IF (debug) THEN
+      !    PRINT *, "T_up: ", T_up, "T_lw: ", T_lw
+      !    PRINT *, "T_out: ", T_out
+      !    PRINT *, "T_in: ", T_in
+      !    PRINT *, "Qs: ", Qs
+      ! END IF
    END SUBROUTINE heatcond1d_CN
 
 END MODULE heatflux
@@ -240,7 +242,6 @@ CONTAINS
    SUBROUTINE EHC( &
       tstep, & !input
       nlayer, &
-      QG_surf, qg_roof, qg_wall, &
       tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
       tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
       tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
@@ -257,7 +258,7 @@ CONTAINS
       INTEGER, INTENT(in) :: tstep
       INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: QG_surf ! ground heat flux
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: QG_surf ! ground heat flux
       ! extended for ESTM_ehc
 
       ! keys:
@@ -270,7 +271,7 @@ CONTAINS
       ! roof/wall/surf: roof/wall/ground surface types
 
       ! input arrays: roof facets
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_roof
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_roof
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof
@@ -279,7 +280,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_roof
       ! input arrays: wall facets
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_wall
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tin_wall
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall
@@ -445,24 +446,24 @@ CONTAINS
             ! actual heat conduction calculations
             IF (dz_cal(i_facet, 1) /= -999.0 .AND. use_heatcond1d) THEN
 
-               ! surface heat flux
-               IF (i_group == 1) THEN
-                  bc(1) = qg_roof(i_facet)
-                  !debug = .FALSE.
-               ELSE IF (i_group == 2) THEN
-                  bc(1) = qg_wall(i_facet)
-                  !debug = .FALSE.
-               ELSE IF (i_group == 3) THEN
-                  bc(1) = QG_surf(i_facet)
-                  !debug = .True.
-               END IF
+               ! ! surface heat flux ! not used in the current version, TS 20 Jul 2023
+               ! IF (i_group == 1) THEN
+               !    bc(1) = qg_roof(i_facet)
+               !    !debug = .FALSE.
+               ! ELSE IF (i_group == 2) THEN
+               !    bc(1) = qg_wall(i_facet)
+               !    !debug = .FALSE.
+               ! ELSE IF (i_group == 3) THEN
+               !    bc(1) = QG_surf(i_facet)
+               !    !debug = .True.
+               ! END IF
                ! bctype(1) = .TRUE.
                bc(1) = tsfc_cal(i_facet)
-               bctype(1) = .FALSE.
+               ! bctype(1) = .FALSE.
 
                !TODO: should be a prescribed temperature of the innermost boundary
                bc(2) = tin_cal(i_facet)
-               bctype(2) = .FALSE.
+               ! bctype(2) = .FALSE.
 
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
                !PRINT *, i_facet, ' temp_cal before: ', temp_cal(i_facet, :)
@@ -473,39 +474,50 @@ CONTAINS
 
                ! END IF
 
+               IF (i_group == 3 .AND. i_facet == 1) THEN
+                  ! PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
+                  PRINT *, '-----------------'
+                  ! PRINT *, 'tsfc_cal before: ', tsfc_cal(i_facet)
+                  ! PRINT *, 'QS_cal before: ', QG_surf(i_facet)
+                  PRINT *, 'temp_cal before: ', temp_cal(i_facet, :)
+                  ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
+                  ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
+                  ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
+                  ! PRINT *, 'bc: ', bc
+                  ! PRINT *, ''
+
+               END IF
                ! 1D heat conduction for finite depth layers
 
-               ! IF ((i_group == 3) .AND. (i_facet == 1)) THEN
-               !    debug = .FALSE.
-               ! ELSE
-               !    debug = .FALSE.
-               ! END IF
+               IF ((i_group == 3) .AND. (i_facet == 1)) THEN
+                  debug = .TRUE.
+               ELSE
+                  debug = .FALSE.
+               END IF
                ! CALL heatcond1d_ext( &
                !CALL heatcond1d_vstep( &
                CALL heatcond1d_CN( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
-                  tsfc_cal(i_facet), &
                   dz_cal(i_facet, 1:ndepth), &
                   tstep*1.D0, &
                   k_cal(i_facet, 1:ndepth), &
                   cp_cal(i_facet, 1:ndepth), &
-                  bc, &
-                  bctype, debug)
+                  bc)
 
                ! update temperature at all inner interfaces
                ! tin_cal(i_facet, :) = temp_all_cal
-               ! IF (i_group == 3 .AND. i_facet == 3) THEN
-               ! PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
-               ! PRINT *, i_facet, 'tsfc_cal after: ', tsfc_cal(i_facet)
-               ! PRINT *, 'QS_cal after: ', QS_cal(i_facet)
-               ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
-               ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
-               ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
-               ! PRINT *, 'bc: ', bc
-               ! PRINT *, ''
+               IF (i_group == 3 .AND. i_facet == 1) THEN
+                  ! PRINT *, 'tsfc_cal after: ', tsfc_cal(i_facet)
+                  PRINT *, 'temp_cal after: ', temp_cal(i_facet, :)
+                  PRINT *, 'QS_cal after: ', QS_cal(i_facet)
+                  PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
+                  PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
+                  PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
+                  PRINT *, 'bc: ', bc
+                  PRINT *, ''
 
-               ! END IF
+               END IF
             END IF
 
             IF (dz_cal(i_facet, 1) /= -999.0 .AND. use_heatcond1d_water) THEN
@@ -528,13 +540,11 @@ CONTAINS
                CALL heatcond1d_CN( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
-                  tsfc_cal(i_facet), &
                   dz_cal(i_facet, 1:ndepth), &
                   tstep*1.D0, &
                   k_cal(i_facet, 1:ndepth), &
                   cp_cal(i_facet, 1:ndepth), &
-                  bc, &
-                  bctype, debug)
+                  bc)
 
                ! ! update temperature at all inner interfaces
                ! temp_cal(i_facet, :) = temp_all_cal

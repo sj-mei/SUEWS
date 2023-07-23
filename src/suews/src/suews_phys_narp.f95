@@ -119,10 +119,9 @@ CONTAINS
 
    !==============================================================================
    SUBROUTINE NARP( &
-      storageheatmethod, & !input
       nsurf, sfr_surf, tsfc_surf, SnowFrac, alb, emis, IceFrac, & ! input:
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-      DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
+      DTIME, ZENITH_deg, kdown, Temp_C, RH, Press_hPa, qn1_obs, ldown_obs, &
       SnowAlb, &
       AlbedoChoice, ldown_option, &
       NetRadiationMethod_use, DiagQN, &
@@ -192,7 +191,7 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) :: DTIME
       REAL(KIND(1D0)), INTENT(in) :: ZENITH_deg
-      REAL(KIND(1D0)), INTENT(in) :: tsurf_0
+      ! REAL(KIND(1D0)), INTENT(in) :: tsurf_0
       REAL(KIND(1D0)), INTENT(in) :: kdown
       REAL(KIND(1D0)), INTENT(in) :: Temp_C
       REAL(KIND(1D0)), INTENT(in) :: RH
@@ -205,7 +204,7 @@ CONTAINS
 
       INTEGER, INTENT(in) :: nsurf
       INTEGER, INTENT(in) :: NetRadiationMethod_use ! the one processed by RadMethod
-      INTEGER, INTENT(in) :: storageheatmethod ! needed for separate surface temperatures
+      ! INTEGER, INTENT(in) :: storageheatmethod ! needed for separate surface temperatures
       INTEGER, INTENT(in) :: AlbedoChoice ! flag if correction to albedo of snow cover should be applied
       INTEGER, INTENT(in) :: ldown_option ! flag for different ldown modelling options; 1 for obs; see code below for other parameterisations
       INTEGER, INTENT(in) :: DiagQN
@@ -263,7 +262,7 @@ CONTAINS
       ! KDOWN=avkdn
       KDOWN_HR = 0.
       tsfc_surf_K = tsfc_surf + 273.16
-      tsurf_0_K = tsurf_0 + 273.16
+      ! tsurf_0_K = tsurf_0 + 273.16
       Temp_K = Temp_C + 273.16
       SIGMATK4 = SIGMA_SB*Temp_K**4
       TD = dewpoint_narp(Temp_C, RH)
@@ -388,11 +387,11 @@ CONTAINS
             LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN !Eq (16) in Offerle et al. (2002)
          ELSE
             ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
-            IF (storageheatmethod == 5) THEN
-               TSURF_K = tsfc_surf_K(is)
-            ELSE
-               TSURF_K = tsurf_0_K
-            END IF
+            ! IF (storageheatmethod == 5) THEN
+            TSURF_K = tsfc_surf_K(is)
+            ! ELSE
+            !    TSURF_K = tsurf_0_K
+            ! END IF
             ! TSURF = tsfc_surf_K(is)
             LUP = EMIS0*SIGMA_SB*TSURF_K**4 + (1 - EMIS0)*LDOWN
          END IF
