@@ -1525,7 +1525,7 @@ CONTAINS
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
-            ! PRINT *, 'Iteration done in', i_iter, ' iterations'
+            PRINT *, 'Iteration done in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
             ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
@@ -1535,11 +1535,11 @@ CONTAINS
          i_iter = i_iter + 1
          ! force quit do-while loop if not convergent after 100 iterations
          IF (Diagnose == 1 .AND. i_iter == max_iter) THEN
-            ! PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
+            PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
-            ! PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
-            ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
+            PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
+            PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
             ! exit
          END IF
 
