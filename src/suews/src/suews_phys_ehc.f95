@@ -110,7 +110,7 @@ CONTAINS
            *rhocp*dx/dt)
    END SUBROUTINE heatcond1d_vstep
 
-   recursive SUBROUTINE heatcond1d_CN(T, Qs, dx, dt, k, rhocp, bc)
+   RECURSIVE SUBROUTINE heatcond1d_CN(T, Qs, dx, dt, k, rhocp, bc)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
       ! REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
@@ -217,20 +217,20 @@ CONTAINS
       ! ---Here we use the outermost surface temperatures to calculate
       ! ------the heat flux from the surface as the change of Qs for SEB
       ! ------considering there might be fluxes going out from the lower boundary
-      Qs = (T_up - T_out(1))*k(1)/(dx(1)*0.5)- (T_out(n) - T_lw)*k(n)/(dx(n)*0.5)
+      Qs = (T_up - T_out(1))*k(1)/(dx(1)*0.5) - (T_out(n) - T_lw)*k(n)/(dx(n)*0.5)
       ! Qs = (T_out(1) - T_out(2)) * k(1) / dx(1)
       ! Qs = Qs_acc / dt
    END SUBROUTINE heatcond1d_CN
 
-   SUBROUTINE heatcond1d_CN_dense(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
+   SUBROUTINE heatcond1d_CN_dense(T, Qs, dx, dt, k, rhocp, bc)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
-      REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
-      LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
+      REAL(KIND(1D0)), INTENT(out) :: Qs
+      ! LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
       REAL(KIND(1D0)) :: alpha, T_lw, T_up
       REAL(KIND(1D0)) :: Qs_acc
 
-      LOGICAL, INTENT(in) :: debug
+      ! LOGICAL, INTENT(in) :: debug
       INTEGER :: i, ids_new, n, n_tmp
       INTEGER :: ratio
       REAL(KIND(1D0)), ALLOCATABLE :: T_tmp(:), k_itf(:)
@@ -247,7 +247,7 @@ CONTAINS
       n_tmp = n*ratio
 
       ALLOCATE (T_tmp(1:n_tmp)) ! temporary temperature array
-      ALLOCATE (T_in(1:n_tmp)) ! initial temperature array
+      ALLOCATE (T_in(1:n)) ! initial temperature array
       ALLOCATE (k_itf(1:n_tmp - 1)) ! thermal conductivity at interfaces
       ALLOCATE (T_out(1:n)) ! output temperature array
       ALLOCATE (k_tmp(1:n_tmp))
@@ -265,7 +265,7 @@ CONTAINS
 
       ! save initial temperatures
       DO i = 1, n
-         T_in((i - 1)*ratio + 1:i*ratio) = T(i)
+         T_in(i) = T(i)
          T_tmp((i - 1)*ratio + 1:i*ratio) = T(i)
          k_tmp((i - 1)*ratio + 1:i*ratio) = k(i)
          rhocp_tmp((i - 1)*ratio + 1:i*ratio) = rhocp(i)
@@ -328,7 +328,7 @@ CONTAINS
          ids_new = (i - 1)*ratio + (ratio - 1)/2 + 1
          T_out(i) = T_tmp(ids_new)
       END DO
-      Tsfc = T_out(1)
+      ! Tsfc = T_out(1)
       T = T_out
 
       ! new way for calcualating heat storage
@@ -336,22 +336,22 @@ CONTAINS
       !      (([bc(1), T_out(1:n - 1)] + T_out)/2. & ! updated temperature
       !       -([bc(1), T_in(1:n - 1)] + T_in)/2) & ! initial temperature
       !      *rhocp*dx/dt)
-      ! Qs = SUM( &
-      !      (T_out - T_in) & ! initial temperature
-      !      *rhocp*dx/dt)
+      Qs = SUM( &
+           (T_out - T_in) & ! initial temperature
+           *rhocp*dx/dt)
       ! ---Here we use the outermost surface temperatures to calculate
       ! ------the heat flux from the surface as the change of Qs for SEB
       ! ------considering there might be fluxes going out from the lower boundary
-      Qs = (T_up - T_tmp(1))*k_tmp(1)/(dx_tmp(1)*0.5)
+      ! Qs = (T_up - T_tmp(1))*k_tmp(1)/(dx_tmp(1)*0.5)
       ! Qs = (T_out(1) - T_out(2)) * k(1) / dx(1)
       ! Qs = Qs_acc / dt
-      IF (debug) THEN
-         !PRINT *, "T_up: ", T_up, "T_lw: ", T_lw
-         !PRINT *, "T_out: ", T_out
-         !PRINT *, "T_in: ", T_in
-         !PRINT *, "Qs_last: ", Qs
-         !PRINT *, "Qs_acc_avg: ", Qs_acc / dt
-      END IF
+      ! IF (debug) THEN
+      !    !PRINT *, "T_up: ", T_up, "T_lw: ", T_lw
+      !    !PRINT *, "T_out: ", T_out
+      !    !PRINT *, "T_in: ", T_in
+      !    !PRINT *, "Qs_last: ", Qs
+      !    !PRINT *, "Qs_acc_avg: ", Qs_acc / dt
+      ! END IF
    END SUBROUTINE heatcond1d_CN_dense
 
 END MODULE heatflux
@@ -607,10 +607,10 @@ CONTAINS
 
                IF (i_group == 3 .AND. i_facet == 1) THEN
                   ! PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
-                  PRINT *, '-----------------'
+                  ! PRINT *, '-----------------'
                   ! PRINT *, 'tsfc_cal before: ', tsfc_cal(i_facet)
                   ! PRINT *, 'QS_cal before: ', QG_surf(i_facet)
-                  PRINT *, 'temp_cal before: ', temp_cal(i_facet, :)
+                  ! PRINT *, 'temp_cal before: ', temp_cal(i_facet, :)
                   ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
                   ! PRINT *, 'cp_cal: ', cp_cal(i_facet, 1:ndepth)
                   ! PRINT *, 'dz_cal: ', dz_cal(i_facet, 1:ndepth)
@@ -627,8 +627,8 @@ CONTAINS
                END IF
                ! CALL heatcond1d_ext( &
                !CALL heatcond1d_vstep( &
-               CALL heatcond1d_CN( &
-                  ! CALL heatcond1d_CN_dense( &
+               ! CALL heatcond1d_CN( &
+               CALL heatcond1d_CN_dense( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   dz_cal(i_facet, 1:ndepth), &
@@ -640,9 +640,9 @@ CONTAINS
                ! update temperature at all inner interfaces
                ! tin_cal(i_facet, :) = temp_all_cal
                ! IF (i_group == 3 .AND. i_facet == 3) THEN
-               IF (i_facet == 1) THEN
-                  PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
-                  PRINT *, 'QS_cal after: ', QS_cal(i_facet)
+               IF ((i_group == 3) .AND. (i_facet == 1)) THEN
+                  ! PRINT *, i_facet, ' temp_cal after: ', temp_cal(i_facet, :)
+                  ! PRINT *, 'QS_cal after: ', QS_cal(i_facet)
                   ! PRINT *, i_facet, 'tsfc_cal after: ', tsfc_cal(i_facet)
 
                   ! PRINT *, 'k_cal: ', k_cal(i_facet, 1:ndepth)
