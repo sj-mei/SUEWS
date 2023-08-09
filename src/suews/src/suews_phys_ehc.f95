@@ -25,14 +25,15 @@ CONTAINS
       END DO
    END SUBROUTINE thomas_triMat
 
-   SUBROUTINE heatcond1d_vstep(T, Qs, Tsfc, dx, dt, k, rhocp, bc, bctype, debug)
+   SUBROUTINE heatcond1d_vstep(T, Qs, dx, dt, k, rhocp, bc)
       REAL(KIND(1D0)), INTENT(inout) :: T(:)
       REAL(KIND(1D0)), INTENT(in) :: dx(:), dt, k(:), rhocp(:), bc(2)
-      REAL(KIND(1D0)), INTENT(out) :: Qs, Tsfc
-      LOGICAL, INTENT(in) :: bctype(2) ! if true, use surrogate flux as boundary condition
-      LOGICAL, INTENT(in) :: debug
+      REAL(KIND(1D0)), INTENT(out) :: Qs
+      ! REAL(KIND(1D0)), INTENT(out) :: Tsfc
+      LOGICAL :: bctype(2) ! if true, use surrogate flux as boundary condition
+      ! LOGICAL, INTENT(in) :: debug
       INTEGER :: i, n
-      REAL(KIND(1D0)), ALLOCATABLE :: w(:), a(:), T1(:), cfl(:)
+      REAL(KIND(1D0)), ALLOCATABLE :: w(:), a(:), T_temp(:), cfl(:)
 
       REAL(KIND(1D0)) :: cfl_max
       REAL(KIND(1D0)) :: dt_remain
@@ -40,10 +41,10 @@ CONTAINS
       REAL(KIND(1D0)) :: dt_step_cfl
 
       REAL(KIND(1D0)), ALLOCATABLE :: T_in(:), T_out(:)
-      REAL(KIND(1D0)) :: dt_x ! for recursion
-      INTEGER :: n_div ! for recursion
+      ! REAL(KIND(1D0)) :: dt_x ! for recursion
+      ! INTEGER :: n_div ! for recursion
       n = SIZE(T)
-      ALLOCATE (w(0:n), a(n), T1(n), cfl(n), T_in(n), T_out(n))
+      ALLOCATE (w(0:n), a(n), T_temp(n), cfl(n), T_in(n), T_out(n))
 
       ! save initial temperatures
       T_in = T
@@ -52,6 +53,7 @@ CONTAINS
       w(0) = bc(1); w(n) = bc(2)
       !convert from flux to equivalent temperature, not exact
       ! F = k dT/dX => dx*F/k + T(i+1) = T(i)
+      bctype= .FALSE. ! force to use T as boundary condition, TS 09 Aug 2023
       IF (bctype(1)) w(0) = bc(1)*0.5*dx(1)/k(1) + w(1)
       IF (bctype(2)) w(n) = bc(2)*0.5*dx(n)/k(n) + w(n)
       ! print *, 'bc(1)=', bc(1), 'bc(2)=',bc(2)
@@ -81,13 +83,13 @@ CONTAINS
             ! PRINT *, 'i: ', (dt/rhocp(i))
             ! PRINT *, 'i: ', (w(i - 1) - 2*T(i) + w(i))
             ! PRINT *, 'i: ', 2*a(i)/dx(i)
-            T1(i) = &
+            T_temp(i) = &
                (dt_step/rhocp(i)) &
                *(w(i - 1) - 2*T(i) + w(i)) &
                *a(i)/dx(i) &
                + T(i)
          END DO
-         T = T1
+         T = T_temp
          DO i = 1, n - 1
             w(i) = (T(i + 1)*a(i + 1) + T(i)*a(i))/(a(i) + a(i + 1))
          END DO
@@ -100,9 +102,9 @@ CONTAINS
       ! Qs = (w(0) - T(1))*2*a(1) + (w(n) - T(n))*2*a(n)
       ! Qs=sum((T1-T)*rhocp*dx)/dt!
 
-      Tsfc = w(0)
+      ! Tsfc = w(0)
       ! save output temperatures
-      T_out = T1
+      T_out = T_temp
       ! new way for calcualating heat storage
       Qs = SUM( &
            (([bc(1), T_out(1:n - 1)] + T_out)/2. & ! updated temperature
@@ -626,9 +628,9 @@ CONTAINS
                   debug = .FALSE.
                END IF
                ! CALL heatcond1d_ext( &
-               !CALL heatcond1d_vstep( &
+               CALL heatcond1d_vstep( &
                ! CALL heatcond1d_CN( &
-               CALL heatcond1d_CN_dense( &
+               ! CALL heatcond1d_CN_dense( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   dz_cal(i_facet, 1:ndepth), &
