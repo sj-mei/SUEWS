@@ -1994,6 +1994,7 @@ CONTAINS
       ! ########################################################################################
       ! flag for Tsurf convergence
       LOGICAL :: flag_converge
+      LOGICAL :: flag_print_debug
       ! REAL(KIND(1D0)) :: Ts_iter !average surface temperature of all surfaces [degC]
       REAL(KIND(1D0)) :: dif_tsfc_iter
       REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
@@ -2225,6 +2226,7 @@ CONTAINS
       ! iteration is used below to get results converge
       flag_converge = .FALSE.
       ! Ts_iter = forcing%temp_c
+      flag_print_debug = .FALSE.
 
       heatState_out = heatState
       tsfc0_out_surf = heatState%tsfc_surf
@@ -2247,8 +2249,10 @@ CONTAINS
       i_iter = 1
       max_iter = 30
       DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
+         if(flag_print_debug) then
          PRINT *, '=========================== '
          PRINT *, 'iteration is ', i_iter
+         end if
 
          ! calculate dectime
          ! CALL SUEWS_cal_dectime( &
@@ -2486,7 +2490,9 @@ CONTAINS
          !    qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          !    albedo_snow, snowState_next%SnowAlb, &
          !    dataOutLineSPARTACUS)
+            if(flag_print_debug) then
          print *, 'Tsfc_surf before QN', heatState_out%tsfc_surf
+            endif
          CALL SUEWS_cal_Qn_DTS( &
             methodPrm, & !input
             timer, nlayer, snowState_prev, snowPrm, &
@@ -2586,7 +2592,8 @@ CONTAINS
          !    heatState_out%temp_roof, QS_roof, & !output
          !    heatState_out%temp_wall, QS_wall, & !output
          !    heatState_out%temp_surf, QS_surf) !output
-         print *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
+
+         if(flag_print_debug) print *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
          CALL SUEWS_cal_Qs_DTS( &
             methodPrm, forcing, siteInfo, & !input
             timer, &
@@ -3007,11 +3014,11 @@ CONTAINS
             PRINT *, 'qh_roof before QH back env.:', QH_roof
 
          END IF
-         PRINT *, 'qn_surf before qh_cal', QN_surf
-         PRINT *, 'qs_surf before qh_cal', qs_surf
-         PRINT *, 'qe_surf before qh_cal', qe_surf
-         print *, 'QH_surf beofre qh_cal', qh_surf
-         print *, 'Tair beofre qh_cal', forcing%temp_c
+         if(flag_print_debug) PRINT *, 'qn_surf before qh_cal', QN_surf
+         if(flag_print_debug) PRINT *, 'qs_surf before qh_cal', qs_surf
+         if(flag_print_debug) PRINT *, 'qe_surf before qh_cal', qe_surf
+         if(flag_print_debug) print *, 'QH_surf beofre qh_cal', qh_surf
+         if(flag_print_debug) print *, 'Tair beofre qh_cal', forcing%temp_c
          DO i_surf = 1, nsurf
             ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
             heatState_out%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
@@ -3024,7 +3031,7 @@ CONTAINS
             ! restrict calculated heat storage to a sensible range
             ! tsfc_out_surf(i_surf) = MAX(MIN(tsfc_out_surf(i_surf), 100.0), -100.0)
          END DO
-         print *, 'tsfc_surf after qh_cal', heatState_out%tsfc_surf
+         if(flag_print_debug) print *, 'tsfc_surf after qh_cal', heatState_out%tsfc_surf
 
          DO i_surf = 1, nlayer
             heatState_out%tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, forcing%temp_c)
@@ -3057,7 +3064,7 @@ CONTAINS
          heatState_out%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + heatState_out%tsfc_wall*ratio_iter)
          ! =======test end=======
 
-         PRINT *, 'tsfc_surf after weighted average', heatState_out%tsfc_surf
+         if(flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState_out%tsfc_surf
 
          !============ surface-level diagonostics end ===============
 
@@ -3079,7 +3086,7 @@ CONTAINS
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
-            PRINT *, 'Iteration done in', i_iter, ' iterations'
+            if(flag_print_debug) PRINT *, 'Iteration done in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
             ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
@@ -3100,11 +3107,11 @@ CONTAINS
          ! Ts_iter = TSfc_C
          ! l_mod_iter = l_mod
          if ( i_iter==max_iter .and. .not. flag_converge) then
-            print *,'Iteration did not converge in', i_iter, ' iterations'
+            if(flag_print_debug) print *,'Iteration did not converge in', i_iter, ' iterations'
 
          end if
-         PRINT *, '========================='
-         PRINT *, ''
+         if(flag_print_debug) PRINT *, '========================='
+         if(flag_print_debug) PRINT *, ''
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
