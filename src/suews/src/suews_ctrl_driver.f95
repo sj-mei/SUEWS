@@ -2249,10 +2249,10 @@ CONTAINS
       i_iter = 1
       max_iter = 30
       DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
-         if(flag_print_debug) then
-         PRINT *, '=========================== '
-         PRINT *, 'iteration is ', i_iter
-         end if
+         IF (flag_print_debug) THEN
+            PRINT *, '=========================== '
+            PRINT *, 'iteration is ', i_iter
+         END IF
 
          ! calculate dectime
          ! CALL SUEWS_cal_dectime( &
@@ -2490,9 +2490,9 @@ CONTAINS
          !    qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          !    albedo_snow, snowState_next%SnowAlb, &
          !    dataOutLineSPARTACUS)
-            if(flag_print_debug) then
-         print *, 'Tsfc_surf before QN', heatState_out%tsfc_surf
-            endif
+         IF (flag_print_debug) THEN
+            PRINT *, 'Tsfc_surf before QN', heatState_out%tsfc_surf
+         END IF
          CALL SUEWS_cal_Qn_DTS( &
             methodPrm, & !input
             timer, nlayer, snowState_prev, snowPrm, &
@@ -2593,7 +2593,7 @@ CONTAINS
          !    heatState_out%temp_wall, QS_wall, & !output
          !    heatState_out%temp_surf, QS_surf) !output
 
-         if(flag_print_debug) print *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
+         IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
          CALL SUEWS_cal_Qs_DTS( &
             methodPrm, forcing, siteInfo, & !input
             timer, &
@@ -3014,11 +3014,11 @@ CONTAINS
             PRINT *, 'qh_roof before QH back env.:', QH_roof
 
          END IF
-         if(flag_print_debug) PRINT *, 'qn_surf before qh_cal', QN_surf
-         if(flag_print_debug) PRINT *, 'qs_surf before qh_cal', qs_surf
-         if(flag_print_debug) PRINT *, 'qe_surf before qh_cal', qe_surf
-         if(flag_print_debug) print *, 'QH_surf beofre qh_cal', qh_surf
-         if(flag_print_debug) print *, 'Tair beofre qh_cal', forcing%temp_c
+         IF (flag_print_debug) PRINT *, 'qn_surf before qh_cal', QN_surf
+         IF (flag_print_debug) PRINT *, 'qs_surf before qh_cal', qs_surf
+         IF (flag_print_debug) PRINT *, 'qe_surf before qh_cal', qe_surf
+         IF (flag_print_debug) PRINT *, 'QH_surf beofre qh_cal', qh_surf
+         IF (flag_print_debug) PRINT *, 'Tair beofre qh_cal', forcing%temp_c
          DO i_surf = 1, nsurf
             ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
             heatState_out%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
@@ -3031,7 +3031,7 @@ CONTAINS
             ! restrict calculated heat storage to a sensible range
             ! tsfc_out_surf(i_surf) = MAX(MIN(tsfc_out_surf(i_surf), 100.0), -100.0)
          END DO
-         if(flag_print_debug) print *, 'tsfc_surf after qh_cal', heatState_out%tsfc_surf
+         IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState_out%tsfc_surf
 
          DO i_surf = 1, nlayer
             heatState_out%tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, forcing%temp_c)
@@ -3064,7 +3064,7 @@ CONTAINS
          heatState_out%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + heatState_out%tsfc_wall*ratio_iter)
          ! =======test end=======
 
-         if(flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState_out%tsfc_surf
+         IF (flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState_out%tsfc_surf
 
          !============ surface-level diagonostics end ===============
 
@@ -3086,7 +3086,7 @@ CONTAINS
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
-            if(flag_print_debug) PRINT *, 'Iteration done in', i_iter, ' iterations'
+            IF (flag_print_debug) PRINT *, 'Iteration done in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
             ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
@@ -3106,12 +3106,12 @@ CONTAINS
 
          ! Ts_iter = TSfc_C
          ! l_mod_iter = l_mod
-         if ( i_iter==max_iter .and. .not. flag_converge) then
-            if(flag_print_debug) print *,'Iteration did not converge in', i_iter, ' iterations'
+         IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
+            IF (flag_print_debug) PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
 
-         end if
-         if(flag_print_debug) PRINT *, '========================='
-         if(flag_print_debug) PRINT *, ''
+         END IF
+         IF (flag_print_debug) PRINT *, '========================='
+         IF (flag_print_debug) PRINT *, ''
          !==============main calculation end=======================
       END DO ! end iteration for tsurf calculations
 
@@ -6310,25 +6310,25 @@ CONTAINS
 
          ! use AnOHM to calculate QS, TS 14 Mar 2016
          ! disable AnOHM, TS 20 Jul 2023
-      ! ELSEIF (StorageHeatMethod == 3) THEN !
-      !    IF (Diagnose == 1) WRITE (*, *) 'Calling AnOHM...'
-      !    ! CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
-      !    !      MetForcingData_grid,state_id/StoreDrainPrm(6,:),&
-      !    !      alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-      !    !      sfr_surf,nsurf,nsh,EmissionsMethod,id,Gridiv,&
-      !    !      a1,a2,a3,qs,deltaQi)
-      !    moist_surf = state_id/StoreDrainPrm(6, :)
-      !    ! CALL AnOHM( &
-      !    !    tstep, dt_since_start, &
-      !    !    qn_use, qn_av_prev, dqndt_prev, qf, &
-      !    !    MetForcingData_grid, moist_surf, &
-      !    !    alb, emis, cpAnOHM, kkAnOHM, chAnOHM, & ! input
-      !    !    sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
-      !    !    qn_av_next, dqndt_next, &
-      !    !    a1, a2, a3, qs, deltaQi) ! output
-      !    QS_surf = qs
-      !    QS_roof = qs
-      !    QS_wall = qs
+         ! ELSEIF (StorageHeatMethod == 3) THEN !
+         !    IF (Diagnose == 1) WRITE (*, *) 'Calling AnOHM...'
+         !    ! CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
+         !    !      MetForcingData_grid,state_id/StoreDrainPrm(6,:),&
+         !    !      alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+         !    !      sfr_surf,nsurf,nsh,EmissionsMethod,id,Gridiv,&
+         !    !      a1,a2,a3,qs,deltaQi)
+         !    moist_surf = state_id/StoreDrainPrm(6, :)
+         !    ! CALL AnOHM( &
+         !    !    tstep, dt_since_start, &
+         !    !    qn_use, qn_av_prev, dqndt_prev, qf, &
+         !    !    MetForcingData_grid, moist_surf, &
+         !    !    alb, emis, cpAnOHM, kkAnOHM, chAnOHM, & ! input
+         !    !    sfr_surf, nsurf, EmissionsMethod, id, Gridiv, &
+         !    !    qn_av_next, dqndt_next, &
+         !    !    a1, a2, a3, qs, deltaQi) ! output
+         !    QS_surf = qs
+         !    QS_roof = qs
+         !    QS_wall = qs
 
          ! !Calculate QS using ESTM
       ELSEIF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
