@@ -53,7 +53,7 @@ CONTAINS
       w(0) = bc(1); w(n) = bc(2)
       !convert from flux to equivalent temperature, not exact
       ! F = k dT/dX => dx*F/k + T(i+1) = T(i)
-      bctype= .FALSE. ! force to use T as boundary condition, TS 09 Aug 2023
+      bctype = .FALSE. ! force to use T as boundary condition, TS 09 Aug 2023
       IF (bctype(1)) w(0) = bc(1)*0.5*dx(1)/k(1) + w(1)
       IF (bctype(2)) w(n) = bc(2)*0.5*dx(n)/k(n) + w(n)
       ! print *, 'bc(1)=', bc(1), 'bc(2)=',bc(2)
@@ -629,8 +629,8 @@ CONTAINS
                END IF
                ! CALL heatcond1d_ext( &
                CALL heatcond1d_vstep( &
-               ! CALL heatcond1d_CN( &
-               ! CALL heatcond1d_CN_dense( &
+                  ! CALL heatcond1d_CN( &
+                  ! CALL heatcond1d_CN_dense( &
                   temp_cal(i_facet, :), &
                   QS_cal(i_facet), &
                   dz_cal(i_facet, 1:ndepth), &
