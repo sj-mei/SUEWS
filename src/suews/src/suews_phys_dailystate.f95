@@ -790,7 +790,7 @@ CONTAINS
                                PHENOLOGY_STATE, anthroHEAT_STATE, METHOD_PRM, &
                                IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM,&
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
                                HYDRO_STATE
 
       IMPLICIT NONE
