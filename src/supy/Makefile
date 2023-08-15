@@ -42,6 +42,7 @@ driver: clean suews
 	ls -l $(supy_driver_dir)/_supy_driver*.*
 	mv $(supy_driver_dir)/_supy_driver.* $(MODULE)/
 	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
+	$(MAKE) -C $(supy_driver_dir) clean
 
 # run pytest
 test:

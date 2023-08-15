@@ -35,7 +35,7 @@ CONTAINS
       INTEGER :: i, n
       REAL(KIND(1D0)), ALLOCATABLE :: w(:), a(:), T_temp(:), cfl(:)
 
-      REAL(KIND(1D0)) :: cfl_max
+      ! REAL(KIND(1D0)) :: cfl_max
       REAL(KIND(1D0)) :: dt_remain
       REAL(KIND(1D0)) :: dt_step
       REAL(KIND(1D0)) :: dt_step_cfl

@@ -790,8 +790,8 @@ CONTAINS
                                PHENOLOGY_STATE, anthroHEAT_STATE, METHOD_PRM, &
                                IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM
-      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
+                               LC_BSOIL_PRM, LC_WATER_PRM,&
+                               HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -2069,8 +2069,7 @@ CONTAINS
       DailyStateLine) !out
 
       USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, anthroHEAT_STATE, &
-                               SNOW_STATE, SUEWS_TIMER
-      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
+                               SNOW_STATE, SUEWS_TIMER, HYDRO_STATE
 
       IMPLICIT NONE
 

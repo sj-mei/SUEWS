@@ -967,8 +967,8 @@ CONTAINS
       vsmd, smd)
 
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
-                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM
-      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM,&
+                               HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -1242,8 +1242,7 @@ CONTAINS
 
       USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM
-      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
+                               LC_BSOIL_PRM, LC_WATER_PRM, HYDRO_STATE
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
@@ -1906,8 +1905,7 @@ CONTAINS
 
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM, SITE_PRM
-      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
+                               LC_BSOIL_PRM, LC_WATER_PRM, SITE_PRM, HYDRO_STATE
 
       IMPLICIT NONE
 
@@ -2628,8 +2626,7 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                IRRIGATION_PRM, anthroHEAT_STATE, &
-                               METHOD_PRM, SUEWS_TIMER, SITE_PRM, SUEWS_FORCING
-      USE SUEWS_HydroHeat_DTS, ONLY: HYDRO_STATE
+                               METHOD_PRM, SUEWS_TIMER, SITE_PRM, SUEWS_FORCING, HYDRO_STATE
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
