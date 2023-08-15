@@ -46,13 +46,17 @@ class TestSuPy(TestCase):
         df_output, df_state = sp.run_supy(
             df_forcing_part, df_state_init, save_state=True
         )
-        test_non_empty = np.all(
-            [
-                not df_output.empty,
-                not df_state.empty,
-            ]
-        )
-        self.assertTrue((test_non_empty and not df_state.isnull().values.any()))
+        # test_non_empty = np.all(
+        #     [
+        #         not df_output.empty,
+        #         not df_state.empty,
+        #     ]
+        # )
+        # self.assertTrue((test_non_empty and not df_state.isnull().values.any()))
+        self.assertFalse(df_output.empty)
+        self.assertFalse(df_state.empty)
+        self.assertFalse(df_state.isnull().values.any())
+
 
     # test if multi-tstep mode can run
     def test_is_supy_running_multi_step(self):
@@ -76,6 +80,7 @@ class TestSuPy(TestCase):
 
         self.assertFalse(df_output.empty)
         self.assertFalse(df_state.empty)
+        self.assertFalse(df_state.isnull().values.any())
         # test_non_empty = np.all(
         #     [
         #         not df_output.empty,
