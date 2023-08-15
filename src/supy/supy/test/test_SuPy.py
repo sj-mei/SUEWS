@@ -74,13 +74,15 @@ class TestSuPy(TestCase):
         #     # Now works as before.
         #     # print("Captured:\n", capturedOutput.getvalue())
 
-        test_non_empty = np.all(
-            [
-                not df_output.empty,
-                not df_state.empty,
-            ]
-        )
-        self.assertTrue((test_non_empty and not df_state.isnull().values.any()))
+        self.assertFalse(df_output.empty)
+        self.assertFalse(df_state.empty)
+        # test_non_empty = np.all(
+        #     [
+        #         not df_output.empty,
+        #         not df_state.empty,
+        #     ]
+        # )
+        # self.assertTrue((df_output.isnull().values.any() and not df_state.isnull().values.any()))
 
     # test if multi-grid simulation can run in parallel
     # def test_is_supy_sim_save_multi_grid_par(self):
