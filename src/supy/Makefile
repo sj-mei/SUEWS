@@ -80,7 +80,7 @@ suews:
 # only local testing on mac
 local: export CIBUILDWHEEL = 1
 local: export SETUPTOOLS_USE_DISTUTILS = stdlib
-# local: export FC = gfortran
+local: export FC = gfortran
 local: clean
 	@echo "\n====================="
 	@echo "SETUPTOOLS_USE_DISTUTILS=${SETUPTOOLS_USE_DISTUTILS}";

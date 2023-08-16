@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "wheel",
-    "f90wrap==0.2.12",
+    # "f90wrap==0.2.12",
     "setuptools<60",
     "oldest-supported-numpy",
     "setuptools-git-versioning",
@@ -13,7 +13,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "supy"
 dynamic = ["version"]
-requires-python = ">3.8, <3.12"
+requires-python = ">3.9, <3.12"
 
 # [tool.setuptools.packages]
 # find = {"where"= "src"}
@@ -77,7 +77,7 @@ archs = ["auto64"]
 [tool.cibuildwheel.macos]
 before-build = [
     'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
-    "python3 -m pip install f90wrap==0.2.12 oldest-supported-numpy",
+    "python3 -m pip install oldest-supported-numpy",
     "make -C '{package}' driver",
     "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
     "echo '===> gfortran version:', $(gfortran --version)",
@@ -87,7 +87,7 @@ test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s
 
 # archs = ["universal2"]
 # build-verbosity = 10
-archs = ["auto"] # skip this for now in gh actions as it takes too long
+archs = ["auto64"] # skip this for now in gh actions as it takes too long
 skip = ['pp*']
 
 repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
