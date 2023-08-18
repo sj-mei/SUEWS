@@ -278,11 +278,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof ! thickness of each layer in roof [m]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall ! thickness of each layer in wall [m]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf ! thickness of each layer in surface [m]
-      contains
-         PROCEDURE :: allocate => allocate_ehc_prm_c
-         procedure :: deallocate => deallocate_ehc_prm_c
+   CONTAINS
+      PROCEDURE :: ALLOCATE => allocate_ehc_prm_c
+      PROCEDURE :: DEALLOCATE => deallocate_ehc_prm_c
    END TYPE EHC_PRM
-
 
    TYPE, PUBLIC :: LC_PAVED_PRM
       REAL(KIND(1D0)) :: sfr
@@ -640,71 +639,70 @@ CONTAINS
       !
    END SUBROUTINE dealloc_heat_state
 
-
-   SUBROUTINE allocate_ehc_prm(self, nlayer,ndepth)
+   SUBROUTINE allocate_ehc_prm(self, nlayer, ndepth)
       TYPE(EHC_PRM), INTENT(INOUT) :: self
       INTEGER, INTENT(IN) :: nlayer
       INTEGER, INTENT(IN) :: ndepth
 
       CALL deallocate_ehc_prm(self)
 
-      ALLOCATE(self%soil_storecap_roof(nlayer))
-      ALLOCATE(self%soil_storecap_wall(nlayer))
-      ALLOCATE(self%state_limit_roof(nlayer))
-      ALLOCATE(self%state_limit_wall(nlayer))
-      ALLOCATE(self%wet_thresh_roof(nlayer))
-      ALLOCATE(self%wet_thresh_wall(nlayer))
-      ALLOCATE(self%tin_roof(nlayer))
-      ALLOCATE(self%tin_wall(nlayer))
-      ALLOCATE(self%tin_surf(nlayer))
-      ALLOCATE(self%k_roof(nlayer, ndepth))
-      ALLOCATE(self%k_wall(nlayer, ndepth))
-      ALLOCATE(self%k_surf(nlayer, ndepth))
-      ALLOCATE(self%cp_roof(nlayer, ndepth))
-      ALLOCATE(self%cp_wall(nlayer, ndepth))
-      ALLOCATE(self%cp_surf(nlayer, ndepth))
-      ALLOCATE(self%dz_roof(nlayer, ndepth))
-      ALLOCATE(self%dz_wall(nlayer, ndepth))
-      ALLOCATE(self%dz_surf(nlayer, ndepth))
+      ALLOCATE (self%soil_storecap_roof(nlayer))
+      ALLOCATE (self%soil_storecap_wall(nlayer))
+      ALLOCATE (self%state_limit_roof(nlayer))
+      ALLOCATE (self%state_limit_wall(nlayer))
+      ALLOCATE (self%wet_thresh_roof(nlayer))
+      ALLOCATE (self%wet_thresh_wall(nlayer))
+      ALLOCATE (self%tin_roof(nlayer))
+      ALLOCATE (self%tin_wall(nlayer))
+      ALLOCATE (self%tin_surf(nlayer))
+      ALLOCATE (self%k_roof(nlayer, ndepth))
+      ALLOCATE (self%k_wall(nlayer, ndepth))
+      ALLOCATE (self%k_surf(nlayer, ndepth))
+      ALLOCATE (self%cp_roof(nlayer, ndepth))
+      ALLOCATE (self%cp_wall(nlayer, ndepth))
+      ALLOCATE (self%cp_surf(nlayer, ndepth))
+      ALLOCATE (self%dz_roof(nlayer, ndepth))
+      ALLOCATE (self%dz_wall(nlayer, ndepth))
+      ALLOCATE (self%dz_surf(nlayer, ndepth))
 
    END SUBROUTINE allocate_ehc_prm
 
    SUBROUTINE deallocate_ehc_prm(self)
       TYPE(EHC_PRM), INTENT(INOUT) :: self
 
-      if ( ALLOCATED(self%soil_storecap_roof) ) DEALLOCATE(self%soil_storecap_roof)
-      if ( ALLOCATED(self%soil_storecap_wall) ) DEALLOCATE(self%soil_storecap_wall)
-      if ( ALLOCATED(self%state_limit_roof) ) DEALLOCATE(self%state_limit_roof)
-      if ( ALLOCATED(self%state_limit_wall) ) DEALLOCATE(self%state_limit_wall)
-      if ( ALLOCATED(self%wet_thresh_roof) ) DEALLOCATE(self%wet_thresh_roof)
-      if ( ALLOCATED(self%wet_thresh_wall) ) DEALLOCATE(self%wet_thresh_wall)
-      if ( ALLOCATED(self%tin_roof) ) DEALLOCATE(self%tin_roof)
-      if ( ALLOCATED(self%tin_wall) ) DEALLOCATE(self%tin_wall)
-      if ( ALLOCATED(self%tin_surf) ) DEALLOCATE(self%tin_surf)
-      if ( ALLOCATED(self%k_roof) ) DEALLOCATE(self%k_roof)
-      if ( ALLOCATED(self%k_wall) ) DEALLOCATE(self%k_wall)
-      if ( ALLOCATED(self%k_surf) ) DEALLOCATE(self%k_surf)
-      if ( ALLOCATED(self%cp_roof) ) DEALLOCATE(self%cp_roof)
-      if ( ALLOCATED(self%cp_wall) ) DEALLOCATE(self%cp_wall)
-      if ( ALLOCATED(self%cp_surf) ) DEALLOCATE(self%cp_surf)
-      if ( ALLOCATED(self%dz_roof) ) DEALLOCATE(self%dz_roof)
-      if ( ALLOCATED(self%dz_wall) ) DEALLOCATE(self%dz_wall)
-      if ( ALLOCATED(self%dz_surf) ) DEALLOCATE(self%dz_surf)
+      IF (ALLOCATED(self%soil_storecap_roof)) DEALLOCATE (self%soil_storecap_roof)
+      IF (ALLOCATED(self%soil_storecap_wall)) DEALLOCATE (self%soil_storecap_wall)
+      IF (ALLOCATED(self%state_limit_roof)) DEALLOCATE (self%state_limit_roof)
+      IF (ALLOCATED(self%state_limit_wall)) DEALLOCATE (self%state_limit_wall)
+      IF (ALLOCATED(self%wet_thresh_roof)) DEALLOCATE (self%wet_thresh_roof)
+      IF (ALLOCATED(self%wet_thresh_wall)) DEALLOCATE (self%wet_thresh_wall)
+      IF (ALLOCATED(self%tin_roof)) DEALLOCATE (self%tin_roof)
+      IF (ALLOCATED(self%tin_wall)) DEALLOCATE (self%tin_wall)
+      IF (ALLOCATED(self%tin_surf)) DEALLOCATE (self%tin_surf)
+      IF (ALLOCATED(self%k_roof)) DEALLOCATE (self%k_roof)
+      IF (ALLOCATED(self%k_wall)) DEALLOCATE (self%k_wall)
+      IF (ALLOCATED(self%k_surf)) DEALLOCATE (self%k_surf)
+      IF (ALLOCATED(self%cp_roof)) DEALLOCATE (self%cp_roof)
+      IF (ALLOCATED(self%cp_wall)) DEALLOCATE (self%cp_wall)
+      IF (ALLOCATED(self%cp_surf)) DEALLOCATE (self%cp_surf)
+      IF (ALLOCATED(self%dz_roof)) DEALLOCATE (self%dz_roof)
+      IF (ALLOCATED(self%dz_wall)) DEALLOCATE (self%dz_wall)
+      IF (ALLOCATED(self%dz_surf)) DEALLOCATE (self%dz_surf)
 
    END SUBROUTINE deallocate_ehc_prm
 
-   SUBROUTINE allocate_ehc_prm_c(self, nlayer,ndepth)
-      class(EHC_PRM), INTENT(INOUT) :: self
-      INTEGER, INTENT(IN) :: nlayer,ndepth
+   SUBROUTINE allocate_ehc_prm_c(self, nlayer, ndepth)
+      CLASS(EHC_PRM), INTENT(INOUT) :: self
+      INTEGER, INTENT(IN) :: nlayer, ndepth
 
-      CALL allocate_ehc_prm(self, nlayer,ndepth)
+      CALL allocate_ehc_prm(self, nlayer, ndepth)
 
    END SUBROUTINE allocate_ehc_prm_c
 
    SUBROUTINE deallocate_ehc_prm_c(self)
-      class(EHC_PRM), INTENT(INOUT) :: self
+      CLASS(EHC_PRM), INTENT(INOUT) :: self
 
-      call deallocate_ehc_prm(self)
+      CALL deallocate_ehc_prm(self)
 
    END SUBROUTINE deallocate_ehc_prm_c
 
