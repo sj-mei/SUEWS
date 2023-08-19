@@ -1741,7 +1741,6 @@ CONTAINS
       pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
       anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
       nlayer, &
-      sfr_surf, &
       output_line_suews) ! output
 
       ! nlayer, &
@@ -1778,7 +1777,7 @@ CONTAINS
       TYPE(SNOW_PRM), INTENT(IN) :: snowPrm
       TYPE(CONDUCTANCE_PRM), INTENT(IN) :: conductancePrm
 
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf !surface cover fraction[-]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf !surface cover fraction[-]
       TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
       TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
@@ -2086,7 +2085,10 @@ CONTAINS
       REAL(KIND(1D0)) :: FAIEveTree_use
       REAL(KIND(1D0)) :: FAIDecTree_use
 
-      ASSOCIATE (Ts5mindata_ir => forcing%Ts5mindata_ir)
+      ASSOCIATE (&
+         Ts5mindata_ir => forcing%Ts5mindata_ir,&
+         sfr_surf => siteInfo%sfr_surf &
+         &)
 
          ! WRITE (*, *) "hydroState%state_roof", hydroState%state_roof
          ! WRITE (*, *) "hydroState%soilstore_roof", hydroState%soilstore_roof
@@ -12704,6 +12706,7 @@ CONTAINS
       siteInfo%narp_trans_site = NARP_TRANS_SITE
       siteInfo%CO2PointSource = CO2PointSource
       siteInfo%flowchange = FlowChange
+      siteInfo%sfr_surf = sfr_surf
 
       ! forcing%kdown = kdown
       ! forcing%ldown = ldown_obs
@@ -13625,8 +13628,7 @@ CONTAINS
             irrPrm, snowPrm, conductancePrm, &
             pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
             anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
-            nlayer, &
-            sfr_surf, &
+            nlayer,&
             ! Ts5mindata_ir, &
             output_line_suews) !output
 
