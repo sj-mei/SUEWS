@@ -488,6 +488,25 @@ MODULE SUEWS_DEF_DTS
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
    END TYPE HEAT_STATE
 
+   TYPE :: ROUGHNESS_STATE
+   ! this type is used to collect the intermediate results in the SUEWS model
+
+   ! calculated values of FAI
+      REAL(KIND(1D0)) :: FAIBldg_use
+      REAL(KIND(1D0)) :: FAIEveTree_use
+      REAL(KIND(1D0)) :: FAIDecTree_use
+
+      REAL(KIND(1D0)) :: FAI
+      REAL(KIND(1D0)) :: PAI
+      REAL(KIND(1D0)) :: Zh ! effective height of bluff bodies
+      REAL(KIND(1D0)) :: z0m ! aerodynamic roughness length
+      REAL(KIND(1D0)) :: zdm ! zero-plance displacement
+      REAL(KIND(1D0)) :: ZZD ! z-zdm
+
+
+   end type ROUGHNESS_STATE
+
+
 CONTAINS
    SUBROUTINE allocate_hydro_state(self, nlayer)
       IMPLICIT NONE
