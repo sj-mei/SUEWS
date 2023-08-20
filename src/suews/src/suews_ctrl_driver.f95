@@ -12756,7 +12756,7 @@ CONTAINS
       lumpsPrm%veg_type = veg_type
 
       ! ESTM_ehc
-      call ehcPrm%allocate(nlayer, ndepth)
+      CALL ehcPrm%ALLOCATE(nlayer, ndepth)
       ! ALLOCATE (ehcPrm%soil_storecap_roof(nlayer))
       ! ALLOCATE (ehcPrm%soil_storecap_wall(nlayer))
       ! ALLOCATE (ehcPrm%state_limit_roof(nlayer))
