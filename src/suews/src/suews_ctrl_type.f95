@@ -250,7 +250,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: narp_trans_site ! atmospheric transmissivity for NARP [-]
       REAL(KIND(1D0)) :: CO2PointSource ! CO2 emission factor [kg km-1]
       REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
-      REAL(KIND(1D0)), DIMENSION(NSURF):: sfr_surf !surface cover fraction[-]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]
    END TYPE SITE_PRM
 
    TYPE, PUBLIC :: LUMPS_PRM
@@ -488,9 +488,9 @@ MODULE SUEWS_DEF_DTS
    END TYPE HEAT_STATE
 
    TYPE :: ROUGHNESS_STATE
-   ! this type is used to collect the intermediate results in the SUEWS model
+      ! this type is used to collect the intermediate results in the SUEWS model
 
-   ! calculated values of FAI
+      ! calculated values of FAI
       REAL(KIND(1D0)) :: FAIBldg_use
       REAL(KIND(1D0)) :: FAIEveTree_use
       REAL(KIND(1D0)) :: FAIDecTree_use
@@ -502,9 +502,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: zdm ! zero-plance displacement
       REAL(KIND(1D0)) :: ZZD ! z-zdm
 
-
-   end type ROUGHNESS_STATE
-
+   END TYPE ROUGHNESS_STATE
 
 CONTAINS
    SUBROUTINE allocate_hydro_state(self, nlayer)

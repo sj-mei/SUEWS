@@ -14,7 +14,7 @@ MODULE SUEWS_Driver
                             SITE_PRM, LUMPS_PRM, EHC_PRM, LC_PAVED_PRM, LC_BLDG_PRM, LC_DECTR_PRM, LC_EVETR_PRM, &
                             LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
-                            HYDRO_STATE, HEAT_STATE,&
+                            HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
@@ -2086,8 +2086,8 @@ CONTAINS
       REAL(KIND(1D0)) :: FAIEveTree_use
       REAL(KIND(1D0)) :: FAIDecTree_use
 
-      ASSOCIATE (&
-         Ts5mindata_ir => forcing%Ts5mindata_ir,&
+      ASSOCIATE ( &
+         Ts5mindata_ir => forcing%Ts5mindata_ir, &
          sfr_surf => siteInfo%sfr_surf &
          &)
 
@@ -13629,7 +13629,7 @@ CONTAINS
             irrPrm, snowPrm, conductancePrm, &
             pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
             anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
-            nlayer,&
+            nlayer, &
             ! Ts5mindata_ir, &
             output_line_suews) !output
 
