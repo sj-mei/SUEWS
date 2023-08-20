@@ -2098,32 +2098,12 @@ CONTAINS
 
          ! ############# memory allocation for DTS variables (start) #############
          CALL hydroState_prev%ALLOCATE(nlayer)
-         ! ALLOCATE (hydroState_prev%soilstore_roof(nlayer))
-         ! ALLOCATE (hydroState_prev%state_roof(nlayer))
-         ! ALLOCATE (hydroState_prev%soilstore_wall(nlayer))
-         ! ALLOCATE (hydroState_prev%state_wall(nlayer))
 
          CALL hydroState_next%ALLOCATE(nlayer)
-         ! ALLOCATE (hydroState_next%soilstore_roof(nlayer))
-         ! ALLOCATE (hydroState_next%state_roof(nlayer))
-         ! ALLOCATE (hydroState_next%soilstore_wall(nlayer))
-         ! ALLOCATE (hydroState_next%state_wall(nlayer))
 
          CALL heatState_in%ALLOCATE(nsurf, nlayer, ndepth)
-         ! ALLOCATE (heatState_in%temp_roof(nlayer, ndepth))
-         ! ALLOCATE (heatState_in%temp_wall(nlayer, ndepth))
-         ! ALLOCATE (heatState_in%tsfc_roof(nlayer))
-         ! ALLOCATE (heatState_in%tsfc_wall(nlayer))
-         ! ALLOCATE (heatState_in%tsfc_surf(nsurf))
-         ! ALLOCATE (heatState_in%temp_surf(nsurf, ndepth))
 
          CALL heatState_out%ALLOCATE(nsurf, nlayer, ndepth)
-         ! ALLOCATE (heatState_out%temp_roof(nlayer, ndepth))
-         ! ALLOCATE (heatState_out%temp_wall(nlayer, ndepth))
-         ! ALLOCATE (heatState_out%tsfc_roof(nlayer))
-         ! ALLOCATE (heatState_out%tsfc_wall(nlayer))
-         ! ALLOCATE (heatState_out%tsfc_surf(nsurf))
-         ! ALLOCATE (heatState_out%temp_surf(nsurf, ndepth))
 
          ! ############# memory allocation for DTS variables (end) #############
 
@@ -2166,13 +2146,6 @@ CONTAINS
          snowState_prev%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, methodPrm%NetRadiationMethod == 0)
 
          hydroState_prev = hydroState
-         ! IF (methodPrm%StorageHeatMethod == 5) THEN
-         !    state_roof_prev = ehcState%state_roof
-         !    state_wall_prev = ehcState%state_wall
-         !    soilstore_roof_prev = ehcState%soilstore_roof
-         !    soilstore_wall_prev = ehcState%soilstore_wall
-         ! END IF
-         ! Tair_av_prev = Tair_av
          Tair_av_prev = forcing%Tair_av_5d
          phenState_prev = phenState
          anthroHeatState_prev = anthroHeatState
@@ -2180,34 +2153,11 @@ CONTAINS
          ! ESTM_ehc related
          ! save initial values of inout variables
          heatState_in = heatState
-         ! IF (StorageHeatMethod == 5) THEN
-         !    temp_in_roof = temp_roof
-         !    temp_in_wall = temp_wall
-         !    temp_in_surf = temp_surf
-         ! END IF
-         ! initialise indoor/bottom boundary temperature arrays
-         ! tin_roof = 10.
-         ! tin_wall = 10.
-         ! tin_surf = 3.
 
          ! initialise  variables
          ohmState_next = ohmState
          snowState_next = snowState
          hydroState_next = hydroState
-
-         !
-         ! state_surf_next = state_surf
-         ! soilstore_surf_next = soilstore_surf
-
-         !hydroState_next = hydroState
-         ! IF (StorageHeatMethod == 5) THEN
-
-         !    soilstore_roof_next = soilstore_roof
-         !    soilstore_wall_next = soilstore_wall
-         !    state_roof_next = state_roof
-         !    state_wall_next = state_wall
-
-         ! END IF
 
          ! Tair_av_next = Tair_av
          Tair_av_next = forcing%Tair_av_5d
@@ -2235,22 +2185,12 @@ CONTAINS
 
          heatState_out = heatState
          tsfc0_out_surf = heatState%tsfc_surf
-         ! tsfc_out_surf = tsfc_surf
-         ! tsfc0_out_surf = tsfc_surf
          ! ! TODO: ESTM work: to allow heterogeneous surface temperatures
          IF (methodPrm%StorageHeatMethod == 5 .OR. methodPrm%NetRadiationMethod > 1000) THEN
             tsfc0_out_roof = heatState%tsfc_roof
             tsfc0_out_wall = heatState%tsfc_wall
          END IF
-         ! IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
-         !    tsfc_out_roof = tsfc_roof
-         !    tsfc0_out_roof = tsfc_roof
-         !    tsfc_out_wall = tsfc_wall
-         !    tsfc0_out_wall = tsfc_wall
-         ! END IF
-         ! PRINT *, 'sfr_surf for this grid ', sfr_surf
-         ! PRINT *, 'before iteration Ts_iter = ', Ts_iter
-         ! L_mod_iter = 10
+
          i_iter = 1
          max_iter = 30
          DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
@@ -2260,29 +2200,16 @@ CONTAINS
             END IF
 
             ! calculate dectime
-            ! CALL SUEWS_cal_dectime( &
-            !    timer%id, timer%it, timer%imin, timer%isec, & ! input
-            !    dectime) ! output
             CALL SUEWS_cal_dectime_DTS( &
                timer, & ! input
                dectime) ! output
 
             ! calculate tstep related VARIABLES
-            ! CALL SUEWS_cal_tstep( &
-            !    timer%tstep, & ! input
-            !    nsh, nsh_real, tstep_real) ! output
             CALL SUEWS_cal_tstep_DTS( &
                timer, & ! input
                nsh, nsh_real, tstep_real) ! output
 
             ! calculate surface fraction related VARIABLES
-            ! CALL SUEWS_cal_surf_DTS( &
-            !    methodPrm%StorageHeatMethod, methodPrm%NetRadiationMethod, & !input
-            !    nlayer, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, & !input
-            !    spartacusLayerPrm%building_frac, spartacusLayerPrm%building_scale, spartacusPrm%height, & !input
-            !    VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
-            !    sfr_roof, sfr_wall) ! output
             CALL SUEWS_cal_surf_DTS( &
                methodPrm, & !input
                nlayer, &
@@ -2292,23 +2219,11 @@ CONTAINS
                sfr_roof, sfr_wall) ! output
 
             ! calculate dayofweek information
-            ! CALL SUEWS_cal_weekday( &
-            !    iy, id, lat, & !input
-            !    dayofWeek_id) !output
-            ! CALL SUEWS_cal_weekday( &
-            !    timer%iy, timer%id, siteInfo%lat, & !input
-            !    dayofWeek_id) !output
             CALL SUEWS_cal_weekday_DTS( &
                timer, siteInfo, & !input
                dayofWeek_id) !output
 
             ! calculate dayofweek information
-            ! CALL SUEWS_cal_DLS( &
-            !    id, startDLS, endDLS, & !input
-            !    DLS) !output
-            ! CALL SUEWS_cal_DLS( &
-            !    timer%id, ahemisPrm%startDLS, ahemisPrm%endDLS, & !input
-            !    DLS) !output
             CALL SUEWS_cal_DLS_DTS( &
                timer, ahemisPrm, & !input
                DLS) !output
@@ -2334,11 +2249,6 @@ CONTAINS
 
             !=================Calculate sun position=================
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
-            ! CALL NARP_cal_SunPosition( &
-            !    REAL(timer%iy, KIND(1D0)), & !input:
-            !    dectime - timer%tstep/2/86400, & ! sun position at middle of timestep before
-            !    siteInfo%timezone, siteInfo%lat, siteInfo%lon, siteInfo%alt, &
-            !    azimuth, zenith_deg) !output:
             CALL NARP_cal_SunPosition_DTS( &
                timer, & !input:
                dectime, & ! sun position at middle of timestep before
@@ -2368,10 +2278,6 @@ CONTAINS
 
             !=================Calculation of density and other water related parameters=================
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-            ! CALL cal_AtmMoist( &
-            !    Temp_C, Press_hPa, avRh, dectime, & ! input:
-            !    lv_J_kg, lvS_J_kg, & ! output:
-            !    es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
             CALL cal_AtmMoist( &
                forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
                lv_J_kg, lvS_J_kg, & ! output:
@@ -2379,15 +2285,6 @@ CONTAINS
 
             !======== Calculate soil moisture =========
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
-            ! CALL SUEWS_update_SoilMoist_DTS( &
-            !    NonWaterFraction, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-            !    pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
-            !    evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
-            !    grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap, & !input
-            !    hydroState_prev%soilstore_surf, &
-            !    SoilMoistCap, SoilState, & !output
-            !    vsmd, smd)
             CALL SUEWS_update_SoilMoist_DTS( &
                NonWaterFraction, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -2397,20 +2294,6 @@ CONTAINS
 
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
             !=================Gives the external and internal water uses per timestep=================
-            ! CALL SUEWS_cal_WaterUse_DTS( &
-            !    nsh_real, & ! input:
-            !    wu_m3, siteInfo%SurfaceArea, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-            !    pavedPrm%IrrFracPaved, bldgPrm%IrrFracBldgs, &
-            !    evetrPrm%IrrFracEveTr, dectrPrm%IrrFracDecTr, grassPrm%IrrFracGrass, &
-            !    bsoilPrm%IrrFracBSoil, waterPrm%IrrFracWater, &
-            !    DayofWeek_id, &
-            !    irrPrm%wuprofa_24hr_working, irrPrm%wuprofa_24hr_holiday, &
-            !    irrPrm%wuprofm_24hr_working, irrPrm%wuprofm_24hr_holiday, &
-            !    irrPrm%InternalWaterUse_h, &
-            !    anthroHeatState_next%HDD_id, hydroState_next%WUDay_id, & ! output:
-            !    methodPrm%WaterUseMethod, NSH, timer%it, timer%imin, DLS, &
-            !    wu_surf, wu_int, wu_ext)
             CALL SUEWS_cal_WaterUse_DTS( &
                nsh_real, & ! input:
                forcing, siteInfo, &
@@ -2422,32 +2305,6 @@ CONTAINS
                wu_surf, wu_int, wu_ext)
 
             ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
-            ! CALL SUEWS_cal_AnthropogenicEmission_DTS( &
-            !    ahemisPrm%anthroheat%ah_min_working, ahemisPrm%anthroheat%ah_min_holiday, &
-            !    ahemisPrm%anthroheat%ahprof_24hr_working, ahemisPrm%anthroheat%ahprof_24hr_holiday, &
-            !    ahemisPrm%anthroheat%ah_slope_cooling_working, ahemisPrm%anthroheat%ah_slope_cooling_holiday, &
-            !    ahemisPrm%anthroheat%ah_slope_heating_working, ahemisPrm%anthroheat%ah_slope_heating_holiday, &
-            !    siteInfo%CO2PointSource, & ! input:
-            !    dayofWeek_id, DLS, ahemisPrm%EF_umolCO2perJ, methodPrm%EmissionsMethod, ahemisPrm%EnEF_v_Jkm, &
-            !    ahemisPrm%FcEF_v_kgkm, ahemisPrm%FrFossilFuel_Heat, ahemisPrm%FrFossilFuel_NonHeat, &
-            !    anthroHeatState_next%HDD_id, &
-            !    ahemisPrm%HumActivity_24hr_working, ahemisPrm%HumActivity_24hr_holiday, &
-            !    timer%imin, timer%it, ahemisPrm%MaxFCMetab, ahemisPrm%MaxQFMetab, ahemisPrm%MinFCMetab, ahemisPrm%MinQFMetab, &
-            !    ahemisPrm%anthroheat%popdensdaytime_working, ahemisPrm%anthroheat%popdensdaytime_holiday, &
-            !    ahemisPrm%anthroheat%popdensnighttime, &
-            !    ahemisPrm%anthroheat%popprof_24hr_working, ahemisPrm%anthroheat%popprof_24hr_holiday, &
-            !    QF, &
-            !    ahemisPrm%anthroheat%qf0_beu_working, ahemisPrm%anthroheat%qf0_beu_holiday, &
-            !    ahemisPrm%anthroheat%qf_a_working, ahemisPrm%anthroheat%qf_a_holiday, &
-            !    ahemisPrm%anthroheat%qf_b_working, ahemisPrm%anthroheat%qf_b_holiday, &
-            !    ahemisPrm%anthroheat%qf_c_working, ahemisPrm%anthroheat%qf_c_holiday, &
-            !    forcing%QF_obs, QF_SAHP, siteInfo%SurfaceArea, &
-            !    ahemisPrm%anthroheat%baset_cooling_working, ahemisPrm%anthroheat%baset_cooling_holiday, &
-            !    ahemisPrm%anthroheat%baset_heating_working, ahemisPrm%anthroheat%baset_heating_holiday, &
-            !    forcing%Temp_C, ahemisPrm%TrafficRate_working, ahemisPrm%TrafficRate_holiday, &
-            !    ahemisPrm%TrafficUnits, &
-            !    ahemisPrm%TraffProf_24hr_working, ahemisPrm%TraffProf_24hr_holiday, &
-            !    Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
             CALL SUEWS_cal_AnthropogenicEmission_DTS( &
                ahemisPrm, &
                siteInfo, & ! input:
@@ -2461,40 +2318,6 @@ CONTAINS
             ! ========================================================================
             ! N.B.: the following parts involves snow-related calculations.
             ! ===================NET ALLWAVE RADIATION================================
-            ! if (kdown>0 .and. i_iter == 1) then
-            !    print *, 'snowFrac_prev=', snowFrac_prev
-            !    snowFrac_prev=-999
-            !    print *, 'snowFrac_prev=', snowFrac_prev
-            ! endif
-            ! CALL SUEWS_cal_Qn_DTS( &
-            !    methodPrm%StorageHeatMethod, methodPrm%NetRadiationMethod, methodPrm%SnowUse, & !input
-            !    timer%tstep, nlayer, snowState_prev%SnowPack, snowPrm%tau_a, snowPrm%tau_f, snowPrm%SnowAlbMax, snowPrm%SnowAlbMin, &
-            !    methodPrm%Diagnose, forcing%ldown, forcing%fcld, &
-            !    dectime, ZENITH_deg, Ts_iter, forcing%kdown, forcing%Temp_C, forcing%RH, ea_hPa, forcing%qn1_obs, &
-            !    snowState_prev%snowalb, snowState_prev%snowFrac, DiagQN, &
-            !    siteInfo%NARP_TRANS_SITE, snowPrm%NARP_EMIS_SNOW, snowState_prev%IceFrac, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-            !    sfr_roof, sfr_wall, &
-            !    heatState_out%tsfc_surf, heatState_out%tsfc_roof, heatState_out%tsfc_wall, &
-            !    pavedPrm%emis, bldgPrm%emis, evetrPrm%emis, dectrPrm%emis, grassPrm%emis, bsoilPrm%emis, waterPrm%emis, &
-            !    phenState_prev%alb, phenState_next%albDecTr_id, phenState_next%albEveTr_id, phenState_next%albGrass_id, &
-            !    phenState%LAI_id, & !input
-            !    spartacusPrm%n_vegetation_region_urban, &
-            !    spartacusPrm%n_stream_sw_urban, spartacusPrm%n_stream_lw_urban, &
-            !    spartacusPrm%sw_dn_direct_frac, spartacusPrm%air_ext_sw, spartacusPrm%air_ssa_sw, &
-            !    spartacusPrm%veg_ssa_sw, spartacusPrm%air_ext_lw, spartacusPrm%air_ssa_lw, spartacusPrm%veg_ssa_lw, &
-            !    spartacusPrm%veg_fsd_const, spartacusPrm%veg_contact_fraction_const, &
-            !    spartacusPrm%ground_albedo_dir_mult_fact, methodPrm%use_sw_direct_albedo, & !input
-            !    spartacusPrm%height, spartacusLayerPrm%building_frac, &
-            !    spartacusLayerPrm%veg_frac, spartacusLayerPrm%building_scale, spartacusLayerPrm%veg_scale, & !input: SPARTACUS
-            !    spartacusLayerPrm%alb_roof, spartacusLayerPrm%emis_roof, spartacusLayerPrm%alb_wall, spartacusLayerPrm%emis_wall, &
-            !    spartacusLayerPrm%roof_albedo_dir_mult_fact, spartacusLayerPrm%wall_specular_frac, &
-            !    phenState_next%alb, ldown, fcld, & !output
-            !    QN_surf, QN_roof, QN_wall, &
-            !    qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
-            !    qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            !    albedo_snow, snowState_next%SnowAlb, &
-            !    dataOutLineSPARTACUS)
             IF (flag_print_debug) THEN
                PRINT *, 'Tsfc_surf before QN', heatState_out%tsfc_surf
             END IF
@@ -2518,86 +2341,6 @@ CONTAINS
                albedo_snow, snowState_next, &
                dataOutLineSPARTACUS)
 
-            ! IF (qn < -300) THEN
-            !    PRINT *, 'qn=', qn
-            !    PRINT *, 'snowFrac_prev=', snowFrac_prev
-            ! END IF
-
-            ! PRINT *, 'Qn_surf after SUEWS_cal_Qn ', qn_surf
-            ! PRINT *, 'qn_roof after SUEWS_cal_Qn ', qn_roof
-            ! PRINT *, 'qn_wall after SUEWS_cal_Qn ', qn_wall
-            ! PRINT *, ''
-
-            ! =================STORAGE HEAT FLUX=======================================
-            ! IF (i_iter == 1) THEN
-            !    Qg_surf = 0.1*QN_surf
-            !    Qg_roof = 0.1*QN_roof
-            !    Qg_wall = 0.1*QN_wall
-            ! ELSE
-            !    Qg_surf = QN_surf + QF - (QH_surf + QE_surf)
-            !    Qg_roof = QN_roof + QF - (QH_roof + QE_roof)
-            !    Qg_wall = QN_wall + QF - (QH_wall + QE_wall)
-            ! END IF
-
-            ! PRINT *, 'Qg_surf before cal_qs', Qg_surf
-            ! PRINT *, 'Qg_roof before cal_qs', Qg_roof
-            ! PRINT *, 'Qg_wall before cal_qs', Qg_wall
-            ! print *,''
-
-            ! PRINT *, 'tsfc_surf before cal_qs', tsfc_out_surf
-            ! PRINT *, 'tsfc_out_roof before cal_qs', tsfc_out_roof
-            ! PRINT *, 'tsfc_wall before cal_qs', tsfc_out_wall
-            ! PRINT *, ''
-
-            ! CALL SUEWS_cal_Qs_DTS( &
-            !    methodPrm%StorageHeatMethod, forcing%qs_obs, methodPrm%OHMIncQF, siteInfo%Gridiv, & !input
-            !    timer%id, timer%tstep, timer%dt_since_start, methodPrm%Diagnose, &
-            !    nlayer, &
-            !    Qg_surf, Qg_roof, Qg_wall, &
-            !    heatState_out%tsfc_roof, ehcPrm%tin_roof, &
-            !    heatState_in%temp_roof, ehcPrm%k_roof, &
-            !    ehcPrm%cp_roof, ehcPrm%dz_roof, sfr_roof, & !input
-            !    heatState_out%tsfc_wall, ehcPrm%tin_wall, &
-            !    heatState_in%temp_wall, ehcPrm%k_wall, &
-            !    ehcPrm%cp_wall, ehcPrm%dz_wall, sfr_wall, & !input
-            !    heatState_out%tsfc_surf, ehcPrm%tin_surf, &
-            !    heatState_in%temp_surf, ehcPrm%k_surf, &
-            !    ehcPrm%cp_surf, ehcPrm%dz_surf, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, & !input
-            !    pavedPrm%ohm%ohm_coef_lc, bldgPrm%ohm%ohm_coef_lc, evetrPrm%ohm%ohm_coef_lc, &
-            !    dectrPrm%ohm%ohm_coef_lc, grassPrm%ohm%ohm_coef_lc, bsoilPrm%ohm%ohm_coef_lc, &
-            !    waterPrm%ohm%ohm_coef_lc, & !input
-            !    pavedPrm%ohm%ohm_threshsw, bldgPrm%ohm%ohm_threshsw, evetrPrm%ohm%ohm_threshsw, &
-            !    dectrPrm%ohm%ohm_threshsw, grassPrm%ohm%ohm_threshsw, bsoilPrm%ohm%ohm_threshsw, &
-            !    waterPrm%ohm%ohm_threshsw, & !input
-            !    pavedPrm%ohm%ohm_threshwd, bldgPrm%ohm%ohm_threshwd, evetrPrm%ohm%ohm_threshwd, &
-            !    dectrPrm%ohm%ohm_threshwd, grassPrm%ohm%ohm_threshwd, bsoilPrm%ohm%ohm_threshwd, &
-            !    waterPrm%ohm%ohm_threshwd, & !input
-            !    hydroState_prev%soilstore_surf, &
-            !    pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
-            !    evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
-            !    grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap, & !input
-            !    hydroState_prev%state_surf, methodPrm%SnowUse, snowState_prev%SnowFrac, DiagQS, &
-            !    anthroHeatState%HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn, &
-            !    forcing%kdown, forcing%U, forcing%temp_c, zenith_deg, forcing%RH, forcing%pres, ldown, &
-            !    bldgPrm%bldgh, phenState%alb, &
-            !    pavedPrm%emis, bldgPrm%emis, evetrPrm%emis, dectrPrm%emis, grassPrm%emis, bsoilPrm%emis, waterPrm%emis, &
-            !    pavedPrm%ohm%cpanohm, bldgPrm%ohm%cpanohm, evetrPrm%ohm%cpanohm, &
-            !    dectrPrm%ohm%cpanohm, grassPrm%ohm%cpanohm, bsoilPrm%ohm%cpanohm, waterPrm%ohm%cpanohm, &
-            !    pavedPrm%ohm%kkanohm, bldgPrm%ohm%kkanohm, evetrPrm%ohm%kkanohm, &
-            !    dectrPrm%ohm%kkanohm, grassPrm%ohm%kkanohm, bsoilPrm%ohm%kkanohm, waterPrm%ohm%kkanohm, &
-            !    pavedPrm%ohm%chanohm, bldgPrm%ohm%chanohm, evetrPrm%ohm%chanohm, &
-            !    dectrPrm%ohm%chanohm, grassPrm%ohm%chanohm, bsoilPrm%ohm%chanohm, waterPrm%ohm%chanohm, &
-            !    methodPrm%EmissionsMethod, &
-            !    forcing%Tair, ohmState_prev%qn_av, ohmState_prev%dqndt, ohmState_prev%qn_s_av, ohmState_prev%dqnsdt, &
-            !    phenState%StoreDrainPrm, &
-            !    qn_snow, dataOutLineESTM, qs, & !output
-            !    ohmState_next%qn_av, ohmState_next%dqndt, ohmState_next%qn_s_av, ohmState_next%dqnsdt, &
-            !    deltaQi, a1, a2, a3, &
-            !    heatState_out%temp_roof, QS_roof, & !output
-            !    heatState_out%temp_wall, QS_wall, & !output
-            !    heatState_out%temp_surf, QS_surf) !output
-
             IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
             CALL SUEWS_cal_Qs_DTS( &
                methodPrm, forcing, siteInfo, & !input
@@ -2617,31 +2360,6 @@ CONTAINS
                QS_roof, & !output
                QS_wall, & !output
                QS_surf) !output
-            ! update iteration variables
-            ! temp_in_roof = temp_out_roof
-            ! temp_in_wall = temp_out_wall
-            ! temp_in_surf = temp_out_surf
-            ! Ts_iter = DOT_PRODUCT(tsfc_out_surf, sfr_surf)
-            ! PRINT *, 'QS_surf after cal_qs', QS_surf
-            !PRINT *, 'QS_roof after cal_qs', QS_roof
-            !PRINT *, 'QS_wall after cal_qs', QS_wall
-
-            ! PRINT *, ''
-
-            ! PRINT *, 'tsfc_surf after cal_qs', heatState_out%tsfc_surf
-            ! PRINT *, 'tsfc_roof after cal_qs', tsfc_out_roof
-            ! PRINT *, 'tsfc_wall after cal_qs', tsfc_out_wall
-            ! PRINT *, ''
-            ! print *,'tsfc_surf abs. diff.:',maxval(abs(tsfc_out_surf-tsfc0_out_surf)),maxloc(abs(tsfc_out_surf-tsfc0_out_surf))
-            ! dif_tsfc_iter=maxval(abs(tsfc_out_surf-tsfc0_out_surf))
-            ! print *,'tsfc_roof abs. diff.:',maxval(abs(tsfc_out_roof-tsfc0_out_roof)),maxloc(abs(tsfc_out_roof-tsfc0_out_roof))
-            ! dif_tsfc_iter=max(maxval(abs(tsfc_out_roof-tsfc0_out_roof)),dif_tsfc_iter)
-            ! print *,'tsfc_wall abs. diff.:',maxval(abs(tsfc_out_wall-tsfc0_out_wall)),maxloc(abs(tsfc_out_wall-tsfc0_out_wall))
-            ! dif_tsfc_iter=max(maxval(abs(tsfc0_out_wall-tsfc_out_wall)),dif_tsfc_iter)
-
-            ! tsfc0_out_surf = tsfc_out_surf
-            ! tsfc0_out_roof = tsfc_out_roof
-            ! tsfc0_out_wall = tsfc_out_wall
 
             !==================Energy related to snow melting/freezing processes=======
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -2650,17 +2368,6 @@ CONTAINS
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
             IF (i_iter == 1) THEN
                !Calculate QH and QE from LUMPS in the first iteration of each time step
-               ! CALL LUMPS_cal_QHQE_DTS( &
-               !    lumpsPrm%veg_type, & !input
-               !    methodPrm%SnowUse, qn, qf, qs, forcing%Temp_C, VegFraction, avcp, forcing%pres, lv_J_kg, &
-               !    tstep_real, lumpsPrm%drainrt, nsh_real, &
-               !    forcing%rain, lumpsPrm%rainmaxres, lumpsPrm%raincover, &
-               !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-               !    phenState_next%LAI_id, &
-               !    evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax, &
-               !    evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin, &
-               !    QH_LUMPS, & !output
-               !    QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
                CALL LUMPS_cal_QHQE_DTS( &
                   lumpsPrm, & !input
                   methodPrm, qn, qf, qs, forcing, VegFraction, avcp, lv_J_kg, &
@@ -2677,40 +2384,8 @@ CONTAINS
                QH_Init = QH
             END IF
 
-            !print *, 'QH_Init=', QH_Init
-
             !============= calculate water balance =============
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
-            ! CALL SUEWS_cal_Water_DTS( &
-            !    methodPrm%Diagnose, & !input
-            !    methodPrm%SnowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-            !    hydroState_prev%state_surf, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-            !    phenState_next%StoreDrainPrm, &
-            !    pavedPrm%waterdist%to_paved, pavedPrm%waterdist%to_bldg, pavedPrm%waterdist%to_evetr, &
-            !    pavedPrm%waterdist%to_dectr, pavedPrm%waterdist%to_grass, pavedPrm%waterdist%to_bsoil, pavedPrm%waterdist%to_water, &
-            !    pavedPrm%waterdist%to_soilstore, &
-            !    bldgPrm%waterdist%to_paved, bldgPrm%waterdist%to_bldg, bldgPrm%waterdist%to_evetr, &
-            !    bldgPrm%waterdist%to_dectr, bldgPrm%waterdist%to_grass, bldgPrm%waterdist%to_bsoil, bldgPrm%waterdist%to_water, &
-            !    bldgPrm%waterdist%to_soilstore, &
-            !    evetrPrm%waterdist%to_paved, evetrPrm%waterdist%to_bldg, evetrPrm%waterdist%to_evetr, &
-            !    evetrPrm%waterdist%to_dectr, evetrPrm%waterdist%to_grass, evetrPrm%waterdist%to_bsoil, evetrPrm%waterdist%to_water, &
-            !    evetrPrm%waterdist%to_soilstore, &
-            !    dectrPrm%waterdist%to_paved, dectrPrm%waterdist%to_bldg, dectrPrm%waterdist%to_evetr, &
-            !    dectrPrm%waterdist%to_dectr, dectrPrm%waterdist%to_grass, dectrPrm%waterdist%to_bsoil, dectrPrm%waterdist%to_water, &
-            !    dectrPrm%waterdist%to_soilstore, &
-            !    grassPrm%waterdist%to_paved, grassPrm%waterdist%to_bldg, grassPrm%waterdist%to_evetr, &
-            !    grassPrm%waterdist%to_dectr, grassPrm%waterdist%to_grass, grassPrm%waterdist%to_bsoil, grassPrm%waterdist%to_water, &
-            !    grassPrm%waterdist%to_soilstore, &
-            !    bsoilPrm%waterdist%to_paved, bsoilPrm%waterdist%to_bldg, bsoilPrm%waterdist%to_evetr, &
-            !    bsoilPrm%waterdist%to_dectr, bsoilPrm%waterdist%to_grass, bsoilPrm%waterdist%to_bsoil, &
-            !    bsoilPrm%waterdist%to_water, &
-            !    bsoilPrm%waterdist%to_soilstore, &
-            !    nsh_real, &
-            !    drain_per_tstep, & !output
-            !    drain_surf, frac_water2runoff, &
-            !    AdditionalWater, runoffPipes, runoff_per_interval, &
-            !    AddWater)
             CALL SUEWS_cal_Water_DTS( &
                methodPrm, & !input
                NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
@@ -2726,25 +2401,6 @@ CONTAINS
 
             !===============Resistance Calculations=======================
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
-            ! CALL SUEWS_cal_Resistance_DTS( &
-            !    methodPrm%StabilityMethod, & !input:
-            !    methodPrm%Diagnose, AerodynamicResistanceMethod, methodPrm%RoughLenHeatMethod, methodPrm%SnowUse, &
-            !    timer%id, timer%it, &
-            !    conductancePrm%gsModel, &
-            !    methodPrm%SMDMethod, &
-            !    avdens, avcp, QH_Init, zzd, z0m, zdm, &
-            !    forcing%U, forcing%Temp_C, VegFraction, forcing%kdown, &
-            !    conductancePrm%Kmax, conductancePrm%g_max, conductancePrm%g_k, conductancePrm%g_q_base, conductancePrm%g_q_shape, &
-            !    conductancePrm%g_t, conductancePrm%g_sm, conductancePrm%s1, conductancePrm%s2, &
-            !    conductancePrm%th, conductanceprm%tl, &
-            !    dq, forcing%xsmd, vsmd, &
-            !    evetrPrm%maxconductance, dectrPrm%maxconductance, grassPrm%maxconductance, &
-            !    evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax, &
-            !    phenState_next%LAI_id, snowState_prev%SnowFrac, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-            !    g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
-            !    UStar, TStar, L_mod, & !output
-            !    zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
             CALL SUEWS_cal_Resistance_DTS( &
                methodPrm, & !input:
                AerodynamicResistanceMethod, &
@@ -2758,49 +2414,13 @@ CONTAINS
                g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
                UStar, TStar, L_mod, & !output
                zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
-            !WRITE (*, *) 'UStar=', UStar, ' TStar=', TStar, ' QH_Init=', QH_Init, "kdown=", forcing%kdown, "L_mod=", L_mod
             !===================Resistance Calculations End=======================
 
             !===================Calculate surface hydrology and related soil water=======================
             IF (methodPrm%SnowUse == 1) THEN
 
                ! ===================Calculate snow related hydrology=======================
-               ! CALL SUEWS_cal_snow_DTS( &
-               !    methodPrm%Diagnose, nlayer, & !input
-               !    tstep, timer%imin, timer%it, EvapMethod, dayofWeek_id, snowPrm%CRWmin, snowPrm%CRWmax, &
-               !    dectime, avdens, avcp, lv_J_kg, lvS_J_kg, forcing%RH, forcing%Pres, forcing%Temp_C, &
-               !    RAsnow, psyc_hPa, sIce_hPa, snowPrm%tau_r, &
-               !    RadMeltFact, TempMeltFact, snowPrm%SnowAlbMax, snowPrm%PrecipLimit, snowPrm%PrecipLimitAlb, &
-               !    qn_ind_snow, kup_ind_snow, deltaQi, Tsurf_ind_snow, &
-               !    snowState_next%SnowAlb, &
-               !    PervFraction, vegfraction, addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
-               !   RS, RA_h, RB, snowPrm%SnowDensMax, snowPrm%snowdensmin, forcing%rain, siteInfo%PipeCapacity, siteInfo%RunoffToWater, &
-               !    addVeg, snowPrm%SnowLimPaved, snowPrm%SnowLimBldg, &
-               !    siteInfo%FlowChange, drain_surf, &
-               !    pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, dectrPrm%wetthresh, &
-               !    grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh, &
-               !    pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
-               !    evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
-               !    grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap, &
-               !    Tsurf_ind, &
-               !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-               !    AddWater, frac_water2runoff, phenState_next%StoreDrainPrm, snowPrm%SnowPackLimit, &
-               !    snowPrm%snowprof_24hr_working, snowPrm%snowprof_24hr_holiday, &
-               !    snowState_prev%SnowPack, snowState_prev%snowFrac, snowState_prev%SnowWater, &
-               !    snowState_prev%IceFrac, snowState_prev%SnowDens, & ! input:
-               !    snowState_prev%SnowfallCum, hydroState_prev%state_surf, hydroState_prev%soilstore_surf, & ! input:
-               !    QN_surf, qs_surf, &
-               !    SnowRemoval, & ! snow specific output
-               !    snowState_next%SnowPack, snowState_next%SnowFrac, snowState_next%SnowWater, &
-               !    snowState_next%iceFrac, snowState_next%SnowDens, & ! output
-               !    snowState_next%SnowfallCum, hydroState_next%state_surf, hydroState_next%soilstore_surf, & ! general output:
-               !    state_per_tstep, NWstate_per_tstep, &
-               !    qe, qe_surf, qe_roof, qe_wall, &
-               !    snowState_next%SnowAlb, &
-               !    swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
-               !    surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-               !    runoffAGveg, runoffAGimpervious, rss_surf, &
-               !    dataOutLineSnow)
+
                CALL SUEWS_cal_snow_DTS( &
                   methodPrm, nlayer, & !input
                   timer, EvapMethod, dayofWeek_id, snowPrm, &
@@ -2831,42 +2451,6 @@ CONTAINS
             ELSE
                IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QE...'
                !======== Evaporation and surface state_id for snow-free conditions ========
-               ! CALL SUEWS_cal_QE_DTS( &
-               !    methodPrm%Diagnose, methodPrm%storageheatmethod, nlayer, & !input
-               !    timer%tstep, &
-               !    EvapMethod, &
-               !    avdens, avcp, lv_J_kg, &
-               !    psyc_hPa, &
-               !    PervFraction, &
-               !    addimpervious, &
-               !    qf, vpd_hPa, s_hPa, RS, RA_h, RB, &
-               !    forcing%rain, siteInfo%pipecapacity, siteInfo%runofftowater, &
-               !    NonWaterFraction, wu_surf, addVeg, addWaterBody, AddWater, &
-               !    siteInfo%flowchange, drain_surf, &
-               !    frac_water2runoff, phenState_next%StoreDrainPrm, &
-               !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-               !    pavedPrm%statelimit, bldgPrm%statelimit, evetrPrm%statelimit, &
-               !    dectrPrm%statelimit, grassPrm%statelimit, bsoilPrm%statelimit, waterPrm%statelimit, &
-               !    pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
-               !    evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
-               !    grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap, &
-               !    pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, &
-               !    dectrPrm%wetthresh, grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh, &
-               !    hydroState_prev%state_surf, hydroState_prev%soilstore_surf, QN_surf, qs_surf, & ! input:
-               !    sfr_roof, ehcPrm%state_limit_roof, ehcPrm%soil_storecap_roof, ehcPrm%wet_thresh_roof, & ! input:
-               !    hydroState_prev%state_roof, hydroState_prev%soilstore_roof, QN_roof, qs_roof, & ! input:
-               !    sfr_wall, ehcPrm%state_limit_wall, ehcPrm%soil_storecap_wall, ehcPrm%wet_thresh_wall, & ! input:
-               !    hydroState_prev%state_wall, hydroState_prev%soilstore_wall, QN_wall, qs_wall, & ! input:
-               !    hydroState_next%state_surf, hydroState_next%soilstore_surf, ev_surf, & ! general output:
-               !    hydroState_next%state_roof, hydroState_next%soilstore_roof, ev_roof, & ! general output:
-               !    hydroState_next%state_wall, hydroState_next%soilstore_wall, ev_wall, & ! general output:
-               !    state_per_tstep, NWstate_per_tstep, &
-               !    ev0_surf, qe0_surf, &
-               !    qe, qe_surf, qe_roof, qe_wall, &
-               !    ev_per_tstep, runoff_per_tstep, &
-               !    surf_chang_per_tstep, runoffPipes, &
-               !    runoffwaterbody, &
-               !    runoffAGveg, runoffAGimpervious, rss_surf)
                CALL SUEWS_cal_QE_DTS( &
                   methodPrm, nlayer, timer, &
                   EvapMethod, &
@@ -2901,24 +2485,6 @@ CONTAINS
             !=== Horizontal movement between soil stores ===
             ! Now water is allowed to move horizontally between the soil stores
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
-            ! CALL SUEWS_cal_HorizontalSoilWater_DTS( &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, & ! input: ! surface fractions
-            !    pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, evetrPrm%soil%soilstorecap, &
-            !    dectrPrm%soil%soilstorecap, grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, &
-            !    waterPrm%soil%soilstorecap, & !Capacity of soil store for each surface [mm]
-            !    pavedPrm%soil%soildepth, bldgPrm%soil%soildepth, evetrPrm%soil%soildepth, &
-            !    dectrPrm%soil%soildepth, grassPrm%soil%soildepth, bsoilPrm%soil%soildepth, &
-            !    waterPrm%soil%soildepth, & !Depth of sub-surface soil store for each surface [mm]
-            !    pavedPrm%soil%sathydraulicconduct, bldgPrm%soil%sathydraulicconduct, evetrPrm%soil%sathydraulicconduct, &
-            !    dectrPrm%soil%sathydraulicconduct, grassPrm%soil%sathydraulicconduct, bsoilPrm%soil%sathydraulicconduct, &
-            !    waterPrm%soil%sathydraulicconduct, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-            !    siteInfo%SurfaceArea, & !Surface area of the study area [m2]
-            !    NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
-            !    tstep_real, & !tstep cast as a real for use in calculations
-            !    hydroState_next%soilstore_surf, & ! inout:!Soil moisture of each surface type [mm]
-            !    runoffSoil, & !Soil runoff from each soil sub-surface [mm]
-            !    runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-            ! )
             CALL SUEWS_cal_HorizontalSoilWater_DTS( &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & ! input
                siteInfo, & !Surface area of the study area [m2]
@@ -2931,15 +2497,6 @@ CONTAINS
 
             !========== Calculate soil moisture ============
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
-            ! CALL SUEWS_cal_SoilState_DTS( &
-            !    methodPrm%SMDMethod, forcing%xsmd, NonWaterFraction, SoilMoistCap, & !input
-            !    pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, evetrPrm%soil%soilstorecap, &
-            !    dectrPrm%soil%soilstorecap, grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, &
-            !    waterPrm%soil%soilstorecap, & ! capacity of soil store for each surface [mm]
-            !    surf_chang_per_tstep, &
-            !    hydroState_next%soilstore_surf, hydroState_prev%soilstore_surf, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-            !    smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
             CALL SUEWS_cal_SoilState_DTS( &
                methodPrm, forcing, NonWaterFraction, SoilMoistCap, & !input
                surf_chang_per_tstep, &
@@ -2949,16 +2506,6 @@ CONTAINS
 
             !============ Sensible heat flux ===============
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
-            ! CALL SUEWS_cal_QH_DTS( &
-            !    1, nlayer, methodPrm%StorageHeatMethod, & !input
-            !    qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
-            !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-            !    sfr_roof, sfr_wall, &
-            !    heatState_out%tsfc_surf, heatState_out%tsfc_roof, heatState_out%tsfc_wall, &
-            !    forcing%Temp_C, &
-            !    RA_h, &
-            !    qh, qh_residual, qh_resist, & !output
-            !    qh_resist_surf, qh_resist_roof, qh_resist_wall)
             CALL SUEWS_cal_QH_DTS( &
                qhMethod, nlayer, methodPrm, & !input
                qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
@@ -2969,21 +2516,7 @@ CONTAINS
                RA_h, &
                qh, qh_residual, qh_resist, & !output
                qh_resist_surf, qh_resist_roof, qh_resist_wall)
-            ! PRINT *, 'qn: ', qn, "qf: ", qf, "qe: ", qe, "qs: ", qs
-            ! PRINT *, 'qn_surf after SUEWS_cal_QH', qn_surf
-            ! PRINT *, 'qs_surf after SUEWS_cal_QH', qs_surf
-            ! PRINT *, 'qe_surf after SUEWS_cal_QH', qe_surf
-            ! PRINT *, 'qh_surf after SUEWS_cal_QH (resist)', qh_surf
-            ! PRINT *, 'qh_roof after SUEWS_cal_QH (resist)', qh_roof
-            ! PRINT *, 'qh_wall after SUEWS_cal_QH (resist)', qh_wall
-            ! PRINT *, ''
 
-            ! PRINT *, 'tsfc_surf after SUEWS_cal_QH (resist)', tsfc_out_surf
-            ! PRINT *, 'tsfc_roof after SUEWS_cal_QH (resist)', tsfc_out_roof
-            ! PRINT *, 'tsfc_wall after SUEWS_cal_QH (resist)', tsfc_out_wall
-            ! PRINT *, ''
-            ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
-            ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
             !============ Sensible heat flux end ===============
 
             ! residual heat flux
@@ -3025,16 +2558,8 @@ CONTAINS
             IF (flag_print_debug) PRINT *, 'QH_surf beofre qh_cal', qh_surf
             IF (flag_print_debug) PRINT *, 'Tair beofre qh_cal', forcing%temp_c
             DO i_surf = 1, nsurf
-               ! TSfc_QH_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
                heatState_out%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
-               ! PRINT *, 'tsfc_surf after QH back env.:', heatState_out%tsfc_surf(i_surf)
-               ! if ( i_surf==1 ) then
-               !    tsfc_out_surf(i_surf) = cal_tsfc(qh_surf(i_surf), avdens, avcp, RA_h, temp_c)
-               ! else
-               !    tsfc_out_surf(i_surf)=tsfc0_out_surf(i_surf)
-               ! end if
-               ! restrict calculated heat storage to a sensible range
-               ! tsfc_out_surf(i_surf) = MAX(MIN(tsfc_out_surf(i_surf), 100.0), -100.0)
+
             END DO
             IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState_out%tsfc_surf
 
@@ -3077,16 +2602,7 @@ CONTAINS
             ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
             ! Test if sensible heat fluxes converge in iterations
-            ! if (abs(QH - QH_Init) > 0.1) then
-            ! IF (ABS(Ts_iter - TSfc_C) > 0.1) THEN
-            !    flag_converge = .FALSE.
-            ! ELSE
-            !    flag_converge = .TRUE.
-            !    PRINT *, 'Iteration done in', i_iter, ' iterations'
-            !    PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
-            ! END IF
-            ! IF (MINVAL(ABS(TSfc_QH_surf - tsfc_surf)) > 0.1) THEN
-            ! IF (ABS(qh_residual - qh_resist) > .2) THEN
+
             IF (dif_tsfc_iter > .1) THEN
                flag_converge = .FALSE.
             ELSE
@@ -3125,17 +2641,6 @@ CONTAINS
 
          !============ roughness sub-layer diagonostics ===============
          IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
-         ! CALL RSLProfile_DTS( &
-         !    methodPrm%DiagMethod, &
-         !    zH, z0m, zdm, z0v, &
-         !    L_MOD, &
-         !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-         !    FAI, PAI, &
-         !    methodPrm%StabilityMethod, RA_h, &
-         !    avcp, lv_J_kg, avdens, &
-         !    forcing%U, forcing%Temp_C, forcing%RH, forcing%pres, siteInfo%z, qh, qe, & ! input
-         !    T2_C, q2_gkg, U10_ms, RH2, & !output
-         !    dataoutLineRSL) ! output
          CALL RSLProfile_DTS( &
             methodPrm, &
             zH, z0m, zdm, z0v, &
@@ -3149,31 +2654,6 @@ CONTAINS
             dataoutLineRSL) ! output
 
          ! ============ BIOGENIC CO2 FLUX =======================
-         ! CALL SUEWS_cal_BiogenCO2_DTS( &
-         !    evetrPrm%bioco2%alpha_bioco2, dectrPrm%bioco2%alpha_bioco2, grassPrm%bioco2%alpha_bioco2, &
-         !    evetrPrm%bioco2%alpha_enh_bioco2, dectrPrm%bioco2%alpha_enh_bioco2, grassPrm%bioco2%alpha_enh_bioco2, &
-         !    forcing%kdown, forcing%RH, &
-         !    evetrPrm%bioco2%beta_bioCO2, dectrPrm%bioco2%beta_bioCO2, grassPrm%bioco2%beta_bioCO2, &
-         !    evetrPrm%bioco2%beta_enh_bioco2, dectrPrm%bioco2%beta_enh_bioco2, grassPrm%bioco2%beta_enh_bioco2, &
-         !    dectime, methodPrm%Diagnose, methodPrm%EmissionsMethod, Fc_anthro, &
-         !    conductancePrm%g_max, conductancePrm%g_k, conductancePrm%g_q_base, conductancePrm%g_q_shape, &
-         !    conductancePrm%g_t, conductancePrm%g_sm, gfunc, conductancePrm%gsmodel, &
-         !    timer%id, timer%it, conductancePrm%Kmax, &
-         !    phenState_next%LAI_id, &
-         !    evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin, &
-         !    evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax, &
-         !    evetrPrm%MaxConductance, dectrPrm%MaxConductance, grassPrm%MaxConductance, &
-         !    evetrPrm%bioco2%min_res_bioCO2, dectrPrm%bioco2%min_res_bioCO2, grassPrm%bioco2%min_res_bioCO2, &
-         !    forcing%Pres, &
-         !    evetrPrm%bioco2%resp_a, dectrPrm%bioco2%resp_a, grassPrm%bioco2%resp_a, &
-         !    evetrPrm%bioco2%resp_b, dectrPrm%bioco2%resp_b, grassPrm%bioco2%resp_b, &
-         !    conductancePrm%S1, conductancePrm%S2, &
-         !    pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr, &
-         !    methodPrm%SMDMethod, snowState%SnowFrac, &
-         !    t2_C, forcing%Temp_C, &
-         !    evetrPrm%bioco2%theta_bioCO2, dectrPrm%bioco2%theta_bioCO2, grassPrm%bioco2%theta_bioco2, &
-         !    conductancePrm%TH, conductancePrm%TL, vsmd, forcing%xsmd, &
-         !    Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
          CALL SUEWS_cal_BiogenCO2_DTS( &
             forcing, methodPrm, conductancePrm, &
             dectime, Fc_anthro, &
@@ -3251,44 +2731,15 @@ CONTAINS
          ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
          IF (sfr_surf(BldgSurf) > 0) THEN
             PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
-            ! CALL BEERS_cal_main(iy, id, dectime, PAI, FAI, kdown, ldown, Temp_C, avrh, &
-            !                     Press_hPa, TSfc_C, lat, lng, alt, timezone, zenith_deg, azimuth, &
-            !                     alb(1), alb(2), emis(1), emis(2), &
-            !                     dataOutLineBEERS) ! output
-            ! CALL BEERS_cal_main(timer%iy, timer%id, dectime, PAI, FAI, forcing%kdown, ldown, forcing%Temp_C, forcing%RH, &
-            !                   forcing%Pres, TSfc_C, siteInfo%lat, siteInfo%lon, siteInfo%alt, siteInfo%timezone, zenith_deg, azimuth, &
-            !                     phenState%alb(1), phenState%alb(2), pavedPrm%emis, bldgPrm%emis, &
-            !                     dataOutLineBEERS) ! output
             CALL BEERS_cal_main_DTS(timer, dectime, PAI, FAI, forcing, ldown, &
                                     TSfc_C, siteInfo, zenith_deg, azimuth, &
                                     pavedPrm, bldgPrm, phenState, &
                                     dataOutLineBEERS) ! output
-            ! CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
-            ! lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
          ELSE
             dataOutLineBEERS = set_nan(dataOutLineBEERS)
          END IF
 
          !==============translation of  output variables into output array===========
-         ! CALL SUEWS_update_outputLine( &
-         !    AdditionalWater, alb, kdown, U10_ms, azimuth, & !input
-         !    chSnow_per_interval, dectime, &
-         !    drain_per_tstep, QE_LUMPS, ev_per_tstep, wu_ext, Fc, Fc_build, fcld, &
-         !    Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &
-         !    QH_LUMPS, id, imin, wu_int, it, iy, &
-         !    kup, LAI_id, ldown, l_mod, lup, mwh, &
-         !    MwStore, &
-         !    nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
-         !    qe, qf, qh, qh_resist, Qm, QmFreez, &
-         !    QmRain, qn, qn_snow, qn_snowfree, qs, RA_h, &
-         !    RS, RH2, runoffAGimpervious, runoffAGveg, &
-         !    runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
-         !    runoffWaterBody, sfr_surf, smd, smd_nsurf, SnowAlb, SnowRemoval, &
-         !    state_surf_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
-         !    tot_chang_per_tstep, tsurf, UStar, &
-         !    wu_surf, &
-         !    z0m, zdm, zenith_deg, &
-         !    datetimeLine, dataOutLineSUEWS) !output
          CALL SUEWS_update_outputLine_DTS( &
             AdditionalWater, phenState, forcing, U10_ms, azimuth, & !input
             chSnow_per_interval, dectime, &
@@ -3311,42 +2762,6 @@ CONTAINS
             z0m, zdm, zenith_deg, &
             datetimeLine, dataOutLineSUEWS) !output
 
-         ! CALL ESTMExt_update_outputLine( &
-         !    iy, id, it, imin, dectime, nlayer, & !input
-         !    tsfc_out_surf, qs_surf, &
-         !    tsfc_out_roof, &
-         !    QN_roof, &
-         !    QS_roof, &
-         !    QE_roof, &
-         !    QH_roof, &
-         !    state_roof, &
-         !    soilstore_roof, &
-         !    tsfc_out_wall, &
-         !    QN_wall, &
-         !    QS_wall, &
-         !    QE_wall, &
-         !    QH_wall, &
-         !    state_wall, &
-         !    soilstore_wall, &
-         !    datetimeLine, dataOutLineESTMExt) !output
-         ! CALL ESTMExt_update_outputLine( &
-         !    timer%iy, timer%id, timer%it, timer%imin, dectime, nlayer, & !input
-         !    heatState_out%tsfc_surf, qs_surf, &
-         !    heatState_out%tsfc_roof, &
-         !    QN_roof, &
-         !    QS_roof, &
-         !    QE_roof, &
-         !    QH_roof, &
-         !    hydroState%state_roof, &
-         !    hydroState%soilstore_roof, &
-         !    heatState_out%tsfc_wall, &
-         !    QN_wall, &
-         !    QS_wall, &
-         !    QE_wall, &
-         !    QH_wall, &
-         !    hydroState%state_wall, &
-         !    hydroState%soilstore_wall, &
-         !    datetimeLine, dataOutLineESTMExt) !output
          CALL ECH_update_outputLine_DTS( &
             timer, dectime, nlayer, & !input
             heatState_out, qs_surf, &
@@ -3362,21 +2777,6 @@ CONTAINS
             datetimeLine, dataOutLineEHC) !output
 
          ! daily state_id:
-         ! CALL update_DailyStateLine( &
-         !    it, imin, nsh_real, & !input
-         !    GDD_id, HDD_id, LAI_id, &
-         !    SDD_id, &
-         !    Tmin_id, Tmax_id, lenday_id, &
-         !    DecidCap_id, &
-         !    albDecTr_id, &
-         !    albEveTr_id, &
-         !    albGrass_id, &
-         !    porosity_id, &
-         !    WUDay_id, &
-         !    VegPhenLumps, &
-         !    SnowAlb, SnowDens, &
-         !    a1, a2, a3, &
-         !    dataOutLineDailyState) !out
          CALL update_DailyStateLine_DTS( &
             timer, phenState, anthroHeatState, &
             hydroState, &
