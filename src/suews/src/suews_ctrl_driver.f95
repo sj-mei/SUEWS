@@ -2087,7 +2087,6 @@ CONTAINS
       ! REAL(KIND(1D0)) :: FAIDecTree_use
       TYPE(ROUGHNESS_STATE) :: roughnessState
 
-
       ASSOCIATE ( &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
@@ -2255,9 +2254,9 @@ CONTAINS
                phenState_prev, &
                ! TODO: collect output into a derived type for model output
                roughnessState)
-               ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
-               ! FAI, PAI, & !output
-               ! zH, z0m, zdm, ZZD)
+            ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
+            ! FAI, PAI, & !output
+            ! zH, z0m, zdm, ZZD)
             ! print *, 'day =', timer%id, 'hour =', timer%it, 'z0m = ', z0m
 
             !=================Calculate sun position=================

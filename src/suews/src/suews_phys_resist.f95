@@ -807,11 +807,11 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(out) :: FAIDecTree_use
 
       ASSOCIATE ( &
-         surfacearea => siteInfo%surfacearea , &
-         z0m_in => siteInfo%z0m_in , &
-         zdm_in => siteInfo%zdm_in , &
-         Z => siteInfo%Z , &
-         porosity_dectr => phenState_prev%porosity_id , &
+         surfacearea => siteInfo%surfacearea, &
+         z0m_in => siteInfo%z0m_in, &
+         zdm_in => siteInfo%zdm_in, &
+         Z => siteInfo%Z, &
+         porosity_dectr => phenState_prev%porosity_id, &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
