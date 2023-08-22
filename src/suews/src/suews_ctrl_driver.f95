@@ -2334,6 +2334,7 @@ CONTAINS
                phenState_prev, phenState, phenState_next, &
                spartacusPrm, &
                spartacusLayerPrm, &
+               ! TODO: collect output into a derived type
                ldown, fcld, & !output
                QN_surf, QN_roof, QN_wall, &
                qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
@@ -2354,6 +2355,7 @@ CONTAINS
                anthroHeatState, Ts5mindata_ir, qf, qn, &
                zenith_deg, ldown, ohmState_prev, &
                phenState, &
+               ! TODO: collect output into a derived type
                qn_snow, dataOutLineESTM, qs, & !output
                ohmState_next, &
                deltaQi, a1, a2, a3, &
@@ -2374,6 +2376,7 @@ CONTAINS
                   tstep_real, nsh_real, &
                   pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                   phenState_next, &
+                  ! TODO: collect output into a derived type
                   QH_LUMPS, & !output
                   QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
 
@@ -2393,6 +2396,7 @@ CONTAINS
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                phenState_next, &
                nsh_real, &
+               ! TODO: collect output into a derived type
                drain_per_tstep, & !output
                drain_surf, frac_water2runoff, &
                AdditionalWater, runoffPipes, runoff_per_interval, &
@@ -2411,6 +2415,7 @@ CONTAINS
                dq, vsmd, &
                phenState_next, snowState_prev, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
+               ! TODO: collect output into a derived type
                g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
                UStar, TStar, L_mod, & !output
                zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
@@ -2438,6 +2443,7 @@ CONTAINS
                   snowState_prev, & ! input:
                   hydroState_prev, & ! input:
                   QN_surf, qs_surf, &
+                  ! TODO: collect output into a derived type for model output - snow related can be done later
                   SnowRemoval, & ! snow specific output
                   hydroState_next, & ! general output:
                   state_per_tstep, NWstate_per_tstep, &
@@ -2468,6 +2474,7 @@ CONTAINS
                   hydroState_prev, QN_surf, qs_surf, & ! input:
                   sfr_roof, QN_roof, qs_roof, & ! input:
                   sfr_wall, QN_wall, qs_wall, & ! input:
+                  ! TODO: collect output into a derived type for model output
                   hydroState_next, ev_surf, ev_roof, ev_wall, & ! general output:
                   state_per_tstep, NWstate_per_tstep, &
                   ev0_surf, qe0_surf, &
@@ -2490,8 +2497,10 @@ CONTAINS
                siteInfo, & !Surface area of the study area [m2]
                NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
                tstep_real, & !tstep cast as a real for use in calculations
+               ! TODO: collect inout into a derived type for model state
                hydroState_next, & ! inout:!Soil moisture of each surface type [mm]
                runoffSoil, & !Soil runoff from each soil sub-surface [mm]
+               ! TODO: collect output into a derived type for model output
                runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
                )
 
@@ -2514,6 +2523,7 @@ CONTAINS
                heatState_out, &
                forcing, &
                RA_h, &
+               ! TODO: collect output into a derived type for model output
                qh, qh_residual, qh_resist, & !output
                qh_resist_surf, qh_resist_roof, qh_resist_wall)
 
@@ -2525,15 +2535,6 @@ CONTAINS
             ! PRINT *, 'residual wall: ', qn_wall + qf - qs_wall - qe_wall - qh_wall
 
             !============ Sensible heat flux end===============
-
-            !============ calculate surface temperature ===============
-            TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, forcing%temp_c)
-
-            !============= calculate surface specific QH and Tsfc ===============
-            ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
-            tsfc0_out_surf = MIN(heatState_out%tsfc_surf, forcing%Temp_C + 50)
-            tsfc0_out_roof = MIN(heatState_out%tsfc_roof, forcing%Temp_C + 50)
-            tsfc0_out_wall = MIN(heatState_out%tsfc_wall, forcing%Temp_C + 50)
 
             QH_surf = QN_surf + qf - qs_surf - qe_surf
             QH_roof = QN_roof + qf - qs_roof - qe_roof
@@ -2557,6 +2558,12 @@ CONTAINS
             IF (flag_print_debug) PRINT *, 'qe_surf before qh_cal', qe_surf
             IF (flag_print_debug) PRINT *, 'QH_surf beofre qh_cal', qh_surf
             IF (flag_print_debug) PRINT *, 'Tair beofre qh_cal', forcing%temp_c
+
+            !============ calculate surface temperature ===============
+            TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, forcing%temp_c)
+
+            !============= calculate surface specific QH and Tsfc ===============
+
             DO i_surf = 1, nsurf
                heatState_out%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
 
@@ -2567,6 +2574,11 @@ CONTAINS
                heatState_out%tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, forcing%temp_c)
                heatState_out%tsfc_wall(i_surf) = cal_tsfc(QH_wall(i_surf), avdens, avcp, RA_h, forcing%temp_c)
             END DO
+
+            ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
+            tsfc0_out_surf = MIN(heatState_out%tsfc_surf, forcing%Temp_C + 50)
+            tsfc0_out_roof = MIN(heatState_out%tsfc_roof, forcing%Temp_C + 50)
+            tsfc0_out_wall = MIN(heatState_out%tsfc_wall, forcing%Temp_C + 50)
 
             IF (methodPrm%diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState_out%tsfc_surf
             ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
