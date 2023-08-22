@@ -1851,8 +1851,8 @@ CONTAINS
       REAL(KIND(1D0)) :: mwh !snowmelt [mm]
       REAL(KIND(1D0)) :: mwstore !overall met water [mm]
       REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
-      REAL(KIND(1D0)) :: FAI ! frontal area index [-]
-      REAL(KIND(1D0)) :: PAI ! plan area index [-]
+      ! REAL(KIND(1D0)) :: FAI ! frontal area index [-]
+      ! REAL(KIND(1D0)) :: PAI ! plan area index [-]
       REAL(KIND(1D0)) :: zL ! Stability scale [-]
       REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
       REAL(KIND(1D0)) :: qe !turbuent latent heat flux [W m-2]
@@ -1891,10 +1891,10 @@ CONTAINS
       REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
       REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
       REAL(KIND(1D0)) :: VPD_Pa !vapour pressure deficit  [Pa]
-      REAL(KIND(1D0)) :: z0m !Aerodynamic roughness length [m]
-      REAL(KIND(1D0)) :: zdm !zero-plane displacement [m]
+      ! REAL(KIND(1D0)) :: z0m !Aerodynamic roughness length [m]
+      ! REAL(KIND(1D0)) :: zdm !zero-plane displacement [m]
       REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle in degree [°]
-      REAL(KIND(1D0)) :: zH ! Mean building height [m]
+      ! REAL(KIND(1D0)) :: zH ! Mean building height [m]
 
       REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf !external water use of each surface type [mm]
@@ -1931,7 +1931,7 @@ CONTAINS
       REAL(KIND(1D0)) :: VegPhenLumps
       REAL(KIND(1D0)) :: VPd_hpa ! vapour pressure deficit [hPa]
       REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
-      REAL(KIND(1D0)) :: ZZD !Active measurement height[m]
+      ! REAL(KIND(1D0)) :: ZZD !Active measurement height[m]
 
       REAL(KIND(1D0)), DIMENSION(NSURF) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
@@ -2082,11 +2082,22 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
 
       ! calculated values of FAI
-      REAL(KIND(1D0)) :: FAIBldg_use
-      REAL(KIND(1D0)) :: FAIEveTree_use
-      REAL(KIND(1D0)) :: FAIDecTree_use
+      ! REAL(KIND(1D0)) :: FAIBldg_use
+      ! REAL(KIND(1D0)) :: FAIEveTree_use
+      ! REAL(KIND(1D0)) :: FAIDecTree_use
+      TYPE(ROUGHNESS_STATE) :: roughnessState
+
 
       ASSOCIATE ( &
+         FAI => roughnessState%FAI, &
+         PAI => roughnessState%PAI, &
+         Zh => roughnessState%Zh, &
+         z0m => roughnessState%z0m, &
+         zdm => roughnessState%zdm, &
+         ZZD => roughnessState%ZZD, &
+         FAIBldg_use => roughnessState%FAIBldg_use, &
+         FAIEveTree_use => roughnessState%FAIEveTree_use, &
+         FAIDecTree_use => roughnessState%FAIDecTree_use, &
          Ts5mindata_ir => forcing%Ts5mindata_ir, &
          sfr_surf => siteInfo%sfr_surf &
          &)
@@ -2242,9 +2253,11 @@ CONTAINS
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
                siteInfo, &
                phenState_prev, &
-               FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
-               FAI, PAI, & !output
-               zH, z0m, zdm, ZZD)
+               ! TODO: collect output into a derived type for model output
+               roughnessState)
+               ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
+               ! FAI, PAI, & !output
+               ! zH, z0m, zdm, ZZD)
             ! print *, 'day =', timer%id, 'hour =', timer%it, 'z0m = ', z0m
 
             !=================Calculate sun position=================
@@ -2662,6 +2675,7 @@ CONTAINS
             RA_h, &
             avcp, lv_J_kg, avdens, &
             forcing, siteInfo, qh, qe, & ! input
+            ! TODO: collect output into a derived type for model output
             T2_C, q2_gkg, U10_ms, RH2, & !output
             dataoutLineRSL) ! output
 
@@ -2673,6 +2687,7 @@ CONTAINS
             pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
             t2_C, snowState, &
             vsmd, &
+            ! TODO: collect output into a derived type for model output
             Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
          ! calculations of diagnostics end
