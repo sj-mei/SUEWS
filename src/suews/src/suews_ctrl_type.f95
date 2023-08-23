@@ -285,7 +285,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE EHC_PRM
 
    TYPE, PUBLIC :: LC_PAVED_PRM
-   ! land cover specific parameters for paved surfaces
+      ! land cover specific parameters for paved surfaces
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
@@ -298,7 +298,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_PAVED_PRM
 
    TYPE, PUBLIC :: LC_BLDG_PRM
-   ! land cover specific parameters for buildings
+      ! land cover specific parameters for buildings
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: faibldg
       REAL(KIND(1D0)) :: bldgh
@@ -313,7 +313,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_BLDG_PRM
 
    TYPE, PUBLIC :: LC_DECTR_PRM
-   ! land cover specific parameters for deciduous trees
+      ! land cover specific parameters for deciduous trees
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       REAL(KIND(1D0)) :: faidectree
@@ -337,7 +337,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_DECTR_PRM
 
    TYPE, PUBLIC :: LC_EVETR_PRM
-   ! land cover specific parameters for evergreen trees
+      ! land cover specific parameters for evergreen trees
       REAL(KIND(1D0)) :: sfr !surface cover fraction[-]
       REAL(KIND(1D0)) :: emis !Effective surface emissivity[-]
       REAL(KIND(1D0)) :: faievetree !frontal area index for evergreen tree [-]
@@ -357,7 +357,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_EVETR_PRM
 
    TYPE, PUBLIC :: LC_GRASS_PRM
-   ! land cover specific parameters for grass
+      ! land cover specific parameters for grass
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       REAL(KIND(1D0)) :: alb_min
@@ -375,7 +375,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_GRASS_PRM
 
    TYPE, PUBLIC :: LC_BSOIL_PRM
-   ! land cover specific parameters for bare soil
+      ! land cover specific parameters for bare soil
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
@@ -387,7 +387,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_BSOIL_PRM
 
    TYPE, PUBLIC :: LC_WATER_PRM
-   ! land cover specific parameters for water surface
+      ! land cover specific parameters for water surface
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
@@ -435,7 +435,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowpack ! snow water equivalent on each land cover [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowwater ! snow water[mm]
    END TYPE SNOW_STATE
-
 
    TYPE, PUBLIC :: HYDRO_STATE
       ! REAL(KIND(1D0)) :: runofftowater   ! Fraction of above-ground runoff flowing to water surface during flooding
@@ -522,7 +521,6 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: DLS !daylight saving time offset [h]
 
    END TYPE SUEWS_TIMER
-
 
 CONTAINS
    SUBROUTINE allocate_hydro_state(self, nlayer)

@@ -2092,9 +2092,8 @@ CONTAINS
          nsh_real => timer%nsh_real, &
          tstep_real => timer%tstep_real, &
          dectime => timer%dectime, &
-         dayofWeek_id =>timer%dayofWeek_id, &
+         dayofWeek_id => timer%dayofWeek_id, &
          dls => timer%dls, &
-
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
@@ -2106,7 +2105,7 @@ CONTAINS
          FAIDecTree_use => roughnessState%FAIDecTree_use, &
          Ts5mindata_ir => forcing%Ts5mindata_ir, &
          sfr_surf => siteInfo%sfr_surf &
-         &)
+         )
 
          ! WRITE (*, *) "hydroState%state_roof", hydroState%state_roof
          ! WRITE (*, *) "hydroState%soilstore_roof", hydroState%soilstore_roof
@@ -12851,15 +12850,14 @@ CONTAINS
             timer%nsh, timer%nsh_real, timer%tstep_real) ! output
 
          ! calculate dayofweek information
-            CALL SUEWS_cal_weekday_DTS( &
-               timer, siteInfo, & !input
-               timer%dayofWeek_id) !output
+         CALL SUEWS_cal_weekday_DTS( &
+            timer, siteInfo, & !input
+            timer%dayofWeek_id) !output
 
-               ! calculate dayofweek information
-            CALL SUEWS_cal_DLS_DTS( &
-               timer, ahemisPrm, & !input
-               timer%DLS) !output
-
+         ! calculate dayofweek information
+         CALL SUEWS_cal_DLS_DTS( &
+            timer, ahemisPrm, & !input
+            timer%DLS) !output
 
          forcing%qn1_obs = MetForcingBlock(ir, 5) !Real values (kind(1d0))
          forcing%qs_obs = MetForcingBlock(ir, 8)
