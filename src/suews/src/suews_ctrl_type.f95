@@ -512,9 +512,9 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: dt_since_start !
 
       ! values that are derived from tstep
-      ! INTEGER :: nsh ! number of timesteps per hour
-      ! REAL(KIND(1D0)) :: nsh_real ! nsh in type real [-]
-      ! REAL(KIND(1D0)) :: tstep_real ! tstep in type real
+      INTEGER :: nsh ! number of timesteps per hour
+      REAL(KIND(1D0)) :: nsh_real ! nsh in type real [-]
+      REAL(KIND(1D0)) :: tstep_real ! tstep in type real
       REAL(KIND(1D0)) :: dectime !decimal time [-]
 
    END TYPE SUEWS_TIMER

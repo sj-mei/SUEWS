@@ -1950,10 +1950,10 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: frac_water2runoff = 0
 
       ! values that are derived from tstep
-      INTEGER :: nsh ! number of timesteps per hour
-      REAL(KIND(1D0)) :: nsh_real ! nsh in type real [-]
-      REAL(KIND(1D0)) :: tstep_real ! tstep in type real
-      REAL(KIND(1D0)) :: dectime !decimal time [-]
+      ! INTEGER :: nsh ! number of timesteps per hour
+      ! REAL(KIND(1D0)) :: nsh_real ! nsh in type real [-]
+      ! REAL(KIND(1D0)) :: tstep_real ! tstep in type real
+      ! REAL(KIND(1D0)) :: dectime !decimal time [-]
 
       ! values that are derived from sfr_surf (surface fractions)
       REAL(KIND(1D0)) :: VegFraction ! fraction of vegetation [-]
@@ -2088,9 +2088,9 @@ CONTAINS
       TYPE(ROUGHNESS_STATE) :: roughnessState
 
       ASSOCIATE ( &
-         ! nsh => timer%nsh, &
-         ! nsh_real => timer%nsh_real, &
-         ! tstep_real => timer%tstep_real, &
+         nsh => timer%nsh, &
+         nsh_real => timer%nsh_real, &
+         tstep_real => timer%tstep_real, &
          dectime => timer%dectime, &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
@@ -2218,10 +2218,10 @@ CONTAINS
             !    timer, & ! input
             !    dectime) ! output
 
-            ! calculate tstep related VARIABLES
-            CALL SUEWS_cal_tstep_DTS( &
-               timer, & ! input
-               nsh, nsh_real, tstep_real) ! output
+            ! ! calculate tstep related VARIABLES
+            ! CALL SUEWS_cal_tstep_DTS( &
+            !    timer, & ! input
+            !    nsh, nsh_real, tstep_real) ! output
 
             ! calculate surface fraction related VARIABLES
             CALL SUEWS_cal_surf_DTS( &
@@ -4719,6 +4719,7 @@ CONTAINS
          QS_wall = qs
 
          ! use AnOHM to calculate QS, TS 14 Mar 2016
+         ! AnOHM is deactivated for now and will be separated from SUEWS into a standalone research module, TS 14 May 2023
       ELSEIF (StorageHeatMethod == 3) THEN
          IF (Diagnose == 1) WRITE (*, *) 'Calling AnOHM...'
          ! CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
@@ -12803,6 +12804,10 @@ CONTAINS
          CALL SUEWS_cal_dectime_DTS( &
             timer, & ! input
             timer%dectime) ! output
+         ! calculate tstep related VARIABLES
+         CALL SUEWS_cal_tstep_DTS( &
+            timer, & ! input
+            timer%nsh, timer%nsh_real, timer%tstep_real) ! output
 
          forcing%qn1_obs = MetForcingBlock(ir, 5) !Real values (kind(1d0))
          forcing%qs_obs = MetForcingBlock(ir, 8)
