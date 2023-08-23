@@ -1747,7 +1747,6 @@ CONTAINS
 
       ! input variables
 
-
       ! ####################################################################################
       !  declaration for DTS variables
       TYPE(SITE_PRM), INTENT(IN) :: siteInfo
@@ -1967,8 +1966,8 @@ CONTAINS
       TYPE(HYDRO_STATE) :: hydroState_prev, hydroState_next
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf ! evapotranspiration from PM of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: ev_roof ! evapotranspiration of each roof layer [mm]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_roof ! evapotranspiration of each roof layer [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
 
       ! phenology related:
       TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
@@ -1991,8 +1990,8 @@ CONTAINS
       !
       ! input arrays: standard suews surfaces
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: sfr_roof !roof surface fraction [-]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: sfr_wall !wall surface fraction [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_roof !roof surface fraction [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_wall !wall surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_roof !surface temperature of roof[degC]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_wall !surface temperature of wall[degC]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
@@ -2001,29 +2000,29 @@ CONTAINS
 
       ! roof facets
       ! aggregated heat storage of all roof facets
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QS_roof ! heat storage flux for roof component [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_roof ! heat storage flux for roof component [W m-2]
       !interface temperature between depth layers
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_roof !interface temperature between depth layers [degC]
 
       ! energy fluxes of individual surfaces
       ! REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QG_roof ! heat flux used in ESTM_ehc as forcing of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QN_roof ! net all-wave radiation of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qe_roof ! latent heat flux of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qh_roof ! sensible heat flux of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qh_resist_roof ! resist-based sensible heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_roof ! net all-wave radiation of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_roof ! latent heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_roof ! sensible heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_roof ! resist-based sensible heat flux of roof surface [W m-2]
 
       ! wall facets
       ! aggregated heat storage of all wall facets
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QS_wall ! heat storage flux for wall component [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_wall ! heat storage flux for wall component [W m-2]
       !interface temperature between depth layers
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_wall !interface temperature between depth layers [degC]
 
       ! energy fluxes of individual surfaces
       ! REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QG_wall ! heat flux used in ESTM_ehc as forcing of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QN_wall ! net all-wave radiation of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qe_wall ! latent heat flux of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qh_wall ! sensible heat flux of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qh_resist_wall ! resistance based sensible heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_wall ! net all-wave radiation of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_wall ! latent heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_wall ! sensible heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_wall ! resistance based sensible heat flux of wall surface [W m-2]
 
       ! standard suews surfaces
       !interface temperature between depth layers
@@ -2098,21 +2097,20 @@ CONTAINS
          ! WRITE (*, *) "hydroState%soilstore_roof", hydroState%soilstore_roof
          ! WRITE (*, *) "hydroState%state_wall", hydroState%state_wall
          ! WRITE (*, *) "hydroState%soilstore_wall", hydroState%soilstore_wall
-         ALLOCATE(sfr_roof(nlayer))
-         ALLOCATE(sfr_wall(nlayer))
-         ALLOCATE(QS_roof(nlayer))
-         ALLOCATE(QS_wall(nlayer))
-         ALLOCATE(QN_roof(nlayer))
-         ALLOCATE(QN_wall(nlayer))
-         ALLOCATE(qe_roof(nlayer))
-         ALLOCATE(qe_wall(nlayer))
-         ALLOCATE(qh_roof(nlayer))
-         ALLOCATE(qh_wall(nlayer))
-         ALLOCATE(qh_resist_roof(nlayer))
-         ALLOCATE(qh_resist_wall(nlayer))
-         ALLOCATE(ev_roof(nlayer))
-         ALLOCATE(ev_wall(nlayer))
-
+         ALLOCATE (sfr_roof(nlayer))
+         ALLOCATE (sfr_wall(nlayer))
+         ALLOCATE (QS_roof(nlayer))
+         ALLOCATE (QS_wall(nlayer))
+         ALLOCATE (QN_roof(nlayer))
+         ALLOCATE (QN_wall(nlayer))
+         ALLOCATE (qe_roof(nlayer))
+         ALLOCATE (qe_wall(nlayer))
+         ALLOCATE (qh_roof(nlayer))
+         ALLOCATE (qh_wall(nlayer))
+         ALLOCATE (qh_resist_roof(nlayer))
+         ALLOCATE (qh_resist_wall(nlayer))
+         ALLOCATE (ev_roof(nlayer))
+         ALLOCATE (ev_wall(nlayer))
 
          ! ############# memory allocation for DTS variables (start) #############
          CALL hydroState_prev%ALLOCATE(nlayer)

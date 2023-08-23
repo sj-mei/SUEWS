@@ -593,7 +593,6 @@ CONTAINS
       !
    END SUBROUTINE deallocHeatState_c
 
-
    SUBROUTINE allocate_ehc_prm_c(self, nlayer, ndepth)
       CLASS(EHC_PRM), INTENT(INOUT) :: self
       INTEGER, INTENT(IN) :: nlayer, ndepth
