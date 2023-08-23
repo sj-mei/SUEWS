@@ -523,102 +523,45 @@ MODULE SUEWS_DEF_DTS
    END TYPE SUEWS_TIMER
 
 CONTAINS
-   SUBROUTINE allocate_hydro_state(self, nlayer)
-      IMPLICIT NONE
-      TYPE(HYDRO_STATE), INTENT(inout) :: self
-      INTEGER, INTENT(in) :: nlayer
-      !
-      IF (ALLOCATED(self%soilstore_roof)) THEN
-         DEALLOCATE (self%soilstore_roof)
-      END IF
-
-      IF (ALLOCATED(self%state_roof)) THEN
-         DEALLOCATE (self%state_roof)
-      END IF
-
-      IF (ALLOCATED(self%soilstore_wall)) THEN
-         DEALLOCATE (self%soilstore_wall)
-      END IF
-
-      IF (ALLOCATED(self%state_wall)) THEN
-         DEALLOCATE (self%state_wall)
-      END IF
-
-      ALLOCATE (self%soilstore_roof(nlayer))
-      ALLOCATE (self%state_roof(nlayer))
-      ALLOCATE (self%soilstore_wall(nlayer))
-      ALLOCATE (self%state_wall(nlayer))
-      !
-   END SUBROUTINE allocate_hydro_state
 
    SUBROUTINE allocHydroState_c(self, nlayer)
       IMPLICIT NONE
       CLASS(HYDRO_STATE), INTENT(inout) :: self
       INTEGER, INTENT(in) :: nlayer
       !
-      CALL allocate_hydro_state(self, nlayer)
+      ! CALL allocate_hydro_state(self, nlayer)
+      CALL self%DEALLOCATE()
+      ALLOCATE (self%soilstore_roof(nlayer))
+      ALLOCATE (self%state_roof(nlayer))
+      ALLOCATE (self%soilstore_wall(nlayer))
+      ALLOCATE (self%state_wall(nlayer))
       !
    END SUBROUTINE allocHydroState_c
-
-   SUBROUTINE dealloc_hydro_state(self)
-      IMPLICIT NONE
-      TYPE(HYDRO_STATE), INTENT(inout) :: self
-      !
-      IF (ALLOCATED(self%soilstore_roof)) THEN
-         DEALLOCATE (self%soilstore_roof)
-      END IF
-
-      IF (ALLOCATED(self%state_roof)) THEN
-         DEALLOCATE (self%state_roof)
-      END IF
-
-      IF (ALLOCATED(self%soilstore_wall)) THEN
-         DEALLOCATE (self%soilstore_wall)
-      END IF
-
-      IF (ALLOCATED(self%state_wall)) THEN
-         DEALLOCATE (self%state_wall)
-      END IF
-      !
-   END SUBROUTINE dealloc_hydro_state
 
    SUBROUTINE deallocHydroState_c(self)
       IMPLICIT NONE
       CLASS(HYDRO_STATE), INTENT(inout) :: self
       !
-      CALL dealloc_hydro_state(self)
+      ! CALL dealloc_hydro_state(self)
+      IF (ALLOCATED(self%soilstore_roof)) DEALLOCATE (self%soilstore_roof)
+
+      IF (ALLOCATED(self%state_roof)) DEALLOCATE (self%state_roof)
+
+      IF (ALLOCATED(self%soilstore_wall)) DEALLOCATE (self%soilstore_wall)
+
+      IF (ALLOCATED(self%state_wall)) DEALLOCATE (self%state_wall)
       !
    END SUBROUTINE deallocHydroState_c
 
-   SUBROUTINE allocate_heat_state(self, num_surf, num_layer, num_depth)
+   SUBROUTINE allocHeatState_c(self, num_surf, num_layer, num_depth)
       IMPLICIT NONE
-      TYPE(HEAT_STATE), INTENT(inout) :: self
+      CLASS(HEAT_STATE), INTENT(inout) :: self
       INTEGER, INTENT(in) :: num_surf, num_layer, num_depth
+
       !
-      IF (ALLOCATED(self%temp_roof)) THEN
-         DEALLOCATE (self%temp_roof)
-      END IF
+      ! CALL allocate_heat_state(self, num_surf, num_layer, num_depth)
 
-      IF (ALLOCATED(self%temp_wall)) THEN
-         DEALLOCATE (self%temp_wall)
-      END IF
-
-      IF (ALLOCATED(self%tsfc_roof)) THEN
-         DEALLOCATE (self%tsfc_roof)
-      END IF
-
-      IF (ALLOCATED(self%tsfc_wall)) THEN
-         DEALLOCATE (self%tsfc_wall)
-      END IF
-
-      IF (ALLOCATED(self%tsfc_surf)) THEN
-         DEALLOCATE (self%tsfc_surf)
-      END IF
-
-      IF (ALLOCATED(self%temp_surf)) THEN
-         DEALLOCATE (self%temp_surf)
-      END IF
-
+      CALL self%DEALLOCATE()
       ALLOCATE (self%temp_roof(num_layer, num_depth))
       ALLOCATE (self%temp_wall(num_layer, num_depth))
       ALLOCATE (self%tsfc_roof(num_layer))
@@ -626,62 +569,34 @@ CONTAINS
       ALLOCATE (self%tsfc_surf(num_surf))
       ALLOCATE (self%temp_surf(num_surf, num_depth))
       !
-   END SUBROUTINE allocate_heat_state
-
-   SUBROUTINE allocHeatState_c(self, num_surf, num_layer, num_depth)
-      IMPLICIT NONE
-      CLASS(HEAT_STATE), INTENT(inout) :: self
-      INTEGER, INTENT(in) :: num_surf, num_layer, num_depth
-      !
-      CALL allocate_heat_state(self, num_surf, num_layer, num_depth)
-      !
    END SUBROUTINE allocHeatState_c
 
    SUBROUTINE deallocHeatState_c(self)
       IMPLICIT NONE
       CLASS(HEAT_STATE), INTENT(inout) :: self
       !
-      CALL dealloc_heat_state(self)
+      ! CALL dealloc_heat_state(self)
+      IF (ALLOCATED(self%temp_roof)) DEALLOCATE (self%temp_roof)
+
+      IF (ALLOCATED(self%temp_wall)) DEALLOCATE (self%temp_wall)
+
+      IF (ALLOCATED(self%tsfc_roof)) DEALLOCATE (self%tsfc_roof)
+
+      IF (ALLOCATED(self%tsfc_wall)) DEALLOCATE (self%tsfc_wall)
+
+      IF (ALLOCATED(self%tsfc_surf)) DEALLOCATE (self%tsfc_surf)
+
+      IF (ALLOCATED(self%temp_surf)) DEALLOCATE (self%temp_surf)
       !
    END SUBROUTINE deallocHeatState_c
 
-   SUBROUTINE dealloc_heat_state(self)
-      IMPLICIT NONE
-      TYPE(HEAT_STATE), INTENT(inout) :: self
-      !
-      IF (ALLOCATED(self%temp_roof)) THEN
-         DEALLOCATE (self%temp_roof)
-      END IF
 
-      IF (ALLOCATED(self%temp_wall)) THEN
-         DEALLOCATE (self%temp_wall)
-      END IF
+   SUBROUTINE allocate_ehc_prm_c(self, nlayer, ndepth)
+      CLASS(EHC_PRM), INTENT(INOUT) :: self
+      INTEGER, INTENT(IN) :: nlayer, ndepth
 
-      IF (ALLOCATED(self%tsfc_roof)) THEN
-         DEALLOCATE (self%tsfc_roof)
-      END IF
-
-      IF (ALLOCATED(self%tsfc_wall)) THEN
-         DEALLOCATE (self%tsfc_wall)
-      END IF
-
-      IF (ALLOCATED(self%tsfc_surf)) THEN
-         DEALLOCATE (self%tsfc_surf)
-      END IF
-
-      IF (ALLOCATED(self%temp_surf)) THEN
-         DEALLOCATE (self%temp_surf)
-      END IF
-      !
-   END SUBROUTINE dealloc_heat_state
-
-   SUBROUTINE allocate_ehc_prm(self, nlayer, ndepth)
-      TYPE(EHC_PRM), INTENT(INOUT) :: self
-      INTEGER, INTENT(IN) :: nlayer
-      INTEGER, INTENT(IN) :: ndepth
-
-      CALL deallocate_ehc_prm(self)
-
+      ! CALL allocate_ehc_prm(self, nlayer, ndepth)
+      CALL self%DEALLOCATE()
       ALLOCATE (self%soil_storecap_roof(nlayer))
       ALLOCATE (self%soil_storecap_wall(nlayer))
       ALLOCATE (self%state_limit_roof(nlayer))
@@ -701,11 +616,12 @@ CONTAINS
       ALLOCATE (self%dz_wall(nlayer, ndepth))
       ALLOCATE (self%dz_surf(nlayer, ndepth))
 
-   END SUBROUTINE allocate_ehc_prm
+   END SUBROUTINE allocate_ehc_prm_c
 
-   SUBROUTINE deallocate_ehc_prm(self)
-      TYPE(EHC_PRM), INTENT(INOUT) :: self
+   SUBROUTINE deallocate_ehc_prm_c(self)
+      CLASS(EHC_PRM), INTENT(INOUT) :: self
 
+      ! CALL deallocate_ehc_prm(self)
       IF (ALLOCATED(self%soil_storecap_roof)) DEALLOCATE (self%soil_storecap_roof)
       IF (ALLOCATED(self%soil_storecap_wall)) DEALLOCATE (self%soil_storecap_wall)
       IF (ALLOCATED(self%state_limit_roof)) DEALLOCATE (self%state_limit_roof)
@@ -724,21 +640,6 @@ CONTAINS
       IF (ALLOCATED(self%dz_roof)) DEALLOCATE (self%dz_roof)
       IF (ALLOCATED(self%dz_wall)) DEALLOCATE (self%dz_wall)
       IF (ALLOCATED(self%dz_surf)) DEALLOCATE (self%dz_surf)
-
-   END SUBROUTINE deallocate_ehc_prm
-
-   SUBROUTINE allocate_ehc_prm_c(self, nlayer, ndepth)
-      CLASS(EHC_PRM), INTENT(INOUT) :: self
-      INTEGER, INTENT(IN) :: nlayer, ndepth
-
-      CALL allocate_ehc_prm(self, nlayer, ndepth)
-
-   END SUBROUTINE allocate_ehc_prm_c
-
-   SUBROUTINE deallocate_ehc_prm_c(self)
-      CLASS(EHC_PRM), INTENT(INOUT) :: self
-
-      CALL deallocate_ehc_prm(self)
 
    END SUBROUTINE deallocate_ehc_prm_c
 
