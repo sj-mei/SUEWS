@@ -251,6 +251,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: CO2PointSource ! CO2 emission factor [kg km-1]
       REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]
+
+      INTEGER :: nlayer ! number of vertical layers in urban canyon [-]
+
    END TYPE SITE_PRM
 
    TYPE, PUBLIC :: LUMPS_PRM
