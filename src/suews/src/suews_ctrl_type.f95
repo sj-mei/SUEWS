@@ -519,6 +519,8 @@ MODULE SUEWS_DEF_DTS
 
       INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
 
+      INTEGER :: DLS !daylight saving time offset [h]
+
    END TYPE SUEWS_TIMER
 
 

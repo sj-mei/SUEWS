@@ -1914,7 +1914,7 @@ CONTAINS
 
       ! INTEGER, DIMENSION(NSURF) :: snowCalcSwitch
       ! INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
-      INTEGER :: DLS
+      ! INTEGER :: DLS !daylight saving time offset [h]
 
       REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
       REAL(KIND(1D0)) :: lvS_J_kg !latent heat of sublimation [J kg-1]
@@ -2093,6 +2093,7 @@ CONTAINS
          tstep_real => timer%tstep_real, &
          dectime => timer%dectime, &
          dayofWeek_id =>timer%dayofWeek_id, &
+         dls => timer%dls, &
 
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
@@ -2239,10 +2240,10 @@ CONTAINS
             !    timer, siteInfo, & !input
             !    dayofWeek_id) !output
 
-            ! calculate dayofweek information
-            CALL SUEWS_cal_DLS_DTS( &
-               timer, ahemisPrm, & !input
-               DLS) !output
+            ! ! calculate dayofweek information
+            ! CALL SUEWS_cal_DLS_DTS( &
+            !    timer, ahemisPrm, & !input
+            !    DLS) !output
 
             ! calculate mean air temperature of past 24 hours
             ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
@@ -12852,6 +12853,11 @@ CONTAINS
             CALL SUEWS_cal_weekday_DTS( &
                timer, siteInfo, & !input
                timer%dayofWeek_id) !output
+
+               ! calculate dayofweek information
+            CALL SUEWS_cal_DLS_DTS( &
+               timer, ahemisPrm, & !input
+               timer%DLS) !output
 
 
          forcing%qn1_obs = MetForcingBlock(ir, 5) !Real values (kind(1d0))
