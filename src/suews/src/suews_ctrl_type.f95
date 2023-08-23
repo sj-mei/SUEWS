@@ -517,6 +517,8 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: tstep_real ! tstep in type real
       REAL(KIND(1D0)) :: dectime !decimal time [-]
 
+      INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
+
    END TYPE SUEWS_TIMER
 
 

@@ -1913,7 +1913,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_snow !snowpack surface temperature [C]
 
       ! INTEGER, DIMENSION(NSURF) :: snowCalcSwitch
-      INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
+      ! INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
       INTEGER :: DLS
 
       REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
@@ -2092,6 +2092,8 @@ CONTAINS
          nsh_real => timer%nsh_real, &
          tstep_real => timer%tstep_real, &
          dectime => timer%dectime, &
+         dayofWeek_id =>timer%dayofWeek_id, &
+
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
@@ -2232,10 +2234,10 @@ CONTAINS
                VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
                sfr_roof, sfr_wall) ! output
 
-            ! calculate dayofweek information
-            CALL SUEWS_cal_weekday_DTS( &
-               timer, siteInfo, & !input
-               dayofWeek_id) !output
+            ! ! calculate dayofweek information
+            ! CALL SUEWS_cal_weekday_DTS( &
+            !    timer, siteInfo, & !input
+            !    dayofWeek_id) !output
 
             ! calculate dayofweek information
             CALL SUEWS_cal_DLS_DTS( &
@@ -12175,7 +12177,7 @@ CONTAINS
       siteInfo%CO2PointSource = CO2PointSource
       siteInfo%flowchange = FlowChange
       siteInfo%sfr_surf = sfr_surf
-      siteInfo%nlayer = nlayer
+      ! siteInfo%nlayer = nlayer
 
       ! forcing%kdown = kdown
       ! forcing%ldown = ldown_obs
@@ -12845,6 +12847,12 @@ CONTAINS
          CALL SUEWS_cal_tstep_DTS( &
             timer, & ! input
             timer%nsh, timer%nsh_real, timer%tstep_real) ! output
+
+         ! calculate dayofweek information
+            CALL SUEWS_cal_weekday_DTS( &
+               timer, siteInfo, & !input
+               timer%dayofWeek_id) !output
+
 
          forcing%qn1_obs = MetForcingBlock(ir, 5) !Real values (kind(1d0))
          forcing%qs_obs = MetForcingBlock(ir, 8)
