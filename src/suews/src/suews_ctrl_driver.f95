@@ -1743,23 +1743,10 @@ CONTAINS
       anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
       output_line_suews) ! output
 
-      ! nlayer, &
-      ! Ts5mindata_ir,  ! for coupling with external models
-      ! output_line_suews
-
-      ! ---output related variables
-      ! datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
-      ! dataOutLineBEERS, & !output
-      ! dataOutLineDebug, dataOutLineSPARTACUS, &
-      ! dataOutLineESTMExt, &
-      ! dataOutLineDailyState) !output
-
       IMPLICIT NONE
 
       ! input variables
-      ! REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: Ts5mindata_ir !surface temperature input data[degC]
 
-      ! INTEGER, INTENT(IN) :: nlayer ! number of vertical layers in urban canyon [-]
 
       ! ####################################################################################
       !  declaration for DTS variables
