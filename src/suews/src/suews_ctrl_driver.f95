@@ -2307,12 +2307,13 @@ CONTAINS
             ! WIP: the wrapper subroutines for different physical processes have the same structure to allow easy implementation of new functionalities
             ! the structure is as follows:
             ! --------------------------------------------------------------------------------
-            ! SUEWS_cal_<module_name>_DTS( &
+            ! SUEWS_cal_<module_name>_DTS( & ! `DTS` stands for `derived type structure`
             !    timer, & ! time related variables <input>
             !    forcing & ! meteorological forcing variables <input>
             !    siteInfo, & ! site information <input>
-            !    methodPrm & ! configuation methods of model behaviours <input>
-            !    modState, & ! model states that are being changed through iterations within one timestep / across timesteps <inout>
+            !    methodPrm, & ! configuation methods of model behaviours <input>
+            !    modState_in_<module_name>, & ! model states as input to the module <input>
+            !    modState_out_<module_name>, & ! model states as output updated by the module <output>
             !    res_<module_name> & ! model outputs <output>
             ! &)
             ! --------------------------------------------------------------------------------
