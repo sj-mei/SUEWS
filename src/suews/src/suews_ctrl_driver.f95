@@ -2246,8 +2246,6 @@ CONTAINS
             ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
             Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
 
-            !==============main calculation start=======================
-
             !==============surface roughness calculation=======================
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
             IF (methodPrm%Diagnose == 1) PRINT *, 'z0m_in =', siteInfo%z0m_in
@@ -2271,6 +2269,51 @@ CONTAINS
                siteInfo, &
                azimuth, zenith_deg) !output:
 
+            !=================Calculation of density and other water related parameters=================
+            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
+            CALL cal_AtmMoist( &
+               forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
+               lv_J_kg, lvS_J_kg, & ! output:
+               es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
+            !==============main calculation start=======================
+
+            ! WIP notes: TS 23 Aug 2023
+            ! the following part is the main calculation part of SUEWS
+            ! the calculation is divided into several modules relating to major physical processes
+            ! the modules are called in the following order:
+            ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ! part A: modules that are called multiple times per timestep to achieve convergence
+            ! A1. SUEWS_cal_DailyState_DTS: update phenology and land cover states at a daily scale - which may occur either at the beginning or end of a day
+            ! A2. SUEWS_cal_WaterUse_DTS: calculate water use
+            ! A3. SUEWS_cal_AnthropogenicEmission_DTS: calculate anthropogenic heat and CO2 fluxes
+            ! A4. SUEWS_cal_Qn_DTS: calculate net all-wave radiation
+            ! A5. SUEWS_cal_Qs_DTS: calculate storage heat flux
+            ! A6. SUEWS_cal_Water_DTS: calculate surface water balance
+            ! A7. SUEWS_cal_Resistance_DTS: calculate various resistances
+            ! A8.1 (optional) SUEWS_cal_snow_DTS: calculate snow-related energy balance if snowuse == 1
+            ! A8.2 (optional) SUEWS_cal_QE_DTS: calculate non-snow-related energy balance if snowuse == 0
+            ! A9. SUEWS_cal_HorizontalSoilWater_DTS: calculate redistribution of soil water between land covers within a grid cell
+            ! A10. SUEWS_cal_SoilState_DTS: calculate stored soil water
+            ! A11. SUEWS_cal_QH_DTS: calculate sensible heat flux
+            ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ! part B: modules that are called once per timestep due to computational inefficiency
+            ! B1. RSLProfile_DTS: calculate RSL profiles of wind speed, temperature and humidity
+            ! B2. SUEWS_cal_BiogenCO2_DTS: calculate CO2 fluxes from biogenic sources
+            ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+            ! WIP: the wrapper subroutines for different physical processes have the same structure to allow easy implementation of new functionalities
+            ! the structure is as follows:
+            ! --------------------------------------------------------------------------------
+            ! SUEWS_cal_<module_name>_DTS( &
+            !    timer, & ! time related variables <input>
+            !    forcing & ! meteorological forcing variables <input>
+            !    siteInfo, & ! site information <input>
+            !    methodPrm & ! configuation methods of model behaviours <input>
+            !    modState, & ! model states that are being changed through iterations within one timestep / across timesteps <inout>
+            !    res_<module_name> & ! model outputs <output>
+            ! &)
+            ! --------------------------------------------------------------------------------
+
             !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
          !!! Do we need to separate the phenology parameters from the land cover parameters?
@@ -2291,13 +2334,6 @@ CONTAINS
                anthroHeatState_next, & !output
                phenState_next, &
                hydroState_next) !output
-
-            !=================Calculation of density and other water related parameters=================
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-            CALL cal_AtmMoist( &
-               forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
-               lv_J_kg, lvS_J_kg, & ! output:
-               es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
 
             !======== Calculate soil moisture =========
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
@@ -12139,6 +12175,7 @@ CONTAINS
       siteInfo%CO2PointSource = CO2PointSource
       siteInfo%flowchange = FlowChange
       siteInfo%sfr_surf = sfr_surf
+      siteInfo%nlayer = nlayer
 
       ! forcing%kdown = kdown
       ! forcing%ldown = ldown_obs
