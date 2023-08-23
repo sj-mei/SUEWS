@@ -285,6 +285,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE EHC_PRM
 
    TYPE, PUBLIC :: LC_PAVED_PRM
+   ! land cover specific parameters for paved surfaces
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
@@ -297,6 +298,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_PAVED_PRM
 
    TYPE, PUBLIC :: LC_BLDG_PRM
+   ! land cover specific parameters for buildings
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: faibldg
       REAL(KIND(1D0)) :: bldgh
@@ -311,6 +313,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_BLDG_PRM
 
    TYPE, PUBLIC :: LC_DECTR_PRM
+   ! land cover specific parameters for deciduous trees
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       REAL(KIND(1D0)) :: faidectree
@@ -334,6 +337,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_DECTR_PRM
 
    TYPE, PUBLIC :: LC_EVETR_PRM
+   ! land cover specific parameters for evergreen trees
       REAL(KIND(1D0)) :: sfr !surface cover fraction[-]
       REAL(KIND(1D0)) :: emis !Effective surface emissivity[-]
       REAL(KIND(1D0)) :: faievetree !frontal area index for evergreen tree [-]
@@ -353,6 +357,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_EVETR_PRM
 
    TYPE, PUBLIC :: LC_GRASS_PRM
+   ! land cover specific parameters for grass
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       REAL(KIND(1D0)) :: alb_min
@@ -370,6 +375,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_GRASS_PRM
 
    TYPE, PUBLIC :: LC_BSOIL_PRM
+   ! land cover specific parameters for bare soil
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
@@ -381,6 +387,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE LC_BSOIL_PRM
 
    TYPE, PUBLIC :: LC_WATER_PRM
+   ! land cover specific parameters for water surface
       REAL(KIND(1D0)) :: sfr
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
@@ -429,6 +436,50 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowwater ! snow water[mm]
    END TYPE SNOW_STATE
 
+
+   TYPE, PUBLIC :: HYDRO_STATE
+      ! REAL(KIND(1D0)) :: runofftowater   ! Fraction of above-ground runoff flowing to water surface during flooding
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf ! Initial water stored in soil beneath `Bldgs` surface
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf ! Initial wetness condition on SUEWS land covers.
+      REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id ! Daily water use for EveTr, DecTr, Grass [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof ! Soil moisture of roof [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall ! wetness status of wall [mm]
+   CONTAINS
+      PROCEDURE :: ALLOCATE => allocHydroState_c
+      PROCEDURE :: DEALLOCATE => deallocHydroState_c
+   END TYPE HYDRO_STATE
+
+   TYPE, PUBLIC :: HEAT_STATE
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof ! interface temperature between depth layers in roof [degC]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall ! interface temperature between depth layers in wall [degC]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf ! interface temperature between depth layers [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof ! roof surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
+   CONTAINS
+      PROCEDURE :: ALLOCATE => allocHeatState_c
+      PROCEDURE :: DEALLOCATE => deallocHeatState_c
+   END TYPE HEAT_STATE
+
+   TYPE, PUBLIC :: ROUGHNESS_STATE
+      ! this type is used to collect the intermediate results in the SUEWS model
+
+      ! calculated values of FAI
+      REAL(KIND(1D0)) :: FAIBldg_use
+      REAL(KIND(1D0)) :: FAIEveTree_use
+      REAL(KIND(1D0)) :: FAIDecTree_use
+
+      REAL(KIND(1D0)) :: FAI
+      REAL(KIND(1D0)) :: PAI
+      REAL(KIND(1D0)) :: Zh ! effective height of bluff bodies
+      REAL(KIND(1D0)) :: z0m ! aerodynamic roughness length
+      REAL(KIND(1D0)) :: zdm ! zero-plance displacement
+      REAL(KIND(1D0)) :: ZZD ! z-zdm
+
+   END TYPE ROUGHNESS_STATE
+
    ! ********** SUEWS_forcing schema **********
    TYPE, PUBLIC :: SUEWS_FORCING
       REAL(KIND(1D0)) :: kdown !
@@ -459,50 +510,15 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: tstep !
       INTEGER :: tstep_prev !
       INTEGER :: dt_since_start !
+
+      ! values that are derived from tstep
+      ! INTEGER :: nsh ! number of timesteps per hour
+      ! REAL(KIND(1D0)) :: nsh_real ! nsh in type real [-]
+      ! REAL(KIND(1D0)) :: tstep_real ! tstep in type real
+      REAL(KIND(1D0)) :: dectime !decimal time [-]
+
    END TYPE SUEWS_TIMER
 
-   TYPE, PUBLIC :: HYDRO_STATE
-      ! REAL(KIND(1D0)) :: runofftowater   ! Fraction of above-ground runoff flowing to water surface during flooding
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf ! Initial water stored in soil beneath `Bldgs` surface
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf ! Initial wetness condition on SUEWS land covers.
-      REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id ! Daily water use for EveTr, DecTr, Grass [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof ! Soil moisture of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall ! wetness status of wall [mm]
-   CONTAINS
-      PROCEDURE :: ALLOCATE => allocHydroState_c
-      PROCEDURE :: DEALLOCATE => deallocHydroState_c
-   END TYPE HYDRO_STATE
-
-   TYPE, PUBLIC :: HEAT_STATE
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof ! interface temperature between depth layers in roof [degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall ! interface temperature between depth layers in wall [degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf ! interface temperature between depth layers [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof ! roof surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
-   CONTAINS
-      PROCEDURE :: ALLOCATE => allocHeatState_c
-      PROCEDURE :: DEALLOCATE => deallocHeatState_c
-   END TYPE HEAT_STATE
-
-   TYPE :: ROUGHNESS_STATE
-      ! this type is used to collect the intermediate results in the SUEWS model
-
-      ! calculated values of FAI
-      REAL(KIND(1D0)) :: FAIBldg_use
-      REAL(KIND(1D0)) :: FAIEveTree_use
-      REAL(KIND(1D0)) :: FAIDecTree_use
-
-      REAL(KIND(1D0)) :: FAI
-      REAL(KIND(1D0)) :: PAI
-      REAL(KIND(1D0)) :: Zh ! effective height of bluff bodies
-      REAL(KIND(1D0)) :: z0m ! aerodynamic roughness length
-      REAL(KIND(1D0)) :: zdm ! zero-plance displacement
-      REAL(KIND(1D0)) :: ZZD ! z-zdm
-
-   END TYPE ROUGHNESS_STATE
 
 CONTAINS
    SUBROUTINE allocate_hydro_state(self, nlayer)

@@ -2088,6 +2088,10 @@ CONTAINS
       TYPE(ROUGHNESS_STATE) :: roughnessState
 
       ASSOCIATE ( &
+         ! nsh => timer%nsh, &
+         ! nsh_real => timer%nsh_real, &
+         ! tstep_real => timer%tstep_real, &
+         dectime => timer%dectime, &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
@@ -2209,10 +2213,10 @@ CONTAINS
                PRINT *, 'iteration is ', i_iter
             END IF
 
-            ! calculate dectime
-            CALL SUEWS_cal_dectime_DTS( &
-               timer, & ! input
-               dectime) ! output
+            ! ! calculate dectime
+            ! CALL SUEWS_cal_dectime_DTS( &
+            !    timer, & ! input
+            !    dectime) ! output
 
             ! calculate tstep related VARIABLES
             CALL SUEWS_cal_tstep_DTS( &
@@ -12795,6 +12799,10 @@ CONTAINS
          timer%it = INT(MetForcingBlock(ir, 3))
          timer%imin = INT(MetForcingBlock(ir, 4))
          timer%isec = 0 ! NOT used by SUEWS but by WRF-SUEWS via the cal_main interface
+         ! calculate dectime
+         CALL SUEWS_cal_dectime_DTS( &
+            timer, & ! input
+            timer%dectime) ! output
 
          forcing%qn1_obs = MetForcingBlock(ir, 5) !Real values (kind(1d0))
          forcing%qs_obs = MetForcingBlock(ir, 8)
