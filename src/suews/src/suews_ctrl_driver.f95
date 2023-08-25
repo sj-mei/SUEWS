@@ -2366,7 +2366,7 @@ CONTAINS
                methodPrm, & !input
                timer, nlayer, snowState_prev, snowPrm, &
                forcing, &
-               dectime, timer%ZENITH_deg, ea_hPa, &
+               dectime, ZENITH_deg, ea_hPa, &
                DiagQN, &
                siteInfo, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -2394,7 +2394,7 @@ CONTAINS
                hydroState_prev, &
                snowState_prev, DiagQS, &
                anthroHeatState, Ts5mindata_ir, qf, qn, &
-               timer%zenith_deg, ldown, ohmState_prev, &
+               ZENITH_deg, ldown, ohmState_prev, &
                phenState, &
                ! TODO: collect output into a derived type
                qn_snow, dataOutLineESTM, qs, & !output
@@ -2779,7 +2779,7 @@ CONTAINS
          IF (sfr_surf(BldgSurf) > 0) THEN
             PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
             CALL BEERS_cal_main_DTS(timer, dectime, PAI, FAI, forcing, ldown, &
-                                    TSfc_C, siteInfo, timer%zenith_deg, timer%azimuth, &
+                                    TSfc_C, siteInfo, ZENITH_deg, azimuth, &
                                     pavedPrm, bldgPrm, phenState, &
                                     dataOutLineBEERS) ! output
          ELSE
@@ -2788,7 +2788,7 @@ CONTAINS
 
          !==============translation of  output variables into output array===========
          CALL SUEWS_update_outputLine_DTS( &
-            AdditionalWater, phenState, forcing, U10_ms, timer%azimuth, & !input
+            AdditionalWater, phenState, forcing, U10_ms, azimuth, & !input
             chSnow_per_interval, dectime, &
             drain_per_tstep, QE_LUMPS, ev_per_tstep, wu_ext, Fc, Fc_build, fcld, &
             Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, siteInfo, &
@@ -2806,7 +2806,7 @@ CONTAINS
             hydroState, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
             tot_chang_per_tstep, tsurf, UStar, &
             wu_surf, &
-            z0m, zdm, timer%zenith_deg, &
+            z0m, zdm, ZENITH_deg, &
             datetimeLine, dataOutLineSUEWS) !output
 
          CALL ECH_update_outputLine_DTS( &
