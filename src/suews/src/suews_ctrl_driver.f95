@@ -2252,8 +2252,8 @@ CONTAINS
                timer, & !input:
                siteInfo, &
                azimuth, zenith_deg) !output:
-            zenith_deg=timer%zenith_deg
-            azimuth=timer%azimuth
+            zenith_deg = timer%zenith_deg
+            azimuth = timer%azimuth
             ! print *, 'azimuth, zenith_deg', azimuth, zenith_deg
             ! print *, '~~~~~'
 
