@@ -523,6 +523,10 @@ MODULE SUEWS_DEF_DTS
 
       INTEGER :: DLS !daylight saving time offset [h]
 
+      REAL(KIND(1D0)) :: azimuth !solar azimuth angle [deg]
+      REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle in degree [deg]
+
+
    END TYPE SUEWS_TIMER
 
 CONTAINS

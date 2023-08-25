@@ -626,7 +626,7 @@ CONTAINS
 
    END SUBROUTINE NARP_cal_SunPosition
 
-   SUBROUTINE NARP_cal_SunPosition_DTS(timer, dectime, &
+   SUBROUTINE NARP_cal_SunPosition_DTS(timer, &
                                        siteInfo, &
                                        sunazimuth, sunzenith)
 
@@ -636,7 +636,7 @@ CONTAINS
 
       TYPE(SUEWS_TIMER), INTENT(in) :: timer
       TYPE(SITE_PRM), INTENT(in) :: siteInfo
-      REAL(KIND(1D0)), INTENT(in) :: dectime
+      ! REAL(KIND(1D0)), INTENT(in) :: dectime
 
       REAL(KIND(1D0)) :: year, idectime, UTC, locationlatitude, locationlongitude, locationaltitude
       REAL(KIND(1D0)), INTENT(out) :: sunazimuth, sunzenith
@@ -662,7 +662,7 @@ CONTAINS
       REAL(KIND(1D0)) :: topocentric_local_hour
 
       year = REAL(timer%iy, KIND(1D0))
-      idectime = dectime - timer%tstep/2/86400
+      idectime = timer%dectime - timer%tstep/2/86400
       UTC = siteInfo%timezone
       locationlatitude = siteInfo%lat
       locationlongitude = siteInfo%lon

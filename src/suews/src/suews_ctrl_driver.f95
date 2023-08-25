@@ -1878,7 +1878,7 @@ CONTAINS
       REAL(KIND(1D0)) :: VPD_Pa !vapour pressure deficit  [Pa]
       ! REAL(KIND(1D0)) :: z0m !Aerodynamic roughness length [m]
       ! REAL(KIND(1D0)) :: zdm !zero-plane displacement [m]
-      REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle in degree [°]
+      REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle [deg]
       ! REAL(KIND(1D0)) :: zH ! Mean building height [m]
 
       REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
@@ -2080,6 +2080,8 @@ CONTAINS
          dectime => timer%dectime, &
          dayofWeek_id => timer%dayofWeek_id, &
          dls => timer%dls, &
+         ! azimuth => timer%azimuth, &
+         ! zenith_deg => timer%zenith_deg, &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
@@ -2215,16 +2217,6 @@ CONTAINS
                PRINT *, 'iteration is ', i_iter
             END IF
 
-            ! ! calculate dectime
-            ! CALL SUEWS_cal_dectime_DTS( &
-            !    timer, & ! input
-            !    dectime) ! output
-
-            ! ! calculate tstep related VARIABLES
-            ! CALL SUEWS_cal_tstep_DTS( &
-            !    timer, & ! input
-            !    nsh, nsh_real, tstep_real) ! output
-
             ! calculate surface fraction related VARIABLES
             CALL SUEWS_cal_surf_DTS( &
                methodPrm, & !input
@@ -2233,16 +2225,6 @@ CONTAINS
                spartacusLayerPrm, spartacusPrm, & !input
                VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
                sfr_roof, sfr_wall) ! output
-
-            ! ! calculate dayofweek information
-            ! CALL SUEWS_cal_weekday_DTS( &
-            !    timer, siteInfo, & !input
-            !    dayofWeek_id) !output
-
-            ! ! calculate dayofweek information
-            ! CALL SUEWS_cal_DLS_DTS( &
-            !    timer, ahemisPrm, & !input
-            !    DLS) !output
 
             ! calculate mean air temperature of past 24 hours
             ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
@@ -2265,11 +2247,15 @@ CONTAINS
 
             !=================Calculate sun position=================
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
+            ! print *, 'timer: azimuth, zenith_deg', timer%azimuth, timer%zenith_deg
             CALL NARP_cal_SunPosition_DTS( &
                timer, & !input:
-               dectime, & ! sun position at middle of timestep before
                siteInfo, &
                azimuth, zenith_deg) !output:
+            zenith_deg=timer%zenith_deg
+            azimuth=timer%azimuth
+            ! print *, 'azimuth, zenith_deg', azimuth, zenith_deg
+            ! print *, '~~~~~'
 
             !=================Calculation of density and other water related parameters=================
             IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
@@ -2380,7 +2366,7 @@ CONTAINS
                methodPrm, & !input
                timer, nlayer, snowState_prev, snowPrm, &
                forcing, &
-               dectime, ZENITH_deg, ea_hPa, &
+               dectime, timer%ZENITH_deg, ea_hPa, &
                DiagQN, &
                siteInfo, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -2408,7 +2394,7 @@ CONTAINS
                hydroState_prev, &
                snowState_prev, DiagQS, &
                anthroHeatState, Ts5mindata_ir, qf, qn, &
-               zenith_deg, ldown, ohmState_prev, &
+               timer%zenith_deg, ldown, ohmState_prev, &
                phenState, &
                ! TODO: collect output into a derived type
                qn_snow, dataOutLineESTM, qs, & !output
@@ -2788,20 +2774,12 @@ CONTAINS
          ! update inout variables with new values (to be compatible with original interface)
          forcing%Tair_av_5d = Tair_av_next
 
-         !==============use SOLWEIG to get localised radiation flux==================
-         ! if (sfr_surf(BldgSurf) > 0) then
-         !    CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
-         !    lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
-         ! else
-         !    dataOutLineSOLWEIG = set_nan(dataOutLineSOLWEIG)
-         ! endif
-
          !==============use BEERS to get localised radiation flux==================
          ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
          IF (sfr_surf(BldgSurf) > 0) THEN
             PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
             CALL BEERS_cal_main_DTS(timer, dectime, PAI, FAI, forcing, ldown, &
-                                    TSfc_C, siteInfo, zenith_deg, azimuth, &
+                                    TSfc_C, siteInfo, timer%zenith_deg, timer%azimuth, &
                                     pavedPrm, bldgPrm, phenState, &
                                     dataOutLineBEERS) ! output
          ELSE
@@ -2810,7 +2788,7 @@ CONTAINS
 
          !==============translation of  output variables into output array===========
          CALL SUEWS_update_outputLine_DTS( &
-            AdditionalWater, phenState, forcing, U10_ms, azimuth, & !input
+            AdditionalWater, phenState, forcing, U10_ms, timer%azimuth, & !input
             chSnow_per_interval, dectime, &
             drain_per_tstep, QE_LUMPS, ev_per_tstep, wu_ext, Fc, Fc_build, fcld, &
             Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, siteInfo, &
@@ -2828,7 +2806,7 @@ CONTAINS
             hydroState, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
             tot_chang_per_tstep, tsurf, UStar, &
             wu_surf, &
-            z0m, zdm, zenith_deg, &
+            z0m, zdm, timer%zenith_deg, &
             datetimeLine, dataOutLineSUEWS) !output
 
          CALL ECH_update_outputLine_DTS( &
@@ -11751,33 +11729,33 @@ CONTAINS
 
       ! ---forcing-related variables
       TYPE(SUEWS_FORCING) :: forcing
-      REAL(KIND(1D0)) :: qn1_obs !observed net all-wave radiation [W m-2]
-      REAL(KIND(1D0)) :: qs_obs !observed heat storage flux [W m-2]
-      REAL(KIND(1D0)) :: qf_obs !observed anthropogenic heat flux [W m-2]
-      REAL(KIND(1D0)) :: avu1 !average wind speed at 1m [W m-1]
-      REAL(KIND(1D0)) :: avrh !relative humidity [-]
-      REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
-      REAL(KIND(1D0)) :: Press_hPa !air pressure [hPa]
-      REAL(KIND(1D0)) :: Precip !rain data [mm]
-      REAL(KIND(1D0)) :: avkdn !incominging shortwave radiation [W m-2]
-      REAL(KIND(1D0)) :: snowFrac_obs !observed snow fraction [-]
-      REAL(KIND(1D0)) :: ldown_obs !observed incoming longwave radiation [W m-2]
-      REAL(KIND(1D0)) :: fcld_obs !observed could fraction [-]
-      REAL(KIND(1D0)) :: wu_m3
+      ! REAL(KIND(1D0)) :: qn1_obs !observed net all-wave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: qs_obs !observed heat storage flux [W m-2]
+      ! REAL(KIND(1D0)) :: qf_obs !observed anthropogenic heat flux [W m-2]
+      ! REAL(KIND(1D0)) :: avu1 !average wind speed at 1m [W m-1]
+      ! REAL(KIND(1D0)) :: avrh !relative humidity [-]
+      ! REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
+      ! REAL(KIND(1D0)) :: Press_hPa !air pressure [hPa]
+      ! REAL(KIND(1D0)) :: Precip !rain data [mm]
+      ! REAL(KIND(1D0)) :: avkdn !incominging shortwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: snowFrac_obs !observed snow fraction [-]
+      ! REAL(KIND(1D0)) :: ldown_obs !observed incoming longwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: fcld_obs !observed could fraction [-]
+      ! REAL(KIND(1D0)) :: wu_m3
 
-      REAL(KIND(1D0)) :: LAI_obs !observed LAI [m2 m-2]
-      REAL(KIND(1D0)) :: xsmd ! observed soil moisture; can be provided either as volumetric ([m3 m-3] when SMDMethod = 1) or gravimetric quantity ([kg kg-1] when SMDMethod = 2
+      ! REAL(KIND(1D0)) :: LAI_obs !observed LAI [m2 m-2]
+      ! REAL(KIND(1D0)) :: xsmd ! observed soil moisture; can be provided either as volumetric ([m3 m-3] when SMDMethod = 1) or gravimetric quantity ([kg kg-1] when SMDMethod = 2
 
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av !average air temperature [degC]
 
       ! ---timer-related variables
       TYPE(SUEWS_TIMER) :: timer
-      INTEGER :: iy ! year [y]
-      INTEGER :: id ! day of year, 1-366 [-]
-      INTEGER :: it ! hour, 0-23 [h]
-      INTEGER :: imin !minutes, 0-59 [min]
-      INTEGER :: isec ! seconds, 0-59 [s]
+      ! INTEGER :: iy ! year [y]
+      ! INTEGER :: id ! day of year, 1-366 [-]
+      ! INTEGER :: it ! hour, 0-23 [h]
+      ! INTEGER :: imin !minutes, 0-59 [min]
+      ! INTEGER :: isec ! seconds, 0-59 [s]
 
       INTEGER, INTENT(IN) :: tstep !timestep [s]
       INTEGER, INTENT(IN) :: tstep_prev ! tstep size of the previous step [s]
@@ -12860,6 +12838,12 @@ CONTAINS
             timer, ahemisPrm, & !input
             timer%DLS) !output
 
+         ! CALL NARP_cal_SunPosition_DTS( &
+         !    timer, & !input:
+         !    siteInfo, &
+         !    timer%azimuth, timer%zenith_deg) !output:
+         ! print *, 'azimuth, zenith_deg', timer%azimuth, timer%zenith_deg
+
          forcing%qn1_obs = MetForcingBlock(ir, 5) !Real values (kind(1d0))
          forcing%qs_obs = MetForcingBlock(ir, 8)
          forcing%qf_obs = MetForcingBlock(ir, 9)
@@ -12880,237 +12864,6 @@ CONTAINS
          kdiff = MetForcingBlock(ir, 22)
          kdir = MetForcingBlock(ir, 23)
          wdir = MetForcingBlock(ir, 24)
-
-         ! !================================================
-         ! ! below is for debugging
-         ! WRITE (year_txt, '(I4)') INT(iy)
-         ! WRITE (id_text, '(I3)') INT(id)
-         ! WRITE (it_text, '(I4)') INT(it)
-         ! WRITE (imin_text, '(I4)') INT(imin)
-
-         ! FileStateInit = './'//TRIM(ADJUSTL(year_txt))//'_'&
-         ! //TRIM(ADJUSTL(id_text))//'_'&
-         ! //TRIM(ADJUSTL(it_text))//'_'&
-         ! //TRIM(ADJUSTL(imin_text))//'_'&
-         ! //'state_init.nml'
-
-         ! OPEN (12, file=FileStateInit, position='rewind')
-
-         ! write (12, *) '&state_init'
-         ! write (12, *) 'aerodynamicresistancemethod=', aerodynamicresistancemethod
-         ! write (12, *) 'ah_min=', ah_min
-         ! write (12, *) 'ahprof_24hr=', ahprof_24hr
-         ! write (12, *) 'ah_slope_cooling=', ah_slope_cooling
-         ! write (12, *) 'ah_slope_heating=', ah_slope_heating
-         ! write (12, *) 'alb=', alb
-         ! write (12, *) 'albmax_dectr=', albmax_dectr
-         ! write (12, *) 'albmax_evetr=', albmax_evetr
-         ! write (12, *) 'albmax_grass=', albmax_grass
-         ! write (12, *) 'albmin_dectr=', albmin_dectr
-         ! write (12, *) 'albmin_evetr=', albmin_evetr
-         ! write (12, *) 'albmin_grass=', albmin_grass
-         ! write (12, *) 'alpha_bioco2=', alpha_bioco2
-         ! write (12, *) 'alpha_enh_bioco2=', alpha_enh_bioco2
-         ! write (12, *) 'alt=', alt
-         ! write (12, *) 'avkdn=', avkdn
-         ! write (12, *) 'avrh=', avrh
-         ! write (12, *) 'avu1=', avu1
-         ! write (12, *) 'baset=', baset
-         ! write (12, *) 'basete=', basete
-         ! write (12, *) 'BaseT_HC=', BaseT_HC
-         ! write (12, *) 'beta_bioco2=', beta_bioco2
-         ! write (12, *) 'beta_enh_bioco2=', beta_enh_bioco2
-         ! write (12, *) 'bldgh=', bldgh
-         ! write (12, *) 'capmax_dec=', capmax_dec
-         ! write (12, *) 'capmin_dec=', capmin_dec
-         ! write (12, *) 'chanohm=', chanohm
-         ! write (12, *) 'co2pointsource=', co2pointsource
-         ! write (12, *) 'cpanohm=', cpanohm
-         ! write (12, *) 'crwmax=', crwmax
-         ! write (12, *) 'crwmin=', crwmin
-         ! write (12, *) 'daywat=', daywat
-         ! write (12, *) 'daywatper=', daywatper
-         ! write (12, *) 'dectreeh=', dectreeh
-         ! write (12, *) 'diagnose=', diagnose
-         ! write (12, *) 'diagqn=', diagqn
-         ! write (12, *) 'diagqs=', diagqs
-         ! write (12, *) 'drainrt=', drainrt
-         ! write (12, *) 'dt_since_start=', dt_since_start
-         ! write (12, *) 'dqndt=', dqndt
-         ! write (12, *) 'qn_av=', qn_av
-         ! write (12, *) 'dqnsdt=', dqnsdt
-         ! write (12, *) 'qn1_s_av=', qn1_s_av
-         ! write (12, *) 'ef_umolco2perj=', ef_umolco2perj
-         ! write (12, *) 'emis=', emis
-         ! write (12, *) 'emissionsmethod=', emissionsmethod
-         ! write (12, *) 'enef_v_jkm=', enef_v_jkm
-         ! write (12, *) 'enddls=', enddls
-         ! write (12, *) 'evetreeh=', evetreeh
-         ! write (12, *) 'faibldg=', faibldg
-         ! write (12, *) 'faidectree=', faidectree
-         ! write (12, *) 'faievetree=', faievetree
-         ! write (12, *) 'faut=', faut
-         ! write (12, *) 'fcef_v_kgkm=', fcef_v_kgkm
-         ! write (12, *) 'fcld_obs=', fcld_obs
-         ! write (12, *) 'flowchange=', flowchange
-         ! write (12, *) 'frfossilfuel_heat=', frfossilfuel_heat
-         ! write (12, *) 'frfossilfuel_nonheat=', frfossilfuel_nonheat
-         ! write (12, *) 'g1=', g1
-         ! write (12, *) 'g2=', g2
-         ! write (12, *) 'g3=', g3
-         ! write (12, *) 'g4=', g4
-         ! write (12, *) 'g5=', g5
-         ! write (12, *) 'g6=', g6
-         ! write (12, *) 'gdd_id=', gdd_id
-         ! write (12, *) 'gddfull=', gddfull
-         ! write (12, *) 'gridiv=', gridiv
-         ! write (12, *) 'gsmodel=', gsmodel
-         ! write (12, *) 'hdd_id=', hdd_id
-         ! write (12, *) 'humactivity_24hr=', humactivity_24hr
-         ! write (12, *) 'icefrac=', icefrac
-         ! write (12, *) 'id=', id
-         ! write (12, *) 'ie_a=', ie_a
-         ! write (12, *) 'ie_end=', ie_end
-         ! write (12, *) 'ie_m=', ie_m
-         ! write (12, *) 'ie_start=', ie_start
-         ! write (12, *) 'imin=', imin
-         ! write (12, *) 'internalwateruse_h=', internalwateruse_h
-         ! write (12, *) 'IrrFracEveTr=', IrrFracEveTr
-         ! write (12, *) 'IrrFracDecTr=', IrrFracDecTr
-         ! write (12, *) 'irrfracgrass=', irrfracgrass
-         ! write (12, *) 'isec=', isec
-         ! write (12, *) 'it=', it
-         ! write (12, *) 'evapmethod=', evapmethod
-         ! write (12, *) 'iy=', iy
-         ! write (12, *) 'kkanohm=', kkanohm
-         ! write (12, *) 'kmax=', kmax
-         ! write (12, *) 'lai_id=', lai_id
-         ! write (12, *) 'laicalcyes=', laicalcyes
-         ! write (12, *) 'laimax=', laimax
-         ! write (12, *) 'laimin=', laimin
-         ! write (12, *) 'lai_obs=', lai_obs
-         ! write (12, *) 'laipower=', laipower
-         ! write (12, *) 'laitype=', laitype
-         ! write (12, *) 'lat=', lat
-         ! write (12, *) 'lenday_id=', lenday_id
-         ! write (12, *) 'ldown_obs=', ldown_obs
-         ! write (12, *) 'lng=', lng
-         ! write (12, *) 'maxconductance=', maxconductance
-         ! write (12, *) 'maxfcmetab=', maxfcmetab
-         ! write (12, *) 'maxqfmetab=', maxqfmetab
-         ! write (12, *) 'snowwater=', snowwater
-         ! ! write (12, *) 'metforcingdata_grid=', metforcingdata_grid
-         ! write (12, *) 'minfcmetab=', minfcmetab
-         ! write (12, *) 'minqfmetab=', minqfmetab
-         ! write (12, *) 'min_res_bioco2=', min_res_bioco2
-         ! write (12, *) 'narp_emis_snow=', narp_emis_snow
-         ! write (12, *) 'narp_trans_site=', narp_trans_site
-         ! write (12, *) 'netradiationmethod=', netradiationmethod
-         ! write (12, *) 'ohm_coef=', ohm_coef
-         ! write (12, *) 'ohmincqf=', ohmincqf
-         ! write (12, *) 'ohm_threshsw=', ohm_threshsw
-         ! write (12, *) 'ohm_threshwd=', ohm_threshwd
-         ! write (12, *) 'pipecapacity=', pipecapacity
-         ! write (12, *) 'popdensdaytime=', popdensdaytime
-         ! write (12, *) 'popdensnighttime=', popdensnighttime
-         ! write (12, *) 'popprof_24hr=', popprof_24hr
-         ! write (12, *) 'pormax_dec=', pormax_dec
-         ! write (12, *) 'pormin_dec=', pormin_dec
-         ! write (12, *) 'precip=', precip
-         ! write (12, *) 'preciplimit=', preciplimit
-         ! write (12, *) 'preciplimitalb=', preciplimitalb
-         ! write (12, *) 'press_hpa=', press_hpa
-         ! write (12, *) 'qf0_beu=', qf0_beu
-         ! write (12, *) 'qf_a=', qf_a
-         ! write (12, *) 'qf_b=', qf_b
-         ! write (12, *) 'qf_c=', qf_c
-         ! write (12, *) 'qn1_obs=', qn1_obs
-         ! write (12, *) 'qh_obs=', qh_obs
-         ! write (12, *) 'qs_obs=', qs_obs
-         ! write (12, *) 'qf_obs=', qf_obs
-         ! write (12, *) 'radmeltfact=', radmeltfact
-         ! write (12, *) 'raincover=', raincover
-         ! write (12, *) 'rainmaxres=', rainmaxres
-         ! write (12, *) 'resp_a=', resp_a
-         ! write (12, *) 'resp_b=', resp_b
-         ! write (12, *) 'roughlenheatmethod=', roughlenheatmethod
-         ! write (12, *) 'roughlenmommethod=', roughlenmommethod
-         ! write (12, *) 'runofftowater=', runofftowater
-         ! write (12, *) 's1=', s1
-         ! write (12, *) 's2=', s2
-         ! write (12, *) 'sathydraulicconduct=', sathydraulicconduct
-         ! write (12, *) 'sddfull=', sddfull
-         ! write (12, *) 'sdd_id=', sdd_id
-         ! write (12, *) 'sfr_surf=', sfr_surf
-         ! write (12, *) 'smdmethod=', smdmethod
-         ! write (12, *) 'snowalb=', snowalb
-         ! write (12, *) 'snowalbmax=', snowalbmax
-         ! write (12, *) 'snowalbmin=', snowalbmin
-         ! write (12, *) 'snowpacklimit=', snowpacklimit
-         ! write (12, *) 'snowdens=', snowdens
-         ! write (12, *) 'snowdensmax=', snowdensmax
-         ! write (12, *) 'snowdensmin=', snowdensmin
-         ! write (12, *) 'snowfallcum=', snowfallcum
-         ! write (12, *) 'snowfrac=', snowfrac
-         ! write (12, *) 'snowlimbldg=', snowlimbldg
-         ! write (12, *) 'snowlimpaved=', snowlimpaved
-         ! write (12, *) 'snowfrac_obs=', snowfrac_obs
-         ! write (12, *) 'snowpack=', snowpack
-         ! write (12, *) 'snowprof_24hr=', snowprof_24hr
-         ! write (12, *) 'SnowUse=', SnowUse
-         ! write (12, *) 'soildepth=', soildepth
-         ! write (12, *) 'soilstore_id=', soilstore_id
-         ! write (12, *) 'soilstorecap=', soilstorecap
-         ! write (12, *) 'stabilitymethod=', stabilitymethod
-         ! write (12, *) 'startdls=', startdls
-         ! write (12, *) 'state_id=', state_id
-         ! write (12, *) 'statelimit=', statelimit
-         ! write (12, *) 'storageheatmethod=', storageheatmethod
-         ! write (12, *) 'storedrainprm=', storedrainprm
-         ! write (12, *) 'surfacearea=', surfacearea
-         ! write (12, *) 'tair_av=', tair_av
-         ! write (12, *) 'tau_a=', tau_a
-         ! write (12, *) 'tau_f=', tau_f
-         ! write (12, *) 'tau_r=', tau_r
-         ! write (12, *) 'tmax_id=', tmax_id
-         ! write (12, *) 'tmin_id=', tmin_id
-         ! write (12, *) 'BaseT_Cooling=', BaseT_Cooling
-         ! write (12, *) 'BaseT_Heating=', BaseT_Heating
-         ! write (12, *) 'temp_c=', temp_c
-         ! write (12, *) 'tempmeltfact=', tempmeltfact
-         ! write (12, *) 'th=', th
-         ! write (12, *) 'theta_bioco2=', theta_bioco2
-         ! write (12, *) 'timezone=', timezone
-         ! write (12, *) 'tl=', tl
-         ! write (12, *) 'trafficrate=', trafficrate
-         ! write (12, *) 'trafficunits=', trafficunits
-         ! write (12, *) 'traffprof_24hr=', traffprof_24hr
-         ! ! write (12, *) 'ts5mindata_ir=', ts5mindata_ir
-         ! write (12, *) 'tstep=', tstep
-         ! write (12, *) 'tstep_prev=', tstep_prev
-         ! write (12, *) 'veg_type=', veg_type
-         ! write (12, *) 'waterdist=', waterdist
-         ! write (12, *) 'waterusemethod=', waterusemethod
-         ! write (12, *) 'wetthresh=', wetthresh
-         ! write (12, *) 'wu_m3=', wu_m3
-         ! write (12, *) 'wuday_id=', wuday_id
-         ! write (12, *) 'decidcap_id=', decidcap_id
-         ! write (12, *) 'albdectr_id=', albdectr_id
-         ! write (12, *) 'albevetr_id=', albevetr_id
-         ! write (12, *) 'albgrass_id=', albgrass_id
-         ! write (12, *) 'porosity_id=', porosity_id
-         ! write (12, *) 'wuprofa_24hr=', wuprofa_24hr
-         ! write (12, *) 'wuprofm_24hr=', wuprofm_24hr
-         ! write (12, *) 'xsmd=', xsmd
-         ! write (12, *) 'z=', z
-         ! write (12, *) 'z0m_in=', z0m_in
-         ! write (12, *) 'zdm_in=', zdm_in
-         ! write (12, *) '/'
-
-         ! WRITE (12, *) ''
-
-         ! CLOSE (12)
-         ! !================================================
 
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
