@@ -12,9 +12,9 @@ MODULE AtmMoistStab_module
 
 CONTAINS
 
-   SUBROUTINE cal_atm_state(forcing, timer, atmState)
-      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+   SUBROUTINE cal_atm_state(timer, forcing, atmState)
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(atm_state), INTENT(out) :: atmState
       ASSOCIATE ( &
          Temp_C => forcing%Temp_C, &

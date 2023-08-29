@@ -2264,7 +2264,7 @@ CONTAINS
 
          !=================Calculation of density and other water related parameters=================
          IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-         CALL cal_atm_state(forcing, timer, atmState)
+         CALL cal_atm_state(timer, forcing, atmState)
          ! CALL cal_AtmMoist( &
          !    forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
          !    lv_J_kg, lvS_J_kg, & ! output:
