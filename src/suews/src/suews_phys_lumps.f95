@@ -395,7 +395,7 @@ CONTAINS
       ! SG Feb 2012     - added some comments
       ! --------------------------------------------------------------
       USE meteo, ONLY: psyc_const, slope_svp, slopeice_svp
-      USE SUEWS_DEF_DTS, ONLY: LUMPS_PRM, METHOD_PRM, SUEWS_FORCING, &
+      USE SUEWS_DEF_DTS, ONLY: LUMPS_PRM, config_PRM, SUEWS_FORCING, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                PHENOLOGY_STATE
@@ -403,7 +403,7 @@ CONTAINS
       IMPLICIT NONE
 
       TYPE(LUMPS_PRM), INTENT(IN) :: lumpsPrm
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
 
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
 

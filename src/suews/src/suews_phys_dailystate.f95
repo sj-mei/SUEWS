@@ -787,7 +787,7 @@ CONTAINS
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
       USE SUEWS_DEF_DTS, ONLY: SITE_PRM, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
-                               PHENOLOGY_STATE, anthroHEAT_STATE, METHOD_PRM, &
+                               PHENOLOGY_STATE, anthroHEAT_STATE, config_PRM, &
                                IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
@@ -805,7 +805,7 @@ CONTAINS
       INTEGER :: tstep_prev
       INTEGER :: dt_since_start
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
       INTEGER :: WaterUseMethod
       INTEGER, INTENT(IN) :: BaseTMethod
 

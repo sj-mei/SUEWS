@@ -8,7 +8,7 @@ MODULE SUEWS_Driver
    ! 1. functions/subroutines
    ! 2. constant variables
    ! USE SUEWS_HydroHeat_DTS, ONLY:
-   USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SURF_STORE_PRM, WATER_DIST_PRM, bioCO2_PRM, CONDUCTANCE_PRM, &
+   USE SUEWS_DEF_DTS, ONLY: config_PRM, SURF_STORE_PRM, WATER_DIST_PRM, bioCO2_PRM, CONDUCTANCE_PRM, &
                             LAI_PRM, OHM_COEF_LC, OHM_PRM, SOIL_PRM, anthroHEAT_PRM, IRRIG_daywater, &
                             IRRIGATION_PRM, anthroEMIS_PRM, SNOW_PRM, SPARTACUS_PRM, SPARTACUS_LAYER_PRM, &
                             SITE_PRM, LUMPS_PRM, EHC_PRM, LC_PAVED_PRM, LC_BLDG_PRM, LC_DECTR_PRM, LC_EVETR_PRM, &
@@ -57,15 +57,6 @@ MODULE SUEWS_Driver
 
    IMPLICIT NONE
 
-   TYPE, PUBLIC :: config
-      INTEGER :: var1
-      INTEGER :: var2
-
-      ! private
-
-      ! contains
-
-   END TYPE config
 
    TYPE, PUBLIC :: array_m
       INTEGER, DIMENSION(2, 3) :: var1
@@ -167,13 +158,13 @@ CONTAINS
 
    END SUBROUTINE output_block_finalize
 
-   SUBROUTINE var2add_two(arg_type, res_type)
-      TYPE(config), INTENT(in) :: arg_type
-      TYPE(config), INTENT(out) :: res_type
-      res_type%var1 = arg_type%var1 + arg_type%var2
-      res_type%var2 = arg_type%var1 - arg_type%var2
+   ! SUBROUTINE var2add_two(arg_type, res_type)
+   !    TYPE(config), INTENT(in) :: arg_type
+   !    TYPE(config), INTENT(out) :: res_type
+   !    res_type%var1 = arg_type%var1 + arg_type%var2
+   !    res_type%var2 = arg_type%var1 - arg_type%var2
 
-   END SUBROUTINE var2add_two
+   ! END SUBROUTINE var2add_two
 
    SUBROUTINE arr2add_two(arg_type, res_type)
       TYPE(array_m), INTENT(in) :: arg_type
@@ -1736,10 +1727,10 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_Main
 
    SUBROUTINE SUEWS_cal_Main_DTS( &
-      timer, forcing, methodPrm, siteInfo, &
-      lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
-      irrPrm, snowPrm, conductancePrm, &
-      pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
+      timer, forcing, config, siteInfo, &
+      ! lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
+      ! irrPrm, snowPrm, conductancePrm, &
+      ! pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
       anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
       output_line_suews) ! output
 
@@ -1749,28 +1740,28 @@ CONTAINS
 
       ! ####################################################################################
       !  declaration for DTS variables
-      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
-      TYPE(SUEWS_FORCING), INTENT(INOUT) :: forcing
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(INOUT) :: forcing
+      TYPE(config_PRM), INTENT(IN) :: config
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
-      TYPE(LUMPS_PRM), INTENT(IN) :: lumpsPrm
-      TYPE(EHC_PRM), INTENT(IN) :: ehcPrm
-      TYPE(SPARTACUS_PRM), INTENT(IN) :: spartacusPrm
-      TYPE(SPARTACUS_LAYER_PRM), INTENT(IN) :: spartacusLayerPrm
-      TYPE(anthroEMIS_PRM), INTENT(IN) :: ahemisPrm
-      TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
-      TYPE(SNOW_PRM), INTENT(IN) :: snowPrm
-      TYPE(CONDUCTANCE_PRM), INTENT(IN) :: conductancePrm
+      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      ! TYPE(LUMPS_PRM), INTENT(IN) :: lumpsPrm
+      ! TYPE(EHC_PRM), INTENT(IN) :: ehcPrm
+      ! TYPE(SPARTACUS_PRM), INTENT(IN) :: spartacusPrm
+      ! TYPE(SPARTACUS_LAYER_PRM), INTENT(IN) :: spartacusLayerPrm
+      ! TYPE(anthroEMIS_PRM), INTENT(IN) :: ahemisPrm
+      ! TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
+      ! TYPE(SNOW_PRM), INTENT(IN) :: snowPrm
+      ! TYPE(CONDUCTANCE_PRM), INTENT(IN) :: conductancePrm
 
       ! REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN) :: sfr_surf !surface cover fraction[-]
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
       TYPE(anthroHEAT_STATE), INTENT(INOUT) :: anthroHeatState
       TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
@@ -2076,13 +2067,29 @@ CONTAINS
       TYPE(atm_state) :: atmState
 
       ASSOCIATE ( &
-         nlayer => siteInfo%nlayer, &
          nsh => timer%nsh, &
          nsh_real => timer%nsh_real, &
          tstep_real => timer%tstep_real, &
          dectime => timer%dectime, &
          dayofWeek_id => timer%dayofWeek_id, &
          dls => timer%dls, &
+         nlayer => siteInfo%nlayer, &
+         lumpsPrm => siteInfo%lumps, &
+         ehcPrm => siteInfo%ehc, &
+         spartacusPrm => siteInfo%spartacus, &
+         spartacusLayerPrm => siteInfo%spartacus_Layer, &
+         ahemisPrm => siteInfo%anthroemis, &
+         irrPrm => siteInfo%irrigation, &
+         snowPrm => siteInfo%snow, &
+         conductancePrm => siteInfo%conductance, &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         dectrPrm => siteInfo%lc_dectr, &
+         evetrPrm => siteInfo%lc_evetr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+
          azimuth_deg => solarState%azimuth_deg, &
          zenith_deg => solarState%zenith_deg, &
          lv_J_kg => atmState%lv_J_kg, &
@@ -2160,7 +2167,7 @@ CONTAINS
 
          ! ####
          ! force several snow related state variables to zero if snow module is off
-         IF (methodPrm%snowuse == 0) THEN
+         IF (config%snowuse == 0) THEN
             snowState%SnowDens = 0.
             snowState%SnowFrac = 0.
             snowState%SnowWater = 0.
@@ -2174,7 +2181,7 @@ CONTAINS
          ohmState_prev = ohmState
 
          snowState_prev = snowState
-         snowState_prev%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, methodPrm%NetRadiationMethod == 0)
+         snowState_prev%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
          hydroState_prev = hydroState
          Tair_av_prev = forcing%Tair_av_5d
@@ -2217,14 +2224,14 @@ CONTAINS
          heatState_out = heatState
          tsfc0_out_surf = heatState%tsfc_surf
          ! ! TODO: ESTM work: to allow heterogeneous surface temperatures
-         IF (methodPrm%StorageHeatMethod == 5 .OR. methodPrm%NetRadiationMethod > 1000) THEN
+         IF (config%StorageHeatMethod == 5 .OR. config%NetRadiationMethod > 1000) THEN
             tsfc0_out_roof = heatState%tsfc_roof
             tsfc0_out_wall = heatState%tsfc_wall
          END IF
 
          ! calculate surface fraction related VARIABLES
          CALL SUEWS_cal_surf_DTS( &
-            methodPrm, & !input
+            config, & !input
             nlayer, &
             pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
             spartacusLayerPrm, spartacusPrm, & !input
@@ -2236,10 +2243,10 @@ CONTAINS
          Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
 
          !==============surface roughness calculation=======================
-         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
-         IF (methodPrm%Diagnose == 1) PRINT *, 'z0m_in =', siteInfo%z0m_in
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
+         IF (config%Diagnose == 1) PRINT *, 'z0m_in =', siteInfo%z0m_in
          CALL SUEWS_cal_RoughnessParameters_DTS( &
-            methodPrm, &
+            config, &
             pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
             siteInfo, &
             phenState_prev, &
@@ -2251,7 +2258,7 @@ CONTAINS
          ! print *, 'day =', timer%id, 'hour =', timer%it, 'z0m = ', z0m
 
          !=================Calculate sun position=================
-         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
          ! print *, 'timer: azimuth, zenith_deg', timer%azimuth, timer%zenith_deg
          CALL NARP_cal_SunPosition_DTS( &
             timer, & !input:
@@ -2263,7 +2270,7 @@ CONTAINS
          ! print *, '~~~~~'
 
          !=================Calculation of density and other water related parameters=================
-         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
          CALL cal_atm_state(timer, forcing, atmState)
          ! CALL cal_AtmMoist( &
          !    forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
@@ -2321,13 +2328,13 @@ CONTAINS
             ! --------------------------------------------------------------------------------
 
             !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
          !!! Do we need to separate the phenology parameters from the land cover parameters?
             CALL SUEWS_cal_DailyState_DTS( &
                timer, DayofWeek_id, & !input
                phenState_prev, &
                BaseTMethod, &
-               methodPrm, irrPrm, &
+               config, irrPrm, &
                LAImethod, &
                pavedPrm, bldgPrm, &
                evetrPrm, dectrPrm, grassPrm, &
@@ -2342,7 +2349,7 @@ CONTAINS
                hydroState_next) !output
 
             !======== Calculate soil moisture =========
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
             CALL SUEWS_update_SoilMoist_DTS( &
                NonWaterFraction, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -2350,7 +2357,7 @@ CONTAINS
                SoilMoistCap, SoilState, & !output
                vsmd, smd)
 
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
             !=================Gives the external and internal water uses per timestep=================
             CALL SUEWS_cal_WaterUse_DTS( &
                nsh_real, & ! input:
@@ -2359,14 +2366,14 @@ CONTAINS
                DayofWeek_id, &
                irrPrm, &
                anthroHeatState_next, hydroState_next, & ! output:
-               methodPrm, NSH, timer, DLS, &
+               config, NSH, timer, DLS, &
                wu_surf, wu_int, wu_ext)
 
             ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
             CALL SUEWS_cal_AnthropogenicEmission_DTS( &
                ahemisPrm, &
                siteInfo, & ! input:
-               dayofWeek_id, DLS, methodPrm, &
+               dayofWeek_id, DLS, config, &
                anthroHeatState_next, &
                timer, &
                QF, &
@@ -2380,7 +2387,7 @@ CONTAINS
                PRINT *, 'Tsfc_surf before QN', heatState_out%tsfc_surf
             END IF
             CALL SUEWS_cal_Qn_DTS( &
-               methodPrm, & !input
+               config, & !input
                timer, nlayer, snowState_prev, snowPrm, &
                forcing, &
                dectime, ZENITH_deg, ea_hPa, &
@@ -2402,7 +2409,7 @@ CONTAINS
 
             IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
             CALL SUEWS_cal_Qs_DTS( &
-               methodPrm, forcing, siteInfo, & !input
+               config, forcing, siteInfo, & !input
                timer, &
                nlayer, &
                heatState_out, ehcPrm, heatState_in, &
@@ -2422,15 +2429,15 @@ CONTAINS
                QS_surf) !output
 
             !==================Energy related to snow melting/freezing processes=======
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
 
             !==========================Turbulent Fluxes================================
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
             IF (i_iter == 1) THEN
                !Calculate QH and QE from LUMPS in the first iteration of each time step
                CALL LUMPS_cal_QHQE_DTS( &
                   lumpsPrm, & !input
-                  methodPrm, qn, qf, qs, forcing, VegFraction, avcp, lv_J_kg, &
+                  config, qn, qf, qs, forcing, VegFraction, avcp, lv_J_kg, &
                   tstep_real, nsh_real, &
                   pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                   phenState_next, &
@@ -2446,9 +2453,9 @@ CONTAINS
             END IF
 
             !============= calculate water balance =============
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
             CALL SUEWS_cal_Water_DTS( &
-               methodPrm, & !input
+               config, & !input
                NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
                hydroState_prev, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -2462,9 +2469,9 @@ CONTAINS
             !============= calculate water balance end =============
 
             !===============Resistance Calculations=======================
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
             CALL SUEWS_cal_Resistance_DTS( &
-               methodPrm, & !input:
+               config, & !input:
                AerodynamicResistanceMethod, &
                timer, conductancePrm, &
                avdens, avcp, QH_Init, zzd, z0m, zdm, &
@@ -2480,12 +2487,12 @@ CONTAINS
             !===================Resistance Calculations End=======================
 
             !===================Calculate surface hydrology and related soil water=======================
-            IF (methodPrm%SnowUse == 1) THEN
+            IF (config%SnowUse == 1) THEN
 
                ! ===================Calculate snow related hydrology=======================
 
                CALL SUEWS_cal_snow_DTS( &
-                  methodPrm, nlayer, & !input
+                  config, nlayer, & !input
                   timer, EvapMethod, dayofWeek_id, snowPrm, &
                   dectime, avdens, avcp, lv_J_kg, lvS_J_kg, forcing, &
                   RAsnow, psyc_hPa, sIce_hPa, &
@@ -2513,10 +2520,10 @@ CONTAINS
                ! N.B.: snow-related calculations end here.
                !===================================================
             ELSE
-               IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QE...'
+               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QE...'
                !======== Evaporation and surface state_id for snow-free conditions ========
                CALL SUEWS_cal_QE_DTS( &
-                  methodPrm, nlayer, timer, &
+                  config, nlayer, timer, &
                   EvapMethod, &
                   avdens, avcp, lv_J_kg, &
                   psyc_hPa, &
@@ -2545,11 +2552,11 @@ CONTAINS
             END IF
 
             ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
-            IF (methodPrm%Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState_next%soilstore_surf
+            IF (config%Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState_next%soilstore_surf
 
             !=== Horizontal movement between soil stores ===
             ! Now water is allowed to move horizontally between the soil stores
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
             CALL SUEWS_cal_HorizontalSoilWater_DTS( &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & ! input
                siteInfo, & !Surface area of the study area [m2]
@@ -2563,18 +2570,18 @@ CONTAINS
                )
 
             !========== Calculate soil moisture ============
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
             CALL SUEWS_cal_SoilState_DTS( &
-               methodPrm, forcing, NonWaterFraction, SoilMoistCap, & !input
+               config, forcing, NonWaterFraction, SoilMoistCap, & !input
                surf_chang_per_tstep, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                hydroState_next, hydroState_prev, &
                smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
             !============ Sensible heat flux ===============
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
             CALL SUEWS_cal_QH_DTS( &
-               qhMethod, nlayer, methodPrm, & !input
+               qhMethod, nlayer, config, & !input
                qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                sfr_roof, sfr_wall, &
@@ -2598,7 +2605,7 @@ CONTAINS
             QH_roof = QN_roof + qf - qs_roof - qe_roof
             QH_wall = QN_wall + qf - qs_wall - qe_wall
 
-            IF (methodPrm%diagnose == 1) THEN
+            IF (config%diagnose == 1) THEN
                PRINT *, 'qn_surf before QH back env.:', QN_surf
                PRINT *, 'qf before QH back env.:', qf
                PRINT *, 'qs_surf before QH back env.:', qs_surf
@@ -2638,18 +2645,18 @@ CONTAINS
             tsfc0_out_roof = MIN(heatState_out%tsfc_roof, forcing%Temp_C + 50)
             tsfc0_out_wall = MIN(heatState_out%tsfc_wall, forcing%Temp_C + 50)
 
-            IF (methodPrm%diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState_out%tsfc_surf
+            IF (config%diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState_out%tsfc_surf
             ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
-            IF (methodPrm%diagnose == 1) PRINT *, &
+            IF (config%diagnose == 1) PRINT *, &
                'tsfc_surf abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_surf - tsfc0_out_surf)), &
                MAXLOC(ABS(heatState_out%tsfc_surf - tsfc0_out_surf))
             dif_tsfc_iter = MAXVAL(ABS(heatState_out%tsfc_surf - tsfc0_out_surf))
-            IF (methodPrm%StorageHeatMethod == 5) THEN
-               IF (methodPrm%diagnose == 1) PRINT *, &
+            IF (config%StorageHeatMethod == 5) THEN
+               IF (config%diagnose == 1) PRINT *, &
                   'tsfc_roof abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_roof - tsfc0_out_roof)), &
                   MAXLOC(ABS(heatState_out%tsfc_roof - tsfc0_out_roof))
                dif_tsfc_iter = MAX(MAXVAL(ABS(heatState_out%tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
-               IF (methodPrm%diagnose == 1) PRINT *, &
+               IF (config%diagnose == 1) PRINT *, &
                   'tsfc_wall abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_wall - tsfc0_out_wall)), &
                   MAXLOC(ABS(heatState_out%tsfc_wall - tsfc0_out_wall))
                dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - heatState_out%tsfc_wall)), dif_tsfc_iter)
@@ -2686,7 +2693,7 @@ CONTAINS
 
             i_iter = i_iter + 1
             ! force quit do-while loop if not convergent after 100 iterations
-            IF (methodPrm%Diagnose == 1 .AND. i_iter == max_iter) THEN
+            IF (config%Diagnose == 1 .AND. i_iter == max_iter) THEN
                ! PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
                ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
                ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
@@ -2710,9 +2717,9 @@ CONTAINS
          ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
 
          !============ roughness sub-layer diagonostics ===============
-         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
          CALL RSLProfile_DTS( &
-            methodPrm, &
+            config, &
             zH, z0m, zdm, z0v, &
             L_MOD, &
             pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -2726,7 +2733,7 @@ CONTAINS
 
          ! ============ BIOGENIC CO2 FLUX =======================
          CALL SUEWS_cal_BiogenCO2_DTS( &
-            forcing, methodPrm, conductancePrm, &
+            forcing, config, conductancePrm, &
             dectime, Fc_anthro, &
             gfunc, timer, phenState_next, &
             pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -2772,7 +2779,7 @@ CONTAINS
          anthroHeatState%HDD_id = anthroHeatState_next%HDD_id
          hydroState%WUDay_id = hydroState_next%WUDay_id
 
-         IF (methodPrm%StorageHeatMethod == 5) THEN
+         IF (config%StorageHeatMethod == 5) THEN
             ! ESTM_ehc related
             heatState%temp_roof = heatState_out%temp_roof
             heatState%temp_wall = heatState_out%temp_wall
@@ -3078,7 +3085,7 @@ CONTAINS
       TYPE(SITE_PRM), INTENT(IN) :: siteInfo
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
 
       EF_umolCO2perJ = ahemisPrm%EF_umolCO2perJ
       EmissionsMethod = methodPrm%EmissionsMethod
@@ -3522,13 +3529,13 @@ CONTAINS
       Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
 
       USE SUEWS_DEF_DTS, ONLY: LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               METHOD_PRM, CONDUCTANCE_PRM, SUEWS_FORCING, &
+                               config_PRM, CONDUCTANCE_PRM, SUEWS_FORCING, &
                                SUEWS_TIMER, PHENOLOGY_STATE, SNOW_STATE
 
       IMPLICIT NONE
 
       TYPE(SUEWS_FORCING), INTENT(in) :: forcing
-      TYPE(METHOD_PRM), INTENT(in) :: methodPrm
+      TYPE(config_PRM), INTENT(in) :: methodPrm
       TYPE(CONDUCTANCE_PRM), INTENT(in) :: conductancePrm
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
       TYPE(SNOW_STATE), INTENT(IN) :: snowState
@@ -4255,7 +4262,7 @@ CONTAINS
       dataOutLineSPARTACUS)
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, SNOW_STATE, SNOW_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_TIMER, SNOW_STATE, SNOW_PRM, &
                                SUEWS_FORCING, SITE_PRM, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
@@ -4267,7 +4274,7 @@ CONTAINS
       ! INTEGER,PARAMETER ::ConifSurf = 3 !New surface classes: Grass = 5th/7 surfaces
       ! INTEGER,PARAMETER ::DecidSurf = 4 !New surface classes: Grass = 5th/7 surfaces
       ! INTEGER,PARAMETER ::GrassSurf = 5
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SNOW_PRM), INTENT(IN) :: snowPrm
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
@@ -5355,7 +5362,7 @@ CONTAINS
       QS_wall, & !output
       QS_surf) !output
 
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, SITE_PRM, SUEWS_TIMER, &
+      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_FORCING, SITE_PRM, SUEWS_TIMER, &
                                SNOW_STATE, EHC_PRM, &
                                anthroHEAT_STATE, PHENOLOGY_STATE, OHM_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
@@ -5364,7 +5371,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      TYPE(METHOD_PRM), INTENT(in) :: methodPrm
+      TYPE(config_PRM), INTENT(in) :: methodPrm
 
       TYPE(SITE_PRM), INTENT(in) :: siteInfo
 
@@ -6189,13 +6196,13 @@ CONTAINS
       AdditionalWater, runoffPipes, runoff_per_interval, &
       AddWater)
 
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, PHENOLOGY_STATE, &
+      USE SUEWS_DEF_DTS, ONLY: config_PRM, PHENOLOGY_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, HYDRO_STATE
 
       IMPLICIT NONE
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
 
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_prev
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
@@ -7209,7 +7216,7 @@ CONTAINS
       runoffAGveg, runoffAGimpervious, rss_surf, &
       dataOutLineSnow)
 
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, SNOW_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_TIMER, SNOW_PRM, &
                                SUEWS_FORCING, PHENOLOGY_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, &
                                LC_DECTR_PRM, LC_GRASS_PRM, LC_BSOIL_PRM, &
@@ -7217,7 +7224,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SNOW_PRM), INTENT(IN) :: snowPrm
 
@@ -8395,7 +8402,7 @@ CONTAINS
       runoffWaterBody_grid, &
       runoffAGveg_grid, runoffAGimpervious_grid, rss_surf)
 
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, SUEWS_FORCING, &
+      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_TIMER, SUEWS_FORCING, &
                                SITE_PRM, EHC_PRM, &
                                LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
@@ -8404,7 +8411,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
 
@@ -8969,13 +8976,13 @@ CONTAINS
       qh, qh_residual, qh_resist, & !output
       qh_resist_surf, qh_resist_roof, qh_resist_wall)
 
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE
 
       IMPLICIT NONE
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(HEAT_STATE), INTENT(IN) :: heatState_out
 
@@ -9424,7 +9431,7 @@ CONTAINS
       UStar, TStar, L_mod, & !output
       zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
 
-      USE SUEWS_DEF_DTS, ONLY: METHOD_PRM, SUEWS_TIMER, CONDUCTANCE_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_TIMER, CONDUCTANCE_PRM, &
                                SUEWS_FORCING, &
                                LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
@@ -9433,7 +9440,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(CONDUCTANCE_PRM), INTENT(IN) :: conductancePrm
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
@@ -10531,7 +10538,7 @@ CONTAINS
 
       IMPLICIT NONE
 
-      TYPE(METHOD_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: methodPrm
 
       TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
@@ -11779,7 +11786,7 @@ CONTAINS
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
 
       ! ---method-related variables
-      TYPE(METHOD_PRM) :: methodPrm
+      TYPE(config_PRM) :: config
       INTEGER, INTENT(INOUT) :: Diagnose ! flag for printing diagnostic info during runtime [N/A]C
       INTEGER, INTENT(in) :: DiagMethod !Defines how near surface diagnostics are calculated
       INTEGER, INTENT(IN) :: EmissionsMethod !method to calculate anthropogenic heat [-]
@@ -12202,20 +12209,20 @@ CONTAINS
       timer%tstep_prev = tstep_prev
       timer%dt_since_start = dt_since_start
 
-      methodPrm%Diagnose = Diagnose
-      methodPrm%DiagMethod = DiagMethod
-      methodPrm%EmissionsMethod = EmissionsMethod
-      methodPrm%RoughLenHeatMethod = RoughLenHeatMethod
-      methodPrm%RoughLenMomMethod = RoughLenMomMethod
-      methodPrm%FAIMethod = FAIMethod
-      methodPrm%SMDMethod = SMDMethod
-      methodPrm%WaterUseMethod = WaterUseMethod
-      methodPrm%NetRadiationMethod = NetRadiationMethod
-      methodPrm%StabilityMethod = StabilityMethod
-      methodPrm%StorageHeatMethod = StorageHeatMethod
-      methodPrm%SnowUse = SnowUse
-      methodPrm%use_sw_direct_albedo = use_sw_direct_albedo
-      methodPrm%ohmIncQF = OHMIncQF
+      config%Diagnose = Diagnose
+      config%DiagMethod = DiagMethod
+      config%EmissionsMethod = EmissionsMethod
+      config%RoughLenHeatMethod = RoughLenHeatMethod
+      config%RoughLenMomMethod = RoughLenMomMethod
+      config%FAIMethod = FAIMethod
+      config%SMDMethod = SMDMethod
+      config%WaterUseMethod = WaterUseMethod
+      config%NetRadiationMethod = NetRadiationMethod
+      config%StabilityMethod = StabilityMethod
+      config%StorageHeatMethod = StorageHeatMethod
+      config%SnowUse = SnowUse
+      config%use_sw_direct_albedo = use_sw_direct_albedo
+      config%ohmIncQF = OHMIncQF
 
       lumpsPrm%raincover = RAINCOVER
       lumpsPrm%rainmaxres = RainMaxRes
@@ -12822,6 +12829,21 @@ CONTAINS
       phenState%lenDay_id = lenDay_id
       phenState%StoreDrainPrm = StoreDrainPrm
       ! ############# evaluation for DTS variables (end) #############
+      siteInfo%lumps=lumpsPrm
+      siteInfo%ehc=ehcPrm
+      siteInfo%spartacus=spartacusPrm
+      siteInfo%spartacus_Layer=spartacusLayerPrm
+      siteInfo%anthroemis=ahemisPrm
+      siteInfo%irrigation=irrPrm
+      siteInfo%snow=snowPrm
+      siteInfo%conductance=conductancePrm
+      siteInfo%lc_paved=pavedPrm
+      siteInfo%lc_bldg=bldgPrm
+      siteInfo%lc_dectr=dectrPrm
+      siteInfo%lc_evetr=evetrPrm
+      siteInfo%lc_grass=grassPrm
+      siteInfo%lc_bsoil=bsoilPrm
+      siteInfo%lc_water=waterPrm
 
       !   allocate output arrays
 
@@ -12884,10 +12906,10 @@ CONTAINS
 
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
-            timer, forcing, methodPrm, siteInfo, &
-            lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
-            irrPrm, snowPrm, conductancePrm, &
-            pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
+            timer, forcing, config, siteInfo, &
+            ! lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
+            ! irrPrm, snowPrm, conductancePrm, &
+            ! pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
             anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
             ! nlayer, &
             ! Ts5mindata_ir, &
@@ -12956,7 +12978,7 @@ CONTAINS
       porosity_id = phenState%porosity_id
       StoreDrainPrm = phenState%StoreDrainPrm
 
-      IF (methodPrm%StorageHeatMethod == 5) THEN
+      IF (config%StorageHeatMethod == 5) THEN
          ! ESTM_ehc related
          temp_roof = heatState%temp_roof
          temp_wall = heatState%temp_wall

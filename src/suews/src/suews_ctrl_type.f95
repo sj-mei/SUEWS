@@ -3,7 +3,7 @@ MODULE SUEWS_DEF_DTS
 
    IMPLICIT NONE
    ! ********** SUEWS_parameters schema (basic) **********
-   TYPE, PUBLIC :: METHOD_PRM
+   TYPE, PUBLIC :: config_PRM
       INTEGER :: DiagMethod ! Defines how near surface diagnostics are calculated
       INTEGER :: EmissionsMethod ! method to calculate anthropogenic heat [-]
       INTEGER :: RoughLenHeatMethod ! method to calculate heat roughness length [-]
@@ -18,7 +18,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: SnowUse !
       LOGICAL :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER :: ohmIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
-   END TYPE METHOD_PRM
+   END TYPE config_PRM
 
    TYPE, PUBLIC :: SURF_STORE_PRM
       REAL(KIND(1D0)) :: store_min
@@ -235,26 +235,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE SPARTACUS_LAYER_PRM
 
    ! ********** SUEWS_parameters schema (derived) **********
-   TYPE, PUBLIC :: SITE_PRM
-      REAL(KIND(1D0)) :: lat !latitude [deg]
-      REAL(KIND(1D0)) :: lon !longitude [deg]
-      REAL(KIND(1D0)) :: alt ! solar altitude [deg]
-      INTEGER :: gridiv ! grid id [-]
-      REAL(KIND(1D0)) :: timezone ! time zone, for site relative to UTC (east is positive) [h]
-      REAL(KIND(1D0)) :: surfacearea ! area of the grid [ha]
-      REAL(KIND(1D0)) :: z ! measurement height [m]
-      REAL(KIND(1D0)) :: z0m_in ! roughness length for momentum [m]
-      REAL(KIND(1D0)) :: zdm_in ! zero-plane displacement [m]
-      REAL(KIND(1D0)) :: pipecapacity ! capacity of pipes to transfer water [mm]
-      REAL(KIND(1D0)) :: runofftowater ! fraction of above-ground runoff flowing to water surface during flooding [-]
-      REAL(KIND(1D0)) :: narp_trans_site ! atmospheric transmissivity for NARP [-]
-      REAL(KIND(1D0)) :: CO2PointSource ! CO2 emission factor [kg km-1]
-      REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]
 
-      INTEGER :: nlayer ! number of vertical layers in urban canyon [-]
-
-   END TYPE SITE_PRM
 
    TYPE, PUBLIC :: LUMPS_PRM
       REAL(KIND(1D0)) :: raincover ! limit when surface totally covered with water for LUMPS [mm]
@@ -400,6 +381,46 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: wetthresh ! ******* dummy variable *******
       REAL(KIND(1D0)) :: flowchange ! special term in water
    END TYPE LC_WATER_PRM
+
+   TYPE, PUBLIC :: SITE_PRM
+      REAL(KIND(1D0)) :: lat !latitude [deg]
+      REAL(KIND(1D0)) :: lon !longitude [deg]
+      REAL(KIND(1D0)) :: alt ! solar altitude [deg]
+      INTEGER :: gridiv ! grid id [-]
+      REAL(KIND(1D0)) :: timezone ! time zone, for site relative to UTC (east is positive) [h]
+      REAL(KIND(1D0)) :: surfacearea ! area of the grid [ha]
+      REAL(KIND(1D0)) :: z ! measurement height [m]
+      REAL(KIND(1D0)) :: z0m_in ! roughness length for momentum [m]
+      REAL(KIND(1D0)) :: zdm_in ! zero-plane displacement [m]
+      REAL(KIND(1D0)) :: pipecapacity ! capacity of pipes to transfer water [mm]
+      REAL(KIND(1D0)) :: runofftowater ! fraction of above-ground runoff flowing to water surface during flooding [-]
+      REAL(KIND(1D0)) :: narp_trans_site ! atmospheric transmissivity for NARP [-]
+      REAL(KIND(1D0)) :: CO2PointSource ! CO2 emission factor [kg km-1]
+      REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]
+
+      INTEGER :: nlayer ! number of vertical layers in urban canyon [-]
+      type(SPARTACUS_PRM) :: spartacus
+      type(LUMPS_PRM)::lumps
+      type(EHC_PRM) :: ehc
+      type(SPARTACUS_LAYER_PRM) :: spartacus_layer
+      type(SURF_STORE_PRM) :: surf_store
+      type(IRRIGATION_PRM) :: irrigation
+      type(anthroEMIS_PRM) :: anthroemis
+      ! type(anthroHEAT_PRM) :: anthroheat
+      type(SNOW_PRM) :: snow
+      type(CONDUCTANCE_PRM) :: conductance
+      type(LC_PAVED_PRM) :: lc_paved
+      type(LC_BLDG_PRM) :: lc_bldg
+      type(LC_DECTR_PRM) :: lc_dectr
+      type(LC_EVETR_PRM) :: lc_evetr
+      type(LC_GRASS_PRM) :: lc_grass
+      type(LC_BSOIL_PRM) :: lc_bsoil
+      type(LC_WATER_PRM) :: lc_water
+
+
+
+   END TYPE SITE_PRM
 
    ! ********** SUEWS_stateVars schema **********
    TYPE, PUBLIC :: anthroHEAT_STATE
