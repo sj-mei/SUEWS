@@ -413,6 +413,11 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: dqnsdt ! Rate of change of net radiation [W m-2 h-1]
    END TYPE OHM_STATE
 
+   TYPE, PUBLIC :: solar_State
+      REAL(KIND(1D0)) :: azimuth
+      REAL(KIND(1D0)) :: zenith_deg
+   END TYPE solar_State
+
    TYPE, PUBLIC :: PHENOLOGY_STATE
       REAL(KIND(1D0)), DIMENSION(NSURF) :: alb
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: lai_id ! Initial LAI values.

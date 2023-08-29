@@ -2209,6 +2209,55 @@ CONTAINS
             tsfc0_out_wall = heatState%tsfc_wall
          END IF
 
+         ! calculate surface fraction related VARIABLES
+         CALL SUEWS_cal_surf_DTS( &
+            methodPrm, & !input
+            nlayer, &
+            pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
+            spartacusLayerPrm, spartacusPrm, & !input
+            VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
+            sfr_roof, sfr_wall) ! output
+
+         ! calculate mean air temperature of past 24 hours
+         ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
+         Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
+
+         !==============surface roughness calculation=======================
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
+         IF (methodPrm%Diagnose == 1) PRINT *, 'z0m_in =', siteInfo%z0m_in
+         CALL SUEWS_cal_RoughnessParameters_DTS( &
+            methodPrm, &
+            pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
+            siteInfo, &
+            phenState_prev, &
+            ! TODO: collect output into a derived type for model output
+            roughnessState)
+         ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
+         ! FAI, PAI, & !output
+         ! zH, z0m, zdm, ZZD)
+         ! print *, 'day =', timer%id, 'hour =', timer%it, 'z0m = ', z0m
+
+         !=================Calculate sun position=================
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
+         ! print *, 'timer: azimuth, zenith_deg', timer%azimuth, timer%zenith_deg
+         CALL NARP_cal_SunPosition_DTS( &
+            timer, & !input:
+            siteInfo, &
+            azimuth, zenith_deg) !output:
+         ! zenith_deg=timer%zenith_deg
+         ! azimuth=timer%azimuth
+         ! print *, 'azimuth, zenith_deg', azimuth, zenith_deg
+         ! print *, '~~~~~'
+
+         !=================Calculation of density and other water related parameters=================
+         IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
+         CALL cal_AtmMoist( &
+            forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
+            lv_J_kg, lvS_J_kg, & ! output:
+            es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
+
+         ! start iteration-based calculation
+         ! through iterations, the surface temperature is examined to be converged
          i_iter = 1
          max_iter = 30
          DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
@@ -2217,52 +2266,7 @@ CONTAINS
                PRINT *, 'iteration is ', i_iter
             END IF
 
-            ! calculate surface fraction related VARIABLES
-            CALL SUEWS_cal_surf_DTS( &
-               methodPrm, & !input
-               nlayer, &
-               pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
-               spartacusLayerPrm, spartacusPrm, & !input
-               VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
-               sfr_roof, sfr_wall) ! output
 
-            ! calculate mean air temperature of past 24 hours
-            ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
-            Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
-
-            !==============surface roughness calculation=======================
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
-            IF (methodPrm%Diagnose == 1) PRINT *, 'z0m_in =', siteInfo%z0m_in
-            CALL SUEWS_cal_RoughnessParameters_DTS( &
-               methodPrm, &
-               pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
-               siteInfo, &
-               phenState_prev, &
-               ! TODO: collect output into a derived type for model output
-               roughnessState)
-            ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
-            ! FAI, PAI, & !output
-            ! zH, z0m, zdm, ZZD)
-            ! print *, 'day =', timer%id, 'hour =', timer%it, 'z0m = ', z0m
-
-            !=================Calculate sun position=================
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
-            ! print *, 'timer: azimuth, zenith_deg', timer%azimuth, timer%zenith_deg
-            CALL NARP_cal_SunPosition_DTS( &
-               timer, & !input:
-               siteInfo, &
-               azimuth, zenith_deg) !output:
-            ! zenith_deg=timer%zenith_deg
-            ! azimuth=timer%azimuth
-            ! print *, 'azimuth, zenith_deg', azimuth, zenith_deg
-            ! print *, '~~~~~'
-
-            !=================Calculation of density and other water related parameters=================
-            IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-            CALL cal_AtmMoist( &
-               forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
-               lv_J_kg, lvS_J_kg, & ! output:
-               es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
             !==============main calculation start=======================
 
             ! WIP notes: TS 23 Aug 2023
@@ -12861,9 +12865,9 @@ CONTAINS
          forcing%LAI_obs = MetForcingBlock(ir, 21)
          !qh_obs = MetForcingBlock(ir, 6)
          !qe_obs = MetForcingBlock(ir, 7)
-         kdiff = MetForcingBlock(ir, 22)
-         kdir = MetForcingBlock(ir, 23)
-         wdir = MetForcingBlock(ir, 24)
+         ! kdiff = MetForcingBlock(ir, 22)
+         ! kdir = MetForcingBlock(ir, 23)
+         ! wdir = MetForcingBlock(ir, 24)
 
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
