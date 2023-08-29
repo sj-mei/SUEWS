@@ -2266,7 +2266,6 @@ CONTAINS
                PRINT *, 'iteration is ', i_iter
             END IF
 
-
             !==============main calculation start=======================
 
             ! WIP notes: TS 23 Aug 2023
