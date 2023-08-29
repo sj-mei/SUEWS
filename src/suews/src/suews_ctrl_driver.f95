@@ -15,7 +15,8 @@ MODULE SUEWS_Driver
                             LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
-                            ROUGHNESS_STATE, solar_State, atm_state
+                            ROUGHNESS_STATE, solar_State, atm_state,&
+                            SUEWS_STATE
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, cal_atm_state
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition, NARP_cal_SunPosition_DTS
@@ -1731,7 +1732,8 @@ CONTAINS
       ! lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
       ! irrPrm, snowPrm, conductancePrm, &
       ! pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
-      anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
+      modState,&
+      ! anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
       output_line_suews) ! output
 
       IMPLICIT NONE
@@ -1763,12 +1765,14 @@ CONTAINS
       ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
       ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(anthroHEAT_STATE), INTENT(INOUT) :: anthroHeatState
-      TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
-      TYPE(HEAT_STATE), INTENT(INOUT) :: heatState
-      TYPE(OHM_STATE), INTENT(INOUT) :: ohmState
-      TYPE(SNOW_STATE), INTENT(INOUT) :: snowState
-      TYPE(PHENOLOGY_STATE), INTENT(INOUT) :: phenState
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
+
+      ! TYPE(anthroHEAT_STATE), INTENT(INOUT) :: anthroHeatState
+      ! TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
+      ! TYPE(HEAT_STATE), INTENT(INOUT) :: heatState
+      ! TYPE(OHM_STATE), INTENT(INOUT) :: ohmState
+      ! TYPE(SNOW_STATE), INTENT(INOUT) :: snowState
+      ! TYPE(PHENOLOGY_STATE), INTENT(INOUT) :: phenState
       ! ####################################################################################
 
       ! ########################################################################################
@@ -1866,10 +1870,10 @@ CONTAINS
       REAL(KIND(1D0)) :: TStar !T*, temperature scale [-]
       REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
       REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
-      REAL(KIND(1D0)) :: VPD_Pa !vapour pressure deficit  [Pa]
+      ! REAL(KIND(1D0)) :: VPD_Pa !vapour pressure deficit  [Pa]
       ! REAL(KIND(1D0)) :: z0m !Aerodynamic roughness length [m]
       ! REAL(KIND(1D0)) :: zdm !zero-plane displacement [m]
-      REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle [deg]
+      ! REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle [deg]
       ! REAL(KIND(1D0)) :: zH ! Mean building height [m]
 
       REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
@@ -2073,6 +2077,7 @@ CONTAINS
          dectime => timer%dectime, &
          dayofWeek_id => timer%dayofWeek_id, &
          dls => timer%dls, &
+
          nlayer => siteInfo%nlayer, &
          lumpsPrm => siteInfo%lumps, &
          ehcPrm => siteInfo%ehc, &
@@ -2089,6 +2094,7 @@ CONTAINS
          grassPrm => siteInfo%lc_grass, &
          bsoilPrm => siteInfo%lc_bsoil, &
          waterPrm => siteInfo%lc_water, &
+         sfr_surf => siteInfo%sfr_surf, &
 
          azimuth_deg => solarState%azimuth_deg, &
          zenith_deg => solarState%zenith_deg, &
@@ -2111,8 +2117,15 @@ CONTAINS
          FAIBldg_use => roughnessState%FAIBldg_use, &
          FAIEveTree_use => roughnessState%FAIEveTree_use, &
          FAIDecTree_use => roughnessState%FAIDecTree_use, &
-         Ts5mindata_ir => forcing%Ts5mindata_ir, &
-         sfr_surf => siteInfo%sfr_surf &
+         anthroHeatState => modState%anthroHeatState, &
+         hydroState => modState%hydroState, &
+         heatstate => modState%heatState, &
+         ohmstate => modState%ohmState, &
+         snowState => modState%snowState, &
+         phenState => modState%phenState, &
+         ! roughnessState => modState%roughnessState, &
+
+         Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
 
          ! WRITE (*, *) "hydroState%state_roof", hydroState%state_roof
@@ -12069,6 +12082,9 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(INOUT) :: albGrass_id !Albedo of grass  [-]
       REAL(KIND(1D0)), INTENT(INOUT) :: porosity_id !Porosity of deciduous trees [-]
       REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) :: StoreDrainPrm !coefficients used in drainage calculation [-]
+
+      ! lumped states
+      TYPE(SUEWS_STATE) :: modState
       ! ############# DTS variables (end) #############
 
       ! input:
@@ -12128,11 +12144,11 @@ CONTAINS
       INTEGER :: ir
       ! met forcing variables
       INTEGER, PARAMETER :: gridiv_x = 1 ! a dummy gridiv as this routine is only one grid
-      REAL(KIND(1D0)) :: qh_obs
-      REAL(KIND(1D0)) :: qe_obs
-      REAL(KIND(1D0)) :: kdiff
-      REAL(KIND(1D0)) :: kdir
-      REAL(KIND(1D0)) :: wdir
+      ! REAL(KIND(1D0)) :: qh_obs
+      ! REAL(KIND(1D0)) :: qe_obs
+      ! REAL(KIND(1D0)) :: kdiff
+      ! REAL(KIND(1D0)) :: kdir
+      ! REAL(KIND(1D0)) :: wdir
 
       REAL(KIND(1D0)), DIMENSION(5) :: datetimeLine
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
@@ -12828,7 +12844,19 @@ CONTAINS
       phenState%Tmax_id = Tmax_id
       phenState%lenDay_id = lenDay_id
       phenState%StoreDrainPrm = StoreDrainPrm
+
+      ! ! transfer states into modState
+      modState%anthroHeatState = anthroHeatState
+      modState%hydroState = hydroState
+      modState%heatState = heatState
+      modState%ohmState = ohmState
+      modState%snowState = snowState
+      modState%phenState = phenState
+
+
       ! ############# evaluation for DTS variables (end) #############
+
+
       siteInfo%lumps=lumpsPrm
       siteInfo%ehc=ehcPrm
       siteInfo%spartacus=spartacusPrm
@@ -12910,7 +12938,8 @@ CONTAINS
             ! lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
             ! irrPrm, snowPrm, conductancePrm, &
             ! pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
-            anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
+            modState,&
+            ! anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
             ! nlayer, &
             ! Ts5mindata_ir, &
             output_line_suews) !output
@@ -12942,6 +12971,14 @@ CONTAINS
 
       ! update INOUT variables
       Tair_av = forcing%Tair_av_5d
+
+      ! ! transfer modState back into individual states
+      anthroHeatState= modState%anthroHeatstate
+      hydroState= modState%hydrostate
+      heatState= modState%heatstate
+      ohmState= modState%ohmstate
+      snowState= modState%snowstate
+      phenState= modState%phenstate
 
       HDD_id = anthroHeatState%HDD_id
 

@@ -528,6 +528,19 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE ROUGHNESS_STATE
 
+   ! incorporate all model states into one lumped type
+   TYPE, PUBLIC :: SUEWS_STATE
+      TYPE(anthroHEAT_STATE) :: anthroheatState
+      TYPE(OHM_STATE) :: ohmState
+      TYPE(solar_State) :: solarState
+      TYPE(atm_state) :: atmState
+      TYPE(PHENOLOGY_STATE) :: phenState
+      TYPE(SNOW_STATE) :: snowState
+      TYPE(HYDRO_STATE) :: hydroState
+      TYPE(HEAT_STATE) :: heatState
+      TYPE(ROUGHNESS_STATE) :: roughnessState
+   END TYPE SUEWS_STATE
+
    ! ********** SUEWS_forcing schema **********
    TYPE, PUBLIC :: SUEWS_FORCING
       REAL(KIND(1D0)) :: kdown !
