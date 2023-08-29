@@ -15,9 +15,9 @@ MODULE SUEWS_Driver
                             LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
-                            ROUGHNESS_STATE
+                            ROUGHNESS_STATE, solar_State, atm_state
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
-   USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
+   USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, cal_atm_state
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition, NARP_cal_SunPosition_DTS
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
    USE AnOHM_module, ONLY: AnOHM
@@ -1949,6 +1949,8 @@ CONTAINS
       ! snow related temporary values
       REAL(KIND(1D0)) :: albedo_snow !snow albedo [-]
 
+      TYPE(solar_State) :: solarState ! solar related model states
+
       ! ########################################################################################
       ! TS 19 Sep 2019
       ! temporary variables to save values for inout varialbes
@@ -2071,6 +2073,7 @@ CONTAINS
       ! REAL(KIND(1D0)) :: FAIEveTree_use
       ! REAL(KIND(1D0)) :: FAIDecTree_use
       TYPE(ROUGHNESS_STATE) :: roughnessState
+      TYPE(atm_state) :: atmState
 
       ASSOCIATE ( &
          nlayer => siteInfo%nlayer, &
@@ -2080,8 +2083,18 @@ CONTAINS
          dectime => timer%dectime, &
          dayofWeek_id => timer%dayofWeek_id, &
          dls => timer%dls, &
-         ! azimuth => timer%azimuth, &
-         ! zenith_deg => timer%zenith_deg, &
+         azimuth_deg => solarState%azimuth_deg, &
+         zenith_deg => solarState%zenith_deg, &
+         lv_J_kg => atmState%lv_J_kg, &
+         lvS_J_kg => atmState%lvS_J_kg, &
+         es_hPa => atmState%es_hPa, &
+         Ea_hPa => atmState%Ea_hPa, &
+         VPd_hpa => atmState%VPd_hpa, &
+         VPD_Pa => atmState%VPD_Pa, &
+         dq => atmState%dq, &
+         dens_dry => atmState%dens_dry, &
+         avcp => atmState%avcp, &
+         avdens => atmState%avdens, &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
@@ -2243,7 +2256,7 @@ CONTAINS
          CALL NARP_cal_SunPosition_DTS( &
             timer, & !input:
             siteInfo, &
-            azimuth, zenith_deg) !output:
+            azimuth_deg, zenith_deg) !output:
          ! zenith_deg=timer%zenith_deg
          ! azimuth=timer%azimuth
          ! print *, 'azimuth, zenith_deg', azimuth, zenith_deg
@@ -2251,10 +2264,11 @@ CONTAINS
 
          !=================Calculation of density and other water related parameters=================
          IF (methodPrm%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-         CALL cal_AtmMoist( &
-            forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
-            lv_J_kg, lvS_J_kg, & ! output:
-            es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
+         CALL cal_atm_state(forcing, timer, atmState)
+         ! CALL cal_AtmMoist( &
+         !    forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
+         !    lv_J_kg, lvS_J_kg, & ! output:
+         !    es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
 
          ! start iteration-based calculation
          ! through iterations, the surface temperature is examined to be converged
@@ -2265,7 +2279,6 @@ CONTAINS
                PRINT *, '=========================== '
                PRINT *, 'iteration is ', i_iter
             END IF
-
 
             !==============main calculation start=======================
 
@@ -2783,7 +2796,7 @@ CONTAINS
          IF (sfr_surf(BldgSurf) > 0) THEN
             PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
             CALL BEERS_cal_main_DTS(timer, dectime, PAI, FAI, forcing, ldown, &
-                                    TSfc_C, siteInfo, ZENITH_deg, azimuth, &
+                                    TSfc_C, siteInfo, ZENITH_deg, azimuth_deg, &
                                     pavedPrm, bldgPrm, phenState, &
                                     dataOutLineBEERS) ! output
          ELSE
@@ -2792,7 +2805,7 @@ CONTAINS
 
          !==============translation of  output variables into output array===========
          CALL SUEWS_update_outputLine_DTS( &
-            AdditionalWater, phenState, forcing, U10_ms, azimuth, & !input
+            AdditionalWater, phenState, forcing, U10_ms, azimuth_deg, & !input
             chSnow_per_interval, dectime, &
             drain_per_tstep, QE_LUMPS, ev_per_tstep, wu_ext, Fc, Fc_build, fcld, &
             Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, siteInfo, &

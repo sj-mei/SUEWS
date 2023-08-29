@@ -1,4 +1,5 @@
 MODULE AtmMoistStab_module
+   USE SUEWS_DEF_DTS, ONLY: atm_state, SUEWS_FORCING, SUEWS_TIMER
    IMPLICIT NONE
    REAL(KIND(1D0)), PARAMETER :: neut_limit = 1.E-2 !Limit for neutral stability
    REAL(KIND(1D0)), PARAMETER :: k = 0.4 !Von Karman's contant
@@ -10,6 +11,36 @@ MODULE AtmMoistStab_module
    INTEGER, PARAMETER :: B71 = 4 ! Businger et al (1971) modifed  Hogstrom (1988)
 
 CONTAINS
+
+   SUBROUTINE cal_atm_state(forcing, timer, atmState)
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(atm_state), INTENT(out) :: atmState
+      ASSOCIATE ( &
+         Temp_C => forcing%Temp_C, &
+         pres => forcing%pres, &
+         RH => forcing%RH, &
+         dectime => timer%dectime, &
+         lv_J_kg => atmState%lv_J_kg, &
+         lvS_J_kg => atmState%lvS_J_kg, &
+         es_hPa => atmState%es_hPa, &
+         Ea_hPa => atmState%Ea_hPa, &
+         VPd_hpa => atmState%VPd_hpa, &
+         VPD_Pa => atmState%VPD_Pa, &
+         dq => atmState%dq, &
+         dens_dry => atmState%dens_dry, &
+         avcp => atmState%avcp, &
+         avdens => atmState%avdens &
+         )
+         CALL cal_AtmMoist( &
+            Temp_C, pres, RH, dectime, &
+            lv_J_kg, lvS_J_kg, &
+            es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
+
+      END ASSOCIATE
+
+   END SUBROUTINE cal_atm_state
+
    !.c!! For Lumps Version 2 - no stability calculations
    ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
    ! explict interface added to all subroutines, TS 08 Aug 2017

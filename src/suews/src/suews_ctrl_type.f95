@@ -414,9 +414,29 @@ MODULE SUEWS_DEF_DTS
    END TYPE OHM_STATE
 
    TYPE, PUBLIC :: solar_State
-      REAL(KIND(1D0)) :: azimuth
-      REAL(KIND(1D0)) :: zenith_deg
+      REAL(KIND(1D0)) :: azimuth_deg !solar azimuth [angle]
+      REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle [deg]
    END TYPE solar_State
+
+   TYPE, PUBLIC :: atm_state
+      REAL(KIND(1D0)) :: avcp !Specific heat capacity
+      REAL(KIND(1D0)) :: dens_dry !Dry air density kg m-3
+      REAL(KIND(1D0)) :: avdens !Average air density
+      REAL(KIND(1D0)) :: dq !Specific humidity deficit
+      REAL(KIND(1D0)) :: Ea_hPa !Water vapour pressure in hPa
+      REAL(KIND(1D0)) :: Es_hPa !Saturation vapour pressure in hPa
+      REAL(KIND(1D0)) :: lv_J_kg !Latent heat of vaporization in [J kg-1]
+      REAL(KIND(1D0)) :: lvS_J_kg !latent heat of sublimation [J kg-1]
+      REAL(KIND(1D0)) :: tlv !Latent heat of vaporization per timestep [J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
+      REAL(KIND(1D0)) :: psyc_hPa !Psychometric constant in hPa
+      REAL(KIND(1D0)) :: psycIce_hPa !Psychometric constant in hPa for snow
+      REAL(KIND(1D0)) :: s_Pa !Vapour pressure versus temperature slope in Pa
+      REAL(KIND(1D0)) :: s_hpa !Vapour pressure versus temperature slope in hPa
+      REAL(KIND(1D0)) :: sIce_hpa !Vapour pressure versus temperature slope in hPa above ice/snow
+      REAL(KIND(1D0)) :: vpd_hPa !Vapour pressure deficit in hPa
+      REAL(KIND(1D0)) :: vpd_pa !Vapour pressure deficit in Pa
+
+   END TYPE atm_state
 
    TYPE, PUBLIC :: PHENOLOGY_STATE
       REAL(KIND(1D0)), DIMENSION(NSURF) :: alb
@@ -527,9 +547,6 @@ MODULE SUEWS_DEF_DTS
       INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
 
       INTEGER :: DLS !daylight saving time offset [h]
-
-      REAL(KIND(1D0)) :: azimuth !solar azimuth angle [deg]
-      REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle in degree [deg]
 
    END TYPE SUEWS_TIMER
 
