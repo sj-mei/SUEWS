@@ -1736,7 +1736,7 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_Main
 
    SUBROUTINE SUEWS_cal_Main_DTS( &
-      siteInfo, forcing, timer, methodPrm, &
+      timer, forcing, methodPrm, siteInfo, &
       lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
       irrPrm, snowPrm, conductancePrm, &
       pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
@@ -1803,15 +1803,15 @@ CONTAINS
       REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
       REAL(KIND(1D0)) :: AdditionalWater = 0 !!Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
       REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
-      REAL(KIND(1D0)) :: azimuth !solar azimuth [angle]
+      ! REAL(KIND(1D0)) :: azimuth !solar azimuth [angle]
       REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
 
-      REAL(KIND(1D0)) :: dens_dry !Vap density or absolute humidity (kg m-3)
+      ! REAL(KIND(1D0)) :: dens_dry !Vap density or absolute humidity (kg m-3)
       ! REAL(KIND(1D0)) :: deltaLAI !change in LAI [m2 m-2]
       REAL(KIND(1D0)) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
-      REAL(KIND(1D0)) :: Ea_hPa !vapor pressure [hPa]
+      ! REAL(KIND(1D0)) :: Ea_hPa !vapor pressure [hPa]
       REAL(KIND(1D0)) :: QE_LUMPS !turbulent latent heat flux by LUMPS model [W m-2]
-      REAL(KIND(1D0)) :: es_hPa !Saturation vapour pressure over water  [hPa]
+      ! REAL(KIND(1D0)) :: es_hPa !Saturation vapour pressure over water  [hPa]
       REAL(KIND(1D0)) :: ev_per_tstep ! evaporation at each time step [mm]
       REAL(KIND(1D0)) :: wu_ext !external water use [mm]
       REAL(KIND(1D0)) :: Fc !total co2 flux [umol m-2 s-1]
@@ -1901,8 +1901,8 @@ CONTAINS
       ! INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
       ! INTEGER :: DLS !daylight saving time offset [h]
 
-      REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
-      REAL(KIND(1D0)) :: lvS_J_kg !latent heat of sublimation [J kg-1]
+      ! REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
+      ! REAL(KIND(1D0)) :: lvS_J_kg !latent heat of sublimation [J kg-1]
       REAL(KIND(1D0)) :: psyc_hPa !psychometric constant [hPa]
       REAL(KIND(1D0)) :: z0v !roughness for heat [m]
       REAL(KIND(1D0)) :: z0vSnow !roughness for heat [m]
@@ -1914,7 +1914,7 @@ CONTAINS
       REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
       ! REAL(KIND(1D0)) :: veg_fr !vegetation fraction [-]
       REAL(KIND(1D0)) :: VegPhenLumps
-      REAL(KIND(1D0)) :: VPd_hpa ! vapour pressure deficit [hPa]
+      ! REAL(KIND(1D0)) :: VPd_hpa ! vapour pressure deficit [hPa]
       REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
       ! REAL(KIND(1D0)) :: ZZD !Active measurement height[m]
 
@@ -12884,7 +12884,7 @@ CONTAINS
 
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
-            siteInfo, forcing, timer, methodPrm, &
+            timer, forcing, methodPrm, siteInfo, &
             lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
             irrPrm, snowPrm, conductancePrm, &
             pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
