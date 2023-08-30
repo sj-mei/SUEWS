@@ -226,7 +226,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_surf
 
       REAL(KIND(1D0)), INTENT(out) :: albedo_snowfree
-      REAL(KIND(1D0)):: albedo_snow
+      REAL(KIND(1D0)) :: albedo_snow
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf_K
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_surf
