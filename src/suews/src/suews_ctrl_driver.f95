@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
                             LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
-                            ROUGHNESS_STATE, solar_State, atm_state,&
+                            ROUGHNESS_STATE, solar_State, atm_state, &
                             SUEWS_STATE
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, cal_atm_state
@@ -1728,7 +1728,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_Main_DTS( &
       timer, forcing, config, siteInfo, &
-      modState,&
+      modState, &
       output_line_suews) ! output
 
       IMPLICIT NONE
@@ -2072,7 +2072,6 @@ CONTAINS
          dectime => timer%dectime, &
          dayofWeek_id => timer%dayofWeek_id, &
          dls => timer%dls, &
-
          nlayer => siteInfo%nlayer, &
          lumpsPrm => siteInfo%lumps, &
          ehcPrm => siteInfo%ehc, &
@@ -2090,7 +2089,6 @@ CONTAINS
          bsoilPrm => siteInfo%lc_bsoil, &
          waterPrm => siteInfo%lc_water, &
          sfr_surf => siteInfo%sfr_surf, &
-
          azimuth_deg => solarState%azimuth_deg, &
          zenith_deg => solarState%zenith_deg, &
          lv_J_kg => atmState%lv_J_kg, &
@@ -2119,7 +2117,6 @@ CONTAINS
          snowState => modState%snowState, &
          phenState => modState%phenState, &
          ! roughnessState => modState%roughnessState, &
-
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
 
@@ -2240,9 +2237,10 @@ CONTAINS
          ! calculate surface fraction related VARIABLES
          CALL SUEWS_cal_surf_DTS( &
             config, & !input
-            nlayer, &
-            pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
-            spartacusLayerPrm, spartacusPrm, & !input
+            siteInfo, & !input
+            ! nlayer, &
+            ! pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
+            ! spartacusLayerPrm, spartacusPrm, & !input
             VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
             sfr_roof, sfr_wall) ! output
 
@@ -10537,87 +10535,112 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_surf_DTS
 
    SUBROUTINE SUEWS_cal_surf_DTS( &
-      methodPrm, & !input
-      nlayer, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
-      spartacusLayerPrm, spartacusPrm, & !input
+      config, & !input
+      siteInfo, & !input
+      ! nlayer, &
+      ! pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
+      ! spartacusLayerPrm, spartacusPrm, & !input
       vegfraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
       sfr_roof, sfr_wall) ! output
 
       IMPLICIT NONE
 
-      TYPE(config_PRM), INTENT(IN) :: methodPrm
+      TYPE(config_PRM), INTENT(IN) :: config
+      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(SPARTACUS_LAYER_PRM), INTENT(IN) :: spartacusLayerPrm
-      TYPE(SPARTACUS_PRM), INTENT(IN) :: spartacusPrm
+      ! TYPE(SPARTACUS_LAYER_PRM), INTENT(IN) :: spartacusLayerPrm
+      ! TYPE(SPARTACUS_PRM), INTENT(IN) :: spartacusPrm
 
       INTEGER :: StorageHeatMethod ! method for storage heat calculations [-]
       INTEGER :: NetRadiationMethod ! method for net radiation calculations [-]
-      INTEGER, INTENT(IN) :: nlayer !number of vertical layers[-]
+      ! INTEGER, INTENT(IN) :: nlayer !number of vertical layers[-]
 
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: building_frac !cumulative surface fraction of buildings across vertical layers [-]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: building_scale !building scales of each vertical layer  [m]
-      REAL(KIND(1D0)), DIMENSION(nlayer + 1) :: height !building height of each layer[-]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: building_frac !cumulative surface fraction of buildings across vertical layers [-]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: building_scale !building scales of each vertical layer  [m]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer + 1) :: height !building height of each layer[-]
       REAL(KIND(1D0)), INTENT(OUT) :: VegFraction ! fraction of vegetation [-]
       REAL(KIND(1D0)), INTENT(OUT) :: ImpervFraction !fractioin of impervious surface [-]
       REAL(KIND(1D0)), INTENT(OUT) :: PervFraction !fraction of pervious surfaces [-]
       REAL(KIND(1D0)), INTENT(OUT) :: NonWaterFraction !fraction of non-water [-]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: sfr_roof !fraction of roof facets [-]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(OUT) :: sfr_wall !fraction of wall facets [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: sfr_roof !fraction of roof facets [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: sfr_wall !fraction of wall facets [-]
 
       ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof ! individual building fraction at each layer
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: dz_ind ! individual net building height at each layer
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: dz_ind ! individual net building height at each layer
       ! REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall ! individual net building height at each layer
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: perimeter_ind ! individual building perimeter at each layer
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: perimeter_ind ! individual building perimeter at each layer
+      ASSOCIATE ( &
+         StorageHeatMethod => config%StorageHeatMethod, &
+         NetRadiationMethod => config%NetRadiationMethod, &
+         nlayer => siteInfo%nlayer, &
+         ! sfr_surf => siteInfo%sfr_surf, &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         ! spartacusPrm => siteInfo%spartacus, &
+         height => siteInfo%spartacus%height, &
+         ! spartacusLayerPrm => siteInfo%spartacusLayerPrm, &
+         building_frac => siteInfo%spartacus_layer%building_frac, &
+         building_scale => siteInfo%spartacus_layer%building_scale &
+         &)
+         ! StorageHeatMethod = config%StorageHeatMethod
+         ! NetRadiationMethod = config%NetRadiationMethod
+         ALLOCATE (sfr_roof(nlayer))
+         ALLOCATE (sfr_wall(nlayer))
+         ALLOCATE (dz_ind(nlayer))
+         ALLOCATE (perimeter_ind(nlayer))
 
-      StorageHeatMethod = methodPrm%StorageHeatMethod
-      NetRadiationMethod = methodPrm%NetRadiationMethod
+         sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+         ! building_frac = spartacusLayerPrm%building_frac
+         ! building_scale = spartacusLayerPrm%building_scale
+         ! height = spartacusPrm%height
 
-      building_frac = spartacusLayerPrm%building_frac
-      building_scale = spartacusLayerPrm%building_scale
-      height = spartacusPrm%height
+         VegFraction = sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)
+         ImpervFraction = sfr_surf(PavSurf) + sfr_surf(BldgSurf)
+         PervFraction = 1 - ImpervFraction
+         NonWaterFraction = 1 - sfr_surf(WaterSurf)
 
-      VegFraction = sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)
-      ImpervFraction = sfr_surf(PavSurf) + sfr_surf(BldgSurf)
-      PervFraction = 1 - ImpervFraction
-      NonWaterFraction = 1 - sfr_surf(WaterSurf)
+         IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
+            ! get individual building fractions of each layer
+            ! NB.: sum(sfr_roof) = building_frac(1)
+            sfr_roof = 0.
+            IF (nlayer > 1) sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
+            sfr_roof(nlayer) = building_frac(nlayer)
 
-      IF (StorageHeatMethod == 5 .OR. NetRadiationMethod > 1000) THEN
-         ! get individual building fractions of each layer
-         ! NB.: sum(sfr_roof) = building_frac(1)
-         sfr_roof = 0.
-         IF (nlayer > 1) sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
-         sfr_roof(nlayer) = building_frac(nlayer)
+            ! get individual net building height of each layer
+            dz_ind = 0.
+            dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
 
-         ! get individual net building height of each layer
-         dz_ind = 0.
-         dz_ind(1:nlayer) = height(2:nlayer + 1) - height(1:nlayer)
+            ! get individual building perimeter of each layer
+            ! this is from eq. 8 in SS documentation:
+            ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
+            perimeter_ind = 0.
+            perimeter_ind(1:nlayer) = 4.*building_frac(1:nlayer)/building_scale(1:nlayer)
 
-         ! get individual building perimeter of each layer
-         ! this is from eq. 8 in SS documentation:
-         ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
-         perimeter_ind = 0.
-         perimeter_ind(1:nlayer) = 4.*building_frac(1:nlayer)/building_scale(1:nlayer)
+            ! sfr_wall stands for individual wall area
+            ! get individual wall area at each layer
+            sfr_wall = 0.
+            ! this is from eq. 1 in SS documentation:
+            ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
+            sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)
+         END IF
 
-         ! sfr_wall stands for individual wall area
-         ! get individual wall area at each layer
-         sfr_wall = 0.
-         ! this is from eq. 1 in SS documentation:
-         ! https://github.com/ecmwf/spartacus-surface/blob/master/doc/spartacus_surface_documentation.pdf
-         sfr_wall(1:nlayer) = perimeter_ind(1:nlayer)*dz_ind(1:nlayer)
-      END IF
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_surf_DTS
 
@@ -12295,7 +12318,7 @@ CONTAINS
       spartacusPrm%veg_contact_fraction_const = veg_contact_fraction_const
       spartacusPrm%veg_fsd_const = veg_fsd_const
 
-      call spartacusLayerPrm%ALLOCATE(nlayer)
+      CALL spartacusLayerPrm%ALLOCATE(nlayer)
 
       ! ALLOCATE (spartacusLayerPrm%building_frac(nlayer))
       ! ALLOCATE (spartacusLayerPrm%building_scale(nlayer))
@@ -12850,7 +12873,6 @@ CONTAINS
       modState%snowState = snowState
       modState%phenState = phenState
 
-
       ! ############# evaluation for DTS variables (end) #############
       siteInfo%lumps = lumpsPrm
       siteInfo%ehc = ehcPrm
@@ -12930,7 +12952,7 @@ CONTAINS
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
             timer, forcing, config, siteInfo, &
-            modState,&
+            modState, &
             output_line_suews) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -12962,12 +12984,12 @@ CONTAINS
       Tair_av = forcing%Tair_av_5d
 
       ! ! transfer modState back into individual states
-      anthroHeatState= modState%anthroHeatstate
-      hydroState= modState%hydrostate
-      heatState= modState%heatstate
-      ohmState= modState%ohmstate
-      snowState= modState%snowstate
-      phenState= modState%phenstate
+      anthroHeatState = modState%anthroHeatstate
+      hydroState = modState%hydrostate
+      heatState = modState%heatstate
+      ohmState = modState%ohmstate
+      snowState = modState%snowstate
+      phenState = modState%phenstate
 
       HDD_id = anthroHeatState%HDD_id
 
