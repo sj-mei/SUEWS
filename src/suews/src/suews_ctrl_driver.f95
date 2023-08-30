@@ -2124,7 +2124,7 @@ CONTAINS
          ! qe_surf => modState%heatState%qe_surf, &
          ! qh_surf => modState%heatState%qh_surf, &
          ! qh_resist_surf => modState%heatState%qh_resist_surf, &
-         ! roughnessState => modState%roughnessState, &
+
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
 
