@@ -1998,7 +1998,7 @@ CONTAINS
 
       ! energy fluxes of individual surfaces
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: QG_surf ! heat flux used in ESTM_ehc as forcing of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf ! net all-wave radiation of individual surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf ! net all-wave radiation of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe0_surf ! latent heat flux from PM of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
@@ -2109,38 +2109,38 @@ CONTAINS
          tsfc0_out_wall => modState%heatState%tsfc0_out_wall, &
          tsfc0_out_surf => modState%heatState%tsfc0_out_surf, &
 
-         ! QN_roof => modState%heatState%QN_roof, &
-         ! QN_wall => modState%heatState%QN_wall, &
+         QN_roof => modState%heatState%QN_roof, &
+         QN_wall => modState%heatState%QN_wall, &
          QN_surf => modState%heatState%QN_surf, &
 
-         ! QS_roof => modState%heatState%QS_roof, &
-         ! QS_wall => modState%heatState%QS_wall, &
-         ! qs_surf => modState%heatState%qs_surf, &
+         QS_roof => modState%heatState%QS_roof, &
+         QS_wall => modState%heatState%QS_wall, &
+         qs_surf => modState%heatState%qs_surf, &
 
-         ! qe_roof => modState%heatState%qe_roof, &
-         ! qh_roof => modState%heatState%qh_roof, &
-         ! qh_resist_roof => modState%heatState%qh_resist_roof, &
-         ! qe_wall => modState%heatState%qe_wall, &
-         ! qh_wall => modState%heatState%qh_wall, &
-         ! qh_resist_wall => modState%heatState%qh_resist_wall, &
-         ! qe0_surf => modState%heatState%qe0_surf, &
-         ! qe_surf => modState%heatState%qe_surf, &
-         ! qh_surf => modState%heatState%qh_surf, &
-         ! qh_resist_surf => modState%heatState%qh_resist_surf, &
+         qe_roof => modState%heatState%qe_roof, &
+         qh_roof => modState%heatState%qh_roof, &
+         qh_resist_roof => modState%heatState%qh_resist_roof, &
+         qe_wall => modState%heatState%qe_wall, &
+         qh_wall => modState%heatState%qh_wall, &
+         qh_resist_wall => modState%heatState%qh_resist_wall, &
+         qe0_surf => modState%heatState%qe0_surf, &
+         qe_surf => modState%heatState%qe_surf, &
+         qh_surf => modState%heatState%qh_surf, &
+         qh_resist_surf => modState%heatState%qh_resist_surf, &
 
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
 
-         ALLOCATE (QN_roof(nlayer))
-         ALLOCATE (QN_wall(nlayer))
-         ALLOCATE (QS_roof(nlayer))
-         ALLOCATE (QS_wall(nlayer))
-         ALLOCATE (qe_roof(nlayer))
-         ALLOCATE (qe_wall(nlayer))
-         ALLOCATE (qh_roof(nlayer))
-         ALLOCATE (qh_wall(nlayer))
-         ALLOCATE (qh_resist_roof(nlayer))
-         ALLOCATE (qh_resist_wall(nlayer))
+         ! ALLOCATE (QN_roof(nlayer))
+         ! ALLOCATE (QN_wall(nlayer))
+         ! ALLOCATE (QS_roof(nlayer))
+         ! ALLOCATE (QS_wall(nlayer))
+         ! ALLOCATE (qe_roof(nlayer))
+         ! ALLOCATE (qe_wall(nlayer))
+         ! ALLOCATE (qh_roof(nlayer))
+         ! ALLOCATE (qh_wall(nlayer))
+         ! ALLOCATE (qh_resist_roof(nlayer))
+         ! ALLOCATE (qh_resist_wall(nlayer))
          ! ALLOCATE (ev_roof(nlayer))
          ! ALLOCATE (ev_wall(nlayer))
 
@@ -10277,10 +10277,11 @@ CONTAINS
       ! ESTM_ehc related:
       ! water balance related:
       !CALL hydroState%allocHydro(nlayer)
-      ALLOCATE (hydroState%soilstore_roof(nlayer))
-      ALLOCATE (hydroState%state_roof(nlayer))
-      ALLOCATE (hydroState%soilstore_wall(nlayer))
-      ALLOCATE (hydroState%state_wall(nlayer))
+      call hydroState%ALLOCATE(nlayer)
+      ! ALLOCATE (hydroState%soilstore_roof(nlayer))
+      ! ALLOCATE (hydroState%state_roof(nlayer))
+      ! ALLOCATE (hydroState%soilstore_wall(nlayer))
+      ! ALLOCATE (hydroState%state_wall(nlayer))
 
       hydroState%soilstore_roof = soilstore_roof
       hydroState%state_roof = state_roof
@@ -10291,12 +10292,13 @@ CONTAINS
       hydroState%WUDay_id = WUDay_id
 
       !CALL heatState%allocHeat(nsurf, nlayer, ndepth)
-      ALLOCATE (heatState%temp_roof(nlayer, ndepth))
-      ALLOCATE (heatState%temp_wall(nlayer, ndepth))
-      ALLOCATE (heatState%tsfc_roof(nlayer))
-      ALLOCATE (heatState%tsfc_wall(nlayer))
-      ALLOCATE (heatState%tsfc_surf(nsurf))
-      ALLOCATE (heatState%temp_surf(nsurf, ndepth))
+      call heatState%ALLOCATE(nsurf, nlayer, ndepth)
+      ! ALLOCATE (heatState%temp_roof(nlayer, ndepth))
+      ! ALLOCATE (heatState%temp_wall(nlayer, ndepth))
+      ! ALLOCATE (heatState%tsfc_roof(nlayer))
+      ! ALLOCATE (heatState%tsfc_wall(nlayer))
+      ! ALLOCATE (heatState%tsfc_surf(nsurf))
+      ! ALLOCATE (heatState%temp_surf(nsurf, ndepth))
 
       heatState%temp_roof = temp_roof
       heatState%temp_wall = temp_wall
@@ -10344,6 +10346,7 @@ CONTAINS
       modState%phenState = phenState
 
       ! ############# evaluation for DTS variables (end) #############
+      CALL siteInfo%ALLOCATE(nlayer)
       siteInfo%lumps = lumpsPrm
       siteInfo%ehc = ehcPrm
       siteInfo%spartacus = spartacusPrm
@@ -10359,7 +10362,6 @@ CONTAINS
       siteInfo%lc_grass = grassPrm
       siteInfo%lc_bsoil = bsoilPrm
       siteInfo%lc_water = waterPrm
-      CALL siteInfo%ALLOCATE(nlayer)
       CALL siteInfo%cal_surf(config)
 
       !   allocate output arrays
