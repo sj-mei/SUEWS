@@ -2108,18 +2108,21 @@ CONTAINS
          tsfc0_out_roof => modState%heatState%tsfc0_out_roof, &
          tsfc0_out_wall => modState%heatState%tsfc0_out_wall, &
          tsfc0_out_surf => modState%heatState%tsfc0_out_surf, &
-         ! QS_roof => modState%heatState%QS_roof, &
+
          ! QN_roof => modState%heatState%QN_roof, &
+         ! QN_wall => modState%heatState%QN_wall, &
+         QN_surf => modState%heatState%QN_surf, &
+
+         ! QS_roof => modState%heatState%QS_roof, &
+         ! QS_wall => modState%heatState%QS_wall, &
+         ! qs_surf => modState%heatState%qs_surf, &
+
          ! qe_roof => modState%heatState%qe_roof, &
          ! qh_roof => modState%heatState%qh_roof, &
          ! qh_resist_roof => modState%heatState%qh_resist_roof, &
-         ! QS_wall => modState%heatState%QS_wall, &
-         ! QN_wall => modState%heatState%QN_wall, &
          ! qe_wall => modState%heatState%qe_wall, &
          ! qh_wall => modState%heatState%qh_wall, &
          ! qh_resist_wall => modState%heatState%qh_resist_wall, &
-         ! qs_surf => modState%heatState%qs_surf, &
-         ! QN_surf => modState%heatState%QN_surf, &
          ! qe0_surf => modState%heatState%qe0_surf, &
          ! qe_surf => modState%heatState%qe_surf, &
          ! qh_surf => modState%heatState%qh_surf, &
@@ -2128,16 +2131,10 @@ CONTAINS
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
 
-         ! WRITE (*, *) "hydroState%state_roof", hydroState%state_roof
-         ! WRITE (*, *) "hydroState%soilstore_roof", hydroState%soilstore_roof
-         ! WRITE (*, *) "hydroState%state_wall", hydroState%state_wall
-         ! WRITE (*, *) "hydroState%soilstore_wall", hydroState%soilstore_wall
-         ! ALLOCATE (sfr_roof(nlayer))
-         ! ALLOCATE (sfr_wall(nlayer))
-         ALLOCATE (QS_roof(nlayer))
-         ALLOCATE (QS_wall(nlayer))
          ALLOCATE (QN_roof(nlayer))
          ALLOCATE (QN_wall(nlayer))
+         ALLOCATE (QS_roof(nlayer))
+         ALLOCATE (QS_wall(nlayer))
          ALLOCATE (qe_roof(nlayer))
          ALLOCATE (qe_wall(nlayer))
          ALLOCATE (qh_roof(nlayer))
