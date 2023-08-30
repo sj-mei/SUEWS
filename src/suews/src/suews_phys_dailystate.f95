@@ -787,7 +787,7 @@ CONTAINS
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
       USE SUEWS_DEF_DTS, ONLY: SITE_PRM, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
-                               PHENOLOGY_STATE, anthroHEAT_STATE, config_PRM, &
+                               PHENOLOGY_STATE, anthroEmis_STATE, config_PRM, &
                                IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
@@ -966,8 +966,8 @@ CONTAINS
       ! TS, 27 Dec 2018: updated the annotation for 2018b and WRF-SUEWS coupling
 
       ! Heating Degree Days
-      TYPE(anthroHEAT_STATE), INTENT(IN) :: anthroHeatState_prev
-      TYPE(anthroHEAT_STATE), INTENT(OUT) :: anthroHeatState_next
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroHeatState_prev
+      TYPE(anthroEmis_STATE), INTENT(OUT) :: anthroHeatState_next
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id_prev ! Heating Degree Days (see SUEWS_DailyState.f95)
       !REAL(KIND(1D0)), DIMENSION(12), INTENT(OUT) :: HDD_id_next ! Heating Degree Days (see SUEWS_DailyState.f95)
@@ -2068,13 +2068,13 @@ CONTAINS
       a1, a2, a3, &
       DailyStateLine) !out
 
-      USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, anthroHEAT_STATE, &
+      USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, anthroEmis_STATE, &
                                SNOW_STATE, SUEWS_TIMER, HYDRO_STATE
 
       IMPLICIT NONE
 
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
-      TYPE(anthroHEAT_STATE), INTENT(IN) :: anthroHeatState
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroHeatState
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
       TYPE(SNOW_STATE), INTENT(IN) :: snowState
 

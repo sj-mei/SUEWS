@@ -2625,7 +2625,7 @@ CONTAINS
 
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
-                               IRRIGATION_PRM, anthroHEAT_STATE, &
+                               IRRIGATION_PRM, anthroEmis_STATE, &
                                config_PRM, SUEWS_TIMER, SITE_PRM, SUEWS_FORCING, HYDRO_STATE
 
       IMPLICIT NONE
@@ -2651,7 +2651,7 @@ CONTAINS
       TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
       REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
 
-      TYPE(anthroHEAT_STATE), INTENT(IN) :: anthroHeatState_next
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroHeatState_next
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_next
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)

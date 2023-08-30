@@ -438,15 +438,29 @@ MODULE SUEWS_DEF_DTS
    END TYPE SITE_PRM
 
    ! ********** SUEWS_stateVars schema **********
-   TYPE, PUBLIC :: anthroHEAT_STATE
+   TYPE, PUBLIC :: anthroEmis_STATE
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !Heating Degree Days [degC d]
-   END TYPE anthroHEAT_STATE
+
+      REAL(KIND(1D0)) :: Fc !total co2 flux [umol m-2 s-1]
+      REAL(KIND(1D0)) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
+      REAL(KIND(1D0)) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
+      REAL(KIND(1D0)) :: Fc_build ! anthropogenic co2 flux  [umol m-2 s-1]
+      REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
+      REAL(KIND(1D0)) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
+      REAL(KIND(1D0)) :: Fc_photo !co2 flux from photosynthesis [umol m
+      REAL(KIND(1D0)) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
+      REAL(KIND(1D0)) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
+      REAL(KIND(1D0)) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
+   END TYPE anthroEmis_STATE
 
    TYPE, PUBLIC :: OHM_STATE
       REAL(KIND(1D0)) :: qn_av ! weighted average of net all-wave radiation [W m-2]
       REAL(KIND(1D0)) :: dqndt ! rate of change of net radiation [W m-2 h-1]
       REAL(KIND(1D0)) :: qn_s_av ! weighted average of qn over snow [W m-2]
       REAL(KIND(1D0)) :: dqnsdt ! Rate of change of net radiation [W m-2 h-1]
+      REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
+      REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
+      REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
    END TYPE OHM_STATE
 
    TYPE, PUBLIC :: solar_State
@@ -472,6 +486,20 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: vpd_hPa !Vapour pressure deficit in hPa
       REAL(KIND(1D0)) :: vpd_pa !Vapour pressure deficit in Pa
 
+      REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
+      REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
+      REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
+      REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
+
+      REAL(KIND(1D0)) :: L_mod !Obukhov length [m]
+      REAL(KIND(1D0)) :: zL ! Stability scale [-]
+
+      REAL(KIND(1D0)) :: RA_h ! aerodynamic resistance [s m-1]
+      REAL(KIND(1D0)) :: RS ! surface resistance [s m-1]
+      REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
+      REAL(KIND(1D0)) :: RB !boundary layer resistance shuttleworth
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: rss_surf ! surface resistance adjusted by surface wetness state[s m-1]
+
    END TYPE atm_state
 
    TYPE, PUBLIC :: PHENOLOGY_STATE
@@ -488,16 +516,40 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Tmax_id ! Daily maximum temperature [degC]
       REAL(KIND(1D0)) :: lenDay_id ! daytime length [h]
       REAL(KIND(1D0)), DIMENSION(6, NSURF) :: StoreDrainPrm ! coefficients used in drainage calculation [-]
+
+      REAL(KIND(1D0)) :: gfunc ! stomatal conductance function [-]
+      REAL(KIND(1D0)) :: gsc !Surface Layer Conductance
    END TYPE PHENOLOGY_STATE
 
    TYPE, PUBLIC :: SNOW_STATE
       REAL(KIND(1D0)) :: snowfallCum !
       REAL(KIND(1D0)) :: snowalb ! albedo of snow [-]
+      REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
+      REAL(KIND(1D0)) :: mwh !snowmelt [mm]
+      REAL(KIND(1D0)) :: mwstore !overall met water [mm]
+      REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
+
+      REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
+      REAL(KIND(1D0)) :: QmFreez !heat related to freezing of surface store [W m-2]
+      REAL(KIND(1D0)) :: QmRain !melt heat for rain on snow [W m-2]
+
+      REAL(KIND(1D0)) :: swe !overall snow water equavalent[mm]
+
+      REAL(KIND(1D0)) :: z0vSnow !roughness for heat [m]
+      REAL(KIND(1D0)) :: RAsnow !Aerodynamic resistance for snow [s m-1]
+      REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
+
+      REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
+
       REAL(KIND(1D0)), DIMENSION(nsurf) :: icefrac ! fraction of ice in snowpack [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowdens ! snow density [kg m-3]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowfrac ! snow fraction [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowpack ! snow water equivalent on each land cover [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowwater ! snow water[mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_snow !snowpack surface temperature [C]
    END TYPE SNOW_STATE
 
    TYPE, PUBLIC :: HYDRO_STATE
@@ -514,6 +566,44 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf ! evapotranspiration from PM of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf !external water use of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_nsurf !soil moisture deficit for each surface
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
+
+      REAL(KIND(1D0)) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
+      REAL(KIND(1D0)) :: QE_LUMPS !turbulent latent heat flux by LUMPS model [W m-2]
+      REAL(KIND(1D0)) :: ev_per_tstep ! evaporation at each time step [mm]
+      REAL(KIND(1D0)) :: wu_ext !external water use [mm]
+      REAL(KIND(1D0)) :: wu_int !internal water use [mm]
+
+      REAL(KIND(1D0)) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
+      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
+      REAL(KIND(1D0)) :: runoff_per_tstep !runoff water at each time step [mm]
+      REAL(KIND(1D0)) :: runoffPipes !runoff to pipes [mm]
+      REAL(KIND(1D0)) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+      REAL(KIND(1D0)) :: runoffwaterbody !Above ground runoff from water body for all surface area [mm]
+      REAL(KIND(1D0)) :: smd !soil moisture deficit [mm]
+      REAL(KIND(1D0)) :: SoilState !Area-averaged soil moisture  for whole surface [mm]
+      REAL(KIND(1D0)) :: state_per_tstep !state_id at each timestep [mm]
+      REAL(KIND(1D0)) :: surf_chang_per_tstep !change in state_id (exluding snowpack) per timestep [mm]
+      REAL(KIND(1D0)) :: tot_chang_per_tstep !Change in surface state_id [mm]
+      REAL(KIND(1D0)) :: runoff_per_interval !run-off at each time interval [mm]
+
+      REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
+      REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
+
+
+      ! TODO: TS 25 Oct 2017
+      ! the  variables are not used currently as grid-to-grid connection is NOT set up.
+      ! set these variables as zero.
+      REAL(KIND(1D0)) :: AdditionalWater = 0 !!Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
+      REAL(KIND(1D0)) :: addImpervious = 0
+      REAL(KIND(1D0)) :: addPipes = 0
+      REAL(KIND(1D0)) :: addVeg = 0
+      REAL(KIND(1D0)) :: addWaterBody = 0
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: AddWater = 0
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: frac_water2runoff = 0
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHydroState_c
       PROCEDURE :: DEALLOCATE => deallocHydroState_c
@@ -549,6 +639,28 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! sensinle heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_resist_surf ! resistance based sensible heat flux of individual surface [W m-2]
+
+      REAL(KIND(1D0)) :: QH_LUMPS !turbulent sensible heat flux from LUMPS model [W m-2]
+
+      REAL(KIND(1D0)) :: kclear !clear sky incoming shortwave radiation [W m-2]
+      REAL(KIND(1D0)) :: kup !outgoing shortwave radiation [W m-2]
+      REAL(KIND(1D0)) :: ldown !incoming longtwave radiation [W m-2]
+      REAL(KIND(1D0)) :: lup !outgoing longwave radiation [W m-2]
+
+      REAL(KIND(1D0)) :: qe !turbuent latent heat flux [W m-2]
+      REAL(KIND(1D0)) :: qf !anthropogenic heat flux [W m-2]
+      REAL(KIND(1D0)) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
+      REAL(KIND(1D0)) :: qh !turbulent sensible heat flux [W m-2]
+      REAL(KIND(1D0)) :: qh_residual ! residual based sensible heat flux [W m-2]
+      REAL(KIND(1D0)) :: qh_resist !resistance bnased sensible heat flux [W m-2]
+
+      REAL(KIND(1D0)) :: qn !net all-wave radiation [W m-2]
+      REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
+      REAL(KIND(1D0)) :: qn_snowfree !net all-wave radiation on snow-free surface [W m-2]
+      REAL(KIND(1D0)) :: qs !heat storage flux [W m-2]
+
+      REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
+      REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHeatState_c
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
@@ -566,6 +678,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: PAI
       REAL(KIND(1D0)) :: Zh ! effective height of bluff bodies
       REAL(KIND(1D0)) :: z0m ! aerodynamic roughness length
+      REAL(KIND(1D0)) :: z0v ! roughness for heat [m]
       REAL(KIND(1D0)) :: zdm ! zero-plance displacement
       REAL(KIND(1D0)) :: ZZD ! z-zdm
 
@@ -573,7 +686,7 @@ MODULE SUEWS_DEF_DTS
 
    ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE
-      TYPE(anthroHEAT_STATE) :: anthroheatState
+      TYPE(anthroEmis_STATE) :: anthroemisState
       TYPE(OHM_STATE) :: ohmState
       TYPE(solar_State) :: solarState
       TYPE(atm_state) :: atmState

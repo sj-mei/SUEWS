@@ -128,7 +128,7 @@ CONTAINS
       qn_surf, &
       QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, & ! output:
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_surf, &
-      albedo_snowfree, albedo_snow)
+      albedo_snowfree)
       !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
       !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
       !,zenith_degnetRadiationChoice,
@@ -226,7 +226,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_surf
 
       REAL(KIND(1D0)), INTENT(out) :: albedo_snowfree
-      REAL(KIND(1D0)), INTENT(out) :: albedo_snow
+      REAL(KIND(1D0)):: albedo_snow
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf_K
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_surf

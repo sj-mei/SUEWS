@@ -7,12 +7,11 @@ MODULE SUEWS_Driver
    ! only the following immutable objects are imported:
    ! 1. functions/subroutines
    ! 2. constant variables
-   ! USE SUEWS_HydroHeat_DTS, ONLY:
    USE SUEWS_DEF_DTS, ONLY: config_PRM, SURF_STORE_PRM, WATER_DIST_PRM, bioCO2_PRM, CONDUCTANCE_PRM, &
                             LAI_PRM, OHM_COEF_LC, OHM_PRM, SOIL_PRM, anthroHEAT_PRM, IRRIG_daywater, &
                             IRRIGATION_PRM, anthroEMIS_PRM, SNOW_PRM, SPARTACUS_PRM, SPARTACUS_LAYER_PRM, &
                             SITE_PRM, LUMPS_PRM, EHC_PRM, LC_PAVED_PRM, LC_BLDG_PRM, LC_DECTR_PRM, LC_EVETR_PRM, &
-                            LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroHEAT_STATE, &
+                            LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroEmis_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, &
@@ -1764,33 +1763,28 @@ CONTAINS
 
       ! ########################################################################################
       ! local variables
-      REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
-      REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
-      REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
-      REAL(KIND(1D0)) :: AdditionalWater = 0 !!Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
-      REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
-      ! REAL(KIND(1D0)) :: azimuth !solar azimuth [angle]
-      REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
+      ! REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
+      ! REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
+      ! REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
+      ! REAL(KIND(1D0)) :: AdditionalWater = 0 !!Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
+      ! REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
+      ! REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
 
-      ! REAL(KIND(1D0)) :: dens_dry !Vap density or absolute humidity (kg m-3)
-      ! REAL(KIND(1D0)) :: deltaLAI !change in LAI [m2 m-2]
-      REAL(KIND(1D0)) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
-      ! REAL(KIND(1D0)) :: Ea_hPa !vapor pressure [hPa]
-      REAL(KIND(1D0)) :: QE_LUMPS !turbulent latent heat flux by LUMPS model [W m-2]
-      ! REAL(KIND(1D0)) :: es_hPa !Saturation vapour pressure over water  [hPa]
-      REAL(KIND(1D0)) :: ev_per_tstep ! evaporation at each time step [mm]
-      REAL(KIND(1D0)) :: wu_ext !external water use [mm]
-      REAL(KIND(1D0)) :: Fc !total co2 flux [umol m-2 s-1]
-      REAL(KIND(1D0)) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
-      REAL(KIND(1D0)) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
-      REAL(KIND(1D0)) :: Fc_build ! anthropogenic co2 flux  [umol m-2 s-1]
-      REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
-      REAL(KIND(1D0)) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
-      REAL(KIND(1D0)) :: Fc_photo !co2 flux from photosynthesis [umol m
-      REAL(KIND(1D0)) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
-      REAL(KIND(1D0)) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
-      REAL(KIND(1D0)) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
-      REAL(KIND(1D0)) :: gfunc
+      ! REAL(KIND(1D0)) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
+      ! REAL(KIND(1D0)) :: QE_LUMPS !turbulent latent heat flux by LUMPS model [W m-2]
+      ! REAL(KIND(1D0)) :: ev_per_tstep ! evaporation at each time step [mm]
+      ! REAL(KIND(1D0)) :: wu_ext !external water use [mm]
+      ! REAL(KIND(1D0)) :: Fc !total co2 flux [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: Fc_build ! anthropogenic co2 flux  [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
+      ! REAL(KIND(1D0)) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: Fc_photo !co2 flux from photosynthesis [umol m
+      ! REAL(KIND(1D0)) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
+      REAL(KIND(1D0)) :: gfunc ! stomatal conductance function [-]
       REAL(KIND(1D0)) :: gsc !Surface Layer Conductance
       REAL(KIND(1D0)) :: QH_LUMPS !turbulent sensible heat flux from LUMPS model [W m-2]
       REAL(KIND(1D0)) :: wu_int !internal water use [mm]
@@ -1802,8 +1796,6 @@ CONTAINS
       REAL(KIND(1D0)) :: mwh !snowmelt [mm]
       REAL(KIND(1D0)) :: mwstore !overall met water [mm]
       REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
-      ! REAL(KIND(1D0)) :: FAI ! frontal area index [-]
-      ! REAL(KIND(1D0)) :: PAI ! plan area index [-]
       REAL(KIND(1D0)) :: zL ! Stability scale [-]
       REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
       REAL(KIND(1D0)) :: qe !turbuent latent heat flux [W m-2]
@@ -1841,34 +1833,16 @@ CONTAINS
       REAL(KIND(1D0)) :: TStar !T*, temperature scale [-]
       REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
       REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
-      ! REAL(KIND(1D0)) :: VPD_Pa !vapour pressure deficit  [Pa]
-      ! REAL(KIND(1D0)) :: z0m !Aerodynamic roughness length [m]
-      ! REAL(KIND(1D0)) :: zdm !zero-plane displacement [m]
-      ! REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle [deg]
-      ! REAL(KIND(1D0)) :: zH ! Mean building height [m]
 
       REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf !external water use of each surface type [mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezMelt !freezing of melt water[mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: mw_ind !melt water from sknowpack[mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: Qm_freezState !heat related to freezing of surface store [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: Qm_melt !melt heat [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: Qm_rain !melt heat for rain on snow [W m-2]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: rainOnSnow !rain water on snow event [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_nsurf !soil moisture deficit for each surface
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: snowDepth !Snow depth [m]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_snow !snowpack surface temperature [C]
 
-      ! INTEGER, DIMENSION(NSURF) :: snowCalcSwitch
-      ! INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
-      ! INTEGER :: DLS !daylight saving time offset [h]
-
-      ! REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
-      ! REAL(KIND(1D0)) :: lvS_J_kg !latent heat of sublimation [J kg-1]
       REAL(KIND(1D0)) :: psyc_hPa !psychometric constant [hPa]
       REAL(KIND(1D0)) :: z0v !roughness for heat [m]
       REAL(KIND(1D0)) :: z0vSnow !roughness for heat [m]
@@ -1877,43 +1851,15 @@ CONTAINS
       REAL(KIND(1D0)) :: runoff_per_interval !run-off at each time interval [mm]
       REAL(KIND(1D0)) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
       REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
-      REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
-      ! REAL(KIND(1D0)) :: veg_fr !vegetation fraction [-]
       REAL(KIND(1D0)) :: VegPhenLumps
-      ! REAL(KIND(1D0)) :: VPd_hpa ! vapour pressure deficit [hPa]
+      REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
       REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
-      ! REAL(KIND(1D0)) :: ZZD !Active measurement height[m]
 
       REAL(KIND(1D0)), DIMENSION(NSURF) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezState !freezing of state_id [mm]
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezStateVol !surface state_id [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind !snow-free surface temperature [degC]
-
-      ! TODO: TS 25 Oct 2017
-      ! the  variables are not used currently as grid-to-grid connection is NOT set up.
-      ! set these variables as zero.
-      REAL(KIND(1D0)) :: addImpervious = 0
-      REAL(KIND(1D0)) :: addPipes = 0
-      REAL(KIND(1D0)) :: addVeg = 0
-      REAL(KIND(1D0)) :: addWaterBody = 0
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: AddWater = 0
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: frac_water2runoff = 0
-
-      ! values that are derived from tstep
-      ! INTEGER :: nsh ! number of timesteps per hour
-      ! REAL(KIND(1D0)) :: nsh_real ! nsh in type real [-]
-      ! REAL(KIND(1D0)) :: tstep_real ! tstep in type real
-      ! REAL(KIND(1D0)) :: dectime !decimal time [-]
-
-      ! values that are derived from sfr_surf (surface fractions)
-      ! REAL(KIND(1D0)) :: VegFraction ! fraction of vegetation [-]
-      ! REAL(KIND(1D0)) :: ImpervFraction !fractioin of impervious surface [-]
-      ! REAL(KIND(1D0)) :: PervFraction !fraction of pervious surfaces [-]
-      ! REAL(KIND(1D0)) :: NonWaterFraction !fraction of non-water [-]
-
-      ! snow related temporary values
-      REAL(KIND(1D0)) :: albedo_snow !snow albedo [-]
 
       TYPE(solar_State) :: solarState ! solar related model states
 
@@ -1937,7 +1883,7 @@ CONTAINS
       TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
 
       ! anthropogenic heat related:
-      TYPE(anthroHEAT_STATE) :: anthroHeatState_prev, anthroHeatState_next
+      TYPE(anthroEmis_STATE) :: anthroHeatState_prev, anthroHeatState_next
 
       REAL(KIND(1D0)) :: Tair_av_prev, Tair_av_next !average air temperature [degC]
       ! ########################################################################################
@@ -1954,58 +1900,6 @@ CONTAINS
       !
       ! input arrays: standard suews surfaces
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
-      ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_roof !roof surface fraction [-]
-      ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_wall !wall surface fraction [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_roof !surface temperature of roof[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_wall !surface temperature of wall[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
-
-      ! output arrays:
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf ! evapotranspiration from PM of each surface type [mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
-      ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_roof ! evapotranspiration of each roof layer [mm]
-      ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
-
-      ! roof facets
-      ! aggregated heat storage of all roof facets
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_roof ! heat storage flux for roof component [W m-2]
-      !interface temperature between depth layers
-      ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_roof !interface temperature between depth layers [degC]
-
-      ! energy fluxes of individual surfaces
-      ! REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QG_roof ! heat flux used in ESTM_ehc as forcing of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_roof ! net all-wave radiation of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_roof ! latent heat flux of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_roof ! sensible heat flux of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_roof ! resist-based sensible heat flux of roof surface [W m-2]
-
-      ! wall facets
-      ! aggregated heat storage of all wall facets
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_wall ! heat storage flux for wall component [W m-2]
-      !interface temperature between depth layers
-      ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_out_wall !interface temperature between depth layers [degC]
-
-      ! energy fluxes of individual surfaces
-      ! REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: QG_wall ! heat flux used in ESTM_ehc as forcing of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_wall ! net all-wave radiation of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_wall ! latent heat flux of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_wall ! sensible heat flux of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_wall ! resistance based sensible heat flux of wall surface [W m-2]
-
-      ! standard suews surfaces
-      !interface temperature between depth layers
-      ! REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_out_surf !interface temperature between depth layers[degC]
-
-      ! energy fluxes of individual surfaces
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: QG_surf ! heat flux used in ESTM_ehc as forcing of individual surface [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf ! net all-wave radiation of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qe0_surf ! latent heat flux from PM of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! sensinle heat flux of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_resist_surf ! resistance based sensible heat flux of individual surface [W m-2]
-      ! surface temperature
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_qh_surf ! latent heat flux of individual surface [W m-2]
 
       ! iterator for surfaces
       INTEGER :: i_surf !iterator for surfaces
@@ -2034,12 +1928,8 @@ CONTAINS
       INTEGER, PARAMETER :: LAImethod = 1 ! boolean to determine if calculate LAI [-]
       REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
 
-      ! calculated values of FAI
-      ! REAL(KIND(1D0)) :: FAIBldg_use
-      ! REAL(KIND(1D0)) :: FAIEveTree_use
-      ! REAL(KIND(1D0)) :: FAIDecTree_use
-      TYPE(ROUGHNESS_STATE) :: roughnessState
-      TYPE(atm_state) :: atmState
+      TYPE(ROUGHNESS_STATE) :: roughnessState ! roughness related info
+      TYPE(atm_state) :: atmState ! atmospheric state
 
       ASSOCIATE ( &
          nsh => timer%nsh, &
@@ -2071,7 +1961,6 @@ CONTAINS
          NonWaterFraction => siteInfo%NonWaterFraction, &
          sfr_roof => siteInfo%sfr_roof, &
          sfr_wall => siteInfo%sfr_wall, &
-
          azimuth_deg => solarState%azimuth_deg, &
          zenith_deg => solarState%zenith_deg, &
          lv_J_kg => atmState%lv_J_kg, &
@@ -2084,6 +1973,7 @@ CONTAINS
          dens_dry => atmState%dens_dry, &
          avcp => atmState%avcp, &
          avdens => atmState%avdens, &
+         U10_ms => atmState%U10_ms, &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
@@ -2093,30 +1983,36 @@ CONTAINS
          FAIBldg_use => roughnessState%FAIBldg_use, &
          FAIEveTree_use => roughnessState%FAIEveTree_use, &
          FAIDecTree_use => roughnessState%FAIDecTree_use, &
-         anthroHeatState => modState%anthroHeatState, &
+         anthroEmisState => modState%anthroemisState, &
          hydroState => modState%hydroState, &
          heatstate => modState%heatState, &
          ohmstate => modState%ohmState, &
          snowState => modState%snowState, &
          phenState => modState%phenState, &
-
          ev_roof => modState%hydroState%ev_roof, &
          ev_wall => modState%hydroState%ev_wall, &
          ev_surf => modState%hydroState%ev_surf, &
          ev0_surf => modState%hydroState%ev0_surf, &
-
+         AdditionalWater => modState%hydroState%AdditionalWater, &
+         addImpervious => modState%hydroState%addImpervious, &
+         addPipes => modState%hydroState%addPipes, &
+         addVeg => modState%hydroState%addVeg, &
+         addWaterBody => modState%hydroState%addWaterBody, &
+         AddWater => modState%hydroState%AddWater, &
+         frac_water2runoff => modState%hydroState%frac_water2runoff, &
+         drain_per_tstep => modState%hydroState%drain_per_tstep, &
+         QE_LUMPS => modState%hydroState%QE_LUMPS, &
+         ev_per_tstep => modState%hydroState%ev_per_tstep, &
+         wu_ext => modState%hydroState%wu_ext, &
          tsfc0_out_roof => modState%heatState%tsfc0_out_roof, &
          tsfc0_out_wall => modState%heatState%tsfc0_out_wall, &
          tsfc0_out_surf => modState%heatState%tsfc0_out_surf, &
-
          QN_roof => modState%heatState%QN_roof, &
          QN_wall => modState%heatState%QN_wall, &
          QN_surf => modState%heatState%QN_surf, &
-
          QS_roof => modState%heatState%QS_roof, &
          QS_wall => modState%heatState%QS_wall, &
          qs_surf => modState%heatState%qs_surf, &
-
          qe_roof => modState%heatState%qe_roof, &
          qh_roof => modState%heatState%qh_roof, &
          qh_resist_roof => modState%heatState%qh_resist_roof, &
@@ -2127,22 +2023,22 @@ CONTAINS
          qe_surf => modState%heatState%qe_surf, &
          qh_surf => modState%heatState%qh_surf, &
          qh_resist_surf => modState%heatState%qh_resist_surf, &
-
+         a1 => modState%ohmState%a1, &
+         a2 => modState%ohmState%a2, &
+         a3 => modState%ohmState%a3, &
+         chSnow_per_interval => modState%snowState%chSnow_per_interval, &
+         Fc => modState%anthroemisState%Fc, &
+         Fc_anthro => modState%anthroemisState%Fc_anthro, &
+         Fc_biogen => modState%anthroemisState%Fc_biogen, &
+         Fc_build => modState%anthroemisState%Fc_build, &
+         fcld => modState%anthroemisState%fcld, &
+         Fc_metab => modState%anthroemisState%Fc_metab, &
+         Fc_photo => modState%anthroemisState%Fc_photo, &
+         Fc_point => modState%anthroemisState%Fc_point, &
+         Fc_respi => modState%anthroemisState%Fc_respi, &
+         Fc_traff => modState%anthroemisState%Fc_traff, &
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
-
-         ! ALLOCATE (QN_roof(nlayer))
-         ! ALLOCATE (QN_wall(nlayer))
-         ! ALLOCATE (QS_roof(nlayer))
-         ! ALLOCATE (QS_wall(nlayer))
-         ! ALLOCATE (qe_roof(nlayer))
-         ! ALLOCATE (qe_wall(nlayer))
-         ! ALLOCATE (qh_roof(nlayer))
-         ! ALLOCATE (qh_wall(nlayer))
-         ! ALLOCATE (qh_resist_roof(nlayer))
-         ! ALLOCATE (qh_resist_wall(nlayer))
-         ! ALLOCATE (ev_roof(nlayer))
-         ! ALLOCATE (ev_wall(nlayer))
 
          ! ############# memory allocation for DTS variables (start) #############
          CALL hydroState_prev%ALLOCATE(nlayer)
@@ -2196,7 +2092,7 @@ CONTAINS
          hydroState_prev = hydroState
          Tair_av_prev = forcing%Tair_av_5d
          phenState_prev = phenState
-         anthroHeatState_prev = anthroHeatState
+         anthroHeatState_prev = anthroEmisState
 
          ! ESTM_ehc related
          ! save initial values of inout variables
@@ -2210,7 +2106,7 @@ CONTAINS
          ! Tair_av_next = Tair_av
          Tair_av_next = forcing%Tair_av_5d
          phenState_next = phenState
-         anthroHeatState_next = anthroHeatState
+         anthroHeatState_next = anthroEmisState
 
          ! initialise output variables
          dataOutLineSnow = -999.
@@ -2415,7 +2311,7 @@ CONTAINS
                QN_surf, QN_roof, QN_wall, &
                qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
                qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-               albedo_snow, snowState_next, &
+               snowState_next, &
                dataOutLineSPARTACUS)
 
             IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
@@ -2428,7 +2324,7 @@ CONTAINS
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
                hydroState_prev, &
                snowState_prev, DiagQS, &
-               anthroHeatState, Ts5mindata_ir, qf, qn, &
+               anthroEmisState, Ts5mindata_ir, qf, qn, &
                ZENITH_deg, ldown, ohmState_prev, &
                phenState, &
                ! TODO: collect output into a derived type
@@ -2787,7 +2683,7 @@ CONTAINS
          phenState%Tmin_id = phenState_next%Tmin_id
          phenState%Tmax_id = phenState_next%Tmax_id
          phenState%lenday_id = phenState_next%lenday_id
-         anthroHeatState%HDD_id = anthroHeatState_next%HDD_id
+         anthroEmisState%HDD_id = anthroHeatState_next%HDD_id
          hydroState%WUDay_id = hydroState_next%WUDay_id
 
          IF (config%StorageHeatMethod == 5) THEN
@@ -2860,7 +2756,7 @@ CONTAINS
 
          ! daily state_id:
          CALL update_DailyStateLine_DTS( &
-            timer, phenState, anthroHeatState, &
+            timer, phenState, anthroEmisState, &
             hydroState, &
             snowState, &
             nsh_real, & !input
@@ -3019,7 +2915,7 @@ CONTAINS
       forcing, QF_SAHP, &
       Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
-      USE SUEWS_DEF_DTS, ONLY: anthroEMIS_PRM, SITE_PRM, anthroHEAT_STATE, &
+      USE SUEWS_DEF_DTS, ONLY: anthroEMIS_PRM, SITE_PRM, anthroEmis_STATE, &
                                SUEWS_TIMER, SUEWS_FORCING
 
       IMPLICIT NONE
@@ -3092,7 +2988,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: notUsed = -999
 
       TYPE(anthroEMIS_PRM), INTENT(IN) :: ahemisPrm
-      TYPE(anthroHEAT_STATE), INTENT(IN) :: anthroHeatState_next
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroHeatState_next
       TYPE(SITE_PRM), INTENT(IN) :: siteInfo
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
@@ -3923,7 +3819,7 @@ CONTAINS
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn_surf, & ! output:
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, & ! output:
-            qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
+            qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree)
 
          IF (Diagqn == 1) WRITE (*, *) 'Calling SPARTACUS:'
          IF (NetRadiationMethod > 1000) THEN
@@ -4269,7 +4165,7 @@ CONTAINS
       qn_surf, qn_roof, qn_wall, &
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      albedo_snow, snowState_next, &
+      snowState_next, &
       dataOutLineSPARTACUS)
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
@@ -4369,7 +4265,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: kup !output outgoing shortwave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: lup !output outgoing longwave radiation [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: tsurf !output surface temperature [degC]
-      REAL(KIND(1D0)), INTENT(out) :: albedo_snow !estimated albedo of snow [-]
+      ! REAL(KIND(1D0)), INTENT(out) :: albedo_snow !estimated albedo of snow [-]
       ! REAL(KIND(1D0)), INTENT(out) :: SnowAlb_next !output snow albedo [-]
       REAL(KIND(1D0)) :: albedo_snowfree !estimated albedo for snow-free surface [-]
       REAL(KIND(1D0)) :: SnowAlb ! updated snow albedo [-]
@@ -4537,7 +4433,7 @@ CONTAINS
             AlbedoChoice, ldown_option, NetRadiationMethod_use, DiagQN, &
             qn_surf, & ! output:
             qn, qn_snowfree, qn_snow, kclear, kup, LDown, lup, fcld, tsurf, & ! output:
-            qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree, albedo_snow)
+            qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, albedo_snowfree)
 
          IF (Diagqn == 1) WRITE (*, *) 'Calling SPARTACUS:'
          IF (NetRadiationMethod > 1000) THEN
@@ -4861,7 +4757,7 @@ CONTAINS
 
       USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_FORCING, SITE_PRM, SUEWS_TIMER, &
                                SNOW_STATE, EHC_PRM, &
-                               anthroHEAT_STATE, PHENOLOGY_STATE, OHM_STATE, &
+                               anthroEmis_STATE, PHENOLOGY_STATE, OHM_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                HEAT_STATE, HYDRO_STATE
@@ -4891,7 +4787,7 @@ CONTAINS
 
       TYPE(HYDRO_STATE), INTENT(in) :: hydroState_prev
       TYPE(SNOW_STATE), INTENT(in) :: snowState_prev
-      TYPE(anthroHEAT_STATE), INTENT(in) :: anthroHeatState
+      TYPE(anthroEmis_STATE), INTENT(in) :: anthroHeatState
       TYPE(PHENOLOGY_STATE), INTENT(in) :: phenState
       TYPE(OHM_STATE), INTENT(in) :: ohmState_prev
       TYPE(OHM_STATE), INTENT(OUT) :: ohmState_next
@@ -9516,7 +9412,7 @@ CONTAINS
 
       ! ********** SUEWS_stateVariables **********
       ! ---anthropogenic heat-related states
-      TYPE(anthroHEAT_STATE) :: anthroHeatState
+      TYPE(anthroEmis_STATE) :: anthroHeatState
       REAL(KIND(1D0)), DIMENSION(12), INTENT(INOUT) :: HDD_id !Heating Degree Days [degC d]
 
       ! ---water balance related states
@@ -10277,7 +10173,7 @@ CONTAINS
       ! ESTM_ehc related:
       ! water balance related:
       !CALL hydroState%allocHydro(nlayer)
-      call hydroState%ALLOCATE(nlayer)
+      CALL hydroState%ALLOCATE(nlayer)
       ! ALLOCATE (hydroState%soilstore_roof(nlayer))
       ! ALLOCATE (hydroState%state_roof(nlayer))
       ! ALLOCATE (hydroState%soilstore_wall(nlayer))
@@ -10292,7 +10188,7 @@ CONTAINS
       hydroState%WUDay_id = WUDay_id
 
       !CALL heatState%allocHeat(nsurf, nlayer, ndepth)
-      call heatState%ALLOCATE(nsurf, nlayer, ndepth)
+      CALL heatState%ALLOCATE(nsurf, nlayer, ndepth)
       ! ALLOCATE (heatState%temp_roof(nlayer, ndepth))
       ! ALLOCATE (heatState%temp_wall(nlayer, ndepth))
       ! ALLOCATE (heatState%tsfc_roof(nlayer))
@@ -10338,7 +10234,7 @@ CONTAINS
       phenState%StoreDrainPrm = StoreDrainPrm
 
       ! ! transfer states into modState
-      modState%anthroHeatState = anthroHeatState
+      modState%anthroemisState = anthroHeatState
       modState%hydroState = hydroState
       modState%heatState = heatState
       modState%ohmState = ohmState
@@ -10458,7 +10354,7 @@ CONTAINS
       Tair_av = forcing%Tair_av_5d
 
       ! ! transfer modState back into individual states
-      anthroHeatState = modState%anthroHeatstate
+      anthroHeatState = modState%anthroemisState
       hydroState = modState%hydrostate
       heatState = modState%heatstate
       ohmState = modState%ohmstate
