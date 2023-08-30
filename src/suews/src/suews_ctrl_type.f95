@@ -501,10 +501,10 @@ MODULE SUEWS_DEF_DTS
    END TYPE atm_state
 
    TYPE, PUBLIC :: PHENOLOGY_STATE
-   REAL(KIND(1D0)), DIMENSION(NSURF) :: alb
-   REAL(KIND(1D0)), DIMENSION(nvegsurf) :: lai_id ! Initial LAI values.
-   REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDD_id ! Growing Degree Days [degC](see SUEWS_DailyState.f95)
-   REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDD_id ! Senescence Degree Days [degC](see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: alb
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: lai_id ! Initial LAI values.
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDD_id ! Growing Degree Days [degC](see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDD_id ! Senescence Degree Days [degC](see SUEWS_DailyState.f95)
       REAL(KIND(1D0)) :: VegPhenLumps
       REAL(KIND(1D0)) :: porosity_id !
       REAL(KIND(1D0)) :: decidcap_id ! Storage capacity of deciduous surface `DecTr`; updated each day in simulaiton due to changes in LAI.
