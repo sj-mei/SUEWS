@@ -23,7 +23,7 @@ test_data_dir = Path(__file__).parent / 'data_test'
 p_df_sample = Path(test_data_dir) / 'sample_output.pkl'
 
 # if platform is macOS and python version is 3.9, set flag_full_test to True
-flag_full_test = (sys.version_info[0] == 3 and sys.version_info[1] == 9 and platform.system() == "Darwin")
+flag_full_test = (sys.version_info[0] == 3 and sys.version_info[1] == 10 and platform.system() == "Darwin")
 
 class TestSuPy(TestCase):
     def setUp(self):
@@ -148,19 +148,7 @@ class TestSuPy(TestCase):
             "RSL",
         ]
 
-        # single-step results
-        df_output_s, df_state_s = sp.run_supy(
-            df_forcing_part, df_state_init, save_state=True
-        )
-        df_res_s = (
-            df_output_s.loc[:, list_grp_test]
-            .fillna(-999.0)
-            .sort_index(axis=1)
-            .round(6)
-            .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
-        )
 
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
         # multi-step results
         df_output_m, df_state_m = sp.run_supy(
             df_forcing_part, df_state_init, save_state=False
@@ -170,12 +158,26 @@ class TestSuPy(TestCase):
             .fillna(-999.0)
             .sort_index(axis=1)
             .round(6)
-            .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
+            .map(lambda x: -999.0 if np.abs(x) > 3e4 else x)
         )
+
+        # single-step results
+        df_output_s, df_state_s = sp.run_supy(
+            df_forcing_part, df_state_init, save_state=True
+        )
+        df_res_s = (
+            df_output_s.loc[:, list_grp_test]
+            .fillna(-999.0)
+            .sort_index(axis=1)
+            .round(6)
+            .map(lambda x: -999.0 if np.abs(x) > 3e4 else x)
+        )
+
+
         # print(df_res_m.iloc[:3, 86], df_res_s.iloc[:3, 86])
         pd.testing.assert_frame_equal(
-            left=df_res_s,
-            right=df_res_m,
+            left=df_res_m,
+            right=df_res_s,
         )
 
     # test saving output files working
