@@ -1761,106 +1761,6 @@ CONTAINS
       TYPE(output_line), INTENT(OUT) :: output_line_suews
       ! ########################################################################################
 
-      ! ########################################################################################
-      ! local variables
-      ! REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
-      ! REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
-      ! REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
-      ! REAL(KIND(1D0)) :: AdditionalWater = 0 !!Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
-      ! REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
-      ! REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
-
-      ! REAL(KIND(1D0)) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
-      ! REAL(KIND(1D0)) :: QE_LUMPS !turbulent latent heat flux by LUMPS model [W m-2]
-      ! REAL(KIND(1D0)) :: ev_per_tstep ! evaporation at each time step [mm]
-      ! REAL(KIND(1D0)) :: wu_ext !external water use [mm]
-      ! REAL(KIND(1D0)) :: Fc !total co2 flux [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: Fc_build ! anthropogenic co2 flux  [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
-      ! REAL(KIND(1D0)) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: Fc_photo !co2 flux from photosynthesis [umol m
-      ! REAL(KIND(1D0)) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: gfunc ! stomatal conductance function [-]
-      ! REAL(KIND(1D0)) :: gsc !Surface Layer Conductance
-      ! REAL(KIND(1D0)) :: QH_LUMPS !turbulent sensible heat flux from LUMPS model [W m-2]
-      ! REAL(KIND(1D0)) :: wu_int !internal water use [mm]
-      ! REAL(KIND(1D0)) :: kclear !clear sky incoming shortwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: kup !outgoing shortwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: ldown !incoming longtwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: lup !outgoing longwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: L_mod !Obukhov length [m]
-      ! REAL(KIND(1D0)) :: mwh !snowmelt [mm]
-      ! REAL(KIND(1D0)) :: mwstore !overall met water [mm]
-      ! REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
-      ! REAL(KIND(1D0)) :: zL ! Stability scale [-]
-      ! REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
-      ! REAL(KIND(1D0)) :: qe !turbuent latent heat flux [W m-2]
-      ! REAL(KIND(1D0)) :: qf !anthropogenic heat flux [W m-2]
-      ! REAL(KIND(1D0)) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
-      ! REAL(KIND(1D0)) :: qh !turbulent sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)) :: qh_residual ! residual based sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)) :: qh_resist !resistance bnased sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
-      ! REAL(KIND(1D0)) :: QmFreez !heat related to freezing of surface store [W m-2]
-      ! REAL(KIND(1D0)) :: QmRain !melt heat for rain on snow [W m-2]
-      ! REAL(KIND(1D0)) :: qn !net all-wave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
-      ! REAL(KIND(1D0)) :: qn_snowfree !net all-wave radiation on snow-free surface [W m-2]
-      ! REAL(KIND(1D0)) :: qs !heat storage flux [W m-2]
-      ! REAL(KIND(1D0)) :: RA_h ! aerodynamic resistance [s m-1]
-      ! REAL(KIND(1D0)) :: RS ! surface resistance [s m-1]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: rss_surf ! surface resistance adjusted by surface wetness state[s m-1]
-      ! REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
-      ! REAL(KIND(1D0)) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
-      ! REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
-      ! REAL(KIND(1D0)) :: runoff_per_tstep !runoff water at each time step [mm]
-      ! REAL(KIND(1D0)) :: runoffPipes !runoff to pipes [mm]
-      ! REAL(KIND(1D0)) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-      ! REAL(KIND(1D0)) :: runoffwaterbody !Above ground runoff from water body for all surface area [mm]
-      ! REAL(KIND(1D0)) :: smd !soil moisture deficit [mm]
-      ! REAL(KIND(1D0)) :: SoilState !Area-averaged soil moisture  for whole surface [mm]
-      ! REAL(KIND(1D0)) :: state_per_tstep !state_id at each timestep [mm]
-      ! REAL(KIND(1D0)) :: surf_chang_per_tstep !change in state_id (exluding snowpack) per timestep [mm]
-      ! REAL(KIND(1D0)) :: swe !overall snow water equavalent[mm]
-      ! REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
-      ! REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
-      ! REAL(KIND(1D0)) :: TempVeg ! temporary vegetative surface fraction adjusted by rainfall [-]
-      ! REAL(KIND(1D0)) :: tot_chang_per_tstep !Change in surface state_id [mm]
-      ! REAL(KIND(1D0)) :: TStar !T*, temperature scale [-]
-      ! REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
-      ! REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
-
-      ! REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf !external water use of each surface type [mm]
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_nsurf !soil moisture deficit for each surface
-
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_snow !snowpack surface temperature [C]
-
-      ! REAL(KIND(1D0)) :: psyc_hPa !psychometric constant [hPa]
-      ! REAL(KIND(1D0)) :: z0v !roughness for heat [m]
-      ! REAL(KIND(1D0)) :: z0vSnow !roughness for heat [m]
-      ! REAL(KIND(1D0)) :: RAsnow !Aerodynamic resistance for snow [s m-1]
-      ! REAL(KIND(1D0)) :: RB !boundary layer resistance shuttleworth
-      ! REAL(KIND(1D0)) :: runoff_per_interval !run-off at each time interval [mm]
-      ! REAL(KIND(1D0)) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
-      ! REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
-      ! REAL(KIND(1D0)) :: VegPhenLumps
-      ! REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
-      ! REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
-
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezState !freezing of state_id [mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezStateVol !surface state_id [mm]
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind !snow-free surface temperature [degC]
-
       TYPE(solar_State) :: solarState ! solar related model states
 
       ! ########################################################################################
@@ -1885,6 +1785,9 @@ CONTAINS
       ! anthropogenic heat related:
       TYPE(anthroEmis_STATE) :: anthroHeatState_prev, anthroHeatState_next
 
+      ! input arrays: standard suews surfaces
+      TYPE(HEAT_STATE) :: heatState_in, heatState_out
+
       REAL(KIND(1D0)) :: Tair_av_prev, Tair_av_next !average air temperature [degC]
       ! ########################################################################################
       ! flag for Tsurf convergence
@@ -1894,13 +1797,6 @@ CONTAINS
       REAL(KIND(1D0)) :: dif_tsfc_iter
       REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
       INTEGER :: i_iter
-
-      ! ########################################################################################
-      !  ! extended for ESTM_ehc, TS 20 Jan 2022
-      !
-      ! input arrays: standard suews surfaces
-      TYPE(HEAT_STATE) :: heatState_in, heatState_out
-
       ! iterator for surfaces
       INTEGER :: i_surf !iterator for surfaces
 
