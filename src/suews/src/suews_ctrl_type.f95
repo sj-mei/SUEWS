@@ -593,7 +593,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
       REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
 
-
       ! TODO: TS 25 Oct 2017
       ! the  variables are not used currently as grid-to-grid connection is NOT set up.
       ! set these variables as zero.
