@@ -1728,11 +1728,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_Main_DTS( &
       timer, forcing, config, siteInfo, &
-      ! lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
-      ! irrPrm, snowPrm, conductancePrm, &
-      ! pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
       modState,&
-      ! anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
       output_line_suews) ! output
 
       IMPLICIT NONE
@@ -12932,13 +12928,7 @@ CONTAINS
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
             timer, forcing, config, siteInfo, &
-            ! lumpsPrm, ehcPrm, spartacusPrm, spartacusLayerPrm, ahemisPrm, &
-            ! irrPrm, snowPrm, conductancePrm, &
-            ! pavedPrm, bldgPrm, dectrPrm, eveTrPrm, grassPrm, bsoilPrm, waterPrm, &
             modState,&
-            ! anthroHeatState, hydroState, heatState, ohmState, snowState, phenState, &
-            ! nlayer, &
-            ! Ts5mindata_ir, &
             output_line_suews) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
