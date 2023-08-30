@@ -726,7 +726,7 @@ def set_index_dt(df_raw: pd.DataFrame) -> pd.DataFrame:
     loc_issue = ser_dt_diff_sec.reset_index().index[~ser_test][1:] + 2
     if loc_issue.size == 0:
         # empty list of `loc_issue`
-        freq = ser_dt_diff[1]
+        freq = ser_dt_diff.iloc[1]
         df_datetime = df_raw.set_index(idx_dt).asfreq(freq)
     else:
         # non-empty list of `loc_issue`
