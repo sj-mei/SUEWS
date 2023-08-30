@@ -679,6 +679,9 @@ def resample_forcing_met(
     data_met_tstep = data_met_tstep.filter(list(dict_var_type_forcing.keys()))
     data_met_tstep = data_met_tstep.replace(np.nan, -999)
 
+    # to keep the same order as the original data
+    data_met_tstep=data_met_tstep.reindex(columns=data_met_raw.columns)
+
     return data_met_tstep
 
 
