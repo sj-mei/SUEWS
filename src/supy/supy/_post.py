@@ -7,16 +7,21 @@ from .supy_driver import suews_driver as sd
 # post-processing part
 # get variable information from Fortran
 def get_output_info_df():
+    from packaging.version import parse as LooseVersion
+
     size_var_list = sd.output_size()
     var_list_x = [np.array(sd.output_name_n(i)) for i in np.arange(size_var_list) + 1]
 
     df_var_list = pd.DataFrame(var_list_x, columns=["var", "group", "aggm", "outlevel"])
-    if pd.__version__ >= "2.1.0":
+
+    # strip leading and trailing spaces
+    fun_strip = lambda x: x.decode().strip()
+    if LooseVersion(pd.__version__) >= LooseVersion("2.1.0"):
         # if pandas version is 2.1.0 or above, we can use `df.map`
-        df_var_list = df_var_list.map(lambda x: x.strip())
+        df_var_list = df_var_list.map(fun_strip)
     else:
         # otherwise, we need to use `df.applymap`
-        df_var_list = df_var_list.applymap(lambda x: x.decode().strip())
+        df_var_list = df_var_list.applymap(fun_strip)
 
     df_var_list_x = df_var_list.replace(r"^\s*$", np.nan, regex=True).dropna()
     var_dfm = df_var_list_x.set_index(["group", "var"])
