@@ -509,6 +509,11 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall ! wetness status of wall [mm]
+
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_roof ! evapotranspiration of each roof layer [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf ! evapotranspiration from PM of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHydroState_c
       PROCEDURE :: DEALLOCATE => deallocHydroState_c
@@ -521,6 +526,29 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof ! roof surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
+
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_roof !surface temperature of roof[degC]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_wall !surface temperature of wall[degC]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
+
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_roof ! heat storage flux for roof component [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_roof ! net all-wave radiation of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_roof ! latent heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_roof ! sensible heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_roof ! resist-based sensible heat flux of roof surface [W m-2]
+
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_wall ! heat storage flux for wall component [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_wall ! net all-wave radiation of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_wall ! latent heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_wall ! sensible heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_wall ! resistance based sensible heat flux of wall surface [W m-2]
+
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf ! aggregated heat storage of of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf ! net all-wave radiation of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qe0_surf ! latent heat flux from PM of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! sensinle heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_resist_surf ! resistance based sensible heat flux of individual surface [W m-2]
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHeatState_c
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
@@ -647,6 +675,8 @@ CONTAINS
       ALLOCATE (self%state_roof(nlayer))
       ALLOCATE (self%soilstore_wall(nlayer))
       ALLOCATE (self%state_wall(nlayer))
+      ALLOCATE (self%ev_roof(nlayer))
+      ALLOCATE (self%ev_wall(nlayer))
       !
    END SUBROUTINE allocHydroState_c
 
@@ -656,12 +686,11 @@ CONTAINS
       !
       ! CALL dealloc_hydro_state(self)
       IF (ALLOCATED(self%soilstore_roof)) DEALLOCATE (self%soilstore_roof)
-
       IF (ALLOCATED(self%state_roof)) DEALLOCATE (self%state_roof)
-
       IF (ALLOCATED(self%soilstore_wall)) DEALLOCATE (self%soilstore_wall)
-
       IF (ALLOCATED(self%state_wall)) DEALLOCATE (self%state_wall)
+      IF (ALLOCATED(self%ev_roof)) DEALLOCATE (self%ev_roof)
+      IF (ALLOCATED(self%ev_wall)) DEALLOCATE (self%ev_wall)
       !
    END SUBROUTINE deallocHydroState_c
 
@@ -676,10 +705,22 @@ CONTAINS
       CALL self%DEALLOCATE()
       ALLOCATE (self%temp_roof(num_layer, num_depth))
       ALLOCATE (self%temp_wall(num_layer, num_depth))
+      ALLOCATE (self%temp_surf(num_surf, num_depth))
+
       ALLOCATE (self%tsfc_roof(num_layer))
       ALLOCATE (self%tsfc_wall(num_layer))
       ALLOCATE (self%tsfc_surf(num_surf))
-      ALLOCATE (self%temp_surf(num_surf, num_depth))
+
+      ALLOCATE (self%QS_roof(num_layer))
+      ALLOCATE (self%QN_roof(num_layer))
+      ALLOCATE (self%qe_roof(num_layer))
+      ALLOCATE (self%qh_roof(num_layer))
+      ALLOCATE (self%qh_resist_roof(num_layer))
+      ALLOCATE (self%QS_wall(num_layer))
+      ALLOCATE (self%QN_wall(num_layer))
+      ALLOCATE (self%qe_wall(num_layer))
+      ALLOCATE (self%qh_wall(num_layer))
+      ALLOCATE (self%qh_resist_wall(num_layer))
       !
    END SUBROUTINE allocHeatState_c
 
@@ -689,17 +730,22 @@ CONTAINS
       !
       ! CALL dealloc_heat_state(self)
       IF (ALLOCATED(self%temp_roof)) DEALLOCATE (self%temp_roof)
-
       IF (ALLOCATED(self%temp_wall)) DEALLOCATE (self%temp_wall)
-
       IF (ALLOCATED(self%tsfc_roof)) DEALLOCATE (self%tsfc_roof)
-
       IF (ALLOCATED(self%tsfc_wall)) DEALLOCATE (self%tsfc_wall)
-
       IF (ALLOCATED(self%tsfc_surf)) DEALLOCATE (self%tsfc_surf)
-
       IF (ALLOCATED(self%temp_surf)) DEALLOCATE (self%temp_surf)
-      !
+      IF (ALLOCATED(self%QS_roof)) DEALLOCATE (self%QS_roof)
+      IF (ALLOCATED(self%QN_roof)) DEALLOCATE (self%QN_roof)
+      IF (ALLOCATED(self%qe_roof)) DEALLOCATE (self%qe_roof)
+      IF (ALLOCATED(self%qh_roof)) DEALLOCATE (self%qh_roof)
+      IF (ALLOCATED(self%qh_resist_roof)) DEALLOCATE (self%qh_resist_roof)
+      IF (ALLOCATED(self%QS_wall)) DEALLOCATE (self%QS_wall)
+      IF (ALLOCATED(self%QN_wall)) DEALLOCATE (self%QN_wall)
+      IF (ALLOCATED(self%qe_wall)) DEALLOCATE (self%qe_wall)
+      IF (ALLOCATED(self%qh_wall)) DEALLOCATE (self%qh_wall)
+      IF (ALLOCATED(self%qh_resist_wall)) DEALLOCATE (self%qh_resist_wall)
+
    END SUBROUTINE deallocHeatState_c
 
    SUBROUTINE allocate_ehc_prm_c(self, nlayer, ndepth)
