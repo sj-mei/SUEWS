@@ -485,28 +485,27 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: sIce_hpa !Vapour pressure versus temperature slope in hPa above ice/snow
       REAL(KIND(1D0)) :: vpd_hPa !Vapour pressure deficit in hPa
       REAL(KIND(1D0)) :: vpd_pa !Vapour pressure deficit in Pa
-
       REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
       REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
       REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
       REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
-
       REAL(KIND(1D0)) :: L_mod !Obukhov length [m]
       REAL(KIND(1D0)) :: zL ! Stability scale [-]
-
       REAL(KIND(1D0)) :: RA_h ! aerodynamic resistance [s m-1]
       REAL(KIND(1D0)) :: RS ! surface resistance [s m-1]
       REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
+      REAL(KIND(1D0)) :: TStar !T*, temperature scale [-]
       REAL(KIND(1D0)) :: RB !boundary layer resistance shuttleworth
       REAL(KIND(1D0)), DIMENSION(NSURF) :: rss_surf ! surface resistance adjusted by surface wetness state[s m-1]
 
    END TYPE atm_state
 
    TYPE, PUBLIC :: PHENOLOGY_STATE
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: alb
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: lai_id ! Initial LAI values.
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDD_id ! Growing Degree Days [degC](see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDD_id ! Senescence Degree Days [degC](see SUEWS_DailyState.f95)
+   REAL(KIND(1D0)), DIMENSION(NSURF) :: alb
+   REAL(KIND(1D0)), DIMENSION(nvegsurf) :: lai_id ! Initial LAI values.
+   REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDD_id ! Growing Degree Days [degC](see SUEWS_DailyState.f95)
+   REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDD_id ! Senescence Degree Days [degC](see SUEWS_DailyState.f95)
+      REAL(KIND(1D0)) :: VegPhenLumps
       REAL(KIND(1D0)) :: porosity_id !
       REAL(KIND(1D0)) :: decidcap_id ! Storage capacity of deciduous surface `DecTr`; updated each day in simulaiton due to changes in LAI.
       REAL(KIND(1D0)) :: albDecTr_id !
@@ -515,10 +514,16 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Tmin_id ! Daily minimum temperature [degC]
       REAL(KIND(1D0)) :: Tmax_id ! Daily maximum temperature [degC]
       REAL(KIND(1D0)) :: lenDay_id ! daytime length [h]
+      REAL(KIND(1D0)) :: TempVeg ! temporary vegetative surface fraction adjusted by rainfall [-]
       REAL(KIND(1D0)), DIMENSION(6, NSURF) :: StoreDrainPrm ! coefficients used in drainage calculation [-]
 
       REAL(KIND(1D0)) :: gfunc ! stomatal conductance function [-]
-      REAL(KIND(1D0)) :: gsc !Surface Layer Conductance
+      REAL(KIND(1D0)) :: gsc !Surface Layer Conductance [s m-1]
+      REAL(KIND(1D0)) :: g_kdown ! surface conductance function for shortwave radiation [-]
+      REAL(KIND(1D0)) :: g_dq ! surface conductance function for specific humidity [-]
+      REAL(KIND(1D0)) :: g_ta ! surface conductance function for air temperature [-]
+      REAL(KIND(1D0)) :: g_smd ! surface conductance function for soil moisture deficit [-]
+      REAL(KIND(1D0)) :: g_lai ! surface conductance function for LAI [-]
    END TYPE PHENOLOGY_STATE
 
    TYPE, PUBLIC :: SNOW_STATE
@@ -529,6 +534,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: mwstore !overall met water [mm]
       REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
 
+      REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
       REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
       REAL(KIND(1D0)) :: QmFreez !heat related to freezing of surface store [W m-2]
       REAL(KIND(1D0)) :: QmRain !melt heat for rain on snow [W m-2]
@@ -639,6 +645,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_surf ! sensinle heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qh_resist_surf ! resistance based sensible heat flux of individual surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind !snow-free surface temperature [degC]
 
       REAL(KIND(1D0)) :: QH_LUMPS !turbulent sensible heat flux from LUMPS model [W m-2]
 
@@ -655,7 +662,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: qh_resist !resistance bnased sensible heat flux [W m-2]
 
       REAL(KIND(1D0)) :: qn !net all-wave radiation [W m-2]
-      REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
       REAL(KIND(1D0)) :: qn_snowfree !net all-wave radiation on snow-free surface [W m-2]
       REAL(KIND(1D0)) :: qs !heat storage flux [W m-2]
 

@@ -1784,82 +1784,82 @@ CONTAINS
       ! REAL(KIND(1D0)) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
       ! REAL(KIND(1D0)) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
       ! REAL(KIND(1D0)) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
-      REAL(KIND(1D0)) :: gfunc ! stomatal conductance function [-]
-      REAL(KIND(1D0)) :: gsc !Surface Layer Conductance
-      REAL(KIND(1D0)) :: QH_LUMPS !turbulent sensible heat flux from LUMPS model [W m-2]
-      REAL(KIND(1D0)) :: wu_int !internal water use [mm]
-      REAL(KIND(1D0)) :: kclear !clear sky incoming shortwave radiation [W m-2]
-      REAL(KIND(1D0)) :: kup !outgoing shortwave radiation [W m-2]
-      REAL(KIND(1D0)) :: ldown !incoming longtwave radiation [W m-2]
-      REAL(KIND(1D0)) :: lup !outgoing longwave radiation [W m-2]
-      REAL(KIND(1D0)) :: L_mod !Obukhov length [m]
-      REAL(KIND(1D0)) :: mwh !snowmelt [mm]
-      REAL(KIND(1D0)) :: mwstore !overall met water [mm]
-      REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
-      REAL(KIND(1D0)) :: zL ! Stability scale [-]
-      REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
-      REAL(KIND(1D0)) :: qe !turbuent latent heat flux [W m-2]
-      REAL(KIND(1D0)) :: qf !anthropogenic heat flux [W m-2]
-      REAL(KIND(1D0)) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
-      REAL(KIND(1D0)) :: qh !turbulent sensible heat flux [W m-2]
-      REAL(KIND(1D0)) :: qh_residual ! residual based sensible heat flux [W m-2]
-      REAL(KIND(1D0)) :: qh_resist !resistance bnased sensible heat flux [W m-2]
-      REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
-      REAL(KIND(1D0)) :: QmFreez !heat related to freezing of surface store [W m-2]
-      REAL(KIND(1D0)) :: QmRain !melt heat for rain on snow [W m-2]
-      REAL(KIND(1D0)) :: qn !net all-wave radiation [W m-2]
-      REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
-      REAL(KIND(1D0)) :: qn_snowfree !net all-wave radiation on snow-free surface [W m-2]
-      REAL(KIND(1D0)) :: qs !heat storage flux [W m-2]
-      REAL(KIND(1D0)) :: RA_h ! aerodynamic resistance [s m-1]
-      REAL(KIND(1D0)) :: RS ! surface resistance [s m-1]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: rss_surf ! surface resistance adjusted by surface wetness state[s m-1]
-      REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
-      REAL(KIND(1D0)) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
-      REAL(KIND(1D0)) :: runoff_per_tstep !runoff water at each time step [mm]
-      REAL(KIND(1D0)) :: runoffPipes !runoff to pipes [mm]
-      REAL(KIND(1D0)) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-      REAL(KIND(1D0)) :: runoffwaterbody !Above ground runoff from water body for all surface area [mm]
-      REAL(KIND(1D0)) :: smd !soil moisture deficit [mm]
-      REAL(KIND(1D0)) :: SoilState !Area-averaged soil moisture  for whole surface [mm]
-      REAL(KIND(1D0)) :: state_per_tstep !state_id at each timestep [mm]
-      REAL(KIND(1D0)) :: surf_chang_per_tstep !change in state_id (exluding snowpack) per timestep [mm]
-      REAL(KIND(1D0)) :: swe !overall snow water equavalent[mm]
-      REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
-      REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
-      REAL(KIND(1D0)) :: TempVeg ! temporary vegetative surface fraction adjusted by rainfall [-]
-      REAL(KIND(1D0)) :: tot_chang_per_tstep !Change in surface state_id [mm]
-      REAL(KIND(1D0)) :: TStar !T*, temperature scale [-]
-      REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
-      REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
+      ! REAL(KIND(1D0)) :: gfunc ! stomatal conductance function [-]
+      ! REAL(KIND(1D0)) :: gsc !Surface Layer Conductance
+      ! REAL(KIND(1D0)) :: QH_LUMPS !turbulent sensible heat flux from LUMPS model [W m-2]
+      ! REAL(KIND(1D0)) :: wu_int !internal water use [mm]
+      ! REAL(KIND(1D0)) :: kclear !clear sky incoming shortwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: kup !outgoing shortwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: ldown !incoming longtwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: lup !outgoing longwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: L_mod !Obukhov length [m]
+      ! REAL(KIND(1D0)) :: mwh !snowmelt [mm]
+      ! REAL(KIND(1D0)) :: mwstore !overall met water [mm]
+      ! REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
+      ! REAL(KIND(1D0)) :: zL ! Stability scale [-]
+      ! REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
+      ! REAL(KIND(1D0)) :: qe !turbuent latent heat flux [W m-2]
+      ! REAL(KIND(1D0)) :: qf !anthropogenic heat flux [W m-2]
+      ! REAL(KIND(1D0)) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
+      ! REAL(KIND(1D0)) :: qh !turbulent sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)) :: qh_residual ! residual based sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)) :: qh_resist !resistance bnased sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
+      ! REAL(KIND(1D0)) :: QmFreez !heat related to freezing of surface store [W m-2]
+      ! REAL(KIND(1D0)) :: QmRain !melt heat for rain on snow [W m-2]
+      ! REAL(KIND(1D0)) :: qn !net all-wave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
+      ! REAL(KIND(1D0)) :: qn_snowfree !net all-wave radiation on snow-free surface [W m-2]
+      ! REAL(KIND(1D0)) :: qs !heat storage flux [W m-2]
+      ! REAL(KIND(1D0)) :: RA_h ! aerodynamic resistance [s m-1]
+      ! REAL(KIND(1D0)) :: RS ! surface resistance [s m-1]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: rss_surf ! surface resistance adjusted by surface wetness state[s m-1]
+      ! REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
+      ! REAL(KIND(1D0)) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
+      ! REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
+      ! REAL(KIND(1D0)) :: runoff_per_tstep !runoff water at each time step [mm]
+      ! REAL(KIND(1D0)) :: runoffPipes !runoff to pipes [mm]
+      ! REAL(KIND(1D0)) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+      ! REAL(KIND(1D0)) :: runoffwaterbody !Above ground runoff from water body for all surface area [mm]
+      ! REAL(KIND(1D0)) :: smd !soil moisture deficit [mm]
+      ! REAL(KIND(1D0)) :: SoilState !Area-averaged soil moisture  for whole surface [mm]
+      ! REAL(KIND(1D0)) :: state_per_tstep !state_id at each timestep [mm]
+      ! REAL(KIND(1D0)) :: surf_chang_per_tstep !change in state_id (exluding snowpack) per timestep [mm]
+      ! REAL(KIND(1D0)) :: swe !overall snow water equavalent[mm]
+      ! REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
+      ! REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
+      ! REAL(KIND(1D0)) :: TempVeg ! temporary vegetative surface fraction adjusted by rainfall [-]
+      ! REAL(KIND(1D0)) :: tot_chang_per_tstep !Change in surface state_id [mm]
+      ! REAL(KIND(1D0)) :: TStar !T*, temperature scale [-]
+      ! REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
+      ! REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
 
-      REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf !external water use of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_nsurf !soil moisture deficit for each surface
+      ! REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf !external water use of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_nsurf !soil moisture deficit for each surface
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_snow !snowpack surface temperature [C]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_snow !snowpack surface temperature [C]
 
-      REAL(KIND(1D0)) :: psyc_hPa !psychometric constant [hPa]
-      REAL(KIND(1D0)) :: z0v !roughness for heat [m]
-      REAL(KIND(1D0)) :: z0vSnow !roughness for heat [m]
-      REAL(KIND(1D0)) :: RAsnow !Aerodynamic resistance for snow [s m-1]
-      REAL(KIND(1D0)) :: RB !boundary layer resistance shuttleworth
-      REAL(KIND(1D0)) :: runoff_per_interval !run-off at each time interval [mm]
-      REAL(KIND(1D0)) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
-      REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
-      REAL(KIND(1D0)) :: VegPhenLumps
-      REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
-      REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
+      ! REAL(KIND(1D0)) :: psyc_hPa !psychometric constant [hPa]
+      ! REAL(KIND(1D0)) :: z0v !roughness for heat [m]
+      ! REAL(KIND(1D0)) :: z0vSnow !roughness for heat [m]
+      ! REAL(KIND(1D0)) :: RAsnow !Aerodynamic resistance for snow [s m-1]
+      ! REAL(KIND(1D0)) :: RB !boundary layer resistance shuttleworth
+      ! REAL(KIND(1D0)) :: runoff_per_interval !run-off at each time interval [mm]
+      ! REAL(KIND(1D0)) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
+      ! REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
+      ! REAL(KIND(1D0)) :: VegPhenLumps
+      ! REAL(KIND(1D0)) :: SoilMoistCap !Maximum capacity of soil store [mm]
+      ! REAL(KIND(1D0)) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
 
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezState !freezing of state_id [mm]
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: FreezStateVol !surface state_id [mm]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind !snow-free surface temperature [degC]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind !snow-free surface temperature [degC]
 
       TYPE(solar_State) :: solarState ! solar related model states
 
@@ -1932,12 +1932,14 @@ CONTAINS
       TYPE(atm_state) :: atmState ! atmospheric state
 
       ASSOCIATE ( &
+         ! timer
          nsh => timer%nsh, &
          nsh_real => timer%nsh_real, &
          tstep_real => timer%tstep_real, &
          dectime => timer%dectime, &
          dayofWeek_id => timer%dayofWeek_id, &
          dls => timer%dls, &
+         ! siteInfo
          nlayer => siteInfo%nlayer, &
          lumpsPrm => siteInfo%lumps, &
          ehcPrm => siteInfo%ehc, &
@@ -1961,8 +1963,10 @@ CONTAINS
          NonWaterFraction => siteInfo%NonWaterFraction, &
          sfr_roof => siteInfo%sfr_roof, &
          sfr_wall => siteInfo%sfr_wall, &
+         ! solarState
          azimuth_deg => solarState%azimuth_deg, &
          zenith_deg => solarState%zenith_deg, &
+         ! atmState
          lv_J_kg => atmState%lv_J_kg, &
          lvS_J_kg => atmState%lvS_J_kg, &
          es_hPa => atmState%es_hPa, &
@@ -1973,22 +1977,43 @@ CONTAINS
          dens_dry => atmState%dens_dry, &
          avcp => atmState%avcp, &
          avdens => atmState%avdens, &
+         tlv => atmState%tlv, &
+         psyc_hPa => atmState%psyc_hPa, &
+         psycIce_hPa => atmState%psycIce_hPa, &
+         s_Pa => atmState%s_Pa, &
+         s_hpa => atmState%s_hpa, &
+         sIce_hpa => atmState%sIce_hpa, &
          U10_ms => atmState%U10_ms, &
+         t2_C => atmState%t2_C, &
+         q2_gkg => atmState%q2_gkg, &
+         RH2 => atmState%RH2, &
+         L_mod => atmState%L_mod, &
+         zL => atmState%zL, &
+         RA_h => atmState%RA_h, &
+         RS => atmState%RS, &
+         UStar => atmState%UStar, &
+         RB => atmState%RB, &
+         TStar => atmState%TStar, &
+         rss_surf => atmState%rss_surf, &
+         ! roughnessState
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
          z0m => roughnessState%z0m, &
+         z0v => roughnessState%z0v, &
          zdm => roughnessState%zdm, &
          ZZD => roughnessState%ZZD, &
          FAIBldg_use => roughnessState%FAIBldg_use, &
          FAIEveTree_use => roughnessState%FAIEveTree_use, &
          FAIDecTree_use => roughnessState%FAIDecTree_use, &
+         ! modState
          anthroEmisState => modState%anthroemisState, &
          hydroState => modState%hydroState, &
          heatstate => modState%heatState, &
          ohmstate => modState%ohmState, &
          snowState => modState%snowState, &
          phenState => modState%phenState, &
+         ! hydroState
          ev_roof => modState%hydroState%ev_roof, &
          ev_wall => modState%hydroState%ev_wall, &
          ev_surf => modState%hydroState%ev_surf, &
@@ -2004,6 +2029,26 @@ CONTAINS
          QE_LUMPS => modState%hydroState%QE_LUMPS, &
          ev_per_tstep => modState%hydroState%ev_per_tstep, &
          wu_ext => modState%hydroState%wu_ext, &
+         drain_surf => modState%hydroState%drain_surf, &
+         SoilMoistCap => modState%hydroState%SoilMoistCap, &
+         vsmd => modState%hydroState%vsmd, &
+         runoff_per_interval => modState%hydroState%runoff_per_interval, &
+         smd_nsurf => modState%hydroState%smd_nsurf, &
+         runoffSoil => modState%hydroState%runoffSoil, &
+         wu_surf => modState%hydroState%wu_surf, &
+         runoffAGveg => modState%hydroState%runoffAGveg, &
+         runoffAGimpervious => modState%hydroState%runoffAGimpervious, &
+         runoff_per_tstep => modState%hydroState%runoff_per_tstep, &
+         runoffPipes => modState%hydroState%runoffPipes, &
+         runoffSoil_per_tstep => modState%hydroState%runoffSoil_per_tstep, &
+         runoffwaterbody => modState%hydroState%runoffwaterbody, &
+         smd => modState%hydroState%smd, &
+         SoilState => modState%hydroState%SoilState, &
+         state_per_tstep => modState%hydroState%state_per_tstep, &
+         surf_chang_per_tstep => modState%hydroState%surf_chang_per_tstep, &
+         tot_chang_per_tstep => modState%hydroState%tot_chang_per_tstep, &
+         wu_int => modState%hydroState%wu_int, &
+         ! heatState
          tsfc0_out_roof => modState%heatState%tsfc0_out_roof, &
          tsfc0_out_wall => modState%heatState%tsfc0_out_wall, &
          tsfc0_out_surf => modState%heatState%tsfc0_out_surf, &
@@ -2023,10 +2068,45 @@ CONTAINS
          qe_surf => modState%heatState%qe_surf, &
          qh_surf => modState%heatState%qh_surf, &
          qh_resist_surf => modState%heatState%qh_resist_surf, &
+         tsurf_ind => modState%heatState%tsurf_ind, &
+         TSfc_C => modState%heatState%TSfc_C, &
+         tsurf => modState%heatState%tsurf, &
+         qe => modState%heatState%qe, &
+         qf => modState%heatState%qf, &
+         QF_SAHP => modState%heatState%QF_SAHP, &
+         qh => modState%heatState%qh, &
+         qh_residual => modState%heatState%qh_residual, &
+         qh_resist => modState%heatState%qh_resist, &
+         qn_snowfree => modState%heatState%qn_snowfree, &
+         qn => modState%heatState%qn, &
+         qs => modState%heatState%qs, &
+         QH_LUMPS => modState%heatState%QH_LUMPS, &
+         kclear => modState%heatState%kclear, &
+         kup => modState%heatState%kup, &
+         ldown => modState%heatState%ldown, &
+         lup => modState%heatState%lup, &
+         ! ohmState
          a1 => modState%ohmState%a1, &
          a2 => modState%ohmState%a2, &
          a3 => modState%ohmState%a3, &
+         ! snowState
          chSnow_per_interval => modState%snowState%chSnow_per_interval, &
+         deltaQi => modState%snowState%deltaQi, &
+         z0vSnow => modState%snowState%z0vSnow, &
+         RAsnow => modState%snowState%RAsnow, &
+         Tsurf_ind_snow => modState%snowState%Tsurf_ind_snow, &
+         qn_ind_snow => modState%snowState%qn_ind_snow, &
+         kup_ind_snow => modState%snowState%kup_ind_snow, &
+         SnowRemoval => modState%snowState%SnowRemoval, &
+         swe => modState%snowState%swe, &
+         Qm => modState%snowState%Qm, &
+         QmFreez => modState%snowState%QmFreez, &
+         QmRain => modState%snowState%QmRain, &
+         NWstate_per_tstep => modState%snowState%NWstate_per_tstep, &
+         mwh => modState%snowState%mwh, &
+         mwstore => modState%snowState%mwstore, &
+         qn_snow => modState%snowState%qn_snow, &
+         ! anthroEmisState
          Fc => modState%anthroemisState%Fc, &
          Fc_anthro => modState%anthroemisState%Fc_anthro, &
          Fc_biogen => modState%anthroemisState%Fc_biogen, &
@@ -2037,6 +2117,12 @@ CONTAINS
          Fc_point => modState%anthroemisState%Fc_point, &
          Fc_respi => modState%anthroemisState%Fc_respi, &
          Fc_traff => modState%anthroemisState%Fc_traff, &
+         ! phenState
+         VegPhenLumps => modState%phenState%VegPhenLumps, &
+         TempVeg => modState%phenState%TempVeg, &
+         gfunc => modState%phenState%gfunc, &
+         gsc => modState%phenState%gsc, &
+         ! forcing
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
 
