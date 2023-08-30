@@ -236,7 +236,6 @@ MODULE SUEWS_DEF_DTS
 
    ! ********** SUEWS_parameters schema (derived) **********
 
-
    TYPE, PUBLIC :: LUMPS_PRM
       REAL(KIND(1D0)) :: raincover ! limit when surface totally covered with water for LUMPS [mm]
       REAL(KIND(1D0)) :: rainmaxres ! maximum water bucket reservoir. Used for LUMPS surface wetness control. [mm]
@@ -400,25 +399,23 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]
 
       INTEGER :: nlayer ! number of vertical layers in urban canyon [-]
-      type(SPARTACUS_PRM) :: spartacus
-      type(LUMPS_PRM)::lumps
-      type(EHC_PRM) :: ehc
-      type(SPARTACUS_LAYER_PRM) :: spartacus_layer
-      type(SURF_STORE_PRM) :: surf_store
-      type(IRRIGATION_PRM) :: irrigation
-      type(anthroEMIS_PRM) :: anthroemis
+      TYPE(SPARTACUS_PRM) :: spartacus
+      TYPE(LUMPS_PRM) :: lumps
+      TYPE(EHC_PRM) :: ehc
+      TYPE(SPARTACUS_LAYER_PRM) :: spartacus_layer
+      TYPE(SURF_STORE_PRM) :: surf_store
+      TYPE(IRRIGATION_PRM) :: irrigation
+      TYPE(anthroEMIS_PRM) :: anthroemis
       ! type(anthroHEAT_PRM) :: anthroheat
-      type(SNOW_PRM) :: snow
-      type(CONDUCTANCE_PRM) :: conductance
-      type(LC_PAVED_PRM) :: lc_paved
-      type(LC_BLDG_PRM) :: lc_bldg
-      type(LC_DECTR_PRM) :: lc_dectr
-      type(LC_EVETR_PRM) :: lc_evetr
-      type(LC_GRASS_PRM) :: lc_grass
-      type(LC_BSOIL_PRM) :: lc_bsoil
-      type(LC_WATER_PRM) :: lc_water
-
-
+      TYPE(SNOW_PRM) :: snow
+      TYPE(CONDUCTANCE_PRM) :: conductance
+      TYPE(LC_PAVED_PRM) :: lc_paved
+      TYPE(LC_BLDG_PRM) :: lc_bldg
+      TYPE(LC_DECTR_PRM) :: lc_dectr
+      TYPE(LC_EVETR_PRM) :: lc_evetr
+      TYPE(LC_GRASS_PRM) :: lc_grass
+      TYPE(LC_BSOIL_PRM) :: lc_bsoil
+      TYPE(LC_WATER_PRM) :: lc_water
 
    END TYPE SITE_PRM
 

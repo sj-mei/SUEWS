@@ -58,7 +58,6 @@ MODULE SUEWS_Driver
 
    IMPLICIT NONE
 
-
    TYPE, PUBLIC :: array_m
       INTEGER, DIMENSION(2, 3) :: var1
       INTEGER, DIMENSION(3, 2) :: var2
@@ -12855,23 +12854,21 @@ CONTAINS
 
 
       ! ############# evaluation for DTS variables (end) #############
-
-
-      siteInfo%lumps=lumpsPrm
-      siteInfo%ehc=ehcPrm
-      siteInfo%spartacus=spartacusPrm
-      siteInfo%spartacus_Layer=spartacusLayerPrm
-      siteInfo%anthroemis=ahemisPrm
-      siteInfo%irrigation=irrPrm
-      siteInfo%snow=snowPrm
-      siteInfo%conductance=conductancePrm
-      siteInfo%lc_paved=pavedPrm
-      siteInfo%lc_bldg=bldgPrm
-      siteInfo%lc_dectr=dectrPrm
-      siteInfo%lc_evetr=evetrPrm
-      siteInfo%lc_grass=grassPrm
-      siteInfo%lc_bsoil=bsoilPrm
-      siteInfo%lc_water=waterPrm
+      siteInfo%lumps = lumpsPrm
+      siteInfo%ehc = ehcPrm
+      siteInfo%spartacus = spartacusPrm
+      siteInfo%spartacus_Layer = spartacusLayerPrm
+      siteInfo%anthroemis = ahemisPrm
+      siteInfo%irrigation = irrPrm
+      siteInfo%snow = snowPrm
+      siteInfo%conductance = conductancePrm
+      siteInfo%lc_paved = pavedPrm
+      siteInfo%lc_bldg = bldgPrm
+      siteInfo%lc_dectr = dectrPrm
+      siteInfo%lc_evetr = evetrPrm
+      siteInfo%lc_grass = grassPrm
+      siteInfo%lc_bsoil = bsoilPrm
+      siteInfo%lc_water = waterPrm
 
       !   allocate output arrays
 
