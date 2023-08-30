@@ -2105,9 +2105,9 @@ CONTAINS
          ev_surf => modState%hydroState%ev_surf, &
          ev0_surf => modState%hydroState%ev0_surf, &
 
-         ! tsfc0_out_roof => modState%heatState%tsfc0_out_roof, &
-         ! tsfc0_out_wall => modState%heatState%tsfc0_out_wall, &
-         ! tsfc0_out_surf => modState%heatState%tsfc0_out_surf, &
+         tsfc0_out_roof => modState%heatState%tsfc0_out_roof, &
+         tsfc0_out_wall => modState%heatState%tsfc0_out_wall, &
+         tsfc0_out_surf => modState%heatState%tsfc0_out_surf, &
          ! QS_roof => modState%heatState%QS_roof, &
          ! QN_roof => modState%heatState%QN_roof, &
          ! qe_roof => modState%heatState%qe_roof, &
