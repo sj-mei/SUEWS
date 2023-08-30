@@ -1,5 +1,5 @@
 MODULE SUEWS_DEF_DTS
-   USE allocateArray, ONLY: nsurf, nvegsurf
+   USE allocateArray, ONLY: nsurf, nvegsurf,nspec
 
    IMPLICIT NONE
    ! ********** SUEWS_parameters schema (basic) **********
@@ -232,6 +232,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_wall ! emissivity of wall [-]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: roof_albedo_dir_mult_fact !Ratio of the direct and diffuse albedo of the roof[-]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wall_specular_frac ! Fraction of wall reflection that is specular [-]
+      contains
+         procedure :: allocate => allocate_spartacus_layer_prm_c
+         procedure :: deallocate => deallocate_spartacus_layer_prm_c
    END TYPE SPARTACUS_LAYER_PRM
 
    ! ********** SUEWS_parameters schema (derived) **********
@@ -582,6 +585,44 @@ MODULE SUEWS_DEF_DTS
    END TYPE SUEWS_TIMER
 
 CONTAINS
+   subroutine allocate_spartacus_layer_prm_c(self,  nlayer)
+      IMPLICIT NONE
+      CLASS(SPARTACUS_LAYER_PRM), INTENT(inout) :: self
+      INTEGER, INTENT(in) :: nlayer
+
+      CALL self%DEALLOCATE()
+      ALLOCATE (self%building_frac(nlayer))
+      ALLOCATE (self%building_scale(nlayer))
+      ALLOCATE (self%veg_frac(nlayer))
+      ALLOCATE (self%veg_scale(nlayer))
+      ALLOCATE (self%alb_roof(nlayer))
+      ALLOCATE (self%emis_roof(nlayer))
+      ALLOCATE (self%alb_wall(nlayer))
+      ALLOCATE (self%emis_wall(nlayer))
+      ALLOCATE (self%roof_albedo_dir_mult_fact(nspec, nlayer))
+      ALLOCATE (self%wall_specular_frac(nspec, nlayer))
+
+
+
+   end subroutine allocate_spartacus_layer_prm_c
+
+subroutine deallocate_spartacus_layer_prm_c(self)
+   IMPLICIT NONE
+    CLASS(SPARTACUS_LAYER_PRM), INTENT(inout) :: self
+
+    if (allocated(self%building_frac)) deallocate(self%building_frac)
+      if (allocated(self%building_scale)) deallocate(self%building_scale)
+      if (allocated(self%veg_frac)) deallocate(self%veg_frac)
+      if (allocated(self%veg_scale)) deallocate(self%veg_scale)
+      if (allocated(self%alb_roof)) deallocate(self%alb_roof)
+      if (allocated(self%emis_roof)) deallocate(self%emis_roof)
+      if (allocated(self%alb_wall)) deallocate(self%alb_wall)
+      if (allocated(self%emis_wall)) deallocate(self%emis_wall)
+      if (allocated(self%roof_albedo_dir_mult_fact)) deallocate(self%roof_albedo_dir_mult_fact)
+      if (allocated(self%wall_specular_frac)) deallocate(self%wall_specular_frac)
+
+
+end subroutine deallocate_spartacus_layer_prm_c
 
    SUBROUTINE allocHydroState_c(self, nlayer)
       IMPLICIT NONE

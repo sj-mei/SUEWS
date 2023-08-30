@@ -12295,16 +12295,18 @@ CONTAINS
       spartacusPrm%veg_contact_fraction_const = veg_contact_fraction_const
       spartacusPrm%veg_fsd_const = veg_fsd_const
 
-      ALLOCATE (spartacusLayerPrm%building_frac(nlayer))
-      ALLOCATE (spartacusLayerPrm%building_scale(nlayer))
-      ALLOCATE (spartacusLayerPrm%veg_frac(nlayer))
-      ALLOCATE (spartacusLayerPrm%veg_scale(nlayer))
-      ALLOCATE (spartacusLayerPrm%alb_roof(nlayer))
-      ALLOCATE (spartacusLayerPrm%emis_roof(nlayer))
-      ALLOCATE (spartacusLayerPrm%alb_wall(nlayer))
-      ALLOCATE (spartacusLayerPrm%emis_wall(nlayer))
-      ALLOCATE (spartacusLayerPrm%roof_albedo_dir_mult_fact(nspec, nlayer))
-      ALLOCATE (spartacusLayerPrm%wall_specular_frac(nspec, nlayer))
+      call spartacusLayerPrm%ALLOCATE(nlayer)
+
+      ! ALLOCATE (spartacusLayerPrm%building_frac(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%building_scale(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%veg_frac(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%veg_scale(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%alb_roof(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%emis_roof(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%alb_wall(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%emis_wall(nlayer))
+      ! ALLOCATE (spartacusLayerPrm%roof_albedo_dir_mult_fact(nspec, nlayer))
+      ! ALLOCATE (spartacusLayerPrm%wall_specular_frac(nspec, nlayer))
       spartacusLayerPrm%building_frac = building_frac
       spartacusLayerPrm%building_scale = building_scale
       spartacusLayerPrm%veg_frac = veg_frac
