@@ -1961,10 +1961,10 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
 
       ! output arrays:
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf ! evapotranspiration from PM of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_roof ! evapotranspiration of each roof layer [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf ! evapotranspiration from PM of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_roof ! evapotranspiration of each roof layer [mm]
+      ! REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
 
       ! roof facets
       ! aggregated heat storage of all roof facets
@@ -2100,10 +2100,10 @@ CONTAINS
          snowState => modState%snowState, &
          phenState => modState%phenState, &
 
-         ! ev_roof => modState%hydroState%ev_roof, &
-         ! ev_wall => modState%hydroState%ev_wall, &
-         ! ev_surf => modState%hydroState%ev_surf, &
-         ! ev0_surf => modState%hydroState%ev0_surf, &
+         ev_roof => modState%hydroState%ev_roof, &
+         ev_wall => modState%hydroState%ev_wall, &
+         ev_surf => modState%hydroState%ev_surf, &
+         ev0_surf => modState%hydroState%ev0_surf, &
 
          ! tsfc0_out_roof => modState%heatState%tsfc0_out_roof, &
          ! tsfc0_out_wall => modState%heatState%tsfc0_out_wall, &
@@ -2144,8 +2144,8 @@ CONTAINS
          ALLOCATE (qh_wall(nlayer))
          ALLOCATE (qh_resist_roof(nlayer))
          ALLOCATE (qh_resist_wall(nlayer))
-         ALLOCATE (ev_roof(nlayer))
-         ALLOCATE (ev_wall(nlayer))
+         ! ALLOCATE (ev_roof(nlayer))
+         ! ALLOCATE (ev_wall(nlayer))
 
          ! ############# memory allocation for DTS variables (start) #############
          CALL hydroState_prev%ALLOCATE(nlayer)
