@@ -1761,7 +1761,7 @@ CONTAINS
       TYPE(output_line), INTENT(OUT) :: output_line_suews
       ! ########################################################################################
 
-      TYPE(solar_State) :: solarState ! solar related model states
+
 
       ! ########################################################################################
       ! TS 19 Sep 2019
@@ -1790,26 +1790,22 @@ CONTAINS
 
       REAL(KIND(1D0)) :: Tair_av_prev, Tair_av_next !average air temperature [degC]
       ! ########################################################################################
-      ! flag for Tsurf convergence
-      LOGICAL :: flag_converge
-      LOGICAL :: flag_print_debug
-      ! REAL(KIND(1D0)) :: Ts_iter !average surface temperature of all surfaces [degC]
-      REAL(KIND(1D0)) :: dif_tsfc_iter
-      REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
-      INTEGER :: i_iter
-      ! iterator for surfaces
+
+      ! these local variables are used in iteration
+
+      LOGICAL :: flag_converge ! flag for Tsurf convergence
+      LOGICAL :: flag_print_debug ! flag for printing debug info
+      INTEGER :: i_iter ! iterator in main calculation loop
       INTEGER :: i_surf !iterator for surfaces
-
-      !method to calculate qh [-]
-      INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
-
-      ! used in iteration
-      INTEGER :: max_iter !maximum iteration
-      REAL(KIND(1D0)) :: ratio_iter
+      REAL(KIND(1D0)) :: dif_tsfc_iter ! difference between tsfc and tsfc0 to test convergence
+      INTEGER :: max_iter ! maximum number of iteration
+      REAL(KIND(1D0)) :: ratio_iter ! ratio of new and old tsfc used in iteration for faster convergence
 
 
       ! ####################################################################################
-      ! Related to RSL wind profiles
+      ! fixed parameters - may be removed in the future; TS 31 Aug 2023
+      !method to calculate qh [-]
+      INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
       INTEGER, PARAMETER :: nz = 90 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
       INTEGER, PARAMETER :: AerodynamicResistanceMethod = 2 !method to calculate RA [-]
       INTEGER, PARAMETER :: BaseTMethod = 2 ! base t method [-]
@@ -1819,6 +1815,7 @@ CONTAINS
       INTEGER, PARAMETER :: LAImethod = 1 ! boolean to determine if calculate LAI [-]
       REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
 
+      TYPE(solar_State) :: solarState ! solar related model states
       TYPE(ROUGHNESS_STATE) :: roughnessState ! roughness related info
       TYPE(atm_state) :: atmState ! atmospheric state
 
@@ -1886,17 +1883,6 @@ CONTAINS
          RB => atmState%RB, &
          TStar => atmState%TStar, &
          rss_surf => atmState%rss_surf, &
-         ! roughnessState
-         FAI => roughnessState%FAI, &
-         PAI => roughnessState%PAI, &
-         Zh => roughnessState%Zh, &
-         z0m => roughnessState%z0m, &
-         z0v => roughnessState%z0v, &
-         zdm => roughnessState%zdm, &
-         ZZD => roughnessState%ZZD, &
-         FAIBldg_use => roughnessState%FAIBldg_use, &
-         FAIEveTree_use => roughnessState%FAIEveTree_use, &
-         FAIDecTree_use => roughnessState%FAIDecTree_use, &
          ! modState
          anthroEmisState => modState%anthroemisState, &
          hydroState => modState%hydroState, &
@@ -1904,6 +1890,18 @@ CONTAINS
          ohmstate => modState%ohmState, &
          snowState => modState%snowState, &
          phenState => modState%phenState, &
+         roughnessState => modState%roughnessState, &
+         ! roughnessState
+         FAI => modState%roughnessState%FAI, &
+         PAI => modState%roughnessState%PAI, &
+         Zh => modState%roughnessState%Zh, &
+         z0m => modState%roughnessState%z0m, &
+         z0v => modState%roughnessState%z0v, &
+         zdm => modState%roughnessState%zdm, &
+         ZZD => modState%roughnessState%ZZD, &
+         FAIBldg_use => modState%roughnessState%FAIBldg_use, &
+         FAIEveTree_use => modState%roughnessState%FAIEveTree_use, &
+         FAIDecTree_use => modState%roughnessState%FAIDecTree_use, &
          ! hydroState
          ev_roof => modState%hydroState%ev_roof, &
          ev_wall => modState%hydroState%ev_wall, &
@@ -1976,6 +1974,7 @@ CONTAINS
          kup => modState%heatState%kup, &
          ldown => modState%heatState%ldown, &
          lup => modState%heatState%lup, &
+         QH_Init => modState%heatState%QH_Init, &
          ! ohmState
          a1 => modState%ohmState%a1, &
          a2 => modState%ohmState%a2, &
@@ -2053,7 +2052,6 @@ CONTAINS
          ev0_surf = 0 ! ev from PM: only meaningful when snowuse=0
          ev_surf = 0 ! ev from water balance: only meaningful when snowuse=0
 
-         ! ####
          ! force several snow related state variables to zero if snow module is off
          IF (config%snowuse == 0) THEN
             snowState%SnowDens = 0.
@@ -2117,16 +2115,6 @@ CONTAINS
             tsfc0_out_wall = heatState%tsfc_wall
          END IF
 
-         ! calculate surface fraction related VARIABLES
-         ! CALL SUEWS_cal_surf_DTS( &
-         !    config, & !input
-         !    siteInfo, & !input
-         !    ! nlayer, &
-         !    ! pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
-         !    ! spartacusLayerPrm, spartacusPrm, & !input
-         !    VegFraction, ImpervFraction, PervFraction, NonWaterFraction, & ! output
-         !    sfr_roof, sfr_wall) ! output
-
          ! calculate mean air temperature of past 24 hours
          ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
          Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
@@ -2141,10 +2129,6 @@ CONTAINS
             phenState_prev, &
             ! TODO: collect output into a derived type for model output
             roughnessState)
-         ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
-         ! FAI, PAI, & !output
-         ! zH, z0m, zdm, ZZD)
-         ! print *, 'day =', timer%id, 'hour =', timer%it, 'z0m = ', z0m
 
          !=================Calculate sun position=================
          IF (config%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
@@ -2153,18 +2137,10 @@ CONTAINS
             timer, & !input:
             siteInfo, &
             azimuth_deg, zenith_deg) !output:
-         ! zenith_deg=timer%zenith_deg
-         ! azimuth=timer%azimuth
-         ! print *, 'azimuth, zenith_deg', azimuth, zenith_deg
-         ! print *, '~~~~~'
 
          !=================Calculation of density and other water related parameters=================
          IF (config%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
          CALL cal_atm_state(timer, forcing, atmState)
-         ! CALL cal_AtmMoist( &
-         !    forcing%Temp_C, forcing%pres, forcing%RH, dectime, & ! input:
-         !    lv_J_kg, lvS_J_kg, & ! output:
-         !    es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
 
          ! start iteration-based calculation
          ! through iterations, the surface temperature is examined to be converged
@@ -9132,22 +9108,6 @@ CONTAINS
 
       ! ---forcing-related variables
       TYPE(SUEWS_FORCING) :: forcing
-      ! REAL(KIND(1D0)) :: qn1_obs !observed net all-wave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: qs_obs !observed heat storage flux [W m-2]
-      ! REAL(KIND(1D0)) :: qf_obs !observed anthropogenic heat flux [W m-2]
-      ! REAL(KIND(1D0)) :: avu1 !average wind speed at 1m [W m-1]
-      ! REAL(KIND(1D0)) :: avrh !relative humidity [-]
-      ! REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
-      ! REAL(KIND(1D0)) :: Press_hPa !air pressure [hPa]
-      ! REAL(KIND(1D0)) :: Precip !rain data [mm]
-      ! REAL(KIND(1D0)) :: avkdn !incominging shortwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: snowFrac_obs !observed snow fraction [-]
-      ! REAL(KIND(1D0)) :: ldown_obs !observed incoming longwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: fcld_obs !observed could fraction [-]
-      ! REAL(KIND(1D0)) :: wu_m3
-
-      ! REAL(KIND(1D0)) :: LAI_obs !observed LAI [m2 m-2]
-      ! REAL(KIND(1D0)) :: xsmd ! observed soil moisture; can be provided either as volumetric ([m3 m-3] when SMDMethod = 1) or gravimetric quantity ([kg kg-1] when SMDMethod = 2
 
       ! ESTM related:
       REAL(KIND(1D0)), INTENT(INOUT) :: Tair_av !average air temperature [degC]
@@ -9394,7 +9354,7 @@ CONTAINS
 
       ! ********** SUEWS_stateVariables **********
       ! ---anthropogenic heat-related states
-      TYPE(anthroEmis_STATE) :: anthroHeatState
+      TYPE(anthroEmis_STATE) :: anthroEmisState
       REAL(KIND(1D0)), DIMENSION(12), INTENT(INOUT) :: HDD_id !Heating Degree Days [degC d]
 
       ! ---water balance related states
@@ -9459,27 +9419,6 @@ CONTAINS
       INTEGER, INTENT(IN) :: len_sim
       ! input variables
       INTEGER, INTENT(IN) :: nlayer ! number of vertical layers in urban canyon
-      ! INTEGER, INTENT(IN) :: AerodynamicResistanceMethod !method to calculate RA [-]
-      ! INTEGER, INTENT(IN) :: Diagnose
-      ! INTEGER, INTENT(IN) :: DiagQN
-      ! INTEGER, INTENT(IN) :: DiagQS
-      ! INTEGER, INTENT(IN) :: LAICalcYes !boolean to determine if calculate LAI [-]
-      ! dt_since_start is intentionally made as inout to keep naming consistency with the embedded subroutine
-      ! REAL(KIND(1D0)),INTENT(IN)::avkdn
-      ! REAL(KIND(1D0)),INTENT(IN)::avRh
-      ! REAL(KIND(1D0)),INTENT(IN)::avU1
-      ! REAL(KIND(1D0)),INTENT(IN)::fcld_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::LAI_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::ldown_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::Precip
-      ! REAL(KIND(1D0)),INTENT(IN)::Press_hPa
-      ! REAL(KIND(1D0)),INTENT(IN)::qh_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::qn1_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::qs_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::qf_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::Temp_C
-      ! REAL(KIND(1D0)),INTENT(IN)::xsmd
-      ! REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Numcapita
       REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: Ts5mindata_ir !surface temperature input data[degC]
       ! ########################################################################################
 
@@ -10150,17 +10089,11 @@ CONTAINS
       ! waterPrm%storedrainprm%store_cap = StoreDrainPrm(6, WaterSurf)
 
       ! ********** SUEWS_stateVariables **********
-      anthroHeatState%HDD_id = HDD_id
+      anthroEmisState%HDD_id = HDD_id
 
       ! ESTM_ehc related:
       ! water balance related:
-      !CALL hydroState%allocHydro(nlayer)
       CALL hydroState%ALLOCATE(nlayer)
-      ! ALLOCATE (hydroState%soilstore_roof(nlayer))
-      ! ALLOCATE (hydroState%state_roof(nlayer))
-      ! ALLOCATE (hydroState%soilstore_wall(nlayer))
-      ! ALLOCATE (hydroState%state_wall(nlayer))
-
       hydroState%soilstore_roof = soilstore_roof
       hydroState%state_roof = state_roof
       hydroState%soilstore_wall = soilstore_wall
@@ -10169,15 +10102,7 @@ CONTAINS
       hydroState%state_surf = state_surf
       hydroState%WUDay_id = WUDay_id
 
-      !CALL heatState%allocHeat(nsurf, nlayer, ndepth)
       CALL heatState%ALLOCATE(nsurf, nlayer, ndepth)
-      ! ALLOCATE (heatState%temp_roof(nlayer, ndepth))
-      ! ALLOCATE (heatState%temp_wall(nlayer, ndepth))
-      ! ALLOCATE (heatState%tsfc_roof(nlayer))
-      ! ALLOCATE (heatState%tsfc_wall(nlayer))
-      ! ALLOCATE (heatState%tsfc_surf(nsurf))
-      ! ALLOCATE (heatState%temp_surf(nsurf, ndepth))
-
       heatState%temp_roof = temp_roof
       heatState%temp_wall = temp_wall
       heatState%temp_surf = temp_surf
@@ -10216,7 +10141,7 @@ CONTAINS
       phenState%StoreDrainPrm = StoreDrainPrm
 
       ! ! transfer states into modState
-      modState%anthroemisState = anthroHeatState
+      modState%anthroemisState = anthroEmisState
       modState%hydroState = hydroState
       modState%heatState = heatState
       modState%ohmState = ohmState
@@ -10336,14 +10261,14 @@ CONTAINS
       Tair_av = forcing%Tair_av_5d
 
       ! ! transfer modState back into individual states
-      anthroHeatState = modState%anthroemisState
+      anthroEmisState = modState%anthroemisState
       hydroState = modState%hydrostate
       heatState = modState%heatstate
       ohmState = modState%ohmstate
       snowState = modState%snowstate
       phenState = modState%phenstate
 
-      HDD_id = anthroHeatState%HDD_id
+      HDD_id = anthroEmisState%HDD_id
 
       qn_av = ohmState%qn_av
       dqndt = ohmState%dqndt

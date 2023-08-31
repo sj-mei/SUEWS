@@ -666,6 +666,7 @@ MODULE SUEWS_DEF_DTS
 
       REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
       REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
+      REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHeatState_c
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
