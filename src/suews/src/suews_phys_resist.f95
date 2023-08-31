@@ -745,7 +745,7 @@ CONTAINS
       ! sg feb 2012 - made separate subroutine
       !--------------------------------------------------------------------------------
 
-      USE SUEWS_DEF_DTS, ONLY: config_PRM, SITE_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, PHENOLOGY_STATE, ROUGHNESS_STATE
       IMPLICIT NONE
@@ -760,7 +760,7 @@ CONTAINS
       INTEGER, PARAMETER :: WaterSurf = 7
       REAL(KIND(1D0)), PARAMETER :: porosity_evetr = 0.32 ! assumed porosity of evergreen trees, ref: Lai et al. (2022), http://dx.doi.org/10.2139/ssrn.4058842
 
-      TYPE(config_PRM), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
       ! INTEGER :: RoughLenMomMethod
       ! INTEGER :: FAImethod ! 0 = use FAI provided, 1 = use the simple scheme
 
@@ -779,7 +779,7 @@ CONTAINS
       ! REAL(KIND(1D0)) :: FAIEveTree
       ! REAL(KIND(1D0)) :: FAIDecTree
 
-      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       ! REAL(KIND(1D0)) :: surfaceArea ! surface area of whole grid cell
       ! REAL(KIND(1D0)) :: z0m_in ! z0m set in SiteSelect
       ! REAL(KIND(1D0)) :: zdm_in ! zdm set in SiteSelect

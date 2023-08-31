@@ -1240,14 +1240,14 @@ CONTAINS
       hydroState_next, hydroState_prev, &
       smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
-      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HYDRO_STATE
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
 
-      TYPE(config_PRM), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_next, hydroState_prev
 
@@ -1905,11 +1905,11 @@ CONTAINS
 
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM, SITE_PRM, HYDRO_STATE
+                               LC_BSOIL_PRM, LC_WATER_PRM, SUEWS_SITE, HYDRO_STATE
 
       IMPLICIT NONE
 
-      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
@@ -2626,13 +2626,13 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                IRRIGATION_PRM, anthroEmis_STATE, &
-                               config_PRM, SUEWS_TIMER, SITE_PRM, SUEWS_FORCING, HYDRO_STATE
+                               SUEWS_CONFIG, SUEWS_TIMER, SUEWS_SITE, SUEWS_FORCING, HYDRO_STATE
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER :: nsurf = 7
 
       TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
-      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       REAL(KIND(1D0)), INTENT(in) :: nsh_real
       REAL(KIND(1D0)) :: wu_m3 ! external water input (e.g., irrigation)  [m3]
@@ -2656,7 +2656,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
-      TYPE(config_PRM), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
       INTEGER, INTENT(in) :: DayofWeek_id(3) !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
       INTEGER :: WaterUseMethod !Use modelled (0) or observed (1) water use
       INTEGER, INTENT(in) :: NSH !Number of timesteps per hour

@@ -341,7 +341,7 @@ CONTAINS
                                  pavedPrm, bldgPrm, phenState, &
                                  dataOutLineBEERS) ! output
 
-      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_FORCING, SITE_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_FORCING, SUEWS_SITE, &
                                PHENOLOGY_STATE, LC_PAVED_PRM, LC_BLDG_PRM
 
       IMPLICIT NONE
@@ -349,7 +349,7 @@ CONTAINS
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
 
-      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
       TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm

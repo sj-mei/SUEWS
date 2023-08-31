@@ -377,12 +377,12 @@ SUBROUTINE SUEWS_cal_weekday_DTS( &
    timer, siteInfo, & !input
    dayofWeek_id) !output
 
-   USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SITE_PRM
+   USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_SITE
 
    IMPLICIT NONE
 
    TYPE(SUEWS_TIMER), INTENT(IN) :: timer
-   TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+   TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
    INTEGER :: iy ! year
    INTEGER :: id ! day of year

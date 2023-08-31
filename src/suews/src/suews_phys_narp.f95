@@ -630,12 +630,12 @@ CONTAINS
                                        siteInfo, &
                                        sunazimuth, sunzenith)
 
-      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SITE_PRM
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_SITE
 
       IMPLICIT NONE
 
       TYPE(SUEWS_TIMER), INTENT(in) :: timer
-      TYPE(SITE_PRM), INTENT(in) :: siteInfo
+      TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
       ! REAL(KIND(1D0)), INTENT(in) :: dectime
 
       REAL(KIND(1D0)) :: year, idectime, UTC, locationlatitude, locationlongitude, locationaltitude

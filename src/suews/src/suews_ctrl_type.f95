@@ -4,8 +4,10 @@ MODULE SUEWS_DEF_DTS
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf
 
    IMPLICIT NONE
+   ! in the following, the type definitions starting with `SUEWS_` are used in the main program
+
    ! ********** SUEWS_parameters schema (basic) **********
-   TYPE, PUBLIC :: config_PRM
+   TYPE, PUBLIC :: SUEWS_CONFIG
       INTEGER :: DiagMethod ! Defines how near surface diagnostics are calculated
       INTEGER :: EmissionsMethod ! method to calculate anthropogenic heat [-]
       INTEGER :: RoughLenHeatMethod ! method to calculate heat roughness length [-]
@@ -20,7 +22,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: SnowUse !
       LOGICAL :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER :: ohmIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
-   END TYPE config_PRM
+   END TYPE SUEWS_CONFIG
 
    TYPE, PUBLIC :: SURF_STORE_PRM
       REAL(KIND(1D0)) :: store_min
@@ -386,7 +388,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: flowchange ! special term in water
    END TYPE LC_WATER_PRM
 
-   TYPE, PUBLIC :: SITE_PRM
+   TYPE, PUBLIC :: SUEWS_SITE
       REAL(KIND(1D0)) :: lat !latitude [deg]
       REAL(KIND(1D0)) :: lon !longitude [deg]
       REAL(KIND(1D0)) :: alt ! solar altitude [deg]
@@ -435,7 +437,7 @@ MODULE SUEWS_DEF_DTS
       PROCEDURE :: DEALLOCATE => deallocate_site_prm_c
       PROCEDURE :: cal_surf => SUEWS_cal_surf_DTS
 
-   END TYPE SITE_PRM
+   END TYPE SUEWS_SITE
 
    ! ********** SUEWS_stateVars schema **********
    TYPE, PUBLIC :: anthroEmis_STATE
@@ -920,7 +922,7 @@ CONTAINS
    END SUBROUTINE deallocate_ehc_prm_c
 
    SUBROUTINE allocate_site_prm_c(self, nlayer)
-      CLASS(SITE_PRM), INTENT(inout) :: self
+      CLASS(SUEWS_SITE), INTENT(inout) :: self
       INTEGER, INTENT(in) :: nlayer
       CALL self%DEALLOCATE()
       ALLOCATE (self%sfr_roof(nlayer))
@@ -931,7 +933,7 @@ CONTAINS
    SUBROUTINE deallocate_site_prm_c(self)
       IMPLICIT NONE
 
-      CLASS(SITE_PRM), INTENT(inout) :: self
+      CLASS(SUEWS_SITE), INTENT(inout) :: self
 
       IF (ALLOCATED(self%sfr_roof)) DEALLOCATE (self%sfr_roof)
       IF (ALLOCATED(self%sfr_wall)) DEALLOCATE (self%sfr_wall)
@@ -944,8 +946,8 @@ CONTAINS
       ) ! output
       IMPLICIT NONE
 
-      CLASS(SITE_PRM), INTENT(INOUT) :: self
-      TYPE(config_PRM), INTENT(IN) :: config
+      CLASS(SUEWS_SITE), INTENT(INOUT) :: self
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
 
       ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm

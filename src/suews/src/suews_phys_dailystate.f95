@@ -767,27 +767,77 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_DailyState_DTS
 
    SUBROUTINE SUEWS_cal_DailyState_DTS( &
+      timer, forcing, config, siteInfo, & !input
+      modState) !inout
+      USE SUEWS_DEF_DTS, ONLY: &
+         SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, &
+         SUEWS_STATE
+      TYPE(SUEWS_TIMER), INTENT(in) :: timer
+      TYPE(SUEWS_FORCING), INTENT(in) :: forcing
+      TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
+      TYPE(SUEWS_CONFIG), INTENT(in) :: config
+      TYPE(SUEWS_STATE), INTENT(inout) :: modState
+      ASSOCIATE ( &
+         DayofWeek_id => timer%DayofWeek_id, &
+         phenState_prev => modState%phenState, &
+         methodPrm => config, &
+         irrPrm => siteInfo%irrigation, &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         nsh_real => timer%nsh_real, &
+         ahemisPrm => siteInfo%anthroEmis, &
+         anthroHeatState_prev => modState%anthroemisState, &
+         hydroState_prev => modState%hydroState, &
+         anthroHeatState_next => modState%anthroemisState, &
+         phenState_next => modState%phenState, &
+         hydroState_next => modState%hydroState &
+         )
+
+         CALL SUEWS_cal_DailyState_DTS_x( &
+            timer, DayofWeek_id, & !input
+            phenState_prev, &
+            methodPrm, irrPrm, &
+            pavedPrm, bldgPrm, &
+            evetrPrm, dectrPrm, grassPrm, &
+            bsoilPrm, waterPrm, &
+            nsh_real, forcing, &
+            ahemisPrm, &
+            siteInfo, &
+            anthroHeatState_prev, &
+            hydroState_prev, & !input
+            anthroHeatState_next, & !output
+            phenState_next, & !output
+            hydroState_next)
+
+      END ASSOCIATE
+
+   END SUBROUTINE SUEWS_cal_DailyState_DTS
+
+   SUBROUTINE SUEWS_cal_DailyState_DTS_x( &
       timer, DayofWeek_id, & !input
       phenState_prev, &
-      BaseTMethod, &
       methodPrm, irrPrm, &
-      LAICalcYes, &
       pavedPrm, bldgPrm, &
       evetrPrm, dectrPrm, grassPrm, &
       bsoilPrm, waterPrm, &
-      nsh_real, forcing, BaseT_HC, &
+      nsh_real, forcing, &
       ahemisPrm, &
       siteInfo, &
-      anthroHeatState_prev, &
+      anthroEmisState_prev, &
       hydroState_prev, & !input
-      anthroHeatState_next, & !output
+      anthroEmisState_next, & !output
       phenState_next, & !output
       hydroState_next) !output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
-      USE SUEWS_DEF_DTS, ONLY: SITE_PRM, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
-                               PHENOLOGY_STATE, anthroEmis_STATE, config_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
+                               PHENOLOGY_STATE, anthroEmis_STATE, SUEWS_CONFIG, &
                                IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
@@ -805,15 +855,17 @@ CONTAINS
       INTEGER :: tstep_prev
       INTEGER :: dt_since_start
 
-      TYPE(config_PRM), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
       INTEGER :: WaterUseMethod
-      INTEGER, INTENT(IN) :: BaseTMethod
+      INTEGER, PARAMETER :: BaseTMethod = 2 ! base t method [-]
+      REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
 
       TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
       INTEGER :: Ie_start !Starting time of water use (DOY)
       INTEGER :: Ie_end !Ending time of water use (DOY)
       REAL(KIND(1D0)) :: Faut
-      INTEGER, INTENT(IN) :: LAICalcYes
+
+      INTEGER, PARAMETER :: LAICalcYes = 1 ! boolean to determine if calculate LAI [-]
 
       TYPE(LC_PAVED_PRM) :: pavedPrm
       TYPE(LC_BLDG_PRM) :: bldgPrm
@@ -833,7 +885,6 @@ CONTAINS
       REAL(KIND(1D0)) :: Temp_C
       REAL(KIND(1D0)) :: Precip
       REAL(KIND(1D0)) :: LAI_obs
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_HC
 
       TYPE(anthroEMIS_PRM), INTENT(IN) :: ahemisPrm
       REAL(KIND(1D0)) :: BaseT_Heating_working
@@ -844,7 +895,7 @@ CONTAINS
       REAL(KIND(1D0)) :: BaseT_Cooling_holiday
       REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Cooling
 
-      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       REAL(KIND(1D0)) :: lat
 
       ! REAL(KIND(1D0)), INTENT(IN)::tau_a
@@ -966,8 +1017,8 @@ CONTAINS
       ! TS, 27 Dec 2018: updated the annotation for 2018b and WRF-SUEWS coupling
 
       ! Heating Degree Days
-      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroHeatState_prev
-      TYPE(anthroEmis_STATE), INTENT(OUT) :: anthroHeatState_next
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState_prev
+      TYPE(anthroEmis_STATE), INTENT(OUT) :: anthroEmisState_next
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id_prev ! Heating Degree Days (see SUEWS_DailyState.f95)
       !REAL(KIND(1D0)), DIMENSION(12), INTENT(OUT) :: HDD_id_next ! Heating Degree Days (see SUEWS_DailyState.f95)
@@ -1069,7 +1120,7 @@ CONTAINS
       albGrass_id_prev = phenState_prev%albGrass_id
       porosity_id_prev = phenState_prev%porosity_id
 
-      HDD_id_prev = anthroHeatState_prev%HDD_id
+      HDD_id_prev = anthroEmisState_prev%HDD_id
 
       state_id = hydroState_prev%state_surf
       soilstore_id = hydroState_prev%soilstore_surf
@@ -1293,14 +1344,14 @@ CONTAINS
       phenState_next%albEveTr_id = albEveTr_id
       phenState_next%albGrass_id = albGrass_id
       phenState_next%porosity_id = porosity_id
-      anthroHeatState_next%HDD_id = HDD_id
+      anthroEmisState_next%HDD_id = HDD_id
       ! PRINT*, 'after_DailyState', iy,id,it,imin
       ! PRINT*, 'HDD(id)', HDD(id,:)
       ! PRINT*, 'HDD_id', HDD_id
 
       ! RETURN
 
-   END SUBROUTINE SUEWS_cal_DailyState_DTS
+   END SUBROUTINE SUEWS_cal_DailyState_DTS_x
 
    SUBROUTINE update_DailyState_End( &
       id, it, imin, tstep, dt_since_start, & !input

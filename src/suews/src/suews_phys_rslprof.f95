@@ -767,16 +767,16 @@ CONTAINS
       ! TODO how to improve the speed of this code
       !
       !-----------------------------------------------------
-      USE SUEWS_DEF_DTS, ONLY: config_PRM, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
-                               SITE_PRM
+                               SUEWS_SITE
 
       IMPLICIT NONE
 
-      TYPE(config_PRM), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
-      TYPE(SITE_PRM), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
