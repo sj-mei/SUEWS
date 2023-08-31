@@ -27,7 +27,7 @@ MODULE SUEWS_Driver
    USE EHC_module, ONLY: EHC
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine, update_DailyStateLine_DTS, &
-                                SUEWS_cal_DailyState_DTS, SUEWS_cal_DailyState_DTS_x
+                               SUEWS_cal_DailyState_DTS_x
    USE WaterDist_module, ONLY: &
       drainage, cal_water_storage_surf, &
       cal_water_storage_building, &
@@ -2021,6 +2021,8 @@ CONTAINS
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
 
+         IF (config%Diagnose == 1) WRITE (*, *) 'dectime', dectime
+
          ! ############# memory allocation for DTS variables (start) #############
          CALL hydroState_prev%ALLOCATE(nlayer)
 
@@ -2121,7 +2123,6 @@ CONTAINS
 
          !==============surface roughness calculation=======================
          IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
-         IF (config%Diagnose == 1) PRINT *, 'z0m_in =', siteInfo%z0m_in
          CALL SUEWS_cal_RoughnessParameters_DTS( &
             config, &
             pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
@@ -2201,15 +2202,15 @@ CONTAINS
             ! hydroState_next = hydroState
 
             CALL SUEWS_cal_DailyState_DTS_x( &
-               timer, DayofWeek_id, & !input
+               timer, config, forcing, siteInfo, & !input
+               DayofWeek_id, & !input
                phenState_prev, &
-               config, irrPrm, &
-               pavedPrm, bldgPrm, &
-               evetrPrm, dectrPrm, grassPrm, &
-               bsoilPrm, waterPrm, &
-               nsh_real, forcing, &
-               ahemisPrm, &
-               siteInfo, &
+               ! irrPrm, &
+               ! pavedPrm, bldgPrm, &
+               ! evetrPrm, dectrPrm, grassPrm, &
+               ! bsoilPrm, waterPrm, &
+               ! nsh_real,  &
+               ! ahemisPrm, &
                anthroEmisState_prev, & !input
                hydroState_prev, & !input
                anthroEmisState_next, & !output
@@ -2473,19 +2474,19 @@ CONTAINS
             QH_roof = QN_roof + qf - qs_roof - qe_roof
             QH_wall = QN_wall + qf - qs_wall - qe_wall
 
-            IF (config%diagnose == 1) THEN
-               PRINT *, 'qn_surf before QH back env.:', QN_surf
-               PRINT *, 'qf before QH back env.:', qf
-               PRINT *, 'qs_surf before QH back env.:', qs_surf
-               PRINT *, 'qe_surf before QH back env.:', qe_surf
-               PRINT *, 'qh_surf before QH back env.:', QH_surf
+            ! IF (config%diagnose == 1) THEN
+            !    PRINT *, 'qn_surf before QH back env.:', QN_surf
+            !    PRINT *, 'qf before QH back env.:', qf
+            !    PRINT *, 'qs_surf before QH back env.:', qs_surf
+            !    PRINT *, 'qe_surf before QH back env.:', qe_surf
+            !    PRINT *, 'qh_surf before QH back env.:', QH_surf
 
-               PRINT *, 'qn_roof before QH back env.:', QN_roof
-               PRINT *, 'qs_roof before QH back env.:', qs_roof
-               PRINT *, 'qe_roof before QH back env.:', qe_roof
-               PRINT *, 'qh_roof before QH back env.:', QH_roof
+            !    PRINT *, 'qn_roof before QH back env.:', QN_roof
+            !    PRINT *, 'qs_roof before QH back env.:', qs_roof
+            !    PRINT *, 'qe_roof before QH back env.:', qe_roof
+            !    PRINT *, 'qh_roof before QH back env.:', QH_roof
 
-            END IF
+            ! END IF
             IF (flag_print_debug) PRINT *, 'qn_surf before qh_cal', QN_surf
             IF (flag_print_debug) PRINT *, 'qs_surf before qh_cal', qs_surf
             IF (flag_print_debug) PRINT *, 'qe_surf before qh_cal', qe_surf
@@ -2600,6 +2601,7 @@ CONTAINS
             dataoutLineRSL) ! output
 
          ! ============ BIOGENIC CO2 FLUX =======================
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_BiogenCO2_DTS...'
          CALL SUEWS_cal_BiogenCO2_DTS( &
             forcing, config, conductancePrm, &
             dectime, Fc_anthro, &
@@ -2612,7 +2614,7 @@ CONTAINS
 
          ! calculations of diagnostics end
          !==============================================================
-
+         IF (config%Diagnose == 1) WRITE (*, *) 'update inout variables with new values...'
          !==============================================================
          ! update inout variables with new values
          ohmState%qn_av = ohmState_next%qn_av
@@ -2669,6 +2671,7 @@ CONTAINS
          !==============use BEERS to get localised radiation flux==================
          ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
          IF (sfr_surf(BldgSurf) > 0) THEN
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
             PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
             CALL BEERS_cal_main_DTS(timer, dectime, PAI, FAI, forcing, ldown, &
                                     TSfc_C, siteInfo, ZENITH_deg, azimuth_deg, &
@@ -2679,6 +2682,7 @@ CONTAINS
          END IF
 
          !==============translation of  output variables into output array===========
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
          CALL SUEWS_update_outputLine_DTS( &
             AdditionalWater, phenState, forcing, U10_ms, azimuth_deg, & !input
             chSnow_per_interval, dectime, &
@@ -2701,21 +2705,25 @@ CONTAINS
             z0m, zdm, ZENITH_deg, &
             datetimeLine, dataOutLineSUEWS) !output
 
-         CALL ECH_update_outputLine_DTS( &
-            timer, dectime, nlayer, & !input
-            heatState_out, qs_surf, &
-            QN_roof, &
-            QS_roof, &
-            QE_roof, &
-            QH_roof, &
-            hydroState, &
-            QN_wall, &
-            QS_wall, &
-            QE_wall, &
-            QH_wall, &
-            datetimeLine, dataOutLineEHC) !output
+            IF (config%StorageHeatMethod == 5) THEN
+            IF (config%Diagnose == 1) WRITE (*, *) 'Calling ECH_update_outputLine_DTS...'
+            CALL ECH_update_outputLine_DTS( &
+               timer, dectime, nlayer, & !input
+               heatState_out, qs_surf, &
+               QN_roof, &
+               QS_roof, &
+               QE_roof, &
+               QH_roof, &
+               hydroState, &
+               QN_wall, &
+               QS_wall, &
+               QE_wall, &
+               QH_wall, &
+               datetimeLine, dataOutLineEHC) !output
+         END IF
 
          ! daily state_id:
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling update_DailyStateLine_DTS...'
          CALL update_DailyStateLine_DTS( &
             timer, phenState, anthroEmisState, &
             hydroState, &
@@ -2726,7 +2734,7 @@ CONTAINS
             dataOutLineDailyState) !out
 
          !==============translation end ================
-
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling dataoutlineDebug...'
          dataoutlineDebug = &
             [tsfc0_out_surf, &
              qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
@@ -2744,6 +2752,7 @@ CONTAINS
              ohmState%dqndt]
 
          !==============output==========================
+         IF (config%Diagnose == 1) WRITE (*, *) 'Calling output_line_init...'
          CALL output_line_init(output_line_suews)
          output_line_suews%datetimeLine = datetimeLine
          output_line_suews%dataOutLineSUEWS = [datetimeLine, dataOutLineSUEWS]
@@ -8267,38 +8276,45 @@ CONTAINS
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
       ! INTEGER:: is
-      REAL(KIND(1D0)) :: LAI_wt !area weighted LAI [m2 m-2]
-      REAL(KIND(1D0)) :: RH2_pct ! RH2 in percentage [-]
+      ! REAL(KIND(1D0)) :: LAI_wt !area weighted LAI [m2 m-2]
+      ! REAL(KIND(1D0)) :: RH2_pct ! RH2 in percentage [-]
 
       ! the variables below with '_x' endings stand for 'exported' values
-      REAL(KIND(1D0)) :: ResistSurf_x !output surface resistance [s m-1]
-      REAL(KIND(1D0)) :: surf_chang_per_tstep_x !output change in state_id (exluding snowpack) per timestep [mm]
-      REAL(KIND(1D0)) :: l_mod_x !output  Obukhov length [m]
-      REAL(KIND(1D0)) :: bulkalbedo !output area-weighted albedo [-]
-      REAL(KIND(1D0)) :: smd_nsurf_x(nsurf) !output soil moisture deficit for each surface [mm]
-      REAL(KIND(1D0)) :: state_x(nsurf) !output wetness status of each surfaces[mm]
-      REAL(KIND(1D0)) :: wu_DecTr !water use for deciduous tree and shrubs [mm]
-      REAL(KIND(1D0)) :: wu_EveTr !water use of evergreen tree and shrubs [mm]
-      REAL(KIND(1D0)) :: wu_Grass !water use for grass [mm]
+      ! REAL(KIND(1D0)) :: ResistSurf_x !output surface resistance [s m-1]
+      ! REAL(KIND(1D0)) :: surf_chang_per_tstep_x !output change in state_id (exluding snowpack) per timestep [mm]
+      ! REAL(KIND(1D0)) :: l_mod_x !output  Obukhov length [m]
+      ! REAL(KIND(1D0)) :: bulkalbedo !output area-weighted albedo [-]
+      ! REAL(KIND(1D0)) :: smd_nsurf_x(nsurf) !output soil moisture deficit for each surface [mm]
+      ! REAL(KIND(1D0)) :: state_x(nsurf) !output wetness status of each surfaces[mm]
+      ! REAL(KIND(1D0)) :: wu_DecTr !water use for deciduous tree and shrubs [mm]
+      ! REAL(KIND(1D0)) :: wu_EveTr !water use of evergreen tree and shrubs [mm]
+      ! REAL(KIND(1D0)) :: wu_Grass !water use for grass [mm]
+
+      PRINT *, 'ECH_update_outputLine_DTS loc 1'
 
       iy = timer%iy
       id = timer%id
       it = timer%it
       imin = timer%imin
-
+      PRINT *, 'ECH_update_outputLine_DTS loc 2'
       tsfc_out_surf = heatState_out%tsfc_surf
       tsfc_out_roof = heatState_out%tsfc_roof
       tsfc_out_wall = heatState_out%tsfc_wall
+      PRINT *, 'ECH_update_outputLine_DTS loc 3'
 
       state_roof = hydroState%state_roof
+      PRINT *, 'ECH_update_outputLine_DTS loc 3.1'
       soilstore_roof = hydroState%soilstore_roof
+      PRINT *, 'ECH_update_outputLine_DTS loc 3.2'
       state_wall = hydroState%state_wall
+      PRINT *, 'ECH_update_outputLine_DTS loc 3.3'
       soilstore_wall = hydroState%soilstore_wall
-
+      PRINT *, 'ECH_update_outputLine_DTS loc 4'
       ! date & time:
       datetimeLine = [ &
                      REAL(iy, KIND(1D0)), REAL(id, KIND(1D0)), &
                      REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), dectime]
+      PRINT *, 'ECH_update_outputLine_DTS loc 5'
       !Define the overall output matrix to be printed out step by step
       dataOutLineEHC = [ &
                        tsfc_out_surf, qs_surf, & !output
@@ -8317,6 +8333,7 @@ CONTAINS
                        fill_result_x(state_wall, n_fill), &
                        fill_result_x(soilstore_wall, n_fill) &
                        ]
+      PRINT *, 'ECH_update_outputLine_DTS loc 6'
       ! set invalid values to NAN
       ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
 
@@ -9747,6 +9764,7 @@ CONTAINS
          ! kdiff = MetForcingBlock(ir, 22)
          ! kdir = MetForcingBlock(ir, 23)
          ! wdir = MetForcingBlock(ir, 24)
+         ! config%Diagnose = 1
 
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
