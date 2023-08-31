@@ -1807,11 +1807,6 @@ CONTAINS
       INTEGER :: max_iter !maximum iteration
       REAL(KIND(1D0)) :: ratio_iter
 
-      REAL(KIND(1D0)) :: g_kdown !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)) :: g_dq !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)) :: g_ta !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
 
       ! ####################################################################################
       ! Related to RSL wind profiles
@@ -2018,6 +2013,11 @@ CONTAINS
          TempVeg => modState%phenState%TempVeg, &
          gfunc => modState%phenState%gfunc, &
          gsc => modState%phenState%gsc, &
+         g_kdown => modState%phenState%g_kdown, &
+         g_dq => modState%phenState%g_dq, &
+         g_ta => modState%phenState%g_ta, &
+         g_smd => modState%phenState%g_smd, &
+         g_lai => modState%phenState%g_lai, &
          ! forcing
          Ts5mindata_ir => forcing%Ts5mindata_ir &
          )
