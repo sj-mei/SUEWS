@@ -2203,14 +2203,7 @@ CONTAINS
 
             CALL SUEWS_cal_DailyState_DTS_x( &
                timer, config, forcing, siteInfo, & !input
-               DayofWeek_id, & !input
                phenState_prev, &
-               ! irrPrm, &
-               ! pavedPrm, bldgPrm, &
-               ! evetrPrm, dectrPrm, grassPrm, &
-               ! bsoilPrm, waterPrm, &
-               ! nsh_real,  &
-               ! ahemisPrm, &
                anthroEmisState_prev, & !input
                hydroState_prev, & !input
                anthroEmisState_next, & !output

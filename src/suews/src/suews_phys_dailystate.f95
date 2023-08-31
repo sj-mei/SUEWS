@@ -820,14 +820,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_DailyState_DTS_x( &
       timer, config, forcing, siteInfo, &
-      DayofWeek_id, & !input
       phenState_prev, &
-      ! irrPrm, &
-      ! pavedPrm, bldgPrm, &
-      ! evetrPrm, dectrPrm, grassPrm, &
-      ! bsoilPrm, waterPrm, &
-      ! nsh_real,  &
-      ! ahemisPrm, &
       anthroEmisState_prev, &
       hydroState_prev, & !input
       anthroEmisState_next, & !output
@@ -1057,7 +1050,7 @@ CONTAINS
       ! --------------------------------------------------------------------------------
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
-      INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
+      ! INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
 
       ! REAL(KIND(1D0)), INTENT(OUT) :: deltaLAI
 
@@ -1095,6 +1088,7 @@ CONTAINS
          tstep_prev => timer%tstep_prev, &
          dt_since_start => timer%dt_since_start, &
          nsh_real => timer%nsh_real, &
+         DayofWeek_id => timer%DayofWeek_id, &
          avkdn => forcing%kdown, &
          Temp_C => forcing%Temp_C, &
          Precip => forcing%pres, &
