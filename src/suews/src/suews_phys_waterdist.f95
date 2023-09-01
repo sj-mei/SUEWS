@@ -960,31 +960,36 @@ CONTAINS
    ! END SUBROUTINE SUEWS_update_SoilMoist_DTS
 
    SUBROUTINE SUEWS_update_SoilMoist_DTS( &
-      NonWaterFraction, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
+      timer, config, forcing, siteInfo, & ! input
       hydroState_prev, &
       SoilMoistCap, SoilState, & !output
       vsmd, smd)
 
-      USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                HYDRO_STATE
 
       IMPLICIT NONE
 
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
       ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
-      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
+      ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
       TYPE(HYDRO_STATE), INTENT(in) :: hydroState_prev
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap
 
@@ -992,52 +997,64 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: vsmd, smd
 
       INTEGER :: is
-      REAL(KIND(1D0)) :: fveg
+      ! REAL(KIND(1D0)) :: fveg
+      ASSOCIATE ( &
+         sfr_surf => siteInfo%sfr_surf, &
+         NonWaterFraction => siteInfo%NonWaterFraction, &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water &
+         )
 
-      soilstore_id = hydroState_prev%soilstore_surf
+         soilstore_id = hydroState_prev%soilstore_surf
 
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
-      SoilStoreCap(1) = pavedPrm%soil%soilstorecap
-      SoilStoreCap(2) = bldgPrm%soil%soilstorecap
-      SoilStoreCap(3) = evetrPrm%soil%soilstorecap
-      SoilStoreCap(4) = dectrPrm%soil%soilstorecap
-      SoilStoreCap(5) = grassPrm%soil%soilstorecap
-      SoilStoreCap(6) = bsoilPrm%soil%soilstorecap
-      SoilStoreCap(7) = waterPrm%soil%soilstorecap
+         ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+         SoilStoreCap(1) = pavedPrm%soil%soilstorecap
+         SoilStoreCap(2) = bldgPrm%soil%soilstorecap
+         SoilStoreCap(3) = evetrPrm%soil%soilstorecap
+         SoilStoreCap(4) = dectrPrm%soil%soilstorecap
+         SoilStoreCap(5) = grassPrm%soil%soilstorecap
+         SoilStoreCap(6) = bsoilPrm%soil%soilstorecap
+         SoilStoreCap(7) = waterPrm%soil%soilstorecap
 
-      SoilMoistCap = 0 !Maximum capacity of soil store [mm] for whole surface
-      SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
+         SoilMoistCap = 0 !Maximum capacity of soil store [mm] for whole surface
+         SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
 
-      IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
-         DO is = 1, nsurf - 1 !No water body included
-            SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr_surf(is)/NonWaterFraction)
-            SoilState = SoilState + (soilstore_id(is)*sfr_surf(is)/NonWaterFraction)
-         END DO
-      END IF
+         IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
+            DO is = 1, nsurf - 1 !No water body included
+               SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr_surf(is)/NonWaterFraction)
+               SoilState = SoilState + (soilstore_id(is)*sfr_surf(is)/NonWaterFraction)
+            END DO
+         END IF
 
-      !If loop removed HCW 26 Feb 2015
-      !if (ir==1) then  !Calculate initial smd
-      smd = SoilMoistCap - SoilState
-      !endif
+         !If loop removed HCW 26 Feb 2015
+         !if (ir==1) then  !Calculate initial smd
+         smd = SoilMoistCap - SoilState
+         !endif
 
-      ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
-      ! vsmd = 0
-      ! IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
+         ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
+         ! vsmd = 0
+         ! IF ((sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf)) > 0) THEN
 
-      !    fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
-      ! ELSE
-      !    fveg = 0
-      ! END IF
-      ! DO is = ConifSurf, GrassSurf !Vegetated surfaces only
-      !    IF (fveg == 0) THEN
-      !       vsmd = 0
-      !    ELSE
-      !       vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
-      !    END IF
-      !    !write(*,*) is, vsmd, smd
-      ! END DO
+         !    fveg = sfr_surf(is)/(sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf))
+         ! ELSE
+         !    fveg = 0
+         ! END IF
+         ! DO is = ConifSurf, GrassSurf !Vegetated surfaces only
+         !    IF (fveg == 0) THEN
+         !       vsmd = 0
+         !    ELSE
+         !       vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr_surf(is)/fveg
+         !    END IF
+         !    !write(*,*) is, vsmd, smd
+         ! END DO
 
-      vsmd = cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf)
+         vsmd = cal_smd_veg(SoilStoreCap, soilstore_id, sfr_surf)
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_update_SoilMoist_DTS
    !------------------------------------------------------------------------------

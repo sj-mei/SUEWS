@@ -2214,8 +2214,7 @@ CONTAINS
                !======== Calculate soil moisture =========
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
-                  NonWaterFraction, &
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
+                  timer, config, forcing, siteInfo, & ! input
                   hydroState_prev, &
                   SoilMoistCap, SoilState, & !output
                   vsmd, smd)
