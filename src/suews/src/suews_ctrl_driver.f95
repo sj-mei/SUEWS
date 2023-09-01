@@ -2228,13 +2228,10 @@ CONTAINS
 
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
                CALL SUEWS_cal_AnthropogenicEmission_DTS( &
-                  ahemisPrm, &
-                  siteInfo, & ! input:
-                  dayofWeek_id, DLS, config, &
+                  timer, config, forcing, siteInfo, & ! input
                   anthroEmisState_next, &
-                  timer, &
                   QF, &
-                  forcing, QF_SAHP, &
+                  QF_SAHP, &
                   Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
                ! ========================================================================
@@ -2866,35 +2863,27 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_AnthropogenicEmission
 
    SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS( &
-      ahemisPrm, &
-      siteInfo, & ! input:
-      dayofWeek_id, DLS, methodPrm, anthroHeatState_next, &
-      timer, &
+      timer, config, forcing, siteInfo, & ! input
+      anthroEmisState_next, &
       QF, &
-      forcing, QF_SAHP, &
+      QF_SAHP, &
       Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
-      USE SUEWS_DEF_DTS, ONLY: anthroEMIS_PRM, SUEWS_SITE, anthroEmis_STATE, &
-                               SUEWS_TIMER, SUEWS_FORCING
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
+                               anthroEMIS_PRM, SUEWS_SITE, anthroEmis_STATE
 
       IMPLICIT NONE
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       ! INTEGER, INTENT(in)::Diagnose
-      INTEGER, INTENT(in) :: DLS ! daylighting savings
       INTEGER :: EmissionsMethod !0 - Use values in met forcing file, or default QF;1 - Method according to Loridan et al. (2011) : SAHP; 2 - Method according to Jarvi et al. (2011)   : SAHP_2
-      ! INTEGER, INTENT(in) :: id
-      INTEGER :: it ! hour [H]
-      INTEGER :: imin ! minutes [M]
-      ! INTEGER, INTENT(in) :: nsh
-      INTEGER, DIMENSION(3), INTENT(in) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
-
-      ! REAL(KIND(1D0)), DIMENSION(6, 2) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
 
       REAL(KIND(1D0)), DIMENSION(2) :: AH_MIN ! miniumum anthropogenic heat flux [W m-2]
       REAL(KIND(1D0)), DIMENSION(2) :: AH_SLOPE_Heating ! heating slope for the anthropogenic heat flux calculation [W m-2 K-1]
       REAL(KIND(1D0)), DIMENSION(2) :: AH_SLOPE_Cooling ! cooling slope for the anthropogenic heat flux calculation [W m-2 K-1]
-      REAL(KIND(1D0)), DIMENSION(2) :: FcEF_v_kgkm ! CO2 Emission factor [kg km-1]
       ! REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::NumCapita
 
       REAL(KIND(1D0)), DIMENSION(2) :: PopDensDaytime ! Daytime population density [people ha-1] (i.e. workers)
@@ -2917,23 +2906,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: PopProf_24hr ! diurnal profile of population [-]
 
-      REAL(KIND(1D0)) :: CO2PointSource ! point source [kgC day-1]
-      REAL(KIND(1D0)) :: EF_umolCO2perJ !co2 emission factor [umol J-1]
-      REAL(KIND(1D0)) :: EnEF_v_Jkm ! energy emission factor [J K m-1]
-      REAL(KIND(1D0)) :: FrFossilFuel_Heat ! fraction of fossil fuel heat [-]
-      REAL(KIND(1D0)) :: FrFossilFuel_NonHeat ! fraction of fossil fuel non heat [-]
-      REAL(KIND(1D0)) :: MaxFCMetab ! maximum FC metabolism [umol m-2 s-1]
-      REAL(KIND(1D0)) :: MaxQFMetab ! maximum QF Metabolism [W m-2]
-      REAL(KIND(1D0)) :: MinFCMetab ! minimum QF metabolism [umol m-2 s-1]
-      REAL(KIND(1D0)) :: MinQFMetab ! minimum FC metabolism [W m-2]
-      REAL(KIND(1D0)) :: PopDensNighttime ! nighttime population density [ha-1] (i.e. residents)
-      REAL(KIND(1D0)) :: QF_obs ! observed anthropogenic heat flux from met forcing file when EmissionMethod=0 [W m-2]
-      REAL(KIND(1D0)) :: Temp_C ! air temperature [degC]
       REAL(KIND(1D0)) :: TrafficUnits ! traffic units choice [-]
-
-      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr_surf
-      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac
-      REAL(KIND(1D0)) :: SurfaceArea !surface area [m-2]
 
       REAL(KIND(1D0)), INTENT(out) :: Fc_anthro ! anthropogenic co2 flux  [umol m-2 s-1]
       REAL(KIND(1D0)), INTENT(out) :: Fc_build ! co2 emission from building component [umol m-2 s-1]
@@ -2946,101 +2919,103 @@ CONTAINS
       INTEGER, PARAMETER :: notUsedI = -999
       REAL(KIND(1D0)), PARAMETER :: notUsed = -999
 
-      TYPE(anthroEMIS_PRM), INTENT(IN) :: ahemisPrm
-      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroHeatState_next
-      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
-      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
-      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState_next
+      ASSOCIATE ( &
+         dayofWeek_id => timer%dayofWeek_id, &
+         DLS => timer%DLS, &
+         ahemisPrm => siteInfo%anthroemis &
+      &)
 
-      EF_umolCO2perJ = ahemisPrm%EF_umolCO2perJ
-      EmissionsMethod = methodPrm%EmissionsMethod
-      EnEF_v_Jkm = ahemisPrm%EnEF_v_Jkm
-      FcEF_v_kgkm = ahemisPrm%FcEF_v_kgkm
-      FrFossilFuel_Heat = ahemisPrm%FrFossilFuel_Heat
-      FrFossilFuel_NonHeat = ahemisPrm%FrFossilFuel_NonHeat
-      MaxFCMetab = ahemisPrm%MaxFCMetab
-      MaxQFMetab = ahemisPrm%MaxQFMetab
-      MinFCMetab = ahemisPrm%MinFCMetab
-      MinQFMetab = ahemisPrm%MinQFMetab
-      PopDensNighttime = ahemisPrm%anthroheat%popdensnighttime
+         ASSOCIATE ( &
+            EmissionsMethod => config%EmissionsMethod, &
+            EF_umolCO2perJ => ahemisPrm%EF_umolCO2perJ, &
+            EnEF_v_Jkm => ahemisPrm%EnEF_v_Jkm, &
+            FcEF_v_kgkm => ahemisPrm%FcEF_v_kgkm, &
+            FrFossilFuel_Heat => ahemisPrm%FrFossilFuel_Heat, &
+            FrFossilFuel_NonHeat => ahemisPrm%FrFossilFuel_NonHeat, &
+            MaxFCMetab => ahemisPrm%MaxFCMetab, &
+            MaxQFMetab => ahemisPrm%MaxQFMetab, &
+            MinFCMetab => ahemisPrm%MinFCMetab, &
+            MinQFMetab => ahemisPrm%MinQFMetab, &
+            PopDensNighttime => ahemisPrm%anthroheat%popdensnighttime, &
+            CO2PointSource => siteInfo%CO2PointSource, &
+            SurfaceArea => siteInfo%SurfaceArea, &
+            HDD_id => anthroEmisState_next%HDD_id, &
+            imin => timer%imin, &
+            it => timer%it, &
+            Temp_C => forcing%Temp_C, &
+            QF_obs => forcing%QF_obs &
+            )
 
-      CO2PointSource = siteInfo%CO2PointSource
-      SurfaceArea = siteInfo%SurfaceArea
+            AH_MIN(1) = ahemisPrm%anthroheat%ah_min_working
+            AH_MIN(2) = ahemisPrm%anthroheat%ah_min_holiday
+            AH_SLOPE_Heating(1) = ahemisPrm%anthroheat%ah_slope_heating_working
+            AH_SLOPE_Heating(2) = ahemisPrm%anthroheat%ah_slope_heating_holiday
+            AH_SLOPE_Cooling(1) = ahemisPrm%anthroheat%ah_slope_cooling_working
+            AH_SLOPE_Cooling(2) = ahemisPrm%anthroheat%ah_slope_cooling_holiday
 
-      HDD_id = anthroHeatState_next%HDD_id
-      imin = timer%imin
-      it = timer%it
+            TrafficRate(1) = ahemisPrm%TrafficRate_working
+            TrafficRate(2) = ahemisPrm%TrafficRate_holiday
 
-      Temp_C = forcing%Temp_C
-      QF_obs = forcing%QF_obs
+            PopDensDaytime(1) = ahemisPrm%anthroheat%popdensdaytime_working
+            PopDensDaytime(2) = ahemisPrm%anthroheat%popdensdaytime_holiday
+            QF0_BEU(1) = ahemisPrm%anthroheat%qf0_beu_working
+            QF0_BEU(2) = ahemisPrm%anthroheat%qf0_beu_holiday
+            Qf_A(1) = ahemisPrm%anthroheat%qf_a_working
+            Qf_A(2) = ahemisPrm%anthroheat%qf_a_holiday
+            Qf_B(1) = ahemisPrm%anthroheat%qf_b_working
+            Qf_B(2) = ahemisPrm%anthroheat%qf_b_holiday
+            Qf_C(1) = ahemisPrm%anthroheat%qf_c_working
+            Qf_C(2) = ahemisPrm%anthroheat%qf_c_holiday
+            BaseT_Heating(1) = ahemisPrm%anthroheat%baset_heating_working
+            BaseT_Heating(2) = ahemisPrm%anthroheat%baset_heating_holiday
+            BaseT_Cooling(1) = ahemisPrm%anthroheat%baset_cooling_working
+            BaseT_Cooling(2) = ahemisPrm%anthroheat%baset_cooling_holiday
 
-      AH_MIN(1) = ahemisPrm%anthroheat%ah_min_working
-      AH_MIN(2) = ahemisPrm%anthroheat%ah_min_holiday
-      AH_SLOPE_Heating(1) = ahemisPrm%anthroheat%ah_slope_heating_working
-      AH_SLOPE_Heating(2) = ahemisPrm%anthroheat%ah_slope_heating_holiday
-      AH_SLOPE_Cooling(1) = ahemisPrm%anthroheat%ah_slope_cooling_working
-      AH_SLOPE_Cooling(2) = ahemisPrm%anthroheat%ah_slope_cooling_holiday
+            AHProf_24hr(:, 1) = ahemisPrm%anthroheat%ahprof_24hr_working
+            AHProf_24hr(:, 2) = ahemisPrm%anthroheat%ahprof_24hr_holiday
+            HumActivity_24hr(:, 1) = ahemisPrm%HumActivity_24hr_working
+            HumActivity_24hr(:, 2) = ahemisPrm%HumActivity_24hr_holiday
+            PopProf_24hr(:, 1) = ahemisPrm%anthroheat%popprof_24hr_working
+            PopProf_24hr(:, 2) = ahemisPrm%anthroheat%popprof_24hr_holiday
+            TraffProf_24hr(:, 1) = ahemisPrm%TraffProf_24hr_working
+            TraffProf_24hr(:, 2) = ahemisPrm%TraffProf_24hr_holiday
+            TrafficUnits = ahemisPrm%TrafficUnits
 
-      TrafficRate(1) = ahemisPrm%TrafficRate_working
-      TrafficRate(2) = ahemisPrm%TrafficRate_holiday
+            IF (EmissionsMethod == 0) THEN ! use observed qf
+               qf = QF_obs
+            ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
+               CALL AnthropogenicEmissions( &
+                  CO2PointSource, EmissionsMethod, &
+                  it, imin, DLS, DayofWeek_id, &
+                  EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
+                  FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
+                  MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
+                  PopDensDaytime, PopDensNighttime, &
+                  Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
+                  AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
+                  BaseT_Heating, BaseT_Cooling, &
+                  TrafficRate, &
+                  QF0_BEU, QF_SAHP, &
+                  Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
+                  AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr, SurfaceArea)
 
-      PopDensDaytime(1) = ahemisPrm%anthroheat%popdensdaytime_working
-      PopDensDaytime(2) = ahemisPrm%anthroheat%popdensdaytime_holiday
-      QF0_BEU(1) = ahemisPrm%anthroheat%qf0_beu_working
-      QF0_BEU(2) = ahemisPrm%anthroheat%qf0_beu_holiday
-      Qf_A(1) = ahemisPrm%anthroheat%qf_a_working
-      Qf_A(2) = ahemisPrm%anthroheat%qf_a_holiday
-      Qf_B(1) = ahemisPrm%anthroheat%qf_b_working
-      Qf_B(2) = ahemisPrm%anthroheat%qf_b_holiday
-      Qf_C(1) = ahemisPrm%anthroheat%qf_c_working
-      Qf_C(2) = ahemisPrm%anthroheat%qf_c_holiday
-      BaseT_Heating(1) = ahemisPrm%anthroheat%baset_heating_working
-      BaseT_Heating(2) = ahemisPrm%anthroheat%baset_heating_holiday
-      BaseT_Cooling(1) = ahemisPrm%anthroheat%baset_cooling_working
-      BaseT_Cooling(2) = ahemisPrm%anthroheat%baset_cooling_holiday
+            ELSE
+               CALL ErrorHint(73, 'RunControl.nml:EmissionsMethod unusable', notUsed, notUsed, EmissionsMethod)
+            END IF
 
-      AHProf_24hr(:, 1) = ahemisPrm%anthroheat%ahprof_24hr_working
-      AHProf_24hr(:, 2) = ahemisPrm%anthroheat%ahprof_24hr_holiday
-      HumActivity_24hr(:, 1) = ahemisPrm%HumActivity_24hr_working
-      HumActivity_24hr(:, 2) = ahemisPrm%HumActivity_24hr_holiday
-      PopProf_24hr(:, 1) = ahemisPrm%anthroheat%popprof_24hr_working
-      PopProf_24hr(:, 2) = ahemisPrm%anthroheat%popprof_24hr_holiday
-      TraffProf_24hr(:, 1) = ahemisPrm%TraffProf_24hr_working
-      TraffProf_24hr(:, 2) = ahemisPrm%TraffProf_24hr_holiday
-      TrafficUnits = ahemisPrm%TrafficUnits
+            IF (EmissionsMethod >= 1) qf = QF_SAHP
 
-      IF (EmissionsMethod == 0) THEN ! use observed qf
-         qf = QF_obs
-      ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
-         CALL AnthropogenicEmissions( &
-            CO2PointSource, EmissionsMethod, &
-            it, imin, DLS, DayofWeek_id, &
-            EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
-            FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
-            MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
-            PopDensDaytime, PopDensNighttime, &
-            Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
-            AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
-            BaseT_Heating, BaseT_Cooling, &
-            TrafficRate, &
-            QF0_BEU, QF_SAHP, &
-            Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
-            AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr, SurfaceArea)
+            IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
+               Fc_anthro = 0
+               Fc_metab = 0
+               Fc_traff = 0
+               Fc_build = 0
+               Fc_point = 0
+            END IF
 
-      ELSE
-         CALL ErrorHint(73, 'RunControl.nml:EmissionsMethod unusable', notUsed, notUsed, EmissionsMethod)
-      END IF
-
-      IF (EmissionsMethod >= 1) qf = QF_SAHP
-
-      IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
-         Fc_anthro = 0
-         Fc_metab = 0
-         Fc_traff = 0
-         Fc_build = 0
-         Fc_point = 0
-      END IF
+         END ASSOCIATE
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS
 ! ================================================================================
