@@ -2615,13 +2615,8 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_WaterUse_DTS
 
    SUBROUTINE SUEWS_cal_WaterUse_DTS( &
-      nsh_real, & ! input:
-      forcing, siteInfo, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-      DayofWeek_id, &
-      irrPrm, &
-      anthroHeatState_next, hydroState_next, &
-      methodPrm, NSH, timer, DLS, &
+      timer, config, forcing, siteInfo, & ! input
+      anthroEmisState_next, hydroState_next, &
       wu_surf, wu_int, wu_ext) ! output:
       ! Conversion of water use (irrigation)
       ! Last modified:
@@ -2640,48 +2635,48 @@ CONTAINS
       ! To Do:
       !        - Add functionality for water on paved surfaces (street cleaning, fountains)
 
-      USE SUEWS_DEF_DTS, ONLY: LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                IRRIGATION_PRM, anthroEmis_STATE, &
-                               SUEWS_CONFIG, SUEWS_TIMER, SUEWS_SITE, SUEWS_FORCING, HYDRO_STATE
+                               HYDRO_STATE
 
       IMPLICIT NONE
+
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       ! INTEGER, PARAMETER :: nsurf = 7
 
-      TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
-      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
-      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
-      REAL(KIND(1D0)), INTENT(in) :: nsh_real
-      REAL(KIND(1D0)) :: wu_m3 ! external water input (e.g., irrigation)  [m3]
+      ! TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
+      ! REAL(KIND(1D0)), INTENT(in) :: nsh_real
+      ! REAL(KIND(1D0)) :: wu_m3 ! external water input (e.g., irrigation)  [m3]
       REAL(KIND(1D0)) :: SurfaceArea !Surface area of the study area [m2]
-      REAL(KIND(1D0)) :: InternalWaterUse_h !Internal water use [mm h-1]
+      ! REAL(KIND(1D0)) :: InternalWaterUse_h !Internal water use [mm h-1]
 
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: WUProfA_24hr !Automatic water use profiles at hourly scales
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: WUProfM_24hr !Manual water use profiles at hourly scales
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
 
-      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroHeatState_next
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState_next
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_next
-      REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
-      INTEGER, INTENT(in) :: DayofWeek_id(3) !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
-      INTEGER :: WaterUseMethod !Use modelled (0) or observed (1) water use
-      INTEGER, INTENT(in) :: NSH !Number of timesteps per hour
+      ! INTEGER, INTENT(in) :: DayofWeek_id(3) !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
+      ! INTEGER :: WaterUseMethod !Use modelled (0) or observed (1) water use
 
-      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
-      INTEGER :: it !Hour
-      INTEGER :: imin !Minutes
-      INTEGER, INTENT(in) :: DLS !day lightsavings =1 + 1h) =0
+      ! INTEGER :: it !Hour
+      ! INTEGER :: imin !Minutes
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: wu_surf !external Water use for each surface [mm]
       REAL(KIND(1D0)), INTENT(out) :: wu_int !Internal water use for the model timestep [mm] (over whole study area)
@@ -2707,152 +2702,194 @@ CONTAINS
       REAL(KIND(1D0)) :: OverUse
       REAL(KIND(1D0)) :: rain_cum_daily ! accumulated daily rainfall
 
-      REAL(KIND(1D0)) :: get_Prof_SpecTime_sum
+      ! REAL(KIND(1D0)) :: get_Prof_SpecTime_sum
 
       REAL(KIND(1D0)) :: WUProfA_tstep ! automatic water use profile value at tstep
       REAL(KIND(1D0)) :: WUProfM_tstep ! mannual water use profile value at tstep
 
-      SurfaceArea = siteInfo%SurfaceArea
-      InternalWaterUse_h = irrPrm%InternalWaterUse_h
+      ASSOCIATE ( &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         grassPrm => siteInfo%lc_grass, &
+         dectrPrm => siteInfo%lc_dectr, &
+         evetrPrm => siteInfo%lc_evetr, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         irrPrm => siteInfo%irrigation &
+         )
+         ASSOCIATE ( &
+            SurfaceArea => siteInfo%SurfaceArea, &
+            sfr_surf => siteInfo%sfr_surf, &
+            InternalWaterUse_h => irrPrm%InternalWaterUse_h, &
+            HDD_id => anthroEmisState_next%HDD_id, &
+            WUDay_id => hydroState_next%WUDay_id, &
+            WaterUseMethod => config%WaterUseMethod, &
+            wu_m3 => forcing%Wuh, &
+            it => timer%it, &
+            nsh_real=> timer%nsh_real, &
+            DayofWeek_id => timer%DayofWeek_id, &
+            NSH =>timer%NSH, &
+            DLS=> timer%DLS, &
+            imin => timer%imin &
+            )
 
-      HDD_id = anthroHeatState_next%HDD_id
-      WUDay_id = hydroState_next%WUDay_id
+            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+            WUProfA_24hr(:, 1) = irrPrm%wuprofa_24hr_working
+            WUProfA_24hr(:, 2) = irrPrm%wuprofa_24hr_holiday
+            WUProfM_24hr(:, 1) = irrPrm%wuprofm_24hr_working
+            WUProfM_24hr(:, 2) = irrPrm%wuprofm_24hr_holiday
+            ! NB: set OverUse as 0 as done module_constants, TS 22 Oct 2017
+            ! and the logic for calculating OverUse to be determined
+            OverUse = 0
 
-      WaterUseMethod = methodPrm%WaterUseMethod
-
-      wu_m3 = forcing%Wuh
-
-      it = timer%it
-      imin = timer%imin
-
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
-      WUProfA_24hr(:, 1) = irrPrm%wuprofa_24hr_working
-      WUProfA_24hr(:, 2) = irrPrm%wuprofa_24hr_holiday
-      WUProfM_24hr(:, 1) = irrPrm%wuprofm_24hr_working
-      WUProfM_24hr(:, 2) = irrPrm%wuprofm_24hr_holiday
-      ! NB: set OverUse as 0 as done module_constants, TS 22 Oct 2017
-      ! and the logic for calculating OverUse to be determined
-      OverUse = 0
-
-      ! initialise wu
-      wu = 0
-
-      ! timestep in second
-      tstep = INT(3600/NSH)
-
-      ! accumulated daily rainfall
-      rain_cum_daily = HDD_id(11)
-
-      ! Irrigated Fraction of each surface
-      ! TS: as of 20191130, assuming irrigation fraction as ONE except for vegetated surfaces
-
-      ! Irrigated Fraction of each surface
-      ! TS: 20200409, add irrigation fractions for all surfaces
-      IrrFrac = [pavedPrm%IrrFracPaved, bldgPrm%IrrFracBldgs, &
-                 evetrPrm%IrrFracEveTr, dectrPrm%IrrFracDecTr, grassPrm%IrrFracGrass, &
-                 bsoilPrm%IrrFracBSoil, waterPrm%IrrFracWater]
-
-      ! --------------------------------------------------------------------------------
-      ! If water used is observed and provided in the met forcing file, units are m3
-      ! Divide observed water use (in m3) by water use area to find water use (in mm)
-      IF (WaterUseMethod == 1) THEN !If water use is observed
-         ! Calculate water use area [m2] for each surface type
-
-         WUArea = IrrFrac*sfr_surf*SurfaceArea
-         WUAreaTotal_m2 = SUM(WUArea)
-
-         !Set water use [mm] for each surface type to zero initially
-         wu_EveTr = 0
-         wu_DecTr = 0
-         wu_Grass = 0
-
-         wu_surf = 0
-         IF (wu_m3 == NAN .OR. wu_m3 == 0) THEN !If no water use
-            ! wu_m3=0
+            ! initialise wu
             wu = 0
-         ELSE !If water use
-            IF (WUAreaTotal_m2 > 0) THEN
-               wu = (wu_m3/WUAreaTotal_m2*1000) !Water use in mm for the whole irrigated area
 
-               wu_surf = wu*IrrFrac
+            ! timestep in second
+            tstep = INT(3600/NSH)
 
-               wu = (wu_m3/SurfaceArea*1000) !Water use for the whole study area in mm
+            ! accumulated daily rainfall
+            rain_cum_daily = HDD_id(11)
+
+            ! Irrigated Fraction of each surface
+            ! TS: as of 20191130, assuming irrigation fraction as ONE except for vegetated surfaces
+
+            ! Irrigated Fraction of each surface
+            ! TS: 20200409, add irrigation fractions for all surfaces
+            IrrFrac = [pavedPrm%IrrFracPaved, bldgPrm%IrrFracBldgs, &
+                       evetrPrm%IrrFracEveTr, dectrPrm%IrrFracDecTr, grassPrm%IrrFracGrass, &
+                       bsoilPrm%IrrFracBSoil, waterPrm%IrrFracWater]
+
+            ! --------------------------------------------------------------------------------
+            ! If water used is observed and provided in the met forcing file, units are m3
+            ! Divide observed water use (in m3) by water use area to find water use (in mm)
+            IF (WaterUseMethod == 1) THEN !If water use is observed
+               ! Calculate water use area [m2] for each surface type
+
+               WUArea = IrrFrac*sfr_surf*SurfaceArea
+               WUAreaTotal_m2 = SUM(WUArea)
+
+               !Set water use [mm] for each surface type to zero initially
+               wu_EveTr = 0
+               wu_DecTr = 0
+               wu_Grass = 0
+
+               wu_surf = 0
+               IF (wu_m3 == NAN .OR. wu_m3 == 0) THEN !If no water use
+                  ! wu_m3=0
+                  wu = 0
+               ELSE !If water use
+                  IF (WUAreaTotal_m2 > 0) THEN
+                     wu = (wu_m3/WUAreaTotal_m2*1000) !Water use in mm for the whole irrigated area
+
+                     wu_surf = wu*IrrFrac
+
+                     wu = (wu_m3/SurfaceArea*1000) !Water use for the whole study area in mm
+                  END IF
+               END IF
+
+               ! --------------------------------------------------------------------------------
+               ! If water use is modelled, calculate at timestep of model resolution [mm]
+            ELSEIF (WaterUseMethod == 0) THEN !If water use is modelled
+
+               ! Account for Daylight saving
+               ih = it - DLS
+               IF (ih < 0) ih = 23
+
+               ! Weekday or weekend profile
+               iu = 1 !Set to 1=weekday
+               !  IF(DayofWeek(id,1)==1.OR.DayofWeek(id,1)==7) THEN
+               IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) THEN
+                  iu = 2 !Set to 2=weekend
+               END IF
+
+               !write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
+               WUDay_A_id = 0
+               WUDay_A_id(ConifSurf) = WUDay_id(2)
+               WUDay_A_id(DecidSurf) = WUDay_id(5)
+               WUDay_A_id(GrassSurf) = WUDay_id(8)
+
+               WUDay_M_id = 0
+               WUDay_M_id(ConifSurf) = WUDay_id(3)
+               WUDay_M_id(DecidSurf) = WUDay_id(6)
+               WUDay_M_id(GrassSurf) = WUDay_id(9)
+
+               ! ---- Automatic irrigation ----
+               WUProfA_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)
+
+               ! ---- Manual irrigation ----
+               flag_WuM = 1 !Initialize flag_WuM to 1, but if raining, reduce manual fraction of water use
+               ! If cumulative daily precipitation exceeds 2 mm
+               IF (rain_cum_daily > 2) THEN !.and.WUDay(id-1,3)>0) then !Commented out HCW 23/01/2015
+                  flag_WuM = 0 ! 0 -> No manual irrigation if raining
+               END IF
+
+               ! Add manual to automatic to find total irrigation
+               WUProfM_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)
+
+               ! sum up irrigation amount of automatic and manual approaches
+               wu_surf = WUProfA_tstep*WUDay_A_id + WUProfM_tstep*WUDay_M_id*flag_WuM
+               ! apply irrigation fraction: part of land covers are not irrigated
+               wu_surf = wu_surf*IrrFrac
+
+               ! Total water use for the whole study area [mm]
+               ! wu = wu_EveTr*sfr_surf(ConifSurf) + wu_DecTr*sfr_surf(DecidSurf) + wu_Grass*sfr_surf(GrassSurf)
+               wu = DOT_PRODUCT(wu_surf, sfr_surf)
+
+            END IF !End WU_choice
+            ! --------------------------------------------------------------------------------
+
+            ! Internal water use is supplied in SUEWS_Irrigation in mm h-1
+            ! Convert to mm for the model timestep
+            InternalWaterUse = InternalWaterUse_h/nsh_real
+
+            ! Remove InternalWaterUse from the total water use
+            wu_ext = wu - (InternalWaterUse + OverUse)
+            ! Check ext_wu cannot be negative
+            IF (wu_ext < 0) THEN
+               overUse = ABS(wu_ext)
+               wu_ext = 0
+            ELSE
+               OverUse = 0
             END IF
-         END IF
 
-         ! --------------------------------------------------------------------------------
-         ! If water use is modelled, calculate at timestep of model resolution [mm]
-      ELSEIF (WaterUseMethod == 0) THEN !If water use is modelled
+            wu_int = wu - wu_ext
 
-         ! Account for Daylight saving
-         ih = it - DLS
-         IF (ih < 0) ih = 23
-
-         ! Weekday or weekend profile
-         iu = 1 !Set to 1=weekday
-         !  IF(DayofWeek(id,1)==1.OR.DayofWeek(id,1)==7) THEN
-         IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) THEN
-            iu = 2 !Set to 2=weekend
-         END IF
-
-         !write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
-         WUDay_A_id = 0
-         WUDay_A_id(ConifSurf) = WUDay_id(2)
-         WUDay_A_id(DecidSurf) = WUDay_id(5)
-         WUDay_A_id(GrassSurf) = WUDay_id(8)
-
-         WUDay_M_id = 0
-         WUDay_M_id(ConifSurf) = WUDay_id(3)
-         WUDay_M_id(DecidSurf) = WUDay_id(6)
-         WUDay_M_id(GrassSurf) = WUDay_id(9)
-
-         ! ---- Automatic irrigation ----
-         WUProfA_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)
-
-         ! ---- Manual irrigation ----
-         flag_WuM = 1 !Initialize flag_WuM to 1, but if raining, reduce manual fraction of water use
-         ! If cumulative daily precipitation exceeds 2 mm
-         IF (rain_cum_daily > 2) THEN !.and.WUDay(id-1,3)>0) then !Commented out HCW 23/01/2015
-            flag_WuM = 0 ! 0 -> No manual irrigation if raining
-         END IF
-
-         ! Add manual to automatic to find total irrigation
-         WUProfM_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)
-
-         ! sum up irrigation amount of automatic and manual approaches
-         wu_surf = WUProfA_tstep*WUDay_A_id + WUProfM_tstep*WUDay_M_id*flag_WuM
-         ! apply irrigation fraction: part of land covers are not irrigated
-         wu_surf = wu_surf*IrrFrac
-
-         ! Total water use for the whole study area [mm]
-         ! wu = wu_EveTr*sfr_surf(ConifSurf) + wu_DecTr*sfr_surf(DecidSurf) + wu_Grass*sfr_surf(GrassSurf)
-         wu = DOT_PRODUCT(wu_surf, sfr_surf)
-
-      END IF !End WU_choice
-      ! --------------------------------------------------------------------------------
-
-      ! Internal water use is supplied in SUEWS_Irrigation in mm h-1
-      ! Convert to mm for the model timestep
-      InternalWaterUse = InternalWaterUse_h/nsh_real
-
-      ! Remove InternalWaterUse from the total water use
-      wu_ext = wu - (InternalWaterUse + OverUse)
-      ! Check ext_wu cannot be negative
-      IF (wu_ext < 0) THEN
-         overUse = ABS(wu_ext)
-         wu_ext = 0
-      ELSE
-         OverUse = 0
-      END IF
-
-      wu_int = wu - wu_ext
-
-      ! Decrease the water use for each surface by the same proportion
-      IF (wu_ext /= 0 .AND. wu /= 0) THEN
-         wu_surf = wu_surf*wu_ext/wu
-      END IF
-
+            ! Decrease the water use for each surface by the same proportion
+            IF (wu_ext /= 0 .AND. wu /= 0) THEN
+               wu_surf = wu_surf*wu_ext/wu
+            END IF
+         END ASSOCIATE
+      END ASSOCIATE
    END SUBROUTINE SUEWS_cal_WaterUse_DTS
    !===================================================================================
+
+   ! TODO: this is a temporary workaround for the fact that the compiler does not support function-calling within associate
+   FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTime)
+
+   IMPLICIT NONE
+
+   INTEGER :: i, j !Used to count over hours and sub-hourly timesteps
+   INTEGER, INTENT(IN) :: Hour, Min, Sec, dt
+   INTEGER :: total_sec, SecPerHour
+   REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
+   REAL(KIND(1D0)), DIMENSION(0:23) :: Prof_24h_sum
+   REAL(KIND(1D0)) :: deltaProf !Change in hourly profiles per model timestep
+   REAL(KIND(1D0)) :: Prof_CurrTime
+
+   total_sec = Min*60 + Sec
+   SecPerHour = 3600
+
+   Prof_24h_sum = MERGE(Prof_24h/(SUM(Prof_24h)), 0.D0, SUM(Prof_24h) /= 0) ! prevent zero-division
+
+   i = hour
+   j = i + 1
+   IF (j == 24) j = 0
+
+   deltaProf = (Prof_24h_sum(j) - Prof_24h_sum(i))/SecPerHour
+   Prof_CurrTime = Prof_24h_sum(hour) + deltaProf*total_sec
+   Prof_CurrTime = Prof_CurrTime*dt/SecPerHour
+
+END FUNCTION get_Prof_SpecTime_sum
 
 END MODULE WaterDist_module

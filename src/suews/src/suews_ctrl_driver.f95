@@ -2222,14 +2222,9 @@ CONTAINS
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
                !=================Gives the external and internal water uses per timestep=================
                CALL SUEWS_cal_WaterUse_DTS( &
-                  nsh_real, & ! input:
-                  forcing, siteInfo, &
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-                  DayofWeek_id, &
-                  irrPrm, &
-                  anthroEmisState_next, hydroState_next, & ! output:
-                  config, NSH, timer, DLS, &
-                  wu_surf, wu_int, wu_ext)
+                  timer, config, forcing, siteInfo, & ! input
+                  anthroEmisState_next, hydroState_next, &
+                  wu_surf, wu_int, wu_ext) ! output:
 
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
                CALL SUEWS_cal_AnthropogenicEmission_DTS( &
