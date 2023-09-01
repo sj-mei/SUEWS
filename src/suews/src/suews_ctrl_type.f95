@@ -447,7 +447,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
       REAL(KIND(1D0)) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
       REAL(KIND(1D0)) :: Fc_build ! anthropogenic co2 flux  [umol m-2 s-1]
-      REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
+
       REAL(KIND(1D0)) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
       REAL(KIND(1D0)) :: Fc_photo !co2 flux from photosynthesis [umol m
       REAL(KIND(1D0)) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
@@ -471,6 +471,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE solar_State
 
    TYPE, PUBLIC :: atm_state
+   REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
       REAL(KIND(1D0)) :: avcp !Specific heat capacity
       REAL(KIND(1D0)) :: dens_dry !Dry air density kg m-3
       REAL(KIND(1D0)) :: avdens !Average air density
