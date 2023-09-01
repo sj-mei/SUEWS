@@ -1770,7 +1770,7 @@ CONTAINS
       ! so that these values won't updated in unexpectedly many times
 
       ! OHM related:
-      TYPE(OHM_STATE) :: ohmState_prev, ohmState_next
+      ! TYPE(OHM_STATE) :: ohmState, ohmState
 
       ! snow related:
       TYPE(SNOW_STATE) :: snowState_prev, snowState_next
@@ -2067,7 +2067,7 @@ CONTAINS
 
             ! ########################################################################################
             ! save initial values of inout variables
-            ohmState_prev = ohmState
+            ohmState = ohmState
 
             snowState_prev = snowState
             snowState_prev%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
@@ -2082,7 +2082,7 @@ CONTAINS
             heatState_in = heatState
 
             ! initialise  variables
-            ohmState_next = ohmState
+            ohmState = ohmState
             snowState_next = snowState
             hydroState_next = hydroState
 
@@ -2264,11 +2264,11 @@ CONTAINS
                   hydroState_prev, &
                   snowState_prev, DiagQS, &
                   anthroEmisState, Ts5mindata_ir, qf, qn, &
-                  ZENITH_deg, ldown, ohmState_prev, &
+                  ZENITH_deg, ldown, ohmState, &
                   phenState, &
                   ! TODO: collect output into a derived type
                   qn_snow, dataOutLineESTM, qs, & !output
-                  ohmState_next, &
+                  ohmState, &
                   deltaQi, a1, a2, a3, &
                   QS_roof, & !output
                   QS_wall, & !output
@@ -2594,10 +2594,10 @@ CONTAINS
             IF (config%Diagnose == 1) WRITE (*, *) 'update inout variables with new values...'
             !==============================================================
             ! update inout variables with new values
-            ohmState%qn_av = ohmState_next%qn_av
-            ohmState%dqndt = ohmState_next%dqndt
-            ohmState%qn_s_av = ohmState_next%qn_s_av
-            ohmState%dqnsdt = ohmState_next%dqnsdt
+            ! ohmState%qn_av = ohmState_next%qn_av
+            ! ohmState%dqndt = ohmState_next%dqndt
+            ! ohmState%qn_s_av = ohmState_next%qn_s_av
+            ! ohmState%dqnsdt = ohmState_next%dqnsdt
             snowState%SnowfallCum = snowState_next%SnowfallCum
             snowState%SnowAlb = snowState_next%SnowAlb
             snowState%IceFrac = snowState_next%IceFrac
