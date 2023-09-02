@@ -2067,8 +2067,6 @@ CONTAINS
 
             ! ########################################################################################
             ! save initial values of inout variables
-            ohmState = ohmState
-
             snowState_prev = snowState
             snowState_prev%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
@@ -2082,7 +2080,6 @@ CONTAINS
             heatState_in = heatState
 
             ! initialise  variables
-            ohmState = ohmState
             snowState_next = snowState
             hydroState_next = hydroState
 
