@@ -2201,11 +2201,11 @@ CONTAINS
 
                CALL SUEWS_cal_DailyState_DTS_x( &
                   timer, config, forcing, siteInfo, & !input
-                  phenState_prev, &
+                  phenState, &
                   anthroEmisState_prev, & !input
                   hydroState_prev, & !input
                   anthroEmisState_next, & !output
-                  phenState_next, &
+                  phenState, &
                   hydroState_next) !output
 
                !======== Calculate soil moisture =========
@@ -2242,7 +2242,7 @@ CONTAINS
                   nlayer, snowState_prev, &
                   solarState, atmState, &
                   heatState_out, &
-                  phenState_prev, phenState, phenState_next, &
+                   phenState, &
                   ldown, & !output
                   qn_surf, qn_roof, qn_wall, &
                   qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
@@ -2283,7 +2283,7 @@ CONTAINS
                      config, qn, qf, qs, forcing, VegFraction, avcp, lv_J_kg, &
                      tstep_real, nsh_real, &
                      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-                     phenState_next, &
+                     phenState, &
                      ! TODO: collect output into a derived type
                      QH_LUMPS, & !output
                      QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
@@ -2302,7 +2302,7 @@ CONTAINS
                   NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
                   hydroState_prev, &
                   pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-                  phenState_next, &
+                  phenState, &
                   nsh_real, &
                   ! TODO: collect output into a derived type
                   drain_per_tstep, & !output
@@ -2321,7 +2321,7 @@ CONTAINS
                   forcing, &
                   VegFraction, &
                   dq, vsmd, &
-                  phenState_next, snowState_prev, &
+                  phenState, snowState_prev, &
                   pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                   ! TODO: collect output into a derived type
                   g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
@@ -2347,7 +2347,7 @@ CONTAINS
                      drain_surf, &
                      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                      Tsurf_ind, &
-                     AddWater, frac_water2runoff, phenState_next, &
+                     AddWater, frac_water2runoff, phenState, &
                      snowState_prev, & ! input:
                      hydroState_prev, & ! input:
                      QN_surf, qs_surf, &
@@ -2376,7 +2376,7 @@ CONTAINS
                      forcing, siteInfo, &
                      NonWaterFraction, wu_surf, addVeg, addWaterBody, AddWater, &
                      drain_surf, &
-                     frac_water2runoff, phenState_next, &
+                     frac_water2runoff, phenState, &
                      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                      ehcPrm, &
                      hydroState_prev, QN_surf, qs_surf, & ! input:
@@ -2579,7 +2579,7 @@ CONTAINS
             CALL SUEWS_cal_BiogenCO2_DTS( &
                forcing, config, conductancePrm, &
                dectime, Fc_anthro, &
-               gfunc, timer, phenState_next, &
+               gfunc, timer, phenState, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                t2_C, snowState, &
                vsmd, &
@@ -2605,21 +2605,21 @@ CONTAINS
 
             hydroState%soilstore_surf = hydroState_next%soilstore_surf
             hydroState%state_surf = hydroState_next%state_surf
-            phenState%alb = phenState_next%alb
-            phenState%GDD_id = phenState_next%GDD_id
-            phenState%SDD_id = phenState_next%SDD_id
-            phenState%LAI_id = phenState_next%LAI_id
-            phenState%DecidCap_id = phenState_next%DecidCap_id
-            phenState%albDecTr_id = phenState_next%albDecTr_id
-            phenState%albEveTr_id = phenState_next%albEveTr_id
-            phenState%albGrass_id = phenState_next%albGrass_id
-            phenState%porosity_id = phenState_next%porosity_id
-            phenState%StoreDrainPrm = phenState_next%StoreDrainPrm
+            ! phenState%alb = phenState_next%alb
+            ! phenState%GDD_id = phenState_next%GDD_id
+            ! phenState%SDD_id = phenState_next%SDD_id
+            ! phenState%LAI_id = phenState_next%LAI_id
+            ! phenState%DecidCap_id = phenState_next%DecidCap_id
+            ! phenState%albDecTr_id = phenState_next%albDecTr_id
+            ! phenState%albEveTr_id = phenState_next%albEveTr_id
+            ! phenState%albGrass_id = phenState_next%albGrass_id
+            ! phenState%porosity_id = phenState_next%porosity_id
+            ! phenState%StoreDrainPrm = phenState_next%StoreDrainPrm
+            ! phenState%Tmin_id = phenState_next%Tmin_id
+            ! phenState%Tmax_id = phenState_next%Tmax_id
+            ! phenState%lenday_id = phenState_next%lenday_id
             ! Tair_av = Tair_av_next
             ! forcing%Tair = Tair_av_next
-            phenState%Tmin_id = phenState_next%Tmin_id
-            phenState%Tmax_id = phenState_next%Tmax_id
-            phenState%lenday_id = phenState_next%lenday_id
             anthroEmisState%HDD_id = anthroEmisState_next%HDD_id
             hydroState%WUDay_id = hydroState_next%WUDay_id
 
@@ -3596,7 +3596,7 @@ CONTAINS
       nlayer, snowState_prev, &
       solarState, atmState, &
       heatState_out, &
-      phenState_prev, phenState, phenState_next, &
+      phenState, &
       ldown, & !output
       qn_surf, qn_roof, qn_wall, &
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
@@ -3632,8 +3632,8 @@ CONTAINS
       TYPE(SNOW_STATE), INTENT(IN) :: snowState_prev
       TYPE(SNOW_STATE), INTENT(OUT) :: snowState_next
       TYPE(HEAT_STATE), INTENT(IN) :: heatState_out
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_prev, phenState
-      TYPE(PHENOLOGY_STATE), INTENT(OUT) :: phenState_next
+      TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
+      ! TYPE(PHENOLOGY_STATE), INTENT(OUT) :: phenState
 
       ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
@@ -3759,10 +3759,10 @@ CONTAINS
       INTEGER, PARAMETER :: DiagQN = 0 ! flag for printing diagnostic info for QN module during runtime [N/A] ! not used and will be removed
 
       ASSOCIATE ( &
-         alb_prev => phenState_prev%alb, &
-         albDecTr_id => phenState_next%albDecTr_id, &
-         albEveTr_id => phenState_next%albEveTr_id, &
-         albGrass_id => phenState_next%albGrass_id, &
+         alb_prev => phenState%alb, &
+         albDecTr_id => phenState%albDecTr_id, &
+         albEveTr_id => phenState%albEveTr_id, &
+         albGrass_id => phenState%albGrass_id, &
          LAI_id => phenState%LAI_id, &
          storageheatmethod => config%StorageHeatMethod, &
          NetRadiationMethod => config%NetRadiationMethod, &
@@ -4003,7 +4003,7 @@ CONTAINS
 
             ! translate values
             ! alb_next = alb
-            phenState_next%alb = alb
+            phenState%alb = alb
             snowState_next%SnowAlb = SnowAlb
          END ASSOCIATE
       END ASSOCIATE
