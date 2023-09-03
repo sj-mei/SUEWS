@@ -2240,7 +2240,7 @@ CONTAINS
                END IF
                CALL SUEWS_cal_Qn_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  nlayer, snowState, &
+                  nlayer, &
                   solarState, atmState, &
                   heatState, &
                   phenState, &
@@ -3591,7 +3591,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_Qn_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      nlayer, snowState_prev, &
+      nlayer, &
       solarState, atmState, &
       heatState, &
       phenState, &
@@ -3599,7 +3599,7 @@ CONTAINS
       qn_surf, qn_roof, qn_wall, &
       qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
       qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      snowState_next, &
+      snowState, &
       dataOutLineSPARTACUS)
       USE NARP_MODULE, ONLY: RadMethod, NARP
       USE SPARTACUS_MODULE, ONLY: SPARTACUS
@@ -3627,8 +3627,8 @@ CONTAINS
       ! TYPE(SPARTACUS_PRM), INTENT(IN) :: spartacusPrm
       ! TYPE(SPARTACUS_LAYER_PRM), INTENT(IN) :: spartacusLayerPrm
 
-      TYPE(SNOW_STATE), INTENT(IN) :: snowState_prev
-      TYPE(SNOW_STATE), INTENT(OUT) :: snowState_next
+      ! TYPE(SNOW_STATE), INTENT(IN) :: snowState
+      TYPE(SNOW_STATE), INTENT(INOUT) :: snowState
       TYPE(HEAT_STATE), INTENT(IN) :: heatState
       TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
       ! TYPE(PHENOLOGY_STATE), INTENT(OUT) :: phenState
@@ -3745,10 +3745,10 @@ CONTAINS
          Tair_C => forcing%Temp_C, &
          avRH => forcing%RH, &
          qn1_obs => forcing%qn1_obs, &
-         SnowPack_prev => snowState_prev%SnowPack, &
-         SnowAlb_prev => snowState_prev%snowalb, &
-         snowFrac_prev => snowState_prev%snowFrac, &
-         IceFrac => snowState_prev%IceFrac, &
+         SnowPack_prev => snowState%SnowPack, &
+         SnowAlb_prev => snowState%snowalb, &
+         snowFrac_prev => snowState%snowFrac, &
+         IceFrac => snowState%IceFrac, &
          dectime => timer%dectime, &
          ZENITH_deg => solarState%ZENITH_deg, &
          ea_hPa => atmState%ea_hPa, &
@@ -3907,7 +3907,7 @@ CONTAINS
             ! translate values
             ! alb_next = alb
             phenState%alb = alb
-            snowState_next%SnowAlb = SnowAlb
+            snowState%SnowAlb = SnowAlb
          END ASSOCIATE
       END ASSOCIATE
    END SUBROUTINE SUEWS_cal_Qn_DTS
