@@ -2069,6 +2069,7 @@ CONTAINS
             ! save initial values of inout variables
             snowState_prev = snowState
             snowState_prev%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
+            snowState%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
             hydroState_prev = hydroState
             Tair_av_prev = forcing%Tair_av_5d
@@ -2239,7 +2240,7 @@ CONTAINS
                END IF
                CALL SUEWS_cal_Qn_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  nlayer, snowState_prev, &
+                  nlayer, snowState, &
                   solarState, atmState, &
                   heatState, &
                   phenState, &
@@ -2247,7 +2248,7 @@ CONTAINS
                   qn_surf, qn_roof, qn_wall, &
                   qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
                   qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-                  snowState_next, &
+                  snowState, &
                   dataOutLineSPARTACUS)
 
                IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
@@ -2255,7 +2256,7 @@ CONTAINS
                   timer, config, forcing, siteInfo, & !input
                   nlayer, &
                   hydroState_prev, &
-                  snowState_prev, DiagQS, &
+                  snowState, DiagQS, &
                   anthroEmisState, Ts5mindata_ir, qf, qn, &
                   solarState, ldown, &
                   phenState, &
