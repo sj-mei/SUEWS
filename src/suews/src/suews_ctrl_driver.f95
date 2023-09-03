@@ -1805,7 +1805,6 @@ CONTAINS
       !method to calculate qh [-]
       INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
       INTEGER, PARAMETER :: nz = 90 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
-      INTEGER, PARAMETER :: AerodynamicResistanceMethod = 2 !method to calculate RA [-]
 
       INTEGER, PARAMETER :: DiagQN = 0 ! flag for printing diagnostic info for QN module during runtime [N/A] ! not used and will be removed
       INTEGER, PARAMETER :: DiagQS = 0 ! flag for printing diagnostic info for QS module during runtime [N/A] ! not used and will be removed
@@ -2314,15 +2313,11 @@ CONTAINS
                !===============Resistance Calculations=======================
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
                CALL SUEWS_cal_Resistance_DTS( &
-                  config, & !input:
-                  AerodynamicResistanceMethod, &
-                  timer, conductancePrm, &
-                  avdens, avcp, QH_Init, zzd, z0m, zdm, &
-                  forcing, &
-                  VegFraction, &
-                  dq, vsmd, &
+                  timer, config, forcing, siteInfo, & ! input
+                  atmState,&
+                  QH_Init, zzd, z0m, zdm, &
+                   vsmd, &
                   phenState, snowState_prev, &
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                   ! TODO: collect output into a derived type
                   g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
                   UStar, TStar, L_mod, & !output
@@ -7499,15 +7494,11 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_Resistance_DTS
 
    SUBROUTINE SUEWS_cal_Resistance_DTS( &
-      methodPrm, & !input:
-      AerodynamicResistanceMethod, &
-      timer, conductancePrm, &
-      avdens, avcp, QH_init, zzd, z0m, zdm, &
-      forcing, &
-      VegFraction, &
-      dq, vsmd, &
+      timer, config, forcing, siteInfo, & ! input
+      atmState,&
+      QH_init, zzd, z0m, zdm, &
+       vsmd, &
       phenState_next, snowState_prev, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
       g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
       UStar, TStar, L_mod, & !output
       zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
@@ -7517,60 +7508,65 @@ CONTAINS
                                LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
-                               PHENOLOGY_STATE, SNOW_STATE
+                               PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_SITE
 
       IMPLICIT NONE
 
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
-      TYPE(CONDUCTANCE_PRM), INTENT(IN) :: conductancePrm
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! TYPE(CONDUCTANCE_PRM), INTENT(IN) :: conductancePrm
+
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
       TYPE(SNOW_STATE), INTENT(IN) :: snowState_prev
+      TYPE(atm_state), INTENT(IN) :: atmState
 
-      INTEGER :: StabilityMethod !method to calculate atmospheric stability [-]
-      INTEGER :: Diagnose
-      INTEGER, INTENT(in) :: AerodynamicResistanceMethod !method to calculate RA [-]
-      INTEGER :: RoughLenHeatMethod !method to calculate heat roughness length [-]
-      INTEGER :: SnowUse !!Snow part used (1) or not used (0) [-]
-      INTEGER :: id ! day of the year [-]
-      INTEGER :: it !hour [h]
+      ! INTEGER :: StabilityMethod !method to calculate atmospheric stability [-]
+      ! INTEGER :: Diagnose
+      ! INTEGER, INTENT(in) :: AerodynamicResistanceMethod !method to calculate RA [-]
+      ! INTEGER :: RoughLenHeatMethod !method to calculate heat roughness length [-]
+      ! INTEGER :: SnowUse !!Snow part used (1) or not used (0) [-]
+      ! INTEGER :: id ! day of the year [-]
+      ! INTEGER :: it !hour [h]
       INTEGER :: gsModel !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
-      INTEGER :: SMDMethod !Method of measured soil moisture
+      ! INTEGER :: SMDMethod !Method of measured soil moisture
+
+      INTEGER, PARAMETER :: AerodynamicResistanceMethod = 2 !method to calculate RA [-]
 
       ! REAL(KIND(1d0)), INTENT(in)::qh_obs
-      REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
-      REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
+      ! REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
       REAL(KIND(1D0)), INTENT(in) :: QH_init !initial sensible heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: zzd !Active measurement height (meas. height-displac. height) [m]
       REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length [m]
       REAL(KIND(1D0)), INTENT(in) :: zdm !Displacement height [m]
-      REAL(KIND(1D0)) :: avU1 !Average wind speed [m s-1]
-      REAL(KIND(1D0)) :: Temp_C !Air temperature [degC]
-      REAL(KIND(1D0)), INTENT(in) :: VegFraction !Fraction of vegetation [-]
-      REAL(KIND(1D0)) :: avkdn !Average downwelling shortwave radiation [W m-2]
-      REAL(KIND(1D0)) :: Kmax !Annual maximum hourly solar radiation [W m-2]
-      REAL(KIND(1D0)) :: G_max !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_k !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_q_base !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_q_shape !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_t !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_sm !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: S1 !a parameter related to soil moisture dependence [-]
-      REAL(KIND(1D0)) :: S2 !a parameter related to soil moisture dependence [mm]
-      REAL(KIND(1D0)) :: TH !Maximum temperature limit [degC]
-      REAL(KIND(1D0)) :: TL !Minimum temperature limit [degC]
+      ! REAL(KIND(1D0)) :: avU1 !Average wind speed [m s-1]
+      ! REAL(KIND(1D0)) :: Temp_C !Air temperature [degC]
+      ! REAL(KIND(1D0)), INTENT(in) :: VegFraction !Fraction of vegetation [-]
+      ! REAL(KIND(1D0)) :: avkdn !Average downwelling shortwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: Kmax !Annual maximum hourly solar radiation [W m-2]
+      ! REAL(KIND(1D0)) :: G_max !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_k !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_q_base !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_q_shape !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_t !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_sm !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: S1 !a parameter related to soil moisture dependence [-]
+      ! REAL(KIND(1D0)) :: S2 !a parameter related to soil moisture dependence [mm]
+      ! REAL(KIND(1D0)) :: TH !Maximum temperature limit [degC]
+      ! REAL(KIND(1D0)) :: TL !Minimum temperature limit [degC]
       REAL(KIND(1D0)) :: dq !Specific humidity deficit
-      REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit
+      ! REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit
       REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only[mm]
 
       REAL(KIND(1D0)), DIMENSION(3) :: MaxConductance !the maximum conductance of each vegetation or surface type. [mm s-1]
@@ -7580,7 +7576,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac !Surface fraction of snow cover [-]
 
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
       REAL(KIND(1D0)), INTENT(out) :: TStar !T* temperature scale
       REAL(KIND(1D0)), INTENT(out) :: UStar !friction velocity [m s-1]
@@ -7607,112 +7603,155 @@ CONTAINS
       ! CALL SUEWS_init_QH( &
       !    avdens, avcp, QH_init, qn1, dectime, &
       !    H_init)
+      ASSOCIATE ( &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         sfr_surf => siteInfo%sfr_surf, &
+         conductancePrm => siteInfo%conductance, &
+         NonWaterFraction => siteInfo%NonWaterFraction, &
+         VegFraction => siteInfo%VegFraction, &
+         nsh_real => timer%nsh_real, &
+         id => timer%id, &
+         it => timer%it, &
+         avU1 => forcing%U, &
+         Temp_C => forcing%Temp_C, &
+         avkdn => forcing%kdown, &
+         xsmd => forcing%xsmd, &
+         avdens => atmState%avdens, &
+         avcp => atmState%avcp, &
+         dq => atmState%dq, &
+         Diagnose => config%Diagnose, &
+         StabilityMethod => config%StabilityMethod, &
+         RoughLenHeatMethod => config%RoughLenHeatMethod, &
+         SnowUse => config%SnowUse, &
+         SMDMethod => config%SMDMethod &
+         )
+         ASSOCIATE ( &
+            gsModel => conductancePrm%gsModel, &
+            Kmax => conductancePrm%Kmax, &
+            G_max => conductancePrm%g_max, &
+            G_k => conductancePrm%g_k, &
+            G_q_base => conductancePrm%g_q_base, &
+            G_q_shape => conductancePrm%g_q_shape, &
+            G_t => conductancePrm%g_t, &
+            G_sm => conductancePrm%g_sm, &
+            S1 => conductancePrm%s1, &
+            S2 => conductancePrm%s2, &
+            TH => conductancePrm%th, &
+            TL => conductanceprm%tl &
+            )
 
-      StabilityMethod = methodPrm%StabilityMethod
-      Diagnose = methodPrm%Diagnose
-      RoughLenHeatMethod = methodPrm%RoughLenHeatMethod
-      SnowUse = methodPrm%SnowUse
-      SMDMethod = methodPrm%SMDMethod
+            ! StabilityMethod = config%StabilityMethod
+            ! RoughLenHeatMethod = config%RoughLenHeatMethod
+            ! SnowUse = config%SnowUse
+            ! SMDMethod = config%SMDMethod
 
-      id = timer%id
-      it = timer%it
+            ! id = timer%id
+            ! it = timer%it
 
-      gsModel = conductancePrm%gsModel
-      Kmax = conductancePrm%Kmax
-      G_max = conductancePrm%g_max
-      G_k = conductancePrm%g_k
-      G_q_base = conductancePrm%g_q_base
-      G_q_shape = conductancePrm%g_q_shape
-      G_t = conductancePrm%g_t
-      G_sm = conductancePrm%g_sm
-      S1 = conductancePrm%s1
-      S2 = conductancePrm%s2
-      TH = conductancePrm%th
-      TL = conductanceprm%tl
+            ! gsModel = conductancePrm%gsModel
+            ! Kmax = conductancePrm%Kmax
+            ! G_max = conductancePrm%g_max
+            ! G_k = conductancePrm%g_k
+            ! G_q_base = conductancePrm%g_q_base
+            ! G_q_shape = conductancePrm%g_q_shape
+            ! G_t = conductancePrm%g_t
+            ! G_sm = conductancePrm%g_sm
+            ! S1 = conductancePrm%s1
+            ! S2 = conductancePrm%s2
+            ! TH = conductancePrm%th
+            ! TL = conductanceprm%tl
 
-      avU1 = forcing%U
-      Temp_C = forcing%Temp_C
-      avkdn = forcing%kdown
-      xsmd = forcing%xsmd
+            ! avU1 = forcing%U
+            ! Temp_C = forcing%Temp_C
+            ! avkdn = forcing%kdown
+            ! xsmd = forcing%xsmd
 
-      LAI_id = phenState_next%LAI_id
+            LAI_id = phenState_next%LAI_id
 
-      SnowFrac = snowState_prev%SnowFrac
+            SnowFrac = snowState_prev%SnowFrac
 
-      RAsnow = 0.0
+            RAsnow = 0.0
 
-      MaxConductance(1) = evetrPrm%maxconductance
-      MaxConductance(2) = dectrPrm%maxconductance
-      MaxConductance(3) = grassPrm%maxconductance
+            MaxConductance(1) = evetrPrm%maxconductance
+            MaxConductance(2) = dectrPrm%maxconductance
+            MaxConductance(3) = grassPrm%maxconductance
 
-      LAIMax(1) = evetrPrm%lai%laimax
-      LAIMax(2) = dectrPrm%lai%laimax
-      LAIMax(3) = grassPrm%lai%laimax
+            LAIMax(1) = evetrPrm%lai%laimax
+            LAIMax(2) = dectrPrm%lai%laimax
+            LAIMax(3) = grassPrm%lai%laimax
 
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
-      IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
-      !u* and Obukhov length out
-      CALL cal_Stab( &
-         StabilityMethod, & ! input
-         zzd, & !Active measurement height (meas. height-displac. height)
-         z0m, & !Aerodynamic roughness length
-         zdm, & !zero-plane displacement
-         avU1, & !Average wind speed
-         Temp_C, & !Air temperature
-         QH_init, & !sensible heat flux
-         avdens, & ! air density
-         avcp, & ! heat capacity of air
-         L_mod, & ! output: !Obukhov length
-         TStar, & !T*, temperature scale
-         UStar, & !Friction velocity
-         zL) !Stability scale
+            IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
+            !u* and Obukhov length out
+            CALL cal_Stab( &
+               StabilityMethod, & ! input
+               zzd, & !Active measurement height (meas. height-displac. height)
+               z0m, & !Aerodynamic roughness length
+               zdm, & !zero-plane displacement
+               avU1, & !Average wind speed
+               Temp_C, & !Air temperature
+               QH_init, & !sensible heat flux
+               avdens, & ! air density
+               avcp, & ! heat capacity of air
+               L_mod, & ! output: !Obukhov length
+               TStar, & !T*, temperature scale
+               UStar, & !Friction velocity
+               zL) !Stability scale
 
-      IF (Diagnose == 1) WRITE (*, *) 'Calling AerodynamicResistance...'
-      CALL AerodynamicResistance( &
-         ZZD, & ! input:
-         z0m, &
-         AVU1, &
-         L_mod, &
-         UStar, &
-         VegFraction, &
-         AerodynamicResistanceMethod, &
-         StabilityMethod, &
-         RoughLenHeatMethod, &
-         RA, z0v) ! output:
+            IF (Diagnose == 1) WRITE (*, *) 'Calling AerodynamicResistance...'
+            CALL AerodynamicResistance( &
+               ZZD, & ! input:
+               z0m, &
+               AVU1, &
+               L_mod, &
+               UStar, &
+               VegFraction, &
+               AerodynamicResistanceMethod, &
+               StabilityMethod, &
+               RoughLenHeatMethod, &
+               RA, z0v) ! output:
 
-      IF (SnowUse == 1) THEN
-         IF (Diagnose == 1) WRITE (*, *) 'Calling AerodynamicResistance for snow...'
-         CALL AerodynamicResistance( &
-            ZZD, & ! input:
-            z0m, &
-            AVU1, &
-            L_mod, &
-            UStar, &
-            VegFraction, &
-            AerodynamicResistanceMethod, &
-            StabilityMethod, &
-            3, &
-            RASnow, z0vSnow) ! output:
-      END IF
+            IF (SnowUse == 1) THEN
+               IF (Diagnose == 1) WRITE (*, *) 'Calling AerodynamicResistance for snow...'
+               CALL AerodynamicResistance( &
+                  ZZD, & ! input:
+                  z0m, &
+                  AVU1, &
+                  L_mod, &
+                  UStar, &
+                  VegFraction, &
+                  AerodynamicResistanceMethod, &
+                  StabilityMethod, &
+                  3, &
+                  RASnow, z0vSnow) ! output:
+            END IF
 
-      IF (Diagnose == 1) WRITE (*, *) 'Calling SurfaceResistance...'
-      ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
-      CALL SurfaceResistance( &
-         id, it, & ! input:
-         SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
-         LAIMax, LAI_id, gsModel, Kmax, &
-         G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
-         g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
-         gfunc, gsc, RS) ! output:
+            IF (Diagnose == 1) WRITE (*, *) 'Calling SurfaceResistance...'
+            ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
+            CALL SurfaceResistance( &
+               id, it, & ! input:
+               SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+               LAIMax, LAI_id, gsModel, Kmax, &
+               G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
+               g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
+               gfunc, gsc, RS) ! output:
 
-      IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
-      CALL BoundaryLayerResistance( &
-         zzd, & ! input:     !Active measurement height (meas. height- zero-plane displacement)
-         z0m, & !Aerodynamic roughness length
-         avU1, & !Average wind speed
-         UStar, & ! input/output:
-         RB) ! output:
+            IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
+            CALL BoundaryLayerResistance( &
+               zzd, & ! input:     !Active measurement height (meas. height- zero-plane displacement)
+               z0m, & !Aerodynamic roughness length
+               avU1, & !Average wind speed
+               UStar, & ! input/output:
+               RB) ! output:
+         END ASSOCIATE
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_Resistance_DTS
 !========================================================================
