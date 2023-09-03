@@ -2257,10 +2257,10 @@ CONTAINS
                   hydroState_prev, &
                   snowState_prev, DiagQS, &
                   anthroEmisState, Ts5mindata_ir, qf, qn, &
-                  solarState, ldown, ohmState, &
+                  solarState, ldown, &
                   phenState, &
                   ! TODO: collect output into a derived type
-                  qn_snow, dataOutLineESTM, qs, & !output
+                  qn_snow, dataOutLineESTM, qs, &
                   heatState, &
                   ohmState, &
                   deltaQi, a1, a2, a3, &
@@ -4162,11 +4162,11 @@ CONTAINS
       hydroState_prev, &
       snowState_prev, DiagQS, &
       anthroHeatState, Ts5mindata_ir, qf, qn, &
-      solarstate, ldown, ohmState_prev, &
+      solarstate, ldown, &
       phenState, &
-      qn_S, dataOutLineESTM, qs, & !output
+      qn_S, dataOutLineESTM, qs, &
       heatState, &
-      ohmState_next, &
+      ohmState, &
       deltaQi, a1, a2, a3, &
       QS_roof, & !output
       QS_wall, & !output
@@ -4204,8 +4204,8 @@ CONTAINS
       TYPE(SNOW_STATE), INTENT(in) :: snowState_prev
       TYPE(anthroEmis_STATE), INTENT(in) :: anthroHeatState
       TYPE(PHENOLOGY_STATE), INTENT(in) :: phenState
-      TYPE(OHM_STATE), INTENT(in) :: ohmState_prev
-      TYPE(OHM_STATE), INTENT(OUT) :: ohmState_next
+      ! TYPE(OHM_STATE), INTENT(in) :: ohmState
+      TYPE(OHM_STATE), INTENT(inOUT) :: ohmState
 
       ! INTEGER :: StorageHeatMethod !heat storage calculation option [-]
       ! INTEGER :: OHMIncQF !Determines whether the storage heat flux calculation uses Q* or ( Q* +QF)
@@ -4622,10 +4622,10 @@ CONTAINS
             ELSEIF (StorageHeatMethod == 1) THEN !Use OHM to calculate QS
                Tair_mav_5d = HDD_id(10)
                IF (Diagnose == 1) WRITE (*, *) 'Calling OHM...'
-               CALL OHM(qn_use, ohmState_prev%qn_av, ohmState_prev%dqndt, &
-                        ohmState_next%qn_av, ohmState_next%dqndt, &
-                        qn_S, ohmState_prev%qn_s_av, ohmState_prev%dqnsdt, &
-                        ohmState_next%qn_s_av, ohmState_next%dqnsdt, &
+               CALL OHM(qn_use, ohmState%qn_av, ohmState%dqndt, &
+                        ohmState%qn_av, ohmState%dqndt, &
+                        qn_S, ohmState%qn_s_av, ohmState%dqnsdt, &
+                        ohmState%qn_s_av, ohmState%dqnsdt, &
                         tstep, dt_since_start, &
                         sfr_surf, nsurf, &
                         Tair_mav_5d, &
