@@ -2277,7 +2277,7 @@ CONTAINS
                IF (i_iter == 1) THEN
                   !Calculate QH and QE from LUMPS in the first iteration of each time step
                   CALL LUMPS_cal_QHQE_DTS( &
-                  timer, config, forcing, siteInfo, & ! input
+                     timer, config, forcing, siteInfo, & ! input
                      heatstate, &
                      atmState, &
                      phenState, &
