@@ -2254,7 +2254,6 @@ CONTAINS
                CALL SUEWS_cal_Qs_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   nlayer, &
-                  heatState, &
                   hydroState_prev, &
                   snowState_prev, DiagQS, &
                   anthroEmisState, Ts5mindata_ir, qf, qn, &
@@ -4160,14 +4159,13 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Qs_DTS( &
       timer, config, forcing, siteInfo, & ! input
       nlayer, &
-      heatState_in, &
       hydroState_prev, &
       snowState_prev, DiagQS, &
       anthroHeatState, Ts5mindata_ir, qf, qn, &
       solarstate, ldown, ohmState_prev, &
       phenState, &
       qn_S, dataOutLineESTM, qs, & !output
-      heatState_out, &
+      heatState, &
       ohmState_next, &
       deltaQi, a1, a2, a3, &
       QS_roof, & !output
@@ -4188,8 +4186,8 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(in) :: forcing
       TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
 
-      TYPE(HEAT_STATE), INTENT(in) :: heatState_in
-      TYPE(HEAT_STATE), INTENT(inout) :: heatState_out
+      ! TYPE(HEAT_STATE), INTENT(in) :: heatState
+      TYPE(HEAT_STATE), INTENT(inout) :: heatState
       TYPE(solar_State), INTENT(in) :: solarstate
 
       ! TYPE(EHC_PRM), INTENT(in) :: ehcPrm
@@ -4387,12 +4385,12 @@ CONTAINS
             ! tstep = timer%tstep
             ! dt_since_start = timer%dt_since_start
 
-            tsfc_roof = heatState_out%tsfc_roof
-            tsfc_wall = heatState_out%tsfc_wall
-            tsfc_surf = heatState_out%tsfc_surf
-            temp_in_roof = heatState_in%temp_roof
-            temp_in_wall = heatState_in%temp_wall
-            temp_in_surf = heatState_in%temp_surf
+            tsfc_roof = heatState%tsfc_roof
+            tsfc_wall = heatState%tsfc_wall
+            tsfc_surf = heatState%tsfc_surf
+            temp_in_roof = heatState%temp_roof
+            temp_in_wall = heatState%temp_wall
+            temp_in_surf = heatState%temp_surf
 
             ! tin_roof = ehcPrm%tin_roof
             ! k_roof = ehcPrm%k_roof
@@ -4695,9 +4693,9 @@ CONTAINS
                   tsfc_roof, tin_roof, temp_in_roof, k_roof, cp_roof, dz_roof, sfr_roof, & !input
                   tsfc_wall, tin_wall, temp_in_wall, k_wall, cp_wall, dz_wall, sfr_wall, & !input
                   tsfc_surf, tin_surf, temp_in_surf, k_surf, cp_surf, dz_surf, sfr_surf, & !input
-                  heatState_out%temp_roof, QS_roof, & !output
-                  heatState_out%temp_wall, QS_wall, & !output
-                  heatState_out%temp_surf, QS_surf, & !output
+                  heatState%temp_roof, QS_roof, & !output
+                  heatState%temp_wall, QS_wall, & !output
+                  heatState%temp_surf, QS_surf, & !output
                   QS) !output
 
                ! TODO: add deltaQi to output for snow heat storage
