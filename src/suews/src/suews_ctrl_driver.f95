@@ -2252,16 +2252,13 @@ CONTAINS
 
                IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
                CALL SUEWS_cal_Qs_DTS( &
-                  config, forcing, siteInfo, & !input
-                  timer, &
+                  timer, config, forcing, siteInfo, & !input
                   nlayer, &
-                  heatState_out, ehcPrm, heatState_in, &
-                  sfr_roof, sfr_wall, & !input
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
+                  heatState_out, heatState_in, &
                   hydroState_prev, &
                   snowState_prev, DiagQS, &
                   anthroEmisState, Ts5mindata_ir, qf, qn, &
-                  ZENITH_deg, ldown, ohmState, &
+                  solarState, ldown, ohmState, &
                   phenState, &
                   ! TODO: collect output into a derived type
                   qn_snow, dataOutLineESTM, qs, & !output
@@ -4160,16 +4157,13 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_Qs
 
    SUBROUTINE SUEWS_cal_Qs_DTS( &
-      methodPrm, forcing, siteInfo, & !input
-      timer, &
+      timer, config, forcing, siteInfo, & ! input
       nlayer, &
-      heatState_out, ehcPrm, heatState_in, &
-      sfr_roof, sfr_wall, & !input
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
+      heatState_out, heatState_in, &
       hydroState_prev, &
       snowState_prev, DiagQS, &
       anthroHeatState, Ts5mindata_ir, qf, qn, &
-      zenith_deg, ldown, ohmState_prev, &
+      solarstate, ldown, ohmState_prev, &
       phenState, &
       qn_S, dataOutLineESTM, qs, & !output
       ohmState_next, &
@@ -4187,26 +4181,26 @@ CONTAINS
 
       IMPLICIT NONE
 
-      TYPE(SUEWS_CONFIG), INTENT(in) :: methodPrm
-
+      TYPE(SUEWS_TIMER), INTENT(in) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(in) :: config
+      TYPE(SUEWS_FORCING), INTENT(in) :: forcing
       TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
 
-      TYPE(SUEWS_FORCING), INTENT(in) :: forcing
 
-      TYPE(SUEWS_TIMER), INTENT(in) :: timer
 
       TYPE(HEAT_STATE), INTENT(in) :: heatState_in
       TYPE(HEAT_STATE), INTENT(INOUT) :: heatState_out
+      TYPE(solar_State), INTENT(in) :: solarstate
 
-      TYPE(EHC_PRM), INTENT(in) :: ehcPrm
+      ! TYPE(EHC_PRM), INTENT(in) :: ehcPrm
 
-      TYPE(LC_PAVED_PRM), INTENT(in) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(in) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(in) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(in) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(in) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(in) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(in) :: waterPrm
+      ! TYPE(LC_PAVED_PRM), INTENT(in) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(in) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(in) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(in) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(in) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(in) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(in) :: waterPrm
 
       TYPE(HYDRO_STATE), INTENT(in) :: hydroState_prev
       TYPE(SNOW_STATE), INTENT(in) :: snowState_prev
@@ -4215,17 +4209,17 @@ CONTAINS
       TYPE(OHM_STATE), INTENT(in) :: ohmState_prev
       TYPE(OHM_STATE), INTENT(OUT) :: ohmState_next
 
-      INTEGER :: StorageHeatMethod !heat storage calculation option [-]
-      INTEGER :: OHMIncQF !Determines whether the storage heat flux calculation uses Q* or ( Q* +QF)
-      INTEGER :: Gridiv ! grid id [-]
-      INTEGER :: id ! day of year [-]
-      INTEGER :: tstep ! time step [s]
-      INTEGER :: dt_since_start ! time since simulation starts [s]
-      INTEGER :: Diagnose
+      ! INTEGER :: StorageHeatMethod !heat storage calculation option [-]
+      ! INTEGER :: OHMIncQF !Determines whether the storage heat flux calculation uses Q* or ( Q* +QF)
+      ! INTEGER :: Gridiv ! grid id [-]
+      ! INTEGER :: id ! day of year [-]
+      ! INTEGER :: tstep ! time step [s]
+      ! INTEGER :: dt_since_start ! time since simulation starts [s]
+      ! INTEGER :: Diagnose
       ! INTEGER, INTENT(in)  ::nsh              ! number of timesteps in one hour
-      INTEGER :: SnowUse ! option for snow related calculations [-]
+      ! INTEGER :: SnowUse ! option for snow related calculations [-]
       INTEGER :: DiagQS ! diagnostic option [-]
-      INTEGER :: EmissionsMethod ! AnthropHeat option [-]
+      ! INTEGER :: EmissionsMethod ! AnthropHeat option [-]
       INTEGER :: nlayer ! number of vertical levels in urban canopy [-]
 
       REAL(KIND(1D0)) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients [-]
@@ -4240,8 +4234,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating degree day of the day of year
       REAL(KIND(1D0)) :: qf ! anthropogenic heat lufx [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: qn ! net all-wave radiative flux [W m-2]
-      REAL(KIND(1D0)) :: qs_obs ! observed heat storage flux [W m-2]
-      REAL(KIND(1D0)) :: avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
+      ! REAL(KIND(1D0)) :: qs_obs ! observed heat storage flux [W m-2]
+      ! REAL(KIND(1D0)) :: avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa
+      REAL(KIND(1D0)) :: ldown
       REAL(KIND(1D0)) :: bldgh ! mean building height [m]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: alb ! albedo [-]
@@ -4256,7 +4251,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: Ts5mindata_ir !surface temperature input data [degC]
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: QG_surf ! ground heat flux [W m-2]
-      REAL(KIND(1D0)) :: Tair_av ! mean air temperature of past 24hr [degC]
+      ! REAL(KIND(1D0)) :: Tair_av ! mean air temperature of past 24hr [degC]
       ! REAL(KIND(1D0)) :: qn_av_prev ! weighted average of qn [W m-2]
       !REAL(KIND(1D0)), INTENT(out) :: qn_av_next ! weighted average of qn for previous 60 mins [W m-2]
       ! REAL(KIND(1D0)) :: dqndt_prev ! Rate of change of net radiation at t-1 [W m-2 h-1]
@@ -4285,7 +4280,7 @@ CONTAINS
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_roof ! conductive heat flux through roof [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tin_roof ! indoor/deep bottom temperature for roof [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof ! surface fraction of roof [-]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof ! surface fraction of roof [-]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_roof ! temperature at inner interfaces of roof [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: k_roof ! thermal conductivity of roof [W m-1 K]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: cp_roof ! Heat capacity of roof [J m-3 K-1]
@@ -4293,7 +4288,7 @@ CONTAINS
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_wall ! conductive heat flux through wall [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tin_wall ! indoor/deep bottom temperature for wall [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall ! surface fraction of wall [-]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall ! surface fraction of wall [-]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_wall ! temperature at inner interfaces of wall [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: k_wall ! thermal conductivity of wall [W m-1 K]
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: cp_wall ! Heat capacity of wall [J m-3 K-1]
@@ -4325,27 +4320,62 @@ CONTAINS
       REAL(KIND(1D0)) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
       REAL(KIND(1D0)) :: qn_use ! qn used in OHM calculations [W m-2]
 
-      REAL(KIND(1D0)) :: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
+      ! REAL(KIND(1D0)) :: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
-      StorageHeatMethod = methodPrm%StorageHeatMethod
-      OHMIncQF = methodPrm%OHMIncQF
-      Diagnose = methodPrm%Diagnose
-      SnowUse = methodPrm%SnowUse
-      EmissionsMethod = methodPrm%EmissionsMethod
+      ASSOCIATE(&
 
-      Gridiv = siteInfo%Gridiv
+         ehcPrm => siteInfo%ehc,&
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         sfr_roof =>siteInfo%sfr_roof, &
+         sfr_wall => siteInfo%sfr_wall, &
 
-      qs_obs = forcing%qs_obs
-      avkdn = forcing%kdown
-      avu1 = forcing%U
-      temp_c = forcing%temp_c
-      avrh = forcing%RH
-      press_hpa = forcing%pres
-      Tair_av = forcing%Tair_av_5d
+         StorageHeatMethod => config%StorageHeatMethod,&
+         OHMIncQF => config%OHMIncQF,&
+         Diagnose => config%Diagnose,&
+         SnowUse => config%SnowUse,&
+         EmissionsMethod => config%EmissionsMethod,&
 
-      id = timer%id
-      tstep = timer%tstep
-      dt_since_start = timer%dt_since_start
+         Gridiv => siteInfo%Gridiv,&
+
+         qs_obs => forcing%qs_obs,&
+         avkdn => forcing%kdown,&
+         avu1 => forcing%U,&
+         temp_c => forcing%temp_c,&
+         avrh => forcing%RH,&
+         press_hpa => forcing%pres,&
+         Tair_av => forcing%Tair_av_5d,&
+
+         zenith_deg => solarstate%zenith_deg,&
+
+         id => timer%id,&
+         tstep => timer%tstep,&
+         dt_since_start => timer%dt_since_start &
+      )
+      ! StorageHeatMethod = config%StorageHeatMethod
+      ! OHMIncQF = config%OHMIncQF
+      ! Diagnose = config%Diagnose
+      ! SnowUse = config%SnowUse
+      ! EmissionsMethod = config%EmissionsMethod
+
+      ! Gridiv = siteInfo%Gridiv
+
+      ! qs_obs = forcing%qs_obs
+      ! avkdn = forcing%kdown
+      ! avu1 = forcing%U
+      ! temp_c = forcing%temp_c
+      ! avrh = forcing%RH
+      ! press_hpa = forcing%pres
+      ! Tair_av = forcing%Tair_av_5d
+
+      ! id = timer%id
+      ! tstep = timer%tstep
+      ! dt_since_start = timer%dt_since_start
 
       tsfc_roof = heatState_out%tsfc_roof
       tsfc_wall = heatState_out%tsfc_wall
@@ -4669,6 +4699,8 @@ CONTAINS
          ! PRINT *, '------------------------------------'
          ! PRINT *, ''
       END IF
+
+      end associate
 
    END SUBROUTINE SUEWS_cal_Qs_DTS
 !=======================================================================
