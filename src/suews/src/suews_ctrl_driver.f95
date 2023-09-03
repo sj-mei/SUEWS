@@ -2190,6 +2190,11 @@ CONTAINS
                ! &)
                ! --------------------------------------------------------------------------------
 
+               ! WIP notes: TS 03 Sep 2023
+               ! upgrade the interface following this order:
+               ! 1. add `timer, config, forcing, siteInfo` as input
+               ! 2. add `xxState_prev` and `xxState_next` as input and output, respectively
+
                !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
          !!! Do we need to separate the phenology parameters from the land cover parameters?
@@ -5113,10 +5118,10 @@ CONTAINS
          NonWaterFraction => siteInfo%NonWaterFraction, &
          nsh_real => timer%nsh_real, &
          Diagnose => config%Diagnose, &
-         addPipes=>hydroState_prev%addPipes, &
-         addImpervious=>hydroState_prev%addImpervious, &
-         addVeg=>hydroState_prev%addVeg, &
-         addWaterBody=>hydroState_prev%addWaterBody, &
+         addPipes => hydroState_prev%addPipes, &
+         addImpervious => hydroState_prev%addImpervious, &
+         addVeg => hydroState_prev%addVeg, &
+         addWaterBody => hydroState_prev%addWaterBody, &
          SnowUse => config%SnowUse &
          )
 
