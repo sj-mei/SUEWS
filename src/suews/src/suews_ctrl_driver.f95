@@ -2314,9 +2314,9 @@ CONTAINS
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
                CALL SUEWS_cal_Resistance_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  atmState,&
+                  atmState, &
                   QH_Init, zzd, z0m, zdm, &
-                   vsmd, &
+                  vsmd, &
                   phenState, snowState_prev, &
                   ! TODO: collect output into a derived type
                   g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
@@ -7495,9 +7495,9 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_Resistance_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      atmState,&
+      atmState, &
       QH_init, zzd, z0m, zdm, &
-       vsmd, &
+      vsmd, &
       phenState_next, snowState_prev, &
       g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
       UStar, TStar, L_mod, & !output

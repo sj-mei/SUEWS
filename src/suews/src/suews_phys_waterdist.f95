@@ -2726,10 +2726,10 @@ CONTAINS
             WaterUseMethod => config%WaterUseMethod, &
             wu_m3 => forcing%Wuh, &
             it => timer%it, &
-            nsh_real=> timer%nsh_real, &
+            nsh_real => timer%nsh_real, &
             DayofWeek_id => timer%DayofWeek_id, &
-            NSH =>timer%NSH, &
-            DLS=> timer%DLS, &
+            NSH => timer%NSH, &
+            DLS => timer%DLS, &
             imin => timer%imin &
             )
 
@@ -2867,29 +2867,29 @@ CONTAINS
    ! TODO: this is a temporary workaround for the fact that the compiler does not support function-calling within associate
    FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTime)
 
-   IMPLICIT NONE
+      IMPLICIT NONE
 
-   INTEGER :: i, j !Used to count over hours and sub-hourly timesteps
-   INTEGER, INTENT(IN) :: Hour, Min, Sec, dt
-   INTEGER :: total_sec, SecPerHour
-   REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
-   REAL(KIND(1D0)), DIMENSION(0:23) :: Prof_24h_sum
-   REAL(KIND(1D0)) :: deltaProf !Change in hourly profiles per model timestep
-   REAL(KIND(1D0)) :: Prof_CurrTime
+      INTEGER :: i, j !Used to count over hours and sub-hourly timesteps
+      INTEGER, INTENT(IN) :: Hour, Min, Sec, dt
+      INTEGER :: total_sec, SecPerHour
+      REAL(KIND(1D0)), DIMENSION(0:23), INTENT(IN) :: Prof_24h
+      REAL(KIND(1D0)), DIMENSION(0:23) :: Prof_24h_sum
+      REAL(KIND(1D0)) :: deltaProf !Change in hourly profiles per model timestep
+      REAL(KIND(1D0)) :: Prof_CurrTime
 
-   total_sec = Min*60 + Sec
-   SecPerHour = 3600
+      total_sec = Min*60 + Sec
+      SecPerHour = 3600
 
-   Prof_24h_sum = MERGE(Prof_24h/(SUM(Prof_24h)), 0.D0, SUM(Prof_24h) /= 0) ! prevent zero-division
+      Prof_24h_sum = MERGE(Prof_24h/(SUM(Prof_24h)), 0.D0, SUM(Prof_24h) /= 0) ! prevent zero-division
 
-   i = hour
-   j = i + 1
-   IF (j == 24) j = 0
+      i = hour
+      j = i + 1
+      IF (j == 24) j = 0
 
-   deltaProf = (Prof_24h_sum(j) - Prof_24h_sum(i))/SecPerHour
-   Prof_CurrTime = Prof_24h_sum(hour) + deltaProf*total_sec
-   Prof_CurrTime = Prof_CurrTime*dt/SecPerHour
+      deltaProf = (Prof_24h_sum(j) - Prof_24h_sum(i))/SecPerHour
+      Prof_CurrTime = Prof_24h_sum(hour) + deltaProf*total_sec
+      Prof_CurrTime = Prof_CurrTime*dt/SecPerHour
 
-END FUNCTION get_Prof_SpecTime_sum
+   END FUNCTION get_Prof_SpecTime_sum
 
 END MODULE WaterDist_module

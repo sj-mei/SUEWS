@@ -471,7 +471,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE solar_State
 
    TYPE, PUBLIC :: atm_state
-   REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
+      REAL(KIND(1D0)) :: fcld !estomated cloud fraction [-]
       REAL(KIND(1D0)) :: avcp !Specific heat capacity
       REAL(KIND(1D0)) :: dens_dry !Dry air density kg m-3
       REAL(KIND(1D0)) :: avdens !Average air density

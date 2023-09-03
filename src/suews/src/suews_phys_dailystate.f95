@@ -408,7 +408,6 @@ CONTAINS
       REAL(KIND(1D0)) :: BaseT_Cooling_holiday
       REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Cooling
 
-
       ! REAL(KIND(1D0)) :: lat
 
       ! REAL(KIND(1D0)), INTENT(IN)::tau_a
