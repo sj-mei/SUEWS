@@ -3722,35 +3722,6 @@ CONTAINS
       INTEGER :: NetRadiationMethod_use
       INTEGER :: AlbedoChoice, ldown_option
 
-      ! SPARTACUS output variables
-      ! REAL(KIND(1D0)), INTENT(OUT) :: alb_spc, emis_spc, lw_emission_spc, lw_up_spc, sw_up_spc, qn_spc
-      ! REAL(KIND(1D0)), INTENT(OUT) :: top_net_lw_spc, ground_net_lw_spc, top_dn_lw_spc
-      ! REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_lw_spc, wall_net_lw_spc, roof_net_lw_spc, &
-      !                                                roof_in_lw_spc
-      ! REAL(KIND(1D0)), INTENT(OUT) :: top_dn_dir_sw_spc, top_net_sw_spc, ground_dn_dir_sw_spc, ground_net_sw_spc
-      ! REAL(KIND(1D0)), DIMENSION(15), INTENT(OUT) :: clear_air_abs_sw_spc, wall_net_sw_spc, roof_net_sw_spc, &
-      !                                                roof_in_sw_spc
-
-      ! SPARTACUS input variables
-      ! INTEGER :: n_vegetation_region_urban, &
-      !            n_stream_sw_urban, n_stream_lw_urban
-      ! REAL(KIND(1D0)) :: sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
-      !                    veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
-      !                    veg_fsd_const, veg_contact_fraction_const, &
-      !                    ground_albedo_dir_mult_fact
-      ! LOGICAL :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
-
-      ! REAL(KIND(1D0)), DIMENSION(nlayer + 1) :: height ! height in spartacus [m]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: building_frac ! building fraction [-]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_frac !vegetation fraction [-]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: building_scale ! diameter of buildings [[m]. The only L method for buildings is Eq. 19 Hogan et al. 2018.
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: veg_scale ! scale of tree crowns [m]. Using the default use_symmetric_vegetation_scale_urban=.TRUE. so that Eq. 20 Hogan et al. 2018 is used for L.
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: alb_roof !albedo of roof [-]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: emis_roof ! emissivity of roof [-]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: alb_wall !albedo of wall [-]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: emis_wall ! emissivity of wall [-]
-      ! REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: roof_albedo_dir_mult_fact !Ratio of the direct and diffuse albedo of the roof [-]
-      ! REAL(KIND(1D0)), DIMENSION(nspec, nlayer) :: wall_specular_frac ! Fraction of wall reflection that is specular [-]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_wall ! net all-wave radiation on the wall [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_roof ! net all-wave radiation on the roof [W m-2]
 
@@ -3835,72 +3806,6 @@ CONTAINS
             NARP_EMIS_SNOW => snowPrm%NARP_EMIS_SNOW &
             )
 
-            ! storageheatmethod = config%StorageHeatMethod
-            ! NetRadiationMethod = config%NetRadiationMethod
-            ! SnowUse = config%SnowUse
-            ! Diagnose = config%Diagnose
-            ! use_sw_direct_albedo = config%use_sw_direct_albedo
-
-            ! tstep = timer%tstep
-
-            ! SnowPack_prev = snowState_prev%SnowPack
-            ! SnowAlb_prev = snowState_prev%snowalb
-            ! snowFrac_prev = snowState_prev%snowFrac
-            ! IceFrac = snowState_prev%IceFrac
-
-            ! tau_a = snowPrm%tau_a
-            ! tau_f = snowPrm%tau_f
-            ! SnowAlbMax = snowPrm%SnowAlbMax
-            ! SnowAlbMin = snowPrm%SnowAlbMin
-            ! NARP_EMIS_SNOW = snowPrm%NARP_EMIS_SNOW
-
-            ! ldown_obs = forcing%ldown
-            ! fcld_obs = forcing%fcld
-            ! kdown = forcing%kdown
-            ! Tair_C = forcing%Temp_C
-            ! avRH = forcing%RH
-            ! qn1_obs = forcing%qn1_obs
-
-            ! NARP_TRANS_SITE = siteInfo%NARP_TRANS_SITE
-
-            ! tsfc_surf = heatState_out%tsfc_surf
-            ! tsfc_roof = heatState_out%tsfc_roof
-            ! tsfc_wall = heatState_out%tsfc_wall
-
-            ! alb_prev = phenState_prev%alb
-            ! albDecTr_id = phenState_next%albDecTr_id
-            ! albEveTr_id = phenState_next%albEveTr_id
-            ! albGrass_id = phenState_next%albGrass_id
-            ! LAI_id = phenState%LAI_id
-
-            ! n_vegetation_region_urban = spartacusPrm%n_vegetation_region_urban
-            ! n_stream_sw_urban = spartacusPrm%n_stream_sw_urban
-            ! n_stream_lw_urban = spartacusPrm%n_stream_lw_urban
-            ! sw_dn_direct_frac = spartacusPrm%sw_dn_direct_frac
-            ! air_ext_sw = spartacusPrm%air_ext_sw
-            ! air_ssa_sw = spartacusPrm%air_ssa_sw
-            ! veg_ssa_sw = spartacusPrm%veg_ssa_sw
-            ! air_ext_lw = spartacusPrm%air_ext_lw
-            ! air_ssa_lw = spartacusPrm%air_ssa_lw
-            ! veg_ssa_lw = spartacusPrm%veg_ssa_lw
-            ! veg_fsd_const = spartacusPrm%veg_fsd_const
-            ! veg_contact_fraction_const = spartacusPrm%veg_contact_fraction_const
-            ! ground_albedo_dir_mult_fact = spartacusPrm%ground_albedo_dir_mult_fact
-            ! height = spartacusPrm%height
-
-            ! building_frac = spartacusLayerPrm%building_frac
-            ! veg_frac = spartacusLayerPrm%veg_frac
-            ! building_scale = spartacusLayerPrm%building_scale
-            ! veg_scale = spartacusLayerPrm%veg_scale
-            ! alb_roof = spartacusLayerPrm%alb_roof
-            ! emis_roof = spartacusLayerPrm%emis_roof
-            ! alb_wall = spartacusLayerPrm%alb_wall
-            ! emis_wall = spartacusLayerPrm%emis_wall
-            ! roof_albedo_dir_mult_fact = spartacusLayerPrm%roof_albedo_dir_mult_fact
-            ! wall_specular_frac = spartacusLayerPrm%wall_specular_frac
-
-            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, &
-            !             grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
             emis = [pavedPrm%emis, bldgPrm%emis, evetrPrm%emis, dectrPrm%emis, &
                     grassPrm%emis, bsoilPrm%emis, waterPrm%emis]
             ! translate values
