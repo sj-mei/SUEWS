@@ -2235,14 +2235,14 @@ CONTAINS
                ! N.B.: the following parts involves snow-related calculations.
                ! ===================NET ALLWAVE RADIATION================================
                IF (flag_print_debug) THEN
-                  PRINT *, 'Tsfc_surf before QN', heatState_out%tsfc_surf
+                  PRINT *, 'Tsfc_surf before QN', heatState%tsfc_surf
                END IF
                CALL SUEWS_cal_Qn_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   nlayer, snowState_prev, &
                   solarState, atmState, &
-                  heatState_out, &
-                   phenState, &
+                  heatState, &
+                  phenState, &
                   ldown, & !output
                   qn_surf, qn_roof, qn_wall, &
                   qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
