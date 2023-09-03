@@ -2295,12 +2295,10 @@ CONTAINS
                !============= calculate water balance =============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
                CALL SUEWS_cal_Water_DTS( &
-                  config, & !input
-                  NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
+                  timer, config, forcing, siteInfo, & ! input
+                  ! addPipes, addImpervious, addVeg, addWaterBody, &
                   hydroState_prev, &
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                   phenState, &
-                  nsh_real, &
                   ! TODO: collect output into a derived type
                   drain_per_tstep, & !output
                   drain_surf, frac_water2runoff, &
@@ -5042,12 +5040,9 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_Water_DTS
 
    SUBROUTINE SUEWS_cal_Water_DTS( &
-      methodPrm, & !input
-      NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
+      timer, config, forcing, siteInfo, & ! input
       hydroState_prev, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
       phenState_next, &
-      nsh_real, &
       drain_per_tstep, & !output
       drain, frac_water2runoff, &
       AdditionalWater, runoffPipes, runoff_per_interval, &
@@ -5058,36 +5053,38 @@ CONTAINS
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, HYDRO_STATE
 
       IMPLICIT NONE
-
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_TIMER), INTENT(in) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(in) :: config
+      TYPE(SUEWS_FORCING), INTENT(in) :: forcing
+      TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
 
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_prev
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
       ! INTEGER,PARAMETER :: nsurf=7! number of surface types
       ! INTEGER,PARAMETER ::WaterSurf = 7
-      INTEGER :: Diagnose
-      INTEGER :: SnowUse !!Snow part used (1) or not used (0) [-]
+      ! INTEGER :: Diagnose
+      ! INTEGER :: SnowUse !!Snow part used (1) or not used (0) [-]
 
-      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !the surface fraction of non-water [-]
-      REAL(KIND(1D0)), INTENT(in) :: addPipes !additional water in pipes [mm]
-      REAL(KIND(1D0)), INTENT(in) :: addImpervious !water from impervious surfaces of other grids [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(in) :: addVeg !Water from vegetated surfaces of other grids [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(in) :: addWaterBody ! water from water body of other grids [mm] for whole surface area
-      REAL(KIND(1D0)), INTENT(in) :: nsh_real !nsh cast as a real for use in calculations
+      ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !the surface fraction of non-water [-]
+      ! REAL(KIND(1D0)), INTENT(in) :: addPipes !additional water in pipes [mm]
+      ! REAL(KIND(1D0)), INTENT(in) :: addImpervious !water from impervious surfaces of other grids [mm] for whole surface area
+      ! REAL(KIND(1D0)), INTENT(in) :: addVeg !Water from vegetated surfaces of other grids [mm] for whole surface area
+      ! REAL(KIND(1D0)), INTENT(in) :: addWaterBody ! water from water body of other grids [mm] for whole surface area
+      ! REAL(KIND(1D0)), INTENT(in) :: nsh_real !nsh cast as a real for use in calculations
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id !wetness states of each surface [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_id
 
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
       REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm ! drain storage capacity [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf + 1, nsurf - 1) :: WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
@@ -5104,121 +5101,142 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: runoff_per_interval !run-off at each time interval [mm]
       INTEGER :: is
 
-      AdditionalWater = 0.0
-      AdditionalWater = addPipes + addImpervious + addVeg + addWaterBody ![mm]
+      ASSOCIATE ( &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         sfr_surf => siteInfo%sfr_surf, &
+         NonWaterFraction => siteInfo%NonWaterFraction, &
+         nsh_real => timer%nsh_real, &
+         Diagnose => config%Diagnose, &
+         addPipes=>hydroState_prev%addPipes, &
+         addImpervious=>hydroState_prev%addImpervious, &
+         addVeg=>hydroState_prev%addVeg, &
+         addWaterBody=>hydroState_prev%addWaterBody, &
+         SnowUse => config%SnowUse &
+         )
 
-      Diagnose = methodPrm%Diagnose
-      SnowUse = methodPrm%SnowUse
+         AdditionalWater = 0.0
+         AdditionalWater = addPipes + addImpervious + addVeg + addWaterBody ![mm]
 
-      state_id = hydroState_prev%state_surf
-      StoreDrainPrm = phenState_next%StoreDrainPrm
+         ! Diagnose = config%Diagnose
+         ! SnowUse = config%SnowUse
 
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
-      WaterDist(1, 1) = pavedPrm%waterdist%to_paved
-      WaterDist(2, 1) = pavedPrm%waterdist%to_bldg
-      WaterDist(3, 1) = pavedPrm%waterdist%to_evetr
-      WaterDist(4, 1) = pavedPrm%waterdist%to_dectr
-      WaterDist(5, 1) = pavedPrm%waterdist%to_grass
-      WaterDist(6, 1) = pavedPrm%waterdist%to_bsoil
-      WaterDist(7, 1) = pavedPrm%waterdist%to_water
-      WaterDist(8, 1) = pavedPrm%waterdist%to_soilstore
+         state_id = hydroState_prev%state_surf
+         StoreDrainPrm = phenState_next%StoreDrainPrm
 
-      WaterDist(1, 2) = bldgPrm%waterdist%to_paved
-      WaterDist(2, 2) = bldgPrm%waterdist%to_bldg
-      WaterDist(3, 2) = bldgPrm%waterdist%to_evetr
-      WaterDist(4, 2) = bldgPrm%waterdist%to_dectr
-      WaterDist(5, 2) = bldgPrm%waterdist%to_grass
-      WaterDist(6, 2) = bldgPrm%waterdist%to_bsoil
-      WaterDist(7, 2) = bldgPrm%waterdist%to_water
-      WaterDist(8, 2) = bldgPrm%waterdist%to_soilstore
+         ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+         WaterDist(1, 1) = pavedPrm%waterdist%to_paved
+         WaterDist(2, 1) = pavedPrm%waterdist%to_bldg
+         WaterDist(3, 1) = pavedPrm%waterdist%to_evetr
+         WaterDist(4, 1) = pavedPrm%waterdist%to_dectr
+         WaterDist(5, 1) = pavedPrm%waterdist%to_grass
+         WaterDist(6, 1) = pavedPrm%waterdist%to_bsoil
+         WaterDist(7, 1) = pavedPrm%waterdist%to_water
+         WaterDist(8, 1) = pavedPrm%waterdist%to_soilstore
 
-      WaterDist(1, 3) = evetrPrm%waterdist%to_paved
-      WaterDist(2, 3) = evetrPrm%waterdist%to_bldg
-      WaterDist(3, 3) = evetrPrm%waterdist%to_evetr
-      WaterDist(4, 3) = evetrPrm%waterdist%to_dectr
-      WaterDist(5, 3) = evetrPrm%waterdist%to_grass
-      WaterDist(6, 3) = evetrPrm%waterdist%to_bsoil
-      WaterDist(7, 3) = evetrPrm%waterdist%to_water
-      WaterDist(8, 3) = evetrPrm%waterdist%to_soilstore
+         WaterDist(1, 2) = bldgPrm%waterdist%to_paved
+         WaterDist(2, 2) = bldgPrm%waterdist%to_bldg
+         WaterDist(3, 2) = bldgPrm%waterdist%to_evetr
+         WaterDist(4, 2) = bldgPrm%waterdist%to_dectr
+         WaterDist(5, 2) = bldgPrm%waterdist%to_grass
+         WaterDist(6, 2) = bldgPrm%waterdist%to_bsoil
+         WaterDist(7, 2) = bldgPrm%waterdist%to_water
+         WaterDist(8, 2) = bldgPrm%waterdist%to_soilstore
 
-      WaterDist(1, 4) = dectrPrm%waterdist%to_paved
-      WaterDist(2, 4) = dectrPrm%waterdist%to_bldg
-      WaterDist(3, 4) = dectrPrm%waterdist%to_evetr
-      WaterDist(4, 4) = dectrPrm%waterdist%to_dectr
-      WaterDist(5, 4) = dectrPrm%waterdist%to_grass
-      WaterDist(6, 4) = dectrPrm%waterdist%to_bsoil
-      WaterDist(7, 4) = dectrPrm%waterdist%to_water
-      WaterDist(8, 4) = dectrPrm%waterdist%to_soilstore
+         WaterDist(1, 3) = evetrPrm%waterdist%to_paved
+         WaterDist(2, 3) = evetrPrm%waterdist%to_bldg
+         WaterDist(3, 3) = evetrPrm%waterdist%to_evetr
+         WaterDist(4, 3) = evetrPrm%waterdist%to_dectr
+         WaterDist(5, 3) = evetrPrm%waterdist%to_grass
+         WaterDist(6, 3) = evetrPrm%waterdist%to_bsoil
+         WaterDist(7, 3) = evetrPrm%waterdist%to_water
+         WaterDist(8, 3) = evetrPrm%waterdist%to_soilstore
 
-      WaterDist(1, 5) = grassPrm%waterdist%to_paved
-      WaterDist(2, 5) = grassPrm%waterdist%to_bldg
-      WaterDist(3, 5) = grassPrm%waterdist%to_evetr
-      WaterDist(4, 5) = grassPrm%waterdist%to_dectr
-      WaterDist(5, 5) = grassPrm%waterdist%to_grass
-      WaterDist(6, 5) = grassPrm%waterdist%to_bsoil
-      WaterDist(7, 5) = grassPrm%waterdist%to_water
-      WaterDist(8, 5) = grassPrm%waterdist%to_soilstore
+         WaterDist(1, 4) = dectrPrm%waterdist%to_paved
+         WaterDist(2, 4) = dectrPrm%waterdist%to_bldg
+         WaterDist(3, 4) = dectrPrm%waterdist%to_evetr
+         WaterDist(4, 4) = dectrPrm%waterdist%to_dectr
+         WaterDist(5, 4) = dectrPrm%waterdist%to_grass
+         WaterDist(6, 4) = dectrPrm%waterdist%to_bsoil
+         WaterDist(7, 4) = dectrPrm%waterdist%to_water
+         WaterDist(8, 4) = dectrPrm%waterdist%to_soilstore
 
-      WaterDist(1, 6) = bsoilPrm%waterdist%to_paved
-      WaterDist(2, 6) = bsoilPrm%waterdist%to_bldg
-      WaterDist(3, 6) = bsoilPrm%waterdist%to_evetr
-      WaterDist(4, 6) = bsoilPrm%waterdist%to_dectr
-      WaterDist(5, 6) = bsoilPrm%waterdist%to_grass
-      WaterDist(6, 6) = bsoilPrm%waterdist%to_bsoil
-      WaterDist(7, 6) = bsoilPrm%waterdist%to_water
-      WaterDist(8, 6) = bsoilPrm%waterdist%to_soilstore
+         WaterDist(1, 5) = grassPrm%waterdist%to_paved
+         WaterDist(2, 5) = grassPrm%waterdist%to_bldg
+         WaterDist(3, 5) = grassPrm%waterdist%to_evetr
+         WaterDist(4, 5) = grassPrm%waterdist%to_dectr
+         WaterDist(5, 5) = grassPrm%waterdist%to_grass
+         WaterDist(6, 5) = grassPrm%waterdist%to_bsoil
+         WaterDist(7, 5) = grassPrm%waterdist%to_water
+         WaterDist(8, 5) = grassPrm%waterdist%to_soilstore
 
-      ! Retain previous surface state_id and soil moisture state_id
-      ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
-      ! soilstoreOld = soilstore_id !Soil moisture of each surface [mm] for the previous timestep
+         WaterDist(1, 6) = bsoilPrm%waterdist%to_paved
+         WaterDist(2, 6) = bsoilPrm%waterdist%to_bldg
+         WaterDist(3, 6) = bsoilPrm%waterdist%to_evetr
+         WaterDist(4, 6) = bsoilPrm%waterdist%to_dectr
+         WaterDist(5, 6) = bsoilPrm%waterdist%to_grass
+         WaterDist(6, 6) = bsoilPrm%waterdist%to_bsoil
+         WaterDist(7, 6) = bsoilPrm%waterdist%to_water
+         WaterDist(8, 6) = bsoilPrm%waterdist%to_soilstore
 
-      !============= Grid-to-grid runoff =============
-      ! Calculate additional water coming from other grids
-      ! i.e. the variables addImpervious, addVeg, addWaterBody, addPipes
-      !call RunoffFromGrid(GridFromFrac)  !!Need to code between-grid water transfer
+         ! Retain previous surface state_id and soil moisture state_id
+         ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
+         ! soilstoreOld = soilstore_id !Soil moisture of each surface [mm] for the previous timestep
 
-      ! Sum water coming from other grids (these are expressed as depths over the whole surface)
+         !============= Grid-to-grid runoff =============
+         ! Calculate additional water coming from other grids
+         ! i.e. the variables addImpervious, addVeg, addWaterBody, addPipes
+         !call RunoffFromGrid(GridFromFrac)  !!Need to code between-grid water transfer
 
-      ! Initialise runoff in pipes
-      runoffPipes = addPipes !Water flowing in pipes from other grids. QUESTION: No need for scaling?
+         ! Sum water coming from other grids (these are expressed as depths over the whole surface)
+
+         ! Initialise runoff in pipes
+         runoffPipes = addPipes !Water flowing in pipes from other grids. QUESTION: No need for scaling?
       !! CHECK p_i
-      runoff_per_interval = addPipes !pipe plor added to total runoff.
+         runoff_per_interval = addPipes !pipe plor added to total runoff.
 
-      !================== Drainage ===================
-      ! Calculate drainage for each soil subsurface (excluding water body)
-      IF (Diagnose == 1) WRITE (*, *) 'Calling Drainage...'
+         !================== Drainage ===================
+         ! Calculate drainage for each soil subsurface (excluding water body)
+         IF (Diagnose == 1) WRITE (*, *) 'Calling Drainage...'
 
-      IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
-         DO is = 1, nsurf - 1
+         IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
+            DO is = 1, nsurf - 1
 
-            CALL drainage( &
-               is, & ! input:
-               state_id(is), &
-               StoreDrainPrm(6, is), &
-               StoreDrainPrm(2, is), &
-               StoreDrainPrm(3, is), &
-               StoreDrainPrm(4, is), &
-               nsh_real, &
-               drain(is)) ! output
+               CALL drainage( &
+                  is, & ! input:
+                  state_id(is), &
+                  StoreDrainPrm(6, is), &
+                  StoreDrainPrm(2, is), &
+                  StoreDrainPrm(3, is), &
+                  StoreDrainPrm(4, is), &
+                  nsh_real, &
+                  drain(is)) ! output
 
-            ! !HCW added and changed to StoreDrainPrm(6,is) here 20 Feb 2015
-            ! drain_per_tstep=drain_per_tstep+(drain(is)*sfr_surf(is)/NonWaterFraction)   !No water body included
-         END DO
-         drain_per_tstep = DOT_PRODUCT(drain(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction !No water body included
-      ELSE
-         drain(1:nsurf - 1) = 0
-         drain_per_tstep = 0
-      END IF
+               ! !HCW added and changed to StoreDrainPrm(6,is) here 20 Feb 2015
+               ! drain_per_tstep=drain_per_tstep+(drain(is)*sfr_surf(is)/NonWaterFraction)   !No water body included
+            END DO
+            drain_per_tstep = DOT_PRODUCT(drain(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction !No water body included
+         ELSE
+            drain(1:nsurf - 1) = 0
+            drain_per_tstep = 0
+         END IF
 
-      drain(WaterSurf) = 0 ! Set drainage from water body to zero
+         drain(WaterSurf) = 0 ! Set drainage from water body to zero
 
-      ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
-      IF (Diagnose == 1) WRITE (*, *) 'Calling ReDistributeWater...'
-      ! CALL ReDistributeWater
-      !Calculates AddWater(is)
-      CALL ReDistributeWater( &
-         SnowUse, WaterDist, sfr_surf, Drain, & ! input:
-         frac_water2runoff, AddWater) ! output
+         ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
+         IF (Diagnose == 1) WRITE (*, *) 'Calling ReDistributeWater...'
+         ! CALL ReDistributeWater
+         !Calculates AddWater(is)
+         CALL ReDistributeWater( &
+            SnowUse, WaterDist, sfr_surf, Drain, & ! input:
+            frac_water2runoff, AddWater) ! output
+
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_Water_DTS
 !=======================================================================
