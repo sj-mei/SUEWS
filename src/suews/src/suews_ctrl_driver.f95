@@ -3592,7 +3592,7 @@ CONTAINS
       timer, config, forcing, siteInfo, & ! input
       nlayer, snowState_prev, &
       solarState, atmState, &
-      heatState_out, &
+      heatState, &
       phenState, &
       ldown, & !output
       qn_surf, qn_roof, qn_wall, &
@@ -3628,7 +3628,7 @@ CONTAINS
 
       TYPE(SNOW_STATE), INTENT(IN) :: snowState_prev
       TYPE(SNOW_STATE), INTENT(OUT) :: snowState_next
-      TYPE(HEAT_STATE), INTENT(IN) :: heatState_out
+      TYPE(HEAT_STATE), INTENT(IN) :: heatState
       TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
       ! TYPE(PHENOLOGY_STATE), INTENT(OUT) :: phenState
 
@@ -3752,9 +3752,9 @@ CONTAINS
          ZENITH_deg => solarState%ZENITH_deg, &
          ea_hPa => atmState%ea_hPa, &
          fcld => atmState%fcld, &
-         tsfc_surf => heatState_out%tsfc_surf, &
-         tsfc_roof => heatState_out%tsfc_roof, &
-         tsfc_wall => heatState_out%tsfc_wall, &
+         tsfc_surf => heatState%tsfc_surf, &
+         tsfc_roof => heatState%tsfc_roof, &
+         tsfc_wall => heatState%tsfc_wall, &
          spartacusPrm => siteInfo%spartacus, &
          spartacusLayerPrm => siteInfo%spartacus_layer, &
          NARP_TRANS_SITE => siteInfo%NARP_TRANS_SITE, &
