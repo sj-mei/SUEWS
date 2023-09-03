@@ -2126,7 +2126,7 @@ CONTAINS
                config, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
                siteInfo, &
-               phenState_prev, &
+               phenState, &
                ! TODO: collect output into a derived type for model output
                roughnessState)
 
@@ -2277,10 +2277,9 @@ CONTAINS
                IF (i_iter == 1) THEN
                   !Calculate QH and QE from LUMPS in the first iteration of each time step
                   CALL LUMPS_cal_QHQE_DTS( &
-                     lumpsPrm, & !input
-                     config, qn, qf, qs, forcing, VegFraction, avcp, lv_J_kg, &
-                     tstep_real, nsh_real, &
-                     pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
+                  timer, config, forcing, siteInfo, & ! input
+                     heatstate, &
+                     atmState, &
                      phenState, &
                      ! TODO: collect output into a derived type
                      QH_LUMPS, & !output

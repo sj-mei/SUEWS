@@ -375,11 +375,10 @@ CONTAINS
    ! END SUBROUTINE LUMPS_cal_QHQE_DTS
 
    SUBROUTINE LUMPS_cal_QHQE_DTS( &
-      lumpsPrm, & !input
-      methodPrm, qn1, qf, qs, forcing, VegFraction, avcp, lv_J_kg, &
-      tstep_real, nsh_real, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
-      phenState_next, &
+      timer, config, forcing, siteInfo, & ! input
+      heatState,&
+      atmState,&
+      phenState, &
       QH_LUMPS, & !output
       QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, Veg_Fr_temp, VegPhenLumps)
       !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
@@ -395,27 +394,32 @@ CONTAINS
       ! SG Feb 2012     - added some comments
       ! --------------------------------------------------------------
       USE meteo, ONLY: psyc_const, slope_svp, slopeice_svp
-      USE SUEWS_DEF_DTS, ONLY: LUMPS_PRM, SUEWS_CONFIG, SUEWS_FORCING, &
+      USE SUEWS_DEF_DTS, ONLY: LUMPS_PRM, SUEWS_TIMER,SUEWS_SITE, SUEWS_CONFIG, SUEWS_FORCING, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
-                               PHENOLOGY_STATE
+                               PHENOLOGY_STATE,atm_state,HEAT_STATE
 
       IMPLICIT NONE
+       TYPE(SUEWS_TIMER), INTENT(in) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(in) :: config
+      TYPE(SUEWS_FORCING), INTENT(in) :: forcing
+      TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
 
-      TYPE(LUMPS_PRM), INTENT(IN) :: lumpsPrm
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
+      ! TYPE(LUMPS_PRM), INTENT(IN) :: lumpsPrm
+      ! TYPE(SUEWS_CONFIG), INTENT(IN) :: config
 
-      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
+      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
+      TYPE(atm_state), INTENT(IN) :: atmState
+      TYPE(HEAT_STATE), INTENT(IN) :: heatState
 
       INTEGER, PARAMETER :: ndays = 366
       INTEGER, PARAMETER :: NSurf = 7
@@ -427,24 +431,24 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: Qm = 0 !Snow melt associated heat flux
 
       INTEGER :: veg_type !Defines how vegetation is calculated for LUMPS
-      INTEGER :: SnowUse ! option of snow module
+      ! INTEGER :: SnowUse ! option of snow module
 
-      REAL(KIND(1D0)), INTENT(in) :: qn1 ! net all-wave radiation
-      REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux
-      REAL(KIND(1D0)), INTENT(in) :: qs ! storage heat flux
+      ! REAL(KIND(1D0)), INTENT(in) :: qn ! net all-wave radiation
+      ! REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux
+      ! REAL(KIND(1D0)), INTENT(in) :: qs ! storage heat flux
       REAL(KIND(1D0)) :: Temp_C !air temperature in degC
-      REAL(KIND(1D0)), INTENT(in) :: VegFraction !Vegetation fraction from land area
-      REAL(KIND(1D0)), INTENT(in) :: avcp !Specific heat capacity
+      ! REAL(KIND(1D0)), INTENT(in) :: VegFraction !Vegetation fraction from land area
+      ! REAL(KIND(1D0)), INTENT(in) :: avcp !Specific heat capacity
       REAL(KIND(1D0)) :: Press_hPa !Station air pressure in hPa
-      REAL(KIND(1D0)), INTENT(in) :: lv_J_kg !Latent heat of vaporization in [J kg-1]
-      REAL(KIND(1D0)), INTENT(in) :: tstep_real ! time step in REAL
+      ! REAL(KIND(1D0)), INTENT(in) :: lv_J_kg !Latent heat of vaporization in [J kg-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: tstep_real ! time step in REAL
       REAL(KIND(1D0)) :: DRAINRT !Drainage rate of the water bucket [mm hr-1]
-      REAL(KIND(1D0)), INTENT(in) :: nsh_real ! real cast of Number of timesteps per hour
+      ! REAL(KIND(1D0)), INTENT(in) :: nsh_real ! real cast of Number of timesteps per hour
       REAL(KIND(1D0)) :: Precip !Precipitation per timestep [mm]
       REAL(KIND(1D0)) :: RainMaxRes !Maximum water bucket reservoir [mm]
       REAL(KIND(1D0)) :: RAINCOVER ! LUMPS Limit when surface totally wet [mm]
 
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
       REAL(KIND(1D0)), DIMENSION(NVEGSURF) :: LAI_id_prev ! LAI(id-1,iv), LAI at the beginning of today
 
@@ -468,11 +472,34 @@ CONTAINS
                          beta, & !Beta parameter used in LUMPS QH and QE calculations [W m-2]
                          alpha_qhqe, RAINRES, RainBucket, tlv
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
+      ASSOCIATE(&
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         sfr_surf => siteInfo%sfr_surf, &
+         VegFraction => siteInfo%vegFraction, &
+
+         tstep_real => timer%tstep_real, &
+         nsh_real => timer%nsh_real, &
+
+         avcp => atmState%avcp, &
+         lv_J_kg => atmState%lv_J_kg, &
+         qn => heatState%qn, &
+         qf => heatState%qf, &
+         qs => heatState%qs, &
+
+          SnowUse => config%SnowUse,&
+         lumpsPrm=>siteInfo%lumps &
+      )
 
       veg_type = lumpsPrm%veg_type
       DRAINRT = lumpsPrm%drainrt
 
-      SnowUse = methodPrm%SnowUse
+      ! SnowUse = config%SnowUse
 
       Temp_C = forcing%Temp_C
       Press_hPa = forcing%pres
@@ -480,9 +507,9 @@ CONTAINS
       RainMaxRes = lumpsPrm%rainmaxres
       RAINCOVER = lumpsPrm%raincover
 
-      LAI_id_prev = phenState_next%LAI_id
+      LAI_id_prev = phenState%LAI_id
 
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+      ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
       LAImax = [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax]
       LAImin = [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin]
 
@@ -569,10 +596,10 @@ CONTAINS
       END IF
 
       ! Calculate the actual heat fluxes
-      QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn1 + qf - qs - Qm) - beta !Eq 3, Grimmond & Oke (2002)
+      QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn + qf - qs - Qm) - beta !Eq 3, Grimmond & Oke (2002)
       !If LUMPS has had a problem, we still need a value
-      IF (QH_LUMPS == NAN) QH_LUMPS = qn1*0.2
-      QE_LUMPS = (alpha_qhqe/(1 + psyc_s)*(qn1 + qf - qs - Qm)) + beta !Eq 4, Grimmond & Oke (2002)
+      IF (QH_LUMPS == NAN) QH_LUMPS = qn*0.2
+      QE_LUMPS = (alpha_qhqe/(1 + psyc_s)*(qn + qf - qs - Qm)) + beta !Eq 4, Grimmond & Oke (2002)
 
       ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018
       !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
@@ -586,6 +613,7 @@ CONTAINS
 
       RETURN
 
+      end associate
    END SUBROUTINE LUMPS_cal_QHQE_DTS
 
 END MODULE lumps_module
