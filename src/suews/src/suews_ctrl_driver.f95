@@ -1924,7 +1924,7 @@ CONTAINS
             vsmd => hydroState%vsmd, &
             runoff_per_interval => hydroState%runoff_per_interval, &
             smd_nsurf => hydroState%smd_nsurf, &
-            runoffSoil => hydroState%runoffSoil, &
+            runoffSoil_surf => hydroState%runoffSoil, &
             wu_surf => hydroState%wu_surf, &
             runoffAGveg => hydroState%runoffAGveg, &
             runoffAGimpervious => hydroState%runoffAGimpervious, &
@@ -2391,13 +2391,10 @@ CONTAINS
                ! Now water is allowed to move horizontally between the soil stores
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
                CALL SUEWS_cal_HorizontalSoilWater_DTS( &
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & ! input
-                  siteInfo, & !Surface area of the study area [m2]
-                  NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
-                  tstep_real, & !tstep cast as a real for use in calculations
+                  timer, config, forcing, siteInfo, & ! input
                   ! TODO: collect inout into a derived type for model state
                   hydroState_next, & ! inout:!Soil moisture of each surface type [mm]
-                  runoffSoil, & !Soil runoff from each soil sub-surface [mm]
+                  runoffSoil_surf, & !Soil runoff from each soil sub-surface [mm]
                   ! TODO: collect output into a derived type for model output
                   runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
                   )
