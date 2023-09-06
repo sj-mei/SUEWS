@@ -1251,41 +1251,34 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_SoilState_DTS
 
    SUBROUTINE SUEWS_cal_SoilState_DTS( &
-      methodPrm, forcing, NonWaterFraction, SoilMoistCap, & !input
+      timer, config, forcing, siteInfo, & ! input
+      SoilMoistCap, & !input
       surf_chang_per_tstep, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
       hydroState_next, hydroState_prev, &
       smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
-      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HYDRO_STATE
 
       IMPLICIT NONE
+
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       ! INTEGER, PARAMETER :: nsurf = 7
 
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
-      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_next, hydroState_prev
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
-
-      INTEGER :: SMDMethod
-      REAL(KIND(1D0)) :: xsmd
-      REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
       REAL(KIND(1D0)), INTENT(in) :: SoilMoistCap
 
       REAL(KIND(1D0)), INTENT(in) :: surf_chang_per_tstep
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id !Soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstoreOld !Soil moisture of each surface type from previous timestep [mm]
 
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
+      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap !Capacity of soil store for each surface [mm]
 
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: smd_nsurf !smd for each surface
@@ -1296,60 +1289,87 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: NotUsed = -999
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER :: is
+      ASSOCIATE ( &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         ehcPrm => siteInfo%ehc, &
+         sfr_surf => siteInfo%sfr_surf, &
+         sfr_roof => siteInfo%sfr_roof, &
+         sfr_wall => siteInfo%sfr_wall, &
+         SurfaceArea => siteInfo%SurfaceArea, &
+         snowPrm => siteInfo%snow, &
+         PipeCapacity => siteInfo%PipeCapacity, &
+         RunoffToWater => siteInfo%RunoffToWater, &
+         FlowChange => siteInfo%FlowChange, &
+         PervFraction => siteInfo%PervFraction, &
+         vegfraction => siteInfo%vegfraction, &
+         NonWaterFraction => siteInfo%NonWaterFraction, &
+         tstep_real => timer%tstep_real, &
+         xsmd => forcing%xsmd, &
+         SMDMethod => config%SMDMethod, &
+         Diagnose => config%Diagnose &
+         )
 
-      SMDMethod = methodPrm%SMDMethod
+         ! SMDMethod = config%SMDMethod
 
-      xsmd = forcing%xsmd
+         ! xsmd = forcing%xsmd
 
-      soilstore_id = hydroState_next%soilstore_surf
-      soilstoreOld = hydroState_prev%soilstore_surf
+         soilstore_id = hydroState_next%soilstore_surf
+         soilstoreOld = hydroState_prev%soilstore_surf
 
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+         ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
-      SoilStoreCap(1) = pavedPrm%soil%soilstorecap
-      SoilStoreCap(2) = bldgPrm%soil%soilstorecap
-      SoilStoreCap(3) = evetrPrm%soil%soilstorecap
-      SoilStoreCap(4) = dectrPrm%soil%soilstorecap
-      SoilStoreCap(5) = grassPrm%soil%soilstorecap
-      SoilStoreCap(6) = bsoilPrm%soil%soilstorecap
-      SoilStoreCap(7) = waterPrm%soil%soilstorecap
+         SoilStoreCap(1) = pavedPrm%soil%soilstorecap
+         SoilStoreCap(2) = bldgPrm%soil%soilstorecap
+         SoilStoreCap(3) = evetrPrm%soil%soilstorecap
+         SoilStoreCap(4) = dectrPrm%soil%soilstorecap
+         SoilStoreCap(5) = grassPrm%soil%soilstorecap
+         SoilStoreCap(6) = bsoilPrm%soil%soilstorecap
+         SoilStoreCap(7) = waterPrm%soil%soilstorecap
 
-      SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
-      IF (NonWaterFraction /= 0) THEN !Fixed for water surfaces only
-         DO is = 1, nsurf - 1 !No water body included
-            SoilState = SoilState + (soilstore_id(is)*sfr_surf(is)/NonWaterFraction)
-            IF (SoilState < 0) THEN
-               CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
-            ELSEIF (SoilState > SoilMoistCap) THEN
+         SoilState = 0 !Area-averaged soil moisture [mm] for whole surface
+         IF (NonWaterFraction /= 0) THEN !Fixed for water surfaces only
+            DO is = 1, nsurf - 1 !No water body included
+               SoilState = SoilState + (soilstore_id(is)*sfr_surf(is)/NonWaterFraction)
+               IF (SoilState < 0) THEN
+                  CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
+               ELSEIF (SoilState > SoilMoistCap) THEN
                CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState > capacity (just added surface is) ', SoilState, NotUsed, is)
-               !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
-            END IF
-         END DO !end loop over surfaces
-         ! SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
-         ! IF (SoilState < 0) THEN
-         !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
-         ! ELSEIF (SoilState > SoilMoistCap) THEN
-         !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState > capacity (just added surface is) ', SoilState, NotUsed, is)
-         !    !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
-         ! ENDIF
-      END IF
+                  !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
+               END IF
+            END DO !end loop over surfaces
+            ! SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+            ! IF (SoilState < 0) THEN
+            !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
+            ! ELSEIF (SoilState > SoilMoistCap) THEN
+            !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState > capacity (just added surface is) ', SoilState, NotUsed, is)
+            !    !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
+            ! ENDIF
+         END IF
 
-      ! Calculate soil moisture deficit
-      smd = SoilMoistCap - SoilState !One value for whole surface
-      smd_nsurf = SoilStoreCap - soilstore_id !smd for each surface
+         ! Calculate soil moisture deficit
+         smd = SoilMoistCap - SoilState !One value for whole surface
+         smd_nsurf = SoilStoreCap - soilstore_id !smd for each surface
 
-      ! Soil stores can change after horizontal water movements
-      ! Calculate total change in surface and soil state_id
-      tot_chang_per_tstep = surf_chang_per_tstep !Change in surface state_id
-      DO is = 1, (nsurf - 1) !No soil for water surface (so change in soil moisture is zero)
-         tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilstoreOld(is))*sfr_surf(is)) !Add change in soil state_id
-      END DO
+         ! Soil stores can change after horizontal water movements
+         ! Calculate total change in surface and soil state_id
+         tot_chang_per_tstep = surf_chang_per_tstep !Change in surface state_id
+         DO is = 1, (nsurf - 1) !No soil for water surface (so change in soil moisture is zero)
+            tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilstoreOld(is))*sfr_surf(is)) !Add change in soil state_id
+         END DO
 
-      IF (SMDMethod > 0) THEN ! use observed value
-         !  smd_nsurf=NAN
-         smd_nsurf = NAN
-         smd = xsmd
-      END IF
+         IF (SMDMethod > 0) THEN ! use observed value
+            !  smd_nsurf=NAN
+            smd_nsurf = NAN
+            smd = xsmd
+         END IF
+
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_SoilState_DTS
    !===================================================================================
@@ -1928,7 +1948,6 @@ CONTAINS
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
-
 
       TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState_next
 

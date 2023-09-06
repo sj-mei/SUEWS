@@ -2367,7 +2367,7 @@ CONTAINS
                      EvapMethod, &
                      atmState, &
                      qf, &
-                     hydroState,&
+                     hydroState, &
                      phenState, &
                      hydroState_prev, QN_surf, qs_surf, & ! input:
                      QN_roof, qs_roof, & ! input:
@@ -2402,9 +2402,9 @@ CONTAINS
                !========== Calculate soil moisture ============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
                CALL SUEWS_cal_SoilState_DTS( &
-                  config, forcing, NonWaterFraction, SoilMoistCap, & !input
+                  timer, config, forcing, siteInfo, & ! input
+                  SoilMoistCap, & !input
                   surf_chang_per_tstep, &
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
                   hydroState_next, hydroState_prev, &
                   smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
@@ -6484,7 +6484,7 @@ CONTAINS
       EvapMethod, &
       atmState, &
       qf, &
-      hydroState,&
+      hydroState, &
       phenState_next, &
       hydroState_prev, qn_surf, qs_surf, & ! input:
       qn_roof, qs_roof, & ! input:
@@ -6513,7 +6513,7 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(atm_state), INTENT(IN) :: atmState
-      type(HYDRO_STATE), INTENT(IN) :: hydroState
+      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
 
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_prev
@@ -6663,8 +6663,8 @@ CONTAINS
          addVeg => hydroState%addVeg, &
          addWaterBody => hydroState%addWaterBody, &
          AddWater_surf => hydroState%AddWater, &
-         drain_surf=> hydroState%drain_surf, &
-         frac_water2runoff_surf => hydroState%frac_water2runoff,&
+         drain_surf => hydroState%drain_surf, &
+         frac_water2runoff_surf => hydroState%frac_water2runoff, &
          storageheatmethod => config%storageheatmethod, &
          addimpervious => hydroState_prev%addimpervious, &
          Diagnose => config%Diagnose &
