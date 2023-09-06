@@ -1803,7 +1803,7 @@ CONTAINS
       ! ####################################################################################
       ! fixed parameters - may be removed in the future; TS 31 Aug 2023
       !method to calculate qh [-]
-      INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
+
       ! INTEGER, PARAMETER :: nz = 90 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
       ! INTEGER, PARAMETER :: DiagQN = 0 ! flag for printing diagnostic info for QN module during runtime [N/A] ! not used and will be removed
@@ -2411,13 +2411,11 @@ CONTAINS
                !============ Sensible heat flux ===============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
                CALL SUEWS_cal_QH_DTS( &
-                  qhMethod, nlayer, config, & !input
-                  qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
-                  pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-                  sfr_roof, sfr_wall, &
+                  timer, config, forcing, siteInfo, & ! input
+                  nlayer, & !input
+                  qn, qf, QmRain, qe, qs, QmFreez, qm, &
                   heatState_out, &
-                  forcing, &
-                  RA_h, &
+                  atmState, &
                   ! TODO: collect output into a derived type for model output
                   qh, qh_residual, qh_resist, & !output
                   qh_resist_surf, qh_resist_roof, qh_resist_wall)
@@ -7018,36 +7016,30 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_QH_DTS
 
    SUBROUTINE SUEWS_cal_QH_DTS( &
-      QHMethod, nlayer, methodPrm, & !input
-      qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-      sfr_roof, sfr_wall, &
+      timer, config, forcing, siteInfo, & ! input
+      nlayer, & !input
+      qn, qf, QmRain, qe, qs, QmFreez, qm, &
       heatState_out, &
-      forcing, &
-      RA, &
+      atmState, &
       qh, qh_residual, qh_resist, & !output
       qh_resist_surf, qh_resist_roof, qh_resist_wall)
 
-      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE
 
       IMPLICIT NONE
 
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
       TYPE(HEAT_STATE), INTENT(IN) :: heatState_out
+      ! TYPE(HEAT_STATE), INTENT(out) :: heatState
+      TYPE(atm_state), INTENT(IN) :: atmState
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
-
-      INTEGER, INTENT(in) :: QHMethod ! option for QH calculation: 1, residual; 2, resistance-based
-      INTEGER :: storageheatmethod !Determines method for calculating storage heat flux ΔQS [-]
+      INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
       INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
 
       REAL(KIND(1D0)), INTENT(in) :: qn !net all-wave radiation [W m-2]
@@ -7057,79 +7049,114 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: QmFreez !heat related to freezing of surface store [W m-2]
       REAL(KIND(1D0)), INTENT(in) :: qm !Snowmelt-related heat [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
-      REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
+      ! REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
       ! REAL(KIND(1D0)), INTENT(in) :: tsurf
-      REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
-      REAL(KIND(1D0)), INTENT(in) :: RA !aerodynamic resistance [s m-1]
+      ! REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
 
       REAL(KIND(1D0)), INTENT(out) :: qh ! turtbulent sensible heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: qh_resist !resistance bnased sensible heat flux [W m-2]
       REAL(KIND(1D0)), INTENT(out) :: qh_residual ! residual based sensible heat flux [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf !surface temperature [degC]
-
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !surface fraction ratio [-]
-
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf !resistance-based sensible heat flux [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !surface fraction of roof [-]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof !roof surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof !resistance-based sensible heat flux of roof [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !surface fraction of wall [-]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_wall !wall surface temperature[degC]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall !resistance-based sensible heat flux of wall [W m-2]
+
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !surface fraction of roof [-]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof !roof surface temperature [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !surface fraction of wall [-]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_wall !wall surface temperature[degC]
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER :: is
 
-      storageheatmethod = methodPrm%StorageHeatMethod
+      ASSOCIATE ( &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         ehcPrm => siteInfo%ehc, &
+         nlayer => siteInfo%nlayer, &
+         sfr_surf => siteInfo%sfr_surf, &
+         sfr_roof => siteInfo%sfr_roof, &
+         sfr_wall => siteInfo%sfr_wall, &
+         SurfaceArea => siteInfo%SurfaceArea, &
+         snowPrm => siteInfo%snow, &
+         PipeCapacity => siteInfo%PipeCapacity, &
+         RunoffToWater => siteInfo%RunoffToWater, &
+         FlowChange => siteInfo%FlowChange, &
+         PervFraction => siteInfo%PervFraction, &
+         vegfraction => siteInfo%vegfraction, &
+         NonWaterFraction => siteInfo%NonWaterFraction, &
+         tstep_real => timer%tstep_real, &
+         tsfc_surf => heatState_out%tsfc_surf, &
+         tsfc_roof => heatState_out%tsfc_roof, &
+         tsfc_wall => heatState_out%tsfc_wall, &
+         xsmd => forcing%xsmd, &
+         Temp_C => forcing%Temp_C, &
+         RA_h => atmState%RA_h, &
+         avdens => atmState%avdens, &
+         avcp => atmState%avcp, &
+         ! qh_resist_surf => heatState%qh_resist_surf, &
+         ! qh_resist_roof => heatState%qh_resist_roof, &
+         ! qh_resist_wall => heatState%qh_resist_wall, &
+         ! qh => heatState%qh, &
+         ! qh_resist => heatState%qh_resist, &
+         ! qh_residual => heatState%qh_residual, &
+         SMDMethod => config%SMDMethod, &
+         storageheatmethod => config%StorageHeatMethod, &
+         Diagnose => config%Diagnose &
+         )
 
-      Temp_C = forcing%Temp_C
+         ! tsfc_surf = heatState_out%tsfc_surf
+         ! tsfc_roof = heatState_out%tsfc_roof
+         ! tsfc_wall = heatState_out%tsfc_wall
 
-      tsfc_surf = heatState_out%tsfc_surf
-      tsfc_roof = heatState_out%tsfc_roof
-      tsfc_wall = heatState_out%tsfc_wall
+         ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+         ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
+         qh_residual = (qn + qf + QmRain) - (qe + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
 
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
-      ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
-      qh_residual = (qn + qf + QmRain) - (qe + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
-
-      ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
-      ! Aerodynamic-Resistance-based method
-      DO is = 1, nsurf
-         IF (RA /= 0) THEN
-            qh_resist_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA
-         ELSE
-            qh_resist_surf(is) = NAN
-         END IF
-      END DO
-      IF (storageheatmethod == 5) THEN
-         DO is = 1, nlayer
-            IF (RA /= 0) THEN
-               qh_resist_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
-               qh_resist_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA
+         ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
+         ! Aerodynamic-Resistance-based method
+         DO is = 1, nsurf
+            IF (RA_h /= 0) THEN
+               qh_resist_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA_h
             ELSE
                qh_resist_surf(is) = NAN
             END IF
          END DO
+         IF (storageheatmethod == 5) THEN
+            DO is = 1, nlayer
+               IF (RA_h /= 0) THEN
+                  qh_resist_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA_h
+                  qh_resist_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA_h
+               ELSE
+                  qh_resist_surf(is) = NAN
+               END IF
+            END DO
 
-         ! IF (RA /= 0) THEN
-         !    qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
-         ! ELSE
-         !    qh_resist = NAN
-         ! END IF
-         ! aggregate QH of roof and wall
-         qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
-      END IF
+            ! IF (RA /= 0) THEN
+            !    qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
+            ! ELSE
+            !    qh_resist = NAN
+            ! END IF
+            ! aggregate QH of roof and wall
+            qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
+         END IF
 
-      qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
+         qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
 
-      ! choose output QH
-      SELECT CASE (QHMethod)
-      CASE (1)
-         qh = qh_residual
-      CASE (2)
-         qh = qh_resist
-      END SELECT
+         ! choose output QH
+         SELECT CASE (QHMethod)
+         CASE (1)
+            qh = qh_residual
+         CASE (2)
+            qh = qh_resist
+         END SELECT
+
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_QH_DTS
 !========================================================================
