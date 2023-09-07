@@ -2590,6 +2590,7 @@ CONTAINS
 
             hydroState%soilstore_surf = hydroState_next%soilstore_surf
             hydroState%state_surf = hydroState_next%state_surf
+            hydroState%WUDay_id = hydroState_next%WUDay_id
             ! phenState%alb = phenState_next%alb
             ! phenState%GDD_id = phenState_next%GDD_id
             ! phenState%SDD_id = phenState_next%SDD_id
@@ -2606,7 +2607,7 @@ CONTAINS
             ! Tair_av = Tair_av_next
             ! forcing%Tair = Tair_av_next
             anthroEmisState%HDD_id = anthroEmisState_next%HDD_id
-            hydroState%WUDay_id = hydroState_next%WUDay_id
+            ! hydroState%WUDay_id = hydroState_next%WUDay_id
 
             IF (config%StorageHeatMethod == 5) THEN
                ! ESTM_ehc related
