@@ -2531,14 +2531,12 @@ CONTAINS
             ! ============ BIOGENIC CO2 FLUX =======================
             IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_BiogenCO2_DTS...'
             CALL SUEWS_cal_BiogenCO2_DTS( &
-               forcing, config, conductancePrm, &
-               dectime, Fc_anthro, &
-               gfunc, timer, phenState, &
-               pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-               t2_C, snowState, &
+               timer, config, forcing, siteInfo, & ! input
+               atmState, &
+               phenState, &
+               snowState, &
                vsmd, &
-               ! TODO: collect output into a derived type for model output
-               Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
+               anthroEmisState) ! inout
 
             ! calculations of diagnostics end
             !==============================================================
@@ -3078,97 +3076,99 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_BiogenCO2
 
    SUBROUTINE SUEWS_cal_BiogenCO2_DTS( &
-      forcing, methodPrm, conductancePrm, &
-      dectime, Fc_anthro, &
-      gfunc, timer, phenState_next, &
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-      t2_C, snowState, &
+      timer, config, forcing, siteInfo, & ! input
+      atmState, &
+      phenState, &
+      snowState, &
       vsmd, &
-      Fc, Fc_biogen, Fc_photo, Fc_respi) ! output:
+      anthroEmisState) ! inout
 
       USE SUEWS_DEF_DTS, ONLY: LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                SUEWS_CONFIG, CONDUCTANCE_PRM, SUEWS_FORCING, &
-                               SUEWS_TIMER, PHENOLOGY_STATE, SNOW_STATE
+                               SUEWS_TIMER, PHENOLOGY_STATE, SNOW_STATE, atm_state
 
       IMPLICIT NONE
 
-      TYPE(SUEWS_FORCING), INTENT(in) :: forcing
-      TYPE(SUEWS_CONFIG), INTENT(in) :: methodPrm
-      TYPE(CONDUCTANCE_PRM), INTENT(in) :: conductancePrm
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(atm_state), INTENT(IN) :: atmState
+      TYPE(anthroEmis_STATE), INTENT(INout) :: anthroEmisState
+
+      ! TYPE(CONDUCTANCE_PRM), INTENT(in) :: conductancePrm
+      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
       TYPE(SNOW_STATE), INTENT(IN) :: snowState
-      TYPE(SUEWS_TIMER), INTENT(in) :: timer
 
-      TYPE(LC_PAVED_PRM), INTENT(in) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(in) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(in) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(in) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(in) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(in) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(in) :: waterPrm
+      ! TYPE(LC_PAVED_PRM), INTENT(in) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(in) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(in) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(in) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(in) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(in) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(in) :: waterPrm
 
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: alpha_bioCO2 !The mean apparent ecosystem quantum. Represents the initial slope of the light-response curve [-]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: alpha_enh_bioCO2 !part of the alpha coefficient related to the fraction of vegetation [-]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: beta_bioCO2 !The light-saturated gross photosynthesis of the canopy [umol m-2 s-1 ]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: beta_enh_bioCO2 !Part of the beta coefficient related to the fraction of vegetation [umol m-2 s-1 ]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAI_id !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
 
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAI_id !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: alpha_bioCO2 !The mean apparent ecosystem quantum. Represents the initial slope of the light-response curve [-]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: alpha_enh_bioCO2 !part of the alpha coefficient related to the fraction of vegetation [-]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: beta_bioCO2 !The light-saturated gross photosynthesis of the canopy [umol m-2 s-1 ]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: beta_enh_bioCO2 !Part of the beta coefficient related to the fraction of vegetation [umol m-2 s-1 ]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMin !Min LAI [m2 m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMax !Max LAI [m2 m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: min_res_bioCO2 !minimum soil respiration rate (for cold-temperature limit) [umol m-2 s-1]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: resp_a !Respiration coefficient a
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: resp_b !Respiration coefficient b - related to air temperature dependency
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: theta_bioCO2 !The convexity of the curve at light saturation [-]
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: MaxConductance !max conductance [mm s-1]
 
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMin !Min LAI [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMax !Max LAI [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: min_res_bioCO2 !minimum soil respiration rate (for cold-temperature limit) [umol m-2 s-1]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: resp_a !Respiration coefficient a
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: resp_b !Respiration coefficient b - related to air temperature dependency
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: theta_bioCO2 !The convexity of the curve at light saturation [-]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !surface fraction ratio [-]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !surface fraction ratio [-]
-
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac !surface fraction of snow cover [-]
-
-      REAL(KIND(1D0)), DIMENSION(3) :: MaxConductance !max conductance [mm s-1]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac !surface fraction of snow cover [-]
 
       ! INTEGER, INTENT(in) :: BSoilSurf
       ! INTEGER, INTENT(in) :: ConifSurf
       ! INTEGER, INTENT(in) :: DecidSurf
-      INTEGER :: Diagnose
-      INTEGER :: EmissionsMethod
+      ! INTEGER :: Diagnose
+      ! INTEGER :: EmissionsMethod
       ! INTEGER, INTENT(in) :: GrassSurf
-      INTEGER :: gsmodel !choice of gs parameterisation (1 = Ja11, 2 = Wa16)
-      INTEGER :: id !day of year [-]
-      INTEGER :: it ! hour [H]
+      ! INTEGER :: gsmodel !choice of gs parameterisation (1 = Ja11, 2 = Wa16)
+      ! INTEGER :: id !day of year [-]
+      ! INTEGER :: it ! hour [H]
       ! INTEGER, INTENT(in) :: ivConif
       ! INTEGER, INTENT(in) :: ivDecid
       ! INTEGER, INTENT(in) :: ivGrass
       ! INTEGER, INTENT(in) :: nsurf
       ! INTEGER, INTENT(in) :: NVegSurf
-      INTEGER :: SMDMethod !Method of measured soil moisture [-]
+      ! INTEGER :: SMDMethod !Method of measured soil moisture [-]
 
-      REAL(KIND(1D0)) :: avkdn !Average downwelling shortwave radiation [W m-2]
-      REAL(KIND(1D0)) :: avRh !average relative humidity (%) [-]
-      REAL(KIND(1D0)) :: dectime !decimal time [-]
-      REAL(KIND(1D0)), INTENT(in) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
-      REAL(KIND(1D0)) :: G_max !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_k !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_q_base !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_q_shape !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_t !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)) :: G_sm !Fitted parameters related to surface res. calculations
-      REAL(KIND(1D0)), INTENT(in) :: gfunc
-      REAL(KIND(1D0)) :: Kmax !annual maximum hourly solar radiation [W m-2]
-      REAL(KIND(1D0)) :: Press_hPa !air pressure [hPa]
-      REAL(KIND(1D0)) :: S1 !a parameter related to soil moisture dependence [-]
-      REAL(KIND(1D0)) :: S2 !a parameter related to soil moisture dependence [mm]
-      REAL(KIND(1D0)), INTENT(in) :: t2_C !modelled 2 meter air temperature [degC]
-      REAL(KIND(1D0)) :: Temp_C ! measured air temperature [degC]
-      REAL(KIND(1D0)) :: TH !Maximum temperature limit [degC]
-      REAL(KIND(1D0)) :: TL !Minimum temperature limit [degC]
+      ! REAL(KIND(1D0)) :: avkdn !Average downwelling shortwave radiation [W m-2]
+      ! REAL(KIND(1D0)) :: avRh !average relative humidity (%) [-]
+      ! REAL(KIND(1D0)) :: dectime !decimal time [-]
+      ! REAL(KIND(1D0)), INTENT(in) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
+      ! REAL(KIND(1D0)) :: G_max !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_k !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_q_base !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_q_shape !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_t !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)) :: G_sm !Fitted parameters related to surface res. calculations
+      ! REAL(KIND(1D0)), INTENT(in) :: gfunc
+      ! REAL(KIND(1D0)) :: Kmax !annual maximum hourly solar radiation [W m-2]
+      ! REAL(KIND(1D0)) :: Press_hPa !air pressure [hPa]
+      ! REAL(KIND(1D0)) :: S1 !a parameter related to soil moisture dependence [-]
+      ! REAL(KIND(1D0)) :: S2 !a parameter related to soil moisture dependence [mm]
+      ! REAL(KIND(1D0)), INTENT(in) :: t2_C !modelled 2 meter air temperature [degC]
+      ! REAL(KIND(1D0)) :: Temp_C ! measured air temperature [degC]
+      ! REAL(KIND(1D0)) :: TH !Maximum temperature limit [degC]
+      ! REAL(KIND(1D0)) :: TL !Minimum temperature limit [degC]
       REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
-      REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit [mm]
+      ! REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit [mm]
 
-      REAL(KIND(1D0)), INTENT(out) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: Fc_photo !co2 flux from photosynthesis [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: Fc !total co2 flux [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_photo !co2 flux from photosynthesis [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc !total co2 flux [umol m-2 s-1]
 
       REAL(KIND(1D0)) :: gfunc2 !gdq*gtemp*gs*gq for photosynthesis calculations (With modelled 2 meter temperature)
       REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
@@ -3185,91 +3185,149 @@ CONTAINS
       REAL(KIND(1D0)) :: dummy10 !Surface Layer Conductance [mm s-1]
       REAL(KIND(1D0)) :: dummy11 !Surface resistance [s m-1]
 
-      avkdn = forcing%kdown
-      avRh = forcing%RH
-      Press_hPa = forcing%Pres
-      Temp_C = forcing%Temp_C
-      xsmd = forcing%xsmd
+      ASSOCIATE ( &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         evetrPrm => siteInfo%lc_evetr, &
+         dectrPrm => siteInfo%lc_dectr, &
+         grassPrm => siteInfo%lc_grass, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water, &
+         ehcPrm => siteInfo%ehc, &
+         nlayer => siteInfo%nlayer, &
+         sfr_surf => siteInfo%sfr_surf, &
+         sfr_roof => siteInfo%sfr_roof, &
+         sfr_wall => siteInfo%sfr_wall, &
+         SurfaceArea => siteInfo%SurfaceArea, &
+         snowPrm => siteInfo%snow, &
+         PipeCapacity => siteInfo%PipeCapacity, &
+         RunoffToWater => siteInfo%RunoffToWater, &
+         FlowChange => siteInfo%FlowChange, &
+         PervFraction => siteInfo%PervFraction, &
+         vegfraction => siteInfo%vegfraction, &
+         NonWaterFraction => siteInfo%NonWaterFraction, &
+         zMeas => siteInfo%z, &
+         conductancePrm => siteInfo%conductance, &
+         tstep_real => timer%tstep_real, &
+         avkdn => forcing%kdown, &
+         xsmd => forcing%xsmd, &
+         Temp_C => forcing%Temp_C, &
+         avU1 => forcing%U, &
+         avRH => forcing%RH, &
+         Press_hPa => forcing%pres, &
+         RA_h => atmState%RA_h, &
+         avdens => atmState%avdens, &
+         avcp => atmState%avcp, &
+         lv_J_kg => atmState%lv_J_kg, &
+         L_MOD => atmState%L_MOD, &
+         t2_C => atmState%t2_C, &
+         LAI_id => phenState%LAI_id, &
+         gfunc => phenState%gfunc, &
+         id => timer%id, &
+         it => timer%it, &
+         dectime => timer%dectime, &
+         Fc_anthro => anthroEmisState%Fc_anthro, &
+         Fc => anthroEmisState%Fc, &
+         Fc_biogen => anthroEmisState%Fc_biogen, &
+         Fc_photo => anthroEmisState%Fc_photo, &
+         Fc_respi => anthroEmisState%Fc_respi, &
+         SnowFrac => snowState%SnowFrac, &
+         SMDMethod => config%SMDMethod, &
+         storageheatmethod => config%StorageHeatMethod, &
+         DiagMethod => config%DiagMethod, &
+         StabilityMethod => config%StabilityMethod, &
+         EmissionsMethod => config%EmissionsMethod, &
+         Diagnose => config%Diagnose &
+         )
 
-      Diagnose = methodPrm%Diagnose
-      EmissionsMethod = methodPrm%EmissionsMethod
-      SMDMethod = methodPrm%SMDMethod
-      SnowFrac = snowState%SnowFrac
+         ASSOCIATE ( &
+            alpha_bioCO2 => [evetrPrm%bioco2%alpha_bioco2, dectrPrm%bioco2%alpha_bioco2, grassPrm%bioco2%alpha_bioco2], &
+            alpha_enh_bioCO2 => &
+            [evetrPrm%bioco2%alpha_enh_bioco2, dectrPrm%bioco2%alpha_enh_bioco2, grassPrm%bioco2%alpha_enh_bioco2], &
+            beta_bioCO2 => [evetrPrm%bioco2%beta_bioCO2, dectrPrm%bioco2%beta_bioCO2, grassPrm%bioco2%beta_bioCO2], &
+            beta_enh_bioCO2 => &
+            [evetrPrm%bioco2%beta_enh_bioco2, dectrPrm%bioco2%beta_enh_bioco2, grassPrm%bioco2%beta_enh_bioco2], &
+            LAIMin => [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin], &
+            LAIMax => [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax], &
+            min_res_bioCO2 => &
+            [evetrPrm%bioco2%min_res_bioCO2, dectrPrm%bioco2%min_res_bioCO2, grassPrm%bioco2%min_res_bioCO2], &
+            resp_a => [evetrPrm%bioco2%resp_a, dectrPrm%bioco2%resp_a, grassPrm%bioco2%resp_a], &
+            resp_b => [evetrPrm%bioco2%resp_b, dectrPrm%bioco2%resp_b, grassPrm%bioco2%resp_b], &
+            theta_bioCO2 => [evetrPrm%bioco2%theta_bioCO2, dectrPrm%bioco2%theta_bioCO2, grassPrm%bioco2%theta_bioco2], &
+            MaxConductance => [evetrPrm%MaxConductance, dectrPrm%MaxConductance, grassPrm%MaxConductance], &
+            G_max => conductancePrm%g_max, &
+            G_k => conductancePrm%g_k, &
+            G_q_base => conductancePrm%g_q_base, &
+            G_q_shape => conductancePrm%g_q_shape, &
+            G_t => conductancePrm%g_t, &
+            G_sm => conductancePrm%g_sm, &
+            gsmodel => conductancePrm%gsmodel, &
+            Kmax => conductancePrm%Kmax, &
+            S1 => conductancePrm%S1, &
+            S2 => conductancePrm%S2, &
+            TH => conductancePrm%TH, &
+            TL => conductancePrm%TL &
+            )
+            !    alpha_bioCO2 = [evetrPrm%bioco2%alpha_bioco2, dectrPrm%bioco2%alpha_bioco2, grassPrm%bioco2%alpha_bioco2]
+            !   alpha_enh_bioCO2 = [evetrPrm%bioco2%alpha_enh_bioco2, dectrPrm%bioco2%alpha_enh_bioco2, grassPrm%bioco2%alpha_enh_bioco2]
+            !    beta_bioCO2 = [evetrPrm%bioco2%beta_bioCO2, dectrPrm%bioco2%beta_bioCO2, grassPrm%bioco2%beta_bioCO2]
+            !    beta_enh_bioCO2 = [evetrPrm%bioco2%beta_enh_bioco2, dectrPrm%bioco2%beta_enh_bioco2, grassPrm%bioco2%beta_enh_bioco2]
+            !    LAIMin = [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin]
+            !    LAIMax = [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax]
+            !    min_res_bioCO2 = [evetrPrm%bioco2%min_res_bioCO2, dectrPrm%bioco2%min_res_bioCO2, grassPrm%bioco2%min_res_bioCO2]
+            !    resp_a = [evetrPrm%bioco2%resp_a, dectrPrm%bioco2%resp_a, grassPrm%bioco2%resp_a]
+            !    resp_b = [evetrPrm%bioco2%resp_b, dectrPrm%bioco2%resp_b, grassPrm%bioco2%resp_b]
+            !    theta_bioCO2 = [evetrPrm%bioco2%theta_bioCO2, dectrPrm%bioco2%theta_bioCO2, grassPrm%bioco2%theta_bioco2]
+            !    MaxConductance = [evetrPrm%MaxConductance, dectrPrm%MaxConductance, grassPrm%MaxConductance]
 
-      G_max = conductancePrm%g_max
-      G_k = conductancePrm%g_k
-      G_q_base = conductancePrm%g_q_base
-      G_q_shape = conductancePrm%g_q_shape
-      G_t = conductancePrm%g_t
-      G_sm = conductancePrm%g_sm
-      gsmodel = conductancePrm%gsmodel
-      Kmax = conductancePrm%Kmax
-      S1 = conductancePrm%S1
-      S2 = conductancePrm%S2
-      TH = conductancePrm%TH
-      TL = conductancePrm%TL
+            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
-      LAI_id = phenState_next%LAI_id
+            IF (EmissionsMethod >= 11) THEN
 
-      id = timer%id
-      it = timer%it
+               IF (gsmodel == 3 .OR. gsmodel == 4) THEN ! With modelled 2 meter temperature
+                  ! Call LUMPS_cal_AtmMoist for dq and SurfaceResistance for gfunc with 2 meter temperature
+                  ! If modelled 2 meter temperature is too different from measured air temperature then
+                  ! use temp_c
+                  IF (ABS(Temp_C - t2_C) > 5) THEN
+                     t2 = Temp_C
+                  ELSE
+                     t2 = t2_C
+                  END IF
 
-      alpha_bioCO2 = [evetrPrm%bioco2%alpha_bioco2, dectrPrm%bioco2%alpha_bioco2, grassPrm%bioco2%alpha_bioco2]
-      alpha_enh_bioCO2 = [evetrPrm%bioco2%alpha_enh_bioco2, dectrPrm%bioco2%alpha_enh_bioco2, grassPrm%bioco2%alpha_enh_bioco2]
-      beta_bioCO2 = [evetrPrm%bioco2%beta_bioCO2, dectrPrm%bioco2%beta_bioCO2, grassPrm%bioco2%beta_bioCO2]
-      beta_enh_bioCO2 = [evetrPrm%bioco2%beta_enh_bioco2, dectrPrm%bioco2%beta_enh_bioco2, grassPrm%bioco2%beta_enh_bioco2]
-      LAIMin = [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin]
-      LAIMax = [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax]
-      min_res_bioCO2 = [evetrPrm%bioco2%min_res_bioCO2, dectrPrm%bioco2%min_res_bioCO2, grassPrm%bioco2%min_res_bioCO2]
-      resp_a = [evetrPrm%bioco2%resp_a, dectrPrm%bioco2%resp_a, grassPrm%bioco2%resp_a]
-      resp_b = [evetrPrm%bioco2%resp_b, dectrPrm%bioco2%resp_b, grassPrm%bioco2%resp_b]
-      theta_bioCO2 = [evetrPrm%bioco2%theta_bioCO2, dectrPrm%bioco2%theta_bioCO2, grassPrm%bioco2%theta_bioco2]
-      MaxConductance = [evetrPrm%MaxConductance, dectrPrm%MaxConductance, grassPrm%MaxConductance]
-      sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+                  CALL cal_AtmMoist( &
+                     t2, Press_hPa, avRh, dectime, & ! input:
+                     dummy1, dummy2, & ! output:
+                     dummy3, dummy4, dummy5, dummy6, dq, dummy7, dummy8, dummy9)
 
-      IF (EmissionsMethod >= 11) THEN
+                  CALL SurfaceResistance( &
+                     id, it, & ! input:
+                     SMDMethod, SnowFrac, sfr_surf, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
+                     LAIMax, LAI_id, gsModel, Kmax, &
+                     G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
+                     dummy10, dummy10, dummy10, dummy10, dummy10, & ! output:
+                     gfunc2, dummy10, dummy11) ! output:
+               END IF
 
-         IF (gsmodel == 3 .OR. gsmodel == 4) THEN ! With modelled 2 meter temperature
-            ! Call LUMPS_cal_AtmMoist for dq and SurfaceResistance for gfunc with 2 meter temperature
-            ! If modelled 2 meter temperature is too different from measured air temperature then
-            ! use temp_c
-            IF (ABS(Temp_C - t2_C) > 5) THEN
-               t2 = Temp_C
-            ELSE
-               t2 = t2_C
+               ! Calculate CO2 fluxes from biogenic components
+               IF (Diagnose == 1) WRITE (*, *) 'Calling CO2_biogen...'
+               CALL CO2_biogen( &
+                  alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
+                  ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
+                  id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
+                  NVegSurf, resp_a, resp_b, sfr_surf, SnowFrac, t2, Temp_C, theta_bioCO2, &
+                  Fc_biogen, Fc_photo, Fc_respi) ! output:
             END IF
 
-            CALL cal_AtmMoist( &
-               t2, Press_hPa, avRh, dectime, & ! input:
-               dummy1, dummy2, & ! output:
-               dummy3, dummy4, dummy5, dummy6, dq, dummy7, dummy8, dummy9)
+            IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
+               Fc_biogen = 0
+               Fc_photo = 0
+               Fc_respi = 0
+            END IF
 
-            CALL SurfaceResistance( &
-               id, it, & ! input:
-               SMDMethod, SnowFrac, sfr_surf, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
-               LAIMax, LAI_id, gsModel, Kmax, &
-               G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
-               dummy10, dummy10, dummy10, dummy10, dummy10, & ! output:
-               gfunc2, dummy10, dummy11) ! output:
-         END IF
+            Fc = Fc_anthro + Fc_biogen
 
-         ! Calculate CO2 fluxes from biogenic components
-         IF (Diagnose == 1) WRITE (*, *) 'Calling CO2_biogen...'
-         CALL CO2_biogen( &
-            alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, & ! input:
-            ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
-            id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
-            NVegSurf, resp_a, resp_b, sfr_surf, SnowFrac, t2, Temp_C, theta_bioCO2, &
-            Fc_biogen, Fc_photo, Fc_respi) ! output:
-      END IF
-
-      IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
-         Fc_biogen = 0
-         Fc_photo = 0
-         Fc_respi = 0
-      END IF
-
-      Fc = Fc_anthro + Fc_biogen
+         END ASSOCIATE
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_BiogenCO2_DTS
 !========================================================================
