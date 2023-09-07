@@ -1782,7 +1782,8 @@ CONTAINS
       TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
 
       ! anthropogenic heat related:
-      TYPE(anthroEmis_STATE) :: anthroEmisState_prev, anthroEmisState_next
+      ! TYPE(anthroEmis_STATE) :: anthroEmisState_prev, anthroEmisState_next
+      TYPE(anthroEmis_STATE) :: anthroEmisState_prev
 
       ! input arrays: standard suews surfaces
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
@@ -2086,7 +2087,7 @@ CONTAINS
             ! Tair_av_next = Tair_av
             Tair_av_next = forcing%Tair_av_5d
             phenState_next = phenState
-            anthroEmisState_next = anthroEmisState
+            ! anthroEmisState = anthroEmisState
 
             ! initialise output variables
             dataOutLineSnow = -999.
@@ -2210,7 +2211,7 @@ CONTAINS
                   phenState, &
                   anthroEmisState_prev, & !input
                   hydroState_prev, & !input
-                  anthroEmisState_next, & !output
+                  anthroEmisState, & !output
                   phenState, &
                   hydroState_next) !output
 
@@ -2226,13 +2227,13 @@ CONTAINS
                !=================Gives the external and internal water uses per timestep=================
                CALL SUEWS_cal_WaterUse_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  anthroEmisState_next, hydroState_next, &
+                  anthroEmisState, hydroState_next, &
                   wu_surf, wu_int, wu_ext) ! output:
 
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
                CALL SUEWS_cal_AnthropogenicEmission_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  anthroEmisState_next, &
+                  anthroEmisState, &
                   QF, &
                   QF_SAHP, &
                   Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
@@ -2422,35 +2423,12 @@ CONTAINS
 
                !============ Sensible heat flux end ===============
 
-               ! residual heat flux
-               ! PRINT *, 'residual surf: ', qn_surf + qf - qs_surf - qe_surf - qh_surf
-               ! PRINT *, 'residual roof: ', qn_roof + qf - qs_roof - qe_roof - qh_roof
-               ! PRINT *, 'residual wall: ', qn_wall + qf - qs_wall - qe_wall - qh_wall
 
                !============ Sensible heat flux end===============
 
                QH_surf = QN_surf + qf - qs_surf - qe_surf
                QH_roof = QN_roof + qf - qs_roof - qe_roof
                QH_wall = QN_wall + qf - qs_wall - qe_wall
-
-               ! IF (config%diagnose == 1) THEN
-               !    PRINT *, 'qn_surf before QH back env.:', QN_surf
-               !    PRINT *, 'qf before QH back env.:', qf
-               !    PRINT *, 'qs_surf before QH back env.:', qs_surf
-               !    PRINT *, 'qe_surf before QH back env.:', qe_surf
-               !    PRINT *, 'qh_surf before QH back env.:', QH_surf
-
-               !    PRINT *, 'qn_roof before QH back env.:', QN_roof
-               !    PRINT *, 'qs_roof before QH back env.:', qs_roof
-               !    PRINT *, 'qe_roof before QH back env.:', qe_roof
-               !    PRINT *, 'qh_roof before QH back env.:', QH_roof
-
-               ! END IF
-               ! IF (flag_print_debug) PRINT *, 'qn_surf before qh_cal', QN_surf
-               ! IF (flag_print_debug) PRINT *, 'qs_surf before qh_cal', qs_surf
-               ! IF (flag_print_debug) PRINT *, 'qe_surf before qh_cal', qe_surf
-               ! IF (flag_print_debug) PRINT *, 'QH_surf beofre qh_cal', qh_surf
-               ! IF (flag_print_debug) PRINT *, 'Tair beofre qh_cal', forcing%temp_c
 
                !============ calculate surface temperature ===============
                TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, forcing%temp_c)
@@ -2576,10 +2554,6 @@ CONTAINS
             IF (config%Diagnose == 1) WRITE (*, *) 'update inout variables with new values...'
             !==============================================================
             ! update inout variables with new values
-            ! ohmState%qn_av = ohmState_next%qn_av
-            ! ohmState%dqndt = ohmState_next%dqndt
-            ! ohmState%qn_s_av = ohmState_next%qn_s_av
-            ! ohmState%dqnsdt = ohmState_next%dqnsdt
             snowState%SnowfallCum = snowState_next%SnowfallCum
             snowState%SnowAlb = snowState_next%SnowAlb
             snowState%IceFrac = snowState_next%IceFrac
@@ -2591,23 +2565,9 @@ CONTAINS
             hydroState%soilstore_surf = hydroState_next%soilstore_surf
             hydroState%state_surf = hydroState_next%state_surf
             hydroState%WUDay_id = hydroState_next%WUDay_id
-            ! phenState%alb = phenState_next%alb
-            ! phenState%GDD_id = phenState_next%GDD_id
-            ! phenState%SDD_id = phenState_next%SDD_id
-            ! phenState%LAI_id = phenState_next%LAI_id
-            ! phenState%DecidCap_id = phenState_next%DecidCap_id
-            ! phenState%albDecTr_id = phenState_next%albDecTr_id
-            ! phenState%albEveTr_id = phenState_next%albEveTr_id
-            ! phenState%albGrass_id = phenState_next%albGrass_id
-            ! phenState%porosity_id = phenState_next%porosity_id
-            ! phenState%StoreDrainPrm = phenState_next%StoreDrainPrm
-            ! phenState%Tmin_id = phenState_next%Tmin_id
-            ! phenState%Tmax_id = phenState_next%Tmax_id
-            ! phenState%lenday_id = phenState_next%lenday_id
-            ! Tair_av = Tair_av_next
-            ! forcing%Tair = Tair_av_next
-            anthroEmisState%HDD_id = anthroEmisState_next%HDD_id
-            ! hydroState%WUDay_id = hydroState_next%WUDay_id
+
+            ! anthroEmisState%HDD_id = anthroEmisState%HDD_id
+
 
             IF (config%StorageHeatMethod == 5) THEN
                ! ESTM_ehc related
