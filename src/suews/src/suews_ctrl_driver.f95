@@ -1783,7 +1783,6 @@ CONTAINS
 
       ! anthropogenic heat related:
       ! TYPE(anthroEmis_STATE) :: anthroEmisState_prev, anthroEmisState_next
-      TYPE(anthroEmis_STATE) :: anthroEmisState_prev
 
       ! input arrays: standard suews surfaces
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
@@ -2074,7 +2073,7 @@ CONTAINS
             hydroState_prev = hydroState
             Tair_av_prev = forcing%Tair_av_5d
             phenState_prev = phenState
-            anthroEmisState_prev = anthroEmisState
+            ! anthroEmisState_prev = anthroEmisState
 
             ! ESTM_ehc related
             ! save initial values of inout variables
@@ -2209,7 +2208,7 @@ CONTAINS
                CALL SUEWS_cal_DailyState_DTS_x( &
                   timer, config, forcing, siteInfo, & !input
                   phenState, &
-                  anthroEmisState_prev, & !input
+                  anthroEmisState, & !input
                   hydroState_prev, & !input
                   anthroEmisState, & !output
                   phenState, &
