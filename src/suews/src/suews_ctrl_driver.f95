@@ -1781,8 +1781,6 @@ CONTAINS
       ! phenology related:
       TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
 
-      ! anthropogenic heat related:
-      ! TYPE(anthroEmis_STATE) :: anthroEmisState_prev, anthroEmisState_next
 
       ! input arrays: standard suews surfaces
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
