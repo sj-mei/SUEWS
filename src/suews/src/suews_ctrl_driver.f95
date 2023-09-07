@@ -1781,7 +1781,6 @@ CONTAINS
       ! phenology related:
       TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
 
-
       ! input arrays: standard suews surfaces
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
 
@@ -2420,7 +2419,6 @@ CONTAINS
 
                !============ Sensible heat flux end ===============
 
-
                !============ Sensible heat flux end===============
 
                QH_surf = QN_surf + qf - qs_surf - qe_surf
@@ -2522,14 +2520,10 @@ CONTAINS
             !============ roughness sub-layer diagonostics ===============
             IF (config%Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
             CALL RSLProfile_DTS( &
-               config, &
-               zH, z0m, zdm, z0v, &
-               L_MOD, &
-               pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, &
-               FAI, PAI, &
-               RA_h, &
-               avcp, lv_J_kg, avdens, &
-               forcing, siteInfo, qh, qe, & ! input
+               timer, config, forcing, siteInfo, & ! input
+               atmState, &
+               roughnessState, &
+               qh, qe, & ! input
                ! TODO: collect output into a derived type for model output
                T2_C, q2_gkg, U10_ms, RH2, & !output
                dataoutLineRSL) ! output
@@ -2564,7 +2558,6 @@ CONTAINS
             hydroState%WUDay_id = hydroState_next%WUDay_id
 
             ! anthroEmisState%HDD_id = anthroEmisState%HDD_id
-
 
             IF (config%StorageHeatMethod == 5) THEN
                ! ESTM_ehc related
