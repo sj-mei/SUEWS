@@ -1799,19 +1799,9 @@ CONTAINS
 
       ! ####################################################################################
       ! fixed parameters - may be removed in the future; TS 31 Aug 2023
-      !method to calculate qh [-]
 
-      ! INTEGER, PARAMETER :: nz = 90 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
+      ! REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
 
-      ! INTEGER, PARAMETER :: DiagQN = 0 ! flag for printing diagnostic info for QN module during runtime [N/A] ! not used and will be removed
-      INTEGER, PARAMETER :: DiagQS = 0 ! flag for printing diagnostic info for QS module during runtime [N/A] ! not used and will be removed
-      INTEGER, PARAMETER :: EvapMethod = 2 ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
-      INTEGER, PARAMETER :: LAImethod = 1 ! boolean to determine if calculate LAI [-]
-      REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
-
-      ! TYPE(solar_State) :: solarState ! solar related model states
-      ! TYPE(ROUGHNESS_STATE) :: roughnessState ! roughness related info
-      ! TYPE(atm_state) :: atmState ! atmospheric state
       ASSOCIATE ( &
          ! modState
          anthroEmisState => modState%anthroemisState, &
@@ -2258,7 +2248,7 @@ CONTAINS
                   timer, config, forcing, siteInfo, & !input
                   nlayer, &
                   hydroState_prev, &
-                  snowState, DiagQS, &
+                  snowState, &
                   anthroEmisState, Ts5mindata_ir, qf, qn, &
                   solarState, ldown, &
                   phenState, &
@@ -2330,23 +2320,18 @@ CONTAINS
                   CALL SUEWS_cal_snow_DTS( &
                      timer, config, forcing, siteInfo, & ! input
                      nlayer, & !input
-                     EvapMethod, &
-                     avdens, avcp, lv_J_kg, lvS_J_kg, &
-                     RAsnow, psyc_hPa, sIce_hPa, &
-                     qn_ind_snow, kup_ind_snow, deltaQi, Tsurf_ind_snow, &
-                     snowState_next, &
-                     addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
-                     RS, RA_h, RB, &
+                     atmState, &
+                     heatState, &
+                     addimpervious, &
                      addVeg, &
                      drain_surf, &
-                     Tsurf_ind, &
                      AddWater, frac_water2runoff, phenState, &
                      snowState_prev, & ! input:
                      hydroState_prev, & ! input:
-                     QN_surf, qs_surf, &
                      ! TODO: collect output into a derived type for model output - snow related can be done later
                      SnowRemoval, & ! snow specific output
                      hydroState_next, & ! general output:
+                     snowState_next, &
                      state_per_tstep, NWstate_per_tstep, &
                      qe, qe_surf, qe_roof, qe_wall, &
                      swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
@@ -2361,7 +2346,6 @@ CONTAINS
                   CALL SUEWS_cal_QE_DTS( &
                      timer, config, forcing, siteInfo, & ! input
                      nlayer, & !input
-                     EvapMethod, &
                      atmState, &
                      qf, &
                      hydroState, &
@@ -2581,10 +2565,13 @@ CONTAINS
             IF (sfr_surf(BldgSurf) > 0) THEN
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
                PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
-               CALL BEERS_cal_main_DTS(timer, dectime, PAI, FAI, forcing, ldown, &
-                                       TSfc_C, siteInfo, ZENITH_deg, azimuth_deg, &
-                                       pavedPrm, bldgPrm, phenState, &
-                                       dataOutLineBEERS) ! output
+               CALL BEERS_cal_main_DTS( &
+                  timer, config, forcing, siteInfo, & ! input
+                  roughnessState, &
+                  heatState, &
+                  solarState, &
+                  phenState, &
+                  dataOutLineBEERS) ! output
             ELSE
                dataOutLineBEERS = set_nan(dataOutLineBEERS)
             END IF
@@ -3101,74 +3088,7 @@ CONTAINS
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
       TYPE(SNOW_STATE), INTENT(IN) :: snowState
 
-      ! TYPE(LC_PAVED_PRM), INTENT(in) :: pavedPrm
-      ! TYPE(LC_BLDG_PRM), INTENT(in) :: bldgPrm
-      ! TYPE(LC_EVETR_PRM), INTENT(in) :: evetrPrm
-      ! TYPE(LC_DECTR_PRM), INTENT(in) :: dectrPrm
-      ! TYPE(LC_GRASS_PRM), INTENT(in) :: grassPrm
-      ! TYPE(LC_BSOIL_PRM), INTENT(in) :: bsoilPrm
-      ! TYPE(LC_WATER_PRM), INTENT(in) :: waterPrm
-
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAI_id !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
-
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: alpha_bioCO2 !The mean apparent ecosystem quantum. Represents the initial slope of the light-response curve [-]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: alpha_enh_bioCO2 !part of the alpha coefficient related to the fraction of vegetation [-]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: beta_bioCO2 !The light-saturated gross photosynthesis of the canopy [umol m-2 s-1 ]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: beta_enh_bioCO2 !Part of the beta coefficient related to the fraction of vegetation [umol m-2 s-1 ]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMin !Min LAI [m2 m-2]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMax !Max LAI [m2 m-2]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: min_res_bioCO2 !minimum soil respiration rate (for cold-temperature limit) [umol m-2 s-1]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: resp_a !Respiration coefficient a
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: resp_b !Respiration coefficient b - related to air temperature dependency
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: theta_bioCO2 !The convexity of the curve at light saturation [-]
-      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: MaxConductance !max conductance [mm s-1]
-
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !surface fraction ratio [-]
-
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac !surface fraction of snow cover [-]
-
-      ! INTEGER, INTENT(in) :: BSoilSurf
-      ! INTEGER, INTENT(in) :: ConifSurf
-      ! INTEGER, INTENT(in) :: DecidSurf
-      ! INTEGER :: Diagnose
-      ! INTEGER :: EmissionsMethod
-      ! INTEGER, INTENT(in) :: GrassSurf
-      ! INTEGER :: gsmodel !choice of gs parameterisation (1 = Ja11, 2 = Wa16)
-      ! INTEGER :: id !day of year [-]
-      ! INTEGER :: it ! hour [H]
-      ! INTEGER, INTENT(in) :: ivConif
-      ! INTEGER, INTENT(in) :: ivDecid
-      ! INTEGER, INTENT(in) :: ivGrass
-      ! INTEGER, INTENT(in) :: nsurf
-      ! INTEGER, INTENT(in) :: NVegSurf
-      ! INTEGER :: SMDMethod !Method of measured soil moisture [-]
-
-      ! REAL(KIND(1D0)) :: avkdn !Average downwelling shortwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: avRh !average relative humidity (%) [-]
-      ! REAL(KIND(1D0)) :: dectime !decimal time [-]
-      ! REAL(KIND(1D0)), INTENT(in) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
-      ! REAL(KIND(1D0)) :: G_max !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_k !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_q_base !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_q_shape !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_t !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_sm !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)), INTENT(in) :: gfunc
-      ! REAL(KIND(1D0)) :: Kmax !annual maximum hourly solar radiation [W m-2]
-      ! REAL(KIND(1D0)) :: Press_hPa !air pressure [hPa]
-      ! REAL(KIND(1D0)) :: S1 !a parameter related to soil moisture dependence [-]
-      ! REAL(KIND(1D0)) :: S2 !a parameter related to soil moisture dependence [mm]
-      ! REAL(KIND(1D0)), INTENT(in) :: t2_C !modelled 2 meter air temperature [degC]
-      ! REAL(KIND(1D0)) :: Temp_C ! measured air temperature [degC]
-      ! REAL(KIND(1D0)) :: TH !Maximum temperature limit [degC]
-      ! REAL(KIND(1D0)) :: TL !Minimum temperature limit [degC]
       REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
-      ! REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit [mm]
-
-      ! REAL(KIND(1D0)), INTENT(out) :: Fc_biogen !biogenic CO2 flux [umol m-2 s-1]
-      ! REAL(KIND(1D0)), INTENT(out) :: Fc_photo !co2 flux from photosynthesis [umol m-2 s-1]
-      ! REAL(KIND(1D0)), INTENT(out) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
-      ! REAL(KIND(1D0)), INTENT(out) :: Fc !total co2 flux [umol m-2 s-1]
 
       REAL(KIND(1D0)) :: gfunc2 !gdq*gtemp*gs*gq for photosynthesis calculations (With modelled 2 meter temperature)
       REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
@@ -3268,19 +3188,6 @@ CONTAINS
             TH => conductancePrm%TH, &
             TL => conductancePrm%TL &
             )
-            !    alpha_bioCO2 = [evetrPrm%bioco2%alpha_bioco2, dectrPrm%bioco2%alpha_bioco2, grassPrm%bioco2%alpha_bioco2]
-            !   alpha_enh_bioCO2 = [evetrPrm%bioco2%alpha_enh_bioco2, dectrPrm%bioco2%alpha_enh_bioco2, grassPrm%bioco2%alpha_enh_bioco2]
-            !    beta_bioCO2 = [evetrPrm%bioco2%beta_bioCO2, dectrPrm%bioco2%beta_bioCO2, grassPrm%bioco2%beta_bioCO2]
-            !    beta_enh_bioCO2 = [evetrPrm%bioco2%beta_enh_bioco2, dectrPrm%bioco2%beta_enh_bioco2, grassPrm%bioco2%beta_enh_bioco2]
-            !    LAIMin = [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin]
-            !    LAIMax = [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax]
-            !    min_res_bioCO2 = [evetrPrm%bioco2%min_res_bioCO2, dectrPrm%bioco2%min_res_bioCO2, grassPrm%bioco2%min_res_bioCO2]
-            !    resp_a = [evetrPrm%bioco2%resp_a, dectrPrm%bioco2%resp_a, grassPrm%bioco2%resp_a]
-            !    resp_b = [evetrPrm%bioco2%resp_b, dectrPrm%bioco2%resp_b, grassPrm%bioco2%resp_b]
-            !    theta_bioCO2 = [evetrPrm%bioco2%theta_bioCO2, dectrPrm%bioco2%theta_bioCO2, grassPrm%bioco2%theta_bioco2]
-            !    MaxConductance = [evetrPrm%MaxConductance, dectrPrm%MaxConductance, grassPrm%MaxConductance]
-
-            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
             IF (EmissionsMethod >= 11) THEN
 
@@ -4157,7 +4064,7 @@ CONTAINS
       timer, config, forcing, siteInfo, & ! input
       nlayer, &
       hydroState_prev, &
-      snowState_prev, DiagQS, &
+      snowState_prev, &
       anthroHeatState, Ts5mindata_ir, qf, qn, &
       solarstate, ldown, &
       phenState, &
@@ -4213,9 +4120,9 @@ CONTAINS
       ! INTEGER :: Diagnose
       ! INTEGER, INTENT(in)  ::nsh              ! number of timesteps in one hour
       ! INTEGER :: SnowUse ! option for snow related calculations [-]
-      INTEGER :: DiagQS ! diagnostic option [-]
+      ! INTEGER :: DiagQS ! diagnostic option [-]
       ! INTEGER :: EmissionsMethod ! AnthropHeat option [-]
-      INTEGER :: nlayer ! number of vertical levels in urban canopy [-]
+      INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy [-]
 
       REAL(KIND(1D0)) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients [-]
       REAL(KIND(1D0)) :: OHM_threshSW(nsurf + 1) ! Temperature threshold determining whether summer/winter OHM coefficients are applied [degC]
@@ -4334,6 +4241,7 @@ CONTAINS
          Diagnose => config%Diagnose, &
          SnowUse => config%SnowUse, &
          EmissionsMethod => config%EmissionsMethod, &
+         DiagQS => config%DiagQS, &
          Gridiv => siteInfo%Gridiv, &
          qs_obs => forcing%qs_obs, &
          avkdn => forcing%kdown, &
@@ -5649,21 +5557,16 @@ CONTAINS
    SUBROUTINE SUEWS_cal_snow_DTS( &
       timer, config, forcing, siteInfo, & ! input
       nlayer, & !input
-      EvapMethod, &
-      avdens, avcp, lv_J_kg, lvS_J_kg, &
-      RAsnow, psyc_hPa, sIce_hPa, &
-      qn_ind_snow, kup_ind_snow, deltaQi, Tsurf_ind_snow, &
-      snowState_next, &
-      addimpervious, qn_snowfree, qf, qs, vpd_hPa, s_hPa, &
-      RS, RA, RB, &
+      atmState, & ! input:
+      heatState,&
+      addimpervious, &
       addVeg, &
       drain, &
-      Tsurf_ind, &
       AddWater, addwaterrunoff, phenState_next, &
       snowState_prev, hydroState_prev, & ! input:
-      qn_surf, qs_surf, &
       SnowRemoval, & ! snow specific output:
       hydroState_next, & ! general output:
+      snowState_next, &
       state_per_tstep, NWstate_per_tstep, &
       qe, qe_surf, qe_roof, qe_wall, &
       swe, chSnow_per_tstep, ev_per_tstep, runoff_per_tstep, &
@@ -5675,7 +5578,8 @@ CONTAINS
                                SUEWS_FORCING, PHENOLOGY_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, &
                                LC_DECTR_PRM, LC_GRASS_PRM, LC_BSOIL_PRM, &
-                               LC_WATER_PRM, SUEWS_SITE, SNOW_STATE, HYDRO_STATE
+                               LC_WATER_PRM, SUEWS_SITE, SNOW_STATE, HYDRO_STATE, &
+                               atm_state
 
       IMPLICIT NONE
 
@@ -5684,7 +5588,9 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      ! TYPE(SNOW_PRM), INTENT(IN) :: snowPrm
+      TYPE(atm_state), INTENT(IN) :: atmState
+
+      TYPE(HEAT_STATE), INTENT(INOUT) :: heatState
 
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_prev
       TYPE(HYDRO_STATE), INTENT(OUT) :: hydroState_next
@@ -5706,34 +5612,34 @@ CONTAINS
       ! INTEGER :: tstep !timestep [s]
       ! INTEGER :: imin ! minutes [min]
       INTEGER :: it ! hour [H]
-      INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+      ! INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
 
       INTEGER, DIMENSION(nsurf) :: snowCalcSwitch
       ! INTEGER, DIMENSION(3), INTENT(in) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
 
       ! REAL(KIND(1D0)) :: CRWmin !minimum water holding capacity of snow [mm]
       ! REAL(KIND(1D0)) :: CRWmax !maximum water holding capacity of snow [mm]
-      REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg !latent heat of sublimation [J kg-1]
-      REAL(KIND(1D0)), INTENT(in) :: lv_j_kg !Latent heat of vapourisation per timestep [J kg-1]
-      REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
+      ! REAL(KIND(1D0)), INTENT(in) :: lvS_J_kg !latent heat of sublimation [J kg-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: lv_j_kg !Latent heat of vapourisation per timestep [J kg-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
       ! REAL(KIND(1D0)) :: avRh !relative humidity [-]
       ! REAL(KIND(1D0)) :: Press_hPa !air pressure [hPa]
       ! REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
-      REAL(KIND(1D0)), INTENT(in) :: RAsnow !aerodynamic resistance of snow [s m-1]
-      REAL(KIND(1D0)), INTENT(in) :: psyc_hPa !psychometric constant [hPa]
-      REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
-      REAL(KIND(1D0)), INTENT(in) :: sIce_hPa !satured curve on snow [hPa]
+      ! REAL(KIND(1D0)), INTENT(in) :: RAsnow !aerodynamic resistance of snow [s m-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: psyc_hPa !psychometric constant [hPa]
+      ! REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: sIce_hPa !satured curve on snow [hPa]
       ! REAL(KIND(1D0)), INTENT(in) :: PervFraction !sum of surface cover fractions for impervious surfaces [-]
       ! REAL(KIND(1D0)), INTENT(in) :: vegfraction ! fraction of vegetation [-]
       REAL(KIND(1D0)), INTENT(in) :: addimpervious !Water from impervious surfaces of other grids for whole surface area [mm]
-      REAL(KIND(1D0)), INTENT(in) :: qn_snowfree ! net all-wave radiation for snow-free surface [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qf !anthropogenic heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: vpd_hPa ! vapour pressure deficit [hPa]
-      REAL(KIND(1D0)), INTENT(in) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
-      REAL(KIND(1D0)), INTENT(in) :: RS !surface resistance [s m-1]
-      REAL(KIND(1D0)), INTENT(in) :: RA !aerodynamic resistance [s m-1]
-      REAL(KIND(1D0)), INTENT(in) :: RB !boundary layer resistance [s m-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: qn_snowfree ! net all-wave radiation for snow-free surface [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qf !anthropogenic heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: vpd_hPa ! vapour pressure deficit [hPa]
+      ! REAL(KIND(1D0)), INTENT(in) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: RS !surface resistance [s m-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: RA_h !aerodynamic resistance [s m-1]
+      ! REAL(KIND(1D0)), INTENT(in) :: RB !boundary layer resistance [s m-1]
       ! REAL(KIND(1D0)) :: SnowDensMax !Fresh snow density [kg m-3]
       ! REAL(KIND(1D0)) :: SnowDensMin !Fresh snow density [kg m-3]
       ! REAL(KIND(1D0)) :: precip !rain data [mm]
@@ -5767,7 +5673,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: freezstatevol !surface state_id [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: Qm_Melt !melt heat [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: Qm_rain !melt heat for rain on snow [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind !snow-free surface temperature [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind !snow-free surface temperature [degC]
 
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
@@ -5813,8 +5719,8 @@ CONTAINS
 
       ! REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! net all-wave radiation of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! heat storage flux of individual surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! net all-wave radiation of individual surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! heat storage flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe_surf ! latent heat flux of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_roof ! latent heat flux of roof [W m-2]
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_wall ! latent heat flux of wall [W m-2]
@@ -5883,10 +5789,10 @@ CONTAINS
       ! REAL(KIND(1D0)) :: PrecipLimit
       ! REAL(KIND(1D0)) :: PrecipLimitAlb
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: kup_ind_snow
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: deltaQi
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind_snow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_ind_snow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: kup_ind_snow
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: deltaQi
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: Tsurf_ind_snow
 
       REAL(KIND(1D0)) :: SnowfallCum_in
       ! REAL(KIND(1D0)), INTENT(out) :: SnowfallCum_out
@@ -5922,6 +5828,29 @@ CONTAINS
          tstep => timer%tstep, &
          dayofWeek_id => timer%dayofWeek_id, &
          nsh_real => timer%nsh_real, &
+         avdens=>atmState%avdens, &
+         avcp=>atmState%avcp, &
+         lv_J_kg=>atmState%lv_J_kg, &
+         lvS_J_kg=>atmState%lvS_J_kg, &
+         psyc_hPa=>atmState%psyc_hPa, &
+         sIce_hPa=>atmState%sIce_hPa, &
+         vpd_hPa=>atmState%vpd_hPa, &
+         s_hPa=>atmState%s_hPa, &
+         RS=>atmState%RS, &
+         RA_h=>atmState%RA_h, &
+         RB=>atmState%RB, &
+         RAsnow=>snowState_prev%RAsnow, &
+         qn_ind_snow=>snowState_prev%qn_ind_snow,&
+kup_ind_snow=>snowState_prev%kup_ind_snow,&
+deltaQi=>snowState_prev%deltaQi,&
+Tsurf_ind_snow=>snowState_prev%Tsurf_ind_snow,&
+Tsurf_ind=>heatState%Tsurf_ind,&
+qn_snowfree=>heatState%qn_snowfree,&
+qf=>heatState%qf,&
+qs=>heatState%qs,&
+qn_surf=>heatState%qn_surf,&
+qs_surf=>heatState%qs_surf,&
+         EvapMethod => config%EvapMethod, &
          Diagnose => config%Diagnose &
          )
 
@@ -6079,7 +6008,7 @@ CONTAINS
                      EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
                      avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
                      PervFraction, vegfraction, addimpervious, &
-                     vpd_hPa, qn_e, s_hPa, RS, RA, RB, tlv, SnowDensMin, SnowProf_24hr, precip, &
+                     vpd_hPa, qn_e, s_hPa, RS, RA_h, RB, tlv, SnowDensMin, SnowProf_24hr, precip, &
                      PipeCapacity, RunoffToWater, &
                      addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
                      WetThresh_surf, state_id_in, mw_ind, SoilStoreCap, rainonsnow, &
@@ -6488,7 +6417,6 @@ CONTAINS
    SUBROUTINE SUEWS_cal_QE_DTS( &
       timer, config, forcing, siteInfo, & ! input
       nlayer, & !input
-      EvapMethod, &
       atmState, &
       qf, &
       hydroState, &
@@ -6527,7 +6455,7 @@ CONTAINS
       TYPE(HYDRO_STATE), INTENT(OUT) :: hydroState_next
 
       INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
-      INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+      ! INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
 
       ! REAL(KIND(1D0)), INTENT(in) :: lv_j_kg !Latent heat of vapourisation [J kg-1]
       ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
@@ -6674,6 +6602,7 @@ CONTAINS
          frac_water2runoff_surf => hydroState%frac_water2runoff, &
          storageheatmethod => config%storageheatmethod, &
          addimpervious => hydroState_prev%addimpervious, &
+         EvapMethod => config%EvapMethod, &
          Diagnose => config%Diagnose &
          )
 
@@ -9132,6 +9061,10 @@ CONTAINS
       config%SnowUse = SnowUse
       config%use_sw_direct_albedo = use_sw_direct_albedo
       config%ohmIncQF = OHMIncQF
+      ! these options are fixed
+      config%DiagQS = 0
+      config%EvapMethod = 2
+      config%LAImethod = 1
 
       lumpsPrm%raincover = RAINCOVER
       lumpsPrm%rainmaxres = RainMaxRes

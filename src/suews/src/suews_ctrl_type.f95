@@ -22,6 +22,9 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: SnowUse !
       LOGICAL :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER :: ohmIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
+      INTEGER :: DiagQS ! flag for printing diagnostic info for QS module during runtime [N/A] ! not used and will be removed
+      INTEGER :: EvapMethod ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
+      INTEGER :: LAImethod ! boolean to determine if calculate LAI [-]
    END TYPE SUEWS_CONFIG
 
    TYPE, PUBLIC :: SURF_STORE_PRM
