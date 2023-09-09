@@ -2343,14 +2343,7 @@ CONTAINS
                      phenState, &
                      hydroState_prev, & ! input:
                      ! TODO: collect output into a derived type for model output
-                     hydroState_next, ev_surf, ev_roof, ev_wall, & ! general output:
-                     state_per_tstep, NWstate_per_tstep, &
-                     ev0_surf, qe0_surf, &
-                     qe, qe_surf, qe_roof, qe_wall, &
-                     ev_per_tstep, runoff_per_tstep, &
-                     surf_chang_per_tstep, runoffPipes, &
-                     runoffwaterbody, &
-                     runoffAGveg, runoffAGimpervious, rss_surf)
+                     hydroState_next)
                   !======== Evaporation and surface state_id end========
                END IF
 
@@ -6262,14 +6255,7 @@ CONTAINS
       hydroState, &
       phenState_next, &
       hydroState_prev, & ! input:
-      hydroState_next, ev_surf, ev_roof, ev_wall, & ! general output:
-      state_per_tstep, NWstate_per_tstep, &
-      ev0_surf, qe0_surf, &
-      qe, qe_surf, qe_roof, qe_wall, &
-      ev_per_tstep, runoff_per_tstep, &
-      surf_chang_per_tstep, runoffPipes, &
-      runoffwaterbody, &
-      runoffAGveg, runoffAGimpervious, rss_surf)
+      hydroState_next)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, &
                                SUEWS_SITE, EHC_PRM, &
@@ -6341,33 +6327,33 @@ CONTAINS
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
       REAL(KIND(1D0)), DIMENSION(nsurf) :: runoff_surf !runoff from each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe0_surf !evaporation of each surface type by PM [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev0_surf !evaporation of each surface type by PM [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev_surf !evaporation of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf !Redefined surface resistance for wet surfaces [s m-1]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe0_surf !evaporation of each surface type by PM [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev0_surf !evaporation of each surface type by PM [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: ev_surf !evaporation of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: rss_surf !Redefined surface resistance for wet surfaces [s m-1]
 
       ! REAL(KIND(1D0)) :: p_mm !Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe_surf ! latent heat flux on ground surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_roof ! latent heat flux on roof [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_wall ! latent heat flux on wall [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_roof ! evaporation of roof [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qe_surf ! latent heat flux on ground surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_roof ! latent heat flux on roof [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qe_wall ! latent heat flux on wall [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_roof ! evaporation of roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: rss_roof ! redefined surface resistance for wet roof [s m-1]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: runoff_roof !runoff from roof [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_wall ! evaporation of wall [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_wall ! evaporation of wall [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: rss_wall ! redefined surface resistance for wet wall [s m-1]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: runoff_wall !runoff from wall [mm]
-      REAL(KIND(1D0)), INTENT(out) :: state_per_tstep !total state_id (including water body) [mm]
-      REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep !total state_id (excluding water body) [mm]
-      REAL(KIND(1D0)), INTENT(out) :: qe ! aggregated latent heat flux of all surfaces [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep ! total evaporation for all surfaces [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: state_per_tstep !total state_id (including water body) [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep !total state_id (excluding water body) [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: qe ! aggregated latent heat flux of all surfaces [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep ! total evaporation for all surfaces [mm]
       ! REAL(KIND(1D0)) :: qe_grid ! total latent heat flux [W m-2] for all surfaces [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: runoff_per_tstep ! total runoff for all surfaces [mm]
-      REAL(KIND(1D0)), INTENT(out) :: surf_chang_per_tstep ! total change in surface state_id for all surfaces [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffPipes ! !Runoff in pipes for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody !Above ground runoff from water surface for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: runoff_per_tstep ! total runoff for all surfaces [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: surf_chang_per_tstep ! total change in surface state_id for all surfaces [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: runoffPipes ! !Runoff in pipes for all surface area [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody !Above ground runoff from water surface for all surface area [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
 
       ! local:
       ! INTEGER :: is
@@ -6433,19 +6419,38 @@ CONTAINS
          RS => atmState%RS, &
          RA_h => atmState%RA_h, &
          RB => atmState%RB, &
+         rss_surf => atmState%rss_surf, &
          qf => heatState%qf, &
+         qe => heatState%qe, &
          QN_surf => heatState%QN_surf, &
          QN_roof => heatState%QN_roof, &
          QN_wall => heatState%QN_wall, &
          QS_surf => heatState%QS_surf, &
          QS_roof => heatState%QS_roof, &
          QS_wall => heatState%QS_wall, &
+         qe_surf => heatState%qe_surf, &
+         qe_roof => heatState%qe_roof, &
+         qe_wall => heatState%qe_wall, &
+         qe0_surf => heatState%qe0_surf, &
          WU_surf => hydroState%WU_surf, &
          addVeg => hydroState%addVeg, &
          addWaterBody => hydroState%addWaterBody, &
          AddWater_surf => hydroState%AddWater, &
          drain_surf => hydroState%drain_surf, &
          frac_water2runoff_surf => hydroState%frac_water2runoff, &
+         ev_surf => hydroState%ev_surf, &
+         ev_roof => hydroState%ev_roof, &
+         ev_wall => hydroState%ev_wall, &
+         ev0_surf => hydroState%ev0_surf, &
+         state_per_tstep => hydroState%state_per_tstep,&
+         NWstate_per_tstep => hydroState%NWstate_per_tstep,&
+      ev_per_tstep => hydroState%ev_per_tstep,&
+      runoff_per_tstep => hydroState%runoff_per_tstep,&
+      surf_chang_per_tstep => hydroState%surf_chang_per_tstep,&
+      runoffPipes => hydroState%runoffPipes,&
+      runoffwaterbody => hydroState%runoffwaterbody,&
+      runoffAGveg => hydroState%runoffAGveg,&
+      runoffAGimpervious => hydroState%runoffAGimpervious,&
          storageheatmethod => config%storageheatmethod, &
          addimpervious => hydroState_prev%addimpervious, &
          EvapMethod => config%EvapMethod, &
