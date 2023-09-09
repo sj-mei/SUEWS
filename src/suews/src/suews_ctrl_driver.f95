@@ -2338,12 +2338,10 @@ CONTAINS
                      timer, config, forcing, siteInfo, & ! input
                      nlayer, & !input
                      atmState, &
-                     qf, &
+                     heatState, &
                      hydroState, &
                      phenState, &
-                     hydroState_prev, QN_surf, qs_surf, & ! input:
-                     QN_roof, qs_roof, & ! input:
-                     QN_wall, qs_wall, & ! input:
+                     hydroState_prev, & ! input:
                      ! TODO: collect output into a derived type for model output
                      hydroState_next, ev_surf, ev_roof, ev_wall, & ! general output:
                      state_per_tstep, NWstate_per_tstep, &
@@ -6260,20 +6258,18 @@ CONTAINS
       timer, config, forcing, siteInfo, & ! input
       nlayer, & !input
       atmState, &
-      qf, &
+      heatState, &
       hydroState, &
       phenState_next, &
-      hydroState_prev, qn_surf, qs_surf, & ! input:
-      qn_roof, qs_roof, & ! input:
-      qn_wall, qs_wall, & ! input:
+      hydroState_prev, & ! input:
       hydroState_next, ev_surf, ev_roof, ev_wall, & ! general output:
-      state_grid, NWstate_grid, &
+      state_per_tstep, NWstate_per_tstep, &
       ev0_surf, qe0_surf, &
       qe, qe_surf, qe_roof, qe_wall, &
-      ev_grid, runoff_grid, &
-      surf_chang_grid, runoffPipes_grid, &
-      runoffWaterBody_grid, &
-      runoffAGveg_grid, runoffAGimpervious_grid, rss_surf)
+      ev_per_tstep, runoff_per_tstep, &
+      surf_chang_per_tstep, runoffPipes, &
+      runoffwaterbody, &
+      runoffAGveg, runoffAGimpervious, rss_surf)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, &
                                SUEWS_SITE, EHC_PRM, &
@@ -6289,8 +6285,9 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(atm_state), INTENT(IN) :: atmState
-      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
+      TYPE(atm_state), INTENT(INOUT) :: atmState
+      TYPE(HEAT_STATE), INTENT(INOUT) :: heatState
+      TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
 
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_prev
@@ -6304,7 +6301,7 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(in) :: psyc_hPa !Psychometric constant [hPa]
       ! REAL(KIND(1D0)), INTENT(in) :: avcp ! air heat capacity [J kg-1 K-1]
 
-      REAL(KIND(1D0)), INTENT(in) :: qf ! athropogenic heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qf ! athropogenic heat flux [W m-2]
 
       ! REAL(KIND(1D0)), INTENT(in) :: vpd_hPa ! vapour pressure deficit [hPa]
       ! REAL(KIND(1D0)), INTENT(in) :: s_hPa !vapour pressure versus temperature slope [hPa K-1]
@@ -6320,21 +6317,21 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf_in !wetness status of each surface type from previous timestep [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf_in !initial water store in soil of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! latent heat flux of individual surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! latent heat flux of individual surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! latent heat flux of individual surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! latent heat flux of individual surface [W m-2]
 
       ! input for generic roof facets
       REAL(KIND(1D0)), DIMENSION(nlayer) :: StateLimit_roof !Limit for state_id of roof [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: state_roof_in !wetness status of roof from previous timestep[mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: soilstore_roof_in !Soil moisture of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_roof !net all-wave radiation for roof [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_roof !heat storage flux for roof [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_roof !net all-wave radiation for roof [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_roof !heat storage flux for roof [W m-2]
 
       ! input for generic wall facets
       REAL(KIND(1D0)), DIMENSION(nlayer) :: state_wall_in !wetness status of wall from previous timestep[mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: soilstore_wall_in !Soil moisture of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_wall !net all-wave radiation for wall [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_wall !heat storage flux for wall [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_wall !net all-wave radiation for wall [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_wall !heat storage flux for wall [W m-2]
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPackLimit
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater_surf !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
@@ -6360,17 +6357,17 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer) :: ev_wall ! evaporation of wall [mm]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: rss_wall ! redefined surface resistance for wet wall [s m-1]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: runoff_wall !runoff from wall [mm]
-      REAL(KIND(1D0)), INTENT(out) :: state_grid !total state_id (including water body) [mm]
-      REAL(KIND(1D0)), INTENT(out) :: NWstate_grid !total state_id (excluding water body) [mm]
+      REAL(KIND(1D0)), INTENT(out) :: state_per_tstep !total state_id (including water body) [mm]
+      REAL(KIND(1D0)), INTENT(out) :: NWstate_per_tstep !total state_id (excluding water body) [mm]
       REAL(KIND(1D0)), INTENT(out) :: qe ! aggregated latent heat flux of all surfaces [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: ev_grid ! total evaporation for all surfaces [mm]
+      REAL(KIND(1D0)), INTENT(out) :: ev_per_tstep ! total evaporation for all surfaces [mm]
       ! REAL(KIND(1D0)) :: qe_grid ! total latent heat flux [W m-2] for all surfaces [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: runoff_grid ! total runoff for all surfaces [mm]
-      REAL(KIND(1D0)), INTENT(out) :: surf_chang_grid ! total change in surface state_id for all surfaces [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffPipes_grid ! !Runoff in pipes for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffWaterBody_grid !Above ground runoff from water surface for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg_grid !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious_grid !Above ground runoff from impervious surface for all surface area [mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoff_per_tstep ! total runoff for all surfaces [mm]
+      REAL(KIND(1D0)), INTENT(out) :: surf_chang_per_tstep ! total change in surface state_id for all surfaces [mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoffPipes ! !Runoff in pipes for all surface area [mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoffwaterbody !Above ground runoff from water surface for all surface area [mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
+      REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
 
       ! local:
       ! INTEGER :: is
@@ -6436,6 +6433,13 @@ CONTAINS
          RS => atmState%RS, &
          RA_h => atmState%RA_h, &
          RB => atmState%RB, &
+         qf => heatState%qf, &
+         QN_surf => heatState%QN_surf, &
+         QN_roof => heatState%QN_roof, &
+         QN_wall => heatState%QN_wall, &
+         QS_surf => heatState%QS_surf, &
+         QS_roof => heatState%QS_roof, &
+         QS_wall => heatState%QS_wall, &
          WU_surf => hydroState%WU_surf, &
          addVeg => hydroState%addVeg, &
          addWaterBody => hydroState%addWaterBody, &
@@ -6555,7 +6559,7 @@ CONTAINS
                ev0_surf, state_surf_in, soilstore_surf_in, &
                ev_surf, hydroState_next%state_surf, hydroState_next%soilstore_surf, & ! output:
                runoff_surf, &
-               runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid & ! output:
+               runoffAGimpervious, runoffAGveg, runoffPipes, runoffwaterbody & ! output:
                )
 
             ! update QE based on the water balance
@@ -6574,19 +6578,19 @@ CONTAINS
             qe = DOT_PRODUCT(qe_surf, sfr_surf)
 
             ! Sum change from different surfaces to find total change to surface state_id
-            surf_chang_grid = DOT_PRODUCT(hydroState_next%state_surf - state_surf_in, sfr_surf)
+            surf_chang_per_tstep = DOT_PRODUCT(hydroState_next%state_surf - state_surf_in, sfr_surf)
 
             ! Sum evaporation from different surfaces to find total evaporation [mm]
-            ev_grid = DOT_PRODUCT(ev_surf, sfr_surf)
+            ev_per_tstep = DOT_PRODUCT(ev_surf, sfr_surf)
 
             ! Sum runoff from different surfaces to find total runoff
-            runoff_grid = DOT_PRODUCT(runoff_surf, sfr_surf)
+            runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
 
             ! Calculate total state_id (including water body)
-            state_grid = DOT_PRODUCT(hydroState_next%state_surf, sfr_surf)
+            state_per_tstep = DOT_PRODUCT(hydroState_next%state_surf, sfr_surf)
 
             IF (NonWaterFraction /= 0) THEN
-               NWstate_grid = DOT_PRODUCT(hydroState_next%state_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+               NWstate_per_tstep = DOT_PRODUCT(hydroState_next%state_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
             END IF
             ! Calculate volume of water that will move between grids
             ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]

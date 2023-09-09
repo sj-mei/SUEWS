@@ -538,7 +538,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
       REAL(KIND(1D0)) :: mwh !snowmelt [mm]
       REAL(KIND(1D0)) :: mwstore !overall met water [mm]
-      ! REAL(KIND(1D0)) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
 
       REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
       REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
