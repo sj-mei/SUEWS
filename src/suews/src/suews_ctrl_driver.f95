@@ -1980,7 +1980,7 @@ CONTAINS
             Qm => snowState%Qm, &
             QmFreez => snowState%QmFreez, &
             QmRain => snowState%QmRain, &
-            NWstate_per_tstep => snowState%NWstate_per_tstep, &
+            NWstate_per_tstep => hydroState%NWstate_per_tstep, &
             mwh => snowState%mwh, &
             mwstore => snowState%mwstore, &
             qn_snow => snowState%qn_snow, &
@@ -5691,7 +5691,7 @@ CONTAINS
          deltaQi => snowState%deltaQi, &
          Tsurf_ind_snow => snowState%Tsurf_ind_snow, &
          SnowRemoval => snowState%SnowRemoval, &
-         NWstate_per_tstep => snowState%NWstate_per_tstep, &
+         NWstate_per_tstep => hydroState%NWstate_per_tstep, &
          swe => snowState%swe, &
          chSnow_per_interval => snowState%chSnow_per_interval, &
          mwstore => snowState%mwstore, &
