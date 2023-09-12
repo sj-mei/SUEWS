@@ -42,6 +42,7 @@ driver: clean suews
 	ls -l $(supy_driver_dir)/_supy_driver*.*
 	mv $(supy_driver_dir)/_supy_driver.* $(MODULE)/
 	mv $(supy_driver_dir)/supy_driver.py $(MODULE)/
+	$(MAKE) -C $(supy_driver_dir) clean
 
 # run pytest
 test:
@@ -79,7 +80,7 @@ suews:
 # only local testing on mac
 local: export CIBUILDWHEEL = 1
 local: export SETUPTOOLS_USE_DISTUTILS = stdlib
-# local: export FC = gfortran
+local: export FC = gfortran
 local: clean
 	@echo "\n====================="
 	@echo "SETUPTOOLS_USE_DISTUTILS=${SETUPTOOLS_USE_DISTUTILS}";

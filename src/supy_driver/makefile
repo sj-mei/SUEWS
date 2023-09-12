@@ -75,6 +75,7 @@ suffix_code = .f95
 
 # names (without suffix), f90 sources
 LIBSRC_SOURCES = suews_ctrl_const \
+	suews_ctrl_type \
 	suews_util_stringmod \
 	suews_ctrl_input \
 	suews_ctrl_output \
@@ -116,6 +117,7 @@ LIBSRC_FPP_FILES = $(addsuffix .fpp,${LIBSRC_SOURCES})
 
 # names (without suffix), f90 sources
 LIBSRC_WRAP_SOURCES = suews_ctrl_driver \
+	suews_ctrl_type \
 	suews_phys_narp \
 	suews_phys_atmmoiststab \
 	suews_phys_waterdist \
@@ -155,6 +157,9 @@ all: _${PYTHON_MODN} cfg
 cfg: gen-setup_cfg.py
 	${PYTHON} gen-setup_cfg.py
 
+# a modified version of f90wrap to allow proper recognition of procedures associated with derived types
+f90wrap_install:
+	${PYTHON} -m pip install git+https://github.com/sunt05/f90wrap.git@master
 
 clean:
 	-rm -f ${LIBSRC_OBJECTS} ${LIBSRC_FPP_FILES} libsrc.a _${PYTHON_MODN}*.* \
@@ -195,7 +200,7 @@ libsrc.a: ${LIBSRC_OBJECTS}
 	${LIBTOOL} $@ $?
 
 
-_${PYTHON_MODN}: libsrc.a ${LIBSRC_FPP_FILES}
+_${PYTHON_MODN}: libsrc.a ${LIBSRC_FPP_FILES} f90wrap_install
 	${PYTHON} gen-setup_cfg.py
 	f90wrap -m ${PYTHON_MODN} ${LIBSRC_WRAP_FPP_FILES} -k ${KIND_MAP} -v \
 	--skip error_hint

@@ -135,7 +135,7 @@ def check_forcing(df_forcing: pd.DataFrame, fix=False):
     # 1.2 if all columns are in right position
     for col_v, col in zip(list_col_forcing, col_df):
         if col_v != col:
-            str_issue = f"Column {col} is not in the valid position"
+            str_issue = f"Column {col} is not in the valid position for {col_v}"
             list_issues.append(str_issue)
             flag_valid = False
 

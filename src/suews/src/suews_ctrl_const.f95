@@ -83,7 +83,7 @@ MODULE allocateArray
                          ncolumnsDataOutBEERS = 34, &
                          ncolumnsdataOutBL = 22, &
                          ncolumnsDataOutESTM = 5 + 27, &
-                         ncolumnsDataOutESTMExt = 5 + 7*2 + 15*(1 + 4 + 2)*2, &
+                         ncolumnsDataOutEHC = 5 + 7*2 + 15*(1 + 4 + 2)*2, &
                          ncolumnsDataOutDailyState = 49, &
                          ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                          ncolumnsDataOutDebug = 5 + 103 + 14 + 5 + 4 + 3 + 1, &
@@ -162,7 +162,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSPARTACUS !SPARTACUS output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSnow !Main data output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTM !ESTM output matrix
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTMExt !ESTM output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutEHC !ESTM output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutDailyState !DailyState output array
 
    ! -------- output per each timestep ----------------------------------------------------------------
@@ -206,7 +206,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM !ESTM output for the current timestep and grid
 
    ! ---- For ESTM_ext
-   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt !ESTM output for the current timestep and grid
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5) :: dataOutLineEHC !ESTM output for the current timestep and grid
 
    ! Column numbers for TstepProfiles
    INTEGER :: cTP_EnUseWD = 1, &

@@ -491,7 +491,9 @@ def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
     datetime_mid_local = data_raw_kdn.index - timedelta(seconds=tstep_mod / 2)
     sol_elev = np.array(
         [
-            _sd.f90wrap_suews_cal_sunposition(t.year, dectime(t), timezone, lat, lon, alt)[-1]
+            _sd.f90wrap_suews_cal_sunposition(
+                t.year, dectime(t), timezone, lat, lon, alt
+            )[-1]
             for t in datetime_mid_local
         ]
     )
@@ -679,6 +681,9 @@ def resample_forcing_met(
     data_met_tstep = data_met_tstep.filter(list(dict_var_type_forcing.keys()))
     data_met_tstep = data_met_tstep.replace(np.nan, -999)
 
+    # to keep the same order as the original data
+    data_met_tstep = data_met_tstep.reindex(columns=data_met_raw.columns)
+
     return data_met_tstep
 
 
@@ -721,7 +726,7 @@ def set_index_dt(df_raw: pd.DataFrame) -> pd.DataFrame:
     loc_issue = ser_dt_diff_sec.reset_index().index[~ser_test][1:] + 2
     if loc_issue.size == 0:
         # empty list of `loc_issue`
-        freq = ser_dt_diff[1]
+        freq = ser_dt_diff.iloc[1]
         df_datetime = df_raw.set_index(idx_dt).asfreq(freq)
     else:
         # non-empty list of `loc_issue`
@@ -1550,18 +1555,15 @@ def modify_df_init(df_init, list_var_dim):
 # load Initial Condition variables from namelist file
 def add_file_init_df(df_init):
     # load all nml info from file names:('file_init', '0')
-    df_init_file = (
-        df_init[("file_init", "0")].map(lambda fn: load_SUEWS_nml(fn)).apply(pd.Series)
+    dict_init_file = (
+        df_init[("file_init", "0")].map(lambda fn: load_SUEWS_nml(fn)).to_dict()
     )
-    # df_init_file = pd.concat([df_init_file], axis=1, keys=["0"])
-    # df_init_file = df_init_file.swaplevel(0, 1, axis=1)
+    df_init_file = pd.DataFrame.from_dict(dict_init_file, orient="index")
     df_init_file.index.set_names(["Grid"], inplace=True)
 
     # merge only those appeard in base df
     df_init.update(df_init_file)
 
-    # drop ('file_init', '0') as this may cause non-numeic errors later on
-    # df_init = df_init.drop(columns=[("file_init", "0")])
     return df_init
 
 
@@ -1578,11 +1580,12 @@ def load_nml_multi(fn_nml):
 # load grid layout from namelist file
 def add_file_gridlayout_df(df_init):
     # load all nml info from file names:('file_init', '0')
-    df_grid_layout = (
+    dict_grid_layout = (
         df_init[("file_gridlayout", "0")]
         .map(lambda fn: load_SUEWS_nml(fn))
-        .apply(pd.Series)
+        .to_dict()
     )
+    df_grid_layout=pd.DataFrame.from_dict(dict_grid_layout, orient="index")
     df_grid_layout.index.set_names(["grid"], inplace=True)
 
     # copy column names from df_init

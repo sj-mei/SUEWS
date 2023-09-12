@@ -282,6 +282,34 @@ SUBROUTINE SUEWS_cal_dectime( &
 
 END SUBROUTINE SUEWS_cal_dectime
 
+SUBROUTINE SUEWS_cal_dectime_DTS( &
+   timer, & ! input
+   dectime) ! output
+   USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER
+
+   IMPLICIT NONE
+   ! INTEGER, INTENT(in) :: id, it, imin, isec
+   TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+
+   REAL(KIND(1D0)), INTENT(out) :: dectime ! nsh in type real
+
+   INTEGER :: id
+   INTEGER :: it
+   INTEGER :: imin
+   INTEGER :: isec
+
+   id = timer%id
+   it = timer%it
+   imin = timer%imin
+   isec = timer%isec
+
+   dectime = REAL(id - 1, KIND(1D0)) &
+             + REAL(it, KIND(1D0))/24 &
+             + REAL(imin, KIND(1D0))/(60*24) &
+             + REAL(isec, KIND(1D0))/(60*60*24)
+
+END SUBROUTINE SUEWS_cal_dectime_DTS
+
 ! Calculate tstep-derived variables
 SUBROUTINE SUEWS_cal_tstep( &
    tstep, & ! input
@@ -297,6 +325,28 @@ SUBROUTINE SUEWS_cal_tstep( &
    tstep_real = tstep*1.0
 
 END SUBROUTINE SUEWS_cal_tstep
+
+SUBROUTINE SUEWS_cal_tstep_DTS( &
+   timer, & ! input
+   nsh, nsh_real, tstep_real) ! output
+   USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER
+
+   IMPLICIT NONE
+
+   TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+
+   INTEGER :: tstep ! number of timesteps per hour
+   ! values that are derived from tstep
+   INTEGER, INTENT(out) :: nsh ! number of timesteps per hour
+   REAL(KIND(1D0)), INTENT(out) :: nsh_real ! nsh in type real
+   REAL(KIND(1D0)), INTENT(out) :: tstep_real ! tstep in type real
+
+   tstep = timer%tstep
+   nsh = 3600/tstep
+   nsh_real = nsh*1.0
+   tstep_real = tstep*1.0
+
+END SUBROUTINE SUEWS_cal_tstep_DTS
 
 SUBROUTINE SUEWS_cal_weekday( &
    iy, id, lat, & !input
@@ -323,6 +373,41 @@ SUBROUTINE SUEWS_cal_weekday( &
 
 END SUBROUTINE SUEWS_cal_weekday
 
+SUBROUTINE SUEWS_cal_weekday_DTS( &
+   timer, siteInfo, & !input
+   dayofWeek_id) !output
+
+   USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_SITE
+
+   IMPLICIT NONE
+
+   TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+   TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+   INTEGER :: iy ! year
+   INTEGER :: id ! day of year
+   REAL(KIND(1D0)) :: lat
+
+   INTEGER, DIMENSION(3), INTENT(OUT) :: dayofWeek_id
+
+   INTEGER :: wd
+   INTEGER :: mb
+   INTEGER :: date
+   INTEGER :: seas
+
+   iy = timer%iy
+   id = timer%id
+   lat = siteInfo%lat
+
+   CALL day2month(id, mb, date, seas, iy, lat) !Calculate real date from doy
+   CALL Day_of_Week(date, mb, iy, wd) !Calculate weekday (1=Sun, ..., 7=Sat)
+
+   dayofWeek_id(1) = wd !Day of week
+   dayofWeek_id(2) = mb !Month
+   dayofweek_id(3) = seas !Season
+
+END SUBROUTINE SUEWS_cal_weekday_DTS
+
 SUBROUTINE SUEWS_cal_DLS( &
    id, startDLS, endDLS, & !input
    DLS) !output
@@ -335,3 +420,26 @@ SUBROUTINE SUEWS_cal_DLS( &
    IF (id > startDLS .AND. id < endDLS) dls = 1
 
 END SUBROUTINE SUEWS_cal_DLS
+
+SUBROUTINE SUEWS_cal_DLS_DTS( &
+   timer, ahemisPrm, & !input
+   DLS) !output
+
+   USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, anthroEMIS_PRM
+
+   IMPLICIT NONE
+
+   TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+   TYPE(anthroEMIS_PRM), INTENT(IN) :: ahemisPrm
+
+   INTEGER :: id, startDLS, endDLS
+   INTEGER, INTENT(out) :: DLS
+
+   id = timer%id
+   startDLS = ahemisPrm%startDLS
+   endDLS = ahemisPrm%endDLS
+
+   DLS = 0
+   IF (id > startDLS .AND. id < endDLS) dls = 1
+
+END SUBROUTINE SUEWS_cal_DLS_DTS

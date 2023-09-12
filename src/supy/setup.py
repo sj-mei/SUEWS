@@ -453,7 +453,8 @@ setup(
         "matplotlib",
         "chardet",
         "scipy",
-        "f90wrap==0.2.12", # f90wrap is required for f2py-based supy driver
+        "f90wrap", # f90wrap is required for f2py-based supy driver
+        # "git+https://github.com/sunt05/f90wrap.git@master", # a modified version of f90wrap to allow proper recognition of procedures associated with derived types
         "dask",  # needs dask for parallel tasks
         "f90nml",  # utility for namelist files
         "seaborn",  # stat plotting
