@@ -502,6 +502,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: UStar !friction velocity [m s-1]
       REAL(KIND(1D0)) :: TStar !T*, temperature scale [-]
       REAL(KIND(1D0)) :: RB !boundary layer resistance shuttleworth
+      REAL(KIND(1D0)) :: Tair_av ! 5-day moving average of air temperature [degC]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: rss_surf ! surface resistance adjusted by surface wetness state[s m-1]
 
    END TYPE atm_state

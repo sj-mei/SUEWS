@@ -2058,7 +2058,9 @@ CONTAINS
             snowState%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
             hydroState_prev = hydroState
-            Tair_av_prev = forcing%Tair_av_5d
+            ! Tair_av_prev = forcing%Tair_av_5d
+            Tair_av_prev = atmState%Tair_av
+
             phenState_prev = phenState
             ! anthroEmisState_prev = anthroEmisState
 
@@ -2071,7 +2073,8 @@ CONTAINS
             hydroState_next = hydroState
 
             ! Tair_av_next = Tair_av
-            Tair_av_next = forcing%Tair_av_5d
+            ! Tair_av_next = forcing%Tair_av_5d
+            Tair_av_next = atmState%Tair_av
             phenState_next = phenState
             ! anthroEmisState = anthroEmisState
 
@@ -2246,6 +2249,7 @@ CONTAINS
                IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
                CALL SUEWS_cal_Qs_DTS( &
                   timer, config, forcing, siteInfo, & !input
+                  atmState, &
                   nlayer, &
                   hydroState_prev, &
                   snowState, &
@@ -2540,7 +2544,7 @@ CONTAINS
 
             !==============================================================
             ! update inout variables with new values (to be compatible with original interface)
-            forcing%Tair_av_5d = Tair_av_next
+            atmState%Tair_av = Tair_av_next
 
             !==============use BEERS to get localised radiation flux==================
             ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
@@ -4044,6 +4048,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_Qs_DTS( &
       timer, config, forcing, siteInfo, & ! input
+      atmState, &
       nlayer, &
       hydroState_prev, &
       snowState_prev, &
@@ -4075,6 +4080,7 @@ CONTAINS
       ! TYPE(HEAT_STATE), INTENT(in) :: heatState
       TYPE(HEAT_STATE), INTENT(inout) :: heatState
       TYPE(solar_State), INTENT(in) :: solarstate
+      TYPE(atm_state), INTENT(in) :: atmState
 
       ! TYPE(EHC_PRM), INTENT(in) :: ehcPrm
 
@@ -4231,7 +4237,7 @@ CONTAINS
          temp_c => forcing%temp_c, &
          avrh => forcing%RH, &
          press_hpa => forcing%pres, &
-         Tair_av => forcing%Tair_av_5d, &
+         Tair_av => atmState%Tair_av, &
          zenith_deg => solarstate%zenith_deg, &
          id => timer%id, &
          tstep => timer%tstep, &
@@ -8723,6 +8729,7 @@ CONTAINS
       ! ********** SUEWS_stateVariables **********
       ! ---anthropogenic heat-related states
       TYPE(anthroEmis_STATE) :: anthroEmisState
+      TYPE(atm_STATE) :: atmState
       REAL(KIND(1D0)), DIMENSION(12), INTENT(INOUT) :: HDD_id !Heating Degree Days [degC d]
 
       ! ---water balance related states
@@ -8886,7 +8893,7 @@ CONTAINS
       !forcing%qn1_obs = qn1_obs
       !forcing%qs_obs = qs_obs
       !forcing%qf_obs = qf_obs
-      forcing%Tair_av_5d = Tair_av
+      ! forcing%Tair_av_5d = Tair_av
       ! forcing%temp_c = Temp_C
 
       ! timer%id = id
@@ -9461,6 +9468,7 @@ CONTAINS
       ! waterPrm%storedrainprm%store_cap = StoreDrainPrm(6, WaterSurf)
 
       ! ********** SUEWS_stateVariables **********
+      atmState%Tair_av = Tair_av
       anthroEmisState%HDD_id = HDD_id
 
       ! ESTM_ehc related:
@@ -9631,7 +9639,8 @@ CONTAINS
       END DO
 
       ! update INOUT variables
-      Tair_av = forcing%Tair_av_5d
+      ! Tair_av = forcing%Tair_av_5d
+      Tair_av = atmState%Tair_av
 
       ! ! transfer modState back into individual states
       anthroEmisState = modState%anthroemisState
