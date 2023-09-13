@@ -2197,6 +2197,7 @@ CONTAINS
 
                CALL SUEWS_cal_DailyState_DTS_x( &
                   timer, config, forcing, siteInfo, & !input
+                  ! atmState, & !input
                   phenState, &
                   anthroEmisState, & !input
                   hydroState_prev, & !input
@@ -8415,7 +8416,7 @@ CONTAINS
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       IrrFracBSoil, IrrFracWater, &
       kkAnOHM, Kmax, LAI_id, LAIMax, LAIMin, &
-      LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+      LAIPower, LAIType, lat, lng, localClimateMethod, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
       OHM_coef, OHMIncQF, OHM_threshSW, &
@@ -8508,6 +8509,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: FAIMethod !Determines how FAI is calculated [-]
       INTEGER, INTENT(IN) :: SMDMethod ! Determines method for calculating soil moisture deficit [-]
       INTEGER, INTENT(IN) :: WaterUseMethod !Defines how external water use is calculated[-]
+      INTEGER, INTENT(IN) :: localClimateMethod !
       INTEGER, INTENT(IN) :: NetRadiationMethod ! method for calculation of radiation fluxes [-]
       INTEGER, INTENT(IN) :: StabilityMethod !method to calculate atmospheric stability [-]
       INTEGER, INTENT(IN) :: StorageHeatMethod
@@ -8919,6 +8921,7 @@ CONTAINS
       config%SnowUse = SnowUse
       config%use_sw_direct_albedo = use_sw_direct_albedo
       config%ohmIncQF = OHMIncQF
+      config%localClimateMethod = localClimateMethod
       ! these options are fixed
       config%DiagQS = 0
       config%EvapMethod = 2
