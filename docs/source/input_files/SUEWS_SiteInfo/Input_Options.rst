@@ -184,8 +184,8 @@ Input Options
 .. option:: alpha
 
 	:Description:
-		The mean apparent ecosystem quantum. Represents the initial slope of the light-response curve.
-		[umol CO2 umol photons^-1]
+		The mean apparent ecosystem quantum. Represents the initial slope of the light-response curve. Not in use
+		[umol CO2 umol photons^-1]. 
 
 
 	:Configuration:
@@ -318,7 +318,7 @@ Input Options
 
 	:Description:
 
-		The light-saturated gross photosynthesis of the canopy. [umol |m^-2| |s^-1| ]
+		The light-saturated gross photosynthesis of the canopy describing the maximum photosynthesis the certain vegetation can have. [umol |m^-2| |s^-1| ]
 
 
 	:Configuration:
@@ -333,7 +333,7 @@ Input Options
 
 	:Description:
 
-		The convexity of the curve at light saturation.
+		The convexity of the curve at light saturation. Not in use.
 
 	:Configuration:
 		.. csv-table::
@@ -375,7 +375,7 @@ Input Options
 
 	:Description:
 
-		Respiration coefficient a.
+		Soil and vegetation respiration coefficient a.
 
 	:Configuration:
 		.. csv-table::
@@ -389,7 +389,7 @@ Input Options
 
 	:Description:
 
-		Respiration coefficient b - related to air temperature dependency.
+		Soil and vegetation respiration coefficient b - related to air temperature dependency.
 
 	:Configuration:
 		.. csv-table::
@@ -403,7 +403,7 @@ Input Options
 
 	:Description:
 
-		Minimum soil respiration rate (for cold-temperature limit) [umol |m^-2| |s^-1|].
+		Minimum soil and vegetation respiration rate (for cold-temperature limit) [umol |m^-2| |s^-1|].
 
 	:Configuration:
 		.. csv-table::
