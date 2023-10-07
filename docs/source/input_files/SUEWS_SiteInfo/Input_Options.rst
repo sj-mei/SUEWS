@@ -455,7 +455,7 @@ Input Options
 .. option:: CO2PointSource
 
 	:Description:
-		CO2 emission factor [kg |km^-1|]
+		CO2 emission point source within the grid [kgC day-1]
 
 	:Configuration:
 		.. csv-table::
@@ -971,7 +971,7 @@ Input Options
 .. option:: EnEF_v_Jkm
 
 	:Description:
-		Emission factor for heat [J k |m^-1| ].
+		Emission factor for heat from traffic [J k |m^-1| ].
 
 	:Configuration:
 		.. csv-table::
@@ -1076,7 +1076,7 @@ Input Options
 .. option:: FcEF_v_kgkmWD
 
 	:Description:
-		CO2 emission factor for weekdays [kg |km^-1|]
+		CO2 emission factor for traffic on weekdays [kg |km^-1|]
 
 	:Configuration:
 		.. csv-table::
@@ -1089,7 +1089,7 @@ Input Options
 .. option:: FcEF_v_kgkmWE
 
 	:Description:
-		CO2 emission factor for weekends [kg |km^-1|]
+		CO2 emission factor for traffic on weekends [kg |km^-1|]
 
 	:Configuration:
 		.. csv-table::
@@ -3954,7 +3954,7 @@ Input Options
 .. option:: TrafficUnits
 
 	:Description:
-		Units for the traffic rate for the study area. Not used in v2018a.
+		Units for the traffic rate for the study area. 1 = [veh km m-2 day-1] 2 = [veh km cap-1 day-1]). Not used in v2018a.
 
 	:Configuration:
 		.. csv-table::
