@@ -321,8 +321,11 @@ rst_prolog = """
 .. |s^-1| replace:: s\ :sup:`-1`
 .. |kg^-1| replace:: kg\ :sup:`-1`
 .. |K^-1| replace:: K\ :sup:`-1`
+.. |J^-1| replace:: J\ :sup:`-1`
 .. |W^-1| replace:: W\ :sup:`-1`
 .. |h^-1| replace:: h\ :sup:`-1`
+.. |day^-1| replace:: day\ :sup:`-1`
+.. |cap^-1| replace:: cap\ :sup:`-1`
 .. |ha^-1| replace:: ha\ :sup:`-1`
 .. |QF| replace:: Q\ :sub:`F`
 .. |Qstar| replace:: Q\ :sup:`*`

@@ -185,7 +185,7 @@ Input Options
 
 	:Description:
 		The mean apparent ecosystem quantum. Represents the initial slope of the light-response curve. Not in use
-		[umol CO2 umol photons^-1]. 
+		[umol CO2 umol photons^-1].
 
 
 	:Configuration:
@@ -455,7 +455,7 @@ Input Options
 .. option:: CO2PointSource
 
 	:Description:
-		CO2 emission point source within the grid [kgC day-1]
+		CO2 emission point source within the grid [kgC |day^-1|]
 
 	:Configuration:
 		.. csv-table::
@@ -3954,7 +3954,7 @@ Input Options
 .. option:: TrafficUnits
 
 	:Description:
-		Units for the traffic rate for the study area. 1 = [veh km m-2 day-1] 2 = [veh km cap-1 day-1]). Not used in v2018a.
+		Units for the traffic rate for the study area. 1 = [veh km |m^-2| |day^-1|] 2 = [veh km |cap^-1| |day^-1|]). Not used in v2018a.
 
 	:Configuration:
 		.. csv-table::
