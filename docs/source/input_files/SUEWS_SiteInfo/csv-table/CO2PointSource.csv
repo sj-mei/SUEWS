@@ -1,2 +1,2 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`O`","CO2 emission factor [kg |km^-1|]"
+"`SUEWS_SiteSelect.txt`","`O`","CO2 emission point source within the grid [kgC day-1]"
