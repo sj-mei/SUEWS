@@ -74,6 +74,5 @@ More details are described in `our SuPy paper <https://doi.org/10.5194/gmd-12-27
   tutorial/tutorial
   data-structure/supy-io
   api
-  faq
   version-history
 
