@@ -3868,7 +3868,7 @@ CONTAINS
             methodPrm%WaterUseMethod, irrPrm%Ie_start, irrPrm%Ie_end, &
             LAImethod, &
             evetrPrm%lai%laitype, dectrPrm%lai%laitype, grassPrm%lai%laitype, &
-            nsh_real, forcing%kdown, forcing%Temp_C, forcing%pres, BaseT_HC, &
+            nsh_real, forcing%kdown, forcing%Temp_C, forcing%rain, BaseT_HC, &
             ahemisPrm%anthroheat%BaseT_Heating_working, ahemisPrm%anthroheat%BaseT_Heating_holiday, &
             ahemisPrm%anthroheat%BaseT_Cooling_working, ahemisPrm%anthroheat%BaseT_Cooling_holiday, &
             siteInfo%lat, irrPrm%Faut, forcing%LAI_obs, &
