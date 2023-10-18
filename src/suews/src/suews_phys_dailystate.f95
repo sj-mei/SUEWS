@@ -610,7 +610,7 @@ CONTAINS
          DayofWeek_id => timer%DayofWeek_id, &
          avkdn => forcing%kdown, &
          Temp_C => forcing%Temp_C, &
-         Precip => forcing%pres, &
+         Precip => forcing%rain, &
          LAI_obs => forcing%LAI_obs, &
          ahemisPrm => siteInfo%anthroEmis, &
          irrPrm => siteInfo%irrigation, &
