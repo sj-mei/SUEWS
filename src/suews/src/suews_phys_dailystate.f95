@@ -1424,6 +1424,9 @@ CONTAINS
 
       ! initialise WUDay_id
       WUDay_id = 0
+      WUDay_P = 0
+      WUDay_A = 0
+      WUDay_M = 0
 
       IF (WaterUseMethod == 0) THEN !If water use is to be modelled (rather than observed)
 
