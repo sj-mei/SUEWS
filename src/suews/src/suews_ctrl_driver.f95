@@ -2197,7 +2197,7 @@ CONTAINS
 
                CALL SUEWS_cal_DailyState_DTS( &
                   timer, config, forcing, siteInfo, & !input
-                  phenState, &!inout
+                  phenState, & !inout
                   anthroEmisState, & !inout
                   hydroState) !inout
 
@@ -2365,8 +2365,8 @@ CONTAINS
                CALL SUEWS_cal_SoilState_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   SoilMoistCap, & !input
-                  surf_chang_per_tstep, &! input
-                  hydroState, hydroState_prev, &! input
+                  surf_chang_per_tstep, & ! input
+                  hydroState, hydroState_prev, & ! input
                   smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
                !============ Sensible heat flux ===============
@@ -6253,9 +6253,9 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_QE_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      atmState, &!inout
-      heatState, &!inout
-      hydroState, &!inout
+      atmState, & !inout
+      heatState, & !inout
+      hydroState, & !inout
       phenState) ! input:
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, &
@@ -6365,8 +6365,8 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id_out
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id !Soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_e_surf !net available energy for evaporation for each surface[W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qn_e_roof !net available energy for evaporation for roof[W m-2]
-      REAL(KIND(1D0)), DIMENSION(:),ALLOCATABLE :: qn_e_wall !net available energy for evaporation for wall[W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qn_e_roof !net available energy for evaporation for roof[W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qn_e_wall !net available energy for evaporation for wall[W m-2]
 
       REAL(KIND(1D0)) :: pin !Rain per time interval
       REAL(KIND(1D0)) :: tlv !Latent heat of vapourisation per timestep [J kg-1 s-1]
@@ -6388,7 +6388,7 @@ CONTAINS
       hydroState_in = hydroState
 
       ! load dim constants
-      nlayer=siteInfo%nlayer
+      nlayer = siteInfo%nlayer
 
       ALLOCATE (rss_roof(nlayer))
       ALLOCATE (runoff_roof(nlayer))
@@ -6396,7 +6396,6 @@ CONTAINS
       ALLOCATE (runoff_wall(nlayer))
       ALLOCATE (qn_e_roof(nlayer))
       ALLOCATE (qn_e_wall(nlayer))
-
 
       ASSOCIATE ( &
          pavedPrm => siteInfo%lc_paved, &

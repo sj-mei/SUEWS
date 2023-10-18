@@ -354,7 +354,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_DailyState_DTS( &
       timer, config, forcing, siteInfo, &
-      phenState, &!inout
+      phenState, & !inout
       anthroEmisState, & !inout
       hydroState) !inout
 
