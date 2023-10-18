@@ -143,7 +143,13 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
     # main calculation:
 
     try:
-        res_suews_tstep_multi = sd.suews_cal_multitsteps(**dict_input)
+        res_suews_tstep_multi, res_mod_state = sd.suews_cal_multitsteps(**dict_input)
+        # TODO: res_mod_state will be used in the future for debugging purpose
+
+        # from pickle import dump
+
+        # dump(res_mod_state, open("res_mod_state.pkl", "wb"))
+        # print("res_mod_state.pkl saved")
     except Exception as ex:
         # show trace info
         # print(traceback.format_exc())

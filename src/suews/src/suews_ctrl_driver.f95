@@ -5545,11 +5545,11 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_snow_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      atmState, & ! input:
-      heatState, &
-      hydroState, &
-      snowState, &
-      phenState, &
+      atmState, & ! inout:
+      heatState, & ! inout:
+      hydroState, & ! inout:
+      snowState, & ! inout:
+      phenState, & ! inout:
       snowState_prev, hydroState_prev, & ! input:
       hydroState_next, & ! general output:
       snowState_next, &
@@ -6262,7 +6262,7 @@ CONTAINS
       hydroState, &
       phenState_next, &
       hydroState_prev, & ! input:
-      hydroState_next)
+      hydroState_next) ! output:
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, &
                                SUEWS_SITE, EHC_PRM, &
@@ -6308,28 +6308,30 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf !external water use of each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain_surf !Drainage of each surface type [mm]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf_in !wetness status of each surface type from previous timestep [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf_in !initial water store in soil of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf_in !wetness status of each surface type from previous timestep [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf_out !wetness status of each surface type from previous timestep [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf_in !initial water store in soil of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf_out !initial water store in soil of each surface type [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qn_surf ! latent heat flux of individual surface [W m-2]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf ! latent heat flux of individual surface [W m-2]
 
       ! input for generic roof facets
       REAL(KIND(1D0)), DIMENSION(nlayer) :: StateLimit_roof !Limit for state_id of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: state_roof_in !wetness status of roof from previous timestep[mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: soilstore_roof_in !Soil moisture of roof [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: state_roof_in !wetness status of roof from previous timestep[mm]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: soilstore_roof_in !Soil moisture of roof [mm]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_roof !net all-wave radiation for roof [W m-2]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_roof !heat storage flux for roof [W m-2]
 
       ! input for generic wall facets
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: state_wall_in !wetness status of wall from previous timestep[mm]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: soilstore_wall_in !Soil moisture of wall [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: state_wall_in !wetness status of wall from previous timestep[mm]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: soilstore_wall_in !Soil moisture of wall [mm]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qn_wall !net all-wave radiation for wall [W m-2]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qs_wall !heat storage flux for wall [W m-2]
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowPackLimit
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: AddWater_surf !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: frac_water2runoff_surf !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-      REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm !Coefficients used in drainage calculation [-]
+      ! REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm !Coefficients used in drainage calculation [-]
       ! REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: SnowProf_24hr
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: runoffSnow_surf !Initialize for runoff caused by snowmelting
@@ -6460,6 +6462,15 @@ CONTAINS
          runoffAGimpervious => hydroState%runoffAGimpervious, &
          storageheatmethod => config%storageheatmethod, &
          addimpervious => hydroState_prev%addimpervious, &
+         state_surf_in => hydroState_prev%state_surf, &
+         soilstore_surf_in => hydroState_prev%soilstore_surf, &
+         state_roof_in => hydroState_prev%state_roof, &
+         soilstore_roof_in => hydroState_prev%soilstore_roof, &
+         state_wall_in => hydroState_prev%state_wall, &
+         soilstore_wall_in => hydroState_prev%soilstore_wall, &
+         state_surf_out => hydroState_next%state_surf, &
+         soilstore_surf_out => hydroState_next%soilstore_surf, &
+         StoreDrainPrm => phenState_next%StoreDrainPrm, &
          EvapMethod => config%EvapMethod, &
          Diagnose => config%Diagnose &
          )
@@ -6480,18 +6491,18 @@ CONTAINS
                                dectrPrm%wetthresh, grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh] &
             )
 
-            StoreDrainPrm = phenState_next%StoreDrainPrm
+            ! StoreDrainPrm = phenState_next%StoreDrainPrm
 
-            state_surf_in = hydroState_prev%state_surf
-            soilstore_surf_in = hydroState_prev%soilstore_surf
-            state_roof_in = hydroState_prev%state_roof
-            soilstore_roof_in = hydroState_prev%soilstore_roof
-            state_wall_in = hydroState_prev%state_wall
-            soilstore_wall_in = hydroState_prev%soilstore_wall
+            ! state_surf_in = hydroState_prev%state_surf
+            ! soilstore_surf_in = hydroState_prev%soilstore_surf
+            ! state_roof_in = hydroState_prev%state_roof
+            ! soilstore_roof_in = hydroState_prev%soilstore_roof
+            ! state_wall_in = hydroState_prev%state_wall
+            ! soilstore_wall_in = hydroState_prev%soilstore_wall
 
             ! runoff_per_interval = runoff_per_interval_in
-            hydroState_next%state_surf = state_surf_in
-            soilstore_id = soilstore_surf_in
+            state_surf_out = state_surf_in
+            ! soilstore_id = soilstore_surf_in
 
             ! nsh_real = 3600/tstep*1.D0
 
@@ -6569,7 +6580,7 @@ CONTAINS
                PervFraction, &
                sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
                ev0_surf, state_surf_in, soilstore_surf_in, &
-               ev_surf, hydroState_next%state_surf, hydroState_next%soilstore_surf, & ! output:
+               ev_surf, state_surf_out, soilstore_surf_out, & ! output:
                runoff_surf, &
                runoffAGimpervious, runoffAGveg, runoffPipes, runoffwaterbody & ! output:
                )
@@ -6581,8 +6592,8 @@ CONTAINS
             IF (storageheatmethod == 5) THEN
                ! update building specific values
                qe_surf(BldgSurf) = qe_building
-               hydroState_next%state_surf(BldgSurf) = state_building
-               hydroState_next%soilstore_surf(BldgSurf) = soilstore_building/capStore_builing*capStore_surf(BldgSurf)
+               state_surf_out(BldgSurf) = state_building
+               soilstore_surf_out(BldgSurf) = soilstore_building/capStore_builing*capStore_surf(BldgSurf)
                runoff_surf(BldgSurf) = runoff_building
             END IF
 
@@ -6590,7 +6601,7 @@ CONTAINS
             qe = DOT_PRODUCT(qe_surf, sfr_surf)
 
             ! Sum change from different surfaces to find total change to surface state_id
-            surf_chang_per_tstep = DOT_PRODUCT(hydroState_next%state_surf - state_surf_in, sfr_surf)
+            surf_chang_per_tstep = DOT_PRODUCT(state_surf_out - state_surf_in, sfr_surf)
 
             ! Sum evaporation from different surfaces to find total evaporation [mm]
             ev_per_tstep = DOT_PRODUCT(ev_surf, sfr_surf)
@@ -6599,10 +6610,10 @@ CONTAINS
             runoff_per_tstep = DOT_PRODUCT(runoff_surf, sfr_surf)
 
             ! Calculate total state_id (including water body)
-            state_per_tstep = DOT_PRODUCT(hydroState_next%state_surf, sfr_surf)
+            state_per_tstep = DOT_PRODUCT(state_surf_out, sfr_surf)
 
             IF (NonWaterFraction /= 0) THEN
-               NWstate_per_tstep = DOT_PRODUCT(hydroState_next%state_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
+               NWstate_per_tstep = DOT_PRODUCT(state_surf_out(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction
             END IF
             ! Calculate volume of water that will move between grids
             ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
@@ -6619,7 +6630,7 @@ CONTAINS
                IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_builing = ', capStore_builing
                IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
             END IF
-            IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_id = ', hydroState_next%soilstore_surf
+            IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf_out
          END ASSOCIATE
       END ASSOCIATE
    END SUBROUTINE SUEWS_cal_QE_DTS
@@ -8458,7 +8469,7 @@ CONTAINS
       WaterDist, WaterUseMethod, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      output_block_suews) !output
+      output_block_suews, mod_State_out) !output
 
       IMPLICIT NONE
 
@@ -8787,7 +8798,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) :: StoreDrainPrm !coefficients used in drainage calculation [-]
 
       ! lumped states
-      TYPE(SUEWS_STATE) :: modState
+      TYPE(SUEWS_STATE), INTENT(OUT) :: mod_state_out
+      TYPE(SUEWS_STATE) :: mod_state
       ! ############# DTS variables (end) #############
 
       ! input:
@@ -9524,12 +9536,12 @@ CONTAINS
       phenState%StoreDrainPrm = StoreDrainPrm
 
       ! ! transfer states into modState
-      modState%anthroemisState = anthroEmisState
-      modState%hydroState = hydroState
-      modState%heatState = heatState
-      modState%ohmState = ohmState
-      modState%snowState = snowState
-      modState%phenState = phenState
+      mod_State%anthroemisState = anthroEmisState
+      mod_State%hydroState = hydroState
+      mod_State%heatState = heatState
+      mod_State%ohmState = ohmState
+      mod_State%snowState = snowState
+      mod_State%phenState = phenState
 
       ! ############# evaluation for DTS variables (end) #############
       CALL siteInfo%ALLOCATE(nlayer)
@@ -9613,7 +9625,7 @@ CONTAINS
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main_DTS( &
             timer, forcing, config, siteInfo, &
-            modState, &
+            mod_State, &
             output_line_suews) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -9646,12 +9658,14 @@ CONTAINS
       Tair_av = atmState%Tair_av
 
       ! ! transfer modState back into individual states
-      anthroEmisState = modState%anthroemisState
-      hydroState = modState%hydrostate
-      heatState = modState%heatstate
-      ohmState = modState%ohmstate
-      snowState = modState%snowstate
-      phenState = modState%phenstate
+      anthroEmisState = mod_State%anthroemisState
+      hydroState = mod_State%hydrostate
+      heatState = mod_State%heatstate
+      ohmState = mod_State%ohmstate
+      snowState = mod_State%snowstate
+      phenState = mod_State%phenstate
+
+      mod_state_out = mod_State
 
       HDD_id = anthroEmisState%HDD_id
 

@@ -281,6 +281,7 @@ def run_supy(
     logging_level=logging.INFO,
     check_input=False,
     serial_mode=False,
+    debug_mode=False,
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Perform supy simulation.
 
@@ -310,6 +311,8 @@ def run_supy(
         If set to `True`, SuPy simulation will be conducted in serial mode;
         a `False` flag will try parallel simulation if possible (Windows not supported, i.e., always serial).
         (the default is `False`).
+    debug_mode : bool, optional
+        If set to `True`, SuPy simulation will be conducted in debug mode, which will write out additional information for debugging purposes.
 
 
     Returns
