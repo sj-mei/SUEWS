@@ -2649,7 +2649,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_WaterUse_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      anthroEmisState_next, hydroState_next, &
+      anthroEmisState_next, hydroState, &
       wu_surf, wu_int, wu_ext) ! output:
       ! Conversion of water use (irrigation)
       ! Last modified:
@@ -2701,7 +2701,7 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
 
       TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState_next
-      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_next
+      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
       ! REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
       ! REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
@@ -2755,7 +2755,7 @@ CONTAINS
             sfr_surf => siteInfo%sfr_surf, &
             InternalWaterUse_h => irrPrm%InternalWaterUse_h, &
             HDD_id => anthroEmisState_next%HDD_id, &
-            WUDay_id => hydroState_next%WUDay_id, &
+            WUDay_id => hydroState%WUDay_id, &
             WaterUseMethod => config%WaterUseMethod, &
             wu_m3 => forcing%Wuh, &
             it => timer%it, &

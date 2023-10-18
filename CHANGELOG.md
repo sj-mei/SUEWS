@@ -27,3 +27,6 @@
 
 - 01 Jul 2023:
   - [feature] Added a function `supy.util.get_spinup_state` to retrieve the spin-up state for the model, which can be used for debugging and initialising the model for simulation.
+
+- 18 Oct 2023:
+  - [change] `Snow` is temporarily turned off for easier implementation of other functionalities; will be brought back in the future.
