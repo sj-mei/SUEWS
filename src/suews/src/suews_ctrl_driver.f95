@@ -2316,7 +2316,7 @@ CONTAINS
                IF (config%SnowUse == 1) THEN
 
                   ! ===================Calculate snow related hydrology=======================
-                  ! TODO: the snow parts needs more work to be done
+                  ! TODO: #234 the snow parts needs more work to be done
                   ! TS 18 Oct 2023: snow is temporarily turned off for easier implementation of other functionalities
                   ! CALL SUEWS_cal_snow_DTS( &
                   !    timer, config, forcing, siteInfo, & ! input
