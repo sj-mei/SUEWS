@@ -2487,9 +2487,7 @@ CONTAINS
                timer, config, forcing, siteInfo, & ! input
                atmState, &
                roughnessState, &
-               qh, qe, & ! input
-               ! TODO: collect output into a derived type for model output
-               T2_C, q2_gkg, U10_ms, RH2, & !output
+               heatstate, & ! input
                dataoutLineRSL) ! output
 
             ! ============ BIOGENIC CO2 FLUX =======================

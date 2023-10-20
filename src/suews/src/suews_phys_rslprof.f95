@@ -750,8 +750,7 @@ CONTAINS
       timer, config, forcing, siteInfo, & ! input
       atmState, &
       roughnessState, &
-      qh, qe, & ! input
-      T2_C, q2_gkg, U10_ms, RH2, & !output
+      heatState, & ! input
       dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
@@ -766,7 +765,8 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
-                               SUEWS_SITE, atm_state, ROUGHNESS_STATE
+                               SUEWS_SITE, atm_state, ROUGHNESS_STATE,&
+                               HEAT_STATE
 
       IMPLICIT NONE
 
@@ -783,7 +783,8 @@ CONTAINS
       ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
       ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(atm_state), INTENT(IN) :: atmState
+      TYPE(HEAT_STATE), INTENT(IN) :: heatState
+      TYPE(atm_state), INTENT(INOUT) :: atmState
       TYPE(ROUGHNESS_STATE), INTENT(IN) :: roughnessState
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !surface fraction ratio [-]
@@ -798,8 +799,8 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(in) :: avcp ! specific heat capacity [J kg-1 K-1]
       ! REAL(KIND(1D0)), INTENT(in) :: lv_J_kg ! Latent heat of vaporization in [J kg-1]
       ! REAL(KIND(1D0)), INTENT(in) :: avdens ! air density [kg m-3]
-      REAL(KIND(1D0)), INTENT(in) :: qh ! sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qe ! Latent heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qh ! sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qe ! Latent heat flux [W m-2]
       ! REAL(KIND(1D0)), INTENT(in) :: Zh ! Mean building height [m]
       ! REAL(KIND(1D0)), INTENT(in) :: z0m ! roughness for momentum [m]
       ! REAL(KIND(1D0)), INTENT(in) :: z0v ! roughnesslength for heat [s m-1]
@@ -812,10 +813,10 @@ CONTAINS
       ! INTEGER :: StabilityMethod
       ! INTEGER :: DiagMethod
 
-      REAL(KIND(1D0)), INTENT(out) :: T2_C ! Air temperature at 2 m [C]
-      REAL(KIND(1D0)), INTENT(out) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
-      REAL(KIND(1D0)), INTENT(out) :: U10_ms ! wind speed at 10 m [m s-1]
-      REAL(KIND(1D0)), INTENT(out) :: RH2 ! Air relative humidity [-]
+      ! REAL(KIND(1D0)), INTENT(out) :: T2_C ! Air temperature at 2 m [C]
+      ! REAL(KIND(1D0)), INTENT(out) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: U10_ms ! wind speed at 10 m [m s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: RH2 ! Air relative humidity [-]
 
       ! INTEGER, PARAMETER :: nz = 30 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
@@ -934,6 +935,10 @@ CONTAINS
          avcp => atmState%avcp, &
          lv_J_kg => atmState%lv_J_kg, &
          L_MOD => atmState%L_MOD, &
+         T2_C=> atmState%T2_C,&
+         q2_gkg=> atmState%q2_gkg,&
+         U10_ms=> atmState%U10_ms,&
+         RH2=> atmState%RH2,&
          Zh => roughnessState%Zh, &
          z0m => roughnessState%z0m, &
          zdm => roughnessState%zdm, &
@@ -946,6 +951,8 @@ CONTAINS
          ! qh => heatState%qh, &
          ! qh_resist => heatState%qh_resist, &
          ! qh_residual => heatState%qh_residual, &
+         qh => heatState%qh, &
+         qe => heatState%qe, &
          SMDMethod => config%SMDMethod, &
          storageheatmethod => config%StorageHeatMethod, &
          DiagMethod => config%DiagMethod, &
