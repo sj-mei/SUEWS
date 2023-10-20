@@ -2499,7 +2499,7 @@ CONTAINS
                atmState, &
                phenState, &
                snowState, &
-               vsmd, &
+               hydroState, &
                anthroEmisState) ! inout
 
             ! calculations of diagnostics end
@@ -3051,7 +3051,7 @@ CONTAINS
       atmState, &
       phenState, &
       snowState, &
-      vsmd, &
+      hydroState, &
       anthroEmisState) ! inout
 
       USE SUEWS_DEF_DTS, ONLY: LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
@@ -3066,13 +3066,14 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(atm_state), INTENT(IN) :: atmState
+      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
       TYPE(anthroEmis_STATE), INTENT(INout) :: anthroEmisState
 
       ! TYPE(CONDUCTANCE_PRM), INTENT(in) :: conductancePrm
       TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
       TYPE(SNOW_STATE), INTENT(IN) :: snowState
 
-      REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
+      ! REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
 
       REAL(KIND(1D0)) :: gfunc2 !gdq*gtemp*gs*gq for photosynthesis calculations (With modelled 2 meter temperature)
       REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
@@ -3127,6 +3128,7 @@ CONTAINS
          t2_C => atmState%t2_C, &
          LAI_id => phenState%LAI_id, &
          gfunc => phenState%gfunc, &
+         vsmd => hydroState%vsmd, &
          id => timer%id, &
          it => timer%it, &
          dectime => timer%dectime, &
