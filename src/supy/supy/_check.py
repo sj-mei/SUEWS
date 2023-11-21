@@ -310,7 +310,6 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
         "statelimit": "statelimit_surf",
         "qn1_av": "qn_av",
         "qn1_s_av": "qn_s_av",
-
         # these columns are renamed since v2022.4.13
         "g1": "g_max",
         "g2": "g_k",
@@ -332,21 +331,36 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
     set_col_deprecated_use = sorted(
         set(list_col_deprecated_use).intersection(set(list_col_deprecated))
     )
-    print(set_col_deprecated_use)
+
+    # check if a df_state is before v2023.7.3
+    set_col_rule = set(dict_rules_indiv.keys()).difference(
+        [x.lower() for x in list_col_forcing]
+    )
+    set_col_new = set_col_rule.difference(set(df_state_deprecated.columns.levels[0]))
+    if len(set_col_new) > 0:
+        logger_supy.info("A deprecated df_state is detected.")
+        logger_supy.info(
+            f"The following columns are missing: {sorted(set_col_new)} - need to be added."
+        )
+        flag_to_add = True
+    else:
+        flag_to_add = False
+
     if set_col_deprecated_use:
         logger_supy.info("A deprecated df_state is detected.")
         logger_supy.info(
-            f"The following columns are deprecated: {set_col_deprecated_use}"
+            f"The following columns are deprecated: {set_col_deprecated_use} - need to be removed."
         )
-        logger_supy.info("Upgrading...")
-        flag_deprecated = True
+        flag_to_remove = True
     else:
-        logger_supy.info("The df_state is up to date. No upgrade required.")
+        flag_to_remove = False
+
+    if any([flag_to_add, flag_to_remove]):
+        flag_deprecated = True
+        logger_supy.info("Upgrading...")
+    else:
+        logger_supy.info("The df_state is up to date. No columns to be dropped.")
         flag_deprecated = False
-    # for var in list_col_deprecated:
-    #     if var in df_state_deprecated.columns:
-    #         flag_deprecated = True
-    #         break
 
     # if so, upgrade it
     if flag_deprecated:
@@ -373,7 +387,6 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
                 print(df_state_upgrade[c])
                 logger_supy.info(f"Column `{c}` is removed")
                 df_state_upgrade = df_state_upgrade.drop(columns=c, level=0)
-        # print(df_state_upgrade[list_col_remove])
 
         # expand df_state_init to match df_state_init_test
         n_row, n_col = df_state_upgrade.shape
@@ -385,11 +398,13 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
         for c in df_state_init_base.columns:
             if c in df_state_upgrade.columns:
                 continue
-            else:
+            elif c[0] in set_col_new:
                 dict_col_add[c] = df_state_init_base[c]
                 logger_supy.info(
                     f"A new column `{c}` is added with values: {dict_col_add[c].values}"
                 )
+            else:
+                logger_supy.info(f"Column `{c}` is not added - internal testing only.")
 
         # merge processed dataframes
         if len(dict_col_add) > 0:
