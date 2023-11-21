@@ -296,6 +296,16 @@ def flatten_col(df_state: pd.DataFrame):
 
 # upgrade df_state from earlier versions of SuPy
 def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
+    """
+    Upgrades the input DataFrame `df_state` if it contains deprecated columns.
+    If the DataFrame is already up to date, it returns a copy of the input DataFrame.
+
+    Parameters:
+    - df_state (pd.DataFrame): The DataFrame to be upgraded.
+
+    Returns:
+    - pd.DataFrame: The upgraded DataFrame if it contains deprecated columns, otherwise a copy of the input DataFrame.
+    """
     df_state_deprecated = df_state.copy()
     df_state_deprecated.columns = df_state_deprecated.columns.remove_unused_levels()
 
