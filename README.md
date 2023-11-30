@@ -32,6 +32,20 @@ This is a public repo for SUEWS source code and documentation.
 
 ## Compilation
 
+### Prerequisites
+
+#### Essential
+* [gfortran](https://gcc.gnu.org/wiki/GFortran) (>= 9.3.0)
+* [git](https://git-scm.com/) - for version control
+* [mamba](https://mamba.readthedocs.io/en/latest/) - avoid using `conda` as it is too slow
+
+#### Recommended
+* [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) - for Linux-like environment on Windows
+* [VS Code](https://code.visualstudio.com/) - for code editing
+* [VS Code Co-pilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) - for AI-assisted code writing (free for academic use)
+
+
+### Compilation
 1. Since SUEWS includes a dependency package [SPARTACUS](https://github.com/Urban-Meteorology-Reading/spartacus-surface), one needs to initialise this submodule by:
 ```shell
 git submodule init
@@ -42,14 +56,45 @@ Then source code of SPARTACUS will be loaded into `SUEWS-SourceCode/ext_lib/spar
 
 *Note: if a `permission denied` error occurs, one usually needs to fix the SSH connection to GitHub by following the [official guide here](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh).*
 
-2. Compile SUEWS by:
+
+
+2. Configure mamba environment by:
+```shell
+mamba env create -f env.yml
+```
+This will create a new environment named `suews-dev` with all the required packages installed.
+
+3. Activate the environment by:
+```shell
+make activate suews-dev
+```
+
+
+4. Compile SUEWS
+
+4.1 compile the code and perform all tests
 ```shell
 make
 ```
-The compiled SUEWS binary executable can be found under `Release/bin/<system>` where `<system>` can be one of `Win`, `macOS` and `Linux`.
 
-## Sample Run
-Sample input and output files can be found under `Test/BaseRun/<version>`, where `<version>` is denoted by the ending part of compiled binary (e.g., `2020b`).
+4.2 only compile the code
+```shell
+make dev
+```
+
+
+This will install a python package `supy-driver` and `supy` into the current environment (i.e., `suews-dev`).
+Also, several command-line tools will be installed under `bin` folder, which can be used to perform SUEWS simulations:
+- `suews-run`: the main SUEWS binary
+- `suews-convert`: a tool to convert SUEWS input files from old format to new format
+the usage of both of which can be checked by `--help` option (e.g., `suews-run --help`).
+
+5. Check if `supy` is installed by:
+```shell
+pip show supy
+```
+
+
 
 ## Developer Note
 - When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.
@@ -64,11 +109,9 @@ Sample input and output files can be found under `Test/BaseRun/<version>`, where
 If one needs to fix a bug or implement a new feature, please open an issue with details and then submit a pull request with respect to that issue.
 
 
-### Manual
+### Documentation
 
-* Please keep the development changes documented in the [Documentation repo](https://github.com/UMEP-dev/SUEWS-Docs).
-* The SUEWS docs are mainly written in [RST](http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html) but [Markdown](https://guides.github.com/features/mastering-markdown/) is also acceptable.
-* Your changes to docs will be reviewed and merged into public release if appropriate.
+* Please keep the development changes in [CHANGELOG.md](CHANGELOG.md).
 
 ### Test
 
@@ -83,7 +126,7 @@ If any error, please resolve it or justify that the test is giving false alarm.
 - if test run results could match those from the standard run (runs under `BaseRun`): to check if any non-functional changes would break the current code;
 - if all physics schemes are working: to check possible invalid physics schemes.
 
-#### Workflow
+<!-- #### Workflow
 The test workflow is as follows (details refer to the Makefile `test` recipe and related python code):
 
 1. clean existing build and rebuild the code;
@@ -92,9 +135,9 @@ The test workflow is as follows (details refer to the Makefile `test` recipe and
 4. copy the version specific input files under `Release/InputTables/{version}` to the temporary folder (see below for its preparation);
 5. run python code to perform the above checks and write out test results to the console:
    1. if all tests are successful, the code is generally good to go;
-   2. if any test failed, we NEED to look into the reasons for the failure and resolve them before any further feature-added operations.
+   2. if any test failed, we NEED to look into the reasons for the failure and resolve them before any further feature-added operations. -->
 
-#### Preparation of tests
+<!-- #### Preparation of tests
 
 1. Prepare a base run:
    - under `Test/BaseRun`, create a folder named with version/feature info (e.g., `2019a`);
@@ -106,7 +149,7 @@ The test workflow is as follows (details refer to the Makefile `test` recipe and
    - `name_exe`: the SUEWS binary name that will be used for testing.
    - `dir_exe`: the directory to copy `name_exe`.
    - `dir_input`: the directory to copy input files; suggested to be `Release/InputTables/{version}`.
-   - `dir_baserun`: the base run against which to test identity in results.
+   - `dir_baserun`: the base run against which to test identity in results. -->
 
 ### Debugging with GDB
 
