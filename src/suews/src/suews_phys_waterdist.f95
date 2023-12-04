@@ -490,7 +490,7 @@ CONTAINS
 
       DO is = 1, nsurf !For each surface in turn
          ! print *, 'cal_water_storage_surf: is = ', is
-         IF (SnowFrac_in(is)==0 .AND. sfr_surf(is) > 0) THEN
+         IF (SnowFrac_in(is) == 0 .AND. sfr_surf(is) > 0) THEN
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
             CALL cal_water_storage( &
