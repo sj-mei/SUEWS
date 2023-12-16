@@ -36,13 +36,21 @@ CFLAGS = -fPIC #     ==> universal for ifort, gfortran, pgi
 #=======================================================================
 
 UNAME = $(shell uname)
-ifeq (${UNAME}, Darwin)
+ifeq ($(UNAME), Darwin)
   LIBTOOL = libtool -static -o
-  CFLAGS += -fbracket-depth=1024 -D_POSIX_C_SOURCE=200809L
+  # Check if gcc is an alias to clang
+  ifeq ($(shell $(CC) --version | grep -q clang; echo $$?), 0)
+    $(info gcc is an alias to clang)
+    CFLAGS += -fbracket-depth=1024
+  else
+    $(info gcc is GNU Compiler Collection)
+  endif
+  CFLAGS += -D_POSIX_C_SOURCE=200809L
   CFLAGS += $(ARCH_FLAGS)
 else
   LIBTOOL = ar src
 endif
+
 
 # ARCH := $(shell uname -m)
 # ifeq ($(ARCH), arm64)
