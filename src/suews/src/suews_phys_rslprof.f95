@@ -765,7 +765,7 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
-                               SUEWS_SITE, atm_state, ROUGHNESS_STATE,&
+                               SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
                                HEAT_STATE
 
       IMPLICIT NONE
@@ -935,10 +935,10 @@ CONTAINS
          avcp => atmState%avcp, &
          lv_J_kg => atmState%lv_J_kg, &
          L_MOD => atmState%L_MOD, &
-         T2_C=> atmState%T2_C,&
-         q2_gkg=> atmState%q2_gkg,&
-         U10_ms=> atmState%U10_ms,&
-         RH2=> atmState%RH2,&
+         T2_C => atmState%T2_C, &
+         q2_gkg => atmState%q2_gkg, &
+         U10_ms => atmState%U10_ms, &
+         RH2 => atmState%RH2, &
          Zh => roughnessState%Zh, &
          z0m => roughnessState%z0m, &
          zdm => roughnessState%zdm, &
