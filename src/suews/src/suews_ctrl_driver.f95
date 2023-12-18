@@ -1782,7 +1782,7 @@ CONTAINS
       TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
 
       ! input arrays: standard suews surfaces
-      TYPE(HEAT_STATE) :: heatState_in, heatState_out
+      TYPE(HEAT_STATE) :: heatState_in
 
       REAL(KIND(1D0)) :: Tair_av_prev, Tair_av_next !average air temperature [degC]
       ! ########################################################################################
@@ -2017,7 +2017,7 @@ CONTAINS
 
             CALL heatState_in%ALLOCATE(nsurf, nlayer, ndepth)
 
-            CALL heatState_out%ALLOCATE(nsurf, nlayer, ndepth)
+            ! CALL heatState%ALLOCATE(nsurf, nlayer, ndepth)
 
             ! ############# memory allocation for DTS variables (end) #############
 
@@ -2097,7 +2097,6 @@ CONTAINS
             ! Ts_iter = forcing%temp_c
             flag_print_debug = .FALSE.
 
-            heatState_out = heatState
             tsfc0_out_surf = heatState%tsfc_surf
             ! ! TODO: ESTM work: to allow heterogeneous surface temperatures
             IF (config%StorageHeatMethod == 5 .OR. config%NetRadiationMethod > 1000) THEN
@@ -2243,7 +2242,7 @@ CONTAINS
                   snowState, &
                   dataOutLineSPARTACUS)
 
-               IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState_out%tsfc_surf
+               IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
                CALL SUEWS_cal_Qs_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   atmState, &
@@ -2375,7 +2374,6 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   nlayer, & !input
                   heatState,snowState, & ! input
-                  heatState_out, &
                   atmState, &
                   ! TODO: collect output into a derived type for model output
                   qh, qh_residual, qh_resist, & !output
@@ -2395,48 +2393,48 @@ CONTAINS
                !============= calculate surface specific QH and Tsfc ===============
 
                DO i_surf = 1, nsurf
-                  heatState_out%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
+                  heatState%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
 
                END DO
-               IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState_out%tsfc_surf
+               IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
                DO i_surf = 1, nlayer
-                  heatState_out%tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, forcing%temp_c)
-                  heatState_out%tsfc_wall(i_surf) = cal_tsfc(QH_wall(i_surf), avdens, avcp, RA_h, forcing%temp_c)
+                  heatState%tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, forcing%temp_c)
+                  heatState%tsfc_wall(i_surf) = cal_tsfc(QH_wall(i_surf), avdens, avcp, RA_h, forcing%temp_c)
                END DO
 
                ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
-               tsfc0_out_surf = MIN(heatState_out%tsfc_surf, forcing%Temp_C + 50)
-               tsfc0_out_roof = MIN(heatState_out%tsfc_roof, forcing%Temp_C + 50)
-               tsfc0_out_wall = MIN(heatState_out%tsfc_wall, forcing%Temp_C + 50)
+               tsfc0_out_surf = MIN(heatState%tsfc_surf, forcing%Temp_C + 50)
+               tsfc0_out_roof = MIN(heatState%tsfc_roof, forcing%Temp_C + 50)
+               tsfc0_out_wall = MIN(heatState%tsfc_wall, forcing%Temp_C + 50)
 
-               IF (config%diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState_out%tsfc_surf
+               IF (config%diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState%tsfc_surf
                ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
                IF (config%diagnose == 1) PRINT *, &
-                  'tsfc_surf abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_surf - tsfc0_out_surf)), &
-                  MAXLOC(ABS(heatState_out%tsfc_surf - tsfc0_out_surf))
-               dif_tsfc_iter = MAXVAL(ABS(heatState_out%tsfc_surf - tsfc0_out_surf))
+                  'tsfc_surf abs. diff.:', MAXVAL(ABS(heatState%tsfc_surf - tsfc0_out_surf)), &
+                  MAXLOC(ABS(heatState%tsfc_surf - tsfc0_out_surf))
+               dif_tsfc_iter = MAXVAL(ABS(heatState%tsfc_surf - tsfc0_out_surf))
                IF (config%StorageHeatMethod == 5) THEN
                   IF (config%diagnose == 1) PRINT *, &
-                     'tsfc_roof abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_roof - tsfc0_out_roof)), &
-                     MAXLOC(ABS(heatState_out%tsfc_roof - tsfc0_out_roof))
-                  dif_tsfc_iter = MAX(MAXVAL(ABS(heatState_out%tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
+                     'tsfc_roof abs. diff.:', MAXVAL(ABS(heatState%tsfc_roof - tsfc0_out_roof)), &
+                     MAXLOC(ABS(heatState%tsfc_roof - tsfc0_out_roof))
+                  dif_tsfc_iter = MAX(MAXVAL(ABS(heatState%tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
                   IF (config%diagnose == 1) PRINT *, &
-                     'tsfc_wall abs. diff.:', MAXVAL(ABS(heatState_out%tsfc_wall - tsfc0_out_wall)), &
-                     MAXLOC(ABS(heatState_out%tsfc_wall - tsfc0_out_wall))
-                  dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - heatState_out%tsfc_wall)), dif_tsfc_iter)
+                     'tsfc_wall abs. diff.:', MAXVAL(ABS(heatState%tsfc_wall - tsfc0_out_wall)), &
+                     MAXLOC(ABS(heatState%tsfc_wall - tsfc0_out_wall))
+                  dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - heatState%tsfc_wall)), dif_tsfc_iter)
                END IF
 
                ! ====test===
                ! see if this converges better
                ! ratio_iter = 1
                ratio_iter = .3
-               heatState_out%tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + heatState_out%tsfc_surf*ratio_iter)
-               heatState_out%tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + heatState_out%tsfc_roof*ratio_iter)
-               heatState_out%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + heatState_out%tsfc_wall*ratio_iter)
+               heatState%tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + heatState%tsfc_surf*ratio_iter)
+               heatState%tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + heatState%tsfc_roof*ratio_iter)
+               heatState%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + heatState%tsfc_wall*ratio_iter)
                ! =======test end=======
 
-               IF (flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState_out%tsfc_surf
+               IF (flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState%tsfc_surf
 
                !============ surface-level diagonostics end ===============
 
@@ -2525,12 +2523,12 @@ CONTAINS
 
             IF (config%StorageHeatMethod == 5) THEN
                ! ESTM_ehc related
-               heatState%temp_roof = heatState_out%temp_roof
-               heatState%temp_wall = heatState_out%temp_wall
-               heatState%temp_surf = heatState_out%temp_surf
-               heatState%tsfc_roof = heatState_out%tsfc_roof
-               heatState%tsfc_wall = heatState_out%tsfc_wall
-               heatState%tsfc_surf = heatState_out%tsfc_surf
+               heatState%temp_roof = heatState%temp_roof
+               heatState%temp_wall = heatState%temp_wall
+               heatState%temp_surf = heatState%temp_surf
+               heatState%tsfc_roof = heatState%tsfc_roof
+               heatState%tsfc_wall = heatState%tsfc_wall
+               heatState%tsfc_surf = heatState%tsfc_surf
 
                ! hydroState%soilstore_roof = hydroState_next%soilstore_roof
                ! hydroState%state_roof = hydroState_next%state_roof
@@ -2586,7 +2584,7 @@ CONTAINS
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling ECH_update_outputLine_DTS...'
                CALL ECH_update_outputLine_DTS( &
                   timer, dectime, nlayer, & !input
-                  heatState_out, qs_surf, &
+                  heatState, qs_surf, &
                   QN_roof, &
                   QS_roof, &
                   QE_roof, &
@@ -6837,7 +6835,6 @@ CONTAINS
       timer, config, forcing, siteInfo, & ! input
       nlayer, & !input
       heatState, snowstate,&
-      heatState_out, &
       atmState, &
       qh, qh_residual, qh_resist, & !output
       qh_resist_surf, qh_resist_roof, qh_resist_wall)
@@ -6853,7 +6850,6 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(HEAT_STATE), INTENT(IN) :: heatState_out
       TYPE(HEAT_STATE), INTENT(in) :: heatState
       TYPE(snow_STATE), INTENT(in) :: snowState
       TYPE(atm_state), INTENT(IN) :: atmState
@@ -6910,9 +6906,9 @@ CONTAINS
          vegfraction => siteInfo%vegfraction, &
          NonWaterFraction => siteInfo%NonWaterFraction, &
          tstep_real => timer%tstep_real, &
-         tsfc_surf => heatState_out%tsfc_surf, &
-         tsfc_roof => heatState_out%tsfc_roof, &
-         tsfc_wall => heatState_out%tsfc_wall, &
+         tsfc_surf => heatState%tsfc_surf, &
+         tsfc_roof => heatState%tsfc_roof, &
+         tsfc_wall => heatState%tsfc_wall, &
          qn=> heatState%qn,&
 qf=> heatState%qf,&
 qe=> heatState%qe,&
