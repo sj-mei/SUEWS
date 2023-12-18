@@ -2372,12 +2372,8 @@ CONTAINS
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
                CALL SUEWS_cal_QH_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  nlayer, & !input
-                  heatState,snowState, & ! input
-                  atmState, &
-                  ! TODO: collect output into a derived type for model output
-                  qh, qh_residual, qh_resist, & !output
-                  qh_resist_surf, qh_resist_roof, qh_resist_wall)
+                  heatState, snowState, & ! input
+                  atmState)
 
                !============ Sensible heat flux end ===============
 
@@ -6833,11 +6829,8 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_QH_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      nlayer, & !input
-      heatState, snowstate,&
-      atmState, &
-      qh, qh_residual, qh_resist, & !output
-      qh_resist_surf, qh_resist_roof, qh_resist_wall)
+      heatState, snowstate, &
+      atmState)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
@@ -6850,12 +6843,12 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(HEAT_STATE), INTENT(in) :: heatState
+      TYPE(HEAT_STATE), INTENT(inout) :: heatState
       TYPE(snow_STATE), INTENT(in) :: snowState
       TYPE(atm_state), INTENT(IN) :: atmState
 
       INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
-      INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
+      ! INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
 
       ! REAL(KIND(1D0)), INTENT(in) :: qn !net all-wave radiation [W m-2]
       ! REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux [W m-2]
@@ -6869,12 +6862,12 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(in) :: tsurf
       ! REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
 
-      REAL(KIND(1D0)), INTENT(out) :: qh ! turtbulent sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: qh_resist !resistance bnased sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: qh_residual ! residual based sensible heat flux [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf !resistance-based sensible heat flux [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof !resistance-based sensible heat flux of roof [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall !resistance-based sensible heat flux of wall [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qh ! turtbulent sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qh_resist !resistance bnased sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qh_residual ! residual based sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf !resistance-based sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof !resistance-based sensible heat flux of roof [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall !resistance-based sensible heat flux of wall [W m-2]
 
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !surface fraction of roof [-]
       ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof !roof surface temperature [degC]
@@ -6909,24 +6902,24 @@ CONTAINS
          tsfc_surf => heatState%tsfc_surf, &
          tsfc_roof => heatState%tsfc_roof, &
          tsfc_wall => heatState%tsfc_wall, &
-         qn=> heatState%qn,&
-qf=> heatState%qf,&
-qe=> heatState%qe,&
-qs=> heatState%qs,&
-QmRain=> snowState%QmRain,&
-QmFreez=> snowState%QmFreez,&
-qm=> snowState%qm,&
+         qn => heatState%qn, &
+         qf => heatState%qf, &
+         qe => heatState%qe, &
+         qs => heatState%qs, &
+         QmRain => snowState%QmRain, &
+         QmFreez => snowState%QmFreez, &
+         qm => snowState%qm, &
          xsmd => forcing%xsmd, &
          Temp_C => forcing%Temp_C, &
          RA_h => atmState%RA_h, &
          avdens => atmState%avdens, &
          avcp => atmState%avcp, &
-         ! qh_resist_surf => heatState%qh_resist_surf, &
-         ! qh_resist_roof => heatState%qh_resist_roof, &
-         ! qh_resist_wall => heatState%qh_resist_wall, &
-         ! qh => heatState%qh, &
-         ! qh_resist => heatState%qh_resist, &
-         ! qh_residual => heatState%qh_residual, &
+         qh_resist_surf => heatState%qh_resist_surf, &
+         qh_resist_roof => heatState%qh_resist_roof, &
+         qh_resist_wall => heatState%qh_resist_wall, &
+         qh => heatState%qh, &
+         qh_resist => heatState%qh_resist, &
+         qh_residual => heatState%qh_residual, &
          SMDMethod => config%SMDMethod, &
          storageheatmethod => config%StorageHeatMethod, &
          Diagnose => config%Diagnose &
