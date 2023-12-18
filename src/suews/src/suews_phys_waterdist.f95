@@ -1914,10 +1914,8 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_HorizontalSoilWater_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      hydroState_next, & ! inout: !Soil moisture of each surface type [mm]
-      runoffSoil_surf, & !Soil runoff from each soil sub-surface [mm]
-      runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-      )
+      hydroState) ! inout: !Soil moisture of each surface type [mm]
+
       !Transfers water in soil stores of land surfaces LJ (2010)
       !Change the model to use varying hydraulic conductivity instead of constant value LJ (7/2011)
       !If one of the surface's soildepth is zero, no water movement is considered
@@ -1949,7 +1947,7 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState_next
+      TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilDepth !Depth of sub-surface soil store for each surface [mm]
@@ -1959,9 +1957,9 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(in) :: tstep_real !tstep cast as a real for use in calculations
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: soilstore_id !Soil moisture of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil_surf !Soil runoff from each soil sub-surface [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil_surf !Soil runoff from each soil sub-surface [mm]
 
-      REAL(KIND(1D0)), INTENT(out) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+      ! REAL(KIND(1D0)), INTENT(out) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
 
       INTEGER :: jj, is
       REAL(KIND(1D0)) :: &
@@ -2013,6 +2011,8 @@ CONTAINS
          vegfraction => siteInfo%vegfraction, &
          NonWaterFraction => siteInfo%NonWaterFraction, &
          tstep_real => timer%tstep_real, &
+         runoffSoil_surf => hydroState%runoffSoil,&
+runoffSoil_per_tstep => hydroState%runoffSoil_per_tstep,&
          Diagnose => config%Diagnose &
          )
          runoffSoil_surf = 0
@@ -2054,7 +2054,7 @@ CONTAINS
                      ! ---- For surface 1 -----------------------------------------------------
                      ! Calculate non-saturated VWC
                      SoilMoistCap_Vol1 = SoilStoreCap(is)/SoilDepth(is) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-                     SoilMoist_vol1 = hydroState_next%soilstore_surf(is)/SoilDepth(is) !Volumetric soil moisture [m3 m-3]
+                     SoilMoist_vol1 = hydroState%soilstore_surf(is)/SoilDepth(is) !Volumetric soil moisture [m3 m-3]
 
                      !B_r1=SoilMoistCap_Vol1-SoilMoist_vol1  !Residual soil moisture content [m3 m-3]
                      B_r1 = 0.1 !HCW 12/08/2014 Temporary fix
@@ -2097,7 +2097,7 @@ CONTAINS
                      ! ---- For surface 2 -----------------------------------------------------
                      ! Calculate non-saturated VWC
                      SoilMoistCap_Vol2 = SoilStoreCap(jj)/SoilDepth(jj) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-                     SoilMoist_vol2 = hydroState_next%soilstore_surf(jj)/SoilDepth(jj) !Volumetric soil moisture [m3 m-3]
+                     SoilMoist_vol2 = hydroState%soilstore_surf(jj)/SoilDepth(jj) !Volumetric soil moisture [m3 m-3]
 
                      !B_r2=SoilMoistCap_Vol2-SoilMoist_vol2  !Residual soil moisture content [m3 m-3]
                      B_r2 = 0.1 !HCW 12/08/2014 Temporary fix
@@ -2159,36 +2159,36 @@ CONTAINS
                      !Water moves only if (i) there is sufficient water to move and (ii) there is space to move it
 
                      ! If there is sufficient water in both surfaces, allow movement of dI to occur
-                     IF ((hydroState_next%soilstore_surf(jj) >= dI*sfr_surf(is)/sfr_surf(jj)) .AND. &
-                         ((hydroState_next%soilstore_surf(is) + dI) >= 0)) THEN
-                        hydroState_next%soilstore_surf(is) = hydroState_next%soilstore_surf(is) + dI
-                        hydroState_next%soilstore_surf(jj) = hydroState_next%soilstore_surf(jj) - dI*sfr_surf(is)/sfr_surf(jj) !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
+                     IF ((hydroState%soilstore_surf(jj) >= dI*sfr_surf(is)/sfr_surf(jj)) .AND. &
+                         ((hydroState%soilstore_surf(is) + dI) >= 0)) THEN
+                        hydroState%soilstore_surf(is) = hydroState%soilstore_surf(is) + dI
+                        hydroState%soilstore_surf(jj) = hydroState%soilstore_surf(jj) - dI*sfr_surf(is)/sfr_surf(jj) !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
 
                         ! If insufficient water in first surface to move dI, instead move as much as possible
-                     ELSEIF ((hydroState_next%soilstore_surf(is) + dI) < 0) THEN
-                        hydroState_next%soilstore_surf(jj) = hydroState_next%soilstore_surf(jj) + &
-                                                             hydroState_next%soilstore_surf(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
-                        hydroState_next%soilstore_surf(is) = 0 !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
+                     ELSEIF ((hydroState%soilstore_surf(is) + dI) < 0) THEN
+                        hydroState%soilstore_surf(jj) = hydroState%soilstore_surf(jj) + &
+                                                             hydroState%soilstore_surf(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
+                        hydroState%soilstore_surf(is) = 0 !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
 
                         ! If insufficient water in second surface to move dI, instead move as much as possible
                      ELSE
-                        hydroState_next%soilstore_surf(is) = hydroState_next%soilstore_surf(is) + &
-                                                             hydroState_next%soilstore_surf(jj)*sfr_surf(jj)/sfr_surf(is)
-                        hydroState_next%soilstore_surf(jj) = 0
+                        hydroState%soilstore_surf(is) = hydroState%soilstore_surf(is) + &
+                                                             hydroState%soilstore_surf(jj)*sfr_surf(jj)/sfr_surf(is)
+                        hydroState%soilstore_surf(jj) = 0
                      END IF
 
                      !If soil moisture exceeds capacity, excess goes to soil runoff (first surface)
-                     IF (hydroState_next%soilstore_surf(is) > SoilStoreCap(is)) THEN
-                        runoffSoil_surf(is) = runoffSoil_surf(is) + (hydroState_next%soilstore_surf(is) - SoilStoreCap(is))
-                        hydroState_next%soilstore_surf(is) = SoilStoreCap(is)
+                     IF (hydroState%soilstore_surf(is) > SoilStoreCap(is)) THEN
+                        runoffSoil_surf(is) = runoffSoil_surf(is) + (hydroState%soilstore_surf(is) - SoilStoreCap(is))
+                        hydroState%soilstore_surf(is) = SoilStoreCap(is)
                         !elseif (soilstore_id(is)<0) then  !HCW 13/08/2014 commented out as should never be true here anyway...
                         !   soilstore_id(is)=0             ! ... and if so, need to do more here (i.e. account for other water too)
                      END IF
 
                      !If soil moisture exceeds capacity, excess goes to soil runoff (second surface)
-                     IF (hydroState_next%soilstore_surf(jj) > SoilStoreCap(jj)) THEN
-                        runoffSoil_surf(jj) = runoffSoil_surf(jj) + (hydroState_next%soilstore_surf(jj) - SoilStoreCap(jj))
-                        hydroState_next%soilstore_surf(jj) = SoilStoreCap(jj)
+                     IF (hydroState%soilstore_surf(jj) > SoilStoreCap(jj)) THEN
+                        runoffSoil_surf(jj) = runoffSoil_surf(jj) + (hydroState%soilstore_surf(jj) - SoilStoreCap(jj))
+                        hydroState%soilstore_surf(jj) = SoilStoreCap(jj)
                         !elseif (soilstore_id(jj)<0) then  !HCW 13/08/2014 commented out (as above)
                         !         soilstore_id(jj)=0
                      END IF

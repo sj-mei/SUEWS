@@ -2353,11 +2353,8 @@ CONTAINS
                CALL SUEWS_cal_HorizontalSoilWater_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   ! TODO: collect inout into a derived type for model state
-                  hydroState, & ! inout:!Soil moisture of each surface type [mm]
-                  runoffSoil_surf, & !Soil runoff from each soil sub-surface [mm]
-                  ! TODO: collect output into a derived type for model output
-                  runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-                  )
+                  hydroState) ! inout:!Soil moisture of each surface type [mm]
+
 
                !========== Calculate soil moisture ============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
@@ -2623,6 +2620,7 @@ CONTAINS
                 ohmState%dqndt]
 
             !==============output==========================
+            ! TODO: collect output into a derived type for model output
             IF (config%Diagnose == 1) WRITE (*, *) 'Calling output_line_init...'
             CALL output_line_init(output_line_suews)
             output_line_suews%datetimeLine = datetimeLine
