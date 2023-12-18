@@ -2374,7 +2374,7 @@ CONTAINS
                CALL SUEWS_cal_QH_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   nlayer, & !input
-                  qn, qf, QmRain, qe, qs, QmFreez, qm, &
+                  heatState,snowState, & ! input
                   heatState_out, &
                   atmState, &
                   ! TODO: collect output into a derived type for model output
@@ -6836,7 +6836,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_QH_DTS( &
       timer, config, forcing, siteInfo, & ! input
       nlayer, & !input
-      qn, qf, QmRain, qe, qs, QmFreez, qm, &
+      heatState, snowstate,&
       heatState_out, &
       atmState, &
       qh, qh_residual, qh_resist, & !output
@@ -6854,19 +6854,20 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(HEAT_STATE), INTENT(IN) :: heatState_out
-      ! TYPE(HEAT_STATE), INTENT(out) :: heatState
+      TYPE(HEAT_STATE), INTENT(in) :: heatState
+      TYPE(snow_STATE), INTENT(in) :: snowState
       TYPE(atm_state), INTENT(IN) :: atmState
 
       INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
       INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
 
-      REAL(KIND(1D0)), INTENT(in) :: qn !net all-wave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: QmRain !melt heat for rain on snow [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qe !latent heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: QmFreez !heat related to freezing of surface store [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qm !Snowmelt-related heat [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qn !net all-wave radiation [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: QmRain !melt heat for rain on snow [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qe !latent heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: QmFreez !heat related to freezing of surface store [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qm !Snowmelt-related heat [W m-2]
       ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
       ! REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
       ! REAL(KIND(1D0)), INTENT(in) :: tsurf
@@ -6912,6 +6913,13 @@ CONTAINS
          tsfc_surf => heatState_out%tsfc_surf, &
          tsfc_roof => heatState_out%tsfc_roof, &
          tsfc_wall => heatState_out%tsfc_wall, &
+         qn=> heatState%qn,&
+qf=> heatState%qf,&
+qe=> heatState%qe,&
+qs=> heatState%qs,&
+QmRain=> snowState%QmRain,&
+QmFreez=> snowState%QmFreez,&
+qm=> snowState%qm,&
          xsmd => forcing%xsmd, &
          Temp_C => forcing%Temp_C, &
          RA_h => atmState%RA_h, &
