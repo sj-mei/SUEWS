@@ -7339,7 +7339,7 @@ CONTAINS
       TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
       TYPE(SNOW_STATE), INTENT(INout) :: snowState
       TYPE(atm_state), INTENT(INout) :: atmState
-      TYPE(ROUGHNESS_STATE), INTENT(INout) ::roughnessState
+      TYPE(ROUGHNESS_STATE), INTENT(INout) :: roughnessState
       TYPE(HYDRO_STATE), INTENT(INout) :: hydroState
       TYPE(heat_STATE), INTENT(INout) :: heatState
 
@@ -7447,9 +7447,9 @@ CONTAINS
          RB => atmState%RB, &
          QH_init => heatState%QH_init, &
          z0v => roughnessState%z0v, &
-         zzd=> roughnessState%zzd, &
-         z0m=> roughnessState%z0m,&
-         zdm=> roughnessState%zdm,&
+         zzd => roughnessState%zzd, &
+         z0m => roughnessState%z0m, &
+         zdm => roughnessState%zdm, &
          g_kdown => phenState%g_kdown, &
          g_dq => phenState%g_dq, &
          g_ta => phenState%g_ta, &
