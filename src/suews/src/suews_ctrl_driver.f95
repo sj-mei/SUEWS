@@ -2230,14 +2230,13 @@ CONTAINS
                CALL SUEWS_cal_Qs_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   atmState, &
-                  nlayer, &
                   hydroState, &
                   snowState, &
                   anthroEmisState, &
                   solarState, &
                   phenState, &
                   heatState, &
-                  ohmState,&
+                  ohmState, &
                   dataOutLineESTM)
 
                !==================Energy related to snow melting/freezing processes=======
@@ -4027,7 +4026,6 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Qs_DTS( &
       timer, config, forcing, siteInfo, & ! input
       atmState, &
-      nlayer, &
       hydroState, &
       snowState, &
       anthroHeatState, &
@@ -4084,33 +4082,33 @@ CONTAINS
       ! INTEGER :: SnowUse ! option for snow related calculations [-]
       ! INTEGER :: DiagQS ! diagnostic option [-]
       ! INTEGER :: EmissionsMethod ! AnthropHeat option [-]
-      INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy [-]
+      ! INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy [-]
 
       REAL(KIND(1D0)) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients [-]
       REAL(KIND(1D0)) :: OHM_threshSW(nsurf + 1) ! Temperature threshold determining whether summer/winter OHM coefficients are applied [degC]
       REAL(KIND(1D0)) :: OHM_threshWD(nsurf + 1) ! Soil moisture threshold determining whether wet/dry OHM coefficients are applied [-]
 
-      REAL(KIND(1D0)) :: soilstore_id(nsurf) ! soil moisture on day of year
+      ! REAL(KIND(1D0)) :: soilstore_id(nsurf) ! soil moisture on day of year
       REAL(KIND(1D0)) :: SoilStoreCap(nsurf) ! capacity of soil store [J m-3 K-1]
 
       REAL(KIND(1D0)) :: state_id(nsurf) ! wetness status [mm]
 
-      REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating degree day of the day of year
-      REAL(KIND(1D0)) :: qf ! anthropogenic heat lufx [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating degree day of the day of year
+      ! REAL(KIND(1D0)) :: qf ! anthropogenic heat lufx [W m-2]
       ! REAL(KIND(1D0)), INTENT(in) :: qn ! net all-wave radiative flux [W m-2]
       ! REAL(KIND(1D0)) :: qs_obs ! observed heat storage flux [W m-2]
       ! REAL(KIND(1D0)) :: avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa
-      REAL(KIND(1D0)) :: ldown
+      ! REAL(KIND(1D0)) :: ldown
       ! REAL(KIND(1D0)) :: bldgh ! mean building height [m]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: alb ! albedo [-]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: alb ! albedo [-]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: emis ! emissivity [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: cpAnOHM ! heat capacity [J m-3 K-1]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kkAnOHM ! thermal conductivity [W m-1 K-1]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chAnOHM ! bulk transfer coef [J m-3 K-1]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac ! snow fractions of each surface [-]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac ! snow fractions of each surface [-]
 
       ! REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: Ts5mindata_ir !surface temperature input data [degC]
 
@@ -4129,7 +4127,7 @@ CONTAINS
 
       ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store_grid
       ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
-      REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm !Coefficients used in drainage calculation [-]
+      ! REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm !Coefficients used in drainage calculation [-]
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
 
@@ -4143,9 +4141,9 @@ CONTAINS
       ! extended for ESTM_ehc
       ! input arrays: standard suews surfaces
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_roof ! conductive heat flux through roof [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: tin_roof ! indoor/deep bottom temperature for roof [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tin_roof ! indoor/deep bottom temperature for roof [degC]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof ! surface fraction of roof [-]
-      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_roof ! temperature at inner interfaces of roof [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_roof ! temperature at inner interfaces of roof [degC]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: k_roof ! thermal conductivity of roof [W m-1 K]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: cp_roof ! Heat capacity of roof [J m-3 K-1]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: dz_roof ! thickness of each layer in roof [m]
@@ -4153,7 +4151,7 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: qg_wall ! conductive heat flux through wall [W m-2]
       ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tin_wall ! indoor/deep bottom temperature for wall [degC]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall ! surface fraction of wall [-]
-      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_wall ! temperature at inner interfaces of wall [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: temp_in_wall ! temperature at inner interfaces of wall [degC]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: k_wall ! thermal conductivity of wall [W m-1 K]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: cp_wall ! Heat capacity of wall [J m-3 K-1]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth) :: dz_wall ! thickness of each layer in wall [m]
@@ -4162,21 +4160,21 @@ CONTAINS
 
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_in_surf ! temperature at inner interfaces of of each surface [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: temp_in_surf ! temperature at inner interfaces of of each surface [degC]
       ! REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: k_surf ! thermal conductivity of v [W m-1 K]
       ! REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: cp_surf ! Heat capacity of each surface [J m-3 K-1]
       ! REAL(KIND(1D0)), DIMENSION(nsurf, ndepth) :: dz_surf ! thickness of each layer in each surface [m]
       ! output arrays
       ! roof facets
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof ! roof surface temperature [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof ! roof surface temperature [degC]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_roof ! heat storage flux for roof component [W m-2]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_roof !interface temperature between depth layers [degC]
       ! wall facets
-      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_wall ! wall surface temperature [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_wall ! wall surface temperature [degC]
       ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_wall ! heat storage flux for wall component [W m-2]
       !REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_wall !interface temperature between depth layers [degC]
       ! standard suews surfaces
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf ! each surface temperature [degC]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf ! each surface temperature [degC]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: QS_surf ! heat storage flux for each surface component [W m-2]
       !REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(out) :: temp_out_surf !interface temperature between depth layers [degC]
 
@@ -4187,6 +4185,7 @@ CONTAINS
       ! REAL(KIND(1D0)) :: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
       ASSOCIATE ( &
+         nlayer => siteInfo%nlayer, &
          ehcPrm => siteInfo%ehc, &
          pavedPrm => siteInfo%lc_paved, &
          bldgPrm => siteInfo%lc_bldg, &
@@ -4229,9 +4228,15 @@ CONTAINS
          QS_surf => heatState%QS_surf, &
          qn_snow => snowState%qn_snow, &
          deltaQi => snowState%deltaQi, &
+         SnowFrac => snowState%SnowFrac, &
+         soilstore_id => hydroState%soilstore_surf, &
+         state_id => hydroState%state_surf, &
+         HDD_id => anthroHeatState%HDD_id, &
          a1 => ohmState%a1, &
          a2 => ohmState%a2, &
          a3 => ohmState%a3, &
+         alb => phenState%alb, &
+         StoreDrainPrm => phenState%StoreDrainPrm, &
          id => timer%id, &
          tstep => timer%tstep, &
          dt_since_start => timer%dt_since_start &
@@ -4251,50 +4256,9 @@ CONTAINS
             dz_surf => ehcPrm%dz_surf, &
             bldgh => bldgPrm%bldgh &
             )
-            ! StorageHeatMethod = config%StorageHeatMethod
-            ! OHMIncQF = config%OHMIncQF
-            ! Diagnose = config%Diagnose
-            ! SnowUse = config%SnowUse
-            ! EmissionsMethod = config%EmissionsMethod
 
-            ! Gridiv = siteInfo%Gridiv
 
-            ! qs_obs = forcing%qs_obs
-            ! avkdn = forcing%kdown
-            ! avu1 = forcing%U
-            ! temp_c = forcing%temp_c
-            ! avrh = forcing%RH
-            ! press_hpa = forcing%pres
-            ! Tair_av = forcing%Tair_av_5d
 
-            ! id = timer%id
-            ! tstep = timer%tstep
-            ! dt_since_start = timer%dt_since_start
-
-            ! tin_roof = ehcPrm%tin_roof
-            ! k_roof = ehcPrm%k_roof
-            ! cp_roof = ehcPrm%cp_roof
-            ! dz_roof = ehcPrm%dz_roof
-            ! tin_wall = ehcPrm%tin_wall
-            ! k_wall = ehcPrm%k_wall
-            ! cp_wall = ehcPrm%cp_wall
-            ! dz_wall = ehcPrm%dz_wall
-            ! tin_surf = ehcPrm%tin_surf
-            ! k_surf = ehcPrm%k_surf
-            ! cp_surf = ehcPrm%cp_surf
-            ! dz_surf = ehcPrm%dz_surf
-
-            ! bldgh = bldgPrm%bldgh
-
-            soilstore_id = hydroState%soilstore_surf
-            state_id = hydroState%state_surf
-
-            SnowFrac = snowState%SnowFrac
-
-            HDD_id = anthroHeatState%HDD_id
-
-            alb = phenState%alb
-            StoreDrainPrm = phenState%StoreDrainPrm
 
             ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
