@@ -1773,7 +1773,7 @@ CONTAINS
       ! TYPE(OHM_STATE) :: ohmState, ohmState
 
       ! snow related:
-      TYPE(SNOW_STATE) :: snowState_prev, snowState_next
+      TYPE(SNOW_STATE) :: snowState_next
 
       ! water balance related:
       TYPE(HYDRO_STATE) :: hydroState_prev, hydroState_next
@@ -2053,8 +2053,7 @@ CONTAINS
 
             ! ########################################################################################
             ! save initial values of inout variables
-            snowState_prev = snowState
-            snowState_prev%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
+            ! snowState = snowState
             snowState%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
             hydroState_prev = hydroState
@@ -2302,13 +2301,10 @@ CONTAINS
                CALL SUEWS_cal_Resistance_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   atmState, &
-                  QH_Init, zzd, z0m, zdm, &
-                  vsmd, &
-                  phenState, snowState_prev, &
-                  ! TODO: collect output into a derived type
-                  g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
-                  UStar, TStar, L_mod, & !output
-                  zL, gsc, RS, RA_h, RAsnow, RB, z0v, z0vSnow)
+                  roughnessState, &
+                  hydroState, &
+                  heatState, &
+                  phenState, snowState)
                !===================Resistance Calculations End=======================
 
                !===================Calculate surface hydrology and related soil water=======================
@@ -2354,7 +2350,6 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   ! TODO: collect inout into a derived type for model state
                   hydroState) ! inout:!Soil moisture of each surface type [mm]
-
 
                !========== Calculate soil moisture ============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
@@ -7312,12 +7307,10 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Resistance_DTS( &
       timer, config, forcing, siteInfo, & ! input
       atmState, &
-      QH_init, zzd, z0m, zdm, &
-      vsmd, &
-      phenState_next, snowState_prev, &
-      g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
-      UStar, TStar, L_mod, & !output
-      zL, gsc, RS, RA, RASnow, RB, z0v, z0vSnow)
+      roughnessState, &
+      hydroState, &
+      heatState, &
+      phenState, snowState)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, CONDUCTANCE_PRM, &
                                SUEWS_FORCING, &
@@ -7343,9 +7336,12 @@ CONTAINS
       ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
       ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
-      TYPE(SNOW_STATE), INTENT(IN) :: snowState_prev
-      TYPE(atm_state), INTENT(IN) :: atmState
+      TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
+      TYPE(SNOW_STATE), INTENT(INout) :: snowState
+      TYPE(atm_state), INTENT(INout) :: atmState
+      TYPE(ROUGHNESS_STATE), INTENT(INout) ::roughnessState
+      TYPE(HYDRO_STATE), INTENT(INout) :: hydroState
+      TYPE(heat_STATE), INTENT(INout) :: heatState
 
       ! INTEGER :: StabilityMethod !method to calculate atmospheric stability [-]
       ! INTEGER :: Diagnose
@@ -7362,10 +7358,10 @@ CONTAINS
       ! REAL(KIND(1d0)), INTENT(in)::qh_obs
       ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
       ! REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
-      REAL(KIND(1D0)), INTENT(in) :: QH_init !initial sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: zzd !Active measurement height (meas. height-displac. height) [m]
-      REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length [m]
-      REAL(KIND(1D0)), INTENT(in) :: zdm !Displacement height [m]
+      ! REAL(KIND(1D0)), INTENT(in) :: QH_init !initial sensible heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: zzd !Active measurement height (meas. height-displac. height) [m]
+      ! REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length [m]
+      ! REAL(KIND(1D0)), INTENT(in) :: zdm !Displacement height [m]
       ! REAL(KIND(1D0)) :: avU1 !Average wind speed [m s-1]
       ! REAL(KIND(1D0)) :: Temp_C !Air temperature [degC]
       ! REAL(KIND(1D0)), INTENT(in) :: VegFraction !Fraction of vegetation [-]
@@ -7381,9 +7377,9 @@ CONTAINS
       ! REAL(KIND(1D0)) :: S2 !a parameter related to soil moisture dependence [mm]
       ! REAL(KIND(1D0)) :: TH !Maximum temperature limit [degC]
       ! REAL(KIND(1D0)) :: TL !Minimum temperature limit [degC]
-      REAL(KIND(1D0)) :: dq !Specific humidity deficit
+      ! REAL(KIND(1D0)) :: dq !Specific humidity deficit
       ! REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit
-      REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only[mm]
+      ! REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only[mm]
 
       REAL(KIND(1D0)), DIMENSION(3) :: MaxConductance !the maximum conductance of each vegetation or surface type. [mm s-1]
       REAL(KIND(1D0)), DIMENSION(3) :: LAIMax !Max LAI [m2 m-2]
@@ -7394,23 +7390,23 @@ CONTAINS
 
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
-      REAL(KIND(1D0)), INTENT(out) :: TStar !T* temperature scale
-      REAL(KIND(1D0)), INTENT(out) :: UStar !friction velocity [m s-1]
-      REAL(KIND(1D0)), INTENT(out) :: zL !stability scale
-      REAL(KIND(1D0)), INTENT(out) :: gsc !Surface Layer Conductance
-      REAL(KIND(1D0)), INTENT(out) :: RS !surface resistance [s m-1]
-      REAL(KIND(1D0)), INTENT(out) :: RA !Aerodynamic resistance [s m-1]
-      REAL(KIND(1D0)), INTENT(out) :: z0v !roughness for heat [m]
-      REAL(KIND(1D0)), INTENT(out) :: RASnow !Aerodynamic resistance for snow [s m-1]
-      REAL(KIND(1D0)), INTENT(out) :: z0vSnow !roughness for heat [m]
-      REAL(KIND(1D0)), INTENT(out) :: RB !boundary layer resistance shuttleworth
-      REAL(KIND(1D0)), INTENT(out) :: L_mod !Obukhov length [m]
+      ! REAL(KIND(1D0)), INTENT(out) :: TStar !T* temperature scale
+      ! REAL(KIND(1D0)), INTENT(out) :: UStar !friction velocity [m s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: zL !stability scale
+      ! REAL(KIND(1D0)), INTENT(out) :: gsc !Surface Layer Conductance
+      ! REAL(KIND(1D0)), INTENT(out) :: RS !surface resistance [s m-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: RA !Aerodynamic resistance [s m-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: z0v !roughness for heat [m]
+      ! REAL(KIND(1D0)), INTENT(out) :: RASnow !Aerodynamic resistance for snow [s m-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: z0vSnow !roughness for heat [m]
+      ! REAL(KIND(1D0)), INTENT(out) :: RB !boundary layer resistance shuttleworth
+      ! REAL(KIND(1D0)), INTENT(out) :: L_mod !Obukhov length [m]
 
-      REAL(KIND(1D0)), INTENT(out) :: g_kdown !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)), INTENT(out) :: g_dq !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)), INTENT(out) :: g_ta !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)), INTENT(out) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
-      REAL(KIND(1D0)), INTENT(out) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
+      ! REAL(KIND(1D0)), INTENT(out) :: g_kdown !gdq*gtemp*gs*gq for photosynthesis calculations
+      ! REAL(KIND(1D0)), INTENT(out) :: g_dq !gdq*gtemp*gs*gq for photosynthesis calculations
+      ! REAL(KIND(1D0)), INTENT(out) :: g_ta !gdq*gtemp*gs*gq for photosynthesis calculations
+      ! REAL(KIND(1D0)), INTENT(out) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
+      ! REAL(KIND(1D0)), INTENT(out) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
 
       REAL(KIND(1D0)) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
       ! REAL(KIND(1d0))              ::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
@@ -7438,9 +7434,30 @@ CONTAINS
          Temp_C => forcing%Temp_C, &
          avkdn => forcing%kdown, &
          xsmd => forcing%xsmd, &
+         vsmd => hydroState%vsmd, &
          avdens => atmState%avdens, &
          avcp => atmState%avcp, &
          dq => atmState%dq, &
+         TStar => atmState%TStar, &
+         UStar => atmState%UStar, &
+         zL => atmState%zL, &
+         RS => atmState%RS, &
+         RA => atmState%RA_h, &
+         L_mod => atmState%L_mod, &
+         RB => atmState%RB, &
+         QH_init => heatState%QH_init, &
+         z0v => roughnessState%z0v, &
+         zzd=> roughnessState%zzd, &
+         z0m=> roughnessState%z0m,&
+         zdm=> roughnessState%zdm,&
+         g_kdown => phenState%g_kdown, &
+         g_dq => phenState%g_dq, &
+         g_ta => phenState%g_ta, &
+         g_smd => phenState%g_smd, &
+         g_lai => phenState%g_lai, &
+         gsc => phenState%gsc, &
+         RASnow => snowState%RASnow, &
+         z0vSnow => snowState%z0vSnow, &
          Diagnose => config%Diagnose, &
          StabilityMethod => config%StabilityMethod, &
          RoughLenHeatMethod => config%RoughLenHeatMethod, &
@@ -7488,9 +7505,9 @@ CONTAINS
             ! avkdn = forcing%kdown
             ! xsmd = forcing%xsmd
 
-            LAI_id = phenState_next%LAI_id
+            LAI_id = phenState%LAI_id
 
-            SnowFrac = snowState_prev%SnowFrac
+            SnowFrac = snowState%SnowFrac
 
             RAsnow = 0.0
 
