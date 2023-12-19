@@ -2185,7 +2185,7 @@ CONTAINS
 
                !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
-                CALL SUEWS_cal_DailyState_DTS( &
+               CALL SUEWS_cal_DailyState_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   phenState, & !inout
                   anthroEmisState, & !inout
@@ -2207,9 +2207,10 @@ CONTAINS
                CALL SUEWS_cal_AnthropogenicEmission_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   anthroEmisState, &
-                  QF, &
-                  QF_SAHP, &
-                  Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
+                  heatState)
+                  ! QF, &
+                  ! QF_SAHP, &
+                  ! Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
@@ -2726,10 +2727,11 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      anthroEmisState_next, &
-      QF, &
-      QF_SAHP, &
-      Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
+      anthroEmisState, &
+      heatState)
+      ! QF, &
+      ! QF_SAHP, &
+      ! Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
                                anthroEmis_STATE
@@ -2770,18 +2772,19 @@ CONTAINS
 
       REAL(KIND(1D0)) :: TrafficUnits ! traffic units choice [-]
 
-      REAL(KIND(1D0)), INTENT(out) :: Fc_anthro ! anthropogenic co2 flux  [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: Fc_build ! co2 emission from building component [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(out) :: QF ! anthropogeic heat flux when EmissionMethod = 0 [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_anthro ! anthropogenic co2 flux  [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_build ! co2 emission from building component [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
+      ! REAL(KIND(1D0)), INTENT(out) :: QF ! anthropogeic heat flux when EmissionMethod = 0 [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
 
       INTEGER, PARAMETER :: notUsedI = -999
       REAL(KIND(1D0)), PARAMETER :: notUsed = -999
 
-      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState_next
+      TYPE(anthroEmis_STATE), INTENT(INout) :: anthroEmisState
+      TYPE(heat_STATE), INTENT(INout) :: heatState
       ASSOCIATE ( &
          dayofWeek_id => timer%dayofWeek_id, &
          DLS => timer%DLS, &
@@ -2802,9 +2805,16 @@ CONTAINS
             PopDensNighttime => ahemisPrm%anthroheat%popdensnighttime, &
             CO2PointSource => siteInfo%CO2PointSource, &
             SurfaceArea => siteInfo%SurfaceArea, &
-            HDD_id => anthroEmisState_next%HDD_id, &
+            HDD_id => anthroEmisState%HDD_id, &
             imin => timer%imin, &
             it => timer%it, &
+            Fc_anthro => anthroEmisState%Fc_anthro, &
+            Fc_build => anthroEmisState%Fc_build, &
+            Fc_metab => anthroEmisState%Fc_metab, &
+            Fc_point => anthroEmisState%Fc_point, &
+            Fc_traff => anthroEmisState%Fc_traff, &
+            QF => heatState%QF, &
+            QF_SAHP => heatState%QF_SAHP, &
             Temp_C => forcing%Temp_C, &
             QF_obs => forcing%QF_obs &
             )
