@@ -2650,8 +2650,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_WaterUse_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      anthroEmisState_next, hydroState, &
-      wu_surf, wu_int, wu_ext) ! output:
+      anthroEmisState, hydroState) ! INout:
       ! Conversion of water use (irrigation)
       ! Last modified:
       ! TS 30 Nov 2019  - allow external water use for all surfaces
@@ -2701,8 +2700,8 @@ CONTAINS
       ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !Surface fractions [-]
 
-      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState_next
-      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState
+      TYPE(HYDRO_STATE), INTENT(INout) :: hydroState
       ! REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
       ! REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
@@ -2712,9 +2711,9 @@ CONTAINS
       ! INTEGER :: it !Hour
       ! INTEGER :: imin !Minutes
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: wu_surf !external Water use for each surface [mm]
-      REAL(KIND(1D0)), INTENT(out) :: wu_int !Internal water use for the model timestep [mm] (over whole study area)
-      REAL(KIND(1D0)), INTENT(out) :: wu_ext !External water use for the model timestep [mm] (over whole study area)
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: wu_surf !external Water use for each surface [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: wu_int !Internal water use for the model timestep [mm] (over whole study area)
+      ! REAL(KIND(1D0)), INTENT(out) :: wu_ext !External water use for the model timestep [mm] (over whole study area)
 
       REAL(KIND(1D0)) :: wu_EveTr !Water use for evergreen trees/shrubs [mm]
       REAL(KIND(1D0)) :: wu_DecTr !Water use for deciduous trees/shrubs [mm]
@@ -2755,10 +2754,13 @@ CONTAINS
             SurfaceArea => siteInfo%SurfaceArea, &
             sfr_surf => siteInfo%sfr_surf, &
             InternalWaterUse_h => irrPrm%InternalWaterUse_h, &
-            HDD_id => anthroEmisState_next%HDD_id, &
+            HDD_id => anthroEmisState%HDD_id, &
             WUDay_id => hydroState%WUDay_id, &
             WaterUseMethod => config%WaterUseMethod, &
             wu_m3 => forcing%Wuh, &
+            wu_surf => hydroState%wu_surf, &
+            wu_int => hydroState%wu_int, &
+            wu_ext => hydroState%wu_ext, &
             it => timer%it, &
             nsh_real => timer%nsh_real, &
             DayofWeek_id => timer%DayofWeek_id, &

@@ -2185,15 +2185,7 @@ CONTAINS
 
                !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
-         !!! Do we need to separate the phenology parameters from the land cover parameters?
-               ! CALL SUEWS_cal_DailyState_DTS( &
-               !    timer, forcing, config, siteInfo, & !input
-               !    modState) !inout
-               ! anthroEmisState_next = anthroemisState
-               ! phenState_next = phenState
-               ! hydroState_next = hydroState
-
-               CALL SUEWS_cal_DailyState_DTS( &
+                CALL SUEWS_cal_DailyState_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   phenState, & !inout
                   anthroEmisState, & !inout
@@ -2209,8 +2201,7 @@ CONTAINS
                !=================Gives the external and internal water uses per timestep=================
                CALL SUEWS_cal_WaterUse_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  anthroEmisState, hydroState, &
-                  wu_surf, wu_int, wu_ext) ! output:
+                  anthroEmisState, hydroState) ! inout
 
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
                CALL SUEWS_cal_AnthropogenicEmission_DTS( &
