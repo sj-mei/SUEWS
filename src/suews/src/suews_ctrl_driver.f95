@@ -2322,10 +2322,7 @@ CONTAINS
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
                CALL SUEWS_cal_SoilState_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  SoilMoistCap, & !input
-                  surf_chang_per_tstep, & ! input
-                  hydroState, hydroState_prev, & ! input
-                  smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
+                  hydroState, hydroState_prev) !output
 
                !============ Sensible heat flux ===============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
@@ -2466,8 +2463,7 @@ CONTAINS
             snowState%SnowFrac = snowState_next%SnowFrac
             snowState%SnowPack = snowState_next%SnowPack
 
-            ! hydroState%soilstore_surf = hydroState_next%soilstore_surf
-            ! hydroState%state_surf = hydroState_next%state_surf
+
 
             ! print *, 'hydroState_next%WUDay_id beofre update', hydroState_next%WUDay_id
             ! hydroState%WUDay_id = hydroState_next%WUDay_id
@@ -6300,7 +6296,7 @@ CONTAINS
 
       ! REAL(KIND(1D0)) :: runoff_per_interval
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id_out
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id !Soil moisture of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id !Soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qn_e_surf !net available energy for evaporation for each surface[W m-2]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qn_e_roof !net available energy for evaporation for roof[W m-2]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qn_e_wall !net available energy for evaporation for wall[W m-2]

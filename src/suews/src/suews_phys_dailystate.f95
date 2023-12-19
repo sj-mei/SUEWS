@@ -644,8 +644,8 @@ CONTAINS
             porosity_id_prev => phenState_prev%porosity_id, &
             ! HDD_id_prev => anthroEmisState_prev%HDD_id, &
             HDD_id => anthroEmisState%HDD_id, &
-            state_id => hydroState%state_surf, &
-            soilstore_id => hydroState%soilstore_surf, &
+            state_surf => hydroState%state_surf, &
+            soilstore_surf => hydroState%soilstore_surf, &
             WUDay_id => hydroState%WUDay_id, &
             WaterUseMethod => config%WaterUseMethod, &
             Ie_start => irrPrm%Ie_start, &
@@ -855,7 +855,7 @@ CONTAINS
                ! Calculate modelled daily water use ------------------------------------------
                CALL update_WaterUse( &
                   id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, & !input
-                  state_id, soilstore_id, SoilStoreCap, H_maintain, & !input
+                  state_surf, soilstore_surf, SoilStoreCap, H_maintain, & !input
                   Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
                   WUDay_id) !output
 
@@ -1419,7 +1419,7 @@ CONTAINS
 
    SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, FrIrriAuto, HDD_id, & !input
-      state_id, soilstore_id, SoilStoreCap, H_maintain, & !input
+      state_surf, soilstore_surf, SoilStoreCap_surf, H_maintain, & !input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
@@ -1441,9 +1441,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf) :: DayWat !Days of watering allowed
 
       ! ponding control related
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: state_id ! surface wetness [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: soilstore_id ! soil water store [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: state_surf ! surface wetness [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: soilstore_surf ! soil water store [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap_surf !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), INTENT(IN) :: H_maintain ! ponding water depth to maintain [mm]
 
       REAL(KIND(1D0)), DIMENSION(9), INTENT(OUT) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
@@ -1492,8 +1492,8 @@ CONTAINS
 
                ! ---- irrigation amount to maintain a certain water availability----
                ! NB: H_maintain can be either positive or negative
-               h_need = SoilStoreCap(3:5) + H_maintain
-               store_total = state_id(3:5) + soilstore_id(3:5)
+               h_need = SoilStoreCap_surf(3:5) + H_maintain
+               store_total = state_surf(3:5) + soilstore_surf(3:5)
                WUDay_P = h_need - store_total
                WUDay_P = MERGE(WUDay_P, 0D0, WUDay_P > 0)
 
