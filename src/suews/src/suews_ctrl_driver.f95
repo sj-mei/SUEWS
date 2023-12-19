@@ -2288,12 +2288,7 @@ CONTAINS
                CALL SUEWS_cal_Water_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   hydroState, &
-                  phenState, &
-                  ! TODO: collect output into a derived type
-                  drain_per_tstep, & !output
-                  drain_surf, frac_water2runoff, &
-                  AdditionalWater, runoffPipes, runoff_per_interval, &
-                  AddWater)
+                  phenState)
                !============= calculate water balance end =============
 
                !===============Resistance Calculations=======================
@@ -2348,8 +2343,7 @@ CONTAINS
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
                CALL SUEWS_cal_HorizontalSoilWater_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  ! TODO: collect inout into a derived type for model state
-                  hydroState) ! inout:!Soil moisture of each surface type [mm]
+                  hydroState)
 
                !========== Calculate soil moisture ============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
@@ -4922,11 +4916,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Water_DTS( &
       timer, config, forcing, siteInfo, & ! input
       hydroState, &
-      phenState_next, &
-      drain_per_tstep, & !output
-      drain, frac_water2runoff, &
-      AdditionalWater, runoffPipes, runoff_per_interval, &
-      AddWater)
+      phenState)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, PHENOLOGY_STATE, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
@@ -4938,8 +4928,8 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(in) :: forcing
       TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
 
-      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_next
+      TYPE(HYDRO_STATE), INTENT(INout) :: hydroState
+      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
 
       ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
       ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
@@ -4969,16 +4959,16 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm ! drain storage capacity [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf + 1, nsurf - 1) :: WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: drain !drainage of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: AddWater !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: drain !drainage of each surface type [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: frac_water2runoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: AddWater !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: stateOld
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: soilstoreOld
 
-      REAL(KIND(1D0)), INTENT(out) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
-      REAL(KIND(1D0)), INTENT(out) :: AdditionalWater !Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
-      REAL(KIND(1D0)), INTENT(out) :: runoffPipes !run-off in pipes [mm]
-      REAL(KIND(1D0)), INTENT(out) :: runoff_per_interval !run-off at each time interval [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: AdditionalWater !Additional water coming from other grids [mm] (these are expressed as depths over the whole surface)
+      ! REAL(KIND(1D0)), INTENT(out) :: runoffPipes !run-off in pipes [mm]
+      ! REAL(KIND(1D0)), INTENT(out) :: runoff_per_interval !run-off at each time interval [mm]
       INTEGER :: is
 
       ASSOCIATE ( &
@@ -4997,6 +4987,13 @@ CONTAINS
          addImpervious => hydroState%addImpervious, &
          addVeg => hydroState%addVeg, &
          addWaterBody => hydroState%addWaterBody, &
+         drain_per_tstep => hydroState%drain_per_tstep, &
+         drain_surf => hydroState%drain_surf, &
+         frac_water2runoff => hydroState%frac_water2runoff, &
+         AdditionalWater => hydroState%AdditionalWater, &
+         runoffPipes => hydroState%runoffPipes, &
+         runoff_per_interval => hydroState%runoff_per_interval, &
+         AddWater => hydroState%AddWater, &
          SnowUse => config%SnowUse &
          )
 
@@ -5007,7 +5004,7 @@ CONTAINS
          ! SnowUse = config%SnowUse
 
          state_id = hydroState%state_surf
-         StoreDrainPrm = phenState_next%StoreDrainPrm
+         StoreDrainPrm = phenState%StoreDrainPrm
 
          ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
          WaterDist(1, 1) = pavedPrm%waterdist%to_paved
@@ -5095,25 +5092,25 @@ CONTAINS
                   StoreDrainPrm(3, is), &
                   StoreDrainPrm(4, is), &
                   nsh_real, &
-                  drain(is)) ! output
+                  drain_surf(is)) ! output
 
                ! !HCW added and changed to StoreDrainPrm(6,is) here 20 Feb 2015
                ! drain_per_tstep=drain_per_tstep+(drain(is)*sfr_surf(is)/NonWaterFraction)   !No water body included
             END DO
-            drain_per_tstep = DOT_PRODUCT(drain(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction !No water body included
+            drain_per_tstep = DOT_PRODUCT(drain_surf(1:nsurf - 1), sfr_surf(1:nsurf - 1))/NonWaterFraction !No water body included
          ELSE
-            drain(1:nsurf - 1) = 0
+            drain_surf(1:nsurf - 1) = 0
             drain_per_tstep = 0
          END IF
 
-         drain(WaterSurf) = 0 ! Set drainage from water body to zero
+         drain_surf(WaterSurf) = 0 ! Set drainage from water body to zero
 
          ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
          IF (Diagnose == 1) WRITE (*, *) 'Calling ReDistributeWater...'
          ! CALL ReDistributeWater
          !Calculates AddWater(is)
          CALL ReDistributeWater( &
-            SnowUse, WaterDist, sfr_surf, Drain, & ! input:
+            SnowUse, WaterDist, sfr_surf, drain_surf, & ! input:
             frac_water2runoff, AddWater) ! output
 
       END ASSOCIATE
@@ -7339,7 +7336,7 @@ CONTAINS
       TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
       TYPE(SNOW_STATE), INTENT(INout) :: snowState
       TYPE(atm_state), INTENT(INout) :: atmState
-      TYPE(ROUGHNESS_STATE), INTENT(INout) ::roughnessState
+      TYPE(ROUGHNESS_STATE), INTENT(INout) :: roughnessState
       TYPE(HYDRO_STATE), INTENT(INout) :: hydroState
       TYPE(heat_STATE), INTENT(INout) :: heatState
 
@@ -7447,9 +7444,9 @@ CONTAINS
          RB => atmState%RB, &
          QH_init => heatState%QH_init, &
          z0v => roughnessState%z0v, &
-         zzd=> roughnessState%zzd, &
-         z0m=> roughnessState%z0m,&
-         zdm=> roughnessState%zdm,&
+         zzd => roughnessState%zzd, &
+         z0m => roughnessState%z0m, &
+         zdm => roughnessState%zdm, &
          g_kdown => phenState%g_kdown, &
          g_dq => phenState%g_dq, &
          g_ta => phenState%g_ta, &
