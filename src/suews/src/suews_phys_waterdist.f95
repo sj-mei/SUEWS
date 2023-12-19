@@ -961,9 +961,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_update_SoilMoist_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      hydroState_prev, &
-      SoilMoistCap, SoilState, & !output
-      vsmd, smd)
+      hydroState)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
@@ -979,7 +977,7 @@ CONTAINS
 
       ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
       ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction
-      TYPE(HYDRO_STATE), INTENT(in) :: hydroState_prev
+      TYPE(HYDRO_STATE), INTENT(inout) :: hydroState
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id
 
       ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
@@ -993,8 +991,8 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap
 
-      REAL(KIND(1D0)), INTENT(out) :: SoilMoistCap, SoilState
-      REAL(KIND(1D0)), INTENT(out) :: vsmd, smd
+      ! REAL(KIND(1D0)), INTENT(out) :: SoilMoistCap, SoilState
+      ! REAL(KIND(1D0)), INTENT(out) :: vsmd, smd
 
       INTEGER :: is
       ! REAL(KIND(1D0)) :: fveg
@@ -1007,10 +1005,13 @@ CONTAINS
          dectrPrm => siteInfo%lc_dectr, &
          grassPrm => siteInfo%lc_grass, &
          bsoilPrm => siteInfo%lc_bsoil, &
-         waterPrm => siteInfo%lc_water &
-         )
+         waterPrm => siteInfo%lc_water, &
+         SoilMoistCap => hydroState%SoilMoistCap, &
+         SoilState => hydroState%SoilState, &
+         vsmd => hydroState%vsmd, &
+         smd => hydroState%smd )
 
-         soilstore_id = hydroState_prev%soilstore_surf
+         soilstore_id = hydroState%soilstore_surf
 
          ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
          SoilStoreCap(1) = pavedPrm%soil%soilstorecap

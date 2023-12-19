@@ -2203,9 +2203,7 @@ CONTAINS
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  hydroState_prev, & ! input
-                  SoilMoistCap, SoilState, & !output
-                  vsmd, smd)
+                  hydroState)
 
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
                !=================Gives the external and internal water uses per timestep=================
