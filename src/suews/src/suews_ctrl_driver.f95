@@ -2208,9 +2208,9 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   anthroEmisState, &
                   heatState)
-                  ! QF, &
-                  ! QF_SAHP, &
-                  ! Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
+               ! QF, &
+               ! QF_SAHP, &
+               ! Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
@@ -2220,14 +2220,9 @@ CONTAINS
                END IF
                CALL SUEWS_cal_Qn_DTS( &
                   timer, config, forcing, siteInfo, & ! input
-                  nlayer, &
                   solarState, atmState, &
                   heatState, &
                   phenState, &
-                  ldown, & !output
-                  qn_surf, qn_roof, qn_wall, &
-                  qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
-                  qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
                   snowState, &
                   dataOutLineSPARTACUS)
 
@@ -3458,14 +3453,9 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_Qn_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      nlayer, &
       solarState, atmState, &
       heatState, &
       phenState, &
-      ldown, & !output
-      qn_surf, qn_roof, qn_wall, &
-      qn, qn_snowfree, qn_snow, kclear, kup, lup, tsurf, &
-      qn_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
       snowState, &
       dataOutLineSPARTACUS)
       USE NARP_MODULE, ONLY: RadMethod, NARP
@@ -3496,7 +3486,7 @@ CONTAINS
 
       ! TYPE(SNOW_STATE), INTENT(IN) :: snowState
       TYPE(SNOW_STATE), INTENT(INOUT) :: snowState
-      TYPE(HEAT_STATE), INTENT(IN) :: heatState
+      TYPE(HEAT_STATE), INTENT(INout) :: heatState
       TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
       ! TYPE(PHENOLOGY_STATE), INTENT(OUT) :: phenState
 
@@ -3513,7 +3503,7 @@ CONTAINS
       ! INTEGER :: SnowUse !Determines whether the snow part of the model runs; 0-Snow calculations are not performed.1-Snow calculations are performed.
       ! INTEGER :: Diagnose
       ! INTEGER :: tstep !timestep [s]
-      INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
+      ! INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
 
       ! REAL(KIND(1D0)), INTENT(in) :: snowFrac_obs
       ! REAL(KIND(1D0)) :: ldown_obs !observed incoming longwave radiation [W m-2]
@@ -3559,25 +3549,25 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: snowFrac_next
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac ! snow fractions of each surface [-]
 
-      REAL(KIND(1D0)), INTENT(out) :: ldown ! output incoming longwave radiation [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: ldown ! output incoming longwave radiation [W m-2]
       ! REAL(KIND(1D0)), INTENT(out) :: fcld ! estimated cloud fraction [-](used only for emissivity estimate)
-      REAL(KIND(1D0)), INTENT(out) :: qn !  output net all-wave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: qn_snowfree !output net all-wave radiation for snow free surface [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: qn_snow ! output net all-wave radiation for snowpack [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: kclear !output clear sky incoming shortwave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: kup !output outgoing shortwave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: lup !output outgoing longwave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: tsurf !output surface temperature [degC]
+      ! REAL(KIND(1D0)), INTENT(out) :: qn !  output net all-wave radiation [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qn_snowfree !output net all-wave radiation for snow free surface [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qn_snow ! output net all-wave radiation for snowpack [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: kclear !output clear sky incoming shortwave radiation [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: kup !output outgoing shortwave radiation [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: lup !output outgoing longwave radiation [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: tsurf !output surface temperature [degC]
       ! REAL(KIND(1D0)), INTENT(out) :: albedo_snow !estimated albedo of snow [-]
       ! REAL(KIND(1D0)), INTENT(out) :: SnowAlb_next !output snow albedo [-]
       REAL(KIND(1D0)) :: albedo_snowfree !estimated albedo for snow-free surface [-]
       REAL(KIND(1D0)) :: SnowAlb ! updated snow albedo [-]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_surf !net all-wave radiation on each surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind_snow !snowpack surface temperature [C]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: tsurf_ind !snow-free surface temperature [C]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_surf !net all-wave radiation on each surface [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: kup_ind_snow !outgoing shortwave on snowpack [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: Tsurf_ind_snow !snowpack surface temperature [C]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: tsurf_ind !snow-free surface temperature [C]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind !outgoing longwave radiation from observation [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind !outgoing shortwave radiation from observation [W m-2]
@@ -3587,8 +3577,8 @@ CONTAINS
       INTEGER :: NetRadiationMethod_use
       INTEGER :: AlbedoChoice, ldown_option
 
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_wall ! net all-wave radiation on the wall [W m-2]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_roof ! net all-wave radiation on the roof [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_wall ! net all-wave radiation on the wall [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qn_roof ! net all-wave radiation on the roof [W m-2]
 
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5), INTENT(OUT) :: dataOutLineSPARTACUS
 
@@ -3616,10 +3606,25 @@ CONTAINS
          SnowAlb_prev => snowState%snowalb, &
          snowFrac_prev => snowState%snowFrac, &
          IceFrac => snowState%IceFrac, &
+         qn_snow => snowState%qn_snow, &
+         qn_ind_snow => snowState%qn_ind_snow, &
+         kup_ind_snow => snowState%kup_ind_snow, &
+         Tsurf_ind_snow => snowState%Tsurf_ind_snow, &
          dectime => timer%dectime, &
          ZENITH_deg => solarState%ZENITH_deg, &
          ea_hPa => atmState%ea_hPa, &
          fcld => atmState%fcld, &
+         qn => heatState%qn, &
+         kclear => heatState%kclear, &
+         kup => heatState%kup, &
+         lup => heatState%lup, &
+         tsurf => heatState%tsurf, &
+         qn_snowfree => heatState%qn_snowfree, &
+         ldown => heatState%ldown, &
+         qn_surf => heatState%qn_surf, &
+         qn_roof => heatState%qn_roof, &
+         qn_wall => heatState%qn_wall, &
+         Tsurf_ind => heatState%Tsurf_ind, &
          tsfc_surf => heatState%tsfc_surf, &
          tsfc_roof => heatState%tsfc_roof, &
          tsfc_wall => heatState%tsfc_wall, &
