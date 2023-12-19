@@ -1618,304 +1618,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_HorizontalSoilWater
 
-   ! SUBROUTINE SUEWS_cal_HorizontalSoilWater_DTS( &
-   !    sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, & ! input: ! surface fractions
-   !    SoilStoreCap_paved, SoilStoreCap_bldg, SoilStoreCap_evetr, &
-   !    SoilStoreCap_dectr, SoilStoreCap_grass, SoilStoreCap_bsoil, SoilStoreCap_water, & !Capacity of soil store for each surface [mm]
-   !    SoilDepth_paved, SoilDepth_bldg, SoilDepth_evetr, SoilDepth_dectr, SoilDepth_grass, SoilDepth_bsoil, SoilDepth_water, & !Depth of sub-surface soil store for each surface [mm]
-   !    SatHydraulicConduct_paved, SatHydraulicConduct_bldg, &
-   !    SatHydraulicConduct_evetr, SatHydraulicConduct_dectr, &
-   !    SatHydraulicConduct_grass, SatHydraulicConduct_bsoil, SatHydraulicConduct_water, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-   !    SurfaceArea, & !Surface area of the study area [m2]
-   !    NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
-   !    tstep_real, & !tstep cast as a real for use in calculations
-   !    soilstore_id, & ! inout: !Soil moisture of each surface type [mm]
-   !    runoffSoil, & !Soil runoff from each soil sub-surface [mm]
-   !    runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-   !    )
-   !    !Transfers water in soil stores of land surfaces LJ (2010)
-   !    !Change the model to use varying hydraulic conductivity instead of constant value LJ (7/2011)
-   !    !If one of the surface's soildepth is zero, no water movement is considered
-   !    ! LJ  15/06/2017 Modification:   - Moved location of runoffSoil_per_tstep within previous if-loop to avoid dividing with zero with 100% water surface
-   !    ! HCW 22/02/2017 Modifications:  - Minor bug fixed in VWC1/B_r1 comparison - if statements reversed
-   !    ! HCW 13/08/2014 Modifications:  - Order of surfaces reversed (for both is and jj loops)
-   !    !                                - Number of units (e.g. properties) added to distance calculation
-   !    ! HCW 12/08/2014 Modifications:  - Distance changed from m to mm in dI_dt calculation
-   !    !                                - dI_dt [mm s-1] multiplied by no. seconds in timestep -> dI [mm]
-   !    !                                - if MatPot is set to max. value (100000 mm), Km set to 0 mm s-1
-   !    !                                - Provide parameters for residual volumetric soil moisture [m3 m-3]
-   !    !                                   (currently hard coded as 0.1 m3 m-3 for testing)
-   !    !
-   !    !------------------------------------------------------
-   !    ! use SUES_data
-   !    ! use gis_data
-   !    ! use time
-   !    ! use allocateArray
-
-   !    IMPLICIT NONE
-
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_water
-   !    REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
-
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_paved
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_bldg
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_evetr
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_dectr
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_grass
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_bsoil
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap_water
-   !    REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap !Capacity of soil store for each surface [mm]
-
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilDepth_paved
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilDepth_bldg
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilDepth_evetr
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilDepth_dectr
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilDepth_grass
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilDepth_bsoil
-   !    REAL(KIND(1D0)), INTENT(in) :: SoilDepth_water
-   !    REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilDepth !Depth of sub-surface soil store for each surface [mm]
-
-   !    REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_paved
-   !    REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_bldg
-   !    REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_evetr
-   !    REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_dectr
-   !    REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_grass
-   !    REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_bsoil
-   !    REAL(KIND(1D0)), INTENT(in) :: SatHydraulicConduct_water
-   !    REAL(KIND(1D0)), DIMENSION(nsurf) :: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-
-   !    REAL(KIND(1D0)), INTENT(in) :: SurfaceArea !Surface area of the study area [m2]
-   !    REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction ! sum of surface cover fractions for all except water surfaces
-   !    REAL(KIND(1D0)), INTENT(in) :: tstep_real !tstep cast as a real for use in calculations
-
-   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(inout) :: soilstore_id !Soil moisture of each surface type [mm]
-   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
-
-   !    REAL(KIND(1D0)), INTENT(out) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-
-   !    INTEGER :: jj, is
-   !    REAL(KIND(1D0)) :: &
-   !       DimenWaterCon1, DimenWaterCon2, &
-   !       SoilMoistCap_Vol1, &
-   !       SoilMoist_vol1, &
-   !       SoilMoistCap_Vol2, &
-   !       SoilMoist_vol2, &
-   !       B_r1, MatPot1, Km1, &
-   !       B_r2, MatPot2, Km2, &
-   !       Distance, KmWeight, dI, &
-   !       dI_dt !Water flow between two stores
-
-   !    REAL(KIND(1D0)), PARAMETER :: &
-   !       alphavG = 0.0005, & !Set alphavG to match value in van Genuchten (1980) [mm-1]
-   !       NUnits = 1 !Can change to represent plot/base unit size
-
-   !    ! SoilMoist_vol1,2     = Volumetric soil moisture [m3 m-3]
-   !    ! SoilMoistCap_vol1,2  = Volumetric soil moisture capacity [m3 m-3] (from FunctionalTypes)
-   !    ! MatPot1,2            = Water potential (i.e. pressure head) of store [mm]
-   !    ! DimenWaterCon1,2     = Dimensionless water content, or relative saturation [-]
-   !    ! Distance             = Distance between two stores [m]
-   !    ! B_r1,2               = Residual volumetric soil moisture [m3 m-3]
-   !    ! Km1,2                = Hydraulic conductivity of store [mm s-1]
-   !    ! KmWeight             = Weighted hydraulic conductivity [mm s-1]
-   !    ! alphavG              = Parameter (could depend on soil texture) [mm-1]
-   !    ! dI                   = Water flow between stores [mm] dI = dI_dt * no. secs in each timestep
-   !    !                         if dI > 0, first surface gains water, second surface loses water
-   !    ! NUnits               = Number of repeating units (e.g. properties, blocks) for distance calculation [-]
-   !    runoffSoil = 0
-   !    runoffSoil_per_tstep = 0
-
-   !    sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
-   !    SoilStoreCap(1) = SoilStoreCap_paved
-   !    SoilStoreCap(2) = SoilStoreCap_bldg
-   !    SoilStoreCap(3) = SoilStoreCap_evetr
-   !    SoilStoreCap(4) = SoilStoreCap_dectr
-   !    SoilStoreCap(5) = SoilStoreCap_grass
-   !    SoilStoreCap(6) = SoilStoreCap_bsoil
-   !    SoilStoreCap(7) = SoilStoreCap_water
-
-   !    SoilDepth(1) = SoilDepth_paved
-   !    SoilDepth(2) = SoilDepth_bldg
-   !    SoilDepth(3) = SoilDepth_evetr
-   !    SoilDepth(4) = SoilDepth_dectr
-   !    SoilDepth(5) = SoilDepth_grass
-   !    SoilDepth(6) = SoilDepth_bsoil
-   !    SoilDepth(7) = SoilDepth_water
-
-   !    SatHydraulicConduct(1) = SatHydraulicConduct_paved
-   !    SatHydraulicConduct(2) = SatHydraulicConduct_bldg
-   !    SatHydraulicConduct(3) = SatHydraulicConduct_evetr
-   !    SatHydraulicConduct(4) = SatHydraulicConduct_dectr
-   !    SatHydraulicConduct(5) = SatHydraulicConduct_grass
-   !    SatHydraulicConduct(6) = SatHydraulicConduct_bsoil
-   !    SatHydraulicConduct(7) = SatHydraulicConduct_water
-
-   !    DO is = 1, nsurf - 1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)
-
-   !       IF (sfr_surf(is) /= 0 .AND. SoilStoreCap(is) > 0) THEN !If particular surface area exists
-   !          ! and is capable of storing water (SoilStoreCap [mm])
-   !          DO jj = is + 1, nsurf - 1 !is-1,1,-1  !Sub-loop through remaining surfaces (runs backwards as of 13/08/2014, HCW)
-
-   !             IF (sfr_surf(jj) /= 0 .AND. SoilStoreCap(jj) > 0) THEN !If other surface area exists
-   !                ! and is capable of storing water
-
-   !                ! ---- For surface 1 -----------------------------------------------------
-   !                ! Calculate non-saturated VWC
-   !                SoilMoistCap_Vol1 = SoilStoreCap(is)/SoilDepth(is) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-   !                SoilMoist_vol1 = soilstore_id(is)/SoilDepth(is) !Volumetric soil moisture [m3 m-3]
-
-   !                !B_r1=SoilMoistCap_Vol1-SoilMoist_vol1  !Residual soil moisture content [m3 m-3]
-   !                B_r1 = 0.1 !HCW 12/08/2014 Temporary fix
-   !                ! Need to add residual soil moisture values to FunctionalTypes
-   !                !B_r1=VolSoilMoistRes(is) !Residual soil moisture content [m3 m-3]
-
-   !                !Order of if statements reversed HCW 22 Feb 2017
-   !                !If soil moisture less than or equal to residual value, set MatPot to max and Km to 0 to suppress water movement
-   !                IF (B_r1 >= SoilMoist_vol1) THEN
-   !                   MatPot1 = 100000
-   !                   Km1 = 0 !Added by LJ in Nov 2013
-   !                   ! Otherwise, there should be enough water in the soil to allow horizontal transfer
-   !                ELSE
-   !                   DimenWaterCon1 = (SoilMoist_vol1 - B_r1)/(SoilMoistCap_Vol1 - B_r1) !Dimensionless water content [-]
-
-   !                   ! If very large or very small, adjust for calculation of MatPot and Km
-   !                   IF (DimenWaterCon1 > 0.99999) THEN
-   !                      DimenWaterCon1 = DimenWaterCon1 - 0.0001 !This cannot equal 1
-   !                   END IF
-
-   !                   IF (DimenWaterCon1 < 0.00000005) THEN
-   !                      DimenWaterCon1 = DimenWaterCon1 + 0.0000001 !Added HCW 22 Feb 2017
-   !                   END IF
-
-   !                   !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2
-   !                   !Water potential of first store [mm] (van Genuchten 1980, Eq 3 rearranged)
-   !                   MatPot1 = SQRT(1/DimenWaterCon1**2 - 1)/alphavG
-
-   !                   !Hydraulic conductivity of first store [mm s-1] (van Genuchten 1980, Eq 8)
-   !                   Km1 = SatHydraulicConduct(is)*SQRT(DimenWaterCon1)*(1 - (1 - DimenWaterCon1**2)**0.5)**2
-
-   !                   !Check this value (HCW 12/08/2014)
-   !                   IF (MatPot1 > 100000) THEN
-   !                      MatPot1 = 100000 !Max. potential is 100000 mm (van Genuchten 1980)
-   !                      Km1 = 0 !Added by HCW 12/08/2014
-   !                   END IF
-
-   !                END IF
-
-   !                ! ---- For surface 2 -----------------------------------------------------
-   !                ! Calculate non-saturated VWC
-   !                SoilMoistCap_Vol2 = SoilStoreCap(jj)/SoilDepth(jj) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-   !                SoilMoist_vol2 = soilstore_id(jj)/SoilDepth(jj) !Volumetric soil moisture [m3 m-3]
-
-   !                !B_r2=SoilMoistCap_Vol2-SoilMoist_vol2  !Residual soil moisture content [m3 m-3]
-   !                B_r2 = 0.1 !HCW 12/08/2014 Temporary fix
-   !                ! Need to add residual soil moisture values to FunctionalTypes
-   !                !B_r2=VolSoilMoistRes(jj) !Residual soil moisture content [m3 m-3]
-
-   !                !If soil moisture below residual value, set MatPot to maximum
-   !                IF (B_r2 >= SoilMoist_vol2) THEN
-   !                   MatPot2 = 100000
-   !                   Km2 = 0 !Added by LJ in Nov 2013
-   !                ELSE
-   !                   DimenWaterCon2 = (SoilMoist_vol2 - B_r2)/(SoilMoistCap_Vol2 - B_r2) !Dimensionless water content [-]
-
-   !                   IF (DimenWaterCon2 > 0.99999) THEN
-   !                      DimenWaterCon2 = DimenWaterCon2 - 0.0001 !This cannot equal 1
-   !                   END IF
-
-   !                   IF (DimenWaterCon2 < 0.00000005) THEN
-   !                      DimenWaterCon2 = DimenWaterCon2 + 0.0000001 !Added HCW 22 Feb 2017
-   !                   END IF
-   !                   ! print*, 'soilstore_id = ', soilstore_id
-   !                   ! print*, 'SoilStoreCap = ', SoilStoreCap
-   !                   ! print*, 'SoilDepth = ', SoilDepth
-   !                   ! print*, 'SoilMoist_vol2 = ', SoilMoist_vol2
-   !                   ! print*, 'SoilMoistCap_Vol2 = ', SoilMoistCap_Vol2
-   !                   ! print*, 'is = ', is, ' jj = ', jj, ' DimenWaterCon2 = ', DimenWaterCon2
-   !                   !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2
-   !                   !Water potential of second store [mm] (van Genuchten 1980, Eq 3 rearranged)
-   !                   MatPot2 = SQRT(1/DimenWaterCon2**2 - 1)/alphavG
-
-   !                   !Hydraulic conductivity of second store [mm s-1] (van Genuchten 1980, Eq 8)
-   !                   Km2 = SatHydraulicConduct(jj)*SQRT(DimenWaterCon2)*(1 - (1 - DimenWaterCon2**2)**0.5)**2
-
-   !                   IF ((MatPot2) > 100000) THEN
-   !                      MatPot2 = 100000 !Max. potential is 100000 mm (van Genuchten 1980)
-   !                      Km2 = 0 !Added by HCW 12/08/2014
-   !                   END IF
-
-   !                END IF
-
-   !                ! ------------------------------------------------------------------------
-
-   !                !Find distance between the two stores (see Jarvi et al. 2011)
-   !                !SurfaceArea in m2 (changed from ha to m2 n SUEWS_Initial), so Distance in m
-   !                Distance = (SQRT(sfr_surf(is)*SurfaceArea/NUnits) + SQRT(sfr_surf(jj)*SurfaceArea/NUnits))/2
-
-   !                !Calculate areally-weighted hydraulic conductivity [mm s-1]
-   !                KmWeight = (sfr_surf(is)*Km1 + sfr_surf(jj)*Km2)/(sfr_surf(is) + sfr_surf(jj))
-
-   !                !Find water flow between the two stores [mm s-1] (Green-Ampt equation, Hillel 1971)
-   !                !Multiply Distance by 1000 to convert m to mm (HCW 12/08/2014)
-   !                dI_dt = -(KmWeight)*(-MatPot1 + MatPot2)/(Distance*1000)
-
-   !                !Multiply dI_dt by number of seconds in timestep to convert mm s-1 to mm
-   !                !Added by HCW 12/08/2014
-   !                dI = dI_dt*tstep_real !Use dI instead of dI_dt in the following calculations
-
-   !                !Move water (in mm) ------------------------------------------------------
-   !                !Water moves only if (i) there is sufficient water to move and (ii) there is space to move it
-
-   !                ! If there is sufficient water in both surfaces, allow movement of dI to occur
-   !                IF ((soilstore_id(jj) >= dI*sfr_surf(is)/sfr_surf(jj)) .AND. ((soilstore_id(is) + dI) >= 0)) THEN
-   !                   soilstore_id(is) = soilstore_id(is) + dI
-   !                   soilstore_id(jj) = soilstore_id(jj) - dI*sfr_surf(is)/sfr_surf(jj) !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
-
-   !                   ! If insufficient water in first surface to move dI, instead move as much as possible
-   !                ELSEIF ((soilstore_id(is) + dI) < 0) THEN
-   !                   soilstore_id(jj) = soilstore_id(jj) + soilstore_id(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
-   !                   soilstore_id(is) = 0 !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
-
-   !                   ! If insufficient water in second surface to move dI, instead move as much as possible
-   !                ELSE
-   !                   soilstore_id(is) = soilstore_id(is) + soilstore_id(jj)*sfr_surf(jj)/sfr_surf(is)
-   !                   soilstore_id(jj) = 0
-   !                END IF
-
-   !                !If soil moisture exceeds capacity, excess goes to soil runoff (first surface)
-   !                IF (soilstore_id(is) > SoilStoreCap(is)) THEN
-   !                   runoffSoil(is) = runoffSoil(is) + (soilstore_id(is) - SoilStoreCap(is))
-   !                   soilstore_id(is) = SoilStoreCap(is)
-   !                   !elseif (soilstore_id(is)<0) then  !HCW 13/08/2014 commented out as should never be true here anyway...
-   !                   !   soilstore_id(is)=0             ! ... and if so, need to do more here (i.e. account for other water too)
-   !                END IF
-
-   !                !If soil moisture exceeds capacity, excess goes to soil runoff (second surface)
-   !                IF (soilstore_id(jj) > SoilStoreCap(jj)) THEN
-   !                   runoffSoil(jj) = runoffSoil(jj) + (soilstore_id(jj) - SoilStoreCap(jj))
-   !                   soilstore_id(jj) = SoilStoreCap(jj)
-   !                   !elseif (soilstore_id(jj)<0) then  !HCW 13/08/2014 commented out (as above)
-   !                   !         soilstore_id(jj)=0
-   !                END IF
-
-   !             END IF !end if second surface exists and is capable of storing water
-
-   !          END DO !end jj loop over second surface
-
-   !          runoffSoil_per_tstep = runoffSoil_per_tstep + (runoffSoil(is)*sfr_surf(is)/NonWaterFraction) !Excludes water body. Moved here as otherwise code crashed when NonWaterFraction=0
-
-   !       END IF !end if first surface exists and is capable of storing water
-
-   !       !runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr_surf(is)/NonWaterFraction)  !Excludes water body
-
-   !    END DO !is loop over first surface
-
-   ! END SUBROUTINE SUEWS_cal_HorizontalSoilWater_DTS
 
    SUBROUTINE SUEWS_cal_HorizontalSoilWater_DTS( &
       timer, config, forcing, siteInfo, & ! input
@@ -1954,9 +1656,9 @@ CONTAINS
 
       TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap !Capacity of soil store for each surface [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilDepth !Depth of sub-surface soil store for each surface [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap_surf !Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilDepth_surf !Depth of sub-surface soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SatHydraulicConduct_surf !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
 
       ! REAL(KIND(1D0)) :: SurfaceArea !Surface area of the study area [m2]
       ! REAL(KIND(1D0)), INTENT(in) :: tstep_real !tstep cast as a real for use in calculations
@@ -2023,43 +1725,43 @@ CONTAINS
          runoffSoil_surf = 0
          runoffSoil_per_tstep = 0
 
-         SoilStoreCap(1) = pavedPrm%soil%soilstorecap
-         SoilStoreCap(2) = bldgPrm%soil%soilstorecap
-         SoilStoreCap(3) = evetrPrm%soil%soilstorecap
-         SoilStoreCap(4) = dectrPrm%soil%soilstorecap
-         SoilStoreCap(5) = grassPrm%soil%soilstorecap
-         SoilStoreCap(6) = bsoilPrm%soil%soilstorecap
-         SoilStoreCap(7) = waterPrm%soil%soilstorecap
+         SoilStoreCap_surf(1) = pavedPrm%soil%soilstorecap
+         SoilStoreCap_surf(2) = bldgPrm%soil%soilstorecap
+         SoilStoreCap_surf(3) = evetrPrm%soil%soilstorecap
+         SoilStoreCap_surf(4) = dectrPrm%soil%soilstorecap
+         SoilStoreCap_surf(5) = grassPrm%soil%soilstorecap
+         SoilStoreCap_surf(6) = bsoilPrm%soil%soilstorecap
+         SoilStoreCap_surf(7) = waterPrm%soil%soilstorecap
 
-         SoilDepth(1) = pavedPrm%soil%soildepth
-         SoilDepth(2) = bldgPrm%soil%soildepth
-         SoilDepth(3) = evetrPrm%soil%soildepth
-         SoilDepth(4) = dectrPrm%soil%soildepth
-         SoilDepth(5) = grassPrm%soil%soildepth
-         SoilDepth(6) = bsoilPrm%soil%soildepth
-         SoilDepth(7) = waterPrm%soil%soildepth
+         SoilDepth_surf(1) = pavedPrm%soil%soildepth
+         SoilDepth_surf(2) = bldgPrm%soil%soildepth
+         SoilDepth_surf(3) = evetrPrm%soil%soildepth
+         SoilDepth_surf(4) = dectrPrm%soil%soildepth
+         SoilDepth_surf(5) = grassPrm%soil%soildepth
+         SoilDepth_surf(6) = bsoilPrm%soil%soildepth
+         SoilDepth_surf(7) = waterPrm%soil%soildepth
 
-         SatHydraulicConduct(1) = pavedPrm%soil%sathydraulicconduct
-         SatHydraulicConduct(2) = bldgPrm%soil%sathydraulicconduct
-         SatHydraulicConduct(3) = evetrPrm%soil%sathydraulicconduct
-         SatHydraulicConduct(4) = dectrPrm%soil%sathydraulicconduct
-         SatHydraulicConduct(5) = grassPrm%soil%sathydraulicconduct
-         SatHydraulicConduct(6) = bsoilPrm%soil%sathydraulicconduct
-         SatHydraulicConduct(7) = waterPrm%soil%sathydraulicconduct
+         SatHydraulicConduct_surf(1) = pavedPrm%soil%sathydraulicconduct
+         SatHydraulicConduct_surf(2) = bldgPrm%soil%sathydraulicconduct
+         SatHydraulicConduct_surf(3) = evetrPrm%soil%sathydraulicconduct
+         SatHydraulicConduct_surf(4) = dectrPrm%soil%sathydraulicconduct
+         SatHydraulicConduct_surf(5) = grassPrm%soil%sathydraulicconduct
+         SatHydraulicConduct_surf(6) = bsoilPrm%soil%sathydraulicconduct
+         SatHydraulicConduct_surf(7) = waterPrm%soil%sathydraulicconduct
 
          DO is = 1, nsurf - 1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)
 
-            IF (sfr_surf(is) /= 0 .AND. SoilStoreCap(is) > 0) THEN !If particular surface area exists
+            IF (sfr_surf(is) /= 0 .AND. SoilStoreCap_surf(is) > 0) THEN !If particular surface area exists
                ! and is capable of storing water (SoilStoreCap [mm])
                DO jj = is + 1, nsurf - 1 !is-1,1,-1  !Sub-loop through remaining surfaces (runs backwards as of 13/08/2014, HCW)
 
-                  IF (sfr_surf(jj) /= 0 .AND. SoilStoreCap(jj) > 0) THEN !If other surface area exists
+                  IF (sfr_surf(jj) /= 0 .AND. SoilStoreCap_surf(jj) > 0) THEN !If other surface area exists
                      ! and is capable of storing water
 
                      ! ---- For surface 1 -----------------------------------------------------
                      ! Calculate non-saturated VWC
-                     SoilMoistCap_Vol1 = SoilStoreCap(is)/SoilDepth(is) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-                     SoilMoist_vol1 = hydroState%soilstore_surf(is)/SoilDepth(is) !Volumetric soil moisture [m3 m-3]
+                     SoilMoistCap_Vol1 = SoilStoreCap_surf(is)/SoilDepth_surf(is) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
+                     SoilMoist_vol1 = hydroState%soilstore_surf(is)/SoilDepth_surf(is) !Volumetric soil moisture [m3 m-3]
 
                      !B_r1=SoilMoistCap_Vol1-SoilMoist_vol1  !Residual soil moisture content [m3 m-3]
                      B_r1 = 0.1 !HCW 12/08/2014 Temporary fix
@@ -2089,7 +1791,7 @@ CONTAINS
                         MatPot1 = SQRT(1/DimenWaterCon1**2 - 1)/alphavG
 
                         !Hydraulic conductivity of first store [mm s-1] (van Genuchten 1980, Eq 8)
-                        Km1 = SatHydraulicConduct(is)*SQRT(DimenWaterCon1)*(1 - (1 - DimenWaterCon1**2)**0.5)**2
+                        Km1 = SatHydraulicConduct_surf(is)*SQRT(DimenWaterCon1)*(1 - (1 - DimenWaterCon1**2)**0.5)**2
 
                         !Check this value (HCW 12/08/2014)
                         IF (MatPot1 > 100000) THEN
@@ -2101,8 +1803,8 @@ CONTAINS
 
                      ! ---- For surface 2 -----------------------------------------------------
                      ! Calculate non-saturated VWC
-                     SoilMoistCap_Vol2 = SoilStoreCap(jj)/SoilDepth(jj) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-                     SoilMoist_vol2 = hydroState%soilstore_surf(jj)/SoilDepth(jj) !Volumetric soil moisture [m3 m-3]
+                     SoilMoistCap_Vol2 = SoilStoreCap_surf(jj)/SoilDepth_surf(jj) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
+                     SoilMoist_vol2 = hydroState%soilstore_surf(jj)/SoilDepth_surf(jj) !Volumetric soil moisture [m3 m-3]
 
                      !B_r2=SoilMoistCap_Vol2-SoilMoist_vol2  !Residual soil moisture content [m3 m-3]
                      B_r2 = 0.1 !HCW 12/08/2014 Temporary fix
@@ -2134,7 +1836,7 @@ CONTAINS
                         MatPot2 = SQRT(1/DimenWaterCon2**2 - 1)/alphavG
 
                         !Hydraulic conductivity of second store [mm s-1] (van Genuchten 1980, Eq 8)
-                        Km2 = SatHydraulicConduct(jj)*SQRT(DimenWaterCon2)*(1 - (1 - DimenWaterCon2**2)**0.5)**2
+                        Km2 = SatHydraulicConduct_surf(jj)*SQRT(DimenWaterCon2)*(1 - (1 - DimenWaterCon2**2)**0.5)**2
 
                         IF ((MatPot2) > 100000) THEN
                            MatPot2 = 100000 !Max. potential is 100000 mm (van Genuchten 1980)
@@ -2183,17 +1885,17 @@ CONTAINS
                      END IF
 
                      !If soil moisture exceeds capacity, excess goes to soil runoff (first surface)
-                     IF (hydroState%soilstore_surf(is) > SoilStoreCap(is)) THEN
-                        runoffSoil_surf(is) = runoffSoil_surf(is) + (hydroState%soilstore_surf(is) - SoilStoreCap(is))
-                        hydroState%soilstore_surf(is) = SoilStoreCap(is)
+                     IF (hydroState%soilstore_surf(is) > SoilStoreCap_surf(is)) THEN
+                        runoffSoil_surf(is) = runoffSoil_surf(is) + (hydroState%soilstore_surf(is) - SoilStoreCap_surf(is))
+                        hydroState%soilstore_surf(is) = SoilStoreCap_surf(is)
                         !elseif (soilstore_id(is)<0) then  !HCW 13/08/2014 commented out as should never be true here anyway...
                         !   soilstore_id(is)=0             ! ... and if so, need to do more here (i.e. account for other water too)
                      END IF
 
                      !If soil moisture exceeds capacity, excess goes to soil runoff (second surface)
-                     IF (hydroState%soilstore_surf(jj) > SoilStoreCap(jj)) THEN
-                        runoffSoil_surf(jj) = runoffSoil_surf(jj) + (hydroState%soilstore_surf(jj) - SoilStoreCap(jj))
-                        hydroState%soilstore_surf(jj) = SoilStoreCap(jj)
+                     IF (hydroState%soilstore_surf(jj) > SoilStoreCap_surf(jj)) THEN
+                        runoffSoil_surf(jj) = runoffSoil_surf(jj) + (hydroState%soilstore_surf(jj) - SoilStoreCap_surf(jj))
+                        hydroState%soilstore_surf(jj) = SoilStoreCap_surf(jj)
                         !elseif (soilstore_id(jj)<0) then  !HCW 13/08/2014 commented out (as above)
                         !         soilstore_id(jj)=0
                      END IF

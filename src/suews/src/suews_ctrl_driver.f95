@@ -2309,7 +2309,7 @@ CONTAINS
                END IF
 
                ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
-               IF (config%Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState%soilstore_surf
+               ! IF (config%Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState%soilstore_surf
 
                !=== Horizontal movement between soil stores ===
                ! Now water is allowed to move horizontally between the soil stores
