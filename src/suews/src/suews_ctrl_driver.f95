@@ -4028,7 +4028,7 @@ CONTAINS
       atmState, &
       hydroState, &
       snowState, &
-      anthroHeatState, &
+      anthroEmisState, &
       solarstate, &
       phenState, &
       heatState, &
@@ -4066,7 +4066,7 @@ CONTAINS
 
       TYPE(HYDRO_STATE), INTENT(in) :: hydroState
       TYPE(SNOW_STATE), INTENT(inout) :: snowState
-      TYPE(anthroEmis_STATE), INTENT(in) :: anthroHeatState
+      TYPE(anthroEmis_STATE), INTENT(in) :: anthroEmisState
       TYPE(PHENOLOGY_STATE), INTENT(in) :: phenState
       ! TYPE(OHM_STATE), INTENT(in) :: ohmState
       TYPE(OHM_STATE), INTENT(inOUT) :: ohmState
@@ -4231,7 +4231,7 @@ CONTAINS
          SnowFrac => snowState%SnowFrac, &
          soilstore_id => hydroState%soilstore_surf, &
          state_id => hydroState%state_surf, &
-         HDD_id => anthroHeatState%HDD_id, &
+         HDD_id => anthroEmisState%HDD_id, &
          a1 => ohmState%a1, &
          a2 => ohmState%a2, &
          a3 => ohmState%a3, &
