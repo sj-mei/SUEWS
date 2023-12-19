@@ -2011,8 +2011,8 @@ CONTAINS
          vegfraction => siteInfo%vegfraction, &
          NonWaterFraction => siteInfo%NonWaterFraction, &
          tstep_real => timer%tstep_real, &
-         runoffSoil_surf => hydroState%runoffSoil,&
-runoffSoil_per_tstep => hydroState%runoffSoil_per_tstep,&
+         runoffSoil_surf => hydroState%runoffSoil, &
+         runoffSoil_per_tstep => hydroState%runoffSoil_per_tstep, &
          Diagnose => config%Diagnose &
          )
          runoffSoil_surf = 0
@@ -2167,13 +2167,13 @@ runoffSoil_per_tstep => hydroState%runoffSoil_per_tstep,&
                         ! If insufficient water in first surface to move dI, instead move as much as possible
                      ELSEIF ((hydroState%soilstore_surf(is) + dI) < 0) THEN
                         hydroState%soilstore_surf(jj) = hydroState%soilstore_surf(jj) + &
-                                                             hydroState%soilstore_surf(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
+                                                        hydroState%soilstore_surf(is)*sfr_surf(is)/sfr_surf(jj) !HCW 12/08/2014 switched order of these two lines
                         hydroState%soilstore_surf(is) = 0 !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
 
                         ! If insufficient water in second surface to move dI, instead move as much as possible
                      ELSE
                         hydroState%soilstore_surf(is) = hydroState%soilstore_surf(is) + &
-                                                             hydroState%soilstore_surf(jj)*sfr_surf(jj)/sfr_surf(is)
+                                                        hydroState%soilstore_surf(jj)*sfr_surf(jj)/sfr_surf(is)
                         hydroState%soilstore_surf(jj) = 0
                      END IF
 
