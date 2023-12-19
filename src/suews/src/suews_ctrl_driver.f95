@@ -1776,7 +1776,7 @@ CONTAINS
       TYPE(SNOW_STATE) :: snowState_next
 
       ! water balance related:
-      TYPE(HYDRO_STATE) :: hydroState_prev, hydroState_next
+      TYPE(HYDRO_STATE) :: hydroState_prev
 
       ! phenology related:
       TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
@@ -1903,7 +1903,6 @@ CONTAINS
             AddWater => hydroState%AddWater, &
             frac_water2runoff => hydroState%frac_water2runoff, &
             drain_per_tstep => hydroState%drain_per_tstep, &
-            QE_LUMPS => hydroState%QE_LUMPS, &
             ev_per_tstep => hydroState%ev_per_tstep, &
             wu_ext => hydroState%wu_ext, &
             drain_surf => hydroState%drain_surf, &
@@ -1958,6 +1957,7 @@ CONTAINS
             qn => heatState%qn, &
             qs => heatState%qs, &
             QH_LUMPS => heatState%QH_LUMPS, &
+            QE_LUMPS => heatState%QE_LUMPS, &
             kclear => heatState%kclear, &
             kup => heatState%kup, &
             ldown => heatState%ldown, &
@@ -2013,7 +2013,7 @@ CONTAINS
             ! ############# memory allocation for DTS variables (start) #############
             CALL hydroState_prev%ALLOCATE(nlayer)
 
-            CALL hydroState_next%ALLOCATE(nlayer)
+            ! CALL hydroState_next%ALLOCATE(nlayer)
 
             CALL heatState_in%ALLOCATE(nsurf, nlayer, ndepth)
 
@@ -2069,7 +2069,7 @@ CONTAINS
 
             ! initialise  variables
             snowState_next = snowState
-            hydroState_next = hydroState
+            ! hydroState_next = hydroState
 
             ! Tair_av_next = Tair_av
             ! Tair_av_next = forcing%Tair_av_5d
@@ -2208,9 +2208,6 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   anthroEmisState, &
                   heatState)
-               ! QF, &
-               ! QF_SAHP, &
-               ! Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
@@ -2250,10 +2247,7 @@ CONTAINS
                      timer, config, forcing, siteInfo, & ! input
                      heatstate, &
                      atmState, &
-                     phenState, &
-                     ! TODO: collect output into a derived type
-                     QH_LUMPS, & !output
-                     QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+                     phenState)
 
                   ! use LUMPS QH to do stability correction
                   QH_Init = QH_LUMPS
@@ -4049,26 +4043,14 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(in) :: forcing
       TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
 
-      ! TYPE(HEAT_STATE), INTENT(in) :: heatState
       TYPE(HEAT_STATE), INTENT(inout) :: heatState
       TYPE(solar_State), INTENT(in) :: solarstate
       TYPE(atm_state), INTENT(in) :: atmState
-
-      ! TYPE(EHC_PRM), INTENT(in) :: ehcPrm
-
-      ! TYPE(LC_PAVED_PRM), INTENT(in) :: pavedPrm
-      ! TYPE(LC_BLDG_PRM), INTENT(in) :: bldgPrm
-      ! TYPE(LC_EVETR_PRM), INTENT(in) :: evetrPrm
-      ! TYPE(LC_DECTR_PRM), INTENT(in) :: dectrPrm
-      ! TYPE(LC_GRASS_PRM), INTENT(in) :: grassPrm
-      ! TYPE(LC_BSOIL_PRM), INTENT(in) :: bsoilPrm
-      ! TYPE(LC_WATER_PRM), INTENT(in) :: waterPrm
 
       TYPE(HYDRO_STATE), INTENT(in) :: hydroState
       TYPE(SNOW_STATE), INTENT(inout) :: snowState
       TYPE(anthroEmis_STATE), INTENT(in) :: anthroEmisState
       TYPE(PHENOLOGY_STATE), INTENT(in) :: phenState
-      ! TYPE(OHM_STATE), INTENT(in) :: ohmState
       TYPE(OHM_STATE), INTENT(inOUT) :: ohmState
 
       ! INTEGER :: StorageHeatMethod !heat storage calculation option [-]

@@ -1255,7 +1255,7 @@ CONTAINS
       timer, config, forcing, siteInfo, & ! input
       SoilMoistCap, & !input
       surf_chang_per_tstep, &
-      hydroState_next, hydroState_prev, &
+      hydroState, hydroState_prev, &
       smd, smd_nsurf, tot_chang_per_tstep, SoilState) !output
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, &
@@ -1271,7 +1271,7 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       ! INTEGER, PARAMETER :: nsurf = 7
 
-      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_next, hydroState_prev
+      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState, hydroState_prev
 
       REAL(KIND(1D0)), INTENT(in) :: SoilMoistCap
 
@@ -1320,7 +1320,7 @@ CONTAINS
 
          ! xsmd = forcing%xsmd
 
-         soilstore_id = hydroState_next%soilstore_surf
+         soilstore_id = hydroState%soilstore_surf
          soilstoreOld = hydroState_prev%soilstore_surf
 
          ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]

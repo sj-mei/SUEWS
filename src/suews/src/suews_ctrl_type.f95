@@ -585,7 +585,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
 
       REAL(KIND(1D0)) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
-      REAL(KIND(1D0)) :: QE_LUMPS !turbulent latent heat flux by LUMPS model [W m-2]
       REAL(KIND(1D0)) :: ev_per_tstep ! evaporation at each time step [mm]
       REAL(KIND(1D0)) :: wu_ext !external water use [mm]
       REAL(KIND(1D0)) :: wu_int !internal water use [mm]
@@ -655,6 +654,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: tsurf_ind !snow-free surface temperature [degC]
 
       REAL(KIND(1D0)) :: QH_LUMPS !turbulent sensible heat flux from LUMPS model [W m-2]
+      REAL(KIND(1D0)) :: QE_LUMPS !turbulent latent heat flux by LUMPS model [W m-2]
 
       REAL(KIND(1D0)) :: kclear !clear sky incoming shortwave radiation [W m-2]
       REAL(KIND(1D0)) :: kup !outgoing shortwave radiation [W m-2]

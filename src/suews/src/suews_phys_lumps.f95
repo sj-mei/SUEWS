@@ -378,9 +378,7 @@ CONTAINS
       timer, config, forcing, siteInfo, & ! input
       heatState, &
       atmState, &
-      phenState, &
-      QH_LUMPS, & !output
-      QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, Veg_Fr_temp, VegPhenLumps)
+      phenState)
       !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
       ! ref: Grimmond and Oke (2002) JAM and references within that
       !      Offerle (2003) -- add water bucket
@@ -416,9 +414,9 @@ CONTAINS
       ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
       ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
-      TYPE(atm_state), INTENT(IN) :: atmState
-      TYPE(HEAT_STATE), INTENT(IN) :: heatState
+      TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
+      TYPE(atm_state), INTENT(INout) :: atmState
+      TYPE(HEAT_STATE), INTENT(INout) :: heatState
 
       INTEGER, PARAMETER :: ndays = 366
       INTEGER, PARAMETER :: NSurf = 7
@@ -454,13 +452,13 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(3) :: LAImax !Max LAI [m2 m-2]
       REAL(KIND(1D0)), DIMENSION(3) :: LAImin !Min LAI [m2 m-2]
 
-      REAL(KIND(1D0)), INTENT(out) :: QH_LUMPS
-      REAL(KIND(1D0)), INTENT(out) :: QE_LUMPS !turbulent fluxes: QH, QE
-      REAL(KIND(1D0)), INTENT(out) :: psyc_hPa !Psychometric constant in hPa
-      REAL(KIND(1D0)), INTENT(out) :: s_hPa !Vapour pressure versus temperature slope in hPa
-      REAL(KIND(1D0)), INTENT(out) :: sIce_hpa !Vapour pressure versus temperature slope in hPa above ice/snow
-      REAL(KIND(1D0)), INTENT(out) :: Veg_Fr_temp !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
-      REAL(KIND(1D0)), INTENT(out) :: VegPhenLumps
+      ! REAL(KIND(1D0)), INTENT(out) :: QH_LUMPS
+      ! REAL(KIND(1D0)), INTENT(out) :: QE_LUMPS !turbulent fluxes: QH, QE
+      ! REAL(KIND(1D0)), INTENT(out) :: psyc_hPa !Psychometric constant in hPa
+      ! REAL(KIND(1D0)), INTENT(out) :: s_hPa !Vapour pressure versus temperature slope in hPa
+      ! REAL(KIND(1D0)), INTENT(out) :: sIce_hpa !Vapour pressure versus temperature slope in hPa above ice/snow
+      ! REAL(KIND(1D0)), INTENT(out) :: Veg_Fr_temp !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
+      ! REAL(KIND(1D0)), INTENT(out) :: VegPhenLumps
       ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
       ! INTEGER::iv
 
@@ -485,9 +483,16 @@ CONTAINS
          nsh_real => timer%nsh_real, &
          avcp => atmState%avcp, &
          lv_J_kg => atmState%lv_J_kg, &
+         psyc_hPa => atmState%psyc_hPa, &
+         s_hPa => atmState%s_hPa, &
+         sIce_hpa => atmState%sIce_hpa, &
          qn => heatState%qn, &
          qf => heatState%qf, &
          qs => heatState%qs, &
+         QH_LUMPS => heatState%QH_LUMPS, &
+         QE_LUMPS => heatState%QE_LUMPS, &
+         TempVeg => phenState%TempVeg, &
+         VegPhenLumps => phenState%VegPhenLumps, &
          SnowUse => config%SnowUse, &
          lumpsPrm => siteInfo%lumps &
          )
@@ -566,19 +571,19 @@ CONTAINS
          ! ENDDO
 
          IF (VegMax <= 0.01000) THEN !If max vegetation is very small, TempVeg = 0;
-            Veg_Fr_temp = 0
+            TempVeg = 0
          ELSE
             VegPhenLumps = (VegPhen)/(VegMax)
-            Veg_Fr_temp = VegFraction*VegPhenLumps !Now this is veg_fraction in general
+            TempVeg = VegFraction*VegPhenLumps !Now this is veg_fraction in general
          END IF
 
          ! initialisation
          alpha_sl = 0.6
          alpha_in = 0.2
 
-         IF (Veg_Fr_temp > 0.9000) THEN !If vegetation fraction is larger than 0.9
-            beta = (20 - 3)*Veg_Fr_temp + 3
-            alpha_qhqe = Veg_Fr_temp*0.8 + 0.2
+         IF (TempVeg > 0.9000) THEN !If vegetation fraction is larger than 0.9
+            beta = (20 - 3)*TempVeg + 3
+            alpha_qhqe = TempVeg*0.8 + 0.2
          ELSE
             beta = 3
             IF (veg_type == 1) THEN !Area vegetated, including bare soil and water
@@ -588,7 +593,7 @@ CONTAINS
                alpha_sl = 0.610
                alpha_in = 0.222
             END IF
-            alpha_qhqe = Veg_Fr_temp*alpha_sl + alpha_in
+            alpha_qhqe = TempVeg*alpha_sl + alpha_in
          END IF
 
          ! Calculate the actual heat fluxes
