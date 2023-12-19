@@ -2233,17 +2233,12 @@ CONTAINS
                   nlayer, &
                   hydroState, &
                   snowState, &
-                  anthroEmisState, Ts5mindata_ir, qf, qn, &
-                  solarState, ldown, &
+                  anthroEmisState, &
+                  solarState, &
                   phenState, &
-                  ! TODO: collect output into a derived type
-                  qn_snow, dataOutLineESTM, qs, &
                   heatState, &
-                  ohmState, &
-                  deltaQi, a1, a2, a3, &
-                  QS_roof, & !output
-                  QS_wall, & !output
-                  QS_surf) !output
+                  ohmState,&
+                  dataOutLineESTM)
 
                !==================Energy related to snow melting/freezing processes=======
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -4034,17 +4029,13 @@ CONTAINS
       atmState, &
       nlayer, &
       hydroState, &
-      snowState_prev, &
-      anthroHeatState, Ts5mindata_ir, qf, qn, &
-      solarstate, ldown, &
+      snowState, &
+      anthroHeatState, &
+      solarstate, &
       phenState, &
-      qn_S, dataOutLineESTM, qs, &
       heatState, &
       ohmState, &
-      deltaQi, a1, a2, a3, &
-      QS_roof, & !output
-      QS_wall, & !output
-      QS_surf) !output
+      dataOutLineESTM)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_SITE, SUEWS_TIMER, &
                                SNOW_STATE, EHC_PRM, &
@@ -4076,7 +4067,7 @@ CONTAINS
       ! TYPE(LC_WATER_PRM), INTENT(in) :: waterPrm
 
       TYPE(HYDRO_STATE), INTENT(in) :: hydroState
-      TYPE(SNOW_STATE), INTENT(in) :: snowState_prev
+      TYPE(SNOW_STATE), INTENT(inout) :: snowState
       TYPE(anthroEmis_STATE), INTENT(in) :: anthroHeatState
       TYPE(PHENOLOGY_STATE), INTENT(in) :: phenState
       ! TYPE(OHM_STATE), INTENT(in) :: ohmState
@@ -4106,7 +4097,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating degree day of the day of year
       REAL(KIND(1D0)) :: qf ! anthropogenic heat lufx [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qn ! net all-wave radiative flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(in) :: qn ! net all-wave radiative flux [W m-2]
       ! REAL(KIND(1D0)) :: qs_obs ! observed heat storage flux [W m-2]
       ! REAL(KIND(1D0)) :: avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa
       REAL(KIND(1D0)) :: ldown
@@ -4121,7 +4112,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac ! snow fractions of each surface [-]
 
-      REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: Ts5mindata_ir !surface temperature input data [degC]
+      ! REAL(KIND(1D0)), DIMENSION(:), INTENT(in) :: Ts5mindata_ir !surface temperature input data [degC]
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: QG_surf ! ground heat flux [W m-2]
       ! REAL(KIND(1D0)) :: Tair_av ! mean air temperature of past 24hr [degC]
@@ -4140,14 +4131,14 @@ CONTAINS
       ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
       REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm !Coefficients used in drainage calculation [-]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
 
       REAL(KIND(1D0)), DIMENSION(27), INTENT(out) :: dataOutLineESTM !data output from ESTM
-      REAL(KIND(1D0)), INTENT(out) :: qn_S ! net all-wave radiation over snow [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: qs ! storage heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(out) :: a1 !< AnOHM coefficients of grid [-]
-      REAL(KIND(1D0)), INTENT(out) :: a2 !< AnOHM coefficients of grid [h]
-      REAL(KIND(1D0)), INTENT(out) :: a3 !< AnOHM coefficients of grid [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qn_snow ! net all-wave radiation over snow [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: qs ! storage heat flux [W m-2]
+      ! REAL(KIND(1D0)), INTENT(out) :: a1 !< AnOHM coefficients of grid [-]
+      ! REAL(KIND(1D0)), INTENT(out) :: a2 !< AnOHM coefficients of grid [h]
+      ! REAL(KIND(1D0)), INTENT(out) :: a3 !< AnOHM coefficients of grid [W m-2]
 
       ! extended for ESTM_ehc
       ! input arrays: standard suews surfaces
@@ -4178,15 +4169,15 @@ CONTAINS
       ! output arrays
       ! roof facets
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof ! roof surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_roof ! heat storage flux for roof component [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_roof ! heat storage flux for roof component [W m-2]
       ! REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_roof !interface temperature between depth layers [degC]
       ! wall facets
       REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_wall ! wall surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_wall ! heat storage flux for wall component [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: QS_wall ! heat storage flux for wall component [W m-2]
       !REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(out) :: temp_out_wall !interface temperature between depth layers [degC]
       ! standard suews surfaces
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc_surf ! each surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: QS_surf ! heat storage flux for each surface component [W m-2]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: QS_surf ! heat storage flux for each surface component [W m-2]
       !REAL(KIND(1D0)), DIMENSION(nsurf, ndepth), INTENT(out) :: temp_out_surf !interface temperature between depth layers [degC]
 
       ! internal use arrays
@@ -4214,6 +4205,7 @@ CONTAINS
          EmissionsMethod => config%EmissionsMethod, &
          DiagQS => config%DiagQS, &
          Gridiv => siteInfo%Gridiv, &
+         Ts5mindata_ir => forcing%Ts5mindata_ir, &
          qs_obs => forcing%qs_obs, &
          avkdn => forcing%kdown, &
          avu1 => forcing%U, &
@@ -4222,6 +4214,24 @@ CONTAINS
          press_hpa => forcing%pres, &
          Tair_av => atmState%Tair_av, &
          zenith_deg => solarstate%zenith_deg, &
+         qf => heatState%qf, &
+         qn => heatState%qn, &
+         qs => heatState%qs, &
+         ldown => heatState%ldown, &
+         tsfc_roof => heatState%tsfc_roof, &
+         tsfc_wall => heatState%tsfc_wall, &
+         tsfc_surf => heatState%tsfc_surf, &
+         temp_in_roof => heatState%temp_roof, &
+         temp_in_wall => heatState%temp_wall, &
+         temp_in_surf => heatState%temp_surf, &
+         QS_roof => heatState%QS_roof, &
+         QS_wall => heatState%QS_wall, &
+         QS_surf => heatState%QS_surf, &
+         qn_snow => snowState%qn_snow, &
+         deltaQi => snowState%deltaQi, &
+         a1 => ohmState%a1, &
+         a2 => ohmState%a2, &
+         a3 => ohmState%a3, &
          id => timer%id, &
          tstep => timer%tstep, &
          dt_since_start => timer%dt_since_start &
@@ -4261,13 +4271,6 @@ CONTAINS
             ! tstep = timer%tstep
             ! dt_since_start = timer%dt_since_start
 
-            tsfc_roof = heatState%tsfc_roof
-            tsfc_wall = heatState%tsfc_wall
-            tsfc_surf = heatState%tsfc_surf
-            temp_in_roof = heatState%temp_roof
-            temp_in_wall = heatState%temp_wall
-            temp_in_surf = heatState%temp_surf
-
             ! tin_roof = ehcPrm%tin_roof
             ! k_roof = ehcPrm%k_roof
             ! cp_roof = ehcPrm%cp_roof
@@ -4286,7 +4289,7 @@ CONTAINS
             soilstore_id = hydroState%soilstore_surf
             state_id = hydroState%state_surf
 
-            SnowFrac = snowState_prev%SnowFrac
+            SnowFrac = snowState%SnowFrac
 
             HDD_id = anthroHeatState%HDD_id
 
@@ -4500,7 +4503,7 @@ CONTAINS
                IF (Diagnose == 1) WRITE (*, *) 'Calling OHM...'
                CALL OHM(qn_use, ohmState%qn_av, ohmState%dqndt, &
                         ohmState%qn_av, ohmState%dqndt, &
-                        qn_S, ohmState%qn_s_av, ohmState%dqnsdt, &
+                        qn_snow, ohmState%qn_s_av, ohmState%dqnsdt, &
                         ohmState%qn_s_av, ohmState%dqnsdt, &
                         tstep, dt_since_start, &
                         sfr_surf, nsurf, &
