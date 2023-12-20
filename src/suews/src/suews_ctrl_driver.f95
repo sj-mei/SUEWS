@@ -2359,9 +2359,9 @@ CONTAINS
                ! see if this converges better
                ! ratio_iter = 1
                ratio_iter = .3
-               heatState%tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + heatState%tsfc_surf*ratio_iter)
-               heatState%tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + heatState%tsfc_roof*ratio_iter)
-               heatState%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + heatState%tsfc_wall*ratio_iter)
+               heatState%tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_surf*ratio_iter)
+               heatState%tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_roof*ratio_iter)
+               heatState%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_wall*ratio_iter)
                ! =======test end=======
 
                IF (diagnose==1) PRINT *, 'tsfc_surf after weighted average', heatState%tsfc_surf
@@ -2372,7 +2372,6 @@ CONTAINS
                ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
                ! Test if sensible heat fluxes converge in iterations
-
                IF (dif_tsfc_iter > .1) THEN
                   flag_converge = .FALSE.
                ELSE
