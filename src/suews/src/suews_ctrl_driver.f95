@@ -2339,8 +2339,8 @@ CONTAINS
                IF (diagnose==1) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
                DO i_layer = 1, nlayer
-                  heatState%tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
-                  heatState%tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
+                  tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
+                  tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
                END DO
 
                ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
