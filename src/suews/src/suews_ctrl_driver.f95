@@ -2336,7 +2336,6 @@ CONTAINS
                   tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
 
                END DO
-               IF (diagnose==1) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
                DO i_layer = 1, nlayer
                   tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
@@ -2350,10 +2349,10 @@ CONTAINS
                tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
 
 
-               dif_tsfc_iter = MAXVAL(ABS(heatState%tsfc_surf - tsfc0_out_surf))
+               dif_tsfc_iter = MAXVAL(ABS(tsfc_surf - tsfc0_out_surf))
                IF (config%StorageHeatMethod == 5) THEN
-                  dif_tsfc_iter = MAX(MAXVAL(ABS(heatState%tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
-                  dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - heatState%tsfc_wall)), dif_tsfc_iter)
+                  dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
+                  dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_wall)), dif_tsfc_iter)
                END IF
 
                ! ====test===
