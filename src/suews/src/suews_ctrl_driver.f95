@@ -2144,7 +2144,7 @@ CONTAINS
             i_iter = 1
             max_iter = 30
             DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
-               IF (diagnose==1) THEN
+               IF (diagnose == 1) THEN
                   PRINT *, '=========================== '
                   PRINT *, 'iteration is ', i_iter
                END IF
@@ -2221,7 +2221,7 @@ CONTAINS
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
                ! ===================NET ALLWAVE RADIATION================================
-               IF (diagnose==1) THEN
+               IF (diagnose == 1) THEN
                   PRINT *, 'Tsfc_surf before QN', heatState%tsfc_surf
                END IF
                CALL SUEWS_cal_Qn_DTS( &
@@ -2232,7 +2232,7 @@ CONTAINS
                   snowState, &
                   dataOutLineSPARTACUS)
 
-               IF (diagnose ==1) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
+               IF (diagnose == 1) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
                CALL SUEWS_cal_Qs_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   atmState, &
@@ -2317,8 +2317,6 @@ CONTAINS
                   !======== Evaporation and surface state_id end========
                END IF
 
-
-
                !============ Sensible heat flux ===============
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
                CALL SUEWS_cal_QH_DTS( &
@@ -2327,77 +2325,74 @@ CONTAINS
                   atmState)
                !============ Sensible heat flux end ===============
 
-               !============ calculate surface temperature ===============
-               TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
+               ! !============ calculate surface temperature ===============
+               ! TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
 
-               !============= calculate surface specific QH and Tsfc ===============
+               ! !============= calculate surface specific QH and Tsfc ===============
 
-               DO i_surf = 1, nsurf
-                  tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
+               ! DO i_surf = 1, nsurf
+               !    tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
 
-               END DO
+               ! END DO
 
-               DO i_layer = 1, nlayer
-                  tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
-                  tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
-               END DO
+               ! DO i_layer = 1, nlayer
+               !    tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
+               !    tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
+               ! END DO
 
-               ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
-               ! TODO: location of tsfc0_out need to re-considered - might be moved to the end of the iteration loop
-               tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
-               tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
-               tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
+               ! ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
+               ! ! TODO: location of tsfc0_out need to re-considered - might be moved to the end of the iteration loop
+               ! tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
+               ! tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
+               ! tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
 
+               ! dif_tsfc_iter = MAXVAL(ABS(tsfc_surf - tsfc0_out_surf))
+               ! IF (config%StorageHeatMethod == 5) THEN
+               !    dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
+               !    dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_wall)), dif_tsfc_iter)
+               ! END IF
 
-               dif_tsfc_iter = MAXVAL(ABS(tsfc_surf - tsfc0_out_surf))
-               IF (config%StorageHeatMethod == 5) THEN
-                  dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
-                  dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_wall)), dif_tsfc_iter)
-               END IF
+               ! ! ====test===
+               ! ! see if this converges better
+               ! ! ratio_iter = 1
+               ! ratio_iter = .3
+               ! tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_surf*ratio_iter)
+               ! IF (config%StorageHeatMethod == 5) THEN
+               !    tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_roof*ratio_iter)
+               !    tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_wall*ratio_iter)
+               ! END IF
+               ! ! =======test end=======
 
-               ! ====test===
-               ! see if this converges better
-               ! ratio_iter = 1
-               ratio_iter = .3
-               tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_surf*ratio_iter)
-               IF (config%StorageHeatMethod == 5) THEN
-                  heatState%tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_roof*ratio_iter)
-                  heatState%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_wall*ratio_iter)
-               END IF
-               ! =======test end=======
+               ! !============ surface-level diagonostics end ===============
 
+               ! ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
+               ! ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
-               !============ surface-level diagonostics end ===============
+               ! ! Test if sensible heat fluxes converge in iterations
+               ! IF (dif_tsfc_iter > .1) THEN
+               !    flag_converge = .FALSE.
+               ! ELSE
+               !    flag_converge = .TRUE.
+               !    IF (diagnose == 1) PRINT *, 'Iteration done in', i_iter, ' iterations'
+               !    ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
+               !    ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
+               !    ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
 
-               ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
-               ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
+               ! END IF
 
-               ! Test if sensible heat fluxes converge in iterations
-               IF (dif_tsfc_iter > .1) THEN
-                  flag_converge = .FALSE.
-               ELSE
-                  flag_converge = .TRUE.
-                  IF (diagnose==1) PRINT *, 'Iteration done in', i_iter, ' iterations'
-                  ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
-                  ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
-                  ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
-
-               END IF
-
-               !  CALL suews_update_tsurf( &
-               !    timer, config, forcing, siteInfo, & ! input
-               !    flagState, &
-               !    atmState, &
-               !    heatState) ! inout
+               CALL suews_update_tsurf( &
+                  timer, config, forcing, siteInfo, & ! input
+                  flagState, &
+                  atmState, &
+                  heatState) ! inout
 
                i_iter = i_iter + 1
                IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
-                  IF (diagnose==1) PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
+                  IF (diagnose == 1) PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
 
                END IF
-               IF (diagnose==1) PRINT *, '========================='
-               IF (diagnose==1) PRINT *, ''
-
+               IF (diagnose == 1) PRINT *, '========================='
+               IF (diagnose == 1) PRINT *, ''
 
                !==============main calculation end=======================
             END DO ! end iteration for tsurf calculations
@@ -2617,11 +2612,11 @@ CONTAINS
          TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
 
          !============= calculate surface specific QH and Tsfc ===============
+
          DO i_surf = 1, nsurf
             tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
 
          END DO
-         ! IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
          DO i_layer = 1, nlayer
             tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
@@ -2629,24 +2624,14 @@ CONTAINS
          END DO
 
          ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
+         ! TODO: location of tsfc0_out need to re-considered - might be moved to the end of the iteration loop
          tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
          tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
          tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
 
-         IF (diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', tsfc_surf
-         ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
-         IF (diagnose == 1) PRINT *, &
-            'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_surf - tsfc0_out_surf)), &
-            MAXLOC(ABS(tsfc_surf - tsfc0_out_surf))
          dif_tsfc_iter = MAXVAL(ABS(tsfc_surf - tsfc0_out_surf))
          IF (StorageHeatMethod == 5) THEN
-            IF (diagnose == 1) PRINT *, &
-               'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), &
-               MAXLOC(ABS(tsfc_roof - tsfc0_out_roof))
             dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
-            IF (diagnose == 1) PRINT *, &
-               'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_wall - tsfc0_out_wall)), &
-               MAXLOC(ABS(tsfc_wall - tsfc0_out_wall))
             dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_wall)), dif_tsfc_iter)
          END IF
 
@@ -2655,11 +2640,11 @@ CONTAINS
          ! ratio_iter = 1
          ratio_iter = .3
          tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_surf*ratio_iter)
-         tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_roof*ratio_iter)
-         tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_wall*ratio_iter)
+         IF (StorageHeatMethod == 5) THEN
+            tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_roof*ratio_iter)
+            tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_wall*ratio_iter)
+         END IF
          ! =======test end=======
-
-         ! IF (flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState%tsfc_surf
 
          !============ surface-level diagonostics end ===============
 
@@ -2667,12 +2652,10 @@ CONTAINS
          ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
          ! Test if sensible heat fluxes converge in iterations
-
          IF (dif_tsfc_iter > .1) THEN
             flag_converge = .FALSE.
          ELSE
             flag_converge = .TRUE.
-            ! IF (flag_print_debug) PRINT *, 'Iteration done in', i_iter, ' iterations'
             ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
             ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
             ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
