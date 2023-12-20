@@ -1933,9 +1933,9 @@ CONTAINS
             tsfc0_out_surf => heatState%tsfc0_out_surf, &
             tsfc0_out_roof => heatState%tsfc0_out_roof, &
             tsfc0_out_wall => heatState%tsfc0_out_wall, &
-            ! tsfc_surf => heatState%tsfc_surf, &
-            ! tsfc_roof => heatState%tsfc_roof, &
-            ! tsfc_wall => heatState%tsfc_wall, &
+            tsfc_surf => heatState%tsfc_surf, &
+            tsfc_roof => heatState%tsfc_roof, &
+            tsfc_wall => heatState%tsfc_wall, &
             QN_surf => heatState%QN_surf, &
             QN_roof => heatState%QN_roof, &
             QN_wall => heatState%QN_wall, &
@@ -2333,7 +2333,7 @@ CONTAINS
                !============= calculate surface specific QH and Tsfc ===============
 
                DO i_surf = 1, nsurf
-                  heatState%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
+                  tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
 
                END DO
                IF (diagnose==1) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
@@ -2634,7 +2634,7 @@ CONTAINS
          END DO
          ! IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
-         DO i_surf = 1, nlayer
+         DO i_layer = 1, nlayer
             tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
             tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
          END DO
