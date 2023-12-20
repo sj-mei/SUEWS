@@ -2009,6 +2009,7 @@ CONTAINS
             g_smd => phenState%g_smd, &
             g_lai => phenState%g_lai, &
             ! forcing
+            temp_c => forcing%temp_c, &
             Ts5mindata_ir => forcing%Ts5mindata_ir &
             )
 
@@ -2338,7 +2339,7 @@ CONTAINS
                !============ Sensible heat flux end ===============
 
                !============ calculate surface temperature ===============
-               TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, forcing%temp_c)
+               TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
 
                !============= calculate surface specific QH and Tsfc ===============
 
@@ -2354,9 +2355,9 @@ CONTAINS
                END DO
 
                ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
-               tsfc0_out_surf = MIN(heatState%tsfc_surf, forcing%Temp_C + 50)
-               tsfc0_out_roof = MIN(heatState%tsfc_roof, forcing%Temp_C + 50)
-               tsfc0_out_wall = MIN(heatState%tsfc_wall, forcing%Temp_C + 50)
+               tsfc0_out_surf = MIN(heatState%tsfc_surf, Temp_C + 50)
+               tsfc0_out_roof = MIN(heatState%tsfc_roof, Temp_C + 50)
+               tsfc0_out_wall = MIN(heatState%tsfc_wall, Temp_C + 50)
 
                IF (Diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState%tsfc_surf
                ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
@@ -2411,18 +2412,6 @@ CONTAINS
                !    heatState) ! inout
 
                i_iter = i_iter + 1
-               ! force quit do-while loop if not convergent after 100 iterations
-               ! IF (Diagnose == 1 .AND. i_iter == max_iter) THEN
-               !    ! PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
-               !    ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
-               !    ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
-               !    ! PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
-               !    ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
-               !    ! exit
-               ! END IF
-
-               ! Ts_iter = TSfc_C
-               ! l_mod_iter = l_mod
                IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
                   IF (diagnose==1) PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
 
