@@ -14,7 +14,7 @@ MODULE SUEWS_Driver
                             LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroEmis_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
-                            ROUGHNESS_STATE, solar_State, atm_state, &
+                            ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
                             SUEWS_STATE
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, cal_atm_state
@@ -1789,8 +1789,8 @@ CONTAINS
 
       ! these local variables are used in iteration
 
-      LOGICAL :: flag_converge ! flag for Tsurf convergence
-      LOGICAL :: flag_print_debug ! flag for printing debug info
+      ! LOGICAL :: flag_converge ! flag for Tsurf convergence
+      ! LOGICAL :: diagnose ! flag for printing debug info
       INTEGER :: i_iter ! iterator in main calculation loop
       INTEGER :: i_surf !iterator for surfaces
       REAL(KIND(1D0)) :: dif_tsfc_iter ! difference between tsfc and tsfc0 to test convergence
@@ -1803,7 +1803,9 @@ CONTAINS
       ! REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
 
       ASSOCIATE ( &
+         Diagnose => config%Diagnose, &
          ! modState
+         flagState => modState%flagState, &
          anthroEmisState => modState%anthroemisState, &
          hydroState => modState%hydroState, &
          heatstate => modState%heatState, &
@@ -1846,6 +1848,8 @@ CONTAINS
             NonWaterFraction => siteInfo%NonWaterFraction, &
             sfr_roof => siteInfo%sfr_roof, &
             sfr_wall => siteInfo%sfr_wall, &
+            ! flagState
+            flag_converge => flagState%flag_converge, &
             ! solarState
             azimuth_deg => solarState%azimuth_deg, &
             zenith_deg => solarState%zenith_deg, &
@@ -2008,7 +2012,7 @@ CONTAINS
             Ts5mindata_ir => forcing%Ts5mindata_ir &
             )
 
-            IF (config%Diagnose == 1) WRITE (*, *) 'dectime', dectime
+            IF (Diagnose == 1) WRITE (*, *) 'dectime', dectime
 
             ! ############# memory allocation for DTS variables (start) #############
             CALL hydroState_prev%ALLOCATE(nlayer)
@@ -2056,25 +2060,25 @@ CONTAINS
             ! snowState = snowState
             snowState%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
-            hydroState_prev = hydroState
+            ! hydroState_prev = hydroState
             ! Tair_av_prev = forcing%Tair_av_5d
             Tair_av_prev = atmState%Tair_av
+            Tair_av_next = atmState%Tair_av
 
-            phenState_prev = phenState
+            ! phenState_prev = phenState
             ! anthroEmisState_prev = anthroEmisState
 
             ! ESTM_ehc related
             ! save initial values of inout variables
-            heatState_in = heatState
+            ! heatState_in = heatState
 
             ! initialise  variables
-            snowState_next = snowState
+            ! snowState_next = snowState
             ! hydroState_next = hydroState
 
             ! Tair_av_next = Tair_av
             ! Tair_av_next = forcing%Tair_av_5d
-            Tair_av_next = atmState%Tair_av
-            phenState_next = phenState
+            ! phenState_next = phenState
             ! anthroEmisState = anthroEmisState
 
             ! initialise output variables
@@ -2094,7 +2098,7 @@ CONTAINS
             ! iteration is used below to get results converge
             flag_converge = .FALSE.
             ! Ts_iter = forcing%temp_c
-            flag_print_debug = .FALSE.
+            ! diagnose = .FALSE.
 
             tsfc0_out_surf = heatState%tsfc_surf
             ! ! TODO: ESTM work: to allow heterogeneous surface temperatures
@@ -2109,7 +2113,7 @@ CONTAINS
             Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
 
             !==============surface roughness calculation=======================
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
             CALL SUEWS_cal_RoughnessParameters_DTS( &
                config, &
                pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
@@ -2119,7 +2123,7 @@ CONTAINS
                roughnessState)
 
             !=================Calculate sun position=================
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
             ! print *, 'timer: azimuth, zenith_deg', timer%azimuth, timer%zenith_deg
             CALL NARP_cal_SunPosition_DTS( &
                timer, & !input:
@@ -2127,7 +2131,7 @@ CONTAINS
                azimuth_deg, zenith_deg) !output:
 
             !=================Calculation of density and other water related parameters=================
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
             CALL cal_atm_state(timer, forcing, atmState)
 
             ! start iteration-based calculation
@@ -2135,7 +2139,7 @@ CONTAINS
             i_iter = 1
             max_iter = 30
             DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
-               IF (flag_print_debug) THEN
+               IF (diagnose==1) THEN
                   PRINT *, '=========================== '
                   PRINT *, 'iteration is ', i_iter
                END IF
@@ -2184,7 +2188,7 @@ CONTAINS
                ! 2. add `xxState_prev` and `xxState_next` as input and output, respectively
 
                !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
                CALL SUEWS_cal_DailyState_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   phenState, & !inout
@@ -2192,12 +2196,12 @@ CONTAINS
                   hydroState) !inout
 
                !======== Calculate soil moisture =========
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   hydroState)
 
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
                !=================Gives the external and internal water uses per timestep=================
                CALL SUEWS_cal_WaterUse_DTS( &
                   timer, config, forcing, siteInfo, & ! input
@@ -2212,7 +2216,7 @@ CONTAINS
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
                ! ===================NET ALLWAVE RADIATION================================
-               IF (flag_print_debug) THEN
+               IF (diagnose==1) THEN
                   PRINT *, 'Tsfc_surf before QN', heatState%tsfc_surf
                END IF
                CALL SUEWS_cal_Qn_DTS( &
@@ -2223,7 +2227,7 @@ CONTAINS
                   snowState, &
                   dataOutLineSPARTACUS)
 
-               IF (flag_print_debug) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
+               IF (diagnose ==1) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
                CALL SUEWS_cal_Qs_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   atmState, &
@@ -2237,10 +2241,10 @@ CONTAINS
                   dataOutLineESTM)
 
                !==================Energy related to snow melting/freezing processes=======
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
 
                !==========================Turbulent Fluxes================================
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
                IF (i_iter == 1) THEN
                   !Calculate QH and QE from LUMPS in the first iteration of each time step
                   CALL LUMPS_cal_QHQE_DTS( &
@@ -2257,7 +2261,7 @@ CONTAINS
                END IF
 
                !============= calculate water balance =============
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
                CALL SUEWS_cal_Water_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   hydroState, &
@@ -2265,7 +2269,7 @@ CONTAINS
                !============= calculate water balance end =============
 
                !===============Resistance Calculations=======================
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
                CALL SUEWS_cal_Resistance_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   atmState, &
@@ -2297,7 +2301,7 @@ CONTAINS
                   ! N.B.: snow-related calculations end here.
                   !===================================================
                ELSE
-                  IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QE...'
+                  IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QE...'
                   !======== Evaporation and surface state_id for snow-free conditions ========
                   CALL SUEWS_cal_QE_DTS( &
                      timer, config, forcing, siteInfo, & ! input
@@ -2309,33 +2313,29 @@ CONTAINS
                END IF
 
                ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
-               ! IF (config%Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState%soilstore_surf
+               ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState%soilstore_surf
 
                !=== Horizontal movement between soil stores ===
                ! Now water is allowed to move horizontally between the soil stores
-               ! IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
+               ! IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
                ! CALL SUEWS_cal_HorizontalSoilWater_DTS( &
                !    timer, config, forcing, siteInfo, & ! input
                !    hydroState)
 
                !========== Calculate soil moisture ============
-               ! IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
+               ! IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
                ! CALL SUEWS_cal_SoilState_DTS( &
                !    timer, config, forcing, siteInfo, & ! input
                !    hydroState, hydroState_prev) !output
 
                !============ Sensible heat flux ===============
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
                CALL SUEWS_cal_QH_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   heatState, snowState, & ! input
                   atmState)
 
                !============ Sensible heat flux end ===============
-
-               ! QH_surf = QN_surf + qf - qs_surf - qe_surf
-               ! QH_roof = QN_roof + qf - qs_roof - qe_roof
-               ! QH_wall = QN_wall + qf - qs_wall - qe_wall
 
                !============ calculate surface temperature ===============
                TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, forcing%temp_c)
@@ -2346,7 +2346,7 @@ CONTAINS
                   heatState%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
 
                END DO
-               IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
+               IF (diagnose==1) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
                DO i_surf = 1, nlayer
                   heatState%tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, forcing%temp_c)
@@ -2358,18 +2358,18 @@ CONTAINS
                tsfc0_out_roof = MIN(heatState%tsfc_roof, forcing%Temp_C + 50)
                tsfc0_out_wall = MIN(heatState%tsfc_wall, forcing%Temp_C + 50)
 
-               IF (config%diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState%tsfc_surf
+               IF (Diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState%tsfc_surf
                ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
-               IF (config%diagnose == 1) PRINT *, &
+               IF (Diagnose == 1) PRINT *, &
                   'tsfc_surf abs. diff.:', MAXVAL(ABS(heatState%tsfc_surf - tsfc0_out_surf)), &
                   MAXLOC(ABS(heatState%tsfc_surf - tsfc0_out_surf))
                dif_tsfc_iter = MAXVAL(ABS(heatState%tsfc_surf - tsfc0_out_surf))
                IF (config%StorageHeatMethod == 5) THEN
-                  IF (config%diagnose == 1) PRINT *, &
+                  IF (Diagnose == 1) PRINT *, &
                      'tsfc_roof abs. diff.:', MAXVAL(ABS(heatState%tsfc_roof - tsfc0_out_roof)), &
                      MAXLOC(ABS(heatState%tsfc_roof - tsfc0_out_roof))
                   dif_tsfc_iter = MAX(MAXVAL(ABS(heatState%tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
-                  IF (config%diagnose == 1) PRINT *, &
+                  IF (Diagnose == 1) PRINT *, &
                      'tsfc_wall abs. diff.:', MAXVAL(ABS(heatState%tsfc_wall - tsfc0_out_wall)), &
                      MAXLOC(ABS(heatState%tsfc_wall - tsfc0_out_wall))
                   dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - heatState%tsfc_wall)), dif_tsfc_iter)
@@ -2384,7 +2384,7 @@ CONTAINS
                heatState%tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + heatState%tsfc_wall*ratio_iter)
                ! =======test end=======
 
-               IF (flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState%tsfc_surf
+               IF (diagnose==1) PRINT *, 'tsfc_surf after weighted average', heatState%tsfc_surf
 
                !============ surface-level diagonostics end ===============
 
@@ -2397,32 +2397,40 @@ CONTAINS
                   flag_converge = .FALSE.
                ELSE
                   flag_converge = .TRUE.
-                  IF (flag_print_debug) PRINT *, 'Iteration done in', i_iter, ' iterations'
+                  IF (diagnose==1) PRINT *, 'Iteration done in', i_iter, ' iterations'
                   ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
                   ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
                   ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
 
                END IF
+
+               !  CALL suews_update_tsurf( &
+               !    timer, config, forcing, siteInfo, & ! input
+               !    flagState, &
+               !    atmState, &
+               !    heatState) ! inout
 
                i_iter = i_iter + 1
                ! force quit do-while loop if not convergent after 100 iterations
-               IF (config%Diagnose == 1 .AND. i_iter == max_iter) THEN
-                  ! PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
-                  ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
-                  ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
-                  ! PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
-                  ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
-                  ! exit
-               END IF
+               ! IF (Diagnose == 1 .AND. i_iter == max_iter) THEN
+               !    ! PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
+               !    ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
+               !    ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
+               !    ! PRINT *, ' Ts_iter: ', Ts_iter, ' TSfc_C: ', TSfc_C
+               !    ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
+               !    ! exit
+               ! END IF
 
                ! Ts_iter = TSfc_C
                ! l_mod_iter = l_mod
                IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
-                  IF (flag_print_debug) PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
+                  IF (diagnose==1) PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
 
                END IF
-               IF (flag_print_debug) PRINT *, '========================='
-               IF (flag_print_debug) PRINT *, ''
+               IF (diagnose==1) PRINT *, '========================='
+               IF (diagnose==1) PRINT *, ''
+
+
                !==============main calculation end=======================
             END DO ! end iteration for tsurf calculations
 
@@ -2430,7 +2438,7 @@ CONTAINS
             ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
 
             !============ roughness sub-layer diagonostics ===============
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
             CALL RSLProfile_DTS( &
                timer, config, forcing, siteInfo, & ! input
                atmState, &
@@ -2439,7 +2447,7 @@ CONTAINS
                dataoutLineRSL) ! output
 
             ! ============ BIOGENIC CO2 FLUX =======================
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_BiogenCO2_DTS...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_BiogenCO2_DTS...'
             CALL SUEWS_cal_BiogenCO2_DTS( &
                timer, config, forcing, siteInfo, & ! input
                atmState, &
@@ -2450,7 +2458,7 @@ CONTAINS
 
             ! calculations of diagnostics end
             !==============================================================
-            IF (config%Diagnose == 1) WRITE (*, *) 'update inout variables with new values...'
+            IF (Diagnose == 1) WRITE (*, *) 'update inout variables with new values...'
             !==============================================================
             ! update inout variables with new values
             snowState%SnowfallCum = snowState_next%SnowfallCum
@@ -2490,7 +2498,7 @@ CONTAINS
             !==============use BEERS to get localised radiation flux==================
             ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
             IF (sfr_surf(BldgSurf) > 0) THEN
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
                PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
                CALL BEERS_cal_main_DTS( &
                   timer, config, forcing, siteInfo, & ! input
@@ -2504,7 +2512,7 @@ CONTAINS
             END IF
 
             !==============translation of  output variables into output array===========
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
             CALL SUEWS_update_outputLine_DTS( &
                AdditionalWater, phenState, forcing, U10_ms, azimuth_deg, & !input
                chSnow_per_interval, dectime, &
@@ -2528,7 +2536,7 @@ CONTAINS
                datetimeLine, dataOutLineSUEWS) !output
 
             IF (config%StorageHeatMethod == 5) THEN
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling ECH_update_outputLine_DTS...'
+               IF (Diagnose == 1) WRITE (*, *) 'Calling ECH_update_outputLine_DTS...'
                CALL ECH_update_outputLine_DTS( &
                   timer, dectime, nlayer, & !input
                   heatState, qs_surf, &
@@ -2545,7 +2553,7 @@ CONTAINS
             END IF
 
             ! daily state_id:
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling update_DailyStateLine_DTS...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling update_DailyStateLine_DTS...'
             CALL update_DailyStateLine_DTS( &
                timer, phenState, anthroEmisState, &
                hydroState, &
@@ -2556,7 +2564,7 @@ CONTAINS
                dataOutLineDailyState) !out
 
             !==============translation end ================
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling dataoutlineDebug...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling dataoutlineDebug...'
             dataoutlineDebug = &
                [tsfc0_out_surf, &
                 qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
@@ -2575,7 +2583,7 @@ CONTAINS
 
             !==============output==========================
             ! TODO: collect output into a derived type for model output
-            IF (config%Diagnose == 1) WRITE (*, *) 'Calling output_line_init...'
+            IF (Diagnose == 1) WRITE (*, *) 'Calling output_line_init...'
             CALL output_line_init(output_line_suews)
             output_line_suews%datetimeLine = datetimeLine
             output_line_suews%dataOutLineSUEWS = [datetimeLine, dataOutLineSUEWS]
@@ -2593,6 +2601,118 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_Main_DTS
 ! ================================================================================
+
+   ! ================================================================================
+
+   SUBROUTINE suews_update_tsurf( &
+      timer, config, forcing, siteInfo, & ! input
+      flagState, &
+      atmState, &
+      heatState) ! inout
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE, flag_STATE
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(HEAT_STATE), INTENT(inout) :: heatState
+      TYPE(atm_STATE), INTENT(inout) :: atmState
+      TYPE(flag_STATE), INTENT(inout) :: flagState
+
+      INTEGER :: i_surf
+      REAL(KIND(1D0)) :: dif_tsfc_iter, ratio_iter
+
+      ASSOCIATE ( &
+         flag_converge => flagState%flag_converge, &
+         diagnose => config%diagnose, &
+         StorageHeatMethod => config%StorageHeatMethod, &
+         nlayer => siteInfo%nlayer, &
+         avdens => atmState%avdens, &
+         RA_h => atmState%RA_h, &
+         TSfc_C => heatState%TSfc_C, &
+         QH_surf => heatState%QH_surf, &
+         QH_roof => heatState%QH_roof, &
+         QH_wall => heatState%QH_wall, &
+         qh => heatState%qh, &
+         tsfc0_out_surf => heatState%tsfc0_out_surf, &
+         tsfc0_out_roof => heatState%tsfc0_out_roof, &
+         tsfc0_out_wall => heatState%tsfc0_out_wall, &
+         tsfc_surf => heatState%tsfc_surf, &
+         tsfc_roof => heatState%tsfc_roof, &
+         tsfc_wall => heatState%tsfc_wall, &
+         temp_c => forcing%temp_c &
+         )
+
+         !============ calculate surface temperature ===============
+         TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
+
+         !============= calculate surface specific QH and Tsfc ===============
+         DO i_surf = 1, nsurf
+            tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
+
+         END DO
+         ! IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
+
+         DO i_surf = 1, nlayer
+            tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_wall(i_surf) = cal_tsfc(QH_wall(i_surf), avdens, avcp, RA_h, temp_c)
+         END DO
+
+         ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
+         tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
+         tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
+         tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
+
+         IF (diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', tsfc_surf
+         ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
+         IF (diagnose == 1) PRINT *, &
+            'tsfc_surf abs. diff.:', MAXVAL(ABS(tsfc_surf - tsfc0_out_surf)), &
+            MAXLOC(ABS(tsfc_surf - tsfc0_out_surf))
+         dif_tsfc_iter = MAXVAL(ABS(tsfc_surf - tsfc0_out_surf))
+         IF (StorageHeatMethod == 5) THEN
+            IF (diagnose == 1) PRINT *, &
+               'tsfc_roof abs. diff.:', MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), &
+               MAXLOC(ABS(tsfc_roof - tsfc0_out_roof))
+            dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
+            IF (diagnose == 1) PRINT *, &
+               'tsfc_wall abs. diff.:', MAXVAL(ABS(tsfc_wall - tsfc0_out_wall)), &
+               MAXLOC(ABS(tsfc_wall - tsfc0_out_wall))
+            dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_wall)), dif_tsfc_iter)
+         END IF
+
+         ! ====test===
+         ! see if this converges better
+         ! ratio_iter = 1
+         ratio_iter = .3
+         tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_surf*ratio_iter)
+         tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_roof*ratio_iter)
+         tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_wall*ratio_iter)
+         ! =======test end=======
+
+         ! IF (flag_print_debug) PRINT *, 'tsfc_surf after weighted average', heatState%tsfc_surf
+
+         !============ surface-level diagonostics end ===============
+
+         ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
+         ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
+
+         ! Test if sensible heat fluxes converge in iterations
+
+         IF (dif_tsfc_iter > .1) THEN
+            flag_converge = .FALSE.
+         ELSE
+            flag_converge = .TRUE.
+            ! IF (flag_print_debug) PRINT *, 'Iteration done in', i_iter, ' iterations'
+            ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
+            ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
+            ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
+
+         END IF
+      END ASSOCIATE
+
+   END SUBROUTINE suews_update_tsurf
 
 ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
    SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
@@ -6699,104 +6819,6 @@ CONTAINS
       END SELECT
 
    END SUBROUTINE SUEWS_cal_QH
-
-   ! SUBROUTINE SUEWS_cal_QH_DTS( &
-   !    QHMethod, nlayer, storageheatmethod, & !input
-   !    qn, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, &
-   !    sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, &
-   !    sfr_roof, sfr_wall, &
-   !    tsfc_surf, tsfc_roof, tsfc_wall, &
-   !    Temp_C, &
-   !    RA, &
-   !    qh, qh_residual, qh_resist, & !output
-   !    qh_resist_surf, qh_resist_roof, qh_resist_wall)
-   !    IMPLICIT NONE
-
-   !    INTEGER, INTENT(in) :: QHMethod ! option for QH calculation: 1, residual; 2, resistance-based
-   !    INTEGER, INTENT(in) :: storageheatmethod !Determines method for calculating storage heat flux ΔQS [-]
-   !    INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
-
-   !    REAL(KIND(1D0)), INTENT(in) :: qn !net all-wave radiation [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: QmRain !melt heat for rain on snow [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: qe !latent heat flux [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: QmFreez !heat related to freezing of surface store [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: qm !Snowmelt-related heat [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
-   !    REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
-   !    ! REAL(KIND(1D0)), INTENT(in) :: tsurf
-   !    REAL(KIND(1D0)), INTENT(in) :: Temp_C !air temperature [degC]
-   !    REAL(KIND(1D0)), INTENT(in) :: RA !aerodynamic resistance [s m-1]
-
-   !    REAL(KIND(1D0)), INTENT(out) :: qh ! turtbulent sensible heat flux [W m-2]
-   !    REAL(KIND(1D0)), INTENT(out) :: qh_resist !resistance bnased sensible heat flux [W m-2]
-   !    REAL(KIND(1D0)), INTENT(out) :: qh_residual ! residual based sensible heat flux [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_surf !surface temperature [degC]
-
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
-   !    REAL(KIND(1D0)), INTENT(IN) :: sfr_water
-   !    REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !surface fraction ratio [-]
-
-   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf !resistance-based sensible heat flux [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !surface fraction of roof [-]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_roof !roof surface temperature [degC]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof !resistance-based sensible heat flux of roof [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !surface fraction of wall [-]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_wall !wall surface temperature[degC]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall !resistance-based sensible heat flux of wall [W m-2]
-
-   !    REAL(KIND(1D0)), PARAMETER :: NAN = -999
-   !    INTEGER :: is
-
-   !    sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
-   !    ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
-   !    qh_residual = (qn + qf + QmRain) - (qe + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
-
-   !    ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
-   !    ! Aerodynamic-Resistance-based method
-   !    DO is = 1, nsurf
-   !       IF (RA /= 0) THEN
-   !          qh_resist_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA
-   !       ELSE
-   !          qh_resist_surf(is) = NAN
-   !       END IF
-   !    END DO
-   !    IF (storageheatmethod == 5) THEN
-   !       DO is = 1, nlayer
-   !          IF (RA /= 0) THEN
-   !             qh_resist_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA
-   !             qh_resist_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA
-   !          ELSE
-   !             qh_resist_surf(is) = NAN
-   !          END IF
-   !       END DO
-
-   !       ! IF (RA /= 0) THEN
-   !       !    qh_resist = avdens*avcp*(tsurf - Temp_C)/RA
-   !       ! ELSE
-   !       !    qh_resist = NAN
-   !       ! END IF
-   !       ! aggregate QH of roof and wall
-   !       qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
-   !    END IF
-
-   !    qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
-
-   !    ! choose output QH
-   !    SELECT CASE (QHMethod)
-   !    CASE (1)
-   !       qh = qh_residual
-   !    CASE (2)
-   !       qh = qh_resist
-   !    END SELECT
-
-   ! END SUBROUTINE SUEWS_cal_QH_DTS
 
    SUBROUTINE SUEWS_cal_QH_DTS( &
       timer, config, forcing, siteInfo, & ! input

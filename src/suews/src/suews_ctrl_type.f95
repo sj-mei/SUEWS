@@ -444,6 +444,11 @@ MODULE SUEWS_DEF_DTS
    END TYPE SUEWS_SITE
 
    ! ********** SUEWS_stateVars schema **********
+   TYPE, PUBLIC :: flag_STATE
+      LOGICAL :: flag_converge ! flag for convergence of surface temperature
+
+   END TYPE flag_STATE
+
    TYPE, PUBLIC :: anthroEmis_STATE
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !Heating Degree Days [degC d]
 
@@ -700,6 +705,7 @@ MODULE SUEWS_DEF_DTS
 
    ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE
+      TYPE(flag_STATE) :: flagState
       TYPE(anthroEmis_STATE) :: anthroemisState
       TYPE(OHM_STATE) :: ohmState
       TYPE(solar_State) :: solarState
