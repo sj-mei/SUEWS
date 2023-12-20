@@ -2333,10 +2333,9 @@ CONTAINS
 
                !============ Sensible heat flux end ===============
 
-
-               QH_surf = QN_surf + qf - qs_surf - qe_surf
-               QH_roof = QN_roof + qf - qs_roof - qe_roof
-               QH_wall = QN_wall + qf - qs_wall - qe_wall
+               ! QH_surf = QN_surf + qf - qs_surf - qe_surf
+               ! QH_roof = QN_roof + qf - qs_roof - qe_roof
+               ! QH_wall = QN_wall + qf - qs_wall - qe_wall
 
                !============ calculate surface temperature ===============
                TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, forcing%temp_c)
@@ -6892,6 +6891,18 @@ CONTAINS
          qh => heatState%qh, &
          qh_resist => heatState%qh_resist, &
          qh_residual => heatState%qh_residual, &
+         qh_surf => heatState%qh_surf, &
+         qh_roof => heatState%qh_roof, &
+         qh_wall => heatState%qh_wall, &
+         qe_surf => heatState%qe_surf, &
+         qe_roof => heatState%qe_roof, &
+         qe_wall => heatState%qe_wall, &
+         qn_surf => heatState%qn_surf, &
+         qn_roof => heatState%qn_roof, &
+         qn_wall => heatState%qn_wall, &
+         qs_surf => heatState%qs_surf, &
+         qs_roof => heatState%qs_roof, &
+         qs_wall => heatState%qs_wall, &
          SMDMethod => config%SMDMethod, &
          storageheatmethod => config%StorageHeatMethod, &
          Diagnose => config%Diagnose &
@@ -6942,6 +6953,11 @@ CONTAINS
          CASE (2)
             qh = qh_resist
          END SELECT
+
+         ! update QH of all facets
+         QH_surf = QN_surf + qf - qs_surf - qe_surf
+         QH_roof = QN_roof + qf - qs_roof - qe_roof
+         QH_wall = QN_wall + qf - qs_wall - qe_wall
 
       END ASSOCIATE
 
