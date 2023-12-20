@@ -2333,14 +2333,14 @@ CONTAINS
                !============= calculate surface specific QH and Tsfc ===============
 
                DO i_surf = 1, nsurf
-                  heatState%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, forcing%temp_c)
+                  heatState%tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
 
                END DO
                IF (diagnose==1) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
                DO i_layer = 1, nlayer
-                  heatState%tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, forcing%temp_c)
-                  heatState%tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, forcing%temp_c)
+                  heatState%tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
+                  heatState%tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
                END DO
 
                ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
@@ -2600,7 +2600,7 @@ CONTAINS
       TYPE(atm_STATE), INTENT(inout) :: atmState
       TYPE(flag_STATE), INTENT(inout) :: flagState
 
-      INTEGER :: i_surf
+      INTEGER :: i_surf, i_layer
       REAL(KIND(1D0)) :: dif_tsfc_iter, ratio_iter
 
       ASSOCIATE ( &
@@ -2635,8 +2635,8 @@ CONTAINS
          ! IF (flag_print_debug) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
          DO i_surf = 1, nlayer
-            tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, temp_c)
-            tsfc_wall(i_surf) = cal_tsfc(QH_wall(i_surf), avdens, avcp, RA_h, temp_c)
+            tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
+            tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
          END DO
 
          ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
