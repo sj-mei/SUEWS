@@ -1779,7 +1779,7 @@ CONTAINS
       TYPE(HYDRO_STATE) :: hydroState_prev
 
       ! phenology related:
-      TYPE(PHENOLOGY_STATE) :: phenState_prev, phenState_next
+      ! TYPE(PHENOLOGY_STATE) :: phenState_next
 
       ! input arrays: standard suews surfaces
       TYPE(HEAT_STATE) :: heatState_in
@@ -1793,6 +1793,7 @@ CONTAINS
       ! LOGICAL :: diagnose ! flag for printing debug info
       INTEGER :: i_iter ! iterator in main calculation loop
       INTEGER :: i_surf !iterator for surfaces
+      INTEGER :: i_layer !iterator for layers
       REAL(KIND(1D0)) :: dif_tsfc_iter ! difference between tsfc and tsfc0 to test convergence
       INTEGER :: max_iter ! maximum number of iteration
       REAL(KIND(1D0)) :: ratio_iter ! ratio of new and old tsfc used in iteration for faster convergence
@@ -1929,15 +1930,18 @@ CONTAINS
             tot_chang_per_tstep => hydroState%tot_chang_per_tstep, &
             wu_int => hydroState%wu_int, &
             ! heatState
+            tsfc0_out_surf => heatState%tsfc0_out_surf, &
             tsfc0_out_roof => heatState%tsfc0_out_roof, &
             tsfc0_out_wall => heatState%tsfc0_out_wall, &
-            tsfc0_out_surf => heatState%tsfc0_out_surf, &
+            ! tsfc_surf => heatState%tsfc_surf, &
+            ! tsfc_roof => heatState%tsfc_roof, &
+            ! tsfc_wall => heatState%tsfc_wall, &
+            QN_surf => heatState%QN_surf, &
             QN_roof => heatState%QN_roof, &
             QN_wall => heatState%QN_wall, &
-            QN_surf => heatState%QN_surf, &
+            qs_surf => heatState%qs_surf, &
             QS_roof => heatState%QS_roof, &
             QS_wall => heatState%QS_wall, &
-            qs_surf => heatState%qs_surf, &
             qe_roof => heatState%qe_roof, &
             qh_roof => heatState%qh_roof, &
             qh_resist_roof => heatState%qh_resist_roof, &
@@ -2313,21 +2317,7 @@ CONTAINS
                   !======== Evaporation and surface state_id end========
                END IF
 
-               ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
-               ! IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', hydroState%soilstore_surf
 
-               !=== Horizontal movement between soil stores ===
-               ! Now water is allowed to move horizontally between the soil stores
-               ! IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
-               ! CALL SUEWS_cal_HorizontalSoilWater_DTS( &
-               !    timer, config, forcing, siteInfo, & ! input
-               !    hydroState)
-
-               !========== Calculate soil moisture ============
-               ! IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
-               ! CALL SUEWS_cal_SoilState_DTS( &
-               !    timer, config, forcing, siteInfo, & ! input
-               !    hydroState, hydroState_prev) !output
 
                !============ Sensible heat flux ===============
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
@@ -2335,7 +2325,6 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   heatState, snowState, & ! input
                   atmState)
-
                !============ Sensible heat flux end ===============
 
                !============ calculate surface temperature ===============
@@ -2349,12 +2338,13 @@ CONTAINS
                END DO
                IF (diagnose==1) PRINT *, 'tsfc_surf after qh_cal', heatState%tsfc_surf
 
-               DO i_surf = 1, nlayer
-                  heatState%tsfc_roof(i_surf) = cal_tsfc(QH_roof(i_surf), avdens, avcp, RA_h, forcing%temp_c)
-                  heatState%tsfc_wall(i_surf) = cal_tsfc(QH_wall(i_surf), avdens, avcp, RA_h, forcing%temp_c)
+               DO i_layer = 1, nlayer
+                  heatState%tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, forcing%temp_c)
+                  heatState%tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, forcing%temp_c)
                END DO
 
                ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
+               ! TODO: location of tsfc0_out need to re-considered - might be moved to the end of the iteration loop
                tsfc0_out_surf = MIN(heatState%tsfc_surf, Temp_C + 50)
                tsfc0_out_roof = MIN(heatState%tsfc_roof, Temp_C + 50)
                tsfc0_out_wall = MIN(heatState%tsfc_wall, Temp_C + 50)
