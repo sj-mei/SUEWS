@@ -2345,24 +2345,14 @@ CONTAINS
 
                ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
                ! TODO: location of tsfc0_out need to re-considered - might be moved to the end of the iteration loop
-               tsfc0_out_surf = MIN(heatState%tsfc_surf, Temp_C + 50)
-               tsfc0_out_roof = MIN(heatState%tsfc_roof, Temp_C + 50)
-               tsfc0_out_wall = MIN(heatState%tsfc_wall, Temp_C + 50)
+               tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
+               tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
+               tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
 
-               IF (Diagnose == 1) PRINT *, 'tsfc_surf after QH back env.:', heatState%tsfc_surf
-               ! print *,'tsfc_roof after QH back env.:',tsfc_out_roof
-               IF (Diagnose == 1) PRINT *, &
-                  'tsfc_surf abs. diff.:', MAXVAL(ABS(heatState%tsfc_surf - tsfc0_out_surf)), &
-                  MAXLOC(ABS(heatState%tsfc_surf - tsfc0_out_surf))
+
                dif_tsfc_iter = MAXVAL(ABS(heatState%tsfc_surf - tsfc0_out_surf))
                IF (config%StorageHeatMethod == 5) THEN
-                  IF (Diagnose == 1) PRINT *, &
-                     'tsfc_roof abs. diff.:', MAXVAL(ABS(heatState%tsfc_roof - tsfc0_out_roof)), &
-                     MAXLOC(ABS(heatState%tsfc_roof - tsfc0_out_roof))
                   dif_tsfc_iter = MAX(MAXVAL(ABS(heatState%tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
-                  IF (Diagnose == 1) PRINT *, &
-                     'tsfc_wall abs. diff.:', MAXVAL(ABS(heatState%tsfc_wall - tsfc0_out_wall)), &
-                     MAXLOC(ABS(heatState%tsfc_wall - tsfc0_out_wall))
                   dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - heatState%tsfc_wall)), dif_tsfc_iter)
                END IF
 
