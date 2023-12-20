@@ -1909,7 +1909,7 @@ CONTAINS
             SoilMoistCap => hydroState%SoilMoistCap, &
             vsmd => hydroState%vsmd, &
             runoff_per_interval => hydroState%runoff_per_interval, &
-            smd_nsurf => hydroState%smd_nsurf, &
+            smd_nsurf => hydroState%smd_surf, &
             runoffSoil_surf => hydroState%runoffSoil, &
             wu_surf => hydroState%wu_surf, &
             runoffAGveg => hydroState%runoffAGveg, &
@@ -2319,10 +2319,10 @@ CONTAINS
                !    hydroState)
 
                !========== Calculate soil moisture ============
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
-               CALL SUEWS_cal_SoilState_DTS( &
-                  timer, config, forcing, siteInfo, & ! input
-                  hydroState, hydroState_prev) !output
+               ! IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
+               ! CALL SUEWS_cal_SoilState_DTS( &
+               !    timer, config, forcing, siteInfo, & ! input
+               !    hydroState, hydroState_prev) !output
 
                !============ Sensible heat flux ===============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
@@ -2333,7 +2333,6 @@ CONTAINS
 
                !============ Sensible heat flux end ===============
 
-               !============ Sensible heat flux end===============
 
                QH_surf = QN_surf + qf - qs_surf - qe_surf
                QH_roof = QN_roof + qf - qs_roof - qe_roof
@@ -2463,8 +2462,6 @@ CONTAINS
             snowState%SnowFrac = snowState_next%SnowFrac
             snowState%SnowPack = snowState_next%SnowPack
 
-
-
             ! print *, 'hydroState_next%WUDay_id beofre update', hydroState_next%WUDay_id
             ! hydroState%WUDay_id = hydroState_next%WUDay_id
 
@@ -2472,20 +2469,20 @@ CONTAINS
 
             ! anthroEmisState%HDD_id = anthroEmisState%HDD_id
 
-            IF (config%StorageHeatMethod == 5) THEN
-               ! ESTM_ehc related
-               heatState%temp_roof = heatState%temp_roof
-               heatState%temp_wall = heatState%temp_wall
-               heatState%temp_surf = heatState%temp_surf
-               heatState%tsfc_roof = heatState%tsfc_roof
-               heatState%tsfc_wall = heatState%tsfc_wall
-               heatState%tsfc_surf = heatState%tsfc_surf
+            ! IF (config%StorageHeatMethod == 5) THEN
+            !    ! ESTM_ehc related
+            !    ! heatState%temp_roof = heatState%temp_roof
+            !    ! heatState%temp_wall = heatState%temp_wall
+            !    ! heatState%temp_surf = heatState%temp_surf
+            !    ! heatState%tsfc_roof = heatState%tsfc_roof
+            !    ! heatState%tsfc_wall = heatState%tsfc_wall
+            !    ! heatState%tsfc_surf = heatState%tsfc_surf
 
-               ! hydroState%soilstore_roof = hydroState_next%soilstore_roof
-               ! hydroState%state_roof = hydroState_next%state_roof
-               ! hydroState%soilstore_wall = hydroState_next%soilstore_wall
-               ! hydroState%state_wall = hydroState_next%state_wall
-            END IF
+            !    ! hydroState%soilstore_roof = hydroState_next%soilstore_roof
+            !    ! hydroState%state_roof = hydroState_next%state_roof
+            !    ! hydroState%soilstore_wall = hydroState_next%soilstore_wall
+            !    ! hydroState%state_wall = hydroState_next%state_wall
+            ! END IF
 
             !==============================================================
             ! update inout variables with new values (to be compatible with original interface)
@@ -4234,9 +4231,6 @@ CONTAINS
             dz_surf => ehcPrm%dz_surf, &
             bldgh => bldgPrm%bldgh &
             )
-
-
-
 
             ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
@@ -6354,6 +6348,7 @@ CONTAINS
          Press_hPa => forcing%Pres, &
          Temp_C => forcing%Temp_C, &
          precip => forcing%rain, &
+         xsmd => forcing%xsmd, &
          imin => timer%imin, &
          it => timer%it, &
          dectime => timer%dectime, &
@@ -6418,7 +6413,13 @@ CONTAINS
          soilstore_surf => hydroState%soilstore_surf, &
          runoffSoil_surf => hydroState%runoffSoil, &
          runoffSoil_per_tstep => hydroState%runoffSoil_per_tstep, &
+         SoilMoistCap => hydroState%SoilMoistCap, &
+         smd_surf => hydroState%smd_surf, &
+         smd => hydroState%smd, &
+         tot_chang_per_tstep => hydroState%tot_chang_per_tstep, &
+         SoilState => hydroState%SoilState, &
          StoreDrainPrm => phenState%StoreDrainPrm, &
+         SMDMethod => config%SMDMethod, &
          EvapMethod => config%EvapMethod, &
          Diagnose => config%Diagnose &
          )
@@ -6436,11 +6437,11 @@ CONTAINS
                                   evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
                                   grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap], &
             SoilDepth_surf => [pavedPrm%soil%soildepth, bldgPrm%soil%soildepth, evetrPrm%soil%soildepth, dectrPrm%soil%soildepth, &
-                              grassPrm%soil%soildepth, bsoilPrm%soil%soildepth, waterPrm%soil%soildepth], &
+                               grassPrm%soil%soildepth, bsoilPrm%soil%soildepth, waterPrm%soil%soildepth], &
             SatHydraulicConduct_surf => [pavedPrm%soil%sathydraulicconduct, bldgPrm%soil%sathydraulicconduct, &
-                                       evetrPrm%soil%sathydraulicconduct, dectrPrm%soil%sathydraulicconduct, &
-                                       grassPrm%soil%sathydraulicconduct, bsoilPrm%soil%sathydraulicconduct, &
-                                       waterPrm%soil%sathydraulicconduct], &
+                                         evetrPrm%soil%sathydraulicconduct, dectrPrm%soil%sathydraulicconduct, &
+                                         grassPrm%soil%sathydraulicconduct, bsoilPrm%soil%sathydraulicconduct, &
+                                         waterPrm%soil%sathydraulicconduct], &
             WetThresh_surf => [pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, &
                                dectrPrm%wetthresh, grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh] &
             )
@@ -6588,17 +6589,25 @@ CONTAINS
 
             !=== Horizontal movement between soil stores ===
             CALL SUEWS_cal_HorizontalSoilWater( &
-            sfr_surf, & ! input: ! surface fractions
-            SoilStoreCap_surf, & !Capacity of soil store for each surface [mm]
-            SoilDepth_surf, & !Depth of sub-surface soil store for each surface [mm]
-            SatHydraulicConduct_surf, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-            SurfaceArea, & !Surface area of the study area [m2]
-            NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
-            tstep_real, & !tstep cast as a real for use in calculations
-            soilstore_surf, & ! inout: !Soil moisture of each surface type [mm]
-            runoffSoil_surf, & !Soil runoff from each soil sub-surface [mm]
-            runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-            )
+               sfr_surf, & ! input: ! surface fractions
+               SoilStoreCap_surf, & !Capacity of soil store for each surface [mm]
+               SoilDepth_surf, & !Depth of sub-surface soil store for each surface [mm]
+               SatHydraulicConduct_surf, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+               SurfaceArea, & !Surface area of the study area [m2]
+               NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
+               tstep_real, & !tstep cast as a real for use in calculations
+               soilstore_surf, & ! inout: !Soil moisture of each surface type [mm]
+               runoffSoil_surf, & !Soil runoff from each soil sub-surface [mm]
+               runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+               )
+
+            !========== Calculate soil moisture of a whole grid ============
+            CALL SUEWS_cal_SoilState( &
+               SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, & !input
+               SoilStoreCap_surf, surf_chang_per_tstep, &
+               soilstore_surf, soilstore_surf_in, sfr_surf, &
+               smd, smd_surf, tot_chang_per_tstep, SoilState) !output
+
          END ASSOCIATE
       END ASSOCIATE
    END SUBROUTINE SUEWS_cal_QE_DTS

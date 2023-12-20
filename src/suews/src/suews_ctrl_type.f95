@@ -581,7 +581,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf ! evapotranspiration of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf !external water use of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: runoffSoil !Soil runoff from each soil sub-surface [mm]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_nsurf !soil moisture deficit for each surface
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_surf !soil moisture deficit for each surface
       REAL(KIND(1D0)), DIMENSION(NSURF) :: drain_surf !drainage of each surface type [mm]
 
       REAL(KIND(1D0)) :: drain_per_tstep ! total drainage for all surface type at each timestep [mm]
