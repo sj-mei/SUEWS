@@ -2313,10 +2313,10 @@ CONTAINS
 
                !=== Horizontal movement between soil stores ===
                ! Now water is allowed to move horizontally between the soil stores
-               IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
-               CALL SUEWS_cal_HorizontalSoilWater_DTS( &
-                  timer, config, forcing, siteInfo, & ! input
-                  hydroState)
+               ! IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
+               ! CALL SUEWS_cal_HorizontalSoilWater_DTS( &
+               !    timer, config, forcing, siteInfo, & ! input
+               !    hydroState)
 
                !========== Calculate soil moisture ============
                IF (config%Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_SoilState...'
@@ -6349,6 +6349,7 @@ CONTAINS
          PervFraction => siteInfo%PervFraction, &
          vegfraction => siteInfo%vegfraction, &
          NonWaterFraction => siteInfo%NonWaterFraction, &
+         SurfaceArea => siteInfo%SurfaceArea, &
          avRh => forcing%RH, &
          Press_hPa => forcing%Pres, &
          Temp_C => forcing%Temp_C, &
@@ -6357,6 +6358,7 @@ CONTAINS
          it => timer%it, &
          dectime => timer%dectime, &
          tstep => timer%tstep, &
+         tstep_real => timer%tstep_real, &
          dayofWeek_id => timer%dayofWeek_id, &
          nsh_real => timer%nsh_real, &
          avdens => atmState%avdens, &
@@ -6414,6 +6416,8 @@ CONTAINS
          soilstore_wall_in => hydroState_in%soilstore_wall, &
          state_surf => hydroState%state_surf, &
          soilstore_surf => hydroState%soilstore_surf, &
+         runoffSoil_surf => hydroState%runoffSoil, &
+         runoffSoil_per_tstep => hydroState%runoffSoil_per_tstep, &
          StoreDrainPrm => phenState%StoreDrainPrm, &
          EvapMethod => config%EvapMethod, &
          Diagnose => config%Diagnose &
@@ -6431,6 +6435,12 @@ CONTAINS
             SoilStoreCap_surf => [pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
                                   evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
                                   grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap], &
+            SoilDepth_surf => [pavedPrm%soil%soildepth, bldgPrm%soil%soildepth, evetrPrm%soil%soildepth, dectrPrm%soil%soildepth, &
+                              grassPrm%soil%soildepth, bsoilPrm%soil%soildepth, waterPrm%soil%soildepth], &
+            SatHydraulicConduct_surf => [pavedPrm%soil%sathydraulicconduct, bldgPrm%soil%sathydraulicconduct, &
+                                       evetrPrm%soil%sathydraulicconduct, dectrPrm%soil%sathydraulicconduct, &
+                                       grassPrm%soil%sathydraulicconduct, bsoilPrm%soil%sathydraulicconduct, &
+                                       waterPrm%soil%sathydraulicconduct], &
             WetThresh_surf => [pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, &
                                dectrPrm%wetthresh, grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh] &
             )
@@ -6575,6 +6585,20 @@ CONTAINS
                IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE capStore_surf(BldgSurf) = ', capStore_surf(BldgSurf)
             END IF
             IF (Diagnose == 1) PRINT *, 'in SUEWS_cal_QE soilstore_id = ', soilstore_surf
+
+            !=== Horizontal movement between soil stores ===
+            CALL SUEWS_cal_HorizontalSoilWater( &
+            sfr_surf, & ! input: ! surface fractions
+            SoilStoreCap_surf, & !Capacity of soil store for each surface [mm]
+            SoilDepth_surf, & !Depth of sub-surface soil store for each surface [mm]
+            SatHydraulicConduct_surf, & !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+            SurfaceArea, & !Surface area of the study area [m2]
+            NonWaterFraction, & ! sum of surface cover fractions for all except water surfaces
+            tstep_real, & !tstep cast as a real for use in calculations
+            soilstore_surf, & ! inout: !Soil moisture of each surface type [mm]
+            runoffSoil_surf, & !Soil runoff from each soil sub-surface [mm]
+            runoffSoil_per_tstep & !  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+            )
          END ASSOCIATE
       END ASSOCIATE
    END SUBROUTINE SUEWS_cal_QE_DTS
