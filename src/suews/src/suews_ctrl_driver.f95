@@ -1914,7 +1914,7 @@ CONTAINS
             SoilMoistCap => hydroState%SoilMoistCap, &
             vsmd => hydroState%vsmd, &
             runoff_per_interval => hydroState%runoff_per_interval, &
-            smd_nsurf => hydroState%smd_surf, &
+            smd_surf => hydroState%smd_surf, &
             runoffSoil_surf => hydroState%runoffSoil, &
             wu_surf => hydroState%wu_surf, &
             runoffAGveg => hydroState%runoffAGveg, &
@@ -2325,61 +2325,7 @@ CONTAINS
                   atmState)
                !============ Sensible heat flux end ===============
 
-               ! !============ calculate surface temperature ===============
-               ! TSfc_C = cal_tsfc(qh, avdens, avcp, RA_h, temp_c)
-
-               ! !============= calculate surface specific QH and Tsfc ===============
-
-               ! DO i_surf = 1, nsurf
-               !    tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
-
-               ! END DO
-
-               ! DO i_layer = 1, nlayer
-               !    tsfc_roof(i_layer) = cal_tsfc(QH_roof(i_layer), avdens, avcp, RA_h, temp_c)
-               !    tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
-               ! END DO
-
-               ! ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
-               ! ! TODO: location of tsfc0_out need to re-considered - might be moved to the end of the iteration loop
-               ! tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
-               ! tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
-               ! tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
-
-               ! dif_tsfc_iter = MAXVAL(ABS(tsfc_surf - tsfc0_out_surf))
-               ! IF (config%StorageHeatMethod == 5) THEN
-               !    dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
-               !    dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc0_out_wall - tsfc_wall)), dif_tsfc_iter)
-               ! END IF
-
-               ! ! ====test===
-               ! ! see if this converges better
-               ! ! ratio_iter = 1
-               ! ratio_iter = .3
-               ! tsfc_surf = (tsfc0_out_surf*(1 - ratio_iter) + tsfc_surf*ratio_iter)
-               ! IF (config%StorageHeatMethod == 5) THEN
-               !    tsfc_roof = (tsfc0_out_roof*(1 - ratio_iter) + tsfc_roof*ratio_iter)
-               !    tsfc_wall = (tsfc0_out_wall*(1 - ratio_iter) + tsfc_wall*ratio_iter)
-               ! END IF
-               ! ! =======test end=======
-
-               ! !============ surface-level diagonostics end ===============
-
-               ! ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
-               ! ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
-
-               ! ! Test if sensible heat fluxes converge in iterations
-               ! IF (dif_tsfc_iter > .1) THEN
-               !    flag_converge = .FALSE.
-               ! ELSE
-               !    flag_converge = .TRUE.
-               !    IF (diagnose == 1) PRINT *, 'Iteration done in', i_iter, ' iterations'
-               !    ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
-               !    ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
-               !    ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
-
-               ! END IF
-
+               ! ============ update surface temperature of this iteration ===============
                CALL suews_update_tsurf( &
                   timer, config, forcing, siteInfo, & ! input
                   flagState, &
@@ -2432,28 +2378,6 @@ CONTAINS
             snowState%SnowFrac = snowState_next%SnowFrac
             snowState%SnowPack = snowState_next%SnowPack
 
-            ! print *, 'hydroState_next%WUDay_id beofre update', hydroState_next%WUDay_id
-            ! hydroState%WUDay_id = hydroState_next%WUDay_id
-
-            ! print *, 'hydroState%WUDay_id after update', hydroState%WUDay_id
-
-            ! anthroEmisState%HDD_id = anthroEmisState%HDD_id
-
-            ! IF (config%StorageHeatMethod == 5) THEN
-            !    ! ESTM_ehc related
-            !    ! heatState%temp_roof = heatState%temp_roof
-            !    ! heatState%temp_wall = heatState%temp_wall
-            !    ! heatState%temp_surf = heatState%temp_surf
-            !    ! heatState%tsfc_roof = heatState%tsfc_roof
-            !    ! heatState%tsfc_wall = heatState%tsfc_wall
-            !    ! heatState%tsfc_surf = heatState%tsfc_surf
-
-            !    ! hydroState%soilstore_roof = hydroState_next%soilstore_roof
-            !    ! hydroState%state_roof = hydroState_next%state_roof
-            !    ! hydroState%soilstore_wall = hydroState_next%soilstore_wall
-            !    ! hydroState%state_wall = hydroState_next%state_wall
-            ! END IF
-
             !==============================================================
             ! update inout variables with new values (to be compatible with original interface)
             atmState%Tair_av = Tair_av_next
@@ -2477,25 +2401,15 @@ CONTAINS
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
             CALL SUEWS_update_outputLine_DTS( &
-               AdditionalWater, phenState, forcing, U10_ms, azimuth_deg, & !input
-               chSnow_per_interval, dectime, &
-               drain_per_tstep, QE_LUMPS, ev_per_tstep, wu_ext, Fc, Fc_build, fcld, &
-               Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, siteInfo, &
-               QH_LUMPS, timer, wu_int, &
-               kup, ldown, l_mod, lup, mwh, &
-               MwStore, &
-               nsh_real, NWstate_per_tstep, q2_gkg, &
-               qe, qf, qh, qh_resist, Qm, QmFreez, &
-               QmRain, qn, qn_snow, qn_snowfree, qs, RA_h, &
-               RS, RH2, runoffAGimpervious, runoffAGveg, &
-               runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
-               runoffWaterBody, &
-               sfr_surf, &
-               smd, smd_nsurf, snowState, SnowRemoval, &
-               hydroState, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
-               tot_chang_per_tstep, tsurf, UStar, &
-               wu_surf, &
-               z0m, zdm, ZENITH_deg, &
+               timer, config, forcing, siteInfo, & ! input
+               phenState, &
+               heatState, &
+               atmState, &
+               solarState, &
+               anthroemisState, &
+               roughnessState, &
+               snowState, &
+               hydroState, &
                datetimeLine, dataOutLineSUEWS) !output
 
             IF (config%StorageHeatMethod == 5) THEN
@@ -2623,12 +2537,6 @@ CONTAINS
             tsfc_wall(i_layer) = cal_tsfc(QH_wall(i_layer), avdens, avcp, RA_h, temp_c)
          END DO
 
-         ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
-         ! TODO: location of tsfc0_out need to re-considered - might be moved to the end of the iteration loop
-         tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
-         tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
-         tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
-
          dif_tsfc_iter = MAXVAL(ABS(tsfc_surf - tsfc0_out_surf))
          IF (StorageHeatMethod == 5) THEN
             dif_tsfc_iter = MAX(MAXVAL(ABS(tsfc_roof - tsfc0_out_roof)), dif_tsfc_iter)
@@ -2661,6 +2569,11 @@ CONTAINS
             ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
 
          END IF
+
+         ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
+         tsfc0_out_surf = MIN(tsfc_surf, Temp_C + 50)
+         tsfc0_out_roof = MIN(tsfc_roof, Temp_C + 50)
+         tsfc0_out_wall = MIN(tsfc_wall, Temp_C + 50)
       END ASSOCIATE
 
    END SUBROUTINE suews_update_tsurf
@@ -7745,124 +7658,42 @@ CONTAINS
    END SUBROUTINE SUEWS_update_outputLine
 
    SUBROUTINE SUEWS_update_outputLine_DTS( &
-      AdditionalWater, phenState, forcing, avU10_ms, azimuth, & !input
-      chSnow_per_interval, dectime, &
-      drain_per_tstep, E_mod, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
-      Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, siteInfo, &
-      h_mod, timer, int_wu, &
-      kup, ldown, l_mod, lup, mwh, &
-      MwStore, &
-      nsh_real, NWstate_per_tstep, q2_gkg, &
-      qeOut, qf, qh, qh_resist, Qm, QmFreez, &
-      QmRain, qn, qn_snow, qn_snowfree, qs, RA, &
-      resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
-      runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
-      runoffWaterBody, sfr_surf, smd, smd_nsurf, snowState, SnowRemoval, &
-      hydroState, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
-      tot_chang_per_tstep, tsurf, UStar, &
-      wu_nsurf, &
-      z0m, zdm, zenith_deg, &
+      timer, config, forcing, siteInfo, & ! input
+      phenState, &
+      heatState, &
+      atmState, &
+      solarState, &
+      anthroemisState, &
+      roughnessState, &
+      snowState, &
+      hydroState, &
       datetimeLine, dataOutLineSUEWS) !output
 
-      USE SUEWS_DEF_DTS, ONLY: PHENOLOGY_STATE, SUEWS_SITE, SUEWS_TIMER, &
-                               SNOW_STATE, SUEWS_FORCING, HYDRO_STATE
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
+                               HYDRO_STATE
 
       IMPLICIT NONE
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
-
-      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
-
+      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
       TYPE(SNOW_STATE), INTENT(IN) :: snowState
-
       TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
+      TYPE(HEAT_STATE), INTENT(IN) :: heatState
+      TYPE(atm_state), INTENT(IN) :: atmState
+      TYPE(solar_State), INTENT(IN) :: solarState
+      TYPE(anthroemis_State), INTENT(IN) :: anthroemisState
+      TYPE(roughness_State), INTENT(IN) :: roughnessState
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
-      INTEGER :: iy ! year [YYYY]
-      INTEGER :: id ! day of the year [DOY]
-      INTEGER :: it ! hour [H]
-      INTEGER :: imin ! minutes [M]
-      REAL(KIND(1D0)), INTENT(in) :: AdditionalWater !Additional water coming from other grids [mm]
-      REAL(KIND(1D0)) :: alb(nsurf) !albedo of each surfaces [-]
-      REAL(KIND(1D0)) :: avkdn !Average downwelling shortwave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: avU10_ms !average wind speed at 10m [W m-1]
-      REAL(KIND(1D0)), INTENT(in) :: azimuth !solar azimuth [°]
-      REAL(KIND(1D0)), INTENT(in) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
-      REAL(KIND(1D0)), INTENT(in) :: dectime !decimal time [-]
-      REAL(KIND(1D0)), INTENT(in) :: drain_per_tstep ! total dr   ainage at each timestep [mm]
-      REAL(KIND(1D0)), INTENT(in) :: E_mod
-      REAL(KIND(1D0)), INTENT(in) :: ev_per_tstep ! evaporation at each time step [mm]
-      REAL(KIND(1D0)), INTENT(in) :: ext_wu !external water use
-      REAL(KIND(1D0)), INTENT(in) :: Fc !co2 emission [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: Fc_build ! co2 emission from building component [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: Fc_photo !co2 flux from photosynthesis [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: Fc_traff !co2 flux from traffic [umol m-2 s-1]
-      REAL(KIND(1D0)), INTENT(in) :: fcld !cloud fraction [-]
-      REAL(KIND(1D0)) :: FlowChange !Difference between the input and output flow in the water body [mm]
-      REAL(KIND(1D0)), INTENT(in) :: h_mod !volumetric air heat capacity [J m-3 K-1]
-      REAL(KIND(1D0)), INTENT(in) :: int_wu !internal water use [mm]
-      REAL(KIND(1D0)), INTENT(in) :: kup !outgoing shortwave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: l_mod !Obukhov length [m]
-      REAL(KIND(1D0)) :: LAI_id(nvegsurf) !leaf area index [m2 m-2]
-      REAL(KIND(1D0)), INTENT(in) :: ldown !incoming longwave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: lup !outgoing longwave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: mwh !snowmelt [mm]
-      REAL(KIND(1D0)), INTENT(in) :: MwStore !overall met water [mm]
-      REAL(KIND(1D0)), INTENT(in) :: nsh_real !timestep in a hour [-]
-      REAL(KIND(1D0)), INTENT(in) :: NWstate_per_tstep ! state_id at each tinestep(excluding water body) [mm]
-      REAL(KIND(1D0)) :: Precip !rain data [mm]
-      REAL(KIND(1D0)), INTENT(in) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
-      REAL(KIND(1D0)), INTENT(in) :: qeOut !latent heat flux [W -2]
-      REAL(KIND(1D0)), INTENT(in) :: qf !anthropogenic heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qh !turbulent sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qh_resist ! resistance-based turbulent sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: Qm !snowmelt-related heat [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: QmFreez !heat related to freezing of surface store
-      REAL(KIND(1D0)), INTENT(in) :: QmRain !melt heat for rain on snow [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qn !net all-wave radiation [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qn_snow !net all-wave radiation on snow surface [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qn_snowfree !net all-wave radiation on snow-free surface [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: RA !aerodynamic resistance [s m-1]
-      REAL(KIND(1D0)), INTENT(in) :: resistsurf !surface resistance [s m-1]
-      REAL(KIND(1D0)), INTENT(in) :: RH2 ! air relative humidity at 2m [-]
-      REAL(KIND(1D0)), INTENT(in) :: runoff_per_tstep !runoff water at each time step [mm]
-      REAL(KIND(1D0)), INTENT(in) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(in) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(in) :: runoffPipes !runoff to pipes [mm]
-      REAL(KIND(1D0)), INTENT(in) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-      REAL(KIND(1D0)), INTENT(in) :: runoffWaterBody !Above ground runoff from water body for all surface area [mm]
-      REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf) !surface fraction [-]
-      REAL(KIND(1D0)), INTENT(in) :: smd !soil moisture deficit [mm]
-      REAL(KIND(1D0)), INTENT(in) :: smd_nsurf(nsurf) !smd for each surface [mm]
-      REAL(KIND(1D0)) :: SnowAlb !snow alebdo [-]
-      REAL(KIND(1D0)), INTENT(in) :: SnowRemoval(2) !snow removal [mm]
-      REAL(KIND(1D0)) :: state_id(nsurf) ! wetness status of each surface type [mm]
-      REAL(KIND(1D0)), INTENT(in) :: state_per_tstep !state_id at each timestep [mm]
-      REAL(KIND(1D0)), INTENT(in) :: surf_chang_per_tstep !change in state_id (exluding snowpack) per timestep [mm]
-      REAL(KIND(1D0)), INTENT(in) :: swe !overall snow water equavalent[mm]
-      REAL(KIND(1D0)), INTENT(in) :: t2_C !modelled 2 meter air temperature [degC]
-      REAL(KIND(1D0)), INTENT(in) :: tskin_C ! skin temperature [degC]
-      REAL(KIND(1D0)), INTENT(in) :: tot_chang_per_tstep !Change in surface state_id [mm]
-      REAL(KIND(1D0)), INTENT(in) :: tsurf !surface temperatue [degC]
-      REAL(KIND(1D0)), INTENT(in) :: UStar !friction velocity [m s-1]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: wu_nsurf !water use of each surfaces [mm]
-
-      REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length [m]
-      REAL(KIND(1D0)), INTENT(in) :: zdm !zero-plane displacement [m]
-      REAL(KIND(1D0)), INTENT(in) :: zenith_deg !solar zenith angle in degree [°]
 
       REAL(KIND(1D0)), DIMENSION(5), INTENT(OUT) :: datetimeLine !date & time
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(out) :: dataOutLineSUEWS
-      ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
-      ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
-      ! INTEGER:: is
       REAL(KIND(1D0)) :: LAI_wt !area weighted LAI [m2 m-2]
       REAL(KIND(1D0)) :: RH2_pct ! RH2 in percentage [-]
 
@@ -7871,7 +7702,7 @@ CONTAINS
       REAL(KIND(1D0)) :: surf_chang_per_tstep_x !output change in state_id (exluding snowpack) per timestep [mm]
       REAL(KIND(1D0)) :: l_mod_x !output  Obukhov length [m]
       REAL(KIND(1D0)) :: bulkalbedo !output area-weighted albedo [-]
-      REAL(KIND(1D0)) :: smd_nsurf_x(nsurf) !output soil moisture deficit for each surface [mm]
+      REAL(KIND(1D0)) :: smd_surf_x(nsurf) !output soil moisture deficit for each surface [mm]
       REAL(KIND(1D0)) :: state_x(nsurf) !output wetness status of each surfaces[mm]
       REAL(KIND(1D0)) :: wu_DecTr !water use for deciduous tree and shrubs [mm]
       REAL(KIND(1D0)) :: wu_EveTr !water use of evergreen tree and shrubs [mm]
@@ -7880,85 +7711,139 @@ CONTAINS
       !=====================================================================
       !====================== Prepare data for output ======================
       ! values outside of reasonable range are set as NAN-like numbers. TS 10 Jun 2018
+      ASSOCIATE ( &
+         alb => phenState%alb, &
+         LAI_id => phenState%LAI_id, &
+         FlowChange => siteInfo%FlowChange, &
+         sfr_surf => siteInfo%sfr_surf, &
+         id => timer%id, &
+         imin => timer%imin, &
+         it => timer%it, &
+         iy => timer%iy, &
+         AdditionalWater => hydroState%AdditionalWater, &
+         avU10_ms => atmState%U10_ms, &
+         azimuth => solarState%azimuth_deg, &
+         SnowAlb => snowState%SnowAlb, &
+         chSnow_per_interval => snowState%chSnow_per_interval, &
+         dectime => timer%dectime, &
+         drain_per_tstep => hydroState%drain_per_tstep, &
+         QE_LUMPS => heatState%QE_LUMPS, &
+         ev_per_tstep => hydroState%ev_per_tstep, &
+         wu_ext => hydroState%wu_ext, &
+         fcld => forcing%fcld, &
+         Fc => anthroemisState%Fc, &
+         Fc_build => anthroemisState%Fc_build, &
+         Fc_metab => anthroemisState%Fc_metab, &
+         Fc_photo => anthroemisState%Fc_photo, &
+         Fc_respi => anthroemisState%Fc_respi, &
+         Fc_point => anthroemisState%Fc_point, &
+         Fc_traff => anthroemisState%Fc_traff, &
+         QH_LUMPS => heatState%QH_LUMPS, &
+         wu_int => hydroState%wu_int, &
+         kup => heatState%kup, &
+         ldown => heatState%ldown, &
+         l_mod => atmState%l_mod, &
+         lup => heatState%lup, &
+         mwh => snowState%mwh, &
+         MwStore => snowState%MwStore, &
+         nsh_real => timer%nsh_real, &
+         NWstate_per_tstep => hydroState%NWstate_per_tstep, &
+         q2_gkg => atmState%q2_gkg, &
+         qe => heatState%qe, &
+         qf => heatState%qf, &
+         qh => heatState%qh, &
+         qh_resist => heatState%qh_resist, &
+         Qm => snowState%Qm, &
+         QmFreez => snowState%QmFreez, &
+         QmRain => snowState%QmRain, &
+         qn => heatState%qn, &
+         qn_snow => snowState%qn_snow, &
+         qn_snowfree => heatState%qn_snowfree, &
+         qs => heatState%qs, &
+         RA => atmState%RA_h, &
+         RS => atmState%RS, &
+         RH2 => atmState%RH2, &
+         runoffAGimpervious => hydroState%runoffAGimpervious, &
+         runoffAGveg => hydroState%runoffAGveg, &
+         runoff_per_tstep => hydroState%runoff_per_tstep, &
+         runoffPipes => hydroState%runoffPipes, &
+         runoffSoil_per_tstep => hydroState%runoffSoil_per_tstep, &
+         runoffWaterBody => hydroState%runoffWaterBody, &
+         smd => hydroState%smd, &
+         smd_surf => hydroState%smd_surf, &
+         SnowRemoval => snowState%SnowRemoval, &
+         state_per_tstep => hydroState%state_per_tstep, &
+         surf_chang_per_tstep => hydroState%surf_chang_per_tstep, &
+         swe => snowState%swe, &
+         t2_C => atmState%t2_C, &
+         tsfc_C => heatState%tsfc_C, &
+         tot_chang_per_tstep => hydroState%tot_chang_per_tstep, &
+         tsurf => heatState%tsurf, &
+         UStar => atmState%UStar, &
+         wu_surf => hydroState%wu_surf, &
+         z0m => roughnessState%z0m, &
+         zdm => roughnessState%zdm, &
+         zenith_deg => solarState%zenith_deg, &
+         kdown => forcing%kdown, &
+         rain => forcing%rain, &
+         state_surf => hydroState%state_surf &
+         )
 
-      alb = phenState%alb
-      LAI_id = phenState%LAI_id
+         ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
+         state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_surf)
+         smd_surf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_surf)
 
-      FlowChange = siteInfo%FlowChange
+         ResistSurf_x = MIN(9999., RS)
 
-      avkdn = forcing%kdown
+         surf_chang_per_tstep_x = MERGE(surf_chang_per_tstep, 0.D0, ABS(surf_chang_per_tstep) > 1E-6)
 
-      id = timer%id
-      imin = timer%imin
-      it = timer%it
-      iy = timer%iy
+         l_mod_x = MAX(MIN(9999., l_mod), -9999.)
 
-      SnowAlb = snowState%SnowAlb
+         LAI_wt = DOT_PRODUCT(LAI_id(:), sfr_surf(1 + 2:nvegsurf + 2))
 
-      state_id = hydroState%state_surf
+         ! Calculate areally-weighted albedo
+         bulkalbedo = DOT_PRODUCT(alb, sfr_surf)
 
-      ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
-      state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_id)
-      smd_nsurf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_nsurf)
+         ! convert RH2 to a percentage form
+         RH2_pct = atmState%RH2*100.0
 
-      ResistSurf_x = MIN(9999., ResistSurf)
+         ! translate water use to vegetated surfaces
+         wu_DecTr = hydroState%wu_surf(3)
+         wu_EveTr = hydroState%wu_surf(4)
+         wu_Grass = hydroState%wu_surf(5)
 
-      surf_chang_per_tstep_x = MERGE(surf_chang_per_tstep, 0.D0, ABS(surf_chang_per_tstep) > 1E-6)
+         !====================== update output line ==============================
+         ! date & time:
+         datetimeLine = [ &
+                        REAL(iy, KIND(1D0)), REAL(id, KIND(1D0)), &
+                        REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), timer%dectime]
+         !Define the overall output matrix to be printed out step by step
+         dataOutLineSUEWS = [ &
+                            kdown, kup, ldown, lup, tsurf, &
+                            qn, qf, qs, qh, qe, &
+                            QH_LUMPS, QE_LUMPS, qh_resist, &
+                            rain, wu_ext, ev_per_tstep, runoff_per_tstep, tot_chang_per_tstep, &
+                            surf_chang_per_tstep_x, state_per_tstep, NWstate_per_tstep, drain_per_tstep, smd, &
+                            FlowChange/nsh_real, AdditionalWater, &
+                            runoffSoil_per_tstep, runoffPipes, runoffAGimpervious, runoffAGveg, runoffWaterBody, &
+                            wu_int, wu_EveTr, wu_DecTr, wu_Grass, &
+                            smd_surf_x(1:nsurf - 1), &
+                            state_x(1:nsurf), &
+                            zenith_deg, azimuth, bulkalbedo, Fcld, &
+                            LAI_wt, z0m, zdm, &
+                            UStar, l_mod, RA, RS, &
+                            Fc, &
+                            Fc_photo, Fc_respi, Fc_metab, Fc_traff, Fc_build, Fc_point, &
+                            qn_snowfree, qn_snow, SnowAlb, &
+                            Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
+                            SnowRemoval(1:2), &
+                            tsfc_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
+                            ]
+         ! set invalid values to NAN
+         ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
 
-      l_mod_x = MAX(MIN(9999., l_mod), -9999.)
-
-      ! Calculate areally-weighted LAI
-      ! IF(iy == (iy_prev_t  +1) .AND. (id-1) == 0) THEN   !Check for start of next year and avoid using LAI(id-1) as this is at the start of the year
-      !    LAI_wt=DOT_PRODUCT(LAI(id_prev_t,:),sfr_surf(1+2:nvegsurf+2))
-      ! ELSE
-      !    LAI_wt=DOT_PRODUCT(LAI(id-1,:),sfr_surf(1+2:nvegsurf+2))
-      ! ENDIF
-
-      LAI_wt = DOT_PRODUCT(LAI_id(:), sfr_surf(1 + 2:nvegsurf + 2))
-
-      ! Calculate areally-weighted albedo
-      bulkalbedo = DOT_PRODUCT(alb, sfr_surf)
-
-      ! convert RH2 to a percentage form
-      RH2_pct = RH2*100.0
-
-      ! translate water use to vegetated surfaces
-      wu_DecTr = wu_nsurf(3)
-      wu_EveTr = wu_nsurf(4)
-      wu_Grass = wu_nsurf(5)
-
-      !====================== update output line ==============================
-      ! date & time:
-      datetimeLine = [ &
-                     REAL(iy, KIND(1D0)), REAL(id, KIND(1D0)), &
-                     REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), dectime]
-      !Define the overall output matrix to be printed out step by step
-      dataOutLineSUEWS = [ &
-                         avkdn, kup, ldown, lup, tsurf, &
-                         qn, qf, qs, qh, qeOut, &
-                         h_mod, e_mod, qh_resist, &
-                         forcing%rain, ext_wu, ev_per_tstep, runoff_per_tstep, tot_chang_per_tstep, &
-                         surf_chang_per_tstep_x, state_per_tstep, NWstate_per_tstep, drain_per_tstep, smd, &
-                         FlowChange/nsh_real, AdditionalWater, &
-                         runoffSoil_per_tstep, runoffPipes, runoffAGimpervious, runoffAGveg, runoffWaterBody, &
-                         int_wu, wu_EveTr, wu_DecTr, wu_Grass, &
-                         smd_nsurf_x(1:nsurf - 1), &
-                         state_x(1:nsurf), &
-                         zenith_deg, azimuth, bulkalbedo, Fcld, &
-                         LAI_wt, z0m, zdm, &
-                         UStar, l_mod, RA, ResistSurf, &
-                         Fc, &
-                         Fc_photo, Fc_respi, Fc_metab, Fc_traff, Fc_build, Fc_point, &
-                         qn_snowfree, qn_snow, SnowAlb, &
-                         Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
-                         SnowRemoval(1:2), &
-                         tskin_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
-                         ]
-      ! set invalid values to NAN
-      ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
-
-      !====================update output line end==============================
-
+         !====================update output line end==============================
+      END ASSOCIATE
    END SUBROUTINE SUEWS_update_outputLine_DTS
 !========================================================================
 
@@ -8016,19 +7901,19 @@ CONTAINS
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
       ! INTEGER:: is
-      REAL(KIND(1D0)) :: LAI_wt !area weighted LAI [m2 m-2]
-      REAL(KIND(1D0)) :: RH2_pct ! RH2 in percentage [-]
+      ! REAL(KIND(1D0)) :: LAI_wt !area weighted LAI [m2 m-2]
+      ! REAL(KIND(1D0)) :: RH2_pct ! RH2 in percentage [-]
 
       ! the variables below with '_x' endings stand for 'exported' values
-      REAL(KIND(1D0)) :: ResistSurf_x !output surface resistance [s m-1]
-      REAL(KIND(1D0)) :: surf_chang_per_tstep_x !output change in state_id (exluding snowpack) per timestep [mm]
-      REAL(KIND(1D0)) :: l_mod_x !output  Obukhov length [m]
-      REAL(KIND(1D0)) :: bulkalbedo !output area-weighted albedo [-]
-      REAL(KIND(1D0)) :: smd_nsurf_x(nsurf) !output soil moisture deficit for each surface [mm]
-      REAL(KIND(1D0)) :: state_x(nsurf) !output wetness status of each surfaces[mm]
-      REAL(KIND(1D0)) :: wu_DecTr !water use for deciduous tree and shrubs [mm]
-      REAL(KIND(1D0)) :: wu_EveTr !water use of evergreen tree and shrubs [mm]
-      REAL(KIND(1D0)) :: wu_Grass !water use for grass [mm]
+      ! REAL(KIND(1D0)) :: ResistSurf_x !output surface resistance [s m-1]
+      ! REAL(KIND(1D0)) :: surf_chang_per_tstep_x !output change in state_id (exluding snowpack) per timestep [mm]
+      ! REAL(KIND(1D0)) :: l_mod_x !output  Obukhov length [m]
+      ! REAL(KIND(1D0)) :: bulkalbedo !output area-weighted albedo [-]
+      ! REAL(KIND(1D0)) :: smd_nsurf_x(nsurf) !output soil moisture deficit for each surface [mm]
+      ! REAL(KIND(1D0)) :: state_x(nsurf) !output wetness status of each surfaces[mm]
+      ! REAL(KIND(1D0)) :: wu_DecTr !water use for deciduous tree and shrubs [mm]
+      ! REAL(KIND(1D0)) :: wu_EveTr !water use of evergreen tree and shrubs [mm]
+      ! REAL(KIND(1D0)) :: wu_Grass !water use for grass [mm]
 
       ! date & time:
       datetimeLine = [ &
