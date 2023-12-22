@@ -18,7 +18,7 @@ MODULE SUEWS_Driver
                             SUEWS_STATE, &
                             output_line, output_block
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
-   USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, cal_atm_state
+   USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition, NARP_cal_SunPosition_DTS
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
    USE AnOHM_module, ONLY: AnOHM
@@ -410,8 +410,8 @@ CONTAINS
 
             ! hydroState_prev = hydroState
             ! Tair_av_prev = forcing%Tair_av_5d
-            Tair_av_prev = atmState%Tair_av
-            Tair_av_next = atmState%Tair_av
+            ! Tair_av_prev = atmState%Tair_av
+            ! Tair_av_next = atmState%Tair_av
 
             ! phenState_prev = phenState
             ! anthroEmisState_prev = anthroEmisState
@@ -459,16 +459,13 @@ CONTAINS
             ! calculate mean air temperature of past 24 hours
             ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
             ! TODO: move this to atmState
-            Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
+            ! Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
 
             !==============surface roughness calculation=======================
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
             CALL SUEWS_cal_RoughnessParameters_DTS( &
-               config, &
-               pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & !input
-               siteInfo, &
+               timer, config, forcing, siteInfo, & !input
                phenState, &
-               ! TODO: collect output into a derived type for model output
                roughnessState)
 
             !=================Calculate sun position=================
@@ -481,7 +478,7 @@ CONTAINS
 
             !=================Calculation of density and other water related parameters=================
             IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-            CALL cal_atm_state(timer, forcing, atmState)
+            CALL SUEWS_update_atmState(timer, forcing, atmState)
 
             ! start iteration-based calculation
             ! through iterations, the surface temperature is examined to be converged
@@ -724,7 +721,7 @@ CONTAINS
 
             !==============================================================
             ! update inout variables with new values (to be compatible with original interface)
-            atmState%Tair_av = Tair_av_next
+            ! atmState%Tair_av = Tair_av_next
 
             !==============use BEERS to get localised radiation flux==================
             ! TS 14 Jan 2021: BEERS is a modified version of SOLWEIG
@@ -778,6 +775,7 @@ CONTAINS
 
             !==============translation end ================
             IF (Diagnose == 1) WRITE (*, *) 'Calling dataoutlineDebug...'
+            ! TODO: debugging info will be collected into a derived type for model output when the debugging flag is on
             dataoutlineDebug = &
                [tsfc0_out_surf, &
                 qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance

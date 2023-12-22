@@ -729,10 +729,8 @@ CONTAINS
    ! END SUBROUTINE SUEWS_cal_RoughnessParameters_DTS
 
    SUBROUTINE SUEWS_cal_RoughnessParameters_DTS( &
-      methodPrm, & ! input:
-      pavedPrm, bldgPrm, evetrPrm, dectrPrm, grassPrm, bsoilPrm, waterPrm, & ! surface fractions
-      siteInfo, &
-      phenState_prev, &
+      timer, config, forcing, siteInfo, & !input
+      phenState, &
       roughnessState)
       ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
       ! FAI, PAI, & ! output:
@@ -745,9 +743,11 @@ CONTAINS
       ! sg feb 2012 - made separate subroutine
       !--------------------------------------------------------------------------------
 
-      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
-                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM, PHENOLOGY_STATE, ROUGHNESS_STATE
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
+                               IRRIGATION_PRM, anthroEmis_STATE, &
+                               HYDRO_STATE,PHENOLOGY_STATE, ROUGHNESS_STATE
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: nsurf = 7 ! number of surface types
@@ -760,17 +760,20 @@ CONTAINS
       INTEGER, PARAMETER :: WaterSurf = 7
       REAL(KIND(1D0)), PARAMETER :: porosity_evetr = 0.32 ! assumed porosity of evergreen trees, ref: Lai et al. (2022), http://dx.doi.org/10.2139/ssrn.4058842
 
-      TYPE(SUEWS_CONFIG), INTENT(IN) :: methodPrm
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       ! INTEGER :: RoughLenMomMethod
       ! INTEGER :: FAImethod ! 0 = use FAI provided, 1 = use the simple scheme
 
-      TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf ! surface fractions
       ! REAL(KIND(1D0)) :: bldgH
       ! REAL(KIND(1D0)) :: EveTreeH
@@ -779,13 +782,13 @@ CONTAINS
       ! REAL(KIND(1D0)) :: FAIEveTree
       ! REAL(KIND(1D0)) :: FAIDecTree
 
-      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+      ! TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       ! REAL(KIND(1D0)) :: surfaceArea ! surface area of whole grid cell
       ! REAL(KIND(1D0)) :: z0m_in ! z0m set in SiteSelect
       ! REAL(KIND(1D0)) :: zdm_in ! zdm set in SiteSelect
       ! REAL(KIND(1D0)) :: Z
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState_prev
+      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
       TYPE(ROUGHNESS_STATE), INTENT(OUT) :: roughnessState
 
       ! REAL(KIND(1D0)) :: porosity_dectr
@@ -811,7 +814,16 @@ CONTAINS
          z0m_in => siteInfo%z0m_in, &
          zdm_in => siteInfo%zdm_in, &
          Z => siteInfo%Z, &
-         porosity_dectr => phenState_prev%porosity_id, &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         grassPrm => siteInfo%lc_grass, &
+         dectrPrm => siteInfo%lc_dectr, &
+         evetrPrm => siteInfo%lc_evetr, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water &
+      )
+      ASSOCIATE(&
+         porosity_dectr => phenState%porosity_id, &
          FAI => roughnessState%FAI, &
          PAI => roughnessState%PAI, &
          Zh => roughnessState%Zh, &
@@ -821,8 +833,8 @@ CONTAINS
          FAIBldg_use => roughnessState%FAIBldg_use, &
          FAIEveTree_use => roughnessState%FAIEveTree_use, &
          FAIDecTree_use => roughnessState%FAIDecTree_use, &
-         RoughLenMomMethod => methodPrm%RoughLenMomMethod, &
-         FAImethod => methodPrm%FAImethod, &
+         RoughLenMomMethod => config%RoughLenMomMethod, &
+         FAImethod => config%FAImethod, &
          sfr_surf => [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr], &
          bldgH => bldgPrm%bldgH, &
          EveTreeH => evetrPrm%EveTreeH, &
@@ -944,6 +956,7 @@ CONTAINS
          IF (zzd < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, (z-zd) < 0 m.', zzd, notUsed, notUsedI)
 
       END ASSOCIATE
+   END ASSOCIATE
    END SUBROUTINE SUEWS_cal_RoughnessParameters_DTS
 
    FUNCTION cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar) RESULT(z0V)
