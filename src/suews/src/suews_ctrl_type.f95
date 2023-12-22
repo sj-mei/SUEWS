@@ -1,7 +1,12 @@
 MODULE SUEWS_DEF_DTS
    USE allocateArray, ONLY: &
       nsurf, nvegsurf, nspec, &
-      PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf
+      PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &
+      ivConif, ivDecid, ivGrass, &
+      ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
+      ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
+      ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC
 
    IMPLICIT NONE
    ! in the following, the type definitions starting with `SUEWS_` are used in the main program
@@ -715,6 +720,9 @@ MODULE SUEWS_DEF_DTS
       TYPE(HYDRO_STATE) :: hydroState
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
+      contains
+         PROCEDURE :: ALLOCATE => allocSUEWSState_c
+         PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
    END TYPE SUEWS_STATE
 
    ! ********** SUEWS_forcing schema **********
@@ -760,7 +768,127 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE SUEWS_TIMER
 
+
+   TYPE, PUBLIC :: output_block
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSUEWS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSnow
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockESTM
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockEHC
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockRSL
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockBEERS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDebug
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDailyState
+      contains
+         ! Procedures
+         PROCEDURE :: init => output_block_init
+         ! PROCEDURE :: finalize => output_block_finalize
+         PROCEDURE :: cleanup => output_block_finalize
+   END TYPE output_block
+
+   TYPE, PUBLIC :: output_line
+      REAL(KIND(1D0)), DIMENSION(5) :: datetimeLine !date & time
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS) :: dataOutLineSUEWS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow) :: dataOutLineSnow
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM) :: dataOutLineESTM
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC) :: dataOutLineEHC
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL) :: dataoutLineRSL
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS) :: dataOutLineBEERS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug) :: dataOutLineDebug
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS) :: dataOutLineSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
+      contains
+         ! Procedures
+         PROCEDURE :: init => output_line_init
+   END TYPE output_line
+
 CONTAINS
+
+
+   SUBROUTINE output_line_init(self)
+      CLASS(output_line), INTENT(inout) :: self
+
+      ! Set default values
+      self%datetimeLine = -999.0
+      self%dataOutLineSUEWS = -999.0
+      self%dataOutLineSnow = -999.0
+      self%dataOutLineESTM = -999.0
+      self%dataOutLineEHC = -999.0
+      self%dataOutLineRSL = -999.0
+      self%dataOutLineBEERS = -999.0
+      self%dataOutLineDebug = -999.0
+      self%dataOutLineSPARTACUS = -999.0
+      self%dataOutLineDailyState = -999.0
+   END SUBROUTINE output_line_init
+
+   SUBROUTINE output_block_init(self, len)
+      CLASS(output_block), INTENT(inout) :: self
+      INTEGER, INTENT(in) :: len
+
+      ! Allocate memory for the arrays
+      ALLOCATE (self%dataOutBlockSUEWS(len, ncolumnsDataOutSUEWS))
+      ALLOCATE (self%dataOutBlockSnow(len, ncolumnsDataOutSnow))
+      ALLOCATE (self%dataOutBlockESTM(len, ncolumnsDataOutESTM))
+      ALLOCATE (self%dataOutBlockEHC(len, ncolumnsDataOutEHC))
+      ALLOCATE (self%dataOutBlockRSL(len, ncolumnsDataOutRSL))
+      ALLOCATE (self%dataOutBlockBEERS(len, ncolumnsDataOutBEERS))
+      ALLOCATE (self%dataOutBlockDebug(len, ncolumnsDataOutDebug))
+      ALLOCATE (self%dataOutBlockSPARTACUS(len, ncolumnsDataOutSPARTACUS))
+      ALLOCATE (self%dataOutBlockDailyState(len, ncolumnsDataOutDailyState))
+
+      ! Set default values
+      self%dataOutBlockSUEWS = -999.0
+      self%dataOutBlockSnow = -999.0
+      self%dataOutBlockESTM = -999.0
+      self%dataOutBlockEHC = -999.0
+      self%dataOutBlockRSL = -999.0
+      self%dataOutBlockBEERS = -999.0
+      self%dataOutBlockDebug = -999.0
+      self%dataOutBlockSPARTACUS = -999.0
+      self%dataOutBlockDailyState = -999.0
+   END SUBROUTINE output_block_init
+
+   SUBROUTINE output_block_finalize(self)
+      CLASS(output_block), INTENT(inout) :: self
+
+      ! Deallocate memory for the arrays
+      IF (ALLOCATED(self%dataOutBlockSUEWS)) DEALLOCATE (self%dataOutBlockSUEWS)
+      IF (ALLOCATED(self%dataOutBlockSnow)) DEALLOCATE (self%dataOutBlockSnow)
+      IF (ALLOCATED(self%dataOutBlockESTM)) DEALLOCATE (self%dataOutBlockESTM)
+      IF (ALLOCATED(self%dataOutBlockEHC)) DEALLOCATE (self%dataOutBlockEHC)
+      IF (ALLOCATED(self%dataOutBlockRSL)) DEALLOCATE (self%dataOutBlockRSL)
+      IF (ALLOCATED(self%dataOutBlockBEERS)) DEALLOCATE (self%dataOutBlockBEERS)
+      IF (ALLOCATED(self%dataOutBlockDebug)) DEALLOCATE (self%dataOutBlockDebug)
+      IF (ALLOCATED(self%dataOutBlockSPARTACUS)) DEALLOCATE (self%dataOutBlockSPARTACUS)
+      IF (ALLOCATED(self%dataOutBlockDailyState)) DEALLOCATE (self%dataOutBlockDailyState)
+
+   END SUBROUTINE output_block_finalize
+
+   subroutine allocSUEWSState_c(self, nlayer, ndepth)
+      IMPLICIT NONE
+      CLASS(SUEWS_STATE), intent(inout) :: self
+      INTEGER, INTENT(in) :: nlayer
+      INTEGER, INTENT(in) :: ndepth
+
+      CALL self%DEALLOCATE()
+      CALL self%hydroState%ALLOCATE(nlayer)
+      CALL self%heatState%ALLOCATE(nsurf, nlayer, ndepth)
+
+
+   end subroutine allocSUEWSState_c
+
+
+
+   SUBROUTINE deallocSUEWSState_c(self)
+      IMPLICIT NONE
+      CLASS(SUEWS_STATE), INTENT(inout) :: self
+
+      call self%hydroState%DEALLOCATE()
+      call self%heatState%DEALLOCATE()
+
+
+   END SUBROUTINE deallocSUEWSState_c
+
    SUBROUTINE allocate_spartacus_layer_prm_c(self, nlayer)
       IMPLICIT NONE
       CLASS(SPARTACUS_LAYER_PRM), INTENT(inout) :: self
