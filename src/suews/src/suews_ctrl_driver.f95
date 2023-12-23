@@ -101,47 +101,11 @@ CONTAINS
 
       TYPE(SUEWS_STATE) :: modState_init
 
-      ! ########################################################################################
-      ! TS 19 Sep 2019
-      ! temporary variables to save values for inout varialbes
-      ! suffixes  and  denote values from last and to next tsteps, respectively
-      ! these variables are introduced to allow safe and robust iterations inccurred in this subroutine
-      ! so that these values won't updated in unexpectedly many times
-
-      ! OHM related:
-      ! TYPE(OHM_STATE) :: ohmState, ohmState
-
-      ! snow related:
-      ! TYPE(SNOW_STATE) :: snowState_next
-
-      ! water balance related:
-      ! TYPE(HYDRO_STATE) :: hydroState_prev
-
-      ! phenology related:
-      ! TYPE(PHENOLOGY_STATE) :: phenState_next
-
-      ! input arrays: standard suews surfaces
-      ! TYPE(HEAT_STATE) :: heatState_in
-
-      REAL(KIND(1D0)) :: Tair_av_prev, Tair_av_next !average air temperature [degC]
-      ! ########################################################################################
-
       ! these local variables are used in iteration
-
-      ! LOGICAL :: flag_converge ! flag for Tsurf convergence
-      ! LOGICAL :: diagnose ! flag for printing debug info
       INTEGER :: i_iter ! iterator in main calculation loop
-      ! INTEGER :: i_surf !iterator for surfaces
-      ! INTEGER :: i_layer !iterator for layers
-      ! REAL(KIND(1D0)) :: dif_tsfc_iter ! difference between tsfc and tsfc0 to test convergence
       INTEGER :: max_iter ! maximum number of iteration
-      ! REAL(KIND(1D0)) :: ratio_iter ! ratio of new and old tsfc used in iteration for faster convergence
 
       ! ####################################################################################
-      ! fixed parameters - may be removed in the future; TS 31 Aug 2023
-
-      ! REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
-
       ASSOCIATE ( &
          Diagnose => config%Diagnose, &
          ! modState
@@ -363,20 +327,6 @@ CONTAINS
             ! save initial values of model states
             modState_init = modState
 
-            ! CALL hydroState_prev%ALLOCATE(nlayer)
-
-            ! CALL hydroState_next%ALLOCATE(nlayer)
-
-            ! CALL heatState_in%ALLOCATE(nsurf, nlayer, ndepth)
-
-            ! CALL heatState%ALLOCATE(nsurf, nlayer, ndepth)
-
-            ! ############# memory allocation for DTS variables (end) #############
-
-            ! ####################################################################################
-            !  evaluation for DTS variables
-            ! ####################################################################################
-
             ! ########################################3
             ! set initial values for output arrays
             SWE = 0.
@@ -408,26 +358,6 @@ CONTAINS
             ! snowState = snowState
             snowState%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
-            ! hydroState_prev = hydroState
-            ! Tair_av_prev = forcing%Tair_av_5d
-            ! Tair_av_prev = atmState%Tair_av
-            ! Tair_av_next = atmState%Tair_av
-
-            ! phenState_prev = phenState
-            ! anthroEmisState_prev = anthroEmisState
-
-            ! ESTM_ehc related
-            ! save initial values of inout variables
-            ! heatState_in = heatState
-
-            ! initialise  variables
-            ! snowState_next = snowState
-            ! hydroState_next = hydroState
-
-            ! Tair_av_next = Tair_av
-            ! Tair_av_next = forcing%Tair_av_5d
-            ! phenState_next = phenState
-            ! anthroEmisState = anthroEmisState
 
             ! initialise output variables
             dataOutLineSnow = -999.
@@ -445,21 +375,14 @@ CONTAINS
 
             ! iteration is used below to get results converge
             flag_converge = .FALSE.
-            ! Ts_iter = forcing%temp_c
-            ! diagnose = .FALSE.
 
             ! save surface temperature at the beginning of the time step
-            tsfc0_out_surf = heatState%tsfc_surf
+            tsfc0_out_surf = tsfc_surf
             ! ! TODO: ESTM work: to allow heterogeneous surface temperatures
             IF (config%StorageHeatMethod == 5 .OR. config%NetRadiationMethod > 1000) THEN
-               tsfc0_out_roof = heatState%tsfc_roof
-               tsfc0_out_wall = heatState%tsfc_wall
+               tsfc0_out_roof = tsfc_roof
+               tsfc0_out_wall = tsfc_wall
             END IF
-
-            ! calculate mean air temperature of past 24 hours
-            ! Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
-            ! TODO: move this to atmState
-            ! Tair_av_next = cal_tair_av(Tair_av_prev, timer%dt_since_start, timer%tstep, forcing%temp_c)
 
             !==============surface roughness calculation=======================
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
@@ -776,7 +699,7 @@ CONTAINS
 
             !==============translation end ================
             IF (Diagnose == 1) WRITE (*, *) 'Calling dataoutlineDebug...'
-            ! TODO: debugging info will be collected into a derived type for model output when the debugging flag is on
+            ! TODO: #233 debugging info will be collected into a derived type for model output when the debugging flag is on
             dataoutlineDebug = &
                [tsfc0_out_surf, &
                 qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
@@ -6670,16 +6593,6 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      ! TYPE(CONDUCTANCE_PRM), INTENT(IN) :: conductancePrm
-
-      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
-      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
-      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
-      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
-      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
-
       TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
       TYPE(SNOW_STATE), INTENT(INout) :: snowState
       TYPE(atm_state), INTENT(INout) :: atmState
@@ -6687,79 +6600,11 @@ CONTAINS
       TYPE(HYDRO_STATE), INTENT(INout) :: hydroState
       TYPE(heat_STATE), INTENT(INout) :: heatState
 
-      ! INTEGER :: StabilityMethod !method to calculate atmospheric stability [-]
-      ! INTEGER :: Diagnose
-      ! INTEGER, INTENT(in) :: AerodynamicResistanceMethod !method to calculate RA [-]
-      ! INTEGER :: RoughLenHeatMethod !method to calculate heat roughness length [-]
-      ! INTEGER :: SnowUse !!Snow part used (1) or not used (0) [-]
-      ! INTEGER :: id ! day of the year [-]
-      ! INTEGER :: it !hour [h]
-      ! INTEGER :: gsModel !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
-      ! INTEGER :: SMDMethod !Method of measured soil moisture
-
       INTEGER, PARAMETER :: AerodynamicResistanceMethod = 2 !method to calculate RA [-]
-
-      ! REAL(KIND(1d0)), INTENT(in)::qh_obs
-      ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
-      ! REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
-      ! REAL(KIND(1D0)), INTENT(in) :: QH_init !initial sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: zzd !Active measurement height (meas. height-displac. height) [m]
-      ! REAL(KIND(1D0)), INTENT(in) :: z0m !Aerodynamic roughness length [m]
-      ! REAL(KIND(1D0)), INTENT(in) :: zdm !Displacement height [m]
-      ! REAL(KIND(1D0)) :: avU1 !Average wind speed [m s-1]
-      ! REAL(KIND(1D0)) :: Temp_C !Air temperature [degC]
-      ! REAL(KIND(1D0)), INTENT(in) :: VegFraction !Fraction of vegetation [-]
-      ! REAL(KIND(1D0)) :: avkdn !Average downwelling shortwave radiation [W m-2]
-      ! REAL(KIND(1D0)) :: Kmax !Annual maximum hourly solar radiation [W m-2]
-      ! REAL(KIND(1D0)) :: G_max !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_k !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_q_base !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_q_shape !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_t !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: G_sm !Fitted parameters related to surface res. calculations
-      ! REAL(KIND(1D0)) :: S1 !a parameter related to soil moisture dependence [-]
-      ! REAL(KIND(1D0)) :: S2 !a parameter related to soil moisture dependence [mm]
-      ! REAL(KIND(1D0)) :: TH !Maximum temperature limit [degC]
-      ! REAL(KIND(1D0)) :: TL !Minimum temperature limit [degC]
-      ! REAL(KIND(1D0)) :: dq !Specific humidity deficit
-      ! REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit
-      ! REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only[mm]
-
-      ! REAL(KIND(1D0)), DIMENSION(3) :: MaxConductance !the maximum conductance of each vegetation or surface type. [mm s-1]
-      ! REAL(KIND(1D0)), DIMENSION(3) :: LAIMax !Max LAI [m2 m-2]
-
-      ! REAL(KIND(1D0)), DIMENSION(3) :: LAI_id !=LAI_id(id-1,:), LAI for each veg surface [m2 m-2]
-
-      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac !Surface fraction of snow cover [-]
-
-      ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
-
-      ! REAL(KIND(1D0)), INTENT(out) :: TStar !T* temperature scale
-      ! REAL(KIND(1D0)), INTENT(out) :: UStar !friction velocity [m s-1]
-      ! REAL(KIND(1D0)), INTENT(out) :: zL !stability scale
-      ! REAL(KIND(1D0)), INTENT(out) :: gsc !Surface Layer Conductance
-      ! REAL(KIND(1D0)), INTENT(out) :: RS !surface resistance [s m-1]
-      ! REAL(KIND(1D0)), INTENT(out) :: RA !Aerodynamic resistance [s m-1]
-      ! REAL(KIND(1D0)), INTENT(out) :: z0v !roughness for heat [m]
-      ! REAL(KIND(1D0)), INTENT(out) :: RASnow !Aerodynamic resistance for snow [s m-1]
-      ! REAL(KIND(1D0)), INTENT(out) :: z0vSnow !roughness for heat [m]
-      ! REAL(KIND(1D0)), INTENT(out) :: RB !boundary layer resistance shuttleworth
-      ! REAL(KIND(1D0)), INTENT(out) :: L_mod !Obukhov length [m]
-
-      ! REAL(KIND(1D0)), INTENT(out) :: g_kdown !gdq*gtemp*gs*gq for photosynthesis calculations
-      ! REAL(KIND(1D0)), INTENT(out) :: g_dq !gdq*gtemp*gs*gq for photosynthesis calculations
-      ! REAL(KIND(1D0)), INTENT(out) :: g_ta !gdq*gtemp*gs*gq for photosynthesis calculations
-      ! REAL(KIND(1D0)), INTENT(out) :: g_smd !gdq*gtemp*gs*gq for photosynthesis calculations
-      ! REAL(KIND(1D0)), INTENT(out) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
 
       REAL(KIND(1D0)) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
       REAL(KIND(1D0)) :: Tair ! air temperature [degC]
-      ! REAL(KIND(1d0))              ::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
-      ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
-      ! CALL SUEWS_init_QH( &
-      !    avdens, avcp, QH_init, qn1, dectime, &
-      !    H_init)
       ASSOCIATE ( &
          pavedPrm => siteInfo%lc_paved, &
          bldgPrm => siteInfo%lc_bldg, &
