@@ -358,7 +358,6 @@ CONTAINS
             ! snowState = snowState
             snowState%snowfrac = MERGE(forcing%snowfrac, snowState%SnowFrac, config%NetRadiationMethod == 0)
 
-
             ! initialise output variables
             dataOutLineSnow = -999.
             dataOutLineESTM = -999.
