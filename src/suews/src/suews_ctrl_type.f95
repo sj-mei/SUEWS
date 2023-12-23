@@ -455,7 +455,23 @@ MODULE SUEWS_DEF_DTS
    END TYPE flag_STATE
 
    TYPE, PUBLIC :: anthroEmis_STATE
+      ! TODO: #242 split HDD_id into individual explicit variables
       REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !Heating Degree Days [degC d]
+      ! HDD_id:
+      ! first half used for update through the day
+      ! HDD_id(1) ---- Heating [degC]: used for accumulation during calculation
+      ! HDD_id(2) ---- Cooling [degC]: used for accumulation during calculation
+      ! HDD_id(3) ---- Daily mean temp [degC]: used for accumulation during calculation
+      ! HDD_id(4) ---- 5-day running mean temp [degC]: used for actual calculation
+      ! HDD_id(5) ---- Daily precip total [mm]
+      ! HDD_id(6) ---- Days since rain [d]
+      ! second half used for storage of the first half for the prevous day
+      ! HDD_id(6+1) ---- Heating [degC]: used for accumulation during calculation
+      ! HDD_id(6+2) ---- Cooling [degC]: used for accumulation during calculation
+      ! HDD_id(6+3) ---- Daily mean temp [degC]: used for accumulation during calculation
+      ! HDD_id(6+4) ---- 5-day running mean temp [degC]: used for actual calculation
+      ! HDD_id(6+5) ---- Daily precip total [mm]
+      ! HDD_id(6+6) ---- Days since rain [d]
 
       REAL(KIND(1D0)) :: Fc !total co2 flux [umol m-2 s-1]
       REAL(KIND(1D0)) :: Fc_anthro !anthropogenic co2 flux  [umol m-2 s-1]
@@ -579,7 +595,22 @@ MODULE SUEWS_DEF_DTS
       ! REAL(KIND(1D0)) :: runofftowater   ! Fraction of above-ground runoff flowing to water surface during flooding
       REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_surf ! Initial water stored in soil beneath `Bldgs` surface
       REAL(KIND(1D0)), DIMENSION(nsurf) :: state_surf ! Initial wetness condition on SUEWS land covers.
+
+      ! ==================================================
+      ! TODO: #243 split WUDay_id into individual explicit variables
       REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id ! Daily water use for EveTr, DecTr, Grass [mm]
+      ! WUDay_id:
+      ! WUDay_id(1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
+      ! WUDay_id(2) - Automatic irrigation for Irr EveTr [mm]
+      ! WUDay_id(3) - Manual irrigation for Irr EveTr [mm]
+      ! WUDay_id(4) - Daily water use total for Irr DecTr (automatic+manual) [mm]
+      ! WUDay_id(5) - Automatic irrigation for Irr DecTr [mm]
+      ! WUDay_id(6) - Manual irrigation for Irr DecTr [mm]
+      ! WUDay_id(7) - Daily water use total for Irr Grass (automatic+manual) [mm]
+      ! WUDay_id(8) - Automatic irrigation for Irr Grass [mm]
+      ! WUDay_id(9) - Manual irrigation for Irr Grass [mm]
+      ! ==================================================
+
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof ! Soil moisture of roof [mm]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]

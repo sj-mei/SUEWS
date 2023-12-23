@@ -536,6 +536,7 @@ CONTAINS
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
                CALL SUEWS_cal_DailyState_DTS( &
                   timer, config, forcing, siteInfo, & !input
+                  atmState, & !inout
                   phenState, & !inout
                   anthroEmisState, & !inout
                   hydroState) !inout
@@ -2633,7 +2634,7 @@ CONTAINS
 
       INTEGER, PARAMETER :: notUsedI = -999
       REAL(KIND(1D0)), PARAMETER :: notUsed = -999
-      REAL(KIND(1D0)) :: Temp_local ! local ambient air temperature [degC]
+      REAL(KIND(1D0)) :: Tair !ambient air temperature [degC]
 
 
       ASSOCIATE ( &
@@ -2711,7 +2712,7 @@ CONTAINS
                qf = QF_obs
             ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
                ! choose temperature for anthropogenic heat flux calculation
-               Temp_local = MERGE(T2_c, Temp_C, localClimateMethod == 1)
+               Tair = MERGE(T2_c, Temp_C, localClimateMethod == 1)
 
                CALL AnthropogenicEmissions( &
                   CO2PointSource, EmissionsMethod, &
@@ -2720,7 +2721,7 @@ CONTAINS
                   FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
                   MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
                   PopDensDaytime, PopDensNighttime, &
-                  Temp_local, HDD_id, Qf_A, Qf_B, Qf_C, &
+                  Tair, HDD_id, Qf_A, Qf_B, Qf_C, &
                   AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
                   BaseT_Heating, BaseT_Cooling, &
                   TrafficRate, &
