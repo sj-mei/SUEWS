@@ -472,9 +472,8 @@ CONTAINS
             IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
             ! print *, 'timer: azimuth, zenith_deg', timer%azimuth, timer%zenith_deg
             CALL NARP_cal_SunPosition_DTS( &
-               timer, & !input:
-               siteInfo, &
-               azimuth_deg, zenith_deg) !output:
+               timer, config, forcing, siteInfo, & !input
+               solarState)
 
             !=================Calculation of density and other water related parameters=================
             IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
@@ -557,6 +556,7 @@ CONTAINS
                CALL SUEWS_cal_AnthropogenicEmission_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   anthroEmisState, &
+                  atmState, &
                   heatState)
 
                ! ========================================================================
@@ -2574,19 +2574,24 @@ CONTAINS
    SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS( &
       timer, config, forcing, siteInfo, & ! input
       anthroEmisState, &
+      atmState, &
       heatState)
       ! QF, &
       ! QF_SAHP, &
       ! Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
-                               anthroEmis_STATE
+                               anthroEmis_STATE, atm_state
 
       IMPLICIT NONE
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(anthroEmis_STATE), INTENT(INout) :: anthroEmisState
+      TYPE(heat_STATE), INTENT(INout) :: heatState
+      TYPE(atm_state), INTENT(INout) :: atmState
 
       ! INTEGER, INTENT(in)::Diagnose
       INTEGER :: EmissionsMethod !0 - Use values in met forcing file, or default QF;1 - Method according to Loridan et al. (2011) : SAHP; 2 - Method according to Jarvi et al. (2011)   : SAHP_2
@@ -2628,9 +2633,9 @@ CONTAINS
 
       INTEGER, PARAMETER :: notUsedI = -999
       REAL(KIND(1D0)), PARAMETER :: notUsed = -999
+      REAL(KIND(1D0)) :: Temp_local ! local ambient air temperature [degC]
 
-      TYPE(anthroEmis_STATE), INTENT(INout) :: anthroEmisState
-      TYPE(heat_STATE), INTENT(INout) :: heatState
+
       ASSOCIATE ( &
          dayofWeek_id => timer%dayofWeek_id, &
          DLS => timer%DLS, &
@@ -2639,6 +2644,7 @@ CONTAINS
 
          ASSOCIATE ( &
             EmissionsMethod => config%EmissionsMethod, &
+            localClimateMethod => config%localClimateMethod, &
             EF_umolCO2perJ => ahemisPrm%EF_umolCO2perJ, &
             EnEF_v_Jkm => ahemisPrm%EnEF_v_Jkm, &
             FcEF_v_kgkm => ahemisPrm%FcEF_v_kgkm, &
@@ -2661,6 +2667,7 @@ CONTAINS
             Fc_traff => anthroEmisState%Fc_traff, &
             QF => heatState%QF, &
             QF_SAHP => heatState%QF_SAHP, &
+            T2_c => atmstate%t2_C, &
             Temp_C => forcing%Temp_C, &
             QF_obs => forcing%QF_obs &
             )
@@ -2703,6 +2710,9 @@ CONTAINS
             IF (EmissionsMethod == 0) THEN ! use observed qf
                qf = QF_obs
             ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
+               ! choose temperature for anthropogenic heat flux calculation
+               Temp_local = MERGE(T2_c, Temp_C, localClimateMethod == 1)
+
                CALL AnthropogenicEmissions( &
                   CO2PointSource, EmissionsMethod, &
                   it, imin, DLS, DayofWeek_id, &
@@ -2710,7 +2720,7 @@ CONTAINS
                   FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
                   MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
                   PopDensDaytime, PopDensNighttime, &
-                  Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
+                  Temp_local, HDD_id, Qf_A, Qf_B, Qf_C, &
                   AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
                   BaseT_Heating, BaseT_Cooling, &
                   TrafficRate, &

@@ -493,13 +493,6 @@ CONTAINS
          Diagnose => config%Diagnose &
          )
 
-         ! iy = timer%iy
-         ! id = timer%id
-
-         ! avkdn = forcing%kdown
-         ! Temp_C = forcing%Temp_C
-         ! avrh = forcing%RH
-         ! Press_hPa = forcing%Pres
          ASSOCIATE ( &
             emis_ground => pavedPrm%emis, &
             emis_wall => bldgPrm%emis, &
