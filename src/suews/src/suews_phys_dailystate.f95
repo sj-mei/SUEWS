@@ -646,7 +646,6 @@ CONTAINS
             albEveTr_id_prev => phenState_prev%albEveTr_id, &
             albGrass_id_prev => phenState_prev%albGrass_id, &
             porosity_id_prev => phenState_prev%porosity_id, &
-
             Tmin_id => phenState%Tmin_id, &
             Tmax_id => phenState%Tmax_id, &
             lenDay_id => phenState%lenDay_id, &
@@ -659,7 +658,6 @@ CONTAINS
             albEveTr_id => phenState%albEveTr_id, &
             albGrass_id => phenState%albGrass_id, &
             porosity_id => phenState%porosity_id, &
-
             HDD_id => anthroEmisState%HDD_id, &
             state_surf => hydroState%state_surf, &
             soilstore_surf => hydroState%soilstore_surf, &

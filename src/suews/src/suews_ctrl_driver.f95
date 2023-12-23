@@ -2636,7 +2636,6 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: notUsed = -999
       REAL(KIND(1D0)) :: Tair !ambient air temperature [degC]
 
-
       ASSOCIATE ( &
          dayofWeek_id => timer%dayofWeek_id, &
          DLS => timer%DLS, &

@@ -176,7 +176,6 @@ CONTAINS
 
    END SUBROUTINE LUMPS_cal_QHQE
 
-
    SUBROUTINE LUMPS_cal_QHQE_DTS( &
       timer, config, forcing, siteInfo, & ! input
       heatState, &

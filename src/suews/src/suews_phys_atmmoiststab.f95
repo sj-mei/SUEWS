@@ -45,7 +45,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_update_atmState
 
-
    FUNCTION update_tair_av(tair_av_prev, dt_since_start, tstep, temp_c) RESULT(tair_av_next)
       ! calculate mean air temperature of past 24 hours
       ! TS, 17 Sep 2019

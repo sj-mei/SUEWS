@@ -666,7 +666,6 @@ CONTAINS
       REAL(KIND(1D0)) :: topocentric_sun_positiondeclination
       REAL(KIND(1D0)) :: topocentric_local_hour
 
-
       ASSOCIATE ( &
          iy => timer%iy, &
          dectime => timer%dectime, &

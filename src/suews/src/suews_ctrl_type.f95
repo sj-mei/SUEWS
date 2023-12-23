@@ -751,9 +751,9 @@ MODULE SUEWS_DEF_DTS
       TYPE(HYDRO_STATE) :: hydroState
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
-      contains
-         PROCEDURE :: ALLOCATE => allocSUEWSState_c
-         PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
+   CONTAINS
+      PROCEDURE :: ALLOCATE => allocSUEWSState_c
+      PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
    END TYPE SUEWS_STATE
 
    ! ********** SUEWS_forcing schema **********
@@ -799,7 +799,6 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE SUEWS_TIMER
 
-
    TYPE, PUBLIC :: output_block
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSUEWS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSnow
@@ -810,11 +809,11 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDebug
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDailyState
-      contains
-         ! Procedures
-         PROCEDURE :: init => output_block_init
-         ! PROCEDURE :: finalize => output_block_finalize
-         PROCEDURE :: cleanup => output_block_finalize
+   CONTAINS
+      ! Procedures
+      PROCEDURE :: init => output_block_init
+      ! PROCEDURE :: finalize => output_block_finalize
+      PROCEDURE :: cleanup => output_block_finalize
    END TYPE output_block
 
    TYPE, PUBLIC :: output_line
@@ -828,13 +827,12 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
-      contains
-         ! Procedures
-         PROCEDURE :: init => output_line_init
+   CONTAINS
+      ! Procedures
+      PROCEDURE :: init => output_line_init
    END TYPE output_line
 
 CONTAINS
-
 
    SUBROUTINE output_line_init(self)
       CLASS(output_line), INTENT(inout) :: self
@@ -895,9 +893,9 @@ CONTAINS
 
    END SUBROUTINE output_block_finalize
 
-   subroutine allocSUEWSState_c(self, nlayer, ndepth)
+   SUBROUTINE allocSUEWSState_c(self, nlayer, ndepth)
       IMPLICIT NONE
-      CLASS(SUEWS_STATE), intent(inout) :: self
+      CLASS(SUEWS_STATE), INTENT(inout) :: self
       INTEGER, INTENT(in) :: nlayer
       INTEGER, INTENT(in) :: ndepth
 
@@ -905,18 +903,14 @@ CONTAINS
       CALL self%hydroState%ALLOCATE(nlayer)
       CALL self%heatState%ALLOCATE(nsurf, nlayer, ndepth)
 
-
-   end subroutine allocSUEWSState_c
-
-
+   END SUBROUTINE allocSUEWSState_c
 
    SUBROUTINE deallocSUEWSState_c(self)
       IMPLICIT NONE
       CLASS(SUEWS_STATE), INTENT(inout) :: self
 
-      call self%hydroState%DEALLOCATE()
-      call self%heatState%DEALLOCATE()
-
+      CALL self%hydroState%DEALLOCATE()
+      CALL self%heatState%DEALLOCATE()
 
    END SUBROUTINE deallocSUEWSState_c
 
