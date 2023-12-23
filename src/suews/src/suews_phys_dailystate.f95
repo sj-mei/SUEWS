@@ -1206,7 +1206,7 @@ CONTAINS
       id, LAICalcYes, & !input
       lat, LAI_obs, &
       Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
-      BaseT, BaseTe, &
+      BaseT_GDD, BaseT_SDD, &
       GDDFull, SDDFull, &
       LAIMin, LAIMax, LAIPower, LAIType, &
       LAI_id_prev, &
@@ -1230,8 +1230,8 @@ CONTAINS
 
       ! --- Vegetation phenology ---------------------------------------------------------------------
       ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseT !Base temperature for growing degree days [degC]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseTe !Base temperature for senescence degree days [degC]
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseT_GDD !Base temperature for growing degree days [degC]
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseT_SDD !Base temperature for senescence degree days [degC]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: GDDFull !Growing degree days needed for full capacity [degC]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: SDDFull !Senescence degree days needed to initiate leaf off [degC]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: LAIMin !Min LAI [m2 m-2]
@@ -1264,8 +1264,8 @@ CONTAINS
       ! Loop through vegetation types (iv)
       DO iv = 1, NVegSurf
          ! Calculate GDD for each day from the minimum and maximum air temperature
-         delta_GDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT(iv)) !Leaf on
-         delta_SDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseTe(iv)) !Leaf off
+         delta_GDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT_GDD(iv)) !Leaf on
+         delta_SDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT_SDD(iv)) !Leaf off
 
          indHelp = 0 !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
 

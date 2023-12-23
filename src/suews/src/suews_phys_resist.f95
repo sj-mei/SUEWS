@@ -110,7 +110,7 @@ CONTAINS
 
    SUBROUTINE SurfaceResistance( &
       id, it, & ! input:
-      SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+      SMDMethod, SnowFrac, sfr_surf, avkdn, Tair, dq, xsmd, vsmd, MaxConductance, &
       LAIMax, LAI_id, gsModel, Kmax, &
       G_max, G_k, g_q_base, g_q_shape, G_t, G_sm, TH, TL, S1, S2, &
       g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
@@ -160,7 +160,7 @@ CONTAINS
       ! INTEGER,INTENT(in)::nsurf!= 7, Total number of surfaces
 
       REAL(KIND(1D0)), INTENT(in) :: avkdn !Average downwelling shortwave radiation
-      REAL(KIND(1D0)), INTENT(in) :: Temp_C !Air temperature
+      REAL(KIND(1D0)), INTENT(in) :: Tair !Air temperature
       REAL(KIND(1D0)), INTENT(in) :: Kmax !Annual maximum hourly solar radiation
       REAL(KIND(1D0)), INTENT(in) :: G_max !Fitted parameters related to max surface resistance
       REAL(KIND(1D0)), INTENT(in) :: G_k !Fitted parameters related to incoming solar radiation
@@ -236,20 +236,20 @@ CONTAINS
          TC = (TH - G_t)/(G_t - TL)
          TC2 = (G_t - TL)*(TH - G_t)**TC
          !If air temperature below TL or above TH, fit it to TL+0.1/TH-0.1
-         IF (Temp_C <= tl) THEN
+         IF (Tair <= tl) THEN
             g_ta = (tl + 0.1 - tl)*(th - (tl + 0.1))**tc/tc2
             !Call error only if no snow on ground
             !  IF (MIN(SnowFrac(1),SnowFrac(2),SnowFrac(3),SnowFrac(4),SnowFrac(5),SnowFrac(6))/=1) THEN
             IF (MINVAL(SnowFrac(1:6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL=0.1,Temp_c,id,it', &
-                              REAL(Temp_c, KIND(1D0)), id_real, it)
+                              REAL(Tair, KIND(1D0)), id_real, it)
             END IF
-         ELSEIF (Temp_C >= th) THEN
+         ELSEIF (Tair >= th) THEN
             g_ta = ((th - 0.1) - tl)*(th - (th - 0.1))**tc/tc2
             CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TH=39.9,Temp_c,id,it', &
-                           REAL(Temp_c, KIND(1D0)), id_real, it)
+                           REAL(Tair, KIND(1D0)), id_real, it)
          ELSE
-            g_ta = (Temp_C - tl)*(th - Temp_C)**tc/tc2
+            g_ta = (Tair - tl)*(th - Tair)**tc/tc2
          END IF
 
          ! soil moisture deficit ----
@@ -313,19 +313,19 @@ CONTAINS
          Tc = (TH - G_t)/(G_t - TL)
          Tc2 = (G_t - TL)*(TH - G_t)**Tc
          ! If air temperature below TL or above TH, then use value for TL+0.1 or TH-0.1
-         IF (Temp_C <= TL) THEN
+         IF (Tair <= TL) THEN
             g_ta = (TL + 0.1 - TL)*(TH - (TL + 0.1))**Tc/Tc2
             ! Call error only if no snow on ground
             IF (MIN(SnowFrac(1), SnowFrac(2), SnowFrac(3), SnowFrac(4), SnowFrac(5), SnowFrac(6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL+0.1,Temp_C,id,it', &
-                              REAL(Temp_c, KIND(1D0)), id_real, it)
+                              REAL(Tair, KIND(1D0)), id_real, it)
             END IF
-         ELSEIF (Temp_C >= TH) THEN
+         ELSEIF (Tair >= TH) THEN
             g_ta = ((TH - 0.1) - TL)*(TH - (TH - 0.1))**Tc/Tc2
             CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TH-0.1,Temp_C,id,it', &
-                           REAL(Temp_c, KIND(1D0)), id_real, it)
+                           REAL(Tair, KIND(1D0)), id_real, it)
          ELSE
-            g_ta = (Temp_C - TL)*(TH - Temp_C)**Tc/Tc2
+            g_ta = (Tair - TL)*(TH - Tair)**Tc/Tc2
          END IF
          ! ---- g(smd) ----
          sdp = S1/G_sm + S2

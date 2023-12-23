@@ -2981,19 +2981,28 @@ CONTAINS
          )
 
          ASSOCIATE ( &
-            alpha_bioCO2 => [evetrPrm%bioco2%alpha_bioco2, dectrPrm%bioco2%alpha_bioco2, grassPrm%bioco2%alpha_bioco2], &
-            alpha_enh_bioCO2 => &
-            [evetrPrm%bioco2%alpha_enh_bioco2, dectrPrm%bioco2%alpha_enh_bioco2, grassPrm%bioco2%alpha_enh_bioco2], &
-            beta_bioCO2 => [evetrPrm%bioco2%beta_bioCO2, dectrPrm%bioco2%beta_bioCO2, grassPrm%bioco2%beta_bioCO2], &
-            beta_enh_bioCO2 => &
-            [evetrPrm%bioco2%beta_enh_bioco2, dectrPrm%bioco2%beta_enh_bioco2, grassPrm%bioco2%beta_enh_bioco2], &
+            alpha_bioCO2 => [evetrPrm%bioco2%alpha_bioco2, &
+                             dectrPrm%bioco2%alpha_bioco2, &
+                             grassPrm%bioco2%alpha_bioco2], &
+            alpha_enh_bioCO2 => [evetrPrm%bioco2%alpha_enh_bioco2, &
+                                 dectrPrm%bioco2%alpha_enh_bioco2, &
+                                 grassPrm%bioco2%alpha_enh_bioco2], &
+            beta_bioCO2 => [evetrPrm%bioco2%beta_bioCO2, &
+                            dectrPrm%bioco2%beta_bioCO2, &
+                            grassPrm%bioco2%beta_bioCO2], &
+            beta_enh_bioCO2 => [evetrPrm%bioco2%beta_enh_bioco2, &
+                                dectrPrm%bioco2%beta_enh_bioco2, &
+                                grassPrm%bioco2%beta_enh_bioco2], &
             LAIMin => [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin], &
             LAIMax => [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax], &
-            min_res_bioCO2 => &
-            [evetrPrm%bioco2%min_res_bioCO2, dectrPrm%bioco2%min_res_bioCO2, grassPrm%bioco2%min_res_bioCO2], &
+            min_res_bioCO2 => [evetrPrm%bioco2%min_res_bioCO2, &
+                               dectrPrm%bioco2%min_res_bioCO2, &
+                               grassPrm%bioco2%min_res_bioCO2], &
             resp_a => [evetrPrm%bioco2%resp_a, dectrPrm%bioco2%resp_a, grassPrm%bioco2%resp_a], &
             resp_b => [evetrPrm%bioco2%resp_b, dectrPrm%bioco2%resp_b, grassPrm%bioco2%resp_b], &
-            theta_bioCO2 => [evetrPrm%bioco2%theta_bioCO2, dectrPrm%bioco2%theta_bioCO2, grassPrm%bioco2%theta_bioco2], &
+            theta_bioCO2 => [evetrPrm%bioco2%theta_bioCO2, &
+                             dectrPrm%bioco2%theta_bioCO2, &
+                             grassPrm%bioco2%theta_bioco2], &
             MaxConductance => [evetrPrm%MaxConductance, dectrPrm%MaxConductance, grassPrm%MaxConductance], &
             G_max => conductancePrm%g_max, &
             G_k => conductancePrm%g_k, &
@@ -6685,7 +6694,7 @@ CONTAINS
       ! INTEGER :: SnowUse !!Snow part used (1) or not used (0) [-]
       ! INTEGER :: id ! day of the year [-]
       ! INTEGER :: it !hour [h]
-      INTEGER :: gsModel !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
+      ! INTEGER :: gsModel !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
       ! INTEGER :: SMDMethod !Method of measured soil moisture
 
       INTEGER, PARAMETER :: AerodynamicResistanceMethod = 2 !method to calculate RA [-]
@@ -6716,12 +6725,12 @@ CONTAINS
       ! REAL(KIND(1D0)) :: xsmd !Measured soil moisture deficit
       ! REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only[mm]
 
-      REAL(KIND(1D0)), DIMENSION(3) :: MaxConductance !the maximum conductance of each vegetation or surface type. [mm s-1]
-      REAL(KIND(1D0)), DIMENSION(3) :: LAIMax !Max LAI [m2 m-2]
+      ! REAL(KIND(1D0)), DIMENSION(3) :: MaxConductance !the maximum conductance of each vegetation or surface type. [mm s-1]
+      ! REAL(KIND(1D0)), DIMENSION(3) :: LAIMax !Max LAI [m2 m-2]
 
-      REAL(KIND(1D0)), DIMENSION(3) :: LAI_id !=LAI_id(id-1,:), LAI for each veg surface [m2 m-2]
+      ! REAL(KIND(1D0)), DIMENSION(3) :: LAI_id !=LAI_id(id-1,:), LAI for each veg surface [m2 m-2]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac !Surface fraction of snow cover [-]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowFrac !Surface fraction of snow cover [-]
 
       ! REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface fraction [-]
 
@@ -6744,6 +6753,7 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(out) :: g_lai !gdq*gtemp*gs*gq for photosynthesis calculations
 
       REAL(KIND(1D0)) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
+      REAL(KIND(1D0)) :: Tair ! air temperature [degC]
       ! REAL(KIND(1d0))              ::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
       ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
@@ -6780,6 +6790,7 @@ CONTAINS
          RA => atmState%RA_h, &
          L_mod => atmState%L_mod, &
          RB => atmState%RB, &
+         T2_C => atmState%T2_C, &
          QH_init => heatState%QH_init, &
          z0v => roughnessState%z0v, &
          zzd => roughnessState%zzd, &
@@ -6791,15 +6802,20 @@ CONTAINS
          g_smd => phenState%g_smd, &
          g_lai => phenState%g_lai, &
          gsc => phenState%gsc, &
+         LAI_id => phenState%LAI_id, &
          RASnow => snowState%RASnow, &
          z0vSnow => snowState%z0vSnow, &
+         SnowFrac => snowState%SnowFrac, &
          Diagnose => config%Diagnose, &
          StabilityMethod => config%StabilityMethod, &
          RoughLenHeatMethod => config%RoughLenHeatMethod, &
+         localClimateMethod => config%localClimateMethod, &
          SnowUse => config%SnowUse, &
          SMDMethod => config%SMDMethod &
          )
          ASSOCIATE ( &
+            LAIMax => [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax], &
+            MaxConductance => [evetrPrm%maxconductance, dectrPrm%maxconductance, grassPrm%maxconductance], &
             gsModel => conductancePrm%gsModel, &
             Kmax => conductancePrm%Kmax, &
             G_max => conductancePrm%g_max, &
@@ -6814,47 +6830,7 @@ CONTAINS
             TL => conductanceprm%tl &
             )
 
-            ! StabilityMethod = config%StabilityMethod
-            ! RoughLenHeatMethod = config%RoughLenHeatMethod
-            ! SnowUse = config%SnowUse
-            ! SMDMethod = config%SMDMethod
-
-            ! id = timer%id
-            ! it = timer%it
-
-            ! gsModel = conductancePrm%gsModel
-            ! Kmax = conductancePrm%Kmax
-            ! G_max = conductancePrm%g_max
-            ! G_k = conductancePrm%g_k
-            ! G_q_base = conductancePrm%g_q_base
-            ! G_q_shape = conductancePrm%g_q_shape
-            ! G_t = conductancePrm%g_t
-            ! G_sm = conductancePrm%g_sm
-            ! S1 = conductancePrm%s1
-            ! S2 = conductancePrm%s2
-            ! TH = conductancePrm%th
-            ! TL = conductanceprm%tl
-
-            ! avU1 = forcing%U
-            ! Temp_C = forcing%Temp_C
-            ! avkdn = forcing%kdown
-            ! xsmd = forcing%xsmd
-
-            LAI_id = phenState%LAI_id
-
-            SnowFrac = snowState%SnowFrac
-
             RAsnow = 0.0
-
-            MaxConductance(1) = evetrPrm%maxconductance
-            MaxConductance(2) = dectrPrm%maxconductance
-            MaxConductance(3) = grassPrm%maxconductance
-
-            LAIMax(1) = evetrPrm%lai%laimax
-            LAIMax(2) = dectrPrm%lai%laimax
-            LAIMax(3) = grassPrm%lai%laimax
-
-            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
             IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
             !u* and Obukhov length out
@@ -6903,9 +6879,10 @@ CONTAINS
 
             IF (Diagnose == 1) WRITE (*, *) 'Calling SurfaceResistance...'
             ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
+            Tair = MERGE(T2_C, Temp_C, localClimateMethod == 1)
             CALL SurfaceResistance( &
                id, it, & ! input:
-               SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+               SMDMethod, SnowFrac, sfr_surf, avkdn, Tair, dq, xsmd, vsmd, MaxConductance, &
                LAIMax, LAI_id, gsModel, Kmax, &
                G_max, G_k, G_q_base, G_q_shape, G_t, G_sm, TH, TL, S1, S2, &
                g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
