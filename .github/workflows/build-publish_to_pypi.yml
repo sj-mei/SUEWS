@@ -44,7 +44,8 @@ jobs:
     # macOS make is too old
     - if: runner.os == 'macOS'
       run: |
-        brew install make automake libtool gcc
+        which gfortran-10 || brew install gcc@10
+        brew install make automake libtool
         which pipx || brew install pipx && pipx ensurepath
 
     - name: check git info
