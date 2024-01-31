@@ -54,7 +54,7 @@ jobs:
         git describe --tags --dirty --match "2[0-9]*"
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.16.5
+      uses: pypa/cibuildwheel@v2.13
       env:
         SETUPTOOLS_USE_DISTUTILS: stdlib
         CC: gcc
