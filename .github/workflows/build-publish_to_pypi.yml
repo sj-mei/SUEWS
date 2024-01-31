@@ -44,7 +44,7 @@ jobs:
     # macOS make is too old
     - if: runner.os == 'macOS'
       run: |
-        which gfortran-13 || brew install gcc@13
+        which gfortran-12 || brew install gcc@12
         brew install make automake libtool
         which pipx || brew install pipx && pipx ensurepath
 
