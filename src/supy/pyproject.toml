@@ -76,7 +76,7 @@ archs = ["auto64"]
 
 [tool.cibuildwheel.macos]
 before-build = [
-    'ln -sf "$(which gfortran-10)" /usr/local/bin/gfortran',
+    'ln -sf "$(which gfortran-13)" /usr/local/bin/gfortran',
     "python3 -m pip install f90wrap==0.2.12 oldest-supported-numpy",
     "make -C '{package}' driver",
     "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
