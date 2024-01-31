@@ -41,6 +41,11 @@ jobs:
     # # remote debugging
     # - name: Setup upterm session
     #   uses: lhotari/action-upterm@v1
+    # macOS make is too old
+    - if: runner.os == 'macOS'
+      run: |
+        brew install make automake libtool
+        which pipx || brew install pipx && pipx ensurepath
 
     - name: check git info
       run: |
@@ -49,7 +54,7 @@ jobs:
         git describe --tags --dirty --match "2[0-9]*"
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.13
+      uses: pypa/cibuildwheel@v2.16.5
       env:
         SETUPTOOLS_USE_DISTUTILS: stdlib
         CC: gcc
