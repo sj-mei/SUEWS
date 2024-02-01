@@ -23,10 +23,10 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          # - ubuntu-20.04
-          # - windows-2019
-          # - macos-11
-          - macos-14
+          - ubuntu-20.04
+          - windows-2019
+          - macos-11
+          - macos-14 # Apple Silicon build runner
 
     steps:
     - uses: actions/checkout@v3
@@ -41,6 +41,7 @@ jobs:
     # # remote debugging
     # - name: Setup upterm session
     #   uses: lhotari/action-upterm@v1
+
     # macOS make is too old
     - if: runner.os == 'macOS'
       run: |
