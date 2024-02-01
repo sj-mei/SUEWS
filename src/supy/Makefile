@@ -86,7 +86,7 @@ local: clean
 	@echo "CIBUILDWHEEL=${CIBUILDWHEEL}";
 	@echo "FC=${FC}";
 	@echo "=====================\n"
-	pipx run cibuildwheel==2.9.0 --platform macos --config-file pyproject.toml
+	pipx run cibuildwheel==2.16.5 --platform macos --config-file pyproject.toml
 
 # produce sample_output.pkl for testing
 # (only run this if you have changed the test data)
