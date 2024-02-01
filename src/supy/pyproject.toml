@@ -5,7 +5,7 @@ requires = [
     "setuptools>60",
     "oldest-supported-numpy",
     "setuptools-git-versioning",
-    "setuptools_scm[toml]=6.2",
+    "setuptools_scm[toml]>=6.2,<8",
 ]
 # the recommended "build_meta" does not work with nonstop f2py and hence is commented out
 build-backend = "setuptools.build_meta"
