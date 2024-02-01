@@ -12,7 +12,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "supy"
-dynamic = ["version"]
+dynamic = [
+    "version",
+    'description',
+    'readme',
+    'version',
+    'license',
+    'authors',
+    'classifiers',
+    'scripts',
+    'dependencies',
+]
 requires-python = ">3.11, <3.12"
 
 # [tool.setuptools.packages]
@@ -110,4 +120,3 @@ before-build = [
 archs = ["auto64"]
 test-command = 'set "TEST_DATA_DIR={project}/src/supy/supy/test/data_test" && pytest -s "{package}/supy/test"'
 repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
-
