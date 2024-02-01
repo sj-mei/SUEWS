@@ -2,18 +2,28 @@
 requires = [
     "wheel",
     "f90wrap==0.2.12",
-    "setuptools<60",
+    "setuptools>60",
     "oldest-supported-numpy",
     "setuptools-git-versioning",
-    "setuptools_scm[toml]>=6.2",
+    "setuptools_scm[toml]>=6.2,<8",
 ]
 # the recommended "build_meta" does not work with nonstop f2py and hence is commented out
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "supy"
-dynamic = ["version"]
-requires-python = ">3.8, <3.12"
+dynamic = [
+    "version",
+    'description',
+    'readme',
+    'version',
+    'license',
+    'authors',
+    'classifiers',
+    'scripts',
+    'dependencies',
+]
+requires-python = ">3.9, <3.12"
 
 # [tool.setuptools.packages]
 # find = {"where"= "src"}
@@ -110,4 +120,3 @@ before-build = [
 archs = ["auto64"]
 test-command = 'set "TEST_DATA_DIR={project}/src/supy/supy/test/data_test" && pytest -s "{package}/supy/test"'
 repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
-
