@@ -126,7 +126,6 @@ def delete_var(toFile, toVar, toCol, toVal):
 
         # position of columns to delete
         posDel = np.where(dataX[0] == toVar)
-        # print posDel
         dataX = np.delete(dataX, posDel, axis=1)
 
         # dataX[0] = [str(i + 1) for i in np.arange(len(dataX[0]))]
