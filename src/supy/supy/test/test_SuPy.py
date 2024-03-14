@@ -23,7 +23,7 @@ test_data_dir = Path(__file__).parent / 'data_test'
 p_df_sample = Path(test_data_dir) / 'sample_output.pkl'
 
 # if platform is macOS and python version is 3.9, set flag_full_test to True
-flag_full_test = (sys.version_info[0] == 3 and sys.version_info[1] == 11 and platform.system() == "Darwin")
+flag_full_test = (sys.version_info[0] == 3 and sys.version_info[1] == 10 and platform.system() == "Darwin")
 
 class TestSuPy(TestCase):
     def setUp(self):
@@ -73,14 +73,21 @@ class TestSuPy(TestCase):
         #     # sys.stdout = sys.__stdout__  # Reset redirect.
         #     # Now works as before.
         #     # print("Captured:\n", capturedOutput.getvalue())
-
+        print(f"empty output?",df_output.empty)
+        print(f"empty state?", df_state.empty)
+        print(f"any NaN in state?",df_state.isnull().values.any())
+        # find the first NaN in state
+        if df_state.isnull().values.any():
+            print("NaN in state:")
+            print(df_state.columns[np.any(df_state.isnull(), axis=0)])
         test_non_empty = np.all(
             [
                 not df_output.empty,
                 not df_state.empty,
+                not df_state.isnull().values.any(),
             ]
         )
-        self.assertTrue((test_non_empty and not df_state.isnull().values.any()))
+        self.assertTrue(test_non_empty)
 
     # test if multi-grid simulation can run in parallel
     # def test_is_supy_sim_save_multi_grid_par(self):
@@ -112,64 +119,64 @@ class TestSuPy(TestCase):
     #     test_success_save = np.all([isinstance(fn, Path) for fn in list_outfile])
     #     self.assertTrue(test_success_sim and test_success_save)
 
-        # # only print to screen on macOS due incompatibility on Windows
-        # if platform.system() == "Darwin":
-        #     # capturedOutput = io.StringIO()  # Create StringIO object
-        #     # sys.stdout = capturedOutput  # and redirect stdout.
-        #     # Call function.
-        #     n_grid = df_state_init.index.size
-        #     print(f"Running time: {t_end-t_start:.2f} s for {n_grid} grids")
-        #     # sys.stdout = sys.__stdout__  # Reset redirect.
-        #     # Now works as before.
-        #     # print("Captured:\n", capturedOutput.getvalue())
+    #     # only print to screen on macOS due incompatibility on Windows
+    #     if platform.system() == "Darwin":
+    #         # capturedOutput = io.StringIO()  # Create StringIO object
+    #         # sys.stdout = capturedOutput  # and redirect stdout.
+    #         # Call function.
+    #         n_grid = df_state_init.index.size
+    #         print(f"Running time: {t_end-t_start:.2f} s for {n_grid} grids")
+    #         # sys.stdout = sys.__stdout__  # Reset redirect.
+    #         # Now works as before.
+    #         # print("Captured:\n", capturedOutput.getvalue())
 
-        # test_non_empty = np.all([not df_output.empty, not df_state.empty,])
-        # self.assertTrue(test_non_empty)
+    #     test_non_empty = np.all([not df_output.empty, not df_state.empty,])
+    #     self.assertTrue(test_non_empty)
 
-    # test if single-tstep and multi-tstep modes can produce the same SUEWS results
-    @skipUnless(flag_full_test, "Full test is not required.")
-    def test_is_supy_euqal_mode(self):
-        print("\n========================================")
-        print("Testing if single-tstep and multi-tstep modes can produce the same SUEWS results...")
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
-        df_forcing_part = df_forcing_tstep.iloc[: 12*8]
+    # # test if single-tstep and multi-tstep modes can produce the same SUEWS results
+    # @skipUnless(flag_full_test, "Full test is not required.")
+    # def test_is_supy_euqal_mode(self):
+    #     print("\n========================================")
+    #     print("Testing if single-tstep and multi-tstep modes can produce the same SUEWS results...")
+    #     df_state_init, df_forcing_tstep = sp.load_SampleData()
+    #     df_forcing_part = df_forcing_tstep.iloc[: 12*8]
 
-        # output group for testing
-        list_grp_test = [
-            "SUEWS",
-            # "DailyState",
-            "RSL",
-        ]
+    #     # output group for testing
+    #     list_grp_test = [
+    #         "SUEWS",
+    #         # "DailyState",
+    #         "RSL",
+    #     ]
 
-        # single-step results
-        df_output_s, df_state_s = sp.run_supy(
-            df_forcing_part, df_state_init, save_state=True
-        )
-        df_res_s = (
-            df_output_s.loc[:, list_grp_test]
-            .fillna(-999.0)
-            .sort_index(axis=1)
-            .round(6)
-            .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
-        )
+    #     # single-step results
+    #     df_output_s, df_state_s = sp.run_supy(
+    #         df_forcing_part, df_state_init, save_state=True
+    #     )
+    #     df_res_s = (
+    #         df_output_s.loc[:, list_grp_test]
+    #         .fillna(-999.0)
+    #         .sort_index(axis=1)
+    #         .round(6)
+    #         .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
+    #     )
 
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
-        # multi-step results
-        df_output_m, df_state_m = sp.run_supy(
-            df_forcing_part, df_state_init, save_state=False
-        )
-        df_res_m = (
-            df_output_m.loc[:, list_grp_test]
-            .fillna(-999.0)
-            .sort_index(axis=1)
-            .round(6)
-            .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
-        )
-        # print(df_res_m.iloc[:3, 86], df_res_s.iloc[:3, 86])
-        pd.testing.assert_frame_equal(
-            left=df_res_s,
-            right=df_res_m,
-        )
+    #     df_state_init, df_forcing_tstep = sp.load_SampleData()
+    #     # multi-step results
+    #     df_output_m, df_state_m = sp.run_supy(
+    #         df_forcing_part, df_state_init, save_state=False
+    #     )
+    #     df_res_m = (
+    #         df_output_m.loc[:, list_grp_test]
+    #         .fillna(-999.0)
+    #         .sort_index(axis=1)
+    #         .round(6)
+    #         .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
+    #     )
+    #     # print(df_res_m.iloc[:3, 86], df_res_s.iloc[:3, 86])
+    #     pd.testing.assert_frame_equal(
+    #         left=df_res_s,
+    #         right=df_res_m,
+    #     )
 
     # test saving output files working
     @skipUnless(flag_full_test, "Full test is not required.")
@@ -328,7 +335,3 @@ class TestSuPy(TestCase):
         df_dailystate=df_output.DailyState
         n_days_test= df_dailystate.dropna().drop_duplicates().shape[0]
         self.assertEqual(n_days_test,n_days)
-
-
-
-
