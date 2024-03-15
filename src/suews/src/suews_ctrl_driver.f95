@@ -688,12 +688,11 @@ CONTAINS
             ! daily state_id:
             IF (Diagnose == 1) WRITE (*, *) 'Calling update_DailyStateLine_DTS...'
             CALL update_DailyStateLine_DTS( &
-               timer, phenState, anthroEmisState, &
+               timer, config, forcing, siteInfo, & ! input
+               phenState, anthroEmisState, &
                hydroState, &
                snowState, &
-               nsh_real, & !input
-               VegPhenLumps, &
-               a1, a2, a3, &
+               OHMState, &
                dataOutLineDailyState) !out
 
             !==============translation end ================
