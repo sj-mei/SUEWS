@@ -1315,7 +1315,7 @@ CONTAINS
       CASE ('SPARTACUS') !SPARTACUS
          dataOutX = dataOutSPARTACUS(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('EHC') !ESTMExt
+      CASE ('EHC') !EHC
          dataOutX = dataOutEHC(1:irMax, 1:n_var, Gridiv)
 
       CASE ('DailyState') !DailyState
