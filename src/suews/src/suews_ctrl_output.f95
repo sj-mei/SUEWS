@@ -939,232 +939,232 @@ MODULE ctrl_output
         + ncolumnsDataOutRSL - 5 &
         + ncolumnsDataOutDebug - 5 &
         + ncolumnsDataOutSPARTACUS - 5 &
-        + ncolumnsDataOutESTMExt - 5 &
+        + ncolumnsDataOutEHC - 5 &
         )/ &
-      varAttr('Ts_Paved', 'degC', f104, 'surface temperature of paved surface', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Bldgs', 'degC', f104, 'surface temperature of building surface', aA, 'ESTMExt', 0), &
-      varAttr('Ts_EveTr', 'degC', f104, 'surface temperature of evergreen tree surface', aA, 'ESTMExt', 0), &
-      varAttr('Ts_DecTr', 'degC', f104, 'surface temperature of deciduous tree surface', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Grass', 'degC', f104, 'surface temperature of grass surface', aA, 'ESTMExt', 0), &
-      varAttr('Ts_BSoil', 'degC', f104, 'surface temperature of bare soil surface', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Water', 'degC', f104, 'surface temperature of water surface', aA, 'ESTMExt', 0), &
-      varAttr('QS_Paved', 'W m-2', f104, 'storage heat flux of paved surface', aA, 'ESTMExt', 0), &
-      varAttr('QS_Bldgs', 'W m-2', f104, 'storage heat flux of building surface', aA, 'ESTMExt', 0), &
-      varAttr('QS_EveTr', 'W m-2', f104, 'storage heat flux of evergreen tree surface', aA, 'ESTMExt', 0), &
-      varAttr('QS_DecTr', 'W m-2', f104, 'storage heat flux of deciduous tree surface', aA, 'ESTMExt', 0), &
-      varAttr('QS_Grass', 'W m-2', f104, 'storage heat flux of grass surface', aA, 'ESTMExt', 0), &
-      varAttr('QS_BSoil', 'W m-2', f104, 'storage heat flux of bare soil surface', aA, 'ESTMExt', 0), &
-      varAttr('QS_Water', 'W m-2', f104, 'storage heat flux of water surface', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_1', 'degC', f104, 'surface temperature of roof level 1', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_2', 'degC', f104, 'surface temperature of roof level 2', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_3', 'degC', f104, 'surface temperature of roof level 3', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_4', 'degC', f104, 'surface temperature of roof level 4', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_5', 'degC', f104, 'surface temperature of roof level 5', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_6', 'degC', f104, 'surface temperature of roof level 6', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_7', 'degC', f104, 'surface temperature of roof level 7', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_8', 'degC', f104, 'surface temperature of roof level 8', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_9', 'degC', f104, 'surface temperature of roof level 9', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_10', 'degC', f104, 'surface temperature of roof level 10', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_11', 'degC', f104, 'surface temperature of roof level 11', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_12', 'degC', f104, 'surface temperature of roof level 12', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_13', 'degC', f104, 'surface temperature of roof level 13', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_14', 'degC', f104, 'surface temperature of roof level 14', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Roof_15', 'degC', f104, 'surface temperature of roof level 15', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_1', 'degC', f104, 'net all-wave radiation of roof level 1', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_2', 'degC', f104, 'net all-wave radiation of roof level 2', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_3', 'degC', f104, 'net all-wave radiation of roof level 3', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_4', 'degC', f104, 'net all-wave radiation of roof level 4', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_5', 'degC', f104, 'net all-wave radiation of roof level 5', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_6', 'degC', f104, 'net all-wave radiation of roof level 6', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_7', 'degC', f104, 'net all-wave radiation of roof level 7', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_8', 'degC', f104, 'net all-wave radiation of roof level 8', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_9', 'degC', f104, 'net all-wave radiation of roof level 9', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_10', 'degC', f104, 'net all-wave radiation of roof level 10', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_11', 'degC', f104, 'net all-wave radiation of roof level 11', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_12', 'degC', f104, 'net all-wave radiation of roof level 12', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_13', 'degC', f104, 'net all-wave radiation of roof level 13', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_14', 'degC', f104, 'net all-wave radiation of roof level 14', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Roof_15', 'degC', f104, 'net all-wave radiation of roof level 15', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_1', 'degC', f104, 'storage heat flux of roof level 1', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_2', 'degC', f104, 'storage heat flux of roof level 2', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_3', 'degC', f104, 'storage heat flux of roof level 3', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_4', 'degC', f104, 'storage heat flux of roof level 4', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_5', 'degC', f104, 'storage heat flux of roof level 5', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_6', 'degC', f104, 'storage heat flux of roof level 6', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_7', 'degC', f104, 'storage heat flux of roof level 7', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_8', 'degC', f104, 'storage heat flux of roof level 8', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_9', 'degC', f104, 'storage heat flux of roof level 9', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_10', 'degC', f104, 'storage heat flux of roof level 10', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_11', 'degC', f104, 'storage heat flux of roof level 11', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_12', 'degC', f104, 'storage heat flux of roof level 12', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_13', 'degC', f104, 'storage heat flux of roof level 13', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_14', 'degC', f104, 'storage heat flux of roof level 14', aA, 'ESTMExt', 0), &
-      varAttr('QS_Roof_15', 'degC', f104, 'storage heat flux of roof level 15', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_1', 'degC', f104, 'latent heat flux of roof level 1', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_2', 'degC', f104, 'latent heat flux of roof level 2', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_3', 'degC', f104, 'latent heat flux of roof level 3', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_4', 'degC', f104, 'latent heat flux of roof level 4', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_5', 'degC', f104, 'latent heat flux of roof level 5', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_6', 'degC', f104, 'latent heat flux of roof level 6', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_7', 'degC', f104, 'latent heat flux of roof level 7', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_8', 'degC', f104, 'latent heat flux of roof level 8', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_9', 'degC', f104, 'latent heat flux of roof level 9', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_10', 'degC', f104, 'latent heat flux of roof level 10', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_11', 'degC', f104, 'latent heat flux of roof level 11', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_12', 'degC', f104, 'latent heat flux of roof level 12', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_13', 'degC', f104, 'latent heat flux of roof level 13', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_14', 'degC', f104, 'latent heat flux of roof level 14', aA, 'ESTMExt', 0), &
-      varAttr('QE_Roof_15', 'degC', f104, 'latent heat flux of roof level 15', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_1', 'degC', f104, 'sensible heat flux of roof level 1', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_2', 'degC', f104, 'sensible heat flux of roof level 2', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_3', 'degC', f104, 'sensible heat flux of roof level 3', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_4', 'degC', f104, 'sensible heat flux of roof level 4', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_5', 'degC', f104, 'sensible heat flux of roof level 5', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_6', 'degC', f104, 'sensible heat flux of roof level 6', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_7', 'degC', f104, 'sensible heat flux of roof level 7', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_8', 'degC', f104, 'sensible heat flux of roof level 8', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_9', 'degC', f104, 'sensible heat flux of roof level 9', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_10', 'degC', f104, 'sensible heat flux of roof level 10', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_11', 'degC', f104, 'sensible heat flux of roof level 11', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_12', 'degC', f104, 'sensible heat flux of roof level 12', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_13', 'degC', f104, 'sensible heat flux of roof level 13', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_14', 'degC', f104, 'sensible heat flux of roof level 14', aA, 'ESTMExt', 0), &
-      varAttr('QH_Roof_15', 'degC', f104, 'sensible heat flux of roof level 15', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_1', 'mm', f104, 'surface state of roof level 1', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_2', 'mm', f104, 'surface state of roof level 2', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_3', 'mm', f104, 'surface state of roof level 3', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_4', 'mm', f104, 'surface state of roof level 4', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_5', 'mm', f104, 'surface state of roof level 5', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_6', 'mm', f104, 'surface state of roof level 6', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_7', 'mm', f104, 'surface state of roof level 7', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_8', 'mm', f104, 'surface state of roof level 8', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_9', 'mm', f104, 'surface state of roof level 9', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_10', 'mm', f104, 'surface state of roof level 10', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_11', 'mm', f104, 'surface state of roof level 11', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_12', 'mm', f104, 'surface state of roof level 12', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_13', 'mm', f104, 'surface state of roof level 13', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_14', 'mm', f104, 'surface state of roof level 14', aA, 'ESTMExt', 0), &
-      varAttr('St_Roof_15', 'mm', f104, 'surface state of roof level 15', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_1', 'mm', f104, 'soil store of roof level 1', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_2', 'mm', f104, 'soil store of roof level 2', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_3', 'mm', f104, 'soil store of roof level 3', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_4', 'mm', f104, 'soil store of roof level 4', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_5', 'mm', f104, 'soil store of roof level 5', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_6', 'mm', f104, 'soil store of roof level 6', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_7', 'mm', f104, 'soil store of roof level 7', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_8', 'mm', f104, 'soil store of roof level 8', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_9', 'mm', f104, 'soil store of roof level 9', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_10', 'mm', f104, 'soil store of roof level 10', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_11', 'mm', f104, 'soil store of roof level 11', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_12', 'mm', f104, 'soil store of roof level 12', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_13', 'mm', f104, 'soil store of roof level 13', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_14', 'mm', f104, 'soil store of roof level 14', aA, 'ESTMExt', 0), &
-      varAttr('SS_Roof_15', 'mm', f104, 'soil store of roof level 15', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_1', 'degC', f104, 'surface temperature of wall level 1', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_2', 'degC', f104, 'surface temperature of wall level 2', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_3', 'degC', f104, 'surface temperature of wall level 3', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_4', 'degC', f104, 'surface temperature of wall level 4', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_5', 'degC', f104, 'surface temperature of wall level 5', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_6', 'degC', f104, 'surface temperature of wall level 6', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_7', 'degC', f104, 'surface temperature of wall level 7', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_8', 'degC', f104, 'surface temperature of wall level 8', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_9', 'degC', f104, 'surface temperature of wall level 9', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_10', 'degC', f104, 'surface temperature of wall level 10', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_11', 'degC', f104, 'surface temperature of wall level 11', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_12', 'degC', f104, 'surface temperature of wall level 12', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_13', 'degC', f104, 'surface temperature of wall level 13', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_14', 'degC', f104, 'surface temperature of wall level 14', aA, 'ESTMExt', 0), &
-      varAttr('Ts_Wall_15', 'degC', f104, 'surface temperature of wall level 15', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_1', 'degC', f104, 'net all-wave radiation of wall level 1', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_2', 'degC', f104, 'net all-wave radiation of wall level 2', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_3', 'degC', f104, 'net all-wave radiation of wall level 3', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_4', 'degC', f104, 'net all-wave radiation of wall level 4', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_5', 'degC', f104, 'net all-wave radiation of wall level 5', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_6', 'degC', f104, 'net all-wave radiation of wall level 6', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_7', 'degC', f104, 'net all-wave radiation of wall level 7', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_8', 'degC', f104, 'net all-wave radiation of wall level 8', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_9', 'degC', f104, 'net all-wave radiation of wall level 9', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_10', 'degC', f104, 'net all-wave radiation of wall level 10', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_11', 'degC', f104, 'net all-wave radiation of wall level 11', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_12', 'degC', f104, 'net all-wave radiation of wall level 12', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_13', 'degC', f104, 'net all-wave radiation of wall level 13', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_14', 'degC', f104, 'net all-wave radiation of wall level 14', aA, 'ESTMExt', 0), &
-      varAttr('Qn_Wall_15', 'degC', f104, 'net all-wave radiation of wall level 15', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_1', 'degC', f104, 'storage heat flux of wall level 1', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_2', 'degC', f104, 'storage heat flux of wall level 2', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_3', 'degC', f104, 'storage heat flux of wall level 3', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_4', 'degC', f104, 'storage heat flux of wall level 4', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_5', 'degC', f104, 'storage heat flux of wall level 5', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_6', 'degC', f104, 'storage heat flux of wall level 6', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_7', 'degC', f104, 'storage heat flux of wall level 7', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_8', 'degC', f104, 'storage heat flux of wall level 8', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_9', 'degC', f104, 'storage heat flux of wall level 9', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_10', 'degC', f104, 'storage heat flux of wall level 10', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_11', 'degC', f104, 'storage heat flux of wall level 11', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_12', 'degC', f104, 'storage heat flux of wall level 12', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_13', 'degC', f104, 'storage heat flux of wall level 13', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_14', 'degC', f104, 'storage heat flux of wall level 14', aA, 'ESTMExt', 0), &
-      varAttr('QS_Wall_15', 'degC', f104, 'storage heat flux of wall level 15', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_1', 'degC', f104, 'latent heat flux of wall level 1', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_2', 'degC', f104, 'latent heat flux of wall level 2', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_3', 'degC', f104, 'latent heat flux of wall level 3', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_4', 'degC', f104, 'latent heat flux of wall level 4', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_5', 'degC', f104, 'latent heat flux of wall level 5', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_6', 'degC', f104, 'latent heat flux of wall level 6', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_7', 'degC', f104, 'latent heat flux of wall level 7', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_8', 'degC', f104, 'latent heat flux of wall level 8', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_9', 'degC', f104, 'latent heat flux of wall level 9', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_10', 'degC', f104, 'latent heat flux of wall level 10', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_11', 'degC', f104, 'latent heat flux of wall level 11', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_12', 'degC', f104, 'latent heat flux of wall level 12', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_13', 'degC', f104, 'latent heat flux of wall level 13', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_14', 'degC', f104, 'latent heat flux of wall level 14', aA, 'ESTMExt', 0), &
-      varAttr('QE_Wall_15', 'degC', f104, 'latent heat flux of wall level 15', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_1', 'degC', f104, 'sensible heat flux of wall level 1', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_2', 'degC', f104, 'sensible heat flux of wall level 2', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_3', 'degC', f104, 'sensible heat flux of wall level 3', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_4', 'degC', f104, 'sensible heat flux of wall level 4', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_5', 'degC', f104, 'sensible heat flux of wall level 5', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_6', 'degC', f104, 'sensible heat flux of wall level 6', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_7', 'degC', f104, 'sensible heat flux of wall level 7', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_8', 'degC', f104, 'sensible heat flux of wall level 8', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_9', 'degC', f104, 'sensible heat flux of wall level 9', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_10', 'degC', f104, 'sensible heat flux of wall level 10', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_11', 'degC', f104, 'sensible heat flux of wall level 11', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_12', 'degC', f104, 'sensible heat flux of wall level 12', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_13', 'degC', f104, 'sensible heat flux of wall level 13', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_14', 'degC', f104, 'sensible heat flux of wall level 14', aA, 'ESTMExt', 0), &
-      varAttr('QH_Wall_15', 'degC', f104, 'sensible heat flux of wall level 15', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_1', 'mm', f104, 'surface state of wall level 1', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_2', 'mm', f104, 'surface state of wall level 2', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_3', 'mm', f104, 'surface state of wall level 3', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_4', 'mm', f104, 'surface state of wall level 4', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_5', 'mm', f104, 'surface state of wall level 5', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_6', 'mm', f104, 'surface state of wall level 6', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_7', 'mm', f104, 'surface state of wall level 7', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_8', 'mm', f104, 'surface state of wall level 8', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_9', 'mm', f104, 'surface state of wall level 9', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_10', 'mm', f104, 'surface state of wall level 10', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_11', 'mm', f104, 'surface state of wall level 11', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_12', 'mm', f104, 'surface state of wall level 12', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_13', 'mm', f104, 'surface state of wall level 13', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_14', 'mm', f104, 'surface state of wall level 14', aA, 'ESTMExt', 0), &
-      varAttr('St_Wall_15', 'mm', f104, 'surface state of wall level 15', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_1', 'mm', f104, 'soil store of wall level 1', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_2', 'mm', f104, 'soil store of wall level 2', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_3', 'mm', f104, 'soil store of wall level 3', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_4', 'mm', f104, 'soil store of wall level 4', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_5', 'mm', f104, 'soil store of wall level 5', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_6', 'mm', f104, 'soil store of wall level 6', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_7', 'mm', f104, 'soil store of wall level 7', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_8', 'mm', f104, 'soil store of wall level 8', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_9', 'mm', f104, 'soil store of wall level 9', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_10', 'mm', f104, 'soil store of wall level 10', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_11', 'mm', f104, 'soil store of wall level 11', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_12', 'mm', f104, 'soil store of wall level 12', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_13', 'mm', f104, 'soil store of wall level 13', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_14', 'mm', f104, 'soil store of wall level 14', aA, 'ESTMExt', 0), &
-      varAttr('SS_Wall_15', 'mm', f104, 'soil store of wall level 15', aA, 'ESTMExt', 0) &
+      varAttr('Ts_Paved', 'degC', f104, 'surface temperature of paved surface', aA, 'EHC', 0), &
+      varAttr('Ts_Bldgs', 'degC', f104, 'surface temperature of building surface', aA, 'EHC', 0), &
+      varAttr('Ts_EveTr', 'degC', f104, 'surface temperature of evergreen tree surface', aA, 'EHC', 0), &
+      varAttr('Ts_DecTr', 'degC', f104, 'surface temperature of deciduous tree surface', aA, 'EHC', 0), &
+      varAttr('Ts_Grass', 'degC', f104, 'surface temperature of grass surface', aA, 'EHC', 0), &
+      varAttr('Ts_BSoil', 'degC', f104, 'surface temperature of bare soil surface', aA, 'EHC', 0), &
+      varAttr('Ts_Water', 'degC', f104, 'surface temperature of water surface', aA, 'EHC', 0), &
+      varAttr('QS_Paved', 'W m-2', f104, 'storage heat flux of paved surface', aA, 'EHC', 0), &
+      varAttr('QS_Bldgs', 'W m-2', f104, 'storage heat flux of building surface', aA, 'EHC', 0), &
+      varAttr('QS_EveTr', 'W m-2', f104, 'storage heat flux of evergreen tree surface', aA, 'EHC', 0), &
+      varAttr('QS_DecTr', 'W m-2', f104, 'storage heat flux of deciduous tree surface', aA, 'EHC', 0), &
+      varAttr('QS_Grass', 'W m-2', f104, 'storage heat flux of grass surface', aA, 'EHC', 0), &
+      varAttr('QS_BSoil', 'W m-2', f104, 'storage heat flux of bare soil surface', aA, 'EHC', 0), &
+      varAttr('QS_Water', 'W m-2', f104, 'storage heat flux of water surface', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_1', 'degC', f104, 'surface temperature of roof level 1', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_2', 'degC', f104, 'surface temperature of roof level 2', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_3', 'degC', f104, 'surface temperature of roof level 3', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_4', 'degC', f104, 'surface temperature of roof level 4', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_5', 'degC', f104, 'surface temperature of roof level 5', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_6', 'degC', f104, 'surface temperature of roof level 6', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_7', 'degC', f104, 'surface temperature of roof level 7', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_8', 'degC', f104, 'surface temperature of roof level 8', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_9', 'degC', f104, 'surface temperature of roof level 9', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_10', 'degC', f104, 'surface temperature of roof level 10', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_11', 'degC', f104, 'surface temperature of roof level 11', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_12', 'degC', f104, 'surface temperature of roof level 12', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_13', 'degC', f104, 'surface temperature of roof level 13', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_14', 'degC', f104, 'surface temperature of roof level 14', aA, 'EHC', 0), &
+      varAttr('Ts_Roof_15', 'degC', f104, 'surface temperature of roof level 15', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_1', 'degC', f104, 'net all-wave radiation of roof level 1', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_2', 'degC', f104, 'net all-wave radiation of roof level 2', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_3', 'degC', f104, 'net all-wave radiation of roof level 3', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_4', 'degC', f104, 'net all-wave radiation of roof level 4', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_5', 'degC', f104, 'net all-wave radiation of roof level 5', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_6', 'degC', f104, 'net all-wave radiation of roof level 6', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_7', 'degC', f104, 'net all-wave radiation of roof level 7', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_8', 'degC', f104, 'net all-wave radiation of roof level 8', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_9', 'degC', f104, 'net all-wave radiation of roof level 9', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_10', 'degC', f104, 'net all-wave radiation of roof level 10', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_11', 'degC', f104, 'net all-wave radiation of roof level 11', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_12', 'degC', f104, 'net all-wave radiation of roof level 12', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_13', 'degC', f104, 'net all-wave radiation of roof level 13', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_14', 'degC', f104, 'net all-wave radiation of roof level 14', aA, 'EHC', 0), &
+      varAttr('Qn_Roof_15', 'degC', f104, 'net all-wave radiation of roof level 15', aA, 'EHC', 0), &
+      varAttr('QS_Roof_1', 'degC', f104, 'storage heat flux of roof level 1', aA, 'EHC', 0), &
+      varAttr('QS_Roof_2', 'degC', f104, 'storage heat flux of roof level 2', aA, 'EHC', 0), &
+      varAttr('QS_Roof_3', 'degC', f104, 'storage heat flux of roof level 3', aA, 'EHC', 0), &
+      varAttr('QS_Roof_4', 'degC', f104, 'storage heat flux of roof level 4', aA, 'EHC', 0), &
+      varAttr('QS_Roof_5', 'degC', f104, 'storage heat flux of roof level 5', aA, 'EHC', 0), &
+      varAttr('QS_Roof_6', 'degC', f104, 'storage heat flux of roof level 6', aA, 'EHC', 0), &
+      varAttr('QS_Roof_7', 'degC', f104, 'storage heat flux of roof level 7', aA, 'EHC', 0), &
+      varAttr('QS_Roof_8', 'degC', f104, 'storage heat flux of roof level 8', aA, 'EHC', 0), &
+      varAttr('QS_Roof_9', 'degC', f104, 'storage heat flux of roof level 9', aA, 'EHC', 0), &
+      varAttr('QS_Roof_10', 'degC', f104, 'storage heat flux of roof level 10', aA, 'EHC', 0), &
+      varAttr('QS_Roof_11', 'degC', f104, 'storage heat flux of roof level 11', aA, 'EHC', 0), &
+      varAttr('QS_Roof_12', 'degC', f104, 'storage heat flux of roof level 12', aA, 'EHC', 0), &
+      varAttr('QS_Roof_13', 'degC', f104, 'storage heat flux of roof level 13', aA, 'EHC', 0), &
+      varAttr('QS_Roof_14', 'degC', f104, 'storage heat flux of roof level 14', aA, 'EHC', 0), &
+      varAttr('QS_Roof_15', 'degC', f104, 'storage heat flux of roof level 15', aA, 'EHC', 0), &
+      varAttr('QE_Roof_1', 'degC', f104, 'latent heat flux of roof level 1', aA, 'EHC', 0), &
+      varAttr('QE_Roof_2', 'degC', f104, 'latent heat flux of roof level 2', aA, 'EHC', 0), &
+      varAttr('QE_Roof_3', 'degC', f104, 'latent heat flux of roof level 3', aA, 'EHC', 0), &
+      varAttr('QE_Roof_4', 'degC', f104, 'latent heat flux of roof level 4', aA, 'EHC', 0), &
+      varAttr('QE_Roof_5', 'degC', f104, 'latent heat flux of roof level 5', aA, 'EHC', 0), &
+      varAttr('QE_Roof_6', 'degC', f104, 'latent heat flux of roof level 6', aA, 'EHC', 0), &
+      varAttr('QE_Roof_7', 'degC', f104, 'latent heat flux of roof level 7', aA, 'EHC', 0), &
+      varAttr('QE_Roof_8', 'degC', f104, 'latent heat flux of roof level 8', aA, 'EHC', 0), &
+      varAttr('QE_Roof_9', 'degC', f104, 'latent heat flux of roof level 9', aA, 'EHC', 0), &
+      varAttr('QE_Roof_10', 'degC', f104, 'latent heat flux of roof level 10', aA, 'EHC', 0), &
+      varAttr('QE_Roof_11', 'degC', f104, 'latent heat flux of roof level 11', aA, 'EHC', 0), &
+      varAttr('QE_Roof_12', 'degC', f104, 'latent heat flux of roof level 12', aA, 'EHC', 0), &
+      varAttr('QE_Roof_13', 'degC', f104, 'latent heat flux of roof level 13', aA, 'EHC', 0), &
+      varAttr('QE_Roof_14', 'degC', f104, 'latent heat flux of roof level 14', aA, 'EHC', 0), &
+      varAttr('QE_Roof_15', 'degC', f104, 'latent heat flux of roof level 15', aA, 'EHC', 0), &
+      varAttr('QH_Roof_1', 'degC', f104, 'sensible heat flux of roof level 1', aA, 'EHC', 0), &
+      varAttr('QH_Roof_2', 'degC', f104, 'sensible heat flux of roof level 2', aA, 'EHC', 0), &
+      varAttr('QH_Roof_3', 'degC', f104, 'sensible heat flux of roof level 3', aA, 'EHC', 0), &
+      varAttr('QH_Roof_4', 'degC', f104, 'sensible heat flux of roof level 4', aA, 'EHC', 0), &
+      varAttr('QH_Roof_5', 'degC', f104, 'sensible heat flux of roof level 5', aA, 'EHC', 0), &
+      varAttr('QH_Roof_6', 'degC', f104, 'sensible heat flux of roof level 6', aA, 'EHC', 0), &
+      varAttr('QH_Roof_7', 'degC', f104, 'sensible heat flux of roof level 7', aA, 'EHC', 0), &
+      varAttr('QH_Roof_8', 'degC', f104, 'sensible heat flux of roof level 8', aA, 'EHC', 0), &
+      varAttr('QH_Roof_9', 'degC', f104, 'sensible heat flux of roof level 9', aA, 'EHC', 0), &
+      varAttr('QH_Roof_10', 'degC', f104, 'sensible heat flux of roof level 10', aA, 'EHC', 0), &
+      varAttr('QH_Roof_11', 'degC', f104, 'sensible heat flux of roof level 11', aA, 'EHC', 0), &
+      varAttr('QH_Roof_12', 'degC', f104, 'sensible heat flux of roof level 12', aA, 'EHC', 0), &
+      varAttr('QH_Roof_13', 'degC', f104, 'sensible heat flux of roof level 13', aA, 'EHC', 0), &
+      varAttr('QH_Roof_14', 'degC', f104, 'sensible heat flux of roof level 14', aA, 'EHC', 0), &
+      varAttr('QH_Roof_15', 'degC', f104, 'sensible heat flux of roof level 15', aA, 'EHC', 0), &
+      varAttr('St_Roof_1', 'mm', f104, 'surface state of roof level 1', aA, 'EHC', 0), &
+      varAttr('St_Roof_2', 'mm', f104, 'surface state of roof level 2', aA, 'EHC', 0), &
+      varAttr('St_Roof_3', 'mm', f104, 'surface state of roof level 3', aA, 'EHC', 0), &
+      varAttr('St_Roof_4', 'mm', f104, 'surface state of roof level 4', aA, 'EHC', 0), &
+      varAttr('St_Roof_5', 'mm', f104, 'surface state of roof level 5', aA, 'EHC', 0), &
+      varAttr('St_Roof_6', 'mm', f104, 'surface state of roof level 6', aA, 'EHC', 0), &
+      varAttr('St_Roof_7', 'mm', f104, 'surface state of roof level 7', aA, 'EHC', 0), &
+      varAttr('St_Roof_8', 'mm', f104, 'surface state of roof level 8', aA, 'EHC', 0), &
+      varAttr('St_Roof_9', 'mm', f104, 'surface state of roof level 9', aA, 'EHC', 0), &
+      varAttr('St_Roof_10', 'mm', f104, 'surface state of roof level 10', aA, 'EHC', 0), &
+      varAttr('St_Roof_11', 'mm', f104, 'surface state of roof level 11', aA, 'EHC', 0), &
+      varAttr('St_Roof_12', 'mm', f104, 'surface state of roof level 12', aA, 'EHC', 0), &
+      varAttr('St_Roof_13', 'mm', f104, 'surface state of roof level 13', aA, 'EHC', 0), &
+      varAttr('St_Roof_14', 'mm', f104, 'surface state of roof level 14', aA, 'EHC', 0), &
+      varAttr('St_Roof_15', 'mm', f104, 'surface state of roof level 15', aA, 'EHC', 0), &
+      varAttr('SS_Roof_1', 'mm', f104, 'soil store of roof level 1', aA, 'EHC', 0), &
+      varAttr('SS_Roof_2', 'mm', f104, 'soil store of roof level 2', aA, 'EHC', 0), &
+      varAttr('SS_Roof_3', 'mm', f104, 'soil store of roof level 3', aA, 'EHC', 0), &
+      varAttr('SS_Roof_4', 'mm', f104, 'soil store of roof level 4', aA, 'EHC', 0), &
+      varAttr('SS_Roof_5', 'mm', f104, 'soil store of roof level 5', aA, 'EHC', 0), &
+      varAttr('SS_Roof_6', 'mm', f104, 'soil store of roof level 6', aA, 'EHC', 0), &
+      varAttr('SS_Roof_7', 'mm', f104, 'soil store of roof level 7', aA, 'EHC', 0), &
+      varAttr('SS_Roof_8', 'mm', f104, 'soil store of roof level 8', aA, 'EHC', 0), &
+      varAttr('SS_Roof_9', 'mm', f104, 'soil store of roof level 9', aA, 'EHC', 0), &
+      varAttr('SS_Roof_10', 'mm', f104, 'soil store of roof level 10', aA, 'EHC', 0), &
+      varAttr('SS_Roof_11', 'mm', f104, 'soil store of roof level 11', aA, 'EHC', 0), &
+      varAttr('SS_Roof_12', 'mm', f104, 'soil store of roof level 12', aA, 'EHC', 0), &
+      varAttr('SS_Roof_13', 'mm', f104, 'soil store of roof level 13', aA, 'EHC', 0), &
+      varAttr('SS_Roof_14', 'mm', f104, 'soil store of roof level 14', aA, 'EHC', 0), &
+      varAttr('SS_Roof_15', 'mm', f104, 'soil store of roof level 15', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_1', 'degC', f104, 'surface temperature of wall level 1', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_2', 'degC', f104, 'surface temperature of wall level 2', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_3', 'degC', f104, 'surface temperature of wall level 3', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_4', 'degC', f104, 'surface temperature of wall level 4', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_5', 'degC', f104, 'surface temperature of wall level 5', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_6', 'degC', f104, 'surface temperature of wall level 6', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_7', 'degC', f104, 'surface temperature of wall level 7', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_8', 'degC', f104, 'surface temperature of wall level 8', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_9', 'degC', f104, 'surface temperature of wall level 9', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_10', 'degC', f104, 'surface temperature of wall level 10', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_11', 'degC', f104, 'surface temperature of wall level 11', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_12', 'degC', f104, 'surface temperature of wall level 12', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_13', 'degC', f104, 'surface temperature of wall level 13', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_14', 'degC', f104, 'surface temperature of wall level 14', aA, 'EHC', 0), &
+      varAttr('Ts_Wall_15', 'degC', f104, 'surface temperature of wall level 15', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_1', 'degC', f104, 'net all-wave radiation of wall level 1', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_2', 'degC', f104, 'net all-wave radiation of wall level 2', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_3', 'degC', f104, 'net all-wave radiation of wall level 3', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_4', 'degC', f104, 'net all-wave radiation of wall level 4', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_5', 'degC', f104, 'net all-wave radiation of wall level 5', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_6', 'degC', f104, 'net all-wave radiation of wall level 6', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_7', 'degC', f104, 'net all-wave radiation of wall level 7', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_8', 'degC', f104, 'net all-wave radiation of wall level 8', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_9', 'degC', f104, 'net all-wave radiation of wall level 9', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_10', 'degC', f104, 'net all-wave radiation of wall level 10', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_11', 'degC', f104, 'net all-wave radiation of wall level 11', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_12', 'degC', f104, 'net all-wave radiation of wall level 12', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_13', 'degC', f104, 'net all-wave radiation of wall level 13', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_14', 'degC', f104, 'net all-wave radiation of wall level 14', aA, 'EHC', 0), &
+      varAttr('Qn_Wall_15', 'degC', f104, 'net all-wave radiation of wall level 15', aA, 'EHC', 0), &
+      varAttr('QS_Wall_1', 'degC', f104, 'storage heat flux of wall level 1', aA, 'EHC', 0), &
+      varAttr('QS_Wall_2', 'degC', f104, 'storage heat flux of wall level 2', aA, 'EHC', 0), &
+      varAttr('QS_Wall_3', 'degC', f104, 'storage heat flux of wall level 3', aA, 'EHC', 0), &
+      varAttr('QS_Wall_4', 'degC', f104, 'storage heat flux of wall level 4', aA, 'EHC', 0), &
+      varAttr('QS_Wall_5', 'degC', f104, 'storage heat flux of wall level 5', aA, 'EHC', 0), &
+      varAttr('QS_Wall_6', 'degC', f104, 'storage heat flux of wall level 6', aA, 'EHC', 0), &
+      varAttr('QS_Wall_7', 'degC', f104, 'storage heat flux of wall level 7', aA, 'EHC', 0), &
+      varAttr('QS_Wall_8', 'degC', f104, 'storage heat flux of wall level 8', aA, 'EHC', 0), &
+      varAttr('QS_Wall_9', 'degC', f104, 'storage heat flux of wall level 9', aA, 'EHC', 0), &
+      varAttr('QS_Wall_10', 'degC', f104, 'storage heat flux of wall level 10', aA, 'EHC', 0), &
+      varAttr('QS_Wall_11', 'degC', f104, 'storage heat flux of wall level 11', aA, 'EHC', 0), &
+      varAttr('QS_Wall_12', 'degC', f104, 'storage heat flux of wall level 12', aA, 'EHC', 0), &
+      varAttr('QS_Wall_13', 'degC', f104, 'storage heat flux of wall level 13', aA, 'EHC', 0), &
+      varAttr('QS_Wall_14', 'degC', f104, 'storage heat flux of wall level 14', aA, 'EHC', 0), &
+      varAttr('QS_Wall_15', 'degC', f104, 'storage heat flux of wall level 15', aA, 'EHC', 0), &
+      varAttr('QE_Wall_1', 'degC', f104, 'latent heat flux of wall level 1', aA, 'EHC', 0), &
+      varAttr('QE_Wall_2', 'degC', f104, 'latent heat flux of wall level 2', aA, 'EHC', 0), &
+      varAttr('QE_Wall_3', 'degC', f104, 'latent heat flux of wall level 3', aA, 'EHC', 0), &
+      varAttr('QE_Wall_4', 'degC', f104, 'latent heat flux of wall level 4', aA, 'EHC', 0), &
+      varAttr('QE_Wall_5', 'degC', f104, 'latent heat flux of wall level 5', aA, 'EHC', 0), &
+      varAttr('QE_Wall_6', 'degC', f104, 'latent heat flux of wall level 6', aA, 'EHC', 0), &
+      varAttr('QE_Wall_7', 'degC', f104, 'latent heat flux of wall level 7', aA, 'EHC', 0), &
+      varAttr('QE_Wall_8', 'degC', f104, 'latent heat flux of wall level 8', aA, 'EHC', 0), &
+      varAttr('QE_Wall_9', 'degC', f104, 'latent heat flux of wall level 9', aA, 'EHC', 0), &
+      varAttr('QE_Wall_10', 'degC', f104, 'latent heat flux of wall level 10', aA, 'EHC', 0), &
+      varAttr('QE_Wall_11', 'degC', f104, 'latent heat flux of wall level 11', aA, 'EHC', 0), &
+      varAttr('QE_Wall_12', 'degC', f104, 'latent heat flux of wall level 12', aA, 'EHC', 0), &
+      varAttr('QE_Wall_13', 'degC', f104, 'latent heat flux of wall level 13', aA, 'EHC', 0), &
+      varAttr('QE_Wall_14', 'degC', f104, 'latent heat flux of wall level 14', aA, 'EHC', 0), &
+      varAttr('QE_Wall_15', 'degC', f104, 'latent heat flux of wall level 15', aA, 'EHC', 0), &
+      varAttr('QH_Wall_1', 'degC', f104, 'sensible heat flux of wall level 1', aA, 'EHC', 0), &
+      varAttr('QH_Wall_2', 'degC', f104, 'sensible heat flux of wall level 2', aA, 'EHC', 0), &
+      varAttr('QH_Wall_3', 'degC', f104, 'sensible heat flux of wall level 3', aA, 'EHC', 0), &
+      varAttr('QH_Wall_4', 'degC', f104, 'sensible heat flux of wall level 4', aA, 'EHC', 0), &
+      varAttr('QH_Wall_5', 'degC', f104, 'sensible heat flux of wall level 5', aA, 'EHC', 0), &
+      varAttr('QH_Wall_6', 'degC', f104, 'sensible heat flux of wall level 6', aA, 'EHC', 0), &
+      varAttr('QH_Wall_7', 'degC', f104, 'sensible heat flux of wall level 7', aA, 'EHC', 0), &
+      varAttr('QH_Wall_8', 'degC', f104, 'sensible heat flux of wall level 8', aA, 'EHC', 0), &
+      varAttr('QH_Wall_9', 'degC', f104, 'sensible heat flux of wall level 9', aA, 'EHC', 0), &
+      varAttr('QH_Wall_10', 'degC', f104, 'sensible heat flux of wall level 10', aA, 'EHC', 0), &
+      varAttr('QH_Wall_11', 'degC', f104, 'sensible heat flux of wall level 11', aA, 'EHC', 0), &
+      varAttr('QH_Wall_12', 'degC', f104, 'sensible heat flux of wall level 12', aA, 'EHC', 0), &
+      varAttr('QH_Wall_13', 'degC', f104, 'sensible heat flux of wall level 13', aA, 'EHC', 0), &
+      varAttr('QH_Wall_14', 'degC', f104, 'sensible heat flux of wall level 14', aA, 'EHC', 0), &
+      varAttr('QH_Wall_15', 'degC', f104, 'sensible heat flux of wall level 15', aA, 'EHC', 0), &
+      varAttr('St_Wall_1', 'mm', f104, 'surface state of wall level 1', aA, 'EHC', 0), &
+      varAttr('St_Wall_2', 'mm', f104, 'surface state of wall level 2', aA, 'EHC', 0), &
+      varAttr('St_Wall_3', 'mm', f104, 'surface state of wall level 3', aA, 'EHC', 0), &
+      varAttr('St_Wall_4', 'mm', f104, 'surface state of wall level 4', aA, 'EHC', 0), &
+      varAttr('St_Wall_5', 'mm', f104, 'surface state of wall level 5', aA, 'EHC', 0), &
+      varAttr('St_Wall_6', 'mm', f104, 'surface state of wall level 6', aA, 'EHC', 0), &
+      varAttr('St_Wall_7', 'mm', f104, 'surface state of wall level 7', aA, 'EHC', 0), &
+      varAttr('St_Wall_8', 'mm', f104, 'surface state of wall level 8', aA, 'EHC', 0), &
+      varAttr('St_Wall_9', 'mm', f104, 'surface state of wall level 9', aA, 'EHC', 0), &
+      varAttr('St_Wall_10', 'mm', f104, 'surface state of wall level 10', aA, 'EHC', 0), &
+      varAttr('St_Wall_11', 'mm', f104, 'surface state of wall level 11', aA, 'EHC', 0), &
+      varAttr('St_Wall_12', 'mm', f104, 'surface state of wall level 12', aA, 'EHC', 0), &
+      varAttr('St_Wall_13', 'mm', f104, 'surface state of wall level 13', aA, 'EHC', 0), &
+      varAttr('St_Wall_14', 'mm', f104, 'surface state of wall level 14', aA, 'EHC', 0), &
+      varAttr('St_Wall_15', 'mm', f104, 'surface state of wall level 15', aA, 'EHC', 0), &
+      varAttr('SS_Wall_1', 'mm', f104, 'soil store of wall level 1', aA, 'EHC', 0), &
+      varAttr('SS_Wall_2', 'mm', f104, 'soil store of wall level 2', aA, 'EHC', 0), &
+      varAttr('SS_Wall_3', 'mm', f104, 'soil store of wall level 3', aA, 'EHC', 0), &
+      varAttr('SS_Wall_4', 'mm', f104, 'soil store of wall level 4', aA, 'EHC', 0), &
+      varAttr('SS_Wall_5', 'mm', f104, 'soil store of wall level 5', aA, 'EHC', 0), &
+      varAttr('SS_Wall_6', 'mm', f104, 'soil store of wall level 6', aA, 'EHC', 0), &
+      varAttr('SS_Wall_7', 'mm', f104, 'soil store of wall level 7', aA, 'EHC', 0), &
+      varAttr('SS_Wall_8', 'mm', f104, 'soil store of wall level 8', aA, 'EHC', 0), &
+      varAttr('SS_Wall_9', 'mm', f104, 'soil store of wall level 9', aA, 'EHC', 0), &
+      varAttr('SS_Wall_10', 'mm', f104, 'soil store of wall level 10', aA, 'EHC', 0), &
+      varAttr('SS_Wall_11', 'mm', f104, 'soil store of wall level 11', aA, 'EHC', 0), &
+      varAttr('SS_Wall_12', 'mm', f104, 'soil store of wall level 12', aA, 'EHC', 0), &
+      varAttr('SS_Wall_13', 'mm', f104, 'soil store of wall level 13', aA, 'EHC', 0), &
+      varAttr('SS_Wall_14', 'mm', f104, 'soil store of wall level 14', aA, 'EHC', 0), &
+      varAttr('SS_Wall_15', 'mm', f104, 'soil store of wall level 15', aA, 'EHC', 0) &
       /
 
 CONTAINS
@@ -1205,7 +1205,7 @@ CONTAINS
       groupList0(7) = 'RSL'
       groupList0(8) = 'debug'
       groupList0(9) = 'SPARTACUS'
-      groupList0(10) = 'ESTMExt'
+      groupList0(10) = 'EHC'
       groupCond = [ &
                   .TRUE., &
                   .TRUE., &
@@ -1315,8 +1315,8 @@ CONTAINS
       CASE ('SPARTACUS') !SPARTACUS
          dataOutX = dataOutSPARTACUS(1:irMax, 1:n_var, Gridiv)
 
-      CASE ('ESTMExt') !ESTMExt
-         dataOutX = dataOutESTMExt(1:irMax, 1:n_var, Gridiv)
+      CASE ('EHC') !EHC
+         dataOutX = dataOutEHC(1:irMax, 1:n_var, Gridiv)
 
       CASE ('DailyState') !DailyState
          ! get correct day index
