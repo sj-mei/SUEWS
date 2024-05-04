@@ -451,6 +451,7 @@ MODULE SUEWS_DEF_DTS
    ! ********** SUEWS_stateVars schema **********
    TYPE, PUBLIC :: flag_STATE
       LOGICAL :: flag_converge ! flag for convergence of surface temperature
+      INTEGER :: i_iter ! number of iterations for convergence
 
    END TYPE flag_STATE
 

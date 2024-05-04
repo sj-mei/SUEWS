@@ -102,8 +102,7 @@ CONTAINS
       TYPE(SUEWS_STATE) :: modState_init
 
       ! these local variables are used in iteration
-      INTEGER :: i_iter ! iterator in main calculation loop
-      INTEGER :: max_iter ! maximum number of iteration
+      INTEGER, PARAMETER :: max_iter = 30 ! maximum number of iteration
 
       ! ####################################################################################
       ASSOCIATE ( &
@@ -154,6 +153,7 @@ CONTAINS
             sfr_wall => siteInfo%sfr_wall, &
             ! flagState
             flag_converge => flagState%flag_converge, &
+            i_iter => flagState%i_iter, &
             ! solarState
             azimuth_deg => solarState%azimuth_deg, &
             zenith_deg => solarState%zenith_deg, &
@@ -404,7 +404,7 @@ CONTAINS
             ! start iteration-based calculation
             ! through iterations, the surface temperature is examined to be converged
             i_iter = 1
-            max_iter = 30
+            ! max_iter = 30
             DO WHILE ((.NOT. flag_converge) .AND. i_iter < max_iter)
                IF (diagnose == 1) THEN
                   PRINT *, '=========================== '
@@ -698,21 +698,28 @@ CONTAINS
             !==============translation end ================
             IF (Diagnose == 1) WRITE (*, *) 'Calling dataoutlineDebug...'
             ! TODO: #233 debugging info will be collected into a derived type for model output when the debugging flag is on
-            dataoutlineDebug = &
-               [tsfc0_out_surf, &
-                qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
-                wu_surf, ev0_surf, ev_surf, drain_surf, &
-                modState_init%hydroState%state_surf, hydroState%state_surf, &
-                modState_init%hydroState%soilstore_surf, hydroState%soilstore_surf, & ! water balance
-                RS, RA_h, RB, RAsnow, rss_surf, & ! for debugging QE
-                vsmd, conductancePrm%S1/conductancePrm%G_sm + conductancePrm%S2, &
-                conductancePrm%G_sm, &
-                conductancePrm%G_sm*(vsmd - conductancePrm%S1/conductancePrm%G_sm + conductancePrm%S2), & ! debug g_smd
-                g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
-                vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
-                i_iter*1D0, &
-                FAIBldg_use, FAIEveTree_use, FAIDecTree_use, FAI, &
-                ohmState%dqndt]
+            ! here we may still use the original output array but another derived type can be used for enriched debugging info
+
+            ! dataoutlineDebug = &
+            !    [tsfc0_out_surf, &
+            !     qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
+            !     wu_surf, ev0_surf, ev_surf, drain_surf, &
+            !     modState_init%hydroState%state_surf, hydroState%state_surf, &
+            !     modState_init%hydroState%soilstore_surf, hydroState%soilstore_surf, & ! water balance
+            !     RS, RA_h, RB, RAsnow, rss_surf, & ! for debugging QE
+            !     vsmd, conductancePrm%S1/conductancePrm%G_sm + conductancePrm%S2, &
+            !     conductancePrm%G_sm, &
+            !     conductancePrm%G_sm*(vsmd - conductancePrm%S1/conductancePrm%G_sm + conductancePrm%S2), & ! debug g_smd
+            !     g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
+            !     vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
+            !     i_iter*1D0, &
+            !     FAIBldg_use, FAIEveTree_use, FAIDecTree_use, FAI, &
+            !     ohmState%dqndt]
+            call update_debug_info( &
+               timer, config, forcing, siteInfo, & ! input
+               modState_init, & ! input
+               modState, & ! inout
+               dataoutlineDebug) ! output
 
             !==============output==========================
             ! TODO: collect output into a derived type for model output
@@ -735,6 +742,95 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_Main_DTS
 ! ================================================================================
+
+   SUBROUTINE update_debug_info( &
+      timer, config, forcing, siteInfo, & ! input
+      modState_init, & ! input
+      modState, & ! inout
+      dataoutlineDebug) ! output
+
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE, flag_STATE
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(SUEWS_STATE), INTENT(inout) :: modState_init
+
+      TYPE(SUEWS_STATE), INTENT(inout) :: modState
+
+      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ncolumnsDataOutDebug-5) :: dataoutlineDebug
+
+      ASSOCIATE ( &
+         hydroState => modState%hydroState, &
+         heatState => modState%heatState, &
+         ohmState => modState%ohmState, &
+         snowState => modState%snowState, &
+         anthroemisState => modState%anthroemisState, &
+         phenState => modState%phenState, &
+         atmState => modState%atmState, &
+         flagState => modState%flagState, &
+         roughnessState => modState%roughnessState, &
+         conductancePrm => siteInfo%conductance &
+         )
+
+         ASSOCIATE ( &
+            tsfc0_out_surf => heatState%tsfc0_out_surf, &
+            qn_surf => heatState%qn_surf, &
+            qs_surf => heatState%qs_surf, &
+            qe0_surf => heatState%qe0_surf, &
+            qe_surf => heatState%qe_surf, &
+            qh_surf => heatState%qh_surf, &
+            wu_surf => hydroState%wu_surf, &
+            ev0_surf => hydroState%ev0_surf, &
+            ev_surf => hydroState%ev_surf, &
+            drain_surf => hydroState%drain_surf, &
+            RS => atmState%RS, &
+            RA_h => atmState%RA_h, &
+            RB => atmState%RB, &
+            RAsnow => snowState%RAsnow, &
+            rss_surf => atmState%rss_surf, &
+            vsmd => hydroState%vsmd, &
+            g_kdown => phenState%g_kdown, &
+            g_dq => phenState%g_dq, &
+            g_ta => phenState%g_ta, &
+            g_smd => phenState%g_smd, &
+            g_lai => phenState%g_lai, &
+            vpd_hPa => atmState%vpd_hPa, &
+            lv_J_kg => atmState%lv_J_kg, &
+            avdens => atmState%avdens, &
+            avcp => atmState%avcp, &
+            s_hPa => atmState%s_hPa, &
+            psyc_hPa => atmState%psyc_hPa, &
+            i_iter => flagState%i_iter, &
+            FAIBldg_use => roughnessState%FAIBldg_use, &
+            FAIEveTree_use => roughnessState%FAIEveTree_use, &
+            FAIDecTree_use => roughnessState%FAIDecTree_use, &
+            FAI => roughnessState%FAI &
+            )
+
+            dataoutlineDebug = &
+               [tsfc0_out_surf, &
+                qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
+                wu_surf, ev0_surf, ev_surf, drain_surf, &
+                modState_init%hydroState%state_surf, hydroState%state_surf, &
+                modState_init%hydroState%soilstore_surf, hydroState%soilstore_surf, & ! water balance
+                RS, RA_h, RB, RAsnow, rss_surf, & ! for debugging QE
+                vsmd, conductancePrm%S1/conductancePrm%G_sm + conductancePrm%S2, &
+                conductancePrm%G_sm, &
+                conductancePrm%G_sm*(vsmd - conductancePrm%S1/conductancePrm%G_sm + conductancePrm%S2), & ! debug g_smd
+                g_kdown, g_dq, g_ta, g_smd, g_lai, & ! for debugging RS: surface resistance
+                vpd_hPa, lv_J_kg, avdens, avcp, s_hPa, psyc_hPa, & ! for debugging QE
+                i_iter*1D0, &
+                FAIBldg_use, FAIEveTree_use, FAIDecTree_use, FAI, &
+                ohmState%dqndt]
+
+         END ASSOCIATE
+      END ASSOCIATE
+
+   END SUBROUTINE update_debug_info
 
    ! ================================================================================
 
