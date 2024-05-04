@@ -715,7 +715,7 @@ CONTAINS
             !     i_iter*1D0, &
             !     FAIBldg_use, FAIEveTree_use, FAIDecTree_use, FAI, &
             !     ohmState%dqndt]
-            call update_debug_info( &
+            CALL update_debug_info( &
                timer, config, forcing, siteInfo, & ! input
                modState_init, & ! input
                modState, & ! inout
@@ -761,7 +761,7 @@ CONTAINS
 
       TYPE(SUEWS_STATE), INTENT(inout) :: modState
 
-      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ncolumnsDataOutDebug-5) :: dataoutlineDebug
+      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ncolumnsDataOutDebug - 5) :: dataoutlineDebug
 
       ASSOCIATE ( &
          hydroState => modState%hydroState, &
