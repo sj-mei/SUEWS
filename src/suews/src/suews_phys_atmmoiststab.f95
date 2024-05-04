@@ -1,4 +1,5 @@
 MODULE AtmMoistStab_module
+   USE SUEWS_DEF_DTS, ONLY: atm_state, SUEWS_FORCING, SUEWS_TIMER
    IMPLICIT NONE
    REAL(KIND(1D0)), PARAMETER :: neut_limit = 1.E-2 !Limit for neutral stability
    REAL(KIND(1D0)), PARAMETER :: k = 0.4 !Von Karman's contant
@@ -10,6 +11,68 @@ MODULE AtmMoistStab_module
    INTEGER, PARAMETER :: B71 = 4 ! Businger et al (1971) modifed  Hogstrom (1988)
 
 CONTAINS
+
+   SUBROUTINE SUEWS_update_atmState(timer, forcing, atmState)
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(atm_state), INTENT(inout) :: atmState
+      ASSOCIATE ( &
+         Temp_C => forcing%Temp_C, &
+         pres => forcing%pres, &
+         RH => forcing%RH, &
+         dectime => timer%dectime, &
+         dt_since_start => timer%dt_since_start, &
+         tstep => timer%tstep, &
+         Tair_av => atmState%Tair_av, &
+         lv_J_kg => atmState%lv_J_kg, &
+         lvS_J_kg => atmState%lvS_J_kg, &
+         es_hPa => atmState%es_hPa, &
+         Ea_hPa => atmState%Ea_hPa, &
+         VPd_hpa => atmState%VPd_hpa, &
+         VPD_Pa => atmState%VPD_Pa, &
+         dq => atmState%dq, &
+         dens_dry => atmState%dens_dry, &
+         avcp => atmState%avcp, &
+         avdens => atmState%avdens &
+         )
+         CALL cal_AtmMoist( &
+            Temp_C, pres, RH, dectime, &
+            lv_J_kg, lvS_J_kg, &
+            es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
+         Tair_av = update_tair_av(Tair_av, dt_since_start, tstep, temp_c)
+
+      END ASSOCIATE
+
+   END SUBROUTINE SUEWS_update_atmState
+
+   FUNCTION update_tair_av(tair_av_prev, dt_since_start, tstep, temp_c) RESULT(tair_av_next)
+      ! calculate mean air temperature of past 24 hours
+      ! TS, 17 Sep 2019
+      IMPLICIT NONE
+      REAL(KIND(1D0)), INTENT(in) :: tair_av_prev
+      REAL(KIND(1D0)), INTENT(in) :: temp_c
+      INTEGER, INTENT(in) :: dt_since_start
+      INTEGER, INTENT(in) :: tstep
+
+      REAL(KIND(1D0)) :: tair_av_next
+
+      REAL(KIND(1D0)), PARAMETER :: len_day_s = 24*3600 ! day length in seconds
+      REAL(KIND(1D0)) :: len_cal_s ! length of average period in seconds
+      REAL(KIND(1D0)) :: temp_k ! temp in K
+
+      ! determine the average period
+      IF (dt_since_start > len_day_s) THEN
+         ! if simulation has been running over one day
+         len_cal_s = len_day_s
+      ELSE
+         ! if simulation has been running less than one day
+         len_cal_s = dt_since_start + tstep
+      END IF
+      temp_k = temp_c + 273.15
+      tair_av_next = tair_av_prev*(len_cal_s - tstep*1.)/len_cal_s + temp_k*tstep/len_cal_s
+
+   END FUNCTION update_tair_av
+
    !.c!! For Lumps Version 2 - no stability calculations
    ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
    ! explict interface added to all subroutines, TS 08 Aug 2017

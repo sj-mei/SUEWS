@@ -73,9 +73,9 @@ test-requires = "pytest"
 # Install system library
 before-build = [
     "yum install -y glibc-static",
-    "python3 -m pip install f90wrap oldest-supported-numpy",
+    "python3 -m pip install oldest-supported-numpy",
     "make -C '{package}' clean",
-    "make -C '{package}' driver",
+    "make -C '{package}' driver", # a customised f90wrap will be installed in the supy_driver building step
     "echo $ARCHFLAGS",
     "file '{package}'/supy/_supy_driver*.so",
     "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
@@ -97,7 +97,7 @@ test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s
 
 # archs = ["universal2"]
 # build-verbosity = 10
-archs = ["auto"] # skip this for now in gh actions as it takes too long
+archs = ["auto64"] # skip this for now in gh actions as it takes too long
 skip = ['pp*']
 
 repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
@@ -107,10 +107,10 @@ repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest
 before-build = [
     "cd {package}",
     "where python",
-    "python -m pip install oldest-supported-numpy charset_normalizer f90wrap delvewheel",
+    "python -m pip install oldest-supported-numpy charset_normalizer delvewheel",
     "python -v",
     "python build-win-def.py",
-    "make driver",
+    "make driver", # a customised f90wrap will be installed in the supy_driver building step
     "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
     "echo '===> gfortran version:', $(gfortran --version)",
     # 'python -c "import numpy; print(numpy.__version__)"',

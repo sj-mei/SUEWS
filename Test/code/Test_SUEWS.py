@@ -618,7 +618,7 @@ def test_physics(
         df_test_pass.loc["pass", :]
         .to_frame()
         .rename(columns={"pass": "result"})
-        .applymap(lambda x: "pass" if x > 0 else "fail")
+        .map(lambda x: "pass" if x > 0 else "fail")
     )
     df_test_pass.index.set_names(["method", "option"], inplace=True)
 

@@ -130,8 +130,8 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: Ie_a
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: Ie_m !Coefficients for automatic and manual irrigation models
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN) :: DayWatPer !% of houses following daily water
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN) :: DayWat !Days of watering allowed
+      REAL(KIND(1D0)), DIMENSION(7) :: DayWatPer !% of houses following daily water
+      REAL(KIND(1D0)), DIMENSION(7) :: DayWat !Days of watering allowed
 
       ! ponding-water related
       REAL(KIND(1D0)), INTENT(IN) :: H_maintain ! ponding water depth to maintain [mm]
@@ -353,80 +353,63 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_DailyState
 
    SUBROUTINE SUEWS_cal_DailyState_DTS( &
-      iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, & !input
-      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
-      BaseTMethod, &
-      WaterUseMethod, Ie_start, Ie_end, &
-      LAICalcYes, &
-      evetrLAIType, dectrLAIType, grassLAIType, &
-      nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
-      BaseT_Heating_working, BaseT_Heating_holiday, &
-      BaseT_Cooling_working, BaseT_Cooling_holiday, &
-      lat, Faut, LAI_obs, &
-      AlbMax_EveTr, AlbMax_DecTr, AlbMax_Grass, &
-      AlbMin_EveTr, AlbMin_DecTr, AlbMin_Grass, &
-      CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
-      Ie_a, Ie_m, &
-      DayWatPer_mon, DayWatPer_tues, DayWatPer_wed, DayWatPer_thur, DayWatPer_fri, DayWatPer_sat, DayWatPer_sun, &
-      DayWat_mon, DayWat_tues, DayWat_wed, DayWat_thur, DayWat_fri, DayWat_sat, DayWat_sun, &
-      evetrBaseT, dectrBaseT, grassBaseT, &
-      evetrBaseTe, dectrBaseTe, grassBaseTe, &
-      evetrGDDFull, dectrGDDFull, grassGDDFull, &
-      evetrSDDFull, dectrSDDFull, grassSDDFull, &
-      evetrLAIMin, dectrLAIMin, grassLAIMin, &
-      evetrLAIMax, dectrLAIMax, grassLAIMax, &
-      evetrLAIPower, dectrLAIPower, grassLAIPower, &
-      DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
-      albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, & !input
-      HDD_id_prev, & !input
-      state_id, soilstore_id, SoilStoreCap, H_maintain, & !input
-      HDD_id_next, & !output
-      Tmin_id_next, Tmax_id_next, lenDay_id_next, &
-      albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, & !output
-      DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, WUDay_id) !output
+      timer, config, forcing, siteInfo, &
+      atmState, & !inout
+      phenState, & !inout
+      anthroEmisState, & !inout
+      hydroState) !inout
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_FORCING, anthroEMIS_PRM, &
+                               PHENOLOGY_STATE, anthroEmis_STATE, SUEWS_CONFIG, &
+                               IRRIGATION_PRM, LC_PAVED_PRM, LC_BLDG_PRM, &
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
+                               HYDRO_STATE, atm_STATE
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: iy
-      INTEGER, INTENT(IN) :: id
-      INTEGER, INTENT(IN) :: it
-      INTEGER, INTENT(IN) :: imin
-      INTEGER, INTENT(IN) :: isec
-      INTEGER, INTENT(IN) :: tstep
-      INTEGER, INTENT(IN) :: tstep_prev
-      INTEGER, INTENT(IN) :: dt_since_start
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      INTEGER, INTENT(IN) :: WaterUseMethod
-      INTEGER, INTENT(IN) :: BaseTMethod
-      INTEGER, INTENT(IN) :: Ie_start !Starting time of water use (DOY)
-      INTEGER, INTENT(IN) :: Ie_end !Ending time of water use (DOY)
-      INTEGER, INTENT(IN) :: LAICalcYes
+      TYPE(atm_STATE), INTENT(INOUT) :: atmState
 
-      INTEGER, INTENT(IN) :: dectrLAIType
-      INTEGER, INTENT(IN) :: evetrLAIType
-      INTEGER, INTENT(IN) :: grassLAIType
-      INTEGER, DIMENSION(nvegsurf) :: LAIType !LAI equation to use: original (0) or new (1)
+      ! INTEGER :: WaterUseMethod
+      INTEGER, PARAMETER :: BaseTMethod = 2 ! base t method [-]
+      REAL(KIND(1D0)), PARAMETER :: BaseT_HC = 18.2 !base temperature for heating degree dayb [degC] ! to be fully removed TODO
 
-      REAL(KIND(1D0)), INTENT(IN) :: nsh_real
-      REAL(KIND(1D0)), INTENT(IN) :: avkdn
-      REAL(KIND(1D0)), INTENT(IN) :: Temp_C
-      REAL(KIND(1D0)), INTENT(IN) :: Precip
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_HC
+      ! TYPE(IRRIGATION_PRM), INTENT(IN) :: irrPrm
+      ! INTEGER :: Ie_start !Starting time of water use (DOY)
+      ! INTEGER :: Ie_end !Ending time of water use (DOY)
+      ! REAL(KIND(1D0)) :: Faut
 
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Heating_working
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Heating_holiday
+      INTEGER, PARAMETER :: LAICalcYes = 1 ! boolean to determine if calculate LAI [-]
+
+      ! INTEGER :: dectrLAIType
+      ! INTEGER :: evetrLAIType
+      ! INTEGER :: grassLAIType
+      ! INTEGER, DIMENSION(nvegsurf) :: LAIType !LAI equation to use: original (0) or new (1)
+
+      ! REAL(KIND(1D0)), INTENT(IN) :: nsh_real
+      ! REAL(KIND(1D0)) :: avkdn
+      ! REAL(KIND(1D0)) :: Temp_C
+      ! REAL(KIND(1D0)) :: Precip
+      ! REAL(KIND(1D0)) :: LAI_obs
+
+      ! TYPE(anthroEMIS_PRM), INTENT(IN) :: ahemisPrm
+      ! REAL(KIND(1D0)) :: BaseT_Heating_working
+      ! REAL(KIND(1D0)) :: BaseT_Heating_holiday
       REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Heating
 
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Cooling_working
-      REAL(KIND(1D0)), INTENT(IN) :: BaseT_Cooling_holiday
-      REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Cooling
+      ! REAL(KIND(1D0)) :: BaseT_Cooling_working
+      ! REAL(KIND(1D0)) :: BaseT_Cooling_holiday
+      ! REAL(KIND(1D0)), DIMENSION(2) :: BaseT_Cooling
 
-      REAL(KIND(1D0)), INTENT(IN) :: lat
-      REAL(KIND(1D0)), INTENT(IN) :: Faut
-      REAL(KIND(1D0)), INTENT(IN) :: LAI_obs
+      ! REAL(KIND(1D0)) :: lat
+
       ! REAL(KIND(1D0)), INTENT(IN)::tau_a
       ! REAL(KIND(1D0)), INTENT(IN)::tau_f
       ! REAL(KIND(1D0)), INTENT(IN)::tau_r
@@ -434,120 +417,123 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
       ! REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
       ! REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMax_EveTr
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMax_DecTr
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMax_Grass
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMin_EveTr
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMin_DecTr
-      REAL(KIND(1D0)), INTENT(IN) :: AlbMin_Grass
-      REAL(KIND(1D0)), INTENT(IN) :: CapMax_dec
-      REAL(KIND(1D0)), INTENT(IN) :: CapMin_dec
-      REAL(KIND(1D0)), INTENT(IN) :: PorMax_dec
-      REAL(KIND(1D0)), INTENT(IN) :: PorMin_dec
+      ! REAL(KIND(1D0)) :: AlbMax_EveTr
+      ! REAL(KIND(1D0)) :: AlbMax_DecTr
+      ! REAL(KIND(1D0)) :: AlbMax_Grass
+      ! REAL(KIND(1D0)) :: AlbMin_EveTr
+      ! REAL(KIND(1D0)) :: AlbMin_DecTr
+      ! REAL(KIND(1D0)) :: AlbMin_Grass
+      ! REAL(KIND(1D0)) :: CapMax_dec
+      ! REAL(KIND(1D0)) :: CapMin_dec
+      ! REAL(KIND(1D0)) :: PorMax_dec
+      ! REAL(KIND(1D0)) :: PorMin_dec
       ! REAL(KIND(1d0)),INTENT(IN) ::VegPhenLumps
 
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: Ie_a
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: Ie_m !Coefficients for automatic and manual irrigation models
+      ! REAL(KIND(1D0)), DIMENSION(3) :: Ie_a
+      ! REAL(KIND(1D0)), DIMENSION(3) :: Ie_m !Coefficients for automatic and manual irrigation models
 
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_mon
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_tues
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_wed
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_thur
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_fri
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_sat
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer_sun
-      REAL(KIND(1D0)), DIMENSION(7) :: DayWatPer !% of houses following daily water
+      ! REAL(KIND(1D0)) :: DayWatPer_mon
+      ! REAL(KIND(1D0)) :: DayWatPer_tues
+      ! REAL(KIND(1D0)) :: DayWatPer_wed
+      ! REAL(KIND(1D0)) :: DayWatPer_thur
+      ! REAL(KIND(1D0)) :: DayWatPer_fri
+      ! REAL(KIND(1D0)) :: DayWatPer_sat
+      ! REAL(KIND(1D0)) :: DayWatPer_sun
+      ! REAL(KIND(1D0)), DIMENSION(7) :: DayWatPer !% of houses following daily water
 
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat_mon
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat_tues
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat_wed
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat_thur
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat_fri
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat_sat
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat_sun
-      REAL(KIND(1D0)), DIMENSION(7) :: DayWat !Days of watering allowed
+      ! REAL(KIND(1D0)) :: DayWat_mon
+      ! REAL(KIND(1D0)) :: DayWat_tues
+      ! REAL(KIND(1D0)) :: DayWat_wed
+      ! REAL(KIND(1D0)) :: DayWat_thur
+      ! REAL(KIND(1D0)) :: DayWat_fri
+      ! REAL(KIND(1D0)) :: DayWat_sat
+      ! REAL(KIND(1D0)) :: DayWat_sun
+      ! REAL(KIND(1D0)), DIMENSION(7) :: DayWat !Days of watering allowed
 
       ! ponding-water related
-      REAL(KIND(1D0)), INTENT(IN) :: H_maintain ! ponding water depth to maintain [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: state_id ! surface wetness [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: soilstore_id ! soil water store [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
+      ! REAL(KIND(1D0)) :: H_maintain ! ponding water depth to maintain [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id ! surface wetness [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: soilstore_id ! soil water store [mm]
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: SoilStoreCap !Capacity of soil store for each surface [mm]
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
-      REAL(KIND(1D0)), INTENT(IN) :: evetrBaseT
-      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseT
-      REAL(KIND(1D0)), INTENT(IN) :: grassBaseT
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseT !Base temperature for growing degree days [degC]
+      ! REAL(KIND(1D0)) :: evetrBaseT
+      ! REAL(KIND(1D0)) :: dectrBaseT
+      ! REAL(KIND(1D0)) :: grassBaseT
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseT !Base temperature for growing degree days [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: evetrBaseTe
-      REAL(KIND(1D0)), INTENT(IN) :: dectrBaseTe
-      REAL(KIND(1D0)), INTENT(IN) :: grassBaseTe
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseTe !Base temperature for senescence degree days [degC]
+      ! REAL(KIND(1D0)) :: evetrBaseTe
+      ! REAL(KIND(1D0)) :: dectrBaseTe
+      ! REAL(KIND(1D0)) :: grassBaseTe
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: BaseTe !Base temperature for senescence degree days [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: evetrGDDFull
-      REAL(KIND(1D0)), INTENT(IN) :: dectrGDDFull
-      REAL(KIND(1D0)), INTENT(IN) :: grassGDDFull
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDDFull !Growing degree days needed for full capacity [degC]
+      ! REAL(KIND(1D0)) :: evetrGDDFull
+      ! REAL(KIND(1D0)) :: dectrGDDFull
+      ! REAL(KIND(1D0)) :: grassGDDFull
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDDFull !Growing degree days needed for full capacity [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: evetrSDDFull
-      REAL(KIND(1D0)), INTENT(IN) :: dectrSDDFull
-      REAL(KIND(1D0)), INTENT(IN) :: grassSDDFull
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDDFull !Senescence degree days needed to initiate leaf off [degC]
+      ! REAL(KIND(1D0)) :: evetrSDDFull
+      ! REAL(KIND(1D0)) :: dectrSDDFull
+      ! REAL(KIND(1D0)) :: grassSDDFull
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDDFull !Senescence degree days needed to initiate leaf off [degC]
 
-      REAL(KIND(1D0)), INTENT(IN) :: evetrLAIMin
-      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMin
-      REAL(KIND(1D0)), INTENT(IN) :: grassLAIMin
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMin !Min LAI [m2 m-2]
+      ! REAL(KIND(1D0)) :: evetrLAIMin
+      ! REAL(KIND(1D0)) :: dectrLAIMin
+      ! REAL(KIND(1D0)) :: grassLAIMin
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMin !Min LAI [m2 m-2]
 
-      REAL(KIND(1D0)), INTENT(IN) :: evetrLAIMax
-      REAL(KIND(1D0)), INTENT(IN) :: dectrLAIMax
-      REAL(KIND(1D0)), INTENT(IN) :: grassLAIMax
-      REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMax !Max LAI [m2 m-2]
+      ! REAL(KIND(1D0)) :: evetrLAIMax
+      ! REAL(KIND(1D0)) :: dectrLAIMax
+      ! REAL(KIND(1D0)) :: grassLAIMax
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAIMax !Max LAI [m2 m-2]
 
-      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: evetrLAIPower
-      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: dectrLAIPower
-      REAL(KIND(1D0)), DIMENSION(4), INTENT(IN) :: grassLAIPower
+      ! REAL(KIND(1D0)), DIMENSION(4) :: evetrLAIPower
+      ! REAL(KIND(1D0)), DIMENSION(4) :: dectrLAIPower
+      ! REAL(KIND(1D0)), DIMENSION(4) :: grassLAIPower
       REAL(KIND(1D0)), DIMENSION(4, nvegsurf) :: LAIPower !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
 
       ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
-
+      TYPE(PHENOLOGY_STATE), INTENT(INOUT) :: phenState
+      TYPE(PHENOLOGY_STATE) :: phenState_prev
       ! Growing Degree Days
-      REAL(KIND(1D0)), DIMENSION(3) :: GDD_id ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: GDD_id_prev ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(OUT) :: GDD_id_next ! Growing Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(3) :: GDD_id ! Growing Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(3) :: GDD_id_prev ! Growing Degree Days (see SUEWS_DailyState.f95)
+      !REAL(KIND(1D0)), DIMENSION(3) :: GDD_id_next ! Growing Degree Days (see SUEWS_DailyState.f95)
 
       ! Senescence Degree Days
-      REAL(KIND(1D0)), DIMENSION(3) :: SDD_id ! Senescence Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: SDD_id_prev ! Senescence Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(OUT) :: SDD_id_next ! Senescence Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(3) :: SDD_id ! Senescence Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(3) :: SDD_id_prev ! Senescence Degree Days (see SUEWS_DailyState.f95)
+      !REAL(KIND(1D0)), DIMENSION(3), INTENT(OUT) :: SDD_id_next ! Senescence Degree Days (see SUEWS_DailyState.f95)
 
       ! Daily min temp [degC]
-      REAL(KIND(1D0)) :: Tmin_id
-      REAL(KIND(1D0)), INTENT(IN) :: Tmin_id_prev
-      REAL(KIND(1D0)), INTENT(out) :: Tmin_id_next
+      ! REAL(KIND(1D0)) :: Tmin_id
+      ! REAL(KIND(1D0)) :: Tmin_id_prev
+      !REAL(KIND(1D0)), INTENT(out) :: Tmin_id_next
 
       ! Daily max temp [degC]
-      REAL(KIND(1D0)) :: Tmax_id
-      REAL(KIND(1D0)), INTENT(in) :: Tmax_id_prev
-      REAL(KIND(1D0)), INTENT(out) :: Tmax_id_next
+      ! REAL(KIND(1D0)) :: Tmax_id
+      ! REAL(KIND(1D0)) :: Tmax_id_prev
+      !REAL(KIND(1D0)), INTENT(out) :: Tmax_id_next
 
       ! Daytime hours [h]
-      REAL(KIND(1D0)) :: lenDay_id
-      REAL(KIND(1D0)), INTENT(IN) :: lenDay_id_prev
-      REAL(KIND(1D0)), INTENT(out) :: lenDay_id_next
+      ! REAL(KIND(1D0)) :: lenDay_id
+      ! REAL(KIND(1D0)) :: lenDay_id_prev
+      !REAL(KIND(1D0)), INTENT(out) :: lenDay_id_next
 
       ! LAI for each veg surface [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(3) :: LAI_id ! LAI for each veg surface [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN) :: LAI_id_prev ! LAI for each veg surface [m2 m-2]
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(OUT) :: LAI_id_next ! LAI for each veg surface [m2 m-2]
+      ! REAL(KIND(1D0)), DIMENSION(3) :: LAI_id ! LAI for each veg surface [m2 m-2]
+      ! REAL(KIND(1D0)), DIMENSION(3) :: LAI_id_prev ! LAI for each veg surface [m2 m-2]
+      !REAL(KIND(1D0)), DIMENSION(3), INTENT(OUT) :: LAI_id_next ! LAI for each veg surface [m2 m-2]
 
       ! ------------- Key to daily arrays ----------------------------------------------
       ! TS, 27 Dec 2018: updated the annotation for 2018b and WRF-SUEWS coupling
 
       ! Heating Degree Days
-      REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(12), INTENT(IN) :: HDD_id_prev ! Heating Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(12), INTENT(OUT) :: HDD_id_next ! Heating Degree Days (see SUEWS_DailyState.f95)
+      TYPE(anthroEmis_STATE), INTENT(INout) :: anthroEmisState
+      ! TYPE(anthroEmis_STATE) :: anthroEmisState_prev
+      ! REAL(KIND(1D0)), DIMENSION(12) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(12) :: HDD_id_prev ! Heating Degree Days (see SUEWS_DailyState.f95)
+      !REAL(KIND(1D0)), DIMENSION(12), INTENT(OUT) :: HDD_id_next ! Heating Degree Days (see SUEWS_DailyState.f95)
       ! HDD_id:
       ! first half used for update through the day
       ! HDD_id(1) ---- Heating [degC]: used for accumulation during calculation
@@ -567,7 +553,9 @@ CONTAINS
 
       ! --------------------------------------------------------------------------------
       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)), DIMENSION(9), INTENT(OUT) :: WUDay_id ! Water use related array
+      ! TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
+      TYPE(HYDRO_STATE), INTENT(inout) :: hydroState
+      ! REAL(KIND(1D0)), DIMENSION(9), INTENT(OUT) :: WUDay_id ! Water use related array
       ! WUDay_id:
       ! WUDay_id(1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
       ! WUDay_id(2) - Automatic irrigation for Irr EveTr [mm]
@@ -581,188 +569,310 @@ CONTAINS
       ! --------------------------------------------------------------------------------
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
-      INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
+      ! INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
 
       ! REAL(KIND(1D0)), INTENT(OUT) :: deltaLAI
 
-      REAL(KIND(1D0)) :: DecidCap_id
-      REAL(KIND(1D0)), INTENT(IN) :: DecidCap_id_prev
-      REAL(KIND(1D0)), INTENT(OUT) :: DecidCap_id_next
-      REAL(KIND(1D0)) :: albDecTr_id
-      REAL(KIND(1D0)), INTENT(IN) :: albDecTr_id_prev
-      REAL(KIND(1D0)), INTENT(OUT) :: albDecTr_id_next
-      REAL(KIND(1D0)) :: albEveTr_id
-      REAL(KIND(1D0)), INTENT(IN) :: albEveTr_id_prev
-      REAL(KIND(1D0)), INTENT(OUT) :: albEveTr_id_next
-      REAL(KIND(1D0)) :: albGrass_id
-      REAL(KIND(1D0)), INTENT(IN) :: albGrass_id_prev
-      REAL(KIND(1D0)), INTENT(OUT) :: albGrass_id_next
-      REAL(KIND(1D0)) :: porosity_id
-      REAL(KIND(1D0)), INTENT(INOUT) :: porosity_id_prev
-      REAL(KIND(1D0)), INTENT(INOUT) :: porosity_id_next
-      REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm
-      REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(in) :: StoreDrainPrm_prev
-      REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(out) :: StoreDrainPrm_next
+      ! REAL(KIND(1D0)) :: DecidCap_id
+      ! REAL(KIND(1D0)) :: DecidCap_id_prev
+      !REAL(KIND(1D0)), INTENT(OUT) :: DecidCap_id_next
+      ! REAL(KIND(1D0)) :: albDecTr_id
+      ! REAL(KIND(1D0)) :: albDecTr_id_prev
+      ! REAL(KIND(1D0)), INTENT(OUT) :: albDecTr_id_next
+      ! REAL(KIND(1D0)) :: albEveTr_id
+      ! REAL(KIND(1D0)) :: albEveTr_id_prev
+      !REAL(KIND(1D0)), INTENT(OUT) :: albEveTr_id_next
+      ! REAL(KIND(1D0)) :: albGrass_id
+      ! REAL(KIND(1D0)) :: albGrass_id_prev
+      !REAL(KIND(1D0)), INTENT(OUT) :: albGrass_id_next
+      ! REAL(KIND(1D0)) :: porosity_id
+      ! REAL(KIND(1D0)), INTENT(INOUT) :: porosity_id_prev
+      ! REAL(KIND(1D0)) :: porosity_id_prev
+      !REAL(KIND(1D0)), INTENT(INOUT) :: porosity_id_next
+      ! REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm
+      ! REAL(KIND(1D0)), DIMENSION(6, nsurf) :: StoreDrainPrm_prev
+      !REAL(KIND(1D0)), DIMENSION(6, nsurf), INTENT(out) :: StoreDrainPrm_next
 
       LOGICAL :: first_tstep_Q ! if this is the first tstep of a day
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
       TYPE(datetime) :: time_now, time_prev, time_next
 
-      DayWatPer(1) = DayWatPer_mon
-      DayWatPer(2) = DayWatPer_tues
-      DayWatPer(3) = DayWatPer_wed
-      DayWatPer(4) = DayWatPer_thur
-      DayWatPer(5) = DayWatPer_fri
-      DayWatPer(6) = DayWatPer_sat
-      DayWatPer(7) = DayWatPer_sun
+      REAL(KIND(1D0)) :: tair ! air temperature [degC]
 
-      DayWat(1) = DayWat_mon
-      DayWat(2) = DayWat_tues
-      DayWat(3) = DayWat_wed
-      DayWat(4) = DayWat_thur
-      DayWat(5) = DayWat_fri
-      DayWat(6) = DayWat_sat
-      DayWat(7) = DayWat_sun
+      ! save initial values
+      phenState_prev = phenState
 
-      LAIType(1) = evetrLAIType
-      LAIType(2) = dectrLAIType
-      LAIType(3) = grassLAIType
+      ASSOCIATE ( &
+         lat => siteInfo%lat, &
+         iy => timer%iy, &
+         id => timer%id, &
+         it => timer%it, &
+         imin => timer%imin, &
+         isec => timer%isec, &
+         tstep => timer%tstep, &
+         tstep_prev => timer%tstep_prev, &
+         dt_since_start => timer%dt_since_start, &
+         nsh_real => timer%nsh_real, &
+         DayofWeek_id => timer%DayofWeek_id, &
+         avkdn => forcing%kdown, &
+         Temp_C => forcing%Temp_C, &
+         Precip => forcing%rain, &
+         LAI_obs => forcing%LAI_obs, &
+         ahemisPrm => siteInfo%anthroEmis, &
+         irrPrm => siteInfo%irrigation, &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         grassPrm => siteInfo%lc_grass, &
+         dectrPrm => siteInfo%lc_dectr, &
+         evetrPrm => siteInfo%lc_evetr, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water &
+         )
 
-      BaseT_Heating(1) = BaseT_Heating_working
-      BaseT_Heating(2) = BaseT_Heating_holiday
-      BaseT_Cooling(1) = BaseT_Cooling_working
-      BaseT_Cooling(2) = BaseT_Cooling_holiday
+         ASSOCIATE ( &
+            BaseT_Heating => [ahemisPrm%anthroheat%BaseT_Heating_working, &
+                              ahemisPrm%anthroheat%BaseT_Heating_holiday], &
+            BaseT_Cooling => [ahemisPrm%anthroheat%BaseT_Cooling_working, &
+                              ahemisPrm%anthroheat%BaseT_Cooling_holiday], &
+            Tmin_id_prev => phenState_prev%Tmin_id, &
+            Tmax_id_prev => phenState_prev%Tmax_id, &
+            lenDay_id_prev => phenState_prev%lenDay_id, &
+            DecidCap_id_prev => phenState_prev%DecidCap_id, &
+            StoreDrainPrm_prev => phenState_prev%StoreDrainPrm, &
+            LAI_id_prev => phenState_prev%LAI_id, &
+            GDD_id_prev => phenState_prev%GDD_id, &
+            SDD_id_prev => phenState_prev%SDD_id, &
+            albDecTr_id_prev => phenState_prev%albDecTr_id, &
+            albEveTr_id_prev => phenState_prev%albEveTr_id, &
+            albGrass_id_prev => phenState_prev%albGrass_id, &
+            porosity_id_prev => phenState_prev%porosity_id, &
+            Tmin_id => phenState%Tmin_id, &
+            Tmax_id => phenState%Tmax_id, &
+            lenDay_id => phenState%lenDay_id, &
+            DecidCap_id => phenState%DecidCap_id, &
+            StoreDrainPrm => phenState%StoreDrainPrm, &
+            LAI_id => phenState%LAI_id, &
+            GDD_id => phenState%GDD_id, &
+            SDD_id => phenState%SDD_id, &
+            albDecTr_id => phenState%albDecTr_id, &
+            albEveTr_id => phenState%albEveTr_id, &
+            albGrass_id => phenState%albGrass_id, &
+            porosity_id => phenState%porosity_id, &
+            HDD_id => anthroEmisState%HDD_id, &
+            state_surf => hydroState%state_surf, &
+            soilstore_surf => hydroState%soilstore_surf, &
+            WUDay_id => hydroState%WUDay_id, &
+            WaterUseMethod => config%WaterUseMethod, &
+            Ie_start => irrPrm%Ie_start, &
+            Ie_end => irrPrm%Ie_end, &
+            Faut => irrPrm%Faut, &
+            Ie_a => irrPrm%Ie_a, &
+            Ie_m => irrPrm%Ie_m, &
+            H_maintain => irrPrm%H_maintain, &
+            DayWatPer => [irrPrm%irr_daywater%monday_percent, &
+                          irrPrm%irr_daywater%tuesday_percent, &
+                          irrPrm%irr_daywater%wednesday_percent, &
+                          irrPrm%irr_daywater%thursday_percent, &
+                          irrPrm%irr_daywater%friday_percent, &
+                          irrPrm%irr_daywater%saturday_percent, &
+                          irrPrm%irr_daywater%sunday_percent], &
+            DayWat => [irrPrm%irr_daywater%monday_flag, &
+                       irrPrm%irr_daywater%tuesday_flag, &
+                       irrPrm%irr_daywater%wednesday_flag, &
+                       irrPrm%irr_daywater%thursday_flag, &
+                       irrPrm%irr_daywater%friday_flag, &
+                       irrPrm%irr_daywater%saturday_flag, &
+                       irrPrm%irr_daywater%sunday_flag], &
+            AlbMax_EveTr => evetrPrm%Alb_Max, &
+            AlbMin_EveTr => evetrPrm%Alb_Min, &
+            evetrLAIPower => evetrPrm%lai%laipower, &
+            AlbMax_DecTr => dectrPrm%Alb_Max, &
+            AlbMin_DecTr => dectrPrm%Alb_Min, &
+            CapMax_dec => dectrPrm%CapMax_dec, &
+            CapMin_dec => dectrPrm%CapMin_dec, &
+            PorMax_dec => dectrPrm%PorMax_dec, &
+            PorMin_dec => dectrPrm%PorMin_dec, &
+            dectrLAIPower => dectrPrm%lai%laipower, &
+            AlbMax_Grass => grassPrm%Alb_Max, &
+            AlbMin_Grass => grassPrm%Alb_Min, &
+            LAIType => [evetrPrm%lai%laitype, &
+                        dectrPrm%lai%laitype, &
+                        grassPrm%lai%laitype], &
+            BaseT => [evetrPrm%lai%BaseT, &
+                      dectrPrm%lai%BaseT, &
+                      grassPrm%lai%BaseT], &
+            BaseTe => [evetrPrm%lai%BaseTe, &
+                       dectrPrm%lai%BaseTe, &
+                       grassPrm%lai%BaseTe], &
+            GDDFull => [evetrPrm%lai%gddfull, &
+                        dectrPrm%lai%gddfull, &
+                        grassPrm%lai%gddfull], &
+            SDDFull => [evetrPrm%lai%sddfull, &
+                        dectrPrm%lai%sddfull, &
+                        grassPrm%lai%sddfull], &
+            LAIMin => [evetrPrm%lai%laimin, &
+                       dectrPrm%lai%laimin, &
+                       grassPrm%lai%laimin], &
+            LAIMax => [evetrPrm%lai%laimax, &
+                       dectrPrm%lai%laimax, &
+                       grassPrm%lai%laimax], &
+            SoilStoreCap => [pavedPrm%soil%soilstorecap, &
+                             bldgPrm%soil%soilstorecap, &
+                             evetrPrm%soil%soilstorecap, &
+                             dectrPrm%soil%soilstorecap, &
+                             grassPrm%soil%soilstorecap, &
+                             bsoilPrm%soil%soilstorecap, &
+                             waterPrm%soil%soilstorecap], &
+            grassLAIPower => grassPrm%lai%laipower &
+            )
 
-      BaseT(1) = evetrBaseT
-      BaseT(2) = dectrBaseT
-      BaseT(3) = grassBaseT
+            ! before
 
-      BaseTe(1) = evetrBaseTe
-      BaseTe(2) = dectrBaseTe
-      BaseTe(3) = grassBaseTe
+            LAIPower(:, 1) = evetrLAIPower
+            LAIPower(:, 2) = dectrLAIPower
+            LAIPower(:, 3) = grassLAIPower
 
-      GDDFull(1) = evetrGDDFull
-      GDDFull(2) = dectrGDDFull
-      GDDFull(3) = grassGDDFull
+            ! transfer values
+            ! LAI_id = LAI_id_prev
+            ! GDD_id = GDD_id_prev
+            ! SDD_id = SDD_id_prev
+            ! Tmin_id = Tmin_id_prev
+            ! Tmax_id = Tmax_id_prev
+            ! lenDay_id = lenDay_id_prev
+            ! StoreDrainPrm = StoreDrainPrm_prev
+            ! DecidCap_id = DecidCap_id_prev
+            ! albDecTr_id = albDecTr_id_prev
+            ! albEveTr_id = albEveTr_id_prev
+            ! albGrass_id = albGrass_id_prev
+            ! porosity_id = porosity_id_prev
+            ! HDD_id = HDD_id_prev
 
-      SDDFull(1) = evetrSDDFull
-      SDDFull(2) = dectrSDDFull
-      SDDFull(3) = grassSDDFull
+            ! get timestamps
+            time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
+            time_prev = time_now - timedelta(seconds=tstep_prev)
+            time_next = time_now + timedelta(seconds=tstep)
 
-      LAIMin(1) = evetrLAIMin
-      LAIMin(2) = dectrLAIMin
-      LAIMin(3) = grassLAIMin
+            ! test if time at now is the first/last tstep of today
+            first_tstep_Q = time_now%getDay() /= time_prev%getDay()
+            last_tstep_Q = time_now%getDay() /= time_next%getDay()
 
-      LAIMax(1) = evetrLAIMax
-      LAIMax(2) = dectrLAIMax
-      LAIMax(3) = grassLAIMax
+            ! --------------------------------------------------------------------------------
+            ! On first timestep of each day, define whether the day each a workday or weekend
+            IF (first_tstep_Q) THEN
+               CALL update_DailyState_Start( &
+                  it, imin, & !input
+                  HDD_id) !inout
 
-      LAIPower(:, 1) = evetrLAIPower
-      LAIPower(:, 2) = dectrLAIPower
-      LAIPower(:, 3) = grassLAIPower
+               ! reset certain GDD columns
+               Tmin_id = Temp_C !Daily min T in column 3
+               Tmax_id = Temp_C !Daily max T in column 4
+               lenDay_id = 0 !Cumulate daytime hours
+            END IF
 
-      ! transfer values
-      LAI_id = LAI_id_prev
-      GDD_id = GDD_id_prev
-      SDD_id = SDD_id_prev
-      Tmin_id = Tmin_id_prev
-      Tmax_id = Tmax_id_prev
-      lenDay_id = lenDay_id_prev
-      StoreDrainPrm = StoreDrainPrm_prev
-      DecidCap_id = DecidCap_id_prev
-      albDecTr_id = albDecTr_id_prev
-      albEveTr_id = albEveTr_id_prev
-      albGrass_id = albGrass_id_prev
-      porosity_id = porosity_id_prev
-      HDD_id = HDD_id_prev
+            ! --------------------------------------------------------------------------------
+            !> assign Tair with either the forcing air temperature or the local diagnostic air temperature
+            IF (config%localClimateMethod == 1) THEN
+               Tair = atmState%t2_C
+            ELSE
+               Tair = Temp_C
+            END IF
 
-      ! get timestamps
-      time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
-      time_prev = time_now - timedelta(seconds=tstep_prev)
-      time_next = time_now + timedelta(seconds=tstep)
+            ! regular update at all timesteps of a day
+            CALL update_DailyState_Day( &
+               BaseTMethod, &
+               DayofWeek_id, &
+               avkdn, & !input
+               Tair, &
+               Precip, &
+               BaseT_HC, &
+               BaseT_Heating, BaseT_Cooling, &
+               nsh_real, &
+               Tmin_id, Tmax_id, lenDay_id, & !inout
+               HDD_id) !inout
 
-      ! test if time at now is the first/last tstep of today
-      first_tstep_Q = time_now%getDay() /= time_prev%getDay()
-      last_tstep_Q = time_now%getDay() /= time_next%getDay()
+            ! Update snow density, albedo surface fraction
+            ! TODO: to recover snow related functions
+            ! IF (SnowUse == 1) CALL SnowUpdate( &
+            !    nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
+            !    SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
+            !    SnowAlb, SnowDens)!inout
 
-      ! --------------------------------------------------------------------------------
-      ! On first timestep of each day, define whether the day each a workday or weekend
-      IF (first_tstep_Q) THEN
-         CALL update_DailyState_Start( &
-            it, imin, & !input
-            HDD_id) !inout
+            ! --------------------------------------------------------------------------------
+            ! On last timestep, perform the daily calculations -------------------------------
+            ! Daily values not correct until end of each day,
+            !  so main program should use values from the previous day
+            IF (last_tstep_Q) THEN
+               ! Calculate heating degree days ------------------------------------------
+               CALL update_HDD( &
+                  dt_since_start, it, imin, tstep, & !input
+                  HDD_id) !inout
 
-         ! reset certain GDD columns
-         Tmin_id = Temp_C !Daily min T in column 3
-         Tmax_id = Temp_C !Daily max T in column 4
-         lenDay_id = 0 !Cumulate daytime hours
-      END IF
+               ! Calculate modelled daily water use ------------------------------------------
+               CALL update_WaterUse( &
+                  id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, & !input
+                  state_surf, soilstore_surf, SoilStoreCap, H_maintain, & !input
+                  Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
+                  WUDay_id) !output
 
-      ! --------------------------------------------------------------------------------
-      ! regular update at all timesteps of a day
-      CALL update_DailyState_Day( &
-         BaseTMethod, &
-         DayofWeek_id, &
-         avkdn, & !input
-         Temp_C, &
-         Precip, &
-         BaseT_HC, &
-         BaseT_Heating, BaseT_Cooling, &
-         nsh_real, &
-         Tmin_id, Tmax_id, lenDay_id, & !inout
-         HDD_id) !inout
+               ! PRINT*, ''
+               ! PRINT*, 'WUDay(id)',WUDay(id,:)
+               ! PRINT*, 'WUDay_id after update_WaterUse',WUDay_id
 
-      ! Update snow density, albedo surface fraction
-      ! IF (SnowUse == 1) CALL SnowUpdate( &
-      !    nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
-      !    SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
-      !    SnowAlb, SnowDens)!inout
+               !------------------------------------------------------------------------------
+               ! Calculation of LAI from growing degree days
+               ! This was revised and checked on 16 Feb 2014 by LJ
+               !------------------------------------------------------------------------------
+               ! save initial LAI_id
+               ! LAI_id_in = LAI_id
 
-      ! --------------------------------------------------------------------------------
-      ! On last timestep, perform the daily calculations -------------------------------
-      ! Daily values not correct until end of each day,
-      !  so main program should use values from the previous day
-      IF (last_tstep_Q) THEN
-         CALL update_DailyState_End( &
-            id, it, imin, tstep, dt_since_start, & !input
-            Tmin_id, Tmax_id, lenDay_id, &
-            LAIType, Ie_end, Ie_start, LAICalcYes, &
-            WaterUseMethod, DayofWeek_id, &
-            AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-            BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
-            Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
-            state_id, soilstore_id, SoilStoreCap, H_maintain, & !input
-            GDD_id, SDD_id, & !inout
-            HDD_id, &
-            LAI_id, &
-            DecidCap_id, &
-            albDecTr_id, &
-            albEveTr_id, &
-            albGrass_id, &
-            porosity_id, &
-            StoreDrainPrm, &
-            WUDay_id) !output
-      END IF !End of section done only at the end of each day (i.e. only once per day)
+               CALL update_GDDLAI( &
+                  id, LAICalcYes, & !input
+                  lat, LAI_obs, &
+                  Tmin_id, Tmax_id, lenDay_id, &
+                  BaseT, BaseTe, &
+                  GDDFull, SDDFull, &
+                  LAIMin, LAIMax, LAIPower, LAIType, &
+                  LAI_id_prev, &
+                  GDD_id, SDD_id, & !inout
+                  LAI_id) !output
 
-      ! translate values back
-      LAI_id_next = LAI_id
-      GDD_id_next = GDD_id
-      SDD_id_next = SDD_id
-      Tmin_id_next = Tmin_id
-      Tmax_id_next = Tmax_id
-      lenDay_id_next = lenDay_id
-      StoreDrainPrm_next = StoreDrainPrm
-      DecidCap_id_next = DecidCap_id
-      albDecTr_id_next = albDecTr_id
-      albEveTr_id_next = albEveTr_id
-      albGrass_id_next = albGrass_id
-      porosity_id_next = porosity_id
-      HDD_id_next = HDD_id
-      ! PRINT*, 'after_DailyState', iy,id,it,imin
-      ! PRINT*, 'HDD(id)', HDD(id,:)
-      ! PRINT*, 'HDD_id', HDD_id
+               CALL update_Veg( &
+                  LAImax, LAIMin, & !input
+                  AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+                  AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+                  CapMax_dec, CapMin_dec, &
+                  PorMax_dec, PorMin_dec, &
+                  LAI_id, LAI_id_prev, &
+                  DecidCap_id, & !inout
+                  albDecTr_id, &
+                  albEveTr_id, &
+                  albGrass_id, &
+                  porosity_id, &
+                  StoreDrainPrm)
+            END IF !End of section done only at the end of each day (i.e. only once per day)
 
-      ! RETURN
+            ! translate values back
+            ! phenState%LAI_id = LAI_id
+            ! phenState%GDD_id = GDD_id
+            ! phenState%SDD_id = SDD_id
+            ! phenState%Tmin_id = Tmin_id
+            ! phenState%Tmax_id = Tmax_id
+            ! phenState%lenDay_id = lenDay_id
+            ! phenState%StoreDrainPrm = StoreDrainPrm
+            ! phenState%DecidCap_id = DecidCap_id
+            ! phenState%albDecTr_id = albDecTr_id
+            ! phenState%albEveTr_id = albEveTr_id
+            ! phenState%albGrass_id = albGrass_id
+            ! phenState%porosity_id = porosity_id
+            ! anthroEmisState%HDD_id = HDD_id
+            ! PRINT*, 'after_DailyState', iy,id,it,imin
+            ! PRINT*, 'HDD(id)', HDD(id,:)
+            ! PRINT*, 'HDD_id', HDD_id
+
+            ! RETURN
+
+         END ASSOCIATE
+      END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_DailyState_DTS
 
@@ -809,8 +919,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: BaseTe(nvegsurf)
       REAL(KIND(1D0)), INTENT(IN) :: CapMax_dec
       REAL(KIND(1D0)), INTENT(IN) :: CapMin_dec
-      REAL(KIND(1D0)), INTENT(IN) :: DayWat(7)
-      REAL(KIND(1D0)), INTENT(IN) :: DayWatPer(7)
+      REAL(KIND(1D0)) :: DayWat(7)
+      REAL(KIND(1D0)) :: DayWatPer(7)
       REAL(KIND(1D0)), INTENT(IN) :: Faut
       REAL(KIND(1D0)), INTENT(IN) :: GDDFull(nvegsurf)
       REAL(KIND(1D0)), INTENT(IN) :: Ie_a(3)
@@ -909,7 +1019,7 @@ CONTAINS
       BaseTMethod, &
       DayofWeek_id, &
       avkdn, & !input
-      Temp_C, &
+      Tair, &
       Precip, &
       BaseT_HC, &
       BaseT_Heating, BaseT_Cooling, &
@@ -923,7 +1033,7 @@ CONTAINS
       INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
 
       REAL(KIND(1D0)), INTENT(IN) :: avkdn
-      REAL(KIND(1D0)), INTENT(IN) :: Temp_C
+      REAL(KIND(1D0)), INTENT(IN) :: Tair ! Ambient air temperature [degC], this can be from either forcing or diagnostic
       REAL(KIND(1D0)), INTENT(IN) :: Precip
       REAL(KIND(1D0)), INTENT(IN) :: BaseT_HC
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN) :: BaseT_Heating
@@ -967,20 +1077,20 @@ CONTAINS
       END SELECT
 
       ! Daily min and max temp (these get updated through the day) ---------------------
-      Tmin_id = MIN(Temp_C, Tmin_id) !Daily min T in column 3
-      Tmax_id = MAX(Temp_C, Tmax_id) !Daily max T in column 4
+      Tmin_id = MIN(Tair, Tmin_id) !Daily min T in column 3
+      Tmax_id = MAX(Tair, Tmax_id) !Daily max T in column 4
       IF (avkdn > 10) THEN
          lenDay_id = lenDay_id + 1/nsh_real !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
       END IF
 
       ! Calculations related to heating and cooling degree days (HDD) ------------------
       ! See Sailor & Vasireddy (2006) EMS Eq 1,2 (theirs is hourly timestep)
-      dT_heating = BaseT_Heating_use - Temp_C
-      dT_cooling = Temp_C - BaseT_Cooling_use
+      dT_heating = BaseT_Heating_use - Tair
+      dT_cooling = Tair - BaseT_Cooling_use
 
       HDD_id(1) = HDD_id(1) + MERGE(dT_heating, 0D0, dT_heating >= 0) !Heating
       HDD_id(2) = HDD_id(2) + MERGE(dT_cooling, 0D0, dT_cooling >= 0) !Cooling
-      HDD_id(3) = HDD_id(3) + Temp_C !Will become daily average temperature
+      HDD_id(3) = HDD_id(3) + Tair !Will become daily average temperature
       !      4 ------------------------------------!   !5-day running mean
       HDD_id(5) = HDD_id(5) + Precip !Daily precip total
       !      6 ------------------------------------!   !Days since rain
@@ -1096,7 +1206,7 @@ CONTAINS
       id, LAICalcYes, & !input
       lat, LAI_obs, &
       Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
-      BaseT, BaseTe, &
+      BaseT_GDD, BaseT_SDD, &
       GDDFull, SDDFull, &
       LAIMin, LAIMax, LAIPower, LAIType, &
       LAI_id_prev, &
@@ -1120,8 +1230,8 @@ CONTAINS
 
       ! --- Vegetation phenology ---------------------------------------------------------------------
       ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseT !Base temperature for growing degree days [degC]
-      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseTe !Base temperature for senescence degree days [degC]
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseT_GDD !Base temperature for growing degree days [degC]
+      REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: BaseT_SDD !Base temperature for senescence degree days [degC]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: GDDFull !Growing degree days needed for full capacity [degC]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: SDDFull !Senescence degree days needed to initiate leaf off [degC]
       REAL(KIND(1D0)), DIMENSION(nvegsurf), INTENT(IN) :: LAIMin !Min LAI [m2 m-2]
@@ -1154,8 +1264,8 @@ CONTAINS
       ! Loop through vegetation types (iv)
       DO iv = 1, NVegSurf
          ! Calculate GDD for each day from the minimum and maximum air temperature
-         delta_GDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT(iv)) !Leaf on
-         delta_SDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseTe(iv)) !Leaf off
+         delta_GDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT_GDD(iv)) !Leaf on
+         delta_SDD = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT_SDD(iv)) !Leaf off
 
          indHelp = 0 !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
 
@@ -1264,8 +1374,8 @@ CONTAINS
 
    SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, FrIrriAuto, HDD_id, & !input
-      state_id, soilstore_id, SoilStoreCap, H_maintain, & !input
-      Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
+      state_surf, soilstore_surf, SoilStoreCap_surf, H_maintain, & !input
+      Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, & !input
       WUDay_id) !output
 
       IMPLICIT NONE
@@ -1286,9 +1396,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: DayWat !Days of watering allowed
 
       ! ponding control related
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: state_id ! surface wetness [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: soilstore_id ! soil water store [mm]
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap !Capacity of soil store for each surface [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: state_surf ! surface wetness [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(IN) :: soilstore_surf ! soil water store [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SoilStoreCap_surf !Capacity of soil store for each surface [mm]
       REAL(KIND(1D0)), INTENT(IN) :: H_maintain ! ponding water depth to maintain [mm]
 
       REAL(KIND(1D0)), DIMENSION(9), INTENT(OUT) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
@@ -1313,6 +1423,9 @@ CONTAINS
 
       ! initialise WUDay_id
       WUDay_id = 0
+      WUDay_P = 0
+      WUDay_A = 0
+      WUDay_M = 0
 
       IF (WaterUseMethod == 0) THEN !If water use is to be modelled (rather than observed)
 
@@ -1334,8 +1447,8 @@ CONTAINS
 
                ! ---- irrigation amount to maintain a certain water availability----
                ! NB: H_maintain can be either positive or negative
-               h_need = SoilStoreCap(3:5) + H_maintain
-               store_total = state_id(3:5) + soilstore_id(3:5)
+               h_need = SoilStoreCap_surf(3:5) + H_maintain
+               store_total = state_surf(3:5) + soilstore_surf(3:5)
                WUDay_P = h_need - store_total
                WUDay_P = MERGE(WUDay_P, 0D0, WUDay_P > 0)
 
@@ -1362,6 +1475,7 @@ CONTAINS
             END IF
          END IF
       END IF
+      ! print *, 'WUDay_id in update_WaterUse', WUDay_id
 
    END SUBROUTINE update_WaterUse
 
@@ -1451,7 +1565,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_update_DailyState
 
-   ! transfer results to a one-line output for SUEWS_cal_DailyState
    SUBROUTINE update_DailyStateLine( &
       it, imin, nsh_real, & !input
       GDD_id, HDD_id, LAI_id, &
@@ -1522,5 +1635,109 @@ CONTAINS
       END IF
 
    END SUBROUTINE update_DailyStateLine
+
+   ! transfer results to a one-line output for SUEWS_cal_DailyState
+   SUBROUTINE update_DailyStateLine_DTS( &
+      timer, config, forcing, siteInfo, & ! input
+      phenState, anthroEmisState, &
+      hydroState, &
+      snowState, &
+      OHMState, &
+      DailyStateLine) !out
+
+      USE SUEWS_DEF_DTS, ONLY: &
+         SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
+         PHENOLOGY_STATE, anthroEmis_STATE, &
+         SNOW_STATE, SUEWS_TIMER, HYDRO_STATE, &
+         OHM_STATE, PHENOLOGY_STATE
+
+      IMPLICIT NONE
+
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
+      TYPE(anthroEmis_STATE), INTENT(IN) :: anthroEmisState
+      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
+      TYPE(SNOW_STATE), INTENT(IN) :: snowState
+      TYPE(OHM_STATE), INTENT(IN) :: OHMState
+
+      ! INTEGER,INTENT(IN) ::iy
+      ! INTEGER,INTENT(IN) ::id
+      ! INTEGER :: it
+      ! INTEGER :: imin
+      ! REAL(KIND(1D0)) :: nsh_real
+
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(12) :: HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1D0)), DIMENSION(nvegsurf) :: LAI_id !LAI for each veg surface [m2 m-2]
+
+      ! REAL(KIND(1D0)) :: DecidCap_id
+      ! REAL(KIND(1D0)) :: albDecTr_id
+      ! REAL(KIND(1D0)) :: albEveTr_id
+      ! REAL(KIND(1D0)) :: albGrass_id
+      ! REAL(KIND(1D0)) :: porosity_id
+      ! REAL(KIND(1D0)) :: Tmin_id
+      ! REAL(KIND(1D0)) :: Tmax_id
+      ! REAL(KIND(1D0)) :: lenday_id
+      ! REAL(KIND(1D0)), DIMENSION(9) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+
+      ! REAL(KIND(1D0)), INTENT(IN) :: deltaLAI
+      ! REAL(KIND(1D0)), INTENT(IN) :: VegPhenLumps
+      ! REAL(KIND(1D0)) :: SnowAlb
+      ! REAL(KIND(1D0)), DIMENSION(7) :: SnowDens
+
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT) :: DailyStateLine
+      ASSOCIATE ( &
+         GDD_id => phenState%GDD_id, &
+         LAI_id => phenState%LAI_id, &
+         SDD_id => phenState%SDD_id, &
+         Tmin_id => phenState%Tmin_id, &
+         Tmax_id => phenState%Tmax_id, &
+         lenday_id => phenState%lenday_id, &
+         DecidCap_id => phenState%DecidCap_id, &
+         albDecTr_id => phenState%albDecTr_id, &
+         albEveTr_id => phenState%albEveTr_id, &
+         albGrass_id => phenState%albGrass_id, &
+         porosity_id => phenState%porosity_id, &
+         WUDay_id => hydroState%WUDay_id, &
+         SnowAlb => snowState%SnowAlb, &
+         SnowDens => snowState%SnowDens, &
+         HDD_id => anthroEmisState%HDD_id, &
+         VegPhenLumps => phenState%VegPhenLumps, &
+         a1 => OHMState%a1, &
+         a2 => OHMState%a2, &
+         a3 => OHMState%a3, &
+         it => timer%it, &
+         imin => timer%imin, &
+         nsh_real => timer%nsh_real &
+         )
+
+         ! initialise DailyStateLine
+         DailyStateLine = -999
+         IF (it == 23 .AND. imin == (nsh_real - 1)/nsh_real*60) THEN
+            ! Write actual data only at the last timesstep of each day
+            ! DailyStateLine(1:2)   = [iy,id]
+            ! DailyStateLine(1:6) = HDD_id
+            ! DailyStateLine(6 + 1:6 + 5) = GDD_id
+            ! DailyStateLine(11 + 1:11 + 3) = LAI_id
+            ! DailyStateLine(14 + 1:14 + 5) = [DecidCap_id, Porosity_id, AlbEveTr_id, AlbDecTr_id, AlbGrass_id]
+            ! DailyStateLine(19 + 1:19 + 9) = WUDay_id(1:9)
+            ! DailyStateLine(28 + 1) = deltaLAI
+            ! DailyStateLine(29 + 1) = VegPhenLumps
+            ! DailyStateLine(30 + 1:30 + 8) = [SnowAlb, SnowDens(1:7)]
+            ! DailyStateLine(38 + 1:38 + 3) = [a1, a2, a3]
+            DailyStateLine = [HDD_id(1:6), GDD_id, SDD_id, Tmin_id, Tmax_id, lenday_id, LAI_id, DecidCap_id, Porosity_id, &
+                              AlbEveTr_id, AlbDecTr_id, AlbGrass_id, WUDay_id, VegPhenLumps, SnowAlb, SnowDens, &
+                              a1, a2, a3]
+
+         END IF
+
+      END ASSOCIATE
+
+   END SUBROUTINE update_DailyStateLine_DTS
 
 END MODULE DailyState_module
