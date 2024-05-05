@@ -1667,7 +1667,6 @@ CONTAINS
 
       TYPE(SUEWS_STATE), INTENT(inout) :: modState
 
-
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT) :: DailyStateLine
 
       ASSOCIATE ( &
