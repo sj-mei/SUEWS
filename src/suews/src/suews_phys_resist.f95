@@ -564,8 +564,9 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_RoughnessParameters_DTS( &
       timer, config, forcing, siteInfo, & !input
-      phenState, &
-      roughnessState)
+      modState) ! input/output:
+      ! phenState, &
+      ! roughnessState)
       ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
       ! FAI, PAI, & ! output:
       ! Zh, z0m, zdm, ZZD)
@@ -581,7 +582,7 @@ CONTAINS
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                IRRIGATION_PRM, anthroEmis_STATE, &
-                               HYDRO_STATE, PHENOLOGY_STATE, ROUGHNESS_STATE
+                               HYDRO_STATE, PHENOLOGY_STATE, ROUGHNESS_STATE, SUEWS_STATE
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: nsurf = 7 ! number of surface types
@@ -598,6 +599,8 @@ CONTAINS
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(SUEWS_STATE), INTENT(INout) :: modState
       ! INTEGER :: RoughLenMomMethod
       ! INTEGER :: FAImethod ! 0 = use FAI provided, 1 = use the simple scheme
 
@@ -622,8 +625,8 @@ CONTAINS
       ! REAL(KIND(1D0)) :: zdm_in ! zdm set in SiteSelect
       ! REAL(KIND(1D0)) :: Z
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
-      TYPE(ROUGHNESS_STATE), INTENT(OUT) :: roughnessState
+      ! TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
+      ! TYPE(ROUGHNESS_STATE), INTENT(OUT) :: roughnessState
 
       ! REAL(KIND(1D0)) :: porosity_dectr
 
@@ -644,6 +647,8 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(out) :: FAIDecTree_use
 
       ASSOCIATE ( &
+         phenState => modState%phenState, &
+         roughnessState => modState%roughnessState, &
          surfacearea => siteInfo%surfacearea, &
          z0m_in => siteInfo%z0m_in, &
          zdm_in => siteInfo%zdm_in, &

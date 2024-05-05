@@ -748,9 +748,7 @@ CONTAINS
 
    SUBROUTINE RSLProfile_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      atmState, &
-      roughnessState, &
-      heatState, & ! input
+      modState, & ! input/output:
       dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
@@ -766,7 +764,7 @@ CONTAINS
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
                                SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
-                               HEAT_STATE
+                               HEAT_STATE, SUEWS_STATE
 
       IMPLICIT NONE
 
@@ -783,9 +781,11 @@ CONTAINS
       ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
       ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(HEAT_STATE), INTENT(IN) :: heatState
-      TYPE(atm_state), INTENT(INOUT) :: atmState
-      TYPE(ROUGHNESS_STATE), INTENT(IN) :: roughnessState
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
+
+      ! TYPE(HEAT_STATE), INTENT(IN) :: heatState
+      ! TYPE(atm_state), INTENT(INOUT) :: atmState
+      ! TYPE(ROUGHNESS_STATE), INTENT(IN) :: roughnessState
 
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf !surface fraction ratio [-]
 
@@ -898,306 +898,312 @@ CONTAINS
 !          zh, L_MOD, sfr_surf, FAI, PAI, & !input
 !          zH_RSL, L_MOD_RSL, & ! output
 !          Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
-
       ASSOCIATE ( &
-         pavedPrm => siteInfo%lc_paved, &
-         bldgPrm => siteInfo%lc_bldg, &
-         evetrPrm => siteInfo%lc_evetr, &
-         dectrPrm => siteInfo%lc_dectr, &
-         grassPrm => siteInfo%lc_grass, &
-         bsoilPrm => siteInfo%lc_bsoil, &
-         waterPrm => siteInfo%lc_water, &
-         ehcPrm => siteInfo%ehc, &
-         nlayer => siteInfo%nlayer, &
-         sfr_surf => siteInfo%sfr_surf, &
-         sfr_roof => siteInfo%sfr_roof, &
-         sfr_wall => siteInfo%sfr_wall, &
-         SurfaceArea => siteInfo%SurfaceArea, &
-         snowPrm => siteInfo%snow, &
-         PipeCapacity => siteInfo%PipeCapacity, &
-         RunoffToWater => siteInfo%RunoffToWater, &
-         FlowChange => siteInfo%FlowChange, &
-         PervFraction => siteInfo%PervFraction, &
-         vegfraction => siteInfo%vegfraction, &
-         NonWaterFraction => siteInfo%NonWaterFraction, &
-         zMeas => siteInfo%z, &
-         tstep_real => timer%tstep_real, &
-         ! tsfc_surf => heatState_out%tsfc_surf, &
-         ! tsfc_roof => heatState_out%tsfc_roof, &
-         ! tsfc_wall => heatState_out%tsfc_wall, &
-         xsmd => forcing%xsmd, &
-         Temp_C => forcing%Temp_C, &
-         avU1 => forcing%U, &
-         avRH => forcing%RH, &
-         Press_hPa => forcing%pres, &
-         RA_h => atmState%RA_h, &
-         avdens => atmState%avdens, &
-         avcp => atmState%avcp, &
-         lv_J_kg => atmState%lv_J_kg, &
-         L_MOD => atmState%L_MOD, &
-         T2_C => atmState%T2_C, &
-         q2_gkg => atmState%q2_gkg, &
-         U10_ms => atmState%U10_ms, &
-         RH2 => atmState%RH2, &
-         Zh => roughnessState%Zh, &
-         z0m => roughnessState%z0m, &
-         zdm => roughnessState%zdm, &
-         z0v => roughnessState%z0v, &
-         FAI => roughnessState%FAI, &
-         PAI => roughnessState%PAI, &
-         ! qh_resist_surf => heatState%qh_resist_surf, &
-         ! qh_resist_roof => heatState%qh_resist_roof, &
-         ! qh_resist_wall => heatState%qh_resist_wall, &
-         ! qh => heatState%qh, &
-         ! qh_resist => heatState%qh_resist, &
-         ! qh_residual => heatState%qh_residual, &
-         qh => heatState%qh, &
-         qe => heatState%qe, &
-         SMDMethod => config%SMDMethod, &
-         storageheatmethod => config%StorageHeatMethod, &
-         DiagMethod => config%DiagMethod, &
-         StabilityMethod => config%StabilityMethod, &
-         Diagnose => config%Diagnose &
+         heatState => modState%heatState, &
+         atmState => modState%atmState, &
+         roughnessState => modState%roughnessState &
          )
 
-         ! DiagMethod = config%DiagMethod
-         ! StabilityMethod = config%StabilityMethod
+         ASSOCIATE ( &
+            pavedPrm => siteInfo%lc_paved, &
+            bldgPrm => siteInfo%lc_bldg, &
+            evetrPrm => siteInfo%lc_evetr, &
+            dectrPrm => siteInfo%lc_dectr, &
+            grassPrm => siteInfo%lc_grass, &
+            bsoilPrm => siteInfo%lc_bsoil, &
+            waterPrm => siteInfo%lc_water, &
+            ehcPrm => siteInfo%ehc, &
+            nlayer => siteInfo%nlayer, &
+            sfr_surf => siteInfo%sfr_surf, &
+            sfr_roof => siteInfo%sfr_roof, &
+            sfr_wall => siteInfo%sfr_wall, &
+            SurfaceArea => siteInfo%SurfaceArea, &
+            snowPrm => siteInfo%snow, &
+            PipeCapacity => siteInfo%PipeCapacity, &
+            RunoffToWater => siteInfo%RunoffToWater, &
+            FlowChange => siteInfo%FlowChange, &
+            PervFraction => siteInfo%PervFraction, &
+            vegfraction => siteInfo%vegfraction, &
+            NonWaterFraction => siteInfo%NonWaterFraction, &
+            zMeas => siteInfo%z, &
+            tstep_real => timer%tstep_real, &
+            ! tsfc_surf => heatState_out%tsfc_surf, &
+            ! tsfc_roof => heatState_out%tsfc_roof, &
+            ! tsfc_wall => heatState_out%tsfc_wall, &
+            xsmd => forcing%xsmd, &
+            Temp_C => forcing%Temp_C, &
+            avU1 => forcing%U, &
+            avRH => forcing%RH, &
+            Press_hPa => forcing%pres, &
+            RA_h => atmState%RA_h, &
+            avdens => atmState%avdens, &
+            avcp => atmState%avcp, &
+            lv_J_kg => atmState%lv_J_kg, &
+            L_MOD => atmState%L_MOD, &
+            T2_C => atmState%T2_C, &
+            q2_gkg => atmState%q2_gkg, &
+            U10_ms => atmState%U10_ms, &
+            RH2 => atmState%RH2, &
+            Zh => roughnessState%Zh, &
+            z0m => roughnessState%z0m, &
+            zdm => roughnessState%zdm, &
+            z0v => roughnessState%z0v, &
+            FAI => roughnessState%FAI, &
+            PAI => roughnessState%PAI, &
+            ! qh_resist_surf => heatState%qh_resist_surf, &
+            ! qh_resist_roof => heatState%qh_resist_roof, &
+            ! qh_resist_wall => heatState%qh_resist_wall, &
+            ! qh => heatState%qh, &
+            ! qh_resist => heatState%qh_resist, &
+            ! qh_residual => heatState%qh_residual, &
+            qh => heatState%qh, &
+            qe => heatState%qe, &
+            SMDMethod => config%SMDMethod, &
+            storageheatmethod => config%StorageHeatMethod, &
+            DiagMethod => config%DiagMethod, &
+            StabilityMethod => config%StabilityMethod, &
+            Diagnose => config%Diagnose &
+            )
 
-         ! Temp_C = forcing%Temp_C
-         ! avU1 = forcing%U
-         ! avRH = forcing%RH
-         ! Press_hPa = forcing%pres
+            ! DiagMethod = config%DiagMethod
+            ! StabilityMethod = config%StabilityMethod
 
-         ! zMeas = siteInfo%z
+            ! Temp_C = forcing%Temp_C
+            ! avU1 = forcing%U
+            ! avRH = forcing%RH
+            ! Press_hPa = forcing%pres
 
-         ! Step 1: determine if RSL should be used
-         ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+            ! zMeas = siteInfo%z
 
-         IF (DiagMethod == 0) THEN
-            ! force MOST to be used
-            flag_RSL = .FALSE.
-         ELSEIF (DiagMethod == 1) THEN
-            ! force RSL to be used
-            flag_RSL = .TRUE.
-         ELSEIF (DiagMethod == 2) THEN
+            ! Step 1: determine if RSL should be used
+            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
 
-            flag_RSL = &
-               ! zd>0 subject to FAI > beta**2*(1-PAI); also beta<0.5;
-               ! hence the lower limit of FAI below
-               ! FAI > 0.25*(1 - PAI) .AND. FAI < 0.45 .AND. & ! FAI
-               ! PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
-               PAI > 0.1 .AND. PAI < 0.68 .AND. & ! PAI
-               zH > 2 ! effective canopy height
-            ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint
-            !(note: it seems wrong anyway - should be 0.87 not 0.021 based on G&O1991 numbers)
-         ELSE
-            ! default is to use MOST
-            flag_RSL = .FALSE.
-         END IF
+            IF (DiagMethod == 0) THEN
+               ! force MOST to be used
+               flag_RSL = .FALSE.
+            ELSEIF (DiagMethod == 1) THEN
+               ! force RSL to be used
+               flag_RSL = .TRUE.
+            ELSEIF (DiagMethod == 2) THEN
 
-         !
-         ! ! Step 2
-         ! ! determine vertical levels used in RSL
-         ! Define the height array with consideration of key heights
-         ! set number of heights within canopy
-         IF (Zh <= 2) THEN
-            nz_can = 3
-         ELSE IF (Zh <= 10) THEN
-            nz_can = 6
-         ELSE
-            nz_can = 15
-         END IF
-         ! fill up heights in canopy
-         dz_can = Zh/nz_can
-         DO i = 1, nz_can
-            zarray(i) = dz_can*i
-         END DO
-
-         ! guaranttee 2 m is within the zarray
-         IF (dz_can > 2) zarray(1) = 1.999
-
-         ! fill up heights above canopy
-         nz_above = nz - nz_can
-         dz_above = (zMeas - Zh)/nz_above
-         DO i = nz_can + 1, nz
-            zarray(i) = Zh + (i - nz_can)*dz_above
-         END DO
-
-         ! ! determine index at the canyon top
-         ! DO z = 1, nz
-         !    dif(z) = ABS(zarray(z) - Zh)
-         ! END DO
-         ! nz_can = MINLOC(dif, DIM=1)
-         ! ! zarray(idx_can+2) = Zh+.1
-         ! ! zarray(idx_can+1) = Zh+.05
-         ! zarray(nz_can) = Zh
-         ! zarray(idx_can-1) = Zh-.1
-
-         ! determine index at measurement height
-         ! nz = nz
-         zarray(nz) = zMeas
-
-         IF (flag_RSL) THEN
-
-            ! use RSL approach to calculate correction factors
-            psihatm_z = 0.*zarray
-            psihath_z = 0.*zarray
-            ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
-            CALL RSL_cal_prms( &
-               StabilityMethod, & !input
-               nz_above, zarray(nz_can + 1:nz), & !input
-               zh, L_MOD, sfr_surf, FAI, PAI, & !input
-               psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
-               zH_RSL, L_MOD_RSL, & ! output
-               Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
-
-            ! Step 3: calculate the stability dependent H&F constants
-
-            ! CALL cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, fx, c2h, ch)
-            ! CALL cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2m, cm)
-
-            ! ! Step 4: determine psihat at levels above the canopy
-            ! DO z = nz - 1, idx_can, -1
-            !    phimz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-            !    phimzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
-            !    phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-            !    phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
-
-            !    psihatm_z(z) = psihatm_z(z + 1) + dz_above/2.*phimzp*(cm*EXP(-1.*c2m*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
-            !                   /(zarray(z + 1) - zd_RSL)
-            !    psihatm_z(z) = psihatm_z(z) + dz_above/2.*phimz*(cm*EXP(-1.*c2m*beta*(zarray(z) - zd_RSL)/elm)) &
-            !                   /(zarray(z) - zd_RSL)
-            !    psihath_z(z) = psihath_z(z + 1) + dz_above/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
-            !                   /(zarray(z + 1) - zd_RSL)
-            !    psihath_z(z) = psihath_z(z) + dz_above/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
-            !                   /(zarray(z) - zd_RSL)
-            ! END DO
-
-         ELSE
-
-            ! correct parameters if RSL approach doesn't apply for scenario of isolated flows
-            ! see Fig 1 of Grimmond and Oke (1999)
-            ! when isolated flow or skimming flow, implying RSL doesn't apply, force RSL correction to zero
-            psihatm_z = 0
-            psihath_z = 0
-
-            ! use L_MOD as in other parts of SUEWS
-            L_MOD_RSL = L_MOD
-
-            !correct RSL-based using SUEWS system-wide values
-            z0_RSL = z0m
-            zd_RSL = zdm
-            zH_RSL = Zh
-
-            Lc = -999
-            beta = -999
-            Scc = -999
-            fx = -999
-            elm = -999
-
-            ! then MOST recovers from RSL correction
-         END IF
-
-         ! Step 6: Calculate mean variables above canopy
-         !
-         psimz0 = stab_psi_mom(StabilityMethod, z0_RSL/L_MOD_RSL)
-         psimza = stab_psi_mom(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
-         psihza = stab_psi_heat(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
-
-         UStar_RSL = avU1*kappa/(LOG((zMeas - zd_RSL)/z0_RSL) - psimza + psimz0 + psihatm_z(nz))
-
-         ! TS 11 Feb 2021: limit UStar and TStar to reasonable ranges
-         ! under all conditions, min(UStar)==0.001 m s-1 (Jimenez et al 2012, MWR, https://doi.org/10.1175/mwr-d-11-00056.1
-         UStar_RSL = MAX(0.001, UStar_RSL)
-         ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
-         IF ((ZMeas - zd_RSL)/L_MOD_RSL < -neut_limit) UStar_RSL = MAX(0.15, UStar_RSL)
-
-         ! TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_RSL
-         ! qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_RSL
-         IF (flag_RSL) THEN
-            UStar_heat = MAX(0.15, UStar_RSL)
-         ELSE
-            ! use UStar_heat implied by RA_h using MOST
-            psihz0 = stab_psi_heat(StabilityMethod, z0v/L_MOD_RSL)
-            UStar_heat = 1/(kappa*RA_h)*(LOG((zMeas - zd_RSL)/z0v) - psihza + psihz0)
-         END IF
-         TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_heat
-         IF (qe == 0.0) THEN
-            qStar_RSL = 10.**(-10) ! avoid the situation where qe=0, qstar_RSL=0 and the code breaks LB 21 May 2021
-         ELSE
-            qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_heat
-         END IF
-         qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
-
-         DO z = nz_can, nz
-            psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-            psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-            dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
-            dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)
-            dataoutLineqRSL(z) = dataoutLineTRSL(z)
-         END DO
-         !
-         ! Step 7: calculate in canopy variables
-         !
-         IF (flag_RSL) THEN
-            ! RSL approach: exponential profiles within canopy
-            IF (nz_can > 1) THEN
-               t_h = Scc*TStar_RSL/(beta*fx)
-               q_h = Scc*qStar_RSL/(beta*fx)
-               DO z = 1, nz_can - 1
-                  dataoutLineURSL(z) = dataoutLineURSL(nz_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
-                  dataoutLineTRSL(z) = dataoutLineTRSL(nz_can) + (t_h*EXP(beta*fx*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar_RSL
-                  dataoutLineqRSL(z) = dataoutLineqRSL(nz_can) + (q_h*EXP(beta*fx*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar_RSL
-               END DO
+               flag_RSL = &
+                  ! zd>0 subject to FAI > beta**2*(1-PAI); also beta<0.5;
+                  ! hence the lower limit of FAI below
+                  ! FAI > 0.25*(1 - PAI) .AND. FAI < 0.45 .AND. & ! FAI
+                  ! PAI > 0.1 .AND. PAI < 0.61 .AND. & ! PAI
+                  PAI > 0.1 .AND. PAI < 0.68 .AND. & ! PAI
+                  zH > 2 ! effective canopy height
+               ! LB Oct2021 - FAI and PAI can be larger than 0.45 and 0.61 respectively -> remove (1.-PAI)/FAI > .021 constraint
+               !(note: it seems wrong anyway - should be 0.87 not 0.021 based on G&O1991 numbers)
+            ELSE
+               ! default is to use MOST
+               flag_RSL = .FALSE.
             END IF
-         ELSE
-            ! MOST approach:
-            DO z = 1, nz_can
-               ! when using MOST, all vertical levels should larger than zd_RSL
-               IF (zarray(z) <= zd_RSL) zarray(z) = 1.01*(zd_RSL + z0_RSL)
+
+            !
+            ! ! Step 2
+            ! ! determine vertical levels used in RSL
+            ! Define the height array with consideration of key heights
+            ! set number of heights within canopy
+            IF (Zh <= 2) THEN
+               nz_can = 3
+            ELSE IF (Zh <= 10) THEN
+               nz_can = 6
+            ELSE
+               nz_can = 15
+            END IF
+            ! fill up heights in canopy
+            dz_can = Zh/nz_can
+            DO i = 1, nz_can
+               zarray(i) = dz_can*i
+            END DO
+
+            ! guaranttee 2 m is within the zarray
+            IF (dz_can > 2) zarray(1) = 1.999
+
+            ! fill up heights above canopy
+            nz_above = nz - nz_can
+            dz_above = (zMeas - Zh)/nz_above
+            DO i = nz_can + 1, nz
+               zarray(i) = Zh + (i - nz_can)*dz_above
+            END DO
+
+            ! ! determine index at the canyon top
+            ! DO z = 1, nz
+            !    dif(z) = ABS(zarray(z) - Zh)
+            ! END DO
+            ! nz_can = MINLOC(dif, DIM=1)
+            ! ! zarray(idx_can+2) = Zh+.1
+            ! ! zarray(idx_can+1) = Zh+.05
+            ! zarray(nz_can) = Zh
+            ! zarray(idx_can-1) = Zh-.1
+
+            ! determine index at measurement height
+            ! nz = nz
+            zarray(nz) = zMeas
+
+            IF (flag_RSL) THEN
+
+               ! use RSL approach to calculate correction factors
+               psihatm_z = 0.*zarray
+               psihath_z = 0.*zarray
+               ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
+               CALL RSL_cal_prms( &
+                  StabilityMethod, & !input
+                  nz_above, zarray(nz_can + 1:nz), & !input
+                  zh, L_MOD, sfr_surf, FAI, PAI, & !input
+                  psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
+                  zH_RSL, L_MOD_RSL, & ! output
+                  Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
+
+               ! Step 3: calculate the stability dependent H&F constants
+
+               ! CALL cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, fx, c2h, ch)
+               ! CALL cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2m, cm)
+
+               ! ! Step 4: determine psihat at levels above the canopy
+               ! DO z = nz - 1, idx_can, -1
+               !    phimz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
+               !    phimzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
+               !    phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
+               !    phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
+
+               !    psihatm_z(z) = psihatm_z(z + 1) + dz_above/2.*phimzp*(cm*EXP(-1.*c2m*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
+               !                   /(zarray(z + 1) - zd_RSL)
+               !    psihatm_z(z) = psihatm_z(z) + dz_above/2.*phimz*(cm*EXP(-1.*c2m*beta*(zarray(z) - zd_RSL)/elm)) &
+               !                   /(zarray(z) - zd_RSL)
+               !    psihath_z(z) = psihath_z(z + 1) + dz_above/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
+               !                   /(zarray(z + 1) - zd_RSL)
+               !    psihath_z(z) = psihath_z(z) + dz_above/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
+               !                   /(zarray(z) - zd_RSL)
+               ! END DO
+
+            ELSE
+
+               ! correct parameters if RSL approach doesn't apply for scenario of isolated flows
+               ! see Fig 1 of Grimmond and Oke (1999)
+               ! when isolated flow or skimming flow, implying RSL doesn't apply, force RSL correction to zero
+               psihatm_z = 0
+               psihath_z = 0
+
+               ! use L_MOD as in other parts of SUEWS
+               L_MOD_RSL = L_MOD
+
+               !correct RSL-based using SUEWS system-wide values
+               z0_RSL = z0m
+               zd_RSL = zdm
+               zH_RSL = Zh
+
+               Lc = -999
+               beta = -999
+               Scc = -999
+               fx = -999
+               elm = -999
+
+               ! then MOST recovers from RSL correction
+            END IF
+
+            ! Step 6: Calculate mean variables above canopy
+            !
+            psimz0 = stab_psi_mom(StabilityMethod, z0_RSL/L_MOD_RSL)
+            psimza = stab_psi_mom(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
+            psihza = stab_psi_heat(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
+
+            UStar_RSL = avU1*kappa/(LOG((zMeas - zd_RSL)/z0_RSL) - psimza + psimz0 + psihatm_z(nz))
+
+            ! TS 11 Feb 2021: limit UStar and TStar to reasonable ranges
+            ! under all conditions, min(UStar)==0.001 m s-1 (Jimenez et al 2012, MWR, https://doi.org/10.1175/mwr-d-11-00056.1
+            UStar_RSL = MAX(0.001, UStar_RSL)
+            ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
+            IF ((ZMeas - zd_RSL)/L_MOD_RSL < -neut_limit) UStar_RSL = MAX(0.15, UStar_RSL)
+
+            ! TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_RSL
+            ! qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_RSL
+            IF (flag_RSL) THEN
+               UStar_heat = MAX(0.15, UStar_RSL)
+            ELSE
+               ! use UStar_heat implied by RA_h using MOST
+               psihz0 = stab_psi_heat(StabilityMethod, z0v/L_MOD_RSL)
+               UStar_heat = 1/(kappa*RA_h)*(LOG((zMeas - zd_RSL)/z0v) - psihza + psihz0)
+            END IF
+            TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_heat
+            IF (qe == 0.0) THEN
+               qStar_RSL = 10.**(-10) ! avoid the situation where qe=0, qstar_RSL=0 and the code breaks LB 21 May 2021
+            ELSE
+               qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_heat
+            END IF
+            qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
+
+            DO z = nz_can, nz
                psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
                psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-               dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0)/kappa
-               dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza)/kappa
+               dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
+dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)
                dataoutLineqRSL(z) = dataoutLineTRSL(z)
             END DO
-         END IF
+            !
+            ! Step 7: calculate in canopy variables
+            !
+            IF (flag_RSL) THEN
+               ! RSL approach: exponential profiles within canopy
+               IF (nz_can > 1) THEN
+                  t_h = Scc*TStar_RSL/(beta*fx)
+                  q_h = Scc*qStar_RSL/(beta*fx)
+                  DO z = 1, nz_can - 1
+                     dataoutLineURSL(z) = dataoutLineURSL(nz_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
+                     dataoutLineTRSL(z) = dataoutLineTRSL(nz_can) + (t_h*EXP(beta*fx*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar_RSL
+                     dataoutLineqRSL(z) = dataoutLineqRSL(nz_can) + (q_h*EXP(beta*fx*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar_RSL
+                  END DO
+               END IF
+            ELSE
+               ! MOST approach:
+               DO z = 1, nz_can
+                  ! when using MOST, all vertical levels should larger than zd_RSL
+                  IF (zarray(z) <= zd_RSL) zarray(z) = 1.01*(zd_RSL + z0_RSL)
+                  psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
+                  psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
+                  dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0)/kappa
+                  dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza)/kappa
+                  dataoutLineqRSL(z) = dataoutLineTRSL(z)
+               END DO
+            END IF
 
-         ! associate physical quantities to correction profilles
-         dataoutLineURSL = dataoutLineURSL*UStar_RSL
-         dataoutLineTRSL = dataoutLineTRSL*TStar_RSL + Temp_C
-         dataoutLineqRSL = (dataoutLineqRSL*qStar_RSL + qa_gkg/1000.)*1000.
+            ! associate physical quantities to correction profilles
+            dataoutLineURSL = dataoutLineURSL*UStar_RSL
+            dataoutLineTRSL = dataoutLineTRSL*TStar_RSL + Temp_C
+            dataoutLineqRSL = (dataoutLineqRSL*qStar_RSL + qa_gkg/1000.)*1000.
 
-         ! construct output line for output file
-         dataoutLineRSL = [zarray, dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, &
-                           !information for debugging
-                           ! L_stab, L_unstab,
-                           L_MOD_RSL, &
-                           zH_RSL, &
-                           ! Lc_stab, Lc_unstab,
-                           Lc, &
-                           beta, zd_RSL, z0_RSL, elm, Scc, fx, &
-                           UStar_RSL, UStar_heat, TStar_RSL, FAI, PAI, MERGE(1.D0, 0.D0, flag_RSL) &
-                           ]
+            ! construct output line for output file
+            dataoutLineRSL = [zarray, dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, &
+                              !information for debugging
+                              ! L_stab, L_unstab,
+                              L_MOD_RSL, &
+                              zH_RSL, &
+                              ! Lc_stab, Lc_unstab,
+                              Lc, &
+                              beta, zd_RSL, z0_RSL, elm, Scc, fx, &
+                              UStar_RSL, UStar_heat, TStar_RSL, FAI, PAI, MERGE(1.D0, 0.D0, flag_RSL) &
+                              ]
 
-         !
-         ! Step 8
-         ! retrieve the diagnostics at key heights
-         !
-         IF (flag_RSL) THEN
-            ! RSL approach: diagnostics within canopy, heights are above ground level
-            T2_C = interp_z(2D0, zarray, dataoutLineTRSL)
-            q2_gkg = interp_z(2D0, zarray, dataoutLineqRSL)
-            U10_ms = interp_z(10D0, zarray, dataoutLineURSL)
-         ELSE
-            ! MOST approach: diagnostics at heights above zdm+z0m to avoid insane values
-            T2_C = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineTRSL)
-            q2_gkg = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineqRSL)
-            U10_ms = interp_z(10D0 + zd_rsl + z0_rsl, zarray, dataoutLineURSL)
-         END IF
-         ! get relative humidity:
-         RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
+            !
+            ! Step 8
+            ! retrieve the diagnostics at key heights
+            !
+            IF (flag_RSL) THEN
+               ! RSL approach: diagnostics within canopy, heights are above ground level
+               T2_C = interp_z(2D0, zarray, dataoutLineTRSL)
+               q2_gkg = interp_z(2D0, zarray, dataoutLineqRSL)
+               U10_ms = interp_z(10D0, zarray, dataoutLineURSL)
+            ELSE
+               ! MOST approach: diagnostics at heights above zdm+z0m to avoid insane values
+               T2_C = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineTRSL)
+               q2_gkg = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineqRSL)
+               U10_ms = interp_z(10D0 + zd_rsl + z0_rsl, zarray, dataoutLineURSL)
+            END IF
+            ! get relative humidity:
+            RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
 
+         END ASSOCIATE
       END ASSOCIATE
 
    END SUBROUTINE RSLProfile_DTS
