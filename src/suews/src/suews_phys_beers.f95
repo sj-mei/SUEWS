@@ -26,7 +26,6 @@ MODULE beers_module
    ! USE defaultNotUsed, only: notUsed, notUsedI
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE allocateArray, ONLY: ncolumnsDataOutBEERS
-   USE SUEWS_Driver, ONLY: set_nan
 
    IMPLICIT NONE
    REAL(KIND(1D0)), PARAMETER :: pi = ATAN(1.)*4
@@ -1925,5 +1924,25 @@ CONTAINS
       IF (id > startDLS .AND. id < endDLS) dls = 1
 
    END SUBROUTINE SUEWS_cal_DLS
+
+!===============set variable of invalid value to NAN=====================
+   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
+      IMPLICIT NONE
+      REAL(KIND(1D0)), PARAMETER :: pNAN = 30000 ! 30000 to prevent water_state being filtered out as it can be large
+      REAL(KIND(1D0)), PARAMETER :: pZERO = 1E-8 ! to prevent inconsistency caused by positive or negative zero
+      REAL(KIND(1D0)), PARAMETER :: NAN = -999
+      REAL(KIND(1D0)), INTENT(in) :: x
+      REAL(KIND(1D0)) :: xx
+
+      IF (ABS(x) > pNAN) THEN
+         xx = NAN
+      ELSEIF (ABS(x) < pZERO) THEN
+         xx = 0
+      ELSE
+         xx = x
+      END IF
+
+   END FUNCTION set_nan
+!========================================================================
 
 END MODULE beers_module
