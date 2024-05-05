@@ -501,18 +501,6 @@ CONTAINS
                CALL LUMPS_cal_QHQE_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-               ! IF (i_iter == 1) THEN
-               !    !Calculate QH and QE from LUMPS in the first iteration of each time step
-               !    CALL LUMPS_cal_QHQE_DTS( &
-               !       timer, config, forcing, siteInfo, & ! input
-               !       modState) ! input/output:
-
-               !    ! use LUMPS QH to do stability correction
-               !    QH_Init = QH_LUMPS
-               ! ELSE
-               !    ! use SUEWS QH to do stability correction
-               !    QH_Init = QH
-               ! END IF
 
                !============= calculate water balance =============
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
@@ -626,16 +614,6 @@ CONTAINS
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
                dataOutLineBEERS) ! output
-            ! IF (sfr_surf(BldgSurf) > 0) THEN
-            !    IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
-            !    PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
-            !    CALL BEERS_cal_main_DTS( &
-            !       timer, config, forcing, siteInfo, & ! input
-            !       modState, & ! input/output:
-            !       dataOutLineBEERS) ! output
-            ! ELSE
-            !    dataOutLineBEERS = set_nan(dataOutLineBEERS)
-            ! END IF
 
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
