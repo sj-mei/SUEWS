@@ -25,25 +25,6 @@ dynamic = [
 ]
 requires-python = ">3.9, <3.12"
 
-# [tool.setuptools.packages]
-# find = {"where"= "src"}
-# [tool.setuptools-git-versioning]
-# enabled = true
-# template = "{tag}"
-# dev_template = "{tag}.post{ccount}"
-# # ignore "dirty" flag when building using CI for windows: seems to be a bug in the versioning tool
-# dirty_template = "{tag}"
-# version_callback = "setup:get_version"
-
-# [tool.setuptools.packages.find]
-# where = ["src"]
-
-# [tool.setuptools.package-data]
-# mypkg = ["*.txt", "*.json"]
-
-# [tool.distutils.bdist_wheel]
-# universal = true
-
 [tool.setuptools_scm]
 write_to = "src/supy/supy/_version_scm.py"
 root = "../.."
