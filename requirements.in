@@ -3,3 +3,4 @@ f90wrap==0.2.14
 pandas
 setuptools
 pip
+meson
