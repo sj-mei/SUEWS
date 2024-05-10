@@ -1,8 +1,7 @@
 MODULE AnEmsn_module
-   use get_prof_module, only: get_Prof_SpecTime_inst, get_Prof_SpecTime_mean
+   USE get_prof_module, ONLY: get_Prof_SpecTime_inst, get_Prof_SpecTime_mean
 
    IMPLICIT NONE
-
 
    !===================================================================================
    !Simple Anthropogenic Heat and Carbon Dioxide Parameterization routines

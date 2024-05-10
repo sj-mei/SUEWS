@@ -3,7 +3,7 @@ MODULE WaterDist_module
                             PavSurf, BldgSurf, &
                             ConifSurf, DecidSurf, GrassSurf, &
                             BSoilSurf, WaterSurf, ExcessSurf
-   use get_prof_module, only: get_prof_spectime_sum
+   USE get_prof_module, ONLY: get_prof_spectime_sum
    IMPLICIT NONE
    ! INTEGER, PARAMETER :: nsurf = 7
    ! INTEGER, PARAMETER :: PavSurf = 1
