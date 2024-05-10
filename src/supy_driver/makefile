@@ -210,10 +210,9 @@ _${PYTHON_MODN}: libsrc.a ${LIBSRC_FPP_FILES}
 	$(CC) --version
 	CC="$(CC) $(CFLAGS)" \
 	${PYTHON} f2py-f90wrap-patched.py \
-	--fcompiler=$(FCOMP) \
-	--f90flags="-cpp -I../suews/mod" \
-	--build-dir . -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
-	-L../suews/lib -lspartacus -lsuewsdriver
+	--build-dir build_dir -c -m _${PYTHON_MODN} -L../.. -lsrc f90wrap*.f90 \
+	-L../../../suews/lib -lspartacus -lsuewsdriver \
+	-I../../suews/mod
 
 
 test: all

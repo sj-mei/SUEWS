@@ -400,3 +400,4 @@ supy_debug*.zip
 df_forcing.pkl
 df_state_init.pkl
 supy_info.json
+src/supy_driver/build_dir

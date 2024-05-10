@@ -1,5 +1,8 @@
 MODULE AnEmsn_module
+   use get_prof_module, only: get_Prof_SpecTime_inst, get_Prof_SpecTime_mean
+
    IMPLICIT NONE
+
 
    !===================================================================================
    !Simple Anthropogenic Heat and Carbon Dioxide Parameterization routines
@@ -98,8 +101,8 @@ CONTAINS
          ih
 
       REAL(KIND(1D0)) :: &
-         get_Prof_SpecTime_inst, &
-         get_Prof_SpecTime_mean, & !external function to get profile value at specified timestamp
+         ! get_Prof_SpecTime_inst, &
+         ! get_Prof_SpecTime_mean, & !external function to get profile value at specified timestamp
          HDD_daily, & !daily HDD
          CDD_daily, & !daily HDD
          Tair_avg_daily, & !daily mean air temperature

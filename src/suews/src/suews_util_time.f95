@@ -19,7 +19,10 @@
 !
 !sg feb 2012 - moved all time related subroutines together
 !===============================================================================
+module time_module
+   implicit none
 
+contains
 SUBROUTINE day2month(b, mb, md, seas, year, latitude)
    IMPLICIT NONE
    INTEGER, INTENT(in) :: b !b=doy   --IN
@@ -335,3 +338,7 @@ SUBROUTINE SUEWS_cal_DLS( &
    IF (id > startDLS .AND. id < endDLS) dls = 1
 
 END SUBROUTINE SUEWS_cal_DLS
+
+end module time_module
+
+

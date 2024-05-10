@@ -739,7 +739,10 @@ END SUBROUTINE InputHeaderCheck
 !
 ! endsubroutine SUEWS_InterpHourlyProfiles
 !===================================================================================
+module get_prof_module
+   implicit none
 
+contains
 !===================================================================================
 ! get interpolated profile values at specified time
 ! NO normalisation performed
@@ -827,6 +830,10 @@ FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTim
    Prof_CurrTime = Prof_CurrTime*dt/SecPerHour
 
 END FUNCTION get_Prof_SpecTime_sum
+
+end module get_prof_module
+
+
 !===================================================================================
 ! TODO: #79 all the parameter tables can be stored using a custom dictionary for easier and more consistent access:
 ! this package looks promising: https://github.com/zerothi/fdict
