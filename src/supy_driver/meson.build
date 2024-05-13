@@ -94,7 +94,7 @@ endforeach
 ##################################################################
 # 1. build the SUEWS library using fortran compiler
 # invoke make in the suews directory to build the objects
-build_suews=custom_target(
+build_suews = custom_target(
   'suews_objects',
   command: ['make', '-C', '../../suews/', '&&', 'touch', 'dummy.flag'],
   build_by_default: true,
@@ -104,7 +104,10 @@ build_suews=custom_target(
 # build the static library for later use
 static_library(
   'src',
-  src_f95_files,
+  [
+    build_suews,
+    src_f95_files,
+  ],
   include_directories: include_dir_suews,
 )
 
@@ -141,7 +144,7 @@ gen_f90wrap_f90 = custom_target(
   input: gen_fpp_files,
   build_by_default: true,
   output: [out_wrap_f90],
-  depends:build_suews,
+  depends: build_suews,
 )
 ##################################################################
 # 3. use f2py-f90wrap to generate the C file for the python interface
@@ -211,7 +214,7 @@ lib_dir_0 = declare_dependency(link_args: ['-L.'])
 lib_dir_1 = declare_dependency(link_args: ['-L../../suews/lib'])
 suews_dep = [src, spartacus, suewsdriver, lib_dir_0, lib_dir_1]
 
-ext_driver=py.extension_module(
+ext_driver = py.extension_module(
   '_supy_driver',
   sources: [
     get_module_c,
@@ -233,7 +236,7 @@ ext_driver=py.extension_module(
 )
 
 # add test for the python module
- test(
+test(
   'test_suews_driver',
   py,
   args: ['-c', 'import supy_driver; print(dir(supy_driver))'],
