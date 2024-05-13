@@ -94,7 +94,7 @@ endforeach
 ##################################################################
 # 1. build the SUEWS library using fortran compiler
 # invoke make in the suews directory to build the objects
-custom_target(
+build_suews=custom_target(
   'suews_objects',
   command: ['make', '-C', '../../suews/', '&&', 'touch', 'dummy.flag'],
   build_by_default: true,
@@ -141,6 +141,7 @@ gen_f90wrap_f90 = custom_target(
   input: gen_fpp_files,
   build_by_default: true,
   output: [out_wrap_f90],
+  depends:build_suews,
 )
 ##################################################################
 # 3. use f2py-f90wrap to generate the C file for the python interface
