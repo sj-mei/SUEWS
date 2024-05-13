@@ -96,7 +96,7 @@ endforeach
 # invoke make in the suews directory to build the objects
 build_suews = custom_target(
   'suews_objects',
-  command: ['make', '-C', '../../suews/', '&&', 'touch', 'dummy.flag'],
+  command: ['make', '-C', '../../suews/'],
   build_by_default: true,
   output: ['dummy.flag'],
 )
