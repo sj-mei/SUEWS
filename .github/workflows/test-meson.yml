@@ -36,10 +36,10 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: '3.12'
+        python-version: '3.11'
 
     - name: Install Meson and Ninja
-      run: python3 -m pip install meson ninja
+      run: python3 -m pip install meson ninja f90wrap
 
     # # remote debugging
     # - name: Setup upterm session
