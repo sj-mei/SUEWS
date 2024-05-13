@@ -1,4 +1,4 @@
-name: Build and Publish Python wheels to PyPI and TestPyPI
+name: test-meson
 
 on:
   push:
@@ -16,7 +16,7 @@ on:
       - ".github/workflows/test-meson.yml"
 
 jobs:
-  build_wheels:
+  test-meson:
     name: Build wheels for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
