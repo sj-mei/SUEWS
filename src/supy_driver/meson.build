@@ -210,7 +210,7 @@ lib_dir_0 = declare_dependency(link_args: ['-L.'])
 lib_dir_1 = declare_dependency(link_args: ['-L../../suews/lib'])
 suews_dep = [src, spartacus, suewsdriver, lib_dir_0, lib_dir_1]
 
-py.extension_module(
+ext_driver=py.extension_module(
   '_supy_driver',
   sources: [
     get_module_c,
@@ -229,4 +229,12 @@ py.extension_module(
   ],
   install: true,
 
+)
+
+# add test for the python module
+ test(
+  'test_suews_driver',
+  py,
+  args: ['-c', 'import supy_driver; print(dir(supy_driver))'],
+  depends: ext_driver,
 )
