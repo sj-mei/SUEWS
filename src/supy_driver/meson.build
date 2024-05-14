@@ -33,9 +33,11 @@ fpp_flags = ['-E', '-x', 'f95-cpp-input', '-fPIC']
 
 ##################################################################
 # include the SUEWS library
-include_dir_suews = include_directories('../suews/mod')
+dir_suews = meson.current_source_dir() / '../suews'
 
-dir_src_suews = '../suews/src'
+include_dir_suews = include_directories( '../suews/mod')
+
+dir_src_suews = dir_suews / 'src'
 
 src_f95_all = [
   'suews_ctrl_const.f95',
@@ -96,7 +98,7 @@ endforeach
 # invoke make in the suews directory to build the objects
 build_suews = custom_target(
   'suews_objects',
-  command: ['make', '-C', '../src/suews/', '&&', 'touch', '@OUTPUT@'],
+  command: ['make', '-C', meson.current_source_dir() / '../suews/'],
   build_by_default: true,
   output: 'suews_objects',
 )
@@ -133,7 +135,7 @@ prog_f90wrap = find_program('f90wrap')
 file_kind_map = files('kind_map')
 
 gen_f90wrap_f90 = custom_target(
-  'supy_driver',
+  'f90wrap_f90',
   command: [
     prog_f90wrap,
     '-m', 'supy_driver',
@@ -149,7 +151,7 @@ gen_f90wrap_f90 = custom_target(
   ],
   input: [gen_fpp_files, 'move_output_gen.py'],
   build_by_default: true,
-  output: [out_wrap_f90, 'supy_driver.py'],
+  output: [out_wrap_f90],
   depends: build_suews,
 )
 
@@ -182,10 +184,6 @@ gen_module_c = custom_target(
 
 ##################################################################
 # 4. build the python extension module
-
-# find the python installation
-py = import('python').find_installation(pure: false)
-dep_py = py.dependency()
 
 incdir_numpy = run_command(
   py,
@@ -226,22 +224,22 @@ dep_fortranobject = declare_dependency(
 
 dep_lib_src = declare_dependency(
   link_args: [
-    '-L./src/supy_driver', # the path is relative to the build directory when running meson
+    '-L'+meson.current_build_dir(), # the path is relative to the build directory when running meson
     '-lsrc',
   ],
 )
 dep_lib_suews = declare_dependency(
   link_args: [
-    '-L../src/suews/lib', # the path is relative to the build directory when running meson
+    '-L' + dir_suews / 'lib', # the path is relative to the build directory when running meson
     '-lspartacus',
     '-lsuewsdriver',
   ],
 )
 dep_suews = [dep_lib_src, dep_lib_suews]
 
-inc_suews_mod = include_directories('../suews/mod')
+inc_suews_mod = include_directories( '../suews/mod')
 
-supy_driver = py.extension_module(
+ext_supy_driver = py.extension_module(
   '_supy_driver',
   sources: [
     gen_module_c,
@@ -259,14 +257,39 @@ supy_driver = py.extension_module(
     dep_suews,
   ],
   install: true,
-  subdir: 'supy_driver',
-
+  subdir: 'supy',
 )
+
+gen_supy_driver_py = custom_target(
+  'supy_driver',
+  command: [
+    prog_f90wrap,
+    '-m', 'supy_driver',
+    '@INPUT@',
+    '-k', file_kind_map,
+    '-v',
+    '--skip', 'error_hint',
+    '&&',
+    py,
+    '@CURRENT_SOURCE_DIR@/move_output_gen.py',
+    '@OUTPUT@',
+    '@OUTDIR@',
+  ],
+  input: [gen_fpp_files, 'move_output_gen.py'],
+  build_by_default: true,
+  output: ['supy_driver.py'],
+  depends: ext_supy_driver,
+  install: true,
+  install_dir: [py.get_install_dir() / 'supy'], # this is the directory where the python module will be installed
+)
+
+##################################################################
+# 5. add the test for the python module
 
 # add test for the python module
 test(
   'test_supy_driver',
   py,
   args: ['-c', 'import supy_driver; print(dir(supy_driver))'],
-  depends: supy_driver,
+  depends: ext_supy_driver,
 )
