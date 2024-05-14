@@ -20,7 +20,7 @@ authors = [
     { name = "Dr Hamidreza Omidvar", email = "h.omidvar@reading.ac.uk" },
     { name = "Prof Sue Grimmond", email = "c.s.grimmond@reading.ac.uk" },
 ]
-version = "0.0.1"  # Default version, will be overridden
+version = "0.0.2"  # Default version, will be overridden
 # dynamic = ["version"]
 requires-python = ">3.8, <3.13"
 
