@@ -1,6 +1,6 @@
 # This is the `meson.build` file for building `supy_driver`, which relies on SUEWS - a Fortran-dominant project with some C code.
 
-project('supy_driver', 'fortran', 'c')
+# project('supy_driver', 'fortran', 'c')
 
 # building process:
 # 1. build the SUEWS library using fortran compiler
@@ -96,9 +96,9 @@ endforeach
 # invoke make in the suews directory to build the objects
 build_suews = custom_target(
   'suews_objects',
-  command: ['make', '-C', '../../suews/'],
+  command: ['make', '-C', '../src/suews/', '&&', 'touch', '@OUTPUT@'],
   build_by_default: true,
-  output: ['dummy.flag'],
+  output: 'suews_objects',
 )
 
 # build the static library for later use
@@ -131,6 +131,7 @@ endforeach
 
 prog_f90wrap = find_program('f90wrap')
 file_kind_map = files('kind_map')
+
 gen_f90wrap_f90 = custom_target(
   'supy_driver',
   command: [
@@ -140,27 +141,43 @@ gen_f90wrap_f90 = custom_target(
     '-k', file_kind_map,
     '-v',
     '--skip', 'error_hint',
+    '&&',
+    py,
+    '@CURRENT_SOURCE_DIR@/move_output_gen.py',
+    '@OUTPUT@',
+    '@OUTDIR@',
   ],
-  input: gen_fpp_files,
+  input: [gen_fpp_files, 'move_output_gen.py'],
   build_by_default: true,
-  output: [out_wrap_f90],
+  output: [out_wrap_f90, 'supy_driver.py'],
   depends: build_suews,
 )
+
 ##################################################################
 # 3. use f2py-f90wrap to generate the C file for the python interface
 # build the driver module c file
 prog_f2py_f90wrap = find_program('f2py-f90wrap')
-get_module_c = custom_target(
-  output: '_supy_drivermodule.c',
+# message('Output files will be generated at:', meson.current_build_dir())
+gen_module_c = custom_target(
+  output: [
+    '_supy_drivermodule.c',
+    '_supy_driver-f2pywrappers.f',
+  ],
   command: [
     prog_f2py_f90wrap,
     '-m', '_supy_driver',
     '@INPUT@',
-    '--lower', # IMPORTANT: lower case the module name
+    # IMPORTANT: lower case the module name
+    '--lower', '&&',
+    py,
+    '@CURRENT_SOURCE_DIR@/move_output_gen.py',
+    '@OUTPUT@',
+    '@OUTDIR@',
   ],
   input: [gen_f90wrap_f90],
   depends: [gen_f90wrap_f90],
   build_by_default: true,
+
 )
 
 ##################################################################
@@ -168,7 +185,7 @@ get_module_c = custom_target(
 
 # find the python installation
 py = import('python').find_installation(pure: false)
-py_dep = py.dependency()
+dep_py = py.dependency()
 
 incdir_numpy = run_command(
   py,
@@ -179,7 +196,6 @@ incdir_numpy = run_command(
 ).stdout().strip()
 
 inc_np = include_directories(incdir_numpy)
-# np_dep = declare_dependency(include_directories: inc_np)
 
 incdir_f2py = run_command(
   py,
@@ -192,53 +208,65 @@ inc_f2py = include_directories(incdir_f2py)
 fortranobject_c = incdir_f2py / 'fortranobject.c'
 
 inc_np = include_directories(incdir_numpy, incdir_f2py)
+
 # gh-25000
-quadmath_dep = fortran_compiler.find_library('quadmath', required: true)
+dep_quadmath = fortran_compiler.find_library('quadmath', required: true)
 
 # Share this object across multiple modules.
-fortranobject_lib = static_library(
+lib_fortranobject = static_library(
   '_fortranobject',
   fortranobject_c,
-  dependencies: py_dep,
+  dependencies: dep_py,
   include_directories: [inc_np, inc_f2py],
 )
-fortranobject_dep = declare_dependency(
-  link_with: fortranobject_lib,
+dep_fortranobject = declare_dependency(
+  link_with: lib_fortranobject,
   include_directories: [inc_np, inc_f2py],
 )
 
-src = declare_dependency(link_args: ['-lsrc'])
-spartacus = declare_dependency(link_args: ['-lspartacus'])
-suewsdriver = declare_dependency(link_args: ['-lsuewsdriver'])
-lib_dir_0 = declare_dependency(link_args: ['-L.'])
-lib_dir_1 = declare_dependency(link_args: ['-L../../suews/lib'])
-suews_dep = [src, spartacus, suewsdriver, lib_dir_0, lib_dir_1]
+dep_lib_src = declare_dependency(
+  link_args: [
+    '-L./src/supy_driver', # the path is relative to the build directory when running meson
+    '-lsrc',
+  ],
+)
+dep_lib_suews = declare_dependency(
+  link_args: [
+    '-L../src/suews/lib', # the path is relative to the build directory when running meson
+    '-lspartacus',
+    '-lsuewsdriver',
+  ],
+)
+dep_suews = [dep_lib_src, dep_lib_suews]
 
-ext_driver = py.extension_module(
+inc_suews_mod = include_directories('../suews/mod')
+
+supy_driver = py.extension_module(
   '_supy_driver',
   sources: [
-    get_module_c,
+    gen_module_c,
     gen_f90wrap_f90,
     fortranobject_c,
   ],
   include_directories: [
     inc_np,
-    '../../suews/mod',
+    inc_suews_mod, # the path is relative to the current directory where the meson.build file is located
   ],
   dependencies: [
-    py_dep,
-    fortranobject_dep,
-    quadmath_dep,
-    suews_dep,
+    dep_py,
+    dep_fortranobject,
+    dep_quadmath,
+    dep_suews,
   ],
   install: true,
+  subdir: 'supy_driver',
 
 )
 
 # add test for the python module
 test(
-  'test_suews_driver',
+  'test_supy_driver',
   py,
   args: ['-c', 'import supy_driver; print(dir(supy_driver))'],
-  depends: ext_driver,
+  depends: supy_driver,
 )

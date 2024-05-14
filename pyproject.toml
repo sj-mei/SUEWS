@@ -1,0 +1,150 @@
+[build-system]
+requires = [
+    "wheel",
+    "f90wrap==0.2.14",
+    "setuptools>60",
+    "oldest-supported-numpy",
+    "setuptools-git-versioning",
+    "setuptools_scm[toml]>=6.2,<8",
+    "meson-python>=0.12.0",
+]
+
+# build-backend = "setuptools.build_meta"
+build-backend = 'mesonpy'
+
+[project]
+name = "supy"
+description = "the SUEWS model that speaks python"
+authors = [
+    { name = "Dr Ting Sun", email = "ting.sun@ucl.ac.uk" },
+    { name = "Dr Hamidreza Omidvar", email = "h.omidvar@reading.ac.uk" },
+    { name = "Prof Sue Grimmond", email = "c.s.grimmond@reading.ac.uk" },
+]
+version = "0.0.0"  # Default version, will be overridden
+# dynamic = ["version"]
+requires-python = ">3.8, <3.13"
+
+license = { text = "GPL-V3.0" }
+
+dependencies = [
+    "pandas< 1.5; python_version <= '3.9'",        # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
+    "pandas; python_version > '3.9'",
+    "importlib_resources; python_version < '3.9'", # to fix importlib issue in UMEP under QGIS3
+    "matplotlib",
+    "chardet",
+    "scipy",
+    "f90wrap==0.2.14",                             # f90wrap is required for f2py-based supy driver
+    "dask",                                        # needs dask for parallel tasks
+    "f90nml",                                      # utility for namelist files
+    "seaborn",                                     # stat plotting
+    "atmosp",                                      # my own `atmosp` module forked from `atmos-python`
+    "cdsapi",                                      # ERA5 data
+    "xarray",                                      # utility for high-dimensional datasets
+    "multiprocess",                                # a better multiprocessing library
+    "click",                                       # cmd tool
+    "lmfit",                                       # optimiser
+    "numdifftools",                                # required by `lmfit` for uncertainty estimation
+    "pvlib",                                       # TMY-related solar radiation calculations
+    "platypus-opt==1.0.4",                         # a multi-objective optimiser
+]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+]
+
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+
+[project.scripts]
+suews-run = "supy.cmd.SUEWS:SUEWS"
+suews-convert = "supy.cmd.table_converter:convert_table_cmd"
+
+
+[tool.setuptools_scm]
+write_to = "src/supy/_version_scm.py"
+root = "."
+local_scheme = "no-local-version"
+
+
+[tool.cibuildwheel]
+# skip 32-bit and pypy builds
+skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
+# build-frontend = "pip"
+before-build = ["git describe --tags --always --dirty"]
+
+# Increase pip debugging output
+build-verbosity = 0
+
+test-requires = "pytest"
+
+# only test on python 3.9
+# test-skip = [
+#     # "*win*",
+#     # "*manylinux*",
+#     # "cp38*-*",
+#     # "cp31*-*",
+#     ]
+
+[tool.cibuildwheel.linux]
+# Install system library
+before-build = [
+    "yum install -y glibc-static",
+    "python3 -m pip install f90wrap oldest-supported-numpy",
+    "make -C '{package}' clean",
+    "make -C '{package}' driver",
+    "echo $ARCHFLAGS",
+    "file '{package}'/supy/_supy_driver*.so",
+    "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
+    "echo '===> gfortran version:', $(gfortran --version)",
+]
+test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
+archs = ["auto64"]
+
+[tool.cibuildwheel.macos]
+before-build = [
+    'ln -sf "$(which gfortran-13)" /usr/local/bin/gfortran',
+    "python3 -m pip install f90wrap==0.2.14 oldest-supported-numpy",
+    "make -C '{package}' driver",
+    "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
+    "echo '===> gfortran version:', $(gfortran --version)",
+    "echo $ARCHFLAGS",
+]
+test-command = "TEST_DATA_DIR='{project}/src/supy/supy/test/data_test' pytest -s '{package}/supy/test'"
+
+# archs = ["universal2"]
+# build-verbosity = 10
+archs = ["auto"] # skip this for now in gh actions as it takes too long
+skip = ['pp*']
+
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+
+
+[tool.cibuildwheel.windows]
+before-build = [
+    "cd {package}",
+    "where python",
+    "python -m pip install oldest-supported-numpy charset_normalizer f90wrap delvewheel",
+    "python -v",
+    "python build-win-def.py",
+    "make driver",
+    "echo '===> numpy version:', $(python3 -c 'import numpy; print(numpy.__version__)')",
+    "echo '===> gfortran version:', $(gfortran --version)",
+    # 'python -c "import numpy; print(numpy.__version__)"',
+    # "python setup.py build_ext --inplace --compiler=mingw32",
+    # "ls -l .",
+]
+archs = ["auto64"]
+test-command = 'set "TEST_DATA_DIR={project}/src/supy/supy/test/data_test" && pytest -s "{package}/supy/test"'
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
