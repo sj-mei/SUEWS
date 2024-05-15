@@ -20,9 +20,8 @@ authors = [
     { name = "Dr Hamidreza Omidvar", email = "h.omidvar@reading.ac.uk" },
     { name = "Prof Sue Grimmond", email = "c.s.grimmond@reading.ac.uk" },
 ]
-# version = "0.0.2"  # Default version, will be overridden
 dynamic = ["version"]
-requires-python = ">3.8, <3.13"
+requires-python = ">3.9, <3.13"
 
 license = { text = "GPL-V3.0" }
 
@@ -82,7 +81,7 @@ suews-convert = "supy.cmd.table_converter:convert_table_cmd"
 # # skip 32-bit and pypy builds
 # skip = ["*-win32", "*-manylinux_i686", "pp*", '*-musllinux*']
 # # build-frontend = "pip"
-# before-build = ["git describe --tags --always --dirty"]
+# before-build = ["pip install f90wrap oldest-supported-numpy && pip list"]
 
 # # Increase pip debugging output
 # build-verbosity = 0
