@@ -64,6 +64,8 @@ jobs:
       run: |
         meson setup build
         meson compile -C build
+    - name: test building wheels
+      run: |
         python3 -m build --wheel
 
     # - name: Build wheels
