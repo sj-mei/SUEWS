@@ -61,7 +61,7 @@ jobs:
       - name: upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
           path: ./wheelhouse/*.whl
 
   deploy:
