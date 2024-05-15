@@ -64,20 +64,21 @@ jobs:
     #   run: |
     #     meson setup build
     #     meson compile -C build
-    - name: test building wheels
-      run: |
-        python3 -m build --wheel
+    # - name: test building wheels
+    #   run: |
+    #     python3 -m build --wheel
 
-    # - name: Build wheels
-    #   uses: pypa/cibuildwheel@v2.16.5
-    #   env:
-    #     # SETUPTOOLS_USE_DISTUTILS: stdlib
-    #     CC: gcc
-    #     CXX: g++
-    #   with:
-    #     # package-dir: ./src/supy
-    #     output-dir: wheelhouse
-    #     # config-file: ./src/supy/pyproject.toml
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.16.5
+      env:
+        # SETUPTOOLS_USE_DISTUTILS: stdlib
+        CC: gcc
+        CXX: g++
+        CIBW_BEFORE_ALL_MACOS: "brew install gfortran gnu-sed && brew unlink gfortran && brew link gfortran"
+      with:
+        # package-dir: ./src/supy
+        output-dir: wheelhouse
+        # config-file: ./src/supy/pyproject.toml
 
     # - name: Setup tmate session for debugging
     #   if: failure()
