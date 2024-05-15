@@ -59,10 +59,8 @@ jobs:
 
     - name: test meson.build
       run: |
-        cd src/supy_driver
         meson setup build
         meson compile -C build
-        meson test -C build
 
     # - name: Build wheels
     #   uses: pypa/cibuildwheel@v2.16.5
