@@ -39,7 +39,7 @@ py.install_sources(
         ],
         [
             'sample_run/RunControl.nml',
-            'sample_run/ESTMinput.nml',
+            'sample_run/Input/ESTMinput.nml',
             'sample_run/Input/GridLayoutKc.nml',
             'sample_run/Input/InitialConditionsKc_2011.nml',
             'sample_run/Input/Kc_2012_data_60.txt',
