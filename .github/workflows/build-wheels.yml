@@ -1,4 +1,4 @@
-name: test-meson
+name: build-wheels
 
 on:
   push:

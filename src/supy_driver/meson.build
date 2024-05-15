@@ -132,7 +132,7 @@ endforeach
 # out_wrap_f90 += 'f90wrap_toplevel.f90'
 
 prog_f90wrap = find_program('f90wrap')
-file_kind_map = files('kind_map')
+# file_kind_map = files('kind_map')
 
 # gen_f90wrap_f90 = custom_target(
 #   'f90wrap_f90',
@@ -201,20 +201,23 @@ gen_module_c = custom_target(
 incdir_numpy = run_command(
   py,
   [
-    '-c', 'import numpy; print(numpy.get_include())',
+    '-c', 'import os, numpy; print(os.path.relpath(numpy.get_include()))',
   ],
   check: true,
 ).stdout().strip()
 
 inc_np = include_directories(incdir_numpy)
 
-incdir_f2py = run_command(
-  py,
-  [
-    '-c', 'import numpy.f2py; print(numpy.f2py.get_include())',
-  ],
-  check: true,
-).stdout().strip()
+# incdir_f2py = run_command(
+#   py,
+#   [
+#     '-c', 'import numpy.f2py; print(numpy.f2py.get_include())',
+#   ],
+#   check: true,
+# ).stdout().strip()
+
+# this is the path to the f2py source code - better compatibility with older numpy versions
+incdir_f2py = incdir_numpy / '..' / '..' / 'f2py' / 'src'
 inc_f2py = include_directories(incdir_f2py)
 fortranobject_c = incdir_f2py / 'fortranobject.c'
 

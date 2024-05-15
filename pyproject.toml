@@ -21,7 +21,7 @@ authors = [
     { name = "Prof Sue Grimmond", email = "c.s.grimmond@reading.ac.uk" },
 ]
 dynamic = ["version"]
-requires-python = ">3.9, <3.13"
+requires-python = ">3.10, <3.13"
 
 license = { text = "GPL-V3.0" }
 
@@ -48,8 +48,6 @@ dependencies = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
