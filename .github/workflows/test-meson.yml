@@ -39,7 +39,7 @@ jobs:
         python-version: '3.12'
 
     - name: Install Meson and Ninja
-      run: python3 -m pip install meson ninja f90wrap
+      run: python3 -m pip install meson ninja f90wrap build
 
     # # remote debugging
     # - name: Setup upterm session
@@ -64,7 +64,7 @@ jobs:
       run: |
         meson setup build
         meson compile -C build
-        python -m build --wheel
+        python3 -m build --wheel
 
     # - name: Build wheels
     #   uses: pypa/cibuildwheel@v2.16.5
