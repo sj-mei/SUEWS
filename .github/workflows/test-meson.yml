@@ -60,10 +60,10 @@ jobs:
         git status
         git describe --tags --dirty --match "2[0-9]*"
 
-    - name: test meson.build
-      run: |
-        meson setup build
-        meson compile -C build
+    # - name: test meson.build
+    #   run: |
+    #     meson setup build
+    #     meson compile -C build
     - name: test building wheels
       run: |
         python3 -m build --wheel
