@@ -63,7 +63,7 @@ jobs:
       - name: upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.WHEEL_NAME }}
+          name: ${{ env.WHEEL_NAME }}.zip
           path: ./wheelhouse/*.whl
 
   deploy:
