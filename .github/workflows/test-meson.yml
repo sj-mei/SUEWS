@@ -50,6 +50,9 @@ jobs:
       run: |
         brew install make automake libtool
         which pipx || brew install pipx && pipx ensurepath
+        brew install gfortran gnu-sed
+        brew unlink gfortran
+        brew link gfortran
 
     - name: check git info
       run: |
