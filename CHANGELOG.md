@@ -27,3 +27,6 @@
 
 - 01 Jul 2023:
   - [feature] Added a function `supy.util.get_spinup_state` to retrieve the spin-up state for the model, which can be used for debugging and initialising the model for simulation.
+
+- 15 May 2024:
+  - [maintenance] Changed the python build backend to `meson` and `ninja` for faster builds (#257)
