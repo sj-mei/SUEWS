@@ -22,8 +22,8 @@ jobs:
     strategy:
       matrix:
         buildplat:
-          # - [ubuntu-latest, manylinux, x86_64]
-          # - [macos-11, macosx, x86_64]
+          - [ubuntu-latest, manylinux, x86_64]
+          - [macos-11, macosx, x86_64]
           - [windows-2019, win, AMD64]
           - [macos-14, macosx, arm64]
 
