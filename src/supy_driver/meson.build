@@ -199,10 +199,10 @@ gen_module_c = custom_target(
 # 4. build the python extension module
 
 incdir_numpy = run_command(
+
   py,
-  [
-    '-c', 'import os, numpy; print(os.path.relpath(numpy.get_include()))',
-  ],
+  '-c', 'import os, numpy; print(numpy.get_include())',
+
   check: true,
 ).stdout().strip()
 
@@ -299,7 +299,3 @@ gen_supy_driver_py = custom_target(
 
 # # add test for the python module
 # test(
-#   'test_supy_driver',
-#   py,
-#   args: ['-c', 'import supy_driver; print(dir(supy_driver))'],
-#   depends: ext_supy_driver,

@@ -3,6 +3,7 @@ project(
     'fortran',
     'c',
     version: run_command('get_ver_git.py',check: true).stdout().strip(),
+    meson_version: '>=0.64.0',
 )
 
 # find the python installation
