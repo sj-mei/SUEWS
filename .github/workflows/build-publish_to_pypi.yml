@@ -78,6 +78,12 @@ jobs:
         with:
           path: dist/
 
+      - name: Unzip artifact
+        run: |
+          for file in ./dist/*.zip; do
+            unzip "$file" -d ./dist/
+          done
+
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1.8
         with:
