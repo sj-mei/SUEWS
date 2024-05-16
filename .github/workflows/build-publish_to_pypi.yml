@@ -63,7 +63,7 @@ jobs:
       - name: upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.WHEEL_NAME }}.zip
+          name: ${{ env.WHEEL_NAME }}
           path: ./wheelhouse/*.whl
 
   deploy:
@@ -77,13 +77,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist/
-
-      - name: Unzip artifact
-        run: |
-          ls -l ./dist/
-          for file in ./dist/*.zip; do
-            unzip "$file" -d ./dist/
-          done
+          merge-multiple: true
 
       - name: Setup tmate session for debugging
         if: failure()
