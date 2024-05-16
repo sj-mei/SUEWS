@@ -80,9 +80,15 @@ jobs:
 
       - name: Unzip artifact
         run: |
+          ls -l ./dist/
           for file in ./dist/*.zip; do
             unzip "$file" -d ./dist/
           done
+
+      - name: Setup tmate session for debugging
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 15
 
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1.8
