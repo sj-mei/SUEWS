@@ -7,22 +7,20 @@ import numpy as np
 import pandas as pd
 
 
-# from .supy_driver import suews_driver as sd
-# from ._supy_driver_wrapper import suews_driver as sd
+from pathlib import Path
+
 from . import _supy_driver as _sd
+from . import supy_driver as sd
+
 
 from ._env import logger_supy, trv_supy_module
 from ._misc import path_insensitive
-
-# print("Loading supy module ...")
-# print(dir(sd))
-# print(sd.f90wrap_suews_cal_main.__doc__)
 
 
 ########################################################################
 # get_args_suews can get the interface information
 # of the f2py-converted Fortran interface
-def get_args_suews(docstring=_sd.f90wrap_suews_cal_main.__doc__):
+def get_args_suews(docstring=_sd.f90wrap_suews_driver__suews_cal_main.__doc__):
     # split doc lines for processing
     docLines = np.array(docstring.splitlines(), dtype=str)
 
@@ -78,7 +76,7 @@ def extract_dict_docs(docLines):
 def get_args_suews_multitsteps():
     # split doc lines for processing
     docLines = np.array(
-        _sd.f90wrap_suews_cal_multitsteps.__doc__.splitlines(), dtype=str
+        _sd.f90wrap_suews_driver__suews_cal_multitsteps.__doc__.splitlines(), dtype=str
     )
 
     dict_inout_sd = extract_dict_docs(docLines)
@@ -147,8 +145,8 @@ dict_Code2File = pd.read_json(
     typ="series",
     convert_dates=False,
 ).to_dict()
+
 # variable translation as done in Fortran-SUEWS
-# path_var2siteselect = os.path.join(path_supy_module, 'var2siteselect.json')
 path_var2siteselect = trv_supy_module.joinpath("var2siteselect.json")
 dict_var2SiteSelect = pd.read_json(
     path_var2siteselect,
@@ -237,10 +235,10 @@ def gen_suews_arg_info_df(docstring):
 
 # note: infer data types for variables to avoid type conversion
 df_info_suews_cal_main = gen_suews_arg_info_df(
-    _sd.f90wrap_suews_cal_main.__doc__
+    _sd.f90wrap_suews_driver__suews_cal_main.__doc__
 ).infer_objects()
 df_info_suews_cal_multitsteps = gen_suews_arg_info_df(
-    _sd.f90wrap_suews_cal_multitsteps.__doc__
+    _sd.f90wrap_suews_driver__suews_cal_multitsteps.__doc__
 ).infer_objects()
 
 df_var_info = df_info_suews_cal_multitsteps.merge(
@@ -491,7 +489,9 @@ def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
     datetime_mid_local = data_raw_kdn.index - timedelta(seconds=tstep_mod / 2)
     sol_elev = np.array(
         [
-            _sd.f90wrap_suews_cal_sunposition(t.year, dectime(t), timezone, lat, lon, alt)[-1]
+            _sd.f90wrap_suews_cal_sunposition(
+                t.year, dectime(t), timezone, lat, lon, alt
+            )[-1]
             for t in datetime_mid_local
         ]
     )

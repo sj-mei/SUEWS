@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from .supy_driver import suews_driver as sd
+from packaging import version
 
 
 ##############################################################################
@@ -11,7 +12,11 @@ def get_output_info_df():
     var_list_x = [np.array(sd.output_name_n(i)) for i in np.arange(size_var_list) + 1]
 
     df_var_list = pd.DataFrame(var_list_x, columns=["var", "group", "aggm", "outlevel"])
-    df_var_list = df_var_list.applymap(lambda x: x.decode().strip())
+    if version.parse(pd.__version__) >= version.parse("2.1.0"):
+        # if pandas version is 2.1.0 or above, we need to use map instead of applymap due to deprecation
+        df_var_list = df_var_list.map(lambda x: x.decode().strip())
+    else:
+        df_var_list = df_var_list.applymap(lambda x: x.strip())
     df_var_list_x = df_var_list.replace(r"^\s*$", np.nan, regex=True).dropna()
     var_dfm = df_var_list_x.set_index(["group", "var"])
     return var_dfm

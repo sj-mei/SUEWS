@@ -32,4 +32,21 @@ p_outdir = Path(OUTDIR)
 print("Output directory:", p_outdir)
 # mv the generated files to the source directory
 for f in list_p_out:
-    f.rename(p_outdir / f.name)
+    p_target = p_outdir / f.name
+    if p_target.exists():
+        print(p_target, "exists in the output directory.")
+        if p_target.is_file():
+            p_target.unlink()
+            print("Removed the existing file.")
+        else:
+            # check if it is a directory
+            if p_target.is_dir():
+                # remove the directory
+                p_target.rmdir()
+                print("Removed the existing directory.")
+            else:
+                raise FileExistsError(f"{p_target} exists and is not a file or directory.")
+    else:
+        print(p_target, "does not exist in the output directory.")
+    # move the file
+    f.rename(p_target)

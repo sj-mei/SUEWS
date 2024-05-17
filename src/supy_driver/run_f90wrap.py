@@ -29,6 +29,7 @@ def main():
                 os.path.join(current_source_dir, "kind_map"),
                 "--skip",
                 "error_hint",
+                # "--package",
             ]
         )
         print("f90wrap call successful")

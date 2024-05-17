@@ -5,19 +5,18 @@ requires = [
     "oldest-supported-numpy",
     "meson-python>=0.12.0",
 ]
-
 build-backend = 'mesonpy'
+
 
 [project]
 name = "supy"
-description = "the SUEWS model that speaks python"
+description = "The SUEWS model that speaks Python."
 authors = [
     { name = "Dr Ting Sun", email = "ting.sun@ucl.ac.uk" },
     { name = "Dr Hamidreza Omidvar", email = "h.omidvar@reading.ac.uk" },
     { name = "Prof Sue Grimmond", email = "c.s.grimmond@reading.ac.uk" },
 ]
 dynamic = ["version"]
-# requires-python = ">3.10, <3.13"
 
 license = { text = "GPL-V3.0" }
 
@@ -44,6 +43,7 @@ dependencies = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

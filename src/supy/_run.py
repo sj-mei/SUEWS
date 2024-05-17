@@ -15,7 +15,7 @@ import pandas
 
 import numpy as np
 import pandas as pd
-from ._supy_driver_wrapper import suews_driver as sd
+from .supy_driver import suews_driver as sd
 
 from ._load import (
     df_var_info,

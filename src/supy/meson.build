@@ -11,6 +11,8 @@ py.install_sources(
         '_supy_driver_wrapper.py',
         '_supy_module.py',
         '_version.py',
+        '_version_scm.py',
+        'code2file.json',
         'checker_rules_indiv.json',
         'checker_rules_joint.json',
         'var2siteselect.json',
