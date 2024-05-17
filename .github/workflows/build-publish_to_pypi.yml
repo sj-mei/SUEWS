@@ -89,7 +89,7 @@ jobs:
           packages-dir: dist/
           verbose: true
           skip-existing: true
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          # password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
 
       - name: Publish distribution to PyPI
@@ -99,4 +99,4 @@ jobs:
           packages-dir: dist/
           verbose: true
           skip-existing: true
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          # password: ${{ secrets.PYPI_API_TOKEN }}
