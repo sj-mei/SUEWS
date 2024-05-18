@@ -16,7 +16,7 @@ def get_output_info_df():
         # if pandas version is 2.1.0 or above, we need to use map instead of applymap due to deprecation
         df_var_list = df_var_list.map(lambda x: x.decode().strip())
     else:
-        df_var_list = df_var_list.applymap(lambda x: x.strip())
+        df_var_list = df_var_list.applymap(lambda x: x.decode().strip())
     df_var_list_x = df_var_list.replace(r"^\s*$", np.nan, regex=True).dropna()
     var_dfm = df_var_list_x.set_index(["group", "var"])
     return var_dfm
@@ -28,7 +28,7 @@ var_df = get_output_info_df()
 
 # dict as var_df but keys in lowercase
 var_df_lower = {
-    group.lower(): group for group in var_df.index.levels[0].astype(str).str.strip()
+    group.lower(): group for group in var_df.index.levels[0].str.strip()
 }
 
 #  generate dict of functions to apply for each variable
