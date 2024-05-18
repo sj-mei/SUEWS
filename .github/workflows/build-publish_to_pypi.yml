@@ -53,7 +53,7 @@ jobs:
           CIBW_ENVIRONMENT_PASS_LINUX: RUNNER_OS
           CIBW_BEFORE_ALL_MACOS: "brew install gfortran gnu-sed && brew unlink gfortran && brew link gfortran"
           CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: python -m pytest {project}/test
+          CIBW_TEST_COMMAND: "python -m pytest {project}/test"
 
       - name: Setup tmate session for debugging
         if: failure()

@@ -88,5 +88,5 @@ cibw:
 	CIBW_BUILD=cp312-macosx* \
 	CIBW_ARCH=arm64 \
 	CIBW_TEST_REQUIRES=pytest \
-	CIBW_TEST_COMMAND=python -m pytest '{project}/test'" \
+	CIBW_TEST_COMMAND="python -m pytest '{project}/test'" \
 	pipx run cibuildwheel==2.16.5 --platform macos
