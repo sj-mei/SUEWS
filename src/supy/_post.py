@@ -27,7 +27,9 @@ def get_output_info_df():
 var_df = get_output_info_df()
 
 # dict as var_df but keys in lowercase
-var_df_lower = {group.lower(): group for group in var_df.index.levels[0].str.strip()}
+var_df_lower = {
+    group.lower(): group for group in var_df.index.levels[0].astype(str).str.strip()
+}
 
 #  generate dict of functions to apply for each variable
 dict_func_aggm = {
