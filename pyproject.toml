@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "wheel",
+    "pytest",
     "f90wrap==0.2.14",
     "oldest-supported-numpy",
     "meson-python>=0.12.0",

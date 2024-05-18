@@ -42,6 +42,16 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 all: test
 
+# set up the development environment
+# use `-p [x.y]` to specify python version: e.g. `-p 3.12`
+env:
+	uv venv .venv -p 3.11
+
+# install dependencies
+reqs:
+	uv pip compile requirements.in -o requirements.txt
+	uv pip install -r requirements.txt
+
 # make suews driver library
 suews:
 	$(MAKE) -C $(suews_dir) libdriver; # make SUEWS library
@@ -49,15 +59,15 @@ suews:
 
 # make supy and install locally
 dev:
-	$(MAKE) -C $(supy_dir) dev
+	$(PYTHON) -m pip install -e .
 
 # make supy dist and test
 test:
-	$(MAKE) -C $(supy_dir) main
+	$(PYTHON) -m pytest test
 
 # make supy wheels using cibuild
 wheel:
-	$(MAKE) -C $(supy_dir) wheel
+	$(PYTHON) -m pip wheel --no-deps . -w wheelhouse
 
 # documentation
 docs:
@@ -72,3 +82,11 @@ clean:
 	$(MAKE) -C $(suews_dir) clean
 	$(MAKE) -C $(supy_dir) clean
 	$(MAKE) -C $(docs_dir) clean
+
+# this is to test cibuildwheel locally
+cibw:
+	CIBW_BUILD=cp312-macosx* \
+	CIBW_ARCH=arm64 \
+	CIBW_TEST_REQUIRES=pytest \
+	CIBW_TEST_COMMAND="ls -l . && ls -l .. && python -m pytest '{project}/test'" \
+	pipx run cibuildwheel==2.16.5 --platform macos

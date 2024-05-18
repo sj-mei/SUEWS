@@ -300,7 +300,7 @@ def load_SUEWS_table(path_file):
         try:
             rawdata = pd.read_csv(
                 path_file,
-                delim_whitespace=True,
+                sep=r"\s+",  # any whitespace
                 comment="!",
                 on_bad_lines="error",
                 encoding_errors="ignore",
@@ -527,8 +527,9 @@ def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
 def resample_sum(data_raw_precip, tstep_in, tstep_mod):
     ratio_precip = 1.0 * tstep_mod / tstep_in
     data_tstep_precip_adj = ratio_precip * data_raw_precip.copy().shift(
-        -tstep_in + tstep_mod, freq="S"
-    ).resample("{tstep}S".format(tstep=tstep_mod)).mean().interpolate(
+        -tstep_in + tstep_mod,
+        freq="s",
+    ).resample("{tstep}s".format(tstep=tstep_mod)).mean().interpolate(
         method="polynomial", order=0
     )
     # assign a new start with nan
@@ -537,9 +538,7 @@ def resample_sum(data_raw_precip, tstep_in, tstep_mod):
     # data_tstep_precip_adj.loc[t_start, :] = np.nan
     data_tstep_precip_adj.loc[t_end] = np.nan
     data_tstep_precip_adj = data_tstep_precip_adj.sort_index()
-    data_tstep_precip_adj = data_tstep_precip_adj.asfreq(
-        "{tstep}S".format(tstep=tstep_mod)
-    )
+    data_tstep_precip_adj = data_tstep_precip_adj.asfreq(f"{tstep_mod}s")
     data_tstep_precip_adj = data_tstep_precip_adj.fillna(value=0.0)
     return data_tstep_precip_adj
 
@@ -551,14 +550,14 @@ def resample_linear_inst(data_raw_inst, tstep_in, tstep_mod):
     data_raw_tstep = data_raw_inst.copy()
 
     # assign a new start with nan
-    t_start = data_raw_inst.index.shift(-tstep_in + tstep_mod, freq="S")[0]
+    t_start = data_raw_inst.index.shift(-tstep_in + tstep_mod, freq="s")[0]
     t_end = data_raw_inst.index[-1]
     data_raw_tstep.loc[t_start, :] = np.nan
     data_raw_tstep.loc[t_end, :] = np.nan
 
     # re-align the index so after resampling we can have filled heading part
     data_raw_tstep = data_raw_tstep.sort_index()
-    data_raw_tstep = data_raw_tstep.asfreq(f"{tstep_mod}S").interpolate(method="linear")
+    data_raw_tstep = data_raw_tstep.asfreq(f"{tstep_mod}s").interpolate(method="linear")
     # fill gaps with valid values
     data_tstep = data_raw_tstep.copy().bfill().ffill().dropna(how="all")
 
@@ -568,13 +567,13 @@ def resample_linear_inst(data_raw_inst, tstep_in, tstep_mod):
 # resample input forcing with average values by linear interpolation
 def resample_linear_avg(data_raw_avg, tstep_in, tstep_mod):
     # retrieve ending timestamps
-    t_start = data_raw_avg.index.shift(-tstep_in + tstep_mod, freq="S")[0]
+    t_start = data_raw_avg.index.shift(-tstep_in + tstep_mod, freq="s")[0]
     t_end = data_raw_avg.index[-1]
 
     # reset index as timestamps
     # shift by half-tstep_in to generate a time series with instantaneous
     # values
-    data_raw_shift = data_raw_avg.shift(-tstep_in / 2, freq="S")
+    data_raw_shift = data_raw_avg.shift(-tstep_in / 2, freq="s")
     # print('data_raw_shift.index')
     # print(data_raw_shift.head())
 
@@ -585,7 +584,7 @@ def resample_linear_avg(data_raw_avg, tstep_in, tstep_mod):
     data_raw_tstep = data_raw_tstep.sort_index()
 
     # get proper timestamps for filling up
-    data_tstep = data_raw_tstep.asfreq(f"{tstep_mod}S")
+    data_tstep = data_raw_tstep.asfreq(f"{tstep_mod}s")
 
     # insert the shifted
     idx_comb = (
@@ -721,7 +720,7 @@ def set_index_dt(df_raw: pd.DataFrame) -> pd.DataFrame:
     loc_issue = ser_dt_diff_sec.reset_index().index[~ser_test][1:] + 2
     if loc_issue.size == 0:
         # empty list of `loc_issue`
-        freq = ser_dt_diff[1]
+        freq = ser_dt_diff.iloc[1]
         df_datetime = df_raw.set_index(idx_dt).asfreq(freq)
     else:
         # non-empty list of `loc_issue`

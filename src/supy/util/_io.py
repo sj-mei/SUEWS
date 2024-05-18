@@ -25,7 +25,7 @@ def read_suews(path_suews_file: str) -> pd.DataFrame:
     path_suews_file = Path(path_suews_file).resolve()
     df_raw = pd.read_csv(
         path_suews_file,
-        delim_whitespace=True,
+        sep=r"\s+", # any whitespace
         comment="!",
         on_bad_lines='error',
     )

@@ -84,7 +84,7 @@ def gen_df_year(df_save, year, grid, group, output_level):
     df_grid_group = df_save.loc[grid, group].copy()
     # get temporal index
     idx_dt = df_grid_group.index
-    freq = idx_dt.to_series().diff()[-1]
+    freq = idx_dt.to_series().diff().iloc[-1]
     df_grid_group = df_grid_group.asfreq(freq)
     # select output variables in `SUEWS` based on output level
     if group == "SUEWS":
@@ -108,7 +108,7 @@ def save_df_grid_group(df_year, grid, group, dir_save, site):
     else:
         df_year = df_year.asfreq("5T")
     # output frequency in min
-    freq_min = int(df_year.index.freq.delta.total_seconds() / 60)
+    freq_min = int(pd.Timedelta(df_year.index.freq).total_seconds() / 60)
     # starting year
     try:
         year = df_year.index[0].year
@@ -240,7 +240,7 @@ def save_df_output(
         # cast freq to index if not associated
         if idx_dt.freq is None:
             ser_idx = idx_dt.to_series()
-            freq = ser_idx.diff()[-1]
+            freq = ser_idx.diff().iloc[-1]
             idx_dt = ser_idx.asfreq(freq).index
 
         idx_dt = idx_dt.shift(-1)
