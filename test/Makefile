@@ -41,7 +41,7 @@ test:
 
 # update sample run with the latest bin
 # !USE WITH CAUTION!
-update:
+update_sample_output:
 	cd code; python gen_sample_output.py
 
 clean:
