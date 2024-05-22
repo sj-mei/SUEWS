@@ -297,7 +297,7 @@ class TestSuPy(TestCase):
             "QF",
             "QE",
             "QH",
-            # "T2",
+            "T2",
             "RH2",
             "U10",
         ]
