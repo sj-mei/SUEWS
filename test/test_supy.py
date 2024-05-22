@@ -302,6 +302,8 @@ class TestSuPy(TestCase):
             "U10",
         ]
 
+        print(f'Columns to test: {col_test}')
+
         # load sample output
         df_res_sample = pd.read_pickle(p_df_sample).loc[:, col_test]
 
