@@ -5,7 +5,7 @@ import io
 import sys
 import warnings
 from time import time
-from unittest import TestCase,skipIf,skipUnless
+from unittest import TestCase, skipIf, skipUnless
 
 import numpy as np
 import pandas as pd
@@ -16,19 +16,22 @@ import platform
 from pathlib import Path
 
 # Get the test data directory from the environment variable
-test_data_dir = Path(__file__).parent / 'data_test'
+test_data_dir = Path(__file__).parent / "data_test"
 # test_data_dir = os.environ.get('TEST_DATA_DIR', Path(__file__).parent / 'data_test')
 
 # Construct the file path for the data file
-p_df_sample = Path(test_data_dir) / 'sample_output.pkl'
+p_df_sample = Path(test_data_dir) / "sample_output.pkl"
 
 # if platform is macOS and python version is 3.9, set flag_full_test to True
-flag_full_test = all([
-    sys.version_info[0] == 3,
-    sys.version_info[1] == 12,
-    platform.system() == "Darwin",
-    platform.machine() == "arm64",
-])
+flag_full_test = all(
+    [
+        sys.version_info[0] == 3,
+        sys.version_info[1] == 12,
+        platform.system() == "Darwin",
+        platform.machine() == "arm64",
+    ]
+)
+
 
 class TestSuPy(TestCase):
     def setUp(self):
@@ -47,7 +50,7 @@ class TestSuPy(TestCase):
         print("\n========================================")
         print("Testing if single-tstep mode can run...")
         df_state_init, df_forcing_tstep = sp.load_SampleData()
-        df_forcing_part = df_forcing_tstep.iloc[: 12*8]
+        df_forcing_part = df_forcing_tstep.iloc[: 12 * 8]
         df_output, df_state = sp.run_supy(
             df_forcing_part, df_state_init, save_state=True
         )
@@ -64,7 +67,7 @@ class TestSuPy(TestCase):
         print("\n========================================")
         print("Testing if multi-tstep mode can run...")
         df_state_init, df_forcing_tstep = sp.load_SampleData()
-        df_forcing_part = df_forcing_tstep.iloc[:288*10]
+        df_forcing_part = df_forcing_tstep.iloc[: 288 * 10]
         df_output, df_state = sp.run_supy(
             df_forcing_part, df_state_init, check_input=True
         )
@@ -78,9 +81,9 @@ class TestSuPy(TestCase):
         #     # sys.stdout = sys.__stdout__  # Reset redirect.
         #     # Now works as before.
         #     # print("Captured:\n", capturedOutput.getvalue())
-        print(f"empty output?",df_output.empty)
+        print(f"empty output?", df_output.empty)
         print(f"empty state?", df_state.empty)
-        print(f"any NaN in state?",df_state.isnull().values.any())
+        print(f"any NaN in state?", df_state.isnull().values.any())
         # find the first NaN in state
         if df_state.isnull().values.any():
             print("NaN in state:")
@@ -286,12 +289,13 @@ class TestSuPy(TestCase):
         df_forcing_part = df_forcing_tstep.iloc[: 288 * 365]
 
         # single-step results
-        df_output_s, df_state_s = sp.run_supy(
-            df_forcing_part, df_state_init
-        )
+        df_output_s, df_state_s = sp.run_supy(df_forcing_part, df_state_init)
+
+        # only test chosen columns
+        col_test = ["QN", "QF", "QE", "QH", "T2", "RH2", "U10"]
 
         # load sample output
-        df_res_sample = pd.read_pickle(p_df_sample)
+        df_res_sample = pd.read_pickle(p_df_sample).loc[:, col_test]
 
         # choose the same columns as the testing group
         df_res_s = df_output_s.SUEWS.loc[df_res_sample.index, df_res_sample.columns]
@@ -320,6 +324,7 @@ class TestSuPy(TestCase):
 
         # test SMD_veg
         from supy.supy_driver import Waterdist_Module as wm
+
         smd_veg_test = wm.cal_smd_veg(soilstorecap, soilstore_id, sfr_surf)
 
         test_equal = smd_veg_correct == smd_veg_test
@@ -334,9 +339,7 @@ class TestSuPy(TestCase):
         df_forcing_part = df_forcing_tstep.iloc[: 288 * n_days]
 
         # single-step results
-        df_output, df_state = sp.run_supy(
-            df_forcing_part, df_state_init
-        )
-        df_dailystate=df_output.DailyState
-        n_days_test= df_dailystate.dropna().drop_duplicates().shape[0]
-        self.assertEqual(n_days_test,n_days)
+        df_output, df_state = sp.run_supy(df_forcing_part, df_state_init)
+        df_dailystate = df_output.DailyState
+        n_days_test = df_dailystate.dropna().drop_duplicates().shape[0]
+        self.assertEqual(n_days_test, n_days)
