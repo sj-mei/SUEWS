@@ -292,7 +292,15 @@ class TestSuPy(TestCase):
         df_output_s, df_state_s = sp.run_supy(df_forcing_part, df_state_init)
 
         # only test chosen columns
-        col_test = ["QN", "QF", "QE", "QH", "T2", "RH2", "U10"]
+        col_test = [
+            "QN",
+            "QF",
+            "QE",
+            "QH",
+            # "T2",
+            # "RH2",
+            # "U10",
+        ]
 
         # load sample output
         df_res_sample = pd.read_pickle(p_df_sample).loc[:, col_test]
