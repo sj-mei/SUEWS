@@ -299,7 +299,7 @@ class TestSuPy(TestCase):
             "QH",
             # "T2",
             # "RH2",
-            # "U10",
+            "U10",
         ]
 
         # load sample output
@@ -311,6 +311,7 @@ class TestSuPy(TestCase):
         pd.testing.assert_frame_equal(
             left=df_res_s,
             right=df_res_sample,
+            # rtol=1e-3,
         )
 
     # test if the weighted SMD of vegetated surfaces are properly calculated
