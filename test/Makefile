@@ -42,7 +42,7 @@ test:
 # update sample run with the latest bin
 # !USE WITH CAUTION!
 update:
-	cd code; python update_samplerun.py
+	cd code; python gen_sample_output.py
 
 clean:
 	rm -rf *.zip
