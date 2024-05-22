@@ -23,7 +23,12 @@ test_data_dir = Path(__file__).parent / 'data_test'
 p_df_sample = Path(test_data_dir) / 'sample_output.pkl'
 
 # if platform is macOS and python version is 3.9, set flag_full_test to True
-flag_full_test = (sys.version_info[0] == 3 and sys.version_info[1] == 12 and platform.system() == "Darwin")
+flag_full_test = all([
+    sys.version_info[0] == 3,
+    sys.version_info[1] == 12,
+    platform.system() == "Darwin",
+    platform.machine() == "arm64",
+])
 
 class TestSuPy(TestCase):
     def setUp(self):
