@@ -12,7 +12,6 @@ def get_version_from_git():
             .strip()
             .decode("utf-8")
         )
-        print(describe_output)
 
         # Match against the pattern including optional 'dev' part
         match = re.match(
@@ -23,7 +22,6 @@ def get_version_from_git():
         if match:
             base_version = match.group(1)
             distance = int(match.group(2))
-            print(base_version, distance)
 
             if distance == 0:
                 if "dev" in describe_output:
