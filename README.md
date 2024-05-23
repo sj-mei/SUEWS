@@ -1,5 +1,6 @@
 # SUEWS
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5721639.svg)](https://doi.org/10.5281/zenodo.5721639)
 
 This is a public repo for SUEWS source code and documentation.
 
