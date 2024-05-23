@@ -9,6 +9,10 @@ import pandas as pd
 
 from pathlib import Path
 
+import pandas as pd
+from packaging import version
+
+
 from . import _supy_driver as _sd
 from . import supy_driver as sd
 
@@ -18,7 +22,7 @@ from ._misc import path_insensitive
 
 # choose different second representation to accommodate different pandas versions
 # pandas version <1.5
-str_second = "S" if pd.__version__ < "1.5" else "s"
+str_second = "S" if version.parse(pd.__version__) < version.parse("1.5.0") else "s"
 
 
 ########################################################################
