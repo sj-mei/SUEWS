@@ -3,7 +3,7 @@ MODULE WaterDist_module
                             PavSurf, BldgSurf, &
                             ConifSurf, DecidSurf, GrassSurf, &
                             BSoilSurf, WaterSurf, ExcessSurf
-
+   USE get_prof_module, ONLY: get_prof_spectime_sum
    IMPLICIT NONE
    ! INTEGER, PARAMETER :: nsurf = 7
    ! INTEGER, PARAMETER :: PavSurf = 1
@@ -1771,7 +1771,7 @@ CONTAINS
       REAL(KIND(1D0)) :: OverUse
       REAL(KIND(1D0)) :: rain_cum_daily ! accumulated daily rainfall
 
-      REAL(KIND(1D0)) :: get_Prof_SpecTime_sum
+      ! REAL(KIND(1D0)) :: get_Prof_SpecTime_sum
 
       REAL(KIND(1D0)) :: WUProfA_tstep ! automatic water use profile value at tstep
       REAL(KIND(1D0)) :: WUProfM_tstep ! mannual water use profile value at tstep
@@ -1995,7 +1995,7 @@ CONTAINS
       REAL(KIND(1D0)) :: OverUse
       REAL(KIND(1D0)) :: rain_cum_daily ! accumulated daily rainfall
 
-      REAL(KIND(1D0)) :: get_Prof_SpecTime_sum
+      ! REAL(KIND(1D0)) :: get_Prof_SpecTime_sum
 
       REAL(KIND(1D0)) :: WUProfA_tstep ! automatic water use profile value at tstep
       REAL(KIND(1D0)) :: WUProfM_tstep ! mannual water use profile value at tstep

@@ -9,12 +9,15 @@ MODULE SUEWS_Driver
    ! 2. constant variables
 
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
+   USE time_module, ONLY: suews_cal_dectime, SUEWS_cal_tstep, SUEWS_cal_weekday, &
+                          SUEWS_cal_DLS
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters, SUEWS_cal_RoughnessParameters_DTS
+   USE OHM_module, ONLY: OHM
    USE ESTM_module, ONLY: ESTM
    USE EHC_module, ONLY: EHC
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens

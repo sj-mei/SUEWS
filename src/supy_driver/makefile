@@ -1,3 +1,8 @@
+# NOTE: This makefile is for the supy_driver module only.
+# The supy_driver module is a Python interface to the SUEWS model.
+# This makefile-based workflow only works for python before version 3.12.
+# for python 3.12 and later, use pyproject.toml and PEP 517/518 - a meson build system.
+
 #=======================================================================
 #                   define the compiler names
 #=======================================================================
@@ -210,10 +215,9 @@ _${PYTHON_MODN}: libsrc.a ${LIBSRC_FPP_FILES}
 	$(CC) --version
 	CC="$(CC) $(CFLAGS)" \
 	${PYTHON} f2py-f90wrap-patched.py \
-	--fcompiler=$(FCOMP) \
-	--f90flags="-cpp -I../suews/mod" \
-	--build-dir . -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
-	-L../suews/lib -lspartacus -lsuewsdriver
+	--build-dir builddir -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
+	-L../suews/lib -lspartacus -lsuewsdriver \
+	-I../suews/mod
 
 
 test: all

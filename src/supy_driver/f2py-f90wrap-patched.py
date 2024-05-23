@@ -35,9 +35,12 @@ def get_msvcr_patch():
             raise ValueError("Unknown MS Compiler version %s " % msc_ver)
 
 
-import distutils.cygwinccompiler
-
-distutils.cygwinccompiler.get_msvcr = get_msvcr_patch
+import sys
+if sys.version_info < (3, 12):
+    import distutils.cygwinccompiler
+    distutils.cygwinccompiler.get_msvcr = get_msvcr_patch
+else:
+    pass
 
 
 # -*- coding: utf-8 -*-

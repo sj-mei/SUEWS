@@ -13,6 +13,7 @@
 ! 20170825: improved Bowen calculation
 !========================================================================================
 MODULE AnOHM_module
+   USE OHM_module, ONLY: OHM_dqndt_cal_X, OHM_QS_cal
 
    IMPLICIT NONE
 CONTAINS
