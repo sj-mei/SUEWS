@@ -12,18 +12,24 @@ def get_version_from_git():
             .strip()
             .decode("utf-8")
         )
+        print(describe_output)
 
         # Match against the pattern including optional 'dev' part
         match = re.match(
             r"^(v?\d+\.\d+\.\d+)(?:\.dev)?-(\d+)-g[0-9a-f]+$", describe_output
         )
+        # print(match.groups())
 
         if match:
             base_version = match.group(1)
             distance = int(match.group(2))
+            print(base_version, distance)
 
             if distance == 0:
-                version = base_version
+                if "dev" in describe_output:
+                    version = f"{base_version}.dev"
+                else:
+                    version = base_version
             else:
                 version = f"{base_version}.dev{distance}"
         else:
@@ -41,7 +47,6 @@ def get_version_from_git():
         raise RuntimeError(
             f"An error occurred while retrieving the version from Git: {e}"
         )
-
 
 
 def write_version_file(version_str):
