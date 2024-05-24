@@ -9,12 +9,20 @@ import pandas as pd
 
 from pathlib import Path
 
+import pandas as pd
+from packaging import version
+
+
 from . import _supy_driver as _sd
 from . import supy_driver as sd
 
 
 from ._env import logger_supy, trv_supy_module
 from ._misc import path_insensitive
+
+# choose different second representation to accommodate different pandas versions
+# pandas version <1.5
+str_second = "S" if version.parse(pd.__version__) < version.parse("1.5.0") else "s"
 
 
 ########################################################################
@@ -509,7 +517,7 @@ def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
     # conform to `avg_tstep` index for actual days used
     ratio_SWdown = ratio_SWdown.reindex(index=avg_tstep.index)
     # resample into `tstep_mod` steps
-    ratio_SWdown = ratio_SWdown.resample(f"{tstep_mod}S").mean()
+    ratio_SWdown = ratio_SWdown.resample(f"{tstep_mod}{str_second}").mean()
     # fill nan as the above resample will place valid values at the daily start
     ratio_SWdown = ratio_SWdown.fillna(method="pad")
     # conform to `data_tstep_kdn_adj` index for actual period used
@@ -529,7 +537,7 @@ def resample_sum(data_raw_precip, tstep_in, tstep_mod):
     data_tstep_precip_adj = ratio_precip * data_raw_precip.copy().shift(
         -tstep_in + tstep_mod,
         freq="s",
-    ).resample("{tstep}s".format(tstep=tstep_mod)).mean().interpolate(
+    ).resample(f"{tstep_mod}{str_second}").mean().interpolate(
         method="polynomial", order=0
     )
     # assign a new start with nan
@@ -538,7 +546,7 @@ def resample_sum(data_raw_precip, tstep_in, tstep_mod):
     # data_tstep_precip_adj.loc[t_start, :] = np.nan
     data_tstep_precip_adj.loc[t_end] = np.nan
     data_tstep_precip_adj = data_tstep_precip_adj.sort_index()
-    data_tstep_precip_adj = data_tstep_precip_adj.asfreq(f"{tstep_mod}s")
+    data_tstep_precip_adj = data_tstep_precip_adj.asfreq(f"{tstep_mod}{str_second}")
     data_tstep_precip_adj = data_tstep_precip_adj.fillna(value=0.0)
     return data_tstep_precip_adj
 
@@ -557,7 +565,9 @@ def resample_linear_inst(data_raw_inst, tstep_in, tstep_mod):
 
     # re-align the index so after resampling we can have filled heading part
     data_raw_tstep = data_raw_tstep.sort_index()
-    data_raw_tstep = data_raw_tstep.asfreq(f"{tstep_mod}s").interpolate(method="linear")
+    data_raw_tstep = data_raw_tstep.asfreq(f"{tstep_mod}{str_second}").interpolate(
+        method="linear"
+    )
     # fill gaps with valid values
     data_tstep = data_raw_tstep.copy().bfill().ffill().dropna(how="all")
 
@@ -584,7 +594,7 @@ def resample_linear_avg(data_raw_avg, tstep_in, tstep_mod):
     data_raw_tstep = data_raw_tstep.sort_index()
 
     # get proper timestamps for filling up
-    data_tstep = data_raw_tstep.asfreq(f"{tstep_mod}s")
+    data_tstep = data_raw_tstep.asfreq(f"{tstep_mod}{str_second}")
 
     # insert the shifted
     idx_comb = (
