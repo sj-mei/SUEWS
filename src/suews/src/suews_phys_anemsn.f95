@@ -1,4 +1,6 @@
 MODULE AnEmsn_module
+   USE get_prof_module, ONLY: get_Prof_SpecTime_inst, get_Prof_SpecTime_mean
+
    IMPLICIT NONE
 
    !===================================================================================
@@ -98,8 +100,8 @@ CONTAINS
          ih
 
       REAL(KIND(1D0)) :: &
-         get_Prof_SpecTime_inst, &
-         get_Prof_SpecTime_mean, & !external function to get profile value at specified timestamp
+         ! get_Prof_SpecTime_inst, &
+         ! get_Prof_SpecTime_mean, & !external function to get profile value at specified timestamp
          HDD_daily, & !daily HDD
          CDD_daily, & !daily HDD
          Tair_avg_daily, & !daily mean air temperature

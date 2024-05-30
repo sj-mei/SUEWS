@@ -30,3 +30,6 @@
 
 - 18 Oct 2023:
   - [change] `Snow` is temporarily turned off for easier implementation of other functionalities; will be brought back in the future.
+
+- 17 May 2024:
+  - [maintenance] Changed the python build backend to `meson` and `ninja` for faster builds (#257)
