@@ -33,9 +33,7 @@ def get_output_info_df():
 var_df = get_output_info_df()
 
 # dict as var_df but keys in lowercase
-var_df_lower = {
-    group.lower(): group for group in var_df.index.levels[0].str.strip()
-}
+var_df_lower = {group.lower(): group for group in var_df.index.levels[0].str.strip()}
 
 #  generate dict of functions to apply for each variable
 dict_func_aggm = {
@@ -249,3 +247,51 @@ def proc_df_rsl(df_output, debug=False):
         return df_rsl_proc, df_rsl_debug
     else:
         return df_rsl_proc
+
+
+def is_numeric(obj):
+    """
+    Check if an object is numeric.
+
+    Parameters:
+    obj (object): The object to be checked.
+
+    Returns:
+    bool: True if the object is numeric, False otherwise.
+    """
+    if isinstance(obj, (int, float, complex)):
+        return True
+    if isinstance(obj, np.ndarray):
+        return np.issubdtype(obj.dtype, np.number)
+    return False
+
+
+def pack_dict_debug(dts_debug):
+    """
+    Packs the debug information from the given `dts_debug` object into a dictionary.
+
+    Args:
+        dts_debug: The debug object containing the debug information.
+
+    Returns:
+        dict: A dictionary containing the packed debug information.
+    """
+    list_props = [
+        attr
+        for attr in dir(dts_debug)
+        if not attr.startswith("_")
+        and not attr.endswith("_")
+        and not callable(getattr(dts_debug, attr))
+    ]
+    dict_debug = {
+        prop: (
+            # iterate over the list of properties to get numerical values
+            getattr(dts_debug, prop)
+            if is_numeric(getattr(dts_debug, prop))
+            # if some properties are fortran derived types then iterate use this function
+            else pack_dict_debug(getattr(dts_debug, prop))
+        )
+        for prop in list_props
+    }
+
+    return dict_debug

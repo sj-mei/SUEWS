@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
-                            SUEWS_STATE, &
+                            SUEWS_STATE, SUEWS_DEBUG, &
                             output_line, output_block
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
@@ -73,6 +73,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Main_DTS( &
       timer, forcing, config, siteInfo, &
       modState, &
+      debugState, &
       outputLine) ! output
 
       IMPLICIT NONE
@@ -86,6 +87,7 @@ CONTAINS
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
 
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+      TYPE(SUEWS_DEBUG), INTENT(OUT) :: debugState
 
       TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
       ! ####################################################################################
@@ -331,6 +333,7 @@ CONTAINS
 
             ! ############# memory allocation for DTS variables (start) #############
             CALL modState_init%ALLOCATE(nlayer, ndepth)
+            CALL debugState%init(nlayer, ndepth)
             ! save initial values of model states
             modState_init = modState
 
@@ -466,11 +469,15 @@ CONTAINS
                   timer, config, forcing, siteInfo, & !input
                   modState) ! input/output:
 
+                  debugState%state_dailystate = modState
+
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
+
+                  debugState%state_soilmoist = modState
 
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
                !=================Gives the external and internal water uses per timestep=================
@@ -478,10 +485,14 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
 
+                  debugState%state_wateruse = modState
+
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
                CALL SUEWS_cal_AnthropogenicEmission_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
+
+                  debugState%state_anthroemis = modState
 
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
@@ -494,11 +505,15 @@ CONTAINS
                   modState, & ! input/output:
                   dataOutLineSPARTACUS) ! output
 
+                  debugState%state_qn = modState
+
                IF (diagnose == 1) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
                CALL SUEWS_cal_Qs_DTS( &
                   timer, config, forcing, siteInfo, & !input
                   modState, & ! input/output:
                   dataOutLineESTM)
+
+                  debugState%state_qs = modState
 
                !==================Energy related to snow melting/freezing processes=======
                IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -509,11 +524,15 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
 
+                  debugState%state_qhqe_lumps = modState
+
                !============= calculate water balance =============
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
                CALL SUEWS_cal_Water_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
+
+                  debugState%state_water = modState
                !============= calculate water balance end =============
 
                !===============Resistance Calculations=======================
@@ -521,6 +540,8 @@ CONTAINS
                CALL SUEWS_cal_Resistance_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
+
+                  debugState%state_resist = modState
                ! atmState, &
                ! roughnessState, &
                ! hydroState, &
@@ -555,6 +576,8 @@ CONTAINS
                   CALL SUEWS_cal_QE_DTS( &
                      timer, config, forcing, siteInfo, & ! input
                      modState) ! input/output:
+
+                     debugState%state_qe = modState
                   !======== Evaporation and surface state_id end========
                END IF
 
@@ -563,12 +586,16 @@ CONTAINS
                CALL SUEWS_cal_QH_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
+
+                  debugState%state_qh = modState
                !============ Sensible heat flux end ===============
 
                ! ============ update surface temperature of this iteration ===============
                CALL suews_update_tsurf( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
+
+                  debugState%state_tsurf = modState
 
                i_iter = i_iter + 1
                IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
@@ -591,11 +618,15 @@ CONTAINS
                modState, & ! input/output:
                dataoutLineRSL) ! output
 
+               debugState%state_rsl = modState
+
             ! ============ BIOGENIC CO2 FLUX =======================
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_BiogenCO2_DTS...'
             CALL SUEWS_cal_BiogenCO2_DTS( &
                timer, config, forcing, siteInfo, & ! input
                modState) ! input/output:
+
+               debugState%state_biogenco2 = modState
 
             ! calculations of diagnostics end
             !==============================================================
@@ -621,6 +652,8 @@ CONTAINS
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
                dataOutLineBEERS) ! output
+
+               debugState%state_beers = modState
 
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
@@ -7696,7 +7729,7 @@ CONTAINS
       WaterDist, WaterUseMethod, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      output_block_suews, mod_State_out) !output
+      output_block_suews, debug_state) !output
 
       IMPLICIT NONE
 
@@ -8025,7 +8058,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) :: StoreDrainPrm !coefficients used in drainage calculation [-]
 
       ! lumped states
-      TYPE(SUEWS_STATE), INTENT(OUT) :: mod_state_out
+      TYPE(SUEWS_DEBUG), INTENT(OUT) :: debug_state
       TYPE(SUEWS_STATE) :: mod_state
       ! ############# DTS variables (end) #############
 
@@ -8853,6 +8886,7 @@ CONTAINS
          CALL SUEWS_cal_Main_DTS( &
             timer, forcing, config, siteInfo, &
             mod_State, &
+            debug_state, &
             output_line_suews) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -8892,7 +8926,7 @@ CONTAINS
       snowState = mod_State%snowstate
       phenState = mod_State%phenstate
 
-      mod_state_out = mod_State
+      ! mod_state_out = mod_State
 
       HDD_id = anthroEmisState%HDD_id
 

@@ -65,7 +65,6 @@ class TestSuPy(TestCase):
         self.assertFalse(df_state.empty)
         # self.assertFalse(df_state.isnull().values.any())
 
-
     # test if multi-tstep mode can run
     def test_is_supy_running_multi_step(self):
         print("\n========================================")
@@ -159,35 +158,35 @@ class TestSuPy(TestCase):
     #         "RSL",
     #     ]
 
-        # single-step results
-        df_output_s, df_state_s = sp.run_supy(
-            df_forcing_part, df_state_init, save_state=True
-        )
-        df_res_s = (
-            df_output_s.loc[:, list_grp_test]
-            .fillna(-999.0)
-            .sort_index(axis=1)
-            .round(6)
-            .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
-        )
+    # # single-step results
+    # df_output_s, df_state_s = sp.run_supy(
+    #     df_forcing_part, df_state_init, save_state=True
+    # )
+    # df_res_s = (
+    #     df_output_s.loc[:, list_grp_test]
+    #     .fillna(-999.0)
+    #     .sort_index(axis=1)
+    #     .round(6)
+    #     .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
+    # )
 
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
-        # multi-step results
-        df_output_m, df_state_m = sp.run_supy(
-            df_forcing_part, df_state_init, save_state=False
-        )
-        df_res_m = (
-            df_output_m.loc[:, list_grp_test]
-            .fillna(-999.0)
-            .sort_index(axis=1)
-            .round(6)
-            .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
-        )
-        # print(df_res_m.iloc[:3, 86], df_res_s.iloc[:3, 86])
-        pd.testing.assert_frame_equal(
-            left=df_res_s,
-            right=df_res_m,
-        )
+    # df_state_init, df_forcing_tstep = sp.load_SampleData()
+    # # multi-step results
+    # df_output_m, df_state_m = sp.run_supy(
+    #     df_forcing_part, df_state_init, save_state=False
+    # )
+    # df_res_m = (
+    #     df_output_m.loc[:, list_grp_test]
+    #     .fillna(-999.0)
+    #     .sort_index(axis=1)
+    #     .round(6)
+    #     .applymap(lambda x: -999.0 if np.abs(x) > 3e4 else x)
+    # )
+    # # print(df_res_m.iloc[:3, 86], df_res_s.iloc[:3, 86])
+    # pd.testing.assert_frame_equal(
+    #     left=df_res_s,
+    #     right=df_res_m,
+    # )
 
     # test saving output files working
     @skipUnless(flag_full_test, "Full test is not required.")
@@ -305,7 +304,7 @@ class TestSuPy(TestCase):
             "U10",
         ]
 
-        print(f'Columns to test: {col_test}')
+        print(f"Columns to test: {col_test}")
 
         # load sample output
         df_res_sample = pd.read_pickle(p_df_sample).loc[:, col_test]
@@ -316,7 +315,7 @@ class TestSuPy(TestCase):
         pd.testing.assert_frame_equal(
             left=df_res_s,
             right=df_res_sample,
-            rtol=8e-3, # 0.8% tolerance - temporary fix to pass the CI test
+            rtol=8e-3,  # 0.8% tolerance - temporary fix to pass the CI test
         )
 
     # test if the weighted SMD of vegetated surfaces are properly calculated

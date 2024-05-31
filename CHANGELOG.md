@@ -33,3 +33,6 @@
 
 - 17 May 2024:
   - [maintenance] Changed the python build backend to `meson` and `ninja` for faster builds (#257)
+
+- 31 May 2024:
+  - [feature] Added `dict_debug` an optional output of `run_supy` to help debug the model (for developers: add a `debug` flag to `df_state` to activate this feature) (#233)

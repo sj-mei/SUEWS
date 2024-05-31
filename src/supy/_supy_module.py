@@ -371,16 +371,26 @@ def run_supy(
         )
     else:
         logger_supy.info(f"SuPy is running in serial mode")
-        df_output, df_state_final = run_supy_ser(
-            df_forcing, df_state_init, save_state, chunk_day
-        )
+        try:
+            res_supy = run_supy_ser(
+                df_forcing, df_state_init, save_state, chunk_day
+            )
+        except:
+            res_supy = run_supy_ser(
+                df_forcing, df_state_init, save_state, chunk_day
+            )
 
     # show simulation time
     end = time.time()
     logger_supy.info(f"Execution time: {(end - start):.1f} s")
     logger_supy.info(f"====================\n")
+    try:
+        df_output, df_state_final = res_supy
+        return df_output, df_state_final
+    except:
+        df_output, df_state_final, res_debug = res_supy
+        return df_output, df_state_final, res_debug
 
-    return df_output, df_state_final
 
 
 ##############################################################################
