@@ -35,7 +35,7 @@ CONTAINS
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
       MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
       PopDensDaytime, PopDensNighttime, &
-      Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
+      Tair, HDD_id, Qf_A, Qf_B, Qf_C, &
       AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
       BaseT_Heating, BaseT_Cooling, &
       TrafficRate, &
@@ -88,7 +88,7 @@ CONTAINS
          MaxQFMetab, & !Maximum QF Metabolism
          PopDensNighttime, & !Nighttime population density [ha-1] (i.e. residents)
          SurfaceArea, & !Surface area [m-2]
-         Temp_C !Air temperature
+         Tair !Ambient air temperature [degC], which can be from either the forcing or diagnostics (i.e. T2)
 
       REAL(KIND(1D0)), INTENT(out) :: &
          QF_SAHP, &
@@ -181,9 +181,9 @@ CONTAINS
          ! Weekday/weekend differences due to profile only
          ! Now scales with population density
 
-         IF (Temp_C < BaseT_Heating(iu)) THEN
+         IF (Tair < BaseT_Heating(iu)) THEN
             ! QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(BaseT_Heating(iu) - Temp_C))*AHDorNorT
-            QF_SAHP_heating = (AH_SLOPE_Heating(iu)*(BaseT_Heating(iu) - Temp_C))*AHDorNorT
+            QF_SAHP_heating = (AH_SLOPE_Heating(iu)*(BaseT_Heating(iu) - Tair))*AHDorNorT
          ELSE
             QF_SAHP_heating = 0
             !    QF_SAHP = AH_MIN(iu)*AHDorNorT

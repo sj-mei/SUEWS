@@ -280,6 +280,7 @@ def run_supy(
     logging_level=logging.INFO,
     check_input=False,
     serial_mode=False,
+    debug_mode=False,
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Perform supy simulation.
 
@@ -309,6 +310,8 @@ def run_supy(
         If set to `True`, SuPy simulation will be conducted in serial mode;
         a `False` flag will try parallel simulation if possible (Windows not supported, i.e., always serial).
         (the default is `False`).
+    debug_mode : bool, optional
+        If set to `True`, SuPy simulation will be conducted in debug mode, which will write out additional information for debugging purposes.
 
 
     Returns
@@ -368,16 +371,26 @@ def run_supy(
         )
     else:
         logger_supy.info(f"SuPy is running in serial mode")
-        df_output, df_state_final = run_supy_ser(
-            df_forcing, df_state_init, save_state, chunk_day
-        )
+        try:
+            res_supy = run_supy_ser(
+                df_forcing, df_state_init, save_state, chunk_day
+            )
+        except:
+            res_supy = run_supy_ser(
+                df_forcing, df_state_init, save_state, chunk_day
+            )
 
     # show simulation time
     end = time.time()
     logger_supy.info(f"Execution time: {(end - start):.1f} s")
     logger_supy.info(f"====================\n")
+    try:
+        df_output, df_state_final = res_supy
+        return df_output, df_state_final
+    except:
+        df_output, df_state_final, res_debug = res_supy
+        return df_output, df_state_final, res_debug
 
-    return df_output, df_state_final
 
 
 ##############################################################################

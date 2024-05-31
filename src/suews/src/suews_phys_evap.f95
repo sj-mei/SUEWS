@@ -6,6 +6,7 @@ CONTAINS
       EvapMethod, state_is, WetThresh_is, capStore_is, & !input
       vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, RS, RA, RB, tlv, &
       RSS, ev, qe) !output
+      ! RSS, ev, qe) !output
       !------------------------------------------------------------------------------
       !-Calculates evaporation for each surface from modified Penman-Monteith eqn
       !-State determines whether each surface type is dry or wet (wet/transition)

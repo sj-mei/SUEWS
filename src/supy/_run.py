@@ -26,7 +26,14 @@ from ._load import (
     list_var_output,
     list_var_output_multitsteps,
 )
-from ._post import pack_df_output_line, pack_df_output_array, pack_df_state
+from ._post import (
+    pack_df_output_line,
+    pack_df_output_array,
+    pack_df_state,
+    pack_dict_debug,
+    pack_df_debug,
+)
+
 
 from ._env import logger_supy
 
@@ -143,7 +150,12 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
     # main calculation:
 
     try:
-        res_suews_tstep_multi = sd.suews_cal_multitsteps(**dict_input)
+        res_suews_tstep_multi, res_mod_state = sd.suews_cal_multitsteps(**dict_input)
+        # TODO: #233 res_mod_state will be used in the future for debugging purpose
+        # convert res_mod_state to a dict
+        # Assuming dts_debug is your object instance
+        dict_debug = pack_dict_debug(res_mod_state)
+
     except Exception as ex:
         # show trace info
         # print(traceback.format_exc())
@@ -157,12 +169,13 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
         logger_supy.critical("SUEWS kernel error")
     else:
         # update state variables
-        # dict_state_end = copy.deepcopy(dict_input)
+        # use deep copy to avoid reference issue; also copy the initial dict_state_start
         dict_state_end = copy.deepcopy(dict_state_start)
 
+        # update state variables with the output of the model:
+        # note `dict_input` is updated with the output of the model
         dict_state_end.update(
             {var: dict_input[var] for var in list_var_inout_multitsteps}
-            # {var: dict_input[var] for var in list(dict_input.keys())}
         )
 
         # update timestep info
@@ -182,7 +195,7 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
         dict_output_array = dict(zip(list_var, list_arr))
         df_output_block = pack_df_output_block(dict_output_array, df_forcing_block)
 
-        return dict_state_end, df_output_block
+        return dict_state_end, df_output_block, dict_debug
 
 
 # dataframe based wrapper
@@ -381,7 +394,8 @@ def run_supy_ser(
                 suews_cal_tstep_multi(dict_state_input, df_forcing)
                 for dict_state_input in list_dict_state_input
             ]
-            list_dict_state_end, list_df_output = zip(*list_res_grid)
+
+            list_dict_state_end, list_df_output, list_dict_debug = zip(*list_res_grid)
 
         except:
             path_zip_debug = save_zip_debug(df_forcing, df_state_init)
@@ -406,6 +420,10 @@ def run_supy_ser(
         }
         dict_state.update(dict_state_final_tstep)
 
+        # collect debug info
+        dict_debug = {grid: debug for grid, debug in zip(list_grid, list_dict_debug)}
+        df_debug = pack_df_debug(dict_debug)
+
         # save results as time-aware DataFrame
         df_output0 = pd.concat(dict_df_output, names=["grid"]).sort_index()
         df_output = df_output0.replace(-999.0, np.nan)
@@ -423,15 +441,17 @@ def run_supy_ser(
     # end = time.time()
     # print(f'Execution time: {(end - start):.1f} s')
     # print(f'====================\n')
-
-    return df_output, df_state_final
+    if df_state_init["debug"].any().any():
+        return df_output, df_state_final, df_debug
+    else:
+        return df_output, df_state_final
 
 
 def run_save_supy(
     df_forcing_tstep, df_state_init_m, ind, save_state, n_yr, path_dir_temp
 ):
     # run supy in serial mode
-    df_output, df_state_final = run_supy_ser(
+    df_output, df_state_final, res_debug = run_supy_ser(
         df_forcing_tstep, df_state_init_m, save_state, n_yr
     )
     # save to path_dir_temp
