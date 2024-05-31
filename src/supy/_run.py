@@ -26,7 +26,14 @@ from ._load import (
     list_var_output,
     list_var_output_multitsteps,
 )
-from ._post import pack_df_output_line, pack_df_output_array, pack_df_state, pack_dict_debug
+from ._post import (
+    pack_df_output_line,
+    pack_df_output_array,
+    pack_df_state,
+    pack_dict_debug,
+    pack_df_debug,
+)
+
 
 from ._env import logger_supy
 
@@ -388,9 +395,7 @@ def run_supy_ser(
                 for dict_state_input in list_dict_state_input
             ]
 
-            list_dict_state_end, list_df_output, list_dict_debug = zip(
-                *list_res_grid
-            )
+            list_dict_state_end, list_df_output, list_dict_debug = zip(*list_res_grid)
 
         except:
             path_zip_debug = save_zip_debug(df_forcing, df_state_init)
@@ -417,6 +422,7 @@ def run_supy_ser(
 
         # collect debug info
         dict_debug = {grid: debug for grid, debug in zip(list_grid, list_dict_debug)}
+        df_debug = pack_df_debug(dict_debug)
 
         # save results as time-aware DataFrame
         df_output0 = pd.concat(dict_df_output, names=["grid"]).sort_index()
@@ -436,7 +442,7 @@ def run_supy_ser(
     # print(f'Execution time: {(end - start):.1f} s')
     # print(f'====================\n')
     if df_state_init["debug"].any().any():
-        return df_output, df_state_final, dict_debug
+        return df_output, df_state_final, df_debug
     else:
         return df_output, df_state_final
 

@@ -839,21 +839,21 @@ MODULE SUEWS_DEF_DTS
       ! Naming convention: state_XX_YYY
       ! XX: sequence number in the main SUEWS calculation
       ! YYY: name of the physical module
-      TYPE(SUEWS_STATE) :: state_dailystate
-      TYPE(SUEWS_STATE) :: state_soilmoist
-      TYPE(SUEWS_STATE) :: state_wateruse
-      TYPE(SUEWS_STATE) :: state_anthroemis
-      TYPE(SUEWS_STATE) :: state_qn
-      TYPE(SUEWS_STATE) :: state_qs
-      TYPE(SUEWS_STATE) :: state_qhqe_lumps
-      TYPE(SUEWS_STATE) :: state_water
-      TYPE(SUEWS_STATE) :: state_resist
-      TYPE(SUEWS_STATE) :: state_qe
-      TYPE(SUEWS_STATE) :: state_qh
-      TYPE(SUEWS_STATE) :: state_tsurf
-      TYPE(SUEWS_STATE) :: state_rsl
-      TYPE(SUEWS_STATE) :: state_biogenco2
-      TYPE(SUEWS_STATE) :: state_beers
+      TYPE(SUEWS_STATE) :: state_01_dailystate
+      TYPE(SUEWS_STATE) :: state_02_soilmoist
+      TYPE(SUEWS_STATE) :: state_03_wateruse
+      TYPE(SUEWS_STATE) :: state_04_anthroemis
+      TYPE(SUEWS_STATE) :: state_05_qn
+      TYPE(SUEWS_STATE) :: state_06_qs
+      TYPE(SUEWS_STATE) :: state_07_qhqe_lumps
+      TYPE(SUEWS_STATE) :: state_08_water
+      TYPE(SUEWS_STATE) :: state_09_resist
+      TYPE(SUEWS_STATE) :: state_10_qe
+      TYPE(SUEWS_STATE) :: state_11_qh
+      TYPE(SUEWS_STATE) :: state_12_tsurf
+      TYPE(SUEWS_STATE) :: state_13_rsl
+      TYPE(SUEWS_STATE) :: state_14_biogenco2
+      TYPE(SUEWS_STATE) :: state_15_beers
       ! TYPE(SUEWS_STATE) :: state_snow ! unavailable - to be added #234
    CONTAINS
       PROCEDURE :: init => init_suews_debug
@@ -866,19 +866,19 @@ CONTAINS
       INTEGER, INTENT(in) :: nlayer, ndepth
 
       ! Initialise the SUEWS_DEBUG type
-      CALL self%state_dailystate%ALLOCATE(nlayer, ndepth)
-      CALL self%state_soilmoist%ALLOCATE(nlayer, ndepth)
-      CALL self%state_wateruse%ALLOCATE(nlayer, ndepth)
-      CALL self%state_anthroemis%ALLOCATE(nlayer, ndepth)
-      CALL self%state_qn%ALLOCATE(nlayer, ndepth)
-      CALL self%state_qs%ALLOCATE(nlayer, ndepth)
-      CALL self%state_resist%ALLOCATE(nlayer, ndepth)
-      CALL self%state_qe%ALLOCATE(nlayer, ndepth)
-      CALL self%state_qh%ALLOCATE(nlayer, ndepth)
-      CALL self%state_tsurf%ALLOCATE(nlayer, ndepth)
-      CALL self%state_rsl%ALLOCATE(nlayer, ndepth)
-      CALL self%state_biogenco2%ALLOCATE(nlayer, ndepth)
-      CALL self%state_beers%ALLOCATE(nlayer, ndepth)
+      CALL self%state_01_dailystate%ALLOCATE(nlayer, ndepth)
+      CALL self%state_02_soilmoist%ALLOCATE(nlayer, ndepth)
+      CALL self%state_03_wateruse%ALLOCATE(nlayer, ndepth)
+      CALL self%state_04_anthroemis%ALLOCATE(nlayer, ndepth)
+      CALL self%state_05_qn%ALLOCATE(nlayer, ndepth)
+      CALL self%state_06_qs%ALLOCATE(nlayer, ndepth)
+      CALL self%state_09_resist%ALLOCATE(nlayer, ndepth)
+      CALL self%state_10_qe%ALLOCATE(nlayer, ndepth)
+      CALL self%state_11_qh%ALLOCATE(nlayer, ndepth)
+      CALL self%state_12_tsurf%ALLOCATE(nlayer, ndepth)
+      CALL self%state_13_rsl%ALLOCATE(nlayer, ndepth)
+      CALL self%state_14_biogenco2%ALLOCATE(nlayer, ndepth)
+      CALL self%state_15_beers%ALLOCATE(nlayer, ndepth)
       ! CALL self%state_snow%init() ! unavailable - to be added #234
    END SUBROUTINE init_suews_debug
 

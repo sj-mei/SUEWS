@@ -295,3 +295,68 @@ def pack_dict_debug(dts_debug):
     }
 
     return dict_debug
+
+
+def has_dict(d):
+    """
+    Check if a dictionary contains any values that are dictionaries.
+
+    Parameters:
+    d (dict): The dictionary to check.
+
+    Returns:
+    bool: True if the dictionary contains any values that are dictionaries, False otherwise.
+    """
+    return any(isinstance(v, dict) for v in d.values())
+
+
+def pack_df_debug_raw(dict_debug):
+    """
+    Packs a dictionary of debug information into a pandas DataFrame.
+
+    Args:
+        dict_debug (dict): A dictionary containing debug information.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing the packed debug information.
+    """
+
+    dict_df_debug = {}
+    for k, v in dict_debug.items():
+
+        if has_dict(v):
+            dict_df_debug[k] = pack_df_debug_raw(v)
+        else:
+            dict_df_debug[k] = pd.Series(v)
+
+    df_debug = pd.concat(dict_df_debug, axis=0)
+
+    return df_debug
+
+
+def pack_df_debug(dict_debug):
+    """
+    Packs the debug dictionary into a DataFrame.
+
+    Args:
+        dict_debug (dict): The debug dictionary containing the debug information.
+
+    Returns:
+        pandas.DataFrame: The packed DataFrame with debug information.
+
+    """
+    df_debug_raw = pack_df_debug_raw(dict_debug)
+    df_debug_raw.index = df_debug_raw.index.rename(
+        [
+            "grid",
+            "step",
+            "group",
+            "var",
+        ]
+    )
+    df_debug = (
+        df_debug_raw.unstack(level=["group", "var"])
+        .sort_index(level=0, axis=1)
+        .dropna(axis=1, how="all")
+    )
+    return df_debug
