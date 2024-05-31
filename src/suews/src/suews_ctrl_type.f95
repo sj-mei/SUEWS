@@ -855,32 +855,32 @@ MODULE SUEWS_DEF_DTS
       TYPE(SUEWS_STATE) :: state_biogenco2
       TYPE(SUEWS_STATE) :: state_beers
       ! TYPE(SUEWS_STATE) :: state_snow ! unavailable - to be added #234
-      CONTAINS
-         PROCEDURE :: init => init_suews_debug
+   CONTAINS
+      PROCEDURE :: init => init_suews_debug
    END TYPE SUEWS_DEBUG
 
 CONTAINS
 
-subroutine init_suews_debug(self, nlayer, ndepth)
-   CLASS(SUEWS_DEBUG), INTENT(inout) :: self
-   INTEGER, INTENT(in) :: nlayer, ndepth
+   SUBROUTINE init_suews_debug(self, nlayer, ndepth)
+      CLASS(SUEWS_DEBUG), INTENT(inout) :: self
+      INTEGER, INTENT(in) :: nlayer, ndepth
 
-   ! Initialise the SUEWS_DEBUG type
-   CALL self%state_dailystate%ALLOCATE(nlayer, ndepth)
-   CALL self%state_soilmoist%ALLOCATE(nlayer, ndepth)
-   CALL self%state_wateruse%ALLOCATE(nlayer, ndepth)
-   CALL self%state_anthroemis%ALLOCATE(nlayer, ndepth)
-   CALL self%state_qn%ALLOCATE(nlayer, ndepth)
-   CALL self%state_qs%ALLOCATE(nlayer, ndepth)
-   CALL self%state_resist%ALLOCATE(nlayer, ndepth)
-   CALL self%state_qe%ALLOCATE(nlayer, ndepth)
-   CALL self%state_qh%ALLOCATE(nlayer, ndepth)
-   CALL self%state_tsurf%ALLOCATE(nlayer, ndepth)
-   CALL self%state_rsl%ALLOCATE(nlayer, ndepth)
-   CALL self%state_biogenco2%ALLOCATE(nlayer, ndepth)
-   CALL self%state_beers%ALLOCATE(nlayer, ndepth)
-   ! CALL self%state_snow%init() ! unavailable - to be added #234
-end subroutine init_suews_debug
+      ! Initialise the SUEWS_DEBUG type
+      CALL self%state_dailystate%ALLOCATE(nlayer, ndepth)
+      CALL self%state_soilmoist%ALLOCATE(nlayer, ndepth)
+      CALL self%state_wateruse%ALLOCATE(nlayer, ndepth)
+      CALL self%state_anthroemis%ALLOCATE(nlayer, ndepth)
+      CALL self%state_qn%ALLOCATE(nlayer, ndepth)
+      CALL self%state_qs%ALLOCATE(nlayer, ndepth)
+      CALL self%state_resist%ALLOCATE(nlayer, ndepth)
+      CALL self%state_qe%ALLOCATE(nlayer, ndepth)
+      CALL self%state_qh%ALLOCATE(nlayer, ndepth)
+      CALL self%state_tsurf%ALLOCATE(nlayer, ndepth)
+      CALL self%state_rsl%ALLOCATE(nlayer, ndepth)
+      CALL self%state_biogenco2%ALLOCATE(nlayer, ndepth)
+      CALL self%state_beers%ALLOCATE(nlayer, ndepth)
+      ! CALL self%state_snow%init() ! unavailable - to be added #234
+   END SUBROUTINE init_suews_debug
 
    SUBROUTINE output_line_init(self)
       CLASS(output_line), INTENT(inout) :: self
