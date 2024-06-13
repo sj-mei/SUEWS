@@ -2460,7 +2460,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_Main
 
-
 ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
    SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
