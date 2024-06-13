@@ -2837,8 +2837,8 @@ CONTAINS
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
       REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof !roof surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall !wall surface fraction [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_roof !surface temperature of roof[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_wall !surface temperature of wall[degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc0_out_roof !surface temperature of roof[degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc0_out_wall !surface temperature of wall[degC]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
 
       ! output arrays:
