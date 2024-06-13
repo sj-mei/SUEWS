@@ -671,9 +671,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_roof !surface temperature of roof[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_wall !surface temperature of wall[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc0_out_roof !surface temperature of roof[degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc0_out_wall !surface temperature of wall[degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc0_out_surf !surface temperature [degC]
 
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_roof ! heat storage flux for roof component [W m-2]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_roof ! net all-wave radiation of roof surface [W m-2]
@@ -1045,6 +1045,10 @@ CONTAINS
       ALLOCATE (self%tsfc_wall(num_layer))
       ALLOCATE (self%tsfc_surf(num_surf))
 
+      ALLOCATE (self%tsfc0_out_roof(num_layer))
+      ALLOCATE (self%tsfc0_out_wall(num_layer))
+      ALLOCATE (self%tsfc0_out_surf(num_surf))
+
       ALLOCATE (self%QS_roof(num_layer))
       ALLOCATE (self%QN_roof(num_layer))
       ALLOCATE (self%qe_roof(num_layer))
@@ -1068,6 +1072,9 @@ CONTAINS
       IF (ALLOCATED(self%tsfc_roof)) DEALLOCATE (self%tsfc_roof)
       IF (ALLOCATED(self%tsfc_wall)) DEALLOCATE (self%tsfc_wall)
       IF (ALLOCATED(self%tsfc_surf)) DEALLOCATE (self%tsfc_surf)
+      IF (ALLOCATED(self%tsfc0_out_roof)) DEALLOCATE (self%tsfc0_out_roof)
+      IF (ALLOCATED(self%tsfc0_out_wall)) DEALLOCATE (self%tsfc0_out_wall)
+      IF (ALLOCATED(self%tsfc0_out_surf)) DEALLOCATE (self%tsfc0_out_surf)
       IF (ALLOCATED(self%temp_surf)) DEALLOCATE (self%temp_surf)
       IF (ALLOCATED(self%QS_roof)) DEALLOCATE (self%QS_roof)
       IF (ALLOCATED(self%QN_roof)) DEALLOCATE (self%QN_roof)
