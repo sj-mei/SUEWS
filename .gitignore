@@ -403,3 +403,5 @@ supy_info.json
 src/supy_driver/build_dir
 src/supy_driver/log.build
 log.build
+save-AVL_6_vars273/
+AVL_*_vars*
