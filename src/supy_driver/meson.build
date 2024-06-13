@@ -18,7 +18,6 @@ if fortran_compiler.get_id() == 'gcc'
     '-g',
     '-O0',
     '-fcheck=all',
-    # '-fsanitize=address',
   ]
   fortran_program = find_program('gfortran')
 elif fortran_compiler.get_id() == 'intel'
@@ -33,8 +32,6 @@ cflags = [
   '-D_POSIX_C_SOURCE=200809L',
   '-g',
   '-O0',
-  '-fcheck=all',
-  # '-fsanitize=address',
 ]
 if c_compiler.get_id() == 'clang'
   cflags += ['-fbracket-depth=1024']
