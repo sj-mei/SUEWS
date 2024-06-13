@@ -12,7 +12,14 @@
 # set the compiler flags
 fortran_compiler = meson.get_compiler('fortran')
 if fortran_compiler.get_id() == 'gcc'
-  f90flags = ['-fPIC', '-fconvert=big-endian']
+  f90flags = [
+    '-fPIC',
+    '-fconvert=big-endian',
+    '-g',
+    '-O0',
+    '-fcheck=all',
+    # '-fsanitize=address',
+  ]
   fortran_program = find_program('gfortran')
 elif fortran_compiler.get_id() == 'intel'
   f90flags = ['-fpscomp logicals', '-fPIC']
@@ -21,7 +28,14 @@ endif
 add_global_arguments(f90flags, language: 'fortran')
 
 c_compiler = meson.get_compiler('c')
-cflags = ['-fPIC', '-D_POSIX_C_SOURCE=200809L']
+cflags = [
+  '-fPIC',
+  '-D_POSIX_C_SOURCE=200809L',
+  '-g',
+  '-O0',
+  '-fcheck=all',
+  # '-fsanitize=address',
+]
 if c_compiler.get_id() == 'clang'
   cflags += ['-fbracket-depth=1024']
 endif
@@ -72,8 +86,8 @@ endforeach
 src_f95_files = files(src_f95_files)
 
 src_f95_sub = [
-  'suews_ctrl_driver.f95',
   # 'suews_ctrl_const.f95',
+  'suews_ctrl_driver.f95',
   'suews_phys_anemsn.f95',
   'suews_phys_atmmoiststab.f95',
   'suews_phys_dailystate.f95',
@@ -196,7 +210,7 @@ fortranobject_c = incdir_f2py / 'fortranobject.c'
 inc_np = include_directories(incdir_numpy, incdir_f2py)
 
 # gh-25000
-dep_quadmath = fortran_compiler.find_library('quadmath', required: true)
+# dep_quadmath = fortran_compiler.find_library('quadmath', required: true)
 
 # Share this object across multiple modules.
 lib_fortranobject = static_library(
@@ -241,7 +255,7 @@ ext_supy_driver = py.extension_module(
   dependencies: [
     dep_py,
     dep_fortranobject,
-    dep_quadmath,
+    # dep_quadmath,
     dep_suews,
   ],
   install: true,
@@ -250,7 +264,7 @@ ext_supy_driver = py.extension_module(
 
 # move the generated `supy_driver.py` to the correct directory
 # this is kind of dummy, but it is necessary to make the installation work
-gen_supy_driver_py=custom_target(
+gen_supy_driver_py = custom_target(
   command: [
     py,
     '@CURRENT_SOURCE_DIR@/patch_supy_driver.py', # Path to your Python wrapper script
@@ -266,5 +280,3 @@ gen_supy_driver_py=custom_target(
 )
 ##################################################################
 # 5. add the test for the python module
-
-# TODO: add test for the python module

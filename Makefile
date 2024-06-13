@@ -82,6 +82,7 @@ clean:
 	$(MAKE) -C $(suews_dir) clean
 	$(MAKE) -C $(supy_dir) clean
 	$(MAKE) -C $(docs_dir) clean
+	rm -rf build dist *.egg-info
 
 # this is to test cibuildwheel locally
 cibw:
