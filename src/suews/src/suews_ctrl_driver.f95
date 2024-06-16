@@ -6214,7 +6214,7 @@ CONTAINS
                   ev0_surf, state_surf_in, soilstore_surf_in, &
                   runoffAGimpervious, runoffAGveg, runoffPipes, runoffwaterbody, & ! output:
                   ev_surf, state_surf, soilstore_surf, & ! output:
-                  runoff_surf )
+                  runoff_surf)
 
                ! update QE based on the water balance
                qe_surf = tlv*ev_surf
