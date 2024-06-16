@@ -396,16 +396,16 @@ CONTAINS
 
    ! TODO: continue here  for the multi-facet case
    SUBROUTINE cal_water_storage_surf( &
-      pin, nsh_real, & ! input:
+      pin, nsh_real, SnowFrac_in, & ! input:
       PipeCapacity, RunoffToWater, &
       addImpervious, addVeg, addWaterBody, FlowChange, &
       SoilStoreCap_surf, StateLimit_surf, &
       PervFraction, &
       sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
       ev_surf_in, state_surf_in, soilstore_surf_in, &
+      runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! inout
       ev_surf_out, state_surf_out, soilstore_surf_out, & ! output:
-      runoff_surf, &
-      runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid & ! output
+      runoff_surf &
       ) !output:
       IMPLICIT NONE
 
@@ -422,6 +422,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf !external water use of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: ev_surf_in !Evaporation
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_surf_in !Evaporation
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in !needed whether storage was already calculated in snow equations
 
       ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !Capacity of pipes to transfer water
       REAL(KIND(1D0)), INTENT(in) :: PipeCapacity !Capacity of pipes to transfer water
@@ -474,10 +475,10 @@ CONTAINS
       soilstore = soilstore_surf_in
 
       SurplusEvap = 0
-      runoffAGveg_grid = 0
-      runoffPipes_grid = 0
-      runoffAGimpervious_grid = 0
-      runoffWaterBody_grid = 0
+!      runoffAGveg_grid = 0
+!      runoffPipes_grid = 0
+!     runoffAGimpervious_grid = 0
+!      runoffWaterBody_grid = 0
       surplusWaterBody = 0
 
       ! surf_chang_grid = 0
@@ -489,7 +490,7 @@ CONTAINS
 
       DO is = 1, nsurf !For each surface in turn
          ! print *, 'cal_water_storage_surf: is = ', is
-         IF (sfr_surf(is) > 0) THEN
+         IF (SnowFrac_in(is) == 0 .AND. sfr_surf(is) > 0) THEN
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
             CALL cal_water_storage( &

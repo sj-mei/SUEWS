@@ -2100,7 +2100,7 @@ CONTAINS
                ev_per_tstep, runoff_per_tstep, &
                surf_chang_per_tstep, runoffPipes, &
                runoffwaterbody, &
-               runoffAGveg, runoffAGimpervious, rss_surf)
+               runoffAGveg, runoffAGimpervious, rss_surf, SnowFrac)
             !======== Evaporation and surface state_id end========
          END IF
          IF (Diagnose == 1) PRINT *, 'before SUEWS_cal_SoilState soilstore_id = ', soilstore_surf_next
@@ -5537,7 +5537,7 @@ CONTAINS
       ev_grid, runoff_grid, &
       surf_chang_grid, runoffPipes_grid, &
       runoffWaterBody_grid, &
-      runoffAGveg_grid, runoffAGimpervious_grid, rss_surf)
+      runoffAGveg_grid, runoffAGimpervious_grid, rss_surf, SnowFrac_in)
 
       IMPLICIT NONE
 
@@ -5683,6 +5683,7 @@ CONTAINS
       ! REAL(KIND(1D0)) :: runoffPipes_m3
       REAL(KIND(1D0)), INTENT(out) :: runoffAGveg_grid !Above ground runoff from vegetated surfaces for all surface area [mm]
       REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious_grid !Above ground runoff from impervious surface for all surface area [mm]
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in
 
       ! local:
       ! INTEGER :: is
@@ -5783,16 +5784,16 @@ CONTAINS
       END IF
       ! --- general suews surfaces ---
       CALL cal_water_storage_surf( &
-         pin, nsh_real, &
+         pin, nsh_real, SnowFrac_in, &
          PipeCapacity, RunoffToWater, & ! input:
          addImpervious, addVeg, addWaterBody, FlowChange, &
          SoilStoreCap_surf, StateLimit_surf, &
          PervFraction, &
          sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
          ev0_surf, state_surf_in, soilstore_surf_in, &
+         runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid, & ! inout
          ev_surf, state_surf_out, soilstore_surf_out, & ! output:
-         runoff_surf, &
-         runoffAGimpervious_grid, runoffAGveg_grid, runoffPipes_grid, runoffWaterBody_grid & ! output:
+         runoff_surf &
          )
 
       ! update QE based on the water balance
@@ -5952,7 +5953,7 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(out) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
 
       ! local:
-      ! INTEGER :: is
+      INTEGER :: is
 
       ! REAL(KIND(1D0)) :: runoff_per_interval
       ! REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id_out
@@ -5968,7 +5969,7 @@ CONTAINS
       REAL(KIND(1D0)) :: capStore_builing ! aggregated storage capacity of building facets[mm]
       REAL(KIND(1D0)) :: runoff_building !aggregated Runoff of building facets [mm]
       REAL(KIND(1D0)) :: qe_building !aggregated qe of building facets[W m-2]
-
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: drain
       REAL(KIND(1D0)), DIMENSION(7) :: capStore_surf ! current storage capacity [mm]
 
       ! CALL hydroState_next%allocHydro(nlayer)

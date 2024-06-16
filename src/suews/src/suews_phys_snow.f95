@@ -526,11 +526,6 @@ CONTAINS
 
       INTEGER, DIMENSION(nsurf), INTENT(in) :: snowCalcSwitch
 
-      ! INTEGER,INTENT(in)::ConifSurf
-      ! INTEGER,INTENT(in)::BSoilSurf
-      ! INTEGER,INTENT(in)::BldgSurf
-      ! INTEGER,INTENT(in)::PavSurf
-      ! INTEGER,INTENT(in)::WaterSurf
       INTEGER, INTENT(in) :: EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
       INTEGER, DIMENSION(3), INTENT(in) :: DayofWeek_id
 
@@ -1022,20 +1017,6 @@ CONTAINS
          swe = swe + SnowPack(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
          MwStore = MwStore + SnowWater(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
 
-         !if (id==6.and.it==13.and.imin==20) then!
-         !if (id==85.and.it==3.and.imin==10) then!
-         ! if (id==92.and.it==21.and.imin==35) then!
-         !  write(*,*)  ((SnowPack(is)+SnowWater(is))-snowTotInit)*sfr_surf(is)*(1-SnowFrac(is)),&
-         !              runoff(is)*sfr_surf(is)*(1-SnowFrac(is)),&
-         !              ev*sfr_surf(is)*(1-SnowFrac(is)),&
-         !              (state_id(is)-stateOld(is))*sfr_surf(is)*(1-SnowFrac(is)),Precip*sfr_surf(is)
-         !  write(*,*)  changSnow(is),runoff(is),ev,chang(is),runoffTest,FreezState(is) !changSnow(is)-freezMelt(is)
-         !  write(*,*)  is,Precip,runoff_per_tstep,ev_per_tstep,surf_chang_per_tstep,chSnow_per_interval
-         !  write(*,*)  is,Precip-runoff_per_tstep-ev_per_tstep,surf_chang_per_tstep+chSnow_per_interval
-         !  write(*,*)  is,SnowFrac(is),sfr_surf(is),sfr_surf(is)*ev_snow(is)
-         !  pause
-         ! endif
-
          !Only now update the new snow fractions both in the case that snow existing already on ground
          !and snow forms at the current timestep
          IF (snowFracFresh1 > 0) SnowFrac(is) = snowFracFresh1
@@ -1090,40 +1071,6 @@ CONTAINS
       ! ! Calculate overall snow water equivalent
       ! swe = swe + SnowPack(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
       ! MwStore = MwStore + SnowWater(is)*sfr_surf(is)*MAX(SnowFrac(is), snowfracOld)
-
-      ! !if (id==6.and.it==13.and.imin==20) then!
-      ! !if (id==85.and.it==3.and.imin==10) then!
-      ! ! if (id==92.and.it==21.and.imin==35) then!
-      ! !  write(*,*)  ((SnowPack(is)+SnowWater(is))-snowTotInit)*sfr_surf(is)*(1-SnowFrac(is)),&
-      ! !              runoff(is)*sfr_surf(is)*(1-SnowFrac(is)),&
-      ! !              ev*sfr_surf(is)*(1-SnowFrac(is)),&
-      ! !              (state_id(is)-stateOld(is))*sfr_surf(is)*(1-SnowFrac(is)),Precip*sfr_surf(is)
-      ! !  write(*,*)  changSnow(is),runoff(is),ev,chang(is),runoffTest,FreezState(is) !changSnow(is)-freezMelt(is)
-      ! !  write(*,*)  is,Precip,runoff_per_tstep,ev_per_tstep,surf_chang_per_tstep,chSnow_per_interval
-      ! !  write(*,*)  is,Precip-runoff_per_tstep-ev_per_tstep,surf_chang_per_tstep+chSnow_per_interval
-      ! !  write(*,*)  is,SnowFrac(is),sfr_surf(is),sfr_surf(is)*ev_snow(is)
-      ! !  pause
-      ! ! endif
-
-      ! !Only now update the new snow fractions both in the case that snow existing already on ground
-      ! !and snow forms at the current timestep
-      ! IF (snowFracFresh1 > 0) SnowFrac(is) = snowFracFresh1
-      ! IF (snowFracFresh2 > 0) SnowFrac(is) = snowFracFresh2
-
-      ! !Calculate new snow fraction here.
-      ! !Tässä ongelmana että snow fraction muuttuu vain kun on sulamisvettä ja on vika tunti.
-      ! !Tämä ei juuri koskaan toteudu johtuen lämpötilan vuorokausisyklistä
-      ! !Kokeile tässä ajaa kahdella tavalla 1) ei tarvita Mw:tä
-      ! !                                    2) päivitys voi tapahtua millon vain
-      ! !if (SnowFractionChoice==2.and.imin==(nsh_real-1)/nsh_real*60) then
-      ! IF (SnowFractionChoice == 2) THEN
-      !    IF (SnowPack(is) > 0 .AND. mw_ind(is) > 0) THEN
-      !       SnowFrac(is) = SnowDepletionCurve(is, SnowPack(is), SnowPackLimit(is))
-      !       IF (SnowFrac(is) < 0.001) SnowFrac(is) = 0.001 !The snow fraction minimum is 1% of the surface
-      !    ELSEIF (SnowPack(is) == 0) THEN
-      !       SnowFrac(is) = 0
-      !    END IF
-      ! END IF
 
       RETURN
 
