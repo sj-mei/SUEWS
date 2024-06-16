@@ -7634,7 +7634,10 @@ CONTAINS
          ! get individual building fractions of each layer
          ! NB.: sum(sfr_roof) = building_frac(1)
          sfr_roof = 0.
-         IF (nlayer > 1) sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
+         IF (nlayer > 1) sfr_roof(1:nlayer - 1) = &
+            MAX( &
+            building_frac(1:nlayer - 1) - building_frac(2:nlayer), &
+            0.01) ! minimum value for sfr_roof to avoid zero fractions when adjacent layers have the same building fraction
          sfr_roof(nlayer) = building_frac(nlayer)
 
          ! get individual net building height of each layer
