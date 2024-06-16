@@ -5991,6 +5991,7 @@ CONTAINS
          atmState => modState%atmState, &
          heatState => modState%heatState, &
          hydroState => modState%hydroState, &
+         snowstate => modState%snowState, &
          phenState => modState%phenState &
          )
 
@@ -6092,6 +6093,7 @@ CONTAINS
             tot_chang_per_tstep => hydroState%tot_chang_per_tstep, &
             SoilState => hydroState%SoilState, &
             StoreDrainPrm => phenState%StoreDrainPrm, &
+            snowfrac_in => snowstate%SnowFrac, &
             SMDMethod => config%SMDMethod, &
             EvapMethod => config%EvapMethod, &
             Diagnose => config%Diagnose &
@@ -6203,17 +6205,16 @@ CONTAINS
                END IF
                ! --- general suews surfaces ---
                CALL cal_water_storage_surf( &
-                  pin, nsh_real, &
+                  pin, nsh_real, SnowFrac_in, &
                   PipeCapacity, RunoffToWater, & ! input:
                   addImpervious, addVeg, addWaterBody, FlowChange, &
                   SoilStoreCap_surf, StateLimit_surf, &
                   PervFraction, &
                   sfr_surf, drain_surf, AddWater_surf, frac_water2runoff_surf, WU_surf, &
                   ev0_surf, state_surf_in, soilstore_surf_in, &
+                  runoffAGimpervious, runoffAGveg, runoffPipes, runoffwaterbody, & ! output:
                   ev_surf, state_surf, soilstore_surf, & ! output:
-                  runoff_surf, &
-                  runoffAGimpervious, runoffAGveg, runoffPipes, runoffwaterbody & ! output:
-                  )
+                  runoff_surf )
 
                ! update QE based on the water balance
                qe_surf = tlv*ev_surf
