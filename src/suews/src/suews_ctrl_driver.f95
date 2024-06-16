@@ -9,12 +9,15 @@ MODULE SUEWS_Driver
    ! 2. constant variables
 
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
+   USE time_module, ONLY: suews_cal_dectime, SUEWS_cal_tstep, SUEWS_cal_weekday, &
+                          SUEWS_cal_DLS
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters, SUEWS_cal_RoughnessParameters_DTS
+   USE OHM_module, ONLY: OHM
    USE ESTM_module, ONLY: ESTM
    USE EHC_module, ONLY: EHC
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
@@ -41,7 +44,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
-      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutESTMExt
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main
@@ -73,7 +76,7 @@ MODULE SUEWS_Driver
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSUEWS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSnow
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockESTM
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockESTMExt
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockEHC
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockRSL
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockBEERS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDebug
@@ -90,7 +93,7 @@ MODULE SUEWS_Driver
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC) :: dataOutLineEHC
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug) :: dataOutLineDebug
@@ -582,7 +585,7 @@ CONTAINS
       this_line%dataOutLineSUEWS = -999.0
       this_line%dataOutLineSnow = -999.0
       this_line%dataOutLineESTM = -999.0
-      this_line%dataOutLineESTMExt = -999.0
+      this_line%dataOutLineEHC = -999.0
       this_line%dataOutLineRSL = -999.0
       this_line%dataOutLineBEERS = -999.0
       this_line%dataOutLineDebug = -999.0
@@ -598,7 +601,7 @@ CONTAINS
       ALLOCATE (this_block%dataOutBlockSUEWS(len, ncolumnsDataOutSUEWS))
       ALLOCATE (this_block%dataOutBlockSnow(len, ncolumnsDataOutSnow))
       ALLOCATE (this_block%dataOutBlockESTM(len, ncolumnsDataOutESTM))
-      ALLOCATE (this_block%dataOutBlockESTMExt(len, ncolumnsDataOutESTMExt))
+      ALLOCATE (this_block%dataOutBlockEHC(len, ncolumnsDataOutEHC))
       ALLOCATE (this_block%dataOutBlockRSL(len, ncolumnsDataOutRSL))
       ALLOCATE (this_block%dataOutBlockBEERS(len, ncolumnsDataOutBEERS))
       ALLOCATE (this_block%dataOutBlockDebug(len, ncolumnsDataOutDebug))
@@ -609,7 +612,7 @@ CONTAINS
       this_block%dataOutBlockSUEWS = -999.0
       this_block%dataOutBlockSnow = -999.0
       this_block%dataOutBlockESTM = -999.0
-      this_block%dataOutBlockESTMExt = -999.0
+      this_block%dataOutBlockEHC = -999.0
       this_block%dataOutBlockRSL = -999.0
       this_block%dataOutBlockBEERS = -999.0
       this_block%dataOutBlockDebug = -999.0
@@ -624,7 +627,7 @@ CONTAINS
       IF (ALLOCATED(this_line%dataOutBlockSUEWS)) DEALLOCATE (this_line%dataOutBlockSUEWS)
       IF (ALLOCATED(this_line%dataOutBlockSnow)) DEALLOCATE (this_line%dataOutBlockSnow)
       IF (ALLOCATED(this_line%dataOutBlockESTM)) DEALLOCATE (this_line%dataOutBlockESTM)
-      IF (ALLOCATED(this_line%dataOutBlockESTMExt)) DEALLOCATE (this_line%dataOutBlockESTMExt)
+      IF (ALLOCATED(this_line%dataOutBlockEHC)) DEALLOCATE (this_line%dataOutBlockEHC)
       IF (ALLOCATED(this_line%dataOutBlockRSL)) DEALLOCATE (this_line%dataOutBlockRSL)
       IF (ALLOCATED(this_line%dataOutBlockBEERS)) DEALLOCATE (this_line%dataOutBlockBEERS)
       IF (ALLOCATED(this_line%dataOutBlockDebug)) DEALLOCATE (this_line%dataOutBlockDebug)
@@ -717,7 +720,7 @@ CONTAINS
       ! datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
       ! dataOutLineBEERS, & !output
       ! dataOutLineDebug, dataOutLineSPARTACUS, &
-      ! dataOutLineESTMExt, &
+      ! dataOutLineEHC, &
       ! dataOutLineDailyState) !output
 
       IMPLICIT NONE
@@ -1010,7 +1013,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5) :: dataOutLineEHC
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLineDebug
@@ -1467,7 +1470,7 @@ CONTAINS
       ! initialise output variables
       dataOutLineSnow = -999.
       dataOutLineESTM = -999.
-      dataOutLineESTMExt = -999.
+      dataOutLineEHC = -999.
       dataoutLineRSL = -999.
       dataOutLineBEERS = -999.
       dataOutLineDebug = -999.
@@ -2141,7 +2144,7 @@ CONTAINS
          z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS) !output
 
-      CALL ESTMExt_update_outputLine( &
+      CALL EHC_update_outputLine( &
          iy, id, it, imin, dectime, nlayer, & !input
          tsfc_out_surf, qs_surf, &
          tsfc_out_roof, &
@@ -2158,7 +2161,7 @@ CONTAINS
          QH_wall, &
          state_wall, &
          soilstore_wall, &
-         datetimeLine, dataOutLineESTMExt) !output
+         datetimeLine, dataOutLineEHC) !output
 
       ! daily state_id:
       CALL update_DailyStateLine( &
@@ -2195,7 +2198,7 @@ CONTAINS
       CALL output_line_init(output_line_suews)
       output_line_suews%datetimeLine = datetimeLine
       output_line_suews%dataOutLineSUEWS = [datetimeLine, dataOutLineSUEWS]
-      output_line_suews%dataOutLineESTMExt = [datetimeLine, dataOutLineESTMExt]
+      output_line_suews%dataOutLineEHC = [datetimeLine, dataOutLineEHC]
       output_line_suews%dataOutLineDailyState = [datetimeLine, dataOutLineDailyState]
       output_line_suews%dataOutLineBEERS = [datetimeLine, dataOutLineBEERS]
       output_line_suews%dataOutLineDebug = [datetimeLine, dataOutLineDebug]
@@ -2279,7 +2282,7 @@ CONTAINS
       ! datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
       ! dataOutLineBEERS, & !output
       ! dataOutLineDebug, dataOutLineSPARTACUS, &
-      ! dataOutLineESTMExt, &
+      ! dataOutLineEHC, &
       ! dataOutLineDailyState) !output
 
       IMPLICIT NONE
@@ -2629,7 +2632,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5) :: dataOutLineEHC
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLineDebug
@@ -2835,8 +2838,8 @@ CONTAINS
       TYPE(HEAT_STATE) :: heatState_in, heatState_out
       REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_roof !roof surface fraction [-]
       REAL(KIND(1D0)), DIMENSION(nlayer) :: sfr_wall !wall surface fraction [-]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_roof !surface temperature of roof[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_wall !surface temperature of wall[degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc0_out_roof !surface temperature of roof[degC]
+      REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc0_out_wall !surface temperature of wall[degC]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
 
       ! output arrays:
@@ -3707,7 +3710,7 @@ CONTAINS
       ! initialise output variables
       dataOutLineSnow = -999.
       dataOutLineESTM = -999.
-      dataOutLineESTMExt = -999.
+      dataOutLineEHC = -999.
       dataoutLineRSL = -999.
       dataOutLineBEERS = -999.
       dataOutLineDebug = -999.
@@ -4905,7 +4908,7 @@ CONTAINS
          z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS) !output
 
-      ! CALL ESTMExt_update_outputLine( &
+      ! CALL EHC_update_outputLine( &
       !    iy, id, it, imin, dectime, nlayer, & !input
       !    tsfc_out_surf, qs_surf, &
       !    tsfc_out_roof, &
@@ -4922,8 +4925,8 @@ CONTAINS
       !    QH_wall, &
       !    state_wall, &
       !    soilstore_wall, &
-      !    datetimeLine, dataOutLineESTMExt) !output
-      CALL ESTMExt_update_outputLine( &
+      !    datetimeLine, dataOutLineEHC) !output
+      CALL EHC_update_outputLine( &
          timer%iy, timer%id, timer%it, timer%imin, dectime, nlayer, & !input
          heatState_out%tsfc_surf, qs_surf, &
          heatState_out%tsfc_roof, &
@@ -4940,7 +4943,7 @@ CONTAINS
          QH_wall, &
          hydroState%state_wall, &
          hydroState%soilstore_wall, &
-         datetimeLine, dataOutLineESTMExt) !output
+         datetimeLine, dataOutLineEHC) !output
 
       ! daily state_id:
       ! CALL update_DailyStateLine( &
@@ -4994,7 +4997,7 @@ CONTAINS
       CALL output_line_init(output_line_suews)
       output_line_suews%datetimeLine = datetimeLine
       output_line_suews%dataOutLineSUEWS = [datetimeLine, dataOutLineSUEWS]
-      output_line_suews%dataOutLineESTMExt = [datetimeLine, dataOutLineESTMExt]
+      output_line_suews%dataOutLineEHC = [datetimeLine, dataOutLineEHC]
       output_line_suews%dataOutLineDailyState = [datetimeLine, dataOutLineDailyState]
       output_line_suews%dataOutLineBEERS = [datetimeLine, dataOutLineBEERS]
       output_line_suews%dataOutLineDebug = [datetimeLine, dataOutLineDebug]
@@ -9699,7 +9702,7 @@ CONTAINS
 !========================================================================
 
 !==============Update output arrays=========================
-   SUBROUTINE ESTMExt_update_outputLine( &
+   SUBROUTINE EHC_update_outputLine( &
       iy, id, it, imin, dectime, nlayer, & !input
       tsfc_out_surf, qs_surf, &
       tsfc_out_roof, &
@@ -9716,7 +9719,7 @@ CONTAINS
       QH_wall, &
       state_wall, &
       soilstore_wall, &
-      datetimeLine, dataOutLineESTMExt) !output
+      datetimeLine, dataOutLineEHC) !output
       IMPLICIT NONE
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
@@ -9748,7 +9751,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_wall !soil moisture of wall [mm]
 
       REAL(KIND(1D0)), DIMENSION(5), INTENT(OUT) :: datetimeLine !date & time
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5), INTENT(out) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5), INTENT(out) :: dataOutLineEHC
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
       ! INTEGER:: is
@@ -9771,29 +9774,29 @@ CONTAINS
                      REAL(iy, KIND(1D0)), REAL(id, KIND(1D0)), &
                      REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), dectime]
       !Define the overall output matrix to be printed out step by step
-      dataoutlineESTMExt = [ &
-                           tsfc_out_surf, qs_surf, & !output
-                           fill_result_x(tsfc_out_roof, n_fill), &
-                           fill_result_x(Qn_roof, n_fill), &
-                           fill_result_x(QS_roof, n_fill), &
-                           fill_result_x(QE_roof, n_fill), &
-                           fill_result_x(QH_roof, n_fill), &
-                           fill_result_x(state_roof, n_fill), &
-                           fill_result_x(soilstore_roof, n_fill), &
-                           fill_result_x(tsfc_out_wall, n_fill), &
-                           fill_result_x(Qn_wall, n_fill), &
-                           fill_result_x(QS_wall, n_fill), &
-                           fill_result_x(QE_wall, n_fill), &
-                           fill_result_x(QH_wall, n_fill), &
-                           fill_result_x(state_wall, n_fill), &
-                           fill_result_x(soilstore_wall, n_fill) &
-                           ]
+      dataoutlineEHC = [ &
+                       tsfc_out_surf, qs_surf, & !output
+                       fill_result_x(tsfc_out_roof, n_fill), &
+                       fill_result_x(Qn_roof, n_fill), &
+                       fill_result_x(QS_roof, n_fill), &
+                       fill_result_x(QE_roof, n_fill), &
+                       fill_result_x(QH_roof, n_fill), &
+                       fill_result_x(state_roof, n_fill), &
+                       fill_result_x(soilstore_roof, n_fill), &
+                       fill_result_x(tsfc_out_wall, n_fill), &
+                       fill_result_x(Qn_wall, n_fill), &
+                       fill_result_x(QS_wall, n_fill), &
+                       fill_result_x(QE_wall, n_fill), &
+                       fill_result_x(QH_wall, n_fill), &
+                       fill_result_x(state_wall, n_fill), &
+                       fill_result_x(soilstore_wall, n_fill) &
+                       ]
       ! set invalid values to NAN
       ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
 
       !====================update output line end==============================
 
-   END SUBROUTINE ESTMExt_update_outputLine
+   END SUBROUTINE EHC_update_outputLine
 !========================================================================
 
    FUNCTION fill_result_x(res_valid, n_fill) RESULT(res_filled)
@@ -9813,9 +9816,9 @@ CONTAINS
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
       dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
-      dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineESTMExt, & !input
+      dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineEHC, & !input
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS, &
-      dataOutESTMExt) !inout
+      dataOutEHC) !inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: ReadLinesMetdata
@@ -9828,7 +9831,7 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(5), INTENT(in) :: datetimeLine
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS), INTENT(in) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM), INTENT(in) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt), INTENT(in) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC), INTENT(in) :: dataOutLineEHC
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow), INTENT(in) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL), INTENT(in) :: dataoutLineRSL
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS), INTENT(in) :: dataOutLineBEERS
@@ -9838,7 +9841,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutESTM(ReadLinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)
-      REAL(KIND(1D0)), INTENT(inout) :: dataOutESTMExt(ReadLinesMetdata, ncolumnsDataOutESTMExt, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutEHC(ReadLinesMetdata, ncolumnsDataOutEHC, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
@@ -9865,7 +9868,7 @@ CONTAINS
       END IF
 
       IF (storageheatmethod == 5) THEN
-         dataOutESTMExt(ir, 1:ncolumnsDataOutESTMExt, Gridiv) = [set_nan(dataOutLineESTMExt)]
+         dataOutEHC(ir, 1:ncolumnsDataOutEHC, Gridiv) = [set_nan(dataOutLineEHC)]
       END IF
 
       !====================update output arrays end==============================
@@ -10050,7 +10053,10 @@ CONTAINS
          ! get individual building fractions of each layer
          ! NB.: sum(sfr_roof) = building_frac(1)
          sfr_roof = 0.
-         IF (nlayer > 1) sfr_roof(1:nlayer - 1) = building_frac(1:nlayer - 1) - building_frac(2:nlayer)
+         IF (nlayer > 1) sfr_roof(1:nlayer - 1) = &
+            MAX( &
+            building_frac(1:nlayer - 1) - building_frac(2:nlayer), &
+            0.01) ! minimum value for sfr_roof to avoid zero fractions when adjacent layers have the same building fraction
          sfr_roof(nlayer) = building_frac(nlayer)
 
          ! get individual net building height of each layer
@@ -10355,7 +10361,7 @@ CONTAINS
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       output_block_suews) !output
       ! dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockBEERS, & !output
-      ! dataOutBlockDebug, dataOutBlockSPARTACUS, dataOutBlockESTMExt, &
+      ! dataOutBlockDebug, dataOutBlockSPARTACUS, dataOutBlockEHC, &
       ! DailyStateBlock)
 
       IMPLICIT NONE
@@ -10667,7 +10673,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS) :: dataOutBlockSUEWS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow) :: dataOutBlockSnow
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM) :: dataOutBlockESTM
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt) :: dataOutBlockESTMExt
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutEHC) :: dataOutBlockEHC
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL) :: dataOutBlockRSL
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS) :: dataOutBlockBEERS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug) :: dataOutBlockDebug
@@ -10715,7 +10721,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5) :: dataOutLineSnow
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTMExt - 5) :: dataOutLineESTMExt
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5) :: dataOutLineEHC
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataOutLineRSL
       ! REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSOLWEIG - 5) :: dataOutLineSOLWEIG
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
@@ -10726,7 +10732,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) :: dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) :: dataOutBlockSnow_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) :: dataOutBlockESTM_X
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutESTMExt, 1) :: dataOutBlockESTMExt_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutEHC, 1) :: dataOutBlockEHC_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) :: dataOutBlockRSL_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsdataOutBEERS, 1) :: dataOutBlockBEERS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) :: dataOutBlockDebug_X
@@ -11071,7 +11077,7 @@ CONTAINS
          ! datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, & !output
          ! dataOutLineBEERS, & !output
          ! dataOutLineDebug, dataOutLineSPARTACUS, &
-         ! dataOutLineESTMExt, &
+         ! dataOutLineEHC, &
          ! dataOutLineDailyState) !output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -11093,16 +11099,16 @@ CONTAINS
             output_line_suews%dataOutLineBEERS, &
             output_line_suews%dataOutLinedebug, &
             output_line_suews%dataOutLineSPARTACUS, &
-            output_line_suews%dataOutLineESTMExt, & !input
+            output_line_suews%dataOutLineEHC, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
-            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockESTMExt_X) !inout
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X) !inout
 
       END DO
 
       dataOutBlockSUEWS = dataOutBlockSUEWS_X(:, :, 1)
       dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
-      dataOutBlockESTMExt = dataOutBlockESTMExt_X(:, :, 1)
+      dataOutBlockEHC = dataOutBlockEHC_X(:, :, 1)
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
       dataOutBlockBEERS = dataOutBlockBEERS_X(:, :, 1)
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
@@ -11116,7 +11122,7 @@ CONTAINS
       output_block_suews%dataOutBlockSUEWS = dataOutBlockSUEWS
       output_block_suews%dataOutBlockSnow = dataOutBlockSnow
       output_block_suews%dataOutBlockESTM = dataOutBlockESTM
-      output_block_suews%dataOutBlockESTMExt = dataOutBlockESTMExt
+      output_block_suews%dataOutBlockEHC = dataOutBlockEHC
       output_block_suews%dataOutBlockRSL = dataOutBlockRSL
       output_block_suews%dataOutBlockBEERS = dataOutBlockBEERS
       output_block_suews%dataOutBlockDebug = dataOutBlockDebug

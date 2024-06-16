@@ -1,3 +1,8 @@
+# NOTE: This makefile is for the supy_driver module only.
+# The supy_driver module is a Python interface to the SUEWS model.
+# This makefile-based workflow only works for python before version 3.12.
+# for python 3.12 and later, use pyproject.toml and PEP 517/518 - a meson build system.
+
 #=======================================================================
 #                   define the compiler names
 #=======================================================================
@@ -36,13 +41,21 @@ CFLAGS = -fPIC #     ==> universal for ifort, gfortran, pgi
 #=======================================================================
 
 UNAME = $(shell uname)
-ifeq (${UNAME}, Darwin)
+ifeq ($(UNAME), Darwin)
   LIBTOOL = libtool -static -o
-  CFLAGS += -fbracket-depth=1024 -D_POSIX_C_SOURCE=200809L
+  # Check if gcc is an alias to clang
+  ifeq ($(shell $(CC) --version | grep -q clang; echo $$?), 0)
+    $(info gcc is an alias to clang)
+    CFLAGS += -fbracket-depth=1024
+  else
+    $(info gcc is GNU Compiler Collection)
+  endif
+  CFLAGS += -D_POSIX_C_SOURCE=200809L
   CFLAGS += $(ARCH_FLAGS)
 else
   LIBTOOL = ar src
 endif
+
 
 # ARCH := $(shell uname -m)
 # ifeq ($(ARCH), arm64)
@@ -202,10 +215,9 @@ _${PYTHON_MODN}: libsrc.a ${LIBSRC_FPP_FILES}
 	$(CC) --version
 	CC="$(CC) $(CFLAGS)" \
 	${PYTHON} f2py-f90wrap-patched.py \
-	--fcompiler=$(FCOMP) \
-	--f90flags="-cpp -I../suews/mod" \
-	--build-dir . -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
-	-L../suews/lib -lspartacus -lsuewsdriver
+	--build-dir builddir -c -m _${PYTHON_MODN} -L. -lsrc f90wrap*.f90 \
+	-L../suews/lib -lspartacus -lsuewsdriver \
+	-I../suews/mod
 
 
 test: all

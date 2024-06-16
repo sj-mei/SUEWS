@@ -95,9 +95,9 @@ CONTAINS
       END IF
 
       !If RA outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
-      IF (RA_h > 200) THEN !was 175
+      IF (RA_h > 120) THEN !was 175
          CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA > 200 s m-1; RA set to 200 s m-1', RA_h, notUsed, notUsedI)
-         RA_h = 200
+         RA_h = 120
       ELSEIF (RA_h < 10) THEN !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
          CALL errorHint(7, 'In AerodynamicResistance.f95, calculated RA < 10 s m-1; RA set to 10 s m-1', RA_h, notUsed, notUsedI)
          RA_h = 10
