@@ -437,13 +437,13 @@ def run_supy_ser(
     # pack final model states into a proper dataframe
     df_state_final = pack_df_state_final(df_state_final, df_init)
 
-    # show simulation time
-    # end = time.time()
-    # print(f'Execution time: {(end - start):.1f} s')
-    # print(f'====================\n')
-    if df_state_init["debug"].any().any():
-        return df_output, df_state_final, df_debug
-    else:
+    # return results
+    try:
+        if df_state_init["debug"].any().any():
+            return df_output, df_state_final, df_debug
+        else:
+            return df_output, df_state_final
+    except KeyError:
         return df_output, df_state_final
 
 
