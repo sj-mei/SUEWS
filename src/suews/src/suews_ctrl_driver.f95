@@ -555,19 +555,10 @@ CONTAINS
                   ! ===================Calculate snow related hydrology=======================
                   ! TODO: #234 the snow parts needs more work to be done
                   ! TS 18 Oct 2023: snow is temporarily turned off for easier implementation of other functionalities
-                  ! CALL SUEWS_cal_snow_DTS( &
-                  !    timer, config, forcing, siteInfo, & ! input
-                  !    atmState, &
-                  !    heatState, &
-                  !    hydroState, &
-                  !    snowState, &
-                  !    phenState, &
-                  !    snowState_prev, & ! input:
-                  !    hydroState_prev, & ! input:
-                  !    ! TODO: collect output into a derived type for model output - snow related can be done later
-                  !    hydroState_next, & ! general output:
-                  !    snowState_next, &
-                  !    dataOutLineSnow)
+                  CALL SUEWS_cal_snow_DTS( &
+                     timer, config, forcing, siteInfo, & ! input
+                     modState, & ! input/output
+                     dataOutLineSnow)
                   ! N.B.: snow-related calculations end here.
                   !===================================================
                ELSE
@@ -5135,14 +5126,7 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_snow_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      atmState, & ! inout:
-      heatState, & ! inout:
-      hydroState, & ! inout:
-      snowState, & ! inout:
-      phenState, & ! inout:
-      snowState_prev, hydroState_prev, & ! input:
-      hydroState_next, & ! general output:
-      snowState_next, &
+      modState, &
       dataOutLineSnow)
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SNOW_PRM, &
@@ -5159,18 +5143,20 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(atm_state), INTENT(INout) :: atmState
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
 
-      TYPE(HEAT_STATE), INTENT(INOUT) :: heatState
-      TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
+      ! TYPE(atm_state), INTENT(INout) :: atmState
 
-      TYPE(HYDRO_STATE), INTENT(IN) :: hydroState_prev
-      TYPE(HYDRO_STATE), INTENT(OUT) :: hydroState_next
+      ! TYPE(HEAT_STATE), INTENT(INOUT) :: heatState
+      ! TYPE(HYDRO_STATE), INTENT(INOUT) :: hydroState
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
-      TYPE(SNOW_STATE), INTENT(INOUT) :: snowState
-      TYPE(SNOW_STATE), INTENT(IN) :: snowState_prev
-      TYPE(SNOW_STATE), INTENT(OUT) :: snowState_next
+      TYPE(HYDRO_STATE) :: hydroState_prev
+      TYPE(HYDRO_STATE) :: hydroState_next
+
+      ! TYPE(PHENOLOGY_STATE) :: phenState
+      ! TYPE(SNOW_STATE) :: snowState
+      TYPE(SNOW_STATE) :: snowState_prev
+      TYPE(SNOW_STATE) :: snowState_next
 
       INTEGER, DIMENSION(nsurf) :: snowCalcSwitch
 
@@ -5261,248 +5247,264 @@ CONTAINS
          tstep => timer%tstep, &
          dayofWeek_id => timer%dayofWeek_id, &
          nsh_real => timer%nsh_real, &
-         avdens => atmState%avdens, &
-         avcp => atmState%avcp, &
-         lv_J_kg => atmState%lv_J_kg, &
-         lvS_J_kg => atmState%lvS_J_kg, &
-         psyc_hPa => atmState%psyc_hPa, &
-         sIce_hPa => atmState%sIce_hPa, &
-         vpd_hPa => atmState%vpd_hPa, &
-         s_hPa => atmState%s_hPa, &
-         RS => atmState%RS, &
-         RA_h => atmState%RA_h, &
-         RB => atmState%RB, &
-         rss_surf => atmState%rss_surf, &
-         RAsnow => snowState%RAsnow, &
-         qn_ind_snow => snowState%qn_ind_snow, &
-         kup_ind_snow => snowState%kup_ind_snow, &
-         deltaQi => snowState%deltaQi, &
-         Tsurf_ind_snow => snowState%Tsurf_ind_snow, &
-         SnowRemoval => snowState%SnowRemoval, &
-         NWstate_per_tstep => hydroState%NWstate_per_tstep, &
-         swe => snowState%swe, &
-         chSnow_per_interval => snowState%chSnow_per_interval, &
-         mwstore => snowState%mwstore, &
-         Tsurf_ind => heatState%Tsurf_ind, &
-         qn_snowfree => heatState%qn_snowfree, &
-         qf => heatState%qf, &
-         qs => heatState%qs, &
-         qn_surf => heatState%qn_surf, &
-         qs_surf => heatState%qs_surf, &
-         qe => heatState%qe, &
-         qe_surf => heatState%qe_surf, &
-         qe_roof => heatState%qe_roof, &
-         qe_wall => heatState%qe_wall, &
-         addimpervious => hydroState%addimpervious, &
-         addVeg => hydroState%addVeg, &
-         drain => hydroState%drain_surf, &
-         AddWater => hydroState%AddWater, &
-         frac_water2runoff => hydroState%frac_water2runoff, &
-         state_per_tstep => hydroState%state_per_tstep, &
-         ev_per_tstep => hydroState%ev_per_tstep, &
-         runoff_per_tstep => hydroState%runoff_per_tstep, &
-         surf_chang_per_tstep => hydroState%surf_chang_per_tstep, &
-         runoffAGveg => hydroState%runoffAGveg, &
-         runoffAGimpervious => hydroState%runoffAGimpervious, &
-         runoffPipes => hydroState%runoffPipes, &
-         runoffwaterbody => hydroState%runoffwaterbody, &
-         state_id_in => hydroState_prev%state_surf, &
-         soilstore_id_in => hydroState_prev%soilstore_surf, &
-         StoreDrainPrm => phenState%StoreDrainPrm, &
-         SnowPack_in => snowState_prev%SnowPack, &
-         SnowFrac_in => snowState_prev%snowFrac, &
-         SnowWater_in => snowState_prev%SnowWater, &
-         iceFrac_in => snowState_prev%IceFrac, &
-         SnowDens_in => snowState_prev%SnowDens, &
-         SnowfallCum_in => snowState_prev%SnowfallCum, &
-         SnowAlb_in => snowState_next%SnowAlb, &
-         EvapMethod => config%EvapMethod, &
-         Diagnose => config%Diagnose &
+         atmState => modState%atmState, &
+         heatState => modState%heatState, &
+         hydroState => modState%hydroState, &
+         snowState => modState%snowState, &
+         phenState => modState%phenState &
          )
+         ! save the previous state
+         hydroState_prev = hydroState
+         snowState_prev = snowState
 
-         ! Diagnose = config%Diagnose
+         ! initialize the next state
+         hydroState_next = hydroState
+         snowState_next = snowState
+
          ASSOCIATE ( &
-            WetThresh_surf => [pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, dectrPrm%wetthresh, &
-                               grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh], &
-            SoilStoreCap => [pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
-                             evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
-                             grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap], &
-            tau_r => snowPrm%tau_r, &
-            CRWmin => snowPrm%CRWmin, &
-            CRWmax => snowPrm%CRWmax, &
-            SnowAlbMax => snowPrm%SnowAlbMax, &
-            PrecipLimit => snowPrm%PrecipLimit, &
-            PrecipLimitAlb => snowPrm%PrecipLimitAlb, &
-            SnowDensMax => snowPrm%SnowDensMax, &
-            SnowDensMin => snowPrm%snowdensmin, &
-            RadMeltFact => snowPrm%RadMeltFact, &
-            TempMeltFact => snowPrm%TempMeltFact, &
-            SnowLimPaved => snowPrm%SnowLimPaved, &
-            SnowLimBldg => snowPrm%SnowLimBldg, &
-            SnowPackLimit => snowPrm%SnowPackLimit, &
-            SnowProf_24hr_working => snowPrm%snowprof_24hr_working, &
-            SnowProf_24hr_holiday => snowPrm%snowprof_24hr_holiday &
+            avdens => atmState%avdens, &
+            avcp => atmState%avcp, &
+            lv_J_kg => atmState%lv_J_kg, &
+            lvS_J_kg => atmState%lvS_J_kg, &
+            psyc_hPa => atmState%psyc_hPa, &
+            sIce_hPa => atmState%sIce_hPa, &
+            vpd_hPa => atmState%vpd_hPa, &
+            s_hPa => atmState%s_hPa, &
+            RS => atmState%RS, &
+            RA_h => atmState%RA_h, &
+            RB => atmState%RB, &
+            rss_surf => atmState%rss_surf, &
+            RAsnow => snowState%RAsnow, &
+            qn_ind_snow => snowState%qn_ind_snow, &
+            kup_ind_snow => snowState%kup_ind_snow, &
+            deltaQi => snowState%deltaQi, &
+            Tsurf_ind_snow => snowState%Tsurf_ind_snow, &
+            SnowRemoval => snowState%SnowRemoval, &
+            NWstate_per_tstep => hydroState%NWstate_per_tstep, &
+            swe => snowState%swe, &
+            chSnow_per_interval => snowState%chSnow_per_interval, &
+            mwstore => snowState%mwstore, &
+            Tsurf_ind => heatState%Tsurf_ind, &
+            qn_snowfree => heatState%qn_snowfree, &
+            qf => heatState%qf, &
+            qs => heatState%qs, &
+            qn_surf => heatState%qn_surf, &
+            qs_surf => heatState%qs_surf, &
+            qe => heatState%qe, &
+            qe_surf => heatState%qe_surf, &
+            qe_roof => heatState%qe_roof, &
+            qe_wall => heatState%qe_wall, &
+            addimpervious => hydroState%addimpervious, &
+            addVeg => hydroState%addVeg, &
+            drain => hydroState%drain_surf, &
+            AddWater => hydroState%AddWater, &
+            frac_water2runoff => hydroState%frac_water2runoff, &
+            state_per_tstep => hydroState%state_per_tstep, &
+            ev_per_tstep => hydroState%ev_per_tstep, &
+            runoff_per_tstep => hydroState%runoff_per_tstep, &
+            surf_chang_per_tstep => hydroState%surf_chang_per_tstep, &
+            runoffAGveg => hydroState%runoffAGveg, &
+            runoffAGimpervious => hydroState%runoffAGimpervious, &
+            runoffPipes => hydroState%runoffPipes, &
+            runoffwaterbody => hydroState%runoffwaterbody, &
+            state_id_in => hydroState_prev%state_surf, &
+            soilstore_id_in => hydroState_prev%soilstore_surf, &
+            StoreDrainPrm => phenState%StoreDrainPrm, &
+            SnowPack_in => snowState_prev%SnowPack, &
+            SnowFrac_in => snowState_prev%snowFrac, &
+            SnowWater_in => snowState_prev%SnowWater, &
+            iceFrac_in => snowState_prev%IceFrac, &
+            SnowDens_in => snowState_prev%SnowDens, &
+            SnowfallCum_in => snowState_prev%SnowfallCum, &
+            SnowAlb_in => snowState_next%SnowAlb, &
+            EvapMethod => config%EvapMethod, &
+            Diagnose => config%Diagnose &
             )
 
-            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
-            SnowProf_24hr(:, 1) = SnowProf_24hr_working
-            SnowProf_24hr(:, 2) = SnowProf_24hr_holiday
+            ! Diagnose = config%Diagnose
+            ASSOCIATE ( &
+               WetThresh_surf => [pavedPrm%wetthresh, bldgPrm%wetthresh, evetrPrm%wetthresh, dectrPrm%wetthresh, &
+                                  grassPrm%wetthresh, bsoilPrm%wetthresh, waterPrm%wetthresh], &
+               SoilStoreCap => [pavedPrm%soil%soilstorecap, bldgPrm%soil%soilstorecap, &
+                                evetrPrm%soil%soilstorecap, dectrPrm%soil%soilstorecap, &
+                                grassPrm%soil%soilstorecap, bsoilPrm%soil%soilstorecap, waterPrm%soil%soilstorecap], &
+               tau_r => snowPrm%tau_r, &
+               CRWmin => snowPrm%CRWmin, &
+               CRWmax => snowPrm%CRWmax, &
+               SnowAlbMax => snowPrm%SnowAlbMax, &
+               PrecipLimit => snowPrm%PrecipLimit, &
+               PrecipLimitAlb => snowPrm%PrecipLimitAlb, &
+               SnowDensMax => snowPrm%SnowDensMax, &
+               SnowDensMin => snowPrm%snowdensmin, &
+               RadMeltFact => snowPrm%RadMeltFact, &
+               TempMeltFact => snowPrm%TempMeltFact, &
+               SnowLimPaved => snowPrm%SnowLimPaved, &
+               SnowLimBldg => snowPrm%SnowLimBldg, &
+               SnowPackLimit => snowPrm%SnowPackLimit, &
+               SnowProf_24hr_working => snowPrm%snowprof_24hr_working, &
+               SnowProf_24hr_holiday => snowPrm%snowprof_24hr_holiday &
+               )
 
-            ! runoff_per_interval = runoff_per_interval_in
-            state_id_surf = state_id_in
-            soilstore_id = soilstore_id_in
+               ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+               SnowProf_24hr(:, 1) = SnowProf_24hr_working
+               SnowProf_24hr(:, 2) = SnowProf_24hr_holiday
 
-            ! tstep_real = tstep*1.D0
-            ! nsh_real = 3600/tstep*1.D0
+               ! runoff_per_interval = runoff_per_interval_in
+               state_id_surf = state_id_in
+               soilstore_id = soilstore_id_in
 
-            capStore_surf = 0 !initialise capStore
+               ! tstep_real = tstep*1.D0
+               ! nsh_real = 3600/tstep*1.D0
 
-            tlv = lv_J_kg/tstep*1.D0 !Latent heat of vapourisation per timestep
+               capStore_surf = 0 !initialise capStore
 
-            pin = MAX(0., Precip) !Initiate rain data [mm]
+               tlv = lv_J_kg/tstep*1.D0 !Latent heat of vapourisation per timestep
 
-            ! Initialize the output variables
-            qe_surf = 0
+               pin = MAX(0., Precip) !Initiate rain data [mm]
 
-            ev_per_tstep = 0
-            qe_per_tstep = 0
-            surf_chang_per_tstep = 0
-            runoff_per_tstep = 0
-            state_per_tstep = 0
-            NWstate_per_tstep = 0
-            chSnow_per_interval = 0
-            qe = 0
+               ! Initialize the output variables
+               qe_surf = 0
 
-            runoffAGveg = 0
-            runoffAGimpervious = 0
-            surplusWaterBody = 0
-            runoff_surf = 0
-            chang = 0
-            SurplusEvap = 0
+               ev_per_tstep = 0
+               qe_per_tstep = 0
+               surf_chang_per_tstep = 0
+               runoff_per_tstep = 0
+               state_per_tstep = 0
+               NWstate_per_tstep = 0
+               chSnow_per_interval = 0
+               qe = 0
 
-            ! force these facets to be totally dry
-            ! TODO: need to consider their hydrologic dynamics
-            qe_roof = 0
-            qe_wall = 0
+               runoffAGveg = 0
+               runoffAGimpervious = 0
+               surplusWaterBody = 0
+               runoff_surf = 0
+               chang = 0
+               SurplusEvap = 0
 
-            ! net available energy for evaporation
-            qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
+               ! force these facets to be totally dry
+               ! TODO: need to consider their hydrologic dynamics
+               qe_roof = 0
+               qe_wall = 0
 
-            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_snow...'
-            ! IF (SnowUse == 1) THEN ! snow calculation
-            ! net available energy for evaporation
-            qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
+               ! net available energy for evaporation
+               qn_e_surf = qn_surf + qf - qs_surf ! qn1 changed to qn1_snowfree, lj in May 2013
 
-            SnowPack = SnowPack_in
-            SnowFrac = SnowFrac_in
-            SnowWater = SnowWater_in
-            iceFrac = iceFrac_in
-            SnowDens = SnowDens_in
-            SnowfallCum = SnowfallCum_in
-            SnowAlb = SnowAlb_in
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_snow...'
+               ! IF (SnowUse == 1) THEN ! snow calculation
+               ! net available energy for evaporation
+               qn_e = qn_snowfree + qf - qs ! qn1 changed to qn1_snowfree, lj in May 2013
 
-            ! update snow density
-            SnowDens = update_snow_dens( &
-                       tstep, SnowFrac, SnowDens, &
-                       tau_r, SnowDensMax, SnowDensMin)
+               SnowPack = SnowPack_in
+               SnowFrac = SnowFrac_in
+               SnowWater = SnowWater_in
+               iceFrac = iceFrac_in
+               SnowDens = SnowDens_in
+               SnowfallCum = SnowfallCum_in
+               SnowAlb = SnowAlb_in
 
-            ! Calculate snow-related energy budgets
-            CALL MeltHeat( &
-               lvS_J_kg, lv_J_kg, tstep*1D0, RadMeltFact, TempMeltFact, & !input
-               SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-               nsh_real, sfr_surf, Tsurf_ind, state_id_in, qn_ind_snow, &
-               SnowWater, deltaQi, &
-               SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, & !inout
-               mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, & !output
-               Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
-               rainOnSnow, SnowDepth, mw_ind)
+               ! update snow density
+               SnowDens = update_snow_dens( &
+                          tstep, SnowFrac, SnowDens, &
+                          tau_r, SnowDensMax, SnowDensMin)
 
-            DO is = 1, nsurf !For each surface in turn
-               qe_tot = 0
-               ev_tot = 0
-               swe = 0
-               ev_snow = 0
-               runoff_tot = 0
-               surf_chang_tot = 0
-               chSnow_tot = 0
-               SnowRemoval = 0
-               runoffPipes = 0
-               mwstore = 0
-               runoffwaterbody = 0
-               IF (sfr_surf(is) > 0) THEN
-                  ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
+               ! Calculate snow-related energy budgets
+               CALL MeltHeat( &
+                  lvS_J_kg, lv_J_kg, tstep*1D0, RadMeltFact, TempMeltFact, & !input
+                  SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
+                  nsh_real, sfr_surf, Tsurf_ind, state_id_in, qn_ind_snow, &
+                  SnowWater, deltaQi, &
+                  SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, & !inout
+                  mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, & !output
+                  Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
+                  rainOnSnow, SnowDepth, mw_ind)
 
-                  CALL SnowCalc( &
-                     tstep, imin, it, dectime, is, & !input
-                     snowCalcSwitch, &
-                     EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
-                     avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
-                     PervFraction, vegfraction, addimpervious, &
-                     vpd_hPa, qn_e, s_hPa, RS, RA_h, RB, tlv, SnowDensMin, SnowProf_24hr, precip, &
-                     PipeCapacity, RunoffToWater, &
-                     addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
-                     WetThresh_surf, state_id_in, mw_ind, SoilStoreCap, rainonsnow, &
-                     freezmelt, freezstate, freezstatevol, &
-                     Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
-                     AddWater, frac_water2runoff, &
-                     soilstore_id, SnowPack, SurplusEvap, & !inout
-                     SnowFrac, SnowWater, iceFrac, SnowDens, &
-                     runoffAGimpervious, runoffAGveg, surplusWaterBody, &
-                     ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
-                     rss_surf, &
-                     runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
-                     SnowRemoval, swe, &
-                     runoffPipes, mwstore, runoffwaterbody)
+               DO is = 1, nsurf !For each surface in turn
+                  qe_tot = 0
+                  ev_tot = 0
+                  swe = 0
+                  ev_snow = 0
+                  runoff_tot = 0
+                  surf_chang_tot = 0
+                  chSnow_tot = 0
+                  SnowRemoval = 0
+                  runoffPipes = 0
+                  mwstore = 0
+                  runoffwaterbody = 0
+                  IF (sfr_surf(is) > 0) THEN
+                     ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
 
-               ELSE
-                  SnowFrac(is) = 0
-                  SnowDens(is) = 0
-                  SnowPack(is) = 0
-               END IF
-               !Actual updates here as xx_tstep variables not taken as input to snowcalc
-               ev_per_tstep = ev_per_tstep + ev_tot
-               qe_per_tstep = qe_per_tstep + qe_tot
-               runoff_per_tstep = runoff_per_tstep + runoff_tot
-               surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
-               chSnow_per_interval = chSnow_per_interval + chSnow_tot
+                     CALL SnowCalc( &
+                        tstep, imin, it, dectime, is, & !input
+                        snowCalcSwitch, &
+                        EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
+                        avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
+                        PervFraction, vegfraction, addimpervious, &
+                        vpd_hPa, qn_e, s_hPa, RS, RA_h, RB, tlv, SnowDensMin, SnowProf_24hr, precip, &
+                        PipeCapacity, RunoffToWater, &
+                        addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
+                        WetThresh_surf, state_id_in, mw_ind, SoilStoreCap, rainonsnow, &
+                        freezmelt, freezstate, freezstatevol, &
+                        Qm_Melt, Qm_rain, Tsurf_ind, sfr_surf, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
+                        AddWater, frac_water2runoff, &
+                        soilstore_id, SnowPack, SurplusEvap, & !inout
+                        SnowFrac, SnowWater, iceFrac, SnowDens, &
+                        runoffAGimpervious, runoffAGveg, surplusWaterBody, &
+                        ev_tot, qe_tot, runoff_tot, surf_chang_tot, chSnow_tot, & ! output
+                        rss_surf, &
+                        runoff_surf, chang, ChangSnow_surf, SnowToSurf, state_id_surf, ev_snow, &
+                        SnowRemoval, swe, &
+                        runoffPipes, mwstore, runoffwaterbody)
 
-               !Store ev_tot for each surface
-               ev_surf(is) = ev_tot
+                  ELSE
+                     SnowFrac(is) = 0
+                     SnowDens(is) = 0
+                     SnowPack(is) = 0
+                  END IF
+                  !Actual updates here as xx_tstep variables not taken as input to snowcalc
+                  ev_per_tstep = ev_per_tstep + ev_tot
+                  qe_per_tstep = qe_per_tstep + qe_tot
+                  runoff_per_tstep = runoff_per_tstep + runoff_tot
+                  surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
+                  chSnow_per_interval = chSnow_per_interval + chSnow_tot
 
-            END DO
+                  !Store ev_tot for each surface
+                  ev_surf(is) = ev_tot
 
-            qe = qe_per_tstep
+               END DO
 
-            ! Calculate volume of water that will move between grids
-            ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
-            ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
-            ! runoffAGimpervious_m3 = runoffAGimpervious/1000*SurfaceArea
-            ! runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
-            ! runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
-            ! runoffPipes_m3 = runoffPipes/1000*SurfaceArea
+               qe = qe_per_tstep
 
-            hydroState_next%state_surf = state_id_surf
-            hydroState_next%soilstore_surf = soilstore_id
+               ! Calculate volume of water that will move between grids
+               ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
+               ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
+               ! runoffAGimpervious_m3 = runoffAGimpervious/1000*SurfaceArea
+               ! runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
+               ! runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
+               ! runoffPipes_m3 = runoffPipes/1000*SurfaceArea
 
-            snowState_next%SnowWater = SnowWater
-            snowState_next%iceFrac = iceFrac
+               hydroState_next%state_surf = state_id_surf
+               hydroState_next%soilstore_surf = soilstore_id
 
-            snowState_next%SnowAlb = SnowAlb
-            snowState_next%SnowDens = SnowDens
-            snowState_next%SnowPack = SnowPack
-            snowState_next%SnowFrac = SnowFrac
-            snowState_next%SnowfallCum = SnowfallCum
+               snowState_next%SnowWater = SnowWater
+               snowState_next%iceFrac = iceFrac
 
-            ! pack output into one line
-            dataOutLineSnow = [ &
-                              snowState_next%SnowPack(1:nsurf), mw_ind(1:nsurf), Qm_melt(1:nsurf), & !26
-                              Qm_rain(1:nsurf), Qm_freezState(1:nsurf), snowState_next%SnowFrac(1:(nsurf - 1)), & !46
-                              rainOnSnow(1:nsurf), & !53
-                              qn_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
-                              SnowWater(1:nsurf), snowState_next%SnowDens(1:nsurf), & !88
-                              snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf), &
-                              snowState_next%SnowAlb]
+               snowState_next%SnowAlb = SnowAlb
+               snowState_next%SnowDens = SnowDens
+               snowState_next%SnowPack = SnowPack
+               snowState_next%SnowFrac = SnowFrac
+               snowState_next%SnowfallCum = SnowfallCum
 
+               ! pack output into one line
+               dataOutLineSnow = [ &
+                                 snowState_next%SnowPack(1:nsurf), mw_ind(1:nsurf), Qm_melt(1:nsurf), & !26
+                                 Qm_rain(1:nsurf), Qm_freezState(1:nsurf), snowState_next%SnowFrac(1:(nsurf - 1)), & !46
+                                 rainOnSnow(1:nsurf), & !53
+                                 qn_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
+                                 SnowWater(1:nsurf), snowState_next%SnowDens(1:nsurf), & !88
+                                 snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf), &
+                                 snowState_next%SnowAlb]
+
+            END ASSOCIATE
          END ASSOCIATE
       END ASSOCIATE
    END SUBROUTINE SUEWS_cal_snow_DTS
