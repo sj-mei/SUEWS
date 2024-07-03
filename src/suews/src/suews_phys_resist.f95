@@ -639,7 +639,13 @@ CONTAINS
 
       INTEGER, PARAMETER :: notUsedI = -55
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
-      REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
+
+      !Default values for roughness lengths [m]
+      ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
+      REAL(KIND(1D0)), PARAMETER :: z0m4Paved = 0.003 !estimate
+      REAL(KIND(1D0)), PARAMETER :: z0m4Grass = 0.02
+      REAL(KIND(1D0)), PARAMETER :: z0m4BSoil = 0.002
+      REAL(KIND(1D0)), PARAMETER :: z0m4Water = 0.0005
 
       ! calculated values of FAI
       ! REAL(KIND(1D0)), INTENT(out) :: FAIBldg_use
@@ -705,12 +711,6 @@ CONTAINS
             ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
             ! TS 19 Jun 2022: take porosity of trees into account; to be consistent with PAI calculation in RSL
             PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
-
-            ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
-            Z0m4Paved = 0.003 !estimate
-            Z0m4Grass = 0.02
-            Z0m4BSoil = 0.002
-            Z0m4Water = 0.0005
 
             !------------------------------------------------------------------------------
             !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
