@@ -55,7 +55,7 @@
 54,"Azimuth","0,1,2","Solar azimuth angle [°]"
 55,"AlbBulk","0,1,2","Bulk albedo [-]"
 56,"Fcld","0,1,2","Cloud fraction [-]"
-57,"LAI","0,1,2","Leaf area index [m 2 |m^-2|]"
+57,"LAI","0,1,2","Leaf area index [|m^2| |m^-2|]"
 58,"z0m","0,1","Roughness length for momentum [m]"
 59,"zdm","0,1","Zero-plane displacement height [m]"
 60,"ustar","0,1,2","Friction velocity [m |s^-1|]"
