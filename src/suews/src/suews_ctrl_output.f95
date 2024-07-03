@@ -922,7 +922,7 @@ MODULE ctrl_output
       varAttr('LCAAbs_14', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 14', aA, 'SPARTACUS', 0), &
       varAttr('LCAAbs_15', 'W m-2', f104, 'lw clear air absorption - SPARTACUS level 15', aA, 'SPARTACUS', 0) &
       /
-   ! ESTM_ext info
+   ! EHC info
    DATA(varListAll(n), &
         n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
         + ncolumnsdataOutBL - 5 &
@@ -970,21 +970,21 @@ MODULE ctrl_output
       varAttr('Ts_Roof_13', 'degC', f104, 'surface temperature of roof level 13', aA, 'EHC', 0), &
       varAttr('Ts_Roof_14', 'degC', f104, 'surface temperature of roof level 14', aA, 'EHC', 0), &
       varAttr('Ts_Roof_15', 'degC', f104, 'surface temperature of roof level 15', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_1', 'degC', f104, 'net all-wave radiation of roof level 1', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_2', 'degC', f104, 'net all-wave radiation of roof level 2', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_3', 'degC', f104, 'net all-wave radiation of roof level 3', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_4', 'degC', f104, 'net all-wave radiation of roof level 4', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_5', 'degC', f104, 'net all-wave radiation of roof level 5', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_6', 'degC', f104, 'net all-wave radiation of roof level 6', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_7', 'degC', f104, 'net all-wave radiation of roof level 7', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_8', 'degC', f104, 'net all-wave radiation of roof level 8', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_9', 'degC', f104, 'net all-wave radiation of roof level 9', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_10', 'degC', f104, 'net all-wave radiation of roof level 10', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_11', 'degC', f104, 'net all-wave radiation of roof level 11', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_12', 'degC', f104, 'net all-wave radiation of roof level 12', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_13', 'degC', f104, 'net all-wave radiation of roof level 13', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_14', 'degC', f104, 'net all-wave radiation of roof level 14', aA, 'EHC', 0), &
-      varAttr('Qn_Roof_15', 'degC', f104, 'net all-wave radiation of roof level 15', aA, 'EHC', 0), &
+      varAttr('QN_Roof_1', 'degC', f104, 'net all-wave radiation of roof level 1', aA, 'EHC', 0), &
+      varAttr('QN_Roof_2', 'degC', f104, 'net all-wave radiation of roof level 2', aA, 'EHC', 0), &
+      varAttr('QN_Roof_3', 'degC', f104, 'net all-wave radiation of roof level 3', aA, 'EHC', 0), &
+      varAttr('QN_Roof_4', 'degC', f104, 'net all-wave radiation of roof level 4', aA, 'EHC', 0), &
+      varAttr('QN_Roof_5', 'degC', f104, 'net all-wave radiation of roof level 5', aA, 'EHC', 0), &
+      varAttr('QN_Roof_6', 'degC', f104, 'net all-wave radiation of roof level 6', aA, 'EHC', 0), &
+      varAttr('QN_Roof_7', 'degC', f104, 'net all-wave radiation of roof level 7', aA, 'EHC', 0), &
+      varAttr('QN_Roof_8', 'degC', f104, 'net all-wave radiation of roof level 8', aA, 'EHC', 0), &
+      varAttr('QN_Roof_9', 'degC', f104, 'net all-wave radiation of roof level 9', aA, 'EHC', 0), &
+      varAttr('QN_Roof_10', 'degC', f104, 'net all-wave radiation of roof level 10', aA, 'EHC', 0), &
+      varAttr('QN_Roof_11', 'degC', f104, 'net all-wave radiation of roof level 11', aA, 'EHC', 0), &
+      varAttr('QN_Roof_12', 'degC', f104, 'net all-wave radiation of roof level 12', aA, 'EHC', 0), &
+      varAttr('QN_Roof_13', 'degC', f104, 'net all-wave radiation of roof level 13', aA, 'EHC', 0), &
+      varAttr('QN_Roof_14', 'degC', f104, 'net all-wave radiation of roof level 14', aA, 'EHC', 0), &
+      varAttr('QN_Roof_15', 'degC', f104, 'net all-wave radiation of roof level 15', aA, 'EHC', 0), &
       varAttr('QS_Roof_1', 'degC', f104, 'storage heat flux of roof level 1', aA, 'EHC', 0), &
       varAttr('QS_Roof_2', 'degC', f104, 'storage heat flux of roof level 2', aA, 'EHC', 0), &
       varAttr('QS_Roof_3', 'degC', f104, 'storage heat flux of roof level 3', aA, 'EHC', 0), &
@@ -1075,21 +1075,21 @@ MODULE ctrl_output
       varAttr('Ts_Wall_13', 'degC', f104, 'surface temperature of wall level 13', aA, 'EHC', 0), &
       varAttr('Ts_Wall_14', 'degC', f104, 'surface temperature of wall level 14', aA, 'EHC', 0), &
       varAttr('Ts_Wall_15', 'degC', f104, 'surface temperature of wall level 15', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_1', 'degC', f104, 'net all-wave radiation of wall level 1', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_2', 'degC', f104, 'net all-wave radiation of wall level 2', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_3', 'degC', f104, 'net all-wave radiation of wall level 3', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_4', 'degC', f104, 'net all-wave radiation of wall level 4', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_5', 'degC', f104, 'net all-wave radiation of wall level 5', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_6', 'degC', f104, 'net all-wave radiation of wall level 6', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_7', 'degC', f104, 'net all-wave radiation of wall level 7', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_8', 'degC', f104, 'net all-wave radiation of wall level 8', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_9', 'degC', f104, 'net all-wave radiation of wall level 9', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_10', 'degC', f104, 'net all-wave radiation of wall level 10', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_11', 'degC', f104, 'net all-wave radiation of wall level 11', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_12', 'degC', f104, 'net all-wave radiation of wall level 12', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_13', 'degC', f104, 'net all-wave radiation of wall level 13', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_14', 'degC', f104, 'net all-wave radiation of wall level 14', aA, 'EHC', 0), &
-      varAttr('Qn_Wall_15', 'degC', f104, 'net all-wave radiation of wall level 15', aA, 'EHC', 0), &
+      varAttr('QN_Wall_1', 'degC', f104, 'net all-wave radiation of wall level 1', aA, 'EHC', 0), &
+      varAttr('QN_Wall_2', 'degC', f104, 'net all-wave radiation of wall level 2', aA, 'EHC', 0), &
+      varAttr('QN_Wall_3', 'degC', f104, 'net all-wave radiation of wall level 3', aA, 'EHC', 0), &
+      varAttr('QN_Wall_4', 'degC', f104, 'net all-wave radiation of wall level 4', aA, 'EHC', 0), &
+      varAttr('QN_Wall_5', 'degC', f104, 'net all-wave radiation of wall level 5', aA, 'EHC', 0), &
+      varAttr('QN_Wall_6', 'degC', f104, 'net all-wave radiation of wall level 6', aA, 'EHC', 0), &
+      varAttr('QN_Wall_7', 'degC', f104, 'net all-wave radiation of wall level 7', aA, 'EHC', 0), &
+      varAttr('QN_Wall_8', 'degC', f104, 'net all-wave radiation of wall level 8', aA, 'EHC', 0), &
+      varAttr('QN_Wall_9', 'degC', f104, 'net all-wave radiation of wall level 9', aA, 'EHC', 0), &
+      varAttr('QN_Wall_10', 'degC', f104, 'net all-wave radiation of wall level 10', aA, 'EHC', 0), &
+      varAttr('QN_Wall_11', 'degC', f104, 'net all-wave radiation of wall level 11', aA, 'EHC', 0), &
+      varAttr('QN_Wall_12', 'degC', f104, 'net all-wave radiation of wall level 12', aA, 'EHC', 0), &
+      varAttr('QN_Wall_13', 'degC', f104, 'net all-wave radiation of wall level 13', aA, 'EHC', 0), &
+      varAttr('QN_Wall_14', 'degC', f104, 'net all-wave radiation of wall level 14', aA, 'EHC', 0), &
+      varAttr('QN_Wall_15', 'degC', f104, 'net all-wave radiation of wall level 15', aA, 'EHC', 0), &
       varAttr('QS_Wall_1', 'degC', f104, 'storage heat flux of wall level 1', aA, 'EHC', 0), &
       varAttr('QS_Wall_2', 'degC', f104, 'storage heat flux of wall level 2', aA, 'EHC', 0), &
       varAttr('QS_Wall_3', 'degC', f104, 'storage heat flux of wall level 3', aA, 'EHC', 0), &

@@ -406,6 +406,17 @@
         },
         "unit": "1"
     },
+    "localclimatemethod": {
+        "cat": "grid",
+        "logic": "method",
+        "param": {
+            "allowed": [
+                0,
+                1
+            ]
+        },
+        "unit": "1"
+    },
     "diagnose": {
         "cat": "grid",
         "logic": "NA",
