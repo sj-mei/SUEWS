@@ -173,27 +173,38 @@ CONTAINS
       ! ! determine vertical levels used in RSL
       ! Define the height array with consideration of key heights
       ! set number of heights within canopy
-      IF (Zh <= 2) THEN
-         nz_can = 3
-      ELSE IF (Zh <= 10) THEN
-         nz_can = 6
-      ELSE
-         nz_can = 15
-      END IF
-      ! fill up heights in canopy
-      dz_can = Zh/nz_can
-      DO i = 1, nz_can
-         zarray(i) = dz_can*i
-      END DO
+      zH_RSL = MAX(Zh, 2.) ! minimum canyon height is 0.4 m to avoid insane values (e.g. zH=0 m when no buildings - 100% grass)
+      ! IF (zH_RSL <= 2) THEN
+      !    nz_can = 3
+      ! ELSE IF (zH_RSL <= 10) THEN
+      !    nz_can = 6
+      ! ELSE
+      !    nz_can = 15
+      ! END IF
+      ! ! fill up heights in canopy
+      ! dz_can = zH_RSL/nz_can
+      ! DO i = 1, nz_can
+      !    zarray(i) = dz_can*i
+      ! END DO
 
-      ! guaranttee 2 m is within the zarray
-      IF (dz_can > 2) zarray(1) = 1.999
+      ! within canopy
+      nz_can = 20
+      zarray(1) = zH_RSL*.01
+      DO i = 2, nz_can - 1
+         zarray(i) = +zarray(i - 1) + (zH_RSL - zarray(i - 1))*.25
+      END DO
+      zarray(nz_can) = zH_RSL
+
+      ! above canopy
+
+      ! ! guaranttee 2 m is within the zarray
+      ! IF (dz_can > 2) zarray(1) = 1.999
 
       ! fill up heights above canopy
       nz_above = nz - nz_can
-      dz_above = (zMeas - Zh)/nz_above
+      ! dz_above = (zMeas - zH_RSL)/nz_above
       DO i = nz_can + 1, nz
-         zarray(i) = Zh + (i - nz_can)*dz_above
+         zarray(i) = zarray(i - 1) + (zMeas - zarray(i - 1))*.33
       END DO
 
       ! ! determine index at the canyon top
@@ -1004,43 +1015,42 @@ CONTAINS
             ! ! Step 2
             ! ! determine vertical levels used in RSL
             ! Define the height array with consideration of key heights
-            ! set number of heights within canopy
-            IF (Zh <= 2) THEN
-               nz_can = 3
-            ELSE IF (Zh <= 10) THEN
-               nz_can = 6
-            ELSE
-               nz_can = 15
-            END IF
-            ! fill up heights in canopy
-            dz_can = Zh/nz_can
-            DO i = 1, nz_can
-               zarray(i) = dz_can*i
+            ! below is the revised discretization of the vertical levels to address #271
+
+            ! minimum canyon height is 0.4 m to avoid insane values (e.g. zH=0 m when no buildings - 100% grass)
+            zH_RSL = MAX(Zh, 2.)
+
+            ! the array will be filled in three parts:
+            ! 1. within canopy: 20 levels
+            nz_can = 20
+            ! 1.1 surface to half of the canyon height: 10 levels
+            zarray(1) = MIN(zH_RSL*.01, 1.999) ! guaranttee 2 m is within the zarray
+            zarray(10) = zH_RSL*.5
+            dz_can = zH_RSL*.5
+            DO i = 9, 2, -1
+               ! densify the levels near the surface
+               zarray(i) = zarray(i + 1) - dz_can*.5
+               dz_can = zarray(i) - zarray(1)
+            END DO
+            ! 1.2 half of the canyon height to the canyon top: 10 levels
+            dz_can = zH_RSL*.5
+            DO i = 11, nz_can
+               ! densify the levels near the top
+               zarray(i) = zarray(i - 1) + dz_can*.5
+               dz_can = zH_RSL - zarray(i)
             END DO
 
-            ! guaranttee 2 m is within the zarray
-            IF (dz_can > 2) zarray(1) = 1.999
-
+            ! 2. above canopy: 10 levels
+            ! above canopy
             ! fill up heights above canopy
             nz_above = nz - nz_can
-            dz_above = (zMeas - Zh)/nz_above
-            DO i = nz_can + 1, nz
-               zarray(i) = Zh + (i - nz_can)*dz_above
-            END DO
-
-            ! ! determine index at the canyon top
-            ! DO z = 1, nz
-            !    dif(z) = ABS(zarray(z) - Zh)
-            ! END DO
-            ! nz_can = MINLOC(dif, DIM=1)
-            ! ! zarray(idx_can+2) = Zh+.1
-            ! ! zarray(idx_can+1) = Zh+.05
-            ! zarray(nz_can) = Zh
-            ! zarray(idx_can-1) = Zh-.1
-
-            ! determine index at measurement height
-            ! nz = nz
             zarray(nz) = zMeas
+            dz_above = (zMeas - Zh_RSL)
+            DO i = nz - 1, nz_can + 1, -1
+               ! densify the levels near the canopy top
+               zarray(i) = zarray(i + 1) - dz_above*.3
+               dz_above = zarray(i) - Zh_RSL
+            END DO
 
             IF (flag_RSL) THEN
 
@@ -1055,28 +1065,6 @@ CONTAINS
                   psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
                   zH_RSL, L_MOD_RSL, & ! output
                   Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
-
-               ! Step 3: calculate the stability dependent H&F constants
-
-               ! CALL cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, fx, c2h, ch)
-               ! CALL cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2m, cm)
-
-               ! ! Step 4: determine psihat at levels above the canopy
-               ! DO z = nz - 1, idx_can, -1
-               !    phimz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-               !    phimzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
-               !    phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-               !    phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
-
-               !    psihatm_z(z) = psihatm_z(z + 1) + dz_above/2.*phimzp*(cm*EXP(-1.*c2m*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
-               !                   /(zarray(z + 1) - zd_RSL)
-               !    psihatm_z(z) = psihatm_z(z) + dz_above/2.*phimz*(cm*EXP(-1.*c2m*beta*(zarray(z) - zd_RSL)/elm)) &
-               !                   /(zarray(z) - zd_RSL)
-               !    psihath_z(z) = psihath_z(z + 1) + dz_above/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd_RSL)/elm)) & !Taylor's approximation for integral
-               !                   /(zarray(z + 1) - zd_RSL)
-               !    psihath_z(z) = psihath_z(z) + dz_above/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
-               !                   /(zarray(z) - zd_RSL)
-               ! END DO
 
             ELSE
 
@@ -1138,7 +1126,9 @@ CONTAINS
                psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
                psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
                dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
-dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)
+               ! eqn. 4 in Theeuwes et al. (2019 BLM)
+               dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz)) &
+                                    /kappa
                dataoutLineqRSL(z) = dataoutLineTRSL(z)
             END DO
             !

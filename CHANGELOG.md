@@ -36,3 +36,8 @@
 
 - 31 May 2024:
   - [feature] Added `dict_debug` an optional output of `run_supy` to help debug the model (for developers: add a `debug` flag to `df_state` to activate this feature) (#233)
+
+- 04 Jul 2024:
+  - [bugfix] Fixed a bug causing an abrupt change in results due to a less smooth transition in `z0` from surfaces without roughness elements to those with them. (#271)
+  - [bugfix] Improved the discretisation of the vertical levels in the RSL scheme for better interpolation of surface diagnostics (e.g. `T2`) (#271)
+  - [maintenance] Added support for NumPy 2.0 (#271)
