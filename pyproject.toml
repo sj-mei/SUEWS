@@ -2,7 +2,7 @@
 requires = [
     "wheel",
     "pytest",
-    "f90wrap==0.2.14",
+    "f90wrap==0.2.15",
     "numpy>=2.0",
     "meson-python>=0.12.0",
 ]
