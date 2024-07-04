@@ -3,7 +3,7 @@ requires = [
     "wheel",
     "pytest",
     "f90wrap==0.2.14",
-    "oldest-supported-numpy",
+    "numpy>=2.0",
     "meson-python>=0.12.0",
 ]
 build-backend = 'mesonpy'
