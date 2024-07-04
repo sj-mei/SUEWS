@@ -22,10 +22,7 @@ dynamic = ["version"]
 license = { text = "GPL-V3.0" }
 
 dependencies = [
-    "pandas< 1.5; python_version <= '3.9'",        # to fix scipy dependency issue in UMEP under QGIS3 wtih python 3.9
-    "oldest-supported-numpy; python_version <= '3.9'",      # oldest numpy version compatible with Python 3.9
-    "importlib_resources; python_version < '3.9'", # to fix importlib issue in UMEP under QGIS3
-    "pandas; python_version > '3.9'",
+    "pandas",
     "matplotlib",
     "chardet",
     "scipy",
@@ -45,7 +42,6 @@ dependencies = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
