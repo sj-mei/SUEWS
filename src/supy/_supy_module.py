@@ -280,7 +280,7 @@ def run_supy(
     logging_level=logging.INFO,
     check_input=False,
     serial_mode=False,
-    debug_mode=False,
+    debug_mode=False, # TODO: #275 to be implemented to enable debug mode
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Perform supy simulation.
 
@@ -337,12 +337,16 @@ def run_supy(
                 "SuPy stopped entering simulation due to invalid forcing!"
             )
         # initial model states:
-        list_issues_state = check_state(df_state_init)
-        if isinstance(list_issues_state, list):
+        res_check_state = check_state(df_state_init)
+        if isinstance(res_check_state, list):
             logger_supy.critical(f"`df_state_init` is NOT valid to initialise SuPy!")
             raise RuntimeError(
                 "SuPy stopped entering simulation due to invalid initial states!"
             )
+        else:
+            logger_supy.info(f"SuPy simulation is starting ...")
+            if isinstance(res_check_state, pd.DataFrame):
+                df_state_init = res_check_state
 
     # set up a timer for simulation time
     start = time.time()
