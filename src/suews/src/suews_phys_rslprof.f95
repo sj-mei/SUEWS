@@ -1066,7 +1066,6 @@ CONTAINS
                   zH_RSL, L_MOD_RSL, & ! output
                   Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
 
-
             ELSE
 
                ! correct parameters if RSL approach doesn't apply for scenario of isolated flows
