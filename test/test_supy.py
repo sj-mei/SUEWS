@@ -297,6 +297,7 @@ class TestSuPy(TestCase):
         col_test = [
             "QN",
             "QF",
+            "QS",
             "QE",
             "QH",
             "T2",
