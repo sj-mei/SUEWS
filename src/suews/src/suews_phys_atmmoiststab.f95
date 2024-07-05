@@ -1,5 +1,5 @@
 MODULE AtmMoistStab_module
-   USE SUEWS_DEF_DTS, ONLY: atm_state, SUEWS_FORCING, SUEWS_TIMER
+   USE SUEWS_DEF_DTS, ONLY: atm_state, SUEWS_FORCING, SUEWS_TIMER, SUEWS_STATE
    IMPLICIT NONE
    REAL(KIND(1D0)), PARAMETER :: neut_limit = 1.E-2 !Limit for neutral stability
    REAL(KIND(1D0)), PARAMETER :: k = 0.4 !Von Karman's contant
@@ -12,35 +12,39 @@ MODULE AtmMoistStab_module
 
 CONTAINS
 
-   SUBROUTINE SUEWS_update_atmState(timer, forcing, atmState)
+   SUBROUTINE SUEWS_update_atmState(timer, forcing, modState)
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
-      TYPE(atm_state), INTENT(inout) :: atmState
-      ASSOCIATE ( &
-         Temp_C => forcing%Temp_C, &
-         pres => forcing%pres, &
-         RH => forcing%RH, &
-         dectime => timer%dectime, &
-         dt_since_start => timer%dt_since_start, &
-         tstep => timer%tstep, &
-         Tair_av => atmState%Tair_av, &
-         lv_J_kg => atmState%lv_J_kg, &
-         lvS_J_kg => atmState%lvS_J_kg, &
-         es_hPa => atmState%es_hPa, &
-         Ea_hPa => atmState%Ea_hPa, &
-         VPd_hpa => atmState%VPd_hpa, &
-         VPD_Pa => atmState%VPD_Pa, &
-         dq => atmState%dq, &
-         dens_dry => atmState%dens_dry, &
-         avcp => atmState%avcp, &
-         avdens => atmState%avdens &
-         )
-         CALL cal_AtmMoist( &
-            Temp_C, pres, RH, dectime, &
-            lv_J_kg, lvS_J_kg, &
-            es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
-         Tair_av = update_tair_av(Tair_av, dt_since_start, tstep, temp_c)
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
+      ! TYPE(atm_state), INTENT(inout) :: atmState
+      ASSOCIATE (atmState => modState%atmState)
 
+         ASSOCIATE ( &
+            Temp_C => forcing%Temp_C, &
+            pres => forcing%pres, &
+            RH => forcing%RH, &
+            dectime => timer%dectime, &
+            dt_since_start => timer%dt_since_start, &
+            tstep => timer%tstep, &
+            Tair_av => atmState%Tair_av, &
+            lv_J_kg => atmState%lv_J_kg, &
+            lvS_J_kg => atmState%lvS_J_kg, &
+            es_hPa => atmState%es_hPa, &
+            Ea_hPa => atmState%Ea_hPa, &
+            VPd_hpa => atmState%VPd_hpa, &
+            VPD_Pa => atmState%VPD_Pa, &
+            dq => atmState%dq, &
+            dens_dry => atmState%dens_dry, &
+            avcp => atmState%avcp, &
+            avdens => atmState%avdens &
+            )
+            CALL cal_AtmMoist( &
+               Temp_C, pres, RH, dectime, &
+               lv_J_kg, lvS_J_kg, &
+               es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
+            Tair_av = update_tair_av(Tair_av, dt_since_start, tstep, temp_c)
+
+         END ASSOCIATE
       END ASSOCIATE
 
    END SUBROUTINE SUEWS_update_atmState

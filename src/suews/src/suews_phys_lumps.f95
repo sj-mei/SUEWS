@@ -178,9 +178,10 @@ CONTAINS
 
    SUBROUTINE LUMPS_cal_QHQE_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      heatState, &
-      atmState, &
-      phenState)
+      modState) ! input/output:
+      ! heatState, &
+      ! atmState, &
+      ! phenState)
       !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
       ! ref: Grimmond and Oke (2002) JAM and references within that
       !      Offerle (2003) -- add water bucket
@@ -197,7 +198,7 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: LUMPS_PRM, SUEWS_TIMER, SUEWS_SITE, SUEWS_CONFIG, SUEWS_FORCING, &
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
-                               PHENOLOGY_STATE, atm_state, HEAT_STATE
+                               PHENOLOGY_STATE, atm_state, HEAT_STATE, SUEWS_STATE
 
       IMPLICIT NONE
       TYPE(SUEWS_TIMER), INTENT(in) :: timer
@@ -216,9 +217,11 @@ CONTAINS
       ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
       ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
 
-      TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
-      TYPE(atm_state), INTENT(INout) :: atmState
-      TYPE(HEAT_STATE), INTENT(INout) :: heatState
+      TYPE(SUEWS_STATE), INTENT(INout) :: modState
+
+      ! TYPE(PHENOLOGY_STATE), INTENT(INout) :: phenState
+      ! TYPE(atm_state), INTENT(INout) :: atmState
+      ! TYPE(HEAT_STATE), INTENT(INout) :: heatState
 
       INTEGER, PARAMETER :: ndays = 366
       INTEGER, PARAMETER :: NSurf = 7
@@ -271,151 +274,170 @@ CONTAINS
                          beta, & !Beta parameter used in LUMPS QH and QE calculations [W m-2]
                          alpha_qhqe, RAINRES, RainBucket, tlv
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
+
       ASSOCIATE ( &
-         pavedPrm => siteInfo%lc_paved, &
-         bldgPrm => siteInfo%lc_bldg, &
-         evetrPrm => siteInfo%lc_evetr, &
-         dectrPrm => siteInfo%lc_dectr, &
-         grassPrm => siteInfo%lc_grass, &
-         bsoilPrm => siteInfo%lc_bsoil, &
-         waterPrm => siteInfo%lc_water, &
-         sfr_surf => siteInfo%sfr_surf, &
-         VegFraction => siteInfo%vegFraction, &
-         tstep_real => timer%tstep_real, &
-         nsh_real => timer%nsh_real, &
-         avcp => atmState%avcp, &
-         lv_J_kg => atmState%lv_J_kg, &
-         psyc_hPa => atmState%psyc_hPa, &
-         s_hPa => atmState%s_hPa, &
-         sIce_hpa => atmState%sIce_hpa, &
-         qn => heatState%qn, &
-         qf => heatState%qf, &
-         qs => heatState%qs, &
-         QH_LUMPS => heatState%QH_LUMPS, &
-         QE_LUMPS => heatState%QE_LUMPS, &
-         TempVeg => phenState%TempVeg, &
-         VegPhenLumps => phenState%VegPhenLumps, &
-         SnowUse => config%SnowUse, &
-         lumpsPrm => siteInfo%lumps &
+         phenState => modState%phenState, &
+         atmState => modState%atmState, &
+         heatState => modState%heatState, &
+         flagState => modState%flagState &
          )
 
-         veg_type = lumpsPrm%veg_type
-         DRAINRT = lumpsPrm%drainrt
+         ASSOCIATE ( &
+            i_iter => flagState%i_iter, &
+            pavedPrm => siteInfo%lc_paved, &
+            bldgPrm => siteInfo%lc_bldg, &
+            evetrPrm => siteInfo%lc_evetr, &
+            dectrPrm => siteInfo%lc_dectr, &
+            grassPrm => siteInfo%lc_grass, &
+            bsoilPrm => siteInfo%lc_bsoil, &
+            waterPrm => siteInfo%lc_water, &
+            sfr_surf => siteInfo%sfr_surf, &
+            VegFraction => siteInfo%vegFraction, &
+            tstep_real => timer%tstep_real, &
+            nsh_real => timer%nsh_real, &
+            avcp => atmState%avcp, &
+            lv_J_kg => atmState%lv_J_kg, &
+            psyc_hPa => atmState%psyc_hPa, &
+            s_hPa => atmState%s_hPa, &
+            sIce_hpa => atmState%sIce_hpa, &
+            qn => heatState%qn, &
+            qf => heatState%qf, &
+            qs => heatState%qs, &
+            QH_LUMPS => heatState%QH_LUMPS, &
+            QE_LUMPS => heatState%QE_LUMPS, &
+            qh_init => heatState%qh_init, &
+            QH => heatState%QH, &
+            TempVeg => phenState%TempVeg, &
+            VegPhenLumps => phenState%VegPhenLumps, &
+            SnowUse => config%SnowUse, &
+            lumpsPrm => siteInfo%lumps &
+            )
 
-         ! SnowUse = config%SnowUse
+            IF (i_iter == 1) THEN
 
-         Temp_C = forcing%Temp_C
-         Press_hPa = forcing%pres
-         Precip = forcing%rain
-         RainMaxRes = lumpsPrm%rainmaxres
-         RAINCOVER = lumpsPrm%raincover
+               veg_type = lumpsPrm%veg_type
+               DRAINRT = lumpsPrm%drainrt
 
-         LAI_id_prev = phenState%LAI_id
+               ! SnowUse = config%SnowUse
 
-         ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
-         LAImax = [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax]
-         LAImin = [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin]
+               Temp_C = forcing%Temp_C
+               Press_hPa = forcing%pres
+               Precip = forcing%rain
+               RainMaxRes = lumpsPrm%rainmaxres
+               RAINCOVER = lumpsPrm%raincover
 
-         tlv = lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-         ! initialize VegPhenLumps to output
-         VegPhenLumps = 0
+               LAI_id_prev = phenState%LAI_id
 
-         ! initialize rain-related variables
-         RainBucket = 0.
+               ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+               LAImax = [evetrPrm%lai%laimax, dectrPrm%lai%laimax, grassPrm%lai%laimax]
+               LAImin = [evetrPrm%lai%laimin, dectrPrm%lai%laimin, grassPrm%lai%laimin]
 
-         ! surface fractions fro veg surfaces
-         sfrVeg = sfr_surf(ivConif + 2:ivGrass + 2)
+               tlv = lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+               ! initialize VegPhenLumps to output
+               VegPhenLumps = 0
 
-         ! Calculate slope of the saturation vapour pressure vs air temp.
-         s_hPa = slope_svp(Temp_C)
-         psyc_hPa = psyc_const(avcp, Press_hPa, lv_J_kg)
-         psyc_s = psyc_hPa/s_hPa
+               ! initialize rain-related variables
+               RainBucket = 0.
 
-         !Calculate also sublimation ones if snow calculations are made.
-         !Used also for LUMPS
-         IF (SnowUse == 1) THEN
-            IF (Temp_C <= 0) THEN
-               sIce_hpa = slopeIce_svp(Temp_C)
+               ! surface fractions fro veg surfaces
+               sfrVeg = sfr_surf(ivConif + 2:ivGrass + 2)
+
+               ! Calculate slope of the saturation vapour pressure vs air temp.
+               s_hPa = slope_svp(Temp_C)
+               psyc_hPa = psyc_const(avcp, Press_hPa, lv_J_kg)
+               psyc_s = psyc_hPa/s_hPa
+
+               !Calculate also sublimation ones if snow calculations are made.
+               !Used also for LUMPS
+               IF (SnowUse == 1) THEN
+                  IF (Temp_C <= 0) THEN
+                     sIce_hpa = slopeIce_svp(Temp_C)
+                  ELSE
+                     sIce_hpa = slope_svp(Temp_C)
+                  END IF
+                  psyc_s = psyc_hPa/sIce_hPa !Psychometric constant divided by the slope
+               END IF
+
+               ! replaced by sinusoidal vegetation formulation
+               !alpha=gis(idgis,itgis,1)*alpha_sl+alpha_in
+
+               !THE FOLLOWING ADJUSTS THE ALPHA and BETA PARAMETERs FOR RAINFALL.
+               !ASSUMES THE SURFACE IS VEGETATION COVERED WITH RAIN > RAINCOVER mm/DAY
+               !OTHERWISE INCREASES VEGETATION LINEAR WITH AMOUNT OF RAIN.
+
+               ! !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
+               ! IF (E_mod>0.) RainBucket=RainBucket-E_mod/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
+               ! IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
+               ! IF (RainBucket<0.) RainBucket=0.
+               ! IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)
+               !
+               ! RAINRES = RainBucket
+               ! IF (RAINRES>RAINCOVER) RAINRES=RAINCOVER
+
+               !--------Calculate vegetation phenology for LUMPS------------------------
+               ! VegPhen=0
+               ! VegMax=0
+               ! VegMin=0
+               VegPhen = DOT_PRODUCT(sfrVeg, LAI_id_prev)
+               VegMax = DOT_PRODUCT(sfrVeg, LAImax)
+               VegMin = DOT_PRODUCT(sfrVeg, LAImin)
+
+               ! DO iv=ivConif,ivGrass   !Normalized LAI for vegetation
+               !    VegPhen = sfr_surf(iv+2)*LAI(id-1,iv) + VegPhen
+               !    VegMax  = sfr_surf(iv+2)*LAImax(iv) + VegMax
+               !    VegMin  = sfr_surf(iv+2)*LAImax(iv) + VegMin
+               ! ENDDO
+
+               IF (VegMax <= 0.01000) THEN !If max vegetation is very small, TempVeg = 0;
+                  TempVeg = 0
+               ELSE
+                  VegPhenLumps = (VegPhen)/(VegMax)
+                  TempVeg = VegFraction*VegPhenLumps !Now this is veg_fraction in general
+               END IF
+
+               ! initialisation
+               alpha_sl = 0.6
+               alpha_in = 0.2
+
+               IF (TempVeg > 0.9000) THEN !If vegetation fraction is larger than 0.9
+                  beta = (20 - 3)*TempVeg + 3
+                  alpha_qhqe = TempVeg*0.8 + 0.2
+               ELSE
+                  beta = 3
+                  IF (veg_type == 1) THEN !Area vegetated, including bare soil and water
+                     alpha_sl = 0.686
+                     alpha_in = 0.189
+                  ELSEIF (veg_type == 2) THEN !Area irrigated vegetation
+                     alpha_sl = 0.610
+                     alpha_in = 0.222
+                  END IF
+                  alpha_qhqe = TempVeg*alpha_sl + alpha_in
+               END IF
+
+               ! Calculate the actual heat fluxes
+               QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn + qf - qs - Qm) - beta !Eq 3, Grimmond & Oke (2002)
+               !If LUMPS has had a problem, we still need a value
+               IF (QH_LUMPS == NAN) QH_LUMPS = qn*0.2
+               QE_LUMPS = (alpha_qhqe/(1 + psyc_s)*(qn + qf - qs - Qm)) + beta !Eq 4, Grimmond & Oke (2002)
+
+               ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018
+               !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
+               IF (QE_LUMPS > 0.) RainBucket = RainBucket - QE_LUMPS/tlv !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
+               IF (Temp_C > 0.) RainBucket = RainBucket - DRAINRT/nsh_real !DRAINRT is specified in mm h-1
+               IF (RainBucket < 0.) RainBucket = 0.
+               IF (Precip > 0) RainBucket = MIN(RainMaxRes, RainBucket + Precip)
+
+               RAINRES = RainBucket
+               IF (RAINRES > RAINCOVER) RAINRES = RAINCOVER
+
+               ! use LUMPS QH to do stability correction
+               QH_Init = QH_LUMPS
             ELSE
-               sIce_hpa = slope_svp(Temp_C)
+               ! use SUEWS QH to do stability correction
+               QH_Init = QH
             END IF
-            psyc_s = psyc_hPa/sIce_hPa !Psychometric constant divided by the slope
-         END IF
 
-         ! replaced by sinusoidal vegetation formulation
-         !alpha=gis(idgis,itgis,1)*alpha_sl+alpha_in
-
-         !THE FOLLOWING ADJUSTS THE ALPHA and BETA PARAMETERs FOR RAINFALL.
-         !ASSUMES THE SURFACE IS VEGETATION COVERED WITH RAIN > RAINCOVER mm/DAY
-         !OTHERWISE INCREASES VEGETATION LINEAR WITH AMOUNT OF RAIN.
-
-         ! !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
-         ! IF (E_mod>0.) RainBucket=RainBucket-E_mod/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
-         ! IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
-         ! IF (RainBucket<0.) RainBucket=0.
-         ! IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)
-         !
-         ! RAINRES = RainBucket
-         ! IF (RAINRES>RAINCOVER) RAINRES=RAINCOVER
-
-         !--------Calculate vegetation phenology for LUMPS------------------------
-         ! VegPhen=0
-         ! VegMax=0
-         ! VegMin=0
-         VegPhen = DOT_PRODUCT(sfrVeg, LAI_id_prev)
-         VegMax = DOT_PRODUCT(sfrVeg, LAImax)
-         VegMin = DOT_PRODUCT(sfrVeg, LAImin)
-
-         ! DO iv=ivConif,ivGrass   !Normalized LAI for vegetation
-         !    VegPhen = sfr_surf(iv+2)*LAI(id-1,iv) + VegPhen
-         !    VegMax  = sfr_surf(iv+2)*LAImax(iv) + VegMax
-         !    VegMin  = sfr_surf(iv+2)*LAImax(iv) + VegMin
-         ! ENDDO
-
-         IF (VegMax <= 0.01000) THEN !If max vegetation is very small, TempVeg = 0;
-            TempVeg = 0
-         ELSE
-            VegPhenLumps = (VegPhen)/(VegMax)
-            TempVeg = VegFraction*VegPhenLumps !Now this is veg_fraction in general
-         END IF
-
-         ! initialisation
-         alpha_sl = 0.6
-         alpha_in = 0.2
-
-         IF (TempVeg > 0.9000) THEN !If vegetation fraction is larger than 0.9
-            beta = (20 - 3)*TempVeg + 3
-            alpha_qhqe = TempVeg*0.8 + 0.2
-         ELSE
-            beta = 3
-            IF (veg_type == 1) THEN !Area vegetated, including bare soil and water
-               alpha_sl = 0.686
-               alpha_in = 0.189
-            ELSEIF (veg_type == 2) THEN !Area irrigated vegetation
-               alpha_sl = 0.610
-               alpha_in = 0.222
-            END IF
-            alpha_qhqe = TempVeg*alpha_sl + alpha_in
-         END IF
-
-         ! Calculate the actual heat fluxes
-         QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn + qf - qs - Qm) - beta !Eq 3, Grimmond & Oke (2002)
-         !If LUMPS has had a problem, we still need a value
-         IF (QH_LUMPS == NAN) QH_LUMPS = qn*0.2
-         QE_LUMPS = (alpha_qhqe/(1 + psyc_s)*(qn + qf - qs - Qm)) + beta !Eq 4, Grimmond & Oke (2002)
-
-         ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018
-         !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
-         IF (QE_LUMPS > 0.) RainBucket = RainBucket - QE_LUMPS/tlv !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
-         IF (Temp_C > 0.) RainBucket = RainBucket - DRAINRT/nsh_real !DRAINRT is specified in mm h-1
-         IF (RainBucket < 0.) RainBucket = 0.
-         IF (Precip > 0) RainBucket = MIN(RainMaxRes, RainBucket + Precip)
-
-         RAINRES = RainBucket
-         IF (RAINRES > RAINCOVER) RAINRES = RAINCOVER
-
-         RETURN
-
+         END ASSOCIATE
       END ASSOCIATE
    END SUBROUTINE LUMPS_cal_QHQE_DTS
 

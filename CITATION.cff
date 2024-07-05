@@ -1,0 +1,64 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: SUEWS (Surface Urban Energy and Water Balance Scheme)
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Sue
+    family-names: Grimmond
+    orcid: 'https://orcid.org/0000-0002-3166-9415'
+  - given-names: Leena
+    family-names: Järvi
+    orcid: 'https://orcid.org/0000-0002-5224-3448'
+  - given-names: Helen
+    name-particle: C
+    family-names: Ward
+    orcid: 'https://orcid.org/0000-0001-8881-185X'
+  - given-names: Ting
+    family-names: Sun
+    orcid: 'https://orcid.org/0000-0002-2486-6146'
+  - given-names: Hamidreza
+    family-names: Omidvar
+    orcid: 'https://orcid.org/0000-0001-8124-7264'
+  - given-names: Lewis
+    family-names: Blunn
+    orcid: 'https://orcid.org/0000-0002-3207-5002'
+  - given-names: Fredrik
+    family-names: Lindberg
+    orcid: 'https://orcid.org/0000-0002-9648-4542'
+  - given-names: Zhenkun
+    family-names: Li
+  - given-names: Yiqing
+    family-names: Liu
+    orcid: 'https://orcid.org/0000-0001-5159-9197'
+  - given-names: Xiaoxiong
+    family-names: Xie
+    orcid: 'https://orcid.org/0000-0003-2280-1768'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.5721639
+    description: All-version DOI record
+repository-code: 'https://github.com/UMEP-dev/SUEWS/'
+abstract: >-
+  Surface Urban Energy and Water Balance Scheme (SUEWS)
+  [Järvi et al., 2011, Ward et al., 2016] is a
+  neighbourhood/local-scale urban land surface model to
+  simulate the urban radiation, energy and water balances
+  using only commonly measured meteorological variables and
+  information about the surface cover. SUEWS utilises an
+  evaporation-interception approach [Grimmond and Oke,
+  1991], similar to that used in forests, to model
+  evaporation from urban surfaces.
+keywords:
+  - urban climate model
+  - land surface model
+  - urban resilience
+  - surface energy balance
+  - surface water balance
+  - urban climate
+  - urban hydrology
+license: MPL-2.0

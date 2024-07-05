@@ -1,0 +1,63 @@
+[build-system]
+requires = [
+    "wheel",
+    "pytest",
+    "f90wrap==0.2.15",
+    "numpy>=2.0",
+    "meson-python>=0.12.0",
+]
+build-backend = 'mesonpy'
+
+
+[project]
+name = "supy"
+description = "The SUEWS model that speaks Python."
+authors = [
+    { name = "Dr Ting Sun", email = "ting.sun@ucl.ac.uk" },
+    { name = "Dr Hamidreza Omidvar", email = "h.omidvar@reading.ac.uk" },
+    { name = "Prof Sue Grimmond", email = "c.s.grimmond@reading.ac.uk" },
+]
+dynamic = ["version"]
+
+license = { text = "GPL-V3.0" }
+
+dependencies = [
+    "pandas",
+    "matplotlib",
+    "chardet",
+    "scipy",
+    "f90wrap==0.2.15",                             # f90wrap is required for f2py-based supy driver
+    "dask",                                        # needs dask for parallel tasks
+    "f90nml",                                      # utility for namelist files
+    "seaborn",                                     # stat plotting
+    "atmosp",                                      # my own `atmosp` module forked from `atmos-python`
+    "cdsapi",                                      # ERA5 data
+    "xarray",                                      # utility for high-dimensional datasets
+    "multiprocess",                                # a better multiprocessing library
+    "click",                                       # cmd tool
+    "lmfit",                                       # optimiser
+    "numdifftools",                                # required by `lmfit` for uncertainty estimation
+    "pvlib",                                       # TMY-related solar radiation calculations
+    "platypus-opt==1.0.4",                         # a multi-objective optimiser
+]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+]
+
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+
+[project.scripts]
+suews-run = "supy.cmd.SUEWS:SUEWS"
+suews-convert = "supy.cmd.table_converter:convert_table_cmd"

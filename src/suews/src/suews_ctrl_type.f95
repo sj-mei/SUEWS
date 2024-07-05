@@ -451,6 +451,7 @@ MODULE SUEWS_DEF_DTS
    ! ********** SUEWS_stateVars schema **********
    TYPE, PUBLIC :: flag_STATE
       LOGICAL :: flag_converge ! flag for convergence of surface temperature
+      INTEGER :: i_iter ! number of iterations for convergence
 
    END TYPE flag_STATE
 
@@ -670,9 +671,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
 
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_roof !surface temperature of roof[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_wall !surface temperature of wall[degC]
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: tsfc0_out_surf !surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc0_out_roof !surface temperature of roof[degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc0_out_wall !surface temperature of wall[degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc0_out_surf !surface temperature [degC]
 
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_roof ! heat storage flux for roof component [W m-2]
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_roof ! net all-wave radiation of roof surface [W m-2]
@@ -832,7 +833,54 @@ MODULE SUEWS_DEF_DTS
       PROCEDURE :: init => output_line_init
    END TYPE output_line
 
+   TYPE, PUBLIC :: SUEWS_DEBUG
+      ! This type stores the model states for debugging purposes.
+      ! The states are captured at the completion of each physical module.
+      ! Naming convention: state_XX_YYY
+      ! XX: sequence number in the main SUEWS calculation
+      ! YYY: name of the physical module
+      TYPE(SUEWS_STATE) :: state_01_dailystate
+      TYPE(SUEWS_STATE) :: state_02_soilmoist
+      TYPE(SUEWS_STATE) :: state_03_wateruse
+      TYPE(SUEWS_STATE) :: state_04_anthroemis
+      TYPE(SUEWS_STATE) :: state_05_qn
+      TYPE(SUEWS_STATE) :: state_06_qs
+      TYPE(SUEWS_STATE) :: state_07_qhqe_lumps
+      TYPE(SUEWS_STATE) :: state_08_water
+      TYPE(SUEWS_STATE) :: state_09_resist
+      TYPE(SUEWS_STATE) :: state_10_qe
+      TYPE(SUEWS_STATE) :: state_11_qh
+      TYPE(SUEWS_STATE) :: state_12_tsurf
+      TYPE(SUEWS_STATE) :: state_13_rsl
+      TYPE(SUEWS_STATE) :: state_14_biogenco2
+      TYPE(SUEWS_STATE) :: state_15_beers
+      ! TYPE(SUEWS_STATE) :: state_snow ! unavailable - to be added #234
+   CONTAINS
+      PROCEDURE :: init => init_suews_debug
+   END TYPE SUEWS_DEBUG
+
 CONTAINS
+
+   SUBROUTINE init_suews_debug(self, nlayer, ndepth)
+      CLASS(SUEWS_DEBUG), INTENT(inout) :: self
+      INTEGER, INTENT(in) :: nlayer, ndepth
+
+      ! Initialise the SUEWS_DEBUG type
+      CALL self%state_01_dailystate%ALLOCATE(nlayer, ndepth)
+      CALL self%state_02_soilmoist%ALLOCATE(nlayer, ndepth)
+      CALL self%state_03_wateruse%ALLOCATE(nlayer, ndepth)
+      CALL self%state_04_anthroemis%ALLOCATE(nlayer, ndepth)
+      CALL self%state_05_qn%ALLOCATE(nlayer, ndepth)
+      CALL self%state_06_qs%ALLOCATE(nlayer, ndepth)
+      CALL self%state_09_resist%ALLOCATE(nlayer, ndepth)
+      CALL self%state_10_qe%ALLOCATE(nlayer, ndepth)
+      CALL self%state_11_qh%ALLOCATE(nlayer, ndepth)
+      CALL self%state_12_tsurf%ALLOCATE(nlayer, ndepth)
+      CALL self%state_13_rsl%ALLOCATE(nlayer, ndepth)
+      CALL self%state_14_biogenco2%ALLOCATE(nlayer, ndepth)
+      CALL self%state_15_beers%ALLOCATE(nlayer, ndepth)
+      ! CALL self%state_snow%init() ! unavailable - to be added #234
+   END SUBROUTINE init_suews_debug
 
    SUBROUTINE output_line_init(self)
       CLASS(output_line), INTENT(inout) :: self
@@ -997,6 +1045,10 @@ CONTAINS
       ALLOCATE (self%tsfc_wall(num_layer))
       ALLOCATE (self%tsfc_surf(num_surf))
 
+      ALLOCATE (self%tsfc0_out_roof(num_layer))
+      ALLOCATE (self%tsfc0_out_wall(num_layer))
+      ALLOCATE (self%tsfc0_out_surf(num_surf))
+
       ALLOCATE (self%QS_roof(num_layer))
       ALLOCATE (self%QN_roof(num_layer))
       ALLOCATE (self%qe_roof(num_layer))
@@ -1020,6 +1072,9 @@ CONTAINS
       IF (ALLOCATED(self%tsfc_roof)) DEALLOCATE (self%tsfc_roof)
       IF (ALLOCATED(self%tsfc_wall)) DEALLOCATE (self%tsfc_wall)
       IF (ALLOCATED(self%tsfc_surf)) DEALLOCATE (self%tsfc_surf)
+      IF (ALLOCATED(self%tsfc0_out_roof)) DEALLOCATE (self%tsfc0_out_roof)
+      IF (ALLOCATED(self%tsfc0_out_wall)) DEALLOCATE (self%tsfc0_out_wall)
+      IF (ALLOCATED(self%tsfc0_out_surf)) DEALLOCATE (self%tsfc0_out_surf)
       IF (ALLOCATED(self%temp_surf)) DEALLOCATE (self%temp_surf)
       IF (ALLOCATED(self%QS_roof)) DEALLOCATE (self%QS_roof)
       IF (ALLOCATED(self%QN_roof)) DEALLOCATE (self%QN_roof)

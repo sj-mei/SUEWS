@@ -461,12 +461,16 @@ CONTAINS
 
       INTEGER, PARAMETER :: notUsedI = -55
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
-      REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
+      REAL(KIND(1D0)) :: z0m_Paved, z0m_Grass, z0m_BSoil, z0m_Water !Default values for roughness lengths [m]
 
       ! calculated values of FAI
       REAL(KIND(1D0)) :: FAIBldg_use
       REAL(KIND(1D0)) :: FAIEveTree_use
       REAL(KIND(1D0)) :: FAIDecTree_use
+      REAL(KIND(1D0)) :: z0m_zh ! z0m for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: zdm_zh ! zdm for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: z0m_zh0 ! z0m for non-roughness elements (i.e. zh=0)
+      REAL(KIND(1D0)) :: zdm_zh0 ! zdm for non-roughness elements (i.e. zh=0)
 
       !Total area of buildings and trees
       ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
@@ -474,10 +478,16 @@ CONTAINS
       PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
 
       ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
-      Z0m4Paved = 0.003 !estimate
-      Z0m4Grass = 0.02
-      Z0m4BSoil = 0.002
-      Z0m4Water = 0.0005
+      z0m_Paved = 0.003 !estimate
+      z0m_Grass = 0.02
+      z0m_BSoil = 0.002
+      z0m_Water = 0.0005
+      ! z0m for non-roughness elements (i.e. zh=0)
+      z0m_zh0 = (z0m_Paved*sfr_surf(PavSurf) &
+                 + z0m_Grass*sfr_surf(GrassSurf) &
+                 + z0m_BSoil*sfr_surf(BSoilSurf) &
+                 + z0m_Water*sfr_surf(WaterSurf))/(1 - PAI)
+      zdm_zh0 = 0
 
       !------------------------------------------------------------------------------
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
@@ -518,29 +528,30 @@ CONTAINS
       IF (Zh /= 0) THEN
          !Calculate z0m and zdm depending on the Z0 method
          IF (RoughLenMomMethod == 2) THEN !Rule of thumb (G&O 1999)
-            z0m = 0.1*Zh
-            zdm = 0.7*Zh
+            z0m_zh = 0.1*Zh
+            zdm_zh = 0.7*Zh
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
             ! zdm = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
-            zdm = (1 + 4.43**(-PAI)*(PAI - 1))*Zh ! changed sfr_surf(BldgSurf) to PAI to be consistent with z0m calculation, TS 04 Jun 2023
-            z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
+            zdm_zh = (1 + 4.43**(-PAI)*(PAI - 1))*Zh ! changed sfr_surf(BldgSurf) to PAI to be consistent with z0m calculation, TS 04 Jun 2023
+            z0m_zh = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
          ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
             ! these are derived using digitalised points
-            zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
-            z0m = (0.00208 + &
-                   0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
-                   3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
-                   76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
+            zdm_zh = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
+            z0m_zh = (0.00208 + &
+                      0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
+                      3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
+                      76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
          END IF
+         ! #271: to smooth the z0m (and zdm) values when other non-rough surfaces are present
+         z0m = DOT_PRODUCT([z0m_zh, z0m_zh0], [PAI, 1 - PAI])
+         zdm = DOT_PRODUCT([zdm_zh, zdm_zh0], [PAI, 1 - PAI])
+
       ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
          IF (PAI /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, PAI, notUsedI)
          !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
          IF (PAI /= 1) THEN
-            z0m = (z0m4Paved*sfr_surf(PavSurf) &
-                   + z0m4Grass*sfr_surf(GrassSurf) &
-                   + z0m4BSoil*sfr_surf(BSoilSurf) &
-                   + z0m4Water*sfr_surf(WaterSurf))/(1 - PAI)
-            zdm = 0
+            z0m = z0m_zh0
+            zdm = zdm_zh0
             CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
          ELSEIF (PAI == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
             z0m = 1
@@ -564,8 +575,9 @@ CONTAINS
 
    SUBROUTINE SUEWS_cal_RoughnessParameters_DTS( &
       timer, config, forcing, siteInfo, & !input
-      phenState, &
-      roughnessState)
+      modState) ! input/output:
+      ! phenState, &
+      ! roughnessState)
       ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
       ! FAI, PAI, & ! output:
       ! Zh, z0m, zdm, ZZD)
@@ -581,7 +593,7 @@ CONTAINS
                                LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
                                LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
                                IRRIGATION_PRM, anthroEmis_STATE, &
-                               HYDRO_STATE, PHENOLOGY_STATE, ROUGHNESS_STATE
+                               HYDRO_STATE, PHENOLOGY_STATE, ROUGHNESS_STATE, SUEWS_STATE
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: nsurf = 7 ! number of surface types
@@ -598,6 +610,8 @@ CONTAINS
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(SUEWS_STATE), INTENT(INout) :: modState
       ! INTEGER :: RoughLenMomMethod
       ! INTEGER :: FAImethod ! 0 = use FAI provided, 1 = use the simple scheme
 
@@ -622,8 +636,8 @@ CONTAINS
       ! REAL(KIND(1D0)) :: zdm_in ! zdm set in SiteSelect
       ! REAL(KIND(1D0)) :: Z
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
-      TYPE(ROUGHNESS_STATE), INTENT(OUT) :: roughnessState
+      ! TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
+      ! TYPE(ROUGHNESS_STATE), INTENT(OUT) :: roughnessState
 
       ! REAL(KIND(1D0)) :: porosity_dectr
 
@@ -636,7 +650,18 @@ CONTAINS
 
       INTEGER, PARAMETER :: notUsedI = -55
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
-      REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
+
+      !Default values for roughness lengths [m]
+      ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
+      REAL(KIND(1D0)), PARAMETER :: z0m_Paved = 0.003 !estimate
+      REAL(KIND(1D0)), PARAMETER :: z0m_Grass = 0.02
+      REAL(KIND(1D0)), PARAMETER :: z0m_BSoil = 0.002
+      REAL(KIND(1D0)), PARAMETER :: z0m_Water = 0.0005
+
+      REAL(KIND(1D0)) :: z0m_zh ! z0m for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: zdm_zh ! zdm for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: z0m_zh0 ! z0m for non-roughness elements (i.e. zh=0)
+      REAL(KIND(1D0)) :: zdm_zh0 ! zdm for non-roughness elements (i.e. zh=0)
 
       ! calculated values of FAI
       ! REAL(KIND(1D0)), INTENT(out) :: FAIBldg_use
@@ -644,6 +669,8 @@ CONTAINS
       ! REAL(KIND(1D0)), INTENT(out) :: FAIDecTree_use
 
       ASSOCIATE ( &
+         phenState => modState%phenState, &
+         roughnessState => modState%roughnessState, &
          surfacearea => siteInfo%surfacearea, &
          z0m_in => siteInfo%z0m_in, &
          zdm_in => siteInfo%zdm_in, &
@@ -701,11 +728,12 @@ CONTAINS
             ! TS 19 Jun 2022: take porosity of trees into account; to be consistent with PAI calculation in RSL
             PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
 
-            ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
-            Z0m4Paved = 0.003 !estimate
-            Z0m4Grass = 0.02
-            Z0m4BSoil = 0.002
-            Z0m4Water = 0.0005
+            ! z0m for non-roughness elements (i.e. zh=0)
+            z0m_zh0 = (z0m_Paved*sfr_surf(PavSurf) &
+                       + z0m_Grass*sfr_surf(GrassSurf) &
+                       + z0m_BSoil*sfr_surf(BSoilSurf) &
+                       + z0m_Water*sfr_surf(WaterSurf))/(1 - PAI)
+            zdm_zh0 = 0
 
             !------------------------------------------------------------------------------
             !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
@@ -747,28 +775,29 @@ CONTAINS
             IF (Zh /= 0) THEN
                !Calculate z0m and zdm depending on the Z0 method
                IF (RoughLenMomMethod == 2) THEN !Rule of thumb (G&O 1999)
-                  z0m = 0.1*Zh
-                  zdm = 0.7*Zh
+                  z0m_zh = 0.1*Zh
+                  zdm_zh = 0.7*Zh
                ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
-                  zdm = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
-                  z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
+                  zdm_zh = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
+                  z0m_zh = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
                ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
                   ! these are derived using digitalised points
-                  zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
-                  z0m = (0.00208 + &
-                         0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
-                         3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
-                         76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
+                  zdm_zh = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
+                  z0m_zh = (0.00208 + &
+                            0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
+                            3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
+                            76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
                END IF
+               ! #271: to smooth the z0m (and zdm) values when other non-rough surfaces are present
+               z0m = DOT_PRODUCT([z0m_zh, z0m_zh0], [PAI, 1 - PAI])
+               zdm = DOT_PRODUCT([zdm_zh, zdm_zh0], [PAI, 1 - PAI])
+
             ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
                IF (PAI /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, PAI, notUsedI)
                !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
                IF (PAI /= 1) THEN
-                  z0m = (z0m4Paved*sfr_surf(PavSurf) &
-                         + z0m4Grass*sfr_surf(GrassSurf) &
-                         + z0m4BSoil*sfr_surf(BSoilSurf) &
-                         + z0m4Water*sfr_surf(WaterSurf))/(1 - PAI)
-                  zdm = 0
+                  z0m = z0m_zh0
+                  zdm = zdm_zh0
                   CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
                ELSEIF (PAI == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
                   z0m = 1

@@ -26,6 +26,9 @@ MODULE beers_module
    ! USE defaultNotUsed, only: notUsed, notUsedI
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE allocateArray, ONLY: ncolumnsDataOutBEERS
+   USE time_module, ONLY: DAYLEN, SUEWS_cal_weekday, SUEWS_cal_dectime, &
+                          Day_Of_Week, SUEWS_cal_DLS, Days_of_Year, LeapYearCalc, day2month, &
+                          SUEWS_cal_tstep, month2day, dectime_to_timevec
 
    IMPLICIT NONE
    REAL(KIND(1D0)), PARAMETER :: pi = ATAN(1.)*4
@@ -338,15 +341,13 @@ CONTAINS
 
    SUBROUTINE BEERS_cal_main_DTS( &
       timer, config, forcing, siteInfo, & ! input
-      roughnessState, &
-      heatState, &
-      solarState, &
-      phenState, &
+      modState, & ! input/output:
       dataOutLineBEERS) ! output
 
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, SUEWS_SITE, &
                                PHENOLOGY_STATE, LC_PAVED_PRM, LC_BLDG_PRM, &
-                               ROUGHNESS_STATE, HEAT_STATE, solar_State
+                               ROUGHNESS_STATE, HEAT_STATE, solar_State, &
+                               SUEWS_STATE, BldgSurf
 
       IMPLICIT NONE
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
@@ -354,37 +355,7 @@ CONTAINS
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
-      TYPE(ROUGHNESS_STATE), INTENT(IN) :: roughnessState
-      TYPE(HEAT_STATE), INTENT(IN) :: heatState
-      TYPE(solar_State), INTENT(IN) :: solarState
-      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
-      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
-
-      ! INTEGER :: iy
-      ! INTEGER :: id
-      ! REAL(KIND(1D0)), INTENT(in) :: PAI ! plan area fraction
-      ! REAL(KIND(1D0)), INTENT(in) :: FAI ! frontal area fraction
-      !REAL(KIND(1d0)), INTENT(in)::tilt ! Tilt of building in degrees. Could be included FL
-      ! REAL(KIND(1d0)), intent(in) ::lai_id_dectr
-      ! REAL(KIND(1d0)), intent(in) ::LAImax_dectr
-      ! REAL(KIND(1D0)), intent(in)::TransMin        ! Tranmissivity of K through decidious vegetation (leaf on)
-      ! REAL(KIND(1D0)) :: Press_hPa
-      ! REAL(KIND(1D0)) :: Temp_C
-      ! REAL(KIND(1D0)) :: avrh
-      ! REAL(KIND(1D0)) :: avkdn
-      ! REAL(KIND(1D0)), INTENT(in) :: ldown
-      ! REAL(KIND(1D0)), INTENT(in) :: TSfc_C
-      ! REAL(KIND(1d0)), intent(in) :: kdiff !Actual inputs from metfile.
-      ! REAL(KIND(1d0)), intent(in) :: kdir  !Actual inputs from metfile.
-      ! REAL(KIND(1D0)), INTENT(in) :: zenith_deg
-      ! REAL(KIND(1D0)), INTENT(in) :: azimuth_deg
-      ! REAL(KIND(1D0)), INTENT(in) :: dectime
-      ! REAL(KIND(1D0)) :: timezone, lat, lng, alt
-      ! REAL(KIND(1D0)) :: alb_bldg
-      ! REAL(KIND(1D0)) :: alb_ground
-      ! REAL(KIND(1D0)) :: emis_wall
-      REAL(KIND(1D0)) :: emis_ground
+      TYPE(SUEWS_STATE), INTENT(inout) :: modState
 
       REAL(KIND(1D0)), PARAMETER :: absL = 0.97 ! Absorption coefficient of longwave radiation of a person
       REAL(KIND(1D0)), PARAMETER :: absK = 0.7 ! Absorption coefficient of shortwave radiation of a person
@@ -440,261 +411,275 @@ CONTAINS
       INTEGER, PARAMETER :: BEERS_tsurf = 1 !TODO: should be input parameter FL
 
       ASSOCIATE ( &
-         pavedPrm => siteInfo%lc_paved, &
-         bldgPrm => siteInfo%lc_bldg, &
-         evetrPrm => siteInfo%lc_evetr, &
-         dectrPrm => siteInfo%lc_dectr, &
-         grassPrm => siteInfo%lc_grass, &
-         bsoilPrm => siteInfo%lc_bsoil, &
-         waterPrm => siteInfo%lc_water, &
-         ehcPrm => siteInfo%ehc, &
-         nlayer => siteInfo%nlayer, &
-         sfr_surf => siteInfo%sfr_surf, &
-         sfr_roof => siteInfo%sfr_roof, &
-         sfr_wall => siteInfo%sfr_wall, &
-         SurfaceArea => siteInfo%SurfaceArea, &
-         snowPrm => siteInfo%snow, &
-         PipeCapacity => siteInfo%PipeCapacity, &
-         RunoffToWater => siteInfo%RunoffToWater, &
-         FlowChange => siteInfo%FlowChange, &
-         PervFraction => siteInfo%PervFraction, &
-         vegfraction => siteInfo%vegfraction, &
-         NonWaterFraction => siteInfo%NonWaterFraction, &
-         zMeas => siteInfo%z, &
-         lat => siteInfo%lat, &
-         lng => siteInfo%lon, &
-         alt => siteInfo%alt, &
-         timezone => siteInfo%timezone, &
-         conductancePrm => siteInfo%conductance, &
-         tstep_real => timer%tstep_real, &
-         avkdn => forcing%kdown, &
-         xsmd => forcing%xsmd, &
-         Temp_C => forcing%Temp_C, &
-         avU1 => forcing%U, &
-         avRH => forcing%RH, &
-         Press_hPa => forcing%pres, &
-         LAI_id => phenState%LAI_id, &
-         gfunc => phenState%gfunc, &
-         PAI => roughnessState%PAI, &
-         FAI => roughnessState%FAI, &
-         ldown => heatState%ldown, &
-         TSfc_C => heatState%TSfc_C, &
-         zenith_deg => solarState%zenith_deg, &
-         azimuth_deg => solarState%azimuth_deg, &
-         iy => timer%iy, &
-         it => timer%it, &
-         id => timer%id, &
-         dectime => timer%dectime, &
-         SMDMethod => config%SMDMethod, &
-         storageheatmethod => config%StorageHeatMethod, &
-         DiagMethod => config%DiagMethod, &
-         StabilityMethod => config%StabilityMethod, &
-         EmissionsMethod => config%EmissionsMethod, &
-         Diagnose => config%Diagnose &
+         roughnessState => modState%roughnessState, &
+         heatState => modState%heatState, &
+         solarState => modState%solarState, &
+         phenState => modState%phenState &
          )
-
          ASSOCIATE ( &
-            emis_ground => pavedPrm%emis, &
-            emis_wall => bldgPrm%emis, &
-            alb_ground => phenState%alb(1), &
-            alb_bldg => phenState%alb(2), &
-            P => Press_hPa, &
-            Ta => Temp_C, &
-            RH => avrh, &
-            radG => avkdn, &
-            DOY => INT(id) &
+            pavedPrm => siteInfo%lc_paved, &
+            bldgPrm => siteInfo%lc_bldg, &
+            evetrPrm => siteInfo%lc_evetr, &
+            dectrPrm => siteInfo%lc_dectr, &
+            grassPrm => siteInfo%lc_grass, &
+            bsoilPrm => siteInfo%lc_bsoil, &
+            waterPrm => siteInfo%lc_water, &
+            ehcPrm => siteInfo%ehc, &
+            nlayer => siteInfo%nlayer, &
+            sfr_surf => siteInfo%sfr_surf, &
+            sfr_roof => siteInfo%sfr_roof, &
+            sfr_wall => siteInfo%sfr_wall, &
+            SurfaceArea => siteInfo%SurfaceArea, &
+            snowPrm => siteInfo%snow, &
+            PipeCapacity => siteInfo%PipeCapacity, &
+            RunoffToWater => siteInfo%RunoffToWater, &
+            FlowChange => siteInfo%FlowChange, &
+            PervFraction => siteInfo%PervFraction, &
+            vegfraction => siteInfo%vegfraction, &
+            NonWaterFraction => siteInfo%NonWaterFraction, &
+            zMeas => siteInfo%z, &
+            lat => siteInfo%lat, &
+            lng => siteInfo%lon, &
+            alt => siteInfo%alt, &
+            timezone => siteInfo%timezone, &
+            conductancePrm => siteInfo%conductance, &
+            tstep_real => timer%tstep_real, &
+            avkdn => forcing%kdown, &
+            xsmd => forcing%xsmd, &
+            Temp_C => forcing%Temp_C, &
+            avU1 => forcing%U, &
+            avRH => forcing%RH, &
+            Press_hPa => forcing%pres, &
+            LAI_id => phenState%LAI_id, &
+            gfunc => phenState%gfunc, &
+            PAI => roughnessState%PAI, &
+            FAI => roughnessState%FAI, &
+            ldown => heatState%ldown, &
+            TSfc_C => heatState%TSfc_C, &
+            zenith_deg => solarState%zenith_deg, &
+            azimuth_deg => solarState%azimuth_deg, &
+            iy => timer%iy, &
+            it => timer%it, &
+            id => timer%id, &
+            dectime => timer%dectime, &
+            SMDMethod => config%SMDMethod, &
+            storageheatmethod => config%StorageHeatMethod, &
+            DiagMethod => config%DiagMethod, &
+            StabilityMethod => config%StabilityMethod, &
+            EmissionsMethod => config%EmissionsMethod, &
+            Diagnose => config%Diagnose &
             )
+            IF (sfr_surf(BldgSurf) > 0) THEN
+               ! do BEERS calculation
+               PAI = sfr_surf(2)/SUM(sfr_surf(1:2))
 
-            ! initialise this as ONE
-            CIlatenight = 1
-            CI = 1
-            psi = 0.03 ! Tranmissivity of K through vegetation
+               ASSOCIATE ( &
+                  emis_ground => pavedPrm%emis, &
+                  emis_wall => bldgPrm%emis, &
+                  alb_ground => phenState%alb(1), &
+                  alb_bldg => phenState%alb(2), &
+                  P => Press_hPa, &
+                  Ta => Temp_C, &
+                  RH => avrh, &
+                  radG => avkdn, &
+                  DOY => INT(id) &
+                  )
 
-            ! Building azimuth offset from cardinal points in degrees
-            t = 0 !tilt
+                  ! initialise this as ONE
+                  CIlatenight = 1
+                  CI = 1
+                  psi = 0.03 ! Tranmissivity of K through vegetation
 
-            HW = cal_ratio_height2width(PAI, FAI)
+                  ! Building azimuth offset from cardinal points in degrees
+                  t = 0 !tilt
 
-            ! parameterisation using NYC building data
-            ! TODO: #5 which SVF should be used here? in python code, SVF_roof is used.
-            ! Both are used. svfr for roof fluxes. Changed in code below. FL
-            svf_ground = hwToSVF_ground(hw) !TODO: Should change based on Oke equation???
-            svf_roof = hwToSVF_roof(hw) !TODO: Should change based on Oke equation???
+                  HW = cal_ratio_height2width(PAI, FAI)
 
-            svf_veg = 1 ! svfveg: SVF based on vegetation blocking the sky (1 = no vegetation)
-            svf_aveg = 1 ! view factor where vegetation is in view before buildings.
+                  ! parameterisation using NYC building data
+                  ! TODO: #5 which SVF should be used here? in python code, SVF_roof is used.
+                  ! Both are used. svfr for roof fluxes. Changed in code below. FL
+                  svf_ground = hwToSVF_ground(hw) !TODO: Should change based on Oke equation???
+                  svf_roof = hwToSVF_roof(hw) !TODO: Should change based on Oke equation???
 
-            tmp = 1 - (svf_ground + svf_veg - 1)
-            IF (tmp <= 1.E-6) tmp = 1.E-6 ! avoiding log(0)
-            svfalfa = ASIN(EXP(LOG(tmp)/2))
+                  svf_veg = 1 ! svfveg: SVF based on vegetation blocking the sky (1 = no vegetation)
+                  svf_aveg = 1 ! view factor where vegetation is in view before buildings.
 
-            ! SVF combines for buildings and vegetation
-            svf_bldg_veg = (svf_ground - (1 - svf_veg)*(1 - psi))
+                  tmp = 1 - (svf_ground + svf_veg - 1)
+                  IF (tmp <= 1.E-6) tmp = 1.E-6 ! avoiding log(0)
+                  svfalfa = ASIN(EXP(LOG(tmp)/2))
 
-            ! Sun position related things
-            CALL DAYLEN(DOY, lat, DAYL, DEC, SNDN, SNUP)
-            zen = zenith_deg*DEG2RAD
-            altitude = 90 - zenith_deg
+                  ! SVF combines for buildings and vegetation
+                  svf_bldg_veg = (svf_ground - (1 - svf_veg)*(1 - psi))
 
-            !Determination of clear-sky emissivity from Prata (1996) !TODO: Is this calcualted in NARP?
-            ea = 6.107*10**((7.5*Ta)/(237.3 + Ta))*(RH/100) !Vapor pressure
-            msteg = 46.5*(ea/(Ta + 273.15))
-            emis_sky = (1 - (1 + msteg)*EXP(-((1.2 + 3.0*msteg)**0.5)))
+                  ! Sun position related things
+                  CALL DAYLEN(DOY, lat, DAYL, DEC, SNDN, SNUP)
+                  zen = zenith_deg*DEG2RAD
+                  altitude = 90 - zenith_deg
 
-      !!! DAYTIME !!!
-            IF (altitude > 0.1) THEN
+                  !Determination of clear-sky emissivity from Prata (1996) !TODO: Is this calcualted in NARP?
+                  ea = 6.107*10**((7.5*Ta)/(237.3 + Ta))*(RH/100) !Vapor pressure
+                  msteg = 46.5*(ea/(Ta + 273.15))
+                  emis_sky = (1 - (1 + msteg)*EXP(-((1.2 + 3.0*msteg)**0.5)))
 
-               !Clearness Index on Earth's surface after Crawford and Dunchon (1999) with a correction
-               !factor for low sun elevations after Lindberg et al. (2008)
-               CALL clearnessindex_2013b(zen, DOY, Ta, RH/100., radG, lat, P/10., & !input
-                                         I0, CI, Kt, I0et, CIuncorr) !output
-               ! IF (CI > 1) CI = 1
+                  ! DAYTIME
+                  IF (altitude > 0.1) THEN
 
-               !Estimation of radD and radI if not measured after Reindl et al. (1990)
-               IF (onlyglobal == 1) THEN
-                  CALL diffusefraction(radG, altitude, Kt, Ta, RH, radI, radD)
-               END IF
+                     !Clearness Index on Earth's surface after Crawford and Dunchon (1999) with a correction
+                     !factor for low sun elevations after Lindberg et al. (2008)
+                     CALL clearnessindex_2013b(zen, DOY, Ta, RH/100., radG, lat, P/10., & !input
+                                               I0, CI, Kt, I0et, CIuncorr) !output
+                     ! IF (CI > 1) CI = 1
 
-               CALL shadowGroundKusaka(HW, azimuth_deg, zen, shadowground, shadowwalls)
-               shadowroof = 1. ! TODO: should change with time of day etc. Could be parameterizised from e.g. Lindberg et al. 2015 SE
+                     !Estimation of radD and radI if not measured after Reindl et al. (1990)
+                     IF (onlyglobal == 1) THEN
+                        CALL diffusefraction(radG, altitude, Kt, Ta, RH, radI, radD)
+                     END IF
 
-               CALL cylindric_wedge(zen, svfalfa, F_sh)
+                     CALL shadowGroundKusaka(HW, azimuth_deg, zen, shadowground, shadowwalls)
+                     shadowroof = 1. ! TODO: should change with time of day etc. Could be parameterizised from e.g. Lindberg et al. 2015 SE
 
-         !!! Calculation of shortwave daytime radiative fluxes !!!
-               CALL KRoof(radI, radD, radG, F_sh, altitude, svf_roof, svf_veg, shadowroof, psi, alb_bldg, Kdown)
-               !Kdown2d = radI*shadowroof*SIN(altitude*DEG2RAD) &
-               !          + radD*svfr &
-               !          ! TODO: #6 F_sh issue: used below is calculated as a variable but
-               !          + alb_bldg*(1 - svfr)*(radG*(1 - F_sh) + radD*F_sh)
+                     CALL cylindric_wedge(zen, svfalfa, F_sh)
 
-               Kup2d = alb_ground*( &
-                       radI*shadowground*SIN(altitude*DEG2RAD) & ! gvf not defined TODO #2 FIXED
-                       + radD*svf_bldg_veg &
-                       + alb_bldg*(1 - svf_bldg_veg)*(radG*(1 - F_sh) + radD*F_sh))
+                     ! Calculation of shortwave daytime radiative fluxes !!!
+                     CALL KRoof(radI, radD, radG, F_sh, altitude, svf_roof, svf_veg, shadowroof, psi, alb_bldg, Kdown)
+                     !Kdown2d = radI*shadowroof*SIN(altitude*DEG2RAD) &
+                     !          + radD*svfr &
+                     !          ! TODO: #6 F_sh issue: used below is calculated as a variable but
+                     !          + alb_bldg*(1 - svfr)*(radG*(1 - F_sh) + radD*F_sh)
 
-               ! TODO: #7 check consistency with python code
-               CALL KWalls( &
-                  svf_ground, svf_veg, shadowground, F_sh, &
-                  radI, radG, radD, azimuth_deg, altitude, psi, t, alb_ground, alb_bldg, & ! input
-                  Keast, Knorth, Ksouth, Kwest) ! output
+                     Kup2d = alb_ground*( &
+                             radI*shadowground*SIN(altitude*DEG2RAD) & ! gvf not defined TODO #2 FIXED
+                             + radD*svf_bldg_veg &
+                             + alb_bldg*(1 - svf_bldg_veg)*(radG*(1 - F_sh) + radD*F_sh))
 
-               IF (BEERS_tsurf == 1) THEN
-                  CALL tSurfBEERS(iy, Ta, RH, radI, I0, dectime, SNUP, altitude, zen, timezone, lat, lng, alt, &
-                                  Tg, Tw, altmax)
-               ELSE
-                  Tg = TSfc_C - Ta !TODO: Tg is the difference (added temperature between TA and Tg) in BEERS
-                  ! Tg = Tsurf ! changed to absolute sense
-                  Tw = Tg
-               END IF
+                     ! TODO: #7 check consistency with python code
+                     CALL KWalls( &
+                        svf_ground, svf_veg, shadowground, F_sh, &
+                        radI, radG, radD, azimuth_deg, altitude, psi, t, alb_ground, alb_bldg, & ! input
+                        Keast, Knorth, Ksouth, Kwest) ! output
 
-         !!!! Lup, daytime !!!!
-               Lup2d = SBC*emis_ground*((shadowground*Tg + Ta + 273.15)**4)
+                     IF (BEERS_tsurf == 1) THEN
+                        CALL tSurfBEERS(iy, Ta, RH, radI, I0, dectime, SNUP, altitude, zen, timezone, lat, lng, alt, &
+                                        Tg, Tw, altmax)
+                     ELSE
+                        Tg = TSfc_C - Ta !TODO: Tg is the difference (added temperature between TA and Tg) in BEERS
+                        ! Tg = Tsurf ! changed to absolute sense
+                        Tw = Tg
+                     END IF
 
-      !!!!!!! NIGHTTIME !!!!!!!!
+                     ! Lup, daytime !!!!
+                     Lup2d = SBC*emis_ground*((shadowground*Tg + Ta + 273.15)**4)
+
+                     ! NIGHTTIME !!!!!!!!
+                  ELSE
+                     CALL cal_CI_latenight(iy, DOY, Ta, RH/100., radG, lat, P/10., & !input
+                                           CIlatenight, dectime_sunrise, zen_sunrise, I0_sunrise) !output
+                     CI = CIlatenight
+                     I0 = I0_sunrise
+                     shadowground = 0
+                     shadowwalls = 0
+                     shadowroof = 0
+                     ! Tg = Temp_C !TODO: #11 This need some thought. Use ESTM to improve?
+                     ! Tw = Temp_C !TODO: This need some thought. Use ESTM to improve?
+                     IF (BEERS_tsurf == 1) THEN
+                        Tw = 0
+                        Tg = 0
+                     ELSE
+                        Tg = TSfc_C - Ta !TODO: Tg is the difference (added temperature between Ta and Tg) in BEERS
+                        Tw = Tg
+                     END IF
+                     radI = 0
+                     radD = 0
+                     F_sh = 1
+
+                     !Nocturnal cloud fraction from Offerle et al. 2003
+                     IF (dectime < (DOY + 0.5) .AND. dectime > DOY .AND. altitude < 1.0) THEN !TODO: THIS (STILL, 20201117) NEED SOME THOUGHT 20150211
+                        !j=0
+                        !do while (dectime<(DOY+SNUP/24))
+                        !    call ConvertMetData(ith+j) ! read data at sunrise ??
+                        !    j=j+1
+                        !end do
+                        !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+                        !zen=zenith_deg*DEG2RAD
+                        !call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
+                        !call ConvertMetData(ith) ! read data at current timestep again ??
+                        !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+
+                        CI = 1.0
+                     ELSE
+                        ! IF (SolweigCount == 1) THEN
+                        !    CI = 1.0
+                        ! ELSE
+                        !    CI = CIlatenight
+                        ! END IF
+                        CI = CIlatenight
+                     END IF
+
+                     radI = 0
+                     radD = 0
+
+                     !Nocturnal Kfluxes set to 0
+                     Kdown = 0.0
+                     Kwest = 0.0
+                     Kup2d = 0.0
+                     Keast = 0.0
+                     Ksouth = 0.0
+                     Knorth = 0.0
+
+                     ! Lup !!!
+                     Lup2d = SBC*emis_ground*((Ta + Tg + 273.15)**4)
+
+                  END IF
+
+                  ! Ldown !!!
+                  IF (SOLWEIG_ldown == 1) THEN ! Third
+                     ! ldown is calculated in BEERS as a function of Ta
+                     Ldown2d = (svf_roof + svf_veg - 1)*emis_sky*SBC*((Ta + 273.15)**4) &
+                               + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                               + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                               + (2 - svf_roof - svf_veg)*(1 - emis_wall)*emis_sky*SBC*((Ta + 273.15)**4)
+
+                     IF (CI < 0.95) THEN !non-clear conditions
+                        c = 1 - CI
+                        Ldown2d = Ldown2d*(1 - c) + c*( &
+                                  (svf_roof + svf_veg - 1)*SBC*((Ta + 273.15)**4) &
+                                  + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                                  + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                                  + (2 - svf_roof - svf_veg)*(1 - emis_wall)*SBC*((Ta + 273.15)**4))
+                     END IF
+
+                  ELSE
+                     ! use ldown from SUEWS
+                     Ldown2d = (svf_roof + svf_veg - 1)*ldown &
+                               + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
+                               + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
+                               + (2 - svf_roof - svf_veg)*(1 - emis_wall)*ldown
+                  END IF
+
+                  ! Lside !!!
+                  CALL LWalls(svf_ground, svf_veg, svf_aveg, &
+                              Ldown2d, Lup2d, &
+                              altitude, Ta, Tw, SBC, emis_wall, &
+                              emis_sky, t, CI, azimuth_deg, ldown, svfalfa, F_sh, &
+                              Least, Lnorth, Lsouth, Lwest) ! output
+
+                  ! Calculation of radiant flux density and Tmrt (Mean radiant temperature) !!!
+                  Sstr = absK*(Kdown*Fup + Kup2d*Fup + Knorth*Fside + Keast*Fside + Ksouth*Fside + Kwest*Fside) &
+                         + absL*(Ldown2d*Fup + Lup2d*Fup + Lnorth*Fside + Least*Fside + Lsouth*Fside + Lwest*Fside)
+                  Tmrt = SQRT(SQRT((Sstr/(absL*SBC)))) - 273.15
+
+                  dataOutLineBEERS = [azimuth_deg, altitude, radG, radI, radD, &
+                                      Kdown, Kup2d, Ksouth, Kwest, Knorth, Keast, &
+                                      Ldown2d, Lup2d, Lsouth, Lwest, Lnorth, Least, &
+                                      Tmrt, I0, CI, shadowground, shadowwalls, svf_ground, svf_roof, svf_bldg_veg, &
+                                      emis_sky, &
+                                      Ta, Tg, Tw]
+
+               END ASSOCIATE
             ELSE
-               CALL cal_CI_latenight(iy, DOY, Ta, RH/100., radG, lat, P/10., & !input
-                                     CIlatenight, dectime_sunrise, zen_sunrise, I0_sunrise) !output
-               CI = CIlatenight
-               I0 = I0_sunrise
-               shadowground = 0
-               shadowwalls = 0
-               shadowroof = 0
-               ! Tg = Temp_C !TODO: #11 This need some thought. Use ESTM to improve?
-               ! Tw = Temp_C !TODO: This need some thought. Use ESTM to improve?
-               IF (BEERS_tsurf == 1) THEN
-                  Tw = 0
-                  Tg = 0
-               ELSE
-                  Tg = TSfc_C - Ta !TODO: Tg is the difference (added temperature between Ta and Tg) in BEERS
-                  Tw = Tg
-               END IF
-               radI = 0
-               radD = 0
-               F_sh = 1
-
-               !Nocturnal cloud fraction from Offerle et al. 2003
-               IF (dectime < (DOY + 0.5) .AND. dectime > DOY .AND. altitude < 1.0) THEN !TODO: THIS (STILL, 20201117) NEED SOME THOUGHT 20150211
-                  !j=0
-                  !do while (dectime<(DOY+SNUP/24))
-         !!    call ConvertMetData(ith+j) ! read data at sunrise ??
-                  !    j=j+1
-                  !end do
-                  !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
-                  !zen=zenith_deg*DEG2RAD
-                  !call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
-         !!call ConvertMetData(ith) ! read data at current timestep again ??
-                  !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
-
-                  CI = 1.0
-               ELSE
-                  ! IF (SolweigCount == 1) THEN
-                  !    CI = 1.0
-                  ! ELSE
-                  !    CI = CIlatenight
-                  ! END IF
-                  CI = CIlatenight
-               END IF
-
-               radI = 0
-               radD = 0
-
-               !Nocturnal Kfluxes set to 0
-               Kdown = 0.0
-               Kwest = 0.0
-               Kup2d = 0.0
-               Keast = 0.0
-               Ksouth = 0.0
-               Knorth = 0.0
-
-         !!! Lup !!!
-               Lup2d = SBC*emis_ground*((Ta + Tg + 273.15)**4)
-
+               ! set nan values to output
+               dataOutLineBEERS = set_nan(dataOutLineBEERS)
             END IF
-
-      !!! Ldown !!!
-            IF (SOLWEIG_ldown == 1) THEN ! Third
-               ! ldown is calculated in BEERS as a function of Ta
-               Ldown2d = (svf_roof + svf_veg - 1)*emis_sky*SBC*((Ta + 273.15)**4) &
-                         + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-                         + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-                         + (2 - svf_roof - svf_veg)*(1 - emis_wall)*emis_sky*SBC*((Ta + 273.15)**4)
-
-               IF (CI < 0.95) THEN !non-clear conditions
-                  c = 1 - CI
-                  Ldown2d = Ldown2d*(1 - c) + c*( &
-                            (svf_roof + svf_veg - 1)*SBC*((Ta + 273.15)**4) &
-                            + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-                            + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-                            + (2 - svf_roof - svf_veg)*(1 - emis_wall)*SBC*((Ta + 273.15)**4))
-               END IF
-
-            ELSE
-               ! use ldown from SUEWS
-               Ldown2d = (svf_roof + svf_veg - 1)*ldown &
-                         + (2 - svf_veg - svf_aveg)*emis_wall*SBC*((Ta + 273.15)**4) &
-                         + (svf_aveg - svf_roof)*emis_wall*SBC*((Ta + 273.15 + Tw)**4) &
-                         + (2 - svf_roof - svf_veg)*(1 - emis_wall)*ldown
-            END IF
-
-      !!! Lside !!!
-            CALL LWalls(svf_ground, svf_veg, svf_aveg, &
-                        Ldown2d, Lup2d, &
-                        altitude, Ta, Tw, SBC, emis_wall, &
-                        emis_sky, t, CI, azimuth_deg, ldown, svfalfa, F_sh, &
-                        Least, Lnorth, Lsouth, Lwest) ! output
-
-      !!! Calculation of radiant flux density and Tmrt (Mean radiant temperature) !!!
-            Sstr = absK*(Kdown*Fup + Kup2d*Fup + Knorth*Fside + Keast*Fside + Ksouth*Fside + Kwest*Fside) &
-                   + absL*(Ldown2d*Fup + Lup2d*Fup + Lnorth*Fside + Least*Fside + Lsouth*Fside + Lwest*Fside)
-            Tmrt = SQRT(SQRT((Sstr/(absL*SBC)))) - 273.15
-
-            dataOutLineBEERS = [azimuth_deg, altitude, radG, radI, radD, &
-                                Kdown, Kup2d, Ksouth, Kwest, Knorth, Keast, &
-                                Ldown2d, Lup2d, Lsouth, Lwest, Lnorth, Least, &
-                                Tmrt, I0, CI, shadowground, shadowwalls, svf_ground, svf_roof, svf_bldg_veg, &
-                                emis_sky, &
-                                Ta, Tg, Tw]
-
          END ASSOCIATE
       END ASSOCIATE
 
@@ -1597,13 +1582,13 @@ CONTAINS
 
    !  FUNCTION TO RETURN 0 IF IX=0, 1 IF 0<IX<MAXPOS+1,-1 OTHERWISE.
    !  MAXPOS is given as the maximum positive Integer.
-   SUBROUTINE issign(IX, MAXPOS, ISIGNM)
-      REAL(KIND(1D0)) IX, MAXPOS, ISIGNM
-      ISIGNM = 1.0
-      IF (IX < 0 .OR. IX > MAXPOS) ISIGNM = -1
-      IF (IX == 0) ISIGNM = 0
-      RETURN
-   END SUBROUTINE issign
+   ! SUBROUTINE issign(IX, MAXPOS, ISIGNM)
+   !    REAL(KIND(1D0)) IX, MAXPOS, ISIGNM
+   !    ISIGNM = 1.0
+   !    IF (IX < 0 .OR. IX > MAXPOS) ISIGNM = -1
+   !    IF (IX == 0) ISIGNM = 0
+   !    RETURN
+   ! END SUBROUTINE issign
 
 ! subroutines included:
 ! day2month
@@ -1627,237 +1612,237 @@ CONTAINS
 !sg feb 2012 - moved all time related subroutines together
 !===============================================================================
 
-   SUBROUTINE day2month(b, mb, md, seas, year, latitude)
-      IMPLICIT NONE
-      INTEGER, INTENT(in) :: b !b=doy   --IN
-      INTEGER, INTENT(out) :: mb !month=mb  --OUT
-      INTEGER, INTENT(out) :: md !date=md --OUT
-      INTEGER, INTENT(out) :: seas
-      INTEGER, INTENT(in) :: year
-      INTEGER :: t1, t2, t3
-      INTEGER :: k ! k- accounts for leap year
+!    SUBROUTINE day2month(b, mb, md, seas, year, latitude)
+!       IMPLICIT NONE
+!       INTEGER, INTENT(in) :: b !b=doy   --IN
+!       INTEGER, INTENT(out) :: mb !month=mb  --OUT
+!       INTEGER, INTENT(out) :: md !date=md --OUT
+!       INTEGER, INTENT(out) :: seas
+!       INTEGER, INTENT(in) :: year
+!       INTEGER :: t1, t2, t3
+!       INTEGER :: k ! k- accounts for leap year
 
-      REAL(KIND(1D0)) :: latitude
+!       REAL(KIND(1D0)) :: latitude
 
-      ! initialisation
-      mb = 1
+!       ! initialisation
+!       mb = 1
 
-      !Corrected and calculation of date added LJ (Jun 2010)
+!       !Corrected and calculation of date added LJ (Jun 2010)
 
-      t1 = 4
-      t2 = 100
-      t3 = 400
+!       t1 = 4
+!       t2 = 100
+!       t3 = 400
 
-      IF ((MODULO(year, t1) == 0) .AND. (MODULO(year, t2) /= 0) .OR. (MODULO(year, t3) == 0)) THEN
-         K = 1
-      ELSE
-         K = 0
-      END IF
+!       IF ((MODULO(year, t1) == 0) .AND. (MODULO(year, t2) /= 0) .OR. (MODULO(year, t3) == 0)) THEN
+!          K = 1
+!       ELSE
+!          K = 0
+!       END IF
 
-      IF (B <= 31) THEN !January
-         MB = 1
-         md = B
-      ELSEIF (B > 31 .AND. B <= 59 + K) THEN
-         MB = 2
-         md = B - 31
-      ELSEIF (B > 59 + K .AND. B <= 90 + K) THEN
-         MB = 3
-         md = B - (59 + K)
-      ELSEIF (B > 90 + K .AND. B <= 120 + K) THEN
-         MB = 4
-         md = B - (90 + K)
-      ELSEIF (B > 120 + K .AND. B <= 151 + K) THEN
-         MB = 5
-         md = B - (120 + K)
-      ELSEIF (B > 151 + K .AND. B <= 181 + K) THEN
-         MB = 6
-         md = B - (151 + K)
-      ELSEIF (B > 181 + K .AND. B <= 212 + K) THEN
-         MB = 7
-         md = B - (181 + K)
-      ELSEIF (B > 212 + K .AND. B <= 243 + K) THEN
-         MB = 8
-         md = B - (212 + K)
-      ELSEIF (B > 243 + K .AND. B <= 273 + K) THEN
-         MB = 9
-         md = B - (243 + K)
-      ELSEIF (B > 273 + K .AND. B <= 304 + K) THEN
-         MB = 10
-         md = B - (273 + K)
-      ELSEIF (B > 304 + K .AND. B <= 334 + K) THEN
-         MB = 11
-         md = B - (304 + K)
-      ELSEIF (B > 334 + K) THEN
-         MB = 12
-         md = B - (334 + K)
-      END IF
+!       IF (B <= 31) THEN !January
+!          MB = 1
+!          md = B
+!       ELSEIF (B > 31 .AND. B <= 59 + K) THEN
+!          MB = 2
+!          md = B - 31
+!       ELSEIF (B > 59 + K .AND. B <= 90 + K) THEN
+!          MB = 3
+!          md = B - (59 + K)
+!       ELSEIF (B > 90 + K .AND. B <= 120 + K) THEN
+!          MB = 4
+!          md = B - (90 + K)
+!       ELSEIF (B > 120 + K .AND. B <= 151 + K) THEN
+!          MB = 5
+!          md = B - (120 + K)
+!       ELSEIF (B > 151 + K .AND. B <= 181 + K) THEN
+!          MB = 6
+!          md = B - (151 + K)
+!       ELSEIF (B > 181 + K .AND. B <= 212 + K) THEN
+!          MB = 7
+!          md = B - (181 + K)
+!       ELSEIF (B > 212 + K .AND. B <= 243 + K) THEN
+!          MB = 8
+!          md = B - (212 + K)
+!       ELSEIF (B > 243 + K .AND. B <= 273 + K) THEN
+!          MB = 9
+!          md = B - (243 + K)
+!       ELSEIF (B > 273 + K .AND. B <= 304 + K) THEN
+!          MB = 10
+!          md = B - (273 + K)
+!       ELSEIF (B > 304 + K .AND. B <= 334 + K) THEN
+!          MB = 11
+!          md = B - (304 + K)
+!       ELSEIF (B > 334 + K) THEN
+!          MB = 12
+!          md = B - (334 + K)
+!       END IF
 
-      !
-      IF (latitude > 0) THEN ! Northern Hemisphere
-         IF (mb > 3 .AND. mb < 10) THEN !Summer is from Apr to Sep
-            seas = 1
-         ELSE
-            seas = 2 !Winter rest of the months
-         END IF
-      ELSE ! southern hemisphere
-         IF (mb < 4 .OR. mb > 9) THEN !Summer is from Oct to Mar
-            seas = 1
-         ELSE
-            seas = 2 !Winter rest of the months
-         END IF
-      END IF
-      RETURN
-   END SUBROUTINE day2month
-!===============================================================================
-   SUBROUTINE month2day(mon, ne, k, b)
-      IMPLICIT NONE
-      INTEGER :: mon, ne, k, b
+!       !
+!       IF (latitude > 0) THEN ! Northern Hemisphere
+!          IF (mb > 3 .AND. mb < 10) THEN !Summer is from Apr to Sep
+!             seas = 1
+!          ELSE
+!             seas = 2 !Winter rest of the months
+!          END IF
+!       ELSE ! southern hemisphere
+!          IF (mb < 4 .OR. mb > 9) THEN !Summer is from Oct to Mar
+!             seas = 1
+!          ELSE
+!             seas = 2 !Winter rest of the months
+!          END IF
+!       END IF
+!       RETURN
+!    END SUBROUTINE day2month
+! !===============================================================================
+!    SUBROUTINE month2day(mon, ne, k, b)
+!       IMPLICIT NONE
+!       INTEGER :: mon, ne, k, b
 
-      IF (mon == 1) THEN
-         NE = 32 - B
-      ELSE IF (mon == 2) THEN
-         NE = 60 + K - B
-      ELSE IF (mon == 3) THEN
-         NE = 91 + K - B
-      ELSE IF (mon == 4) THEN
-         NE = 121 + K - B
-      ELSE IF (mon == 5) THEN
-         NE = 152 + K - B
-      ELSE IF (mon == 6) THEN
-         NE = 182 + K - B
-      ELSE IF (mon == 7) THEN
-         NE = 213 + K - B
-      ELSE IF (mon == 8) THEN
-         NE = 244 + K - B
-         !**********PAGE 151 STARTS HERE**************
-      ELSE IF (mon == 9) THEN
-         NE = 274 + K - B
-      ELSE IF (mon == 10) THEN
-         NE = 305 + K - B
-      ELSE IF (mon == 11) THEN
-         NE = 335 + K - B
-      ELSE IF (mon == 12) THEN
-         NE = 366 + K - B
-      END IF
-   END SUBROUTINE month2day
-!===============================================================================
-!Defines the number or days in each year (defines the leap year)
-   SUBROUTINE LeapYearCalc(year_int, nroDays)
+!       IF (mon == 1) THEN
+!          NE = 32 - B
+!       ELSE IF (mon == 2) THEN
+!          NE = 60 + K - B
+!       ELSE IF (mon == 3) THEN
+!          NE = 91 + K - B
+!       ELSE IF (mon == 4) THEN
+!          NE = 121 + K - B
+!       ELSE IF (mon == 5) THEN
+!          NE = 152 + K - B
+!       ELSE IF (mon == 6) THEN
+!          NE = 182 + K - B
+!       ELSE IF (mon == 7) THEN
+!          NE = 213 + K - B
+!       ELSE IF (mon == 8) THEN
+!          NE = 244 + K - B
+!          !**********PAGE 151 STARTS HERE**************
+!       ELSE IF (mon == 9) THEN
+!          NE = 274 + K - B
+!       ELSE IF (mon == 10) THEN
+!          NE = 305 + K - B
+!       ELSE IF (mon == 11) THEN
+!          NE = 335 + K - B
+!       ELSE IF (mon == 12) THEN
+!          NE = 366 + K - B
+!       END IF
+!    END SUBROUTINE month2day
+! !===============================================================================
+! !Defines the number or days in each year (defines the leap year)
+!    SUBROUTINE LeapYearCalc(year_int, nroDays)
 
-      IMPLICIT NONE
+!       IMPLICIT NONE
 
-      INTEGER :: nroDays, year_int
+!       INTEGER :: nroDays, year_int
 
-      IF (MOD(year_int, 100) /= 0 .AND. MOD(year_int, 4) == 0) THEN
-         nroDays = 366
-      ELSEIF (MOD(year_int, 400) == 0) THEN
-         nroDays = 366
-      ELSE
-         nroDays = 365
-      END IF
-   END SUBROUTINE LeapYearCalc
+!       IF (MOD(year_int, 100) /= 0 .AND. MOD(year_int, 4) == 0) THEN
+!          nroDays = 366
+!       ELSEIF (MOD(year_int, 400) == 0) THEN
+!          nroDays = 366
+!       ELSE
+!          nroDays = 365
+!       END IF
+!    END SUBROUTINE LeapYearCalc
 
-!===============================================================================
-!Defines the number or days in each year (defines the leap year)
-! Ting Sun 09 May 2018
-   ELEMENTAL FUNCTION Days_of_Year(year_int) RESULT(nDays)
-      IMPLICIT NONE
-      INTEGER, INTENT(in) :: year_int
-      INTEGER :: nDays
+! !===============================================================================
+! !Defines the number or days in each year (defines the leap year)
+! ! Ting Sun 09 May 2018
+!    ELEMENTAL FUNCTION Days_of_Year(year_int) RESULT(nDays)
+!       IMPLICIT NONE
+!       INTEGER, INTENT(in) :: year_int
+!       INTEGER :: nDays
 
-      IF (MOD(year_int, 100) /= 0 .AND. MOD(year_int, 4) == 0) THEN
-         nDays = 366
-      ELSEIF (MOD(year_int, 400) == 0) THEN
-         nDays = 366
-      ELSE
-         nDays = 365
-      END IF
+!       IF (MOD(year_int, 100) /= 0 .AND. MOD(year_int, 4) == 0) THEN
+!          nDays = 366
+!       ELSEIF (MOD(year_int, 400) == 0) THEN
+!          nDays = 366
+!       ELSE
+!          nDays = 365
+!       END IF
 
-   END FUNCTION Days_of_Year
+!    END FUNCTION Days_of_Year
 
-!===============================================================================
+! !===============================================================================
 
-   SUBROUTINE Day_Of_Week(DATE, MONTH, YEAR, DOW)
-      ! Calculate weekday from year, month and day information.
-      ! DOW: Sunday=1,...Saturday=7
-      ! YEAR fixed to integer, LJ March 2015
+!    SUBROUTINE Day_Of_Week(DATE, MONTH, YEAR, DOW)
+!       ! Calculate weekday from year, month and day information.
+!       ! DOW: Sunday=1,...Saturday=7
+!       ! YEAR fixed to integer, LJ March 2015
 
-      IMPLICIT NONE
+!       IMPLICIT NONE
 
-      INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW, YEAR
+!       INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW, YEAR
 
-      YR = YEAR
-      MN = MONTH
+!       YR = YEAR
+!       MN = MONTH
 
-      !C
-      !C       IF JANUARY OR FEBRUARY, ADJUST MONTH AND YEAR
-      !C
-      IF (MN > 2) GO TO 10
-      MN = MN + 12
-      YR = YR - 1
-10    N1 = (26*(MN + 1))/10
-      N2 = (125*YR)/100
-      DAY = (DATE + N1 + N2 - (YR/100) + (YR/400) - 1)
-      DOW = MOD(DAY, 7) + 1
+!       !C
+!       !C       IF JANUARY OR FEBRUARY, ADJUST MONTH AND YEAR
+!       !C
+!       IF (MN > 2) GO TO 10
+!       MN = MN + 12
+!       YR = YR - 1
+! 10    N1 = (26*(MN + 1))/10
+!       N2 = (125*YR)/100
+!       DAY = (DATE + N1 + N2 - (YR/100) + (YR/400) - 1)
+!       DOW = MOD(DAY, 7) + 1
 
-      RETURN
-   END SUBROUTINE Day_Of_Week
+!       RETURN
+!    END SUBROUTINE Day_Of_Week
 
-!===============================================================================
+! !===============================================================================
 
-!FL
-   SUBROUTINE dectime_to_timevec(dectime, HOURS, MINS, SECS)
-      !This subroutine converts dectime to individual
-      !hours, minutes and seconds
-      INTEGER :: HOURS, MINS, doy
-      REAL(KIND(1D0)) :: dectime, SECS, DH, DM, DS
-      !INTEGER :: year
+! !FL
+!    SUBROUTINE dectime_to_timevec(dectime, HOURS, MINS, SECS)
+!       !This subroutine converts dectime to individual
+!       !hours, minutes and seconds
+!       INTEGER :: HOURS, MINS, doy
+!       REAL(KIND(1D0)) :: dectime, SECS, DH, DM, DS
+!       !INTEGER :: year
 
-      doy = FLOOR(dectime)
+!       doy = FLOOR(dectime)
 
-      DH = dectime - doy !Decimal hours
-      HOURS = INT(24*DH)
+!       DH = dectime - doy !Decimal hours
+!       HOURS = INT(24*DH)
 
-      DM = 24*DH - HOURS !Decimal minutes
-      MINS = INT(60*DM)
+!       DM = 24*DH - HOURS !Decimal minutes
+!       MINS = INT(60*DM)
 
-      DS = 60*DM - MINS
-      SECS = INT(60*DS)
+!       DS = 60*DM - MINS
+!       SECS = INT(60*DS)
 
-   END SUBROUTINE dectime_to_timevec
+!    END SUBROUTINE dectime_to_timevec
 
 !==============================================================================
 
 !FL
 
-   SUBROUTINE DAYLEN(DOY, XLAT, DAYL, DEC, SNDN, SNUP)
-      !=======================================================================
-      !  DAYLEN, Real Function, N.B. Pickering, 09/23/1993
-      !  Computes solar day length (Spitters, 1986).
-      !=======================================================================
-      !-----------------------------------------------------------------------
-      IMPLICIT NONE
-      INTEGER :: DOY
-      REAL(KIND(1D0)), INTENT(IN) :: XLAT
-      REAL(KIND(1D0)), INTENT(OUT) :: DEC, DAYL, SNDN, SNUP
-      REAL(KIND(1D0)) :: SOC
-      REAL(KIND(1D0)), PARAMETER :: RAD = PI/180.0
+   ! SUBROUTINE DAYLEN(DOY, XLAT, DAYL, DEC, SNDN, SNUP)
+   !    !=======================================================================
+   !    !  DAYLEN, Real Function, N.B. Pickering, 09/23/1993
+   !    !  Computes solar day length (Spitters, 1986).
+   !    !=======================================================================
+   !    !-----------------------------------------------------------------------
+   !    IMPLICIT NONE
+   !    INTEGER :: DOY
+   !    REAL(KIND(1D0)), INTENT(IN) :: XLAT
+   !    REAL(KIND(1D0)), INTENT(OUT) :: DEC, DAYL, SNDN, SNUP
+   !    REAL(KIND(1D0)) :: SOC
+   !    REAL(KIND(1D0)), PARAMETER :: RAD = PI/180.0
 
-      !-----------------------------------------------------------------------
-      !     Calculation of declination of sun (Eqn. 16). Amplitude= +/-23.45
-      !     deg. Minimum = DOY 355 (DEC 21), maximum = DOY 172.5 (JUN 21/22).
-      DEC = -23.45*COS(2.0*PI*(DOY + 10.0)/365.0)
+   !    !-----------------------------------------------------------------------
+   !    !     Calculation of declination of sun (Eqn. 16). Amplitude= +/-23.45
+   !    !     deg. Minimum = DOY 355 (DEC 21), maximum = DOY 172.5 (JUN 21/22).
+   !    DEC = -23.45*COS(2.0*PI*(DOY + 10.0)/365.0)
 
-      !     Sun angles.  SOC limited for latitudes above polar circles.
-      SOC = TAN(RAD*DEC)*TAN(RAD*XLAT)
-      SOC = MIN(MAX(SOC, -1.0), 1.0)
+   !    !     Sun angles.  SOC limited for latitudes above polar circles.
+   !    SOC = TAN(RAD*DEC)*TAN(RAD*XLAT)
+   !    SOC = MIN(MAX(SOC, -1.0), 1.0)
 
-      !     Calculate daylength, sunrise and sunset (Eqn. 17)
-      DAYL = 12.0 + 24.0*ASIN(SOC)/PI
-      SNUP = 12.0 - DAYL/2.0
-      SNDN = 12.0 + DAYL/2.0
+   !    !     Calculate daylength, sunrise and sunset (Eqn. 17)
+   !    DAYL = 12.0 + 24.0*ASIN(SOC)/PI
+   !    SNUP = 12.0 - DAYL/2.0
+   !    SNDN = 12.0 + DAYL/2.0
 
-   END SUBROUTINE DAYLEN
+   ! END SUBROUTINE DAYLEN
 
 !=======================================================================
 ! DAYLEN Variables
@@ -1873,74 +1858,94 @@ CONTAINS
 ! XLAT  Latitude (deg.)
 !=======================================================================
 
-! Calculate dectime
-   SUBROUTINE SUEWS_cal_dectime( &
-      id, it, imin, isec, & ! input
-      dectime) ! output
+! ! Calculate dectime
+!    SUBROUTINE SUEWS_cal_dectime( &
+!       id, it, imin, isec, & ! input
+!       dectime) ! output
+!       IMPLICIT NONE
+!       INTEGER, INTENT(in) :: id, it, imin, isec
+
+!       REAL(KIND(1D0)), INTENT(out) :: dectime ! nsh in type real
+
+!       dectime = REAL(id - 1, KIND(1D0)) &
+!                 + REAL(it, KIND(1D0))/24 &
+!                 + REAL(imin, KIND(1D0))/(60*24) &
+!                 + REAL(isec, KIND(1D0))/(60*60*24)
+
+!    END SUBROUTINE SUEWS_cal_dectime
+
+! ! Calculate tstep-derived variables
+!    SUBROUTINE SUEWS_cal_tstep( &
+!       tstep, & ! input
+!       nsh, nsh_real, tstep_real) ! output
+!       IMPLICIT NONE
+!       INTEGER, INTENT(in) :: tstep ! number of timesteps per hour
+!       ! values that are derived from tstep
+!       INTEGER, INTENT(out) :: nsh ! number of timesteps per hour
+!       REAL(KIND(1D0)), INTENT(out) :: nsh_real ! nsh in type real
+!       REAL(KIND(1D0)), INTENT(out) :: tstep_real ! tstep in type real
+!       nsh = 3600/tstep
+!       nsh_real = nsh*1.0
+!       tstep_real = tstep*1.0
+
+!    END SUBROUTINE SUEWS_cal_tstep
+
+!    SUBROUTINE SUEWS_cal_weekday( &
+!       iy, id, lat, & !input
+!       dayofWeek_id) !output
+!       IMPLICIT NONE
+
+!       INTEGER, INTENT(in) :: iy ! year
+!       INTEGER, INTENT(in) :: id ! day of year
+!       REAL(KIND(1D0)), INTENT(in) :: lat
+
+!       INTEGER, DIMENSION(3), INTENT(OUT) :: dayofWeek_id
+
+!       INTEGER :: wd
+!       INTEGER :: mb
+!       INTEGER :: date
+!       INTEGER :: seas
+
+!       CALL day2month(id, mb, date, seas, iy, lat) !Calculate real date from doy
+!       CALL Day_of_Week(date, mb, iy, wd) !Calculate weekday (1=Sun, ..., 7=Sat)
+
+!       dayofWeek_id(1) = wd !Day of week
+!       dayofWeek_id(2) = mb !Month
+!       dayofweek_id(3) = seas !Season
+
+!    END SUBROUTINE SUEWS_cal_weekday
+
+!    SUBROUTINE SUEWS_cal_DLS( &
+!       id, startDLS, endDLS, & !input
+!       DLS) !output
+!       IMPLICIT NONE
+
+!       INTEGER, INTENT(in) :: id, startDLS, endDLS
+!       INTEGER, INTENT(out) :: DLS
+
+!       DLS = 0
+!       IF (id > startDLS .AND. id < endDLS) dls = 1
+
+!    END SUBROUTINE SUEWS_cal_DLS
+
+!===============set variable of invalid value to NAN=====================
+   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
       IMPLICIT NONE
-      INTEGER, INTENT(in) :: id, it, imin, isec
+      REAL(KIND(1D0)), PARAMETER :: pNAN = 30000 ! 30000 to prevent water_state being filtered out as it can be large
+      REAL(KIND(1D0)), PARAMETER :: pZERO = 1E-8 ! to prevent inconsistency caused by positive or negative zero
+      REAL(KIND(1D0)), PARAMETER :: NAN = -999
+      REAL(KIND(1D0)), INTENT(in) :: x
+      REAL(KIND(1D0)) :: xx
 
-      REAL(KIND(1D0)), INTENT(out) :: dectime ! nsh in type real
+      IF (ABS(x) > pNAN) THEN
+         xx = NAN
+      ELSEIF (ABS(x) < pZERO) THEN
+         xx = 0
+      ELSE
+         xx = x
+      END IF
 
-      dectime = REAL(id - 1, KIND(1D0)) &
-                + REAL(it, KIND(1D0))/24 &
-                + REAL(imin, KIND(1D0))/(60*24) &
-                + REAL(isec, KIND(1D0))/(60*60*24)
-
-   END SUBROUTINE SUEWS_cal_dectime
-
-! Calculate tstep-derived variables
-   SUBROUTINE SUEWS_cal_tstep( &
-      tstep, & ! input
-      nsh, nsh_real, tstep_real) ! output
-      IMPLICIT NONE
-      INTEGER, INTENT(in) :: tstep ! number of timesteps per hour
-      ! values that are derived from tstep
-      INTEGER, INTENT(out) :: nsh ! number of timesteps per hour
-      REAL(KIND(1D0)), INTENT(out) :: nsh_real ! nsh in type real
-      REAL(KIND(1D0)), INTENT(out) :: tstep_real ! tstep in type real
-      nsh = 3600/tstep
-      nsh_real = nsh*1.0
-      tstep_real = tstep*1.0
-
-   END SUBROUTINE SUEWS_cal_tstep
-
-   SUBROUTINE SUEWS_cal_weekday( &
-      iy, id, lat, & !input
-      dayofWeek_id) !output
-      IMPLICIT NONE
-
-      INTEGER, INTENT(in) :: iy ! year
-      INTEGER, INTENT(in) :: id ! day of year
-      REAL(KIND(1D0)), INTENT(in) :: lat
-
-      INTEGER, DIMENSION(3), INTENT(OUT) :: dayofWeek_id
-
-      INTEGER :: wd
-      INTEGER :: mb
-      INTEGER :: date
-      INTEGER :: seas
-
-      CALL day2month(id, mb, date, seas, iy, lat) !Calculate real date from doy
-      CALL Day_of_Week(date, mb, iy, wd) !Calculate weekday (1=Sun, ..., 7=Sat)
-
-      dayofWeek_id(1) = wd !Day of week
-      dayofWeek_id(2) = mb !Month
-      dayofweek_id(3) = seas !Season
-
-   END SUBROUTINE SUEWS_cal_weekday
-
-   SUBROUTINE SUEWS_cal_DLS( &
-      id, startDLS, endDLS, & !input
-      DLS) !output
-      IMPLICIT NONE
-
-      INTEGER, INTENT(in) :: id, startDLS, endDLS
-      INTEGER, INTENT(out) :: DLS
-
-      DLS = 0
-      IF (id > startDLS .AND. id < endDLS) dls = 1
-
-   END SUBROUTINE SUEWS_cal_DLS
+   END FUNCTION set_nan
+!========================================================================
 
 END MODULE beers_module

@@ -36,20 +36,20 @@ MODULE ctrl_output
 
    INTEGER :: n
 
-   CHARACTER(len=10), PARAMETER :: & !Define useful formats here
-      fy = 'i0004,1X', & !4 digit integer for year
-      ft = 'i0004,1X', & !3 digit integer for id, it, imin
-      fd = 'f08.4,1X', & !3 digits + 4 dp for dectime
-      f94 = 'f09.4,1X', & !standard output format: 4 dp + 4 digits
-      f104 = 'f10.4,1X', & !standard output format: 4 dp + 5 digits
-      f106 = 'f10.6,1X', & !standard output format: 6 dp + 3 digits
-      f146 = 'f14.6,1X' !standard output format: 6 dp + 7 digits
+!Define useful formats here
+   CHARACTER(len=10), PARAMETER :: fy = 'i0004' !4 digit integer for year
+   CHARACTER(len=10), PARAMETER :: ft = 'i0004' !3 digit integer for id, it, imin
+   CHARACTER(len=10), PARAMETER :: fd = 'f08.4' !3 digits + 4 dp for dectime
+   CHARACTER(len=10), PARAMETER :: f94 = 'f09.4' !standard output format: 4 dp + 4 digits
+   CHARACTER(len=10), PARAMETER :: f104 = 'f10.4' !standard output format: 4 dp + 5 digits
+   CHARACTER(len=10), PARAMETER :: f106 = 'f10.6' !standard output format: 6 dp + 3 digits
+   CHARACTER(len=10), PARAMETER :: f146 = 'f14.6' !standard output format: 6 dp + 7 digits
 
-   CHARACTER(len=1), PARAMETER :: & ! Define aggregation methods here
-      aT = 'T', & !time columns
-      aA = 'A', & !average
-      aS = 'S', & !sum
-      aL = 'L' !last value
+! Define aggregation methods here
+   CHARACTER(len=1), PARAMETER :: aT = 'T' !time columns
+   CHARACTER(len=1), PARAMETER :: aA = 'A' !average
+   CHARACTER(len=1), PARAMETER :: aS = 'S' !sum
+   CHARACTER(len=1), PARAMETER :: aL = 'L' !last value
 
    CHARACTER(len=3) :: itext
 

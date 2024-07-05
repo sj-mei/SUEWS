@@ -162,7 +162,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSPARTACUS !SPARTACUS output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSnow !Main data output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTM !ESTM output matrix
-   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutEHC !ESTM output matrix
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutEHC !EHC output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutDailyState !DailyState output array
 
    ! -------- output per each timestep ----------------------------------------------------------------
