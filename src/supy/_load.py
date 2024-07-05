@@ -28,7 +28,7 @@ str_second = "S" if version.parse(pd.__version__) < version.parse("1.5.0") else 
 ########################################################################
 # get_args_suews can get the interface information
 # of the f2py-converted Fortran interface
-def get_args_suews(docstring=_sd.f90wrap_suews_driver__suews_cal_main.__doc__):
+def get_args_suews(docstring=_sd.f90wrap_suews_driver__suews_cal_multitsteps.__doc__):
     # split doc lines for processing
     docLines = np.array(docstring.splitlines(), dtype=str)
 
@@ -243,17 +243,11 @@ def gen_suews_arg_info_df(docstring):
 
 
 # note: infer data types for variables to avoid type conversion
-df_info_suews_cal_main = gen_suews_arg_info_df(
-    _sd.f90wrap_suews_driver__suews_cal_main.__doc__
-).infer_objects()
 df_info_suews_cal_multitsteps = gen_suews_arg_info_df(
     _sd.f90wrap_suews_driver__suews_cal_multitsteps.__doc__
 ).infer_objects()
 
-df_var_info = df_info_suews_cal_multitsteps.merge(
-    df_info_suews_cal_main,
-    how="outer",
-).set_index("name")
+df_var_info = df_info_suews_cal_multitsteps.set_index("name")
 
 
 # load model settings
