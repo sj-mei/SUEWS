@@ -22,7 +22,7 @@ test_data_dir = Path(__file__).parent / "data_test"
 # Construct the file path for the data file
 p_df_sample = Path(test_data_dir) / "sample_output.pkl"
 
-# if platform is macOS and python version is 3.9, set flag_full_test to True
+# if platform is macOS and python version is 3.12, set flag_full_test to True
 flag_full_test = all(
     [
         sys.version_info[0] == 3,
@@ -340,7 +340,6 @@ class TestSuPy(TestCase):
 
         smd_veg_test = wm.cal_smd_veg(soilstorecap, soilstore_id, sfr_surf)
 
-        test_equal = smd_veg_correct == smd_veg_test
         self.assertAlmostEqual(smd_veg_correct, smd_veg_test)
 
     # test if dailystate are written out correctly
