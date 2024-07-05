@@ -132,6 +132,12 @@ def check_forcing(df_forcing: pd.DataFrame, fix=False):
         str_issue = f"Missing columns found: {set_diff}"
         list_issues.append(str_issue)
         flag_valid = False
+    # 1.2 if all columns are in right position
+    for col_v, col in zip(list_col_forcing, col_df):
+        if col_v != col:
+            str_issue = f"Column {col} is not in the valid position for {col_v}"
+            list_issues.append(str_issue)
+            flag_valid = False
 
     # 2. valid timestamps:
     ind_df = df_forcing.index
@@ -204,6 +210,8 @@ def check_state(df_state: pd.DataFrame, fix=True) -> List:
     # these variables dont have to be checked
     list_var_exclude = [
         "ts5mindata_ir",
+        "metforcingblock",
+        "len_sim",
     ]
 
     # variables defined in the rule json file:
@@ -377,7 +385,7 @@ def upgrade_df_state(df_state: pd.DataFrame) -> pd.DataFrame:
         from ._supy_module import init_supy
 
         # load base df_state
-        path_SampleData = Path(trv_supy_module) / "sample_run"
+        path_SampleData = trv_supy_module.joinpath("sample_run")
         path_runcontrol = path_SampleData / "RunControl.nml"
         df_state_base = init_supy(path_runcontrol, force_reload=False)
 

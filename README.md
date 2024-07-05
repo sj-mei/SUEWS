@@ -6,22 +6,6 @@ This is a public repo for SUEWS source code and documentation.
 
 ---
 
-- [SUEWS](#suews)
-  - [Documentation](#documentation)
-  - [Compilation](#compilation)
-  - [Sample Run](#sample-run)
-  - [Developer Note](#developer-note)
-    - [Branch](#branch)
-      - [`master` branch](#master-branch)
-    - [Manual](#manual)
-    - [Test](#test)
-      - [Tests and purposes](#tests-and-purposes)
-      - [Workflow](#workflow)
-      - [Preparation of tests](#preparation-of-tests)
-    - [Debugging with GDB](#debugging-with-gdb)
-      - [GDB on macOS](#gdb-on-macos)
-      - [debugging with GDB](#debugging-with-gdb-1)
-    - [Questions](#questions)
 
 
 ## Documentation
@@ -98,7 +82,11 @@ pip show supy
 
 
 ## Developer Note
-- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.
+
+> [!NOTE]
+> **the following is deprecated and will be updated**
+
+<!-- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.
 
 ### Branch
 

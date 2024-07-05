@@ -1,22 +1,28 @@
 import numpy as np
 import pandas as pd
 from .supy_driver import suews_driver as sd
-from packaging import version
 
 
 ##############################################################################
 # post-processing part
 # get variable information from Fortran
 def get_output_info_df():
+    from packaging.version import parse as LooseVersion
+
     size_var_list = sd.output_size()
     var_list_x = [np.array(sd.output_name_n(i)) for i in np.arange(size_var_list) + 1]
 
     df_var_list = pd.DataFrame(var_list_x, columns=["var", "group", "aggm", "outlevel"])
-    if version.parse(pd.__version__) >= version.parse("2.1.0"):
-        # if pandas version is 2.1.0 or above, we need to use map instead of applymap due to deprecation
-        df_var_list = df_var_list.map(lambda x: x.decode().strip())
+
+    # strip leading and trailing spaces
+    fun_strip = lambda x: x.decode().strip()
+    if LooseVersion(pd.__version__) >= LooseVersion("2.1.0"):
+        # if pandas version is 2.1.0 or above, we can use `df.map`
+        df_var_list = df_var_list.map(fun_strip)
     else:
-        df_var_list = df_var_list.applymap(lambda x: x.decode().strip())
+        # otherwise, we need to use `df.applymap`
+        df_var_list = df_var_list.applymap(fun_strip)
+
     df_var_list_x = df_var_list.replace(r"^\s*$", np.nan, regex=True).dropna()
     var_dfm = df_var_list_x.set_index(["group", "var"])
     return var_dfm
@@ -27,9 +33,7 @@ def get_output_info_df():
 var_df = get_output_info_df()
 
 # dict as var_df but keys in lowercase
-var_df_lower = {
-    group.lower(): group for group in var_df.index.levels[0].str.strip()
-}
+var_df_lower = {group.lower(): group for group in var_df.index.levels[0].str.strip()}
 
 #  generate dict of functions to apply for each variable
 dict_func_aggm = {
@@ -73,8 +77,8 @@ def pack_df_grid(dict_output):
     # pack all grid and times into index/columns
     df_xx = pd.DataFrame.from_dict(dict_output, orient="index")
     # pack
-    df_xx0 = df_xx.applymap(pd.Series)
-    df_xx1 = df_xx0.applymap(pd.DataFrame.from_dict)
+    df_xx0 = df_xx.map(pd.Series)
+    df_xx1 = df_xx0.map(pd.DataFrame.from_dict)
     df_xx2 = pd.concat(
         {
             grid: pd.concat(df_xx1[grid].to_dict()).unstack().dropna(axis=1)
@@ -87,7 +91,7 @@ def pack_df_grid(dict_output):
     df_xx2.index.names = ["grid", "time"]
     gb_xx2 = df_xx2.groupby(level="grid")
     # merge results of each grid
-    xx3 = gb_xx2.agg(lambda x: tuple(x.values)).applymap(np.array)
+    xx3 = gb_xx2.agg(lambda x: tuple(x.values)).map(np.array)
 
     return xx3
 
@@ -243,3 +247,116 @@ def proc_df_rsl(df_output, debug=False):
         return df_rsl_proc, df_rsl_debug
     else:
         return df_rsl_proc
+
+
+def is_numeric(obj):
+    """
+    Check if an object is numeric.
+
+    Parameters:
+    obj (object): The object to be checked.
+
+    Returns:
+    bool: True if the object is numeric, False otherwise.
+    """
+    if isinstance(obj, (int, float, complex)):
+        return True
+    if isinstance(obj, np.ndarray):
+        return np.issubdtype(obj.dtype, np.number)
+    return False
+
+
+def pack_dict_debug(dts_debug):
+    """
+    Packs the debug information from the given `dts_debug` object into a dictionary.
+
+    Args:
+        dts_debug: The debug object containing the debug information.
+
+    Returns:
+        dict: A dictionary containing the packed debug information.
+    """
+    list_props = [
+        attr
+        for attr in dir(dts_debug)
+        if not attr.startswith("_")
+        and not attr.endswith("_")
+        and not callable(getattr(dts_debug, attr))
+    ]
+    dict_debug = {
+        prop: (
+            # iterate over the list of properties to get numerical values
+            getattr(dts_debug, prop)
+            if is_numeric(getattr(dts_debug, prop))
+            # if some properties are fortran derived types then iterate use this function
+            else pack_dict_debug(getattr(dts_debug, prop))
+        )
+        for prop in list_props
+    }
+
+    return dict_debug
+
+
+def has_dict(d):
+    """
+    Check if a dictionary contains any values that are dictionaries.
+
+    Parameters:
+    d (dict): The dictionary to check.
+
+    Returns:
+    bool: True if the dictionary contains any values that are dictionaries, False otherwise.
+    """
+    return any(isinstance(v, dict) for v in d.values())
+
+
+def pack_df_debug_raw(dict_debug):
+    """
+    Packs a dictionary of debug information into a pandas DataFrame.
+
+    Args:
+        dict_debug (dict): A dictionary containing debug information.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing the packed debug information.
+    """
+
+    dict_df_debug = {}
+    for k, v in dict_debug.items():
+
+        if has_dict(v):
+            dict_df_debug[k] = pack_df_debug_raw(v)
+        else:
+            dict_df_debug[k] = pd.Series(v)
+
+    df_debug = pd.concat(dict_df_debug, axis=0)
+
+    return df_debug
+
+
+def pack_df_debug(dict_debug):
+    """
+    Packs the debug dictionary into a DataFrame.
+
+    Args:
+        dict_debug (dict): The debug dictionary containing the debug information.
+
+    Returns:
+        pandas.DataFrame: The packed DataFrame with debug information.
+
+    """
+    df_debug_raw = pack_df_debug_raw(dict_debug)
+    df_debug_raw.index = df_debug_raw.index.rename(
+        [
+            "grid",
+            "step",
+            "group",
+            "var",
+        ]
+    )
+    df_debug = (
+        df_debug_raw.unstack(level=["group", "var"])
+        .sort_index(level=0, axis=1)
+        .dropna(axis=1, how="all")
+    )
+    return df_debug

@@ -108,7 +108,8 @@ set_var_inout_multitsteps = set(list_var_inout_multitsteps)
 set_var_ouput_multitsteps = set(list_var_output_multitsteps)
 
 # variables used in df_state
-set_var_use = set_var_input.intersection(set_var_input_multitsteps)
+set_var_use = set_var_input_multitsteps
+# set_var_use = set_var_input.intersection(set_var_input_multitsteps)
 
 ##############################################################################
 # input processor
@@ -252,8 +253,7 @@ df_info_suews_cal_multitsteps = gen_suews_arg_info_df(
 df_var_info = df_info_suews_cal_multitsteps.merge(
     df_info_suews_cal_main,
     how="outer",
-)
-df_var_info = df_var_info.set_index("name")
+).set_index("name")
 
 
 # load model settings
@@ -275,8 +275,6 @@ def load_SUEWS_nml_simple(path_file):
 
 @functools.lru_cache(maxsize=128)
 def load_SUEWS_nml(p_nml):
-    # remove case issues
-    # xfile = path_insensitive(xfile)
     try:
         p_nml = Path(path_insensitive(str(p_nml))).resolve()
         parser = f90nml.Parser()
@@ -303,8 +301,6 @@ def load_SUEWS_table(path_file):
     except FileNotFoundError:
         logger_supy.exception(f"{path_file} does not exists!")
     else:
-        # fileX = path_insensitive(fileX)
-        # str_file = str(path_file)
         try:
             rawdata = pd.read_csv(
                 path_file,
@@ -316,7 +312,6 @@ def load_SUEWS_table(path_file):
                 index_col=0,
             )
             rawdata = rawdata.dropna()
-            # rawdata = rawdata.apply(pd.to_numeric)
             rawdata.index = rawdata.index.astype(int)
             return rawdata
         except Exception as err:
@@ -687,6 +682,9 @@ def resample_forcing_met(
     data_met_tstep["isec"] = data_met_tstep.index.second
     data_met_tstep = data_met_tstep.filter(list(dict_var_type_forcing.keys()))
     data_met_tstep = data_met_tstep.replace(np.nan, -999)
+
+    # to keep the same order as the original data
+    data_met_tstep = data_met_tstep.reindex(columns=data_met_raw.columns)
 
     return data_met_tstep
 
@@ -1314,6 +1312,7 @@ dict_RunControl_default = {
     "disaggmethod": 1,
     "disaggmethodestm": 1,
     "raindisaggmethod": 100,
+    "localclimatemethod": 0,  # 0: use forcing data; 1: use local climate - modelled
     "rainamongn": -999,
     "multrainamongn": -999,
     "multrainamongnupperi": -999,
@@ -1559,18 +1558,15 @@ def modify_df_init(df_init, list_var_dim):
 # load Initial Condition variables from namelist file
 def add_file_init_df(df_init):
     # load all nml info from file names:('file_init', '0')
-    df_init_file = (
-        df_init[("file_init", "0")].map(lambda fn: load_SUEWS_nml(fn)).apply(pd.Series)
+    dict_init_file = (
+        df_init[("file_init", "0")].map(lambda fn: load_SUEWS_nml(fn)).to_dict()
     )
-    # df_init_file = pd.concat([df_init_file], axis=1, keys=["0"])
-    # df_init_file = df_init_file.swaplevel(0, 1, axis=1)
+    df_init_file = pd.DataFrame.from_dict(dict_init_file, orient="index")
     df_init_file.index.set_names(["Grid"], inplace=True)
 
     # merge only those appeard in base df
     df_init.update(df_init_file)
 
-    # drop ('file_init', '0') as this may cause non-numeic errors later on
-    # df_init = df_init.drop(columns=[("file_init", "0")])
     return df_init
 
 
@@ -1587,11 +1583,10 @@ def load_nml_multi(fn_nml):
 # load grid layout from namelist file
 def add_file_gridlayout_df(df_init):
     # load all nml info from file names:('file_init', '0')
-    df_grid_layout = (
-        df_init[("file_gridlayout", "0")]
-        .map(lambda fn: load_SUEWS_nml(fn))
-        .apply(pd.Series)
+    dict_grid_layout = (
+        df_init[("file_gridlayout", "0")].map(lambda fn: load_SUEWS_nml(fn)).to_dict()
     )
+    df_grid_layout = pd.DataFrame.from_dict(dict_grid_layout, orient="index")
     df_grid_layout.index.set_names(["grid"], inplace=True)
 
     # copy column names from df_init
@@ -1820,32 +1815,72 @@ def load_InitialCond_grid_df(path_runcontrol, force_reload=True):
     # load base df of InitialCond
     logger_supy.debug("loading base df_init...")
     df_init = load_SUEWS_InitialCond_df(path_runcontrol)
-    # if 'state_surf' in df_init.columns:
-    #     print('state_surf is in df_init')
+    # if 'localclimatemethod' in df_init.columns:
+    #     print()
+    #     print('1')
+    #     print('localclimatemethod is in df_init')
+    # else:
+    #     print('localclimatemethod is not in df_init')
 
     # add Initial Condition variables from namelist file
     logger_supy.debug("adding initial conditions...")
     df_init = add_file_init_df(df_init)
+    # if 'localclimatemethod' in df_init.columns:
+    #     print()
+    #     print('2')
+    #     print('localclimatemethod is in df_init')
+    # else:
+    #     print('localclimatemethod is not in df_init')
 
     # add surface specific info into `df_init`
     logger_supy.debug("adding surface specific conditions...")
     df_init = add_sfc_init_df(df_init)
+    # if 'localclimatemethod' in df_init.columns:
+    #     print()
+    #     print('3')
+    #     print('localclimatemethod is in df_init')
+    # else:
+    #     print('localclimatemethod is not in df_init')
 
     # add veg info into `df_init`
     logger_supy.debug("adding vegetation specific conditions...")
     df_init = add_veg_init_df(df_init)
+    # if 'localclimatemethod' in df_init.columns:
+    #     print()
+    #     print('4')
+    #     print('localclimatemethod is in df_init')
+    # else:
+    #     print('localclimatemethod is not in df_init')
 
     # add initial daily state into `df_init`
     logger_supy.debug("adding dailystate specific conditions...")
     df_init = add_state_init_df(df_init)
+    # if 'localclimatemethod' in df_init.columns:
+    #     print()
+    #     print('5')
+    #     print('localclimatemethod is in df_init')
+    # else:
+    #     print('localclimatemethod is not in df_init')
 
     # add Initial Condition variables from namelist file
     logger_supy.debug("adding grid layout info...")
     df_init = add_file_gridlayout_df(df_init)
+    # if 'localclimatemethod' in df_init.columns:
+    #     print()
+    #     print('6')
+    #     print('localclimatemethod is in df_init')
+    # else:
+    #     print('localclimatemethod is not in df_init')
 
     # add Initial temperatures into `df_init`
     logger_supy.debug("adding initial temperatures...")
     df_init = add_temp_init_df(df_init)
+    # if 'localclimatemethod' in df_init.columns:
+    # print()
+    # print('7')
+    # print('localclimatemethod is in df_init')
+    # else:
+    # print('localclimatemethod is not in df_init')
 
     # sort column names for consistency
     logger_supy.debug("setting grid level...")
@@ -1854,6 +1889,12 @@ def load_InitialCond_grid_df(path_runcontrol, force_reload=True):
     # filter out unnecessary entries by re-arranging the columns
     logger_supy.debug("cleaning columns...")
     df_init = trim_df_state(df_init)
+    # print()
+    # print('8')
+    # if 'localclimatemethod' in df_init.columns:
+    # print('localclimatemethod is in df_init')
+    # else:
+    # print('localclimatemethod is not in df_init')
 
     # normalise surface fractions to prevent non-1 sums
     df_sfr_surf = df_init.sfr_surf.copy()

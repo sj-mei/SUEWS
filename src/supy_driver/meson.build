@@ -18,7 +18,6 @@ if fortran_compiler.get_id() == 'gcc'
     '-g',
     '-O0',
     '-fcheck=all',
-    # '-fsanitize=address',
   ]
   fortran_program = find_program('gfortran')
 elif fortran_compiler.get_id() == 'intel'
@@ -33,8 +32,6 @@ cflags = [
   '-D_POSIX_C_SOURCE=200809L',
   '-g',
   '-O0',
-  '-fcheck=all',
-  # '-fsanitize=address',
 ]
 if c_compiler.get_id() == 'clang'
   cflags += ['-fbracket-depth=1024']
@@ -55,6 +52,7 @@ dir_src_suews = dir_suews / 'src'
 
 src_f95_all = [
   'suews_ctrl_const.f95',
+  'suews_ctrl_type.f95',
   'suews_util_stringmod.f95',
   'suews_ctrl_input.f95',
   'suews_ctrl_output.f95',
@@ -87,6 +85,7 @@ src_f95_files = files(src_f95_files)
 
 src_f95_sub = [
   # 'suews_ctrl_const.f95',
+  'suews_ctrl_type.f95',
   'suews_ctrl_driver.f95',
   'suews_phys_anemsn.f95',
   'suews_phys_atmmoiststab.f95',
@@ -118,14 +117,17 @@ build_suews = custom_target(
 )
 
 # build the static library for later use
-static_library(
+build_lib=static_library(
   'src',
   [
     build_suews,
     src_f95_files,
   ],
   include_directories: include_dir_suews,
+  build_by_default: true,
 )
+
+run_command('bash', '-c', 'sleep 5 && ls -l')
 
 ##################################################################
 # 2. use f90wrap to generate the modified fortran code with support for derived type
@@ -210,7 +212,7 @@ fortranobject_c = incdir_f2py / 'fortranobject.c'
 inc_np = include_directories(incdir_numpy, incdir_f2py)
 
 # gh-25000
-# dep_quadmath = fortran_compiler.find_library('quadmath', required: true)
+dep_quadmath = fortran_compiler.find_library('quadmath', required: true)
 
 # Share this object across multiple modules.
 lib_fortranobject = static_library(
@@ -255,11 +257,12 @@ ext_supy_driver = py.extension_module(
   dependencies: [
     dep_py,
     dep_fortranobject,
-    # dep_quadmath,
+    dep_quadmath,
     dep_suews,
   ],
   install: true,
   subdir: 'supy',
+
 )
 
 # move the generated `supy_driver.py` to the correct directory

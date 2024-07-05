@@ -33,12 +33,6 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 
 
-# test the current version
-test:
-# $(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
-	$(MAKE) -C $(SUEWS_dir) suews; # make SUEWS with the `main` recipe
-	cd code; python test_dev.py
-
 # update sample run with the latest bin
 # !USE WITH CAUTION!
 update_sample_output:
@@ -46,6 +40,3 @@ update_sample_output:
 
 clean:
 	rm -rf *.zip
-
-# include common settings
-# include $(SUEWS_dir)/include.common

@@ -110,7 +110,7 @@ CONTAINS
 
    SUBROUTINE SurfaceResistance( &
       id, it, & ! input:
-      SMDMethod, SnowFrac, sfr_surf, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+      SMDMethod, SnowFrac, sfr_surf, avkdn, Tair, dq, xsmd, vsmd, MaxConductance, &
       LAIMax, LAI_id, gsModel, Kmax, &
       G_max, G_k, g_q_base, g_q_shape, G_t, G_sm, TH, TL, S1, S2, &
       g_kdown, g_dq, g_ta, g_smd, g_lai, & ! output:
@@ -160,7 +160,7 @@ CONTAINS
       ! INTEGER,INTENT(in)::nsurf!= 7, Total number of surfaces
 
       REAL(KIND(1D0)), INTENT(in) :: avkdn !Average downwelling shortwave radiation
-      REAL(KIND(1D0)), INTENT(in) :: Temp_C !Air temperature
+      REAL(KIND(1D0)), INTENT(in) :: Tair !Air temperature
       REAL(KIND(1D0)), INTENT(in) :: Kmax !Annual maximum hourly solar radiation
       REAL(KIND(1D0)), INTENT(in) :: G_max !Fitted parameters related to max surface resistance
       REAL(KIND(1D0)), INTENT(in) :: G_k !Fitted parameters related to incoming solar radiation
@@ -236,20 +236,20 @@ CONTAINS
          TC = (TH - G_t)/(G_t - TL)
          TC2 = (G_t - TL)*(TH - G_t)**TC
          !If air temperature below TL or above TH, fit it to TL+0.1/TH-0.1
-         IF (Temp_C <= tl) THEN
+         IF (Tair <= tl) THEN
             g_ta = (tl + 0.1 - tl)*(th - (tl + 0.1))**tc/tc2
             !Call error only if no snow on ground
             !  IF (MIN(SnowFrac(1),SnowFrac(2),SnowFrac(3),SnowFrac(4),SnowFrac(5),SnowFrac(6))/=1) THEN
             IF (MINVAL(SnowFrac(1:6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL=0.1,Temp_c,id,it', &
-                              REAL(Temp_c, KIND(1D0)), id_real, it)
+                              REAL(Tair, KIND(1D0)), id_real, it)
             END IF
-         ELSEIF (Temp_C >= th) THEN
+         ELSEIF (Tair >= th) THEN
             g_ta = ((th - 0.1) - tl)*(th - (th - 0.1))**tc/tc2
             CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TH=39.9,Temp_c,id,it', &
-                           REAL(Temp_c, KIND(1D0)), id_real, it)
+                           REAL(Tair, KIND(1D0)), id_real, it)
          ELSE
-            g_ta = (Temp_C - tl)*(th - Temp_C)**tc/tc2
+            g_ta = (Tair - tl)*(th - Tair)**tc/tc2
          END IF
 
          ! soil moisture deficit ----
@@ -313,19 +313,19 @@ CONTAINS
          Tc = (TH - G_t)/(G_t - TL)
          Tc2 = (G_t - TL)*(TH - G_t)**Tc
          ! If air temperature below TL or above TH, then use value for TL+0.1 or TH-0.1
-         IF (Temp_C <= TL) THEN
+         IF (Tair <= TL) THEN
             g_ta = (TL + 0.1 - TL)*(TH - (TL + 0.1))**Tc/Tc2
             ! Call error only if no snow on ground
             IF (MIN(SnowFrac(1), SnowFrac(2), SnowFrac(3), SnowFrac(4), SnowFrac(5), SnowFrac(6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL+0.1,Temp_C,id,it', &
-                              REAL(Temp_c, KIND(1D0)), id_real, it)
+                              REAL(Tair, KIND(1D0)), id_real, it)
             END IF
-         ELSEIF (Temp_C >= TH) THEN
+         ELSEIF (Tair >= TH) THEN
             g_ta = ((TH - 0.1) - TL)*(TH - (TH - 0.1))**Tc/Tc2
             CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TH-0.1,Temp_C,id,it', &
-                           REAL(Temp_c, KIND(1D0)), id_real, it)
+                           REAL(Tair, KIND(1D0)), id_real, it)
          ELSE
-            g_ta = (Temp_C - TL)*(TH - Temp_C)**Tc/Tc2
+            g_ta = (Tair - TL)*(TH - Tair)**Tc/Tc2
          END IF
          ! ---- g(smd) ----
          sdp = S1/G_sm + S2
@@ -461,12 +461,16 @@ CONTAINS
 
       INTEGER, PARAMETER :: notUsedI = -55
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
-      REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
+      REAL(KIND(1D0)) :: z0m_Paved, z0m_Grass, z0m_BSoil, z0m_Water !Default values for roughness lengths [m]
 
       ! calculated values of FAI
       REAL(KIND(1D0)) :: FAIBldg_use
       REAL(KIND(1D0)) :: FAIEveTree_use
       REAL(KIND(1D0)) :: FAIDecTree_use
+      REAL(KIND(1D0)) :: z0m_zh ! z0m for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: zdm_zh ! zdm for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: z0m_zh0 ! z0m for non-roughness elements (i.e. zh=0)
+      REAL(KIND(1D0)) :: zdm_zh0 ! zdm for non-roughness elements (i.e. zh=0)
 
       !Total area of buildings and trees
       ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
@@ -474,10 +478,16 @@ CONTAINS
       PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
 
       ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
-      Z0m4Paved = 0.003 !estimate
-      Z0m4Grass = 0.02
-      Z0m4BSoil = 0.002
-      Z0m4Water = 0.0005
+      z0m_Paved = 0.003 !estimate
+      z0m_Grass = 0.02
+      z0m_BSoil = 0.002
+      z0m_Water = 0.0005
+      ! z0m for non-roughness elements (i.e. zh=0)
+      z0m_zh0 = (z0m_Paved*sfr_surf(PavSurf) &
+                 + z0m_Grass*sfr_surf(GrassSurf) &
+                 + z0m_BSoil*sfr_surf(BSoilSurf) &
+                 + z0m_Water*sfr_surf(WaterSurf))/(1 - PAI)
+      zdm_zh0 = 0
 
       !------------------------------------------------------------------------------
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
@@ -518,29 +528,30 @@ CONTAINS
       IF (Zh /= 0) THEN
          !Calculate z0m and zdm depending on the Z0 method
          IF (RoughLenMomMethod == 2) THEN !Rule of thumb (G&O 1999)
-            z0m = 0.1*Zh
-            zdm = 0.7*Zh
+            z0m_zh = 0.1*Zh
+            zdm_zh = 0.7*Zh
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
             ! zdm = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
-            zdm = (1 + 4.43**(-PAI)*(PAI - 1))*Zh ! changed sfr_surf(BldgSurf) to PAI to be consistent with z0m calculation, TS 04 Jun 2023
-            z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
+            zdm_zh = (1 + 4.43**(-PAI)*(PAI - 1))*Zh ! changed sfr_surf(BldgSurf) to PAI to be consistent with z0m calculation, TS 04 Jun 2023
+            z0m_zh = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
          ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
             ! these are derived using digitalised points
-            zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
-            z0m = (0.00208 + &
-                   0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
-                   3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
-                   76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
+            zdm_zh = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
+            z0m_zh = (0.00208 + &
+                      0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
+                      3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
+                      76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
          END IF
+         ! #271: to smooth the z0m (and zdm) values when other non-rough surfaces are present
+         z0m = DOT_PRODUCT([z0m_zh, z0m_zh0], [PAI, 1 - PAI])
+         zdm = DOT_PRODUCT([zdm_zh, zdm_zh0], [PAI, 1 - PAI])
+
       ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
          IF (PAI /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, PAI, notUsedI)
          !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
          IF (PAI /= 1) THEN
-            z0m = (z0m4Paved*sfr_surf(PavSurf) &
-                   + z0m4Grass*sfr_surf(GrassSurf) &
-                   + z0m4BSoil*sfr_surf(BSoilSurf) &
-                   + z0m4Water*sfr_surf(WaterSurf))/(1 - PAI)
-            zdm = 0
+            z0m = z0m_zh0
+            zdm = zdm_zh0
             CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
          ELSEIF (PAI == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
             z0m = 1
@@ -563,15 +574,13 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_RoughnessParameters
 
    SUBROUTINE SUEWS_cal_RoughnessParameters_DTS( &
-      RoughLenMomMethod, FAImethod, & ! input:
-      sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water, & ! surface fractions
-      surfacearea, & ! surface area of whole grid cell
-      bldgH, EveTreeH, DecTreeH, &
-      porosity_dectr, FAIBldg, FAIEveTree, FAIDecTree, &
-      z0m_in, zdm_in, Z, &
-      FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
-      FAI, PAI, & ! output:
-      Zh, z0m, zdm, ZZD)
+      timer, config, forcing, siteInfo, & !input
+      modState) ! input/output:
+      ! phenState, &
+      ! roughnessState)
+      ! FAIBldg_use, FAIEveTree_use, FAIDecTree_use, & ! output:
+      ! FAI, PAI, & ! output:
+      ! Zh, z0m, zdm, ZZD)
       ! Get surface covers and frontal area fractions (LJ 11/2010)
       ! Last modified:
       ! TS  18 Sep 2017 - added explicit interface
@@ -580,6 +589,11 @@ CONTAINS
       ! sg feb 2012 - made separate subroutine
       !--------------------------------------------------------------------------------
 
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_SITE, SUEWS_TIMER, SUEWS_CONFIG, SUEWS_FORCING, &
+                               LC_PAVED_PRM, LC_BLDG_PRM, LC_EVETR_PRM, LC_DECTR_PRM, &
+                               LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, &
+                               IRRIGATION_PRM, anthroEmis_STATE, &
+                               HYDRO_STATE, PHENOLOGY_STATE, ROUGHNESS_STATE, SUEWS_STATE
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: nsurf = 7 ! number of surface types
@@ -592,140 +606,220 @@ CONTAINS
       INTEGER, PARAMETER :: WaterSurf = 7
       REAL(KIND(1D0)), PARAMETER :: porosity_evetr = 0.32 ! assumed porosity of evergreen trees, ref: Lai et al. (2022), http://dx.doi.org/10.2139/ssrn.4058842
 
-      INTEGER, INTENT(in) :: RoughLenMomMethod
-      INTEGER, INTENT(in) :: FAImethod ! 0 = use FAI provided, 1 = use the simple scheme
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_paved
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_bldg
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_evetr
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_dectr
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_grass
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_bsoil
-      REAL(KIND(1D0)), INTENT(IN) :: sfr_water
-      REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf ! surface fractions
+      TYPE(SUEWS_STATE), INTENT(INout) :: modState
+      ! INTEGER :: RoughLenMomMethod
+      ! INTEGER :: FAImethod ! 0 = use FAI provided, 1 = use the simple scheme
 
-      REAL(KIND(1D0)), INTENT(in) :: surfaceArea ! surface area of whole grid cell
-      REAL(KIND(1D0)), INTENT(in) :: bldgH
-      REAL(KIND(1D0)), INTENT(in) :: EveTreeH
-      REAL(KIND(1D0)), INTENT(in) :: DecTreeH
-      REAL(KIND(1D0)), INTENT(in) :: porosity_dectr
-      REAL(KIND(1D0)), INTENT(in) :: FAIBldg
-      REAL(KIND(1D0)), INTENT(in) :: FAIEveTree
-      REAL(KIND(1D0)), INTENT(in) :: FAIDecTree
-      REAL(KIND(1D0)), INTENT(in) :: z0m_in ! z0m set in SiteSelect
-      REAL(KIND(1D0)), INTENT(in) :: zdm_in ! zdm set in SiteSelect
-      REAL(KIND(1D0)), INTENT(in) :: Z
+      ! TYPE(LC_PAVED_PRM), INTENT(IN) :: pavedPrm
+      ! TYPE(LC_BLDG_PRM), INTENT(IN) :: bldgPrm
+      ! TYPE(LC_EVETR_PRM), INTENT(IN) :: evetrPrm
+      ! TYPE(LC_DECTR_PRM), INTENT(IN) :: dectrPrm
+      ! TYPE(LC_GRASS_PRM), INTENT(IN) :: grassPrm
+      ! TYPE(LC_BSOIL_PRM), INTENT(IN) :: bsoilPrm
+      ! TYPE(LC_WATER_PRM), INTENT(IN) :: waterPrm
+      ! REAL(KIND(1D0)), DIMENSION(nsurf) :: sfr_surf ! surface fractions
+      ! REAL(KIND(1D0)) :: bldgH
+      ! REAL(KIND(1D0)) :: EveTreeH
+      ! REAL(KIND(1D0)) :: DecTreeH
+      ! REAL(KIND(1D0)) :: FAIBldg
+      ! REAL(KIND(1D0)) :: FAIEveTree
+      ! REAL(KIND(1D0)) :: FAIDecTree
 
-      REAL(KIND(1D0)), INTENT(out) :: FAI
-      REAL(KIND(1D0)), INTENT(out) :: PAI
-      REAL(KIND(1D0)), INTENT(out) :: Zh ! effective height of bluff bodies
-      REAL(KIND(1D0)), INTENT(out) :: z0m ! aerodynamic roughness length
-      REAL(KIND(1D0)), INTENT(out) :: zdm ! zero-plance displacement
-      REAL(KIND(1D0)), INTENT(out) :: ZZD ! z-zdm
+      ! TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+      ! REAL(KIND(1D0)) :: surfaceArea ! surface area of whole grid cell
+      ! REAL(KIND(1D0)) :: z0m_in ! z0m set in SiteSelect
+      ! REAL(KIND(1D0)) :: zdm_in ! zdm set in SiteSelect
+      ! REAL(KIND(1D0)) :: Z
+
+      ! TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
+      ! TYPE(ROUGHNESS_STATE), INTENT(OUT) :: roughnessState
+
+      ! REAL(KIND(1D0)) :: porosity_dectr
+
+      ! REAL(KIND(1D0)), INTENT(out) :: FAI
+      ! REAL(KIND(1D0)), INTENT(out) :: PAI
+      ! REAL(KIND(1D0)), INTENT(out) :: Zh ! effective height of bluff bodies
+      ! REAL(KIND(1D0)), INTENT(out) :: z0m ! aerodynamic roughness length
+      ! REAL(KIND(1D0)), INTENT(out) :: zdm ! zero-plance displacement
+      ! REAL(KIND(1D0)), INTENT(out) :: ZZD ! z-zdm
 
       INTEGER, PARAMETER :: notUsedI = -55
       REAL(KIND(1D0)), PARAMETER :: notUsed = -55.5
-      REAL(KIND(1D0)) :: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water !Default values for roughness lengths [m]
+
+      !Default values for roughness lengths [m]
+      ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
+      REAL(KIND(1D0)), PARAMETER :: z0m_Paved = 0.003 !estimate
+      REAL(KIND(1D0)), PARAMETER :: z0m_Grass = 0.02
+      REAL(KIND(1D0)), PARAMETER :: z0m_BSoil = 0.002
+      REAL(KIND(1D0)), PARAMETER :: z0m_Water = 0.0005
+
+      REAL(KIND(1D0)) :: z0m_zh ! z0m for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: zdm_zh ! zdm for roughness elements (i.e. zh>0)
+      REAL(KIND(1D0)) :: z0m_zh0 ! z0m for non-roughness elements (i.e. zh=0)
+      REAL(KIND(1D0)) :: zdm_zh0 ! zdm for non-roughness elements (i.e. zh=0)
 
       ! calculated values of FAI
-      REAL(KIND(1D0)), INTENT(out) :: FAIBldg_use
-      REAL(KIND(1D0)), INTENT(out) :: FAIEveTree_use
-      REAL(KIND(1D0)), INTENT(out) :: FAIDecTree_use
+      ! REAL(KIND(1D0)), INTENT(out) :: FAIBldg_use
+      ! REAL(KIND(1D0)), INTENT(out) :: FAIEveTree_use
+      ! REAL(KIND(1D0)), INTENT(out) :: FAIDecTree_use
 
-      sfr_surf = [sfr_paved, sfr_bldg, sfr_evetr, sfr_dectr, sfr_grass, sfr_bsoil, sfr_water]
+      ASSOCIATE ( &
+         phenState => modState%phenState, &
+         roughnessState => modState%roughnessState, &
+         surfacearea => siteInfo%surfacearea, &
+         z0m_in => siteInfo%z0m_in, &
+         zdm_in => siteInfo%zdm_in, &
+         Z => siteInfo%Z, &
+         pavedPrm => siteInfo%lc_paved, &
+         bldgPrm => siteInfo%lc_bldg, &
+         grassPrm => siteInfo%lc_grass, &
+         dectrPrm => siteInfo%lc_dectr, &
+         evetrPrm => siteInfo%lc_evetr, &
+         bsoilPrm => siteInfo%lc_bsoil, &
+         waterPrm => siteInfo%lc_water &
+         )
+         ASSOCIATE ( &
+            porosity_dectr => phenState%porosity_id, &
+            FAI => roughnessState%FAI, &
+            PAI => roughnessState%PAI, &
+            Zh => roughnessState%Zh, &
+            z0m => roughnessState%z0m, &
+            zdm => roughnessState%zdm, &
+            ZZD => roughnessState%ZZD, &
+            FAIBldg_use => roughnessState%FAIBldg_use, &
+            FAIEveTree_use => roughnessState%FAIEveTree_use, &
+            FAIDecTree_use => roughnessState%FAIDecTree_use, &
+            RoughLenMomMethod => config%RoughLenMomMethod, &
+            FAImethod => config%FAImethod, &
+            sfr_surf => [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr], &
+            bldgH => bldgPrm%bldgH, &
+            EveTreeH => evetrPrm%EveTreeH, &
+            DecTreeH => dectrPrm%DecTreeH, &
+            FAIBldg => bldgPrm%FAIBldg, &
+            FAIEveTree => evetrPrm%FAIEveTree, &
+            FAIDecTree => dectrPrm%FAIDecTree &
+            )
 
-      !Total area of buildings and trees
-      ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
-      ! TS 19 Jun 2022: take porosity of trees into account; to be consistent with PAI calculation in RSL
-      PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
+            ! RoughLenMomMethod = methodPrm%RoughLenMomMethod
+            ! FAImethod = methodPrm%FAImethod
 
-      ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
-      Z0m4Paved = 0.003 !estimate
-      Z0m4Grass = 0.02
-      Z0m4BSoil = 0.002
-      Z0m4Water = 0.0005
+            ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
+            ! bldgH = bldgPrm%bldgH
+            ! EveTreeH = evetrPrm%EveTreeH
+            ! DecTreeH = dectrPrm%DecTreeH
+            ! FAIBldg = bldgPrm%FAIBldg
+            ! FAIEveTree = evetrPrm%FAIEveTree
+            ! FAIDecTree = dectrPrm%FAIDecTree
 
-      !------------------------------------------------------------------------------
-      !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
-      IF (PAI /= 0) THEN
-         Zh = DOT_PRODUCT( &
-              [bldgH, EveTreeH*(1 - porosity_evetr), DecTreeH*(1 - porosity_dectr)], &
-              sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/PAI
-         IF (FAImethod == 0) THEN
-            ! use FAI provided
-            FAIBldg_use = FAIBldg
-            FAIEveTree_use = FAIEveTree*(1 - porosity_evetr)
-            FAIDecTree_use = FAIDecTree*(1 - porosity_dectr)
+            ! surfacearea = siteInfo%surfacearea ! surface area of whole grid cell
+            ! z0m_in = siteInfo%z0m_in
+            ! zdm_in = siteInfo%zdm_in
+            ! Z = siteInfo%Z
 
-         ELSEIF (FAImethod == 1) THEN
-            ! use the simple scheme, details in #192
+            ! porosity_dectr = phenState_prev%porosity_id
 
-            ! buildings
-            FAIBldg_use = SQRT(sfr_surf(BldgSurf)/surfaceArea)*bldgH
+            !Total area of buildings and trees
+            ! areaZh = (sfr_surf(BldgSurf) + sfr_surf(ConifSurf) + sfr_surf(DecidSurf))
+            ! TS 19 Jun 2022: take porosity of trees into account; to be consistent with PAI calculation in RSL
+            PAI = DOT_PRODUCT(sfr_surf([BldgSurf, ConifSurf, DecidSurf]), [1D0, 1 - porosity_evetr, 1 - porosity_dectr])
 
-            ! evergreen trees
-            FAIEveTree_use = 1.07*sfr_surf(ConifSurf)
+            ! z0m for non-roughness elements (i.e. zh=0)
+            z0m_zh0 = (z0m_Paved*sfr_surf(PavSurf) &
+                       + z0m_Grass*sfr_surf(GrassSurf) &
+                       + z0m_BSoil*sfr_surf(BSoilSurf) &
+                       + z0m_Water*sfr_surf(WaterSurf))/(1 - PAI)
+            zdm_zh0 = 0
 
-            ! deciduous trees
-            FAIDecTree_use = 1.66*(1 - porosity_dectr)*sfr_surf(DecidSurf)
+            !------------------------------------------------------------------------------
+            !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
+            IF (PAI /= 0) THEN
+               Zh = DOT_PRODUCT( &
+                    [bldgH, EveTreeH*(1 - porosity_evetr), DecTreeH*(1 - porosity_dectr)], &
+                    sfr_surf([BldgSurf, ConifSurf, DecidSurf]))/PAI
+               IF (FAImethod == 0) THEN
+                  ! use FAI provided
+                  FAIBldg_use = FAIBldg
+                  FAIEveTree_use = FAIEveTree*(1 - porosity_evetr)
+                  FAIDecTree_use = FAIDecTree*(1 - porosity_dectr)
 
-         END IF
-         FAI = SUM(MERGE([FAIBldg_use, FAIEveTree_use, FAIDecTree_use], &
-                         [0D0, 0D0, 0D0], &
-                         sfr_surf([BldgSurf, ConifSurf, DecidSurf]) > 0))
+               ELSEIF (FAImethod == 1) THEN
+                  ! use the simple scheme, details in #192
 
-         ! `1e-5` set to avoid numerical difficulty
-         FAI = MAX(FAI, 1E-5)
+                  ! buildings
+                  FAIBldg_use = SQRT(sfr_surf(BldgSurf)/surfaceArea)*bldgH
 
-      ELSE
-         Zh = 0 !Set Zh to zero if areaZh = 0
-         FAI = 1E-5
-      END IF
+                  ! evergreen trees
+                  FAIEveTree_use = 1.07*sfr_surf(ConifSurf)
 
-      IF (Zh /= 0) THEN
-         !Calculate z0m and zdm depending on the Z0 method
-         IF (RoughLenMomMethod == 2) THEN !Rule of thumb (G&O 1999)
-            z0m = 0.1*Zh
-            zdm = 0.7*Zh
-         ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
-            zdm = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
-            z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
-         ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
-            ! these are derived using digitalised points
-            zdm = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
-            z0m = (0.00208 + &
-                   0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
-                   3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
-                   76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
-         END IF
-      ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
-         IF (PAI /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, PAI, notUsedI)
-         !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
-         IF (PAI /= 1) THEN
-            z0m = (z0m4Paved*sfr_surf(PavSurf) &
-                   + z0m4Grass*sfr_surf(GrassSurf) &
-                   + z0m4BSoil*sfr_surf(BSoilSurf) &
-                   + z0m4Water*sfr_surf(WaterSurf))/(1 - PAI)
-            zdm = 0
-            CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
-         ELSEIF (PAI == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
-            z0m = 1
-            zdm = 7
-            CALL ErrorHint(15, 'Assuming mean height = 10 m, Setting z0m and zdm to default value', z0m, zdm, notUsedI)
-         END IF
-      END IF
+                  ! deciduous trees
+                  FAIDecTree_use = 1.66*(1 - porosity_dectr)*sfr_surf(DecidSurf)
 
-      IF (RoughLenMomMethod == 1) THEN !use values set in SiteSelect
-         z0m = z0m_in
-         zdm = zdm_in
-      END IF
+               END IF
+               FAI = SUM(MERGE([FAIBldg_use, FAIEveTree_use, FAIDecTree_use], &
+                               [0D0, 0D0, 0D0], &
+                               sfr_surf([BldgSurf, ConifSurf, DecidSurf]) > 0))
 
-      ZZD = Z - zdm
+               ! `1e-5` set to avoid numerical difficulty
+               FAI = MAX(FAI, 1E-5)
 
-      ! Error messages if aerodynamic parameters negative
-      IF (z0m < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, z0 < 0 m.', z0m, notUsed, notUsedI)
-      IF (zdm < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, zd < 0 m.', zdm, notUsed, notUsedI)
-      IF (zzd < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, (z-zd) < 0 m.', zzd, notUsed, notUsedI)
+            ELSE
+               Zh = 0 !Set Zh to zero if areaZh = 0
+               FAI = 1E-5
+            END IF
+
+            IF (Zh /= 0) THEN
+               !Calculate z0m and zdm depending on the Z0 method
+               IF (RoughLenMomMethod == 2) THEN !Rule of thumb (G&O 1999)
+                  z0m_zh = 0.1*Zh
+                  zdm_zh = 0.7*Zh
+               ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
+                  zdm_zh = (1 + 4.43**(-sfr_surf(BldgSurf))*(sfr_surf(BldgSurf) - 1))*Zh
+                  z0m_zh = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
+               ELSEIF (RoughLenMomMethod == 4) THEN ! lambdaP dependent as in Fig.1a of G&O (1999)
+                  ! these are derived using digitalised points
+                  zdm_zh = (-0.182 + 0.722*sigmoid(-1.16 + 3.89*PAI) + 0.493*sigmoid(-5.17 + 32.7*PAI))*Zh
+                  z0m_zh = (0.00208 + &
+                            0.0165*MIN(PAI, .7) + 2.52*MIN(PAI, .7)**2 + &
+                            3.21*MIN(PAI, .7)**3 - 43.6*MIN(PAI, .7)**4 + &
+                            76.5*MIN(PAI, .7)**5 - 40.*MIN(PAI, .7)**6)*Zh
+               END IF
+               ! #271: to smooth the z0m (and zdm) values when other non-rough surfaces are present
+               z0m = DOT_PRODUCT([z0m_zh, z0m_zh0], [PAI, 1 - PAI])
+               zdm = DOT_PRODUCT([zdm_zh, zdm_zh0], [PAI, 1 - PAI])
+
+            ELSEIF (Zh == 0) THEN !If zh calculated to be zero, set default roughness length and displacement height
+               IF (PAI /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, PAI, notUsedI)
+               !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
+               IF (PAI /= 1) THEN
+                  z0m = z0m_zh0
+                  zdm = zdm_zh0
+                  CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
+               ELSEIF (PAI == 1) THEN !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
+                  z0m = 1
+                  zdm = 7
+                  CALL ErrorHint(15, 'Assuming mean height = 10 m, Setting z0m and zdm to default value', z0m, zdm, notUsedI)
+               END IF
+            END IF
+
+            IF (RoughLenMomMethod == 1) THEN !use values set in SiteSelect
+               z0m = z0m_in
+               zdm = zdm_in
+            END IF
+
+            ZZD = Z - zdm
+
+            ! Error messages if aerodynamic parameters negative
+            IF (z0m < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, z0 < 0 m.', z0m, notUsed, notUsedI)
+            IF (zdm < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, zd < 0 m.', zdm, notUsed, notUsedI)
+            IF (zzd < 0) CALL ErrorHint(14, 'In SUEWS_cal_RoughnessParameters, (z-zd) < 0 m.', zzd, notUsed, notUsedI)
+
+         END ASSOCIATE
+      END ASSOCIATE
    END SUBROUTINE SUEWS_cal_RoughnessParameters_DTS
 
    FUNCTION cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar) RESULT(z0V)
