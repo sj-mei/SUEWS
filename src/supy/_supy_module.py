@@ -257,6 +257,7 @@ def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
 
     """
     from ._env import trv_supy_module
+
     trv_SampleData = trv_supy_module / "sample_run"
     path_runcontrol = trv_SampleData / "RunControl.nml"
     df_state_init = init_supy(path_runcontrol, force_reload=False)
@@ -280,7 +281,7 @@ def run_supy(
     logging_level=logging.INFO,
     check_input=False,
     serial_mode=False,
-    debug_mode=False, # TODO: #275 to be implemented to enable debug mode
+    debug_mode=False,  # TODO: #275 to be implemented to enable debug mode
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Perform supy simulation.
 
@@ -348,6 +349,14 @@ def run_supy(
             if isinstance(res_check_state, pd.DataFrame):
                 df_state_init = res_check_state
 
+    # enable debug mode if set
+    if debug_mode:
+        logging_level = logging.DEBUG
+        logger_supy.setLevel(logging_level)
+        df_state_init.loc[:, ("debug", "0")] = 1
+    else:
+        df_state_init.loc[:, ("debug", "0")] = 0
+
     # set up a timer for simulation time
     start = time.time()
 
@@ -376,13 +385,9 @@ def run_supy(
     else:
         logger_supy.info(f"SuPy is running in serial mode")
         try:
-            res_supy = run_supy_ser(
-                df_forcing, df_state_init, save_state, chunk_day
-            )
+            res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
         except:
-            res_supy = run_supy_ser(
-                df_forcing, df_state_init, save_state, chunk_day
-            )
+            res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
 
     # show simulation time
     end = time.time()
@@ -394,7 +399,6 @@ def run_supy(
     except:
         df_output, df_state_final, res_debug = res_supy
         return df_output, df_state_final, res_debug
-
 
 
 ##############################################################################
