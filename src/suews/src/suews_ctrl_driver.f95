@@ -710,7 +710,6 @@ CONTAINS
 
    END SUBROUTINE suews_update_tsurf
 
-
 ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
    ! SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
    !    AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
@@ -870,7 +869,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23, 2) :: PopProf_24hr ! diurnal profile of population [-]
 
       REAL(KIND(1D0)) :: TrafficUnits ! traffic units choice [-]
-
 
       INTEGER, PARAMETER :: notUsedI = -999
       REAL(KIND(1D0)), PARAMETER :: notUsed = -999
@@ -1228,7 +1226,6 @@ CONTAINS
       REAL(KIND(1D0)) :: albedo_snowfree !estimated albedo for snow-free surface [-]
       REAL(KIND(1D0)) :: SnowAlb ! updated snow albedo [-]
 
-
       REAL(KIND(1D0)), DIMENSION(nsurf) :: lup_ind !outgoing longwave radiation from observation [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kup_ind !outgoing shortwave radiation from observation [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qn1_ind !net all-wave radiation from observation [W m-2]
@@ -1476,7 +1473,6 @@ CONTAINS
 
       TYPE(SUEWS_STATE), INTENT(inout) :: modState
 
-
       REAL(KIND(1D0)) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients [-]
       REAL(KIND(1D0)) :: OHM_threshSW(nsurf + 1) ! Temperature threshold determining whether summer/winter OHM coefficients are applied [degC]
       REAL(KIND(1D0)) :: OHM_threshWD(nsurf + 1) ! Soil moisture threshold determining whether wet/dry OHM coefficients are applied [-]
@@ -1485,19 +1481,16 @@ CONTAINS
 
       REAL(KIND(1D0)) :: state_id(nsurf) ! wetness status [mm]
 
-
       REAL(KIND(1D0)), DIMENSION(nsurf) :: emis ! emissivity [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: cpAnOHM ! heat capacity [J m-3 K-1]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: kkAnOHM ! thermal conductivity [W m-1 K-1]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: chAnOHM ! bulk transfer coef [J m-3 K-1]
-
 
       REAL(KIND(1D0)), DIMENSION(27), INTENT(out) :: dataOutLineESTM !data output from ESTM
 
       ! internal use arrays
       REAL(KIND(1D0)) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
       REAL(KIND(1D0)) :: qn_use ! qn used in OHM calculations [W m-2]
-
 
       ASSOCIATE ( &
          atmState => modState%atmState, &
@@ -1995,7 +1988,6 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(in) :: siteInfo
 
       TYPE(SUEWS_STATE), INTENT(INout) :: modState
-
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: state_id !wetness states of each surface [mm]
 
@@ -3115,7 +3107,6 @@ CONTAINS
 
       TYPE(SUEWS_STATE), INTENT(INout) :: modState
 
-
       INTEGER, PARAMETER :: AerodynamicResistanceMethod = 2 !method to calculate RA [-]
 
       REAL(KIND(1D0)) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
@@ -3292,7 +3283,6 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(SUEWS_STATE), INTENT(inout) :: modState
-
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
 
@@ -5421,7 +5411,6 @@ CONTAINS
          sunazimuth, sunzenith)
 
    END SUBROUTINE SUEWS_cal_sunposition
-
 
    FUNCTION cal_tair_av(tair_av_prev, dt_since_start, tstep, temp_c) RESULT(tair_av_next)
       ! calculate mean air temperature of past 24 hours
