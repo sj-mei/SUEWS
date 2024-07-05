@@ -41,3 +41,6 @@
   - [bugfix] Fixed a bug causing an abrupt change in results due to a less smooth transition in `z0` from surfaces without roughness elements to those with them. (#271)
   - [bugfix] Improved the discretisation of the vertical levels in the RSL scheme for better interpolation of surface diagnostics (e.g. `T2`) (#271)
   - [maintenance] Added support for NumPy 2.0 (#271)
+
+- 05 Jul 2024:
+  - [feature] Added an option to consider the local feedback of near-surface temperature on the surface energy balance (#132)
