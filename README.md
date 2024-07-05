@@ -83,9 +83,10 @@ pip show supy
 
 ## Developer Note
 
-:note: **the follow is deprecated and will be updated**
+> [!NOTE]  
+> **the follow is deprecated and will be updated**
 
-- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.
+<!-- When doing `pip install -e supy-driver` using WSL in VS Code on Windows 10 I got the error "[Errno 13] Permission denied: 'build/bdist.linux-x86_64/wheel/supy_driver-2021a2.dist-info'". The solution was in the Windows file explorer to right-click the project directory (SUEWS) -> properties -> security -> edit -> everyone -> tick allow -> apply.
 
 ### Branch
 
