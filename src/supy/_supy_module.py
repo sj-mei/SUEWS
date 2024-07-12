@@ -379,9 +379,7 @@ def run_supy(
 
     if n_grid > 1 and os.name != "nt" and (not serial_mode):
         logger_supy.info(f"SuPy is running in parallel mode")
-        df_output, df_state_final = run_supy_par(
-            df_forcing, df_state_init, save_state, chunk_day
-        )
+        res_supy = run_supy_par(df_forcing, df_state_init, save_state, chunk_day)
     else:
         logger_supy.info(f"SuPy is running in serial mode")
         try:
