@@ -451,7 +451,7 @@ def run_save_supy(
     df_forcing_tstep, df_state_init_m, ind, save_state, n_yr, path_dir_temp
 ):
     # run supy in serial mode
-    df_output, df_state_final, res_debug = run_supy_ser(
+    df_output, df_state_final = run_supy_ser(
         df_forcing_tstep, df_state_init_m, save_state, n_yr
     )
     # save to path_dir_temp

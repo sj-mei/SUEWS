@@ -100,48 +100,50 @@ class TestSuPy(TestCase):
         self.assertTrue((test_non_empty and not df_state.isnull().values.any()))
 
     # test if multi-grid simulation can run in parallel
-    # def test_is_supy_sim_save_multi_grid_par(self):
-    #     print("\n========================================")
-    #     print("Testing if multi-grid simulation can run in parallel...")
-    #     n_grid = 4
-    #     df_state_init, df_forcing_tstep = sp.load_SampleData()
-    #     df_state_init = pd.concat([df_state_init for x in range(n_grid)])
-    #     df_state_init.index = pd.RangeIndex(n_grid, name="grid")
-    #     df_forcing_part = df_forcing_tstep.iloc[: 288 * 60]
-    #     df_output, df_state = sp.run_supy(df_forcing_part, df_state_init)
+    def test_is_supy_sim_save_multi_grid_par(self):
+        print("\n========================================")
+        print("Testing if multi-grid simulation can run in parallel...")
+        n_grid = 4
+        df_state_init, df_forcing_tstep = sp.load_SampleData()
+        df_state_init = pd.concat([df_state_init for x in range(n_grid)])
+        df_state_init.index = pd.RangeIndex(n_grid, name="grid")
+        df_forcing_part = df_forcing_tstep.iloc[: 288 * 60]
+        t_start = time()
+        df_output, df_state = sp.run_supy(df_forcing_part, df_state_init)
+        t_end = time()
 
-    #     test_success_sim = np.all(
-    #         [
-    #             not df_output.empty,
-    #             not df_state.empty,
-    #         ]
-    #     )
+        test_success_sim = np.all(
+            [
+                not df_output.empty,
+                not df_state.empty,
+            ]
+        )
 
-    #     with tempfile.TemporaryDirectory() as dir_temp:
-    #         list_outfile = sp.save_supy(
-    #             df_output,
-    #             df_state,
-    #             path_dir_save=dir_temp,
-    #             site="pytest",
-    #             logging_level=10,
-    #         )
+        with tempfile.TemporaryDirectory() as dir_temp:
+            list_outfile = sp.save_supy(
+                df_output,
+                df_state,
+                path_dir_save=dir_temp,
+                site="pytest",
+                logging_level=10,
+            )
 
-    #     test_success_save = np.all([isinstance(fn, Path) for fn in list_outfile])
-    #     self.assertTrue(test_success_sim and test_success_save)
+        test_success_save = np.all([isinstance(fn, Path) for fn in list_outfile])
+        self.assertTrue(test_success_sim and test_success_save)
 
-    #     # only print to screen on macOS due incompatibility on Windows
-    #     if platform.system() == "Darwin":
-    #         # capturedOutput = io.StringIO()  # Create StringIO object
-    #         # sys.stdout = capturedOutput  # and redirect stdout.
-    #         # Call function.
-    #         n_grid = df_state_init.index.size
-    #         print(f"Running time: {t_end-t_start:.2f} s for {n_grid} grids")
-    #         # sys.stdout = sys.__stdout__  # Reset redirect.
-    #         # Now works as before.
-    #         # print("Captured:\n", capturedOutput.getvalue())
+        # only print to screen on macOS due incompatibility on Windows
+        if platform.system() == "Darwin":
+            # capturedOutput = io.StringIO()  # Create StringIO object
+            # sys.stdout = capturedOutput  # and redirect stdout.
+            # Call function.
+            n_grid = df_state_init.index.size
+            print(f"Running time: {t_end-t_start:.2f} s for {n_grid} grids")
+            # sys.stdout = sys.__stdout__  # Reset redirect.
+            # Now works as before.
+            # print("Captured:\n", capturedOutput.getvalue())
 
-    #     test_non_empty = np.all([not df_output.empty, not df_state.empty,])
-    #     self.assertTrue(test_non_empty)
+        test_non_empty = np.all([not df_output.empty, not df_state.empty,])
+        self.assertTrue(test_non_empty)
 
     # # test if single-tstep and multi-tstep modes can produce the same SUEWS results
     # @skipUnless(flag_full_test, "Full test is not required.")
