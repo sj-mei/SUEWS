@@ -638,6 +638,7 @@ CONTAINS
             StorageHeatMethod => config%StorageHeatMethod, &
             nlayer => siteInfo%nlayer, &
             avdens => atmState%avdens, &
+            avcp => atmState%avcp, &
             RA_h => atmState%RA_h, &
             TSfc_C => heatState%TSfc_C, &
             QH_surf => heatState%QH_surf, &
@@ -660,7 +661,6 @@ CONTAINS
 
             DO i_surf = 1, nsurf
                tsfc_surf(i_surf) = cal_tsfc(QH_surf(i_surf), avdens, avcp, RA_h, temp_c)
-
             END DO
 
             DO i_layer = 1, nlayer
