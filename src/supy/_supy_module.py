@@ -382,10 +382,11 @@ def run_supy(
         res_supy = run_supy_par(df_forcing, df_state_init, save_state, chunk_day)
     else:
         logger_supy.info(f"SuPy is running in serial mode")
-        try:
-            res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
-        except:
-            res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
+        res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
+        # try:
+        #     res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
+        # except:
+        #     res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
 
     # show simulation time
     end = time.time()
