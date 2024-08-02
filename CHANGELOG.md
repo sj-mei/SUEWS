@@ -44,3 +44,6 @@
 
 - 05 Jul 2024:
   - [feature] Added an option to consider the local feedback of near-surface temperature on the surface energy balance (#132)
+
+- 02 Aug 2024:
+  - [bugfix] Fixed a bug in the calculation of the surface temperature (#281)
