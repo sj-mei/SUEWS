@@ -359,7 +359,7 @@ def pack_df_debug(dict_debug):
     )
     df_debug = (
         df_debug_raw.unstack(level=["group", "var"])
-        # .sort_index(level=0, axis=1)
+        .sort_index(level=0, axis=1)
         .dropna(axis=1, how="all")
     )
     return df_debug

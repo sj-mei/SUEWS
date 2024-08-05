@@ -141,12 +141,8 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
             "len_sim": np.array(df_forcing_block.shape[0], dtype=int),
         }
     )
-    # print("list_var_input_multitsteps", sorted(list_var_input_multitsteps))
-    # print("dict_input.keys()", sorted(dict_input.keys()))
-    # set_dif=set(dict_input.keys()) - set(list_var_input_multitsteps)
-    # print("set_dif", sorted(set_dif))
+
     dict_input = {k: dict_input[k] for k in list_var_input_multitsteps}
-    # dict_input = {k: dict_input[k] if k in dict_input else np.array([0.0]) for k in list_var_input_multitsteps}
 
     # main calculation:
 
@@ -434,7 +430,7 @@ def run_supy_ser(
 
         # collect debug info
         dict_debug = {
-            (tstep_final + freq, grid): debug
+            (tstep_final, grid): debug
             for grid, debug in zip(list_grid, list_dict_debug)
         }
         df_debug = pack_df_debug(dict_debug)
