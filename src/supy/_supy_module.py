@@ -353,9 +353,6 @@ def run_supy(
     if debug_mode:
         logging_level = logging.DEBUG
         logger_supy.setLevel(logging_level)
-        df_state_init.loc[:, ("debug", "0")] = 1
-    else:
-        df_state_init.loc[:, ("debug", "0")] = 0
 
     # set up a timer for simulation time
     start = time.time()
@@ -392,12 +389,16 @@ def run_supy(
     end = time.time()
     logger_supy.info(f"Execution time: {(end - start):.1f} s")
     logger_supy.info(f"====================\n")
-    try:
-        df_output, df_state_final = res_supy
-        return df_output, df_state_final
-    except:
-        df_output, df_state_final, res_debug = res_supy
+
+    # unpack results
+    df_output, df_state_final, res_debug = res_supy
+
+    # return results based on debugging needs
+    if debug_mode:
         return df_output, df_state_final, res_debug
+    else:
+        return df_output, df_state_final
+
 
 
 ##############################################################################
