@@ -442,14 +442,16 @@ def run_save_supy(
     df_forcing_tstep, df_state_init_m, ind, save_state, n_yr, path_dir_temp
 ):
     # run supy in serial mode
-    df_output, df_state_final = run_supy_ser(
+    df_output, df_state_final, df_debug = run_supy_ser(
         df_forcing_tstep, df_state_init_m, save_state, n_yr
     )
     # save to path_dir_temp
     path_out = path_dir_temp / f"{ind}_out.pkl"
     path_state = path_dir_temp / f"{ind}_state.pkl"
+    path_debug = path_dir_temp / f"{ind}_debug.pkl"
     df_output.to_pickle(path_out)
     df_state_final.to_pickle(path_state)
+    df_debug.to_pickle(path_debug)
 
 
 # parallel mode: only used on Linux/macOS; Windows is not supported yet.
@@ -490,9 +492,14 @@ def run_supy_par(df_forcing_tstep, df_state_init_m, save_state, n_yr):
                 for n in np.arange(n_grid)
             ]
         )
-        # print(list(path_dir_temp.glob('*')))
+        df_debug = pd.concat(
+            [
+                pd.read_pickle(path_dir_temp / f"{n}_debug.pkl")
+                for n in np.arange(n_grid)
+            ]
+        )
 
-    return df_output, df_state_final
+    return df_output, df_state_final, df_debug
 
 
 # main calculation end here
