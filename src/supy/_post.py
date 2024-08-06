@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import copy
 from .supy_driver import suews_driver as sd
 
 
@@ -276,6 +277,7 @@ def pack_dict_debug(dts_debug):
     Returns:
         dict: A dictionary containing the packed debug information.
     """
+
     list_props = [
         attr
         for attr in dir(dts_debug)
@@ -289,7 +291,7 @@ def pack_dict_debug(dts_debug):
             getattr(dts_debug, prop)
             if is_numeric(getattr(dts_debug, prop))
             # if some properties are fortran derived types then iterate use this function
-            else pack_dict_debug(getattr(dts_debug, prop))
+            else pack_dict_debug(copy.deepcopy(getattr(dts_debug, prop)))
         )
         for prop in list_props
     }
@@ -348,6 +350,7 @@ def pack_df_debug(dict_debug):
     df_debug_raw = pack_df_debug_raw(dict_debug)
     df_debug_raw.index = df_debug_raw.index.rename(
         [
+            "datetime",
             "grid",
             "step",
             "group",
