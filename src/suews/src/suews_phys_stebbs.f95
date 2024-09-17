@@ -669,12 +669,14 @@ END SUBROUTINE setdatetime
 ! SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
 !                               Kroof_sout, Kwall_sout, Lwall_sout, Lroof_sout, ws)
 SUBROUTINE stebbsonlinecouple( &
-   timer, config, forcing, siteInfo, & ! Input
-   modState, & ! Input/Output
-   dataoutLineSTEBBS) ! Output
+    timer, config, forcing, siteInfo, & ! Input
+    modState, &  ! Input/Output
+    datetimeLine, dataoutLineSTEBBS)  ! Output
 !
-   USE modulestebbs
-   USE modulesuewsstebbscouple
+   ! USE modulestebbs
+   USE modulesuewsstebbscouple, ONLY: sout   ! Defines sout
+   USE modulestebbsprecision, ONLY: rprc  ! Defines rprc as REAL64
+   USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
 !
    USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                             LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
@@ -698,98 +700,105 @@ SUBROUTINE stebbsonlinecouple( &
    INTEGER, SAVE :: flginit = 0
 !
    ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
-   !   Kwall_sout, Lwall_sout, Lroof_sout, ws
-   ! REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
+   !                           Kwall_sout, Lwall_sout, Lroof_sout, ws
+   REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine ! To replace
 !
-   NAMELIST /settings/ nbtype, resolution
-   NAMELIST /io/ cases
+   ! NAMELIST /settings/ nbtype, resolution
+   ! NAMELIST /io/ cases
+
+   REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
+   ! REAL(rprc) :: Kwall_sout, Lwall_sout, Kroof_sout, Lroof_sout, Knorth, Ksouth, Keast, Kwest, ws
+   
 !
    ASSOCIATE ( &
       timestep => timer%tstep, &
       heatState => modState%heatState, &
       atmState => modState%atmState, &
       roughnessState => modState%roughnessState, &
-      bldgState => modState%bldgState, &
+      bldgState => modState%bldgState &      
       )
-
-      ! Create an array of the wall states
-      REAL(rprc), DIMENSION(4) :: wallStates
-      wallStatesK(1) = bldgState%Knorth
-      wallStatesK(2) = bldgState%Ksouth
-      wallStatesK(3) = bldgState%Keast
-      wallStatesK(4) = bldgState%Kwest
-      ! Calculate the mean of the wall states
-      Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
-
-      wallStatesL(1) = bldgState%Knorth
-      wallStatesL(2) = bldgState%Ksouth
-      wallStatesL(3) = bldgState%Keast
-      wallStatesL(4) = bldgState%Kwest
-      ! Calculate the mean of the wall states
-      Kroof_sout = SUM(wallStatesL)/SIZE(wallStatesL)
 
       ASSOCIATE ( &
          ws => atmState%U10_ms, &
          Tair_sout => atmState%t2_C, &
-         Kroof_sout => bldgState%Kdown2d
-      Kwall_sout => Kwall_sout, &
+         Kroof_sout => bldgState%Kdown2d, &
          Lroof_sout => bldgState%Ldown2d, &
-         Lwall_sout => Lwall_sout, &
-         )
+         
+         ! Create an array of the wall states
+         Knorth => bldgState%Knorth, &
+         Ksouth => bldgState%Ksouth, &
+         Keast => bldgState%Keast, &
+         Kwest => bldgState%Kwest &
 
+         ! wallStatesL(1) => bldgState%Lnorth, &
+         ! wallStatesL(2) => bldgState%Lsouth, &
+         ! wallStatesL(3) => bldgState%Least, &
+         ! wallStatesL(4) => bldgState%Lwest &
+      )
+
+      END ASSOCIATE
    END ASSOCIATE
-   END ASSOCIATE
 !
+   wallStatesK(1) = Knorth
+   wallStatesK(2) = Ksouth
+   wallStatesK(3) = Keast
+   wallStatesK(4) = Kwest
+   ! Calculate the mean of the wall states
+   Kwall_sout = SUM(wallStatesK) / SIZE(wallStatesK)
+
+   ! ! Calculate the mean of the wall states
+   ! Lwall_sout = SUM(wallStatesL) / SIZE(wallStatesL)
+
 !
-   IF (flginit == 0) THEN
-!
-      OPEN (8, file='./RunControl_STEBBS.nml', status='old', form='formatted')
-      READ (8, nml=settings)
-      ALLOCATE (cases(nbtype))
-      READ (8, nml=io)
-      CLOSE (8)
-!
-      ALLOCATE (fnmls(nbtype))
-      ALLOCATE (blds(nbtype))
-!
-      WRITE (*, *) '++++ SUEWS-STEBBS coupling'
-      WRITE (*, *) '    + Total building type : ', nbtype
-      DO i = 1, nbtype, 1
-         WRITE (*, *) '    + Cases title         : ', i, TRIM(cases(i))
-      END DO
-!
-      IF (resolution <= 0) resolution = timestep
-!
-!
-!
-      DO i = 1, nbtype, 1
-         fnmls(i) = './BuildClasses/'//TRIM(cases(i))//'.nml'
-         CALL create_building(cases(i), blds(i), i)
-      END DO
-!
-!
-!
-      sout%ntstep = 1
-      ALLOCATE (sout%datetime(sout%ntstep))
-      ALLOCATE (sout%hourmin(sout%ntstep))
-      ALLOCATE (sout%Tair(sout%ntstep))
-      ALLOCATE (sout%Tsurf(sout%ntstep))
-      ALLOCATE (sout%Kwall(sout%ntstep))
-      ALLOCATE (sout%Kroof(sout%ntstep))
-      ALLOCATE (sout%ws(sout%ntstep))
-      ALLOCATE (sout%Lroof(sout%ntstep))
-      ALLOCATE (sout%Lwall(sout%ntstep))
-      ALLOCATE (sout%datetime_exch(sout%ntstep))
-      ALLOCATE (sout%hourmin_exch(sout%ntstep))
-      ALLOCATE (sout%Tair_exch(sout%ntstep))
-      ALLOCATE (sout%Tsurf_exch(sout%ntstep))
-      ALLOCATE (sout%Kwall_exch(sout%ntstep))
-      ALLOCATE (sout%Kroof_exch(sout%ntstep))
-      ALLOCATE (sout%ws_exch(sout%ntstep))
-      ALLOCATE (sout%Lroof_exch(sout%ntstep))
-      ALLOCATE (sout%Lwall_exch(sout%ntstep))
-!
-   END IF
+!    IF (flginit == 0) THEN
+! !
+!       OPEN (8, file='./RunControl_STEBBS.nml', status='old', form='formatted')
+!       READ (8, nml=settings)
+!       ALLOCATE (cases(nbtype))
+!       READ (8, nml=io)
+!       CLOSE (8)
+! !
+!       ALLOCATE (fnmls(nbtype))
+!       ALLOCATE (blds(nbtype))
+! !
+!       WRITE (*, *) '++++ SUEWS-STEBBS coupling'
+!       WRITE (*, *) '    + Total building type : ', nbtype
+!       DO i = 1, nbtype, 1
+!          WRITE (*, *) '    + Cases title         : ', i, TRIM(cases(i))
+!       END DO
+! !
+!       IF (resolution <= 0) resolution = timestep
+! !
+! !
+! !
+!       DO i = 1, nbtype, 1
+!          fnmls(i) = './BuildClasses/'//TRIM(cases(i))//'.nml'
+!          CALL create_building(cases(i), blds(i), i)
+!       END DO
+! !
+! !
+! !
+!       sout%ntstep = 1
+!       ALLOCATE (sout%datetime(sout%ntstep))
+!       ALLOCATE (sout%hourmin(sout%ntstep))
+!       ALLOCATE (sout%Tair(sout%ntstep))
+!       ALLOCATE (sout%Tsurf(sout%ntstep))
+!       ALLOCATE (sout%Kwall(sout%ntstep))
+!       ALLOCATE (sout%Kroof(sout%ntstep))
+!       ALLOCATE (sout%ws(sout%ntstep))
+!       ALLOCATE (sout%Lroof(sout%ntstep))
+!       ALLOCATE (sout%Lwall(sout%ntstep))
+!       ALLOCATE (sout%datetime_exch(sout%ntstep))
+!       ALLOCATE (sout%hourmin_exch(sout%ntstep))
+!       ALLOCATE (sout%Tair_exch(sout%ntstep))
+!       ALLOCATE (sout%Tsurf_exch(sout%ntstep))
+!       ALLOCATE (sout%Kwall_exch(sout%ntstep))
+!       ALLOCATE (sout%Kroof_exch(sout%ntstep))
+!       ALLOCATE (sout%ws_exch(sout%ntstep))
+!       ALLOCATE (sout%Lroof_exch(sout%ntstep))
+!       ALLOCATE (sout%Lwall_exch(sout%ntstep))
+! !
+!    END IF
 !
 !
 !
