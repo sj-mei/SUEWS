@@ -1188,10 +1188,10 @@ MODULE ctrl_output
         + ncolumnsDataOutSTEBBS - 5 &
         )/ &
       varAttr('QStar', 'W m-2', f104, 'Net all-wave radiation', aA, 'STEBBS', 0), &
-      varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0) &
-      varAttr('QH', 'W m-2', f104, 'Sensible heat flux', aA, 'STEBBS', 0) &
-      varAttr('QS', 'W m-2', f104, 'Storage heat flux', aA, 'STEBBS', 0) &
-      varAttr('QBAE', 'W m-2', f104, 'BAE (TEMP)', aA, 'STEBBS', 0) &
+      varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0), &
+      varAttr('QH', 'W m-2', f104, 'Sensible heat flux', aA, 'STEBBS', 0), &
+      varAttr('QS', 'W m-2', f104, 'Storage heat flux', aA, 'STEBBS', 0), &
+      varAttr('QBAE', 'W m-2', f104, 'BAE (TEMP)', aA, 'STEBBS', 0), &
       varAttr('QWaste', 'W m-2', f104, 'Waste heat flux (TEMP)', aA, 'STEBBS', 0) &
       /
 
