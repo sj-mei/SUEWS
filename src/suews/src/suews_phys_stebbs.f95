@@ -668,19 +668,19 @@ END SUBROUTINE setdatetime
 !
 ! SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
 !                               Kroof_sout, Kwall_sout, Lwall_sout, Lroof_sout, ws)
-  SUBROUTINE stebbsonlinecouple( &
-    timer, config, forcing, siteInfo, & ! Input
-    modState, &  ! Input/Output
-    dataoutLineSTEBBS)  ! Output
+SUBROUTINE stebbsonlinecouple( &
+   timer, config, forcing, siteInfo, & ! Input
+   modState, & ! Input/Output
+   dataoutLineSTEBBS) ! Output
 !
    USE modulestebbs
    USE modulesuewsstebbscouple
 !
    USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
-                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
-                               LC_BSOIL_PRM, LC_WATER_PRM, &
-                               SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
-                               HEAT_STATE, SUEWS_STATE, BUILDING_STATE
+                            LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                            LC_BSOIL_PRM, LC_WATER_PRM, &
+                            SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
+                            HEAT_STATE, SUEWS_STATE, BUILDING_STATE
 !
    IMPLICIT NONE
 !
@@ -698,7 +698,7 @@ END SUBROUTINE setdatetime
    INTEGER, SAVE :: flginit = 0
 !
    ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
-                           !   Kwall_sout, Lwall_sout, Lroof_sout, ws
+   !   Kwall_sout, Lwall_sout, Lroof_sout, ws
    ! REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
 !
    NAMELIST /settings/ nbtype, resolution
@@ -709,7 +709,7 @@ END SUBROUTINE setdatetime
       heatState => modState%heatState, &
       atmState => modState%atmState, &
       roughnessState => modState%roughnessState, &
-      bldgState => modState%bldgState, &      
+      bldgState => modState%bldgState, &
       )
 
       ! Create an array of the wall states
@@ -719,26 +719,26 @@ END SUBROUTINE setdatetime
       wallStatesK(3) = bldgState%Keast
       wallStatesK(4) = bldgState%Kwest
       ! Calculate the mean of the wall states
-      Kwall_sout = SUM(wallStatesK) / SIZE(wallStatesK)
+      Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
 
       wallStatesL(1) = bldgState%Knorth
       wallStatesL(2) = bldgState%Ksouth
       wallStatesL(3) = bldgState%Keast
       wallStatesL(4) = bldgState%Kwest
       ! Calculate the mean of the wall states
-      Kroof_sout = SUM(wallStatesL) / SIZE(wallStatesL)
+      Kroof_sout = SUM(wallStatesL)/SIZE(wallStatesL)
 
       ASSOCIATE ( &
          ws => atmState%U10_ms, &
          Tair_sout => atmState%t2_C, &
          Kroof_sout => bldgState%Kdown2d
-         Kwall_sout => Kwall_sout, &
+      Kwall_sout => Kwall_sout, &
          Lroof_sout => bldgState%Ldown2d, &
          Lwall_sout => Lwall_sout, &
-      )
+         )
 
-      END ASSOCIATE
-   ENDASSOCIATE
+   END ASSOCIATE
+   END ASSOCIATE
 !
 !
    IF (flginit == 0) THEN

@@ -1168,25 +1168,25 @@ MODULE ctrl_output
       /
    ! STEBBS info
    DATA(varListAll(n), &
-         n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
-         + ncolumnsdataOutBL - 5 &
-         + ncolumnsDataOutSnow - 5 &
-         + ncolumnsDataOutESTM - 5 &
-         + ncolumnsDataOutDailyState - 5 &
-         + ncolumnsDataOutRSL - 5 &
-         + ncolumnsDataOutDebug - 5 &
-         + ncolumnsDataOutSPARTACUS - 5 &
-         + ncolumnsDataOutEHC - 5 &
-         + 1, &
-         ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
-         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
-         + ncolumnsDataOutDailyState - 5 &
-         + ncolumnsDataOutRSL - 5 &
-         + ncolumnsDataOutDebug - 5 &
-         + ncolumnsDataOutSPARTACUS - 5 &
-         + ncolumnsDataOutEHC - 5 &
-         + ncolumnsDataOutSTEBBS - 5 &
-         )/ &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 &
+        + ncolumnsDataOutSnow - 5 &
+        + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + ncolumnsDataOutEHC - 5 &
+        + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + ncolumnsDataOutEHC - 5 &
+        + ncolumnsDataOutSTEBBS - 5 &
+        )/ &
       varAttr('QStar', 'W m-2', f104, 'Net all-wave radiation', aA, 'STEBBS', 0), &
       varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0) &
       varAttr('QH', 'W m-2', f104, 'Sensible heat flux', aA, 'STEBBS', 0) &
