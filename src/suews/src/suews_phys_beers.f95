@@ -347,7 +347,7 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, SUEWS_SITE, &
                                PHENOLOGY_STATE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                ROUGHNESS_STATE, HEAT_STATE, solar_State, &
-                               SUEWS_STATE, BldgSurf
+                               SUEWS_STATE, BldgSurf, BUILDING_STATE
 
       IMPLICIT NONE
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
@@ -390,8 +390,8 @@ CONTAINS
       REAL(KIND(1D0)) :: svf_ground, svf_roof
       REAL(KIND(1D0)) :: svf_veg
       REAL(KIND(1D0)) :: svf_aveg
-      REAL(KIND(1D0)) :: Kdown, Keast, Knorth, Ksouth, Kup2d, Kwest
-      REAL(KIND(1D0)) :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+      ! REAL(KIND(1D0)) :: Kdown, Keast, Knorth, Ksouth, Kup2d, Kwest
+      ! REAL(KIND(1D0)) :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
 
       ! Internal grids
       !Search directions for Ground View Factors (GVF)
@@ -415,6 +415,7 @@ CONTAINS
          heatState => modState%heatState, &
          solarState => modState%solarState, &
          phenState => modState%phenState &
+         bldgState => modState%bldgState &
          )
          ASSOCIATE ( &
             pavedPrm => siteInfo%lc_paved, &
@@ -467,7 +468,19 @@ CONTAINS
             DiagMethod => config%DiagMethod, &
             StabilityMethod => config%StabilityMethod, &
             EmissionsMethod => config%EmissionsMethod, &
-            Diagnose => config%Diagnose &
+            Diagnose => config%Diagnose, &
+            Kdown2d => bldgState%Kdown2d, &
+            Kup2d => bldgState%Kup2d, &
+            Kwest => bldgState%Kwest, &
+            Keast => bldgState%Keast, &
+            Knorth => bldgState%Knorth, &
+            Ksouth => bldgState%Ksouth, &
+            Ldown2d => bldgState%Ldown2d, &
+            Lup2d => bldgState%Lup2d, &
+            Lwest => bldgState%Lwest, &
+            Least => bldgState%Least, &
+            Lnorth => bldgState%Lnorth, &
+            Lsouth => bldgState%Lsouth &
             )
             IF (sfr_surf(BldgSurf) > 0) THEN
                ! do BEERS calculation
