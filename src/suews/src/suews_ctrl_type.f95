@@ -740,6 +740,23 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE ROUGHNESS_STATE
 
+   TYPE, PUBLIC :: BUILDING_STATE
+   
+      REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
+      REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
+      REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
+      REAL(KIND(1D0)) :: Ksouth ! incoming shortwave radiation from south [W m-2]
+      REAL(KIND(1D0)) :: Knorth ! incoming shortwave radiation from north [W m-2]
+      REAL(KIND(1D0)) :: Keast ! incoming shortwave radiation from east [W m-2]
+      REAL(KIND(1D0)) :: Ldown2d ! incoming longwave radiation onto roof [W m-2]
+      REAL(KIND(1D0)) :: Lup2d ! outgoing longwave radiation from roof [W m-2]
+      REAL(KIND(1D0)) :: Lwest ! incoming longwave radiation from west [W m-2]
+      REAL(KIND(1D0)) :: Lsouth ! incoming longwave radiation from south [W m-2]
+      REAL(KIND(1D0)) :: Lnorth ! incoming longwave radiation from north [W m-2]
+      REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
+
+   END TYPE BUILDING_STATE
+
    ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE
       TYPE(flag_STATE) :: flagState
@@ -752,6 +769,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(HYDRO_STATE) :: hydroState
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
+      TYPE(BUILDING_STATE) :: bldgState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
