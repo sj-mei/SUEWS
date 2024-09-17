@@ -666,25 +666,79 @@ END SUBROUTINE setdatetime
 !
 !
 !
-SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
-                              Kroof_sout, Kwall_sout, Lwall_sout, Lroof_sout, ws)
+! SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
+!                               Kroof_sout, Kwall_sout, Lwall_sout, Lroof_sout, ws)
+  SUBROUTINE stebbsonlinecouple( &
+    timer, config, forcing, siteInfo, & ! Input
+    modState, &  ! Input/Output
+    dataoutLineSTEBBS)  ! Output
 !
    USE modulestebbs
    USE modulesuewsstebbscouple
 !
+   USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
+                               LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
+                               LC_BSOIL_PRM, LC_WATER_PRM, &
+                               SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
+                               HEAT_STATE, SUEWS_STATE, BUILDING_STATE
+!
    IMPLICIT NONE
 !
+   TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+   TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+   TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+   TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+!
+   TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
+!
+   REAL(KIND(1D0)), INTENT(out), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataoutLineSTEBBS
+!
    INTEGER :: i
-   INTEGER, INTENT(in) :: timestep
+   ! INTEGER, INTENT(in) :: timestep ! MP replaced from line 706
    INTEGER, SAVE :: flginit = 0
 !
-   REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
-                             Kwall_sout, Lwall_sout, Lroof_sout, ws
-   REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
+   ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
+                           !   Kwall_sout, Lwall_sout, Lroof_sout, ws
+   ! REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
 !
    NAMELIST /settings/ nbtype, resolution
    NAMELIST /io/ cases
 !
+   ASSOCIATE ( &
+      timestep => timer%tstep, &
+      heatState => modState%heatState, &
+      atmState => modState%atmState, &
+      roughnessState => modState%roughnessState, &
+      bldgState => modState%bldgState, &      
+      )
+
+      ! Create an array of the wall states
+      REAL(rprc), DIMENSION(4) :: wallStates
+      wallStatesK(1) = bldgState%Knorth
+      wallStatesK(2) = bldgState%Ksouth
+      wallStatesK(3) = bldgState%Keast
+      wallStatesK(4) = bldgState%Kwest
+      ! Calculate the mean of the wall states
+      Kwall_sout = SUM(wallStatesK) / SIZE(wallStatesK)
+
+      wallStatesL(1) = bldgState%Knorth
+      wallStatesL(2) = bldgState%Ksouth
+      wallStatesL(3) = bldgState%Keast
+      wallStatesL(4) = bldgState%Kwest
+      ! Calculate the mean of the wall states
+      Kroof_sout = SUM(wallStatesL) / SIZE(wallStatesL)
+
+      ASSOCIATE ( &
+         ws => atmState%U10_ms, &
+         Tair_sout => atmState%t2_C, &
+         Kroof_sout => bldgState%Kdown2d
+         Kwall_sout => Kwall_sout, &
+         Lroof_sout => bldgState%Ldown2d, &
+         Lwall_sout => Lwall_sout, &
+      )
+
+      END ASSOCIATE
+   ENDASSOCIATE
 !
 !
    IF (flginit == 0) THEN
@@ -773,6 +827,7 @@ SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
 !
    flginit = 1
 !
+   dataoutLineSTEBBS = [QStar, QH, QS, QEC, QWaste]
    RETURN
 !
 END SUBROUTINE stebbsonlinecouple
