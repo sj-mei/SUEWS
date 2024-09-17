@@ -669,13 +669,13 @@ END SUBROUTINE setdatetime
 ! SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
 !                               Kroof_sout, Kwall_sout, Lwall_sout, Lroof_sout, ws)
 SUBROUTINE stebbsonlinecouple( &
-    timer, config, forcing, siteInfo, & ! Input
-    modState, &  ! Input/Output
-    datetimeLine, dataoutLineSTEBBS)  ! Output
+   timer, config, forcing, siteInfo, & ! Input
+   modState, & ! Input/Output
+   datetimeLine, dataoutLineSTEBBS) ! Output
 !
    ! USE modulestebbs
-   USE modulesuewsstebbscouple, ONLY: sout   ! Defines sout
-   USE modulestebbsprecision, ONLY: rprc  ! Defines rprc as REAL64
+   USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
+   USE modulestebbsprecision, ONLY: rprc ! Defines rprc as REAL64
    USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
 !
    USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
@@ -708,14 +708,14 @@ SUBROUTINE stebbsonlinecouple( &
 
    REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
    ! REAL(rprc) :: Kwall_sout, Lwall_sout, Kroof_sout, Lroof_sout, Knorth, Ksouth, Keast, Kwest, ws
-   
+
 !
    ASSOCIATE ( &
       timestep => timer%tstep, &
       heatState => modState%heatState, &
       atmState => modState%atmState, &
       roughnessState => modState%roughnessState, &
-      bldgState => modState%bldgState &      
+      bldgState => modState%bldgState &
       )
 
       ASSOCIATE ( &
@@ -723,18 +723,16 @@ SUBROUTINE stebbsonlinecouple( &
          Tair_sout => atmState%t2_C, &
          Kroof_sout => bldgState%Kdown2d, &
          Lroof_sout => bldgState%Ldown2d, &
-         
          ! Create an array of the wall states
          Knorth => bldgState%Knorth, &
          Ksouth => bldgState%Ksouth, &
          Keast => bldgState%Keast, &
          Kwest => bldgState%Kwest &
-
          ! wallStatesL(1) => bldgState%Lnorth, &
          ! wallStatesL(2) => bldgState%Lsouth, &
          ! wallStatesL(3) => bldgState%Least, &
          ! wallStatesL(4) => bldgState%Lwest &
-      )
+         )
 
       END ASSOCIATE
    END ASSOCIATE
@@ -744,7 +742,7 @@ SUBROUTINE stebbsonlinecouple( &
    wallStatesK(3) = Keast
    wallStatesK(4) = Kwest
    ! Calculate the mean of the wall states
-   Kwall_sout = SUM(wallStatesK) / SIZE(wallStatesK)
+   Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
 
    ! ! Calculate the mean of the wall states
    ! Lwall_sout = SUM(wallStatesL) / SIZE(wallStatesL)

@@ -741,7 +741,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE ROUGHNESS_STATE
 
    TYPE, PUBLIC :: BUILDING_STATE
-   
+
       REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
       REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
       REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
