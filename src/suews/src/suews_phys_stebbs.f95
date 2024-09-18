@@ -666,16 +666,20 @@ END SUBROUTINE setdatetime
 !
 !
 !
+MODULE stebbs_module
 ! SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
 !                               Kroof_sout, Kwall_sout, Lwall_sout, Lroof_sout, ws)
+
+CONTAINS
+
 SUBROUTINE stebbsonlinecouple( &
    timer, config, forcing, siteInfo, & ! Input
    modState, & ! Input/Output
    datetimeLine, dataoutLineSTEBBS) ! Output
 !
-   ! USE modulestebbs
+   USE modulestebbs, ONLY: nbtype, blds
    USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
-   USE modulestebbsprecision, ONLY: rprc ! Defines rprc as REAL64
+   USE modulestebbsprecision  !, ONLY: rprc ! Defines rprc as REAL64
    USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
 !
    USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
@@ -697,6 +701,7 @@ SUBROUTINE stebbsonlinecouple( &
 !
    INTEGER :: i
    ! INTEGER, INTENT(in) :: timestep ! MP replaced from line 706
+   INTEGER :: timestep
    INTEGER, SAVE :: flginit = 0
 !
    ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
@@ -707,7 +712,10 @@ SUBROUTINE stebbsonlinecouple( &
    ! NAMELIST /io/ cases
 
    REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
-   ! REAL(rprc) :: Kwall_sout, Lwall_sout, Kroof_sout, Lroof_sout, Knorth, Ksouth, Keast, Kwest, ws
+   REAL(rprc) :: Knorth, Ksouth, Keast, Kwest
+   REAL(rprc) :: Kwall_sout, Lwall_sout, Kroof_sout, Lroof_sout
+   REAL(rprc) :: QStar, QH, QS, QEC, QWaste
+   REAL(rprc) :: ws, Tair_sout, Tsurf_sout
 
 !
    ASSOCIATE ( &
@@ -743,7 +751,7 @@ SUBROUTINE stebbsonlinecouple( &
    wallStatesK(4) = Kwest
    ! Calculate the mean of the wall states
    Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
-
+!
    ! ! Calculate the mean of the wall states
    ! Lwall_sout = SUM(wallStatesL) / SIZE(wallStatesL)
 
@@ -821,7 +829,8 @@ SUBROUTINE stebbsonlinecouple( &
 ! Time integration for each building type
 !
    DO i = 1, nbtype, 1
-      CALL suewsstebbscouple(blds(i))
+      CALL suewsstebbscouple(blds(i), &
+      QStar, QH, QS, QEC, QWaste)
    END DO
 !
 !
@@ -839,6 +848,7 @@ SUBROUTINE stebbsonlinecouple( &
 !
 END SUBROUTINE stebbsonlinecouple
 !
+END MODULE stebbs_module
 !
 !
 !
@@ -944,7 +954,8 @@ END SUBROUTINE readsuewsout
 !
 !
 !
-SUBROUTINE suewsstebbscouple(self)
+SUBROUTINE suewsstebbscouple(self, &
+   QStar, QH, QS, QEC, QWaste) ! Output
 !
    USE modulestebbsprecision
    USE modulestebbs, ONLY: LBM, resolution
@@ -973,6 +984,7 @@ SUBROUTINE suewsstebbscouple(self)
    CHARACTER(len=256) :: CASE
    CHARACTER(len=256), DIMENSION(4) :: fout
 !
+   INTENT(OUT) :: QStar, QH, QS, QEC, QWaste
 !
 !
    CASE = self%CASE
