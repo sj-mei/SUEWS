@@ -1191,7 +1191,6 @@ MODULE ctrl_output
       varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0), &
       varAttr('QH', 'W m-2', f104, 'Sensible heat flux', aA, 'STEBBS', 0), &
       varAttr('QS', 'W m-2', f104, 'Storage heat flux', aA, 'STEBBS', 0), &
-      varAttr('QBAE', 'W m-2', f104, 'BAE (TEMP)', aA, 'STEBBS', 0), &
       varAttr('QWaste', 'W m-2', f104, 'Waste heat flux (TEMP)', aA, 'STEBBS', 0) &
       /
 
