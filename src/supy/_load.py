@@ -1336,7 +1336,7 @@ def load_SUEWS_dict_ModConfig(path_runcontrol, dict_default=dict_RunControl_defa
     path_stebbs = (
         path_runcontrol.parent
         / dict_RunControl["fileinputpath"]
-        / "SUEWS_STEBBS.nml"
+        / "RunControl_STEBBS.nml"
     )
 
     dict_RunControl_x = {k[0]: v for k, v in load_SUEWS_nml(path_spartacus).items()}
