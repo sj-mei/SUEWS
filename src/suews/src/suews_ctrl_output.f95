@@ -1344,6 +1344,9 @@ CONTAINS
 
       CASE ('EHC') !EHC
          dataOutX = dataOutEHC(1:irMax, 1:n_var, Gridiv)
+      
+      CASE ('STEBBS') !STEBBS
+         dataOutX = dataOutSTEBBS(1:irMax, 1:n_var, Gridiv)
 
       CASE ('DailyState') !DailyState
          ! get correct day index
