@@ -1,3 +1,4 @@
+
 # This is the `meson.build` file for building `supy_driver`, which relies on SUEWS - a Fortran-dominant project with some C code.
 
 # project('supy_driver', 'fortran', 'c')
@@ -73,6 +74,7 @@ src_f95_all = [
   'suews_phys_ohm.f95',
   # 'suews_phys_estm.f95',
   'suews_phys_spartacus.f95',
+  'suews_phys_stebbs.f95',
   'suews_ctrl_driver.f95',
 ]
 
@@ -95,6 +97,7 @@ src_f95_sub = [
   'suews_phys_resist.f95',
   'suews_phys_rslprof.f95',
   'suews_phys_spartacus.f95',
+  'suews_phys_stebbs.f95',
   'suews_phys_waterdist.f95',
   'suews_util_meteo.f95',
 ]
