@@ -6,7 +6,8 @@ MODULE SUEWS_DEF_DTS
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
-      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC, &
+      ncolumnsDataOutSTEBBS
 
    IMPLICIT NONE
    ! in the following, the type definitions starting with `SUEWS_` are used in the main program
@@ -828,6 +829,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDebug
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDailyState
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSTEBBS
    CONTAINS
       ! Procedures
       PROCEDURE :: init => output_block_init
@@ -846,6 +848,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS) :: dataOutLineSTEBBS
    CONTAINS
       ! Procedures
       PROCEDURE :: init => output_line_init
@@ -914,6 +917,7 @@ CONTAINS
       self%dataOutLineDebug = -999.0
       self%dataOutLineSPARTACUS = -999.0
       self%dataOutLineDailyState = -999.0
+      self%dataOutLineSTEBBS = -999.0
    END SUBROUTINE output_line_init
 
    SUBROUTINE output_block_init(self, len)
@@ -930,6 +934,7 @@ CONTAINS
       ALLOCATE (self%dataOutBlockDebug(len, ncolumnsDataOutDebug))
       ALLOCATE (self%dataOutBlockSPARTACUS(len, ncolumnsDataOutSPARTACUS))
       ALLOCATE (self%dataOutBlockDailyState(len, ncolumnsDataOutDailyState))
+      ALLOCATE (self%dataOutBlockSTEBBS(len, ncolumnsDataOutSTEBBS))
 
       ! Set default values
       self%dataOutBlockSUEWS = -999.0
@@ -941,6 +946,7 @@ CONTAINS
       self%dataOutBlockDebug = -999.0
       self%dataOutBlockSPARTACUS = -999.0
       self%dataOutBlockDailyState = -999.0
+      self%dataOutBlockSTEBBS = -999.0
    END SUBROUTINE output_block_init
 
    SUBROUTINE output_block_finalize(self)
@@ -956,6 +962,7 @@ CONTAINS
       IF (ALLOCATED(self%dataOutBlockDebug)) DEALLOCATE (self%dataOutBlockDebug)
       IF (ALLOCATED(self%dataOutBlockSPARTACUS)) DEALLOCATE (self%dataOutBlockSPARTACUS)
       IF (ALLOCATED(self%dataOutBlockDailyState)) DEALLOCATE (self%dataOutBlockDailyState)
+      IF (ALLOCATED(self%dataOutBlockSTEBBS)) DEALLOCATE (self%dataOutBlockSTEBBS)
 
    END SUBROUTINE output_block_finalize
 

@@ -165,6 +165,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTM !ESTM output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutEHC !EHC output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutDailyState !DailyState output array
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSTEBBS !STEBBS output array
 
    ! -------- output per each timestep ----------------------------------------------------------------
    REAL(KIND(1D0)), DIMENSION(5) :: datetimeLine ! output of datetime info per each timestep
@@ -176,6 +177,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug) :: dataOutLineDebug ! output line for debugging info
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS) :: dataOutLineSPARTACUS ! output line for SPARTACUS per each timestep (1hr?)
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS ! output of STEBBS results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: DailyStateLine ! output of DailyState results per each timestep
 
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: MetForDisagg !Array for original met forcing data (for disaggregation)

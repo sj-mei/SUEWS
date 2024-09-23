@@ -109,6 +109,7 @@ LIBSRC_SOURCES = suews_ctrl_const \
 	suews_phys_ohm \
 	suews_phys_estm \
 	suews_phys_spartacus \
+	suews_phys_stebbs \
 	suews_ctrl_driver
 	# suews_util_datetime \
 
@@ -141,6 +142,7 @@ LIBSRC_WRAP_SOURCES = suews_ctrl_driver \
 	suews_phys_rslprof \
 	suews_util_meteo \
 	suews_phys_spartacus \
+	suews_phys_stebbs \
 
 # file names
 LIBSRC_WRAP_FILES = $(addsuffix .f95,${LIBSRC_WRAP_SOURCES})
