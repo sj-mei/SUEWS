@@ -4107,7 +4107,7 @@ CONTAINS
       sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
-      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, nbtype, & !input
       height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
@@ -4193,6 +4193,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: SnowUse ! Determines whether the snow part of the model runs[-]
       LOGICAL, INTENT(IN) :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER, INTENT(IN) :: OHMIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
+      INTEGER, INTENT(IN) :: nbtype ! number of building types [-] STEBBS
 
       ! ---lumps-related variables
       TYPE(LUMPS_PRM) :: lumpsPrm
@@ -4607,6 +4608,8 @@ CONTAINS
       config%DiagQS = 0
       config%EvapMethod = 2
       config%LAImethod = 1
+
+      config%nbtype = nbtype
 
       lumpsPrm%raincover = RAINCOVER
       lumpsPrm%rainmaxres = RainMaxRes
