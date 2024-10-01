@@ -677,7 +677,8 @@ CONTAINS
       modState, & ! Input/Output
       datetimeLine, dataoutLineSTEBBS) ! Output
 !
-      USE modulestebbs, ONLY: nbtype, blds
+      ! USE modulestebbs, ONLY: nbtype, blds, cases, fnmls
+      USE modulestebbs, ONLY: fnmls, blds
       USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
       USE modulestebbsprecision !, ONLY: rprc ! Defines rprc as REAL64
       USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
@@ -712,18 +713,24 @@ CONTAINS
       ! NAMELIST /io/ cases
 
       REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
-      REAL(rprc) :: Knorth, Ksouth, Keast, Kwest
-      REAL(rprc) :: Kwall_sout, Lwall_sout, Kroof_sout, Lroof_sout
+      ! REAL(rprc) :: Knorth, Ksouth, Keast, Kwest
+      ! REAL(rprc) :: Lnorth, Lsouth, Least, Lwest
+      REAL(rprc) :: Kwall_sout, Lwall_sout
+      ! REAL(rprc) :: Kroof_sout, Lroof_sout
       REAL(rprc) :: QStar, QH, QS, QEC, QWaste
-      REAL(rprc) :: ws, Tair_sout, Tsurf_sout
-
+      ! REAL(rprc) :: ws, Tair_sout
+      REAL(rprc) :: Tsurf_sout
+ 
 !
       ASSOCIATE ( &
          timestep => timer%tstep, &
          heatState => modState%heatState, &
          atmState => modState%atmState, &
          roughnessState => modState%roughnessState, &
-         bldgState => modState%bldgState &
+         bldgState => modState%bldgState, &
+         nbtype => config%nbtype, &
+         resolution => config%resolution, &
+         cases => config%cases &
          )
 
          ASSOCIATE ( &
@@ -735,117 +742,123 @@ CONTAINS
             Knorth => bldgState%Knorth, &
             Ksouth => bldgState%Ksouth, &
             Keast => bldgState%Keast, &
-            Kwest => bldgState%Kwest &
-            ! wallStatesL(1) => bldgState%Lnorth, &
-            ! wallStatesL(2) => bldgState%Lsouth, &
-            ! wallStatesL(3) => bldgState%Least, &
-            ! wallStatesL(4) => bldgState%Lwest &
+            Kwest => bldgState%Kwest, &
+            Lnorth => bldgState%Lnorth, &
+            Lsouth => bldgState%Lsouth, &
+            Least => bldgState%Least, &
+            Lwest => bldgState%Lwest &
             )
+         
+!
+            wallStatesK(1) = Knorth
+            wallStatesK(2) = Ksouth
+            wallStatesK(3) = Keast
+            wallStatesK(4) = Kwest
+            ! Calculate the mean of the wall states
+            Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
+      !
+            ! ! Calculate the mean of the wall states
+            wallStatesL(1) = Lnorth
+            wallStatesL(2) = Lsouth
+            wallStatesL(3) = Least
+            wallStatesL(4) = Lwest
+            Lwall_sout = SUM(wallStatesL) / SIZE(wallStatesL)
 
+      !
+            IF (flginit == 0) THEN
+         !
+               ! OPEN (rprc, file='./RunControl_STEBBS.nml', status='old', form='formatted')
+               ! READ (rprc, nml=settings)
+               ALLOCATE (cases(nbtype))
+               ! READ (rprc, nml=io)
+               ! CLOSE (rprc)
+         !
+               ALLOCATE (fnmls(nbtype))
+               ALLOCATE (blds(nbtype))
+         !
+               WRITE (*, *) '++++ SUEWS-STEBBS coupling'
+               WRITE (*, *) '    + Total building type : ', nbtype
+               DO i = 1, nbtype, 1
+                  WRITE (*, *) '    + Cases title         : ', i, TRIM(cases(i)) ! changed cases(i) to cases for test
+               END DO
+         !
+               ! IF (resolution <= 0) resolution = timestep
+         !
+         !
+         !
+               DO i = 1, nbtype, 1
+                  ! fnmls(i) = './BuildClasses/'//TRIM(cases(i))//'.nml'
+                  CALL create_building(cases(i), blds(i), i) ! also changed cases here
+               END DO
+         !
+         !
+         !
+               sout%ntstep = 1
+               ALLOCATE (sout%datetime(sout%ntstep))
+               ALLOCATE (sout%hourmin(sout%ntstep))
+               ALLOCATE (sout%Tair(sout%ntstep))
+               ALLOCATE (sout%Tsurf(sout%ntstep))
+               ALLOCATE (sout%Kwall(sout%ntstep))
+               ALLOCATE (sout%Kroof(sout%ntstep))
+               ALLOCATE (sout%ws(sout%ntstep))
+               ALLOCATE (sout%Lroof(sout%ntstep))
+               ALLOCATE (sout%Lwall(sout%ntstep))
+               ALLOCATE (sout%datetime_exch(sout%ntstep))
+               ALLOCATE (sout%hourmin_exch(sout%ntstep))
+               ALLOCATE (sout%Tair_exch(sout%ntstep))
+               ALLOCATE (sout%Tsurf_exch(sout%ntstep))
+               ALLOCATE (sout%Kwall_exch(sout%ntstep))
+               ALLOCATE (sout%Kroof_exch(sout%ntstep))
+               ALLOCATE (sout%ws_exch(sout%ntstep))
+               ALLOCATE (sout%Lroof_exch(sout%ntstep))
+               ALLOCATE (sout%Lwall_exch(sout%ntstep))
+         !
+            END IF
+      
+!
+!
+!
+      ! Hand over SUEWS output to STEBBS input
+      !
+            sout%Tair(1) = Tair_sout
+            sout%Tsurf(1) = Tsurf_sout
+            sout%Kroof(1) = Kroof_sout
+            sout%Kwall(1) = Kwall_sout
+            sout%Lwall(1) = Lwall_sout
+            sout%Lroof(1) = Lroof_sout
+            sout%timestep = timestep
+            sout%Tair_exch(1) = Tair_sout
+            sout%Tsurf_exch(1) = Tsurf_sout
+            sout%ws_exch(1) = ws
+      !
+      !
+      !
+            CALL setdatetime(datetimeLine)
+      !
+      !
+      ! Time integration for each building type
+      !
+            DO i = 1, nbtype, 1
+               CALL suewsstebbscouple(blds(i), &
+                                    QStar, QH, QS, QEC, QWaste)
+            END DO
+      !
+      !
+      !
+      ! Mush-up building-wise output to cast back to SUEWS
+      !
+      ! SHOULD DO THIS HERE
+      !
+      !
+      !
+            flginit = 1
+      !
+            dataoutLineSTEBBS = [QStar, QH, QS, QEC, QWaste]
+            RETURN
+         !
          END ASSOCIATE
       END ASSOCIATE
-!
-      wallStatesK(1) = Knorth
-      wallStatesK(2) = Ksouth
-      wallStatesK(3) = Keast
-      wallStatesK(4) = Kwest
-      ! Calculate the mean of the wall states
-      Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
-!
-      ! ! Calculate the mean of the wall states
-      ! Lwall_sout = SUM(wallStatesL) / SIZE(wallStatesL)
 
-!
-!    IF (flginit == 0) THEN
-! !
-!       OPEN (8, file='./RunControl_STEBBS.nml', status='old', form='formatted')
-!       READ (8, nml=settings)
-!       ALLOCATE (cases(nbtype))
-!       READ (8, nml=io)
-!       CLOSE (8)
-! !
-!       ALLOCATE (fnmls(nbtype))
-!       ALLOCATE (blds(nbtype))
-! !
-!       WRITE (*, *) '++++ SUEWS-STEBBS coupling'
-!       WRITE (*, *) '    + Total building type : ', nbtype
-!       DO i = 1, nbtype, 1
-!          WRITE (*, *) '    + Cases title         : ', i, TRIM(cases(i))
-!       END DO
-! !
-!       IF (resolution <= 0) resolution = timestep
-! !
-! !
-! !
-!       DO i = 1, nbtype, 1
-!          fnmls(i) = './BuildClasses/'//TRIM(cases(i))//'.nml'
-!          CALL create_building(cases(i), blds(i), i)
-!       END DO
-! !
-! !
-! !
-!       sout%ntstep = 1
-!       ALLOCATE (sout%datetime(sout%ntstep))
-!       ALLOCATE (sout%hourmin(sout%ntstep))
-!       ALLOCATE (sout%Tair(sout%ntstep))
-!       ALLOCATE (sout%Tsurf(sout%ntstep))
-!       ALLOCATE (sout%Kwall(sout%ntstep))
-!       ALLOCATE (sout%Kroof(sout%ntstep))
-!       ALLOCATE (sout%ws(sout%ntstep))
-!       ALLOCATE (sout%Lroof(sout%ntstep))
-!       ALLOCATE (sout%Lwall(sout%ntstep))
-!       ALLOCATE (sout%datetime_exch(sout%ntstep))
-!       ALLOCATE (sout%hourmin_exch(sout%ntstep))
-!       ALLOCATE (sout%Tair_exch(sout%ntstep))
-!       ALLOCATE (sout%Tsurf_exch(sout%ntstep))
-!       ALLOCATE (sout%Kwall_exch(sout%ntstep))
-!       ALLOCATE (sout%Kroof_exch(sout%ntstep))
-!       ALLOCATE (sout%ws_exch(sout%ntstep))
-!       ALLOCATE (sout%Lroof_exch(sout%ntstep))
-!       ALLOCATE (sout%Lwall_exch(sout%ntstep))
-! !
-!    END IF
-!
-!
-!
-! Hand over SUEWS output to STEBBS input
-!
-      sout%Tair(1) = Tair_sout
-      sout%Tsurf(1) = Tsurf_sout
-      sout%Kroof(1) = Kroof_sout
-      sout%Kwall(1) = Kwall_sout
-      sout%Lwall(1) = Lwall_sout
-      sout%Lroof(1) = Lroof_sout
-      sout%timestep = timestep
-      sout%Tair_exch(1) = Tair_sout
-      sout%Tsurf_exch(1) = Tsurf_sout
-      sout%ws_exch(1) = ws
-!
-!
-!
-      CALL setdatetime(datetimeLine)
-!
-!
-! Time integration for each building type
-!
-      DO i = 1, nbtype, 1
-         CALL suewsstebbscouple(blds(i), &
-                                QStar, QH, QS, QEC, QWaste)
-      END DO
-!
-!
-!
-! Mush-up building-wise output to cast back to SUEWS
-!
-! SHOULD DO THIS HERE
-!
-!
-!
-      flginit = 1
-!
-      dataoutLineSTEBBS = [QStar, QH, QS, QEC, QWaste]
-      RETURN
-!
    END SUBROUTINE stebbsonlinecouple
 !
 END MODULE stebbs_module
@@ -2351,8 +2364,8 @@ SUBROUTINE readnml(fnml, self)
 !
 ! Maybe namelist nml can be more general
 !
-   OPEN (8, file=TRIM(fnml))
-   READ (8, nml=specification)
+   OPEN (rprc, file=TRIM(fnml))
+   READ (rprc, nml=specification)
 !
 !
 !
