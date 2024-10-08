@@ -32,9 +32,9 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: EvapMethod ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER :: LAImethod ! boolean to determine if calculate LAI [-]
       INTEGER :: localClimateMethod ! method to choose local climate variables [-] 0: not use; 1: use local climate variables
-      INTEGER :: nbtype ! number of building type [-]
-      INTEGER :: resolution ! STEBBS time resolution [-]
-      CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: cases ! case of building type, the array size should be consistent to nbtype [-]
+      ! INTEGER :: nbtype ! number of building type [-]
+      ! INTEGER :: resolution ! STEBBS time resolution [-]
+      ! CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: cases ! case of building type, the array size should be consistent to nbtype [-]
    END TYPE SUEWS_CONFIG
 
    TYPE, PUBLIC :: SURF_STORE_PRM
@@ -253,6 +253,14 @@ MODULE SUEWS_DEF_DTS
       PROCEDURE :: ALLOCATE => allocate_spartacus_layer_prm_c
       PROCEDURE :: DEALLOCATE => deallocate_spartacus_layer_prm_c
    END TYPE SPARTACUS_LAYER_PRM
+
+   ! TYPE, PUBLIC :: STEBBS_BUILDING_PRM
+
+   !    ! CONTAINS
+   !    !    PROCEDURE :: ALLOCATE => allocate_stebbs_c
+   !    !    PROCEDURE :: DEALLOCATE => deallocate_stebbs_c
+   ! END TYPE STEBBS_BUILDING_PRM
+
 
    ! ********** SUEWS_parameters schema (derived) **********
 
