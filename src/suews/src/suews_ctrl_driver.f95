@@ -467,7 +467,8 @@ CONTAINS
             CALL stebbsonlinecouple( &
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
-               datetimeLine, dataOutLineSTEBBS) ! output
+               datetimeLine, & ! input
+               dataOutLineSTEBBS) ! output
 
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
@@ -516,6 +517,7 @@ CONTAINS
             outputLine%dataOutLineSnow = [datetimeLine, dataOutLineSnow]
             outputLine%dataoutLineRSL = [datetimeLine, dataOutLineRSL]
             outputLine%dataOutLineESTM = [datetimeLine, dataOutLineESTM]
+            outputLine%dataOutLineSTEBBS = [datetimeLine, dataOutLineSTEBBS]
 
          END ASSOCIATE
       END ASSOCIATE
@@ -4609,7 +4611,7 @@ CONTAINS
       config%EvapMethod = 2
       config%LAImethod = 1
 
-      config%nbtype = nbtype
+      ! config%nbtype = nbtype
 
       lumpsPrm%raincover = RAINCOVER
       lumpsPrm%rainmaxres = RainMaxRes
