@@ -680,7 +680,7 @@ CONTAINS
 !
       USE modulestebbs, ONLY: nbtype, blds, cases, fnmls, resolution
       USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
-      USE modulestebbsprecision!, ONLY: rprc ! Defines rprc as REAL64
+      USE modulestebbsprecision !, ONLY: rprc ! Defines rprc as REAL64
       USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
 !
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
@@ -732,7 +732,7 @@ CONTAINS
          roughnessState => modState%roughnessState, &
          bldgState => modState%bldgState &
          )
-         
+
          ! ALLOCATE(cases(nbtype))
 
          ASSOCIATE ( &
@@ -772,7 +772,7 @@ CONTAINS
                command = 'ls ./BuildClasses/*.nml > file_list.txt'
                CALL EXECUTE_COMMAND_LINE(command)
 
-               OPEN(UNIT=10, FILE='file_list.txt', STATUS='old', ACTION='read', IOSTAT=ios)
+               OPEN (UNIT=10, FILE='file_list.txt', STATUS='old', ACTION='read', IOSTAT=ios)
                IF (ios /= 0) THEN
                   PRINT *, 'Error opening file_list.txt'
                   STOP
@@ -780,25 +780,25 @@ CONTAINS
 
                num_files = 0
                DO
-                  READ(10, '(A)', IOSTAT=ios) filename
+                  READ (10, '(A)', IOSTAT=ios) filename
                   IF (ios /= 0) EXIT
                   num_files = num_files + 1
                END DO
 
-               ALLOCATE(cases(num_files))
-               ALLOCATE(fnmls(num_files))
-               ALLOCATE(blds(num_files))
+               ALLOCATE (cases(num_files))
+               ALLOCATE (fnmls(num_files))
+               ALLOCATE (blds(num_files))
 
-               REWIND(10)
+               REWIND (10)
                DO i = 1, num_files
-                  READ(10, '(A)', IOSTAT=ios) cases(i)
+                  READ (10, '(A)', IOSTAT=ios) cases(i)
                   IF (ios /= 0) EXIT
                END DO
 
-               CLOSE(10)
+               CLOSE (10)
 
                nbtype = num_files
-         !
+               !
                WRITE (*, *) '++++ SUEWS-STEBBS coupling'
                WRITE (*, *) '    + Total building type : ', nbtype
                DO i = 1, nbtype, 1
@@ -811,7 +811,7 @@ CONTAINS
                DO i = 1, nbtype, 1
                   ! fnmls(i) = './BuildClasses/'//TRIM(cases(i))//'.nml'
                   fnmls(i) = TRIM(cases(i))
-                  WRITE(*, *) '    + Building class file : ', TRIM(fnmls(i))
+                  WRITE (*, *) '    + Building class file : ', TRIM(fnmls(i))
                   CALL create_building(cases(i), blds(i), i) ! also changed cases here
                END DO
 !          !
@@ -838,7 +838,7 @@ CONTAINS
                ALLOCATE (sout%Lwall_exch(sout%ntstep))
                !
             END IF
-      
+
 ! !
 ! !
 ! !
@@ -2164,7 +2164,7 @@ SUBROUTINE readnml(fnml, self)
    CHARACTER(len=256), INTENT(in) :: fnml
 !
    CHARACTER(len=256) :: BuildingType, BuildingName
-   
+
    INTEGER :: ios
    CHARACTER(LEN=256) :: fnml_trimmed
 
@@ -2396,31 +2396,31 @@ SUBROUTINE readnml(fnml, self)
 !
    ! Trim the file name
    fnml_trimmed = TRIM(fnml)
-   
-   WRITE(*,*) "Reading namelist file: ", fnml_trimmed
+
+   WRITE (*, *) "Reading namelist file: ", fnml_trimmed
 
    ! Open the file with error handling
    OPEN (UNIT=8, FILE=fnml_trimmed, STATUS='OLD', IOSTAT=ios)
    IF (ios /= 0) THEN
-      WRITE(*,*) "Error opening file: ", fnml_trimmed, " with IOSTAT=", ios
+      WRITE (*, *) "Error opening file: ", fnml_trimmed, " with IOSTAT=", ios
       STOP 'File open error'
    END IF
 
    ! Print debug information
-   WRITE(*,*) "File opened successfully: ", fnml_trimmed, " with IOSTAT=", ios
+   WRITE (*, *) "File opened successfully: ", fnml_trimmed, " with IOSTAT=", ios
 
    ! ! Read the namelist with error handling
    READ (UNIT=8, NML=specification, IOSTAT=ios)
    IF (ios /= 0) THEN
-      WRITE(*,*) "Error reading namelist from file: ", fnml_trimmed, " with IOSTAT=", ios
+      WRITE (*, *) "Error reading namelist from file: ", fnml_trimmed, " with IOSTAT=", ios
       STOP 'Namelist read error'
    END IF
 
    ! Print debug information
-   WRITE(*,*) "Namelist read successfully from file: ", fnml_trimmed
+   WRITE (*, *) "Namelist read successfully from file: ", fnml_trimmed
 
    ! ! Close the file
-   CLOSE(UNIT=8)
+   CLOSE (UNIT=8)
 
 !
 !
