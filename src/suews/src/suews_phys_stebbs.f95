@@ -675,12 +675,12 @@ CONTAINS
    SUBROUTINE stebbsonlinecouple( &
       timer, config, forcing, siteInfo, & ! Input
       modState, & ! Input/Output
-      datetimeLine, dataoutLineSTEBBS) ! Output
+      datetimeLine, & ! Input
+      dataoutLineSTEBBS) ! Output
 !
-      ! USE modulestebbs, ONLY: nbtype, blds, cases, fnmls
-      USE modulestebbs, ONLY: fnmls, blds
+      USE modulestebbs, ONLY: nbtype, blds, cases, fnmls, resolution
       USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
-      USE modulestebbsprecision !, ONLY: rprc ! Defines rprc as REAL64
+      USE modulestebbsprecision!, ONLY: rprc ! Defines rprc as REAL64
       USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
 !
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
@@ -700,17 +700,20 @@ CONTAINS
 !
       REAL(KIND(1D0)), INTENT(out), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataoutLineSTEBBS
 !
-      INTEGER :: i
+      INTEGER :: i, ios
       ! INTEGER, INTENT(in) :: timestep ! MP replaced from line 706
       INTEGER :: timestep
       INTEGER, SAVE :: flginit = 0
+      CHARACTER(LEN=256) :: command, filename
+      CHARACTER(LEN=256), ALLOCATABLE :: file_list(:)
+      INTEGER :: num_files
 !
       ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
       !                           Kwall_sout, Lwall_sout, Lroof_sout, ws
       REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine ! To replace
 !
       ! NAMELIST /settings/ nbtype, resolution
-      ! NAMELIST /io/ cases
+      ! namelist/io/cases
 
       REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
       ! REAL(rprc) :: Knorth, Ksouth, Keast, Kwest
@@ -727,11 +730,10 @@ CONTAINS
          heatState => modState%heatState, &
          atmState => modState%atmState, &
          roughnessState => modState%roughnessState, &
-         bldgState => modState%bldgState, &
-         nbtype => config%nbtype, &
-         resolution => config%resolution, &
-         cases => config%cases &
+         bldgState => modState%bldgState &
          )
+         
+         ! ALLOCATE(cases(nbtype))
 
          ASSOCIATE ( &
             ws => atmState%U10_ms, &
@@ -764,35 +766,57 @@ CONTAINS
             wallStatesL(4) = Lwest
             Lwall_sout = SUM(wallStatesL) / SIZE(wallStatesL)
 
-      !
+!       !
             IF (flginit == 0) THEN
-         !
-               ! OPEN (rprc, file='./RunControl_STEBBS.nml', status='old', form='formatted')
-               ! READ (rprc, nml=settings)
-               ALLOCATE (cases(nbtype))
-               ! READ (rprc, nml=io)
-               ! CLOSE (rprc)
-         !
-               ALLOCATE (fnmls(nbtype))
-               ALLOCATE (blds(nbtype))
+
+               command = 'ls ./BuildClasses/*.nml > file_list.txt'
+               CALL EXECUTE_COMMAND_LINE(command)
+
+               OPEN(UNIT=10, FILE='file_list.txt', STATUS='old', ACTION='read', IOSTAT=ios)
+               IF (ios /= 0) THEN
+                  PRINT *, 'Error opening file_list.txt'
+                  STOP
+               END IF
+
+               num_files = 0
+               DO
+                  READ(10, '(A)', IOSTAT=ios) filename
+                  IF (ios /= 0) EXIT
+                  num_files = num_files + 1
+               END DO
+
+               ALLOCATE(cases(num_files))
+               ALLOCATE(fnmls(num_files))
+               ALLOCATE(blds(num_files))
+
+               REWIND(10)
+               DO i = 1, num_files
+                  READ(10, '(A)', IOSTAT=ios) cases(i)
+                  IF (ios /= 0) EXIT
+               END DO
+
+               CLOSE(10)
+
+               nbtype = num_files
          !
                WRITE (*, *) '++++ SUEWS-STEBBS coupling'
                WRITE (*, *) '    + Total building type : ', nbtype
                DO i = 1, nbtype, 1
                   WRITE (*, *) '    + Cases title         : ', i, TRIM(cases(i)) ! changed cases(i) to cases for test
                END DO
-         !
-               ! IF (resolution <= 0) resolution = timestep
-         !
-         !
-         !
+!          !
+               resolution = timestep
+!          !
+
                DO i = 1, nbtype, 1
                   ! fnmls(i) = './BuildClasses/'//TRIM(cases(i))//'.nml'
+                  fnmls(i) = TRIM(cases(i))
+                  WRITE(*, *) '    + Building class file : ', TRIM(fnmls(i))
                   CALL create_building(cases(i), blds(i), i) ! also changed cases here
                END DO
-         !
-         !
-         !
+!          !
+!          !
+!          !
                sout%ntstep = 1
                ALLOCATE (sout%datetime(sout%ntstep))
                ALLOCATE (sout%hourmin(sout%ntstep))
@@ -815,11 +839,11 @@ CONTAINS
          !
             END IF
       
-!
-!
-!
-      ! Hand over SUEWS output to STEBBS input
-      !
+! !
+! !
+! !
+!       ! Hand over SUEWS output to STEBBS input
+!       !
             sout%Tair(1) = Tair_sout
             sout%Tsurf(1) = Tsurf_sout
             sout%Kroof(1) = Kroof_sout
@@ -830,32 +854,32 @@ CONTAINS
             sout%Tair_exch(1) = Tair_sout
             sout%Tsurf_exch(1) = Tsurf_sout
             sout%ws_exch(1) = ws
-      !
-      !
-      !
+!       !
+!       !
+!       !
             CALL setdatetime(datetimeLine)
-      !
-      !
-      ! Time integration for each building type
-      !
+!       !
+!       !
+!       ! Time integration for each building type
+!       !
             DO i = 1, nbtype, 1
                CALL suewsstebbscouple(blds(i), &
                                     QStar, QH, QS, QEC, QWaste)
             END DO
-      !
-      !
-      !
-      ! Mush-up building-wise output to cast back to SUEWS
-      !
-      ! SHOULD DO THIS HERE
-      !
-      !
-      !
+!       !
+!       !
+!       !
+!       ! Mush-up building-wise output to cast back to SUEWS
+!       !
+!       ! SHOULD DO THIS HERE
+!       !
+!       !
+!       !
             flginit = 1
       !
             dataoutLineSTEBBS = [QStar, QH, QS, QEC, QWaste]
             RETURN
-         !
+!          !
          END ASSOCIATE
       END ASSOCIATE
 
@@ -1009,8 +1033,10 @@ SUBROUTINE suewsstebbscouple(self, &
 !
 !     Output file
 !
-      fout(1) = 'Output_'//TRIM(CASE)//'.csv'; fout(2) = 'HeatFluxes_'//TRIM(CASE)//'.csv'
-      fout(3) = 'EnergyBalance_'//TRIM(CASE)//'.csv'; fout(4) = 'Temp_'//TRIM(CASE)//'.csv'
+      ! fout(1) = 'Output_'//TRIM(CASE)//'.csv'; fout(2) = 'HeatFluxes_'//TRIM(CASE)//'.csv'
+      ! fout(3) = 'EnergyBalance_'//TRIM(CASE)//'.csv'; fout(4) = 'Temp_'//TRIM(CASE)//'.csv'
+      fout(1) = 'Output.csv'; fout(2) = 'HeatFluxes.csv'
+      fout(3) = 'EnergyBalance.csv'; fout(4) = 'Temp.csv'
 !
       DO i = 1, 4, 1
          OPEN (i + 100*self%idLBM, file=TRIM(fout(i)), status='unknown', form='formatted')
@@ -2138,7 +2164,10 @@ SUBROUTINE readnml(fnml, self)
    CHARACTER(len=256), INTENT(in) :: fnml
 !
    CHARACTER(len=256) :: BuildingType, BuildingName
-!
+   
+   INTEGER :: ios
+   CHARACTER(LEN=256) :: fnml_trimmed
+
    REAL(rprc) :: &
       Height, &
       FootprintArea, &
@@ -2255,6 +2284,7 @@ SUBROUTINE readnml(fnml, self)
       HotWaterHeatingEfficiency, &
       MinimumVolumeOfDHWinUse
 !
+
    NAMELIST /specification/ &
       BuildingType, &
       BuildingName, &
@@ -2364,8 +2394,34 @@ SUBROUTINE readnml(fnml, self)
 !
 ! Maybe namelist nml can be more general
 !
-   OPEN (rprc, file=TRIM(fnml))
-   READ (rprc, nml=specification)
+   ! Trim the file name
+   fnml_trimmed = TRIM(fnml)
+   
+   WRITE(*,*) "Reading namelist file: ", fnml_trimmed
+
+   ! Open the file with error handling
+   OPEN (UNIT=8, FILE=fnml_trimmed, STATUS='OLD', IOSTAT=ios)
+   IF (ios /= 0) THEN
+      WRITE(*,*) "Error opening file: ", fnml_trimmed, " with IOSTAT=", ios
+      STOP 'File open error'
+   END IF
+
+   ! Print debug information
+   WRITE(*,*) "File opened successfully: ", fnml_trimmed, " with IOSTAT=", ios
+
+   ! ! Read the namelist with error handling
+   READ (UNIT=8, NML=specification, IOSTAT=ios)
+   IF (ios /= 0) THEN
+      WRITE(*,*) "Error reading namelist from file: ", fnml_trimmed, " with IOSTAT=", ios
+      STOP 'Namelist read error'
+   END IF
+
+   ! Print debug information
+   WRITE(*,*) "Namelist read successfully from file: ", fnml_trimmed
+
+   ! ! Close the file
+   CLOSE(UNIT=8)
+
 !
 !
 !
@@ -2573,7 +2629,8 @@ SUBROUTINE create_building(CASE, self, icase)
 !
 !
    self%idLBM = icase
-   self%fnmlLBM = './BuildClasses/'//TRIM(CASE)//'.nml'
+   ! self%fnmlLBM = './BuildClasses/'//TRIM(CASE)//'.nml'
+   self%fnmlLBM = TRIM(CASE)
    self%CASE = TRIM(CASE)
    self%Qtotal_heating = 0.0 ! # currently only sensible but this needs to be  split into sensible and latent heat components
    self%Qtotal_cooling = 0.0 ! # currently only sensible but this needs to be  split into sensible and latent heat components
@@ -2751,7 +2808,7 @@ SUBROUTINE create_building(CASE, self, icase)
 
    ELSE
       CALL readnml(self%fnmlLBM, self)
-!
+! !
    END IF ifnonml
 !
 !
