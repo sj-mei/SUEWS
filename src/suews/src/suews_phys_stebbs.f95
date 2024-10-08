@@ -723,7 +723,7 @@ CONTAINS
       REAL(rprc) :: QStar, QH, QS, QEC, QWaste
       ! REAL(rprc) :: ws, Tair_sout
       REAL(rprc) :: Tsurf_sout
- 
+
 !
       ASSOCIATE ( &
          timestep => timer%tstep, &
@@ -750,7 +750,7 @@ CONTAINS
             Least => bldgState%Least, &
             Lwest => bldgState%Lwest &
             )
-         
+
 !
             wallStatesK(1) = Knorth
             wallStatesK(2) = Ksouth
@@ -758,13 +758,13 @@ CONTAINS
             wallStatesK(4) = Kwest
             ! Calculate the mean of the wall states
             Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
-      !
+            !
             ! ! Calculate the mean of the wall states
             wallStatesL(1) = Lnorth
             wallStatesL(2) = Lsouth
             wallStatesL(3) = Least
             wallStatesL(4) = Lwest
-            Lwall_sout = SUM(wallStatesL) / SIZE(wallStatesL)
+            Lwall_sout = SUM(wallStatesL)/SIZE(wallStatesL)
 
 !       !
             IF (flginit == 0) THEN
@@ -836,7 +836,7 @@ CONTAINS
                ALLOCATE (sout%ws_exch(sout%ntstep))
                ALLOCATE (sout%Lroof_exch(sout%ntstep))
                ALLOCATE (sout%Lwall_exch(sout%ntstep))
-         !
+               !
             END IF
       
 ! !
@@ -864,7 +864,7 @@ CONTAINS
 !       !
             DO i = 1, nbtype, 1
                CALL suewsstebbscouple(blds(i), &
-                                    QStar, QH, QS, QEC, QWaste)
+                                      QStar, QH, QS, QEC, QWaste)
             END DO
 !       !
 !       !
@@ -876,7 +876,7 @@ CONTAINS
 !       !
 !       !
             flginit = 1
-      !
+            !
             dataoutLineSTEBBS = [QStar, QH, QS, QEC, QWaste]
             RETURN
 !          !
