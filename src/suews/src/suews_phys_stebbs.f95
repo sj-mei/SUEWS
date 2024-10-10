@@ -879,7 +879,7 @@ CONTAINS
 !       !
             flginit = 1
 
-            dataOutLineSTEBBS = [QStar, QH, QS, QEC, QWaste, Qsw_absorbed_wallroof]
+            dataOutLineSTEBBS = [QStar, QH, QS, QEC, QWaste, Qsw_absorbed_wallroof, Textwallroof]
             RETURN
 !          !
          END ASSOCIATE

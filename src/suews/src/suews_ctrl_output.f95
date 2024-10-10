@@ -1192,7 +1192,7 @@ MODULE ctrl_output
       varAttr('QS', 'W m-2', f104, 'Storage heat flux', aA, 'STEBBS', 0), &
       varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0), &
       varAttr('QWaste', 'W m-2', f104, 'Waste heat flux (TEMP)', aA, 'STEBBS', 0), &
-      ! varAttr('Qsw_abs_wr', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qsw_abs_wr', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
       varAttr('Textwallroof', 'degC', f104, 'TEMP', aA, 'STEBBS', 0) &
       /
 
