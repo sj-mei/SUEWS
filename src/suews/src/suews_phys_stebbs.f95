@@ -766,7 +766,7 @@ CONTAINS
             wallStatesL(3) = Least
             wallStatesL(4) = Lwest
             Lwall_sout = SUM(wallStatesL)/SIZE(wallStatesL)
-            
+
             !       !
             IF (flginit == 0) THEN
 
@@ -1020,7 +1020,7 @@ SUBROUTINE suewsstebbscouple(self, &
                  Qconv_extwindow_to_outair, Qconv_extwallroof_to_outair, QH, QS, &
                  Qcond_ground, Q_ventilation, QBAE, Q_waste, QWaste, &
                  temp, Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
-               !   Qlw_dn_extroof, Qlw_dn_extwall, Qsw_dn_extroof, Qsw_dn_extwall                 
+   !   Qlw_dn_extroof, Qlw_dn_extwall, Qsw_dn_extroof, Qsw_dn_extwall
 !
    REAL(rprc), DIMENSION(6) :: bem_qf_1
    REAL(rprc), DIMENSION(25) :: energyEx
@@ -1175,14 +1175,14 @@ SUBROUTINE suewsstebbscouple(self, &
 !
 !
 !
-   !    WRITE (1 + 100*self%idLBM, '(a19,1x,6(",",f10.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
-   !       qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air
-   !    WRITE (2 + 100*self%idLBM, '(a19,1x,25(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
-   !       (energyEx(i)/Area, i=1, 25, 1)
-   !    WRITE (3 + 100*self%idLBM, '(a19,1x,6(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), QStar, QEC, &
-   !       QH, QS, QBAE, QWaste
-   !   WRITE (4 + 100*self%idLBM, '(a19,1x,5(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), Textwallroof, &
-   !       Tintwallroof, Textwindow, Tintwindow, Tair_ind
+      !    WRITE (1 + 100*self%idLBM, '(a19,1x,6(",",f10.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
+      !       qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air
+      !    WRITE (2 + 100*self%idLBM, '(a19,1x,25(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
+      !       (energyEx(i)/Area, i=1, 25, 1)
+      !    WRITE (3 + 100*self%idLBM, '(a19,1x,6(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), QStar, QEC, &
+      !       QH, QS, QBAE, QWaste
+      !   WRITE (4 + 100*self%idLBM, '(a19,1x,5(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), Textwallroof, &
+      !       Tintwallroof, Textwindow, Tintwindow, Tair_ind
 !
 !
 !
