@@ -261,7 +261,6 @@ MODULE SUEWS_DEF_DTS
    !    !    PROCEDURE :: DEALLOCATE => deallocate_stebbs_c
    ! END TYPE STEBBS_BUILDING_PRM
 
-
    ! ********** SUEWS_parameters schema (derived) **********
 
    TYPE, PUBLIC :: LUMPS_PRM
