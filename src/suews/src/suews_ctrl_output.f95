@@ -1188,10 +1188,12 @@ MODULE ctrl_output
         + ncolumnsDataOutSTEBBS - 5 &
         )/ &
       varAttr('QStar', 'W m-2', f104, 'Net all-wave radiation', aA, 'STEBBS', 0), &
-      varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0), &
       varAttr('QH', 'W m-2', f104, 'Sensible heat flux', aA, 'STEBBS', 0), &
       varAttr('QS', 'W m-2', f104, 'Storage heat flux', aA, 'STEBBS', 0), &
-      varAttr('QWaste', 'W m-2', f104, 'Waste heat flux (TEMP)', aA, 'STEBBS', 0) &
+      varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0), &
+      varAttr('QWaste', 'W m-2', f104, 'Waste heat flux (TEMP)', aA, 'STEBBS', 0), &
+      ! varAttr('Qsw_abs_wr', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Textwallroof', 'degC', f104, 'TEMP', aA, 'STEBBS', 0) &
       /
 
 CONTAINS
@@ -1207,9 +1209,9 @@ CONTAINS
 
       INTEGER :: n_group_use, err, outLevel, i
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE :: varListX
-      CHARACTER(len=10) :: groupList0(10)
+      CHARACTER(len=10) :: groupList0(11)
       CHARACTER(len=10), DIMENSION(:), ALLOCATABLE :: grpList
-      LOGICAL :: groupCond(10)
+      LOGICAL :: groupCond(11)
 
       ! determine outLevel
       SELECT CASE (WriteOutOption)
@@ -1233,6 +1235,7 @@ CONTAINS
       groupList0(8) = 'debug'
       groupList0(9) = 'SPARTACUS'
       groupList0(10) = 'EHC'
+      groupList0(11) = 'STEBBS'
       groupCond = [ &
                   .TRUE., &
                   .TRUE., &
@@ -1243,7 +1246,8 @@ CONTAINS
                   .TRUE., &
                   .TRUE., &
                   .TRUE., &
-                  StorageHeatMethod == 5 &
+                  StorageHeatMethod == 5, &
+                  .TRUE. &
                   ]
       n_group_use = COUNT(groupCond)
 

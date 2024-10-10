@@ -675,8 +675,8 @@ CONTAINS
    SUBROUTINE stebbsonlinecouple( &
       timer, config, forcing, siteInfo, & ! Input
       modState, & ! Input/Output
-      datetimeLine, & ! Input
-      dataoutLineSTEBBS) ! Output
+      datetimeLine, &
+      dataOutLineSTEBBS) ! Output
 !
       USE modulestebbs, ONLY: nbtype, blds, cases, fnmls, resolution
       USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
@@ -698,11 +698,11 @@ CONTAINS
 !
       TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
 !
-      REAL(KIND(1D0)), INTENT(out), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataoutLineSTEBBS
+      REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
 !
       INTEGER :: i, ios
       ! INTEGER, INTENT(in) :: timestep ! MP replaced from line 706
-      INTEGER :: timestep
+      ! INTEGER :: timestep
       INTEGER, SAVE :: flginit = 0
       CHARACTER(LEN=256) :: command, filename
       CHARACTER(LEN=256), ALLOCATABLE :: file_list(:)
@@ -710,6 +710,7 @@ CONTAINS
 !
       ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
       !                           Kwall_sout, Lwall_sout, Lroof_sout, ws
+
       REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine ! To replace
 !
       ! NAMELIST /settings/ nbtype, resolution
@@ -721,6 +722,7 @@ CONTAINS
       REAL(rprc) :: Kwall_sout, Lwall_sout
       ! REAL(rprc) :: Kroof_sout, Lroof_sout
       REAL(rprc) :: QStar, QH, QS, QEC, QWaste
+      REAL(rprc) :: Qsw_absorbed_wallroof, Textwallroof
       ! REAL(rprc) :: ws, Tair_sout
       REAL(rprc) :: Tsurf_sout
 
@@ -750,8 +752,7 @@ CONTAINS
             Least => bldgState%Least, &
             Lwest => bldgState%Lwest &
             )
-
-!
+            !
             wallStatesK(1) = Knorth
             wallStatesK(2) = Ksouth
             wallStatesK(3) = Keast
@@ -765,8 +766,8 @@ CONTAINS
             wallStatesL(3) = Least
             wallStatesL(4) = Lwest
             Lwall_sout = SUM(wallStatesL)/SIZE(wallStatesL)
-
-!       !
+            
+            !       !
             IF (flginit == 0) THEN
 
                command = 'ls ./BuildClasses/*.nml > file_list.txt'
@@ -809,7 +810,6 @@ CONTAINS
 !          !
 
                DO i = 1, nbtype, 1
-                  ! fnmls(i) = './BuildClasses/'//TRIM(cases(i))//'.nml'
                   fnmls(i) = TRIM(cases(i))
                   WRITE(*, *) '    + Building class file : ', TRIM(fnmls(i))
                   CALL create_building(cases(i), blds(i), i) ! also changed cases here
@@ -864,7 +864,9 @@ CONTAINS
 !       !
             DO i = 1, nbtype, 1
                CALL suewsstebbscouple(blds(i), &
-                                      QStar, QH, QS, QEC, QWaste)
+                                      QStar, QH, QS, QEC, QWaste, &
+                                      Qsw_absorbed_wallroof, Textwallroof &
+                                      )
             END DO
 !       !
 !       !
@@ -876,8 +878,8 @@ CONTAINS
 !       !
 !       !
             flginit = 1
-            !
-            dataoutLineSTEBBS = [QStar, QH, QS, QEC, QWaste]
+
+            dataOutLineSTEBBS = [QStar, QH, QS, QEC, QWaste, Qsw_absorbed_wallroof]
             RETURN
 !          !
          END ASSOCIATE
@@ -992,7 +994,8 @@ END SUBROUTINE readsuewsout
 !
 !
 SUBROUTINE suewsstebbscouple(self, &
-                             QStar, QH, QS, QEC, QWaste) ! Output
+                             QStar, QH, QS, QEC, QWaste, &
+                             Qsw_absorbed_wallroof, Textwallroof) ! Output
 !
    USE modulestebbsprecision
    USE modulestebbs, ONLY: LBM, resolution
@@ -1000,7 +1003,9 @@ SUBROUTINE suewsstebbscouple(self, &
    USE modulesuewsstebbscouple, ONLY: &
       sout, &
       Tair_out, Tground_deep, Tsurf, density_air_out, &
-      cp_air_out, Qsw_dn_extroof, Qsw_dn_extwall, &
+      cp_air_out, &
+      Qsw_dn_extroof, &
+      Qsw_dn_extwall, &
       Qlw_dn_extwall, Qlw_dn_extroof
 !
    IMPLICIT NONE
@@ -1015,42 +1020,48 @@ SUBROUTINE suewsstebbscouple(self, &
                  Qconv_extwindow_to_outair, Qconv_extwallroof_to_outair, QH, QS, &
                  Qcond_ground, Q_ventilation, QBAE, Q_waste, QWaste, &
                  temp, Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
+               !   Qlw_dn_extroof, Qlw_dn_extwall, Qsw_dn_extroof, Qsw_dn_extwall                 
 !
    REAL(rprc), DIMENSION(6) :: bem_qf_1
    REAL(rprc), DIMENSION(25) :: energyEx
    CHARACTER(len=256) :: CASE
    CHARACTER(len=256), DIMENSION(4) :: fout
 !
-   INTENT(OUT) :: QStar, QH, QS, QEC, QWaste
+   ! INTENT(OUT) :: QStar, QH, QS, QEC, QWaste
+   ! INTENT(OUT) :: Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+   !          qmc, qir, qirw, qirf, qia, avr, qwc, qwic, qfc, qha, qwcon, qwicon, &
+   !          qfcon, Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+   !          Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, qwaste, QS, QS_fabric, QS_air
 !
+   INTENT(OUT) :: QStar, QH, QS, QEC, QWaste, Qsw_absorbed_wallroof, Textwallroof
 !
    CASE = self%CASE
    Area = self%Afootprint
 !
 !
 !
-   IF (self%flginit == 0) THEN
-!
-!     Output file
-!
-      ! fout(1) = 'Output_'//TRIM(CASE)//'.csv'; fout(2) = 'HeatFluxes_'//TRIM(CASE)//'.csv'
-      ! fout(3) = 'EnergyBalance_'//TRIM(CASE)//'.csv'; fout(4) = 'Temp_'//TRIM(CASE)//'.csv'
-      fout(1) = 'Output.csv'; fout(2) = 'HeatFluxes.csv'
-      fout(3) = 'EnergyBalance.csv'; fout(4) = 'Temp.csv'
-!
-      DO i = 1, 4, 1
-         OPEN (i + 100*self%idLBM, file=TRIM(fout(i)), status='unknown', form='formatted')
-      END DO
+!    IF (self%flginit == 0) THEN
+! !
+! !     Output file
+! !
+!       ! fout(1) = 'Output_'//TRIM(CASE)//'.csv'; fout(2) = 'HeatFluxes_'//TRIM(CASE)//'.csv'
+!       ! fout(3) = 'EnergyBalance_'//TRIM(CASE)//'.csv'; fout(4) = 'Temp_'//TRIM(CASE)//'.csv'
+!       fout(1) = 'Output.csv'; fout(2) = 'HeatFluxes.csv'
+!       fout(3) = 'EnergyBalance.csv'; fout(4) = 'Temp.csv'
+! !
+!       DO i = 1, 4, 1
+!          OPEN (i + 100*self%idLBM, file=TRIM(fout(i)), status='unknown', form='formatted')
+!       END DO
 
-      WRITE (1 + 100*self%idLBM, *) ',qheat_dom, qcool_dom, dom_tind, qfb_hw_dom, qfm_dom, qfb_dom_air'
-      WRITE (2 + 100*self%idLBM, *) ',Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, '// &
-         'qmc, qir, qirw, qirf, qia, avr, qwc, qwic, qfc, qha, qwcon, qwicon, '// &
-         'qfcon, Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, '// &
-         'Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, qwaste, QS, QS_fabric, QS_air'
-      WRITE (3 + 100*self%idLBM, *) ',QStar, QEC, QH, QS, QBAE, QWaste'
-      WRITE (4 + 100*self%idLBM, *) ',Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind'
-!
-   END IF
+!       WRITE (1 + 100*self%idLBM, *) ',qheat_dom, qcool_dom, dom_tind, qfb_hw_dom, qfm_dom, qfb_dom_air'
+!       WRITE (2 + 100*self%idLBM, *) ',Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, '// &
+!          'qmc, qir, qirw, qirf, qia, avr, qwc, qwic, qfc, qha, qwcon, qwicon, '// &
+!          'qfcon, Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, '// &
+!          'Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, qwaste, QS, QS_fabric, QS_air'
+!       WRITE (3 + 100*self%idLBM, *) ',QStar, QEC, QH, QS, QBAE, QWaste'
+!       WRITE (4 + 100*self%idLBM, *) ',Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind'
+! !
+!    END IF
 !
 !
 !  Time integration start
@@ -1164,14 +1175,14 @@ SUBROUTINE suewsstebbscouple(self, &
 !
 !
 !
-      WRITE (1 + 100*self%idLBM, '(a19,1x,6(",",f10.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
-         qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air
-      WRITE (2 + 100*self%idLBM, '(a19,1x,25(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
-         (energyEx(i)/Area, i=1, 25, 1)
-      WRITE (3 + 100*self%idLBM, '(a19,1x,6(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), QStar, QEC, &
-         QH, QS, QBAE, QWaste
-     WRITE (4 + 100*self%idLBM, '(a19,1x,5(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), Textwallroof, &
-         Tintwallroof, Textwindow, Tintwindow, Tair_ind
+   !    WRITE (1 + 100*self%idLBM, '(a19,1x,6(",",f10.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
+   !       qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air
+   !    WRITE (2 + 100*self%idLBM, '(a19,1x,25(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
+   !       (energyEx(i)/Area, i=1, 25, 1)
+   !    WRITE (3 + 100*self%idLBM, '(a19,1x,6(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), QStar, QEC, &
+   !       QH, QS, QBAE, QWaste
+   !   WRITE (4 + 100*self%idLBM, '(a19,1x,5(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), Textwallroof, &
+   !       Tintwallroof, Textwindow, Tintwindow, Tair_ind
 !
 !
 !
@@ -1191,7 +1202,7 @@ SUBROUTINE suewsstebbscouple(self, &
    self%QS = QS
    self%QBAE = QBAE
    self%QWaste = QWaste
-!
+
 !
 !
    self%flginit = 1
