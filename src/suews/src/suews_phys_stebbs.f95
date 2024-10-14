@@ -768,7 +768,7 @@ CONTAINS
             wallStatesL(3) = Least
             wallStatesL(4) = Lwest
             Lwall_sout = SUM(wallStatesL)/SIZE(wallStatesL)
-            
+
             !       !
             IF (flginit == 0) THEN
 

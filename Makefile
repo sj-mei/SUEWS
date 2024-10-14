@@ -80,7 +80,6 @@ livehtml:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) -C $(suews_dir) clean
-	$(MAKE) -C $(supy_dir) clean
 	$(MAKE) -C $(docs_dir) clean
 	rm -rf build dist *.egg-info
 

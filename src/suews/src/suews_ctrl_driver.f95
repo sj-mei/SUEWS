@@ -471,7 +471,6 @@ CONTAINS
                datetimeLine, & ! input
                dataOutLineSTEBBS) ! output
 
-
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
             CALL SUEWS_update_outputLine_DTS( &
