@@ -680,7 +680,7 @@ CONTAINS
 !
       USE modulestebbs, ONLY: nbtype, blds, cases, fnmls, resolution
       USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
-      USE modulestebbsprecision !, ONLY: rprc ! Defines rprc as REAL64
+      USE modulestebbsprecision, ONLY: rprc ! Defines rprc as REAL64
       USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
 !
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
@@ -717,14 +717,15 @@ CONTAINS
       ! namelist/io/cases
 
       REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
-      ! REAL(rprc) :: Knorth, Ksouth, Keast, Kwest
-      ! REAL(rprc) :: Lnorth, Lsouth, Least, Lwest
       REAL(rprc) :: Kwall_sout, Lwall_sout
-      ! REAL(rprc) :: Kroof_sout, Lroof_sout
-      REAL(rprc) :: QStar, QH, QS, QEC, QWaste
-      REAL(rprc) :: Qsw_absorbed_wallroof, Textwallroof
-      ! REAL(rprc) :: ws, Tair_sout
       REAL(rprc) :: Tsurf_sout
+
+      REAL(rprc) :: qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                     Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                     Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                     Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                     QStar, QEC, QH, QS, QBAE, QWaste, &
+                     Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
 
 !
       ASSOCIATE ( &
@@ -740,6 +741,7 @@ CONTAINS
          ASSOCIATE ( &
             ws => atmState%U10_ms, &
             Tair_sout => atmState%t2_C, &
+            Tsurf_sout => heatState%Tsurf, &
             Kroof_sout => bldgState%Kdown2d, &
             Lroof_sout => bldgState%Ldown2d, &
             ! Create an array of the wall states
@@ -760,7 +762,7 @@ CONTAINS
             ! Calculate the mean of the wall states
             Kwall_sout = SUM(wallStatesK)/SIZE(wallStatesK)
             !
-            ! ! Calculate the mean of the wall states
+            ! Calculate the mean of the wall states
             wallStatesL(1) = Lnorth
             wallStatesL(2) = Lsouth
             wallStatesL(3) = Least
@@ -808,7 +810,6 @@ CONTAINS
 !          !
                resolution = timestep
 !          !
-
                DO i = 1, nbtype, 1
                   fnmls(i) = TRIM(cases(i))
                   WRITE (*, *) '    + Building class file : ', TRIM(fnmls(i))
@@ -864,9 +865,13 @@ CONTAINS
 !       !
             DO i = 1, nbtype, 1
                CALL suewsstebbscouple(blds(i), &
-                                      QStar, QH, QS, QEC, QWaste, &
-                                      Qsw_absorbed_wallroof, Textwallroof &
-                                      )
+                                    qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                                    Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                                    Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                                    Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                                    QStar, QEC, QH, QS, QBAE, QWaste, &
+                                    Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
+                                    )
             END DO
 !       !
 !       !
@@ -879,7 +884,14 @@ CONTAINS
 !       !
             flginit = 1
 
-            dataOutLineSTEBBS = [QStar, QH, QS, QEC, QWaste, Qsw_absorbed_wallroof, Textwallroof]
+            dataOutLineSTEBBS = [ws, Tair_sout, Tsurf_sout, Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
+                                 qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                                 Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                                 Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                                 Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                                 QStar, QEC, QH, QS, QBAE, QWaste, &
+                                 Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
+                                 ]
             RETURN
 !          !
          END ASSOCIATE
@@ -994,8 +1006,14 @@ END SUBROUTINE readsuewsout
 !
 !
 SUBROUTINE suewsstebbscouple(self, &
-                             QStar, QH, QS, QEC, QWaste, &
-                             Qsw_absorbed_wallroof, Textwallroof) ! Output
+                             qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                             Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                             Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                             Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                             QStar, QEC, QH, QS, QBAE, QWaste, &
+                             Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
+                             ) ! Output
+                             
 !
    USE modulestebbsprecision
    USE modulestebbs, ONLY: LBM, resolution
@@ -1020,49 +1038,21 @@ SUBROUTINE suewsstebbscouple(self, &
                  Qconv_extwindow_to_outair, Qconv_extwallroof_to_outair, QH, QS, &
                  Qcond_ground, Q_ventilation, QBAE, Q_waste, QWaste, &
                  temp, Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
-               !   Qlw_dn_extroof, Qlw_dn_extwall, Qsw_dn_extroof, Qsw_dn_extwall                 
 !
    REAL(rprc), DIMENSION(6) :: bem_qf_1
    REAL(rprc), DIMENSION(25) :: energyEx
    CHARACTER(len=256) :: CASE
    CHARACTER(len=256), DIMENSION(4) :: fout
 !
-   ! INTENT(OUT) :: QStar, QH, QS, QEC, QWaste
-   ! INTENT(OUT) :: Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-   !          qmc, qir, qirw, qirf, qia, avr, qwc, qwic, qfc, qha, qwcon, qwicon, &
-   !          qfcon, Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-   !          Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, qwaste, QS, QS_fabric, QS_air
-!
-   INTENT(OUT) :: QStar, QH, QS, QEC, QWaste, Qsw_absorbed_wallroof, Textwallroof
+   INTENT(OUT) :: qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                  Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                  Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                  Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                  QStar, QEC, QH, QS, QBAE, QWaste, &
+                  Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
 !
    CASE = self%CASE
    Area = self%Afootprint
-!
-!
-!
-!    IF (self%flginit == 0) THEN
-! !
-! !     Output file
-! !
-!       ! fout(1) = 'Output_'//TRIM(CASE)//'.csv'; fout(2) = 'HeatFluxes_'//TRIM(CASE)//'.csv'
-!       ! fout(3) = 'EnergyBalance_'//TRIM(CASE)//'.csv'; fout(4) = 'Temp_'//TRIM(CASE)//'.csv'
-!       fout(1) = 'Output.csv'; fout(2) = 'HeatFluxes.csv'
-!       fout(3) = 'EnergyBalance.csv'; fout(4) = 'Temp.csv'
-! !
-!       DO i = 1, 4, 1
-!          OPEN (i + 100*self%idLBM, file=TRIM(fout(i)), status='unknown', form='formatted')
-!       END DO
-
-!       WRITE (1 + 100*self%idLBM, *) ',qheat_dom, qcool_dom, dom_tind, qfb_hw_dom, qfm_dom, qfb_dom_air'
-!       WRITE (2 + 100*self%idLBM, *) ',Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, '// &
-!          'qmc, qir, qirw, qirf, qia, avr, qwc, qwic, qfc, qha, qwcon, qwicon, '// &
-!          'qfcon, Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, '// &
-!          'Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, qwaste, QS, QS_fabric, QS_air'
-!       WRITE (3 + 100*self%idLBM, *) ',QStar, QEC, QH, QS, QBAE, QWaste'
-!       WRITE (4 + 100*self%idLBM, *) ',Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind'
-! !
-!    END IF
-!
 !
 !  Time integration start
 !
@@ -1077,8 +1067,6 @@ SUBROUTINE suewsstebbscouple(self, &
       Qsw_dn_extwall = sout%Kwall(tstep)
       Qlw_dn_extwall = sout%Lwall(tstep)
       Qlw_dn_extroof = sout%Lroof(tstep)
-!
-!
 !
       self%h_o(1) = ext_conv_coeff(sout%ws_exch(tstep), sout%Tair_exch(tstep) - sout%Tsurf_exch(tstep))
       self%h_o(2) = ext_conv_coeff(sout%ws_exch(tstep), sout%Tair_exch(tstep) - sout%Tsurf_exch(tstep))
@@ -1120,9 +1108,9 @@ SUBROUTINE suewsstebbscouple(self, &
 !
 !        ?? = (/self%setTwater_tank, self%Twater_tank, self%Twater_vessel,                   &
 !               self%Vwater_vessel, self%flowrate_water_supply, self%flowrate_water_drain/)
-!
       energyEx = self%EnergyExchanges(:)/float(sout%timestep)
-!
+      WRITE(*, *) energyEx(4:25)
+      !
 !       # calculate energy balance fluxes for a building, divided by footprint area [W m-2]
 !       # 1) for net all wave radiation Q*
 !       # knet from building = Qsw_transmitted_window + Qsw_absorbed_window + Qsw_absorbed_wallroof
@@ -1135,7 +1123,9 @@ SUBROUTINE suewsstebbscouple(self, &
       Qlw_net_extwindow_to_outair = energyEx(19)/Area ! #longwave radiation at external windows [W m-2]
       QStar = Qsw_transmitted_window + Qsw_absorbed_window + Qsw_absorbed_wallroof &
               - Qlw_net_extwallroof_to_outair - Qlw_net_extwindow_to_outair
-!
+      ! WRITE(*, *) 'Test: ', Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                  !  Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair
+      ! WRITE(*, *) '2: ', Qstar
 !       # 2) sensible energy input into building (QEC)
 !
       qinternal = (energyEx(8) + bem_qf_1(5))/Area ! #sensible internal appliance gain and sensible metabolism [W m-2]
@@ -1172,19 +1162,6 @@ SUBROUTINE suewsstebbscouple(self, &
       Textwindow = self%Textwindow ! # external surface temperature of window [K]
       Tintwindow = self%Tintwindow ! # internal surface temperature of window [K]
       Tair_ind = self%Tair_ind ! # Indoor air temperature [K]
-!
-!
-!
-   !    WRITE (1 + 100*self%idLBM, '(a19,1x,6(",",f10.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
-   !       qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air
-   !    WRITE (2 + 100*self%idLBM, '(a19,1x,25(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), &
-   !       (energyEx(i)/Area, i=1, 25, 1)
-   !    WRITE (3 + 100*self%idLBM, '(a19,1x,6(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), QStar, QEC, &
-   !       QH, QS, QBAE, QWaste
-   !   WRITE (4 + 100*self%idLBM, '(a19,1x,5(",",f15.5))') TRIM(sout%datetime(tstep))//' '//TRIM(sout%hourmin(tstep)), Textwallroof, &
-   !       Tintwallroof, Textwindow, Tintwindow, Tair_ind
-!
-!
 !
    END DO
 !
@@ -1697,6 +1674,7 @@ SUBROUTINE tstep( &
          ! // Qlw_net_extwallroof_to_outair = outdoorRadiativeHeatTransfer(BVF_extwall, Awallroof, emissivity_extwallroof, Textwallroof, Tsurf)+outdoorRadiativeHeatTransfer(SVF_extwall, Awallroof, emissivity_extwallroof, Textwallroof, Tsky);
          ! // Qlw_net_extwindow_to_outair = outdoorRadiativeHeatTransfer(BVF_extwall, Awindow, emissivity_extwindow, Textwindow, Tsurf)+outdoorRadiativeHeatTransfer(SVF_extwall, Awindow, emissivity_extwindow, Textwindow, Tsky);
          ! // call outdoorRadiativeHeatTransfer with LW instead of temp
+         
          Qlw_net_extwallroof_to_outair = &
             lwoutdoorRadiativeHeatTransfer &
             (Awallroof, emissivity_extwallroof, Textwallroof, &
@@ -1977,7 +1955,6 @@ SUBROUTINE tstep( &
 
          Qlw_net_extwallroof_to_outair_tstepTotal = &
             Qlw_net_extwallroof_to_outair_tstepTotal + Qlw_net_extwallroof_to_outair*resolution
-
          Qlw_net_extwindow_to_outair_tstepTotal = &
             Qlw_net_extwindow_to_outair_tstepTotal + Qlw_net_extwindow_to_outair*resolution
 
