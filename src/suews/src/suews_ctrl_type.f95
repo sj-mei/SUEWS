@@ -928,7 +928,6 @@ CONTAINS
       self%dataOutLineSPARTACUS = -999.0
       self%dataOutLineDailyState = -999.0
       self%dataOutLineSTEBBS = -999.0
-      ! WRITE(*, *) ncolumnsDataOutSTEBBS
    END SUBROUTINE output_line_init
 
    SUBROUTINE output_block_init(self, len)
@@ -958,6 +957,7 @@ CONTAINS
       self%dataOutBlockSPARTACUS = -999.0
       self%dataOutBlockDailyState = -999.0
       self%dataOutBlockSTEBBS = -999.0
+
    END SUBROUTINE output_block_init
 
    SUBROUTINE output_block_finalize(self)

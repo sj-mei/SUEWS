@@ -65,7 +65,7 @@ MODULE ctrl_output
    END TYPE varAttr
 
    ! initialise valist
-   TYPE(varAttr) :: varListAll(1200)
+   TYPE(varAttr) :: varListAll(1400)
 
    ! datetime:
    DATA(varListAll(n), n=1, 5)/ &
@@ -1187,13 +1187,38 @@ MODULE ctrl_output
         + ncolumnsDataOutEHC - 5 &
         + ncolumnsDataOutSTEBBS - 5 &
         )/ &
+      varAttr('ws', 'm s-1', f104, 'Wind speed', aA, 'STEBBS', 0), &
+      varAttr('Tair', 'degC', f104, 'Air temperature', aA, 'STEBBS', 0), &
+      varAttr('Tsurf', 'degC', f104, 'Surface temperature', aA, 'STEBBS', 0), &
+      varAttr('Kroof', 'W m-2', f104, 'Downward shortwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Lroof', 'W m-2', f104, 'Downward longwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Kwall', 'W m-2', f104, 'Downward shortwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Lwall', 'W m-2', f104, 'Downward longwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Qheat_dom', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qcool_dom', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('dom_temp', 'degC', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('qfb_hw_dom', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('qfm_dom', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('qfb_dom_air', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qsw_transmitted_window', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qsw_absorbed_window', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qsw_absorbed_wallroof', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qcond_ground', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qlw_net_extwallroof_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qlw_net_extwindow_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qconv_extwallroof_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qconv_extwindow_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
       varAttr('QStar', 'W m-2', f104, 'Net all-wave radiation', aA, 'STEBBS', 0), &
-      varAttr('QH', 'W m-2', f104, 'Sensible heat flux', aA, 'STEBBS', 0), &
-      varAttr('QS', 'W m-2', f104, 'Storage heat flux', aA, 'STEBBS', 0), &
-      varAttr('QEC', 'W m-2', f104, 'Energy Consumption (TEMP)', aA, 'STEBBS', 0), &
-      varAttr('QWaste', 'W m-2', f104, 'Waste heat flux (TEMP)', aA, 'STEBBS', 0), &
-      varAttr('Qsw_abs_wr', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
-      varAttr('Textwallroof', 'degC', f104, 'TEMP', aA, 'STEBBS', 0) &
+      varAttr('QEC', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('QH', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('QS', 'W m-2', f104, '(TEMP)', aA, 'STEBBS', 0), &
+      varAttr('QBAE', 'W m-2', f104, '(TEMP)', aA, 'STEBBS', 0), &
+      varAttr('QWaste', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Textwallroof', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Tintwallroof', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Textwindow', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Tintwindow', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Tair_ind', '', f104, 'TEMP', aA, 'STEBBS', 0) &
       /
 
 CONTAINS
