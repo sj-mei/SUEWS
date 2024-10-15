@@ -771,7 +771,7 @@ CONTAINS
 
             !       !
             IF (flginit == 0) THEN
-               WRITE(*, *) 'WS: ', ws
+               WRITE (*, *) 'WS: ', ws
                command = 'ls ./BuildClasses/*.nml > file_list.txt'
                CALL EXECUTE_COMMAND_LINE(command)
 
@@ -869,13 +869,13 @@ CONTAINS
 !       !
             DO i = 1, nbtype, 1
                CALL suewsstebbscouple(blds(i), flginit, &
-                                    qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
-                                    Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                                    Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-                                    Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
-                                    QStar, QEC, QH, QS, QBAE, QWaste, &
-                                    Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
-                                    )
+                                      qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                                      Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                                      Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                                      Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                                      QStar, QEC, QH, QS, QBAE, QWaste, &
+                                      Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
+                                      )
             END DO
 !       !
 !       !
@@ -1624,8 +1624,8 @@ SUBROUTINE tstep( &
 ! Simulation starts
 !
    IF (flginit == 0) THEN
-      WRITE(*, *) 'timestep/resolution: ', timestep, resolution
-      WRITE(*, *) 'Pre Calc: ',Qlw_net_extwallroof_to_outair_tstepTotal
+      WRITE (*, *) 'timestep/resolution: ', timestep, resolution
+      WRITE (*, *) 'Pre Calc: ', Qlw_net_extwallroof_to_outair_tstepTotal
    END IF
 !    //Used to recalculate Area of DHW in use
    IF (Awater_vessel > 0.0) THEN
@@ -2135,7 +2135,7 @@ SUBROUTINE tstep( &
 
       END DO looptime
       IF (flginit == 0) THEN
-         WRITE(*, *) 'Post Calc: ',Qlw_net_extwallroof_to_outair_tstepTotal
+         WRITE (*, *) 'Post Calc: ', Qlw_net_extwallroof_to_outair_tstepTotal
       END IF
    ELSE !iftimestepresolution
 !        printf("Timestep: %i not equally divisible by given resolution: %i.\n", timestep, resolution)
