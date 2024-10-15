@@ -721,11 +721,11 @@ CONTAINS
       REAL(rprc) :: Tsurf_sout
 
       REAL(rprc) :: qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
-                     Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                     Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-                     Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
-                     QStar, QEC, QH, QS, QBAE, QWaste, &
-                     Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
+                    Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                    Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                    Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                    QStar, QEC, QH, QS, QBAE, QWaste, &
+                    Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
 
 !
       ASSOCIATE ( &
@@ -1017,7 +1017,7 @@ SUBROUTINE suewsstebbscouple(self, flginit, &
                              QStar, QEC, QH, QS, QBAE, QWaste, &
                              Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
                              ) ! Output
-                             
+
 !
    USE modulestebbsprecision
    USE modulestebbs, ONLY: LBM, resolution
@@ -1050,11 +1050,11 @@ SUBROUTINE suewsstebbscouple(self, flginit, &
    CHARACTER(len=256), DIMENSION(4) :: fout
 !
    INTENT(OUT) :: qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
-                  Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                  Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-                  Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
-                  QStar, QEC, QH, QS, QBAE, QWaste, &
-                  Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
+      Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+      Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+      Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+      QStar, QEC, QH, QS, QBAE, QWaste, &
+      Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
 !
    CASE = self%CASE
    Area = self%Afootprint
@@ -1129,7 +1129,7 @@ SUBROUTINE suewsstebbscouple(self, flginit, &
       QStar = Qsw_transmitted_window + Qsw_absorbed_window + Qsw_absorbed_wallroof &
               - Qlw_net_extwallroof_to_outair - Qlw_net_extwindow_to_outair
       ! WRITE(*, *) 'Test: ', Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                  !  Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair
+      !  Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair
       ! WRITE(*, *) '2: ', Qstar
 !       # 2) sensible energy input into building (QEC)
 !
@@ -1684,7 +1684,7 @@ SUBROUTINE tstep( &
          ! // Qlw_net_extwallroof_to_outair = outdoorRadiativeHeatTransfer(BVF_extwall, Awallroof, emissivity_extwallroof, Textwallroof, Tsurf)+outdoorRadiativeHeatTransfer(SVF_extwall, Awallroof, emissivity_extwallroof, Textwallroof, Tsky);
          ! // Qlw_net_extwindow_to_outair = outdoorRadiativeHeatTransfer(BVF_extwall, Awindow, emissivity_extwindow, Textwindow, Tsurf)+outdoorRadiativeHeatTransfer(SVF_extwall, Awindow, emissivity_extwindow, Textwindow, Tsky);
          ! // call outdoorRadiativeHeatTransfer with LW instead of temp
-         
+
          Qlw_net_extwallroof_to_outair = &
             lwoutdoorRadiativeHeatTransfer &
             (Awallroof, emissivity_extwallroof, Textwallroof, &

@@ -5329,7 +5329,7 @@ CONTAINS
             output_line_suews%dataOutLineEHC, &
             output_line_suews%dataOutLineSTEBBS, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
-            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X, & 
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X, &
             dataOutBlockSTEBBS_X &
             ) !inout
 
