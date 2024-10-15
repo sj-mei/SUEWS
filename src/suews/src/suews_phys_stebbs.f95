@@ -771,7 +771,7 @@ CONTAINS
 
             !       !
             IF (flginit == 0) THEN
-
+               WRITE(*, *) 'WS: ', ws
                command = 'ls ./BuildClasses/*.nml > file_list.txt'
                CALL EXECUTE_COMMAND_LINE(command)
 
@@ -808,12 +808,14 @@ CONTAINS
                   WRITE (*, *) '    + Cases title         : ', i, TRIM(cases(i)) ! changed cases(i) to cases for test
                END DO
 !          !
-               resolution = timestep
+               ! resolution = timestep
+               resolution = 1
 !          !
                DO i = 1, nbtype, 1
                   fnmls(i) = TRIM(cases(i))
                   WRITE (*, *) '    + Building class file : ', TRIM(fnmls(i))
                   CALL create_building(cases(i), blds(i), i) ! also changed cases here
+                  ! WRITE(*, *) blds(i)
                END DO
 !          !
 !          !
@@ -852,8 +854,10 @@ CONTAINS
             sout%Lwall(1) = Lwall_sout
             sout%Lroof(1) = Lroof_sout
             sout%timestep = timestep
+            ! sout%timestep = 1
             sout%Tair_exch(1) = Tair_sout
             sout%Tsurf_exch(1) = Tsurf_sout
+            sout%ws(1) = ws
             sout%ws_exch(1) = ws
 !       !
 !       !
@@ -864,7 +868,7 @@ CONTAINS
 !       ! Time integration for each building type
 !       !
             DO i = 1, nbtype, 1
-               CALL suewsstebbscouple(blds(i), &
+               CALL suewsstebbscouple(blds(i), flginit, &
                                     qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                                     Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
                                     Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
@@ -1005,7 +1009,7 @@ END SUBROUTINE readsuewsout
 !
 !
 !
-SUBROUTINE suewsstebbscouple(self, &
+SUBROUTINE suewsstebbscouple(self, flginit, &
                              qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                              Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
                              Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
@@ -1031,6 +1035,7 @@ SUBROUTINE suewsstebbscouple(self, &
    TYPE(LBM) :: self
 !
    INTEGER :: tstep, i
+   INTEGER, INTENT(in) :: flginit
    REAL(rprc) :: Area, qfm_dom, qheat_dom, qcool_dom, qfb_hw_dom, qfb_dom_air, dom_temp, &
                  Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
                  Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
@@ -1075,7 +1080,8 @@ SUBROUTINE suewsstebbscouple(self, &
                                density_air_out, cp_air_out, &
                                Qsw_dn_extroof, Qsw_dn_extwall, &
                                Qlw_dn_extwall, Qlw_dn_extroof, sout%timestep, &
-                               resolution &
+                               resolution, &
+                               flginit &
                                )
 !
 !
@@ -1109,7 +1115,6 @@ SUBROUTINE suewsstebbscouple(self, &
 !        ?? = (/self%setTwater_tank, self%Twater_tank, self%Twater_vessel,                   &
 !               self%Vwater_vessel, self%flowrate_water_supply, self%flowrate_water_drain/)
       energyEx = self%EnergyExchanges(:)/float(sout%timestep)
-      WRITE(*, *) energyEx(4:25)
       !
 !       # calculate energy balance fluxes for a building, divided by footprint area [W m-2]
 !       # 1) for net all wave radiation Q*
@@ -1195,7 +1200,7 @@ SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
                                density_air_out, cp_air_out, &
                                Qsw_dn_extroof, Qsw_dn_extwall, &
                                Qlw_dn_extwall, Qlw_dn_extroof, &
-                               timestep, resolution &
+                               timestep, resolution, flginit &
                                )
 !
    USE modulestebbsprecision
@@ -1204,6 +1209,7 @@ SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
    IMPLICIT NONE
 !
    INTEGER :: timestep, resolution
+   INTEGER, INTENT(in) :: flginit
    REAL(rprc) :: Tair_out, Tground_deep, Tsurf, density_air_out, &
                  cp_air_out, Qsw_dn_extroof, Qsw_dn_extwall, &
                  Qlw_dn_extwall, Qlw_dn_extroof
@@ -1221,7 +1227,7 @@ SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
 !
 !
    CALL tstep( &
-      Tair_out, Tground_deep, Tsurf, &
+      flginit, Tair_out, Tground_deep, Tsurf, &
       density_air_out, cp_air_out, &
       Qsw_dn_extroof, Qsw_dn_extwall, &
       Qlw_dn_extwall, Qlw_dn_extroof, &
@@ -1305,7 +1311,6 @@ SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
       self%Qmetabolic_latent) !qlatent_timestepTotal
 !
 !
-!
    RETURN
 !
 END SUBROUTINE timeStepCalculation
@@ -1315,7 +1320,7 @@ END SUBROUTINE timeStepCalculation
 !
 !
 SUBROUTINE tstep( &
-   Tair_out, Tground_deep, Tsurf, &
+   flginit, Tair_out, Tground_deep, Tsurf, &
    density_air_out, cp_air_out, &
    Qsw_dn_extroof, Qsw_dn_extwall, &
    Qlw_dn_extwall, Qlw_dn_extroof, &
@@ -1394,6 +1399,7 @@ SUBROUTINE tstep( &
 !
    IMPLICIT NONE
 !
+   INTEGER, INTENT(in) :: flginit
    INTEGER :: i
    REAL(rprc) :: Tair_out, Tground_deep, Tsurf, &
                  density_air_out, cp_air_out, Qsw_dn_extroof, &
@@ -1617,6 +1623,10 @@ SUBROUTINE tstep( &
 !
 ! Simulation starts
 !
+   IF (flginit == 0) THEN
+      WRITE(*, *) 'timestep/resolution: ', timestep, resolution
+      WRITE(*, *) 'Pre Calc: ',Qlw_net_extwallroof_to_outair_tstepTotal
+   END IF
 !    //Used to recalculate Area of DHW in use
    IF (Awater_vessel > 0.0) THEN
       VARatio_water_vessel = Vwater_vessel/Awater_vessel
@@ -2124,6 +2134,9 @@ SUBROUTINE tstep( &
 !            /************************************************************/
 
       END DO looptime
+      IF (flginit == 0) THEN
+         WRITE(*, *) 'Post Calc: ',Qlw_net_extwallroof_to_outair_tstepTotal
+      END IF
    ELSE !iftimestepresolution
 !        printf("Timestep: %i not equally divisible by given resolution: %i.\n", timestep, resolution)
    END IF
