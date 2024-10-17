@@ -771,7 +771,7 @@ CONTAINS
 
             !       !
             IF (flginit == 0) THEN
-               WRITE(*, *) 'WS: ', ws
+               WRITE (*, *) 'WS: ', ws
                command = 'ls ./BuildClasses/*.nml > file_list.txt'
                CALL EXECUTE_COMMAND_LINE(command)
 
