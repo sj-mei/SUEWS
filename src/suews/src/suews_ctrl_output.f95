@@ -1470,7 +1470,6 @@ CONTAINS
       fn = 9
       OPEN (fn, file=TRIM(ADJUSTL(FileOutX)), status='unknown')
       ! PRINT*, 'FileOutX in SUEWS_Output_Init: ',FileOutX
-
       ! write out headers
       WRITE (fn, FormatOut) headerOut
       CLOSE (fn)
