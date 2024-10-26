@@ -58,8 +58,16 @@ suews:
 	# -rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 # make supy and install locally
+# NOTE: `--no-build-isolation` is used to avoid dependency issues with the editable install.
+# ref: https://mesonbuild.com/meson-python/how-to-guides/editable-installs.html#editable-installs
 dev:
-	$(PYTHON) -m pip install -e .
+	rm -rf build
+	rm -rf .pytest_cache
+	$(PYTHON) -m pip install --no-build-isolation --editable .
+
+# install supy locally
+install:
+	$(PYTHON) -m pip install .
 
 # make supy dist and test
 test:
