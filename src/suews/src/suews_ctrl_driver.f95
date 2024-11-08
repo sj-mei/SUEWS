@@ -464,12 +464,14 @@ CONTAINS
 
             !==============use STEBBS to get localised radiation flux==================
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
-            IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
-            CALL stebbsonlinecouple( &
-               timer, config, forcing, siteInfo, & ! input
-               modState, & ! input/output:
-               datetimeLine, & ! input
-               dataOutLineSTEBBS) ! output
+            IF (config%stebbsmethod == 1) THEN
+               IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
+               CALL stebbsonlinecouple( &
+                  timer, config, forcing, siteInfo, & ! input
+                  modState, & ! input/output:
+                  datetimeLine, & ! input
+                  dataOutLineSTEBBS) ! output
+            END IF
 
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
@@ -4114,6 +4116,7 @@ CONTAINS
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      stebbsmethod, & ! stebbs input
       height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
@@ -4200,6 +4203,7 @@ CONTAINS
       LOGICAL, INTENT(IN) :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER, INTENT(IN) :: OHMIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
       ! INTEGER, INTENT(IN) :: nbtype ! number of building types [-] STEBBS
+      INTEGER, INTENT(IN) :: stebbsmethod ! method to calculate building energy use [-] STEBBS
 
       ! ---lumps-related variables
       TYPE(LUMPS_PRM) :: lumpsPrm
@@ -4614,6 +4618,7 @@ CONTAINS
       config%DiagQS = 0
       config%EvapMethod = 2
       config%LAImethod = 1
+      config%stebbsmethod = stebbsmethod
 
       ! config%nbtype = nbtype
 

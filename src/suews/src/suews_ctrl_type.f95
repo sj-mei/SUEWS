@@ -35,6 +35,7 @@ MODULE SUEWS_DEF_DTS
       ! INTEGER :: nbtype ! number of building type [-]
       ! INTEGER :: resolution ! STEBBS time resolution [-]
       ! CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: cases ! case of building type, the array size should be consistent to nbtype [-]
+      INTEGER :: stebbsmethod ! method to calculate building energy [-]
    END TYPE SUEWS_CONFIG
 
    TYPE, PUBLIC :: SURF_STORE_PRM
