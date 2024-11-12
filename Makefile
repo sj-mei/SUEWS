@@ -59,7 +59,7 @@ suews:
 
 # make supy and install locally
 dev:
-	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m pip install --no-deps -e .
 
 # make supy dist and test
 test:
@@ -79,10 +79,11 @@ livehtml:
 
 # If wanted, clean all *.o files after build
 clean:
-	$(MAKE) -C $(suews_dir) clean
-	$(MAKE) -C $(supy_dir) clean
-	$(MAKE) -C $(docs_dir) clean
+	$(MAKE) -C $(suews_dir) clean || true
+	$(MAKE) -C $(supy_dir) clean || true
+	$(MAKE) -C $(docs_dir) clean || true
 	rm -rf build dist *.egg-info
+	rm -rf ./ext_lib/spartacus-surface//*/*.mod
 
 # this is to test cibuildwheel locally
 cibw:
