@@ -427,7 +427,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
-            raise ValueError("alb_min must be less than or equal to alb_max")
+            raise ValueError("alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
         return self
 
 
@@ -442,7 +442,7 @@ class DectrProperties(VegetatedSurfaceProperties):
     @model_validator(mode="after")
     def validate_porosity_range(self) -> "DectrProperties":
         if self.pormin_dec >= self.pormax_dec:
-            raise ValueError("pormin_dec must be less than pormax_dec")
+            raise ValueError("pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
         return self
 
 
