@@ -26,7 +26,7 @@
     - name: london
       properties:
         lat: 51.5074
-        lon: 0.1278
+        lng: 0.1278
         alt: 0
         timezone: 0
         surfacearea: 1
@@ -916,11 +916,11 @@
               drain_coef_2: 0.5
             # `waterdist` is not needed for water
       initial_states:
+        snowalb: .8
         paved:
           state: 10
           soilstore: 100
           snowwater: 1
-          snowalb: .8
           snowdens: 1
           snowfrac: 0
           snowpack: 0
@@ -928,7 +928,6 @@
           state: 10
           soilstore: 100
           snowwater: 1
-          snowalb: .8
           snowdens: 1
           snowfrac: 0
           snowpack: 0
@@ -936,7 +935,6 @@
           state: 10
           soilstore: 100
           snowwater: 1
-          snowalb: .8
           snowdens: 1
           snowfrac: 0
           snowpack: 0
@@ -947,7 +945,6 @@
           state: 10
           soilstore: 100
           snowwater: 1
-          snowalb: .8
           snowdens: 1
           snowfrac: 0
           snowpack: 0
@@ -956,7 +953,6 @@
           state: 10
           soilstore: 100
           snowwater: 1
-          snowalb: .8
           snowdens: 1
           snowfrac: 0
           snowpack: 0
@@ -965,7 +961,6 @@
           state: 10
           soilstore: 100
           snowwater: 1
-          snowalb: .8
           snowdens: 1
           snowfrac: 0
           snowpack: 0
@@ -973,7 +968,6 @@
           state: 10
           soilstore: 100
           snowwater: 1
-          snowalb: .8
           snowdens: 1
           snowfrac: 0
           snowpack: 0

@@ -1,5 +1,12 @@
 from typing import Dict, List, Optional, Union, Literal, Tuple
-from pydantic import BaseModel, Field, model_validator, field_validator, validator, PrivateAttr
+from pydantic import (
+    BaseModel,
+    Field,
+    model_validator,
+    field_validator,
+    validator,
+    PrivateAttr,
+)
 import numpy as np
 from enum import Enum
 import pandas as pd
@@ -15,6 +22,9 @@ class SurfaceType(str, Enum):
     BSOIL = "bsoil"
     WATER = "water"
 
+class SnowAlb(BaseModel):
+    snowalb: float = Field(ge=0, le=1, description="Snow albedo")
+
 
 class InitialState(BaseModel):
     state: float = Field(ge=0, description="Initial state")
@@ -22,17 +32,24 @@ class InitialState(BaseModel):
     snowfrac: float = Field(ge=0, le=1, description="Snow fraction")
     snowpack: float = Field(ge=0, description="Snow pack")
     snowwater: float = Field(ge=0, description="Snow water")
-    snowalb: float = Field(ge=0, le=1, description="Snow albedo")
     snowdens: float = Field(ge=0, description="Snow density")
 
     # Additional fields for specific surface types
-    decidcap_id: Optional[float] = Field(None, description="Deciduous capacity ID (required for deciduous trees)")
-    porosity_id: Optional[float] = Field(None, description="Porosity ID (required for deciduous trees)")
-    alb_id: Optional[float] = Field(None, description="Albedo ID (required for vegetated surfaces)")
-    surface_type: Optional[SurfaceType] = Field(None, description="Surface type for validation")
+    decidcap_id: Optional[float] = Field(
+        None, description="Deciduous capacity ID (required for deciduous trees)"
+    )
+    porosity_id: Optional[float] = Field(
+        None, description="Porosity ID (required for deciduous trees)"
+    )
+    alb_id: Optional[float] = Field(
+        None, description="Albedo ID (required for vegetated surfaces)"
+    )
+    surface_type: Optional[SurfaceType] = Field(
+        None, description="Surface type for validation"
+    )
 
-    @model_validator(mode='after')
-    def validate_surface_specific_fields(self) -> 'InitialState':
+    @model_validator(mode="after")
+    def validate_surface_specific_fields(self) -> "InitialState":
         if self.surface_type == SurfaceType.DECTR:
             if self.decidcap_id is None:
                 raise ValueError("decidcap_id is required for deciduous trees")
@@ -80,13 +97,61 @@ class WaterDistribution(BaseModel):
         """Validate water distribution based on surface type"""
         # Define required fields for each surface type
         required_fields = {
-            SurfaceType.PAVED: ["to_bldgs", "to_dectr", "to_evetr", "to_grass", "to_bsoil", "to_water", "to_runoff"],
-            SurfaceType.BLDGS: ["to_paved", "to_dectr", "to_evetr", "to_grass", "to_bsoil", "to_water", "to_runoff"],
-            SurfaceType.DECTR: ["to_paved", "to_bldgs", "to_evetr", "to_grass", "to_bsoil", "to_water", "to_soilstore"],
-            SurfaceType.EVETR: ["to_paved", "to_bldgs", "to_dectr", "to_grass", "to_bsoil", "to_water", "to_soilstore"],
-            SurfaceType.GRASS: ["to_paved", "to_bldgs", "to_dectr", "to_evetr", "to_bsoil", "to_water", "to_soilstore"],
-            SurfaceType.BSOIL: ["to_paved", "to_bldgs", "to_dectr", "to_evetr", "to_grass", "to_water", "to_soilstore"],
-            SurfaceType.WATER: None  # Water surface doesn't have water distribution
+            SurfaceType.PAVED: [
+                "to_bldgs",
+                "to_dectr",
+                "to_evetr",
+                "to_grass",
+                "to_bsoil",
+                "to_water",
+                "to_runoff",
+            ],
+            SurfaceType.BLDGS: [
+                "to_paved",
+                "to_dectr",
+                "to_evetr",
+                "to_grass",
+                "to_bsoil",
+                "to_water",
+                "to_runoff",
+            ],
+            SurfaceType.DECTR: [
+                "to_paved",
+                "to_bldgs",
+                "to_evetr",
+                "to_grass",
+                "to_bsoil",
+                "to_water",
+                "to_soilstore",
+            ],
+            SurfaceType.EVETR: [
+                "to_paved",
+                "to_bldgs",
+                "to_dectr",
+                "to_grass",
+                "to_bsoil",
+                "to_water",
+                "to_soilstore",
+            ],
+            SurfaceType.GRASS: [
+                "to_paved",
+                "to_bldgs",
+                "to_dectr",
+                "to_evetr",
+                "to_bsoil",
+                "to_water",
+                "to_soilstore",
+            ],
+            SurfaceType.BSOIL: [
+                "to_paved",
+                "to_bldgs",
+                "to_dectr",
+                "to_evetr",
+                "to_grass",
+                "to_water",
+                "to_soilstore",
+            ],
+            SurfaceType.WATER: None,  # Water surface doesn't have water distribution
         }
 
         if surface_type == SurfaceType.WATER:
@@ -99,7 +164,9 @@ class WaterDistribution(BaseModel):
         for field in fields:
             value = getattr(self, field)
             if value is None:
-                raise ValueError(f"Missing required field {field} for {surface_type.value}")
+                raise ValueError(
+                    f"Missing required field {field} for {surface_type.value}"
+                )
             values.append(value)
 
         # Validate sum
@@ -138,7 +205,9 @@ class SurfaceProperties(BaseModel):
     sathydraulicconduct: float
     waterdist: Optional[WaterDistribution] = None
     storedrainprm: StorageDrainParams
-    _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)  # Private attribute for surface type
+    _surface_type: Optional[SurfaceType] = PrivateAttr(
+        default=None
+    )  # Private attribute for surface type
 
     def set_surface_type(self, surface_type: SurfaceType):
         self._surface_type = surface_type
@@ -148,7 +217,9 @@ class SurfaceProperties(BaseModel):
                 raise ValueError("Water surface should not have water distribution")
         else:
             if self.waterdist is None:
-                raise ValueError(f"Water distribution required for {self._surface_type.value}")
+                raise ValueError(
+                    f"Water distribution required for {self._surface_type.value}"
+                )
             self.waterdist.validate_distribution(self._surface_type)
 
 
@@ -220,9 +291,11 @@ class SPARTACUSParams(BaseModel):
     veg_ssa_lw: float
     veg_ssa_sw: float
 
+
 class DayProfile(BaseModel):
     working_day: float
     holiday: float
+
 
 class WeeklyProfile(BaseModel):
     monday: float
@@ -238,14 +311,14 @@ class HourlyProfile(BaseModel):
     working_day: Dict[str, float]
     holiday: Dict[str, float]
 
-    @field_validator('working_day', 'holiday', mode='before')
+    @field_validator("working_day", "holiday", mode="before")
     def convert_keys_to_str(cls, v: Dict) -> Dict[str, float]:
         if isinstance(v, dict):
             return {str(k): float(v) for k, v in v.items()}
         return v
 
-    @model_validator(mode='after')
-    def validate_hours(self) -> 'HourlyProfile':
+    @model_validator(mode="after")
+    def validate_hours(self) -> "HourlyProfile":
         for profile in [self.working_day, self.holiday]:
             hours = [int(h) for h in profile.keys()]
             if not all(1 <= h <= 24 for h in hours):
@@ -350,8 +423,8 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     ie_a: float = Field(description="Irrigation efficiency coefficient-automatic")
     ie_m: float = Field(description="Irrigation efficiency coefficient-manual")
 
-    @model_validator(mode='after')
-    def validate_albedo_range(self) -> 'VegetatedSurfaceProperties':
+    @model_validator(mode="after")
+    def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
             raise ValueError("alb_min must be less than or equal to alb_max")
         return self
@@ -399,17 +472,17 @@ class LandCover(BaseModel):
     bsoil: BaresoilProperties
     water: WaterProperties
 
-    @model_validator(mode='after')
-    def set_surface_types(self) -> 'LandCover':
+    @model_validator(mode="after")
+    def set_surface_types(self) -> "LandCover":
         # Set surface types and validate
         surface_map = {
-            'paved': (self.paved, SurfaceType.PAVED),
-            'bldgs': (self.bldgs, SurfaceType.BLDGS),
-            'dectr': (self.dectr, SurfaceType.DECTR),
-            'evetr': (self.evetr, SurfaceType.EVETR),
-            'grass': (self.grass, SurfaceType.GRASS),
-            'bsoil': (self.bsoil, SurfaceType.BSOIL),
-            'water': (self.water, SurfaceType.WATER),
+            "paved": (self.paved, SurfaceType.PAVED),
+            "bldgs": (self.bldgs, SurfaceType.BLDGS),
+            "dectr": (self.dectr, SurfaceType.DECTR),
+            "evetr": (self.evetr, SurfaceType.EVETR),
+            "grass": (self.grass, SurfaceType.GRASS),
+            "bsoil": (self.bsoil, SurfaceType.BSOIL),
+            "water": (self.water, SurfaceType.WATER),
         }
 
         for prop, surface_type in surface_map.values():
@@ -439,7 +512,7 @@ class InitialConditions(BaseModel):
 
 class SiteProperties(BaseModel):
     lat: float = Field(ge=-90, le=90)
-    lon: float = Field(ge=-180, le=180)
+    lng: float = Field(ge=-180, le=180)
     alt: float
     timezone: int = Field(ge=-12, le=12)
     surfacearea: float = Field(gt=0)
@@ -460,7 +533,8 @@ class SiteProperties(BaseModel):
 class Site(BaseModel):
     name: str
     properties: SiteProperties
-    initial_states: Dict[str, InitialState]
+    initial_states: Union[Dict[str, InitialState], SnowAlb]
+
 
 
 class SUEWSConfig(BaseModel):
@@ -472,7 +546,6 @@ class SUEWSConfig(BaseModel):
     class Config:
         extra = "allow"
 
-
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
         """Create MultiIndex from df_state_columns.txt"""
         with open(columns_file, "r") as f:
@@ -481,14 +554,8 @@ class SUEWSConfig(BaseModel):
         tuples = []
         for line in lines:
             col_name, indices = line.strip().split(",", 1)
-            if indices == "0":
-                tuples.append((col_name, 0))
-            else:
-                # Convert string tuple to actual tuple
-                indices = eval(indices)
-                if isinstance(indices, int):
-                    indices = (indices,)
-                tuples.append((col_name, *indices))
+            str_indices = f"{indices}" if indices != "0" else "0"
+            tuples.append((col_name, str_indices))
 
         return pd.MultiIndex.from_tuples(tuples)
 
@@ -496,67 +563,93 @@ class SUEWSConfig(BaseModel):
         """Convert config to DataFrame state format"""
         # Initialize empty DataFrame with correct structure
         columns = self.create_multi_index_columns("df_state_columns.txt")
+        # columns_str = [(col[0], f"{col[1]}") for col in columns]
         df = pd.DataFrame(index=[0], columns=columns)
+        print(df.columns)
 
         # Helper function to set values in DataFrame
         def set_df_value(col_name: str, indices: Union[int, Tuple], value: float):
             if isinstance(indices, int):
-                indices = (indices,)
-            df.loc[0, (col_name, *indices)] = value
+                if indices == 0:
+                    str_indices = str(indices)
+                else:
+                    str_indices = f"({indices})"
+            else:
+                # Tuples should maintain their string representation
+                str_indices = str(indices)
+            df.loc[0, (col_name, str_indices)] = value
 
         # Process each site (assuming single site for now)
         site = self.site[0]
         props = site.properties
 
         # Basic site properties
-        set_df_value('lat', 0, props.lat)
-        set_df_value('lon', 0, props.lon)
-        set_df_value('alt', 0, props.alt)
-        set_df_value('timezone', 0, props.timezone)
+        set_df_value("lat", 0, props.lat)
+        set_df_value("lng", 0, props.lng)
+        set_df_value("alt", 0, props.alt)
+        set_df_value("timezone", 0, props.timezone)
 
         # Surface properties
         surface_map = {
-            'paved': 0, 'bldgs': 1, 'dectr': 2, 'evetr': 3,
-            'grass': 4, 'bsoil': 5, 'water': 6
+            "paved": 0,
+            "bldgs": 1,
+            "dectr": 2,
+            "evetr": 3,
+            "grass": 4,
+            "bsoil": 5,
+            "water": 6,
         }
 
         # Process each surface type
         for surf_name, surf_idx in surface_map.items():
             surface = getattr(props.land_cover, surf_name)
 
+            # Handle both Dict and SnowAlb cases for initial_states
+            if isinstance(site.initial_states, dict):
+                init_state = site.initial_states.get(surf_name)
+            else:  # SnowAlb case
+                init_state = None
+                # Set snowalb for all surfaces if it's a SnowAlb object
+                set_df_value("snowalb", 0, site.initial_states.snowalb)
+
             # Basic surface properties
-            set_df_value('sfr', surf_idx, surface.sfr)
-            set_df_value('alb', surf_idx,
-                        getattr(surface, 'alb', (surface.alb_min + surface.alb_max) / 2))
-            set_df_value('emis', surf_idx, surface.emis)
+            set_df_value("sfr_surf", surf_idx, surface.sfr)
+            if hasattr(surface, "alb"):
+                set_df_value("alb", surf_idx, getattr(surface, "alb"))
+            else:
+                set_df_value("alb", surf_idx, (surface.alb_min + surface.alb_max) / 2)
+            set_df_value("emis", surf_idx, surface.emis)
 
             # Initial states
-            init_state = getattr(props.initial_states, surf_name)
-            set_df_value('state_surf', surf_idx, init_state.state)
-            set_df_value('soilstore_surf', surf_idx, init_state.soilstore)
-            set_df_value('snowwater', surf_idx, init_state.snowwater)
-            set_df_value('snowalb', surf_idx, init_state.snowalb)
-            set_df_value('snowdens', surf_idx, init_state.snowdens)
-            set_df_value('snowfrac', surf_idx, init_state.snowfrac)
+            if init_state:
+                set_df_value("state_surf", surf_idx, init_state.state)
+                set_df_value("soilstore_surf", surf_idx, init_state.soilstore)
+                set_df_value("snowwater", surf_idx, init_state.snowwater)
+                set_df_value("snowdens", surf_idx, init_state.snowdens)
+                set_df_value("snowfrac", surf_idx, init_state.snowfrac)
 
-            # Vegetation-specific properties
-            if surf_name in ['dectr', 'evetr', 'grass']:
-                if hasattr(init_state, 'alb_id'):
-                    set_df_value(f'alb{surf_name}_id', 0, init_state.alb_id)
-                if hasattr(init_state, 'porosity_id'):
-                    set_df_value('porosity_id', 0, init_state.porosity_id)
-                if hasattr(init_state, 'decidcap_id'):
-                    set_df_value('decidcap_id', 0, init_state.decidcap_id)
+                # Vegetation-specific properties
+                if surf_name in ["dectr", "evetr", "grass"]:
+                    if init_state.alb_id is not None:
+                        set_df_value(f"alb{surf_name}_id", 0, init_state.alb_id)
+                    if init_state.porosity_id is not None:
+                        set_df_value("porosity_id", 0, init_state.porosity_id)
+                    if init_state.decidcap_id is not None:
+                        set_df_value("decidcap_id", 0, init_state.decidcap_id)
 
         # Process anthropogenic emissions
         anthro = props.anthropogenic_emissions
         for hour in range(24):
-            set_df_value('ahprof_24hr', (hour, 0),
-                        anthro.heat.ahprof_24hr.working_day[str(hour + 1)])
-            set_df_value('ahprof_24hr', (hour, 1),
-                        anthro.heat.ahprof_24hr.holiday[str(hour + 1)])
-
-        # ... Add more conversions as needed ...
+            set_df_value(
+                "ahprof_24hr",
+                (hour, 0),
+                anthro.heat.ahprof_24hr.working_day[str(hour + 1)],
+            )
+            set_df_value(
+                "ahprof_24hr",
+                (hour, 1),
+                anthro.heat.ahprof_24hr.holiday[str(hour + 1)]
+            )
 
         return df
 
@@ -564,8 +657,13 @@ class SUEWSConfig(BaseModel):
     def from_df_state(cls, df: pd.DataFrame) -> "SUEWSConfig":
         """Create config from DataFrame state"""
         surface_map = {
-            0: 'paved', 1: 'bldgs', 2: 'dectr', 3: 'evetr',
-            4: 'grass', 5: 'bsoil', 6: 'water'
+            0: "paved",
+            1: "bldgs",
+            2: "dectr",
+            3: "evetr",
+            4: "grass",
+            5: "bsoil",
+            6: "water",
         }
 
         # Initialize basic structure
@@ -577,587 +675,57 @@ class SUEWSConfig(BaseModel):
                     "tstep": 300,  # Default values
                     "forcing_file": "forcing.csv",
                     "output_file": "output.csv",
-                    "daylightsaving_method": 1
+                    "daylightsaving_method": 1,
                 },
                 "physics": {
                     # Add physics parameters from df
-                }
+                },
             },
-            "site": [{
-                "name": "site_0",
-                "properties": {
-                    "lat": float(df.loc[0, ('lat', 0)]),
-                    "lon": float(df.loc[0, ('lon', 0)]),
-                    "alt": float(df.loc[0, ('alt', 0)]),
-                    "timezone": int(df.loc[0, ('timezone', 0)]),
-                    # ... other properties ...
+            "site": [
+                {
+                    "name": "site_0",
+                    "properties": {
+                        "lat": float(df.loc[0, ("lat", 0)]),
+                        "lng": float(df.loc[0, ("lng", 0)]),
+                        "alt": float(df.loc[0, ("alt", 0)]),
+                        "timezone": int(df.loc[0, ("timezone", 0)]),
+                        # ... other properties ...
+                    },
                 }
-            }]
+            ],
         }
 
         # Convert DataFrame data to config structure
         for surf_idx, surf_name in surface_map.items():
             # Extract surface properties
             surface_props = {
-                "sfr": float(df.loc[0, ('sfr', surf_idx)]),
-                "emis": float(df.loc[0, ('emis', surf_idx)]),
+                "sfr": float(df.loc[0, ("sfr_surf", surf_idx)]),
+                "emis": float(df.loc[0, ("emis", surf_idx)]),
                 # ... other properties ...
             }
 
             # Add to config dictionary
-            config_dict["site"][0]["properties"]["land_cover"][surf_name] = surface_props
+            config_dict["site"][0]["properties"]["land_cover"][surf_name] = (
+                surface_props
+            )
 
         return cls(**config_dict)
-
-# Create a sample configuration
-# sample_config_suews = SUEWSConfig(
-#     name="Sample Config",
-#     description="A sample configuration for testing",
-#     model={
-#         "control": ModelControl(
-#             tstep=300,
-#             forcing_file="forcing.csv",
-#             output_file="output.csv",
-#             daylightsaving_method=1,
-#         ),
-#         "physics": ModelPhysics(
-#             netradiationmethod=1,
-#             emissionsmethod=1,
-#             storageheatmethod=1,
-#             ohmincqf=1,
-#             aerodynamicresistancemethod=1,
-#             roughlenmommethod=1,
-#             roughlenheatmethod=1,
-#             stabilitymethod=1,
-#             smdmethod=1,
-#             waterusemethod=1,
-#             diagmethod=1,
-#             snowuse=0,
-#         ),
-#     },
-#     site=[
-#         Site(
-#             name="site_0",
-#             properties=SiteProperties(
-#                 lat=51.5,
-#                 lon=-0.1,
-#                 alt=35,
-#                 timezone=0,
-#                 surfacearea=1,
-#                 z=10,
-#                 z0m_in=0.1,
-#                 zdm_in=2,
-#                 pipecapacity=100,
-#                 runofftowater=0.5,
-#                 narp_trans_site=1,
-#                 lumps=LUMPSParams(
-#                     raincover=0.25,
-#                     rainmaxres=0.25,
-#                     drainrt=0.25,
-#                     veg_type=1,
-#                 ),
-#                 spartacus=SPARTACUSParams(
-#                     air_ext_lw=1.0,
-#                     air_ext_sw=1.0,
-#                     air_ssa_lw=1.0,
-#                     air_ssa_sw=1.0,
-#                     ground_albedo_dir_mult_fact=1.0,
-#                     n_stream_lw_urban=1,
-#                     n_stream_sw_urban=1,
-#                     n_vegetation_region_urban=1,
-#                     sw_dn_direct_frac=1.0,
-#                     use_sw_direct_albedo=0.1,
-#                     veg_contact_fraction_const=1.0,
-#                     veg_fsd_const=1.0,
-#                     veg_ssa_lw=1.0,
-#                     veg_ssa_sw=1.0,
-#                 ),
-#                 irrigation=IrrigationParams(
-#                     h_maintain=0.5,
-#                     faut=0.5,
-#                     ie_start=100,
-#                     ie_end=200,
-#                     internalwateruse_h=10,
-#                     daywatper=DayProfile(
-#                         Monday=10.0,
-#                         Tuesday=10.0,
-#                         Wednesday=10.0,
-#                         Thursday=10.0,
-#                         Friday=10.0,
-#                         Saturday=10.0,
-#                         Sunday=10.0,
-#                     ),
-#                     daywat=DayProfile(
-#                         Monday=10.0,
-#                         Tuesday=10.0,
-#                         Wednesday=10.0,
-#                         Thursday=10.0,
-#                         Friday=10.0,
-#                         Saturday=10.0,
-#                         Sunday=10.0,
-#                     ),
-#                     wuprofa_24hr=HourlyProfile(
-#                         working_day={str(i): 0.1 for i in range(1, 25)},
-#                         holiday={str(i): 0.1 for i in range(1, 25)},
-#                     ),
-#                     wuprofm_24hr=HourlyProfile(
-#                         working_day={str(i): 0.1 for i in range(1, 25)},
-#                         holiday={str(i): 0.1 for i in range(1, 25)},
-#                     ),
-#                 ),
-#                 anthropogenic_emissions=AnthropogenicEmissions(
-#                     startdls=100,
-#                     enddls=300,
-#                     heat=AnthropogenicHeat(
-#                         qf0_beu={
-#                             "paved": 0.1,
-#                             "bldgs": 0.1,
-#                             "dectr": 0.1,
-#                             "evetr": 0.1,
-#                             "grass": 0.1,
-#                             "bsoil": 0.1,
-#                             "water": 0.1,
-#                         },
-#                         qf_a={
-#                             "paved": 0.1,
-#                             "bldgs": 0.1,
-#                             "dectr": 0.1,
-#                             "evetr": 0.1,
-#                             "grass": 0.1,
-#                             "bsoil": 0.1,
-#                             "water": 0.1,
-#                         },
-#                         qf_b={
-#                             "paved": 0.1,
-#                             "bldgs": 0.1,
-#                             "dectr": 0.1,
-#                             "evetr": 0.1,
-#                             "grass": 0.1,
-#                             "bsoil": 0.1,
-#                             "water": 0.1,
-#                         },
-#                         qf_c={
-#                             "paved": 0.1,
-#                             "bldgs": 0.1,
-#                             "dectr": 0.1,
-#                             "evetr": 0.1,
-#                             "grass": 0.1,
-#                             "bsoil": 0.1,
-#                             "water": 0.1,
-#                         },
-#                         baset_cooling={
-#                             "paved": 0.1,
-#                             "bldgs": 0.1,
-#                             "dectr": 0.1,
-#                             "evetr": 0.1,
-#                             "grass": 0.1,
-#                             "bsoil": 0.1,
-#                             "water": 0.1,
-#                         },
-#                         baset_heating={
-#                             "paved": 0.1,
-#                             "bldgs": 0.1,
-#                             "dectr": 0.1,
-#                             "evetr": 0.1,
-#                             "grass": 0.1,
-#                             "bsoil": 0.1,
-#                             "water": 0.1,
-#                         },
-#                         ah_min=0.1,
-#                         ah_slope_cooling=0.1,
-#                         ah_slope_heating=0.1,
-#                         ahprof_24hr=HourlyProfile(
-#                             working_day={str(i): 0.1 for i in range(1, 25)},
-#                             holiday={str(i): 0.1 for i in range(1, 25)},
-#                         ),
-#                     ),
-#                     co2=CO2Params(
-#                         co2pointsource=0.1,
-#                         ef_umolco2perj=0.1,
-#                         enef_v_jkm=0.1,
-#                         fcef_v_kgkm=0.1,
-#                         frfossilfuel_heat=0.1,
-#                         frfossilfuel_nonheat=0.1,
-#                         maxfcmetab=0.1,
-#                         maxqfmetab=0.1,
-#                         min_res_bioco2=0.1,
-#                         minfcmetab=0.1,
-#                         minqfmetab=0.1,
-#                         trafficrate=0.1,
-#                         trafficunits=0.1,
-#                         traffprof_24hr=HourlyProfile(
-#                             working_day={str(i): 0.1 for i in range(1, 25)},
-#                             holiday={str(i): 0.1 for i in range(1, 25)},
-#                         ),
-#                     ),
-#                 ),
-#                 snow=SnowParams(
-#                     crwmax=0.1,
-#                     crwmin=0.1,
-#                     narp_emis_snow=0.1,
-#                     preciplimit=0.1,
-#                     preciplimitalb=0.1,
-#                     snowalbmax=0.1,
-#                     snowalbmin=0.1,
-#                     snowdensmin=0.1,
-#                     snowlimbldg=0.1,
-#                     snowlimpaved=0.1,
-#                     snowpacklimit=0.1,
-#                     snowprof_24hr=HourlyProfile(
-#                         working_day={str(i): 0.1 for i in range(1, 25)},
-#                         holiday={str(i): 0.1 for i in range(1, 25)},
-#                     ),
-#                     tau_a=0.1,
-#                     tau_r=0.1,
-#                     tempmeltfact=0.1,
-#                     radmeltfact=0.1,
-#                 ),
-#                 land_cover=LandCover(
-#                     paved=SurfaceProperties(
-#                         sfr=0.1,
-#                         emis=0.1,
-#                         alb=0.1,
-#                         chanohm=0.1,
-#                         cpanohm=0.1,
-#                         kkanohm=0.1,
-#                         ohm_threshsw=0.1,
-#                         ohm_threshwd=0.1,
-#                         soildepth=0.1,
-#                         soilstore=0.1,
-#                         soilstorecap=0.1,
-#                         statelimit=0.1,
-#                         sathydraulicconduct=0.1,
-#                         storedrainprm=StorageDrainParams(
-#                             store_min=0.0,
-#                             store_max=10.0,
-#                             store_cap=5.0,
-#                             drain_eq=1,
-#                             drain_coef_1=0.5,
-#                             drain_coef_2=0.5,
-#                         ),
-#                     ),
-#                     bldgs=SurfaceProperties(
-#                         sfr=0.1,
-#                         emis=0.1,
-#                         alb=0.1,
-#                         chanohm=0.1,
-#                         cpanohm=0.1,
-#                         kkanohm=0.1,
-#                         ohm_threshsw=0.1,
-#                         ohm_threshwd=0.1,
-#                         soildepth=0.1,
-#                         soilstore=0.1,
-#                         soilstorecap=0.1,
-#                         statelimit=0.1,
-#                         sathydraulicconduct=0.1,
-#                         storedrainprm=StorageDrainParams(
-#                             store_min=0.0,
-#                             store_max=10.0,
-#                             store_cap=5.0,
-#                             drain_eq=1,
-#                             drain_coef_1=0.5,
-#                             drain_coef_2=0.5,
-#                         ),
-#                     ),
-#                     dectr=DectrProperties(
-#                         sfr=0.1,
-#                         emis=0.1,
-#                         alb=0.1,
-#                         soildepth=0.1,
-#                         soilstore=0.1,
-#                         soilstorecap=0.1,
-#                         statelimit=0.1,
-#                         sathydraulicconduct=0.1,
-#                         storedrainprm=StorageDrainParams(
-#                             store_min=0.0,
-#                             store_max=10.0,
-#                             store_cap=5.0,
-#                             drain_eq=1,
-#                             drain_coef_1=0.5,
-#                             drain_coef_2=0.5,
-#                         ),
-#                         faidectree=0.1,
-#                         dectreeh=0.1,
-#                         pormin_dec=0.1,
-#                         pormax_dec=0.1,
-#                         capmax_dec=0.1,
-#                         capmin_dec=0.1,
-#                         alb_min=0.1,
-#                         alb_max=0.9,
-#                         beta_bioco2=0.1,
-#                         beta_enh_bioco2=0.1,
-#                         alpha_bioco2=0.1,
-#                         alpha_enh_bioco2=0.1,
-#                         resp_a=0.1,
-#                         resp_b=0.1,
-#                         theta_bioco2=0.1,
-#                         conductance=Conductance(
-#                             g_max=0.1,
-#                             g_k=0.1,
-#                             g_q_base=0.1,
-#                             g_q_shape=0.1,
-#                             g_t=0.1,
-#                             g_sm=0.1,
-#                             kmax=0.1,
-#                             gsmodel=1,
-#                             maxconductance=0.1,
-#                             s1=0.1,
-#                             s2=0.1,
-#                         ),
-#                         lai=LAIParams(
-#                             baset=0.1,
-#                             gddfull=0.1,
-#                             basete=0.1,
-#                             sddfull=0.1,
-#                             laimin=0.1,
-#                             laimax=0.1,
-#                             laipower=0.1,
-#                             laitype=1,
-#                         ),
-#                         ie_a=0.1,
-#                         ie_m=0.1,
-#                     ),
-#                     evetr=EvetrProperties(
-#                         sfr=0.1,
-#                         emis=0.1,
-#                         alb=0.1,
-#                         soildepth=0.1,
-#                         soilstore=0.1,
-#                         soilstorecap=0.1,
-#                         statelimit=0.1,
-#                         sathydraulicconduct=0.1,
-#                         storedrainprm=StorageDrainParams(
-#                             store_min=0.0,
-#                             store_max=10.0,
-#                             store_cap=5.0,
-#                             drain_eq=1,
-#                             drain_coef_1=0.5,
-#                             drain_coef_2=0.5,
-#                         ),
-#                         faievetree=0.1,
-#                         evetreeh=0.1,
-#                         alb_min=0.1,
-#                         alb_max=0.9,
-#                         beta_bioco2=0.1,
-#                         beta_enh_bioco2=0.1,
-#                         alpha_bioco2=0.1,
-#                         alpha_enh_bioco2=0.1,
-#                         resp_a=0.1,
-#                         resp_b=0.1,
-#                         theta_bioco2=0.1,
-#                         conductance=Conductance(
-#                             g_max=0.1,
-#                             g_k=0.1,
-#                             g_q_base=0.1,
-#                             g_q_shape=0.1,
-#                             g_t=0.1,
-#                             g_sm=0.1,
-#                             kmax=0.1,
-#                             gsmodel=1,
-#                             maxconductance=0.1,
-#                             s1=0.1,
-#                             s2=0.1,
-#                         ),
-#                         lai=LAIParams(
-#                             baset=0.1,
-#                             gddfull=0.1,
-#                             basete=0.1,
-#                             sddfull=0.1,
-#                             laimin=0.1,
-#                             laimax=0.1,
-#                             laipower=0.1,
-#                             laitype=1,
-#                         ),
-#                         ie_a=0.1,
-#                         ie_m=0.1,
-#                     ),
-#                     grass=VegetatedSurfaceProperties(
-#                         sfr=0.1,
-#                         emis=0.1,
-#                         alb=0.1,
-#                         soildepth=0.1,
-#                         soilstore=0.1,
-#                         soilstorecap=0.1,
-#                         statelimit=0.1,
-#                         sathydraulicconduct=0.1,
-#                         storedrainprm=StorageDrainParams(
-#                             store_min=0.0,
-#                             store_max=10.0,
-#                             store_cap=5.0,
-#                             drain_eq=1,
-#                             drain_coef_1=0.5,
-#                             drain_coef_2=0.5,
-#                         ),
-#                         alb_min=0.1,
-#                         alb_max=0.9,
-#                         beta_bioco2=0.1,
-#                         beta_enh_bioco2=0.1,
-#                         alpha_bioco2=0.1,
-#                         alpha_enh_bioco2=0.1,
-#                         resp_a=0.1,
-#                         resp_b=0.1,
-#                         theta_bioco2=0.1,
-#                         conductance=Conductance(
-#                             g_max=0.1,
-#                             g_k=0.1,
-#                             g_q_base=0.1,
-#                             g_q_shape=0.1,
-#                             g_t=0.1,
-#                             g_sm=0.1,
-#                             kmax=0.1,
-#                             gsmodel=1,
-#                             maxconductance=0.1,
-#                             s1=0.1,
-#                             s2=0.1,
-#                         ),
-#                         lai=LAIParams(
-#                             baset=0.1,
-#                             gddfull=0.1,
-#                             basete=0.1,
-#                             sddfull=0.1,
-#                             laimin=0.1,
-#                             laimax=0.1,
-#                             laipower=0.1,
-#                             laitype=1,
-#                         ),
-#                         ie_a=0.1,
-#                         ie_m=0.1,
-#                     ),
-#                     bsoil=SurfaceProperties(
-#                         sfr=0.1,
-#                         emis=0.1,
-#                         alb=0.1,
-#                         chanohm=0.1,
-#                         cpanohm=0.1,
-#                         kkanohm=0.1,
-#                         ohm_threshsw=0.1,
-#                         ohm_threshwd=0.1,
-#                         soildepth=0.1,
-#                         soilstore=0.1,
-#                         soilstorecap=0.1,
-#                         statelimit=0.1,
-#                         sathydraulicconduct=0.1,
-#                         storedrainprm=StorageDrainParams(
-#                             store_min=0.0,
-#                             store_max=10.0,
-#                             store_cap=5.0,
-#                             drain_eq=1,
-#                             drain_coef_1=0.5,
-#                             drain_coef_2=0.5,
-#                         ),
-#                     ),
-#                     water=WaterProperties(
-#                         sfr=0.1,
-#                         emis=0.1,
-#                         alb=0.1,
-#                         soildepth=0.1,
-#                         soilstore=0.1,
-#                         soilstorecap=0.1,
-#                         statelimit=0.1,
-#                         sathydraulicconduct=0.1,
-#                         storedrainprm=StorageDrainParams(
-#                             store_min=0.0,
-#                             store_max=10.0,
-#                             store_cap=5.0,
-#                             drain_eq=1,
-#                             drain_coef_1=0.5,
-#                             drain_coef_2=0.5,
-#                         ),
-#                         flowchange=0.1,
-#                         irrfracwater=0.1,
-#                     ),
-#                 ),
-#                 initial_states={
-#                     "paved": InitialState(
-#                         state=0.1,
-#                         soilstore=0.1,
-#                         snowfrac=0.1,
-#                         snowpack=0.1,
-#                         snowwater=0.1,
-#                         snowalb=0.1,
-#                         snowdens=0.1,
-#                     ),
-#                     "bldgs": InitialState(
-#                         state=0.1,
-#                         soilstore=0.1,
-#                         snowfrac=0.1,
-#                         snowpack=0.1,
-#                         snowwater=0.1,
-#                         snowalb=0.1,
-#                         snowdens=0.1,
-#                     ),
-#                     "dectr": InitialState(
-#                         state=0.1,
-#                         soilstore=0.1,
-#                         snowfrac=0.1,
-#                         snowpack=0.1,
-#                         snowwater=0.1,
-#                         snowalb=0.1,
-#                         snowdens=0.1,
-#                         decidcap_id=0.1,
-#                         porosity_id=0.1,
-#                         alb_id=0.1,
-#                     ),
-#                     "evetr": InitialState(
-#                         state=0.1,
-#                         soilstore=0.1,
-#                         snowfrac=0.1,
-#                         snowpack=0.1,
-#                         snowwater=0.1,
-#                         snowalb=0.1,
-#                         snowdens=0.1,
-#                         decidcap_id=0.1,
-#                         porosity_id=0.1,
-#                         alb_id=0.1,
-#                     ),
-#                     "grass": InitialState(
-#                         state=0.1,
-#                         soilstore=0.1,
-#                         snowfrac=0.1,
-#                         snowpack=0.1,
-#                         snowwater=0.1,
-#                         snowalb=0.1,
-#                         snowdens=0.1,
-#                         decidcap_id=0.1,
-#                         porosity_id=0.1,
-#                         alb_id=0.1,
-#                     ),
-#                     "bsoil": InitialState(
-#                         state=0.1,
-#                         soilstore=0.1,
-#                         snowfrac=0.1,
-#                         snowpack=0.1,
-#                         snowwater=0.1,
-#                         snowalb=0.1,
-#                         snowdens=0.1,
-#                     ),
-#                     "water": InitialState(
-#                         state=0.1,
-#                         soilstore=0.1,
-#                         snowfrac=0.1,
-#                         snowpack=0.1,
-#                         snowwater=0.1,
-#                         snowalb=0.1,
-#                         snowdens=0.1,
-#                     ),
-#                 },
-#             ),
-#         )
-#     ],
-# )
 
 
 if __name__ == "__main__":
     # test the sample config
     # Load YAML config
-    with open('./config-suews.yml', 'r') as file:
+    with open("./config-suews.yml", "r") as file:
         yaml_config = yaml.safe_load(file)
 
     # Create SUEWSConfig object
     suews_config = SUEWSConfig(**yaml_config[0])
+    print(r"testing suews_config done!")
 
-    print(r'testing suews_config done!')
-    # test converting the sample `config-suews.yml` to dataframe
+    # Convert to DataFrame
+    df_state = suews_config.to_df_state()
+    print("testing df_state done!")
 
-
-
+    # Convert back to config
+    suews_config_back = SUEWSConfig.from_df_state(df_state)
+    print("testing from_df_state done!")
