@@ -427,7 +427,9 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
-            raise ValueError("alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            value_error_message = ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            exceptions.append(value_error_message)
+            #raise value_error_message
         return self
 
 
@@ -442,7 +444,9 @@ class DectrProperties(VegetatedSurfaceProperties):
     @model_validator(mode="after")
     def validate_porosity_range(self) -> "DectrProperties":
         if self.pormin_dec >= self.pormax_dec:
-            raise ValueError("pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
+            value_error_message = ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
+            exceptions.append(value_error_message)
+            #raise value_error_message
         return self
 
 
@@ -720,6 +724,9 @@ class SUEWSConfig(BaseModel):
 
 
 if __name__ == "__main__":
+    # Create list for collecting all exceptions
+    exceptions = []
+
     # test the sample config
     # Load YAML config
     with open("./config-suews.yml", "r") as file:
@@ -727,6 +734,10 @@ if __name__ == "__main__":
 
     # Create SUEWSConfig object
     suews_config = SUEWSConfig(**yaml_config[0])
+
+    if exceptions:
+        raise ExceptionGroup("Validation errors occurred", exceptions)
+
     print(r"testing suews_config done!")
 
     pdb.set_trace()
