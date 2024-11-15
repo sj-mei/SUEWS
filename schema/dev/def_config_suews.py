@@ -11,6 +11,7 @@ import numpy as np
 from enum import Enum
 import pandas as pd
 import yaml
+import pdb
 
 
 class SurfaceType(str, Enum):
@@ -438,6 +439,12 @@ class DectrProperties(VegetatedSurfaceProperties):
     capmax_dec: float
     capmin_dec: float
 
+    @model_validator(mode="after")
+    def validate_porosity_range(self) -> "DectrProperties":
+        if self.pormin_dec >= self.pormax_dec:
+            raise ValueError("pormin_dec must be less than pormax_dec")
+        return self
+
 
 class EvetrProperties(VegetatedSurfaceProperties):
     faievetree: float
@@ -721,6 +728,8 @@ if __name__ == "__main__":
     # Create SUEWSConfig object
     suews_config = SUEWSConfig(**yaml_config[0])
     print(r"testing suews_config done!")
+
+    pdb.set_trace()
 
     # Convert to DataFrame
     df_state = suews_config.to_df_state()
