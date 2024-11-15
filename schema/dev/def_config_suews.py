@@ -490,6 +490,22 @@ class SnowParams(BaseModel):
     tempmeltfact: float
     radmeltfact: float
 
+    @model_validator(mode="after")
+    def validate_crw_range(self) -> "SnowParams":
+        if self.crwmin >= self.crwmax:
+            error_message = ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+        return self
+
+    @model_validator(mode="after")
+    def validate_snowalb_range(self) -> "SnowParams":
+        if self.snowalbmin >= self.snowalbmax:
+            error_message = ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+        return self
+
 
 class LandCover(BaseModel):
     paved: PavedProperties
