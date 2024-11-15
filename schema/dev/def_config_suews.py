@@ -445,8 +445,8 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 class DectrProperties(VegetatedSurfaceProperties):
     faidectree: float
     dectreeh: float
-    pormin_dec: float
-    pormax_dec: float
+    pormin_dec: float = Field(ge=0.1, le=0.9, description="Minimum porosity")
+    pormax_dec: float = Field(ge=0.1, le=0.9, description="Maximum porosity")
     capmax_dec: float
     capmin_dec: float
 
