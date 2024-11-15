@@ -458,6 +458,14 @@ class DectrProperties(VegetatedSurfaceProperties):
             #raise ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
         return self
 
+    @model_validator(mode="after")
+    def validate_cap_range(self) -> "DectrProperties":
+        if self.capmin_dec >= self.capmax_dec:
+            error_message = ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
+        return self
+
 
 class EvetrProperties(VegetatedSurfaceProperties):
     faievetree: float
