@@ -664,7 +664,11 @@
               sddfull: 100
               laimin: 0.1
               laimax: 2
-              laipower: 2
+              laipower:
+                growth_lai: 0.2
+                growth_gdd: 0.3
+                senescence_lai: 0.2
+                senescence_sdd: 0.3
               laitype: 1
             storedrainprm: # for surface water (i.e. above ground)
               store_min: 0.1
@@ -733,7 +737,11 @@
               sddfull: 100
               laimin: 0.1
               laimax: 2
-              laipower: 2
+              laipower:
+                growth_lai: 0.2
+                growth_gdd: 0.3
+                senescence_lai: 0.2
+                senescence_sdd: 0.3
               laitype: 1
             storedrainprm: # for surface water (i.e. above ground)
               store_min: 0.1
@@ -800,7 +808,11 @@
               sddfull: 100
               laimin: 0.1
               laimax: 2
-              laipower: 2
+              laipower:
+                growth_lai: 0.2
+                growth_gdd: 0.3
+                senescence_lai: 0.2
+                senescence_sdd: 0.3
               laitype: 1
             storedrainprm: # for surface water (i.e. above ground)
               store_min: 0.1

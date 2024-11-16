@@ -180,6 +180,7 @@ class OHMCoefficients(BaseModel):
 
 class SurfaceProperties(BaseModel):
     """Base properties for all surface types"""
+
     sfr: float = Field(ge=0, le=1, description="Surface fraction")
     emis: float = Field(ge=0, le=1, description="Surface emissivity")
     chanohm: Optional[float] = None
@@ -384,15 +385,59 @@ class Conductance(BaseModel):
     s2: float = Field(description="Soil moisture threshold parameter")
 
 
+class LAIPowerCoefficients(BaseModel):
+    growth_lai: float = Field(
+        description="Power coefficient for LAI in growth equation (LAIPower[1])"
+    )
+    growth_gdd: float = Field(
+        description="Power coefficient for GDD in growth equation (LAIPower[2])"
+    )
+    senescence_lai: float = Field(
+        description="Power coefficient for LAI in senescence equation (LAIPower[3])"
+    )
+    senescence_sdd: float = Field(
+        description="Power coefficient for SDD in senescence equation (LAIPower[4])"
+    )
+
+    def to_list(self) -> List[float]:
+        """Convert to list format for Fortran interface"""
+        return [
+            self.growth_lai,
+            self.growth_gdd,
+            self.senescence_lai,
+            self.senescence_sdd,
+        ]
+
+
 class LAIParams(BaseModel):
-    baset: float
-    gddfull: float
-    basete: float
-    sddfull: float
-    laimin: float
-    laimax: float
-    laipower: float
-    laitype: int
+    baset: float = Field(
+        description="Base Temperature for initiating growing degree days (GDD) for leaf growth [degC]"
+    )
+    gddfull: float = Field(
+        description="Growing degree days (GDD) needed for full capacity of LAI [degC]"
+    )
+    basete: float = Field(
+        description="Base temperature for initiating senescence degree days (SDD) for leaf off [degC]"
+    )
+    sddfull: float = Field(
+        description="Senescence degree days (SDD) needed to initiate leaf off [degC]"
+    )
+    laimin: float = Field(description="Leaf-off wintertime value [m2 m-2]")
+    laimax: float = Field(description="Full leaf-on summertime value [m2 m-2]")
+    laipower: LAIPowerCoefficients = Field(
+        description="LAI calculation power parameters for growth and senescence"
+    )
+    laitype: int = Field(
+        description="LAI calculation choice (0: original, 1: new high latitude)"
+    )
+
+    @model_validator(mode="after")
+    def validate_lai_ranges(self) -> "LAIParams":
+        if self.laimin > self.laimax:
+            raise ValueError("laimin must be less than or equal to laimax")
+        if self.baset > self.gddfull:
+            raise ValueError("baset must be less than gddfull")
+        return self
 
 
 class VegetatedSurfaceProperties(SurfaceProperties):
@@ -613,7 +658,8 @@ class SUEWSConfig(BaseModel):
                         set_df_value("snowdens", surf_idx, init_state.snowdens)
             else:  # SnowAlb case
                 # Set snowalb for all surfaces if it's a SnowAlb object
-                set_df_value("snowalb", surf_idx, site.initial_states.snowalb)
+                # snowalb is a single value for all surfaces
+                set_df_value("snowalb", 0, site.initial_states.snowalb)
 
             # OHM coefficients
             if surface.ohm_coef:
@@ -642,7 +688,7 @@ class SUEWSConfig(BaseModel):
                 ):
                     set_df_value(
                         "storedrainprm",
-                        (surf_idx, i),
+                        (i, surf_idx),
                         getattr(surface.storedrainprm, var),
                     )
 
@@ -657,15 +703,24 @@ class SUEWSConfig(BaseModel):
 
             # LAI parameters
             if hasattr(surface, "lai"):
+                lai = surface.lai
                 idx = surf_idx - 2
-                set_df_value("baset", (idx,), surface.lai.baset)
-                set_df_value("gddfull", (idx,), surface.lai.gddfull)
-                set_df_value("basete", (idx,), surface.lai.basete)
-                set_df_value("sddfull", (idx,), surface.lai.sddfull)
-                set_df_value("laimin", (idx,), surface.lai.laimin)
-                set_df_value("laimax", (idx,), surface.lai.laimax)
-                set_df_value("laipower", (idx,), surface.lai.laipower)
-                set_df_value("laitype", (idx,), surface.lai.laitype)
+                set_df_value("baset", (idx,), lai.baset)
+                set_df_value("gddfull", (idx,), lai.gddfull)
+                set_df_value("basete", (idx,), lai.basete)
+                set_df_value("sddfull", (idx,), lai.sddfull)
+                set_df_value("laimin", (idx,), lai.laimin)
+                set_df_value("laimax", (idx,), lai.laimax)
+                set_df_value("laitype", (idx,), lai.laitype)
+                for i, var in enumerate(
+                    [
+                        "growth_lai",
+                        "growth_gdd",
+                        "senescence_lai",
+                        "senescence_sdd",
+                    ]
+                ):
+                    set_df_value("laipower", (i, idx), getattr(lai.laipower, var))
 
             # CO2 parameters for vegetated surfaces
             if hasattr(surface, "beta_bioco2"):
