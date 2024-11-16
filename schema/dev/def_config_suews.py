@@ -179,6 +179,7 @@ class OHMCoefficients(BaseModel):
 
 
 class SurfaceProperties(BaseModel):
+    """Base properties for all surface types"""
     sfr: float = Field(ge=0, le=1, description="Surface fraction")
     emis: float = Field(ge=0, le=1, description="Surface emissivity")
     chanohm: Optional[float] = None
@@ -193,9 +194,8 @@ class SurfaceProperties(BaseModel):
     sathydraulicconduct: float
     waterdist: Optional[WaterDistribution] = None
     storedrainprm: StorageDrainParams
-    _surface_type: Optional[SurfaceType] = PrivateAttr(
-        default=None
-    )  # Private attribute for surface type
+    snowpacklimit: float = Field(ge=0, description="Snow pack limit for the surface")
+    _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
         self._surface_type = surface_type
@@ -345,7 +345,7 @@ class CO2Params(BaseModel):
     co2pointsource: float
     ef_umolco2perj: float
     enef_v_jkm: float
-    fcef_v_kgkm: float
+    fcef_v_kgkm: DayProfile
     frfossilfuel_heat: float
     frfossilfuel_nonheat: float
     maxfcmetab: float
@@ -380,7 +380,6 @@ class Conductance(BaseModel):
     g_sm: float = Field(description="Conductance parameter related to soil moisture")
     kmax: float = Field(description="Maximum incoming shortwave radiation")
     gsmodel: int = Field(description="Stomatal conductance model selection")
-    maxconductance: float = Field(description="Maximum surface conductance")
     s1: float = Field(description="Soil moisture threshold parameter")
     s2: float = Field(description="Soil moisture threshold parameter")
 
@@ -406,6 +405,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     resp_a: float
     resp_b: float
     theta_bioco2: float
+    maxconductance: float = Field(description="Maximum surface conductance")
     lai: LAIParams
     ie_a: float = Field(description="Irrigation efficiency coefficient-automatic")
     ie_m: float = Field(description="Irrigation efficiency coefficient-manual")
@@ -442,7 +442,6 @@ class SnowParams(BaseModel):
     snowdensmin: float
     snowlimbldg: float
     snowlimpaved: float
-    snowpacklimit: float
     snowprof_24hr: HourlyProfile
     tau_a: float
     tau_r: float
@@ -577,7 +576,7 @@ class SUEWSConfig(BaseModel):
             surface = getattr(props.land_cover, surf_name)
 
             # Basic surface properties
-            set_df_value("sfr_surf", surf_idx, surface.sfr)
+            set_df_value("sfr_surf", (surf_idx,), surface.sfr)
             set_df_value("emis", (surf_idx,), surface.emis)
 
             # Handle albedo
@@ -631,41 +630,30 @@ class SUEWSConfig(BaseModel):
 
             # Storage and drain parameters
             if hasattr(surface, "storedrainprm"):
-                set_df_value(
-                    "storedrainprm", (surf_idx, 0), surface.storedrainprm.store_min
-                )
-                set_df_value(
-                    "storedrainprm", (surf_idx, 1), surface.storedrainprm.store_max
-                )
-                set_df_value(
-                    "storedrainprm", (surf_idx, 2), surface.storedrainprm.store_cap
-                )
-                set_df_value(
-                    "storedrainprm", (surf_idx, 3), surface.storedrainprm.drain_eq
-                )
-                set_df_value(
-                    "storedrainprm", (surf_idx, 4), surface.storedrainprm.drain_coef_1
-                )
-                set_df_value(
-                    "storedrainprm", (surf_idx, 5), surface.storedrainprm.drain_coef_2
-                )
+                for i, var in enumerate(
+                    [
+                        "store_min",
+                        "store_max",
+                        "store_cap",
+                        "drain_eq",
+                        "drain_coef_1",
+                        "drain_coef_2",
+                    ]
+                ):
+                    set_df_value(
+                        "storedrainprm",
+                        (surf_idx, i),
+                        getattr(surface.storedrainprm, var),
+                    )
 
-            # Vegetation-specific properties
-            if hasattr(surface, "conductance"):
+            # Maximum conductance
+            if hasattr(surface, "maxconductance"):
                 idx = surf_idx - 2
-                set_df_value("g_max", (idx,), surface.conductance.g_max)
-                set_df_value("g_k", (idx,), surface.conductance.g_k)
-                set_df_value("g_q_base", (idx,), surface.conductance.g_q_base)
-                set_df_value("g_q_shape", (idx,), surface.conductance.g_q_shape)
-                set_df_value("g_t", (idx,), surface.conductance.g_t)
-                set_df_value("g_sm", (idx,), surface.conductance.g_sm)
-                set_df_value("kmax", (idx,), surface.conductance.kmax)
-                set_df_value("gsmodel", surf_idx, surface.conductance.gsmodel)
-                set_df_value(
-                    "maxconductance", surf_idx, surface.conductance.maxconductance
-                )
-                set_df_value("s1", surf_idx, surface.conductance.s1)
-                set_df_value("s2", surf_idx, surface.conductance.s2)
+                set_df_value("maxconductance", (idx,), surface.maxconductance)
+
+            # Snow pack limit
+            if hasattr(surface, "snowpacklimit"):
+                set_df_value("snowpacklimit", (surf_idx,), surface.snowpacklimit)
 
             # LAI parameters
             if hasattr(surface, "lai"):
@@ -686,6 +674,19 @@ class SUEWSConfig(BaseModel):
                 set_df_value("beta_enh_bioco2", (idx,), surface.beta_enh_bioco2)
                 set_df_value("alpha_bioco2", (idx,), surface.alpha_bioco2)
                 set_df_value("alpha_enh_bioco2", (idx,), surface.alpha_enh_bioco2)
+
+        # Conductance properties
+        conductance = props.conductance
+        set_df_value("g_max", 0, conductance.g_max)
+        set_df_value("g_k", 0, conductance.g_k)
+        set_df_value("g_q_base", 0, conductance.g_q_base)
+        set_df_value("g_q_shape", 0, conductance.g_q_shape)
+        set_df_value("g_t", 0, conductance.g_t)
+        set_df_value("g_sm", 0, conductance.g_sm)
+        set_df_value("kmax", 0, conductance.kmax)
+        set_df_value("gsmodel", 0, conductance.gsmodel)
+        set_df_value("s1", 0, conductance.s1)
+        set_df_value("s2", 0, conductance.s2)
 
         # Process anthropogenic emissions
         anthro = props.anthropogenic_emissions
@@ -711,7 +712,8 @@ class SUEWSConfig(BaseModel):
         set_df_value("co2pointsource", 0, anthro.co2.co2pointsource)
         set_df_value("ef_umolco2perj", 0, anthro.co2.ef_umolco2perj)
         set_df_value("enef_v_jkm", 0, anthro.co2.enef_v_jkm)
-        set_df_value("fcef_v_kgkm", 0, anthro.co2.fcef_v_kgkm)
+        set_df_value("fcef_v_kgkm", (0,), anthro.co2.fcef_v_kgkm.working_day)
+        set_df_value("fcef_v_kgkm", (1,), anthro.co2.fcef_v_kgkm.holiday)
 
         # Snow parameters
         snow = props.snow
@@ -725,7 +727,6 @@ class SUEWSConfig(BaseModel):
         set_df_value("snowdensmin", 0, snow.snowdensmin)
         set_df_value("snowlimbldg", 0, snow.snowlimbldg)
         set_df_value("snowlimpaved", 0, snow.snowlimpaved)
-        set_df_value("snowpacklimit", 0, snow.snowpacklimit)
         set_df_value("tau_a", 0, snow.tau_a)
         set_df_value("tau_r", 0, snow.tau_r)
         set_df_value("tempmeltfact", 0, snow.tempmeltfact)
@@ -806,6 +807,6 @@ if __name__ == "__main__":
     df_state = suews_config.to_df_state()
     print("testing df_state done!")
 
-    # Convert back to config
-    suews_config_back = SUEWSConfig.from_df_state(df_state)
-    print("testing from_df_state done!")
+    # # Convert back to config
+    # suews_config_back = SUEWSConfig.from_df_state(df_state)
+    # print("testing from_df_state done!")

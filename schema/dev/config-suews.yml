@@ -65,7 +65,6 @@
           g_sm: 200
           kmax: 1200
           gsmodel: 1
-          maxconductance: 20
           s1: 0.5
           s2: 0.5
         irrigation:
@@ -335,7 +334,9 @@
             co2pointsource: 0.1
             ef_umolco2perj: 0.1
             enef_v_jkm: 0.1
-            fcef_v_kgkm: 0.1
+            fcef_v_kgkm:
+              working_day: 0.1
+              holiday: 0.1
             frfossilfuel_heat: 0.1
             frfossilfuel_nonheat: 0.1
             maxfcmetab: 0.1
@@ -458,7 +459,10 @@
           snowdensmin: 1
           snowlimbldg: .3
           snowlimpaved: .3
-          snowpacklimit: 0
+          tau_a: 0.1
+          tau_r: 0.1
+          tempmeltfact: 0.1
+          radmeltfact: 0.1
           snowprof_24hr:
             working_day:
               1: 0.1
@@ -510,10 +514,6 @@
               22: 0.1
               23: 0.1
               24: 0.1
-          tau_a: 0.1
-          tau_r: 0.1
-          tempmeltfact: 0.1
-          radmeltfact: 0.1
         land_cover:
           paved:
             sfr: 0.1
@@ -561,6 +561,7 @@
               to_bsoil: 0.1
               to_water: 0.1
               to_runoff: 0.4
+            snowpacklimit: 0.1
           bldgs: # buildings
             sfr: 0.1
             faibldg: 0.1
@@ -609,6 +610,7 @@
               to_bsoil: 0.1
               to_water: 0.1
               to_runoff: 0.4
+            snowpacklimit: 0.1
           dectr: # deciduous trees
             sfr: 0.1
             emis: .9
@@ -654,6 +656,7 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
+            maxconductance: 0.5
             lai:
               baset: 20
               gddfull: 100
@@ -678,6 +681,7 @@
               to_bsoil: 0.1
               to_water: 0.1
               to_soilstore: 0.4
+            snowpacklimit: 0.1
             ie_a: 1  # Irrigation efficiency coefficient-automatic
             ie_m: 1  # Irrigation efficiency coefficient-manual
           evetr: # evergreen trees
@@ -721,6 +725,7 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
+            maxconductance: 0.5
             lai:
               baset: 20
               gddfull: 100
@@ -745,6 +750,7 @@
               to_bsoil: 0.1
               to_water: 0.1
               to_soilstore: 0.4
+            snowpacklimit: 0.1
             ie_a: 1  # Irrigation efficiency coefficient-automatic
             ie_m: 1  # Irrigation efficiency coefficient-manual
           grass:
@@ -786,6 +792,7 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
+            maxconductance: 0.5
             lai:
               baset: 20
               gddfull: 100
@@ -810,6 +817,7 @@
               to_bsoil: 0.1
               to_water: 0.1
               to_soilstore: 0.4
+            snowpacklimit: 0.1
             ie_a: 1  # Irrigation efficiency coefficient-automatic
             ie_m: 1  # Irrigation efficiency coefficient-manual
           bsoil: # bare soil
@@ -858,6 +866,7 @@
               to_grass: 0.1
               to_water: 0.1
               to_soilstore: 0.4
+            snowpacklimit: 0.1
           water:
             sfr: 0.4
             emis: .9
@@ -896,7 +905,7 @@
               drain_eq: 1
               drain_coef_1: 0.5
               drain_coef_2: 0.5
-            # `waterdist` is not needed for water
+            snowpacklimit: 0.1
       initial_states:
         snowalb: .8
         paved:
