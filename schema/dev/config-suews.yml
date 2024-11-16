@@ -56,6 +56,18 @@
           veg_fsd_const: 1
           veg_ssa_lw: 1
           veg_ssa_sw: 1
+        conductance:
+          g_max: 200
+          g_k: 100
+          g_q_base: 12
+          g_q_shape: 2
+          g_t: 20
+          g_sm: 200
+          kmax: 1200
+          gsmodel: 1
+          maxconductance: 20
+          s1: 0.5
+          s2: 0.5
         irrigation:
           h_maintain: 10
           faut: 0.5
@@ -202,9 +214,15 @@
             baset_heating:
               working_day: 10
               holiday: 10
-            ah_min: 0.1
-            ah_slope_cooling: 0.1
-            ah_slope_heating: 0.1
+            ah_min:
+              working_day: 0.1
+              holiday: 0.1
+            ah_slope_cooling:
+              working_day: 0.1
+              holiday: 0.1
+            ah_slope_heating:
+              working_day: 0.1
+              holiday: 0.1
             ahprof_24hr:
               working_day: # 24 hours
                 1: 0.1
@@ -636,18 +654,6 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
-            conductance:
-              g_max: 200
-              g_k: 100
-              g_q_base: 12
-              g_q_shape: 2
-              g_t: 20
-              g_sm: 200
-              kmax: 1200
-              gsmodel: 1
-              maxconductance: 20
-              s1: 0.5
-              s2: 0.5
             lai:
               baset: 20
               gddfull: 100
@@ -715,18 +721,6 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
-            conductance:
-              g_max: 200
-              g_k: 100
-              g_q_base: 12
-              g_q_shape: 2
-              g_t: 20
-              g_sm: 200
-              kmax: 1200
-              gsmodel: 1
-              maxconductance: 20
-              s1: 0.5
-              s2: 0.5
             lai:
               baset: 20
               gddfull: 100
@@ -792,18 +786,6 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
-            conductance:
-              g_max: 200
-              g_k: 100
-              g_q_base: 12
-              g_q_shape: 2
-              g_t: 20
-              g_sm: 200
-              kmax: 1200
-              gsmodel: 1
-              maxconductance: 20
-              s1: 0.5
-              s2: 0.5
             lai:
               baset: 20
               gddfull: 100
