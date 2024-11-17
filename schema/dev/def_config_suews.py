@@ -731,7 +731,10 @@ class SUEWSConfig(BaseModel):
                 str_indices = str(indices)
             df.loc[0, (col_name, str_indices)] = value
 
-        # config
+        # Model control
+        set_df_value("tstep", 0, self.model.control.tstep)
+
+        # Model physics
         set_df_value("netradiationmethod", 0, self.model.physics.netradiationmethod)
         set_df_value("emissionsmethod", 0, self.model.physics.emissionsmethod)
         set_df_value("storageheatmethod", 0, self.model.physics.storageheatmethod)
