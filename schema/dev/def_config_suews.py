@@ -384,7 +384,7 @@ class CO2Params(BaseModel):
     trafficrate: float
     trafficunits: float
     traffprof_24hr: HourlyProfile
-
+    humactivity_24hr: HourlyProfile
 
 class AnthropogenicEmissions(BaseModel):
     startdls: float
@@ -717,6 +717,10 @@ class SUEWSConfig(BaseModel):
                         set_df_value("snowwater", surf_idx, init_state.snowwater)
                     if init_state.snowdens is not None:
                         set_df_value("snowdens", surf_idx, init_state.snowdens)
+
+                    # albedo
+                    if init_state.alb_id is not None:
+                        set_df_value(f"alb{surf_name}_id", (surf_idx-2,), init_state.alb_id)
             else:  # SnowAlb case
                 # Set snowalb for all surfaces if it's a SnowAlb object
                 # snowalb is a single value for all surfaces
@@ -791,6 +795,23 @@ class SUEWSConfig(BaseModel):
                 set_df_value("alpha_bioco2", (idx,), surface.alpha_bioco2)
                 set_df_value("alpha_enh_bioco2", (idx,), surface.alpha_enh_bioco2)
 
+        # SPARTACUS parameters
+        spartacus = props.spartacus
+        set_df_value("air_ext_lw", 0, spartacus.air_ext_lw)
+        set_df_value("air_ext_sw", 0, spartacus.air_ext_sw)
+        set_df_value("air_ssa_lw", 0, spartacus.air_ssa_lw)
+        set_df_value("air_ssa_sw", 0, spartacus.air_ssa_sw)
+        set_df_value("ground_albedo_dir_mult_fact", 0, spartacus.ground_albedo_dir_mult_fact)
+        set_df_value("n_stream_lw_urban", 0, spartacus.n_stream_lw_urban)
+        set_df_value("n_stream_sw_urban", 0, spartacus.n_stream_sw_urban)
+        set_df_value("n_vegetation_region_urban", 0, spartacus.n_vegetation_region_urban)
+        set_df_value("sw_dn_direct_frac", 0, spartacus.sw_dn_direct_frac)
+        set_df_value("use_sw_direct_albedo", 0, spartacus.use_sw_direct_albedo)
+        set_df_value("veg_contact_fraction_const", 0, spartacus.veg_contact_fraction_const)
+        set_df_value("veg_fsd_const", 0, spartacus.veg_fsd_const)
+        set_df_value("veg_ssa_lw", 0, spartacus.veg_ssa_lw)
+        set_df_value("veg_ssa_sw", 0, spartacus.veg_ssa_sw)
+
         # Conductance properties
         conductance = props.conductance
         set_df_value("g_max", 0, conductance.g_max)
@@ -804,32 +825,66 @@ class SUEWSConfig(BaseModel):
         set_df_value("s1", 0, conductance.s1)
         set_df_value("s2", 0, conductance.s2)
 
+        # Irrigation parameters
+        irrigation = props.irrigation
+        set_df_value("h_maintain", 0, irrigation.h_maintain)
+        set_df_value("faut", 0, irrigation.faut)
+        set_df_value("ie_start", 0, irrigation.ie_start)
+        set_df_value("ie_end", 0, irrigation.ie_end)
+        set_df_value("internalwateruse_h", 0, irrigation.internalwateruse_h)
+        # weekly profile
+        for i, day in enumerate(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]):
+            set_df_value(f"daywatper", (i,), getattr(irrigation.daywatper, day))
+            set_df_value(f"daywat", (i,), getattr(irrigation.daywat, day))
+        # 24-hour profile
+        for hour in range(24):
+            for i, day in enumerate(["working_day", "holiday"]):
+                prop_day = getattr(irrigation.wuprofa_24hr, day)
+                set_df_value(f"wuprofa_24hr", (hour, i), prop_day[f"{hour+1}"])
+                prop_day = getattr(irrigation.wuprofm_24hr, day)
+                set_df_value(f"wuprofm_24hr", (hour, i), prop_day[f"{hour+1}"])
+
         # Process anthropogenic emissions
         anthro = props.anthropogenic_emissions
-        set_df_value("ah_min", (0,), anthro.heat.ah_min.working_day)
-        set_df_value("ah_min", (1,), anthro.heat.ah_min.holiday)
-        set_df_value("ah_slope_cooling", (0,), anthro.heat.ah_slope_cooling.working_day)
-        set_df_value("ah_slope_cooling", (1,), anthro.heat.ah_slope_cooling.holiday)
-        set_df_value("ah_slope_heating", (0,), anthro.heat.ah_slope_heating.working_day)
-        set_df_value("ah_slope_heating", (1,), anthro.heat.ah_slope_heating.holiday)
-
-        # Hourly profiles
-        for hour in range(24):
-            set_df_value(
-                "ahprof_24hr",
-                (hour, 0),
-                anthro.heat.ahprof_24hr.working_day[str(hour + 1)],
-            )
-            set_df_value(
-                "ahprof_24hr", (hour, 1), anthro.heat.ahprof_24hr.holiday[str(hour + 1)]
-            )
+        set_df_value("startdls", 0, anthro.startdls)
+        set_df_value("enddls", 0, anthro.enddls)
+        # heat
+        for i, day in enumerate(["working_day", "holiday"]):
+            set_df_value("qf0_beu", (i,), getattr(anthro.heat.qf0_beu, day))
+            set_df_value("qf_a", (i,), getattr(anthro.heat.qf_a, day))
+            set_df_value("qf_b", (i,), getattr(anthro.heat.qf_b, day))
+            set_df_value("qf_c", (i,), getattr(anthro.heat.qf_c, day))
+            set_df_value("baset_cooling", (i,), getattr(anthro.heat.baset_cooling, day))
+            set_df_value("baset_heating", (i,), getattr(anthro.heat.baset_heating, day))
+            set_df_value("ah_min", (i,), getattr(anthro.heat.ah_min, day))
+            set_df_value("ah_slope_cooling", (i,), getattr(anthro.heat.ah_slope_cooling, day))
+            set_df_value("ah_slope_heating", (i,), getattr(anthro.heat.ah_slope_heating, day))
+            # Hourly profiles
+            for hour in range(24):
+                set_df_value(
+                    "ahprof_24hr",
+                    (hour, i),
+                    getattr(anthro.heat.ahprof_24hr, day)[f"{hour+1}"],
+                )
 
         # CO2 parameters
         set_df_value("co2pointsource", 0, anthro.co2.co2pointsource)
         set_df_value("ef_umolco2perj", 0, anthro.co2.ef_umolco2perj)
         set_df_value("enef_v_jkm", 0, anthro.co2.enef_v_jkm)
-        set_df_value("fcef_v_kgkm", (0,), anthro.co2.fcef_v_kgkm.working_day)
-        set_df_value("fcef_v_kgkm", (1,), anthro.co2.fcef_v_kgkm.holiday)
+        for i, day in enumerate(["working_day", "holiday"]):
+            set_df_value("fcef_v_kgkm", (i,), getattr(anthro.co2.fcef_v_kgkm, day))
+            # 24-hour profile
+            for hour in range(24):
+                set_df_value(
+                    "traffprof_24hr",
+                    (hour, i),
+                    getattr(anthro.co2.traffprof_24hr, day)[f"{hour+1}"],
+                )
+                set_df_value(
+                    "humactivity_24hr",
+                    (hour, i),
+                    getattr(anthro.co2.humactivity_24hr, day)[f"{hour+1}"],
+                )
 
         # Snow parameters
         snow = props.snow
@@ -847,6 +902,8 @@ class SUEWSConfig(BaseModel):
         set_df_value("tau_r", 0, snow.tau_r)
         set_df_value("tempmeltfact", 0, snow.tempmeltfact)
         set_df_value("radmeltfact", 0, snow.radmeltfact)
+
+
 
         return df
 
