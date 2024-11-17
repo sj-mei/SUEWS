@@ -37,10 +37,18 @@ class SurfaceInitialState(BaseModel):
     snowpack: Optional[float] = Field(None, ge=0, description="Snow pack")
     snowwater: Optional[float] = Field(None, ge=0, description="Snow water")
     snowdens: Optional[float] = Field(None, ge=0, description="Snow density")
-    alb_id: Optional[float] = Field(None, description="Initial albedo for vegetated surfaces")
-    porosity_id: Optional[float] = Field(None, description="Initial porosity for deciduous trees")
-    decidcap_id: Optional[float] = Field(None, description="Initial deciduous capacity for deciduous trees")
-    lai_id: Optional[float] = Field(None, description="Initial leaf area index for vegetated surfaces")
+    alb_id: Optional[float] = Field(
+        None, description="Initial albedo for vegetated surfaces"
+    )
+    porosity_id: Optional[float] = Field(
+        None, description="Initial porosity for deciduous trees"
+    )
+    decidcap_id: Optional[float] = Field(
+        None, description="Initial deciduous capacity for deciduous trees"
+    )
+    lai_id: Optional[float] = Field(
+        None, description="Initial leaf area index for vegetated surfaces"
+    )
 
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
@@ -48,8 +56,8 @@ class SurfaceInitialState(BaseModel):
         """Set and validate surface type specific parameters"""
         self._surface_type = surface_type
 
-    @model_validator(mode='after')
-    def validate_surface_state(self) -> 'SurfaceInitialState':
+    @model_validator(mode="after")
+    def validate_surface_state(self) -> "SurfaceInitialState":
         """Validate state based on surface type if set"""
         if self._surface_type is not None:
             # Re-run validation with current surface type
@@ -70,12 +78,26 @@ class SurfaceInitialState(BaseModel):
                 raise ValueError("porosity_id is required for deciduous trees")
 
         # Validate non-vegetation parameters
-        non_veg_types = [SurfaceType.PAVED, SurfaceType.BLDGS, SurfaceType.BSOIL, SurfaceType.WATER]
+        non_veg_types = [
+            SurfaceType.PAVED,
+            SurfaceType.BLDGS,
+            SurfaceType.BSOIL,
+            SurfaceType.WATER,
+        ]
         if self._surface_type in non_veg_types:
-            if any(param is not None for param in [self.alb_id, self.lai_id, self.decidcap_id, self.porosity_id]):
-                raise ValueError(f"Vegetation parameters should not be set for {self._surface_type.value}")
+            if any(
+                param is not None
+                for param in [
+                    self.alb_id,
+                    self.lai_id,
+                    self.decidcap_id,
+                    self.porosity_id,
+                ]
+            ):
+                raise ValueError(
+                    f"Vegetation parameters should not be set for {self._surface_type.value}"
+                )
         return self
-
 
 
 class InitialStates(BaseModel):
@@ -396,6 +418,9 @@ class AnthropogenicHeat(BaseModel):
     ah_slope_cooling: DayProfile
     ah_slope_heating: DayProfile
     ahprof_24hr: HourlyProfile
+    popdensdaytime: DayProfile
+    popdensnighttime: float
+    popprof_24hr: HourlyProfile
 
 
 class CO2Params(BaseModel):
@@ -407,10 +432,10 @@ class CO2Params(BaseModel):
     frfossilfuel_nonheat: float
     maxfcmetab: float
     maxqfmetab: float
-    min_res_bioco2: float
+    min_res_bioco2: float = Field(default=0.1, description="Minimum respiratory biogenic CO2")
     minfcmetab: float
     minqfmetab: float
-    trafficrate: float
+    trafficrate: DayProfile
     trafficunits: float
     traffprof_24hr: HourlyProfile
     humactivity_24hr: HourlyProfile
@@ -507,7 +532,8 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     resp_a: float
     resp_b: float
     theta_bioco2: float
-    maxconductance: float = Field(description="Maximum surface conductance")
+    maxconductance: float = Field(default=0.5, description="Maximum surface conductance")
+    min_res_bioco2: float = Field(default=0.1, description="Minimum respiratory biogenic CO2")
     lai: LAIParams
     ie_a: float = Field(description="Irrigation efficiency coefficient-automatic")
     ie_m: float = Field(description="Irrigation efficiency coefficient-manual")
@@ -661,10 +687,14 @@ class Site(BaseModel):
     properties: SiteProperties
     initial_states: InitialStates
 
+class Model(BaseModel):
+    control: ModelControl
+    physics: ModelPhysics
+
 class SUEWSConfig(BaseModel):
     name: str
     description: str
-    model: Dict[str, Union[ModelControl, ModelPhysics]]
+    model: Model
     site: List[Site]
 
     class Config:
@@ -701,6 +731,21 @@ class SUEWSConfig(BaseModel):
                 str_indices = str(indices)
             df.loc[0, (col_name, str_indices)] = value
 
+        # config
+        set_df_value("netradiationmethod", 0, self.model.physics.netradiationmethod)
+        set_df_value("emissionsmethod", 0, self.model.physics.emissionsmethod)
+        set_df_value("storageheatmethod", 0, self.model.physics.storageheatmethod)
+        set_df_value("ohmincqf", 0, self.model.physics.ohmincqf)
+        set_df_value("aerodynamicresistancemethod", 0, self.model.physics.aerodynamicresistancemethod)
+        set_df_value("roughlenmommethod", 0, self.model.physics.roughlenmommethod)
+        set_df_value("roughlenheatmethod", 0, self.model.physics.roughlenheatmethod)
+        set_df_value("stabilitymethod", 0, self.model.physics.stabilitymethod)
+        set_df_value("smdmethod", 0, self.model.physics.smdmethod)
+        set_df_value("waterusemethod", 0, self.model.physics.waterusemethod)
+        set_df_value("diagmethod", 0, self.model.physics.diagmethod)
+        set_df_value("snowuse", 0, self.model.physics.snowuse)
+
+
         # Process each site (assuming single site for now)
         site = self.site[0]
         props = site.properties
@@ -716,6 +761,74 @@ class SUEWSConfig(BaseModel):
         set_df_value("pipecapacity", 0, props.pipecapacity)
         set_df_value("runofftowater", 0, props.runofftowater)
         set_df_value("narp_trans_site", 0, props.narp_trans_site)
+
+        # LUMPS parameters
+        lumps = props.lumps
+        set_df_value("raincover", 0, lumps.raincover)
+        set_df_value("rainmaxres", 0, lumps.rainmaxres)
+        set_df_value("drainrt", 0, lumps.drainrt)
+        set_df_value("veg_type", 0, lumps.veg_type)
+
+        # SPARTACUS parameters
+        spartacus = props.spartacus
+        set_df_value("air_ext_lw", 0, spartacus.air_ext_lw)
+        set_df_value("air_ext_sw", 0, spartacus.air_ext_sw)
+        set_df_value("air_ssa_lw", 0, spartacus.air_ssa_lw)
+        set_df_value("air_ssa_sw", 0, spartacus.air_ssa_sw)
+        set_df_value("ground_albedo_dir_mult_fact", 0, spartacus.ground_albedo_dir_mult_fact)
+        set_df_value("n_stream_lw_urban", 0, spartacus.n_stream_lw_urban)
+        set_df_value("n_stream_sw_urban", 0, spartacus.n_stream_sw_urban)
+        set_df_value("n_vegetation_region_urban", 0, spartacus.n_vegetation_region_urban)
+        set_df_value("sw_dn_direct_frac", 0, spartacus.sw_dn_direct_frac)
+        set_df_value("use_sw_direct_albedo", 0, spartacus.use_sw_direct_albedo)
+        set_df_value("veg_contact_fraction_const", 0, spartacus.veg_contact_fraction_const)
+        set_df_value("veg_fsd_const", 0, spartacus.veg_fsd_const)
+        set_df_value("veg_ssa_lw", 0, spartacus.veg_ssa_lw)
+        set_df_value("veg_ssa_sw", 0, spartacus.veg_ssa_sw)
+
+        # Conductance parameters
+        cond = props.conductance
+        set_df_value("g_max", 0, cond.g_max)
+        set_df_value("g_k", 0, cond.g_k)
+        set_df_value("g_q_base", 0, cond.g_q_base)
+        set_df_value("g_q_shape", 0, cond.g_q_shape)
+        set_df_value("g_t", 0, cond.g_t)
+        set_df_value("g_sm", 0, cond.g_sm)
+        set_df_value("kmax", 0, cond.kmax)
+        set_df_value("gsmodel", 0, cond.gsmodel)
+        set_df_value("s1", 0, cond.s1)
+        set_df_value("s2", 0, cond.s2)
+
+        # Irrigation parameters
+        irr = props.irrigation
+        set_df_value("h_maintain", 0, irr.h_maintain)
+        set_df_value("faut", 0, irr.faut)
+        set_df_value("ie_start", 0, irr.ie_start)
+        set_df_value("ie_end", 0, irr.ie_end)
+        set_df_value("internalwateruse_h", 0, irr.internalwateruse_h)
+
+        # Daily water parameters
+        set_df_value("daywatper", (0,), irr.daywatper.monday)
+        set_df_value("daywatper", (1,), irr.daywatper.tuesday)
+        set_df_value("daywatper", (2,), irr.daywatper.wednesday)
+        set_df_value("daywatper", (3,), irr.daywatper.thursday)
+        set_df_value("daywatper", (4,), irr.daywatper.friday)
+        set_df_value("daywatper", (5,), irr.daywatper.saturday)
+        set_df_value("daywatper", (6,), irr.daywatper.sunday)
+
+        set_df_value("daywat", (0,), irr.daywat.monday)
+        set_df_value("daywat", (1,), irr.daywat.tuesday)
+        set_df_value("daywat", (2,), irr.daywat.wednesday)
+        set_df_value("daywat", (3,), irr.daywat.thursday)
+        set_df_value("daywat", (4,), irr.daywat.friday)
+        set_df_value("daywat", (5,), irr.daywat.saturday)
+        set_df_value("daywat", (6,), irr.daywat.sunday)
+
+        # Water use profile
+        for hour in range(24):
+            hour_str = str(hour + 1)
+            set_df_value("wuprofa_24hr", (hour, 0), irr.wuprofa_24hr.working_day[hour_str])
+            set_df_value("wuprofa_24hr", (hour, 1), irr.wuprofa_24hr.holiday[hour_str])
 
         # Surface properties
         surface_map = {
@@ -750,6 +863,25 @@ class SUEWSConfig(BaseModel):
                 elif surf_name == "grass":
                     set_df_value("albmax_grass", 0, surface.alb_max)
                     set_df_value("albmin_grass", 0, surface.alb_min)
+            # Add to OHM section
+            if hasattr(surface, "ohm_threshsw"):
+                set_df_value("ohm_threshsw", (surf_idx,), surface.ohm_threshsw)
+            if hasattr(surface, "ohm_threshwd"):
+                set_df_value("ohm_threshwd", (surf_idx,), surface.ohm_threshwd)
+            if hasattr(surface, "chanohm"):
+                set_df_value("chanohm", (surf_idx,), surface.chanohm)
+            if hasattr(surface, "cpanohm"):
+                set_df_value("cpanohm", (surf_idx,), surface.cpanohm)
+            if hasattr(surface, "kkanohm"):
+                set_df_value("kkanohm", (surf_idx,), surface.kkanohm)
+
+            # Add to surface properties section
+            if hasattr(surface, "soildepth"):
+                set_df_value("soildepth", (surf_idx,), surface.soildepth)
+            if hasattr(surface, "soilstorecap"):
+                set_df_value("soilstorecap_surf", (surf_idx,), surface.soilstorecap)
+            if hasattr(surface, "statelimit"):
+                set_df_value("statelimit_surf", (surf_idx,), surface.statelimit)
 
             # Initial states
             init_state = getattr(site.initial_states, surf_name)
@@ -782,6 +914,20 @@ class SUEWSConfig(BaseModel):
                             set_df_value("decidcap_id", 0, init_state.decidcap_id)
                         if init_state.porosity_id is not None:
                             set_df_value("porosity_id", 0, init_state.porosity_id)
+
+                    # Missing porosity parameters for deciduous trees
+                    if hasattr(surface, "pormin_dec"):
+                        set_df_value("pormin_dec", 0, surface.pormin_dec)
+                    if hasattr(surface, "pormax_dec"):
+                        set_df_value("pormax_dec", 0, surface.pormax_dec)
+
+                    # Missing capacity parameters for deciduous trees
+                    if hasattr(surface, "capmin_dec"):
+                        set_df_value("capmin_dec", 0, surface.capmin_dec)
+                    if hasattr(surface, "capmax_dec"):
+                        set_df_value("capmax_dec", 0, surface.capmax_dec)
+                    if hasattr(surface, "min_res_bioco2"):
+                        set_df_value("min_res_bioco2", (surf_idx - 2,), surface.min_res_bioco2)
 
             # Set initial snow albedo
             set_df_value("snowalb", 0, site.initial_states.snowalb)
@@ -951,9 +1097,14 @@ class SUEWSConfig(BaseModel):
         set_df_value("co2pointsource", 0, anthro.co2.co2pointsource)
         set_df_value("ef_umolco2perj", 0, anthro.co2.ef_umolco2perj)
         set_df_value("enef_v_jkm", 0, anthro.co2.enef_v_jkm)
+
+        # Traffic and emission factors for weekday/weekend
         for i, day in enumerate(["working_day", "holiday"]):
+            # Traffic rate and emission factors
+            set_df_value("trafficrate", (i,), getattr(anthro.co2.trafficrate, day))
             set_df_value("fcef_v_kgkm", (i,), getattr(anthro.co2.fcef_v_kgkm, day))
-            # 24-hour profile
+
+            # 24-hour profiles
             for hour in range(24):
                 set_df_value(
                     "traffprof_24hr",
@@ -965,6 +1116,17 @@ class SUEWSConfig(BaseModel):
                     (hour, i),
                     getattr(anthro.co2.humactivity_24hr, day)[f"{hour+1}"],
                 )
+
+        # Traffic units setting
+        set_df_value("trafficunits", 0, anthro.co2.trafficunits)
+
+        # Additional emission-related parameters
+        set_df_value("frfossilfuel_heat", 0, anthro.co2.frfossilfuel_heat)
+        set_df_value("frfossilfuel_nonheat", 0, anthro.co2.frfossilfuel_nonheat)
+        set_df_value("maxfcmetab", 0, anthro.co2.maxfcmetab)
+        set_df_value("maxqfmetab", 0, anthro.co2.maxqfmetab)
+        set_df_value("minfcmetab", 0, anthro.co2.minfcmetab)
+        set_df_value("minqfmetab", 0, anthro.co2.minqfmetab)
 
         # Snow parameters
         snow = props.snow
@@ -994,19 +1156,6 @@ class SUEWSConfig(BaseModel):
         # Add to to_df_state where vegetation parameters are handled
 
 
-        if surf_name in ["dectr", "evetr", "grass"]:
-            # Missing porosity parameters for deciduous trees
-            if hasattr(surface, "pormin_dec"):
-                set_df_value("pormin_dec", 0, surface.pormin_dec)
-            if hasattr(surface, "pormax_dec"):
-                set_df_value("pormax_dec", 0, surface.pormax_dec)
-
-            # Missing capacity parameters for deciduous trees
-            if hasattr(surface, "capmin_dec"):
-                set_df_value("capmin_dec", 0, surface.capmin_dec)
-            if hasattr(surface, "capmax_dec"):
-                set_df_value("capmax_dec", 0, surface.capmax_dec)
-
         # Missing FAI parameters
         set_df_value("faibldg", 0, props.land_cover.bldgs.faibldg)
         set_df_value("faievetree", 0, props.land_cover.evetr.faievetree)
@@ -1014,7 +1163,9 @@ class SUEWSConfig(BaseModel):
 
         # Add to surface properties section
         if hasattr(surface, "sathydraulicconduct"):
-            set_df_value("sathydraulicconduct", (surf_idx,), surface.sathydraulicconduct)
+            set_df_value(
+                "sathydraulicconduct", (surf_idx,), surface.sathydraulicconduct
+            )
 
         # Irrigation fraction parameters
         if hasattr(surface, "irrfracevetr"):
@@ -1027,33 +1178,53 @@ class SUEWSConfig(BaseModel):
         # Water specific parameters
         if hasattr(surface, "flowchange"):
             set_df_value("flowchange", 0, surface.flowchange)
-        # Add to OHM section
-        if hasattr(surface, "ohm_threshsw"):
-            set_df_value("ohm_threshsw", (surf_idx,), surface.ohm_threshsw)
-        if hasattr(surface, "ohm_threshwd"):
-            set_df_value("ohm_threshwd", (surf_idx,), surface.ohm_threshwd)
-        if hasattr(surface, "chanohm"):
-            set_df_value("chanohm", (surf_idx,), surface.chanohm)
-        if hasattr(surface, "cpanohm"):
-            set_df_value("cpanohm", (surf_idx,), surface.cpanohm)
-        if hasattr(surface, "kkanohm"):
-            set_df_value("kkanohm", (surf_idx,), surface.kkanohm)
 
-        # Add to surface properties section
-        if hasattr(surface, "soildepth"):
-            set_df_value("soildepth", (surf_idx,), surface.soildepth)
-        if hasattr(surface, "soilstorecap"):
-            set_df_value("soilstorecap", (surf_idx,), surface.soilstorecap)
-        if hasattr(surface, "statelimit"):
-            set_df_value("statelimit", (surf_idx,), surface.statelimit)
+        # LUMPS parameters
+        lumps = props.lumps
+        set_df_value("raincover", 0, lumps.raincover)
+        set_df_value("rainmaxres", 0, lumps.rainmaxres)
+        set_df_value("drainrt", 0, lumps.drainrt)
+        set_df_value("veg_type", 0, lumps.veg_type)
+
+        # Population profile parameters
+        set_df_value("popdensnighttime", 0, anthro.heat.popdensnighttime)
+        for i, day in enumerate(["working_day", "holiday"]):
+            set_df_value("popdensdaytime", (i,), getattr(anthro.heat.popdensdaytime, day))
+            # 24-hour population profile
+            for hour in range(24):
+                set_df_value(
+                    "popprof_24hr",
+                    (hour, i),
+                    getattr(anthro.heat.popprof_24hr, day)[f"{hour+1}"],
+                )
+
+        # Additional CO2 parameters
+        set_df_value("frfossilfuel_heat", 0, anthro.co2.frfossilfuel_heat)
+        set_df_value("frfossilfuel_nonheat", 0, anthro.co2.frfossilfuel_nonheat)
+        set_df_value("maxfcmetab", 0, anthro.co2.maxfcmetab)
+        set_df_value("maxqfmetab", 0, anthro.co2.maxqfmetab)
+        set_df_value("minfcmetab", 0, anthro.co2.minfcmetab)
+        set_df_value("minqfmetab", 0, anthro.co2.minqfmetab)
+        set_df_value("trafficrate", (0,), anthro.co2.trafficrate.working_day)
+        set_df_value("trafficrate", (1,), anthro.co2.trafficrate.holiday)
+        set_df_value("trafficunits", 0, anthro.co2.trafficunits)
+
+        # Snow profile
+        for i, day in enumerate(["working_day", "holiday"]):
+            for hour in range(24):
+                set_df_value(
+                    "snowprof_24hr",
+                    (hour, i),
+                    getattr(snow.snowprof_24hr, day)[f"{hour+1}"],
+                )
 
         # Add to CO2 parameters section for vegetated surfaces
         if hasattr(surface, "resp_a"):
-            set_df_value("resp_a", (surf_idx-2,), surface.resp_a)
+            set_df_value("resp_a", (surf_idx - 2,), surface.resp_a)
         if hasattr(surface, "resp_b"):
-            set_df_value("resp_b", (surf_idx-2,), surface.resp_b)
+            set_df_value("resp_b", (surf_idx - 2,), surface.resp_b)
         if hasattr(surface, "theta_bioco2"):
-            set_df_value("theta_bioco2", (surf_idx-2,), surface.theta_bioco2)
+            set_df_value("theta_bioco2", (surf_idx - 2,), surface.theta_bioco2)
 
         return df
 
@@ -1133,12 +1304,36 @@ if __name__ == "__main__":
 
     print(r"testing suews_config done!")
 
-    pdb.set_trace()
+    # pdb.set_trace()
 
     # Convert to DataFrame
-    df_state = suews_config.to_df_state()
+    df_state_test = suews_config.to_df_state()
     print("testing df_state done!")
 
-    # # Convert back to config
-    # suews_config_back = SUEWSConfig.from_df_state(df_state)
-    # print("testing from_df_state done!")
+    # checking if all properties are properly converted
+    # Get the column differences
+    df_state = pd.read_pickle("./df_state.pkl")
+    df_state_cols = set(df_state.columns)
+    df_test_cols = set(df_state_test.columns)
+
+    print("Columns only in df_state:")
+    print(sorted(df_state_cols - df_test_cols))
+
+    print("\nColumns only in df_state_test:")
+    print(sorted(df_test_cols - df_state_cols))
+
+    print("\nTotal columns in df_state:", len(df_state_cols))
+    print("Total columns in df_state_test:", len(df_test_cols))
+
+    # Get columns with any NA values
+    na_cols = df_state_test.columns[df_state_test.isna().any()].tolist()
+
+    # Sort and print the column names
+    print(f"{len(na_cols)} Columns containing NA values:")
+    for col in sorted(na_cols):
+        print(col)
+
+
+# # Convert back to config
+# suews_config_back = SUEWSConfig.from_df_state(df_state)
+# print("testing from_df_state done!")

@@ -276,9 +276,7 @@
             popdensdaytime:
               working_day: 100
               holiday: 100
-            popdensnighttime:
-              working_day: 100
-              holiday: 100
+            popdensnighttime: 100
             popprof_24hr:
               working_day:
                 1: 100
@@ -341,10 +339,11 @@
             frfossilfuel_nonheat: 0.1
             maxfcmetab: 0.1
             maxqfmetab: 0.1
-            min_res_bioco2: 0.1
             minfcmetab: 0.1
             minqfmetab: 0.1
-            trafficrate: 0.1
+            trafficrate:
+              working_day: 0.1
+              holiday: 0.1
             trafficunits: 0.1
             traffprof_24hr:
               working_day:
@@ -656,6 +655,7 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
+            min_res_bioco2: 0.1
             maxconductance: 0.5
             lai:
               baset: 20
@@ -729,6 +729,7 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
+            min_res_bioco2: 0.1
             maxconductance: 0.5
             lai:
               baset: 20
@@ -800,6 +801,7 @@
             resp_a: 0.5
             resp_b: 0.5
             theta_bioco2: 0.5
+            min_res_bioco2: 0.1
             maxconductance: 0.5
             lai:
               baset: 20
