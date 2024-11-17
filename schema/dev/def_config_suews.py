@@ -321,7 +321,6 @@ class ModelPhysics(BaseModel):
     emissionsmethod: int
     storageheatmethod: int
     ohmincqf: int
-    aerodynamicresistancemethod: int
     roughlenmommethod: int
     roughlenheatmethod: int
     stabilitymethod: int
@@ -739,7 +738,6 @@ class SUEWSConfig(BaseModel):
         set_df_value("emissionsmethod", 0, self.model.physics.emissionsmethod)
         set_df_value("storageheatmethod", 0, self.model.physics.storageheatmethod)
         set_df_value("ohmincqf", 0, self.model.physics.ohmincqf)
-        set_df_value("aerodynamicresistancemethod", 0, self.model.physics.aerodynamicresistancemethod)
         set_df_value("roughlenmommethod", 0, self.model.physics.roughlenmommethod)
         set_df_value("roughlenheatmethod", 0, self.model.physics.roughlenheatmethod)
         set_df_value("stabilitymethod", 0, self.model.physics.stabilitymethod)

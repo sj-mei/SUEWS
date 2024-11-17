@@ -14,7 +14,6 @@
       emissionsmethod: 1
       storageheatmethod: 1
       ohmincqf: 1 # this could be merged above as storageheatmethod=2
-      aerodynamicresistancemethod: 1
       roughlenmommethod: 1
       roughlenheatmethod: 1
       stabilitymethod: 1
