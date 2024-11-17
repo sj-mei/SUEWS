@@ -617,7 +617,7 @@
             faidectree: 0.1
             dectreeh: 10
             pormin_dec: 0.1
-            pormax_dec: 0.1
+            pormax_dec: 0.2
             alb_min: .1 # varying between min and max depending on LAI
             alb_max: .2 # varying between min and max depending on LAI
             chanohm: 0.5

@@ -11,6 +11,7 @@ import numpy as np
 from enum import Enum
 import pandas as pd
 import yaml
+import pdb
 
 
 class SurfaceType(str, Enum):
@@ -50,6 +51,28 @@ class InitialConditions(BaseModel):
     bsoil: SurfaceInitialState
     water: SurfaceInitialState
 
+    @model_validator(mode="after")
+    def validate_surface_specific_fields(self) -> "InitialConditions":
+        if self.surface_type == SurfaceType.DECTR:
+            if self.decidcap_id is None:
+                error_message = ValueError(
+                    "decidcap_id is required for deciduous trees"
+                )
+                exceptions.append(error_message)
+                # raise ValueError("decidcap_id is required for deciduous trees")
+            if self.porosity_id is None:
+                error_message = ValueError(
+                    "porosity_id is required for deciduous trees"
+                )
+                exceptions.append(error_message)
+                # raise ValueError("porosity_id is required for deciduous trees")
+
+        veg_types = [SurfaceType.DECTR, SurfaceType.EVETR, SurfaceType.GRASS]
+        if self.surface_type in veg_types and self.alb_id is None:
+            error_message = ValueError("alb_id is required for vegetated surfaces")
+            exceptions.append(error_message)
+            # raise ValueError("alb_id is required for vegetated surfaces")
+        return self
 
 class ThermalLayer(BaseModel):
     dz: List[float] = Field(min_items=5, max_items=5)
@@ -311,9 +334,13 @@ class HourlyProfile(BaseModel):
         for profile in [self.working_day, self.holiday]:
             hours = [int(h) for h in profile.keys()]
             if not all(1 <= h <= 24 for h in hours):
-                raise ValueError("Hour values must be between 1 and 24")
+                error_message = ValueError("Hour values must be between 1 and 24")
+                exceptions.append(error_message)
+                #raise ValueError("Hour values must be between 1 and 24")
             if sorted(hours) != list(range(1, 25)):
-                raise ValueError("Must have all hours from 1 to 24")
+                error_message = ValueError("Must have all hours from 1 to 24")
+                exceptions.append(error_message)
+                #raise ValueError("Must have all hours from 1 to 24")
         return self
 
 
@@ -458,17 +485,35 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
-            raise ValueError("alb_min must be less than or equal to alb_max")
+            error_message = ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
         return self
 
 
 class DectrProperties(VegetatedSurfaceProperties):
     faidectree: float
     dectreeh: float
-    pormin_dec: float
-    pormax_dec: float
+    pormin_dec: float = Field(ge=0.1, le=0.9, description="Minimum porosity")
+    pormax_dec: float = Field(ge=0.1, le=0.9, description="Maximum porosity")
     capmax_dec: float
     capmin_dec: float
+
+    @model_validator(mode="after")
+    def validate_porosity_range(self) -> "DectrProperties":
+        if self.pormin_dec >= self.pormax_dec:
+            error_message = ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
+        return self
+
+    @model_validator(mode="after")
+    def validate_cap_range(self) -> "DectrProperties":
+        if self.capmin_dec >= self.capmax_dec:
+            error_message = ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
+        return self
 
 
 class EvetrProperties(VegetatedSurfaceProperties):
@@ -492,6 +537,22 @@ class SnowParams(BaseModel):
     tau_r: float
     tempmeltfact: float
     radmeltfact: float
+
+    @model_validator(mode="after")
+    def validate_crw_range(self) -> "SnowParams":
+        if self.crwmin >= self.crwmax:
+            error_message = ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+        return self
+
+    @model_validator(mode="after")
+    def validate_snowalb_range(self) -> "SnowParams":
+        if self.snowalbmin >= self.snowalbmax:
+            error_message = ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+            exceptions.append(error_message)
+            #raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+        return self
 
 
 class LandCover(BaseModel):
@@ -849,6 +910,9 @@ class SUEWSConfig(BaseModel):
 
 
 if __name__ == "__main__":
+    # Create list for collecting all exceptions
+    exceptions = []
+
     # test the sample config
     # Load YAML config
     with open("./config-suews.yml", "r") as file:
@@ -856,7 +920,13 @@ if __name__ == "__main__":
 
     # Create SUEWSConfig object
     suews_config = SUEWSConfig(**yaml_config[0])
+
+    if exceptions:
+        raise ExceptionGroup("Validation errors occurred", exceptions)
+
     print(r"testing suews_config done!")
+
+    pdb.set_trace()
 
     # Convert to DataFrame
     df_state = suews_config.to_df_state()
