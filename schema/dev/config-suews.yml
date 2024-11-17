@@ -944,6 +944,7 @@
           decidcap_id: 1
           porosity_id: .2
           alb_id: .2
+          lai_id: 1
         evetr:
           state: 10
           soilstore: 100
@@ -952,6 +953,7 @@
           snowfrac: 0
           snowpack: 0
           alb_id: .2
+          lai_id: 1
         grass:
           state: 10
           soilstore: 100
@@ -960,6 +962,7 @@
           snowfrac: 0
           snowpack: 0
           alb_id: .2
+          lai_id: 1
         bsoil:
           state: 10
           soilstore: 100

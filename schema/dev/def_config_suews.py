@@ -37,9 +37,48 @@ class SurfaceInitialState(BaseModel):
     snowpack: Optional[float] = Field(None, ge=0, description="Snow pack")
     snowwater: Optional[float] = Field(None, ge=0, description="Snow water")
     snowdens: Optional[float] = Field(None, ge=0, description="Snow density")
+    alb_id: Optional[float] = Field(None, description="Initial albedo for vegetated surfaces")
+    porosity_id: Optional[float] = Field(None, description="Initial porosity for deciduous trees")
+    decidcap_id: Optional[float] = Field(None, description="Initial deciduous capacity for deciduous trees")
+    lai_id: Optional[float] = Field(None, description="Initial leaf area index for vegetated surfaces")
+
+    _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
+
+    def set_surface_type(self, surface_type: SurfaceType):
+        """Set and validate surface type specific parameters"""
+        self._surface_type = surface_type
+
+    @model_validator(mode='after')
+    def validate_surface_state(self) -> 'SurfaceInitialState':
+        """Validate state based on surface type if set"""
+        if self._surface_type is not None:
+            # Re-run validation with current surface type
+            self.set_surface_type(self._surface_type)
+        # Validate vegetation-specific parameters
+        veg_types = [SurfaceType.DECTR, SurfaceType.EVETR, SurfaceType.GRASS]
+        if self._surface_type in veg_types:
+            if self.alb_id is None:
+                raise ValueError(f"alb_id is required for {self._surface_type.value}")
+            if self.lai_id is None:
+                raise ValueError(f"lai_id is required for {self._surface_type.value}")
+
+        # Validate deciduous-specific parameters
+        if self._surface_type == SurfaceType.DECTR:
+            if self.decidcap_id is None:
+                raise ValueError("decidcap_id is required for deciduous trees")
+            if self.porosity_id is None:
+                raise ValueError("porosity_id is required for deciduous trees")
+
+        # Validate non-vegetation parameters
+        non_veg_types = [SurfaceType.PAVED, SurfaceType.BLDGS, SurfaceType.BSOIL, SurfaceType.WATER]
+        if self._surface_type in non_veg_types:
+            if any(param is not None for param in [self.alb_id, self.lai_id, self.decidcap_id, self.porosity_id]):
+                raise ValueError(f"Vegetation parameters should not be set for {self._surface_type.value}")
+        return self
 
 
-class InitialConditions(BaseModel):
+
+class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
     snowalb: float = Field(ge=0, le=1, description="Initial snow albedo")
@@ -51,28 +90,17 @@ class InitialConditions(BaseModel):
     bsoil: SurfaceInitialState
     water: SurfaceInitialState
 
-    @model_validator(mode="after")
-    def validate_surface_specific_fields(self) -> "InitialConditions":
-        if self.surface_type == SurfaceType.DECTR:
-            if self.decidcap_id is None:
-                error_message = ValueError(
-                    "decidcap_id is required for deciduous trees"
-                )
-                exceptions.append(error_message)
-                # raise ValueError("decidcap_id is required for deciduous trees")
-            if self.porosity_id is None:
-                error_message = ValueError(
-                    "porosity_id is required for deciduous trees"
-                )
-                exceptions.append(error_message)
-                # raise ValueError("porosity_id is required for deciduous trees")
+    def __init__(self, **data):
+        super().__init__(**data)
+        # Set surface types for each surface
+        self.paved.set_surface_type(SurfaceType.PAVED)
+        self.bldgs.set_surface_type(SurfaceType.BLDGS)
+        self.dectr.set_surface_type(SurfaceType.DECTR)
+        self.evetr.set_surface_type(SurfaceType.EVETR)
+        self.grass.set_surface_type(SurfaceType.GRASS)
+        self.bsoil.set_surface_type(SurfaceType.BSOIL)
+        self.water.set_surface_type(SurfaceType.WATER)
 
-        veg_types = [SurfaceType.DECTR, SurfaceType.EVETR, SurfaceType.GRASS]
-        if self.surface_type in veg_types and self.alb_id is None:
-            error_message = ValueError("alb_id is required for vegetated surfaces")
-            exceptions.append(error_message)
-            # raise ValueError("alb_id is required for vegetated surfaces")
-        return self
 
 class ThermalLayer(BaseModel):
     dz: List[float] = Field(min_items=5, max_items=5)
@@ -337,11 +365,11 @@ class HourlyProfile(BaseModel):
             if not all(1 <= h <= 24 for h in hours):
                 error_message = ValueError("Hour values must be between 1 and 24")
                 exceptions.append(error_message)
-                #raise ValueError("Hour values must be between 1 and 24")
+                # raise ValueError("Hour values must be between 1 and 24")
             if sorted(hours) != list(range(1, 25)):
                 error_message = ValueError("Must have all hours from 1 to 24")
                 exceptions.append(error_message)
-                #raise ValueError("Must have all hours from 1 to 24")
+                # raise ValueError("Must have all hours from 1 to 24")
         return self
 
 
@@ -386,6 +414,7 @@ class CO2Params(BaseModel):
     trafficunits: float
     traffprof_24hr: HourlyProfile
     humactivity_24hr: HourlyProfile
+
 
 class AnthropogenicEmissions(BaseModel):
     startdls: float
@@ -486,34 +515,52 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
-            error_message = ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            error_message = ValueError(
+                f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max})."
+            )
             exceptions.append(error_message)
-            #raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            # raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
         return self
 
 
 class DectrProperties(VegetatedSurfaceProperties):
     faidectree: float = Field(description="Frontal area index of deciduous trees")
     dectreeh: float = Field(description="Height of deciduous trees [m]")
-    pormin_dec: float = Field(ge=0.1, le=0.9, description="Minimum porosity of deciduous trees in winter when leaves are off")
-    pormax_dec: float = Field(ge=0.1, le=0.9, description="Maximum porosity of deciduous trees in summer when leaves are fully on")
-    capmax_dec: float = Field(description="Maximum storage capacity of deciduous trees in summer when leaves are fully on [mm]")
-    capmin_dec: float = Field(description="Minimum storage capacity of deciduous trees in winter when leaves are off [mm]")
+    pormin_dec: float = Field(
+        ge=0.1,
+        le=0.9,
+        description="Minimum porosity of deciduous trees in winter when leaves are off",
+    )
+    pormax_dec: float = Field(
+        ge=0.1,
+        le=0.9,
+        description="Maximum porosity of deciduous trees in summer when leaves are fully on",
+    )
+    capmax_dec: float = Field(
+        description="Maximum storage capacity of deciduous trees in summer when leaves are fully on [mm]"
+    )
+    capmin_dec: float = Field(
+        description="Minimum storage capacity of deciduous trees in winter when leaves are off [mm]"
+    )
 
     @model_validator(mode="after")
     def validate_porosity_range(self) -> "DectrProperties":
         if self.pormin_dec >= self.pormax_dec:
-            error_message = ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
+            error_message = ValueError(
+                f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec})."
+            )
             exceptions.append(error_message)
-            #raise ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
+            # raise ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
         return self
 
     @model_validator(mode="after")
     def validate_cap_range(self) -> "DectrProperties":
         if self.capmin_dec >= self.capmax_dec:
-            error_message = ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
+            error_message = ValueError(
+                f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec})."
+            )
             exceptions.append(error_message)
-            #raise ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
+            # raise ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
         return self
 
 
@@ -542,17 +589,21 @@ class SnowParams(BaseModel):
     @model_validator(mode="after")
     def validate_crw_range(self) -> "SnowParams":
         if self.crwmin >= self.crwmax:
-            error_message = ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+            error_message = ValueError(
+                f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax})."
+            )
             exceptions.append(error_message)
-            #raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+            # raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
         return self
 
     @model_validator(mode="after")
     def validate_snowalb_range(self) -> "SnowParams":
         if self.snowalbmin >= self.snowalbmax:
-            error_message = ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+            error_message = ValueError(
+                f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax})."
+            )
             exceptions.append(error_message)
-            #raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+            # raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
         return self
 
 
@@ -608,8 +659,7 @@ class SiteProperties(BaseModel):
 class Site(BaseModel):
     name: str
     properties: SiteProperties
-    initial_states: Union[Dict[str, SurfaceInitialState], SnowAlb]
-
+    initial_states: InitialStates
 
 class SUEWSConfig(BaseModel):
     name: str
@@ -702,30 +752,39 @@ class SUEWSConfig(BaseModel):
                     set_df_value("albmin_grass", 0, surface.alb_min)
 
             # Initial states
-            if isinstance(site.initial_states, dict):
-                init_state = site.initial_states.get(surf_name)
-                if init_state:
-                    # Basic state parameters
-                    set_df_value("state_surf", surf_idx, init_state.state)
-                    set_df_value("soilstore_surf", surf_idx, init_state.soilstore)
+            init_state = getattr(site.initial_states, surf_name)
+            if init_state:
+                # Basic state parameters
+                set_df_value("state_surf", (surf_idx,), init_state.state)
+                set_df_value("soilstore_surf", (surf_idx,), init_state.soilstore)
 
-                    # Snow-related parameters
-                    if init_state.snowfrac is not None:
-                        set_df_value("snowfrac", surf_idx, init_state.snowfrac)
-                    if init_state.snowpack is not None:
-                        set_df_value("snowpack", surf_idx, init_state.snowpack)
-                    if init_state.snowwater is not None:
-                        set_df_value("snowwater", surf_idx, init_state.snowwater)
-                    if init_state.snowdens is not None:
-                        set_df_value("snowdens", surf_idx, init_state.snowdens)
+                # Snow-related parameters
+                if init_state.snowfrac is not None:
+                    set_df_value("snowfrac", (surf_idx,), init_state.snowfrac)
+                if init_state.snowpack is not None:
+                    set_df_value("snowpack", (surf_idx,), init_state.snowpack)
+                if init_state.snowwater is not None:
+                    set_df_value("snowwater", (surf_idx,), init_state.snowwater)
+                if init_state.snowdens is not None:
+                    set_df_value("snowdens", (surf_idx,), init_state.snowdens)
 
+                # Vegetation-specific parameters
+                if surf_name in ["dectr", "evetr", "grass"]:
                     # albedo
                     if init_state.alb_id is not None:
-                        set_df_value(f"alb{surf_name}_id", (surf_idx-2,), init_state.alb_id)
-            else:  # SnowAlb case
-                # Set snowalb for all surfaces if it's a SnowAlb object
-                # snowalb is a single value for all surfaces
-                set_df_value("snowalb", 0, site.initial_states.snowalb)
+                        set_df_value(f"alb{surf_name}_id", 0, init_state.alb_id)
+                    # LAI
+                    if init_state.lai_id is not None:
+                        set_df_value(f"lai_id", (surf_idx - 2,), init_state.lai_id)
+                    # Additional parameters for deciduous trees
+                    if surf_name == "dectr":
+                        if init_state.decidcap_id is not None:
+                            set_df_value("decidcap_id", 0, init_state.decidcap_id)
+                        if init_state.porosity_id is not None:
+                            set_df_value("porosity_id", 0, init_state.porosity_id)
+
+            # Set initial snow albedo
+            set_df_value("snowalb", 0, site.initial_states.snowalb)
 
             # OHM coefficients
             if surface.ohm_coef:
@@ -802,13 +861,19 @@ class SUEWSConfig(BaseModel):
         set_df_value("air_ext_sw", 0, spartacus.air_ext_sw)
         set_df_value("air_ssa_lw", 0, spartacus.air_ssa_lw)
         set_df_value("air_ssa_sw", 0, spartacus.air_ssa_sw)
-        set_df_value("ground_albedo_dir_mult_fact", 0, spartacus.ground_albedo_dir_mult_fact)
+        set_df_value(
+            "ground_albedo_dir_mult_fact", 0, spartacus.ground_albedo_dir_mult_fact
+        )
         set_df_value("n_stream_lw_urban", 0, spartacus.n_stream_lw_urban)
         set_df_value("n_stream_sw_urban", 0, spartacus.n_stream_sw_urban)
-        set_df_value("n_vegetation_region_urban", 0, spartacus.n_vegetation_region_urban)
+        set_df_value(
+            "n_vegetation_region_urban", 0, spartacus.n_vegetation_region_urban
+        )
         set_df_value("sw_dn_direct_frac", 0, spartacus.sw_dn_direct_frac)
         set_df_value("use_sw_direct_albedo", 0, spartacus.use_sw_direct_albedo)
-        set_df_value("veg_contact_fraction_const", 0, spartacus.veg_contact_fraction_const)
+        set_df_value(
+            "veg_contact_fraction_const", 0, spartacus.veg_contact_fraction_const
+        )
         set_df_value("veg_fsd_const", 0, spartacus.veg_fsd_const)
         set_df_value("veg_ssa_lw", 0, spartacus.veg_ssa_lw)
         set_df_value("veg_ssa_sw", 0, spartacus.veg_ssa_sw)
@@ -834,7 +899,17 @@ class SUEWSConfig(BaseModel):
         set_df_value("ie_end", 0, irrigation.ie_end)
         set_df_value("internalwateruse_h", 0, irrigation.internalwateruse_h)
         # weekly profile
-        for i, day in enumerate(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]):
+        for i, day in enumerate(
+            [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+            ]
+        ):
             set_df_value(f"daywatper", (i,), getattr(irrigation.daywatper, day))
             set_df_value(f"daywat", (i,), getattr(irrigation.daywat, day))
         # 24-hour profile
@@ -858,8 +933,12 @@ class SUEWSConfig(BaseModel):
             set_df_value("baset_cooling", (i,), getattr(anthro.heat.baset_cooling, day))
             set_df_value("baset_heating", (i,), getattr(anthro.heat.baset_heating, day))
             set_df_value("ah_min", (i,), getattr(anthro.heat.ah_min, day))
-            set_df_value("ah_slope_cooling", (i,), getattr(anthro.heat.ah_slope_cooling, day))
-            set_df_value("ah_slope_heating", (i,), getattr(anthro.heat.ah_slope_heating, day))
+            set_df_value(
+                "ah_slope_cooling", (i,), getattr(anthro.heat.ah_slope_cooling, day)
+            )
+            set_df_value(
+                "ah_slope_heating", (i,), getattr(anthro.heat.ah_slope_heating, day)
+            )
             # Hourly profiles
             for hour in range(24):
                 set_df_value(
@@ -906,13 +985,75 @@ class SUEWSConfig(BaseModel):
 
         # Missing height parameters for vegetation and buildings
         set_df_value("bldgh", 0, props.land_cover.bldgs.bldgh)  # Building height
-        set_df_value("evetreeh", 0, props.land_cover.evetr.evetreeh)  # Evergreen tree height
-        set_df_value("dectreeh", 0, props.land_cover.dectr.dectreeh)  # Deciduous tree height
+        set_df_value(
+            "evetreeh", 0, props.land_cover.evetr.evetreeh
+        )  # Evergreen tree height
+        set_df_value(
+            "dectreeh", 0, props.land_cover.dectr.dectreeh
+        )  # Deciduous tree height
+        # Add to to_df_state where vegetation parameters are handled
+
+
+        if surf_name in ["dectr", "evetr", "grass"]:
+            # Missing porosity parameters for deciduous trees
+            if hasattr(surface, "pormin_dec"):
+                set_df_value("pormin_dec", 0, surface.pormin_dec)
+            if hasattr(surface, "pormax_dec"):
+                set_df_value("pormax_dec", 0, surface.pormax_dec)
+
+            # Missing capacity parameters for deciduous trees
+            if hasattr(surface, "capmin_dec"):
+                set_df_value("capmin_dec", 0, surface.capmin_dec)
+            if hasattr(surface, "capmax_dec"):
+                set_df_value("capmax_dec", 0, surface.capmax_dec)
 
         # Missing FAI parameters
         set_df_value("faibldg", 0, props.land_cover.bldgs.faibldg)
         set_df_value("faievetree", 0, props.land_cover.evetr.faievetree)
         set_df_value("faidectree", 0, props.land_cover.dectr.faidectree)
+
+        # Add to surface properties section
+        if hasattr(surface, "sathydraulicconduct"):
+            set_df_value("sathydraulicconduct", (surf_idx,), surface.sathydraulicconduct)
+
+        # Irrigation fraction parameters
+        if hasattr(surface, "irrfracevetr"):
+            set_df_value("irrfracevetr", 0, surface.irrfracevetr)
+        if hasattr(surface, "irrfracbsoil"):
+            set_df_value("irrfracbsoil", 0, surface.irrfracbsoil)
+        if hasattr(surface, "irrfracwater"):
+            set_df_value("irrfracwater", 0, surface.irrfracwater)
+
+        # Water specific parameters
+        if hasattr(surface, "flowchange"):
+            set_df_value("flowchange", 0, surface.flowchange)
+        # Add to OHM section
+        if hasattr(surface, "ohm_threshsw"):
+            set_df_value("ohm_threshsw", (surf_idx,), surface.ohm_threshsw)
+        if hasattr(surface, "ohm_threshwd"):
+            set_df_value("ohm_threshwd", (surf_idx,), surface.ohm_threshwd)
+        if hasattr(surface, "chanohm"):
+            set_df_value("chanohm", (surf_idx,), surface.chanohm)
+        if hasattr(surface, "cpanohm"):
+            set_df_value("cpanohm", (surf_idx,), surface.cpanohm)
+        if hasattr(surface, "kkanohm"):
+            set_df_value("kkanohm", (surf_idx,), surface.kkanohm)
+
+        # Add to surface properties section
+        if hasattr(surface, "soildepth"):
+            set_df_value("soildepth", (surf_idx,), surface.soildepth)
+        if hasattr(surface, "soilstorecap"):
+            set_df_value("soilstorecap", (surf_idx,), surface.soilstorecap)
+        if hasattr(surface, "statelimit"):
+            set_df_value("statelimit", (surf_idx,), surface.statelimit)
+
+        # Add to CO2 parameters section for vegetated surfaces
+        if hasattr(surface, "resp_a"):
+            set_df_value("resp_a", (surf_idx-2,), surface.resp_a)
+        if hasattr(surface, "resp_b"):
+            set_df_value("resp_b", (surf_idx-2,), surface.resp_b)
+        if hasattr(surface, "theta_bioco2"):
+            set_df_value("theta_bioco2", (surf_idx-2,), surface.theta_bioco2)
 
         return df
 
