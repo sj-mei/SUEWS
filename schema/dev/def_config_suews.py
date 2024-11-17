@@ -246,6 +246,7 @@ class PavedProperties(NonVegetatedSurfaceProperties):
 class BuildingProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
     faibldg: float = Field(ge=0, description="Frontal area index of buildings")
+    bldgh: float = Field(ge=0, description="Building height")
 
 
 class BaresoilProperties(NonVegetatedSurfaceProperties):
@@ -492,12 +493,12 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
 
 class DectrProperties(VegetatedSurfaceProperties):
-    faidectree: float
-    dectreeh: float
-    pormin_dec: float = Field(ge=0.1, le=0.9, description="Minimum porosity")
-    pormax_dec: float = Field(ge=0.1, le=0.9, description="Maximum porosity")
-    capmax_dec: float
-    capmin_dec: float
+    faidectree: float = Field(description="Frontal area index of deciduous trees")
+    dectreeh: float = Field(description="Height of deciduous trees [m]")
+    pormin_dec: float = Field(ge=0.1, le=0.9, description="Minimum porosity of deciduous trees in winter when leaves are off")
+    pormax_dec: float = Field(ge=0.1, le=0.9, description="Maximum porosity of deciduous trees in summer when leaves are fully on")
+    capmax_dec: float = Field(description="Maximum storage capacity of deciduous trees in summer when leaves are fully on [mm]")
+    capmin_dec: float = Field(description="Minimum storage capacity of deciduous trees in winter when leaves are off [mm]")
 
     @model_validator(mode="after")
     def validate_porosity_range(self) -> "DectrProperties":
@@ -517,8 +518,8 @@ class DectrProperties(VegetatedSurfaceProperties):
 
 
 class EvetrProperties(VegetatedSurfaceProperties):
-    faievetree: float
-    evetreeh: float
+    faievetree: float = Field(description="Frontal area index of evergreen trees")
+    evetreeh: float = Field(description="Height of evergreen trees [m]")
 
 
 class SnowParams(BaseModel):
@@ -903,7 +904,15 @@ class SUEWSConfig(BaseModel):
         set_df_value("tempmeltfact", 0, snow.tempmeltfact)
         set_df_value("radmeltfact", 0, snow.radmeltfact)
 
+        # Missing height parameters for vegetation and buildings
+        set_df_value("bldgh", 0, props.land_cover.bldgs.bldgh)  # Building height
+        set_df_value("evetreeh", 0, props.land_cover.evetr.evetreeh)  # Evergreen tree height
+        set_df_value("dectreeh", 0, props.land_cover.dectr.dectreeh)  # Deciduous tree height
 
+        # Missing FAI parameters
+        set_df_value("faibldg", 0, props.land_cover.bldgs.faibldg)
+        set_df_value("faievetree", 0, props.land_cover.evetr.faievetree)
+        set_df_value("faidectree", 0, props.land_cover.dectr.faidectree)
 
         return df
 
