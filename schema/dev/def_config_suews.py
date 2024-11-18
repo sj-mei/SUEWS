@@ -835,8 +835,8 @@ class SUEWSConfig(BaseModel):
         surface_map = {
             "paved": 0,
             "bldgs": 1,
-            "dectr": 2,
-            "evetr": 3,
+            "evetr": 2,
+            "dectr": 3,
             "grass": 4,
             "bsoil": 5,
             "water": 6,
@@ -849,6 +849,54 @@ class SUEWSConfig(BaseModel):
             # Basic surface properties
             set_df_value("sfr_surf", (surf_idx,), surface.sfr)
             set_df_value("emis", (surf_idx,), surface.emis)
+
+            # Add water distribution parameters
+            if surface.waterdist is not None:
+                # Map of possible distribution targets based on (8,6) dimensionality
+                # 8 rows: Paved(0), Bldgs(1), EveTr(2), DecTr(3), Grass(4), BSoil(5), Water(6), Extra(7)
+                # 6 cols: Paved(0), Bldgs(1), EveTr(2), DecTr(3), Grass(4), BSoil(5)
+                dist_targets = {
+                    "to_paved": 0,
+                    "to_bldgs": 1,
+                    "to_evetr": 2,
+                    "to_dectr": 3,
+                    "to_grass": 4,
+                    "to_bsoil": 5,
+                    "to_water": 6,
+                }
+
+                # Set water distribution values
+                for target, value in surface.waterdist.__dict__.items():
+                    try:
+                        target_idx = dist_targets[target]
+                        # print(surf_idx, target_idx, value)
+                    except KeyError:
+                        print(f"Target {target} not found in dist_targets")
+                        continue
+                    if value is not None:
+                        if target == "to_runoff":
+                            # Special case for runoff (separate column)
+                            # set_df_value("waterdist_runoff", (surf_idx,), value)
+                            pass
+                        elif target == "to_soilstore":
+                            # Special case for soil store (separate column)
+                            # set_df_value("waterdist_soilstore", (surf_idx,), value)
+                            pass
+                        elif target == "to_water":
+                            # Special case for water (row 6)
+                            set_df_value("waterdist", (6, surf_idx), value)
+                        elif target in dist_targets:
+                            # Regular surface-to-surface distributions
+                            target_idx = dist_targets[target]
+                            # Note: in the DataFrame, first index is FROM surface, second is TO surface
+                            set_df_value("waterdist", (target_idx, surf_idx), value)
+
+                # Set unused row (7) to 0
+                for col_idx in range(6):
+                    set_df_value("waterdist", (7, col_idx), 0.0)
+                # Set diagonal elements (targets to themselves) to 0
+                for row_idx in range(6):
+                    set_df_value("waterdist", (row_idx, row_idx), 0.0)
 
             # Handle albedo
             if hasattr(surface, "alb"):
