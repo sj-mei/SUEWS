@@ -295,8 +295,20 @@ class PavedProperties(NonVegetatedSurfaceProperties):
 
 class BuildingProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
+    sfr: float = Field(description="Plan area index of buildings")
     faibldg: float = Field(ge=0, description="Frontal area index of buildings")
     bldgh: float = Field(ge=0, description="Building height")
+
+    @model_validator(mode="after")
+    def validate_rsl_zd_range(self) -> "BuildingProperties":
+        sfr_bldg_lower_limit = 0.18
+        if (self.sfr < sfr_bldg_lower_limit):
+            if  self.faibldg < 0.25 * ( 1 - self.sfr ):
+                error_message = ValueError("The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
+                "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302")
+                exceptions.append(error_message)
+                # raise 
+        return self
 
 
 class BaresoilProperties(NonVegetatedSurfaceProperties):
@@ -1353,7 +1365,7 @@ if __name__ == "__main__":
 
     print(r"testing suews_config done!")
 
-    # pdb.set_trace()
+    pdb.set_trace()
 
     # Convert to DataFrame
     df_state_test = suews_config.to_df_state()
@@ -1381,7 +1393,7 @@ if __name__ == "__main__":
     print(f"{len(na_cols)} Columns containing NA values:")
     for col in sorted(na_cols):
         print(col)
-
+        
 
 # # Convert back to config
 # suews_config_back = SUEWSConfig.from_df_state(df_state)
