@@ -528,9 +528,17 @@ class LAIParams(BaseModel):
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
         if self.laimin > self.laimax:
-            raise ValueError("laimin must be less than or equal to laimax")
+            error_message = ValueError(
+                f"laimin ({self.laimin}) must be less than or equal to laimax ({self.laimax})."
+            )
+            exceptions.append(error_message)
+            #raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
         if self.baset > self.gddfull:
-            raise ValueError("baset must be less than gddfull")
+            error_message = ValueError(
+                f"baset ({self.baset}) must be less than gddfull ({self.gddfull})."
+            )
+            exceptions.append(error_message)
+            #raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
         return self
 
 
