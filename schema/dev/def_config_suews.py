@@ -305,6 +305,7 @@ class BuildingProperties(NonVegetatedSurfaceProperties):
         if (self.sfr < sfr_bldg_lower_limit):
             if  self.faibldg < 0.25 * ( 1 - self.sfr ):
                 error_message = ValueError("The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
+                f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
                 "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302")
                 exceptions.append(error_message)
                 # raise 
@@ -1393,7 +1394,7 @@ if __name__ == "__main__":
     print(f"{len(na_cols)} Columns containing NA values:")
     for col in sorted(na_cols):
         print(col)
-        
+
 
 # # Convert back to config
 # suews_config_back = SUEWSConfig.from_df_state(df_state)
