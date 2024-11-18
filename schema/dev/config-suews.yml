@@ -562,7 +562,7 @@
             snowpacklimit: 0.1
           bldgs: # buildings
             sfr: 0.1
-            faibldg: 0.1
+            faibldg: 0.5
             bldgh: 10
             emis: .9
             alb: .1 # fixed for non-vegetated surfaces

@@ -295,8 +295,21 @@ class PavedProperties(NonVegetatedSurfaceProperties):
 
 class BuildingProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
+    sfr: float = Field(description="Plan area index of buildings")
     faibldg: float = Field(ge=0, description="Frontal area index of buildings")
     bldgh: float = Field(ge=0, description="Building height")
+
+    @model_validator(mode="after")
+    def validate_rsl_zd_range(self) -> "BuildingProperties":
+        sfr_bldg_lower_limit = 0.18
+        if (self.sfr < sfr_bldg_lower_limit):
+            if  self.faibldg < 0.25 * ( 1 - self.sfr ):
+                error_message = ValueError("The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
+                f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
+                "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302")
+                exceptions.append(error_message)
+                # raise 
+        return self
 
 
 class BaresoilProperties(NonVegetatedSurfaceProperties):
@@ -515,9 +528,17 @@ class LAIParams(BaseModel):
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
         if self.laimin > self.laimax:
-            raise ValueError("laimin must be less than or equal to laimax")
+            error_message = ValueError(
+                f"laimin ({self.laimin}) must be less than or equal to laimax ({self.laimax})."
+            )
+            exceptions.append(error_message)
+            #raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
         if self.baset > self.gddfull:
-            raise ValueError("baset must be less than gddfull")
+            error_message = ValueError(
+                f"baset ({self.baset}) must be less than gddfull ({self.gddfull})."
+            )
+            exceptions.append(error_message)
+            #raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
         return self
 
 
@@ -1353,7 +1374,7 @@ if __name__ == "__main__":
 
     print(r"testing suews_config done!")
 
-    # pdb.set_trace()
+    pdb.set_trace()
 
     # Convert to DataFrame
     df_state_test = suews_config.to_df_state()
