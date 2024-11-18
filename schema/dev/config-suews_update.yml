@@ -1,0 +1,1092 @@
+name: london sim
+description: london sim
+model:
+  control:
+    tstep: 300
+    forcing_file: london_2016_2017.csv
+    output_file: london_2016_2017_output.csv
+    daylightsaving_method: 1
+  physics:
+    netradiationmethod: 1
+    emissionsmethod: 1
+    storageheatmethod: 1
+    ohmincqf: 1
+    aerodynamicresistancemethod: 1
+    roughlenmommethod: 1
+    roughlenheatmethod: 1
+    stabilitymethod: 1
+    smdmethod: 1
+    waterusemethod: 1
+    diagmethod: 1
+    snowuse: 0
+    stebbsmethod: 0
+site:  # Site information
+  - name: london
+    properties:
+      lat: 51.5074  # Latitude
+      lng: 0.1278 # Longitude
+      alt: 0 # Altitude
+      timezone: 0
+      surfacearea: 1
+      z: 40
+      z0m_in: 0.1
+      zdm_in: 2
+      pipecapacity: 100
+      runofftowater: 0.5
+      narp_trans_site: 1
+      lumps:
+        raincover: 0.5
+        rainmaxres: 0.5
+        drainrt: 0.5
+        veg_type: 1
+      spartacus:
+        air_ext_lw: 1
+        air_ext_sw: 1
+        air_ssa_lw: 1
+        air_ssa_sw: 1
+        ground_albedo_dir_mult_fact: 1
+        n_stream_lw_urban: 1
+        n_stream_sw_urban: 1
+        n_vegetation_region_urban: 1
+        sw_dn_direct_frac: 1
+        use_sw_direct_albedo: 0.1
+        veg_contact_fraction_const: 1
+        veg_fsd_const: 1
+        veg_ssa_lw: 1
+        veg_ssa_sw: 1
+      irrigation:
+        h_maintain: 10
+        faut: 0.5
+        ie_start: 100
+        ie_end: 200
+        internalwateruse_h: 10
+        daywatper:
+          monday: 10
+          tuesday: 10
+          wednesday: 10
+          thursday: 10
+          friday: 10
+          saturday: 10
+          sunday: 10
+        daywat:
+          monday: 10
+          tuesday: 10
+          wednesday: 10
+          thursday: 10
+          friday: 10
+          saturday: 10
+          sunday: 10
+        wuprofa_24hr:
+          working_day:
+            1: 0.1
+            2: 0.1
+            3: 0.1
+            4: 0.1
+            5: 0.1
+            6: 0.1
+            7: 0.1
+            8: 0.1
+            9: 0.1
+            10: 0.1
+            11: 0.1
+            12: 0.1
+            13: 0.1
+            14: 0.1
+            15: 0.1
+            16: 0.1
+            17: 0.1
+            18: 0.1
+            19: 0.1
+            20: 0.1
+            21: 0.1
+            22: 0.1
+            23: 0.1
+            24: 0.1
+          holiday:
+            1: 0.1
+            2: 0.1
+            3: 0.1
+            4: 0.1
+            5: 0.1
+            6: 0.1
+            7: 0.1
+            8: 0.1
+            9: 0.1
+            10: 0.1
+            11: 0.1
+            12: 0.1
+            13: 0.1
+            14: 0.1
+            15: 0.1
+            16: 0.1
+            17: 0.1
+            18: 0.1
+            19: 0.1
+            20: 0.1
+            21: 0.1
+            22: 0.1
+            23: 0.1
+            24: 0.1
+        wuprofm_24hr:
+          working_day:
+            1: 0.1
+            2: 0.1
+            3: 0.1
+            4: 0.1
+            5: 0.1
+            6: 0.1
+            7: 0.1
+            8: 0.1
+            9: 0.1
+            10: 0.1
+            11: 0.1
+            12: 0.1
+            13: 0.1
+            14: 0.1
+            15: 0.1
+            16: 0.1
+            17: 0.1
+            18: 0.1
+            19: 0.1
+            20: 0.1
+            21: 0.1
+            22: 0.1
+            23: 0.1
+            24: 0.1
+          holiday:
+            1: 0.1
+            2: 0.1
+            3: 0.1
+            4: 0.1
+            5: 0.1
+            6: 0.1
+            7: 0.1
+            8: 0.1
+            9: 0.1
+            10: 0.1
+            11: 0.1
+            12: 0.1
+            13: 0.1
+            14: 0.1
+            15: 0.1
+            16: 0.1
+            17: 0.1
+            18: 0.1
+            19: 0.1
+            20: 0.1
+            21: 0.1
+            22: 0.1
+            23: 0.1
+            24: 0.1
+      anthropogenic_emissions:
+        startdls: 150
+        enddls: 250
+        heat:
+          qf0_beu:
+            working_day: 10
+            holiday: 10
+          qf_a:
+            working_day: 10
+            holiday: 10
+          qf_b:
+            working_day: 10
+            holiday: 10
+          qf_c:
+            working_day: 10
+            holiday: 10
+          baset_cooling:
+            working_day: 10
+            holiday: 10
+          baset_heating:
+            working_day: 10
+            holiday: 10
+          ah_min: 0.1
+          ah_slope_cooling: 0.1
+          ah_slope_heating: 0.1
+          ahprof_24hr:
+            working_day:
+              1: 0.1
+              2: 0.1
+              3: 0.1
+              4: 0.1
+              5: 0.1
+              6: 0.1
+              7: 0.1
+              8: 0.1
+              9: 0.1
+              10: 0.1
+              11: 0.1
+              12: 0.1
+              13: 0.1
+              14: 0.1
+              15: 0.1
+              16: 0.1
+              17: 0.1
+              18: 0.1
+              19: 0.1
+              20: 0.1
+              21: 0.1
+              22: 0.1
+              23: 0.1
+              24: 0.1
+            holiday:
+              1: 0.1
+              2: 0.1
+              3: 0.1
+              4: 0.1
+              5: 0.1
+              6: 0.1
+              7: 0.1
+              8: 0.1
+              9: 0.1
+              10: 0.1
+              11: 0.1
+              12: 0.1
+              13: 0.1
+              14: 0.1
+              15: 0.1
+              16: 0.1
+              17: 0.1
+              18: 0.1
+              19: 0.1
+              20: 0.1
+              21: 0.1
+              22: 0.1
+              23: 0.1
+              24: 0.1
+          popdensdaytime:
+            working_day: 100
+            holiday: 100
+          popdensnighttime:
+            working_day: 100
+            holiday: 100
+          popprof_24hr:
+            working_day:
+              1: 100
+              2: 100
+              3: 100
+              4: 100
+              5: 100
+              6: 100
+              7: 100
+              8: 100
+              9: 100
+              10: 100
+              11: 100
+              12: 100
+              13: 100
+              14: 100
+              15: 100
+              16: 100
+              17: 100
+              18: 100
+              19: 100
+              20: 100
+              21: 100
+              22: 100
+              23: 100
+              24: 100
+            holiday:
+              1: 100
+              2: 100
+              3: 100
+              4: 100
+              5: 100
+              6: 100
+              7: 100
+              8: 100
+              9: 100
+              10: 100
+              11: 100
+              12: 100
+              13: 100
+              14: 100
+              15: 100
+              16: 100
+              17: 100
+              18: 100
+              19: 100
+              20: 100
+              21: 100
+              22: 100
+              23: 100
+              24: 100
+        co2:
+          co2pointsource: 0.1
+          ef_umolco2perj: 0.1
+          enef_v_jkm: 0.1
+          fcef_v_kgkm: 0.1
+          frfossilfuel_heat: 0.1
+          frfossilfuel_nonheat: 0.1
+          maxfcmetab: 0.1
+          maxqfmetab: 0.1
+          min_res_bioco2: 0.1
+          minfcmetab: 0.1
+          minqfmetab: 0.1
+          trafficrate: 0.1
+          trafficunits: 0.1
+          traffprof_24hr:
+            working_day:
+              1: 0.1
+              2: 0.1
+              3: 0.1
+              4: 0.1
+              5: 0.1
+              6: 0.1
+              7: 0.1
+              8: 0.1
+              9: 0.1
+              10: 0.1
+              11: 0.1
+              12: 0.1
+              13: 0.1
+              14: 0.1
+              15: 0.1
+              16: 0.1
+              17: 0.1
+              18: 0.1
+              19: 0.1
+              20: 0.1
+              21: 0.1
+              22: 0.1
+              23: 0.1
+              24: 0.1
+            holiday:
+              1: 0.1
+              2: 0.1
+              3: 0.1
+              4: 0.1
+              5: 0.1
+              6: 0.1
+              7: 0.1
+              8: 0.1
+              9: 0.1
+              10: 0.1
+              11: 0.1
+              12: 0.1
+              13: 0.1
+              14: 0.1
+              15: 0.1
+              16: 0.1
+              17: 0.1
+              18: 0.1
+              19: 0.1
+              20: 0.1
+              21: 0.1
+              22: 0.1
+              23: 0.1
+              24: 0.1
+          humactivity_24hr:
+            working_day:
+              1: 0.1
+              2: 0.1
+              3: 0.1
+              4: 0.1
+              5: 0.1
+              6: 0.1
+              7: 0.1
+              8: 0.1
+              9: 0.1
+              10: 0.1
+              11: 0.1
+              12: 0.1
+              13: 0.1
+              14: 0.1
+              15: 0.1
+              16: 0.1
+              17: 0.1
+              18: 0.1
+              19: 0.1
+              20: 0.1
+              21: 0.1
+              22: 0.1
+              23: 0.1
+              24: 0.1
+            holiday:
+              1: 0.1
+              2: 0.1
+              3: 0.1
+              4: 0.1
+              5: 0.1
+              6: 0.1
+              7: 0.1
+              8: 0.1
+              9: 0.1
+              10: 0.1
+              11: 0.1
+              12: 0.1
+              13: 0.1
+              14: 0.1
+              15: 0.1
+              16: 0.1
+              17: 0.1
+              18: 0.1
+              19: 0.1
+              20: 0.1
+              21: 0.1
+              22: 0.1
+              23: 0.1
+              24: 0.1
+      snow:
+        crwmax: 1
+        crwmin: 0.3
+        narp_emis_snow: 0.8
+        preciplimit: 10
+        preciplimitalb: 0.3
+        snowalbmax: 0.8
+        snowalbmin: 0.3
+        snowdensmin: 1
+        snowlimbldg: 0.3
+        snowlimpaved: 0.3
+        snowpacklimit: 0
+        snowprof_24hr:
+          working_day:
+            1: 0.1
+            2: 0.1
+            3: 0.1
+            4: 0.1
+            5: 0.1
+            6: 0.1
+            7: 0.1
+            8: 0.1
+            9: 0.1
+            10: 0.1
+            11: 0.1
+            12: 0.1
+            13: 0.1
+            14: 0.1
+            15: 0.1
+            16: 0.1
+            17: 0.1
+            18: 0.1
+            19: 0.1
+            20: 0.1
+            21: 0.1
+            22: 0.1
+            23: 0.1
+            24: 0.1
+          holiday:
+            1: 0.1
+            2: 0.1
+            3: 0.1
+            4: 0.1
+            5: 0.1
+            6: 0.1
+            7: 0.1
+            8: 0.1
+            9: 0.1
+            10: 0.1
+            11: 0.1
+            12: 0.1
+            13: 0.1
+            14: 0.1
+            15: 0.1
+            16: 0.1
+            17: 0.1
+            18: 0.1
+            19: 0.1
+            20: 0.1
+            21: 0.1
+            22: 0.1
+            23: 0.1
+            24: 0.1
+        tau_a: 0.1
+        tau_r: 0.1
+        tempmeltfact: 0.1
+        radmeltfact: 0.1
+      land_cover:
+        paved:
+          sfr: 0.1
+          emis: 0.9
+          alb: 0.1
+          chanohm: 0.5
+          cpanohm: 200000
+          kkanohm: 1.2
+          ohm_threshsw: 18
+          ohm_threshwd: 0.5
+          ohm_coef:
+            a1:
+              summer_dry: 0.13
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a2:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a3:
+              summer_dry: 20.1
+              summer_wet: 20.1
+              winter_dry: 20.1
+              winter_wet: 20.1
+          soildepth: 0.1
+          soilstorecap: 200
+          sathydraulicconduct: 0.5
+          irrfracpaved: 0.5
+          wetthresh: 0.5
+          statelimit: 10
+          storedrainprm:
+            store_min: 0.1
+            store_max: 0.2
+            store_cap: 0.5
+            drain_eq: 1
+            drain_coef_1: 0.5
+            drain_coef_2: 0.5
+          waterdist:
+            to_bldgs: 0.1
+            to_dectr: 0.1
+            to_evetr: 0.1
+            to_grass: 0.1
+            to_bsoil: 0.1
+            to_water: 0.1
+            to_runoff: 0.4
+        bldgs:
+          sfr: 0.1
+          faibldg: 0.1
+          bldgh: 10
+          emis: 0.9
+          alb: 0.1
+          chanohm: 0.5
+          cpanohm: 200000
+          kkanohm: 1.2
+          ohm_threshsw: 18
+          ohm_threshwd: 0.5
+          ohm_coef:
+            a1:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a2:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a3:
+              summer_dry: 20.1
+              summer_wet: 20.1
+              winter_dry: 20.1
+              winter_wet: 20.1
+          soildepth: 0.1
+          soilstorecap: 200
+          sathydraulicconduct: 0.5
+          irrfracbldgs: 0.5
+          wetthresh: 0.5
+          statelimit: 10
+          storedrainprm:
+            store_min: 0.1
+            store_max: 0.2
+            store_cap: 0.5
+            drain_eq: 1
+            drain_coef_1: 0.5
+            drain_coef_2: 0.5
+          waterdist:
+            to_paved: 0.1
+            to_dectr: 0.1
+            to_evetr: 0.1
+            to_grass: 0.1
+            to_bsoil: 0.1
+            to_water: 0.1
+            to_runoff: 0.4
+          WallRoof:
+            WallThickness:
+            WallEffectiveConductivity:
+            WallDensity:
+            WallCp:
+            Wallx1:
+            WallExternalEmissivity:
+            WallInternalEmissivity:
+            WallTransmissivity:
+            WallAbsorbtivity:
+            WallReflectivity:
+            WallInternalConvectionCoefficient:
+            WallExternalConvectionCoefficient:
+          Window:
+            WindowThickness:
+            WindowEffectiveConductivity:
+            WindowDensity:
+            WindowCp:
+            WindowExternalEmissivity:
+            WindowInternalEmissivity:
+            WindowTransmissivity:
+            WindowAbsorbtivity:
+            WindowReflectivity:
+            WindowInternalConvectionCoefficient:
+            WindowExternalConvectionCoefficient:
+          Floor:
+            FloorThickness:
+            GroundFloorEffectiveConductivity:
+            GroundFloorDensity:
+            GroundFloorCp:
+            FloorInternalConvectionCoefficient:
+          QF:
+            MaxHeatingPower:
+            MaximumHotWaterHeatingPower:
+            HeatingSetpointTemperature:
+            CoolingSetpointTemperature:
+            HeatingSystemEfficiency:
+            MaxCoolingPower:
+            CoolingSystemCOP:
+            VentilationRate:
+          QF DHW:
+            WaterTankWaterVolume:
+            WaterTankWallThickness:
+            MainsWaterTemperature:
+            WaterTankSurfaceArea:
+            HotWaterTankWallEmissivity:
+            DHWVesselWallThickness:
+            DHWWaterVolume:
+            DHWSurfaceArea:
+            DHWVesselEmissivity:
+            HotWaterFlowRate:
+            DHWDrainFlowRate:
+            DHWSpecificHeatCapacity:
+            HotWaterTankSpecificHeatCapacity:
+            DHWVesselSpecificHeatCapacity:
+            DHWDensity:
+            HotWaterTankWallDensity:
+            DHWVesselDensity:
+            HotWaterTankBuildingWallViewFactor:
+            HotWaterTankInternalMassViewFactor:
+            HotWaterTankWallConductivity:
+            HotWaterTankInternalWallConvectionCoefficient:
+            HotWaterTankExternalWallConvectionCoefficient:
+            DHWVesselWallConductivity:
+            DHWVesselInternalWallConvectionCoefficient:
+            DHWVesselExternalWallConvectionCoefficient:
+            DHWVesselWallEmissivity:
+            HotWaterHeatingEfficiency:
+            MinimumVolumeOfDHWinUse:
+          QF Temp:
+            IndoorAirStartTemperature:
+            IndoorMassStartTemperature:
+            WallIndoorSurfaceTemperature:
+            WallOutdoorSurfaceTemperature:
+            WindowIndoorSurfaceTemperature:
+            WindowOutdoorSurfaceTemperature:
+            GroundFloorIndoorSurfaceTemperature:
+            GroundFloorOutdoorSurfaceTemperature:
+            WaterTankTemperature:
+            InternalWallWaterTankTemperature:
+            ExternalWallWaterTankTemperature:
+            HotWaterHeatingSetpointTemperature:
+            DomesticHotWaterTemperatureInUseInBuilding:
+            InternalWallDHWVesselTemperature:
+            ExternalWallDHWVesselTemperature:
+          Population:
+            Occupants:
+            hhs0:
+            age_0_4:
+            age_5_11:
+            age_12_18:
+            age_19_64:
+            age_65plus:
+            MetabolicRate:
+            LatentSensibleRatio:
+          Appliance:
+            ApplianceRating:
+            TotalNumberofAppliances:
+            ApplianceUsageFactor:
+          Dynamic:
+            IndoorAirDensity:
+            IndoorAirCp:
+          WallExternalArea:
+          RatioInternalVolume:
+          WWR:
+          InternalMassDensity:
+          InternalMassCp:
+          InternalMassEmissivity:
+          Height:
+          FootprintArea:
+          WallBuildingViewFactor:
+          WallGroundViewFactor:
+          WallSkyViewFactor:
+        dectr:
+          sfr: 0.1
+          emis: 0.9
+          faidectree: 0.1
+          dectreeh: 10
+          pormin_dec: 0.1
+          pormax_dec: 0.1
+          alb_min: 0.1
+          alb_max: 0.2
+          chanohm: 0.5
+          cpanohm: 200000
+          kkanohm: 1.2
+          ohm_threshsw: 18
+          ohm_threshwd: 0.5
+          ohm_coef:
+            a1:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a2:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a3:
+              summer_dry: 20.1
+              summer_wet: 20.1
+              winter_dry: 20.1
+              winter_wet: 20.1
+          soildepth: 0.1
+          soilstorecap: 200
+          statelimit: 10
+          capmax_dec: 100
+          capmin_dec: 10
+          irrfracdectr: 0.5
+          sathydraulicconduct: 0.5
+          wetthresh: 0.5
+          beta_bioco2: 0.5
+          beta_enh_bioco2: 0.5
+          alpha_bioco2: 0.5
+          alpha_enh_bioco2: 0.5
+          resp_a: 0.5
+          resp_b: 0.5
+          theta_bioco2: 0.5
+          conductance:
+            g_max: 200
+            g_k: 100
+            g_q_base: 12
+            g_q_shape: 2
+            g_t: 20
+            g_sm: 200
+            kmax: 1200
+            gsmodel: 1
+            maxconductance: 20
+            s1: 0.5
+            s2: 0.5
+          lai:
+            baset: 20
+            gddfull: 100
+            basete: 15
+            sddfull: 100
+            laimin: 0.1
+            laimax: 2
+            laipower: 2
+            laitype: 1
+          storedrainprm:
+            store_min: 0.1
+            store_max: 0.2
+            store_cap: 0.5
+            drain_eq: 1
+            drain_coef_1: 0.5
+            drain_coef_2: 0.5
+          waterdist:
+            to_paved: 0.1
+            to_bldgs: 0.1
+            to_evetr: 0.1
+            to_grass: 0.1
+            to_bsoil: 0.1
+            to_water: 0.1
+            to_soilstore: 0.4
+          ie_a: 1
+          ie_m: 1
+        evetr:
+          sfr: 0.1
+          faievetree: 0.1
+          evetreeh: 10
+          emis: 0.9
+          alb_min: 0.1
+          alb_max: 0.2
+          chanohm: 0.5
+          cpanohm: 200000
+          kkanohm: 1.2
+          ohm_threshsw: 18
+          ohm_threshwd: 0.5
+          ohm_coef:
+            a1:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a2:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a3:
+              summer_dry: 20.1
+              summer_wet: 20.1
+              winter_dry: 20.1
+              winter_wet: 20.1
+          soildepth: 0.1
+          soilstorecap: 200
+          statelimit: 10
+          sathydraulicconduct: 0.5
+          irrfracevetr: 0.5
+          wetthresh: 0.5
+          beta_bioco2: 0.5
+          beta_enh_bioco2: 0.5
+          alpha_bioco2: 0.5
+          alpha_enh_bioco2: 0.5
+          resp_a: 0.5
+          resp_b: 0.5
+          theta_bioco2: 0.5
+          conductance:
+            g_max: 200
+            g_k: 100
+            g_q_base: 12
+            g_q_shape: 2
+            g_t: 20
+            g_sm: 200
+            kmax: 1200
+            gsmodel: 1
+            maxconductance: 20
+            s1: 0.5
+            s2: 0.5
+          lai:
+            baset: 20
+            gddfull: 100
+            basete: 15
+            sddfull: 100
+            laimin: 0.1
+            laimax: 2
+            laipower: 2
+            laitype: 1
+          storedrainprm:
+            store_min: 0.1
+            store_max: 0.2
+            store_cap: 0.5
+            drain_eq: 1
+            drain_coef_1: 0.5
+            drain_coef_2: 0.5
+          waterdist:
+            to_paved: 0.1
+            to_bldgs: 0.1
+            to_dectr: 0.1
+            to_grass: 0.1
+            to_bsoil: 0.1
+            to_water: 0.1
+            to_soilstore: 0.4
+          ie_a: 1
+          ie_m: 1
+        grass:
+          sfr: 0.1
+          emis: 0.9
+          alb_min: 0.1
+          alb_max: 0.2
+          chanohm: 0.5
+          cpanohm: 200000
+          kkanohm: 1.2
+          ohm_threshsw: 18
+          ohm_threshwd: 0.5
+          ohm_coef:
+            a1:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a2:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a3:
+              summer_dry: 20.1
+              summer_wet: 20.1
+              winter_dry: 20.1
+              winter_wet: 20.1
+          soildepth: 0.1
+          soilstorecap: 200
+          statelimit: 10
+          sathydraulicconduct: 0.5
+          irrfracgrass: 0.5
+          wetthresh: 0.5
+          beta_bioco2: 0.5
+          beta_enh_bioco2: 0.5
+          alpha_bioco2: 0.5
+          alpha_enh_bioco2: 0.5
+          resp_a: 0.5
+          resp_b: 0.5
+          theta_bioco2: 0.5
+          conductance:
+            g_max: 200
+            g_k: 100
+            g_q_base: 12
+            g_q_shape: 2
+            g_t: 20
+            g_sm: 200
+            kmax: 1200
+            gsmodel: 1
+            maxconductance: 20
+            s1: 0.5
+            s2: 0.5
+          lai:
+            baset: 20
+            gddfull: 100
+            basete: 15
+            sddfull: 100
+            laimin: 0.1
+            laimax: 2
+            laipower: 2
+            laitype: 1
+          storedrainprm:
+            store_min: 0.1
+            store_max: 0.2
+            store_cap: 0.5
+            drain_eq: 1
+            drain_coef_1: 0.5
+            drain_coef_2: 0.5
+          waterdist:
+            to_paved: 0.1
+            to_bldgs: 0.1
+            to_dectr: 0.1
+            to_evetr: 0.1
+            to_bsoil: 0.1
+            to_water: 0.1
+            to_soilstore: 0.4
+          ie_a: 1
+          ie_m: 1
+        bsoil:
+          sfr: 0.1
+          emis: 0.9
+          alb: 0.1
+          chanohm: 0.5
+          cpanohm: 200000
+          kkanohm: 1.2
+          ohm_threshsw: 18
+          ohm_threshwd: 0.5
+          ohm_coef:
+            a1:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a2:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a3:
+              summer_dry: 20.1
+              summer_wet: 20.1
+              winter_dry: 20.1
+              winter_wet: 20.1
+          soildepth: 0.1
+          soilstorecap: 200
+          statelimit: 10
+          sathydraulicconduct: 0.5
+          irrfracbsoil: 0.5
+          wetthresh: 0.5
+          storedrainprm:
+            store_min: 0.1
+            store_max: 0.2
+            store_cap: 0.5
+            drain_eq: 1
+            drain_coef_1: 0.5
+            drain_coef_2: 0.5
+          waterdist:
+            to_paved: 0.1
+            to_bldgs: 0.1
+            to_dectr: 0.1
+            to_evetr: 0.1
+            to_grass: 0.1
+            to_water: 0.1
+            to_soilstore: 0.4
+        water:
+          sfr: 0.4
+          emis: 0.9
+          alb: 0.1
+          chanohm: 0.5
+          cpanohm: 200000
+          kkanohm: 1.2
+          ohm_threshsw: 18
+          ohm_threshwd: 0.5
+          ohm_coef:
+            a1:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a2:
+              summer_dry: 0.1
+              summer_wet: 0.1
+              winter_dry: 0.1
+              winter_wet: 0.1
+            a3:
+              summer_dry: 20.1
+              summer_wet: 20.1
+              winter_dry: 20.1
+              winter_wet: 20.1
+          soildepth: 0.1
+          soilstorecap: 200
+          statelimit: 10
+          sathydraulicconduct: 0.5
+          irrfracwater: 0.5
+          flowchange: 0.5
+          storedrainprm:
+            store_min: 0.1
+            store_max: 0.2
+            store_cap: 0.5
+            drain_eq: 1
+            drain_coef_1: 0.5
+            drain_coef_2: 0.5
+      stebbs:
+        BuildingCode:
+        BuildingClass:
+        BuildingType:
+        BuildingName:
+        BuildingCount:
+        InternalMassConvectionCoefficient:
+        ExternalGroundConductivity:
+        GroundDepth:
+    initial_states:
+      snowalb: 0.8
+      paved:
+        state: 10
+        soilstore: 100
+        snowwater: 1
+        snowdens: 1
+        snowfrac: 0
+        snowpack: 0
+      bldgs:
+        state: 10
+        soilstore: 100
+        snowwater: 1
+        snowdens: 1
+        snowfrac: 0
+        snowpack: 0
+      dectr:
+        state: 10
+        soilstore: 100
+        snowwater: 1
+        snowdens: 1
+        snowfrac: 0
+        snowpack: 0
+        decidcap_id: 1
+        porosity_id: 0.2
+        alb_id: 0.2
+      evetr:
+        state: 10
+        soilstore: 100
+        snowwater: 1
+        snowdens: 1
+        snowfrac: 0
+        snowpack: 0
+        alb_id: 0.2
+      grass:
+        state: 10
+        soilstore: 100
+        snowwater: 1
+        snowdens: 1
+        snowfrac: 0
+        snowpack: 0
+        alb_id: 0.2
+      bsoil:
+        state: 10
+        soilstore: 100
+        snowwater: 1
+        snowdens: 1
+        snowfrac: 0
+        snowpack: 0
+      water:
+        state: 10
+        soilstore: 100
+        snowwater: 1
+        snowdens: 1
+        snowfrac: 0
+        snowpack: 0
