@@ -10,6 +10,7 @@ from pydantic import (
 import numpy as np
 from enum import Enum
 import pandas as pd
+import scipy as sp
 import yaml
 import pdb
 import math
@@ -851,7 +852,9 @@ class SUEWSConfig(BaseModel):
         """Convert config to DataFrame state format"""
         # Initialize empty DataFrame with correct structure
         columns = self.create_multi_index_columns("df_state_columns.txt")
-        df = pd.DataFrame(index=[0], columns=columns)
+        columns.set_names(['var','ind_dim'],inplace=True)
+        index = pd.Index([0],name='grid')
+        df = pd.DataFrame(index=index, columns=columns)
 
         # Helper function to set values in DataFrame
         def set_df_value(col_name: str, indices: Union[int, Tuple], value: float):
@@ -1429,10 +1432,10 @@ class SUEWSConfig(BaseModel):
                 # fill in dummy values for variables that are not needed for users
                 for i in range(12):
                     set_df_value("hdd_id", (i,), 0)
-                set_df_value("dqndt", 0, 0)
-                set_df_value("dqnsdt", 0, 0)
-                set_df_value("qn_av", 0, 0)
-                set_df_value("qn_s_av", 0, 0)
+                set_df_value("dqndt", 0, 1)
+                set_df_value("dqnsdt", 0, 10)
+                set_df_value("qn_av", 0, 10)
+                set_df_value("qn_s_av", 0, 10)
                 set_df_value("dt_since_start", 0, 0)
                 set_df_value("lenday_id", 0, 0)
                 set_df_value("tmax_id", 0, 0)
@@ -1675,6 +1678,13 @@ if __name__ == "__main__":
     print(f"{len(na_cols)} Columns containing NA values:")
     for col in sorted(na_cols):
         print(col)
+
+    # test running supy
+    import supy as sp
+    df_state, df_forcing = sp.load_SampleData()
+    df_state_test = pd.read_pickle("./df_state_test.pkl")
+    sp.run_supy(df_forcing, df_state_test)
+
 
 
 # # Convert back to config
