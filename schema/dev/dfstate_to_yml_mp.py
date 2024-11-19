@@ -81,7 +81,7 @@ class ModelParameters:
         self.df.drop(index=params.index, inplace=True)
         
         params = params.index.get_level_values('SuPy Input').tolist()
-        params = {param: None for param in params}
+        params = {'stebbs_'+param: None for param in params}
 
         return params
 
@@ -202,7 +202,7 @@ class YamlEditor:
 
 if __name__ == '__main__':
     # Read in the data in multi-index format
-    supyParameters = ModelParameters(csv_file='2024-11-suews_stebbs_translation(Inputs).csv', encoding='latin1')
+    supyParameters = ModelParameters(csv_file='./schema/dev/2024-11-suews_stebbs_translation(Inputs).csv', encoding='latin1')
 
     # Collect some parameters from the STEBBS model
     stebbs_methods = supyParameters.filter_parameters(
