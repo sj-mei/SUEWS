@@ -23,6 +23,7 @@
       snowuse: 0
   site:
     - name: london
+      gridiv: 1
       properties:
         lat: 51.5074
         lng: 0.1278
@@ -568,6 +569,7 @@
             sfr: 0.5
             faibldg: 0.3
             bldgh: 20
+            # vertical layers
             nlayer: 3
             building_frac: [0.5, 0.3, 0.2]
             building_scale: [1, 1, 1]
@@ -578,18 +580,30 @@
                   dz: [0.1, 0.2, 0.3, 0.4, 0.5]
                   k: [1.0, 1.0, 1.0, 1.0, 1.0]
                   cp: [1000, 1000, 1000, 1000, 1000]
+                statelimit: 10
+                soilstorecap: 200
+                wetthresh: 0.5
+                roof_albedo_dir_mult_fact: 0.1
               - alb: 0.2
                 emis: .9
                 thermal_layers:
                   dz: [0.1, 0.2, 0.3, 0.4, 0.5]
                   k: [1.0, 1.0, 1.0, 1.0, 1.0]
                   cp: [1000, 1000, 1000, 1000, 1000]
+                statelimit: 10
+                soilstorecap: 200
+                wetthresh: 0.5
+                roof_albedo_dir_mult_fact: 0.1
               - alb: 0.3
                 emis: .9
                 thermal_layers:
                   dz: [0.1, 0.2, 0.3, 0.4, 0.5]
                   k: [1.0, 1.0, 1.0, 1.0, 1.0]
                   cp: [1000, 1000, 1000, 1000, 1000]
+                statelimit: 10
+                soilstorecap: 200
+                wetthresh: 0.5
+                roof_albedo_dir_mult_fact: 0.1
             walls:
               - alb: 0.4
                 emis: .9
@@ -597,18 +611,31 @@
                   dz: [0.1, 0.2, 0.3, 0.4, 0.5]
                   k: [1.0, 1.0, 1.0, 1.0, 1.0]
                   cp: [1000, 1000, 1000, 1000, 1000]
+                statelimit: 10
+                soilstorecap: 200
+                wetthresh: 0.5
+                wall_specular_frac: 0.1
               - alb: 0.5
                 emis: .9
                 thermal_layers:
                   dz: [0.1, 0.2, 0.3, 0.4, 0.5]
                   k: [1.0, 1.0, 1.0, 1.0, 1.0]
                   cp: [1000, 1000, 1000, 1000, 1000]
+                statelimit: 10
+                soilstorecap: 200
+                wetthresh: 0.5
+                wall_specular_frac: 0.1
               - alb: 0.6
                 emis: .9
                 thermal_layers:
                   dz: [0.1, 0.2, 0.3, 0.4, 0.5]
                   k: [1.0, 1.0, 1.0, 1.0, 1.0]
                   cp: [1000, 1000, 1000, 1000, 1000]
+                statelimit: 10
+                soilstorecap: 200
+                wetthresh: 0.5
+                wall_specular_frac: 0.1
+            # vertical layers end
             emis: .9
             alb: .1 # fixed for non-vegetated surfaces
             chanohm: 0.5
@@ -974,6 +1001,7 @@
             soildepth: 0.1
             soilstorecap: 200
             statelimit: 10
+            wetthresh: 0.5
             sathydraulicconduct: 0.5
             irrfracwater: 0.5
             flowchange: 0.5
@@ -1055,3 +1083,59 @@
           snowfrac: 0
           snowpack: 0
           temperature: [20, 19, 18, 17, 16]
+        roofs:
+          - state: 10
+            soilstore: 100
+            snowwater: 1
+            snowdens: 1
+            snowfrac: 0
+            snowpack: 0
+            tsfc: 10
+            temperature: [20, 19, 18, 17, 16]
+            tin: 10
+          - state: 10
+            soilstore: 100
+            snowwater: 1
+            snowdens: 1
+            snowfrac: 0
+            snowpack: 0
+            tsfc: 10
+            temperature: [20, 19, 18, 17, 16]
+            tin: 10
+          - state: 10
+            soilstore: 100
+            snowwater: 1
+            snowdens: 1
+            snowfrac: 0
+            snowpack: 0
+            tsfc: 10
+            temperature: [20, 19, 18, 17, 16]
+            tin: 10
+        walls:
+          - state: 10
+            soilstore: 100
+            snowwater: 1
+            snowdens: 1
+            snowfrac: 0
+            snowpack: 0
+            tsfc: 10
+            temperature: [20, 19, 18, 17, 16]
+            tin: 10
+          - state: 10
+            soilstore: 100
+            snowwater: 1
+            snowdens: 1
+            snowfrac: 0
+            snowpack: 0
+            tsfc: 10
+            temperature: [20, 19, 18, 17, 16]
+            tin: 10
+          - state: 10
+            soilstore: 100
+            snowwater: 1
+            snowdens: 1
+            snowfrac: 0
+            snowpack: 0
+            tsfc: 10
+            temperature: [20, 19, 18, 17, 16]
+            tin: 10

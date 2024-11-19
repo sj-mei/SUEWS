@@ -55,6 +55,8 @@ class SurfaceInitialState(BaseModel):
         max_items=5,
         description="Initial temperature for each thermal layer",
     )
+    tsfc: Optional[float] = Field(None, description="Initial exterior surface temperature")
+    tin: Optional[float] = Field(None, description="Initial interior surface temperature")
 
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
@@ -117,6 +119,8 @@ class InitialStates(BaseModel):
     grass: SurfaceInitialState
     bsoil: SurfaceInitialState
     water: SurfaceInitialState
+    roofs: Optional[List[SurfaceInitialState]] = None  # TODO: add validation for number of layers
+    walls: Optional[List[SurfaceInitialState]] = None  # TODO: add validation for number of layers
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -270,6 +274,7 @@ class SurfaceProperties(BaseModel):
     soildepth: float
     soilstorecap: float
     statelimit: float
+    wetthresh: float
     sathydraulicconduct: float
     waterdist: Optional[WaterDistribution] = None
     storedrainprm: StorageDrainParams
@@ -301,6 +306,11 @@ class BuildingLayer(BaseModel):
     alb: float
     emis: float
     thermal_layers: ThermalLayer
+    statelimit: float
+    soilstorecap: float
+    wetthresh: float
+    roof_albedo_dir_mult_fact: Optional[float] = None
+    wall_specular_frac: Optional[float] = None
 
 
 class BuildingProperties(NonVegetatedSurfaceProperties):
@@ -761,6 +771,7 @@ class SiteProperties(BaseModel):
 
 class Site(BaseModel):
     name: str
+    gridiv: int
     properties: SiteProperties
     initial_states: InitialStates
 
@@ -829,8 +840,10 @@ class SUEWSConfig(BaseModel):
         # Process each site (assuming single site for now)
         site = self.site[0]
         props = site.properties
+        gridiv = site.gridiv
 
         # Basic site properties
+        set_df_value("gridiv", 0, gridiv)
         set_df_value("lat", 0, props.lat)
         set_df_value("lng", 0, props.lng)
         set_df_value("alt", 0, props.alt)
@@ -1218,6 +1231,9 @@ class SUEWSConfig(BaseModel):
             if hasattr(surface, "statelimit"):
                 set_df_value("statelimit_surf", (surf_idx,), surface.statelimit)
 
+            if hasattr(surface, "wetthresh"):
+                set_df_value("wetthresh_surf", (surf_idx,), surface.wetthresh)
+
             # porosity parameters for deciduous trees
             if hasattr(surface, "pormin_dec"):
                 set_df_value("pormin_dec", 0, surface.pormin_dec)
@@ -1244,6 +1260,10 @@ class SUEWSConfig(BaseModel):
                     set_df_value("ohm_coef", (surf_idx, i, 0), a1)
                     set_df_value("ohm_coef", (surf_idx, i, 1), a2)
                     set_df_value("ohm_coef", (surf_idx, i, 2), a3)
+                    # dummy row for extra surface
+                    set_df_value("ohm_coef", (7, i, 0), a1)
+                    set_df_value("ohm_coef", (7, i, 1), a2)
+                    set_df_value("ohm_coef", (7, i, 2), a3)
 
             # Storage and drain parameters
             if hasattr(surface, "storedrainprm"):
@@ -1346,8 +1366,16 @@ class SUEWSConfig(BaseModel):
                     set_df_value("building_scale", (i,), surface.building_scale[i])
                     set_df_value("building_frac", (i,), surface.building_frac[i])
                 for i, layer in enumerate(surface.roofs):
+                    set_df_value(
+                        f"roof_albedo_dir_mult_fact",
+                        (0, i),
+                        layer.roof_albedo_dir_mult_fact,
+                    )
                     set_df_value(f"alb_roof", (i,), layer.alb)
                     set_df_value(f"emis_roof", (i,), layer.emis)
+                    set_df_value(f"statelimit_roof", (i,), layer.statelimit)
+                    set_df_value(f"soilstorecap_roof", (i,), layer.soilstorecap)
+                    set_df_value(f"wetthresh_roof", (i,), layer.wetthresh)
                     thermal_layers = layer.thermal_layers
                     for j, var in enumerate(["dz", "k", "cp"]):
                         for k in range(5):
@@ -1355,8 +1383,14 @@ class SUEWSConfig(BaseModel):
                                 f"{var}_roof", (i, k), getattr(thermal_layers, var)[k]
                             )
                 for i, layer in enumerate(surface.walls):
+                    set_df_value(
+                        f"wall_specular_frac", (0, i), layer.wall_specular_frac
+                    )
                     set_df_value(f"alb_wall", (i,), layer.alb)
                     set_df_value(f"emis_wall", (i,), layer.emis)
+                    set_df_value(f"statelimit_wall", (i,), layer.statelimit)
+                    set_df_value(f"soilstorecap_wall", (i,), layer.soilstorecap)
+                    set_df_value(f"wetthresh_wall", (i,), layer.wetthresh)
                     thermal_layers = layer.thermal_layers
                     for j, var in enumerate(["dz", "k", "cp"]):
                         for k in range(5):
@@ -1403,6 +1437,24 @@ class SUEWSConfig(BaseModel):
             # Set initial snow albedo
             set_df_value("snowalb", 0, site.initial_states.snowalb)
 
+        for building_facet in ['roofs', 'walls']:
+            facet = building_facet[:-1]
+            if hasattr(site.initial_states, building_facet):
+                for j, layer in enumerate(getattr(site.initial_states, building_facet)):
+                    set_df_value(f"state_{facet}", (j,), layer.state)
+                    set_df_value(f"soilstore_{facet}", (j,), layer.soilstore)
+                    set_df_value(f"snowwater_{facet}", (j,), layer.snowwater)
+                    set_df_value(f"snowdens_{facet}", (j,), layer.snowdens)
+                    set_df_value(f"snowfrac_{facet}", (j,), layer.snowfrac)
+                    set_df_value(f"snowpack_{facet}", (j,), layer.snowpack)
+                    for k, var in enumerate(["temperature", "tsfc", "tin"]):
+                        if var == "tsfc":
+                            set_df_value(f"tsfc_{facet}", (j,), layer.tsfc)
+                        elif var == "temperature":
+                            for k in range(5):
+                                set_df_value(f"temp_{facet}", (j, k), getattr(layer, var)[k])
+                        elif var == "tin":
+                            set_df_value(f"tin_{facet}", (j,), layer.tin)
         return df
 
     @classmethod
