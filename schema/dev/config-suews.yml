@@ -9,6 +9,7 @@
       forcing_file: london_2016_2017.csv # planned change - inconsistent with current suews version
       output_file: london_2016_2017_output.csv # planned change - inconsistent with current suews version
       daylightsaving_method: 1
+      diagnose: 0
     physics:
       netradiationmethod: 1
       emissionsmethod: 1
@@ -20,6 +21,8 @@
       smdmethod: 1
       waterusemethod: 1
       diagmethod: 1
+      faimethod: 1
+      localclimatemethod: 1
       snowuse: 0
   site:
     - name: london
@@ -67,6 +70,8 @@
           gsmodel: 1
           s1: 0.5
           s2: 0.5
+          tl: -10
+          th: 50
         irrigation:
           h_maintain: 10
           faut: 0.5
@@ -456,10 +461,12 @@
           snowalbmax: .8
           snowalbmin: .3
           snowdensmin: 1
+          snowdensmax: 100
           snowlimbldg: .3
           snowlimpaved: .3
           tau_a: 0.1
           tau_r: 0.1
+          tau_f: 0.1
           tempmeltfact: 0.1
           radmeltfact: 0.1
           snowprof_24hr:
@@ -542,7 +549,7 @@
             soildepth: 0.1
             soilstorecap: 200
             sathydraulicconduct: 0.5
-            irrfracpaved: 0.5
+            irrfrac: 0.5
             wetthresh: 0.5
             statelimit: 10
             storedrainprm: # for surface water (i.e. above ground)
@@ -569,73 +576,6 @@
             sfr: 0.5
             faibldg: 0.3
             bldgh: 20
-            # vertical layers
-            nlayer: 3
-            building_frac: [0.5, 0.3, 0.2]
-            building_scale: [1, 1, 1]
-            roofs:
-              - alb: 0.1
-                emis: .9
-                thermal_layers:
-                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
-                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
-                  cp: [1000, 1000, 1000, 1000, 1000]
-                statelimit: 10
-                soilstorecap: 200
-                wetthresh: 0.5
-                roof_albedo_dir_mult_fact: 0.1
-              - alb: 0.2
-                emis: .9
-                thermal_layers:
-                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
-                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
-                  cp: [1000, 1000, 1000, 1000, 1000]
-                statelimit: 10
-                soilstorecap: 200
-                wetthresh: 0.5
-                roof_albedo_dir_mult_fact: 0.1
-              - alb: 0.3
-                emis: .9
-                thermal_layers:
-                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
-                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
-                  cp: [1000, 1000, 1000, 1000, 1000]
-                statelimit: 10
-                soilstorecap: 200
-                wetthresh: 0.5
-                roof_albedo_dir_mult_fact: 0.1
-            walls:
-              - alb: 0.4
-                emis: .9
-                thermal_layers:
-                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
-                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
-                  cp: [1000, 1000, 1000, 1000, 1000]
-                statelimit: 10
-                soilstorecap: 200
-                wetthresh: 0.5
-                wall_specular_frac: 0.1
-              - alb: 0.5
-                emis: .9
-                thermal_layers:
-                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
-                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
-                  cp: [1000, 1000, 1000, 1000, 1000]
-                statelimit: 10
-                soilstorecap: 200
-                wetthresh: 0.5
-                wall_specular_frac: 0.1
-              - alb: 0.6
-                emis: .9
-                thermal_layers:
-                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
-                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
-                  cp: [1000, 1000, 1000, 1000, 1000]
-                statelimit: 10
-                soilstorecap: 200
-                wetthresh: 0.5
-                wall_specular_frac: 0.1
-            # vertical layers end
             emis: .9
             alb: .1 # fixed for non-vegetated surfaces
             chanohm: 0.5
@@ -662,7 +602,7 @@
             soildepth: 0.1
             soilstorecap: 200
             sathydraulicconduct: 0.5
-            irrfracbldgs: 0.5
+            irrfrac: 0.5
             wetthresh: 0.5
             statelimit: 10
             storedrainprm: # for surface water (i.e. above ground)
@@ -733,6 +673,7 @@
             theta_bioco2: 0.5
             min_res_bioco2: 0.1
             maxconductance: 0.5
+            irrfrac: 0.5
             lai:
               baset: 20
               gddfull: 100
@@ -800,7 +741,7 @@
             soilstorecap: 200
             statelimit: 10
             sathydraulicconduct: 0.5
-            irrfracevetr: 0.5
+            irrfrac: 0.5
             wetthresh: 0.5
             beta_bioco2: 0.5
             beta_enh_bioco2: 0.5
@@ -876,7 +817,7 @@
             soilstorecap: 200
             statelimit: 10
             sathydraulicconduct: 0.5
-            irrfracgrass: 0.5
+            irrfrac: 0.5
             wetthresh: 0.5
             beta_bioco2: 0.5
             beta_enh_bioco2: 0.5
@@ -951,7 +892,7 @@
             soilstorecap: 200
             statelimit: 10
             sathydraulicconduct: 0.5
-            irrfracbsoil: 0.5
+            irrfrac: 0.5
             wetthresh: 0.5
             storedrainprm: # for surface water (i.e. above ground)
               store_min: 0.1
@@ -1003,7 +944,7 @@
             statelimit: 10
             wetthresh: 0.5
             sathydraulicconduct: 0.5
-            irrfracwater: 0.5
+            irrfrac: 0.5
             flowchange: 0.5
             storedrainprm: # for surface water (i.e. above ground)
               store_min: 0.1
@@ -1017,6 +958,76 @@
               dz: [0.1, 0.2, 0.3, 0.4, 0.5]
               k: [1.0, 1.0, 1.0, 1.0, 1.0]
               cp: [1000, 1000, 1000, 1000, 1000]
+        vertical_layers:
+          nlayer: 3
+          height: [0, 10, 20, 30]
+          veg_frac: [0.5, 0.3, 0.2]
+          veg_scale: [1, 1, 1]
+          building_frac: [0.5, 0.3, 0.2]
+          building_scale: [1, 1, 1]
+          roofs:
+            - alb: 0.1
+              emis: .9
+              thermal_layers:
+                dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                cp: [1000, 1000, 1000, 1000, 1000]
+              statelimit: 10
+              soilstorecap: 200
+              wetthresh: 0.5
+              roof_albedo_dir_mult_fact: 0.1
+            - alb: 0.2
+              emis: .9
+              thermal_layers:
+                dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                cp: [1000, 1000, 1000, 1000, 1000]
+              statelimit: 10
+              soilstorecap: 200
+              wetthresh: 0.5
+              roof_albedo_dir_mult_fact: 0.1
+            - alb: 0.3
+              emis: .9
+              thermal_layers:
+                dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                cp: [1000, 1000, 1000, 1000, 1000]
+              statelimit: 10
+              soilstorecap: 200
+              wetthresh: 0.5
+              roof_albedo_dir_mult_fact: 0.1
+          walls:
+            - alb: 0.4
+              emis: .9
+              thermal_layers:
+                dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                cp: [1000, 1000, 1000, 1000, 1000]
+              statelimit: 10
+              soilstorecap: 200
+              wetthresh: 0.5
+              wall_specular_frac: 0.1
+            - alb: 0.5
+              emis: .9
+              thermal_layers:
+                dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                cp: [1000, 1000, 1000, 1000, 1000]
+              statelimit: 10
+              soilstorecap: 200
+              wetthresh: 0.5
+              wall_specular_frac: 0.1
+            - alb: 0.6
+              emis: .9
+              thermal_layers:
+                dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                cp: [1000, 1000, 1000, 1000, 1000]
+              statelimit: 10
+              soilstorecap: 200
+              wetthresh: 0.5
+              wall_specular_frac: 0.1
+            # vertical layers end
       initial_states:
         snowalb: .8
         paved:
@@ -1026,7 +1037,10 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          icefrac: 0
+          tsfc: 10
           temperature: [20, 19, 18, 17, 16]
+          tin: 10
         bldgs:
           state: 10
           soilstore: 100
@@ -1034,7 +1048,10 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          icefrac: 0
+          tsfc: 10
           temperature: [20, 19, 18, 17, 16]
+          tin: 10
         dectr:
           state: 10
           soilstore: 100
@@ -1042,11 +1059,20 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          icefrac: 0
           decidcap_id: 1
           porosity_id: .2
           alb_id: .2
           lai_id: 1
+          gdd_id: 100
+          sdd_id: 100
+          tsfc: 10
           temperature: [20, 19, 18, 17, 16]
+          tin: 10
+          wu: # water use
+            wu_total: 2
+            wu_auto: 1
+            wu_manual: 1
         evetr:
           state: 10
           soilstore: 100
@@ -1054,9 +1080,18 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          icefrac: 0
           alb_id: .2
           lai_id: 1
+          gdd_id: 100
+          sdd_id: 100
+          tsfc: 10
           temperature: [20, 19, 18, 17, 16]
+          tin: 10
+          wu: # water use
+            wu_total: 2
+            wu_auto: 1
+            wu_manual: 1
         grass:
           state: 10
           soilstore: 100
@@ -1064,9 +1099,18 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          icefrac: 0
           alb_id: .2
           lai_id: 1
+          gdd_id: 100
+          sdd_id: 100
+          tsfc: 10
           temperature: [20, 19, 18, 17, 16]
+          tin: 10
+          wu: # water use
+            wu_total: 2
+            wu_auto: 1
+            wu_manual: 1
         bsoil:
           state: 10
           soilstore: 100
@@ -1074,7 +1118,10 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          icefrac: 0
+          tsfc: 10
           temperature: [20, 19, 18, 17, 16]
+          tin: 10
         water:
           state: 10
           soilstore: 100
@@ -1082,60 +1129,63 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          icefrac: 0
+          tsfc: 10
           temperature: [20, 19, 18, 17, 16]
+          tin: 10
         roofs:
           - state: 10
             soilstore: 100
-            snowwater: 1
-            snowdens: 1
-            snowfrac: 0
-            snowpack: 0
+            # snowwater: 1
+            # snowdens: 1
+            # snowfrac: 0
+            # snowpack: 0
             tsfc: 10
             temperature: [20, 19, 18, 17, 16]
             tin: 10
           - state: 10
             soilstore: 100
-            snowwater: 1
-            snowdens: 1
-            snowfrac: 0
-            snowpack: 0
+            # snowwater: 1
+            # snowdens: 1
+            # snowfrac: 0
+            # snowpack: 0
             tsfc: 10
             temperature: [20, 19, 18, 17, 16]
             tin: 10
           - state: 10
             soilstore: 100
-            snowwater: 1
-            snowdens: 1
-            snowfrac: 0
-            snowpack: 0
+            # snowwater: 1
+            # snowdens: 1
+            # snowfrac: 0
+            # snowpack: 0
             tsfc: 10
             temperature: [20, 19, 18, 17, 16]
             tin: 10
         walls:
           - state: 10
             soilstore: 100
-            snowwater: 1
-            snowdens: 1
-            snowfrac: 0
-            snowpack: 0
+            # snowwater: 1
+            # snowdens: 1
+            # snowfrac: 0
+            # snowpack: 0
             tsfc: 10
             temperature: [20, 19, 18, 17, 16]
             tin: 10
           - state: 10
             soilstore: 100
-            snowwater: 1
-            snowdens: 1
-            snowfrac: 0
-            snowpack: 0
+            # snowwater: 1
+            # snowdens: 1
+            # snowfrac: 0
+            # snowpack: 0
             tsfc: 10
             temperature: [20, 19, 18, 17, 16]
             tin: 10
           - state: 10
             soilstore: 100
-            snowwater: 1
-            snowdens: 1
-            snowfrac: 0
-            snowpack: 0
+            # snowwater: 1
+            # snowdens: 1
+            # snowfrac: 0
+            # snowpack: 0
             tsfc: 10
             temperature: [20, 19, 18, 17, 16]
             tin: 10
