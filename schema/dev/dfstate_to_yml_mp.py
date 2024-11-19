@@ -2,6 +2,9 @@ import pandas as pd
 import yaml
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
+import f90nml
+
+glob_comments = {}
 
 IGNORECOLSDICT = {
     "Model Use": [
@@ -52,6 +55,9 @@ class ModelParameters:
         self.df = pd.read_csv(csv_file, encoding=encoding)
         self.df = self.remove_ignored_columns(ignoreColsdict=IGNORECOLSDICT)
         self.df = self.convert_to_multiindex()
+        self.comments = {}
+        self.general_buidling_data = f90nml.read('./buildingClass/London_stebbs_general_params.nml')
+        self.atype_file = f90nml.read('./buildingClass/London_stebbs_building_typologies.nml')
 
     def remove_ignored_columns(self, ignoreColsdict):
         columns_to_ignore = [col for cols in ignoreColsdict.values() for col in cols]
@@ -63,6 +69,23 @@ class ModelParameters:
         df_mi = self.df.copy()
         df_mi.set_index(['Model', 'Input Type', 'Category', 'Scale', 'SuPy Input'], inplace=True)
         return df_mi
+
+    def get_building_objects(self, grid_name):
+        """Create dicts of STEBBS building objects for all  buildings in a single grid"""
+        
+        building_keys = [k for k in self.atype_file.keys() if str(grid_name) in k]
+        building_names = [b for b in building_keys  if '_r_' in b or '_m_' in b or '_o_' in b or '_nr_' in b]
+        
+        buildings = {}
+
+        for archetype in building_names:
+            grid_atype = self.atype_file[archetype]
+            for key, val in self.general_buidling_data['stebbs_general_params'].items():
+                grid_atype[key] = val
+            buildings[archetype] = grid_atype
+            break
+
+        return buildings
 
 
     def filter_parameters(self, model=None, input_type=None, category=None, scale=None, contains=None):
@@ -77,12 +100,21 @@ class ModelParameters:
             params = params[params.index.get_level_values('Scale') == scale]
         if contains is not None:
             params = params[params.index.get_level_values('SuPy Input').str.contains(contains)]
-        
         self.df.drop(index=params.index, inplace=True)
         
-        params = params.index.get_level_values('SuPy Input').tolist()
-        params = {'stebbs_'+param: None for param in params}
+        building_data = self.get_building_objects(17240202)
 
+        units = params['Units']
+        params = params.index.get_level_values('SuPy Input').tolist()
+        params = ['stebbs_'+param.lower() for param in params]
+        comments = dict(zip(params, units))
+        glob_comments.update(comments)
+        params = {param: None for param in params}
+        for building_name in building_data: 
+            building_params = building_data[building_name]
+            for building_param in building_params:
+                if 'stebbs_'+building_param in params:
+                    params['stebbs_'+building_param] = building_params[building_param]
         return params
 
 class YamlEditor:
@@ -277,12 +309,14 @@ if __name__ == '__main__':
     
     yamlEditor.add_siteInfo(siteInfo=siteInfo_update)
     yamlEditor.add_all_parameters(model_name='stebbs', parameters=supyParameters.filter_parameters(model='STEBBS'))
-    comments = {
-        'lat': 'Latitude',
-        'lng': 'Longitude',
-        'alt': 'Altitude',
-        'site': 'Site information',
-    }
+
+
+    # comments = {
+    #     'lat': 'Latitude',
+    #     'lng': 'Longitude',
+    #     'alt': 'Altitude',
+    #     'site': 'Site information',
+    # }
 
 
     # Add missing columns:
@@ -296,4 +330,4 @@ if __name__ == '__main__':
             print(f'{col} not in the yaml file')
 
 
-    yamlEditor.write_yaml_file_with_comments(comments=comments)
+    yamlEditor.write_yaml_file_with_comments(comments=glob_comments)
