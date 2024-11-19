@@ -560,10 +560,55 @@
               to_water: 0.1
               to_runoff: 0.4
             snowpacklimit: 0.1
+            thermal_layers:
+              dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+              k: [1.0, 1.0, 1.0, 1.0, 1.0]
+              cp: [1000, 1000, 1000, 1000, 1000]
           bldgs: # buildings
-            sfr: 0.1
-            faibldg: 0.5
-            bldgh: 10
+            sfr: 0.5
+            faibldg: 0.3
+            bldgh: 20
+            nlayer: 3
+            building_frac: [0.5, 0.3, 0.2]
+            building_scale: [1, 1, 1]
+            roofs:
+              - alb: 0.1
+                emis: .9
+                thermal_layers:
+                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                  cp: [1000, 1000, 1000, 1000, 1000]
+              - alb: 0.2
+                emis: .9
+                thermal_layers:
+                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                  cp: [1000, 1000, 1000, 1000, 1000]
+              - alb: 0.3
+                emis: .9
+                thermal_layers:
+                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                  cp: [1000, 1000, 1000, 1000, 1000]
+            walls:
+              - alb: 0.4
+                emis: .9
+                thermal_layers:
+                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                  cp: [1000, 1000, 1000, 1000, 1000]
+              - alb: 0.5
+                emis: .9
+                thermal_layers:
+                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                  cp: [1000, 1000, 1000, 1000, 1000]
+              - alb: 0.6
+                emis: .9
+                thermal_layers:
+                  dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+                  k: [1.0, 1.0, 1.0, 1.0, 1.0]
+                  cp: [1000, 1000, 1000, 1000, 1000]
             emis: .9
             alb: .1 # fixed for non-vegetated surfaces
             chanohm: 0.5
@@ -609,6 +654,11 @@
               to_water: 0.1
               to_runoff: 0.4
             snowpacklimit: 0.1
+            thermal_layers:
+              dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+              k: [1.0, 1.0, 1.0, 1.0, 1.0]
+              cp: [1000, 1000, 1000, 1000, 1000]
+              temperature: [20, 19, 18, 17, 16]
           dectr: # deciduous trees
             sfr: 0.1
             emis: .9
@@ -687,6 +737,10 @@
             snowpacklimit: 0.1
             ie_a: 1  # Irrigation efficiency coefficient-automatic
             ie_m: 1  # Irrigation efficiency coefficient-manual
+            thermal_layers:
+              dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+              k: [1.0, 1.0, 1.0, 1.0, 1.0]
+              cp: [1000, 1000, 1000, 1000, 1000]
           evetr: # evergreen trees
             sfr: 0.1
             faievetree: 0.1
@@ -761,6 +815,10 @@
             snowpacklimit: 0.1
             ie_a: 1  # Irrigation efficiency coefficient-automatic
             ie_m: 1  # Irrigation efficiency coefficient-manual
+            thermal_layers:
+              dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+              k: [1.0, 1.0, 1.0, 1.0, 1.0]
+              cp: [1000, 1000, 1000, 1000, 1000]
           grass:
             sfr: 0.1
             emis: .9
@@ -833,6 +891,10 @@
             snowpacklimit: 0.1
             ie_a: 1  # Irrigation efficiency coefficient-automatic
             ie_m: 1  # Irrigation efficiency coefficient-manual
+            thermal_layers:
+              dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+              k: [1.0, 1.0, 1.0, 1.0, 1.0]
+              cp: [1000, 1000, 1000, 1000, 1000]
           bsoil: # bare soil
             sfr: 0.1
             emis: .9
@@ -880,6 +942,10 @@
               to_water: 0.1
               to_soilstore: 0.4
             snowpacklimit: 0.1
+            thermal_layers:
+              dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+              k: [1.0, 1.0, 1.0, 1.0, 1.0]
+              cp: [1000, 1000, 1000, 1000, 1000]
           water:
             sfr: 0.4
             emis: .9
@@ -919,6 +985,10 @@
               drain_coef_1: 0.5
               drain_coef_2: 0.5
             snowpacklimit: 0.1
+            thermal_layers:
+              dz: [0.1, 0.2, 0.3, 0.4, 0.5]
+              k: [1.0, 1.0, 1.0, 1.0, 1.0]
+              cp: [1000, 1000, 1000, 1000, 1000]
       initial_states:
         snowalb: .8
         paved:
@@ -928,6 +998,7 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          temperature: [20, 19, 18, 17, 16]
         bldgs:
           state: 10
           soilstore: 100
@@ -935,6 +1006,7 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          temperature: [20, 19, 18, 17, 16]
         dectr:
           state: 10
           soilstore: 100
@@ -946,6 +1018,7 @@
           porosity_id: .2
           alb_id: .2
           lai_id: 1
+          temperature: [20, 19, 18, 17, 16]
         evetr:
           state: 10
           soilstore: 100
@@ -955,6 +1028,7 @@
           snowpack: 0
           alb_id: .2
           lai_id: 1
+          temperature: [20, 19, 18, 17, 16]
         grass:
           state: 10
           soilstore: 100
@@ -964,6 +1038,7 @@
           snowpack: 0
           alb_id: .2
           lai_id: 1
+          temperature: [20, 19, 18, 17, 16]
         bsoil:
           state: 10
           soilstore: 100
@@ -971,6 +1046,7 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          temperature: [20, 19, 18, 17, 16]
         water:
           state: 10
           soilstore: 100
@@ -978,3 +1054,4 @@
           snowdens: 1
           snowfrac: 0
           snowpack: 0
+          temperature: [20, 19, 18, 17, 16]

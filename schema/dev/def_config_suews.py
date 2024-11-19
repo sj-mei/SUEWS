@@ -12,6 +12,7 @@ from enum import Enum
 import pandas as pd
 import yaml
 import pdb
+import math
 
 
 class SurfaceType(str, Enum):
@@ -48,6 +49,11 @@ class SurfaceInitialState(BaseModel):
     )
     lai_id: Optional[float] = Field(
         None, description="Initial leaf area index for vegetated surfaces"
+    )
+    temperature: List[float] = Field(
+        min_items=5,
+        max_items=5,
+        description="Initial temperature for each thermal layer",
     )
 
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
@@ -128,7 +134,6 @@ class ThermalLayer(BaseModel):
     dz: List[float] = Field(min_items=5, max_items=5)
     k: List[float] = Field(min_items=5, max_items=5)
     cp: List[float] = Field(min_items=5, max_items=5)
-    temperature: List[float] = Field(min_items=5, max_items=5)
 
 
 class VegetationParams(BaseModel):
@@ -268,12 +273,11 @@ class SurfaceProperties(BaseModel):
     sathydraulicconduct: float
     waterdist: Optional[WaterDistribution] = None
     storedrainprm: StorageDrainParams
-    snowpacklimit: float = Field(ge=0, description="Snow pack limit for the surface")
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
+    thermal_layers: ThermalLayer = Field(description="Thermal layers for the surface")
 
     def set_surface_type(self, surface_type: SurfaceType):
         self._surface_type = surface_type
-        # Validate water distribution after setting surface type
         if self._surface_type == SurfaceType.WATER:
             if self.waterdist is not None:
                 raise ValueError("Water surface should not have water distribution")
@@ -293,22 +297,69 @@ class PavedProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
 
 
+class BuildingLayer(BaseModel):
+    alb: float
+    emis: float
+    thermal_layers: ThermalLayer
+
+
 class BuildingProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
     sfr: float = Field(description="Plan area index of buildings")
     faibldg: float = Field(ge=0, description="Frontal area index of buildings")
     bldgh: float = Field(ge=0, description="Building height")
+    nlayer: int = Field(
+        ge=1, description="Number of vertical layers for roofs and walls"
+    )
+    building_frac: List[float]
+    building_scale: List[float]
+    roofs: List[BuildingLayer]
+    walls: List[BuildingLayer]
 
     @model_validator(mode="after")
     def validate_rsl_zd_range(self) -> "BuildingProperties":
+        # Existing validation
         sfr_bldg_lower_limit = 0.18
-        if (self.sfr < sfr_bldg_lower_limit):
-            if  self.faibldg < 0.25 * ( 1 - self.sfr ):
-                error_message = ValueError("The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
-                f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
-                "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302")
+        if self.sfr < sfr_bldg_lower_limit:
+            if self.faibldg < 0.25 * (1 - self.sfr):
+                error_message = ValueError(
+                    "The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
+                    f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
+                    "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
+                )
                 exceptions.append(error_message)
-                # raise 
+        return self
+
+    @model_validator(mode="after")
+    def validate_building(self) -> "BuildingProperties":
+        # Validate building fractions
+        if len(self.building_frac) != self.nlayer:
+            raise ValueError(
+                f"Number of building fractions ({len(self.building_frac)}) must match nlayer ({self.nlayer})"
+            )
+        if not math.isclose(sum(self.building_frac), 1.0, rel_tol=1e-9):
+            raise ValueError(
+                f"Building fractions must sum to 1.0, got {sum(self.building_frac)}"
+            )
+
+        # Validate building scales
+        if len(self.building_scale) != self.nlayer:
+            raise ValueError(
+                f"Number of building scales ({len(self.building_scale)}) must match nlayer ({self.nlayer})"
+            )
+
+        # Validate number of roof layers matches nlayer
+        if len(self.roofs) != self.nlayer:
+            raise ValueError(
+                f"Number of roof layers ({len(self.roof)}) must match nlayer ({self.nlayer})"
+            )
+
+        # Validate number of wall layers matches nlayer
+        if len(self.walls) != self.nlayer:
+            raise ValueError(
+                f"Number of wall layers ({len(self.wall)}) must match nlayer ({self.nlayer})"
+            )
+
         return self
 
 
@@ -444,7 +495,9 @@ class CO2Params(BaseModel):
     frfossilfuel_nonheat: float
     maxfcmetab: float
     maxqfmetab: float
-    min_res_bioco2: float = Field(default=0.1, description="Minimum respiratory biogenic CO2")
+    min_res_bioco2: float = Field(
+        default=0.1, description="Minimum respiratory biogenic CO2"
+    )
     minfcmetab: float
     minqfmetab: float
     trafficrate: DayProfile
@@ -532,13 +585,13 @@ class LAIParams(BaseModel):
                 f"laimin ({self.laimin}) must be less than or equal to laimax ({self.laimax})."
             )
             exceptions.append(error_message)
-            #raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
+            # raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
         if self.baset > self.gddfull:
             error_message = ValueError(
                 f"baset ({self.baset}) must be less than gddfull ({self.gddfull})."
             )
             exceptions.append(error_message)
-            #raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
+            # raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
         return self
 
 
@@ -552,8 +605,12 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     resp_a: float
     resp_b: float
     theta_bioco2: float
-    maxconductance: float = Field(default=0.5, description="Maximum surface conductance")
-    min_res_bioco2: float = Field(default=0.1, description="Minimum respiratory biogenic CO2")
+    maxconductance: float = Field(
+        default=0.5, description="Maximum surface conductance"
+    )
+    min_res_bioco2: float = Field(
+        default=0.1, description="Minimum respiratory biogenic CO2"
+    )
     lai: LAIParams
     ie_a: float = Field(description="Irrigation efficiency coefficient-automatic")
     ie_m: float = Field(description="Irrigation efficiency coefficient-manual")
@@ -707,9 +764,11 @@ class Site(BaseModel):
     properties: SiteProperties
     initial_states: InitialStates
 
+
 class Model(BaseModel):
     control: ModelControl
     physics: ModelPhysics
+
 
 class SUEWSConfig(BaseModel):
     name: str
@@ -767,7 +826,6 @@ class SUEWSConfig(BaseModel):
         set_df_value("diagmethod", 0, self.model.physics.diagmethod)
         set_df_value("snowuse", 0, self.model.physics.snowuse)
 
-
         # Process each site (assuming single site for now)
         site = self.site[0]
         props = site.properties
@@ -797,13 +855,19 @@ class SUEWSConfig(BaseModel):
         set_df_value("air_ext_sw", 0, spartacus.air_ext_sw)
         set_df_value("air_ssa_lw", 0, spartacus.air_ssa_lw)
         set_df_value("air_ssa_sw", 0, spartacus.air_ssa_sw)
-        set_df_value("ground_albedo_dir_mult_fact", 0, spartacus.ground_albedo_dir_mult_fact)
+        set_df_value(
+            "ground_albedo_dir_mult_fact", 0, spartacus.ground_albedo_dir_mult_fact
+        )
         set_df_value("n_stream_lw_urban", 0, spartacus.n_stream_lw_urban)
         set_df_value("n_stream_sw_urban", 0, spartacus.n_stream_sw_urban)
-        set_df_value("n_vegetation_region_urban", 0, spartacus.n_vegetation_region_urban)
+        set_df_value(
+            "n_vegetation_region_urban", 0, spartacus.n_vegetation_region_urban
+        )
         set_df_value("sw_dn_direct_frac", 0, spartacus.sw_dn_direct_frac)
         set_df_value("use_sw_direct_albedo", 0, spartacus.use_sw_direct_albedo)
-        set_df_value("veg_contact_fraction_const", 0, spartacus.veg_contact_fraction_const)
+        set_df_value(
+            "veg_contact_fraction_const", 0, spartacus.veg_contact_fraction_const
+        )
         set_df_value("veg_fsd_const", 0, spartacus.veg_fsd_const)
         set_df_value("veg_ssa_lw", 0, spartacus.veg_ssa_lw)
         set_df_value("veg_ssa_sw", 0, spartacus.veg_ssa_sw)
@@ -849,227 +913,10 @@ class SUEWSConfig(BaseModel):
         # Water use profile
         for hour in range(24):
             hour_str = str(hour + 1)
-            set_df_value("wuprofa_24hr", (hour, 0), irr.wuprofa_24hr.working_day[hour_str])
+            set_df_value(
+                "wuprofa_24hr", (hour, 0), irr.wuprofa_24hr.working_day[hour_str]
+            )
             set_df_value("wuprofa_24hr", (hour, 1), irr.wuprofa_24hr.holiday[hour_str])
-
-        # Surface properties
-        surface_map = {
-            "paved": 0,
-            "bldgs": 1,
-            "evetr": 2,
-            "dectr": 3,
-            "grass": 4,
-            "bsoil": 5,
-            "water": 6,
-        }
-
-        # Process each surface type
-        for surf_name, surf_idx in surface_map.items():
-            surface = getattr(props.land_cover, surf_name)
-
-            # Basic surface properties
-            set_df_value("sfr_surf", (surf_idx,), surface.sfr)
-            set_df_value("emis", (surf_idx,), surface.emis)
-
-            # Add water distribution parameters
-            if surface.waterdist is not None:
-                # Map of possible distribution targets based on (8,6) dimensionality
-                # 8 rows: Paved(0), Bldgs(1), EveTr(2), DecTr(3), Grass(4), BSoil(5), Water(6), Extra(7)
-                # 6 cols: Paved(0), Bldgs(1), EveTr(2), DecTr(3), Grass(4), BSoil(5)
-                dist_targets = {
-                    "to_paved": 0,
-                    "to_bldgs": 1,
-                    "to_evetr": 2,
-                    "to_dectr": 3,
-                    "to_grass": 4,
-                    "to_bsoil": 5,
-                    "to_water": 6,
-                }
-
-                # Set water distribution values
-                for target, value in surface.waterdist.__dict__.items():
-                    try:
-                        target_idx = dist_targets[target]
-                        # print(surf_idx, target_idx, value)
-                    except KeyError:
-                        print(f"Target {target} not found in dist_targets")
-                        continue
-                    if value is not None:
-                        if target == "to_runoff":
-                            # Special case for runoff (separate column)
-                            # set_df_value("waterdist_runoff", (surf_idx,), value)
-                            pass
-                        elif target == "to_soilstore":
-                            # Special case for soil store (separate column)
-                            # set_df_value("waterdist_soilstore", (surf_idx,), value)
-                            pass
-                        elif target == "to_water":
-                            # Special case for water (row 6)
-                            set_df_value("waterdist", (6, surf_idx), value)
-                        elif target in dist_targets:
-                            # Regular surface-to-surface distributions
-                            target_idx = dist_targets[target]
-                            # Note: in the DataFrame, first index is FROM surface, second is TO surface
-                            set_df_value("waterdist", (target_idx, surf_idx), value)
-
-                # Set unused row (7) to 0
-                for col_idx in range(6):
-                    set_df_value("waterdist", (7, col_idx), 0.0)
-                # Set diagonal elements (targets to themselves) to 0
-                for row_idx in range(6):
-                    set_df_value("waterdist", (row_idx, row_idx), 0.0)
-
-            # Handle albedo
-            if hasattr(surface, "alb"):
-                set_df_value("alb", (surf_idx,), surface.alb)
-            elif hasattr(surface, "alb_min") and hasattr(surface, "alb_max"):
-                set_df_value("alb", (surf_idx,), surface.alb_min)  # Use min as default
-                if surf_name == "dectr":
-                    set_df_value("albmax_dectr", 0, surface.alb_max)
-                    set_df_value("albmin_dectr", 0, surface.alb_min)
-                elif surf_name == "evetr":
-                    set_df_value("albmax_evetr", 0, surface.alb_max)
-                    set_df_value("albmin_evetr", 0, surface.alb_min)
-                elif surf_name == "grass":
-                    set_df_value("albmax_grass", 0, surface.alb_max)
-                    set_df_value("albmin_grass", 0, surface.alb_min)
-            # Add to OHM section
-            if hasattr(surface, "ohm_threshsw"):
-                set_df_value("ohm_threshsw", (surf_idx,), surface.ohm_threshsw)
-            if hasattr(surface, "ohm_threshwd"):
-                set_df_value("ohm_threshwd", (surf_idx,), surface.ohm_threshwd)
-            if hasattr(surface, "chanohm"):
-                set_df_value("chanohm", (surf_idx,), surface.chanohm)
-            if hasattr(surface, "cpanohm"):
-                set_df_value("cpanohm", (surf_idx,), surface.cpanohm)
-            if hasattr(surface, "kkanohm"):
-                set_df_value("kkanohm", (surf_idx,), surface.kkanohm)
-
-            # Add to surface properties section
-            if hasattr(surface, "soildepth"):
-                set_df_value("soildepth", (surf_idx,), surface.soildepth)
-            if hasattr(surface, "soilstorecap"):
-                set_df_value("soilstorecap_surf", (surf_idx,), surface.soilstorecap)
-            if hasattr(surface, "statelimit"):
-                set_df_value("statelimit_surf", (surf_idx,), surface.statelimit)
-
-            # Initial states
-            init_state = getattr(site.initial_states, surf_name)
-            if init_state:
-                # Basic state parameters
-                set_df_value("state_surf", (surf_idx,), init_state.state)
-                set_df_value("soilstore_surf", (surf_idx,), init_state.soilstore)
-
-                # Snow-related parameters
-                if init_state.snowfrac is not None:
-                    set_df_value("snowfrac", (surf_idx,), init_state.snowfrac)
-                if init_state.snowpack is not None:
-                    set_df_value("snowpack", (surf_idx,), init_state.snowpack)
-                if init_state.snowwater is not None:
-                    set_df_value("snowwater", (surf_idx,), init_state.snowwater)
-                if init_state.snowdens is not None:
-                    set_df_value("snowdens", (surf_idx,), init_state.snowdens)
-
-                # Vegetation-specific parameters
-                if surf_name in ["dectr", "evetr", "grass"]:
-                    # albedo
-                    if init_state.alb_id is not None:
-                        set_df_value(f"alb{surf_name}_id", 0, init_state.alb_id)
-                    # LAI
-                    if init_state.lai_id is not None:
-                        set_df_value(f"lai_id", (surf_idx - 2,), init_state.lai_id)
-                    # Additional parameters for deciduous trees
-                    if surf_name == "dectr":
-                        if init_state.decidcap_id is not None:
-                            set_df_value("decidcap_id", 0, init_state.decidcap_id)
-                        if init_state.porosity_id is not None:
-                            set_df_value("porosity_id", 0, init_state.porosity_id)
-
-                    # Missing porosity parameters for deciduous trees
-                    if hasattr(surface, "pormin_dec"):
-                        set_df_value("pormin_dec", 0, surface.pormin_dec)
-                    if hasattr(surface, "pormax_dec"):
-                        set_df_value("pormax_dec", 0, surface.pormax_dec)
-
-                    # Missing capacity parameters for deciduous trees
-                    if hasattr(surface, "capmin_dec"):
-                        set_df_value("capmin_dec", 0, surface.capmin_dec)
-                    if hasattr(surface, "capmax_dec"):
-                        set_df_value("capmax_dec", 0, surface.capmax_dec)
-                    if hasattr(surface, "min_res_bioco2"):
-                        set_df_value("min_res_bioco2", (surf_idx - 2,), surface.min_res_bioco2)
-
-            # Set initial snow albedo
-            set_df_value("snowalb", 0, site.initial_states.snowalb)
-
-            # OHM coefficients
-            if surface.ohm_coef:
-                for i, (a1, a2, a3) in enumerate(
-                    zip(
-                        surface.ohm_coef.a1.values(),
-                        surface.ohm_coef.a2.values(),
-                        surface.ohm_coef.a3.values(),
-                    )
-                ):
-                    set_df_value("ohm_coef", (surf_idx, i, 0), a1)
-                    set_df_value("ohm_coef", (surf_idx, i, 1), a2)
-                    set_df_value("ohm_coef", (surf_idx, i, 2), a3)
-
-            # Storage and drain parameters
-            if hasattr(surface, "storedrainprm"):
-                for i, var in enumerate(
-                    [
-                        "store_min",
-                        "store_max",
-                        "store_cap",
-                        "drain_eq",
-                        "drain_coef_1",
-                        "drain_coef_2",
-                    ]
-                ):
-                    set_df_value(
-                        "storedrainprm",
-                        (i, surf_idx),
-                        getattr(surface.storedrainprm, var),
-                    )
-
-            # Maximum conductance
-            if hasattr(surface, "maxconductance"):
-                idx = surf_idx - 2
-                set_df_value("maxconductance", (idx,), surface.maxconductance)
-
-            # Snow pack limit
-            if hasattr(surface, "snowpacklimit"):
-                set_df_value("snowpacklimit", (surf_idx,), surface.snowpacklimit)
-
-            # LAI parameters
-            if hasattr(surface, "lai"):
-                lai = surface.lai
-                idx = surf_idx - 2
-                set_df_value("baset", (idx,), lai.baset)
-                set_df_value("gddfull", (idx,), lai.gddfull)
-                set_df_value("basete", (idx,), lai.basete)
-                set_df_value("sddfull", (idx,), lai.sddfull)
-                set_df_value("laimin", (idx,), lai.laimin)
-                set_df_value("laimax", (idx,), lai.laimax)
-                set_df_value("laitype", (idx,), lai.laitype)
-                for i, var in enumerate(
-                    [
-                        "growth_lai",
-                        "growth_gdd",
-                        "senescence_lai",
-                        "senescence_sdd",
-                    ]
-                ):
-                    set_df_value("laipower", (i, idx), getattr(lai.laipower, var))
-
-            # CO2 parameters for vegetated surfaces
-            if hasattr(surface, "beta_bioco2"):
-                idx = surf_idx - 2
-                set_df_value("beta_bioco2", (idx,), surface.beta_bioco2)
-                set_df_value("beta_enh_bioco2", (idx,), surface.beta_enh_bioco2)
-                set_df_value("alpha_bioco2", (idx,), surface.alpha_bioco2)
-                set_df_value("alpha_enh_bioco2", (idx,), surface.alpha_enh_bioco2)
 
         # SPARTACUS parameters
         spartacus = props.spartacus
@@ -1225,29 +1072,10 @@ class SUEWSConfig(BaseModel):
         )  # Deciduous tree height
         # Add to to_df_state where vegetation parameters are handled
 
-
         # Missing FAI parameters
         set_df_value("faibldg", 0, props.land_cover.bldgs.faibldg)
         set_df_value("faievetree", 0, props.land_cover.evetr.faievetree)
         set_df_value("faidectree", 0, props.land_cover.dectr.faidectree)
-
-        # Add to surface properties section
-        if hasattr(surface, "sathydraulicconduct"):
-            set_df_value(
-                "sathydraulicconduct", (surf_idx,), surface.sathydraulicconduct
-            )
-
-        # Irrigation fraction parameters
-        if hasattr(surface, "irrfracevetr"):
-            set_df_value("irrfracevetr", 0, surface.irrfracevetr)
-        if hasattr(surface, "irrfracbsoil"):
-            set_df_value("irrfracbsoil", 0, surface.irrfracbsoil)
-        if hasattr(surface, "irrfracwater"):
-            set_df_value("irrfracwater", 0, surface.irrfracwater)
-
-        # Water specific parameters
-        if hasattr(surface, "flowchange"):
-            set_df_value("flowchange", 0, surface.flowchange)
 
         # LUMPS parameters
         lumps = props.lumps
@@ -1259,7 +1087,9 @@ class SUEWSConfig(BaseModel):
         # Population profile parameters
         set_df_value("popdensnighttime", 0, anthro.heat.popdensnighttime)
         for i, day in enumerate(["working_day", "holiday"]):
-            set_df_value("popdensdaytime", (i,), getattr(anthro.heat.popdensdaytime, day))
+            set_df_value(
+                "popdensdaytime", (i,), getattr(anthro.heat.popdensdaytime, day)
+            )
             # 24-hour population profile
             for hour in range(24):
                 set_df_value(
@@ -1287,14 +1117,291 @@ class SUEWSConfig(BaseModel):
                     (hour, i),
                     getattr(snow.snowprof_24hr, day)[f"{hour+1}"],
                 )
+        # Surface properties
+        surface_map = {
+            "paved": 0,
+            "bldgs": 1,
+            "evetr": 2,
+            "dectr": 3,
+            "grass": 4,
+            "bsoil": 5,
+            "water": 6,
+        }
 
-        # Add to CO2 parameters section for vegetated surfaces
-        if hasattr(surface, "resp_a"):
-            set_df_value("resp_a", (surf_idx - 2,), surface.resp_a)
-        if hasattr(surface, "resp_b"):
-            set_df_value("resp_b", (surf_idx - 2,), surface.resp_b)
-        if hasattr(surface, "theta_bioco2"):
-            set_df_value("theta_bioco2", (surf_idx - 2,), surface.theta_bioco2)
+        # Process each surface type
+        for surf_name, surf_idx in surface_map.items():
+            surface = getattr(props.land_cover, surf_name)
+
+            # Basic surface properties
+            set_df_value("sfr_surf", (surf_idx,), surface.sfr)
+            set_df_value("emis", (surf_idx,), surface.emis)
+
+            # Add water distribution parameters
+            if surface.waterdist is not None:
+                # Map of possible distribution targets based on (8,6) dimensionality
+                # 8 rows: Paved(0), Bldgs(1), EveTr(2), DecTr(3), Grass(4), BSoil(5), Water(6), Extra(7)
+                # 6 cols: Paved(0), Bldgs(1), EveTr(2), DecTr(3), Grass(4), BSoil(5)
+                dist_targets = {
+                    "to_paved": 0,
+                    "to_bldgs": 1,
+                    "to_evetr": 2,
+                    "to_dectr": 3,
+                    "to_grass": 4,
+                    "to_bsoil": 5,
+                    "to_water": 6,
+                }
+
+                # Set water distribution values
+                for target, value in surface.waterdist.__dict__.items():
+                    try:
+                        target_idx = dist_targets[target]
+                        # print(surf_idx, target_idx, value)
+                    except KeyError:
+                        print(f"Target {target} not found in dist_targets")
+                        continue
+                    if value is not None:
+                        if target == "to_runoff":
+                            # Special case for runoff (separate column)
+                            # set_df_value("waterdist_runoff", (surf_idx,), value)
+                            pass
+                        elif target == "to_soilstore":
+                            # Special case for soil store (separate column)
+                            # set_df_value("waterdist_soilstore", (surf_idx,), value)
+                            pass
+                        elif target == "to_water":
+                            # Special case for water (row 6)
+                            set_df_value("waterdist", (6, surf_idx), value)
+                        elif target in dist_targets:
+                            # Regular surface-to-surface distributions
+                            target_idx = dist_targets[target]
+                            # Note: in the DataFrame, first index is FROM surface, second is TO surface
+                            set_df_value("waterdist", (target_idx, surf_idx), value)
+
+                # Set unused row (7) to 0
+                for col_idx in range(6):
+                    set_df_value("waterdist", (7, col_idx), 0.0)
+                # Set diagonal elements (targets to themselves) to 0
+                for row_idx in range(6):
+                    set_df_value("waterdist", (row_idx, row_idx), 0.0)
+
+            # Handle albedo
+            if hasattr(surface, "alb"):
+                set_df_value("alb", (surf_idx,), surface.alb)
+            elif hasattr(surface, "alb_min") and hasattr(surface, "alb_max"):
+                set_df_value("alb", (surf_idx,), surface.alb_min)  # Use min as default
+                if surf_name == "dectr":
+                    set_df_value("albmax_dectr", 0, surface.alb_max)
+                    set_df_value("albmin_dectr", 0, surface.alb_min)
+                elif surf_name == "evetr":
+                    set_df_value("albmax_evetr", 0, surface.alb_max)
+                    set_df_value("albmin_evetr", 0, surface.alb_min)
+                elif surf_name == "grass":
+                    set_df_value("albmax_grass", 0, surface.alb_max)
+                    set_df_value("albmin_grass", 0, surface.alb_min)
+            # Add to OHM section
+            if hasattr(surface, "ohm_threshsw"):
+                set_df_value("ohm_threshsw", (surf_idx,), surface.ohm_threshsw)
+            if hasattr(surface, "ohm_threshwd"):
+                set_df_value("ohm_threshwd", (surf_idx,), surface.ohm_threshwd)
+            if hasattr(surface, "chanohm"):
+                set_df_value("chanohm", (surf_idx,), surface.chanohm)
+            if hasattr(surface, "cpanohm"):
+                set_df_value("cpanohm", (surf_idx,), surface.cpanohm)
+            if hasattr(surface, "kkanohm"):
+                set_df_value("kkanohm", (surf_idx,), surface.kkanohm)
+
+            # Add to surface properties section
+            if hasattr(surface, "soildepth"):
+                set_df_value("soildepth", (surf_idx,), surface.soildepth)
+            if hasattr(surface, "soilstorecap"):
+                set_df_value("soilstorecap_surf", (surf_idx,), surface.soilstorecap)
+            if hasattr(surface, "statelimit"):
+                set_df_value("statelimit_surf", (surf_idx,), surface.statelimit)
+
+            # porosity parameters for deciduous trees
+            if hasattr(surface, "pormin_dec"):
+                set_df_value("pormin_dec", 0, surface.pormin_dec)
+            if hasattr(surface, "pormax_dec"):
+                set_df_value("pormax_dec", 0, surface.pormax_dec)
+
+            # capacity parameters for deciduous trees
+            if hasattr(surface, "capmin_dec"):
+                set_df_value("capmin_dec", 0, surface.capmin_dec)
+            if hasattr(surface, "capmax_dec"):
+                set_df_value("capmax_dec", 0, surface.capmax_dec)
+            if hasattr(surface, "min_res_bioco2"):
+                set_df_value("min_res_bioco2", (surf_idx - 2,), surface.min_res_bioco2)
+
+            # OHM coefficients
+            if surface.ohm_coef:
+                for i, (a1, a2, a3) in enumerate(
+                    zip(
+                        surface.ohm_coef.a1.values(),
+                        surface.ohm_coef.a2.values(),
+                        surface.ohm_coef.a3.values(),
+                    )
+                ):
+                    set_df_value("ohm_coef", (surf_idx, i, 0), a1)
+                    set_df_value("ohm_coef", (surf_idx, i, 1), a2)
+                    set_df_value("ohm_coef", (surf_idx, i, 2), a3)
+
+            # Storage and drain parameters
+            if hasattr(surface, "storedrainprm"):
+                for i, var in enumerate(
+                    [
+                        "store_min",
+                        "store_max",
+                        "store_cap",
+                        "drain_eq",
+                        "drain_coef_1",
+                        "drain_coef_2",
+                    ]
+                ):
+                    set_df_value(
+                        "storedrainprm",
+                        (i, surf_idx),
+                        getattr(surface.storedrainprm, var),
+                    )
+
+            # Maximum conductance
+            if hasattr(surface, "maxconductance"):
+                idx = surf_idx - 2
+                set_df_value("maxconductance", (idx,), surface.maxconductance)
+
+            # Snow pack limit
+            if hasattr(surface, "snowpacklimit"):
+                set_df_value("snowpacklimit", (surf_idx,), surface.snowpacklimit)
+
+            # LAI parameters
+            if hasattr(surface, "lai"):
+                lai = surface.lai
+                idx = surf_idx - 2
+                set_df_value("baset", (idx,), lai.baset)
+                set_df_value("gddfull", (idx,), lai.gddfull)
+                set_df_value("basete", (idx,), lai.basete)
+                set_df_value("sddfull", (idx,), lai.sddfull)
+                set_df_value("laimin", (idx,), lai.laimin)
+                set_df_value("laimax", (idx,), lai.laimax)
+                set_df_value("laitype", (idx,), lai.laitype)
+                for i, var in enumerate(
+                    [
+                        "growth_lai",
+                        "growth_gdd",
+                        "senescence_lai",
+                        "senescence_sdd",
+                    ]
+                ):
+                    set_df_value("laipower", (i, idx), getattr(lai.laipower, var))
+
+            # CO2 parameters for vegetated surfaces
+            if hasattr(surface, "beta_bioco2"):
+                idx = surf_idx - 2
+                set_df_value("beta_bioco2", (idx,), surface.beta_bioco2)
+                set_df_value("beta_enh_bioco2", (idx,), surface.beta_enh_bioco2)
+                set_df_value("alpha_bioco2", (idx,), surface.alpha_bioco2)
+                set_df_value("alpha_enh_bioco2", (idx,), surface.alpha_enh_bioco2)
+
+            # Add to surface properties section
+            if hasattr(surface, "sathydraulicconduct"):
+                set_df_value(
+                    "sathydraulicconduct", (surf_idx,), surface.sathydraulicconduct
+                )
+
+            # Irrigation fraction parameters
+            if hasattr(surface, "irrfracevetr"):
+                set_df_value("irrfracevetr", 0, surface.irrfracevetr)
+            if hasattr(surface, "irrfracbsoil"):
+                set_df_value("irrfracbsoil", 0, surface.irrfracbsoil)
+            if hasattr(surface, "irrfracwater"):
+                set_df_value("irrfracwater", 0, surface.irrfracwater)
+
+            # Water specific parameters
+            if hasattr(surface, "flowchange"):
+                set_df_value("flowchange", 0, surface.flowchange)
+
+            # Add to CO2 parameters section for vegetated surfaces
+            if hasattr(surface, "resp_a"):
+                set_df_value("resp_a", (surf_idx - 2,), surface.resp_a)
+            if hasattr(surface, "resp_b"):
+                set_df_value("resp_b", (surf_idx - 2,), surface.resp_b)
+            if hasattr(surface, "theta_bioco2"):
+                set_df_value("theta_bioco2", (surf_idx - 2,), surface.theta_bioco2)
+
+            # Thermal layers
+            if hasattr(surface, "thermal_layers"):
+                # Get the lists from thermal_layers
+                dz_list = surface.thermal_layers.dz
+                k_list = surface.thermal_layers.k
+                cp_list = surface.thermal_layers.cp
+
+                # Set each value in the lists
+                for i in range(5):  # We know there are exactly 5 values
+                    set_df_value("dz_surf", (surf_idx, i), dz_list[i])
+                    set_df_value("k_surf", (surf_idx, i), k_list[i])
+                    set_df_value("cp_surf", (surf_idx, i), cp_list[i])
+
+            # Roof and wall layers
+            if surf_name in ["bldgs"]:
+                for i in range(surface.nlayer):
+                    set_df_value("building_scale", (i,), surface.building_scale[i])
+                    set_df_value("building_frac", (i,), surface.building_frac[i])
+                for i, layer in enumerate(surface.roofs):
+                    set_df_value(f"alb_roof", (i,), layer.alb)
+                    set_df_value(f"emis_roof", (i,), layer.emis)
+                    thermal_layers = layer.thermal_layers
+                    for j, var in enumerate(["dz", "k", "cp"]):
+                        for k in range(5):
+                            set_df_value(
+                                f"{var}_roof", (i, k), getattr(thermal_layers, var)[k]
+                            )
+                for i, layer in enumerate(surface.walls):
+                    set_df_value(f"alb_wall", (i,), layer.alb)
+                    set_df_value(f"emis_wall", (i,), layer.emis)
+                    thermal_layers = layer.thermal_layers
+                    for j, var in enumerate(["dz", "k", "cp"]):
+                        for k in range(5):
+                            set_df_value(
+                                f"{var}_wall", (i, k), getattr(thermal_layers, var)[k]
+                            )
+
+            # Initial states
+            init_state = getattr(site.initial_states, surf_name)
+            if init_state:
+                # Basic state parameters
+                set_df_value("state_surf", (surf_idx,), init_state.state)
+                set_df_value("soilstore_surf", (surf_idx,), init_state.soilstore)
+
+                # Snow-related parameters
+                if init_state.snowfrac is not None:
+                    set_df_value("snowfrac", (surf_idx,), init_state.snowfrac)
+                if init_state.snowpack is not None:
+                    set_df_value("snowpack", (surf_idx,), init_state.snowpack)
+                if init_state.snowwater is not None:
+                    set_df_value("snowwater", (surf_idx,), init_state.snowwater)
+                if init_state.snowdens is not None:
+                    set_df_value("snowdens", (surf_idx,), init_state.snowdens)
+
+                # Vegetation-specific parameters
+                if surf_name in ["dectr", "evetr", "grass"]:
+                    # albedo
+                    if init_state.alb_id is not None:
+                        set_df_value(f"alb{surf_name}_id", 0, init_state.alb_id)
+                    # LAI
+                    if init_state.lai_id is not None:
+                        set_df_value(f"lai_id", (surf_idx - 2,), init_state.lai_id)
+                    # Additional parameters for deciduous trees
+                    if surf_name == "dectr":
+                        if init_state.decidcap_id is not None:
+                            set_df_value("decidcap_id", 0, init_state.decidcap_id)
+                        if init_state.porosity_id is not None:
+                            set_df_value("porosity_id", 0, init_state.porosity_id)
+                # temperature
+                if hasattr(init_state, "temperature"):
+                    temp_list = init_state.temperature
+                    for i in range(5):
+                        set_df_value("temp_surf", (surf_idx, i), temp_list[i])
+            # Set initial snow albedo
+            set_df_value("snowalb", 0, site.initial_states.snowalb)
 
         return df
 
@@ -1374,7 +1481,7 @@ if __name__ == "__main__":
 
     print(r"testing suews_config done!")
 
-    pdb.set_trace()
+    # pdb.set_trace()
 
     # Convert to DataFrame
     df_state_test = suews_config.to_df_state()
