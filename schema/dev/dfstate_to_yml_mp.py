@@ -176,7 +176,7 @@ class YamlEditor:
         self.config_data = convert_dict_to_commented_map(self.config_data)
         self.config_data = CommentedMap(self.config_data)
 
-    def update_values(self, path, values):
+    def update_values(self, path, values, type=None):
         """
         Update the value of a key using the path to the key.
         
@@ -190,6 +190,9 @@ class YamlEditor:
             values = float(values)
         except:
             pass
+        if type != None:
+            if type == 'int':
+                values = int(values)
         dct[path[-1]] = values
 
     def write_yaml_file(self):
@@ -329,6 +332,32 @@ if __name__ == '__main__':
     # Read old df_state to apply old values to new yaml file
     old_df_state = pd.read_csv('./df_state_old.csv')
 
+    # Adjust methods:
+    methods = old_df_state.filter([
+        "netradiationmethod",
+        "emissionsmethod",
+        "storageheatmethod",
+        "ohmincqf",
+        "roughlenmommethod",
+        "roughlenheatmethod",
+        "stabilitymethod",
+        "smdmethod",
+        "waterusemethod",
+        "diagmethod",
+        "faimethod",
+        "localclimatemethod",
+        "snowuse"
+        # "stebbs_stebbsmethod"  # [-]
+    ])
+    methods = methods.drop([0,1])
+    for col in methods:
+        path = yamlEditor.search_dict(yamlEditor.config_data, col)
+        if path is not None:
+            value = methods[col].values[0]
+            yamlEditor.update_values(path, value, type='int')
+        else:
+            print(f'{col} not in the yaml file')
+
     # Adjust values for OHM coefficients:
     ohm_coeffs = old_df_state.filter(like="ohm_coef")
     ohm_coeffs.columns = ohm_coeffs.iloc[0]
@@ -367,6 +396,5 @@ if __name__ == '__main__':
             yamlEditor.update_values(path, value)
         else:
             print(f'{col} not in the yaml file')
-    import pdb; pdb.set_trace()
 
     yamlEditor.write_yaml_file_with_comments(comments=glob_comments)
