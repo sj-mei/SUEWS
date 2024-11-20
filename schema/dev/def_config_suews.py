@@ -856,6 +856,17 @@ class SUEWSConfig(BaseModel):
         index = pd.Index([0],name='grid')
         df = pd.DataFrame(index=index, columns=columns)
 
+
+
+
+
+        # Process each site (assuming single site for now)
+        site = self.site[0]
+        props = site.properties
+        gridiv = site.gridiv
+        # update index using gridiv
+        df.index = pd.Index([gridiv], name='grid')
+
         # Helper function to set values in DataFrame
         def set_df_value(col_name: str, indices: Union[int, Tuple], value: float):
             if isinstance(indices, int):
@@ -866,7 +877,8 @@ class SUEWSConfig(BaseModel):
             else:
                 # Tuples should maintain their string representation
                 str_indices = str(indices)
-            df.loc[0, (col_name, str_indices)] = value
+            df.loc[gridiv, (col_name, str_indices)] = value
+
 
         # Model control
         set_df_value("tstep", 0, self.model.control.tstep)
@@ -885,11 +897,6 @@ class SUEWSConfig(BaseModel):
         set_df_value("faimethod", 0, self.model.physics.faimethod)
         set_df_value("localclimatemethod", 0, self.model.physics.localclimatemethod)
         set_df_value("snowuse", 0, self.model.physics.snowuse)
-
-        # Process each site (assuming single site for now)
-        site = self.site[0]
-        props = site.properties
-        gridiv = site.gridiv
 
         # Basic site properties
         set_df_value("gridiv", 0, gridiv)
@@ -1440,7 +1447,7 @@ class SUEWSConfig(BaseModel):
                 set_df_value("lenday_id", 0, 0)
                 set_df_value("tmax_id", 0, 0)
                 set_df_value("tmin_id", 0, 0)
-                set_df_value("tstep_prev", 0, 0)
+                set_df_value("tstep_prev", 0, 300)
                 set_df_value("tair_av", 0, 0)
                 set_df_value("snowfallcum", 0, 0)
 
@@ -1683,7 +1690,7 @@ if __name__ == "__main__":
     import supy as sp
     df_state, df_forcing = sp.load_SampleData()
     df_state_test = pd.read_pickle("./df_state_test.pkl")
-    sp.run_supy(df_forcing, df_state_test)
+    sp.run_supy(df_forcing.iloc[0:288*10], df_state_test)
 
 
 
