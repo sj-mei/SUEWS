@@ -176,6 +176,22 @@ class YamlEditor:
         self.config_data = convert_dict_to_commented_map(self.config_data)
         self.config_data = CommentedMap(self.config_data)
 
+    def update_values(self, path, values):
+        """
+        Update the value of a key using the path to the key.
+        
+        :param path: The path to the key as a list of keys.
+        :param value: The new value to set.
+        """
+        dct = self.config_data
+        for key in path[:-1]:
+            dct = dct[key]
+        try:
+            values = float(values)
+        except:
+            pass
+        dct[path[-1]] = values
+
     def write_yaml_file(self):
         with open('./schema/dev/config-suews_update.yml', 'w') as file:
             yaml.dump(self.config_data, file)
@@ -310,24 +326,47 @@ if __name__ == '__main__':
     yamlEditor.add_siteInfo(siteInfo=siteInfo_update)
     yamlEditor.add_all_parameters(model_name='stebbs', parameters=supyParameters.filter_parameters(model='STEBBS'))
 
+    # Read old df_state to apply old values to new yaml file
+    old_df_state = pd.read_csv('./df_state_old.csv')
 
-    # comments = {
-    #     'lat': 'Latitude',
-    #     'lng': 'Longitude',
-    #     'alt': 'Altitude',
-    #     'site': 'Site information',
-    # }
+    # Adjust values for OHM coefficients:
+    ohm_coeffs = old_df_state.filter(like="ohm_coef")
+    ohm_coeffs.columns = ohm_coeffs.iloc[0]
+    ohm_coeffs = ohm_coeffs.drop([0,1])
+    surface_types = ['paved', 'bldgs', 'evetr', 'dectr', 'grass', 'bsoil', 'water']
+    surface_conditions = ['summer_dry', 'summer_wet', 'winter_dry', 'winter_wet']
+    ohm_coefficents = ['a1', 'a2', 'a3']
 
+    for i, surface_type in enumerate(surface_types):
+        ohm_path = ['site', 0, 'properties', 'land_cover', surface_type, 'ohm_coef']
+        for k, ohm_coeff in enumerate(ohm_coefficents):
+            ohm_path_s2 = ohm_path.copy()
+            ohm_path_s2.append(ohm_coeff)
+            for j, surface_condition in enumerate(surface_conditions):
+                ohm_path_s3 = ohm_path_s2.copy()
+                ohm_path_s3.append(surface_condition)
+                ohm_coeff = ohm_coeffs[f'({i}, {j}, {k})'].values[0]
+                yamlEditor.update_values(ohm_path_s3, ohm_coeff)
 
-    # Add missing columns:
-    missing_columns = pd.read_csv('./df_state_test(in).csv')
-    columns = missing_columns.columns.tolist()
+    # Adjust values for conductance values
+    conductance = old_df_state.filter(like="maxconductance")
+    conductance.columns = conductance.iloc[0]
+    conductance = conductance.drop([0,1])
+    veg_conductance = ['evetr', 'dectr', 'grass']
+    for i, veg_type in enumerate(veg_conductance):
+        conductance_path = ['site', 0, 'properties', 'land_cover', veg_type, 'maxconductance']
+        conductance_value = conductance[f'({i},)'].values[0]
+        yamlEditor.update_values(conductance_path, conductance_value)
 
-    # Check if the columns are in the dataframe
-    for col in columns:
+    conductance2 = old_df_state.filter(["g_max", "g_k", "g_q_base", "g_q_shape", "g_t", "g_sm", "kmax", "s1", "s2", "tl", "th"])
+    conductance2 = conductance2.drop([0,1])
+    for col in conductance2:
         path = yamlEditor.search_dict(yamlEditor.config_data, col)
-        if path is None:
+        if path is not None:
+            value = conductance2[col].values[0]
+            yamlEditor.update_values(path, value)
+        else:
             print(f'{col} not in the yaml file')
-
+    import pdb; pdb.set_trace()
 
     yamlEditor.write_yaml_file_with_comments(comments=glob_comments)

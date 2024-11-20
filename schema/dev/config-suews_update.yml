@@ -6,26 +6,29 @@ model:
     forcing_file: london_2016_2017.csv
     output_file: london_2016_2017_output.csv
     daylightsaving_method: 1
+    diagnose: 0
   physics:
     netradiationmethod: 1
     emissionsmethod: 1
     storageheatmethod: 1
     ohmincqf: 1
-    aerodynamicresistancemethod: 1
     roughlenmommethod: 1
     roughlenheatmethod: 1
     stabilitymethod: 1
     smdmethod: 1
     waterusemethod: 1
     diagmethod: 1
+    faimethod: 1
+    localclimatemethod: 1
     snowuse: 0
-    stebbs_stebbsmethod: 0
-site:  # Site information
+    stebbs_stebbsmethod: 0  # [-]
+site:
   - name: london
+    gridiv: 1
     properties:
-      lat: 51.5074  # Latitude
-      lng: 0.1278 # Longitude
-      alt: 0 # Altitude
+      lat: 51.5074
+      lng: 0.1278
+      alt: 0
       timezone: 0
       surfacearea: 1
       z: 40
@@ -54,6 +57,19 @@ site:  # Site information
         veg_fsd_const: 1
         veg_ssa_lw: 1
         veg_ssa_sw: 1
+      conductance:
+        g_max: 3.5
+        g_k: 200.0
+        g_q_base: 0.13
+        g_q_shape: 0.7
+        g_t: 30.0
+        g_sm: 0.05
+        kmax: 1200.0
+        gsmodel: 1
+        s1: 5.56
+        s2: 0.0
+        tl: -10.0
+        th: 55.0
       irrigation:
         h_maintain: 10
         faut: 0.5
@@ -200,9 +216,15 @@ site:  # Site information
           baset_heating:
             working_day: 10
             holiday: 10
-          ah_min: 0.1
-          ah_slope_cooling: 0.1
-          ah_slope_heating: 0.1
+          ah_min:
+            working_day: 0.1
+            holiday: 0.1
+          ah_slope_cooling:
+            working_day: 0.1
+            holiday: 0.1
+          ah_slope_heating:
+            working_day: 0.1
+            holiday: 0.1
           ahprof_24hr:
             working_day:
               1: 0.1
@@ -257,9 +279,7 @@ site:  # Site information
           popdensdaytime:
             working_day: 100
             holiday: 100
-          popdensnighttime:
-            working_day: 100
-            holiday: 100
+          popdensnighttime: 100
           popprof_24hr:
             working_day:
               1: 100
@@ -315,15 +335,18 @@ site:  # Site information
           co2pointsource: 0.1
           ef_umolco2perj: 0.1
           enef_v_jkm: 0.1
-          fcef_v_kgkm: 0.1
+          fcef_v_kgkm:
+            working_day: 0.1
+            holiday: 0.1
           frfossilfuel_heat: 0.1
           frfossilfuel_nonheat: 0.1
           maxfcmetab: 0.1
           maxqfmetab: 0.1
-          min_res_bioco2: 0.1
           minfcmetab: 0.1
           minqfmetab: 0.1
-          trafficrate: 0.1
+          trafficrate:
+            working_day: 0.1
+            holiday: 0.1
           trafficunits: 0.1
           traffprof_24hr:
             working_day:
@@ -436,9 +459,14 @@ site:  # Site information
         snowalbmax: 0.8
         snowalbmin: 0.3
         snowdensmin: 1
+        snowdensmax: 100
         snowlimbldg: 0.3
         snowlimpaved: 0.3
-        snowpacklimit: 0
+        tau_a: 0.1
+        tau_r: 0.1
+        tau_f: 0.1
+        tempmeltfact: 0.1
+        radmeltfact: 0.1
         snowprof_24hr:
           working_day:
             1: 0.1
@@ -490,10 +518,6 @@ site:  # Site information
             22: 0.1
             23: 0.1
             24: 0.1
-        tau_a: 0.1
-        tau_r: 0.1
-        tempmeltfact: 0.1
-        radmeltfact: 0.1
       land_cover:
         paved:
           sfr: 0.1
@@ -506,24 +530,24 @@ site:  # Site information
           ohm_threshwd: 0.5
           ohm_coef:
             a1:
-              summer_dry: 0.13
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.722
+              summer_wet: 0.722
+              winter_dry: 0.848
+              winter_wet: 0.848
             a2:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.3
+              summer_wet: 0.3
+              winter_dry: 0.3
+              winter_wet: 0.3
             a3:
-              summer_dry: 20.1
-              summer_wet: 20.1
-              winter_dry: 20.1
-              winter_wet: 20.1
+              summer_dry: -36.14
+              summer_wet: -36.14
+              winter_dry: 14.16
+              winter_wet: 14.16
           soildepth: 0.1
           soilstorecap: 200
           sathydraulicconduct: 0.5
-          irrfracpaved: 0.5
+          irrfrac: 0.5
           wetthresh: 0.5
           statelimit: 10
           storedrainprm:
@@ -541,10 +565,30 @@ site:  # Site information
             to_bsoil: 0.1
             to_water: 0.1
             to_runoff: 0.4
+          snowpacklimit: 0.1
+          thermal_layers:
+            dz:
+              - 0.1
+              - 0.2
+              - 0.3
+              - 0.4
+              - 0.5
+            k:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+            cp:
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+              - 1000
         bldgs:
-          sfr: 0.1
-          faibldg: 0.1
-          bldgh: 10
+          sfr: 0.5
+          faibldg: 0.3
+          bldgh: 20
           emis: 0.9
           alb: 0.1
           chanohm: 0.5
@@ -554,24 +598,24 @@ site:  # Site information
           ohm_threshwd: 0.5
           ohm_coef:
             a1:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.51
+              summer_wet: 0.51
+              winter_dry: 0.598
+              winter_wet: 0.598
             a2:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.337
+              summer_wet: 0.337
+              winter_dry: 0.337
+              winter_wet: 0.337
             a3:
-              summer_dry: 20.1
-              summer_wet: 20.1
-              winter_dry: 20.1
-              winter_wet: 20.1
+              summer_dry: -28.85
+              summer_wet: -28.85
+              winter_dry: 11.3
+              winter_wet: 11.3
           soildepth: 0.1
           soilstorecap: 200
           sathydraulicconduct: 0.5
-          irrfracbldgs: 0.5
+          irrfrac: 0.5
           wetthresh: 0.5
           statelimit: 10
           storedrainprm:
@@ -589,126 +633,152 @@ site:  # Site information
             to_bsoil: 0.1
             to_water: 0.1
             to_runoff: 0.4
+          snowpacklimit: 0.1
+          thermal_layers:
+            dz:
+              - 0.1
+              - 0.2
+              - 0.3
+              - 0.4
+              - 0.5
+            k:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+            cp:
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+            temperature:
+              - 20
+              - 19
+              - 18
+              - 17
+              - 16
           WallRoof:
-            stebbs_WallThickness:
-            stebbs_WallEffectiveConductivity:
-            stebbs_WallDensity:
-            stebbs_WallCp:
-            stebbs_Wallx1:
-            stebbs_WallExternalEmissivity:
-            stebbs_WallInternalEmissivity:
-            stebbs_WallTransmissivity:
-            stebbs_WallAbsorbtivity:
-            stebbs_WallReflectivity:
-            stebbs_WallInternalConvectionCoefficient:
-            stebbs_WallExternalConvectionCoefficient:
+            stebbs_wallthickness: 0.176  # [m]
+            stebbs_walleffectiveconductivity: 0.58 # [W m-1 K-1]
+            stebbs_walldensity: 1481.0 # [kg m-3]
+            stebbs_wallcp: 1154.5 # [J kg-1 K-1]
+            stebbs_wallx1: 0.248 # [-]
+            stebbs_wallexternalemissivity: 0.903 # [-]
+            stebbs_wallinternalemissivity: 0.91 # [-]
+            stebbs_walltransmissivity: 0.0 # [-]
+            stebbs_wallabsorbtivity: 0.656 # [-]
+            stebbs_wallreflectivity: 0.344 # [-]
+            stebbs_wallinternalconvectioncoefficient: 3.0 # [W m-2 K-1]
+            stebbs_wallexternalconvectioncoefficient: 21.72 # [W m-2 K-1]
           Window:
-            stebbs_WindowThickness:
-            stebbs_WindowEffectiveConductivity:
-            stebbs_WindowDensity:
-            stebbs_WindowCp:
-            stebbs_WindowExternalEmissivity:
-            stebbs_WindowInternalEmissivity:
-            stebbs_WindowTransmissivity:
-            stebbs_WindowAbsorbtivity:
-            stebbs_WindowReflectivity:
-            stebbs_WindowInternalConvectionCoefficient:
-            stebbs_WindowExternalConvectionCoefficient:
+            stebbs_windowthickness: 0.002  # [m]
+            stebbs_windoweffectiveconductivity: 0.049 # [W m-1 K-1]
+            stebbs_windowdensity: 2500.0 # [kg m-3]
+            stebbs_windowcp: 840.0 # [J kg-1 K-1]
+            stebbs_windowexternalemissivity: 0.84 # [-]
+            stebbs_windowinternalemissivity: 0.84 # [-]
+            stebbs_windowtransmissivity: 0.803 # [-]
+            stebbs_windowabsorbtivity: 0.147 # [-]
+            stebbs_windowreflectivity: 0.05 # [-]
+            stebbs_windowinternalconvectioncoefficient: 3.0 # [W m-2 K-1]
+            stebbs_windowexternalconvectioncoefficient: 21.72 # [W m-2 K-1]
           Floor:
-            stebbs_FloorThickness:
-            stebbs_GroundFloorEffectiveConductivity:
-            stebbs_GroundFloorDensity:
-            stebbs_GroundFloorCp:
-            stebbs_FloorInternalConvectionCoefficient:
+            stebbs_floorthickness: 0.227  # [m]
+            stebbs_groundflooreffectiveconductivity: 0.193 # [W m-1 K-1]
+            stebbs_groundfloordensity: 299.5 # [kg m-3]
+            stebbs_groundfloorcp: 1528.5 # [J kg-1 K-1]
+            stebbs_floorinternalconvectioncoefficient: 2.8 # [W m-2 K-1]
           QF:
-            stebbs_MaxHeatingPower:
-            stebbs_MaximumHotWaterHeatingPower:
-            stebbs_HeatingSetpointTemperature:
-            stebbs_CoolingSetpointTemperature:
-            stebbs_HeatingSystemEfficiency:
-            stebbs_MaxCoolingPower:
-            stebbs_CoolingSystemCOP:
-            stebbs_VentilationRate:
+            stebbs_maxheatingpower: 0.0  # [W]
+            stebbs_maximumhotwaterheatingpower: 0.0 # [W]
+            stebbs_heatingsetpointtemperature: -100.0 # [°C]
+            stebbs_coolingsetpointtemperature: 100.0 # [°C]
+            stebbs_heatingsystemefficiency: 0.9 # [-]
+            stebbs_maxcoolingpower: 3000 # [W]
+            stebbs_coolingsystemcop: 2.0 # [-]
+            stebbs_ventilationrate: 0.6 # [h-1]
           QF DHW:
-            stebbs_WaterTankWaterVolume:
-            stebbs_WaterTankWallThickness:
-            stebbs_MainsWaterTemperature:
-            stebbs_WaterTankSurfaceArea:
-            stebbs_HotWaterTankWallEmissivity:
-            stebbs_DHWVesselWallThickness:
-            stebbs_DHWWaterVolume:
-            stebbs_DHWSurfaceArea:
-            stebbs_DHWVesselEmissivity:
-            stebbs_HotWaterFlowRate:
-            stebbs_DHWDrainFlowRate:
-            stebbs_DHWSpecificHeatCapacity:
-            stebbs_HotWaterTankSpecificHeatCapacity:
-            stebbs_DHWVesselSpecificHeatCapacity:
-            stebbs_DHWDensity:
-            stebbs_HotWaterTankWallDensity:
-            stebbs_DHWVesselDensity:
-            stebbs_HotWaterTankBuildingWallViewFactor:
-            stebbs_HotWaterTankInternalMassViewFactor:
-            stebbs_HotWaterTankWallConductivity:
-            stebbs_HotWaterTankInternalWallConvectionCoefficient:
-            stebbs_HotWaterTankExternalWallConvectionCoefficient:
-            stebbs_DHWVesselWallConductivity:
-            stebbs_DHWVesselInternalWallConvectionCoefficient:
-            stebbs_DHWVesselExternalWallConvectionCoefficient:
-            stebbs_DHWVesselWallEmissivity:
-            stebbs_HotWaterHeatingEfficiency:
-            stebbs_MinimumVolumeOfDHWinUse:
+            stebbs_watertankwatervolume: 0.0  # [m3]
+            stebbs_watertankwallthickness: 0.055 # [m]
+            stebbs_mainswatertemperature: 10.0 # [°C]
+            stebbs_watertanksurfacearea: 8.8 # [m2]
+            stebbs_hotwatertankwallemissivity: 0.9 # [-]
+            stebbs_dhwvesselwallthickness: 0.0047 # [m]
+            stebbs_dhwwatervolume: 10.0 # [m3]
+            stebbs_dhwsurfacearea: 1.7 # [m2]
+            stebbs_dhwvesselemissivity: 0.91 # [-]
+            stebbs_hotwaterflowrate: 0.000183 # [m3 s-1]
+            stebbs_dhwdrainflowrate: 0.00013725 # [m3 s-1]
+            stebbs_dhwspecificheatcapacity: 4180.1 # [J kg-1 K-1]
+            stebbs_hotwatertankspecificheatcapacity: 1380.0 # [J kg-1 K-1]
+            stebbs_dhwvesselspecificheatcapacity: 1380.0 # [J kg-1 K-1]
+            stebbs_dhwdensity: 1000.0 # [kg m-3]
+            stebbs_hotwatertankwalldensity: 745.55 # [kg m-3]
+            stebbs_dhwvesseldensity: 1380.0 # [kg m-3]
+            stebbs_hotwatertankbuildingwallviewfactor: 0.2 # [-]
+            stebbs_hotwatertankinternalmassviewfactor: 0.8 # [-]
+            stebbs_hotwatertankwallconductivity: 0.0275 # [W m-1 K-1]
+            stebbs_hotwatertankinternalwallconvectioncoefficient: 243.0 # [W m-2 K-1]
+            stebbs_hotwatertankexternalwallconvectioncoefficient: 3.0 # [W m-2 K-1]
+            stebbs_dhwvesselwallconductivity: 0.16 # [W m-1 K-1]
+            stebbs_dhwvesselinternalwallconvectioncoefficient: 243.0 # [W m-2 K-1]
+            stebbs_dhwvesselexternalwallconvectioncoefficient: 3.0 # [W m-2 K-1]
+            stebbs_dhwvesselwallemissivity: 0.91 # [-]
+            stebbs_hotwaterheatingefficiency: 0.95 # [-]
+            stebbs_minimumvolumeofdhwinuse: 2.0 # [m3]
           QF Temp:
-            stebbs_IndoorAirStartTemperature:
-            stebbs_IndoorMassStartTemperature:
-            stebbs_WallIndoorSurfaceTemperature:
-            stebbs_WallOutdoorSurfaceTemperature:
-            stebbs_WindowIndoorSurfaceTemperature:
-            stebbs_WindowOutdoorSurfaceTemperature:
-            stebbs_GroundFloorIndoorSurfaceTemperature:
-            stebbs_GroundFloorOutdoorSurfaceTemperature:
-            stebbs_WaterTankTemperature:
-            stebbs_InternalWallWaterTankTemperature:
-            stebbs_ExternalWallWaterTankTemperature:
-            stebbs_HotWaterHeatingSetpointTemperature:
-            stebbs_DomesticHotWaterTemperatureInUseInBuilding:
-            stebbs_InternalWallDHWVesselTemperature:
-            stebbs_ExternalWallDHWVesselTemperature:
+            stebbs_indoorairstarttemperature: 15.0  # [°C]
+            stebbs_indoormassstarttemperature: 20.0 # [°C]
+            stebbs_wallindoorsurfacetemperature: 20.0 # [°C]
+            stebbs_walloutdoorsurfacetemperature: 20.0 # [°C]
+            stebbs_windowindoorsurfacetemperature: 20.0 # [°C]
+            stebbs_windowoutdoorsurfacetemperature: 20.0 # [°C]
+            stebbs_groundfloorindoorsurfacetemperature: 20.0 # [°C]
+            stebbs_groundflooroutdoorsurfacetemperature: 20.0 # [°C]
+            stebbs_watertanktemperature: 30.0 # [°C]
+            stebbs_internalwallwatertanktemperature: 30.0 # [°C]
+            stebbs_externalwallwatertanktemperature: 30.0 # [°C]
+            stebbs_hotwaterheatingsetpointtemperature: 60.0 # [°C]
+            stebbs_domestichotwatertemperatureinuseinbuilding: 40.0 # [°C]
+            stebbs_internalwalldhwvesseltemperature: 35.0 # [°C]
+            stebbs_externalwalldhwvesseltemperature: 25.0 # [°C]
           Population:
-            stebbs_Occupants:
-            stebbs_hhs0:
-            stebbs_age_0_4:
-            stebbs_age_5_11:
-            stebbs_age_12_18:
-            stebbs_age_19_64:
-            stebbs_age_65plus:
-            stebbs_MetabolicRate:
-            stebbs_LatentSensibleRatio:
+            stebbs_occupants: 0  # [-]
+            stebbs_hhs0: # [-]
+            stebbs_age_0_4: # [-]
+            stebbs_age_5_11: # [-]
+            stebbs_age_12_18: # [-]
+            stebbs_age_19_64: # [-]
+            stebbs_age_65plus: # [-]
+            stebbs_metabolicrate: 70.0 # [W]
+            stebbs_latentsensibleratio: 0.43 # [-]
           Appliance:
-            stebbs_ApplianceRating:
-            stebbs_TotalNumberofAppliances:
-            stebbs_ApplianceUsageFactor:
+            stebbs_appliancerating: 100  # [W]
+            stebbs_totalnumberofappliances: 1 # [-]
+            stebbs_applianceusagefactor: 1 # [-]
           Dynamic:
-            stebbs_IndoorAirDensity:
-            stebbs_IndoorAirCp:
-          stebbs_WallExternalArea:
-          stebbs_RatioInternalVolume:
-          stebbs_WWR:
-          stebbs_InternalMassDensity:
-          stebbs_InternalMassCp:
-          stebbs_InternalMassEmissivity:
-          stebbs_Height:
-          stebbs_FootprintArea:
-          stebbs_WallBuildingViewFactor:
-          stebbs_WallGroundViewFactor:
-          stebbs_WallSkyViewFactor:
+            stebbs_indoorairdensity: 1.225  # [kg m-3]
+            stebbs_indooraircp: 1005.0 # [J kg-1 K-1]
+          stebbs_wallexternalarea: 43.3  # [m2]
+          stebbs_ratiointernalvolume: 0.0 # [-]
+          stebbs_wwr: 0.0 # [-]
+          stebbs_internalmassdensity: 1553.8 # [kg m-3]
+          stebbs_internalmasscp: 1000.0 # [J kg-1 K-1]
+          stebbs_internalmassemissivity: 0.91 # [kg m-3]
+          stebbs_height: 3.3 # [m]
+          stebbs_footprintarea: 16.9 # [m2]
+          stebbs_wallbuildingviewfactor: 0.4 # [-]
+          stebbs_wallgroundviewfactor: 0.2 # [-]
+          stebbs_wallskyviewfactor: 0.4 # [-]
         dectr:
           sfr: 0.1
           emis: 0.9
           faidectree: 0.1
           dectreeh: 10
           pormin_dec: 0.1
-          pormax_dec: 0.1
+          pormax_dec: 0.2
           alb_min: 0.1
           alb_max: 0.2
           chanohm: 0.5
@@ -718,20 +788,20 @@ site:  # Site information
           ohm_threshwd: 0.5
           ohm_coef:
             a1:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.23
+              summer_wet: 0.23
+              winter_dry: 0.27
+              winter_wet: 0.27
             a2:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.325
+              summer_wet: 0.325
+              winter_dry: 0.325
+              winter_wet: 0.325
             a3:
-              summer_dry: 20.1
-              summer_wet: 20.1
-              winter_dry: 20.1
-              winter_wet: 20.1
+              summer_dry: -16.91
+              summer_wet: -16.91
+              winter_dry: 6.62
+              winter_wet: 6.62
           soildepth: 0.1
           soilstorecap: 200
           statelimit: 10
@@ -747,18 +817,9 @@ site:  # Site information
           resp_a: 0.5
           resp_b: 0.5
           theta_bioco2: 0.5
-          conductance:
-            g_max: 200
-            g_k: 100
-            g_q_base: 12
-            g_q_shape: 2
-            g_t: 20
-            g_sm: 200
-            kmax: 1200
-            gsmodel: 1
-            maxconductance: 20
-            s1: 0.5
-            s2: 0.5
+          min_res_bioco2: 0.1
+          maxconductance: 11.7
+          irrfrac: 0.5
           lai:
             baset: 20
             gddfull: 100
@@ -766,7 +827,11 @@ site:  # Site information
             sddfull: 100
             laimin: 0.1
             laimax: 2
-            laipower: 2
+            laipower:
+              growth_lai: 0.2
+              growth_gdd: 0.3
+              senescence_lai: 0.2
+              senescence_sdd: 0.3
             laitype: 1
           storedrainprm:
             store_min: 0.1
@@ -783,8 +848,28 @@ site:  # Site information
             to_bsoil: 0.1
             to_water: 0.1
             to_soilstore: 0.4
+          snowpacklimit: 0.1
           ie_a: 1
           ie_m: 1
+          thermal_layers:
+            dz:
+              - 0.1
+              - 0.2
+              - 0.3
+              - 0.4
+              - 0.5
+            k:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+            cp:
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+              - 1000
         evetr:
           sfr: 0.1
           faievetree: 0.1
@@ -799,25 +884,25 @@ site:  # Site information
           ohm_threshwd: 0.5
           ohm_coef:
             a1:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.23
+              summer_wet: 0.23
+              winter_dry: 0.27
+              winter_wet: 0.27
             a2:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.325
+              summer_wet: 0.325
+              winter_dry: 0.325
+              winter_wet: 0.325
             a3:
-              summer_dry: 20.1
-              summer_wet: 20.1
-              winter_dry: 20.1
-              winter_wet: 20.1
+              summer_dry: -16.91
+              summer_wet: -16.91
+              winter_dry: 6.62
+              winter_wet: 6.62
           soildepth: 0.1
           soilstorecap: 200
           statelimit: 10
           sathydraulicconduct: 0.5
-          irrfracevetr: 0.5
+          irrfrac: 0.5
           wetthresh: 0.5
           beta_bioco2: 0.5
           beta_enh_bioco2: 0.5
@@ -826,18 +911,8 @@ site:  # Site information
           resp_a: 0.5
           resp_b: 0.5
           theta_bioco2: 0.5
-          conductance:
-            g_max: 200
-            g_k: 100
-            g_q_base: 12
-            g_q_shape: 2
-            g_t: 20
-            g_sm: 200
-            kmax: 1200
-            gsmodel: 1
-            maxconductance: 20
-            s1: 0.5
-            s2: 0.5
+          min_res_bioco2: 0.1
+          maxconductance: 7.4
           lai:
             baset: 20
             gddfull: 100
@@ -845,7 +920,11 @@ site:  # Site information
             sddfull: 100
             laimin: 0.1
             laimax: 2
-            laipower: 2
+            laipower:
+              growth_lai: 0.2
+              growth_gdd: 0.3
+              senescence_lai: 0.2
+              senescence_sdd: 0.3
             laitype: 1
           storedrainprm:
             store_min: 0.1
@@ -862,8 +941,28 @@ site:  # Site information
             to_bsoil: 0.1
             to_water: 0.1
             to_soilstore: 0.4
+          snowpacklimit: 0.1
           ie_a: 1
           ie_m: 1
+          thermal_layers:
+            dz:
+              - 0.1
+              - 0.2
+              - 0.3
+              - 0.4
+              - 0.5
+            k:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+            cp:
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+              - 1000
         grass:
           sfr: 0.1
           emis: 0.9
@@ -876,25 +975,25 @@ site:  # Site information
           ohm_threshwd: 0.5
           ohm_coef:
             a1:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.23
+              summer_wet: 0.23
+              winter_dry: 0.27
+              winter_wet: 0.27
             a2:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.325
+              summer_wet: 0.325
+              winter_dry: 0.325
+              winter_wet: 0.325
             a3:
-              summer_dry: 20.1
-              summer_wet: 20.1
-              winter_dry: 20.1
-              winter_wet: 20.1
+              summer_dry: -16.91
+              summer_wet: -16.91
+              winter_dry: 6.62
+              winter_wet: 6.62
           soildepth: 0.1
           soilstorecap: 200
           statelimit: 10
           sathydraulicconduct: 0.5
-          irrfracgrass: 0.5
+          irrfrac: 0.5
           wetthresh: 0.5
           beta_bioco2: 0.5
           beta_enh_bioco2: 0.5
@@ -903,18 +1002,8 @@ site:  # Site information
           resp_a: 0.5
           resp_b: 0.5
           theta_bioco2: 0.5
-          conductance:
-            g_max: 200
-            g_k: 100
-            g_q_base: 12
-            g_q_shape: 2
-            g_t: 20
-            g_sm: 200
-            kmax: 1200
-            gsmodel: 1
-            maxconductance: 20
-            s1: 0.5
-            s2: 0.5
+          min_res_bioco2: 0.1
+          maxconductance: 33.1
           lai:
             baset: 20
             gddfull: 100
@@ -922,7 +1011,11 @@ site:  # Site information
             sddfull: 100
             laimin: 0.1
             laimax: 2
-            laipower: 2
+            laipower:
+              growth_lai: 0.2
+              growth_gdd: 0.3
+              senescence_lai: 0.2
+              senescence_sdd: 0.3
             laitype: 1
           storedrainprm:
             store_min: 0.1
@@ -939,8 +1032,28 @@ site:  # Site information
             to_bsoil: 0.1
             to_water: 0.1
             to_soilstore: 0.4
+          snowpacklimit: 0.1
           ie_a: 1
           ie_m: 1
+          thermal_layers:
+            dz:
+              - 0.1
+              - 0.2
+              - 0.3
+              - 0.4
+              - 0.5
+            k:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+            cp:
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+              - 1000
         bsoil:
           sfr: 0.1
           emis: 0.9
@@ -952,25 +1065,25 @@ site:  # Site information
           ohm_threshwd: 0.5
           ohm_coef:
             a1:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.379
+              summer_wet: 0.379
+              winter_dry: 0.445
+              winter_wet: 0.445
             a2:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.335
+              summer_wet: 0.335
+              winter_dry: 0.335
+              winter_wet: 0.335
             a3:
-              summer_dry: 20.1
-              summer_wet: 20.1
-              winter_dry: 20.1
-              winter_wet: 20.1
+              summer_dry: -30.05
+              summer_wet: -30.05
+              winter_dry: 11.77
+              winter_wet: 11.77
           soildepth: 0.1
           soilstorecap: 200
           statelimit: 10
           sathydraulicconduct: 0.5
-          irrfracbsoil: 0.5
+          irrfrac: 0.5
           wetthresh: 0.5
           storedrainprm:
             store_min: 0.1
@@ -987,6 +1100,26 @@ site:  # Site information
             to_grass: 0.1
             to_water: 0.1
             to_soilstore: 0.4
+          snowpacklimit: 0.1
+          thermal_layers:
+            dz:
+              - 0.1
+              - 0.2
+              - 0.3
+              - 0.4
+              - 0.5
+            k:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+            cp:
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+              - 1000
         water:
           sfr: 0.4
           emis: 0.9
@@ -998,25 +1131,26 @@ site:  # Site information
           ohm_threshwd: 0.5
           ohm_coef:
             a1:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.534
+              summer_wet: 0.534
+              winter_dry: 0.627
+              winter_wet: 0.627
             a2:
-              summer_dry: 0.1
-              summer_wet: 0.1
-              winter_dry: 0.1
-              winter_wet: 0.1
+              summer_dry: 0.21
+              summer_wet: 0.21
+              winter_dry: 0.21
+              winter_wet: 0.21
             a3:
-              summer_dry: 20.1
-              summer_wet: 20.1
-              winter_dry: 20.1
-              winter_wet: 20.1
+              summer_dry: -33.31
+              summer_wet: -33.31
+              winter_dry: 13.05
+              winter_wet: 13.05
           soildepth: 0.1
           soilstorecap: 200
           statelimit: 10
+          wetthresh: 0.5
           sathydraulicconduct: 0.5
-          irrfracwater: 0.5
+          irrfrac: 0.5
           flowchange: 0.5
           storedrainprm:
             store_min: 0.1
@@ -1025,15 +1159,210 @@ site:  # Site information
             drain_eq: 1
             drain_coef_1: 0.5
             drain_coef_2: 0.5
+          snowpacklimit: 0.1
+          thermal_layers:
+            dz:
+              - 0.1
+              - 0.2
+              - 0.3
+              - 0.4
+              - 0.5
+            k:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+            cp:
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+              - 1000
+      vertical_layers:
+        nlayer: 3
+        height:
+          - 0
+          - 10
+          - 20
+          - 30
+        veg_frac:
+          - 0.5
+          - 0.3
+          - 0.2
+        veg_scale:
+          - 1
+          - 1
+          - 1
+        building_frac:
+          - 0.5
+          - 0.3
+          - 0.2
+        building_scale:
+          - 1
+          - 1
+          - 1
+        roofs:
+          - alb: 0.1
+            emis: 0.9
+            thermal_layers:
+              dz:
+                - 0.1
+                - 0.2
+                - 0.3
+                - 0.4
+                - 0.5
+              k:
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+              cp:
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+            statelimit: 10
+            soilstorecap: 200
+            wetthresh: 0.5
+            roof_albedo_dir_mult_fact: 0.1
+          - alb: 0.2
+            emis: 0.9
+            thermal_layers:
+              dz:
+                - 0.1
+                - 0.2
+                - 0.3
+                - 0.4
+                - 0.5
+              k:
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+              cp:
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+            statelimit: 10
+            soilstorecap: 200
+            wetthresh: 0.5
+            roof_albedo_dir_mult_fact: 0.1
+          - alb: 0.3
+            emis: 0.9
+            thermal_layers:
+              dz:
+                - 0.1
+                - 0.2
+                - 0.3
+                - 0.4
+                - 0.5
+              k:
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+              cp:
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+            statelimit: 10
+            soilstorecap: 200
+            wetthresh: 0.5
+            roof_albedo_dir_mult_fact: 0.1
+        walls:
+          - alb: 0.4
+            emis: 0.9
+            thermal_layers:
+              dz:
+                - 0.1
+                - 0.2
+                - 0.3
+                - 0.4
+                - 0.5
+              k:
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+              cp:
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+            statelimit: 10
+            soilstorecap: 200
+            wetthresh: 0.5
+            wall_specular_frac: 0.1
+          - alb: 0.5
+            emis: 0.9
+            thermal_layers:
+              dz:
+                - 0.1
+                - 0.2
+                - 0.3
+                - 0.4
+                - 0.5
+              k:
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+              cp:
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+            statelimit: 10
+            soilstorecap: 200
+            wetthresh: 0.5
+            wall_specular_frac: 0.1
+          - alb: 0.6
+            emis: 0.9
+            thermal_layers:
+              dz:
+                - 0.1
+                - 0.2
+                - 0.3
+                - 0.4
+                - 0.5
+              k:
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+                - 1.0
+              cp:
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+                - 1000
+            statelimit: 10
+            soilstorecap: 200
+            wetthresh: 0.5
+            wall_specular_frac: 0.1
       stebbs:
-        stebbs_BuildingCode:
-        stebbs_BuildingClass:
-        stebbs_BuildingType:
-        stebbs_BuildingName:
-        stebbs_BuildingCount:
-        stebbs_InternalMassConvectionCoefficient:
-        stebbs_ExternalGroundConductivity:
-        stebbs_GroundDepth:
+        stebbs_buildingcode: O_SH  # [-]
+        stebbs_buildingclass: other # [-]
+        stebbs_buildingtype: shed # [-]
+        stebbs_buildingname: 17240202_O_SH # [-]
+        stebbs_buildingcount: 45 # [-]
+        stebbs_internalmassconvectioncoefficient: 3.0 # [W m-2 K-1]
+        stebbs_externalgroundconductivity: 1.28 # [W m-1 K-1]
+        stebbs_grounddepth: 2.0 # [m]
     initial_states:
       snowalb: 0.8
       paved:
@@ -1043,6 +1372,15 @@ site:  # Site information
         snowdens: 1
         snowfrac: 0
         snowpack: 0
+        icefrac: 0
+        tsfc: 10
+        temperature:
+          - 20
+          - 19
+          - 18
+          - 17
+          - 16
+        tin: 10
       bldgs:
         state: 10
         soilstore: 100
@@ -1050,6 +1388,15 @@ site:  # Site information
         snowdens: 1
         snowfrac: 0
         snowpack: 0
+        icefrac: 0
+        tsfc: 10
+        temperature:
+          - 20
+          - 19
+          - 18
+          - 17
+          - 16
+        tin: 10
       dectr:
         state: 10
         soilstore: 100
@@ -1057,9 +1404,25 @@ site:  # Site information
         snowdens: 1
         snowfrac: 0
         snowpack: 0
+        icefrac: 0
         decidcap_id: 1
         porosity_id: 0.2
         alb_id: 0.2
+        lai_id: 1
+        gdd_id: 100
+        sdd_id: 100
+        tsfc: 10
+        temperature:
+          - 20
+          - 19
+          - 18
+          - 17
+          - 16
+        tin: 10
+        wu:
+          wu_total: 2
+          wu_auto: 1
+          wu_manual: 1
       evetr:
         state: 10
         soilstore: 100
@@ -1067,7 +1430,23 @@ site:  # Site information
         snowdens: 1
         snowfrac: 0
         snowpack: 0
+        icefrac: 0
         alb_id: 0.2
+        lai_id: 1
+        gdd_id: 100
+        sdd_id: 100
+        tsfc: 10
+        temperature:
+          - 20
+          - 19
+          - 18
+          - 17
+          - 16
+        tin: 10
+        wu:
+          wu_total: 2
+          wu_auto: 1
+          wu_manual: 1
       grass:
         state: 10
         soilstore: 100
@@ -1075,7 +1454,23 @@ site:  # Site information
         snowdens: 1
         snowfrac: 0
         snowpack: 0
+        icefrac: 0
         alb_id: 0.2
+        lai_id: 1
+        gdd_id: 100
+        sdd_id: 100
+        tsfc: 10
+        temperature:
+          - 20
+          - 19
+          - 18
+          - 17
+          - 16
+        tin: 10
+        wu:
+          wu_total: 2
+          wu_auto: 1
+          wu_manual: 1
       bsoil:
         state: 10
         soilstore: 100
@@ -1083,6 +1478,15 @@ site:  # Site information
         snowdens: 1
         snowfrac: 0
         snowpack: 0
+        icefrac: 0
+        tsfc: 10
+        temperature:
+          - 20
+          - 19
+          - 18
+          - 17
+          - 16
+        tin: 10
       water:
         state: 10
         soilstore: 100
@@ -1090,3 +1494,74 @@ site:  # Site information
         snowdens: 1
         snowfrac: 0
         snowpack: 0
+        icefrac: 0
+        tsfc: 10
+        temperature:
+          - 20
+          - 19
+          - 18
+          - 17
+          - 16
+        tin: 10
+      roofs:
+        - state: 10
+          soilstore: 100
+          tsfc: 10
+          temperature:
+            - 20
+            - 19
+            - 18
+            - 17
+            - 16
+          tin: 10
+        - state: 10
+          soilstore: 100
+          tsfc: 10
+          temperature:
+            - 20
+            - 19
+            - 18
+            - 17
+            - 16
+          tin: 10
+        - state: 10
+          soilstore: 100
+          tsfc: 10
+          temperature:
+            - 20
+            - 19
+            - 18
+            - 17
+            - 16
+          tin: 10
+      walls:
+        - state: 10
+          soilstore: 100
+          tsfc: 10
+          temperature:
+            - 20
+            - 19
+            - 18
+            - 17
+            - 16
+          tin: 10
+        - state: 10
+          soilstore: 100
+          tsfc: 10
+          temperature:
+            - 20
+            - 19
+            - 18
+            - 17
+            - 16
+          tin: 10
+        - state: 10
+          soilstore: 100
+          tsfc: 10
+          temperature:
+            - 20
+            - 19
+            - 18
+            - 17
+            - 16
+          tin: 10
