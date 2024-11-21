@@ -4,7 +4,6 @@ from pydantic import (
     Field,
     model_validator,
     field_validator,
-    validator,
     PrivateAttr,
 )
 import numpy as np
@@ -51,22 +50,22 @@ class SurfaceInitialState(BaseModel):
     snowwater: Optional[float] = Field(ge=0, description="Snow water", default=0.0)
     snowdens: Optional[float] = Field(ge=0, description="Snow density", default=0.0)
     alb_id: Optional[float] = Field(
-        description="Initial albedo for vegetated surfaces", default=0.2
+        description="Initial albedo for vegetated surfaces", default=None
     )
     porosity_id: Optional[float] = Field(
-        description="Initial porosity for deciduous trees", default=0.2
+        description="Initial porosity for deciduous trees", default=None
     )
     decidcap_id: Optional[float] = Field(
-        description="Initial deciduous capacity for deciduous trees", default=0.5
+        description="Initial deciduous capacity for deciduous trees", default=None
     )
     lai_id: Optional[float] = Field(
-        description="Initial leaf area index for vegetated surfaces", default=1.0
+        description="Initial leaf area index for vegetated surfaces", default=None
     )
     gdd_id: Optional[float] = Field(
-        description="Growing degree days ID for vegetated surfaces", default=0.0
+        description="Growing degree days ID for vegetated surfaces", default=None
     )
     sdd_id: Optional[float] = Field(
-        description="Senescence degree days ID for vegetated surfaces", default=0.0
+        description="Senescence degree days ID for vegetated surfaces", default=None
     )
     temperature: List[float] = Field(
         min_items=5,
@@ -1644,7 +1643,7 @@ class SUEWSConfig(BaseModel):
                 str_indices = str(indices) if indices == 0 else f"({indices},)"
             else:
                 str_indices = str(indices)
-            # print(f"Setting {col_name} to {value} for indices {str_indices}")
+            print(f"Setting df {col_name} to {value} for indices {str_indices}")
             df.loc[gridiv, (col_name, str_indices)] = value
 
         # Helper functions to handle different parameter types
@@ -1674,35 +1673,62 @@ class SUEWSConfig(BaseModel):
                         "faidectree",
                         "faievetree",
                         "flowchange",
+                        "decidcap_id",
+                        "porosity_id",
                     ]:
-                        # these parameters are not indexed
+                        # these parameters are not indexed - associated with surface type
                         full_key = f"{key}"
-                        full_indices = 0
-                    elif key in ["irrfrac"]:
-                        # irrfrac is indexed by surface type
-                        full_key = f"{key}{surf_name}"
-                        full_indices = 0
-                    elif key in ["alb_max", "alb_min"] and surf_name in [
-                        "evetr",
-                        "dectr",
-                        "grass",
-                    ]:
-                        # alb_max and alb_min are indexed by veg type
-                        veg_name = surf_name
-                        full_key = f"{key.replace('_', '')}_{veg_name}"
                         full_indices = 0
                     elif key in [
                         "soilstorecap",
                         "sfr",
                         "statelimit",
+                        "state",
                         "wetthresh",
+                        "soilstore",
+                        "tin",
+                        "tsfc",
                     ]:
-                        # soilstorecap and sfr are not indexed
+                        # these parameters are indexed by surface type
                         full_key = f"{key}_surf"
                         full_indices = indices
+                    elif key in ["irrfrac"]:
+                        # irrfrac is named by surface type
+                        full_key = f"{key}{surf_name}"
+                        full_indices = 0
+                    elif surf_name in [
+                        "evetr",
+                        "dectr",
+                        "grass",
+                    ]:
+                        if key in [
+                            "alb_max",
+                            "alb_min",
+                            "alb_id",
+                        ]:
+                            # alb_max and alb_min are named by veg type
+                            veg_name = surf_name
+                            if key in ["alb_max", "alb_min"]:
+                                full_key = f"{key.replace('_', '')}_{veg_name}"
+                            else:
+                                full_key = f"{key.replace('alb', f'alb{veg_name}')}"
+                            full_indices = 0
+                        elif key in [
+                            "lai_id",
+                            "gdd_id",
+                            "sdd_id",
+                        ]:
+                            # lai_id, gdd_id, and sdd_id are named by veg type
+                            full_key = f"{key}"
+                            full_indices = (indices[0] - 2,)
+                        else:
+                            # all other veg type parameters are indexed by veg type
+                            full_key = f"{key}"
+                            full_indices = (indices[0] - 2,)
                     else:
                         full_key = f"{prefix}{key}" if prefix else f"{key}{suffix}"
                         full_indices = indices
+
                     print(f"Setting {full_key} to {val} for indices {full_indices}")
                     set_df_value(full_key, full_indices, val)
                 elif isinstance(val, dict):
@@ -1752,13 +1778,6 @@ class SUEWSConfig(BaseModel):
                         set_df_value(param_name, (int(hour) - 1, i), value)
                 else:
                     set_df_value(param_name, (i,), value)
-
-        # def set_hourly_profile(obj, param_name: str, day_types: List[str] = ["working_day", "holiday"]):
-        #     for hour in range(1, 25):
-        #         hour_str = str(hour)
-        #         for i, day_type in enumerate(day_types):
-        #             value = getattr(obj, day_type).get(hour_str, 0.0)
-        #             set_df_value(param_name, (hour - 1, i), value)
 
         def set_thermal_layers(thermal_layers: ThermalLayer, suffix: str, index: int):
             for var in ["dz", "k", "cp"]:
@@ -1814,30 +1833,53 @@ class SUEWSConfig(BaseModel):
         SURFACE_TYPES = {
             "paved": 0,
             "bldgs": 1,
-            "dectr": 2,
-            "evetr": 3,
+            "evetr": 2,
+            "dectr": 3,
             "grass": 4,
             "bsoil": 5,
             "water": 6,
         }
 
         for surf_name, surf_idx in SURFACE_TYPES.items():
+            print("\n")
+            print("-" * 10)
+            print(f"Setting {surf_name} for indices {surf_idx}")
             surface = getattr(site.properties.land_cover, surf_name)
             if not surface:
                 continue
             # Handle specific parameters
             if isinstance(surface, VegetatedSurfaceProperties):
                 set_simple_params(surface.lai.model_dump(), indices=(surf_idx - 2,))
-                set_simple_params(surface.model_dump(), indices=(surf_idx - 2,), surf_name=surf_name)
+                # set_simple_params(
+                #     surface.model_dump(), indices=(surf_idx - 2,), surf_name=surf_name
+                # )
             else:
                 # Set basic surface parameters
-                set_simple_params(surface.model_dump(), indices=(surf_idx,), surf_name=surf_name)
+                set_simple_params(
+                    surface.model_dump(), indices=(surf_idx,), surf_name=surf_name
+                )
 
             # Handle profiles and thermal layers
             if hasattr(surface, "thermal_layers") and surface.thermal_layers:
                 set_thermal_layers(
                     surface.thermal_layers, suffix="surf", index=surf_idx
                 )
+
+            # Handle initial states
+            if hasattr(site.initial_states, surf_name):
+                initial_state = getattr(site.initial_states, surf_name)
+                if isinstance(initial_state, VegetatedSurfaceProperties):
+                    set_simple_params(
+                        initial_state.model_dump(),
+                        indices=(surf_idx - 2,),
+                        surf_name=surf_name,
+                    )
+                else:
+                    set_simple_params(
+                        initial_state.model_dump(),
+                        indices=(surf_idx,),
+                        surf_name=surf_name,
+                    )
 
         # Handle Vertical Layers
         if (

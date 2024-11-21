@@ -321,8 +321,14 @@ class TestToDataFrameMethods(unittest.TestCase):
 
     def test_to_df_state_new_matches_original(self):
         """Test that to_df_state_new produces the same output as to_df_state"""
-        original_df = self.config.to_df_state()
-        new_df = self.config.to_df_state_new()
+        # load yaml file
+        # Load YAML config
+        import yaml
+        with open("./config-suews.yml", "r") as file:
+            yaml_config = yaml.safe_load(file)
+        suews_config = SUEWSConfig(**yaml_config[0])
+        original_df = suews_config.to_df_state()
+        new_df = suews_config.to_df_state_new()
         # Get the column differences
         original_cols = set(original_df.columns)
         new_cols = set(new_df.columns)
