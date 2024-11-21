@@ -752,8 +752,74 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE ROUGHNESS_STATE
 
-   TYPE, PUBLIC :: BUILDING_STATE
+   TYPE, PUBLIC :: STEBBS_STATE
+      ! Collect general parameters for STEBBS
+      REAL(KIND(1D0)) :: WallInternalConvectionCoefficient
+      REAL(KIND(1D0)) :: InternalMassConvectionCoefficient
+      REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient
+      REAL(KIND(1D0)) :: WindowInternalConvectionCoefficient
+      REAL(KIND(1D0)) :: WallExternalConvectionCoefficient
+      REAL(KIND(1D0)) :: WindowExternalConvectionCoefficient
+      REAL(KIND(1D0)) :: GroundDepth
+      REAL(KIND(1D0)) :: ExternalGroundConductivity
+      REAL(KIND(1D0)) :: IndoorAirDensity
+      REAL(KIND(1D0)) :: IndoorAirCp
+      REAL(KIND(1D0)) :: WallBuildingViewFactor
+      REAL(KIND(1D0)) :: WallGroundViewFactor
+      REAL(KIND(1D0)) :: WallSkyViewFactor
+      REAL(KIND(1D0)) :: MetabolicRate
+      REAL(KIND(1D0)) :: LatentSensibleRatio
+      REAL(KIND(1D0)) :: ApplianceRating
+      REAL(KIND(1D0)) :: TotalNumberofAppliances
+      REAL(KIND(1D0)) :: ApplianceUsageFactor
+      REAL(KIND(1D0)) :: HeatingSystemEfficiency
+      REAL(KIND(1D0)) :: MaxCoolingPower
+      REAL(KIND(1D0)) :: CoolingSystemCOP
+      REAL(KIND(1D0)) :: VentilationRate
+      REAL(KIND(1D0)) :: IndoorAirStartTemperature
+      REAL(KIND(1D0)) :: IndoorMassStartTemperature
+      REAL(KIND(1D0)) :: WallIndoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WallOutdoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WindowIndoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WindowOutdoorSurfaceTemperature
+      REAL(KIND(1D0)) :: GroundFloorIndoorSurfaceTemperature
+      REAL(KIND(1D0)) :: GroundFloorOutdoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WaterTankTemperature
+      REAL(KIND(1D0)) :: InternalWallWaterTankTemperature
+      REAL(KIND(1D0)) :: ExternalWallWaterTankTemperature
+      REAL(KIND(1D0)) :: WaterTankWallThickness
+      REAL(KIND(1D0)) :: MainsWaterTemperature
+      REAL(KIND(1D0)) :: WaterTankSurfaceArea
+      REAL(KIND(1D0)) :: HotWaterHeatingSetpointTemperature
+      REAL(KIND(1D0)) :: HotWaterTankWallEmissivity
+      REAL(KIND(1D0)) :: DomesticHotWaterTemperatureInUseInBuilding
+      REAL(KIND(1D0)) :: InternalWallDHWVesselTemperature
+      REAL(KIND(1D0)) :: ExternalWallDHWVesselTemperature
+      REAL(KIND(1D0)) :: DHWVesselWallThickness
+      REAL(KIND(1D0)) :: DHWWaterVolume
+      REAL(KIND(1D0)) :: DHWSurfaceArea
+      REAL(KIND(1D0)) :: DHWVesselEmissivity
+      REAL(KIND(1D0)) :: HotWaterFlowRate
+      REAL(KIND(1D0)) :: DHWDrainFlowRate
+      REAL(KIND(1D0)) :: DHWSpecificHeatCapacity
+      REAL(KIND(1D0)) :: HotWaterTankSpecificHeatCapacity
+      REAL(KIND(1D0)) :: DHWVesselSpecificHeatCapacity
+      REAL(KIND(1D0)) :: DHWDensity
+      REAL(KIND(1D0)) :: HotWaterTankWallDensity
+      REAL(KIND(1D0)) :: DHWVesselDensity
+      REAL(KIND(1D0)) :: HotWaterTankBuildingWallViewFactor
+      REAL(KIND(1D0)) :: HotWaterTankInternalMassViewFactor
+      REAL(KIND(1D0)) :: HotWaterTankWallConductivity
+      REAL(KIND(1D0)) :: HotWaterTankInternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: HotWaterTankExternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: DHWVesselWallConductivity
+      REAL(KIND(1D0)) :: DHWVesselInternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: DHWVesselExternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: DHWVesselWallEmissivity
+      REAL(KIND(1D0)) :: HotWaterHeatingEfficiency
+      REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse
 
+      ! Beers output for STEBBS
       REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
       REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
       REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
@@ -767,6 +833,58 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Lnorth ! incoming longwave radiation from north [W m-2]
       REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
 
+   END TYPE STEBBS_STATE
+
+   TYPE, PUBLIC :: BUILDING_STATE
+      ! This type is used to collect building archetypes for STEBBS
+      ! CHARACTER(LEN=50) :: BuildingCode
+      ! CHARACTER(LEN=50) :: BuildingClass
+      ! CHARACTER(LEN=50) :: BuildingType
+      ! CHARACTER(LEN=50) :: BuildingName
+      REAL(KIND(1D0)) :: BuildingCount
+      REAL(KIND(1D0)) :: Occupants
+      REAL(KIND(1D0)) :: hhs0
+      REAL(KIND(1D0)) :: age_0_4
+      REAL(KIND(1D0)) :: age_5_11
+      REAL(KIND(1D0)) :: age_12_18
+      REAL(KIND(1D0)) :: age_19_64
+      REAL(KIND(1D0)) :: age_65plus
+      REAL(KIND(1D0)) :: stebbs_Height
+      REAL(KIND(1D0)) :: FootprintArea
+      REAL(KIND(1D0)) :: WallExternalArea
+      REAL(KIND(1D0)) :: RatioInternalVolume
+      REAL(KIND(1D0)) :: WWR
+      REAL(KIND(1D0)) :: WallThickness
+      REAL(KIND(1D0)) :: WallEffectiveConductivity
+      REAL(KIND(1D0)) :: WallDensity
+      REAL(KIND(1D0)) :: WallCp
+      REAL(KIND(1D0)) :: Wallx1
+      REAL(KIND(1D0)) :: WallExternalEmissivity
+      REAL(KIND(1D0)) :: WallInternalEmissivity
+      REAL(KIND(1D0)) :: WallTransmissivity
+      REAL(KIND(1D0)) :: WallAbsorbtivity
+      REAL(KIND(1D0)) :: WallReflectivity
+      REAL(KIND(1D0)) :: FloorThickness
+      REAL(KIND(1D0)) :: GroundFloorEffectiveConductivity
+      REAL(KIND(1D0)) :: GroundFloorDensity
+      REAL(KIND(1D0)) :: GroundFloorCp
+      REAL(KIND(1D0)) :: WindowThickness
+      REAL(KIND(1D0)) :: WindowEffectiveConductivity
+      REAL(KIND(1D0)) :: WindowDensity
+      REAL(KIND(1D0)) :: WindowCp
+      REAL(KIND(1D0)) :: WindowExternalEmissivity
+      REAL(KIND(1D0)) :: WindowInternalEmissivity
+      REAL(KIND(1D0)) :: WindowTransmissivity
+      REAL(KIND(1D0)) :: WindowAbsorbtivity
+      REAL(KIND(1D0)) :: WindowReflectivity
+      REAL(KIND(1D0)) :: InternalMassDensity
+      REAL(KIND(1D0)) :: InternalMassCp
+      REAL(KIND(1D0)) :: InternalMassEmissivity
+      REAL(KIND(1D0)) :: MaxHeatingPower
+      REAL(KIND(1D0)) :: WaterTankWaterVolume
+      REAL(KIND(1D0)) :: MaximumHotWaterHeatingPower
+      REAL(KIND(1D0)) :: HeatingSetpointTemperature
+      REAL(KIND(1D0)) :: CoolingSetpointTemperature
    END TYPE BUILDING_STATE
 
    ! incorporate all model states into one lumped type
@@ -781,6 +899,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(HYDRO_STATE) :: hydroState
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
+      TYPE(STEBBS_STATE) :: stebbsState
       TYPE(BUILDING_STATE) :: bldgState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
