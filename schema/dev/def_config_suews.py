@@ -1895,9 +1895,6 @@ class SUEWSConfig(BaseModel):
         # Population profile parameters
         set_df_value("popdensnighttime", 0, anthro_heat.popdensnighttime)
         for i, day in enumerate(["working_day", "holiday"]):
-            # set_df_value(
-            #     "popdensdaytime", (i,), getattr(anthro_heat.popdensdaytime, day)
-            # )
             # 24-hour population profile
             for hour in range(24):
                 set_df_value(
@@ -1914,6 +1911,86 @@ class SUEWSConfig(BaseModel):
                 for name, value in dayhourmap_snow.items():
                     set_df_value(name, (hour, i), getattr(value, day)[f"{hour+1}"])
 
+        # Surface-specific parameter mappings
+        def get_surface_mappings(surface, surf_idx):
+            """Get mappings for surface parameters"""
+            base_map = {
+                "sfr_surf": ((surf_idx,), surface.sfr),
+                "emis": ((surf_idx,), surface.emis),
+            }
+
+            # Optional parameters with direct mapping
+            optional_params = {
+                "alb": "alb",
+                "ohm_threshsw": "ohm_threshsw",
+                "ohm_threshwd": "ohm_threshwd",
+                "chanohm": "chanohm",
+                "cpanohm": "cpanohm",
+                "kkanohm": "kkanohm",
+                "soildepth": "soildepth",
+                "soilstorecap": "soilstorecap_surf",
+                "statelimit": "statelimit_surf",
+                "wetthresh": "wetthresh_surf",
+                "flowchange": "flowchange",
+                "snowpacklimit": "snowpacklimit",
+            }
+
+            for attr, df_name in optional_params.items():
+                if hasattr(surface, attr):
+                    # special case for flowchange
+                    if attr == "flowchange":
+                        base_map[df_name] = (0, getattr(surface, attr))
+                    else:
+                        base_map[df_name] = ((surf_idx,), getattr(surface, attr))
+
+            return base_map
+
+        def get_vegetation_mappings(surface, surf_idx):
+            """Get mappings specific to vegetation surfaces"""
+            veg_map = {}
+
+            # LAI parameters mapping
+            if hasattr(surface, "lai"):
+                lai = surface.lai
+                idx = surf_idx - 2
+                lai_params = {
+                    "baset": lai.baset,
+                    "gddfull": lai.gddfull,
+                    "basete": lai.basete,
+                    "sddfull": lai.sddfull,
+                    "laimin": lai.laimin,
+                    "laimax": lai.laimax,
+                    "laitype": lai.laitype,
+                }
+                for param, value in lai_params.items():
+                    veg_map[param] = (idx, value)
+
+                # LAI power parameters
+                lai_power_vars = [
+                    "growth_lai",
+                    "growth_gdd",
+                    "senescence_lai",
+                    "senescence_sdd",
+                ]
+                for i, var in enumerate(lai_power_vars):
+                    veg_map["laipower"] = (i, idx, getattr(lai.laipower, var))
+
+            # CO2 parameters mapping
+            co2_params = {
+                "beta_bioco2": "beta_bioco2",
+                "beta_enh_bioco2": "beta_enh_bioco2",
+                "alpha_bioco2": "alpha_bioco2",
+                "alpha_enh_bioco2": "alpha_enh_bioco2",
+                "resp_a": "resp_a",
+                "resp_b": "resp_b",
+                "theta_bioco2": "theta_bioco2",
+            }
+
+            for attr, df_name in co2_params.items():
+                if hasattr(surface, attr):
+                    veg_map[df_name] = (surf_idx - 2, getattr(surface, attr))
+
+            return veg_map
 
         # Surface properties
         surface_map = {
@@ -1930,9 +2007,20 @@ class SUEWSConfig(BaseModel):
         for surf_name, surf_idx in surface_map.items():
             surface = getattr(props.land_cover, surf_name)
 
+            # # Get and apply base surface mappings
+            surface_maps = get_surface_mappings(surface, surf_idx)
+            for name, (indices, value) in surface_maps.items():
+                set_df_value(name, indices, value)
+
+            # # For vegetation surfaces, apply additional mappings
+            # if surf_name in ["dectr", "evetr", "grass"]:
+            #     veg_maps = get_vegetation_mappings(surface, surf_idx)
+            #     for name, (indices, value) in veg_maps.items():
+            #         set_df_value(name, indices, value)
+
             # Basic surface properties
-            set_df_value("sfr_surf", (surf_idx,), surface.sfr)
-            set_df_value("emis", (surf_idx,), surface.emis)
+            # set_df_value("sfr_surf", (surf_idx,), surface.sfr)
+            # set_df_value("emis", (surf_idx,), surface.emis)
 
             # Add water distribution parameters
             if surface.waterdist is not None:
