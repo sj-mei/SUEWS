@@ -1950,9 +1950,9 @@ class SUEWSConfig(BaseModel):
             veg_map = {}
 
             # LAI parameters mapping
+            idx = surf_idx - 2
             if hasattr(surface, "lai"):
                 lai = surface.lai
-                idx = surf_idx - 2
                 lai_params = {
                     "baset": lai.baset,
                     "gddfull": lai.gddfull,
@@ -1963,7 +1963,7 @@ class SUEWSConfig(BaseModel):
                     "laitype": lai.laitype,
                 }
                 for param, value in lai_params.items():
-                    veg_map[param] = (idx, value)
+                    veg_map[param] = ((idx,), value)
 
                 # LAI power parameters
                 lai_power_vars = [
@@ -1973,7 +1973,7 @@ class SUEWSConfig(BaseModel):
                     "senescence_sdd",
                 ]
                 for i, var in enumerate(lai_power_vars):
-                    veg_map["laipower"] = (i, idx, getattr(lai.laipower, var))
+                    veg_map["laipower"] = ((i, idx), getattr(lai.laipower, var))
 
             # CO2 parameters mapping
             co2_params = {
@@ -1988,7 +1988,16 @@ class SUEWSConfig(BaseModel):
 
             for attr, df_name in co2_params.items():
                 if hasattr(surface, attr):
-                    veg_map[df_name] = (surf_idx - 2, getattr(surface, attr))
+                    veg_map[df_name] = ((idx,), getattr(surface, attr))
+
+            if hasattr(surface, "alb_min") and hasattr(surface, "alb_max"):
+                # set_df_value("alb", (surf_idx,), surface.alb_min)  # Use min as default
+                veg_map["alb"] = ((surf_idx,), surface.alb_min)
+                surf_name = surface._surface_type.value
+                str_alb_max = f"albmax_{surf_name}"
+                str_alb_min = f"albmin_{surf_name}"
+                veg_map[str_alb_max] = (0, surface.alb_max)
+                veg_map[str_alb_min] = (0, surface.alb_min)
 
             return veg_map
 
@@ -2009,18 +2018,18 @@ class SUEWSConfig(BaseModel):
 
             # # Get and apply base surface mappings
             surface_maps = get_surface_mappings(surface, surf_idx)
+
             for name, (indices, value) in surface_maps.items():
                 set_df_value(name, indices, value)
 
-            # # For vegetation surfaces, apply additional mappings
-            # if surf_name in ["dectr", "evetr", "grass"]:
-            #     veg_maps = get_vegetation_mappings(surface, surf_idx)
-            #     for name, (indices, value) in veg_maps.items():
-            #         set_df_value(name, indices, value)
+            # a dummy row for extra surface ! not used but essential for the structural completeness
+            set_df_value("ohm_threshsw", (7,), surface.ohm_threshsw)
 
-            # Basic surface properties
-            # set_df_value("sfr_surf", (surf_idx,), surface.sfr)
-            # set_df_value("emis", (surf_idx,), surface.emis)
+            # For vegetation surfaces, apply additional mappings
+            if surf_name in ["dectr", "evetr", "grass"]:
+                veg_maps = get_vegetation_mappings(surface, surf_idx)
+                for name, (indices, value) in veg_maps.items():
+                    set_df_value(name, indices, value)
 
             # Add water distribution parameters
             if surface.waterdist is not None:
@@ -2069,46 +2078,6 @@ class SUEWSConfig(BaseModel):
                 # Set diagonal elements (targets to themselves) to 0
                 for row_idx in range(6):
                     set_df_value("waterdist", (row_idx, row_idx), 0.0)
-
-            # Handle albedo
-            if hasattr(surface, "alb"):
-                set_df_value("alb", (surf_idx,), surface.alb)
-            elif hasattr(surface, "alb_min") and hasattr(surface, "alb_max"):
-                set_df_value("alb", (surf_idx,), surface.alb_min)  # Use min as default
-                if surf_name == "dectr":
-                    set_df_value("albmax_dectr", 0, surface.alb_max)
-                    set_df_value("albmin_dectr", 0, surface.alb_min)
-                elif surf_name == "evetr":
-                    set_df_value("albmax_evetr", 0, surface.alb_max)
-                    set_df_value("albmin_evetr", 0, surface.alb_min)
-                elif surf_name == "grass":
-                    set_df_value("albmax_grass", 0, surface.alb_max)
-                    set_df_value("albmin_grass", 0, surface.alb_min)
-            # Add to OHM section
-            if hasattr(surface, "ohm_threshsw"):
-                set_df_value("ohm_threshsw", (surf_idx,), surface.ohm_threshsw)
-                set_df_value("ohm_threshsw", (7,), surface.ohm_threshsw)
-
-            if hasattr(surface, "ohm_threshwd"):
-                set_df_value("ohm_threshwd", (surf_idx,), surface.ohm_threshwd)
-                set_df_value("ohm_threshwd", (7,), surface.ohm_threshwd)
-            if hasattr(surface, "chanohm"):
-                set_df_value("chanohm", (surf_idx,), surface.chanohm)
-            if hasattr(surface, "cpanohm"):
-                set_df_value("cpanohm", (surf_idx,), surface.cpanohm)
-            if hasattr(surface, "kkanohm"):
-                set_df_value("kkanohm", (surf_idx,), surface.kkanohm)
-
-            # Add to surface properties section
-            if hasattr(surface, "soildepth"):
-                set_df_value("soildepth", (surf_idx,), surface.soildepth)
-            if hasattr(surface, "soilstorecap"):
-                set_df_value("soilstorecap_surf", (surf_idx,), surface.soilstorecap)
-            if hasattr(surface, "statelimit"):
-                set_df_value("statelimit_surf", (surf_idx,), surface.statelimit)
-
-            if hasattr(surface, "wetthresh"):
-                set_df_value("wetthresh_surf", (surf_idx,), surface.wetthresh)
 
             # porosity parameters for deciduous trees
             if hasattr(surface, "pormin_dec"):
@@ -2194,13 +2163,6 @@ class SUEWSConfig(BaseModel):
                 ):
                     set_df_value("laipower", (i, idx), getattr(lai.laipower, var))
 
-            # CO2 parameters for vegetated surfaces
-            if hasattr(surface, "beta_bioco2"):
-                idx = surf_idx - 2
-                set_df_value("beta_bioco2", (idx,), surface.beta_bioco2)
-                set_df_value("beta_enh_bioco2", (idx,), surface.beta_enh_bioco2)
-                set_df_value("alpha_bioco2", (idx,), surface.alpha_bioco2)
-                set_df_value("alpha_enh_bioco2", (idx,), surface.alpha_enh_bioco2)
 
             # Add to surface properties section
             if hasattr(surface, "sathydraulicconduct"):
@@ -2262,6 +2224,7 @@ class SUEWSConfig(BaseModel):
                 set_df_value("tstep_prev", 0, 300)
                 set_df_value("tair_av", 0, 0)
                 set_df_value("snowfallcum", 0, 0)
+                set_df_value("ohm_threshwd", (7,), surface.ohm_threshwd)
 
                 # Snow-related parameters
                 if init_state.snowfrac is not None:
