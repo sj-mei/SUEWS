@@ -15,11 +15,19 @@ import pdb
 import math
 
 
+def init_df_state(grid_id: int) -> pd.DataFrame:
+    idx = pd.Index([grid_id], name="grid")
+    col = pd.MultiIndex.from_tuples([("grid_iv", 0)], names=["var", "ind_dim"])
+    df_state = pd.DataFrame(index=idx, columns=col, dtype=float)
+    df_state.loc[grid_id, ("grid_iv", 0)] = grid_id
+    return df_state
+
+
 class SurfaceType(str, Enum):
     PAVED = "paved"
     BLDGS = "bldgs"
-    DECTR = "dectr"
     EVETR = "evetr"
+    DECTR = "dectr"
     GRASS = "grass"
     BSOIL = "bsoil"
     WATER = "water"
@@ -339,9 +347,67 @@ class SurfaceProperties(BaseModel):
                 )
             self.waterdist.validate_distribution(self._surface_type)
 
+    def get_surface_type(self) -> SurfaceType:
+        return self._surface_type
+
+    def get_surface_name(self) -> str:
+        return self._surface_type.value
+
+    def get_surface_index(self) -> int:
+        dict_surface_type = {
+            SurfaceType.PAVED: 0,
+            SurfaceType.BLDGS: 1,
+            SurfaceType.EVETR: 2,
+            SurfaceType.DECTR: 3,
+            SurfaceType.GRASS: 4,
+            SurfaceType.BSOIL: 5,
+        }
+        return dict_surface_type[self._surface_type]
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        df_state = init_df_state(grid_id)
+        # surface index
+        surf_idx = self.get_surface_index()
+
+        # Get all properties of this class using introspection
+        properties = [
+            attr
+            for attr in dir(self)
+            if not attr.startswith("_") and not callable(getattr(self, attr))
+        ]
+        # drop 'surface_type'
+        properties.remove("surface_type")
+        # drop all those starts with "model_"
+        properties = [p for p in properties if not p.startswith("model_")]
+        for property in properties:
+            # Skip nested properties
+            if property in ["waterdist", "storedrainprm", "thermal_layers",'ohm_coef']:
+                continue
+
+            try:
+                # Get the value
+                value = getattr(self, property)
+
+                # Create the column name with proper indexing
+                col_name = f"{property}"
+                idx_str = f"({surf_idx},)"
+
+                # Set the value using explicit column creation if needed
+                if (col_name, idx_str) not in df_state.columns:
+                    df_state[(col_name, idx_str)] = np.nan
+
+                df_state.at[grid_id, (col_name, idx_str)] = value
+
+            except Exception as e:
+                print(f"Warning: Could not set property {property}: {str(e)}")
+                continue
+
+        return df_state
+
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
     alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
+
 
 
 class PavedProperties(NonVegetatedSurfaceProperties):
@@ -2162,7 +2228,6 @@ class SUEWSConfig(BaseModel):
                     ]
                 ):
                     set_df_value("laipower", (i, idx), getattr(lai.laipower, var))
-
 
             # Add to surface properties section
             if hasattr(surface, "sathydraulicconduct"):
