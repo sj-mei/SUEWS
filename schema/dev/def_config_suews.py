@@ -39,41 +39,46 @@ class WaterUse(BaseModel):
 class SurfaceInitialState(BaseModel):
     """Initial state parameters for a surface type"""
 
-    state: float = Field(ge=0, description="Initial state of the surface")
-    soilstore: float = Field(ge=0, description="Initial soil store")
-    snowfrac: Optional[float] = Field(None, ge=0, le=1, description="Snow fraction")
-    snowpack: Optional[float] = Field(None, ge=0, description="Snow pack")
-    icefrac: Optional[float] = Field(None, ge=0, le=1, description="Ice fraction")
-    snowwater: Optional[float] = Field(None, ge=0, description="Snow water")
-    snowdens: Optional[float] = Field(None, ge=0, description="Snow density")
+    state: float = Field(ge=0, description="Initial state of the surface", default=0.0)
+    soilstore: float = Field(ge=0, description="Initial soil store", default=0.0)
+    snowfrac: Optional[float] = Field(
+        ge=0, le=1, description="Snow fraction", default=0.0
+    )
+    snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
+    icefrac: Optional[float] = Field(
+        ge=0, le=1, description="Ice fraction", default=0.0
+    )
+    snowwater: Optional[float] = Field(ge=0, description="Snow water", default=0.0)
+    snowdens: Optional[float] = Field(ge=0, description="Snow density", default=0.0)
     alb_id: Optional[float] = Field(
-        None, description="Initial albedo for vegetated surfaces"
+        description="Initial albedo for vegetated surfaces", default=0.2
     )
     porosity_id: Optional[float] = Field(
-        None, description="Initial porosity for deciduous trees"
+        description="Initial porosity for deciduous trees", default=0.2
     )
     decidcap_id: Optional[float] = Field(
-        None, description="Initial deciduous capacity for deciduous trees"
+        description="Initial deciduous capacity for deciduous trees", default=0.5
     )
     lai_id: Optional[float] = Field(
-        None, description="Initial leaf area index for vegetated surfaces"
+        description="Initial leaf area index for vegetated surfaces", default=1.0
     )
     gdd_id: Optional[float] = Field(
-        None, description="Growing degree days ID for vegetated surfaces"
+        description="Growing degree days ID for vegetated surfaces", default=0.0
     )
     sdd_id: Optional[float] = Field(
-        None, description="Senescence degree days ID for vegetated surfaces"
+        description="Senescence degree days ID for vegetated surfaces", default=0.0
     )
     temperature: List[float] = Field(
         min_items=5,
         max_items=5,
         description="Initial temperature for each thermal layer",
+        default=[15.0, 15.0, 15.0, 15.0, 15.0],
     )
     tsfc: Optional[float] = Field(
-        None, description="Initial exterior surface temperature"
+        description="Initial exterior surface temperature", default=15.0
     )
     tin: Optional[float] = Field(
-        None, description="Initial interior surface temperature"
+        description="Initial interior surface temperature", default=20.0
     )
     wu: Optional[WaterUse] = (
         None  # TODO: add validation - only needed for vegetated surfaces
@@ -133,19 +138,27 @@ class SurfaceInitialState(BaseModel):
 class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
-    snowalb: float = Field(ge=0, le=1, description="Initial snow albedo")
-    paved: SurfaceInitialState
-    bldgs: SurfaceInitialState
-    dectr: SurfaceInitialState
-    evetr: SurfaceInitialState
-    grass: SurfaceInitialState
-    bsoil: SurfaceInitialState
-    water: SurfaceInitialState
-    roofs: Optional[List[SurfaceInitialState]] = (
-        None  # TODO: add validation for number of layers
+    snowalb: float = Field(ge=0, le=1, description="Initial snow albedo", default=0.5)
+    paved: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    bldgs: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    dectr: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    evetr: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    grass: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    bsoil: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    water: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    roofs: Optional[List[SurfaceInitialState]] = Field(
+        default=[
+            SurfaceInitialState(),
+            SurfaceInitialState(),
+        ],
+        description="Initial states for roof layers",
     )
-    walls: Optional[List[SurfaceInitialState]] = (
-        None  # TODO: add validation for number of layers
+    walls: Optional[List[SurfaceInitialState]] = Field(
+        default=[
+            SurfaceInitialState(),
+            SurfaceInitialState(),
+        ],
+        description="Initial states for wall layers",
     )
 
     def __init__(self, **data):
@@ -161,9 +174,9 @@ class InitialStates(BaseModel):
 
 
 class ThermalLayer(BaseModel):
-    dz: List[float] = Field(min_items=5, max_items=5)
-    k: List[float] = Field(min_items=5, max_items=5)
-    cp: List[float] = Field(min_items=5, max_items=5)
+    dz: List[float] = Field([0.1, 0.2, 0.3, 0.4, 0.5], min_items=5, max_items=5)
+    k: List[float] = Field([1.0, 1.0, 1.0, 1.0, 1.0], min_items=5, max_items=5)
+    cp: List[float] = Field([1000, 1000, 1000, 1000, 1000], min_items=5, max_items=5)
 
 
 class VegetationParams(BaseModel):
@@ -272,12 +285,12 @@ class WaterDistribution(BaseModel):
 
 
 class StorageDrainParams(BaseModel):
-    store_min: float = Field(ge=0)
-    store_max: float = Field(ge=0)
-    store_cap: float = Field(ge=0)
-    drain_eq: int
-    drain_coef_1: float
-    drain_coef_2: float
+    store_min: float = Field(ge=0, default=0.0)
+    store_max: float = Field(ge=0, default=10.0)
+    store_cap: float = Field(ge=0, default=10.0)
+    drain_eq: int = Field(default=0)
+    drain_coef_1: float = Field(default=0.013)
+    drain_coef_2: float = Field(default=1.71)
 
 
 class OHMCoefficients(BaseModel):
@@ -289,24 +302,30 @@ class OHMCoefficients(BaseModel):
 class SurfaceProperties(BaseModel):
     """Base properties for all surface types"""
 
-    sfr: float = Field(ge=0, le=1, description="Surface fraction")
-    emis: float = Field(ge=0, le=1, description="Surface emissivity")
-    chanohm: Optional[float] = None
-    cpanohm: Optional[float] = None
-    kkanohm: Optional[float] = None
-    ohm_threshsw: Optional[float] = None
-    ohm_threshwd: Optional[float] = None
+    sfr: float = Field(ge=0, le=1, description="Surface fraction", default=1.0 / 7)
+    emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
+    chanohm: Optional[float] = Field(default=0.0)
+    cpanohm: Optional[float] = Field(default=1200.0)
+    kkanohm: Optional[float] = Field(default=0.4)
+    ohm_threshsw: Optional[float] = Field(default=0.0)
+    ohm_threshwd: Optional[float] = Field(default=0.0)
     ohm_coef: Optional[OHMCoefficients] = None
-    soildepth: float
-    soilstorecap: float
-    statelimit: float
-    wetthresh: float
-    sathydraulicconduct: float
-    waterdist: Optional[WaterDistribution] = None
-    storedrainprm: StorageDrainParams
-    snowpacklimit: Optional[float] = None
-    thermal_layers: ThermalLayer = Field(description="Thermal layers for the surface")
-    irrfrac: Optional[float] = None
+    soildepth: float = Field(default=0.15)
+    soilstorecap: float = Field(default=150.0)
+    statelimit: float = Field(default=10.0)
+    wetthresh: float = Field(default=0.5)
+    sathydraulicconduct: float = Field(default=0.0001)
+    waterdist: Optional[WaterDistribution] = Field(
+        default=None, description="Water distribution parameters"
+    )
+    storedrainprm: StorageDrainParams = Field(
+        default_factory=StorageDrainParams, description="Storage and drain parameters"
+    )
+    snowpacklimit: Optional[float] = Field(default=10.0)
+    thermal_layers: ThermalLayer = Field(
+        default_factory=ThermalLayer, description="Thermal layers for the surface"
+    )
+    irrfrac: Optional[float] = Field(default=0.0)
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
@@ -323,7 +342,7 @@ class SurfaceProperties(BaseModel):
 
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
-    alb: float = Field(ge=0, le=1, description="Surface albedo")
+    alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
 
 
 class PavedProperties(NonVegetatedSurfaceProperties):
@@ -331,14 +350,16 @@ class PavedProperties(NonVegetatedSurfaceProperties):
 
 
 class BuildingLayer(BaseModel):
-    alb: float
-    emis: float
-    thermal_layers: ThermalLayer
-    statelimit: float
-    soilstorecap: float
-    wetthresh: float
-    roof_albedo_dir_mult_fact: Optional[float] = None
-    wall_specular_frac: Optional[float] = None
+    alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
+    emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
+    thermal_layers: ThermalLayer = Field(
+        default_factory=ThermalLayer, description="Thermal layers for the surface"
+    )
+    statelimit: float = Field(default=10.0)
+    soilstorecap: float = Field(default=150.0)
+    wetthresh: float = Field(default=0.5)
+    roof_albedo_dir_mult_fact: Optional[float] = Field(default=0.1)
+    wall_specular_frac: Optional[float] = Field(default=0.1)
 
 
 class VerticalLayers(BaseModel):
@@ -392,9 +413,10 @@ class VerticalLayers(BaseModel):
 
 class BuildingProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
-    sfr: float = Field(description="Plan area index of buildings")
-    faibldg: float = Field(ge=0, description="Frontal area index of buildings")
-    bldgh: float = Field(ge=0, description="Building height")
+    faibldg: float = Field(
+        ge=0, default=0.3, description="Frontal area index of buildings"
+    )
+    bldgh: float = Field(ge=0, default=10.0, description="Building height")
 
     @model_validator(mode="after")
     def validate_rsl_zd_range(self) -> "BuildingProperties":
@@ -411,21 +433,20 @@ class BuildingProperties(NonVegetatedSurfaceProperties):
         return self
 
 
-
 class BaresoilProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
 
 
 class WaterProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
-    flowchange: float
+    flowchange: float = Field(default=0.0)
 
 
 class ModelControl(BaseModel):
     tstep: int = Field(description="Time step in seconds")
     forcing_file: str
     output_file: str
-    daylightsaving_method: int
+    # daylightsaving_method: int
     diagnose: int
 
 
@@ -546,9 +567,6 @@ class CO2Params(BaseModel):
     frfossilfuel_nonheat: float
     maxfcmetab: float
     maxqfmetab: float
-    min_res_bioco2: float = Field(
-        default=0.1, description="Minimum respiratory biogenic CO2"
-    )
     minfcmetab: float
     minqfmetab: float
     trafficrate: DayProfile
@@ -587,16 +605,20 @@ class Conductance(BaseModel):
 
 class LAIPowerCoefficients(BaseModel):
     growth_lai: float = Field(
-        description="Power coefficient for LAI in growth equation (LAIPower[1])"
+        default=0.1,
+        description="Power coefficient for LAI in growth equation (LAIPower[1])",
     )
     growth_gdd: float = Field(
-        description="Power coefficient for GDD in growth equation (LAIPower[2])"
+        default=0.1,
+        description="Power coefficient for GDD in growth equation (LAIPower[2])",
     )
     senescence_lai: float = Field(
-        description="Power coefficient for LAI in senescence equation (LAIPower[3])"
+        default=0.1,
+        description="Power coefficient for LAI in senescence equation (LAIPower[3])",
     )
     senescence_sdd: float = Field(
-        description="Power coefficient for SDD in senescence equation (LAIPower[4])"
+        default=0.1,
+        description="Power coefficient for SDD in senescence equation (LAIPower[4])",
     )
 
     def to_list(self) -> List[float]:
@@ -611,24 +633,32 @@ class LAIPowerCoefficients(BaseModel):
 
 class LAIParams(BaseModel):
     baset: float = Field(
-        description="Base Temperature for initiating growing degree days (GDD) for leaf growth [degC]"
+        default=10.0,
+        description="Base Temperature for initiating growing degree days (GDD) for leaf growth [degC]",
     )
     gddfull: float = Field(
-        description="Growing degree days (GDD) needed for full capacity of LAI [degC]"
+        default=100.0,
+        description="Growing degree days (GDD) needed for full capacity of LAI [degC]",
     )
     basete: float = Field(
-        description="Base temperature for initiating senescence degree days (SDD) for leaf off [degC]"
+        default=10.0,
+        description="Base temperature for initiating senescence degree days (SDD) for leaf off [degC]",
     )
     sddfull: float = Field(
-        description="Senescence degree days (SDD) needed to initiate leaf off [degC]"
+        default=100.0,
+        description="Senescence degree days (SDD) needed to initiate leaf off [degC]",
     )
-    laimin: float = Field(description="Leaf-off wintertime value [m2 m-2]")
-    laimax: float = Field(description="Full leaf-on summertime value [m2 m-2]")
+    laimin: float = Field(default=0.1, description="Leaf-off wintertime value [m2 m-2]")
+    laimax: float = Field(
+        default=10.0, description="Full leaf-on summertime value [m2 m-2]"
+    )
     laipower: LAIPowerCoefficients = Field(
-        description="LAI calculation power parameters for growth and senescence"
+        default_factory=LAIPowerCoefficients,
+        description="LAI calculation power parameters for growth and senescence",
     )
     laitype: int = Field(
-        description="LAI calculation choice (0: original, 1: new high latitude)"
+        default=0,
+        description="LAI calculation choice (0: original, 1: new high latitude)",
     )
 
     @model_validator(mode="after")
@@ -649,24 +679,40 @@ class LAIParams(BaseModel):
 
 
 class VegetatedSurfaceProperties(SurfaceProperties):
-    alb_min: float = Field(ge=0, le=1, description="Minimum albedo")
-    alb_max: float = Field(ge=0, le=1, description="Maximum albedo")
-    beta_bioco2: float
-    beta_enh_bioco2: float
-    alpha_bioco2: float
-    alpha_enh_bioco2: float
-    resp_a: float
-    resp_b: float
-    theta_bioco2: float
+    alb_min: float = Field(ge=0, le=1, description="Minimum albedo", default=0.2)
+    alb_max: float = Field(ge=0, le=1, description="Maximum albedo", default=0.3)
+    beta_bioco2: float = Field(
+        default=0.6, description="Biogenic CO2 exchange coefficient"
+    )
+    beta_enh_bioco2: float = Field(
+        default=0.7, description="Enhanced biogenic CO2 exchange coefficient"
+    )
+    alpha_bioco2: float = Field(
+        default=0.8, description="Biogenic CO2 exchange coefficient"
+    )
+    alpha_enh_bioco2: float = Field(
+        default=0.9, description="Enhanced biogenic CO2 exchange coefficient"
+    )
+    resp_a: float = Field(default=1.0, description="Respiration coefficient")
+    resp_b: float = Field(default=1.1, description="Respiration coefficient")
+    theta_bioco2: float = Field(
+        default=1.2, description="Biogenic CO2 exchange coefficient"
+    )
     maxconductance: float = Field(
         default=0.5, description="Maximum surface conductance"
     )
     min_res_bioco2: float = Field(
         default=0.1, description="Minimum respiratory biogenic CO2"
     )
-    lai: LAIParams
-    ie_a: float = Field(description="Irrigation efficiency coefficient-automatic")
-    ie_m: float = Field(description="Irrigation efficiency coefficient-manual")
+    lai: LAIParams = Field(
+        default_factory=LAIParams, description="Leaf area index parameters"
+    )
+    ie_a: float = Field(
+        default=0.5, description="Irrigation efficiency coefficient-automatic"
+    )
+    ie_m: float = Field(
+        default=0.6, description="Irrigation efficiency coefficient-manual"
+    )
 
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
@@ -680,23 +726,29 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
 
 class DectrProperties(VegetatedSurfaceProperties):
-    faidectree: float = Field(description="Frontal area index of deciduous trees")
-    dectreeh: float = Field(description="Height of deciduous trees [m]")
+    faidectree: float = Field(
+        default=0.1, description="Frontal area index of deciduous trees"
+    )
+    dectreeh: float = Field(default=10.0, description="Height of deciduous trees [m]")
     pormin_dec: float = Field(
+        default=0.1,
         ge=0.1,
         le=0.9,
         description="Minimum porosity of deciduous trees in winter when leaves are off",
     )
     pormax_dec: float = Field(
+        default=0.9,
         ge=0.1,
         le=0.9,
         description="Maximum porosity of deciduous trees in summer when leaves are fully on",
     )
     capmax_dec: float = Field(
-        description="Maximum storage capacity of deciduous trees in summer when leaves are fully on [mm]"
+        default=100.0,
+        description="Maximum storage capacity of deciduous trees in summer when leaves are fully on [mm]",
     )
     capmin_dec: float = Field(
-        description="Minimum storage capacity of deciduous trees in winter when leaves are off [mm]"
+        default=10.0,
+        description="Minimum storage capacity of deciduous trees in winter when leaves are off [mm]",
     )
 
     @model_validator(mode="after")
@@ -721,8 +773,10 @@ class DectrProperties(VegetatedSurfaceProperties):
 
 
 class EvetrProperties(VegetatedSurfaceProperties):
-    faievetree: float = Field(description="Frontal area index of evergreen trees")
-    evetreeh: float = Field(description="Height of evergreen trees [m]")
+    faievetree: float = Field(
+        default=0.1, description="Frontal area index of evergreen trees"
+    )
+    evetreeh: float = Field(default=10.0, description="Height of evergreen trees [m]")
 
 
 class SnowParams(BaseModel):
@@ -814,6 +868,7 @@ class SiteProperties(BaseModel):
     land_cover: LandCover
     vertical_layers: VerticalLayers
 
+
 class Site(BaseModel):
     name: str
     gridiv: int
@@ -852,20 +907,16 @@ class SUEWSConfig(BaseModel):
         """Convert config to DataFrame state format"""
         # Initialize empty DataFrame with correct structure
         columns = self.create_multi_index_columns("df_state_columns.txt")
-        columns.set_names(['var','ind_dim'],inplace=True)
-        index = pd.Index([0],name='grid')
+        columns.set_names(["var", "ind_dim"], inplace=True)
+        index = pd.Index([0], name="grid")
         df = pd.DataFrame(index=index, columns=columns)
-
-
-
-
 
         # Process each site (assuming single site for now)
         site = self.site[0]
         props = site.properties
         gridiv = site.gridiv
         # update index using gridiv
-        df.index = pd.Index([gridiv], name='grid')
+        df.index = pd.Index([gridiv], name="grid")
 
         # Helper function to set values in DataFrame
         def set_df_value(col_name: str, indices: Union[int, Tuple], value: float):
@@ -878,7 +929,6 @@ class SUEWSConfig(BaseModel):
                 # Tuples should maintain their string representation
                 str_indices = str(indices)
             df.loc[gridiv, (col_name, str_indices)] = value
-
 
         # Model control
         set_df_value("tstep", 0, self.model.control.tstep)
@@ -1348,9 +1398,9 @@ class SUEWSConfig(BaseModel):
                     )
             # Irrigation coefficients
             if hasattr(surface, "ie_a"):
-                set_df_value("ie_a", (surf_idx-2,), surface.ie_a)
+                set_df_value("ie_a", (surf_idx - 2,), surface.ie_a)
             if hasattr(surface, "ie_m"):
-                set_df_value("ie_m", (surf_idx-2,), surface.ie_m)
+                set_df_value("ie_m", (surf_idx - 2,), surface.ie_m)
 
             # Maximum conductance
             if hasattr(surface, "maxconductance"):
@@ -1544,9 +1594,7 @@ class SUEWSConfig(BaseModel):
                             f"{var}_roof", (i, k), getattr(thermal_layers, var)[k]
                         )
             for i, layer in enumerate(vertical_layers.walls):
-                set_df_value(
-                    f"wall_specular_frac", (0, i), layer.wall_specular_frac
-                )
+                set_df_value(f"wall_specular_frac", (0, i), layer.wall_specular_frac)
                 set_df_value(f"alb_wall", (i,), layer.alb)
                 set_df_value(f"emis_wall", (i,), layer.emis)
                 set_df_value(f"statelimit_wall", (i,), layer.statelimit)
@@ -1580,63 +1628,250 @@ class SUEWSConfig(BaseModel):
                             set_df_value(f"tin_{facet}", (j,), layer.tin)
         return df
 
+    def to_df_state_new(self) -> pd.DataFrame:
+        """Convert config to DataFrame state format using a simplified approach"""
+
+        # Initialize empty DataFrame with correct structure
+        columns = self.create_multi_index_columns("df_state_columns.txt")
+        columns.set_names(["var", "ind_dim"], inplace=True)
+        site = self.site[0]  # Assuming single site
+        gridiv = site.gridiv
+        df = pd.DataFrame(index=pd.Index([gridiv], name="grid"), columns=columns)
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, indices: Union[int, Tuple], value: float):
+            if isinstance(indices, int):
+                str_indices = str(indices) if indices == 0 else f"({indices},)"
+            else:
+                str_indices = str(indices)
+            # print(f"Setting {col_name} to {value} for indices {str_indices}")
+            df.loc[gridiv, (col_name, str_indices)] = value
+
+        # Helper functions to handle different parameter types
+        def set_simple_params(
+            params: Dict,
+            prefix: str = "",
+            suffix: str = "",
+            indices: Union[int, Tuple] = 0,
+            surf_name: str = "",
+        ):
+            for key, val in params.items():
+                if isinstance(val, int) or isinstance(val, float):
+                    # special cases
+                    if "wall" in key or "roof" in key:
+                        # particular roof/wall parameters
+                        full_key = f"{key}"
+                        full_indices = (0, indices[0])
+                    elif key in [
+                        "capmin_dec",
+                        "capmax_dec",
+                        "pormin_dec",
+                        "pormax_dec",
+                        "bldgh",
+                        "dectreeh",
+                        "evetreeh",
+                        "faibldg",
+                        "faidectree",
+                        "faievetree",
+                        "flowchange",
+                    ]:
+                        # these parameters are not indexed
+                        full_key = f"{key}"
+                        full_indices = 0
+                    elif key in ["irrfrac"]:
+                        # irrfrac is indexed by surface type
+                        full_key = f"{key}{surf_name}"
+                        full_indices = 0
+                    elif key in ["alb_max", "alb_min"] and surf_name in [
+                        "evetr",
+                        "dectr",
+                        "grass",
+                    ]:
+                        # alb_max and alb_min are indexed by veg type
+                        veg_name = surf_name
+                        full_key = f"{key.replace('_', '')}_{veg_name}"
+                        full_indices = 0
+                    elif key in [
+                        "soilstorecap",
+                        "sfr",
+                        "statelimit",
+                        "wetthresh",
+                    ]:
+                        # soilstorecap and sfr are not indexed
+                        full_key = f"{key}_surf"
+                        full_indices = indices
+                    else:
+                        full_key = f"{prefix}{key}" if prefix else f"{key}{suffix}"
+                        full_indices = indices
+                    print(f"Setting {full_key} to {val} for indices {full_indices}")
+                    set_df_value(full_key, full_indices, val)
+                elif isinstance(val, dict):
+                    print(f"Setting {key} to {val}")
+                    if "working_day" in val or "holiday" in val:
+                        set_day_profile(val, key)
+                    elif (
+                        "monday" in val
+                        or "tuesday" in val
+                        or "wednesday" in val
+                        or "thursday" in val
+                        or "friday" in val
+                        or "saturday" in val
+                        or "sunday" in val
+                    ):
+                        set_week_profile(val, key)
+                    else:
+                        print(f"nesting: Setting {key} to {val}")
+                        # set_simple_params(val, indices)
+                        # for k, v in val.items():
+                        #     set_simple_params(v, k)
+                        # print(f"Skipping {key} with value {val} as it's not a number")
+                else:
+                    print(f"Skipping {key} with value {val} as it's not a number")
+
+        def set_week_profile(params: Dict, param_name: str):
+            days = [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+            ]
+            for i, day in enumerate(days):
+                value = params[day]
+                set_df_value(param_name, (i,), value)
+
+        def set_day_profile(params: Dict, param_name: str):
+            days = ["working_day", "holiday"]
+            for i, day in enumerate(days):
+                value = params[day]
+                if isinstance(value, dict):
+                    for hour, value in value.items():
+                        # set hourly profile
+                        set_df_value(param_name, (int(hour) - 1, i), value)
+                else:
+                    set_df_value(param_name, (i,), value)
+
+        # def set_hourly_profile(obj, param_name: str, day_types: List[str] = ["working_day", "holiday"]):
+        #     for hour in range(1, 25):
+        #         hour_str = str(hour)
+        #         for i, day_type in enumerate(day_types):
+        #             value = getattr(obj, day_type).get(hour_str, 0.0)
+        #             set_df_value(param_name, (hour - 1, i), value)
+
+        def set_thermal_layers(thermal_layers: ThermalLayer, suffix: str, index: int):
+            for var in ["dz", "k", "cp"]:
+                values = getattr(thermal_layers, var)
+                for i, val in enumerate(values):
+                    set_df_value(f"{var}_{suffix}", (index, i), val)
+
+        # Set Model Control Parameters
+        set_simple_params(self.model.control.model_dump())
+
+        # Set Model Physics Parameters
+        set_simple_params(self.model.physics.model_dump())
+
+        # Set Basic Site Properties
+        basic_site_params = {
+            "gridiv": gridiv,
+            "lat": site.properties.lat,
+            "lng": site.properties.lng,
+            "alt": site.properties.alt,
+            "timezone": site.properties.timezone,
+            "surfacearea": site.properties.surfacearea,
+            "z": site.properties.z,
+            "z0m_in": site.properties.z0m_in,
+            "zdm_in": site.properties.zdm_in,
+            "pipecapacity": site.properties.pipecapacity,
+            "runofftowater": site.properties.runofftowater,
+            "narp_trans_site": site.properties.narp_trans_site,
+        }
+        set_simple_params(basic_site_params)
+
+        # Set LUMPS Parameters
+        set_simple_params(site.properties.lumps.model_dump())
+
+        # Set SPARTACUS Parameters
+        set_simple_params(site.properties.spartacus.model_dump())
+
+        # Set Conductance Parameters
+        set_simple_params(site.properties.conductance.model_dump())
+
+        # Set Irrigation Parameters
+        irrigation = site.properties.irrigation
+        set_simple_params(irrigation.model_dump())
+
+        # Set Anthropogenic Emissions Parameters
+        anthro = site.properties.anthropogenic_emissions
+        set_simple_params(anthro.heat.model_dump())
+        set_simple_params(anthro.co2.model_dump())
+
+        # Set Snow Parameters
+        set_simple_params(site.properties.snow.model_dump())
+
+        # Set Surface Properties
+        SURFACE_TYPES = {
+            "paved": 0,
+            "bldgs": 1,
+            "dectr": 2,
+            "evetr": 3,
+            "grass": 4,
+            "bsoil": 5,
+            "water": 6,
+        }
+
+        for surf_name, surf_idx in SURFACE_TYPES.items():
+            surface = getattr(site.properties.land_cover, surf_name)
+            if not surface:
+                continue
+            # Handle specific parameters
+            if isinstance(surface, VegetatedSurfaceProperties):
+                set_simple_params(surface.lai.model_dump(), indices=(surf_idx - 2,))
+                set_simple_params(surface.model_dump(), indices=(surf_idx - 2,), surf_name=surf_name)
+            else:
+                # Set basic surface parameters
+                set_simple_params(surface.model_dump(), indices=(surf_idx,), surf_name=surf_name)
+
+            # Handle profiles and thermal layers
+            if hasattr(surface, "thermal_layers") and surface.thermal_layers:
+                set_thermal_layers(
+                    surface.thermal_layers, suffix="surf", index=surf_idx
+                )
+
+        # Handle Vertical Layers
+        if (
+            hasattr(site.properties, "vertical_layers")
+            and site.properties.vertical_layers
+        ):
+            vl = site.properties.vertical_layers
+            set_df_value("nlayer", 0, vl.nlayer)
+            for i, height in enumerate(vl.height):
+                set_df_value("height", (i,), height)
+            for i in range(vl.nlayer):
+                set_simple_params(
+                    {
+                        "building_scale": vl.building_scale[i],
+                        "building_frac": vl.building_frac[i],
+                        "veg_scale": vl.veg_scale[i],
+                        "veg_frac": vl.veg_frac[i],
+                    },
+                    indices=(i,),
+                )
+            for i, roof in enumerate(vl.roofs):
+                set_simple_params(roof.model_dump(), suffix=f"_roof", indices=(i,))
+                set_thermal_layers(roof.thermal_layers, suffix=f"roof", index=i)
+            for i, wall in enumerate(vl.walls):
+                set_simple_params(wall.model_dump(), suffix=f"_wall", indices=(i,))
+                set_thermal_layers(wall.thermal_layers, suffix=f"wall", index=i)
+
+        return df
+
     @classmethod
     def from_df_state(cls, df: pd.DataFrame) -> "SUEWSConfig":
         """Create config from DataFrame state"""
-        surface_map = {
-            0: "paved",
-            1: "bldgs",
-            2: "dectr",
-            3: "evetr",
-            4: "grass",
-            5: "bsoil",
-            6: "water",
-        }
-
-        # Initialize basic structure
-        config_dict = {
-            "name": "Generated from df_state",
-            "description": "Automatically converted from DataFrame state",
-            "model": {
-                "control": {
-                    "tstep": 300,  # Default values
-                    "forcing_file": "forcing.csv",
-                    "output_file": "output.csv",
-                    "daylightsaving_method": 1,
-                },
-                "physics": {
-                    # Add physics parameters from df
-                },
-            },
-            "site": [
-                {
-                    "name": "site_0",
-                    "properties": {
-                        "lat": float(df.loc[0, ("lat", 0)]),
-                        "lng": float(df.loc[0, ("lng", 0)]),
-                        "alt": float(df.loc[0, ("alt", 0)]),
-                        "timezone": int(df.loc[0, ("timezone", 0)]),
-                        # ... other properties ...
-                    },
-                }
-            ],
-        }
-
-        # Convert DataFrame data to config structure
-        for surf_idx, surf_name in surface_map.items():
-            # Extract surface properties
-            surface_props = {
-                "sfr": float(df.loc[0, ("sfr_surf", surf_idx)]),
-                "emis": float(df.loc[0, ("emis", surf_idx)]),
-                # ... other properties ...
-            }
-
-            # Add to config dictionary
-            config_dict["site"][0]["properties"]["land_cover"][surf_name] = (
-                surface_props
-            )
-
-        return cls(**config_dict)
+        # TODO: add from_df_state
+        pass
 
 
 if __name__ == "__main__":
@@ -1688,10 +1923,10 @@ if __name__ == "__main__":
 
     # test running supy
     import supy as sp
+
     df_state, df_forcing = sp.load_SampleData()
     df_state_test = pd.read_pickle("./df_state_test.pkl")
-    sp.run_supy(df_forcing.iloc[0:288*10], df_state_test)
-
+    sp.run_supy(df_forcing.iloc[0 : 288 * 10], df_state_test)
 
 
 # # Convert back to config

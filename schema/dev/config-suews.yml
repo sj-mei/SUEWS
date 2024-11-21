@@ -8,7 +8,7 @@
       tstep: 300
       forcing_file: london_2016_2017.csv # planned change - inconsistent with current suews version
       output_file: london_2016_2017_output.csv # planned change - inconsistent with current suews version
-      daylightsaving_method: 1
+      # daylightsaving_method: 1
       diagnose: 0
     physics:
       netradiationmethod: 3
