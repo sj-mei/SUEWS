@@ -5512,7 +5512,6 @@ CONTAINS
 
       !   allocate output arrays
 
-
       Diagnose = 0
 
       DO ir = 1, len_sim, 1
