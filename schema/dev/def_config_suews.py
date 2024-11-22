@@ -1957,7 +1957,45 @@ class SnowParams(BaseModel):
             exceptions.append(error_message)
             # raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
         return self
+    
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """
+        Convert snow parameters to DataFrame state format.
 
+        Args:
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            pd.DataFrame: DataFrame containing snow parameters.
+        """
+        
+        df_state = init_df_state(grid_id)
+
+        scalar_params = {
+            "crwmax": self.crwmax,
+            "crwmin": self.crwmin,
+            "narp_emis_snow": self.narp_emis_snow,
+            "preciplimit": self.preciplimit,
+            "preciplimitalb": self.preciplimitalb,
+            "snowalbmax": self.snowalbmax,
+            "snowalbmin": self.snowalbmin,
+            "snowdensmin": self.snowdensmin,
+            "snowdensmax": self.snowdensmax,
+            "snowlimbldg": self.snowlimbldg,
+            "snowlimpaved": self.snowlimpaved,
+            "tau_a": self.tau_a,
+            "tau_f": self.tau_f,
+            "tau_r": self.tau_r,
+            "tempmeltfact": self.tempmeltfact,
+            "radmeltfact": self.radmeltfact,
+        }
+        for param_name, value in scalar_params.items():
+            df_state.loc[grid_id, (param_name, 0)] = value
+
+        df_hourly_profile = self.snowprof_24hr.to_df_state(grid_id, "snowprof_24hr")
+        df_state = df_state.combine_first(df_hourly_profile)
+
+        return df_state
 
 class LandCover(BaseModel):
     paved: PavedProperties
