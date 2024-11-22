@@ -4149,7 +4149,7 @@ CONTAINS
       HotWaterTankInternalMassViewFactor, HotWaterTankWallConductivity, HotWaterTankInternalWallConvectionCoefficient, &
       HotWaterTankExternalWallConvectionCoefficient, DHWVesselWallConductivity, DHWVesselInternalWallConvectionCoefficient, &
       DHWVesselExternalWallConvectionCoefficient, DHWVesselWallEmissivity, HotWaterHeatingEfficiency, &
-      MinimumVolumeOfDHWinUse=2.0, &
+      MinimumVolumeOfDHWinUse, &
       height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
