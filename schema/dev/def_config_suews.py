@@ -1305,6 +1305,41 @@ class SPARTACUSParams(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "SPARTACUSParams":
+        """
+        Reconstruct SPARTACUSParams from DataFrame state format.
+
+        Args:
+            df: DataFrame containing SPARTACUS parameters
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            SPARTACUSParams: An instance of SPARTACUSParams
+        """
+        # Define parameter names matching to_df_state structure
+        spartacus_params = {
+            "air_ext_lw",
+            "air_ext_sw",
+            "air_ssa_lw",
+            "air_ssa_sw",
+            "ground_albedo_dir_mult_fact",
+            "n_stream_lw_urban",
+            "n_stream_sw_urban",
+            "n_vegetation_region_urban",
+            "sw_dn_direct_frac",
+            "use_sw_direct_albedo",
+            "veg_contact_fraction_const",
+            "veg_fsd_const",
+            "veg_ssa_lw",
+            "veg_ssa_sw",
+        }
+
+        # Extract parameters from the DataFrame
+        params = {param: df.loc[grid_id, (param, "0")] for param in spartacus_params}
+
+        # Return an instance of SPARTACUSParams
+        return cls(**params)
 
     # def to_df_state(self, grid_id: int) -> pd.DataFrame:
     #     """Convert SPARTACUS parameters to DataFrame state format.
