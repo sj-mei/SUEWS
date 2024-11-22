@@ -773,7 +773,7 @@ CONTAINS
             !       !
             IF (flginit == 0) THEN
 !          !
-               WRITE(*,*) 'Initialising STEBBS'
+               WRITE (*, *) 'Initialising STEBBS'
                ALLOCATE (blds(1))
                CALL gen_building(stebbsState, bldgState, blds(1))
 !          !
@@ -2212,26 +2212,26 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%Vindoormass = self%Vair_ind*self%ratioInternalVolume ! # Multiplied by factor that accounts for internal mass as proportion of total air volume
    self%Aindoormass = 6*(self%Vindoormass**(2./3.)) ! # Assumed internal mass as a cube
    self%h_i = (/self%conv_coeff_intwallroof, self%conv_coeff_indoormass, &
-                  self%conv_coeff_intgroundfloor, self%conv_coeff_intwindow/)
+                self%conv_coeff_intgroundfloor, self%conv_coeff_intwindow/)
 
    self%h_o = (/self%conv_coeff_extwallroof, self%conv_coeff_extwindow/)
    self%k_eff = (/self%conductivity_wallroof, self%conductivity_groundfloor, &
                   self%conductivity_window, self%conductivity_ground/)
 
    self%rho = (/self%density_wallroof, self%density_groundfloor, &
-                  self%density_window, self%density_indoormass, &
-                  self%density_air_ind/)
+                self%density_window, self%density_indoormass, &
+                self%density_air_ind/)
    self%Cp = (/self%cp_wallroof, self%cp_groundfloor, self%cp_window, &
                self%cp_indoormass, self%cp_air_ind/)
    self%emis = (/self%emissivity_extwallroof, self%emissivity_intwallroof, &
-                  self%emissivity_indoormass, self%emissivity_extwindow, &
-                  self%emissivity_intwindow/)
+                 self%emissivity_indoormass, self%emissivity_extwindow, &
+                 self%emissivity_intwindow/)
    self%wiTAR = (/self%windowTransmissivity, self%windowAbsorbtivity, self%windowReflectivity/)
    self%waTAR = (/self%wallTransmisivity, self%wallAbsorbtivity, self%wallReflectivity/)
 
    self%viewFactors = (/self%BVF_extwall, self%GVF_extwall, self%SVF_extwall/) !  # Building, ground, and sky view factors
    self%occupantData = (/self%occupants, self%metabolic_rate, &
-                           self%ratio_metabolic_latent_sensible/)
+                         self%ratio_metabolic_latent_sensible/)
 !            #            self.applianceData = [self.appliance_power_rating,self.appliance_totalnumber,self.appliance_usage_factor] # List of appliance related factors [Average appliance power rating, Number of appliances, factor usage of appliances (0 to 1)]
 
 !            #            self.heatingSystem = [self.maxheatingpower_air,self.heating_efficiency_air]
@@ -2245,11 +2245,11 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%Textwindow = stebbsState%WindowOutdoorSurfaceTemperature + 273.15 ! # Window outdoor surface temperature (K)
    self%Tintgroundfloor = stebbsState%GroundFloorIndoorSurfaceTemperature + 273.15 ! # Ground floor indoor surface temperature (K)
    self%Textgroundfloor = stebbsState%GroundFloorOutdoorSurfaceTemperature + 273.15 ! # Ground floor outdoor surface temperature (K)
-   
+
    self%Ts = (/bldgState%HeatingSetpointTemperature + 273.15, &
                bldgState%CoolingSetpointTemperature + 273.15/) ! # Heating and Cooling setpoint temperatures (K), respectively
    self%initTs = (/bldgState%HeatingSetpointTemperature + 273.15, &
-                  bldgState%CoolingSetpointTemperature + 273.15/)
+                   bldgState%CoolingSetpointTemperature + 273.15/)
    self%HTsAverage = (/18 + 273.15, 18 + 273.15, 18 + 273.15/) ! #
    self%HWTsAverage = (/10 + 273.15, 10 + 273.15, 10 + 273.15/)
 
@@ -2305,7 +2305,6 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%HeatingPower_DHW = bldgState%MaximumHotWaterHeatingPower
 
    self%HWPowerAverage = (/30000, 30000, 30000/)
-
 
 END SUBROUTINE gen_building
 !
@@ -2409,26 +2408,26 @@ SUBROUTINE create_building(CASE, self, icase)
    self%Vindoormass = self%Vair_ind*self%ratioInternalVolume ! # Multiplied by factor that accounts for internal mass as proportion of total air volume
    self%Aindoormass = 6*(self%Vindoormass**(2./3.)) ! # Assumed internal mass as a cube
    self%h_i = (/self%conv_coeff_intwallroof, self%conv_coeff_indoormass, &
-                  self%conv_coeff_intgroundfloor, self%conv_coeff_intwindow/)
+                self%conv_coeff_intgroundfloor, self%conv_coeff_intwindow/)
 
    self%h_o = (/self%conv_coeff_extwallroof, self%conv_coeff_extwindow/)
    self%k_eff = (/self%conductivity_wallroof, self%conductivity_groundfloor, &
                   self%conductivity_window, self%conductivity_ground/)
 
    self%rho = (/self%density_wallroof, self%density_groundfloor, &
-                  self%density_window, self%density_indoormass, &
-                  self%density_air_ind/)
+                self%density_window, self%density_indoormass, &
+                self%density_air_ind/)
    self%Cp = (/self%cp_wallroof, self%cp_groundfloor, self%cp_window, &
                self%cp_indoormass, self%cp_air_ind/)
    self%emis = (/self%emissivity_extwallroof, self%emissivity_intwallroof, &
-                  self%emissivity_indoormass, self%emissivity_extwindow, &
-                  self%emissivity_intwindow/)
+                 self%emissivity_indoormass, self%emissivity_extwindow, &
+                 self%emissivity_intwindow/)
    self%wiTAR = (/self%windowTransmissivity, self%windowAbsorbtivity, self%windowReflectivity/)
    self%waTAR = (/self%wallTransmisivity, self%wallAbsorbtivity, self%wallReflectivity/)
 
    self%viewFactors = (/self%BVF_extwall, self%GVF_extwall, self%SVF_extwall/) !  # Building, ground, and sky view factors
    self%occupantData = (/self%occupants, self%metabolic_rate, &
-                           self%ratio_metabolic_latent_sensible/)
+                         self%ratio_metabolic_latent_sensible/)
 !            #            self.applianceData = [self.appliance_power_rating,self.appliance_totalnumber,self.appliance_usage_factor] # List of appliance related factors [Average appliance power rating, Number of appliances, factor usage of appliances (0 to 1)]
 
 !            #            self.heatingSystem = [self.maxheatingpower_air,self.heating_efficiency_air]
