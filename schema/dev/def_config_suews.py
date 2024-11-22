@@ -34,7 +34,20 @@ class SurfaceType(str, Enum):
 
 
 class SnowAlb(BaseModel):
-    snowalb: float = Field(ge=0, le=1, description="Snow albedo")
+    snowalb: float = Field(ge=0, le=1, description="Snow albedo", default=0.5)
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert snow albedo to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            pd.DataFrame: DataFrame containing snow albedo parameters
+        """
+        df_state = init_df_state(grid_id)
+        df_state[("snowalb", "0")] = self.snowalb
+        return df_state
 
 
 class WaterUse(BaseModel):
@@ -52,7 +65,7 @@ class WaterUse(BaseModel):
 
 
 class SurfaceInitialState(BaseModel):
-    """Initial state parameters for a surface type"""
+    """Base initial state parameters for all surface types"""
 
     state: float = Field(ge=0, description="Initial state of the surface", default=0.0)
     soilstore: float = Field(ge=0, description="Initial soil store", default=0.0)
@@ -65,24 +78,6 @@ class SurfaceInitialState(BaseModel):
     )
     snowwater: Optional[float] = Field(ge=0, description="Snow water", default=0.0)
     snowdens: Optional[float] = Field(ge=0, description="Snow density", default=0.0)
-    alb_id: Optional[float] = Field(
-        description="Initial albedo for vegetated surfaces", default=0.1
-    )
-    porosity_id: Optional[float] = Field(
-        description="Initial porosity for deciduous trees", default=0.2
-    )
-    decidcap_id: Optional[float] = Field(
-        description="Initial deciduous capacity for deciduous trees", default=100
-    )
-    lai_id: Optional[float] = Field(
-        description="Initial leaf area index for vegetated surfaces", default=1.0
-    )
-    gdd_id: Optional[float] = Field(
-        description="Growing degree days ID for vegetated surfaces", default=0
-    )
-    sdd_id: Optional[float] = Field(
-        description="Senescence degree days ID for vegetated surfaces", default=0
-    )
     temperature: List[float] = Field(
         min_items=5,
         max_items=5,
@@ -95,59 +90,160 @@ class SurfaceInitialState(BaseModel):
     tin: Optional[float] = Field(
         description="Initial interior surface temperature", default=20.0
     )
-    wu: Optional[WaterUse] = (
-        None  # TODO: add validation - only needed for vegetated surfaces
-    )
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
-        """Set and validate surface type specific parameters"""
+        """Set surface type"""
         self._surface_type = surface_type
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert base surface initial state to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            pd.DataFrame: DataFrame containing initial state parameters
+        """
+        df_state = init_df_state(grid_id)
+
+        # Get surface index
+        surf_idx = {
+            SurfaceType.PAVED: 0,
+            SurfaceType.BLDGS: 1,
+            SurfaceType.EVETR: 2,
+            SurfaceType.DECTR: 3,
+            SurfaceType.GRASS: 4,
+            SurfaceType.BSOIL: 5,
+            SurfaceType.WATER: 6,
+        }[self._surface_type]
+
+        # Set basic state parameters
+        df_state[("state", f"({surf_idx},)")] = self.state
+        df_state[("soilstore_id", f"({surf_idx},)")] = self.soilstore
+
+        # Set snow/ice parameters if present
+        if self.snowfrac is not None:
+            df_state[("snowfrac", f"({surf_idx},)")] = self.snowfrac
+        if self.snowpack is not None:
+            df_state[("snowpack", f"({surf_idx},)")] = self.snowpack
+        if self.icefrac is not None:
+            df_state[("icefrac", f"({surf_idx},)")] = self.icefrac
+        if self.snowwater is not None:
+            df_state[("snowwater", f"({surf_idx},)")] = self.snowwater
+        if self.snowdens is not None:
+            df_state[("snowdens", f"({surf_idx},)")] = self.snowdens
+
+        # Set temperature parameters
+        for i, temp in enumerate(self.temperature):
+            df_state[("t", f"({surf_idx},{i})")] = temp
+
+        if self.tsfc is not None:
+            df_state[("tsfc", f"({surf_idx},)")] = self.tsfc
+        if self.tin is not None:
+            df_state[("tin", f"({surf_idx},)")] = self.tin
+
+        return df_state
+
+
+class VegetatedSurfaceInitialState(SurfaceInitialState):
+    """Base initial state parameters for vegetated surfaces"""
+
+    alb_id: float = Field(
+        description="Initial albedo for vegetated surfaces", default=0.1
+    )
+    lai_id: float = Field(description="Initial leaf area index", default=1.0)
+    gdd_id: float = Field(description="Growing degree days ID", default=0)
+    sdd_id: float = Field(description="Senescence degree days ID", default=0)
+    wu: WaterUse = Field(default_factory=WaterUse)
+
     @model_validator(mode="after")
-    def validate_surface_state(self) -> "SurfaceInitialState":
-        """Validate state based on surface type if set"""
-        if self._surface_type is not None:
-            # Re-run validation with current surface type
-            self.set_surface_type(self._surface_type)
-        # Validate vegetation-specific parameters
-        veg_types = [SurfaceType.DECTR, SurfaceType.EVETR, SurfaceType.GRASS]
-        if self._surface_type in veg_types:
-            if self.alb_id is None:
-                raise ValueError(f"alb_id is required for {self._surface_type.value}")
-            if self.lai_id is None:
-                raise ValueError(f"lai_id is required for {self._surface_type.value}")
-            if self.wu is None:
-                raise ValueError(f"wu is required for {self._surface_type.value}")
+    def validate_surface_state(self) -> "VegetatedSurfaceInitialState":
+        """Validate state based on surface type"""
+        # Skip validation if surface type not yet set
+        if not hasattr(self, '_surface_type') or self._surface_type is None:
+            return self
 
-        # Validate deciduous-specific parameters
-        if self._surface_type == SurfaceType.DECTR:
-            if self.decidcap_id is None:
-                raise ValueError("decidcap_id is required for deciduous trees")
-            if self.porosity_id is None:
-                raise ValueError("porosity_id is required for deciduous trees")
-
-        # Validate non-vegetation parameters
-        non_veg_types = [
-            SurfaceType.PAVED,
-            SurfaceType.BLDGS,
-            SurfaceType.BSOIL,
-            SurfaceType.WATER,
-        ]
-        if self._surface_type in non_veg_types:
-            if any(
-                param is not None
-                for param in [
-                    self.alb_id,
-                    self.lai_id,
-                    self.decidcap_id,
-                    self.porosity_id,
-                ]
-            ):
-                raise ValueError(
-                    f"Vegetation parameters should not be set for {self._surface_type.value}"
-                )
+        if self._surface_type not in [
+            SurfaceType.DECTR,
+            SurfaceType.EVETR,
+            SurfaceType.GRASS,
+        ]:
+            raise ValueError(
+                f"Invalid surface type {self._surface_type} for vegetated surface"
+            )
         return self
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert vegetated surface initial state to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            pd.DataFrame: DataFrame containing initial state parameters
+        """
+        # Get base surface state parameters
+        df_state = super().to_df_state(grid_id)
+
+        # Get surface index
+        surf_idx = self.get_surface_index()
+
+        # Add vegetated surface specific parameters
+        df_state[("alb", f"({surf_idx},)")] = self.alb_id
+        df_state[("lai", f"({surf_idx},)")] = self.lai_id
+        df_state[("gdd", f"({surf_idx},)")] = self.gdd_id
+        df_state[("sdd", f"({surf_idx},)")] = self.sdd_id
+
+        # Add water use parameters
+        df_wu = self.wu.to_df_state(grid_id, surf_idx)
+        df_state = pd.concat([df_state, df_wu], axis=1)
+
+        # Drop any duplicate columns
+        df_state = df_state.loc[:, ~df_state.columns.duplicated()]
+
+        return df_state
+
+
+class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
+    """Initial state parameters for deciduous trees"""
+
+    porosity_id: float = Field(description="Initial porosity for deciduous trees")
+    decidcap_id: float = Field(
+        description="Initial deciduous capacity for deciduous trees"
+    )
+
+    @model_validator(mode="after")
+    def validate_surface_state(self) -> "DeciduousTreeSurfaceInitialState":
+        """Validate state based on surface type"""
+        # Skip validation if surface type not yet set
+        if not hasattr(self, '_surface_type') or self._surface_type is None:
+            return self
+
+        if self._surface_type != SurfaceType.DECTR:
+            raise ValueError("This state is only valid for deciduous trees")
+        return self
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert deciduous tree initial state to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            pd.DataFrame: DataFrame containing initial state parameters
+        """
+        # Get base vegetated surface state parameters
+        df_state = super().to_df_state(grid_id)
+
+        # Get surface index
+        surf_idx = self.get_surface_index()
+
+        # Add deciduous tree specific parameters
+        df_state[("porosity", f"({surf_idx},)")] = self.porosity_id
+        df_state[("decidcap", f"({surf_idx},)")] = self.decidcap_id
+
+        return df_state
 
 
 class InitialStates(BaseModel):
@@ -156,9 +252,9 @@ class InitialStates(BaseModel):
     snowalb: float = Field(ge=0, le=1, description="Initial snow albedo", default=0.5)
     paved: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
     bldgs: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
-    dectr: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
-    evetr: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
-    grass: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    evetr: VegetatedSurfaceInitialState = Field(default_factory=VegetatedSurfaceInitialState)
+    dectr: DeciduousTreeSurfaceInitialState = Field(default_factory=DeciduousTreeSurfaceInitialState)
+    grass: VegetatedSurfaceInitialState = Field(default_factory=VegetatedSurfaceInitialState)
     bsoil: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
     water: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
     roofs: Optional[List[SurfaceInitialState]] = Field(
@@ -176,16 +272,92 @@ class InitialStates(BaseModel):
         description="Initial states for wall layers",
     )
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        # Set surface types for each surface
-        self.paved.set_surface_type(SurfaceType.PAVED)
-        self.bldgs.set_surface_type(SurfaceType.BLDGS)
-        self.dectr.set_surface_type(SurfaceType.DECTR)
-        self.evetr.set_surface_type(SurfaceType.EVETR)
-        self.grass.set_surface_type(SurfaceType.GRASS)
-        self.bsoil.set_surface_type(SurfaceType.BSOIL)
-        self.water.set_surface_type(SurfaceType.WATER)
+    @model_validator(mode="before")
+    @classmethod
+    def set_surface_types(cls, data: Dict) -> Dict:
+        """Set surface types for all surfaces before validation"""
+        # Create instances if they don't exist
+        for surface_type in ["paved", "bldgs", "bsoil", "water"]:
+            if surface_type not in data:
+                data[surface_type] = SurfaceInitialState()
+            if isinstance(data[surface_type], dict):
+                data[surface_type] = SurfaceInitialState(**data[surface_type])
+            data[surface_type].set_surface_type(SurfaceType(surface_type))
+
+        # Handle vegetated surfaces
+        if "evetr" in data:
+            if isinstance(data["evetr"], dict):
+                data["evetr"] = VegetatedSurfaceInitialState(**data["evetr"])
+            data["evetr"].set_surface_type(SurfaceType.EVETR)
+
+        if "dectr" in data:
+            if isinstance(data["dectr"], dict):
+                data["dectr"] = DeciduousTreeSurfaceInitialState(**data["dectr"])
+            data["dectr"].set_surface_type(SurfaceType.DECTR)
+
+        if "grass" in data:
+            if isinstance(data["grass"], dict):
+                data["grass"] = VegetatedSurfaceInitialState(**data["grass"])
+            data["grass"].set_surface_type(SurfaceType.GRASS)
+
+        return data
+
+    # def __init__(self, **data):
+    #     super().__init__(**data)
+    #     # Set surface types for non-vegetated surfaces
+    #     self.paved.set_surface_type(SurfaceType.PAVED)
+    #     self.bldgs.set_surface_type(SurfaceType.BLDGS)
+    #     self.bsoil.set_surface_type(SurfaceType.BSOIL)
+    #     self.water.set_surface_type(SurfaceType.WATER)
+
+    #     # Set surface types for vegetated surfaces
+    #     # These need to be set before validation
+    #     if isinstance(self.evetr, VegetatedSurfaceInitialState):
+    #         self.evetr.set_surface_type(SurfaceType.EVETR)
+    #     if isinstance(self.dectr, DeciduousTreeSurfaceInitialState):
+    #         self.dectr.set_surface_type(SurfaceType.DECTR)
+    #     if isinstance(self.grass, VegetatedSurfaceInitialState):
+    #         self.grass.set_surface_type(SurfaceType.GRASS)
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert initial states to DataFrame state format."""
+        df_state = init_df_state(grid_id)
+
+        # Add snowalb
+        df_state[("snowalb", "0")] = self.snowalb
+
+        # Add surface states
+        surfaces = {
+            "paved": self.paved,
+            "bldgs": self.bldgs,
+            "evetr": self.evetr,
+            "dectr": self.dectr,
+            "grass": self.grass,
+            "bsoil": self.bsoil,
+            "water": self.water,
+        }
+        # Add surface states
+        for surface in surfaces.values():
+            df_surface = surface.to_df_state(grid_id)
+            df_state = pd.concat([df_state, df_surface], axis=1)
+
+        # Add roof and wall states
+        for surface_list, surface_type in [(self.roofs, "roof"), (self.walls, "wall")]:
+            if surface_list is not None:  # Check for None explicitly
+                for i, surface in enumerate(surface_list):
+                    if surface is not None:  # Check each surface is not None
+                        df_surface = surface.to_df_state(grid_id)
+                        # Prefix column names with surface type
+                        df_surface.columns = pd.MultiIndex.from_tuples(
+                            [(f"{surface_type}_{col[0]}", f"({i},)") for col in df_surface.columns],
+                            names=["var", "ind_dim"]
+                        )
+                        df_state = pd.concat([df_state, df_surface], axis=1)
+
+        # Drop duplicate columns while preserving first occurrence
+        df_state = df_state.loc[:, ~df_state.columns.duplicated(keep='first')]
+
+        return df_state
 
 
 class ThermalLayer(BaseModel):
@@ -313,10 +485,19 @@ class WaterDistribution(BaseModel):
         values = []
 
         # Add all non-None distribution parameters
-        for i, attr in enumerate([
-            "to_paved", "to_bldgs", "to_dectr", "to_evetr",
-            "to_grass", "to_bsoil", "to_water", "to_runoff", "to_soilstore"
-        ]):
+        for i, attr in enumerate(
+            [
+                "to_paved",
+                "to_bldgs",
+                "to_dectr",
+                "to_evetr",
+                "to_grass",
+                "to_bsoil",
+                "to_water",
+                "to_runoff",
+                "to_soilstore",
+            ]
+        ):
             value = getattr(self, attr)
             if value is not None:
                 param_tuples.append(("waterdist", (i, surf_idx)))
@@ -330,7 +511,7 @@ class WaterDistribution(BaseModel):
             index=pd.Index([grid_id], name="grid"),
             columns=columns,
             data=[values],
-            dtype=float
+            dtype=float,
         )
 
         return df
@@ -392,6 +573,7 @@ class StorageDrainParams(BaseModel):
 
         return df
 
+
 class OHM_Coefficient_season_wetness(BaseModel):
     summer_dry: float
     summer_wet: float
@@ -415,7 +597,7 @@ class OHM_Coefficient_season_wetness(BaseModel):
             "summer_dry": 0,
             "summer_wet": 1,
             "winter_dry": 2,
-            "winter_wet": 3
+            "winter_wet": 3,
         }
 
         # Set values for each season/wetness combination
@@ -424,7 +606,6 @@ class OHM_Coefficient_season_wetness(BaseModel):
             df_state.loc[grid_id, ("ohm_coef", str_idx)] = getattr(self, season_wetdry)
 
         return df_state
-
 
 
 class OHMCoefficients(BaseModel):
@@ -453,6 +634,7 @@ class OHMCoefficients(BaseModel):
         df_state = df_state.loc[:, ~df_state.columns.duplicated()]
 
         return df_state
+
 
 class SurfaceProperties(BaseModel):
     """Base properties for all surface types"""
@@ -1008,7 +1190,6 @@ class ModelPhysics(BaseModel):
                 df_state[(col_name, idx_str)] = np.nan
             df_state.at[grid_id, (col_name, idx_str)] = int(value)
 
-
         list_attr = [
             "netradiationmethod",
             "emissionsmethod",
@@ -1054,6 +1235,23 @@ class LUMPSParams(BaseModel):
         df_state.loc[grid_id, ("veg_type", 0)] = self.veg_type
 
         return df_state
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert LUMPS parameters to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            pd.DataFrame: DataFrame containing LUMPS parameters
+        """
+        df_state = init_df_state(grid_id)
+
+        # Add all attributes
+        for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
+            df_state[(attr, "0")] = getattr(self, attr)
+
+        return df_state
+
 
 class SPARTACUSParams(BaseModel):
     air_ext_lw: float
@@ -1071,10 +1269,48 @@ class SPARTACUSParams(BaseModel):
     veg_ssa_lw: float
     veg_ssa_sw: float
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert SPARTACUS parameters to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            pd.DataFrame: DataFrame containing SPARTACUS parameters
+        """
+        df_state = init_df_state(grid_id)
+
+        # Add all attributes except private ones
+        for attr in dir(self):
+            if not attr.startswith("_") and not callable(getattr(self, attr)):
+                value = getattr(self, attr)
+                if not isinstance(value, (BaseModel, Enum)):
+                    df_state[(attr, "0")] = value
+
+        return df_state
+
 
 class DayProfile(BaseModel):
     working_day: float
     holiday: float
+
+    def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
+        """Convert day profile to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+            param_name: Name of the parameter this profile belongs to
+
+        Returns:
+            pd.DataFrame: DataFrame containing day profile parameters
+        """
+        df_state = init_df_state(grid_id)
+
+        # Set values for working day and holiday
+        df_state[(f"{param_name}_wd", "0")] = self.working_day
+        df_state[(f"{param_name}_we", "0")] = self.holiday
+
+        return df_state
 
 
 class WeeklyProfile(BaseModel):
@@ -1085,6 +1321,34 @@ class WeeklyProfile(BaseModel):
     friday: float
     saturday: float
     sunday: float
+
+    def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
+        """Convert weekly profile to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+            param_name: Name of the parameter this profile belongs to
+
+        Returns:
+            pd.DataFrame: DataFrame containing weekly profile parameters
+        """
+        df_state = init_df_state(grid_id)
+
+        # Map days to their index
+        day_map = {
+            "monday": 0,
+            "tuesday": 1,
+            "wednesday": 2,
+            "thursday": 3,
+            "friday": 4,
+            "saturday": 5,
+            "sunday": 6,
+        }
+
+        for day, idx in day_map.items():
+            df_state[(param_name, f"({idx},)")] = getattr(self, day)
+
+        return df_state
 
 
 class HourlyProfile(BaseModel):
@@ -1110,6 +1374,28 @@ class HourlyProfile(BaseModel):
                 exceptions.append(error_message)
                 # raise ValueError("Must have all hours from 1 to 24")
         return self
+
+    def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
+        """Convert hourly profile to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+            param_name: Name of the parameter this profile belongs to
+
+        Returns:
+            pd.DataFrame: DataFrame containing hourly profile parameters
+        """
+        df_state = init_df_state(grid_id)
+
+        # Set working day values (index 0)
+        for hour, value in self.working_day.items():
+            df_state[(param_name, f"(0,{int(hour)-1})")] = value
+
+        # Set holiday/weekend values (index 1)
+        for hour, value in self.holiday.items():
+            df_state[(param_name, f"(1,{int(hour)-1})")] = value
+
+        return df_state
 
 
 class IrrigationParams(BaseModel):
@@ -1237,6 +1523,7 @@ class LAIPowerCoefficients(BaseModel):
 
         return df_state
 
+
 class LAIParams(BaseModel):
     baset: float = Field(
         default=10.0,
@@ -1330,7 +1617,6 @@ class LAIParams(BaseModel):
         return df_state
 
 
-
 class VegetatedSurfaceProperties(SurfaceProperties):
     alb_min: float = Field(ge=0, le=1, description="Minimum albedo", default=0.2)
     alb_max: float = Field(ge=0, le=1, description="Maximum albedo", default=0.3)
@@ -1419,7 +1705,6 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             set_df_value("beta_enh_bioco2", f"({idx},)", self.beta_enh_bioco2)
             set_df_value("alpha_bioco2", f"({idx},)", self.alpha_bioco2)
             set_df_value("alpha_enh_bioco2", f"({idx},)", self.alpha_enh_bioco2)
-
 
         return df_state
 
