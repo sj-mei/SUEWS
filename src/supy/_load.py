@@ -1351,7 +1351,9 @@ def load_SUEWS_dict_ModConfig(path_runcontrol, dict_default=dict_RunControl_defa
     dict_RunControl_y = {k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()}
     dict_RunControl.update(dict_RunControl_y)
 
-    dict_RunControl_z = {k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()}
+    dict_RunControl_z = {
+        k[0]: v for k, v in load_SUEWS_nml(path_stebbs_general).items()
+    }
     dict_RunControl.update(dict_RunControl_z)
 
     return dict_RunControl
@@ -1495,7 +1497,7 @@ def load_SUEWS_InitialCond_df(path_runcontrol):
         df_init.columns.to_flat_index(),
         names=["var", "ind_dim"],
     )
-    
+
     # for k in dict_InitCond_default:
     #     df_init.loc[:, (k, "0")] = dict_InitCond_default[k]
 
