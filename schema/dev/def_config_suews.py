@@ -1221,10 +1221,9 @@ class ModelPhysics(BaseModel):
         Returns:
             ModelPhysics: Instance of ModelPhysics
         """
-        # Initialize a dictionary to hold extracted attributes
+
         properties = {}
 
-        # List of attributes expected in the DataFrame
         list_attr = [
             "netradiationmethod",
             "emissionsmethod",
@@ -1241,14 +1240,12 @@ class ModelPhysics(BaseModel):
             "snowuse",
         ]
 
-        # Extract values from the DataFrame
         for attr in list_attr:
             try:
                 properties[attr] = int(df.loc[grid_id, (attr, "0")])
             except KeyError:
                 raise ValueError(f"Missing attribute '{attr}' in the DataFrame")
 
-        # Create and return an instance of ModelPhysics
         return cls(**properties)
 
 
@@ -1463,6 +1460,38 @@ class WeeklyProfile(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "WeeklyProfile":
+        """Reconstruct WeeklyProfile from a DataFrame state format.
+
+        Args:
+            df: DataFrame containing weekly profile parameters
+            grid_id: Grid ID for the DataFrame index
+            param_name: Name of the parameter to extract values from
+
+        Returns:
+            WeeklyProfile: Instance of WeeklyProfile
+        """
+        # Map days to their index
+        day_map = {
+            "monday": 0,
+            "tuesday": 1,
+            "wednesday": 2,
+            "thursday": 3,
+            "friday": 4,
+            "saturday": 5,
+            "sunday": 6,
+        }
+
+        # Extract values from DataFrame for each day
+        params = {
+            day: df.loc[grid_id, (param_name, f"({idx},)")]
+            for day, idx in day_map.items()
+        }
+
+        # Create an instance of WeeklyProfile
+        return cls(**params)
+
 
 class HourlyProfile(BaseModel):
     working_day: Dict[str, float]
@@ -1510,6 +1539,33 @@ class HourlyProfile(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "HourlyProfile":
+        """Reconstruct HourlyProfile from a DataFrame state format.
+
+        Args:
+            df: DataFrame containing hourly profile parameters
+            grid_id: Grid ID for the DataFrame index
+            param_name: Name of the parameter to extract values from
+
+        Returns:
+            HourlyProfile: Instance of HourlyProfile
+        """
+        # Extract working day values (index 0)
+        working_day = {
+            str(hour + 1): df.loc[grid_id, (param_name, f"(0,{hour})")]
+            for hour in range(24)
+        }
+
+        # Extract holiday/weekend values (index 1)
+        holiday = {
+            str(hour + 1): df.loc[grid_id, (param_name, f"(1,{hour})")]
+            for hour in range(24)
+        }
+
+        # Create an instance of HourlyProfile
+        return cls(working_day=working_day, holiday=holiday)
+
 
 class IrrigationParams(BaseModel):
     h_maintain: float
@@ -1555,6 +1611,48 @@ class IrrigationParams(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "IrrigationParams":
+        """
+        Reconstruct IrrigationParams from a DataFrame state format.
+
+        Args:
+            df: DataFrame containing irrigation parameters
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            IrrigationParams: Instance of IrrigationParams
+        """
+        # Extract scalar attributes
+        h_maintain = df.loc[grid_id, ("h_maintain", 0)]
+        faut = df.loc[grid_id, ("faut", 0)]
+        ie_start = df.loc[grid_id, ("ie_start", 0)]
+        ie_end = df.loc[grid_id, ("ie_end", 0)]
+        internalwateruse_h = df.loc[grid_id, ("internalwateruse_h", 0)]
+
+        # Extract WeeklyProfile attributes
+        daywatper = WeeklyProfile.from_df_state(df, grid_id, "daywatper")
+        daywat = WeeklyProfile.from_df_state(df, grid_id, "daywat")
+
+        # Extract HourlyProfile attributes
+        wuprofa_24hr = HourlyProfile.from_df_state(df, grid_id, "wuprofa_24hr")
+        wuprofm_24hr = HourlyProfile.from_df_state(df, grid_id, "wuprofm_24hr")
+
+        # Construct and return the IrrigationParams instance
+        return cls(
+            h_maintain=h_maintain,
+            faut=faut,
+            ie_start=ie_start,
+            ie_end=ie_end,
+            internalwateruse_h=internalwateruse_h,
+            daywatper=daywatper,
+            daywat=daywat,
+            wuprofa_24hr=wuprofa_24hr,
+            wuprofm_24hr=wuprofm_24hr,
+        )
+
+
+#day profile coulmns need to be fixed
 class AnthropogenicHeat(BaseModel):
     qf0_beu: DayProfile
     qf_a: DayProfile
