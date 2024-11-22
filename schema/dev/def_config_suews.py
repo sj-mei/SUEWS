@@ -1251,7 +1251,8 @@ class SPARTACUSParams(BaseModel):
     veg_ssa_sw: float
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
-        """Convert SPARTACUS parameters to DataFrame state format.
+        """
+        Convert SPARTACUS parameters to DataFrame state format.
 
         Args:
             grid_id: Grid ID for the DataFrame index
@@ -1259,16 +1260,53 @@ class SPARTACUSParams(BaseModel):
         Returns:
             pd.DataFrame: DataFrame containing SPARTACUS parameters
         """
+        # Initialize DataFrame with grid index
         df_state = init_df_state(grid_id)
 
-        # Add all attributes except private ones
-        for attr in dir(self):
-            if not attr.startswith("_") and not callable(getattr(self, attr)):
-                value = getattr(self, attr)
-                if not isinstance(value, (BaseModel, Enum)):
-                    df_state[(attr, "0")] = value
+        # Map SPARTACUS parameters to DataFrame columns
+        spartacus_params = {
+            "air_ext_lw": self.air_ext_lw,
+            "air_ext_sw": self.air_ext_sw,
+            "air_ssa_lw": self.air_ssa_lw,
+            "air_ssa_sw": self.air_ssa_sw,
+            "ground_albedo_dir_mult_fact": self.ground_albedo_dir_mult_fact,
+            "n_stream_lw_urban": self.n_stream_lw_urban,
+            "n_stream_sw_urban": self.n_stream_sw_urban,
+            "n_vegetation_region_urban": self.n_vegetation_region_urban,
+            "sw_dn_direct_frac": self.sw_dn_direct_frac,
+            "use_sw_direct_albedo": self.use_sw_direct_albedo,
+            "veg_contact_fraction_const": self.veg_contact_fraction_const,
+            "veg_fsd_const": self.veg_fsd_const,
+            "veg_ssa_lw": self.veg_ssa_lw,
+            "veg_ssa_sw": self.veg_ssa_sw,
+        }
+
+        # Assign each parameter to its corresponding column in the DataFrame
+        for param_name, value in spartacus_params.items():
+            df_state[(param_name, "0")] = value
 
         return df_state
+
+
+    # def to_df_state(self, grid_id: int) -> pd.DataFrame:
+    #     """Convert SPARTACUS parameters to DataFrame state format.
+
+    #     Args:
+    #         grid_id: Grid ID for the DataFrame index
+
+    #     Returns:
+    #         pd.DataFrame: DataFrame containing SPARTACUS parameters
+    #     """
+    #     df_state = init_df_state(grid_id)
+
+    #     # Add all attributes except private ones
+    #     for attr in dir(self):
+    #         if not attr.startswith("_") and not callable(getattr(self, attr)):
+    #             value = getattr(self, attr)
+    #             if not isinstance(value, (BaseModel, Enum)):
+    #                 df_state[(attr, "0")] = value
+
+    #     return df_state
 
 
 class DayProfile(BaseModel):
