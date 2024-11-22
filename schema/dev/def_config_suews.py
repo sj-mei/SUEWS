@@ -1496,6 +1496,52 @@ class CO2Params(BaseModel):
     traffprof_24hr: HourlyProfile
     humactivity_24hr: HourlyProfile
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """
+        Convert CO2 parameters to DataFrame state format.
+
+        Args:
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            pd.DataFrame: DataFrame containing CO2 parameters.
+        """
+
+        df_state = init_df_state(grid_id)
+
+        scalar_params = {
+            "co2pointsource": self.co2pointsource,
+            "ef_umolco2perj": self.ef_umolco2perj,
+            "enef_v_jkm": self.enef_v_jkm,
+            "frfossilfuel_heat": self.frfossilfuel_heat,
+            "frfossilfuel_nonheat": self.frfossilfuel_nonheat,
+            "maxfcmetab": self.maxfcmetab,
+            "maxqfmetab": self.maxqfmetab,
+            "minfcmetab": self.minfcmetab,
+            "minqfmetab": self.minqfmetab,
+            "trafficunits": self.trafficunits,
+        }
+        for param_name, value in scalar_params.items():
+            df_state.loc[grid_id, (param_name, 0)] = value
+
+        day_profiles = {
+            "fcef_v_kgkm": self.fcef_v_kgkm,
+            "trafficrate": self.trafficrate,
+        }
+        for param_name, profile in day_profiles.items():
+            df_day_profile = profile.to_df_state(grid_id, param_name)
+            df_state = df_state.combine_first(df_day_profile)
+            
+        hourly_profiles = {
+            "traffprof_24hr": self.traffprof_24hr,
+            "humactivity_24hr": self.humactivity_24hr,
+        }
+        for param_name, profile in hourly_profiles.items():
+            df_hourly_profile = profile.to_df_state(grid_id, param_name)
+            df_state = df_state.combine_first(df_hourly_profile)
+
+        return df_state
+
 
 class AnthropogenicEmissions(BaseModel):
     startdls: float
