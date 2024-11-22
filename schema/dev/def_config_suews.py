@@ -1390,6 +1390,38 @@ class IrrigationParams(BaseModel):
     wuprofa_24hr: HourlyProfile
     wuprofm_24hr: HourlyProfile
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """
+        Convert irrigation parameters to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            pd.DataFrame: DataFrame containing irrigation parameters
+        """
+
+        df_state = init_df_state(grid_id)
+
+        df_state.loc[grid_id, ("h_maintain", 0)] = self.h_maintain
+        df_state.loc[grid_id, ("faut", 0)] = self.faut
+        df_state.loc[grid_id, ("ie_start", 0)] = self.ie_start
+        df_state.loc[grid_id, ("ie_end", 0)] = self.ie_end
+        df_state.loc[grid_id, ("internalwateruse_h", 0)] = self.internalwateruse_h
+
+        df_daywatper = self.daywatper.to_df_state(grid_id, "daywatper")
+        df_daywat = self.daywat.to_df_state(grid_id, "daywat")
+
+        df_state = df_state.combine_first(df_daywatper)
+        df_state = df_state.combine_first(df_daywat)
+
+        df_wuprofa_24hr = self.wuprofa_24hr.to_df_state(grid_id, "wuprofa_24hr")
+        df_wuprofm_24hr = self.wuprofm_24hr.to_df_state(grid_id, "wuprofm_24hr")
+
+        df_state = df_state.combine_first(df_wuprofa_24hr)
+        df_state = df_state.combine_first(df_wuprofm_24hr)
+
+        return df_state
 
 class AnthropogenicHeat(BaseModel):
     qf0_beu: DayProfile
