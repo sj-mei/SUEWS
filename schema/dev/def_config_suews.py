@@ -299,6 +299,47 @@ class StorageDrainParams(BaseModel):
     drain_coef_1: float = Field(default=0.013)
     drain_coef_2: float = Field(default=1.71)
 
+    def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
+        """Convert storage and drain parameters to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+            surf_idx: Surface index (0=paved, 1=bldgs, 2=dectr, 3=evetr, 4=grass, 5=bsoil, 6=water)
+
+        Returns:
+            pd.DataFrame: DataFrame containing storage and drain parameters with MultiIndex columns
+        """
+        # Create tuples for MultiIndex columns
+        param_tuples = [
+            ("storedrainprm", (i, surf_idx))
+            for i, _ in enumerate([
+                "store_min", "store_max", "store_cap",
+                "drain_eq", "drain_coef_1", "drain_coef_2"
+            ])
+        ]
+
+        # Create MultiIndex columns
+        columns = pd.MultiIndex.from_tuples(
+            param_tuples,
+            names=["var", "ind_dim"]
+        )
+
+        # Create DataFrame with single row
+        df = pd.DataFrame(
+            index=pd.Index([grid_id], name="grid"),
+            columns=columns,
+            dtype=float
+        )
+
+        # Fill values
+        for i, var in enumerate([
+            "store_min", "store_max", "store_cap",
+            "drain_eq", "drain_coef_1", "drain_coef_2"
+        ]):
+            df.loc[grid_id, ("storedrainprm", (i, surf_idx))] = getattr(self, var)
+
+        return df
+
 
 class OHMCoefficients(BaseModel):
     a1: Dict[str, float]
@@ -365,9 +406,19 @@ class SurfaceProperties(BaseModel):
         return dict_surface_type[self._surface_type]
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert surface properties to DataFrame state format.
+        This is the base implementation that handles common surface properties."""
         df_state = init_df_state(grid_id)
-        # surface index
+
+        # Get surface index
         surf_idx = self.get_surface_index()
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.at[grid_id, (col_name, idx_str)] = value
 
         # Get all properties of this class using introspection
         properties = [
@@ -375,43 +426,155 @@ class SurfaceProperties(BaseModel):
             for attr in dir(self)
             if not attr.startswith("_") and not callable(getattr(self, attr))
         ]
-        # drop 'surface_type'
-        properties.remove("surface_type")
-        # drop all those starts with "model_"
-        properties = [p for p in properties if not p.startswith("model_")]
+        # drop 'surface_type' and model-specific properties
+        properties = [p for p in properties if p != "surface_type" and not p.startswith("model_")]
+
+        # Process each property
+        dfs = [df_state]  # List to collect all DataFrames
+
         for property in properties:
-            # Skip nested properties
-            if property in ["waterdist", "storedrainprm", "thermal_layers",'ohm_coef']:
+            # Handle nested properties with their own to_df_state methods
+            if property in ["waterdist", "storedrainprm", "thermal_layers", "ohm_coef"]:
+                nested_obj = getattr(self, property)
+                if nested_obj is not None and hasattr(nested_obj, "to_df_state"):
+                    nested_df = nested_obj.to_df_state(grid_id, surf_idx)
+                    dfs.append(nested_df)
                 continue
 
             try:
-                # Get the value
                 value = getattr(self, property)
-
-                # Create the column name with proper indexing
-                col_name = f"{property}"
-                idx_str = f"({surf_idx},)"
-
-                # Set the value using explicit column creation if needed
-                if (col_name, idx_str) not in df_state.columns:
-                    df_state[(col_name, idx_str)] = np.nan
-
-                df_state.at[grid_id, (col_name, idx_str)] = value
-
+                set_df_value(property, value)
             except Exception as e:
                 print(f"Warning: Could not set property {property}: {str(e)}")
                 continue
 
-        return df_state
+        # Merge all DataFrames
+        df_final = pd.concat(dfs, axis=1)
+        return df_final
 
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
     alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
+    emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
+    z0: float = Field(ge=0, description="Roughness length for momentum", default=0.1)
+    zdh: float = Field(ge=0, description="Zero-plane displacement height", default=0.05)
+    frfossilfuel_heat: float = Field(
+        ge=0, le=1, description="Fraction of fossil fuel heat", default=0.0
+    )
+    frfossilfuel_cool: float = Field(
+        ge=0, le=1, description="Fraction of fossil fuel cooling", default=0.0
+    )
+    waterdist: Optional[WaterDistribution] = None
+    storedrainprm: Optional[StorageDrainParams] = None
+    thermal_layers: Optional[ThermalLayer] = None
+    ohm_coef: Optional[OHMCoefficients] = None
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert non-vegetated surface properties to DataFrame state format."""
+        dfs = []
+
+        # Get base properties from parent
+        df_base = super().to_df_state(grid_id)
+        dfs.append(df_base)
+
+        surf_idx = self.get_surface_index()
+
+        # Create DataFrame for this class's properties
+        param_tuples = []
+        values = []
+
+        # Add all non-inherited properties that aren't model-specific or nested objects
+        for attr in dir(self):
+            if (not attr.startswith('_') and
+                not callable(getattr(self, attr)) and
+                not attr.startswith('model_') and
+                attr not in ['surface_type', 'waterdist', 'storedrainprm', 'thermal_layers', 'ohm_coef'] and
+                attr not in dir(super())):
+                value = getattr(self, attr)
+                if not isinstance(value, (BaseModel, Enum)):
+                    param_tuples.append((attr, (surf_idx,)))
+                    values.append(value)
+
+        if param_tuples:  # Only create DataFrame if we have properties to add
+            columns = pd.MultiIndex.from_tuples(param_tuples, names=["var", "ind_dim"])
+            df = pd.DataFrame(
+                index=pd.Index([grid_id], name="grid"),
+                columns=columns,
+                data=[values],
+                dtype=float
+            )
+            dfs.append(df)
+
+        # Add nested property DataFrames
+        for nested_prop in ['waterdist', 'storedrainprm', 'thermal_layers', 'ohm_coef']:
+            nested_obj = getattr(self, nested_prop)
+            if nested_obj is not None and hasattr(nested_obj, "to_df_state"):
+                nested_df = nested_obj.to_df_state(grid_id, surf_idx)
+                dfs.append(nested_df)
+
+        # Merge all DataFrames
+        df_final = pd.concat(dfs, axis=1)
+        return df_final
 
 
 class PavedProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert paved surface properties to DataFrame state format."""
+        dfs = []
+
+        # Get base properties from parent
+        df_base = super().to_df_state(grid_id)
+        dfs.append(df_base)
+
+        surf_idx = self.get_surface_index()
+
+        # Create DataFrame for this class's properties
+        param_tuples = []
+        values = []
+
+        # Add all non-inherited properties that aren't model-specific or nested objects
+        for attr in dir(self):
+            if (
+                not attr.startswith("_")
+                and not callable(getattr(self, attr))
+                and not attr.startswith("model_")
+                and attr
+                not in [
+                    "surface_type",
+                    "waterdist",
+                    "storedrainprm",
+                    "thermal_layers",
+                    "ohm_coef",
+                ]
+                and attr not in dir(super())
+            ):
+                value = getattr(self, attr)
+                if not isinstance(value, (BaseModel, Enum)):
+                    param_tuples.append((attr, (surf_idx,)))
+                    values.append(value)
+
+        if param_tuples:  # Only create DataFrame if we have properties to add
+            columns = pd.MultiIndex.from_tuples(param_tuples, names=["var", "ind_dim"])
+            df = pd.DataFrame(
+                index=pd.Index([grid_id], name="grid"),
+                columns=columns,
+                data=[values],
+                dtype=float,
+            )
+            dfs.append(df)
+
+        # Add nested property DataFrames
+        for nested_prop in ["waterdist", "storedrainprm", "thermal_layers", "ohm_coef"]:
+            nested_obj = getattr(self, nested_prop)
+            if nested_obj is not None and hasattr(nested_obj, "to_df_state"):
+                nested_df = nested_obj.to_df_state(grid_id, surf_idx)
+                dfs.append(nested_df)
+
+        # Merge all DataFrames
+        df_final = pd.concat(dfs, axis=1)
+        return df_final
 
 
 class BuildingLayer(BaseModel):
@@ -425,6 +588,102 @@ class BuildingLayer(BaseModel):
     wetthresh: float = Field(default=0.5)
     roof_albedo_dir_mult_fact: Optional[float] = Field(default=0.1)
     wall_specular_frac: Optional[float] = Field(default=0.1)
+
+    def to_df_state(self, grid_id: int, layer_idx: int, is_roof: bool = True) -> pd.DataFrame:
+        """Convert building layer properties to DataFrame state format.
+
+        Args:
+            grid_id: Grid ID for the DataFrame index
+            layer_idx: Layer index (0 or 1 for two layers)
+            is_roof: True if this is a roof layer, False if wall layer
+
+        Returns:
+            pd.DataFrame: DataFrame containing building layer parameters
+        """
+        dfs = []  # List to collect DataFrames
+
+        # Create base properties DataFrame
+        base_props = {
+            "alb": self.alb,
+            "emis": self.emis,
+            "statelimit": self.statelimit,
+            "soilstorecap": self.soilstorecap,
+            "wetthresh": self.wetthresh,
+        }
+
+        # Determine prefix based on layer type
+        prefix = "roof" if is_roof else "wall"
+
+        # Create tuples for MultiIndex columns
+        param_tuples = [(f"{prefix}_{name}", (layer_idx,)) for name in base_props.keys()]
+        columns = pd.MultiIndex.from_tuples(param_tuples, names=["var", "ind_dim"])
+
+        # Create DataFrame with single row
+        df_base = pd.DataFrame(
+            index=pd.Index([grid_id], name="grid"),
+            columns=columns,
+            data=[list(base_props.values())],
+            dtype=float
+        )
+        dfs.append(df_base)
+
+        # Add specific properties for roof/wall
+        if is_roof and self.roof_albedo_dir_mult_fact is not None:
+            columns = pd.MultiIndex.from_tuples(
+                [("roof_albedo_dir_mult_fact", (layer_idx,))],
+                names=["var", "ind_dim"]
+            )
+            df_roof = pd.DataFrame(
+                index=pd.Index([grid_id], name="grid"),
+                columns=columns,
+                data=[[self.roof_albedo_dir_mult_fact]],
+                dtype=float
+            )
+            dfs.append(df_roof)
+
+        elif not is_roof and self.wall_specular_frac is not None:
+            columns = pd.MultiIndex.from_tuples(
+                [("wall_specular_frac", (layer_idx,))],
+                names=["var", "ind_dim"]
+            )
+            df_wall = pd.DataFrame(
+                index=pd.Index([grid_id], name="grid"),
+                columns=columns,
+                data=[[self.wall_specular_frac]],
+                dtype=float
+            )
+            dfs.append(df_wall)
+
+        # Add thermal layers if present
+        if self.thermal_layers:
+            # Create tuples for thermal layer parameters
+            thermal_tuples = []
+            thermal_values = []
+
+            for i in range(5):  # 5 layers
+                thermal_tuples.extend([
+                    (f"{prefix}_dz", (layer_idx, i)),
+                    (f"{prefix}_k", (layer_idx, i)),
+                    (f"{prefix}_cp", (layer_idx, i))
+                ])
+                thermal_values.extend([
+                    self.thermal_layers.dz[i],
+                    self.thermal_layers.k[i],
+                    self.thermal_layers.cp[i]
+                ])
+
+            columns = pd.MultiIndex.from_tuples(thermal_tuples, names=["var", "ind_dim"])
+            df_thermal = pd.DataFrame(
+                index=pd.Index([grid_id], name="grid"),
+                columns=columns,
+                data=[thermal_values],
+                dtype=float
+            )
+            dfs.append(df_thermal)
+
+        # Merge all DataFrames
+        df_final = pd.concat(dfs, axis=1)
+        return df_final
 
 
 class VerticalLayers(BaseModel):
@@ -497,14 +756,95 @@ class BuildingProperties(NonVegetatedSurfaceProperties):
                 exceptions.append(error_message)
         return self
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert building properties to DataFrame state format."""
+        df_state = super().to_df_state(grid_id)
+        surf_idx = self.get_surface_index()
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.at[grid_id, (col_name, idx_str)] = value
+
+        # Add all non-inherited properties
+        for attr in dir(self):
+            if (not attr.startswith('_') and
+                not callable(getattr(self, attr)) and
+                attr not in ['surface_type'] and
+                attr not in dir(super())):
+                try:
+                    value = getattr(self, attr)
+                    if not isinstance(value, (BaseModel, Enum)):
+                        set_df_value(attr, value)
+                except Exception as e:
+                    print(f"Warning: Could not set property {attr}: {str(e)}")
+
+        return df_state
+
 
 class BaresoilProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert bare soil properties to DataFrame state format."""
+        df_state = super().to_df_state(grid_id)
+        surf_idx = self.get_surface_index()
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.at[grid_id, (col_name, idx_str)] = value
+
+        # Add all non-inherited properties
+        for attr in dir(self):
+            if (not attr.startswith('_') and
+                not callable(getattr(self, attr)) and
+                attr not in ['surface_type'] and
+                attr not in dir(super())):
+                try:
+                    value = getattr(self, attr)
+                    if not isinstance(value, (BaseModel, Enum)):
+                        set_df_value(attr, value)
+                except Exception as e:
+                    print(f"Warning: Could not set property {attr}: {str(e)}")
+
+        return df_state
 
 
 class WaterProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
     flowchange: float = Field(default=0.0)
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert water surface properties to DataFrame state format."""
+        df_state = super().to_df_state(grid_id)
+        surf_idx = self.get_surface_index()
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.at[grid_id, (col_name, idx_str)] = value
+
+        # Add all non-inherited properties
+        for attr in dir(self):
+            if (not attr.startswith('_') and
+                not callable(getattr(self, attr)) and
+                attr not in ['surface_type'] and
+                attr not in dir(super())):
+                try:
+                    value = getattr(self, attr)
+                    if not isinstance(value, (BaseModel, Enum)):
+                        set_df_value(attr, value)
+                except Exception as e:
+                    print(f"Warning: Could not set property {attr}: {str(e)}")
+
+        return df_state
 
 
 class ModelControl(BaseModel):
@@ -789,59 +1129,116 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             # raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
         return self
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert vegetated surface properties to DataFrame state format."""
+        # Get base properties
+        df_state = super().to_df_state(grid_id)
+
+        # Add vegetation-specific properties
+        surf_idx = self.get_surface_index()
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.at[grid_id, (col_name, idx_str)] = value
+
+        # Add LAI-related properties
+        if hasattr(self, "lai"):
+            lai = self.lai
+            idx = surf_idx - 2  # Adjust index for vegetation surfaces
+            for i, var in enumerate([
+                "albmax", "albmin", "lai_max", "lai_min",
+                "baset", "basete", "gdd_id", "sddfull",
+                "senescencesdd"
+            ]):
+                if hasattr(lai.laipower, var):
+                    set_df_value("laipower", (i, idx), getattr(lai.laipower, var))
+
+        # Add CO2-related properties for vegetated surfaces
+        if hasattr(self, "beta_bioco2"):
+            idx = surf_idx - 2
+            set_df_value("beta_bioco2", (idx,), self.beta_bioco2)
+            set_df_value("beta_enh_bioco2", (idx,), self.beta_enh_bioco2)
+            set_df_value("alpha_bioco2", (idx,), self.alpha_bioco2)
+            set_df_value("alpha_enh_bioco2", (idx,), self.alpha_enh_bioco2)
+
+        return df_state
+
 
 class DectrProperties(VegetatedSurfaceProperties):
     faidectree: float = Field(
         default=0.1, description="Frontal area index of deciduous trees"
     )
-    dectreeh: float = Field(default=10.0, description="Height of deciduous trees [m]")
-    pormin_dec: float = Field(
-        default=0.1,
-        ge=0.1,
-        le=0.9,
-        description="Minimum porosity of deciduous trees in winter when leaves are off",
-    )
-    pormax_dec: float = Field(
-        default=0.9,
-        ge=0.1,
-        le=0.9,
-        description="Maximum porosity of deciduous trees in summer when leaves are fully on",
-    )
-    capmax_dec: float = Field(
-        default=100.0,
-        description="Maximum storage capacity of deciduous trees in summer when leaves are fully on [mm]",
-    )
-    capmin_dec: float = Field(
-        default=10.0,
-        description="Minimum storage capacity of deciduous trees in winter when leaves are off [mm]",
-    )
+    dectreeh: float = Field(default=15.0, description="Deciduous tree height")
+    pormin_dec: float = Field(default=0.2, description="Minimum porosity")
+    pormax_dec: float = Field(default=0.6, description="Maximum porosity")
+    decidcap_id: Optional[int] = Field(default=None, description="DecidCap ID")
+    porosity_id: Optional[int] = Field(default=None, description="Porosity ID")
 
-    @model_validator(mode="after")
-    def validate_porosity_range(self) -> "DectrProperties":
-        if self.pormin_dec >= self.pormax_dec:
-            error_message = ValueError(
-                f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec}).")
-        return self
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert deciduous tree properties to DataFrame state format."""
+        # Get base properties from parent
+        df_state = super().to_df_state(grid_id)
+        surf_idx = self.get_surface_index()
 
-    @model_validator(mode="after")
-    def validate_cap_range(self) -> "DectrProperties":
-        if self.capmin_dec >= self.capmax_dec:
-            error_message = ValueError(
-                f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"capmin_dec ({self.capmin_dec}) must be less than capmax_dec ({self.capmax_dec}).")
-        return self
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.at[grid_id, (col_name, idx_str)] = value
+
+        # Add all non-inherited properties
+        for attr in dir(self):
+            if (not attr.startswith('_') and
+                not callable(getattr(self, attr)) and
+                attr not in ['surface_type'] and
+                attr not in dir(super())):
+                try:
+                    value = getattr(self, attr)
+                    if not isinstance(value, (BaseModel, Enum)):
+                        set_df_value(attr, value)
+                except Exception as e:
+                    print(f"Warning: Could not set property {attr}: {str(e)}")
+
+        return df_state
 
 
 class EvetrProperties(VegetatedSurfaceProperties):
     faievetree: float = Field(
         default=0.1, description="Frontal area index of evergreen trees"
     )
-    evetreeh: float = Field(default=10.0, description="Height of evergreen trees [m]")
+    evetreeh: float = Field(default=15.0, description="Evergreen tree height")
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert evergreen tree properties to DataFrame state format."""
+        # Get base properties from parent
+        df_state = super().to_df_state(grid_id)
+        surf_idx = self.get_surface_index()
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.at[grid_id, (col_name, idx_str)] = value
+
+        # Add all non-inherited properties
+        for attr in dir(self):
+            if (not attr.startswith('_') and
+                not callable(getattr(self, attr)) and
+                attr not in ['surface_type'] and
+                attr not in dir(super())):
+                try:
+                    value = getattr(self, attr)
+                    if not isinstance(value, (BaseModel, Enum)):
+                        set_df_value(attr, value)
+                except Exception as e:
+                    print(f"Warning: Could not set property {attr}: {str(e)}")
+
+        return df_state
 
 
 class SnowParams(BaseModel):
@@ -1165,147 +1562,231 @@ class SUEWSConfig(BaseModel):
         # 24-hour profile
         for hour in range(24):
             for i, day in enumerate(["working_day", "holiday"]):
-                prop_day = getattr(irrigation.wuprofa_24hr, day)
-                set_df_value(f"wuprofa_24hr", (hour, i), prop_day[f"{hour+1}"])
-                prop_day = getattr(irrigation.wuprofm_24hr, day)
-                set_df_value(f"wuprofm_24hr", (hour, i), prop_day[f"{hour+1}"])
+                for var in ["wuprofa_24hr", "wuprofm_24hr"]:
+                    val = getattr(getattr(irrigation, var), day)[f"{hour+1}"]
+                    set_df_value(var, (hour, i), val)
 
         # Process anthropogenic emissions
         anthro = props.anthropogenic_emissions
-        set_df_value("startdls", 0, anthro.startdls)
-        set_df_value("enddls", 0, anthro.enddls)
+        for var in ["startdls", "enddls"]:
+            set_df_value(var, 0, getattr(anthro, var))
+
         # heat
+        anthro_heat = anthro.heat
+        # day-specific mappings for anthro_heat
+        daymap_anthro_heat = {
+            "qf0_beu": anthro_heat.qf0_beu,
+            "qf_a": anthro_heat.qf_a,
+            "qf_b": anthro_heat.qf_b,
+            "qf_c": anthro_heat.qf_c,
+            "baset_cooling": anthro_heat.baset_cooling,
+            "baset_heating": anthro_heat.baset_heating,
+            "ah_min": anthro_heat.ah_min,
+            "ah_slope_cooling": anthro_heat.ah_slope_cooling,
+            "ah_slope_heating": anthro_heat.ah_slope_heating,
+            "popdensdaytime": anthro_heat.popdensdaytime,
+        }
+
+        # Set values for working day and holiday
         for i, day in enumerate(["working_day", "holiday"]):
-            set_df_value("qf0_beu", (i,), getattr(anthro.heat.qf0_beu, day))
-            set_df_value("qf_a", (i,), getattr(anthro.heat.qf_a, day))
-            set_df_value("qf_b", (i,), getattr(anthro.heat.qf_b, day))
-            set_df_value("qf_c", (i,), getattr(anthro.heat.qf_c, day))
-            set_df_value("baset_cooling", (i,), getattr(anthro.heat.baset_cooling, day))
-            set_df_value("baset_heating", (i,), getattr(anthro.heat.baset_heating, day))
-            set_df_value("ah_min", (i,), getattr(anthro.heat.ah_min, day))
-            set_df_value(
-                "ah_slope_cooling", (i,), getattr(anthro.heat.ah_slope_cooling, day)
-            )
-            set_df_value(
-                "ah_slope_heating", (i,), getattr(anthro.heat.ah_slope_heating, day)
-            )
+            for name, value in daymap_anthro_heat.items():
+                set_df_value(name, (i,), getattr(value, day))
+
             # Hourly profiles
             for hour in range(24):
                 set_df_value(
                     "ahprof_24hr",
                     (hour, i),
-                    getattr(anthro.heat.ahprof_24hr, day)[f"{hour+1}"],
+                    getattr(anthro_heat.ahprof_24hr, day)[f"{hour+1}"],
                 )
 
         # CO2 parameters
-        set_df_value("co2pointsource", 0, anthro.co2.co2pointsource)
-        set_df_value("ef_umolco2perj", 0, anthro.co2.ef_umolco2perj)
-        set_df_value("enef_v_jkm", 0, anthro.co2.enef_v_jkm)
+        anthro_co2 = anthro.co2
+        # invariant parameters
+        map_anthro_co2 = {
+            "co2pointsource": anthro_co2.co2pointsource,
+            "ef_umolco2perj": anthro_co2.ef_umolco2perj,
+            "enef_v_jkm": anthro_co2.enef_v_jkm,
+            "trafficunits": anthro_co2.trafficunits,
+            "frfossilfuel_heat": anthro_co2.frfossilfuel_heat,
+            "frfossilfuel_nonheat": anthro_co2.frfossilfuel_nonheat,
+            "maxfcmetab": anthro_co2.maxfcmetab,
+            "maxqfmetab": anthro_co2.maxqfmetab,
+            "minfcmetab": anthro_co2.minfcmetab,
+            "minqfmetab": anthro_co2.minqfmetab,
+        }
+        for name, value in map_anthro_co2.items():
+            set_df_value(name, 0, value)
 
         # Traffic and emission factors for weekday/weekend
+        daymap_anthro_co2_traffic = {
+            "trafficrate": anthro_co2.trafficrate,
+            "fcef_v_kgkm": anthro_co2.fcef_v_kgkm,
+        }
         for i, day in enumerate(["working_day", "holiday"]):
-            # Traffic rate and emission factors
-            set_df_value("trafficrate", (i,), getattr(anthro.co2.trafficrate, day))
-            set_df_value("fcef_v_kgkm", (i,), getattr(anthro.co2.fcef_v_kgkm, day))
+            for name, value in daymap_anthro_co2_traffic.items():
+                set_df_value(name, (i,), getattr(value, day))
 
-            # 24-hour profiles
+        # 24-hour profiles dependent on day type
+        dayhourmap_anthro_co2_traffic = {
+            "traffprof_24hr": anthro_co2.traffprof_24hr,
+            "humactivity_24hr": anthro_co2.humactivity_24hr,
+        }
+        for i, day in enumerate(["working_day", "holiday"]):
             for hour in range(24):
-                set_df_value(
-                    "traffprof_24hr",
-                    (hour, i),
-                    getattr(anthro.co2.traffprof_24hr, day)[f"{hour+1}"],
-                )
-                set_df_value(
-                    "humactivity_24hr",
-                    (hour, i),
-                    getattr(anthro.co2.humactivity_24hr, day)[f"{hour+1}"],
-                )
-
-        # Traffic units setting
-        set_df_value("trafficunits", 0, anthro.co2.trafficunits)
-
-        # Additional emission-related parameters
-        set_df_value("frfossilfuel_heat", 0, anthro.co2.frfossilfuel_heat)
-        set_df_value("frfossilfuel_nonheat", 0, anthro.co2.frfossilfuel_nonheat)
-        set_df_value("maxfcmetab", 0, anthro.co2.maxfcmetab)
-        set_df_value("maxqfmetab", 0, anthro.co2.maxqfmetab)
-        set_df_value("minfcmetab", 0, anthro.co2.minfcmetab)
-        set_df_value("minqfmetab", 0, anthro.co2.minqfmetab)
+                for name, value in dayhourmap_anthro_co2_traffic.items():
+                    set_df_value(name, (hour, i), getattr(value, day)[f"{hour+1}"])
 
         # Snow parameters
         snow = props.snow
-        set_df_value("crwmax", 0, snow.crwmax)
-        set_df_value("crwmin", 0, snow.crwmin)
-        set_df_value("narp_emis_snow", 0, snow.narp_emis_snow)
-        set_df_value("preciplimit", 0, snow.preciplimit)
-        set_df_value("preciplimitalb", 0, snow.preciplimitalb)
-        set_df_value("snowalbmax", 0, snow.snowalbmax)
-        set_df_value("snowalbmin", 0, snow.snowalbmin)
-        set_df_value("snowdensmin", 0, snow.snowdensmin)
-        set_df_value("snowdensmax", 0, snow.snowdensmax)
-        set_df_value("snowlimbldg", 0, snow.snowlimbldg)
-        set_df_value("snowlimpaved", 0, snow.snowlimpaved)
-        set_df_value("tau_a", 0, snow.tau_a)
-        set_df_value("tau_r", 0, snow.tau_r)
-        set_df_value("tau_f", 0, snow.tau_f)
-        set_df_value("tempmeltfact", 0, snow.tempmeltfact)
-        set_df_value("radmeltfact", 0, snow.radmeltfact)
+        map_snow = {
+            "crwmax": snow.crwmax,
+            "crwmin": snow.crwmin,
+            "narp_emis_snow": snow.narp_emis_snow,
+            "preciplimit": snow.preciplimit,
+            "preciplimitalb": snow.preciplimitalb,
+            "snowalbmax": snow.snowalbmax,
+            "snowalbmin": snow.snowalbmin,
+            "snowdensmin": snow.snowdensmin,
+            "snowdensmax": snow.snowdensmax,
+            "snowlimbldg": snow.snowlimbldg,
+            "snowlimpaved": snow.snowlimpaved,
+            "tau_a": snow.tau_a,
+            "tau_r": snow.tau_r,
+            "tau_f": snow.tau_f,
+            "tempmeltfact": snow.tempmeltfact,
+            "radmeltfact": snow.radmeltfact,
+        }
+        for name, value in map_snow.items():
+            set_df_value(name, 0, value)
 
         # Missing height parameters for vegetation and buildings
-        set_df_value("bldgh", 0, props.land_cover.bldgs.bldgh)  # Building height
-        set_df_value(
-            "evetreeh", 0, props.land_cover.evetr.evetreeh
-        )  # Evergreen tree height
-        set_df_value(
-            "dectreeh", 0, props.land_cover.dectr.dectreeh
-        )  # Deciduous tree height
-        # Add to to_df_state where vegetation parameters are handled
+        map_veg_height = {
+            "bldgh": props.land_cover.bldgs.bldgh,  # Building height
+            "evetreeh": props.land_cover.evetr.evetreeh,  # Evergreen tree height
+            "dectreeh": props.land_cover.dectr.dectreeh,  # Deciduous tree height
+        }
+        for name, value in map_veg_height.items():
+            set_df_value(name, 0, value)
 
         # Missing FAI parameters
-        set_df_value("faibldg", 0, props.land_cover.bldgs.faibldg)
-        set_df_value("faievetree", 0, props.land_cover.evetr.faievetree)
-        set_df_value("faidectree", 0, props.land_cover.dectr.faidectree)
-
-        # LUMPS parameters
-        lumps = props.lumps
-        set_df_value("raincover", 0, lumps.raincover)
-        set_df_value("rainmaxres", 0, lumps.rainmaxres)
-        set_df_value("drainrt", 0, lumps.drainrt)
-        set_df_value("veg_type", 0, lumps.veg_type)
+        map_faibldg = {
+            "faibldg": props.land_cover.bldgs.faibldg,
+            "faievetree": props.land_cover.evetr.faievetree,
+            "faidectree": props.land_cover.dectr.faidectree,
+        }
+        for name, value in map_faibldg.items():
+            set_df_value(name, 0, value)
 
         # Population profile parameters
-        set_df_value("popdensnighttime", 0, anthro.heat.popdensnighttime)
+        set_df_value("popdensnighttime", 0, anthro_heat.popdensnighttime)
         for i, day in enumerate(["working_day", "holiday"]):
-            set_df_value(
-                "popdensdaytime", (i,), getattr(anthro.heat.popdensdaytime, day)
-            )
             # 24-hour population profile
             for hour in range(24):
                 set_df_value(
                     "popprof_24hr",
                     (hour, i),
-                    getattr(anthro.heat.popprof_24hr, day)[f"{hour+1}"],
+                    getattr(anthro_heat.popprof_24hr, day)[f"{hour+1}"],
                 )
 
-        # Additional CO2 parameters
-        set_df_value("frfossilfuel_heat", 0, anthro.co2.frfossilfuel_heat)
-        set_df_value("frfossilfuel_nonheat", 0, anthro.co2.frfossilfuel_nonheat)
-        set_df_value("maxfcmetab", 0, anthro.co2.maxfcmetab)
-        set_df_value("maxqfmetab", 0, anthro.co2.maxqfmetab)
-        set_df_value("minfcmetab", 0, anthro.co2.minfcmetab)
-        set_df_value("minqfmetab", 0, anthro.co2.minqfmetab)
-        set_df_value("trafficrate", (0,), anthro.co2.trafficrate.working_day)
-        set_df_value("trafficrate", (1,), anthro.co2.trafficrate.holiday)
-        set_df_value("trafficunits", 0, anthro.co2.trafficunits)
-
-        # Snow profile
+        dayhourmap_snow = {
+            "snowprof_24hr": snow.snowprof_24hr,
+        }
         for i, day in enumerate(["working_day", "holiday"]):
             for hour in range(24):
-                set_df_value(
-                    "snowprof_24hr",
-                    (hour, i),
-                    getattr(snow.snowprof_24hr, day)[f"{hour+1}"],
-                )
+                for name, value in dayhourmap_snow.items():
+                    set_df_value(name, (hour, i), getattr(value, day)[f"{hour+1}"])
+
+        # Surface-specific parameter mappings
+        def get_surface_mappings(surface, surf_idx):
+            """Get mappings for surface parameters"""
+            base_map = {
+                "sfr_surf": ((surf_idx,), surface.sfr),
+                "emis": ((surf_idx,), surface.emis),
+            }
+
+            # Optional parameters with direct mapping
+            optional_params = {
+                "alb": "alb",
+                "ohm_threshsw": "ohm_threshsw",
+                "ohm_threshwd": "ohm_threshwd",
+                "chanohm": "chanohm",
+                "cpanohm": "cpanohm",
+                "kkanohm": "kkanohm",
+                "soildepth": "soildepth",
+                "soilstorecap": "soilstorecap_surf",
+                "statelimit": "statelimit_surf",
+                "wetthresh": "wetthresh_surf",
+                "flowchange": "flowchange",
+                "snowpacklimit": "snowpacklimit",
+            }
+
+            for attr, df_name in optional_params.items():
+                if hasattr(surface, attr):
+                    # special case for flowchange
+                    if attr == "flowchange":
+                        base_map[df_name] = (0, getattr(surface, attr))
+                    else:
+                        base_map[df_name] = ((surf_idx,), getattr(surface, attr))
+
+            return base_map
+
+        def get_vegetation_mappings(surface, surf_idx):
+            """Get mappings specific to vegetation surfaces"""
+            veg_map = {}
+
+            # LAI parameters mapping
+            idx = surf_idx - 2
+            if hasattr(surface, "lai"):
+                lai = surface.lai
+                lai_params = {
+                    "baset": lai.baset,
+                    "gddfull": lai.gddfull,
+                    "basete": lai.basete,
+                    "sddfull": lai.sddfull,
+                    "laimin": lai.laimin,
+                    "laimax": lai.laimax,
+                    "laitype": lai.laitype,
+                }
+                for param, value in lai_params.items():
+                    veg_map[param] = ((idx,), value)
+
+                # LAI power parameters
+                lai_power_vars = [
+                    "growth_lai",
+                    "growth_gdd",
+                    "senescence_lai",
+                    "senescence_sdd",
+                ]
+                for i, var in enumerate(lai_power_vars):
+                    veg_map["laipower"] = ((i, idx), getattr(lai.laipower, var))
+
+            # CO2 parameters mapping
+            co2_params = {
+                "beta_bioco2": "beta_bioco2",
+                "beta_enh_bioco2": "beta_enh_bioco2",
+                "alpha_bioco2": "alpha_bioco2",
+                "alpha_enh_bioco2": "alpha_enh_bioco2",
+                "resp_a": "resp_a",
+                "resp_b": "resp_b",
+                "theta_bioco2": "theta_bioco2",
+            }
+
+            for attr, df_name in co2_params.items():
+                if hasattr(surface, attr):
+                    veg_map[df_name] = ((idx,), getattr(surface, attr))
+
+            if hasattr(surface, "alb_min") and hasattr(surface, "alb_max"):
+                # set_df_value("alb", (surf_idx,), surface.alb_min)  # Use min as default
+                veg_map["alb"] = ((surf_idx,), surface.alb_min)
+                surf_name = surface._surface_type.value
+                str_alb_max = f"albmax_{surf_name}"
+                str_alb_min = f"albmin_{surf_name}"
+                veg_map[str_alb_max] = (0, surface.alb_max)
+                veg_map[str_alb_min] = (0, surface.alb_min)
+
+            return veg_map
+
         # Surface properties
         surface_map = {
             "paved": 0,
@@ -1321,9 +1802,20 @@ class SUEWSConfig(BaseModel):
         for surf_name, surf_idx in surface_map.items():
             surface = getattr(props.land_cover, surf_name)
 
-            # Basic surface properties
-            set_df_value("sfr_surf", (surf_idx,), surface.sfr)
-            set_df_value("emis", (surf_idx,), surface.emis)
+            # # Get and apply base surface mappings
+            surface_maps = get_surface_mappings(surface, surf_idx)
+
+            for name, (indices, value) in surface_maps.items():
+                set_df_value(name, indices, value)
+
+            # a dummy row for extra surface ! not used but essential for the structural completeness
+            set_df_value("ohm_threshsw", (7,), surface.ohm_threshsw)
+
+            # For vegetation surfaces, apply additional mappings
+            if surf_name in ["dectr", "evetr", "grass"]:
+                veg_maps = get_vegetation_mappings(surface, surf_idx)
+                for name, (indices, value) in veg_maps.items():
+                    set_df_value(name, indices, value)
 
             # Add water distribution parameters
             if surface.waterdist is not None:
@@ -1372,46 +1864,6 @@ class SUEWSConfig(BaseModel):
                 # Set diagonal elements (targets to themselves) to 0
                 for row_idx in range(6):
                     set_df_value("waterdist", (row_idx, row_idx), 0.0)
-
-            # Handle albedo
-            if hasattr(surface, "alb"):
-                set_df_value("alb", (surf_idx,), surface.alb)
-            elif hasattr(surface, "alb_min") and hasattr(surface, "alb_max"):
-                set_df_value("alb", (surf_idx,), surface.alb_min)  # Use min as default
-                if surf_name == "dectr":
-                    set_df_value("albmax_dectr", 0, surface.alb_max)
-                    set_df_value("albmin_dectr", 0, surface.alb_min)
-                elif surf_name == "evetr":
-                    set_df_value("albmax_evetr", 0, surface.alb_max)
-                    set_df_value("albmin_evetr", 0, surface.alb_min)
-                elif surf_name == "grass":
-                    set_df_value("albmax_grass", 0, surface.alb_max)
-                    set_df_value("albmin_grass", 0, surface.alb_min)
-            # Add to OHM section
-            if hasattr(surface, "ohm_threshsw"):
-                set_df_value("ohm_threshsw", (surf_idx,), surface.ohm_threshsw)
-                set_df_value("ohm_threshsw", (7,), surface.ohm_threshsw)
-
-            if hasattr(surface, "ohm_threshwd"):
-                set_df_value("ohm_threshwd", (surf_idx,), surface.ohm_threshwd)
-                set_df_value("ohm_threshwd", (7,), surface.ohm_threshwd)
-            if hasattr(surface, "chanohm"):
-                set_df_value("chanohm", (surf_idx,), surface.chanohm)
-            if hasattr(surface, "cpanohm"):
-                set_df_value("cpanohm", (surf_idx,), surface.cpanohm)
-            if hasattr(surface, "kkanohm"):
-                set_df_value("kkanohm", (surf_idx,), surface.kkanohm)
-
-            # Add to surface properties section
-            if hasattr(surface, "soildepth"):
-                set_df_value("soildepth", (surf_idx,), surface.soildepth)
-            if hasattr(surface, "soilstorecap"):
-                set_df_value("soilstorecap_surf", (surf_idx,), surface.soilstorecap)
-            if hasattr(surface, "statelimit"):
-                set_df_value("statelimit_surf", (surf_idx,), surface.statelimit)
-
-            if hasattr(surface, "wetthresh"):
-                set_df_value("wetthresh_surf", (surf_idx,), surface.wetthresh)
 
             # porosity parameters for deciduous trees
             if hasattr(surface, "pormin_dec"):
@@ -2229,6 +2681,14 @@ class SUEWSConfig(BaseModel):
                 ):
                     set_df_value("laipower", (i, idx), getattr(lai.laipower, var))
 
+            # CO2 parameters for vegetated surfaces
+            if hasattr(surface, "beta_bioco2"):
+                idx = surf_idx - 2
+                set_df_value("beta_bioco2", (idx,), surface.beta_bioco2)
+                set_df_value("beta_enh_bioco2", (idx,), surface.beta_enh_bioco2)
+                set_df_value("alpha_bioco2", (idx,), surface.alpha_bioco2)
+                set_df_value("alpha_enh_bioco2", (idx,), surface.alpha_enh_bioco2)
+
             # Add to surface properties section
             if hasattr(surface, "sathydraulicconduct"):
                 set_df_value(
@@ -2289,7 +2749,6 @@ class SUEWSConfig(BaseModel):
                 set_df_value("tstep_prev", 0, 300)
                 set_df_value("tair_av", 0, 0)
                 set_df_value("snowfallcum", 0, 0)
-                set_df_value("ohm_threshwd", (7,), surface.ohm_threshwd)
 
                 # Snow-related parameters
                 if init_state.snowfrac is not None:
