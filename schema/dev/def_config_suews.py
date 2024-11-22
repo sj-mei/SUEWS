@@ -1035,6 +1035,25 @@ class LUMPSParams(BaseModel):
     drainrt: float = Field(ge=0, le=1)
     veg_type: int
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """
+        Convert LUMPS parameters to DataFrame state format.
+
+        Args:
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            pd.DataFrame: DataFrame containing LUMPS parameters.
+        """
+
+        df_state = init_df_state(grid_id)
+
+        df_state.loc[grid_id, ("raincover", 0)] = self.raincover
+        df_state.loc[grid_id, ("rainmaxres", 0)] = self.rainmaxres
+        df_state.loc[grid_id, ("drainrt", 0)] = self.drainrt
+        df_state.loc[grid_id, ("veg_type", 0)] = self.veg_type
+
+        return df_state
 
 class SPARTACUSParams(BaseModel):
     air_ext_lw: float
