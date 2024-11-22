@@ -1652,7 +1652,6 @@ class IrrigationParams(BaseModel):
         )
 
 
-#day profile coulmns need to be fixed
 class AnthropogenicHeat(BaseModel):
     qf0_beu: DayProfile
     qf_a: DayProfile
@@ -1668,6 +1667,7 @@ class AnthropogenicHeat(BaseModel):
     popdensnighttime: float
     popprof_24hr: HourlyProfile
 
+    #DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert anthropogenic heat parameters to DataFrame state format.
@@ -1726,6 +1726,7 @@ class CO2Params(BaseModel):
     traffprof_24hr: HourlyProfile
     humactivity_24hr: HourlyProfile
 
+    #DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert CO2 parameters to DataFrame state format.
@@ -1832,6 +1833,36 @@ class Conductance(BaseModel):
             df_state.loc[grid_id, (param_name, 0)] = value
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "Conductance":
+        """
+        Reconstruct Conductance from a DataFrame state format.
+
+        Args:
+            df: DataFrame containing conductance parameters
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            Conductance: Instance of Conductance
+        """
+        scalar_params = {
+            "g_max": df.loc[grid_id, ("g_max", 0)],
+            "g_k": df.loc[grid_id, ("g_k", 0)],
+            "g_q_base": df.loc[grid_id, ("g_q_base", 0)],
+            "g_q_shape": df.loc[grid_id, ("g_q_shape", 0)],
+            "g_t": df.loc[grid_id, ("g_t", 0)],
+            "g_sm": df.loc[grid_id, ("g_sm", 0)],
+            "kmax": df.loc[grid_id, ("kmax", 0)],
+            "gsmodel": int(df.loc[grid_id, ("gsmodel", 0)]),
+            "s1": df.loc[grid_id, ("s1", 0)],
+            "s2": df.loc[grid_id, ("s2", 0)],
+            "tl": df.loc[grid_id, ("tl", 0)],
+            "th": df.loc[grid_id, ("th", 0)],
+        }
+
+        return cls(**scalar_params)
+
 
 
 
