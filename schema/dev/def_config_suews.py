@@ -1570,6 +1570,40 @@ class Conductance(BaseModel):
     tl: float = Field(description="Air temperature threshold parameter")
     th: float = Field(description="Air temperature threshold parameter")
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """
+        Convert conductance parameters to DataFrame state format.
+
+        Args:
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            pd.DataFrame: DataFrame containing conductance parameters.
+        """
+
+        df_state = init_df_state(grid_id)
+
+        scalar_params = {
+            "g_max": self.g_max,
+            "g_k": self.g_k,
+            "g_q_base": self.g_q_base,
+            "g_q_shape": self.g_q_shape,
+            "g_t": self.g_t,
+            "g_sm": self.g_sm,
+            "kmax": self.kmax,
+            "gsmodel": self.gsmodel,
+            "s1": self.s1,
+            "s2": self.s2,
+            "tl": self.tl,
+            "th": self.th,
+        }
+
+        for param_name, value in scalar_params.items():
+            df_state.loc[grid_id, (param_name, 0)] = value
+
+        return df_state
+
+
 
 class LAIPowerCoefficients(BaseModel):
     growth_lai: float = Field(
