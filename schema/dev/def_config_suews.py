@@ -1233,6 +1233,24 @@ class LUMPSParams(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "LUMPSParams":
+        """Create LUMPSParams from DataFrame state format.
+
+        Args:
+            df: DataFrame containing LUMPS parameters
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            LUMPSParams: Instance of LUMPSParams
+        """
+        # Extract attributes from DataFrame
+        params = {}
+        for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
+            params[attr] = df.loc[grid_id, (attr, "0")]
+
+        return cls(**params)
+
 
 class SPARTACUSParams(BaseModel):
     air_ext_lw: float
