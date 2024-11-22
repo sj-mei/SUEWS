@@ -1209,6 +1209,48 @@ class ModelPhysics(BaseModel):
             set_df_value(attr, getattr(self, attr))
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "ModelPhysics":
+        """
+        Reconstruct ModelPhysics from a DataFrame state format.
+
+        Args:
+            df: DataFrame containing model physics properties
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            ModelPhysics: Instance of ModelPhysics
+        """
+        # Initialize a dictionary to hold extracted attributes
+        properties = {}
+
+        # List of attributes expected in the DataFrame
+        list_attr = [
+            "netradiationmethod",
+            "emissionsmethod",
+            "storageheatmethod",
+            "ohmincqf",
+            "roughlenmommethod",
+            "roughlenheatmethod",
+            "stabilitymethod",
+            "smdmethod",
+            "waterusemethod",
+            "diagmethod",
+            "faimethod",
+            "localclimatemethod",
+            "snowuse",
+        ]
+
+        # Extract values from the DataFrame
+        for attr in list_attr:
+            try:
+                properties[attr] = int(df.loc[grid_id, (attr, "0")])
+            except KeyError:
+                raise ValueError(f"Missing attribute '{attr}' in the DataFrame")
+
+        # Create and return an instance of ModelPhysics
+        return cls(**properties)
+
 
 class LUMPSParams(BaseModel):
     raincover: float = Field(ge=0, le=1, default=0.25)
@@ -1317,7 +1359,7 @@ class SPARTACUSParams(BaseModel):
         Returns:
             SPARTACUSParams: An instance of SPARTACUSParams
         """
-        # Define parameter names matching to_df_state structure
+
         spartacus_params = {
             "air_ext_lw",
             "air_ext_sw",
@@ -1335,10 +1377,8 @@ class SPARTACUSParams(BaseModel):
             "veg_ssa_sw",
         }
 
-        # Extract parameters from the DataFrame
         params = {param: df.loc[grid_id, (param, "0")] for param in spartacus_params}
 
-        # Return an instance of SPARTACUSParams
         return cls(**params)
 
     # def to_df_state(self, grid_id: int) -> pd.DataFrame:
