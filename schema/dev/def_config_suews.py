@@ -1438,6 +1438,47 @@ class AnthropogenicHeat(BaseModel):
     popdensnighttime: float
     popprof_24hr: HourlyProfile
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """
+        Convert anthropogenic heat parameters to DataFrame state format.
+
+        Args:
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            pd.DataFrame: DataFrame containing anthropogenic heat parameters.
+        """
+
+        df_state = init_df_state(grid_id)
+
+        day_profiles = {
+            "qf0_beu": self.qf0_beu,
+            "qf_a": self.qf_a,
+            "qf_b": self.qf_b,
+            "qf_c": self.qf_c,
+            "baset_cooling": self.baset_cooling,
+            "baset_heating": self.baset_heating,
+            "ah_min": self.ah_min,
+            "ah_slope_cooling": self.ah_slope_cooling,
+            "ah_slope_heating": self.ah_slope_heating,
+            "popdensdaytime": self.popdensdaytime,
+        }
+        for param_name, profile in day_profiles.items():
+            df_day_profile = profile.to_df_state(grid_id, param_name)
+            df_state = df_state.combine_first(df_day_profile)
+
+        hourly_profiles = {
+            "ahprof_24hr": self.ahprof_24hr,
+            "popprof_24hr": self.popprof_24hr,
+        }
+        for param_name, profile in hourly_profiles.items():
+            df_hourly_profile = profile.to_df_state(grid_id, param_name)
+            df_state = df_state.combine_first(df_hourly_profile)
+
+        df_state.loc[grid_id, ("popdensnighttime", 0)] = self.popdensnighttime
+
+        return df_state
+
 
 class CO2Params(BaseModel):
     co2pointsource: float
