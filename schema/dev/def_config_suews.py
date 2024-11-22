@@ -1211,10 +1211,10 @@ class ModelPhysics(BaseModel):
 
 
 class LUMPSParams(BaseModel):
-    raincover: float = Field(ge=0, le=1)
-    rainmaxres: float = Field(ge=0, le=1)
-    drainrt: float = Field(ge=0, le=1)
-    veg_type: int
+    raincover: float = Field(ge=0, le=1, default=0.25)
+    rainmaxres: float = Field(ge=0, le=1, default=0.25)
+    drainrt: float = Field(ge=0, le=1, default=0.25)
+    veg_type: int = Field(default=1)
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert LUMPS parameters to DataFrame state format.
@@ -1623,7 +1623,7 @@ class CO2Params(BaseModel):
         for param_name, profile in day_profiles.items():
             df_day_profile = profile.to_df_state(grid_id, param_name)
             df_state = df_state.combine_first(df_day_profile)
-            
+
         hourly_profiles = {
             "traffprof_24hr": self.traffprof_24hr,
             "humactivity_24hr": self.humactivity_24hr,
@@ -2049,7 +2049,7 @@ class SnowParams(BaseModel):
             exceptions.append(error_message)
             # raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
         return self
-    
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert snow parameters to DataFrame state format.
@@ -2060,7 +2060,7 @@ class SnowParams(BaseModel):
         Returns:
             pd.DataFrame: DataFrame containing snow parameters.
         """
-        
+
         df_state = init_df_state(grid_id)
 
         scalar_params = {
