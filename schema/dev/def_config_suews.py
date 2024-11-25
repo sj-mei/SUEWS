@@ -1764,7 +1764,7 @@ class AnthropogenicHeat(BaseModel):
         df_state.loc[grid_id, ("popdensnighttime", 0)] = self.popdensnighttime
 
         return df_state
-        
+
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "AnthropogenicHeat":
         """
@@ -1872,6 +1872,52 @@ class CO2Params(BaseModel):
             df_state = df_state.combine_first(df_hourly_profile)
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "CO2Params":
+        """
+        Reconstruct CO2Params from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing CO2 parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            CO2Params: Instance of CO2Params.
+        """
+
+        # Extract scalar attributes
+        scalar_params = {
+            "co2pointsource": df.loc[grid_id, ("co2pointsource", 0)],
+            "ef_umolco2perj": df.loc[grid_id, ("ef_umolco2perj", 0)],
+            "enef_v_jkm": df.loc[grid_id, ("enef_v_jkm", 0)],
+            "frfossilfuel_heat": df.loc[grid_id, ("frfossilfuel_heat", 0)],
+            "frfossilfuel_nonheat": df.loc[grid_id, ("frfossilfuel_nonheat", 0)],
+            "maxfcmetab": df.loc[grid_id, ("maxfcmetab", 0)],
+            "maxqfmetab": df.loc[grid_id, ("maxqfmetab", 0)],
+            "minfcmetab": df.loc[grid_id, ("minfcmetab", 0)],
+            "minqfmetab": df.loc[grid_id, ("minqfmetab", 0)],
+            "trafficunits": df.loc[grid_id, ("trafficunits", 0)],
+        }
+
+        # Extract DayProfile attributes
+        day_profiles = {
+            "fcef_v_kgkm": DayProfile.from_df_state(df, grid_id, "fcef_v_kgkm"),
+            "trafficrate": DayProfile.from_df_state(df, grid_id, "trafficrate"),
+        }
+
+        # Extract HourlyProfile attributes
+        hourly_profiles = {
+            "traffprof_24hr": HourlyProfile.from_df_state(df, grid_id, "traffprof_24hr"),
+            "humactivity_24hr": HourlyProfile.from_df_state(df, grid_id, "humactivity_24hr"),
+        }
+
+        # Construct and return CO2Params instance
+        return cls(
+            **scalar_params,
+            **day_profiles,
+            **hourly_profiles,
+        )
 
 
 class AnthropogenicEmissions(BaseModel):
