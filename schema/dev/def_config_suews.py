@@ -96,6 +96,18 @@ class SurfaceInitialState(BaseModel):
         """Set surface type"""
         self._surface_type = surface_type
 
+    def get_surface_index(self) -> int:
+        """Get surface index"""
+        return {
+            SurfaceType.PAVED: 0,
+            SurfaceType.BLDGS: 1,
+            SurfaceType.EVETR: 2,
+            SurfaceType.DECTR: 3,
+            SurfaceType.GRASS: 4,
+            SurfaceType.BSOIL: 5,
+            SurfaceType.WATER: 6,
+        }[self._surface_type]
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert base surface initial state to DataFrame state format.
 
@@ -108,15 +120,7 @@ class SurfaceInitialState(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Get surface index
-        surf_idx = {
-            SurfaceType.PAVED: 0,
-            SurfaceType.BLDGS: 1,
-            SurfaceType.EVETR: 2,
-            SurfaceType.DECTR: 3,
-            SurfaceType.GRASS: 4,
-            SurfaceType.BSOIL: 5,
-            SurfaceType.WATER: 6,
-        }[self._surface_type]
+        surf_idx = self.get_surface_index()
 
         # Set basic state parameters
         df_state[("state", f"({surf_idx},)")] = self.state
@@ -161,7 +165,7 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
     def validate_surface_state(self) -> "VegetatedSurfaceInitialState":
         """Validate state based on surface type"""
         # Skip validation if surface type not yet set
-        if not hasattr(self, '_surface_type') or self._surface_type is None:
+        if not hasattr(self, "_surface_type") or self._surface_type is None:
             return self
 
         if self._surface_type not in [
@@ -217,7 +221,7 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
     def validate_surface_state(self) -> "DeciduousTreeSurfaceInitialState":
         """Validate state based on surface type"""
         # Skip validation if surface type not yet set
-        if not hasattr(self, '_surface_type') or self._surface_type is None:
+        if not hasattr(self, "_surface_type") or self._surface_type is None:
             return self
 
         if self._surface_type != SurfaceType.DECTR:
@@ -252,9 +256,15 @@ class InitialStates(BaseModel):
     snowalb: float = Field(ge=0, le=1, description="Initial snow albedo", default=0.5)
     paved: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
     bldgs: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
-    evetr: VegetatedSurfaceInitialState = Field(default_factory=VegetatedSurfaceInitialState)
-    dectr: DeciduousTreeSurfaceInitialState = Field(default_factory=DeciduousTreeSurfaceInitialState)
-    grass: VegetatedSurfaceInitialState = Field(default_factory=VegetatedSurfaceInitialState)
+    evetr: VegetatedSurfaceInitialState = Field(
+        default_factory=VegetatedSurfaceInitialState
+    )
+    dectr: DeciduousTreeSurfaceInitialState = Field(
+        default_factory=DeciduousTreeSurfaceInitialState
+    )
+    grass: VegetatedSurfaceInitialState = Field(
+        default_factory=VegetatedSurfaceInitialState
+    )
     bsoil: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
     water: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
     roofs: Optional[List[SurfaceInitialState]] = Field(
@@ -349,13 +359,16 @@ class InitialStates(BaseModel):
                         df_surface = surface.to_df_state(grid_id)
                         # Prefix column names with surface type
                         df_surface.columns = pd.MultiIndex.from_tuples(
-                            [(f"{surface_type}_{col[0]}", f"({i},)") for col in df_surface.columns],
-                            names=["var", "ind_dim"]
+                            [
+                                (f"{surface_type}_{col[0]}", f"({i},)")
+                                for col in df_surface.columns
+                            ],
+                            names=["var", "ind_dim"],
                         )
                         df_state = pd.concat([df_state, df_surface], axis=1)
 
         # Drop duplicate columns while preserving first occurrence
-        df_state = df_state.loc[:, ~df_state.columns.duplicated(keep='first')]
+        df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="first")]
 
         return df_state
 
@@ -1428,7 +1441,9 @@ class DayProfile(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "DayProfile":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, param_name: str
+    ) -> "DayProfile":
         """
         Reconstruct DayProfile from a DataFrame state format.
 
@@ -1456,8 +1471,6 @@ class DayProfile(BaseModel):
                 raise KeyError(f"Column {col} not found in DataFrame")
 
         return cls(**params)
-
-
 
     # # this need to be fixed!
     # def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
@@ -1517,7 +1530,9 @@ class WeeklyProfile(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "WeeklyProfile":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, param_name: str
+    ) -> "WeeklyProfile":
         """Reconstruct WeeklyProfile from a DataFrame state format.
 
         Args:
@@ -1596,7 +1611,9 @@ class HourlyProfile(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "HourlyProfile":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, param_name: str
+    ) -> "HourlyProfile":
         """Reconstruct HourlyProfile from a DataFrame state format.
 
         Args:
@@ -1723,7 +1740,7 @@ class AnthropogenicHeat(BaseModel):
     popdensnighttime: float
     popprof_24hr: HourlyProfile
 
-    #DayProfile coulmns need to be fixed
+    # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert anthropogenic heat parameters to DataFrame state format.
@@ -1787,8 +1804,12 @@ class AnthropogenicHeat(BaseModel):
             "baset_cooling": DayProfile.from_df_state(df, grid_id, "baset_cooling"),
             "baset_heating": DayProfile.from_df_state(df, grid_id, "baset_heating"),
             "ah_min": DayProfile.from_df_state(df, grid_id, "ah_min"),
-            "ah_slope_cooling": DayProfile.from_df_state(df, grid_id, "ah_slope_cooling"),
-            "ah_slope_heating": DayProfile.from_df_state(df, grid_id, "ah_slope_heating"),
+            "ah_slope_cooling": DayProfile.from_df_state(
+                df, grid_id, "ah_slope_cooling"
+            ),
+            "ah_slope_heating": DayProfile.from_df_state(
+                df, grid_id, "ah_slope_heating"
+            ),
             "popdensdaytime": DayProfile.from_df_state(df, grid_id, "popdensdaytime"),
         }
 
@@ -1809,7 +1830,6 @@ class AnthropogenicHeat(BaseModel):
         )
 
 
-
 class CO2Params(BaseModel):
     co2pointsource: float
     ef_umolco2perj: float
@@ -1826,7 +1846,7 @@ class CO2Params(BaseModel):
     traffprof_24hr: HourlyProfile
     humactivity_24hr: HourlyProfile
 
-    #DayProfile coulmns need to be fixed
+    # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert CO2 parameters to DataFrame state format.
@@ -1908,8 +1928,12 @@ class CO2Params(BaseModel):
 
         # Extract HourlyProfile attributes
         hourly_profiles = {
-            "traffprof_24hr": HourlyProfile.from_df_state(df, grid_id, "traffprof_24hr"),
-            "humactivity_24hr": HourlyProfile.from_df_state(df, grid_id, "humactivity_24hr"),
+            "traffprof_24hr": HourlyProfile.from_df_state(
+                df, grid_id, "traffprof_24hr"
+            ),
+            "humactivity_24hr": HourlyProfile.from_df_state(
+                df, grid_id, "humactivity_24hr"
+            ),
         }
 
         # Construct and return CO2Params instance
@@ -2060,8 +2084,6 @@ class Conductance(BaseModel):
         }
 
         return cls(**scalar_params)
-
-
 
 
 class LAIPowerCoefficients(BaseModel):
