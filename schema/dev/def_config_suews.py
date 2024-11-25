@@ -1403,24 +1403,49 @@ class DayProfile(BaseModel):
     working_day: float
     holiday: float
 
-    # this need to be fixed!
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
-        """Convert day profile to DataFrame state format.
+        """
+        Convert day profile to DataFrame state format.
 
         Args:
-            grid_id: Grid ID for the DataFrame index
-            param_name: Name of the parameter this profile belongs to
+            grid_id (int): Grid ID for the DataFrame index.
+            param_name (str): Name of the parameter this profile belongs to.
 
         Returns:
-            pd.DataFrame: DataFrame containing day profile parameters
+            pd.DataFrame: DataFrame containing day profile parameters.
         """
+
         df_state = init_df_state(grid_id)
 
-        # Set values for working day and holiday
-        df_state[(f"{param_name}_wd", "0")] = self.working_day
-        df_state[(f"{param_name}_we", "0")] = self.holiday
+        day_map = {
+            "working_day": 0,
+            "holiday": 1,
+        }
+
+        for day, idx in day_map.items():
+            df_state.loc[grid_id, (param_name, f"({idx},)")] = getattr(self, day)
 
         return df_state
+
+
+    # # this need to be fixed!
+    # def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
+    #     """Convert day profile to DataFrame state format.
+
+    #     Args:
+    #         grid_id: Grid ID for the DataFrame index
+    #         param_name: Name of the parameter this profile belongs to
+
+    #     Returns:
+    #         pd.DataFrame: DataFrame containing day profile parameters
+    #     """
+    #     df_state = init_df_state(grid_id)
+
+    #     # Set values for working day and holiday
+    #     df_state[(f"{param_name}_wd", "0")] = self.working_day
+    #     df_state[(f"{param_name}_we", "0")] = self.holiday
+
+    #     return df_state
 
 
 class WeeklyProfile(BaseModel):
