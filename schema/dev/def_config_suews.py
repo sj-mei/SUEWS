@@ -200,7 +200,8 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
         df_state[("sdd", f"({surf_idx},)")] = self.sdd_id
 
         # Add water use parameters
-        df_wu = self.wu.to_df_state(grid_id, surf_idx)
+        veg_idx = surf_idx - 2
+        df_wu = self.wu.to_df_state(veg_idx, grid_id)
         df_state = pd.concat([df_state, df_wu], axis=1)
 
         # Drop any duplicate columns
