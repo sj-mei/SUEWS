@@ -169,7 +169,9 @@ class SurfaceInitialState(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "SurfaceInitialState":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "SurfaceInitialState":
         """
         Reconstruct SurfaceInitialState from a DataFrame state format.
 
@@ -189,9 +191,7 @@ class SurfaceInitialState(BaseModel):
         snowwater = df.loc[grid_id, ("snowwater", f"({surf_idx},)")]
         snowdens = df.loc[grid_id, ("snowdens", f"({surf_idx},)")]
 
-        temperature = [
-            df.loc[grid_id, ("t", f"({surf_idx},{i})")] for i in range(5)
-        ]
+        temperature = [df.loc[grid_id, ("t", f"({surf_idx},{i})")] for i in range(5)]
         tsfc = df.loc[grid_id, ("tsfc", f"({surf_idx},)")]
         tin = df.loc[grid_id, ("tin", f"({surf_idx},)")]
 
@@ -269,7 +269,9 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "VegetatedSurfaceInitialState":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "VegetatedSurfaceInitialState":
         """
         Reconstruct VegetatedSurfaceInitialState from a DataFrame state format.
 
@@ -345,7 +347,9 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "DeciduousTreeSurfaceInitialState":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "DeciduousTreeSurfaceInitialState":
         """
         Reconstruct DeciduousTreeSurfaceInitialState from a DataFrame state format.
 
@@ -358,7 +362,9 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
             DeciduousTreeSurfaceInitialState: Instance of DeciduousTreeSurfaceInitialState.
         """
         # Base class reconstruction
-        base_instance = VegetatedSurfaceInitialState.from_df_state(df, grid_id, surf_idx)
+        base_instance = VegetatedSurfaceInitialState.from_df_state(
+            df, grid_id, surf_idx
+        )
 
         # Deciduous tree-specific parameters
         porosity_id = df.loc[grid_id, ("porosity", f"({surf_idx},)")]
@@ -369,7 +375,6 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
             porosity_id=porosity_id,
             decidcap_id=decidcap_id,
         )
-
 
 
 class InitialStates(BaseModel):
@@ -524,7 +529,9 @@ class InitialStates(BaseModel):
         }
 
         # Reconstruct roof and wall states
-        def reconstruct_layers(layer_name: str, surface_class: Type[SurfaceInitialState]):
+        def reconstruct_layers(
+            layer_name: str, surface_class: Type[SurfaceInitialState]
+        ):
             layers = []
             for i in range(2):  # Assuming two layers for simplicity
                 try:
@@ -1076,7 +1083,10 @@ class BuildingLayer(BaseModel):
     wall_specular_frac: Optional[float] = Field(default=0.1)
 
     def to_df_state(
-        self, grid_id: int, layer_idx: int, is_roof: bool = True
+        self,
+        grid_id: int,
+        layer_idx: int,
+        is_roof: bool = True,
     ) -> pd.DataFrame:
         """Convert building layer properties to DataFrame state format.
 
@@ -1096,7 +1106,7 @@ class BuildingLayer(BaseModel):
         # Add layer-specific properties
         if is_roof and self.roof_albedo_dir_mult_fact is not None:
             columns = pd.MultiIndex.from_tuples(
-                [("roof_albedo_dir_mult_fact", (layer_idx,))], names=["var", "ind_dim"]
+                [("roof_albedo_dir_mult_fact", (0,layer_idx))], names=["var", "ind_dim"]
             )
             df_roof = pd.DataFrame(
                 index=pd.Index([grid_id], name="grid"),
@@ -1108,7 +1118,7 @@ class BuildingLayer(BaseModel):
 
         elif not is_roof and self.wall_specular_frac is not None:
             columns = pd.MultiIndex.from_tuples(
-                [("wall_specular_frac", (layer_idx,))], names=["var", "ind_dim"]
+                [("wall_specular_frac", (0,layer_idx))], names=["var", "ind_dim"]
             )
             df_wall = pd.DataFrame(
                 index=pd.Index([grid_id], name="grid"),
@@ -1207,6 +1217,30 @@ class VerticalLayers(BaseModel):
             )
 
         return self
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert vertical layers to DataFrame state format."""
+        df_state = init_df_state(grid_id)
+
+        # add veg_frac and building_frac
+
+        df_state[(f"nlayer", "0")] = self.nlayer
+        df_state[(f"height", "(0,)")] = self.height[0]
+
+        for i in range(self.nlayer):
+            df_state[(f"height", f"({i+1},)")] = self.height[i+1]
+            df_state[(f"veg_frac", f"({i},)")] = self.veg_frac[i]
+            df_state[(f"veg_scale", f"({i},)")] = self.veg_scale[i]
+            df_state[(f"building_frac", f"({i},)")] = self.building_frac[i]
+            df_state[(f"building_scale", f"({i},)")] = self.building_scale[i]
+            df_state = df_state.add(
+                self.roofs[i].to_df_state(grid_id, i, is_roof=True), fill_value=0
+            )
+            df_state = df_state.add(
+                self.walls[i].to_df_state(grid_id, i, is_roof=False), fill_value=0
+            )
+
+        return df_state
 
 
 class BuildingProperties(NonVegetatedSurfaceProperties):
