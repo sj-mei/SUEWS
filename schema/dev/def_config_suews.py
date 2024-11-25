@@ -1923,8 +1923,8 @@ class CO2Params(BaseModel):
 class AnthropogenicEmissions(BaseModel):
     startdls: float
     enddls: float
-    heat: AnthropogenicHeat
-    co2: CO2Params
+    #heat: AnthropogenicHeat
+    #co2: CO2Params
 
     #Columns for heat and co2 are already produced by to_df_state in 
     #AnthropogenicHeat and CO2Params classes and should not be added 
@@ -1946,6 +1946,24 @@ class AnthropogenicEmissions(BaseModel):
         df_state.loc[grid_id, ("enddls", 0)] = self.enddls
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "AnthropogenicEmissions":
+        """
+        Reconstruct AnthropogenicEmissions from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing anthropogenic emissions parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            AnthropogenicEmissions: Instance of AnthropogenicEmissions.
+        """
+        
+        startdls = df.loc[grid_id, ("startdls", 0)]
+        enddls = df.loc[grid_id, ("enddls", 0)]
+
+        return cls(startdls=startdls, enddls=enddls)
 
 class Conductance(BaseModel):
     g_max: float = Field(description="Maximum conductance")
