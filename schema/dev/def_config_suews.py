@@ -1805,6 +1805,26 @@ class AnthropogenicEmissions(BaseModel):
     heat: AnthropogenicHeat
     co2: CO2Params
 
+    #Columns for heat and co2 are already produced by to_df_state in 
+    #AnthropogenicHeat and CO2Params classes and should not be added 
+    #twice here.
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """
+        Convert anthropogenic emissions parameters to DataFrame state format.
+
+        Args:
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            pd.DataFrame: DataFrame containing anthropogenic emissions parameters.
+        """
+        df_state = init_df_state(grid_id)
+
+        # Set start and end daylight saving times
+        df_state.loc[grid_id, ("startdls", 0)] = self.startdls
+        df_state.loc[grid_id, ("enddls", 0)] = self.enddls
+
+        return df_state
 
 class Conductance(BaseModel):
     g_max: float = Field(description="Maximum conductance")
