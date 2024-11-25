@@ -1427,6 +1427,37 @@ class DayProfile(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "DayProfile":
+        """
+        Reconstruct DayProfile from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing day profile parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            param_name (str): Name of the parameter this profile belongs to.
+
+        Returns:
+            DayProfile: Instance of DayProfile.
+        """
+
+        day_map = {
+            "working_day": 0,
+            "holiday": 1,
+        }
+
+        # Extract values for working day and holiday from the DataFrame
+        params = {}
+        for day, idx in day_map.items():
+            col = (param_name, f"({idx},)")
+            if col in df.columns:
+                params[day] = df.loc[grid_id, col]
+            else:
+                raise KeyError(f"Column {col} not found in DataFrame")
+
+        return cls(**params)
+
+
 
     # # this need to be fixed!
     # def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
