@@ -230,7 +230,7 @@ CONTAINS
          CALL RSL_cal_prms( &
             StabilityMethod, & !input
             !nz_above, zarray(nz_can + 1:nz), & !input
-            nz_above+1, zarray(nz_can:nz), & !input
+            nz_above + 1, zarray(nz_can:nz), & !input
             zh, L_MOD, sfr_surf, FAI, PAI, & !input
             !psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
             psihatm_z(nz_can:nz), psihath_z(nz_can:nz), & ! Calculate psihatm_z at zH
@@ -1894,7 +1894,7 @@ CONTAINS
                                     z_top, z_mid, z_btm, &
                                     cm, c2m, &
                                     zh_RSL, zd_RSL, L_MOD_RSL, beta, elm, Lc)
-                                    !zh_RSL, zd_RSL, L_MOD, beta, elm, Lc)
+         !zh_RSL, zd_RSL, L_MOD, beta, elm, Lc)
          psihatm_array(iz - 2) = psihatm_btm
          psihatm_top = psihatm_mid
          psihatm_mid = psihatm_btm
