@@ -1923,12 +1923,9 @@ class CO2Params(BaseModel):
 class AnthropogenicEmissions(BaseModel):
     startdls: float
     enddls: float
-    #heat: AnthropogenicHeat
-    #co2: CO2Params
+    heat: AnthropogenicHeat
+    co2: CO2Params
 
-    #Columns for heat and co2 are already produced by to_df_state in 
-    #AnthropogenicHeat and CO2Params classes and should not be added 
-    #twice here.
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert anthropogenic emissions parameters to DataFrame state format.
@@ -1945,6 +1942,17 @@ class AnthropogenicEmissions(BaseModel):
         df_state.loc[grid_id, ("startdls", 0)] = self.startdls
         df_state.loc[grid_id, ("enddls", 0)] = self.enddls
 
+        # Add heat parameters
+        df_heat = self.heat.to_df_state(grid_id)
+        df_state = pd.concat([df_state, df_heat], axis=1)
+
+        # Add CO2 parameters
+        df_co2 = self.co2.to_df_state(grid_id)
+        df_state = pd.concat([df_state, df_co2], axis=1)
+
+        # Drop duplicate columns if necessary
+        df_state = df_state.loc[:, ~df_state.columns.duplicated()]
+
         return df_state
 
     @classmethod
@@ -1959,11 +1967,17 @@ class AnthropogenicEmissions(BaseModel):
         Returns:
             AnthropogenicEmissions: Instance of AnthropogenicEmissions.
         """
-        
         startdls = df.loc[grid_id, ("startdls", 0)]
         enddls = df.loc[grid_id, ("enddls", 0)]
 
-        return cls(startdls=startdls, enddls=enddls)
+        # Reconstruct heat parameters
+        heat = AnthropogenicHeat.from_df_state(df, grid_id)
+
+        # Reconstruct CO2 parameters
+        co2 = CO2Params.from_df_state(df, grid_id)
+
+        return cls(startdls=startdls, enddls=enddls, heat=heat, co2=co2)
+
 
 class Conductance(BaseModel):
     g_max: float = Field(description="Maximum conductance")
