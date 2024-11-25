@@ -1764,6 +1764,50 @@ class AnthropogenicHeat(BaseModel):
         df_state.loc[grid_id, ("popdensnighttime", 0)] = self.popdensnighttime
 
         return df_state
+        
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "AnthropogenicHeat":
+        """
+        Reconstruct AnthropogenicHeat from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing anthropogenic heat parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            AnthropogenicHeat: Instance of AnthropogenicHeat.
+        """
+
+        # Extract DayProfile attributes
+        day_profiles = {
+            "qf0_beu": DayProfile.from_df_state(df, grid_id, "qf0_beu"),
+            "qf_a": DayProfile.from_df_state(df, grid_id, "qf_a"),
+            "qf_b": DayProfile.from_df_state(df, grid_id, "qf_b"),
+            "qf_c": DayProfile.from_df_state(df, grid_id, "qf_c"),
+            "baset_cooling": DayProfile.from_df_state(df, grid_id, "baset_cooling"),
+            "baset_heating": DayProfile.from_df_state(df, grid_id, "baset_heating"),
+            "ah_min": DayProfile.from_df_state(df, grid_id, "ah_min"),
+            "ah_slope_cooling": DayProfile.from_df_state(df, grid_id, "ah_slope_cooling"),
+            "ah_slope_heating": DayProfile.from_df_state(df, grid_id, "ah_slope_heating"),
+            "popdensdaytime": DayProfile.from_df_state(df, grid_id, "popdensdaytime"),
+        }
+
+        # Extract HourlyProfile attributes
+        hourly_profiles = {
+            "ahprof_24hr": HourlyProfile.from_df_state(df, grid_id, "ahprof_24hr"),
+            "popprof_24hr": HourlyProfile.from_df_state(df, grid_id, "popprof_24hr"),
+        }
+
+        # Extract scalar attribute
+        popdensnighttime = df.loc[grid_id, ("popdensnighttime", 0)]
+
+        # Construct and return AnthropogenicHeat instance
+        return cls(
+            **day_profiles,
+            **hourly_profiles,
+            popdensnighttime=popdensnighttime,
+        )
+
 
 
 class CO2Params(BaseModel):
