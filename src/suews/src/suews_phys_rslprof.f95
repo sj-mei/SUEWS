@@ -1696,7 +1696,7 @@ CONTAINS
       ! output
       REAL(KIND(1D0)) :: zd_RSL ! zd used in RSL
 
-      zd_RSL = Zh_RSL - (beta**2.)*Lc
+      !zd_RSL = Zh_RSL - (beta**2.)*Lc
       zd_RSL = Zh_RSL/(1.-EXP(-Zh_RSL/((beta**2.)*Lc))) - (beta**2.)*Lc
       !correct negative values using rule of thumb, TS 24 Jun 2020
       ! if (zd_RSL < 0) zd_RSL = 0.7*Zh_RSL
