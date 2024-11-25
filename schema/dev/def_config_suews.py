@@ -63,6 +63,25 @@ class WaterUse(BaseModel):
         df_state.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 2}")] = self.wu_manual
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, veg_idx: int, grid_id: int) -> "WaterUse":
+        """
+        Reconstruct WaterUse from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing water use parameters.
+            veg_idx (int): Vegetation index for identifying columns.
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            WaterUse: Instance of WaterUse.
+        """
+        wu_total = df.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 0}")]
+        wu_auto = df.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 1}")]
+        wu_manual = df.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 2}")]
+
+        return cls(wu_total=wu_total, wu_auto=wu_auto, wu_manual=wu_manual)
+
 
 class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
@@ -149,6 +168,46 @@ class SurfaceInitialState(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "SurfaceInitialState":
+        """
+        Reconstruct SurfaceInitialState from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing surface initial state parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            surf_idx (int): Surface index for identifying columns.
+
+        Returns:
+            SurfaceInitialState: Instance of SurfaceInitialState.
+        """
+        state = df.loc[grid_id, ("state", f"({surf_idx},)")]
+        soilstore = df.loc[grid_id, ("soilstore_id", f"({surf_idx},)")]
+        snowfrac = df.loc[grid_id, ("snowfrac", f"({surf_idx},)")]
+        snowpack = df.loc[grid_id, ("snowpack", f"({surf_idx},)")]
+        icefrac = df.loc[grid_id, ("icefrac", f"({surf_idx},)")]
+        snowwater = df.loc[grid_id, ("snowwater", f"({surf_idx},)")]
+        snowdens = df.loc[grid_id, ("snowdens", f"({surf_idx},)")]
+
+        temperature = [
+            df.loc[grid_id, ("t", f"({surf_idx},{i})")] for i in range(5)
+        ]
+        tsfc = df.loc[grid_id, ("tsfc", f"({surf_idx},)")]
+        tin = df.loc[grid_id, ("tin", f"({surf_idx},)")]
+
+        return cls(
+            state=state,
+            soilstore=soilstore,
+            snowfrac=snowfrac,
+            snowpack=snowpack,
+            icefrac=icefrac,
+            snowwater=snowwater,
+            snowdens=snowdens,
+            temperature=temperature,
+            tsfc=tsfc,
+            tin=tin,
+        )
+
 
 class VegetatedSurfaceInitialState(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
@@ -209,6 +268,41 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "VegetatedSurfaceInitialState":
+        """
+        Reconstruct VegetatedSurfaceInitialState from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing vegetated surface state parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            surf_idx (int): Surface index for identifying columns.
+
+        Returns:
+            VegetatedSurfaceInitialState: Instance of VegetatedSurfaceInitialState.
+        """
+        # Base class reconstruction
+        base_instance = SurfaceInitialState.from_df_state(df, grid_id, surf_idx)
+
+        # Vegetated surface-specific parameters
+        alb_id = df.loc[grid_id, ("alb", f"({surf_idx},)")]
+        lai_id = df.loc[grid_id, ("lai", f"({surf_idx},)")]
+        gdd_id = df.loc[grid_id, ("gdd", f"({surf_idx},)")]
+        sdd_id = df.loc[grid_id, ("sdd", f"({surf_idx},)")]
+
+        # Reconstruct WaterUse instance
+        veg_idx = surf_idx - 2
+        wu = WaterUse.from_df_state(df, veg_idx, grid_id)
+
+        return cls(
+            **base_instance.dict(),
+            alb_id=alb_id,
+            lai_id=lai_id,
+            gdd_id=gdd_id,
+            sdd_id=sdd_id,
+            wu=wu,
+        )
+
 
 class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
     """Initial state parameters for deciduous trees"""
@@ -249,6 +343,33 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
         df_state[("decidcap", f"({surf_idx},)")] = self.decidcap_id
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "DeciduousTreeSurfaceInitialState":
+        """
+        Reconstruct DeciduousTreeSurfaceInitialState from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing deciduous tree state parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            surf_idx (int): Surface index for identifying columns.
+
+        Returns:
+            DeciduousTreeSurfaceInitialState: Instance of DeciduousTreeSurfaceInitialState.
+        """
+        # Base class reconstruction
+        base_instance = VegetatedSurfaceInitialState.from_df_state(df, grid_id, surf_idx)
+
+        # Deciduous tree-specific parameters
+        porosity_id = df.loc[grid_id, ("porosity", f"({surf_idx},)")]
+        decidcap_id = df.loc[grid_id, ("decidcap", f"({surf_idx},)")]
+
+        return cls(
+            **base_instance.dict(),
+            porosity_id=porosity_id,
+            decidcap_id=decidcap_id,
+        )
+
 
 
 class InitialStates(BaseModel):
@@ -372,6 +493,56 @@ class InitialStates(BaseModel):
         df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="first")]
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "InitialStates":
+        """
+        Reconstruct InitialStates from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing initial states.
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            InitialStates: Instance of InitialStates.
+        """
+        snowalb = df.loc[grid_id, ("snowalb", "0")]
+
+        # Reconstruct surface states
+        surface_types = {
+            "paved": SurfaceInitialState,
+            "bldgs": SurfaceInitialState,
+            "evetr": VegetatedSurfaceInitialState,
+            "dectr": DeciduousTreeSurfaceInitialState,
+            "grass": VegetatedSurfaceInitialState,
+            "bsoil": SurfaceInitialState,
+            "water": SurfaceInitialState,
+        }
+        surfaces = {
+            name: surface_class.from_df_state(df, grid_id, idx)
+            for idx, (name, surface_class) in enumerate(surface_types.items())
+        }
+
+        # Reconstruct roof and wall states
+        def reconstruct_layers(layer_name: str, surface_class: Type[SurfaceInitialState]):
+            layers = []
+            for i in range(2):  # Assuming two layers for simplicity
+                try:
+                    layer = surface_class.from_df_state(df, grid_id, i)
+                    layers.append(layer)
+                except KeyError:
+                    break
+            return layers
+
+        roofs = reconstruct_layers("roof", SurfaceInitialState)
+        walls = reconstruct_layers("wall", SurfaceInitialState)
+
+        return cls(
+            snowalb=snowalb,
+            roofs=roofs,
+            walls=walls,
+            **surfaces,
+        )
 
 
 class ThermalLayer(BaseModel):
