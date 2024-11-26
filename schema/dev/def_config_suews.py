@@ -961,73 +961,30 @@ class SurfaceProperties(BaseModel):
 class NonVegetatedSurfaceProperties(SurfaceProperties):
     alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
     emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
-    z0: float = Field(ge=0, description="Roughness length for momentum", default=0.1)
-    zdh: float = Field(ge=0, description="Zero-plane displacement height", default=0.05)
+    # z0: float = Field(ge=0, description="Roughness length for momentum", default=0.1)
+    # zdh: float = Field(ge=0, description="Zero-plane displacement height", default=0.05)
     frfossilfuel_heat: float = Field(
         ge=0, le=1, description="Fraction of fossil fuel heat", default=0.0
     )
     frfossilfuel_cool: float = Field(
         ge=0, le=1, description="Fraction of fossil fuel cooling", default=0.0
     )
-    waterdist: Optional[WaterDistribution] = None
-    storedrainprm: Optional[StorageDrainParams] = None
-    thermal_layers: Optional[ThermalLayer] = None
-    ohm_coef: Optional[OHMCoefficients] = None
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert non-vegetated surface properties to DataFrame state format."""
-        dfs = []
 
         # Get base properties from parent
         df_base = super().to_df_state(grid_id)
-        dfs.append(df_base)
 
         surf_idx = self.get_surface_index()
 
-        # Create DataFrame for this class's properties
-        param_tuples = []
-        values = []
+        df_waterdist = self.waterdist.to_df_state(grid_id, surf_idx)
 
-        # Add all non-inherited properties that aren't model-specific or nested objects
-        for attr in dir(self):
-            if (
-                not attr.startswith("_")
-                and not callable(getattr(self, attr))
-                and not attr.startswith("model_")
-                and attr
-                not in [
-                    "surface_type",
-                    "waterdist",
-                    "storedrainprm",
-                    "thermal_layers",
-                    "ohm_coef",
-                ]
-                and attr not in dir(super())
-            ):
-                value = getattr(self, attr)
-                if not isinstance(value, (BaseModel, Enum)):
-                    param_tuples.append((attr, (surf_idx,)))
-                    values.append(value)
-
-        if param_tuples:  # Only create DataFrame if we have properties to add
-            columns = pd.MultiIndex.from_tuples(param_tuples, names=["var", "ind_dim"])
-            df = pd.DataFrame(
-                index=pd.Index([grid_id], name="grid"),
-                columns=columns,
-                data=[values],
-                dtype=float,
-            )
-            dfs.append(df)
-
-        # Add nested property DataFrames
-        for nested_prop in ["waterdist", "storedrainprm", "thermal_layers", "ohm_coef"]:
-            nested_obj = getattr(self, nested_prop)
-            if nested_obj is not None and hasattr(nested_obj, "to_df_state"):
-                nested_df = nested_obj.to_df_state(grid_id, surf_idx)
-                dfs.append(nested_df)
+        for attr in ["alb", "emis", "frfossilfuel_heat", "frfossilfuel_cool"]:
+            df_base.loc[grid_id, (attr, f"({surf_idx},)")] = getattr(self, attr)
 
         # Merge all DataFrames
-        df_final = pd.concat(dfs, axis=1)
+        df_final = pd.concat([df_base, df_waterdist], axis=1).sort_index(axis=1)
         return df_final
 
 
