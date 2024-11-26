@@ -712,7 +712,7 @@ class WaterDistribution(BaseModel):
         ):
             value = getattr(self, attr)
             if value is not None:
-                param_tuples.append(("waterdist", (i, surf_idx)))
+                param_tuples.append(("waterdist", f"({i},{surf_idx})"))
                 values.append(value)
 
         # Create MultiIndex columns
@@ -921,7 +921,7 @@ class SurfaceProperties(BaseModel):
             idx_str = f"({surf_idx},)"
             if (col_name, idx_str) not in df_state.columns:
                 df_state[(col_name, idx_str)] = np.nan
-            df_state.at[grid_id, (col_name, idx_str)] = value
+            df_state.loc[grid_id, (col_name, idx_str)] = value
 
         # Get all properties of this class using introspection
         properties = [
@@ -929,7 +929,7 @@ class SurfaceProperties(BaseModel):
             for attr in dir(self)
             if not attr.startswith("_") and not callable(getattr(self, attr))
         ]
-        # drop 'surface_type' and model-specific properties
+        # drop 'surface_type' and model-specific properties (e.g. model_xx)
         properties = [
             p for p in properties if p != "surface_type" and not p.startswith("model_")
         ]
@@ -939,19 +939,25 @@ class SurfaceProperties(BaseModel):
 
         for property in properties:
             # Handle nested properties with their own to_df_state methods
-            if property in ["waterdist", "storedrainprm", "thermal_layers", "ohm_coef"]:
+            if property in [
+                "waterdist",
+                "storedrainprm",
+                "thermal_layers",
+                "ohm_coef",
+                "lai",
+            ]:
                 nested_obj = getattr(self, property)
                 if nested_obj is not None and hasattr(nested_obj, "to_df_state"):
                     nested_df = nested_obj.to_df_state(grid_id, surf_idx)
                     dfs.append(nested_df)
                 continue
 
-            try:
+            else:
                 value = getattr(self, property)
                 set_df_value(property, value)
-            except Exception as e:
-                print(f"Warning: Could not set property {property}: {str(e)}")
-                continue
+            # except Exception as e:
+            #     print(f"Warning: Could not set property {property}: {str(e)}")
+            #     continue
 
         # Merge all DataFrames
         df_final = pd.concat(dfs, axis=1).sort_index(axis=1)
@@ -961,8 +967,6 @@ class SurfaceProperties(BaseModel):
 class NonVegetatedSurfaceProperties(SurfaceProperties):
     alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
     emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
-    # z0: float = Field(ge=0, description="Roughness length for momentum", default=0.1)
-    # zdh: float = Field(ge=0, description="Zero-plane displacement height", default=0.05)
     frfossilfuel_heat: float = Field(
         ge=0, le=1, description="Fraction of fossil fuel heat", default=0.0
     )
@@ -978,14 +982,15 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
 
         surf_idx = self.get_surface_index()
 
-        df_waterdist = self.waterdist.to_df_state(grid_id, surf_idx)
+        if self.waterdist is not None:
+            df_waterdist = self.waterdist.to_df_state(grid_id, surf_idx)
+            df_base = pd.concat([df_base, df_waterdist], axis=1).sort_index(axis=1)
 
         for attr in ["alb", "emis", "frfossilfuel_heat", "frfossilfuel_cool"]:
             df_base.loc[grid_id, (attr, f"({surf_idx},)")] = getattr(self, attr)
+            df_base = df_base.sort_index(axis=1)
 
-        # Merge all DataFrames
-        df_final = pd.concat([df_base, df_waterdist], axis=1).sort_index(axis=1)
-        return df_final
+        return df_base
 
 
 class PavedProperties(NonVegetatedSurfaceProperties):
@@ -1222,7 +1227,9 @@ class BuildingProperties(NonVegetatedSurfaceProperties):
         #         df_state[(col_name, idx_str)] = np.nan
         #     df_state.loc[grid_id, (col_name, idx_str)] = value
 
-        def set_df_value(df: pd.DataFrame, grid_id: int, col_name: str, idx_str: str, value: float) -> pd.DataFrame:
+        def set_df_value(
+            df: pd.DataFrame, grid_id: int, col_name: str, idx_str: str, value: float
+        ) -> pd.DataFrame:
             """Helper function to safely set values in DataFrame with MultiIndex columns."""
             col = (col_name, idx_str)
             if col not in df.columns:
@@ -1233,19 +1240,15 @@ class BuildingProperties(NonVegetatedSurfaceProperties):
 
         # Add all non-inherited properties
         for attr in ["faibldg", "bldgh"]:
-            df_state = set_df_value(df_state, grid_id, attr, f"({surf_idx},)", getattr(self, attr))
+            df_state = set_df_value(
+                df_state, grid_id, attr, f"({surf_idx},)", getattr(self, attr)
+            )
 
         return df_state
 
 
 class BaresoilProperties(NonVegetatedSurfaceProperties):
     surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
-
-    # def to_df_state(self, grid_id: int) -> pd.DataFrame:
-    #     """Convert bare soil properties to DataFrame state format."""
-    #     df_state = super().to_df_state(grid_id)
-
-    #     return df_state
 
 
 class WaterProperties(NonVegetatedSurfaceProperties):
@@ -2415,38 +2418,30 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
         # Helper function to set values in DataFrame
         def set_df_value(col_name: str, idx_str: str, value: float):
-            print(f"Setting {col_name} with index {idx_str} to {value}")
             if (col_name, idx_str) not in df_state.columns:
-                print(f"Column {col_name} with index {idx_str} not found, adding nan")
                 df_state[(col_name, idx_str)] = np.nan
             df_state.loc[grid_id, (col_name, idx_str)] = value
 
-        # Add LAI-related properties
-        if hasattr(self, "lai"):
-            lai = self.lai
-            idx = surf_idx - 2  # Adjust index for vegetation surfaces
-            for i, var in enumerate(
-                [
-                    "albmax",
-                    "albmin",
-                    "lai_max",
-                    "lai_min",
-                    "baset",
-                    "basete",
-                    "gdd_id",
-                    "sddfull",
-                    "senescencesdd",
-                ]
-            ):
-                if hasattr(lai.laipower, var):
-                    set_df_value("laipower", f"{(i, idx)}", getattr(lai.laipower, var))
+        # add ordinary float properties
+        for attr in [
+            "alb_min",
+            "alb_max",
+            "beta_bioco2",
+            "beta_enh_bioco2",
+            "alpha_bioco2",
+            "alpha_enh_bioco2",
+            "resp_a",
+            "resp_b",
+            "theta_bioco2",
+            "maxconductance",
+            "min_res_bioco2",
+            "ie_a",
+            "ie_m",
+        ]:
+            set_df_value(attr, f"({surf_idx},)", getattr(self, attr))
 
-        # Add CO2-related properties for vegetated surfaces
-        if hasattr(self, "beta_bioco2"):
-            set_df_value("beta_bioco2", f"({idx},)", self.beta_bioco2)
-            set_df_value("beta_enh_bioco2", f"({idx},)", self.beta_enh_bioco2)
-            set_df_value("alpha_bioco2", f"({idx},)", self.alpha_bioco2)
-            set_df_value("alpha_enh_bioco2", f"({idx},)", self.alpha_enh_bioco2)
+        df_lai = self.lai.to_df_state(grid_id, surf_idx)
+        df_state = pd.concat([df_state, df_lai], axis=1).sort_index(axis=1)
 
         return df_state
 
@@ -2470,22 +2465,22 @@ class DectrProperties(VegetatedSurfaceProperties):
             idx_str = f"({surf_idx},)"
             if (col_name, idx_str) not in df_state.columns:
                 df_state[(col_name, idx_str)] = np.nan
-            df_state.at[grid_id, (col_name, idx_str)] = value
+            df_state.loc[grid_id, (col_name, idx_str)] = value
 
+        list_properties = [
+            "faidectree",
+            "dectreeh",
+            "pormin_dec",
+            "pormax_dec",
+        ]
         # Add all non-inherited properties
-        for attr in dir(self):
-            if (
-                not attr.startswith("_")
-                and not callable(getattr(self, attr))
-                and attr not in ["surface_type"]
-                and attr not in dir(super())
-            ):
-                try:
-                    value = getattr(self, attr)
-                    if not isinstance(value, (BaseModel, Enum)):
-                        set_df_value(attr, value)
-                except Exception as e:
-                    print(f"Warning: Could not set property {attr}: {str(e)}")
+        for attr in list_properties:
+            try:
+                value = getattr(self, attr)
+                if not isinstance(value, (BaseModel, Enum)):
+                    set_df_value(attr, value)
+            except Exception as e:
+                print(f"Warning: Could not set property {attr}: {str(e)}")
 
         return df_state
 
@@ -2507,22 +2502,17 @@ class EvetrProperties(VegetatedSurfaceProperties):
             idx_str = f"({surf_idx},)"
             if (col_name, idx_str) not in df_state.columns:
                 df_state[(col_name, idx_str)] = np.nan
-            df_state.at[grid_id, (col_name, idx_str)] = value
+            df_state.loc[grid_id, (col_name, idx_str)] = value
 
         # Add all non-inherited properties
-        for attr in dir(self):
-            if (
-                not attr.startswith("_")
-                and not callable(getattr(self, attr))
-                and attr not in ["surface_type"]
-                and attr not in dir(super())
-            ):
-                try:
-                    value = getattr(self, attr)
-                    if not isinstance(value, (BaseModel, Enum)):
-                        set_df_value(attr, value)
-                except Exception as e:
-                    print(f"Warning: Could not set property {attr}: {str(e)}")
+        list_properties = ["faievetree", "evetreeh"]
+        for attr in list_properties:
+            try:
+                value = getattr(self, attr)
+                if not isinstance(value, (BaseModel, Enum)):
+                    set_df_value(attr, value)
+            except Exception as e:
+                print(f"Warning: Could not set property {attr}: {str(e)}")
 
         return df_state
 
@@ -2677,8 +2667,6 @@ class LandCover(BaseModel):
 
         list_df_state = []
         for lc in ["paved", "bldgs", "dectr", "evetr", "grass", "bsoil", "water"]:
-            print('')
-            print(lc)
             df_state = getattr(self, lc).to_df_state(grid_id)
             list_df_state.append(df_state)
         df_state = pd.concat(list_df_state, axis=1)
@@ -2724,7 +2712,6 @@ class SiteProperties(BaseModel):
             "narp_trans_site",
         ]:
             df_state.loc[grid_id, f"({var}, 0)"] = getattr(self, var)
-
 
         return df_state
 
