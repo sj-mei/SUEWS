@@ -17,9 +17,9 @@ import math
 
 def init_df_state(grid_id: int) -> pd.DataFrame:
     idx = pd.Index([grid_id], name="grid")
-    col = pd.MultiIndex.from_tuples([("grid_iv", 0)], names=["var", "ind_dim"])
+    col = pd.MultiIndex.from_tuples([("gridiv", "0")], names=["var", "ind_dim"])
     df_state = pd.DataFrame(index=idx, columns=col)
-    df_state.loc[grid_id, ("grid_iv", 0)] = grid_id
+    df_state.loc[grid_id, ("gridiv", "0")] = grid_id
     return df_state
 
 
@@ -879,7 +879,7 @@ class OHMCoefficients(BaseModel):
         df_state = df_state.loc[:, ~df_state.columns.duplicated()]
 
         return df_state
-    
+
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "OHMCoefficients":
         """
@@ -1632,8 +1632,8 @@ class SPARTACUSParams(BaseModel):
 
 
 class DayProfile(BaseModel):
-    working_day: float
-    holiday: float
+    working_day: float = Field(default=1.0)
+    holiday: float = Field(default=0.0)
 
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
         """
@@ -1787,6 +1787,31 @@ class HourlyProfile(BaseModel):
     working_day: Dict[str, float]
     holiday: Dict[str, float]
 
+    @classmethod
+    def __init_default_values__(cls) -> Dict[str, Dict[str, float]]:
+        """Generate default values for hourly profiles.
+
+        Returns:
+            Dict containing default working_day and holiday profiles with uniform distribution
+        """
+        # Create uniform distribution (1/24) for each hour
+        uniform_value = 1.0 / 24.0
+
+        # Generate hour keys 1-24 with uniform values
+        hourly_values = {str(hour): uniform_value for hour in range(1, 25)}
+
+        return {
+            "working_day": hourly_values.copy(),
+            "holiday": hourly_values.copy()
+        }
+
+    def __init__(self, **data):
+        # If no values provided, use defaults
+        if not data:
+            defaults = self.__init_default_values__()
+            data = defaults
+        super().__init__(**data)
+
     @field_validator("working_day", "holiday", mode="before")
     def convert_keys_to_str(cls, v: Dict) -> Dict[str, float]:
         if isinstance(v, dict):
@@ -1821,11 +1846,11 @@ class HourlyProfile(BaseModel):
 
         # Set working day values (index 0)
         for hour, value in self.working_day.items():
-            df_state[(param_name, f"(0,{int(hour)-1})")] = value
+            df_state[(param_name, f"({int(hour)-1}, 0)")] = value
 
         # Set holiday/weekend values (index 1)
         for hour, value in self.holiday.items():
-            df_state[(param_name, f"(1,{int(hour)-1})")] = value
+            df_state[(param_name, f"({int(hour)-1}, 1)")] = value
 
         return df_state
 
@@ -1945,19 +1970,19 @@ class IrrigationParams(BaseModel):
 
 
 class AnthropogenicHeat(BaseModel):
-    qf0_beu: DayProfile
-    qf_a: DayProfile
-    qf_b: DayProfile
-    qf_c: DayProfile
-    baset_cooling: DayProfile
-    baset_heating: DayProfile
-    ah_min: DayProfile
-    ah_slope_cooling: DayProfile
-    ah_slope_heating: DayProfile
-    ahprof_24hr: HourlyProfile
-    popdensdaytime: DayProfile
-    popdensnighttime: float
-    popprof_24hr: HourlyProfile
+    qf0_beu: DayProfile = Field(description="Base anthropogenic heat flux for buildings, equipment and urban metabolism", default_factory=DayProfile)
+    qf_a: DayProfile = Field(description="Coefficient a for anthropogenic heat flux calculation", default_factory=DayProfile)
+    qf_b: DayProfile = Field(description="Coefficient b for anthropogenic heat flux calculation", default_factory=DayProfile)
+    qf_c: DayProfile = Field(description="Coefficient c for anthropogenic heat flux calculation", default_factory=DayProfile)
+    baset_cooling: DayProfile = Field(description="Base temperature for cooling degree days", default_factory=DayProfile)
+    baset_heating: DayProfile = Field(description="Base temperature for heating degree days", default_factory=DayProfile)
+    ah_min: DayProfile = Field(description="Minimum anthropogenic heat flux", default_factory=DayProfile)
+    ah_slope_cooling: DayProfile = Field(description="Slope of anthropogenic heat vs cooling degree days", default_factory=DayProfile)
+    ah_slope_heating: DayProfile = Field(description="Slope of anthropogenic heat vs heating degree days", default_factory=DayProfile)
+    ahprof_24hr: HourlyProfile = Field(description="24-hour profile of anthropogenic heat flux", default_factory=HourlyProfile)
+    popdensdaytime: DayProfile = Field(description="Daytime population density", default_factory=DayProfile)
+    popdensnighttime: float = Field(default=10.0, description="Nighttime population density")
+    popprof_24hr: HourlyProfile = Field(description="24-hour profile of population density", default_factory=HourlyProfile)
 
     # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -1997,7 +2022,7 @@ class AnthropogenicHeat(BaseModel):
             df_hourly_profile = profile.to_df_state(grid_id, param_name)
             df_state = df_state.combine_first(df_hourly_profile)
 
-        df_state.loc[grid_id, ("popdensnighttime", 0)] = self.popdensnighttime
+        df_state.loc[grid_id, ("popdensnighttime", "0")] = self.popdensnighttime
 
         return df_state
 
@@ -2050,20 +2075,20 @@ class AnthropogenicHeat(BaseModel):
 
 
 class CO2Params(BaseModel):
-    co2pointsource: float
-    ef_umolco2perj: float
-    enef_v_jkm: float
-    fcef_v_kgkm: DayProfile
-    frfossilfuel_heat: float
-    frfossilfuel_nonheat: float
-    maxfcmetab: float
-    maxqfmetab: float
-    minfcmetab: float
-    minqfmetab: float
-    trafficrate: DayProfile
-    trafficunits: float
-    traffprof_24hr: HourlyProfile
-    humactivity_24hr: HourlyProfile
+    co2pointsource: float = Field(default=0.0, description="CO2 point source emission factor")
+    ef_umolco2perj: float = Field(default=0.0, description="CO2 emission factor per unit of fuel")
+    enef_v_jkm: float = Field(default=0.0, description="CO2 emission factor per unit of vehicle distance")
+    fcef_v_kgkm: DayProfile = Field(description="Fuel consumption efficiency for vehicles", default_factory=DayProfile)
+    frfossilfuel_heat: float = Field(default=0.0, description="Fraction of fossil fuel heat")
+    frfossilfuel_nonheat: float = Field(default=0.0, description="Fraction of fossil fuel non-heat")
+    maxfcmetab: float = Field(default=0.0, description="Maximum fuel consumption metabolic rate")
+    maxqfmetab: float = Field(default=0.0, description="Maximum heat production metabolic rate")
+    minfcmetab: float = Field(default=0.0, description="Minimum fuel consumption metabolic rate")
+    minqfmetab: float = Field(default=0.0, description="Minimum heat production metabolic rate")
+    trafficrate: DayProfile = Field(description="Traffic rate", default_factory=DayProfile)
+    trafficunits: float = Field(default=0.0, description="Traffic units")
+    traffprof_24hr: HourlyProfile = Field(description="24-hour profile of traffic rate", default_factory=HourlyProfile)
+    humactivity_24hr: HourlyProfile = Field(description="24-hour profile of human activity", default_factory=HourlyProfile)
 
     # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -2092,7 +2117,7 @@ class CO2Params(BaseModel):
             "trafficunits": self.trafficunits,
         }
         for param_name, value in scalar_params.items():
-            df_state.loc[grid_id, (param_name, 0)] = value
+            df_state.loc[grid_id, (param_name, "0")] = value
 
         day_profiles = {
             "fcef_v_kgkm": self.fcef_v_kgkm,
@@ -2127,16 +2152,16 @@ class CO2Params(BaseModel):
 
         # Extract scalar attributes
         scalar_params = {
-            "co2pointsource": df.loc[grid_id, ("co2pointsource", 0)],
-            "ef_umolco2perj": df.loc[grid_id, ("ef_umolco2perj", 0)],
-            "enef_v_jkm": df.loc[grid_id, ("enef_v_jkm", 0)],
-            "frfossilfuel_heat": df.loc[grid_id, ("frfossilfuel_heat", 0)],
-            "frfossilfuel_nonheat": df.loc[grid_id, ("frfossilfuel_nonheat", 0)],
-            "maxfcmetab": df.loc[grid_id, ("maxfcmetab", 0)],
-            "maxqfmetab": df.loc[grid_id, ("maxqfmetab", 0)],
-            "minfcmetab": df.loc[grid_id, ("minfcmetab", 0)],
-            "minqfmetab": df.loc[grid_id, ("minqfmetab", 0)],
-            "trafficunits": df.loc[grid_id, ("trafficunits", 0)],
+            "co2pointsource": df.loc[grid_id, ("co2pointsource", "0")],
+            "ef_umolco2perj": df.loc[grid_id, ("ef_umolco2perj", "0")],
+            "enef_v_jkm": df.loc[grid_id, ("enef_v_jkm", "0")],
+            "frfossilfuel_heat": df.loc[grid_id, ("frfossilfuel_heat", "0")],
+            "frfossilfuel_nonheat": df.loc[grid_id, ("frfossilfuel_nonheat", "0")],
+            "maxfcmetab": df.loc[grid_id, ("maxfcmetab", "0")],
+            "maxqfmetab": df.loc[grid_id, ("maxqfmetab", "0")],
+            "minfcmetab": df.loc[grid_id, ("minfcmetab", "0")],
+            "minqfmetab": df.loc[grid_id, ("minqfmetab", "0")],
+            "trafficunits": df.loc[grid_id, ("trafficunits", "0")],
         }
 
         # Extract DayProfile attributes
@@ -2164,10 +2189,10 @@ class CO2Params(BaseModel):
 
 
 class AnthropogenicEmissions(BaseModel):
-    startdls: float
-    enddls: float
-    heat: AnthropogenicHeat
-    co2: CO2Params
+    startdls: float = Field(default=0.0, description="Start of daylight savings time in decimal day of year")
+    enddls: float = Field(default=0.0, description="End of daylight savings time in decimal day of year")
+    heat: AnthropogenicHeat = Field(description="Anthropogenic heat emission parameters", default_factory=AnthropogenicHeat)
+    co2: CO2Params = Field(description="CO2 emission parameters", default_factory=CO2Params)
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -2182,8 +2207,8 @@ class AnthropogenicEmissions(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set start and end daylight saving times
-        df_state.loc[grid_id, ("startdls", 0)] = self.startdls
-        df_state.loc[grid_id, ("enddls", 0)] = self.enddls
+        df_state.loc[grid_id, ("startdls", '0')] = self.startdls
+        df_state.loc[grid_id, ("enddls", "0")] = self.enddls
 
         # Add heat parameters
         df_heat = self.heat.to_df_state(grid_id)
@@ -2210,8 +2235,8 @@ class AnthropogenicEmissions(BaseModel):
         Returns:
             AnthropogenicEmissions: Instance of AnthropogenicEmissions.
         """
-        startdls = df.loc[grid_id, ("startdls", 0)]
-        enddls = df.loc[grid_id, ("enddls", 0)]
+        startdls = df.loc[grid_id, ("startdls", "0")]
+        enddls = df.loc[grid_id, ("enddls", "0")]
 
         # Reconstruct heat parameters
         heat = AnthropogenicHeat.from_df_state(df, grid_id)
