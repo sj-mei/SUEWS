@@ -140,7 +140,6 @@ MODULE modulestebbs
          single_flowrate_water_supply, &
          single_flowrate_water_drain, &
          cp_water, &
-         cp_water_tank, &
          cp_wall_tank, &
          cp_wall_vessel, &
          density_water, &
@@ -217,11 +216,17 @@ CONTAINS
 !
 !
 !
-!/**************** Water lost to drains *****************/
-!// rho - density of water
-!// Cp - specific heat capacity
-!// vFR - volume Flow Rate
-!// Tout - temperature (K) of water in vessel lost to drains
+   !-------------------------------------------------------------------
+   ! Function: waterUseEnergyLossToDrains
+   ! Parameters: 
+   !   rho - density of water [kg m-3]
+   !   Cp - specific heat capacity [J kg-1 K-1]
+   !   vFR - volume Flow Rate [m3 s-1]
+   !   Tout - temperature of water in vessel lost to drains [K]
+   !   timeResolution - time resolution [s]
+   ! Returns:
+   !   q_wt - energy lost to drains [J]
+   !-------------------------------------------------------------------
    FUNCTION waterUseEnergyLossToDrains(rho, Cp, vFRo, Tout, timeResolution) RESULT(q_wt)
 !
       USE modulestebbsprecision
@@ -232,13 +237,22 @@ CONTAINS
       REAL(rprc), INTENT(in) :: rho, Cp, vFRo, Tout
       REAL(rprc) :: q_wt
 !
-      q_wt = rho*Cp*Tout*(vFRo*timeResolution) ! // kg/m3 . J/K.kg . K . (m3/s . s) (units cancel to J)
+      q_wt = rho*Cp*Tout*(vFRo*timeResolution)
 !
    END FUNCTION
 !
 !
-!
-!
+   !-------------------------------------------------------------------
+   ! Function: indoorConvectionHeatTransfer
+   ! Description: Indoor Convection on wall surfaces: convective heat transfer between air node and wall node(s)
+   ! Parameters:
+   !   h - convection coefficient applied for all internal objects [W m-2 K-1]
+   !   A - the total internal surface area of internal objects [m2]
+   !   Twi - wall surface temperature for surface [K]
+   !   Ti - indoor air temperature [K]
+   ! Returns:
+   !   ind_cht - [W]
+   !-------------------------------------------------------------------
    FUNCTION indoorConvectionHeatTransfer(h, A, Twi, Ti) RESULT(ind_cht)
 !
       USE modulestebbsprecision
@@ -254,7 +268,17 @@ CONTAINS
 !
 !
 !
-!
+   !-------------------------------------------------------------------
+   ! Function: internalConvectionHeatTransfer
+   ! Description: Indoor Convection on wall surfaces: convective heat transfer between air node and wall node(s)
+   ! Parameters:
+   !   h - convection coefficient applied for all internal objects [W m-2 K-1]
+   !   A - the total internal surface area of internal objects [m2]
+   !   Tio - surface temperature of internal objects [K]
+   !   Ti - indoor air temperature [K]
+   ! Returns:
+   !   int_cht - heat transfer to internal objects [W]
+   !-------------------------------------------------------------------
    FUNCTION internalConvectionHeatTransfer(h, A, Tio, Ti) RESULT(int_cht)
 !
       USE modulestebbsprecision
@@ -271,6 +295,13 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: indoorRadiativeHeatTransfer (NOT IMPLEMENTED)
+   ! Description: Indoor radiative exchange between wall surfaces and mass internal object
+   ! Parameters:
+   ! Returns:
+   !   q - 
+   !-------------------------------------------------------------------
    FUNCTION indoorRadiativeHeatTransfer() RESULT(q)
 !
       USE modulestebbsprecision
@@ -287,7 +318,17 @@ CONTAINS
 !
 !
 !
-!
+   !-------------------------------------------------------------------
+   ! Function: outdoorConvectionHeatTransfer
+   ! Description: Outdoor Convection on surfaces. Convective heat transfer between outside wall surface and ambient air node
+   ! Parameters:
+   !   h - convection coefficient for  outside wall surface type (i.e. solid wall, window) [W m-2 K-1]
+   !   A - total surface area of  outside wall surface type [m2]
+   !   Two - wall surface temperature for surface [K]
+   !   Ta - ambient air temperature (should be determined outside this model) [K]
+   ! Returns:
+   !   out_cht - [W]
+   !-------------------------------------------------------------------
    FUNCTION outdoorConvectionHeatTransfer(h, A, Two, Ta) RESULT(out_cht)
 !
       USE modulestebbsprecision
@@ -305,7 +346,18 @@ CONTAINS
 !
 !
 !
-!
+   !-------------------------------------------------------------------
+   ! Function: outdoorRadiativeHeatTransfer
+   ! Description: Outdoor Convection on surfaces. Convective heat transfer between outside wall surface and ambient air node
+   ! Parameters:
+   !   f - View factor for wall [-]
+   !   A - building wall surface area for wall component [m2]
+   !   emis - emissivity of surface [-]
+   !   Two - outdoor surface temperatures for wall component [K]
+   !   Ts - list of surface temperatures for surface [K]
+   ! Returns:
+   !   out_cht - [W]
+   !-------------------------------------------------------------------
    FUNCTION outdoorRadiativeHeatTransfer(f, A, emis, Two, Ts) RESULT(q)
 !
       USE modulestebbsprecision
@@ -325,6 +377,17 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: lwoutdoorRadiativeHeatTransfer
+   ! Description: Longwave radiative heat transfer between outside surface and ambient air
+   ! Parameters:
+   !   A - Area of surface [m2]
+   !   emis - Emisivity of surface [-]
+   !   Two - External temperature of surface [K]
+   !   lw - Incoming longwave radiation onto surface [W m-2]
+   ! Returns:
+   !   q - Longwave radiative heat transfer [W]
+   !-------------------------------------------------------------------
    FUNCTION lwoutdoorRadiativeHeatTransfer(A, emis, Two, lw) RESULT(q)
 !
       USE modulestebbsprecision
@@ -342,13 +405,16 @@ CONTAINS
    END FUNCTION lwoutdoorRadiativeHeatTransfer
 !
 !
-!
-!/************************************************************/
-!// Window Solar Insolation
-!// Kwall - Irradiance incident on vertical window/wall
-!// Tr - Effective Transmissivity
-!// NOTE: This should be added as heat gain to internal single mass object
-!
+   !-------------------------------------------------------------------
+   ! Function: windowInsolation
+   ! Description: Window Solar Insolation. This should be added as heat gain to internal single mass object
+   ! Parameters:
+   !   Irr - Irradiance incident on vertical window/wall [W m-2]
+   !   Tr - Effective Transmissivity [-]
+   !   A - Area of surface [m2]
+   ! Returns:
+   !   wi_in - Window Insolation [W]
+   !-------------------------------------------------------------------
    FUNCTION windowInsolation(Irr, Tr, A) RESULT(wi_in)
 !
       USE modulestebbsprecision
@@ -365,13 +431,16 @@ CONTAINS
    END FUNCTION windowInsolation
 !
 !
-!
-!/************************************************************/
-!//  Solar Insolation on surface
-!// Irr - Irradiance incident horiozntal roof or vertical wall (irr2)
-!// Ab - Effective Absorptance of surface
-!// NOTE: This should be added as heat gain to external surface of wall
-!
+   !-------------------------------------------------------------------
+   ! Function: wallInsolation
+   ! Description: Solar Insolation on surface. This should be added as heat gain to external surface of wall
+   ! Parameters:
+   !   Irr - Irradiance incident horiozntal roof or vertical wall [W m-2]
+   !   Ab - Effective Absorptance of surface [-]
+   !   A - Area of surface [m2]
+   ! Returns:
+   !   wa_in - [W]
+   !-------------------------------------------------------------------
    FUNCTION wallInsolation(Irr, Ab, A) RESULT(wa_in)
 !
       USE modulestebbsprecision
@@ -390,6 +459,18 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: wallConduction
+   ! Description: Wall Component Conduction (can be floor/roof/wall/window)
+   ! Parameters:
+   !   k_eff - conductivity for lumped wall [W m-1 K-1]
+   !   A - total surface area of wall [m2]
+   !   Twi - indoor wall surface temperature [K]
+   !   Two - outdoor wall surface temperature [K]
+   !   L - wall thickness [m]
+   ! Returns:
+   !   wa_co - [W]
+   !-------------------------------------------------------------------
    FUNCTION wallConduction(k_eff, A, Twi, Two, L) RESULT(wa_co)
 !
       USE modulestebbsprecision
@@ -406,6 +487,18 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: windowConduction
+   ! Description: Window Component Conduction (same as wall)
+   ! Parameters:
+   !   k_eff - thermal conductivity for window surface type [W m-1 K-1]
+   !   A - total surface area of window type [m2]
+   !   Twi - indoor window surface temperature for window type [K]
+   !   Two - outdoor window surface temperature for window type [K]
+   !   L - window unit thickness [m]
+   ! Returns:
+   !   wi_co - [W]
+   !-------------------------------------------------------------------
    FUNCTION windowConduction(k_eff, A, Twi, Two, L) RESULT(wi_co)
 !
       USE modulestebbsprecision
@@ -422,6 +515,17 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: heating
+   ! Description: Heating injected to building 
+   ! Parameters:
+   !   Ts - set point temperature for heating load [K]
+   !   Ti - indoor air node temperature [K]
+   !   epsilon - rated efficiency of the total heating system [-]
+   !   P - maximum power rating of the total heating system [W]
+   ! Returns:
+   !   q_heating - [W]
+   !-------------------------------------------------------------------
    FUNCTION heating(Ts, Ti, epsilon, P) RESULT(q_heating)
 !
       USE modulestebbsprecision
@@ -442,6 +546,18 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: ventilationHeatTransfer
+   ! Description: Building Ventilation rate heat transfer (i.e. not recirculated air)
+   ! Parameters:
+   !   rho - air density [kg m-3]
+   !   Cp - specific heat capacity of air at constant pressure [J kg-1 K-1]
+   !   V - volumetric flow rate [m3 s-1]
+   !   To - outdoor temperature [K]
+   !   Ti - indoor temperature [K]
+   ! Returns:
+   !   q_in - the heat flux resulting in the building [W]
+   !-------------------------------------------------------------------
    FUNCTION ventilationHeatTransfer(rho, Cp, V, To, Ti) RESULT(q_in)
 !
       USE modulestebbsprecision
@@ -458,6 +574,15 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: additionalSystemHeatingEnergy
+   ! Description: Calculates the additional heat from the heating system due to system efficiency
+   ! Parameters:
+   !   q_heating - heating applied to building [W]
+   !   epsilon - rated efficiency of the total heating system [-]
+   ! Returns:
+   !   qH_additional - additional heating energy [W]
+   !-------------------------------------------------------------------
    FUNCTION additionalSystemHeatingEnergy(q_heating, epsilon) RESULT(qH_additional)
 !
       USE modulestebbsprecision
@@ -475,6 +600,17 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: cooling
+   ! Description: Cooling of building (heat ejected)
+   ! Parameters:
+   !   Ts - set point temperature for cooling load [K]
+   !   Ti -indoor air node temperature [K]
+   !   COP - Rated efficiency of the total heating system [-]
+   !   P - maximum power rating of the total heating system [W]
+   ! Returns:
+   !   q_cooling - [W]
+   !-------------------------------------------------------------------
    FUNCTION cooling(Ts, Ti, COP, P) RESULT(q_cooling)
 !
       USE modulestebbsprecision
@@ -495,6 +631,15 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: additionalSystemCoolingEnergy
+   ! Description:  Calculates the additional heat from the cooling system due to system COP
+   ! Parameters:
+   !   q_cooling - cooling applied to building [W]
+   !   COP - rated efficiency of the total heating system [-]
+   ! Returns:
+   !   qC_additional - additional cooling energy [W]
+   !-------------------------------------------------------------------
    FUNCTION additionalSystemCoolingEnergy(q_cooling, COP) RESULT(qC_additional)
 !
       USE modulestebbsprecision
@@ -511,6 +656,16 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: internalOccupancyGains
+   ! Description: Calculates the internal gains from building occupants
+   ! Parameters:
+   !   Occupants - number of occupants in building [-]
+   !   metRate - the metabolic rate of building occupants [W]
+   !   LST - latent sensible ratio (LH/SH) [-]
+   ! Returns:
+   !   qSL - latent heat and sensible heat from all occupants [W]
+   !-------------------------------------------------------------------
    FUNCTION internalOccupancyGains(Occupants, metRate, LSR) RESULT(qSL)
 !
       USE modulestebbsprecision
@@ -532,6 +687,16 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: internalApplianceGains
+   ! Description: 
+   ! Parameters:
+   !   P - power rating of appliances [W]
+   !   f - usage factor of appliance [-]
+   !   n - vnumber of appliances [-]
+   ! Returns:
+   !   qapp - total energy of appliances - assume all goes to heat (sensible) [W]
+   !-------------------------------------------------------------------
    FUNCTION internalApplianceGains(P, f, n) RESULT(qapp)
 !
       USE modulestebbsprecision
@@ -549,8 +714,17 @@ CONTAINS
 !
 !
 !
+   !-------------------------------------------------------------------
+   ! Function: ext_conv_coeff
+   ! Description: Calculates the external convection coefficient using Eq. 11 Cole & Sturrock (1977)
+   ! Parameters:
+   !   wind_speed - Wind speed [m s-1]
+   !   dT - Temperature difference [K]
+   ! Returns:
+   !   hc - External convection coefficient [W m-2 K-1]
+   !-------------------------------------------------------------------
    FUNCTION ext_conv_coeff(wind_speed, dT) RESULT(hc)
-!
+      
       USE modulestebbsprecision
 !
       IMPLICIT NONE
@@ -884,7 +1058,6 @@ CONTAINS
                WRITE (*, *) 'Single Flowrate Water Supply: ', blds(1)%single_flowrate_water_supply
                WRITE (*, *) 'Single Flowrate Water Drain: ', blds(1)%single_flowrate_water_drain
                WRITE (*, *) 'Cp Water: ', blds(1)%cp_water
-               WRITE (*, *) 'Cp Water Tank: ', blds(1)%cp_water_tank
                WRITE (*, *) 'Cp Wall Tank: ', blds(1)%cp_wall_tank
                WRITE (*, *) 'Cp Wall Vessel: ', blds(1)%cp_wall_vessel
                WRITE (*, *) 'Density Water: ', blds(1)%density_water
@@ -1532,120 +1705,120 @@ SUBROUTINE tstep( &
                  density_air_out, cp_air_out, Qsw_dn_extroof, &
                  Qsw_dn_extwall, Qlw_dn_extwall, Qlw_dn_extroof
 !    /*** DOMESTIC HOT WATER ***/
-   REAL(rprc) :: Twater_tank, & ! // Water temperature (K) in Hot Water Tank
-                 Tintwall_tank, & ! // Hot water tank internal wall temperature (K)
-                 Textwall_tank ! //Hot water tank external wall temperature (K)
+   REAL(rprc) :: Twater_tank, & ! Water temperature in Hot Water Tank [K]
+                 Tintwall_tank, & ! Hot water tank internal wall temperature [K]
+                 Textwall_tank ! Hot water tank external wall temperature [K]
    REAL(rprc) :: dTwater_tank = 0.0, dTintwall_tank = 0.0, dTextwall_tank = 0.0
-   REAL(rprc) :: thickness_tankwall ! //Hot water tank wall thickness
+   REAL(rprc) :: thickness_tankwall ! Hot water tank wall thickness [m]
 !
-   REAL(rprc) :: Tincomingwater_tank ! // Water temperature (K) of Water coming into the Water Tank
-   REAL(rprc) :: Vwater_tank, & ! // Volume of Water in Hot Water Tank (m^3)
-                 Asurf_tank, & ! // Surface Area of Hot Water Tank(m^2)
-                 Vwall_tank, & ! // Wall volume of Hot Water Tank(m^2)
-                 setTwater_tank ! // Water Tank setpoint temperature (K)
+   REAL(rprc) :: Tincomingwater_tank ! Water temperature of Water coming into the Water Tank [K]
+   REAL(rprc) :: Vwater_tank, & ! Volume of Water in Hot Water Tank [m3]
+                 Asurf_tank, & ! Surface Area of Hot Water Tank [m2]
+                 Vwall_tank, & ! Wall volume of Hot Water Tank [m3]
+                 setTwater_tank ! Water Tank setpoint temperature [K]
 !
-   REAL(rprc) :: Twater_vessel, & ! // Water temperature (K) of water held in use in Building
-                 Tintwall_vessel, & ! // Hot water tank internal wall temperature (K)
-                 Textwall_vessel ! // Hot water tank external wall temperature (K)
+   REAL(rprc) :: Twater_vessel, & ! Water temperature of water held in use in Building [K]
+                 Tintwall_vessel, & ! Hot water tank internal wall temperature [K]
+                 Textwall_vessel ! Hot water tank external wall temperature [K]
    REAL(rprc) :: dTwater_vessel = 0.0, dTintwall_vessel = 0.0, dTextwall_vessel = 0.0
-   REAL(rprc) :: thickness_wall_vessel ! //DHW vessels wall thickness
+   REAL(rprc) :: thickness_wall_vessel ! DHW vessels wall thickness [m]
 !
-   REAL(rprc) :: Vwater_vessel ! // Volume of water held in use in building
-   REAL(rprc) :: dVwater_vessel = 0.0 ! // Change in volume of Domestic Hot Water held in use in building
-   REAL(rprc) :: Awater_vessel, & ! // Surface Area of Hot Water in Vessels in Building
-                 Vwall_vessel, & ! // Wall volume of Hot water Vessels in Building
-                 flowrate_water_supply, & ! // Hot Water Flow Rate in m^3 / s
-                 flowrate_water_drain ! // Draining of Domestic Hot Water held in building
+   REAL(rprc) :: Vwater_vessel ! Volume of water held in use in building [m3]
+   REAL(rprc) :: dVwater_vessel = 0.0 ! Change in volume of Domestic Hot Water held in use in building [m3]
+   REAL(rprc) :: Awater_vessel, & ! Surface Area of Hot Water in Vessels in Building [m2]
+                 Vwall_vessel, & ! Wall volume of Hot water Vessels in Building [m3]
+                 flowrate_water_supply, & ! Hot Water Flow Rate [m3 s-1]
+                 flowrate_water_drain ! Draining of Domestic Hot Water held in building [m3 s-1]
 !
-   REAL(rprc) :: cp_water, & ! //Specific Heat Capacity of Domestic Hot Water
-                 cp_wall_tank, & ! //Specific Heat Capacity of Hot Water Tank wall
-                 cp_wall_vessel ! //Specific Heat Capacity of Vessels containing DHW in use in Building
+   REAL(rprc) :: cp_water, & ! Specific Heat Capacity of Domestic Hot Water [J kg-1 K-1]
+                 cp_wall_tank, & ! Specific Heat Capacity of Hot Water Tank wall [J kg-1 K-1]
+                 cp_wall_vessel ! Specific Heat Capacity of Vessels containing DHW in use in Building [J kg-1 K-1]
 !
-   REAL(rprc) :: density_water, & ! //Density of water
-                 density_wall_tank, & ! //Density of hot water tank wall
-                 density_wall_vessel ! //Density of vessels containing DHW in use in buildings
+   REAL(rprc) :: density_water, & ! Density of water [kg m-3]
+                 density_wall_tank, & ! Density of hot water tank wall [kg m-3]
+                 density_wall_vessel ! Density of vessels containing DHW in use in buildings [kg m-3]
 !
-   REAL(rprc) :: BVF_tank, & ! //water tank - building wall view factor
-                 MVF_tank ! //water tank - building internal mass view factor
+   REAL(rprc) :: BVF_tank, & ! water tank - building wall view factor [-]
+                 MVF_tank ! water tank - building internal mass view factor [-]
 !
-   REAL(rprc) :: conductivity_wall_tank, & ! // Effective Wall conductivity of the Hot Water Tank
-                 conv_coeff_intwall_tank, & ! // Effective Internal Wall convection coefficient of the Hot Water Tank
-                 conv_coeff_extwall_tank, & ! // Effective External Wall convection coefficient of the Hot Water Tank
-                 emissivity_extwall_tank, & ! // Effective External Wall emissivity of the Hot Water Tank
-                 conductivity_wall_vessel, & ! // Effective Conductivity of vessels containing DHW in use in Building.
-                 conv_coeff_intwall_vessel, & ! // Effective Internal Wall convection coefficient of the Vessels holding DHW in use in Building
-                 conv_coeff_extwall_vessel, & ! // Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building
-                 emissivity_extwall_vessel ! // Effective External Wall emissivity of hot water being used within building
+   REAL(rprc) :: conductivity_wall_tank, & ! Effective Wall conductivity of the Hot Water Tank [W m-1 K-1]
+                 conv_coeff_intwall_tank, & ! Effective Internal Wall convection coefficient of the Hot Water Tank [W m-2 K-1]
+                 conv_coeff_extwall_tank, & ! Effective External Wall convection coefficient of the Hot Water Tank [W m-2 K-1]
+                 emissivity_extwall_tank, & ! Effective External Wall emissivity of the Hot Water Tank [-]
+                 conductivity_wall_vessel, & ! Effective Conductivity of vessels containing DHW in use in Building [W m-1 K-1]
+                 conv_coeff_intwall_vessel, & ! Effective Internal Wall convection coefficient of the Vessels holding DHW in use in Building [W m-2 K-1]
+                 conv_coeff_extwall_vessel, & ! Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building [W m-2 K-1]
+                 emissivity_extwall_vessel ! Effective External Wall emissivity of hot water being used within building [-]
 !    /** NOTE THAT LATENT HEAT FLUX RELATING TO HOT WATER USE CURRENTLY NOT IMPLEMENTED **/
 !
-   REAL(rprc) :: maxheatingpower_water, &
-                 heating_efficiency_water
+   REAL(rprc) :: maxheatingpower_water, & ! [deg C]
+                 heating_efficiency_water ! [-]
 !    /*** END DOMESTIC HOT WATER ***/
 !
-   REAL(rprc) :: winT, & ! // window transmisivity
-                 winA, & ! // window absorptivity
-                 winR, & ! // window reflectivity
-                 walT, & ! // wall transmisivity
-                 walA, & ! // wall absorptivity
-                 walR ! // wall reflectivity
+   REAL(rprc) :: winT, & ! // window transmisivity [-]
+                 winA, & ! // window absorptivity [-]
+                 winR, & ! // window reflectivity [-]
+                 walT, & ! // wall transmisivity [-]
+                 walA, & ! // wall absorptivity [-]
+                 walR ! // wall reflectivity [-]
 !
    REAL(rprc) :: Qtotal_heating, & ! // currently only sensible but this needs to be  split into sensible and latent heat components
                  Qtotal_cooling ! // currently only sensible but this needs to be  split into sensible and latent heat components
 !
-   REAL(rprc) :: height_building, ratio_window_wall, &
-                 thickness_wallroof, thickness_groundfloor, depth_ground, thickness_window, &
+   REAL(rprc) :: height_building, ratio_window_wall, & ! [m], [-]
+                 thickness_wallroof, thickness_groundfloor, depth_ground, thickness_window, & ! [m], [m], [m], [m]
                  !    //float height_building, width, depth, ratio_window_wall, thickness_wallroof, thickness_groundfloor, depth_ground, thickness_window;
-                 conv_coeff_intwallroof, conv_coeff_indoormass, &
-                 conv_coeff_intgroundfloor, conv_coeff_intwindow, &
-                 conv_coeff_extwallroof, conv_coeff_extwindow, &
-                 conductivity_wallroof, conductivity_groundfloor, &
-                 conductivity_window, conductivity_ground, &
-                 density_wallroof, density_groundfloor, density_window, &
-                 density_indoormass, density_air_ind, &
-                 cp_wallroof, cp_groundfloor, cp_window, &
-                 cp_indoormass, cp_air_ind, &
-                 emissivity_extwallroof, emissivity_intwallroof, &
-                 emissivity_indoormass, emissivity_extwindow, emissivity_intwindow, &
-                 windowTransmissivity, windowAbsorbtivity, windowReflectivity, &
-                 wallTransmisivity, wallAbsorbtivity, wallReflectivity, &
-                 BVF_extwall, GVF_extwall, SVF_extwall
+                 conv_coeff_intwallroof, conv_coeff_indoormass, & ! [W m-2 K-1], [W m-2 K-1]
+                 conv_coeff_intgroundfloor, conv_coeff_intwindow, & ! [W m-2 K-1], [W m-2 K-1]
+                 conv_coeff_extwallroof, conv_coeff_extwindow, & ! [W m-2 K-1], [W m-2 K-1]
+                 conductivity_wallroof, conductivity_groundfloor, & ! [W m-1 K-1], [W m-1 K-1]
+                 conductivity_window, conductivity_ground, & ! [W m-1 K-1], [W m-1 K-1]
+                 density_wallroof, density_groundfloor, density_window, & ! [kg m-3], [kg m-3], [kg m-3]
+                 density_indoormass, density_air_ind, & ! [kg m-3], [kg m-3]
+                 cp_wallroof, cp_groundfloor, cp_window, & ! [J kg-1 K-1], [J kg-1 K-1], [J kg-1 K-1]
+                 cp_indoormass, cp_air_ind, & ! [J kg-1 K-1], [J kg-1 K-1]
+                 emissivity_extwallroof, emissivity_intwallroof, & ! [-], [-]
+                 emissivity_indoormass, emissivity_extwindow, emissivity_intwindow, & ! [-], [-], [-]
+                 windowTransmissivity, windowAbsorbtivity, windowReflectivity, & ! [-], [-], [-]
+                 wallTransmisivity, wallAbsorbtivity, wallReflectivity, & ! [-], [-], [-]
+                 BVF_extwall, GVF_extwall, SVF_extwall ! [-], [-], [-]
 !
-   REAL(rprc) :: occupants
+   REAL(rprc) :: occupants ! Number of occupants [-]
 !
-   REAL(rprc) :: metabolic_rate, ratio_metabolic_latent_sensible, &
-                 appliance_power_rating
-   INTEGER :: appliance_totalnumber
-   REAL(rprc) :: appliance_usage_factor, &
-                 maxheatingpower_air, heating_efficiency_air, &
-                 maxcoolingpower_air, coeff_performance_cooling, &
-                 Vair_ind, ventilation_rate, & ! //Fixed at begining to have no natural ventilation. Given in units of volume of air per hour
-                 Awallroof, Vwallroof, &
-                 Afootprint, Vgroundfloor, &
-                 Awindow, Vwindow, &
-                 Vindoormass, Aindoormass ! //Assumed internal mass as a cube
+   REAL(rprc) :: metabolic_rate, ratio_metabolic_latent_sensible, & ! [W], [-]
+                 appliance_power_rating ! [W]
+   INTEGER :: appliance_totalnumber ! Number of appliances [-]
+   REAL(rprc) :: appliance_usage_factor, & ! Number of appliances in use [-]
+                 maxheatingpower_air, heating_efficiency_air, & ! [W], [-]
+                 maxcoolingpower_air, coeff_performance_cooling, & ! [W], [-]
+                 Vair_ind, ventilation_rate, & ! Fixed at begining to have no natural ventilation.
+                 Awallroof, Vwallroof, & ! [m2], [m3]
+                 Afootprint, Vgroundfloor, & ! [m2], [m3]
+                 Awindow, Vwindow, & ! [m2], [m3]
+                 Vindoormass, Aindoormass ! Assumed internal mass as a cube [m3], [m2]
 !
-   REAL(rprc) :: Tair_ind, Tindoormass, Tintwallroof, Textwallroof, &
-                 Tintwindow, Textwindow, Tintgroundfloor, Textgroundfloor
-   REAL(rprc) :: dTair_ind = 0.0, dTindoormass = 0.0, dTintwallroof = 0.0, &
-                 dTextwallroof = 0.0, dTintwindow = 0.0, dTextwindow = 0.0, &
-                 dTintgroundfloor = 0.0, dTextgroundfloor = 0.0
+   REAL(rprc) :: Tair_ind, Tindoormass, Tintwallroof, Textwallroof, & ! [K], [K], [K], [K]
+                 Tintwindow, Textwindow, Tintgroundfloor, Textgroundfloor ! [K], [K], [K], [K]
+   REAL(rprc) :: dTair_ind = 0.0, dTindoormass = 0.0, dTintwallroof = 0.0, & ! [K], [K], [K]
+                 dTextwallroof = 0.0, dTintwindow = 0.0, dTextwindow = 0.0, & ! [K], [K], [K]
+                 dTintgroundfloor = 0.0, dTextgroundfloor = 0.0 ! [K], [K]
 !
 !    /*** DOMESTIC HOT WATER ***/
-   REAL(rprc) :: Qconv_water_to_inttankwall = 0.0, & ! // heat flux to internal wall of hot water tank
-                 Qconv_exttankwall_to_indair = 0.0, & ! // convective heat flux to external wall of hot water tank
+   REAL(rprc) :: Qconv_water_to_inttankwall = 0.0, & ! heat flux to internal wall of hot water tank
+                 Qconv_exttankwall_to_indair = 0.0, & ! convective heat flux to external wall of hot water tank
                  Qlw_net_exttankwall_to_intwallroof = 0.0, & !
-                 Qlw_net_exttankwall_to_indoormass = 0.0, & ! // radiative heat flux to external wall of hot water tank
-                 Qcond_tankwall = 0.0, & ! // heat flux through wall of hot water tank
-                 Qtotal_water_tank, & ! // total heat input into water of hot water tank over simulation, hence do not equate to zero
-                 Qconv_water_to_intvesselwall = 0.0, & ! // heat flux to internal wall of vessels holding DHW in use in building
-                 Qcond_vesselwall = 0.0, & ! // heat flux through wall of vessels holding DHW in use in building
-                 Qconv_extvesselwall_to_indair = 0.0, & ! // convective heat flux to external wall of vessels holding DHW in use in building
+                 Qlw_net_exttankwall_to_indoormass = 0.0, & ! radiative heat flux to external wall of hot water tank
+                 Qcond_tankwall = 0.0, & ! heat flux through wall of hot water tank
+                 Qtotal_water_tank, & ! total heat input into water of hot water tank over simulation, hence do not equate to zero
+                 Qconv_water_to_intvesselwall = 0.0, & ! heat flux to internal wall of vessels holding DHW in use in building
+                 Qcond_vesselwall = 0.0, & ! heat flux through wall of vessels holding DHW in use in building
+                 Qconv_extvesselwall_to_indair = 0.0, & ! convective heat flux to external wall of vessels holding DHW in use in building
                  Qlw_net_extvesselwall_to_wallroof = 0.0, &
-                 Qlw_net_extvesselwall_to_indoormass = 0.0, & ! // radiative heat flux to external wall of vessels holding DHW in use in building
-                 !                      Qloss_drain = 0.0,                         & ! //Heat loss as water held in use in building drains to sewer
-                 Qloss_efficiency_heating_water = 0.0 ! // additional heat release from efficieny losses/gains of heating hot water
+                 Qlw_net_extvesselwall_to_indoormass = 0.0, & ! radiative heat flux to external wall of vessels holding DHW in use in building
+                 !                      Qloss_drain = 0.0,                         & ! Heat loss as water held in use in building drains to sewer
+                 Qloss_efficiency_heating_water = 0.0 ! additional heat release from efficieny losses/gains of heating hot water
 
-   REAL(rprc), INTENT(out) :: Qloss_drain ! // Heat loss as water held in use in building drains to sewer
+   REAL(rprc), INTENT(out) :: Qloss_drain ! Heat loss as water held in use in building drains to sewer
    REAL(rprc) :: Qtotal_net_water_tank = 0.0, Qtotal_net_intwall_tank = 0.0, &
                  Qtotal_net_extwall_tank = 0.0, Qtotal_net_water_vessel = 0.0, &
                  Qtotal_net_intwall_vessel = 0.0, Qtotal_net_extwall_vessel = 0.0
@@ -1657,8 +1830,8 @@ SUBROUTINE tstep( &
 !    /************************************************************/
 !    /*** END DOMESTIC HOT WATER ***/
 !
-   REAL(rprc), DIMENSION(2) :: Ts ! //Heating and Cooling setpoint temperature (K)s, respectively
-   REAL(rprc), DIMENSION(2) :: Qm ! //Metabolic heat, sensible(1) and latent(2)
+   REAL(rprc), DIMENSION(2) :: Ts ! Heating and Cooling setpoint temperature (K)s, respectively
+   REAL(rprc), DIMENSION(2) :: Qm ! Metabolic heat, sensible(1) and latent(2)
 !
    INTEGER :: timestep, resolution
 !
@@ -1676,9 +1849,9 @@ SUBROUTINE tstep( &
    REAL(rprc) :: Qlw_net_extwallroof_to_outair = 0.0, Qlw_net_extwindow_to_outair = 0.0, &
                  Qconv_extwallroof_to_outair = 0.0, Qconv_extwindow_to_outair = 0.0
    REAL(rprc) :: QS_total = 0.0, QS_fabric = 0.0, QS_air = 0.0
-!    //STS - 31/07/2018: Added parameters to return surface fluxes for each timestep.
-!    //This allows model user to calculate QfB and Qs externally to the model
-!    //and provide a more flexible interface to surface energy balance models.
+!    STS - 31/07/2018: Added parameters to return surface fluxes for each timestep.
+!    This allows model user to calculate QfB and Qs externally to the model
+!    and provide a more flexible interface to surface energy balance models.
 !
 ! Output vars
    REAL(rprc), INTENT(inout) :: Qsw_transmitted_window_tstepTotal, &
@@ -2287,8 +2460,8 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
 
    ! self%idLBM = bldgState%BuildingName
 
-   self%Qtotal_heating = 0.0 ! # currently only sensible but this needs to be  split into sensible and latent heat components
-   self%Qtotal_cooling = 0.0 ! # currently only sensible but this needs to be  split into sensible and latent heat components
+   self%Qtotal_heating = 0.0 ! currently only sensible but this needs to be  split into sensible and latent heat components
+   self%Qtotal_cooling = 0.0 ! currently only sensible but this needs to be  split into sensible and latent heat components
 
    self%Qmetabolic_sensible = 0.0 ! # Sensible heat flux from people in building
    self%Qmetabolic_latent = 0.0 ! # Latent heat flux from people in building
@@ -2302,22 +2475,22 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
 
    ! self%BuildingType = bldgState%BuildingType
    ! self%BuildingName = bldgState%BuildingName
-   self%ratio_window_wall = bldgState%WWR ! # window to wall ratio
-   self%Afootprint = bldgState%FootprintArea
+   self%ratio_window_wall = bldgState%WWR
+   self%Afootprint = bldgState%FootprintArea 
    self%height_building = bldgState%stebbs_Height
    self%wallExternalArea = bldgState%WallExternalArea
    self%ratioInternalVolume = bldgState%RatioInternalVolume
    self%thickness_wallroof = bldgState%WallThickness
    self%thickness_groundfloor = bldgState%FloorThickness
-   self%depth_ground = stebbsState%GroundDepth ! # depth of ground considered for calculating QfB to ground (in metres)
-   self%thickness_window = bldgState%WindowThickness ! # all window's thickness (in metres)
+   self%depth_ground = stebbsState%GroundDepth
+   self%thickness_window = bldgState%WindowThickness
    self%conv_coeff_intwallroof = stebbsState%WallInternalConvectionCoefficient
    self%conv_coeff_indoormass = stebbsState%InternalMassConvectionCoefficient
    self%conv_coeff_intgroundfloor = stebbsState%FloorInternalConvectionCoefficient
    self%conv_coeff_intwindow = stebbsState%WindowInternalConvectionCoefficient
-   self%conv_coeff_extwallroof = stebbsState%WallExternalConvectionCoefficient ! # Could be changed to react to outdoor wind speed from SUEWS
+   self%conv_coeff_extwallroof = stebbsState%WallExternalConvectionCoefficient
    self%conv_coeff_extwindow = stebbsState%WindowExternalConvectionCoefficient
-   self%conductivity_wallroof = bldgState%WallEffectiveConductivity
+   self%conductivity_wallroof = bldgState%WallEffectiveConductivity 
    self%conductivity_groundfloor = bldgState%GroundFloorEffectiveConductivity
    self%conductivity_window = bldgState%WindowEffectiveConductivity
    self%conductivity_ground = bldgState%GroundFloorEffectiveConductivity
@@ -2345,13 +2518,13 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%wallReflectivity = bldgState%WallReflectivity
    self%BVF_extwall = stebbsState%WallBuildingViewFactor
    self%GVF_extwall = stebbsState%WallGroundViewFactor
-   self%SVF_extwall = stebbsState%WallSkyViewFactor
+   self%SVF_extwall = stebbsState%WallSkyViewFactor 
    self%occupants = bldgState%Occupants
    self%metabolic_rate = stebbsState%MetabolicRate
    self%ratio_metabolic_latent_sensible = stebbsState%LatentSensibleRatio
    self%appliance_power_rating = stebbsState%ApplianceRating
    self%appliance_totalnumber = INT(stebbsState%TotalNumberofAppliances)
-   self%appliance_usage_factor = stebbsState%ApplianceUsageFactor
+   self%appliance_usage_factor = stebbsState%ApplianceUsageFactor 
    self%maxheatingpower_air = bldgState%MaxHeatingPower
    self%heating_efficiency_air = stebbsState%HeatingSystemEfficiency
    self%maxcoolingpower_air = stebbsState%MaxCoolingPower
@@ -2359,7 +2532,7 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%Vair_ind = &
       (self%Afootprint*self%height_building)* &
       (1 - self%ratioInternalVolume) ! # Multiplied by factor that accounts for internal mass
-   self%ventilation_rate = self%Vair_ind*stebbsState%VentilationRate/3600.0 ! # Fixed at begining to have no natural ventilation. Given in units of volume of air per second
+   self%ventilation_rate = self%Vair_ind*stebbsState%VentilationRate/3600.0 ! Fixed at begining to have no natural ventilation. Given in units of volume of air per second
    self%Awallroof = &
       (self%wallExternalArea*(1 - self%ratio_window_wall)) + &
       self%Afootprint ! # last component accounts for the roof as not considered seperately in the model
@@ -2448,7 +2621,11 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
 
    self%conductivity_wall_tank = stebbsState%HotWaterTankWallConductivity ! # Effective Wall conductivity of the Hot Water Tank (based on polyurethan foam given in https://www.lsta.lt/files/events/28_jarfelt.pdf and from https://www.sciencedirect.com/science/article/pii/S0360544214011189?via%3Dihub)
    self%conv_coeff_intwall_tank = stebbsState%HotWaterTankInternalWallConvectionCoefficient ! # Effective Internal Wall convection coefficient of the Hot Water Tank (W/m2 . K) given in http://orbit.dtu.dk/fedora/objects/orbit:77843/datastreams/file_2640258/content
+   self%conv_coeff_extwall_tank = stebbsState%HotWaterTankExternalWallConvectionCoefficient ! # Effective External Wall convection coefficient of the Hot Water Tank (W/m2 . K) given in http://orbit.dtu.dk/fedora/objects/orbit:77843/datastreams/file_2640258/content
 
+   self%emissivity_extwall_tank = stebbsState%HotWaterTankWallEmissivity
+   self%conductivity_wall_vessel = stebbsState%DHWVesselWallConductivity
+   self%conv_coeff_intwall_vessel = stebbsState%DHWVesselInternalWallConvectionCoefficient
    self%conv_coeff_extwall_vessel = stebbsState%HotWaterTankExternalWallConvectionCoefficient ! # Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building
    self%emissivity_extwall_vessel = stebbsState%DHWVesselWallConductivity ! # Effective External Wall emissivity of hot water being used within building
 
