@@ -845,6 +845,35 @@ class OHM_Coefficient_season_wetness(BaseModel):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int, idx_a: int) -> "OHM_Coefficient_season_wetness":
+        """
+        Reconstruct OHM_Coefficient_season_wetness from DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing OHM coefficients.
+            grid_id (int): Grid ID.
+            surf_idx (int): Surface index.
+            idx_a (int): Index for coefficient (0=a1, 1=a2, 2=a3).
+
+        Returns:
+            OHM_Coefficient_season_wetness: Reconstructed instance.
+        """
+        season_wetdry_map = {
+            "summer_dry": 0,
+            "summer_wet": 1,
+            "winter_dry": 2,
+            "winter_wet": 3,
+        }
+
+        # Extract values for each season/wetness combination
+        params = {
+            season_wetdry: df.loc[grid_id, ("ohm_coef", f"({surf_idx},{idx},{idx_a})")].item()
+            for season_wetdry, idx in season_wetdry_map.items()
+        }
+
+        return cls(**params)
+
 
 class OHMCoefficients(BaseModel):
     a1: OHM_Coefficient_season_wetness
@@ -872,6 +901,27 @@ class OHMCoefficients(BaseModel):
         df_state = df_state.loc[:, ~df_state.columns.duplicated()]
 
         return df_state
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "OHMCoefficients":
+        """
+        Reconstruct OHMCoefficients from DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing OHM coefficients.
+            grid_id (int): Grid ID.
+            surf_idx (int): Surface index.
+
+        Returns:
+            OHMCoefficients: Reconstructed instance.
+        """
+        # Reconstruct each coefficient (a1, a2, a3)
+        a1 = OHM_Coefficient_season_wetness.from_df_state(df, grid_id, surf_idx, 0)
+        a2 = OHM_Coefficient_season_wetness.from_df_state(df, grid_id, surf_idx, 1)
+        a3 = OHM_Coefficient_season_wetness.from_df_state(df, grid_id, surf_idx, 2)
+
+        return cls(a1=a1, a2=a2, a3=a3)
+
 
 
 class SurfaceProperties(BaseModel):
