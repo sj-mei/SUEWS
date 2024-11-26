@@ -442,23 +442,6 @@ class InitialStates(BaseModel):
 
         return data
 
-    # def __init__(self, **data):
-    #     super().__init__(**data)
-    #     # Set surface types for non-vegetated surfaces
-    #     self.paved.set_surface_type(SurfaceType.PAVED)
-    #     self.bldgs.set_surface_type(SurfaceType.BLDGS)
-    #     self.bsoil.set_surface_type(SurfaceType.BSOIL)
-    #     self.water.set_surface_type(SurfaceType.WATER)
-
-    #     # Set surface types for vegetated surfaces
-    #     # These need to be set before validation
-    #     if isinstance(self.evetr, VegetatedSurfaceInitialState):
-    #         self.evetr.set_surface_type(SurfaceType.EVETR)
-    #     if isinstance(self.dectr, DeciduousTreeSurfaceInitialState):
-    #         self.dectr.set_surface_type(SurfaceType.DECTR)
-    #     if isinstance(self.grass, VegetatedSurfaceInitialState):
-    #         self.grass.set_surface_type(SurfaceType.GRASS)
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
         df_state = init_df_state(grid_id)
@@ -487,14 +470,6 @@ class InitialStates(BaseModel):
                 for i, facet in enumerate(facet_list):
                     if facet is not None:  # Check each facet is not None
                         df_facet = facet.to_df_state(grid_id, i, facet_type)
-                        # # Prefix column names with facet type
-                        # df_facet.columns = pd.MultiIndex.from_tuples(
-                        #     [
-                        #         (f"{col[0]}", f"({i},)")
-                        #         for col in df_facet.columns
-                        #     ],
-                        #     names=["var", "ind_dim"],
-                        # )
                         df_state = pd.concat([df_state, df_facet], axis=1)
 
         # Drop duplicate columns while preserving first occurrence
