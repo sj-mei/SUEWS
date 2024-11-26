@@ -218,7 +218,7 @@ CONTAINS
 !
    !-------------------------------------------------------------------
    ! Function: waterUseEnergyLossToDrains
-   ! Parameters: 
+   ! Parameters:
    !   rho - density of water [kg m-3]
    !   Cp - specific heat capacity [J kg-1 K-1]
    !   vFR - volume Flow Rate [m3 s-1]
@@ -300,7 +300,7 @@ CONTAINS
    ! Description: Indoor radiative exchange between wall surfaces and mass internal object
    ! Parameters:
    ! Returns:
-   !   q - 
+   !   q -
    !-------------------------------------------------------------------
    FUNCTION indoorRadiativeHeatTransfer() RESULT(q)
 !
@@ -517,7 +517,7 @@ CONTAINS
 !
    !-------------------------------------------------------------------
    ! Function: heating
-   ! Description: Heating injected to building 
+   ! Description: Heating injected to building
    ! Parameters:
    !   Ts - set point temperature for heating load [K]
    !   Ti - indoor air node temperature [K]
@@ -689,7 +689,7 @@ CONTAINS
 !
    !-------------------------------------------------------------------
    ! Function: internalApplianceGains
-   ! Description: 
+   ! Description:
    ! Parameters:
    !   P - power rating of appliances [W]
    !   f - usage factor of appliance [-]
@@ -724,7 +724,7 @@ CONTAINS
    !   hc - External convection coefficient [W m-2 K-1]
    !-------------------------------------------------------------------
    FUNCTION ext_conv_coeff(wind_speed, dT) RESULT(hc)
-      
+
       USE modulestebbsprecision
 !
       IMPLICIT NONE
@@ -2476,7 +2476,7 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    ! self%BuildingType = bldgState%BuildingType
    ! self%BuildingName = bldgState%BuildingName
    self%ratio_window_wall = bldgState%WWR
-   self%Afootprint = bldgState%FootprintArea 
+   self%Afootprint = bldgState%FootprintArea
    self%height_building = bldgState%stebbs_Height
    self%wallExternalArea = bldgState%WallExternalArea
    self%ratioInternalVolume = bldgState%RatioInternalVolume
@@ -2490,7 +2490,7 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%conv_coeff_intwindow = stebbsState%WindowInternalConvectionCoefficient
    self%conv_coeff_extwallroof = stebbsState%WallExternalConvectionCoefficient
    self%conv_coeff_extwindow = stebbsState%WindowExternalConvectionCoefficient
-   self%conductivity_wallroof = bldgState%WallEffectiveConductivity 
+   self%conductivity_wallroof = bldgState%WallEffectiveConductivity
    self%conductivity_groundfloor = bldgState%GroundFloorEffectiveConductivity
    self%conductivity_window = bldgState%WindowEffectiveConductivity
    self%conductivity_ground = bldgState%GroundFloorEffectiveConductivity
@@ -2518,13 +2518,13 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%wallReflectivity = bldgState%WallReflectivity
    self%BVF_extwall = stebbsState%WallBuildingViewFactor
    self%GVF_extwall = stebbsState%WallGroundViewFactor
-   self%SVF_extwall = stebbsState%WallSkyViewFactor 
+   self%SVF_extwall = stebbsState%WallSkyViewFactor
    self%occupants = bldgState%Occupants
    self%metabolic_rate = stebbsState%MetabolicRate
    self%ratio_metabolic_latent_sensible = stebbsState%LatentSensibleRatio
    self%appliance_power_rating = stebbsState%ApplianceRating
    self%appliance_totalnumber = INT(stebbsState%TotalNumberofAppliances)
-   self%appliance_usage_factor = stebbsState%ApplianceUsageFactor 
+   self%appliance_usage_factor = stebbsState%ApplianceUsageFactor
    self%maxheatingpower_air = bldgState%MaxHeatingPower
    self%heating_efficiency_air = stebbsState%HeatingSystemEfficiency
    self%maxcoolingpower_air = stebbsState%MaxCoolingPower

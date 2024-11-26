@@ -837,25 +837,25 @@ MODULE SUEWS_DEF_DTS
 
    TYPE, PUBLIC :: BUILDING_STATE
       ! This type is used to collect building archetypes for STEBBS
-      ! CHARACTER(LEN=50) :: BuildingCode ! 
-      ! CHARACTER(LEN=50) :: BuildingClass ! 
-      ! CHARACTER(LEN=50) :: BuildingType ! 
-      ! CHARACTER(LEN=50) :: BuildingName ! 
+      ! CHARACTER(LEN=50) :: BuildingCode !
+      ! CHARACTER(LEN=50) :: BuildingClass !
+      ! CHARACTER(LEN=50) :: BuildingType !
+      ! CHARACTER(LEN=50) :: BuildingName !
       REAL(KIND(1D0)) :: BuildingCount ! Number of buildings of this archetype [-]
       REAL(KIND(1D0)) :: Occupants ! Number of occupants present in building [-]
-      REAL(KIND(1D0)) :: hhs0 ! 
-      REAL(KIND(1D0)) :: age_0_4 ! 
-      REAL(KIND(1D0)) :: age_5_11 ! 
-      REAL(KIND(1D0)) :: age_12_18 ! 
-      REAL(KIND(1D0)) :: age_19_64 ! 
-      REAL(KIND(1D0)) :: age_65plus ! 
+      REAL(KIND(1D0)) :: hhs0 !
+      REAL(KIND(1D0)) :: age_0_4 !
+      REAL(KIND(1D0)) :: age_5_11 !
+      REAL(KIND(1D0)) :: age_12_18 !
+      REAL(KIND(1D0)) :: age_19_64 !
+      REAL(KIND(1D0)) :: age_65plus !
       REAL(KIND(1D0)) :: stebbs_Height ! Building height [m]
       REAL(KIND(1D0)) :: FootprintArea ! Building footprint area [m2]
       REAL(KIND(1D0)) :: WallExternalArea ! External wall area (including window area) [m2]
       REAL(KIND(1D0)) :: RatioInternalVolume ! Ratio of internal mass volume to total building volume [-]
       REAL(KIND(1D0)) :: WWR ! window to wall ratio [-]
       REAL(KIND(1D0)) :: WallThickness ! Thickness of external wall and roof (weighted) [m]
-      REAL(KIND(1D0)) :: WallEffectiveConductivity! Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]
+      REAL(KIND(1D0)) :: WallEffectiveConductivity ! Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]
       REAL(KIND(1D0)) :: WallDensity ! Effective density of the walls and roof (weighted) [kg m-3]
       REAL(KIND(1D0)) :: WallCp ! Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]
       REAL(KIND(1D0)) :: Wallx1 ! Weighting factor for heat capacity of walls and roof [-]
