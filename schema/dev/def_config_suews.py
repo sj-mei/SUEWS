@@ -58,9 +58,9 @@ class WaterUse(BaseModel):
     def to_df_state(self, veg_idx: int, grid_id: int) -> pd.DataFrame:
         """Convert water use to DataFrame state format."""
         df_state = init_df_state(grid_id)
-        df_state.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 0}")] = self.wu_total
-        df_state.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 1}")] = self.wu_auto
-        df_state.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 2}")] = self.wu_manual
+        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 0},)")] = self.wu_total
+        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")] = self.wu_auto
+        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")] = self.wu_manual
         return df_state
 
     @classmethod
@@ -76,9 +76,9 @@ class WaterUse(BaseModel):
         Returns:
             WaterUse: Instance of WaterUse.
         """
-        wu_total = df.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 0}")]
-        wu_auto = df.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 1}")]
-        wu_manual = df.loc[grid_id, ("wuday_id", f"{veg_idx * 3 + 2}")]
+        wu_total = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 0},)")]
+        wu_auto = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")]
+        wu_manual = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")]
 
         return cls(wu_total=wu_total, wu_auto=wu_auto, wu_manual=wu_manual)
 
@@ -127,7 +127,9 @@ class SurfaceInitialState(BaseModel):
             SurfaceType.WATER: 6,
         }[self._surface_type]
 
-    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+    def to_df_state(
+        self, grid_id: int, vert_idx: int = None, is_roof: bool = False
+    ) -> pd.DataFrame:
         """Convert base surface initial state to DataFrame state format.
 
         Args:
@@ -139,32 +141,36 @@ class SurfaceInitialState(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Get surface index
-        surf_idx = self.get_surface_index()
-
+        if vert_idx is None:
+            idx = self.get_surface_index()
+            str_type = "surf"
+        else:
+            idx = vert_idx
+            str_type = "roof" if is_roof else "wall"
         # Set basic state parameters
-        df_state[("state", f"({surf_idx},)")] = self.state
-        df_state[("soilstore_id", f"({surf_idx},)")] = self.soilstore
+        df_state[(f"state_{str_type}    ", f"({idx},)")] = self.state
+        df_state[(f"soilstore_{str_type}", f"({idx},)")] = self.soilstore
 
         # Set snow/ice parameters if present
         if self.snowfrac is not None:
-            df_state[("snowfrac", f"({surf_idx},)")] = self.snowfrac
+            df_state[(f"snowfrac_{str_type}", f"({idx},)")] = self.snowfrac
         if self.snowpack is not None:
-            df_state[("snowpack", f"({surf_idx},)")] = self.snowpack
+            df_state[(f"snowpack_{str_type}", f"({idx},)")] = self.snowpack
         if self.icefrac is not None:
-            df_state[("icefrac", f"({surf_idx},)")] = self.icefrac
+            df_state[(f"icefrac_{str_type}", f"({idx},)")] = self.icefrac
         if self.snowwater is not None:
-            df_state[("snowwater", f"({surf_idx},)")] = self.snowwater
+            df_state[(f"snowwater_{str_type}", f"({idx},)")] = self.snowwater
         if self.snowdens is not None:
-            df_state[("snowdens", f"({surf_idx},)")] = self.snowdens
+            df_state[(f"snowdens_{str_type}", f"({idx},)")] = self.snowdens
 
         # Set temperature parameters
         for i, temp in enumerate(self.temperature):
-            df_state[("t", f"({surf_idx},{i})")] = temp
+            df_state[(f"t_{str_type}", f"({idx},{i})")] = temp
 
         if self.tsfc is not None:
-            df_state[("tsfc", f"({surf_idx},)")] = self.tsfc
+            df_state[(f"tsfc_{str_type}", f"({idx},)")] = self.tsfc
         if self.tin is not None:
-            df_state[("tin", f"({surf_idx},)")] = self.tin
+            df_state[(f"tin_{str_type}", f"({idx},)")] = self.tin
 
         return df_state
 
@@ -251,15 +257,15 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
 
         # Get surface index
         surf_idx = self.get_surface_index()
+        veg_idx = surf_idx - 2
 
         # Add vegetated surface specific parameters
-        df_state[("alb", f"({surf_idx},)")] = self.alb_id
-        df_state[("lai", f"({surf_idx},)")] = self.lai_id
-        df_state[("gdd", f"({surf_idx},)")] = self.gdd_id
-        df_state[("sdd", f"({surf_idx},)")] = self.sdd_id
+        df_state[("alb", f"({veg_idx},)")] = self.alb_id
+        df_state[("lai", f"({veg_idx},)")] = self.lai_id
+        df_state[("gdd", f"({veg_idx},)")] = self.gdd_id
+        df_state[("sdd", f"({veg_idx},)")] = self.sdd_id
 
         # Add water use parameters
-        veg_idx = surf_idx - 2
         df_wu = self.wu.to_df_state(veg_idx, grid_id)
         df_state = pd.concat([df_state, df_wu], axis=1)
 
@@ -337,12 +343,9 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
         # Get base vegetated surface state parameters
         df_state = super().to_df_state(grid_id)
 
-        # Get surface index
-        surf_idx = self.get_surface_index()
-
         # Add deciduous tree specific parameters
-        df_state[("porosity", f"({surf_idx},)")] = self.porosity_id
-        df_state[("decidcap", f"({surf_idx},)")] = self.decidcap_id
+        df_state[("porosity_id", "0")] = self.porosity_id
+        df_state[("decidcap_id", "0")] = self.decidcap_id
 
         return df_state
 
@@ -367,8 +370,8 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
         )
 
         # Deciduous tree-specific parameters
-        porosity_id = df.loc[grid_id, ("porosity", f"({surf_idx},)")]
-        decidcap_id = df.loc[grid_id, ("decidcap", f"({surf_idx},)")]
+        porosity_id = df.loc[grid_id, ("porosity_id", "0")]
+        decidcap_id = df.loc[grid_id, ("decidcap_id", "0")]
 
         return cls(
             **base_instance.dict(),
@@ -479,20 +482,20 @@ class InitialStates(BaseModel):
             df_state = pd.concat([df_state, df_surface], axis=1)
 
         # Add roof and wall states
-        for surface_list, surface_type in [(self.roofs, "roof"), (self.walls, "wall")]:
-            if surface_list is not None:  # Check for None explicitly
-                for i, surface in enumerate(surface_list):
-                    if surface is not None:  # Check each surface is not None
-                        df_surface = surface.to_df_state(grid_id)
-                        # Prefix column names with surface type
-                        df_surface.columns = pd.MultiIndex.from_tuples(
-                            [
-                                (f"{surface_type}_{col[0]}", f"({i},)")
-                                for col in df_surface.columns
-                            ],
-                            names=["var", "ind_dim"],
-                        )
-                        df_state = pd.concat([df_state, df_surface], axis=1)
+        for facet_list, facet_type in [(self.roofs, "roof"), (self.walls, "wall")]:
+            if facet_list is not None:  # Check for None explicitly
+                for i, facet in enumerate(facet_list):
+                    if facet is not None:  # Check each facet is not None
+                        df_facet = facet.to_df_state(grid_id, i, facet_type)
+                        # # Prefix column names with facet type
+                        # df_facet.columns = pd.MultiIndex.from_tuples(
+                        #     [
+                        #         (f"{col[0]}", f"({i},)")
+                        #         for col in df_facet.columns
+                        #     ],
+                        #     names=["var", "ind_dim"],
+                        # )
+                        df_state = pd.concat([df_state, df_facet], axis=1)
 
         # Drop duplicate columns while preserving first occurrence
         df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="first")]
@@ -2724,9 +2727,19 @@ class Site(BaseModel):
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert site to DataFrame state format"""
-        df_site = self.properties.to_df_state(grid_id)
+        # df_state = init_df_state(grid_id)
+        df_land_cover = self.properties.land_cover.to_df_state(grid_id)
+        df_vertical_layers = self.properties.vertical_layers.to_df_state(grid_id)
         df_initial_states = self.initial_states.to_df_state(grid_id)
-        df_state = pd.concat([df_site, df_initial_states], axis=1)
+        df_state = pd.concat(
+            [
+                # df_state,
+                df_land_cover,
+                df_vertical_layers,
+                df_initial_states,
+            ],
+            axis=1,
+        )
         return df_state
 
 
