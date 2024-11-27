@@ -924,6 +924,39 @@ class StorageDrainParams(BaseModel):
             )
 
         return df
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "StorageDrainParams":
+        """
+        Reconstruct StorageDrainParams from DataFrame state format.
+
+        Args:
+            df: DataFrame containing storage and drain parameters.
+            grid_id: Grid ID for the DataFrame index.
+            surf_idx: Surface index (0=paved, 1=bldgs, 2=dectr, 3=evetr, 4=grass, 5=bsoil, 6=water).
+
+        Returns:
+            StorageDrainParams: Instance of StorageDrainParams.
+        """
+        # Define the parameter names and their indices
+        param_map = {
+            "store_min": 0,
+            "store_max": 1,
+            "store_cap": 2,
+            "drain_eq": 3,
+            "drain_coef_1": 4,
+            "drain_coef_2": 5,
+        }
+
+        # Extract the values from the DataFrame
+        params = {
+            param: df.loc[grid_id, ("storedrainprm", f"({idx}, {surf_idx})")]
+            for param, idx in param_map.items()
+        }
+
+        # Create an instance using the extracted parameters
+        return cls(**params)
+
 
 
 class OHM_Coefficient_season_wetness(BaseModel):
