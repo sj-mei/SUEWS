@@ -1745,7 +1745,7 @@ class ModelPhysics(BaseModel):
 
 class LUMPSParams(BaseModel):
     raincover: float = Field(ge=0, le=1, default=0.25)
-    rainmaxres: float = Field(ge=0, le=1, default=0.25)
+    rainmaxres: float = Field(ge=0, le=20, default=0.25)
     drainrt: float = Field(ge=0, le=1, default=0.25)
     veg_type: int = Field(default=1)
 
@@ -3078,22 +3078,22 @@ class SnowParams(BaseModel):
         """
         # Extract scalar attributes
         scalar_params = {
-            "crwmax": df.loc[grid_id, ("crwmax", 0)],
-            "crwmin": df.loc[grid_id, ("crwmin", 0)],
-            "narp_emis_snow": df.loc[grid_id, ("narp_emis_snow", 0)],
-            "preciplimit": df.loc[grid_id, ("preciplimit", 0)],
-            "preciplimitalb": df.loc[grid_id, ("preciplimitalb", 0)],
-            "snowalbmax": df.loc[grid_id, ("snowalbmax", 0)],
-            "snowalbmin": df.loc[grid_id, ("snowalbmin", 0)],
-            "snowdensmin": df.loc[grid_id, ("snowdensmin", 0)],
-            "snowdensmax": df.loc[grid_id, ("snowdensmax", 0)],
-            "snowlimbldg": df.loc[grid_id, ("snowlimbldg", 0)],
-            "snowlimpaved": df.loc[grid_id, ("snowlimpaved", 0)],
-            "tau_a": df.loc[grid_id, ("tau_a", 0)],
-            "tau_f": df.loc[grid_id, ("tau_f", 0)],
-            "tau_r": df.loc[grid_id, ("tau_r", 0)],
-            "tempmeltfact": df.loc[grid_id, ("tempmeltfact", 0)],
-            "radmeltfact": df.loc[grid_id, ("radmeltfact", 0)],
+            "crwmax": df.loc[grid_id, ("crwmax", '0')],
+            "crwmin": df.loc[grid_id, ("crwmin", '0')],
+            "narp_emis_snow": df.loc[grid_id, ("narp_emis_snow", '0')],
+            "preciplimit": df.loc[grid_id, ("preciplimit", '0')],
+            "preciplimitalb": df.loc[grid_id, ("preciplimitalb", '0')],
+            "snowalbmax": df.loc[grid_id, ("snowalbmax", '0')],
+            "snowalbmin": df.loc[grid_id, ("snowalbmin", '0')],
+            "snowdensmin": df.loc[grid_id, ("snowdensmin", '0')],
+            "snowdensmax": df.loc[grid_id, ("snowdensmax", '0')],
+            "snowlimbldg": df.loc[grid_id, ("snowlimbldg", '0')],
+            "snowlimpaved": df.loc[grid_id, ("snowlimpaved", '0')],
+            "tau_a": df.loc[grid_id, ("tau_a", '0')],
+            "tau_f": df.loc[grid_id, ("tau_f", '0')],
+            "tau_r": df.loc[grid_id, ("tau_r", '0')],
+            "tempmeltfact": df.loc[grid_id, ("tempmeltfact", '0')],
+            "radmeltfact": df.loc[grid_id, ("radmeltfact", '0')],
         }
 
         # Extract HourlyProfile
