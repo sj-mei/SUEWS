@@ -2834,6 +2834,36 @@ class LAIPowerCoefficients(BaseModel):
             set_df_value("laipower", (i, veg_idx), value)
 
         return df_state
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, veg_idx: int) -> "LAIPowerCoefficients":
+        """
+        Reconstruct LAIPowerCoefficients from DataFrame state format.
+
+        Args:
+            df: DataFrame containing LAI power coefficients
+            grid_id: Grid ID for the DataFrame index
+            veg_idx: Vegetation index (0: EVETR, 1: DECTR, 2: GRASS)
+
+        Returns:
+            LAIPowerCoefficients: Instance of LAIPowerCoefficients
+        """
+        # Map each coefficient to its corresponding index
+        coefficients = [
+            df.loc[grid_id, ("laipower", f"(0, {veg_idx})")],
+            df.loc[grid_id, ("laipower", f"(1, {veg_idx})")],
+            df.loc[grid_id, ("laipower", f"(2, {veg_idx})")],
+            df.loc[grid_id, ("laipower", f"(3, {veg_idx})")],
+        ]
+
+        # Return the instance with coefficients
+        return cls(
+            growth_lai=coefficients[0],
+            growth_gdd=coefficients[1],
+            senescence_lai=coefficients[2],
+            senescence_sdd=coefficients[3],
+        )
+
 
 
 class LAIParams(BaseModel):
@@ -2927,6 +2957,44 @@ class LAIParams(BaseModel):
                     df_state[col] = df_power[col]
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "LAIParams":
+        """
+        Reconstruct LAIParams from DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing LAI parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            surf_idx (int): Surface index for vegetation (2: EVETR, 3: DECTR, 4: GRASS).
+
+        Returns:
+            LAIParams: Instance of LAIParams.
+        """
+        # Adjust index for vegetation surfaces (surface index - 2)
+        veg_idx = surf_idx - 2
+
+        # Helper function to extract values from DataFrame
+        def get_df_value(col_name: str, indices: Union[Tuple, int]) -> float:
+            idx_str = str(indices) if isinstance(indices, int) else str(indices)
+            return df.loc[grid_id, (col_name, idx_str)]
+
+        # Extract basic LAI parameters
+        lai_params = {
+            "baset": get_df_value("baset", (veg_idx,)),
+            "gddfull": get_df_value("gddfull", (veg_idx,)),
+            "basete": get_df_value("basete", (veg_idx,)),
+            "sddfull": get_df_value("sddfull", (veg_idx,)),
+            "laimin": get_df_value("laimin", (veg_idx,)),
+            "laimax": get_df_value("laimax", (veg_idx,)),
+            "laitype": int(get_df_value("laitype", (veg_idx,))),
+        }
+
+        # Extract LAI power coefficients
+        laipower = LAIPowerCoefficients.from_df_state(df, grid_id, veg_idx)
+
+        return cls(**lai_params, laipower=laipower)
+
 
 
 class VegetatedSurfaceProperties(SurfaceProperties):
