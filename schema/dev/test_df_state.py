@@ -123,6 +123,7 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
     # Compare columns
     extra_cols = compare_df_columns(class_df, ref_df, cls.__name__)
 
+
     if extra_cols:
         print(f"Extra columns in {cls.__name__}:")
         for col in sorted(extra_cols):
@@ -132,6 +133,16 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
     if not extra_cols:
         print(f"{cls.__name__} has all expected columns")
 
+    if cls.__name__ == "SUEWSConfig":
+        # For SUEWSConfig, also check for missing columns
+        missing_cols = set(ref_df.columns) - set(class_df.columns)
+        if missing_cols:
+            print(f"\nMissing columns in {cls.__name__}:")
+            for col in sorted(missing_cols):
+                print(f"  - {col}")
+            raise ValueError(f"{len(missing_cols)} missing columns in {cls.__name__}")
+        else:
+            print(f"{cls.__name__} has all expected columns")
 
 def main():
     # Load reference DataFrame
