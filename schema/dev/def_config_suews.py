@@ -444,49 +444,49 @@ class InitialStates(BaseModel):
         description="Initial states for wall layers",
     )
 
-    @model_validator(mode="before")
-    @classmethod
-    def set_surface_types(cls, data: Dict) -> Dict:
-        """Set surface types for all surfaces before validation"""
-        # Create instances if they don't exist
-        if "paved" not in data:
-            data["paved"] = PavedSurfaceInitialStates()
-        elif isinstance(data["paved"], dict):
-            data["paved"] = PavedSurfaceInitialStates(**data["paved"])
+    # @model_validator(mode="before")
+    # @classmethod
+    # def set_surface_types(cls, data: Dict) -> Dict:
+    #     """Set surface types for all surfaces before validation"""
+    #     # Create instances if they don't exist
+    #     if "paved" not in data:
+    #         data["paved"] = InitialStatePaved()
+    #     elif isinstance(data["paved"], dict):
+    #         data["paved"] = InitialStatePaved(**data["paved"])
 
-        if "bldgs" not in data:
-            data["bldgs"] = BldgsSurfaceInitialStates()
-        elif isinstance(data["bldgs"], dict):
-            data["bldgs"] = BldgsSurfaceInitialStates(**data["bldgs"])
+    #     if "bldgs" not in data:
+    #         data["bldgs"] = InitialStateBldgs()
+    #     elif isinstance(data["bldgs"], dict):
+    #         data["bldgs"] = InitialStateBldgs(**data["bldgs"])
 
-        # Handle basic surface types
-        for surface_type in ["bsoil", "water"]:
-            if surface_type not in data:
-                data[surface_type] = SurfaceInitialState()
-            if isinstance(data[surface_type], dict):
-                data[surface_type] = SurfaceInitialState(**data[surface_type])
-            data[surface_type].set_surface_type(SurfaceType(surface_type))
+    #     # Handle basic surface types
+    #     for surface_type in ["bsoil", "water"]:
+    #         if surface_type not in data:
+    #             data[surface_type] = SurfaceInitialState()
+    #         if isinstance(data[surface_type], dict):
+    #             data[surface_type] = SurfaceInitialState(**data[surface_type])
+    #         data[surface_type].set_surface_type(SurfaceType(surface_type))
 
-        # Handle vegetated surfaces
-        if "evetr" not in data:
-            data["evetr"] = VegetatedSurfaceInitialState()
-        if isinstance(data["evetr"], dict):
-            data["evetr"] = VegetatedSurfaceInitialState(**data["evetr"])
-        data["evetr"].set_surface_type(SurfaceType.EVETR)
+    #     # Handle vegetated surfaces
+    #     if "evetr" not in data:
+    #         data["evetr"] = VegInitialState()
+    #     if isinstance(data["evetr"], dict):
+    #         data["evetr"] = VegInitialState(**data["evetr"])
+    #     data["evetr"].set_surface_type(SurfaceType.EVETR)
 
-        if "dectr" not in data:
-            data["dectr"] = InitialStateDectr()
-        if isinstance(data["dectr"], dict):
-            data["dectr"] = InitialStateDectr(**data["dectr"])
-        data["dectr"].set_surface_type(SurfaceType.DECTR)
+    #     if "dectr" not in data:
+    #         data["dectr"] = InitialStateDectr()
+    #     if isinstance(data["dectr"], dict):
+    #         data["dectr"] = InitialStateDectr(**data["dectr"])
+    #     data["dectr"].set_surface_type(SurfaceType.DECTR)
 
-        if "grass" not in data:
-            data["grass"] = VegetatedSurfaceInitialState()
-        if isinstance(data["grass"], dict):
-            data["grass"] = VegetatedSurfaceInitialState(**data["grass"])
-        data["grass"].set_surface_type(SurfaceType.GRASS)
+    #     if "grass" not in data:
+    #         data["grass"] = VegInitialState()
+    #     if isinstance(data["grass"], dict):
+    #         data["grass"] = VegInitialState(**data["grass"])
+    #     data["grass"].set_surface_type(SurfaceType.GRASS)
 
-        return data
+    #     return data
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
