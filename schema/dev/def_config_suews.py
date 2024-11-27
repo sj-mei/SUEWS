@@ -536,6 +536,7 @@ class InitialStates(BaseModel):
                     is_roof = facet_type == "roof"
                     df_facet = facet.to_df_state(grid_id, i, is_roof)
                     df_state = pd.concat([df_state, df_facet], axis=1)
+                    df_state = df_state.sort_index(axis=1)
 
         # add dummy columns to conform to SUEWS convention
         list_cols = [
@@ -553,9 +554,11 @@ class InitialStates(BaseModel):
         ]
         for col in list_cols:
             df_state[(col, "0")] = 0
+            df_state = df_state.sort_index(axis=1)
         # special treatment for hdd_id
         for i in range(12):
             df_state[(f"hdd_id", f"({i},)")] = 0
+            df_state = df_state.sort_index(axis=1)
         # Drop duplicate columns while preserving first occurrence
         df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="first")]
 
@@ -1303,6 +1306,14 @@ class SurfaceProperties(BaseModel):
             # except Exception as e:
             #     print(f"Warning: Could not set property {property}: {str(e)}")
             #     continue
+
+        # add dummy columns to conform to SUEWS convention
+        list_cols = [
+            "ohm_threshsw",
+            "ohm_threshwd",
+        ]
+        for col in list_cols:
+            df_state[(col, "(7,)")] = 0
 
         # Merge all DataFrames
         df_final = pd.concat(dfs, axis=1).sort_index(axis=1)
@@ -3691,6 +3702,8 @@ class SUEWSConfig(BaseModel):
             list_df_site.append(df_site)
 
         df = pd.concat(list_df_site, axis=1)
+        # remove duplicate columns
+        df = df.loc[:, ~df.columns.duplicated()]
         return df
 
     @classmethod
