@@ -715,6 +715,15 @@ class WaterDistribution(BaseModel):
                 "to_bsoil": 0.1,
                 "to_water": 0.1,
                 "to_soilstore": 0.4
+            },
+            SurfaceType.BSOIL: {
+                "to_paved": 0.1,
+                "to_bldgs": 0.1,
+                "to_dectr": 0.1,
+                "to_evetr": 0.1,
+                "to_grass": 0.1,
+                "to_water": 0.1,
+                "to_soilstore": 0.4
             }
         }
 
@@ -838,6 +847,8 @@ class WaterDistribution(BaseModel):
             ]
         ):
             value = getattr(self, attr)
+            if attr in ["to_runoff", "to_soilstore"]:
+                i=7
             if value is not None:
                 param_tuples.append(("waterdist", f"({i}, {surf_idx})"))
                 values.append(value)
@@ -1541,7 +1552,7 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
         ge=0, default=0.3, description="Frontal area index of buildings"
     )
     bldgh: float = Field(ge=0, default=10.0, description="Building height")
-    water_dist: WaterDistribution = Field(
+    waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
     )
 
@@ -1570,8 +1581,18 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
         return df_state
 
 
-class BaresoilProperties(NonVegetatedSurfaceProperties):
+class BsoilProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
+    waterdist: WaterDistribution = Field(
+        default_factory=lambda: WaterDistribution(SurfaceType.BSOIL),
+        description="Water distribution for bare soil"
+    )
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert bare soil properties to DataFrame state format."""
+        df_state = super().to_df_state(grid_id)
+        # df_state.loc[grid_id, ("waterdist", "0")] = self.waterdist
+        return df_state
 
 
 class WaterProperties(NonVegetatedSurfaceProperties):
@@ -2872,7 +2893,7 @@ class DectrProperties(VegetatedSurfaceProperties):
     pormin_dec: float = Field(default=0.2, description="Minimum porosity")
     pormax_dec: float = Field(default=0.6, description="Maximum porosity")
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
-    water_dist: WaterDistribution = Field(
+    waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
         description="Water distribution for deciduous trees"
     )
@@ -2905,7 +2926,7 @@ class EvetrProperties(VegetatedSurfaceProperties):
     )
     evetreeh: float = Field(default=15.0, description="Evergreen tree height")
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
-    water_dist: WaterDistribution = Field(
+    waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.EVETR),
         description="Water distribution for evergreen trees"
     )
@@ -2936,7 +2957,7 @@ class EvetrProperties(VegetatedSurfaceProperties):
 
 class GrassProperties(VegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
-    water_dist: WaterDistribution = Field(
+    waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.GRASS),
         description="Water distribution for grass"
     )
@@ -3086,8 +3107,8 @@ class LandCover(BaseModel):
         default_factory=GrassProperties,
         description="Properties for grass surfaces"
     )
-    bsoil: BaresoilProperties = Field(
-        default_factory=BaresoilProperties,
+    bsoil: BsoilProperties = Field(
+        default_factory=BsoilProperties,
         description="Properties for bare soil surfaces"
     )
     water: WaterProperties = Field(
