@@ -1186,7 +1186,11 @@ class PavedProperties(NonVegetatedSurfaceProperties):
         for nested_prop in ["waterdist", "storedrainprm", "thermal_layers", "ohm_coef"]:
             nested_obj = getattr(self, nested_prop)
             if nested_obj is not None and hasattr(nested_obj, "to_df_state"):
-                nested_df = nested_obj.to_df_state(grid_id, surf_idx)
+                if nested_prop == "thermal_layers":
+                    surf_name = self.get_surface_name()
+                    nested_df = nested_obj.to_df_state(grid_id, surf_idx, surf_name)
+                else:
+                    nested_df = nested_obj.to_df_state(grid_id, surf_idx)
                 dfs.append(nested_df)
 
         # Merge all DataFrames
@@ -2780,23 +2784,23 @@ class EvetrProperties(VegetatedSurfaceProperties):
 
 
 class SnowParams(BaseModel):
-    crwmax: float
-    crwmin: float
-    narp_emis_snow: float
-    preciplimit: float
-    preciplimitalb: float
-    snowalbmax: float
-    snowalbmin: float
-    snowdensmin: float
-    snowdensmax: float
-    snowlimbldg: float
-    snowlimpaved: float
-    snowprof_24hr: HourlyProfile
-    tau_a: float
-    tau_f: float
-    tau_r: float
-    tempmeltfact: float
-    radmeltfact: float
+    crwmax: float = Field(default=0.1, description="Maximum water capacity of snow")
+    crwmin: float = Field(default=0.05, description="Minimum water capacity of snow")
+    narp_emis_snow: float = Field(default=0.99, description="Snow surface emissivity")
+    preciplimit: float = Field(default=2.2, description="Limit for snow vs rain precipitation")
+    preciplimitalb: float = Field(default=0.1, description="Precipitation limit for albedo aging")
+    snowalbmax: float = Field(default=0.85, description="Maximum snow albedo")
+    snowalbmin: float = Field(default=0.4, description="Minimum snow albedo")
+    snowdensmin: float = Field(default=100.0, description="Minimum snow density (kg m-3)")
+    snowdensmax: float = Field(default=400.0, description="Maximum snow density (kg m-3)")
+    snowlimbldg: float = Field(default=0.1, description="Snow limit on buildings")
+    snowlimpaved: float = Field(default=0.1, description="Snow limit on paved surfaces")
+    snowprof_24hr: HourlyProfile = Field(default_factory=HourlyProfile, description="24-hour snow profile")
+    tau_a: float = Field(default=0.018, description="Aging constant for cold snow")
+    tau_f: float = Field(default=0.11, description="Aging constant for melting snow")
+    tau_r: float = Field(default=0.05, description="Aging constant for refreezing snow")
+    tempmeltfact: float = Field(default=0.12, description="Temperature melt factor")
+    radmeltfact: float = Field(default=0.0016, description="Radiation melt factor")
 
     @model_validator(mode="after")
     def validate_crw_range(self) -> "SnowParams":
@@ -2897,13 +2901,34 @@ class SnowParams(BaseModel):
 
 
 class LandCover(BaseModel):
-    paved: PavedProperties
-    bldgs: BuildingProperties
-    dectr: DectrProperties
-    evetr: EvetrProperties
-    grass: VegetatedSurfaceProperties
-    bsoil: BaresoilProperties
-    water: WaterProperties
+    paved: PavedProperties = Field(
+        default_factory=PavedProperties,
+        description="Properties for paved surfaces like roads and pavements"
+    )
+    bldgs: BuildingProperties = Field(
+        default_factory=BuildingProperties,
+        description="Properties for building surfaces including roofs and walls"
+    )
+    dectr: DectrProperties = Field(
+        default_factory=DectrProperties,
+        description="Properties for deciduous trees and vegetation"
+    )
+    evetr: EvetrProperties = Field(
+        default_factory=EvetrProperties,
+        description="Properties for evergreen trees and vegetation"
+    )
+    grass: VegetatedSurfaceProperties = Field(
+        default_factory=VegetatedSurfaceProperties,
+        description="Properties for grass surfaces"
+    )
+    bsoil: BaresoilProperties = Field(
+        default_factory=BaresoilProperties,
+        description="Properties for bare soil surfaces"
+    )
+    water: WaterProperties = Field(
+        default_factory=WaterProperties,
+        description="Properties for water surfaces like lakes and ponds"
+    )
 
     @model_validator(mode="after")
     def set_surface_types(self) -> "LandCover":
@@ -2936,25 +2961,49 @@ class LandCover(BaseModel):
 
 
 class SiteProperties(BaseModel):
-    lat: float = Field(ge=-90, le=90)
-    lng: float = Field(ge=-180, le=180)
-    alt: float = Field(gt=0)
-    timezone: int = Field(ge=-12, le=12)
-    surfacearea: float = Field(gt=0)
-    z: float = Field(gt=0)
-    z0m_in: float = Field(gt=0)
-    zdm_in: float = Field(gt=0)
-    pipecapacity: float = Field(gt=0)
-    runofftowater: float = Field(ge=0, le=1)
-    narp_trans_site: float
-    lumps: LUMPSParams
-    spartacus: SPARTACUSParams
-    conductance: Conductance
-    irrigation: IrrigationParams
-    anthropogenic_emissions: AnthropogenicEmissions
-    snow: SnowParams
-    land_cover: LandCover
-    vertical_layers: VerticalLayers
+    lat: float = Field(ge=-90, le=90, description="Latitude of the site in degrees", default=51.5)
+    lng: float = Field(ge=-180, le=180, description="Longitude of the site in degrees", default=-0.13)
+    alt: float = Field(gt=0, description="Altitude of the site in metres above sea level", default=40.0)
+    timezone: int = Field(ge=-12, le=12, description="Time zone offset from UTC in hours", default=0)
+    surfacearea: float = Field(gt=0, description="Total surface area of the site in square metres", default=10000.0)
+    z: float = Field(gt=0, description="Measurement height in metres", default=10.0)
+    z0m_in: float = Field(gt=0, description="Momentum roughness length in metres", default=1.0)
+    zdm_in: float = Field(gt=0, description="Zero-plane displacement height in metres", default=5.0)
+    pipecapacity: float = Field(gt=0, description="Maximum capacity of drainage pipes in mm/hr", default=100.0)
+    runofftowater: float = Field(ge=0, le=1, description="Fraction of excess water going to water bodies", default=0.0)
+    narp_trans_site: float = Field(description="Site-specific NARP transmission coefficient", default=0.2)
+    lumps: LUMPSParams = Field(
+        default_factory=LUMPSParams,
+        description="Parameters for Local-scale Urban Meteorological Parameterization Scheme"
+    )
+    spartacus: SPARTACUSParams = Field(
+        default_factory=SPARTACUSParams,
+        description="Parameters for Solar Parametrizations for Radiative Transfer through Urban Canopy Scheme"
+    )
+    conductance: Conductance = Field(
+        default_factory=Conductance,
+        description="Parameters for surface conductance calculations"
+    )
+    irrigation: IrrigationParams = Field(
+        default_factory=IrrigationParams,
+        description="Parameters for irrigation modelling"
+    )
+    anthropogenic_emissions: AnthropogenicEmissions = Field(
+        default_factory=AnthropogenicEmissions,
+        description="Parameters for anthropogenic heat and water emissions"
+    )
+    snow: SnowParams = Field(
+        default_factory=SnowParams,
+        description="Parameters for snow modelling"
+    )
+    land_cover: LandCover = Field(
+        default_factory=LandCover,
+        description="Parameters for land cover characteristics"
+    )
+    vertical_layers: VerticalLayers = Field(
+        default_factory=VerticalLayers,
+        description="Parameters for vertical layer structure"
+    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert site properties to DataFrame state format"""
@@ -2979,10 +3028,16 @@ class SiteProperties(BaseModel):
 
 
 class Site(BaseModel):
-    name: str
-    gridiv: int
-    properties: SiteProperties
-    initial_states: InitialStates
+    name: str = Field(description="Name of the site", default="unnamed_site")
+    gridiv: int = Field(description="Grid ID for identifying this site in multi-site simulations", default=1)
+    properties: SiteProperties = Field(
+        default_factory=SiteProperties,
+        description="Physical and morphological properties of the site"
+    )
+    initial_states: InitialStates = Field(
+        default_factory=InitialStates,
+        description="Initial conditions for model state variables"
+    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert site to DataFrame state format"""

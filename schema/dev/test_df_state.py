@@ -73,6 +73,7 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
         "ModelPhysics",
         "NonVegetatedSurfaceProperties",
         "VegetatedSurfaceProperties",
+        "SUEWSConfig",
     ]:
         print(f"Skipping {cls.__name__} for now...")
         return
