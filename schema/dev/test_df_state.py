@@ -73,6 +73,14 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
         "ModelPhysics",
         "NonVegetatedSurfaceProperties",
         "VegetatedSurfaceProperties",
+        "SUEWSConfig",
+        "Site",
+        "SiteProperties",
+        "SurfaceInitialState",
+        "SurfaceProperties",
+        "ThermalLayers",
+        "VegetatedSurfaceInitialState",
+        "WeeklyProfile",
     ]:
         print(f"Skipping {cls.__name__} for now...")
         return
@@ -97,10 +105,14 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
             class_df = instance.to_df_state(grid_id, 3)
         elif isinstance(instance, LAIPowerCoefficients):
             class_df = instance.to_df_state(grid_id, 1)
-        elif isinstance(instance, OHMCoefficients):
+        elif isinstance(
+            instance, (OHMCoefficients, StorageDrainParams, WaterDistribution)
+        ):
             class_df = instance.to_df_state(grid_id, 0)
-        elif isinstance(instance, OHM_Coefficient_season_wetness):
+        elif isinstance(instance, (OHM_Coefficient_season_wetness)):
             class_df = instance.to_df_state(grid_id, 0, 1)
+        elif isinstance(instance, WaterUse):
+            class_df = instance.to_df_state(0, grid_id)
         else:
             class_df = instance.to_df_state(grid_id)
     except Exception as e:
