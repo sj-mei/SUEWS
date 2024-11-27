@@ -541,9 +541,9 @@ class InitialStates(BaseModel):
         surface_types = {
             "paved": SurfaceInitialState,
             "bldgs": SurfaceInitialState,
-            "evetr": VegetatedSurfaceInitialState,
+            "evetr": VegInitialState,
             "dectr": InitialStateDectr,
-            "grass": VegetatedSurfaceInitialState,
+            "grass": VegInitialState,
             "bsoil": SurfaceInitialState,
             "water": SurfaceInitialState,
         }
@@ -664,7 +664,6 @@ class ThermalLayers(BaseModel):
         return cls(dz=dz, k=k, cp=cp)
 
 
-
 class VegetationParams(BaseModel):
     porosity_id: int
     gdd_id: int = Field(description="Growing degree days ID")
@@ -693,30 +692,21 @@ class WaterDistribution(BaseModel):
         default_distributions = {
             SurfaceType.PAVED: {
                 "to_bldgs": 0.2,
-                "to_dectr": 0.1,
                 "to_evetr": 0.1,
+                "to_dectr": 0.1,
                 "to_grass": 0.1,
                 "to_bsoil": 0.1,
                 "to_water": 0.1,
-                "to_runoff": 0.3
+                "to_runoff": 0.3,
             },
             SurfaceType.BLDGS: {
                 "to_paved": 0.2,
+                "to_evetr": 0.1,
                 "to_dectr": 0.1,
-                "to_evetr": 0.1,
                 "to_grass": 0.1,
                 "to_bsoil": 0.1,
                 "to_water": 0.1,
-                "to_runoff": 0.3
-            },
-            SurfaceType.DECTR: {
-                "to_paved": 0.1,
-                "to_bldgs": 0.1,
-                "to_evetr": 0.1,
-                "to_grass": 0.1,
-                "to_bsoil": 0.1,
-                "to_water": 0.1,
-                "to_soilstore": 0.4
+                "to_runoff": 0.3,
             },
             SurfaceType.EVETR: {
                 "to_paved": 0.1,
@@ -725,7 +715,16 @@ class WaterDistribution(BaseModel):
                 "to_grass": 0.1,
                 "to_bsoil": 0.1,
                 "to_water": 0.1,
-                "to_soilstore": 0.4
+                "to_soilstore": 0.4,
+            },
+            SurfaceType.DECTR: {
+                "to_paved": 0.1,
+                "to_bldgs": 0.1,
+                "to_evetr": 0.1,
+                "to_grass": 0.1,
+                "to_bsoil": 0.1,
+                "to_water": 0.1,
+                "to_soilstore": 0.4,
             },
             SurfaceType.GRASS: {
                 "to_paved": 0.1,
@@ -734,7 +733,7 @@ class WaterDistribution(BaseModel):
                 "to_evetr": 0.1,
                 "to_bsoil": 0.1,
                 "to_water": 0.1,
-                "to_soilstore": 0.4
+                "to_soilstore": 0.4,
             },
             SurfaceType.BSOIL: {
                 "to_paved": 0.1,
@@ -743,8 +742,8 @@ class WaterDistribution(BaseModel):
                 "to_evetr": 0.1,
                 "to_grass": 0.1,
                 "to_water": 0.1,
-                "to_soilstore": 0.4
-            }
+                "to_soilstore": 0.4,
+            },
         }
 
         # If surface type is provided, use its default distribution
@@ -854,7 +853,7 @@ class WaterDistribution(BaseModel):
 
         # Add all non-None distribution parameters using a two-step process
         # 1. Collect all non-None values
-        list_waterdist_value=[]
+        list_waterdist_value = []
         for i, attr in enumerate(
             [
                 "to_paved",
@@ -864,15 +863,25 @@ class WaterDistribution(BaseModel):
                 "to_grass",
                 "to_bsoil",
                 "to_water",
-                "to_runoff",
-                "to_soilstore",
+                # "to_soilstore",
+                # "to_runoff",
             ]
         ):
             value = getattr(self, attr)
             if value is not None:
                 list_waterdist_value.append(value)
+
+        # either to_soilstore or to_runoff must be provided - the other must be 0
+        if self.to_soilstore is None:
+            list_waterdist_value.append(0.0)
+            list_waterdist_value.append(self.to_runoff)
+        if self.to_runoff is None:
+            list_waterdist_value.append(self.to_soilstore)
+            list_waterdist_value.append(0.0)
+
         # 2. Create param_tuples and values - only add non-None values following the order of the list
         for i, value in enumerate(list_waterdist_value):
+            print(f"i: {i}, value: {value}")
             if value is not None:
                 param_tuples.append(("waterdist", f"({i}, {surf_idx})"))
                 values.append(value)
@@ -950,7 +959,9 @@ class StorageDrainParams(BaseModel):
         return df
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "StorageDrainParams":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "StorageDrainParams":
         """
         Reconstruct StorageDrainParams from DataFrame state format.
 
