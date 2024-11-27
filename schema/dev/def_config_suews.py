@@ -283,7 +283,9 @@ class VegInitialState(SurfaceInitialState):
         veg_idx = surf_idx - 2
 
         # Add vegetated surface specific parameters
-        df_state[("alb", f"({veg_idx},)")] = self.alb_id
+        # alb is universal so use surf_idx
+        df_state[("alb", f"({surf_idx},)")] = self.alb_id
+        # others are aligned with veg_idx
         df_state[("lai_id", f"({veg_idx},)")] = self.lai_id
         df_state[("gdd_id", f"({veg_idx},)")] = self.gdd_id
         df_state[("sdd_id", f"({veg_idx},)")] = self.sdd_id
@@ -338,6 +340,12 @@ class VegInitialState(SurfaceInitialState):
 class InitialStateEvetr(VegInitialState):
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert evergreen tree initial state to DataFrame state format."""
+        df_state = super().to_df_state(grid_id)
+        df_state[("albevetr_id", "0")] = self.alb_id
+        return df_state
+
 
 class InitialStateDectr(VegInitialState):
     """Initial state parameters for deciduous trees"""
@@ -376,6 +384,7 @@ class InitialStateDectr(VegInitialState):
         # Add deciduous tree specific parameters
         df_state[("porosity_id", "0")] = self.porosity_id
         df_state[("decidcap_id", "0")] = self.decidcap_id
+        df_state[("albdectr_id", "0")] = self.alb_id
 
         return df_state
 
@@ -411,12 +420,19 @@ class InitialStateDectr(VegInitialState):
 class InitialStateGrass(VegInitialState):
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
 
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert grass initial state to DataFrame state format."""
+        df_state = super().to_df_state(grid_id)
+        df_state[("albgrass_id", "0")] = self.alb_id
+        return df_state
+
+
 class InitialStateBsoil(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
 
+
 class InitialStateWater(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
-
 
 
 class InitialStates(BaseModel):
@@ -435,7 +451,6 @@ class InitialStates(BaseModel):
             SurfaceInitialState(),
             SurfaceInitialState(),
             SurfaceInitialState(),
-
         ],
         description="Initial states for roof layers",
     )
@@ -518,14 +533,29 @@ class InitialStates(BaseModel):
         for facet_list, facet_type in [(self.roofs, "roof"), (self.walls, "wall")]:
             if facet_list is not None:  # Check for None explicitly
                 for i, facet in enumerate(facet_list):
-                    if facet is not None:  # Check each facet is not None
-                        if facet_type == "roof":
-                            is_roof = True
-                        elif facet_type == "wall":
-                            is_roof = False
-                        df_facet = facet.to_df_state(grid_id, i, is_roof)
-                        df_state = pd.concat([df_state, df_facet], axis=1)
+                    is_roof = facet_type == "roof"
+                    df_facet = facet.to_df_state(grid_id, i, is_roof)
+                    df_state = pd.concat([df_state, df_facet], axis=1)
 
+        # add dummy columns to conform to SUEWS convention
+        list_cols = [
+            "dqndt",
+            "dqnsdt",
+            "dt_since_start",
+            "lenday_id",
+            "qn_av",
+            "qn_s_av",
+            "tair_av",
+            "tmax_id",
+            "tmin_id",
+            "tstep_prev",
+            "snowfallcum",
+        ]
+        for col in list_cols:
+            df_state[(col, "0")] = 0
+        # special treatment for hdd_id
+        for i in range(12):
+            df_state[(f"hdd_id", f"({i},)")] = 0
         # Drop duplicate columns while preserving first occurrence
         df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="first")]
 
@@ -1105,7 +1135,10 @@ class OHMCoefficients(BaseModel):
         # Convert each coefficient (a1, a2, a3)
         for idx_a, coef in enumerate([self.a1, self.a2, self.a3]):
             df_coef = coef.to_df_state(grid_id, surf_idx, idx_a)
-            df_state = pd.concat([df_state, df_coef], axis=1)
+            df_coef_extra = coef.to_df_state(
+                grid_id, 7, idx_a
+            )  # always include this extra row to conform to SUEWS convention
+            df_state = pd.concat([df_state, df_coef, df_coef_extra], axis=1)
 
         # drop duplicate columns
         df_state = df_state.loc[:, ~df_state.columns.duplicated()]
@@ -3183,6 +3216,8 @@ class DectrProperties(VegetatedSurfaceProperties):
     dectreeh: float = Field(default=15.0, description="Deciduous tree height")
     pormin_dec: float = Field(default=0.2, description="Minimum porosity")
     pormax_dec: float = Field(default=0.6, description="Maximum porosity")
+    capmax_dec: float = Field(default=100.0, description="Maximum capacity")
+    capmin_dec: float = Field(default=10.0, description="Minimum capacity")
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
@@ -3199,6 +3234,8 @@ class DectrProperties(VegetatedSurfaceProperties):
             "dectreeh",
             "pormin_dec",
             "pormax_dec",
+            "capmax_dec",
+            "capmin_dec",
         ]
         # Add all non-inherited properties
         for attr in list_properties:
@@ -3258,6 +3295,10 @@ class GrassProperties(VegetatedSurfaceProperties):
         """Convert grass properties to DataFrame state format."""
         # Get base properties from parent
         df_state = super().to_df_state(grid_id)
+
+        # add specific properties
+        df_state[("albmin_grass", "0")] = self.alb_min
+        df_state[("albmax_grass", "0")] = self.alb_max
 
         return df_state
 
@@ -3657,63 +3698,3 @@ class SUEWSConfig(BaseModel):
         """Create config from DataFrame state"""
         # TODO: add from_df_state
         pass
-
-
-if __name__ == "__main__":
-    # Create list for collecting all exceptions
-    exceptions = []
-
-    # test the sample config
-    # Load YAML config
-    with open("./config-suews.yml", "r") as file:
-        yaml_config = yaml.safe_load(file)
-
-    # Create SUEWSConfig object
-    suews_config = SUEWSConfig(**yaml_config[0])
-
-    if exceptions:
-        raise ExceptionGroup("Validation errors occurred", exceptions)
-
-    print(r"testing suews_config done!")
-
-    # pdb.set_trace()
-
-    # Convert to DataFrame
-    df_state_test = suews_config.to_df_state_deprecated()
-    df_state_test.to_pickle("./df_state_test.pkl")
-    print("testing df_state done!")
-
-    # checking if all properties are properly converted
-    # Get the column differences
-    df_state = pd.read_pickle("./df_state.pkl")
-    df_state_cols = set(df_state.columns)
-    df_test_cols = set(df_state_test.columns)
-
-    print("Columns only in df_state:")
-    print(sorted(df_state_cols - df_test_cols))
-
-    print("\nColumns only in df_state_test:")
-    print(sorted(df_test_cols - df_state_cols))
-
-    print("\nTotal columns in df_state:", len(df_state_cols))
-    print("Total columns in df_state_test:", len(df_test_cols))
-
-    # Get columns with any NA values
-    na_cols = df_state_test.columns[df_state_test.isna().any()].tolist()
-
-    # Sort and print the column names
-    print(f"{len(na_cols)} Columns containing NA values:")
-    for col in sorted(na_cols):
-        print(col)
-
-    # test running supy
-    import supy as sp
-
-    df_state, df_forcing = sp.load_SampleData()
-    df_state_test = pd.read_pickle("./df_state_test.pkl")
-    sp.run_supy(df_forcing.iloc[0 : 288 * 10], df_state_test)
-
-
-# # Convert back to config
-# suews_config_back = SUEWSConfig.from_df_state(df_state)
-# print("testing from_df_state done!")
