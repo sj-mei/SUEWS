@@ -1946,13 +1946,13 @@ class HourlyProfile(BaseModel):
         """
         # Extract working day values (index 0)
         working_day = {
-            str(hour + 1): df.loc[grid_id, (param_name, f"(0,{hour})")]
+            str(hour + 1): df.loc[grid_id, (param_name, f"({hour}, 0)")]
             for hour in range(24)
         }
 
-        # Extract holiday/weekend values (index 1)
+        # Extract holiday values (index 1)
         holiday = {
-            str(hour + 1): df.loc[grid_id, (param_name, f"(1,{hour})")]
+            str(hour + 1): df.loc[grid_id, (param_name, f"({hour}, 1)")]
             for hour in range(24)
         }
 
