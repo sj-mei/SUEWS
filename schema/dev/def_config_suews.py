@@ -1620,11 +1620,23 @@ class WaterProperties(NonVegetatedSurfaceProperties):
 
 
 class ModelControl(BaseModel):
-    tstep: int = Field(description="Time step in seconds")
-    forcing_file: str
-    output_file: str
+    tstep: int = Field(
+        default=300,
+        description="Time step in seconds for model calculations"
+    )
+    forcing_file: str = Field(
+        default="forcing.txt",
+        description="Path to meteorological forcing data file"
+    )
+    output_file: str = Field(
+        default="output.txt",
+        description="Path to model output file"
+    )
     # daylightsaving_method: int
-    diagnose: int
+    diagnose: int = Field(
+        default=0,
+        description="Level of diagnostic output (0=none, 1=basic, 2=detailed)"
+    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model control properties to DataFrame state format."""
@@ -1644,19 +1656,19 @@ class ModelControl(BaseModel):
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: int
-    emissionsmethod: int
-    storageheatmethod: int
-    ohmincqf: int
-    roughlenmommethod: int
-    roughlenheatmethod: int
-    stabilitymethod: int
-    smdmethod: int
-    waterusemethod: int
-    diagmethod: int
-    faimethod: int
-    localclimatemethod: int
-    snowuse: int
+    netradiationmethod: int = Field(default=3, description="Method used to calculate net radiation")
+    emissionsmethod: int = Field(default=2, description="Method used to calculate anthropogenic emissions")
+    storageheatmethod: int = Field(default=1, description="Method used to calculate storage heat flux")
+    ohmincqf: int = Field(default=0, description="Include anthropogenic heat in OHM calculations (1) or not (0)")
+    roughlenmommethod: int = Field(default=2, description="Method used to calculate momentum roughness length")
+    roughlenheatmethod: int = Field(default=2, description="Method used to calculate heat roughness length")
+    stabilitymethod: int = Field(default=2, description="Method used for atmospheric stability calculation")
+    smdmethod: int = Field(default=1, description="Method used to calculate soil moisture deficit")
+    waterusemethod: int = Field(default=1, description="Method used to calculate water use")
+    diagmethod: int = Field(default=1, description="Method used for model diagnostics")
+    faimethod: int = Field(default=1, description="Method used to calculate frontal area index")
+    localclimatemethod: int = Field(default=0, description="Method used for local climate zone calculations")
+    snowuse: int = Field(default=0, description="Include snow calculations (1) or not (0)")
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model physics properties to DataFrame state format."""
@@ -3214,7 +3226,7 @@ class SiteProperties(BaseModel):
 
 
 class Site(BaseModel):
-    name: str = Field(description="Name of the site", default="unnamed_site")
+    name: str = Field(description="Name of the site", default="test site")
     gridiv: int = Field(description="Grid ID for identifying this site in multi-site simulations", default=1)
     properties: SiteProperties = Field(
         default_factory=SiteProperties,
@@ -3244,15 +3256,34 @@ class Site(BaseModel):
 
 
 class Model(BaseModel):
-    control: ModelControl
-    physics: ModelPhysics
+    control: ModelControl = Field(
+        default_factory=ModelControl,
+        description="Model control parameters including timestep, output options, etc."
+    )
+    physics: ModelPhysics = Field(
+        default_factory=ModelPhysics,
+        description="Model physics parameters including surface properties, coefficients, etc."
+    )
 
 
 class SUEWSConfig(BaseModel):
-    name: str
-    description: str
-    model: Model
-    site: List[Site]
+    name: str = Field(
+        default="sample config",
+        description="Name of the SUEWS configuration"
+    )
+    description: str = Field(
+        default="this is a sample config for testing purposes ONLY - values are not realistic",
+        description="Description of this SUEWS configuration"
+    )
+    model: Model = Field(
+        default_factory=Model,
+        description="Model control and physics parameters"
+    )
+    site: List[Site] = Field(
+        default=[Site()],
+        description="List of sites to simulate",
+        min_items=1
+    )
 
     class Config:
         extra = "allow"
@@ -3270,7 +3301,7 @@ class SUEWSConfig(BaseModel):
 
         return pd.MultiIndex.from_tuples(tuples)
 
-    def to_df_state(self) -> pd.DataFrame:
+    def to_df_state_deprecated(self) -> pd.DataFrame:
         """Convert config to DataFrame state format"""
         # Initialize empty DataFrame with correct structure
         columns = self.create_multi_index_columns("df_state_columns.txt")
@@ -4050,7 +4081,7 @@ class SUEWSConfig(BaseModel):
                             set_df_value(f"tin_{facet}", (j,), layer.tin)
         return df
 
-    def to_df_state_new(self) -> pd.DataFrame:
+    def to_df_state(self) -> pd.DataFrame:
         """Convert config to DataFrame state format"""
         list_df_site = []
         for grid_id in range(len(self.site)):
@@ -4086,7 +4117,7 @@ if __name__ == "__main__":
     # pdb.set_trace()
 
     # Convert to DataFrame
-    df_state_test = suews_config.to_df_state()
+    df_state_test = suews_config.to_df_state_deprecated()
     df_state_test.to_pickle("./df_state_test.pkl")
     print("testing df_state done!")
 
