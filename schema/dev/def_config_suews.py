@@ -1309,14 +1309,35 @@ class WallLayer(BuildingLayer):
 
 
 class VerticalLayers(BaseModel):
-    nlayer: int
-    height: List[float]
-    veg_frac: List[float]
-    veg_scale: List[float]
-    building_frac: List[float]
-    building_scale: List[float]
-    roofs: List[RoofLayer]
-    walls: List[WallLayer]
+    nlayer: int = Field(default=3, description="Number of vertical layers in the urban canopy")
+    height: List[float] = Field(
+        default=[0.0, 10.0, 20.0, 30.0],
+        description="Heights of layer boundaries in metres, length must be nlayer+1"
+    )
+    veg_frac: List[float] = Field(
+        default=[0.0, 0.0, 0.0],
+        description="Fraction of vegetation in each layer, length must be nlayer"
+    )
+    veg_scale: List[float] = Field(
+        default=[1.0, 1.0, 1.0],
+        description="Scaling factor for vegetation in each layer, length must be nlayer"
+    )
+    building_frac: List[float] = Field(
+        default=[0.4, 0.3, 0.3],
+        description="Fraction of buildings in each layer, must sum to 1.0, length must be nlayer"
+    )
+    building_scale: List[float] = Field(
+        default=[1.0, 1.0, 1.0],
+        description="Scaling factor for buildings in each layer, length must be nlayer"
+    )
+    roofs: List[RoofLayer] = Field(
+        default_factory=lambda: [RoofLayer(), RoofLayer(), RoofLayer()],
+        description="Properties for roof surfaces in each layer, length must be nlayer"
+    )
+    walls: List[WallLayer] = Field(
+        default_factory=lambda: [WallLayer(), WallLayer(), WallLayer()],
+        description="Properties for wall surfaces in each layer, length must be nlayer"
+    )
 
     @model_validator(mode="after")
     def validate_building(self) -> "VerticalLayers":
@@ -1444,13 +1465,7 @@ class WaterProperties(NonVegetatedSurfaceProperties):
         list_attr = ["flowchange"]
 
         # Add all non-inherited properties
-        for attr in list_attr:
-            try:
-                value = getattr(self, attr)
-                if not isinstance(value, (BaseModel, Enum)):
-                    set_df_value(attr, value)
-            except Exception as e:
-                print(f"Warning: Could not set property {attr}: {str(e)}")
+        df_state.loc[grid_id, ("flowchange", "0")] = self.flowchange
 
         return df_state
 
@@ -2854,7 +2869,7 @@ class SnowParams(BaseModel):
             "radmeltfact": self.radmeltfact,
         }
         for param_name, value in scalar_params.items():
-            df_state.loc[grid_id, (param_name, 0)] = value
+            df_state.loc[grid_id, (param_name, "0")] = value
 
         df_hourly_profile = self.snowprof_24hr.to_df_state(grid_id, "snowprof_24hr")
         df_state = df_state.combine_first(df_hourly_profile)
