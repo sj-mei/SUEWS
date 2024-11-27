@@ -2198,11 +2198,11 @@ class IrrigationParams(BaseModel):
             IrrigationParams: Instance of IrrigationParams
         """
         # Extract scalar attributes
-        h_maintain = df.loc[grid_id, ("h_maintain", 0)]
-        faut = df.loc[grid_id, ("faut", 0)]
-        ie_start = df.loc[grid_id, ("ie_start", 0)]
-        ie_end = df.loc[grid_id, ("ie_end", 0)]
-        internalwateruse_h = df.loc[grid_id, ("internalwateruse_h", 0)]
+        h_maintain = df.loc[grid_id, ("h_maintain", "0")]
+        faut = df.loc[grid_id, ("faut", "0")]
+        ie_start = df.loc[grid_id, ("ie_start", "0")]
+        ie_end = df.loc[grid_id, ("ie_end", "0")]
+        internalwateruse_h = df.loc[grid_id, ("internalwateruse_h", "0")]
 
         # Extract WeeklyProfile attributes
         daywatper = WeeklyProfile.from_df_state(df, grid_id, "daywatper")
@@ -2224,6 +2224,7 @@ class IrrigationParams(BaseModel):
             wuprofa_24hr=wuprofa_24hr,
             wuprofm_24hr=wuprofm_24hr,
         )
+
 
 
 class AnthropogenicHeat(BaseModel):
