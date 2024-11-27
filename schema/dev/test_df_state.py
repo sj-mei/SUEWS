@@ -73,7 +73,6 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
         "ModelPhysics",
         "NonVegetatedSurfaceProperties",
         "VegetatedSurfaceProperties",
-        "SUEWSConfig",
         "SiteProperties",
         "SurfaceInitialState",
         "SurfaceProperties",
@@ -113,6 +112,8 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
             class_df = instance.to_df_state(grid_id, 0, 1)
         elif isinstance(instance, WaterUse):
             class_df = instance.to_df_state(0, grid_id)
+        elif isinstance(instance, SUEWSConfig):
+            class_df = instance.to_df_state()
         else:
             class_df = instance.to_df_state(grid_id)
     except Exception as e:
