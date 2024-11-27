@@ -1449,10 +1449,12 @@ class VerticalLayers(BaseModel):
             raise ValueError(
                 f"Number of building fractions ({len(self.building_frac)}) must match nlayer ({self.nlayer})"
             )
-        if not math.isclose(sum(self.building_frac), 1.0, rel_tol=1e-9):
-            raise ValueError(
-                f"Building fractions must sum to 1.0, got {sum(self.building_frac)}"
-            )
+        # This rule is not correct, we just need building_frac to be in range [0,1]
+        #if not math.isclose(sum(self.building_frac), 1.0, rel_tol=1e-9):
+        #    raise ValueError(
+        #        f"Building fractions must sum to 1.0, got {sum(self.building_frac)}"
+        #    )
+        
 
         # Validate building scales
         if len(self.building_scale) != self.nlayer:
