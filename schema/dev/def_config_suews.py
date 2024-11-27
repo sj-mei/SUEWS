@@ -418,6 +418,7 @@ class InitialStateWater(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
 
 
+
 class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
@@ -433,11 +434,14 @@ class InitialStates(BaseModel):
         default=[
             SurfaceInitialState(),
             SurfaceInitialState(),
+            SurfaceInitialState(),
+
         ],
         description="Initial states for roof layers",
     )
     walls: Optional[List[SurfaceInitialState]] = Field(
         default=[
+            SurfaceInitialState(),
             SurfaceInitialState(),
             SurfaceInitialState(),
         ],
@@ -515,7 +519,11 @@ class InitialStates(BaseModel):
             if facet_list is not None:  # Check for None explicitly
                 for i, facet in enumerate(facet_list):
                     if facet is not None:  # Check each facet is not None
-                        df_facet = facet.to_df_state(grid_id, i, facet_type)
+                        if facet_type == "roof":
+                            is_roof = True
+                        elif facet_type == "wall":
+                            is_roof = False
+                        df_facet = facet.to_df_state(grid_id, i, is_roof)
                         df_state = pd.concat([df_state, df_facet], axis=1)
 
         # Drop duplicate columns while preserving first occurrence
@@ -881,7 +889,6 @@ class WaterDistribution(BaseModel):
 
         # 2. Create param_tuples and values - only add non-None values following the order of the list
         for i, value in enumerate(list_waterdist_value):
-            print(f"i: {i}, value: {value}")
             if value is not None:
                 param_tuples.append(("waterdist", f"({i}, {surf_idx})"))
                 values.append(value)
