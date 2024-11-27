@@ -1594,20 +1594,20 @@ class LUMPSParams(BaseModel):
 
 
 class SPARTACUSParams(BaseModel):
-    air_ext_lw: float
-    air_ext_sw: float
-    air_ssa_lw: float
-    air_ssa_sw: float
-    ground_albedo_dir_mult_fact: float
-    n_stream_lw_urban: int
-    n_stream_sw_urban: int
-    n_vegetation_region_urban: int
-    sw_dn_direct_frac: float
-    use_sw_direct_albedo: float
-    veg_contact_fraction_const: float
-    veg_fsd_const: float
-    veg_ssa_lw: float
-    veg_ssa_sw: float
+    air_ext_lw: float = Field(default=0.0, description="Air extinction coefficient for longwave radiation")
+    air_ext_sw: float = Field(default=0.0, description="Air extinction coefficient for shortwave radiation")
+    air_ssa_lw: float = Field(default=0.5, description="Air single scattering albedo for longwave radiation")
+    air_ssa_sw: float = Field(default=0.5, description="Air single scattering albedo for shortwave radiation")
+    ground_albedo_dir_mult_fact: float = Field(default=1.0, description="Multiplication factor for direct ground albedo")
+    n_stream_lw_urban: int = Field(default=2, description="Number of streams for longwave radiation in urban areas")
+    n_stream_sw_urban: int = Field(default=2, description="Number of streams for shortwave radiation in urban areas")
+    n_vegetation_region_urban: int = Field(default=1, description="Number of vegetation regions in urban areas")
+    sw_dn_direct_frac: float = Field(default=0.5, description="Fraction of downward shortwave radiation that is direct")
+    use_sw_direct_albedo: float = Field(default=1.0, description="Flag to use direct albedo for shortwave radiation")
+    veg_contact_fraction_const: float = Field(default=0.5, description="Constant vegetation contact fraction")
+    veg_fsd_const: float = Field(default=0.5, description="Constant vegetation fractional standard deviation")
+    veg_ssa_lw: float = Field(default=0.5, description="Vegetation single scattering albedo for longwave radiation")
+    veg_ssa_sw: float = Field(default=0.5, description="Vegetation single scattering albedo for shortwave radiation")
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -1782,13 +1782,13 @@ class DayProfile(BaseModel):
 
 
 class WeeklyProfile(BaseModel):
-    monday: float
-    tuesday: float
-    wednesday: float
-    thursday: float
-    friday: float
-    saturday: float
-    sunday: float
+    monday: float = 0.0
+    tuesday: float = 0.0
+    wednesday: float = 0.0
+    thursday: float = 0.0
+    friday: float = 0.0
+    saturday: float = 0.0
+    sunday: float = 0.0
 
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
         """Convert weekly profile to DataFrame state format.
@@ -1952,15 +1952,15 @@ class HourlyProfile(BaseModel):
 
 
 class IrrigationParams(BaseModel):
-    h_maintain: float
-    faut: float
-    ie_start: float
-    ie_end: float
-    internalwateruse_h: float
-    daywatper: WeeklyProfile
-    daywat: WeeklyProfile
-    wuprofa_24hr: HourlyProfile
-    wuprofm_24hr: HourlyProfile
+    h_maintain: float = Field(default=0.5, description="Soil moisture threshold for irrigation")
+    faut: float = Field(default=0.0, description="Fraction of automatic irrigation")
+    ie_start: float = Field(default=0.0, description="Start time of irrigation (hour)")
+    ie_end: float = Field(default=0.0, description="End time of irrigation (hour)")
+    internalwateruse_h: float = Field(default=0.0, description="Internal water use per hour")
+    daywatper: WeeklyProfile = Field(default_factory=WeeklyProfile)
+    daywat: WeeklyProfile = Field(default_factory=WeeklyProfile)
+    wuprofa_24hr: HourlyProfile = Field(default_factory=HourlyProfile)
+    wuprofm_24hr: HourlyProfile = Field(default_factory=HourlyProfile)
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -1975,11 +1975,11 @@ class IrrigationParams(BaseModel):
 
         df_state = init_df_state(grid_id)
 
-        df_state.loc[grid_id, ("h_maintain", 0)] = self.h_maintain
-        df_state.loc[grid_id, ("faut", 0)] = self.faut
-        df_state.loc[grid_id, ("ie_start", 0)] = self.ie_start
-        df_state.loc[grid_id, ("ie_end", 0)] = self.ie_end
-        df_state.loc[grid_id, ("internalwateruse_h", 0)] = self.internalwateruse_h
+        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain
+        df_state.loc[grid_id, ("faut", "0")] = self.faut
+        df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start
+        df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end
+        df_state.loc[grid_id, ("internalwateruse_h", "0")] = self.internalwateruse_h
 
         df_daywatper = self.daywatper.to_df_state(grid_id, "daywatper")
         df_daywat = self.daywat.to_df_state(grid_id, "daywat")
@@ -2929,7 +2929,7 @@ class LandCover(BaseModel):
 class SiteProperties(BaseModel):
     lat: float = Field(ge=-90, le=90)
     lng: float = Field(ge=-180, le=180)
-    alt: float
+    alt: float = Field(gt=0)
     timezone: int = Field(ge=-12, le=12)
     surfacearea: float = Field(gt=0)
     z: float = Field(gt=0)
