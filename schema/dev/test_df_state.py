@@ -63,7 +63,7 @@ def compare_df_columns(
 
 def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
     """Test to_df_state implementation for a class"""
-    print(f"\nTesting {cls.__name__}...")
+    print(f"\nTesting {cls.__name__} - {cls}")
 
     if cls.__name__ in [
         "LandCover",
@@ -71,6 +71,8 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
         "HourlyProfile",
         "ModelControl",
         "ModelPhysics",
+        "NonVegetatedSurfaceProperties",
+        "VegetatedSurfaceProperties",
     ]:
         print(f"Skipping {cls.__name__} for now...")
         return
@@ -95,9 +97,10 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
             class_df = instance.to_df_state(grid_id, 3)
         elif isinstance(instance, LAIPowerCoefficients):
             class_df = instance.to_df_state(grid_id, 1)
-        elif isinstance(instance, (DayProfile, HourlyProfile, LandCover)):
-            print(f"Skipping {cls.__name__} because it's a DayProfile or HourlyProfile")
-            return
+        elif isinstance(instance, OHMCoefficients):
+            class_df = instance.to_df_state(grid_id, 0)
+        elif isinstance(instance, OHM_Coefficient_season_wetness):
+            class_df = instance.to_df_state(grid_id, 0, 1)
         else:
             class_df = instance.to_df_state(grid_id)
     except Exception as e:

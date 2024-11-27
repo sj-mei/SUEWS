@@ -845,10 +845,10 @@ class StorageDrainParams(BaseModel):
 
 
 class OHM_Coefficient_season_wetness(BaseModel):
-    summer_dry: float
-    summer_wet: float
-    winter_dry: float
-    winter_wet: float
+    summer_dry: float = Field(default=0.0, description="OHM coefficient for summer dry conditions")
+    summer_wet: float = Field(default=0.0, description="OHM coefficient for summer wet conditions")
+    winter_dry: float = Field(default=0.0, description="OHM coefficient for winter dry conditions")
+    winter_wet: float = Field(default=0.0, description="OHM coefficient for winter wet conditions")
 
     def to_df_state(self, grid_id: int, surf_idx: int, idx_a: int) -> pd.DataFrame:
         """Convert OHM coefficients to DataFrame state format.
@@ -873,7 +873,7 @@ class OHM_Coefficient_season_wetness(BaseModel):
 
         # Set values for each season/wetness combination
         for season_wetdry, idx in season_wetdry_map.items():
-            str_idx = f"({surf_idx},{idx},{idx_a})"
+            str_idx = f"({surf_idx}, {idx}, {idx_a})"
             df_state.loc[grid_id, ("ohm_coef", str_idx)] = getattr(self, season_wetdry)
 
         return df_state
@@ -913,9 +913,18 @@ class OHM_Coefficient_season_wetness(BaseModel):
 
 
 class OHMCoefficients(BaseModel):
-    a1: OHM_Coefficient_season_wetness
-    a2: OHM_Coefficient_season_wetness
-    a3: OHM_Coefficient_season_wetness
+    a1: OHM_Coefficient_season_wetness = Field(
+        default_factory=OHM_Coefficient_season_wetness,
+        description="OHM coefficient a1 for different seasons and wetness conditions"
+    )
+    a2: OHM_Coefficient_season_wetness = Field(
+        default_factory=OHM_Coefficient_season_wetness,
+        description="OHM coefficient a2 for different seasons and wetness conditions"
+    )
+    a3: OHM_Coefficient_season_wetness = Field(
+        default_factory=OHM_Coefficient_season_wetness,
+        description="OHM coefficient a3 for different seasons and wetness conditions"
+    )
 
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
         """Convert OHM coefficients to DataFrame state format.
