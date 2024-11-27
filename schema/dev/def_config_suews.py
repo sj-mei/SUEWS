@@ -668,6 +668,66 @@ class WaterDistribution(BaseModel):
     to_runoff: Optional[float] = Field(None, ge=0, le=1)  # For paved/bldgs
     to_soilstore: Optional[float] = Field(None, ge=0, le=1)  # For vegetated surfaces
 
+    def __init__(self, surface_type: SurfaceType):
+        # Default distributions based on surface type
+        default_distributions = {
+            SurfaceType.PAVED: {
+                "to_bldgs": 0.2,
+                "to_dectr": 0.1,
+                "to_evetr": 0.1,
+                "to_grass": 0.1,
+                "to_bsoil": 0.1,
+                "to_water": 0.1,
+                "to_runoff": 0.3
+            },
+            SurfaceType.BLDGS: {
+                "to_paved": 0.2,
+                "to_dectr": 0.1,
+                "to_evetr": 0.1,
+                "to_grass": 0.1,
+                "to_bsoil": 0.1,
+                "to_water": 0.1,
+                "to_runoff": 0.3
+            },
+            SurfaceType.DECTR: {
+                "to_paved": 0.1,
+                "to_bldgs": 0.1,
+                "to_evetr": 0.1,
+                "to_grass": 0.1,
+                "to_bsoil": 0.1,
+                "to_water": 0.1,
+                "to_soilstore": 0.4
+            },
+            SurfaceType.EVETR: {
+                "to_paved": 0.1,
+                "to_bldgs": 0.1,
+                "to_dectr": 0.1,
+                "to_grass": 0.1,
+                "to_bsoil": 0.1,
+                "to_water": 0.1,
+                "to_soilstore": 0.4
+            },
+            SurfaceType.GRASS: {
+                "to_paved": 0.1,
+                "to_bldgs": 0.1,
+                "to_dectr": 0.1,
+                "to_evetr": 0.1,
+                "to_bsoil": 0.1,
+                "to_water": 0.1,
+                "to_soilstore": 0.4
+            }
+        }
+
+        # If surface type is provided, use its default distribution
+        # surface_type = data.get('_surface_type')
+        if surface_type and surface_type in default_distributions:
+            # Merge provided data with defaults, prioritising provided data
+            merged_data = {**default_distributions[surface_type]}
+            super().__init__(**merged_data)
+        else:
+            # If no surface type or invalid surface type, just use provided data
+            super().__init__()
+
     def validate_distribution(self, surface_type: SurfaceType) -> None:
         """Validate water distribution based on surface type"""
         # Define required fields for each surface type
@@ -779,7 +839,7 @@ class WaterDistribution(BaseModel):
         ):
             value = getattr(self, attr)
             if value is not None:
-                param_tuples.append(("waterdist", f"({i},{surf_idx})"))
+                param_tuples.append(("waterdist", f"({i}, {surf_idx})"))
                 values.append(value)
 
         # Create MultiIndex columns
@@ -1147,6 +1207,10 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
 
 class PavedProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
+    waterdist: WaterDistribution = Field(
+        default_factory=lambda: WaterDistribution(SurfaceType.PAVED),
+        description="Water distribution fractions for paved surfaces"
+    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert paved surface properties to DataFrame state format."""
@@ -1429,7 +1493,7 @@ class VerticalLayers(BaseModel):
         df_state = pd.concat([df_state, df_roofs, df_walls], axis=1)
 
         return df_state
-    
+
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "VerticalLayers":
         """Reconstruct VerticalLayers instance from DataFrame."""
@@ -1471,15 +1535,18 @@ class VerticalLayers(BaseModel):
 
 
 
-class BuildingProperties(NonVegetatedSurfaceProperties):
+class BldgsProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
     faibldg: float = Field(
         ge=0, default=0.3, description="Frontal area index of buildings"
     )
     bldgh: float = Field(ge=0, default=10.0, description="Building height")
+    water_dist: WaterDistribution = Field(
+        default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
+    )
 
     @model_validator(mode="after")
-    def validate_rsl_zd_range(self) -> "BuildingProperties":
+    def validate_rsl_zd_range(self) -> "BldgsProperties":
         # Existing validation
         sfr_bldg_lower_limit = 0.18
         if self.sfr < sfr_bldg_lower_limit:
@@ -2805,6 +2872,10 @@ class DectrProperties(VegetatedSurfaceProperties):
     pormin_dec: float = Field(default=0.2, description="Minimum porosity")
     pormax_dec: float = Field(default=0.6, description="Maximum porosity")
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
+    water_dist: WaterDistribution = Field(
+        default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
+        description="Water distribution for deciduous trees"
+    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree properties to DataFrame state format."""
@@ -2834,6 +2905,11 @@ class EvetrProperties(VegetatedSurfaceProperties):
     )
     evetreeh: float = Field(default=15.0, description="Evergreen tree height")
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
+    water_dist: WaterDistribution = Field(
+        default_factory=lambda: WaterDistribution(SurfaceType.EVETR),
+        description="Water distribution for evergreen trees"
+    )
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert evergreen tree properties to DataFrame state format."""
         # Get base properties from parent
@@ -2858,6 +2934,19 @@ class EvetrProperties(VegetatedSurfaceProperties):
 
         return df_state
 
+class GrassProperties(VegetatedSurfaceProperties):
+    _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
+    water_dist: WaterDistribution = Field(
+        default_factory=lambda: WaterDistribution(SurfaceType.GRASS),
+        description="Water distribution for grass"
+    )
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert grass properties to DataFrame state format."""
+        # Get base properties from parent
+        df_state = super().to_df_state(grid_id)
+
+        return df_state
 
 class SnowParams(BaseModel):
     crwmax: float = Field(default=0.1, description="Maximum water capacity of snow")
@@ -2981,8 +3070,8 @@ class LandCover(BaseModel):
         default_factory=PavedProperties,
         description="Properties for paved surfaces like roads and pavements"
     )
-    bldgs: BuildingProperties = Field(
-        default_factory=BuildingProperties,
+    bldgs: BldgsProperties = Field(
+        default_factory=BldgsProperties,
         description="Properties for building surfaces including roofs and walls"
     )
     dectr: DectrProperties = Field(
@@ -2993,8 +3082,8 @@ class LandCover(BaseModel):
         default_factory=EvetrProperties,
         description="Properties for evergreen trees and vegetation"
     )
-    grass: VegetatedSurfaceProperties = Field(
-        default_factory=VegetatedSurfaceProperties,
+    grass: GrassProperties = Field(
+        default_factory=GrassProperties,
         description="Properties for grass surfaces"
     )
     bsoil: BaresoilProperties = Field(
