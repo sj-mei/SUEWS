@@ -2195,7 +2195,7 @@ class AnthropogenicHeat(BaseModel):
         }
 
         # Extract scalar attribute
-        popdensnighttime = df.loc[grid_id, ("popdensnighttime", 0)]
+        popdensnighttime = df.loc[grid_id, ("popdensnighttime", "0")]
 
         # Construct and return AnthropogenicHeat instance
         return cls(
