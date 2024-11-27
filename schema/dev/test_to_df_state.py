@@ -69,16 +69,17 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
         "LandCover",
         "DayProfile",
         "HourlyProfile",
+        "InitialStates",
         "ModelControl",
         "ModelPhysics",
         "NonVegetatedSurfaceProperties",
         "VegetatedSurfaceProperties",
-        # "SiteProperties",
+        # "Site",
         # "SUEWSConfig",
         "SurfaceInitialState",
         "SurfaceProperties",
         "ThermalLayers",
-        "VegetatedSurfaceInitialState",
+        "VegInitialState",
         "WaterDistribution",
         "WeeklyProfile",
     ]:
@@ -132,7 +133,7 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
         raise ValueError(f"{len(extra_cols)} extra columns in {cls.__name__}")
 
     if not extra_cols:
-        print(f"{cls.__name__} has all expected columns")
+        print(f"{cls.__name__} has NO extra columns")
 
     if cls.__name__ == "SUEWSConfig":
         # For SUEWSConfig, also check for missing columns
@@ -143,7 +144,7 @@ def test_class_to_df_state(cls: type, ref_df: pd.DataFrame):
                 print(f"  - {col}")
             raise ValueError(f"{len(missing_cols)} missing columns in {cls.__name__}")
         else:
-            print(f"{cls.__name__} has all expected columns")
+            print(f"{cls.__name__} has NO missing columns")
 
 def main():
     # Load reference DataFrame
