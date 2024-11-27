@@ -48,6 +48,21 @@ class SnowAlb(BaseModel):
         df_state = init_df_state(grid_id)
         df_state[("snowalb", "0")] = self.snowalb
         return df_state
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "SnowAlb":
+        """
+        Reconstruct SnowAlb from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing snow albedo parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+
+        Returns:
+            SnowAlb: Instance of SnowAlb.
+        """
+        snowalb = df.loc[grid_id, ("snowalb", "0")]
+        return cls(snowalb=snowalb)
 
 
 class WaterUse(BaseModel):
@@ -1226,6 +1241,69 @@ class SurfaceProperties(BaseModel):
         # Merge all DataFrames
         df_final = pd.concat(dfs, axis=1).sort_index(axis=1)
         return df_final
+
+
+    def from_df_state(self, df: pd.DataFrame, grid_id: int) -> "SurfaceProperties":
+        """Reconstruct surface properties from DataFrame state format."""
+
+        # Get surface index
+        surf_idx = self.get_surface_index()
+
+        # Get surface name
+        surf_name = self.get_surface_name()
+
+        # Get all properties of this class using introspection
+        properties = [
+            "sfr",
+            "emis",
+            "chanohm",
+            "cpanohm",
+            "kkanohm",
+            "ohm_threshsw",
+            "ohm_threshwd",
+            "soildepth",
+            "soilstorecap",
+            "statelimit",
+            "wetthresh",
+            "sathydraulicconduct",
+            "waterdist",
+            "storedrainprm",
+            "snowpacklimit",
+            "thermal_layers",
+            "irrfrac",
+        ]
+        # drop 'surface_type' and model-specific properties (e.g. model_xx)
+        properties = [
+            p for p in properties if p != "surface_type" and not p.startswith("model_")
+        ]
+
+        # Process each property
+        for property in properties:
+            # Handle nested properties with their own from_df_state methods
+            if property in [
+                "waterdist",
+                "storedrainprm",
+                "ohm_coef",
+                "lai",
+            ]:
+                nested_obj = getattr(self, property)
+                if nested_obj is not None and hasattr(nested_obj, "from_df_state"):
+                    setattr(self, property, nested_obj.from_df_state(df, grid_id, surf_idx))
+                continue
+            elif property == "thermal_layers":
+                setattr(
+                    self,
+                    property,
+                    self.thermal_layers.from_df_state(df, grid_id, surf_idx, surf_name),
+                )
+            elif property == "irrfrac":
+                setattr(self, property, df.loc[grid_id, (f"{property}{surf_name}", "0")])
+            elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
+                setattr(self, property, df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")])
+            else:
+                setattr(self, property, df.loc[grid_id, (property, f"({surf_idx},)")])
+
+        return self
 
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
