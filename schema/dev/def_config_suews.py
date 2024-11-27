@@ -616,7 +616,8 @@ class ThermalLayers(BaseModel):
         Args:
             df: DataFrame containing thermal layer parameters.
             grid_id: Grid ID for the DataFrame index.
-            surf_idx: Surface index for identifying columns.
+            idx: Surface index for identifying columns.
+            surf_type: Surface type or facet type ("roof" or "wall").
 
         Returns:
             ThermalLayers: Reconstructed ThermalLayers instance.
@@ -625,13 +626,23 @@ class ThermalLayers(BaseModel):
         k = []
         cp = []
 
+        # Determine suffix based on surf_type
+        if surf_type == "roof":
+            suffix = "roof"
+        elif surf_type == "wall":
+            suffix = "wall"
+        else:
+            suffix = "surf"
+
         # Extract thermal layer parameters for each of the 5 layers
         for i in range(5):
-            dz.append(df.loc[grid_id, ("dz", f"({surf_idx},{i})")])
-            k.append(df.loc[grid_id, ("k", f"({surf_idx},{i})")])
-            cp.append(df.loc[grid_id, ("cp", f"({surf_idx},{i})")])
+            dz.append(df.loc[grid_id, (f"dz_{suffix}", f"({idx}, {i})")])
+            k.append(df.loc[grid_id, (f"k_{suffix}", f"({idx}, {i})")])
+            cp.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
 
+        # Return reconstructed instance
         return cls(dz=dz, k=k, cp=cp)
+
 
 
 class VegetationParams(BaseModel):
@@ -1273,31 +1284,41 @@ class BuildingLayer(BaseModel):
         Returns:
             BuildingLayer: Reconstructed BuildingLayer instance.
         """
+        # Prefix for the specific layer type
         prefix = facet_type
 
+        # Extract scalar parameters
         params = {
-            "alb": df.loc[grid_id, (f"{prefix}_alb", f"({layer_idx},)")],
-            "emis": df.loc[grid_id, (f"{prefix}_emis", f"({layer_idx},)")],
-            "statelimit": df.loc[grid_id, (f"{prefix}_statelimit", f"({layer_idx},)")],
-            "soilstorecap": df.loc[
-                grid_id, (f"{prefix}_soilstorecap", f"({layer_idx},)")
-            ],
-            "wetthresh": df.loc[grid_id, (f"{prefix}_wetthresh", f"({layer_idx},)")],
+            "alb": df.loc[grid_id, (f"alb_{prefix}", f"({layer_idx},)")],
+            "emis": df.loc[grid_id, (f"emis_{prefix}", f"({layer_idx},)")],
+            "statelimit": df.loc[grid_id, (f"statelimit_{prefix}", f"({layer_idx},)")],
+            "soilstorecap": df.loc[grid_id, (f"soilstorecap_{prefix}", f"({layer_idx},)")],
+            "wetthresh": df.loc[grid_id, (f"wetthresh_{prefix}", f"({layer_idx},)")],
         }
 
+        # Extract optional parameters
         if facet_type == "roof":
             params["roof_albedo_dir_mult_fact"] = df.loc[
-                grid_id, (f"{prefix}_albedo_dir_mult_fact", f"({layer_idx},)")
+                grid_id, (f"roof_albedo_dir_mult_fact", f"(0, {layer_idx})")
             ]
-        else:
+            params["wall_specular_frac"] = None  # Explicitly set to None for clarity
+        elif facet_type == "wall":
             params["wall_specular_frac"] = df.loc[
-                grid_id, (f"{prefix}_specular_frac", f"({layer_idx},)")
+                grid_id, (f"wall_specular_frac", f"(0, {layer_idx})")
             ]
+            params["roof_albedo_dir_mult_fact"] = None  # Explicitly set to None for clarity
 
-        # Add thermal layers
-        params["thermal_layers"] = ThermalLayers.from_df_state(df, grid_id, layer_idx)
+        # Extract ThermalLayers
+        thermal_layers = ThermalLayers.from_df_state(df, grid_id, layer_idx, facet_type)
 
+        # Add thermal_layers to params
+        params["thermal_layers"] = thermal_layers
+
+        # Return the reconstructed instance
         return cls(**params)
+
+
+
 
 
 class RoofLayer(BuildingLayer):
@@ -1408,6 +1429,46 @@ class VerticalLayers(BaseModel):
         df_state = pd.concat([df_state, df_roofs, df_walls], axis=1)
 
         return df_state
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "VerticalLayers":
+        """Reconstruct VerticalLayers instance from DataFrame."""
+        # Extract the number of layers
+        nlayer = int(df.loc[grid_id, ("nlayer", "0")])
+
+        # Extract heights for each layer boundary
+        height = [df.loc[grid_id, ("height", f"({i},)")] for i in range(nlayer + 1)]
+
+        # Extract vegetation and building parameters for each layer
+        veg_frac = [df.loc[grid_id, ("veg_frac", f"({i},)")] for i in range(nlayer)]
+        veg_scale = [df.loc[grid_id, ("veg_scale", f"({i},)")] for i in range(nlayer)]
+        building_frac = [
+            df.loc[grid_id, ("building_frac", f"({i},)")] for i in range(nlayer)
+        ]
+        building_scale = [
+            df.loc[grid_id, ("building_scale", f"({i},)")] for i in range(nlayer)
+        ]
+
+        # Reconstruct roof and wall properties for each layer
+        roofs = [
+            RoofLayer.from_df_state(df, grid_id, i, "roof") for i in range(nlayer)
+        ]
+        walls = [
+            WallLayer.from_df_state(df, grid_id, i, "wall") for i in range(nlayer)
+        ]
+
+        # Construct and return VerticalLayers instance
+        return cls(
+            nlayer=nlayer,
+            height=height,
+            veg_frac=veg_frac,
+            veg_scale=veg_scale,
+            building_frac=building_frac,
+            building_scale=building_scale,
+            roofs=roofs,
+            walls=walls,
+        )
+
 
 
 class BuildingProperties(NonVegetatedSurfaceProperties):
