@@ -230,14 +230,15 @@ class SurfaceInitialState(BaseModel):
         )
 
 
-class PavedSurfaceInitialStates(SurfaceInitialState):
+class InitialStatePaved(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
 
 
-class BldgsSurfaceInitialStates(SurfaceInitialState):
+class InitialStateBldgs(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
 
-class VegetatedSurfaceInitialState(SurfaceInitialState):
+
+class VegInitialState(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
     alb_id: float = Field(
@@ -249,7 +250,7 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
     wu: WaterUse = Field(default_factory=WaterUse)
 
     @model_validator(mode="after")
-    def validate_surface_state(self) -> "VegetatedSurfaceInitialState":
+    def validate_surface_state(self) -> "VegInitialState":
         """Validate state based on surface type"""
         # Skip validation if surface type not yet set
         if not hasattr(self, "_surface_type") or self._surface_type is None:
@@ -299,7 +300,7 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
     @classmethod
     def from_df_state(
         cls, df: pd.DataFrame, grid_id: int, surf_idx: int
-    ) -> "VegetatedSurfaceInitialState":
+    ) -> "VegInitialState":
         """
         Reconstruct VegetatedSurfaceInitialState from a DataFrame state format.
 
@@ -333,10 +334,12 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
             wu=wu,
         )
 
-class InitialStatesEvetr(VegetatedSurfaceInitialState):
+
+class InitialStateEvetr(VegInitialState):
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
 
-class InitialStateDectr(VegetatedSurfaceInitialState):
+
+class InitialStateDectr(VegInitialState):
     """Initial state parameters for deciduous trees"""
 
     porosity_id: float = Field(
@@ -392,9 +395,7 @@ class InitialStateDectr(VegetatedSurfaceInitialState):
             DeciduousTreeSurfaceInitialState: Instance of DeciduousTreeSurfaceInitialState.
         """
         # Base class reconstruction
-        base_instance = VegetatedSurfaceInitialState.from_df_state(
-            df, grid_id, surf_idx
-        )
+        base_instance = VegInitialState.from_df_state(df, grid_id, surf_idx)
 
         # Deciduous tree-specific parameters
         porosity_id = df.loc[grid_id, ("porosity_id", "0")]
@@ -407,23 +408,27 @@ class InitialStateDectr(VegetatedSurfaceInitialState):
         )
 
 
+class InitialStateGrass(VegInitialState):
+    _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
+
+class InitialStateBsoil(SurfaceInitialState):
+    _surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
+
+class InitialStateWater(SurfaceInitialState):
+    _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
+
+
 class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
     snowalb: float = Field(ge=0, le=1, description="Initial snow albedo", default=0.5)
-    paved: PavedSurfaceInitialStates = Field(default_factory=PavedSurfaceInitialStates)
-    bldgs: BldgsSurfaceInitialStates = Field(default_factory=BldgsSurfaceInitialStates)
-    evetr: VegetatedSurfaceInitialState = Field(
-        default_factory=VegetatedSurfaceInitialState
-    )
-    dectr: InitialStateDectr = Field(
-        default_factory=InitialStateDectr
-    )
-    grass: VegetatedSurfaceInitialState = Field(
-        default_factory=VegetatedSurfaceInitialState
-    )
-    bsoil: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
-    water: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    paved: InitialStatePaved = Field(default_factory=InitialStatePaved)
+    bldgs: InitialStateBldgs = Field(default_factory=InitialStateBldgs)
+    evetr: InitialStateEvetr = Field(default_factory=InitialStateEvetr)
+    dectr: InitialStateDectr = Field(default_factory=InitialStateDectr)
+    grass: InitialStateGrass = Field(default_factory=InitialStateGrass)
+    bsoil: InitialStateBsoil = Field(default_factory=InitialStateBsoil)
+    water: InitialStateWater = Field(default_factory=InitialStateWater)
     roofs: Optional[List[SurfaceInitialState]] = Field(
         default=[
             SurfaceInitialState(),
