@@ -986,12 +986,13 @@ class OHM_Coefficient_season_wetness(BaseModel):
         # Extract values for each season/wetness combination
         params = {
             season_wetdry: df.loc[
-                grid_id, ("ohm_coef", f"({surf_idx},{idx},{idx_a})")
-            ].item()
+                grid_id, ("ohm_coef", f"({surf_idx}, {idx}, {idx_a})")
+            ]
             for season_wetdry, idx in season_wetdry_map.items()
         }
 
         return cls(**params)
+
 
 
 class OHMCoefficients(BaseModel):
