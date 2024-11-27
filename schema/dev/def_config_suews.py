@@ -148,24 +148,24 @@ class SurfaceInitialState(BaseModel):
             idx = vert_idx
             str_type = "roof" if is_roof else "wall"
         # Set basic state parameters
-        df_state[(f"state_{str_type}    ", f"({idx},)")] = self.state
+        df_state[(f"state_{str_type}", f"({idx},)")] = self.state
         df_state[(f"soilstore_{str_type}", f"({idx},)")] = self.soilstore
 
         # Set snow/ice parameters if present
         if self.snowfrac is not None:
-            df_state[(f"snowfrac_{str_type}", f"({idx},)")] = self.snowfrac
+            df_state[(f"snowfrac", f"({idx},)")] = self.snowfrac
         if self.snowpack is not None:
-            df_state[(f"snowpack_{str_type}", f"({idx},)")] = self.snowpack
+            df_state[(f"snowpack", f"({idx},)")] = self.snowpack
         if self.icefrac is not None:
-            df_state[(f"icefrac_{str_type}", f"({idx},)")] = self.icefrac
+            df_state[(f"icefrac", f"({idx},)")] = self.icefrac
         if self.snowwater is not None:
-            df_state[(f"snowwater_{str_type}", f"({idx},)")] = self.snowwater
+            df_state[(f"snowwater", f"({idx},)")] = self.snowwater
         if self.snowdens is not None:
-            df_state[(f"snowdens_{str_type}", f"({idx},)")] = self.snowdens
+            df_state[(f"snowdens", f"({idx},)")] = self.snowdens
 
         # Set temperature parameters
         for i, temp in enumerate(self.temperature):
-            df_state[(f"t_{str_type}", f"({idx},{i})")] = temp
+            df_state[(f"temp_{str_type}", f"({idx}, {i})")] = temp
 
         if self.tsfc is not None:
             df_state[(f"tsfc_{str_type}", f"({idx},)")] = self.tsfc
@@ -215,6 +215,13 @@ class SurfaceInitialState(BaseModel):
         )
 
 
+class PavedSurfaceInitialStates(SurfaceInitialState):
+    _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
+
+
+class BldgsSurfaceInitialStates(SurfaceInitialState):
+    _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
+
 class VegetatedSurfaceInitialState(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
@@ -261,9 +268,9 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
 
         # Add vegetated surface specific parameters
         df_state[("alb", f"({veg_idx},)")] = self.alb_id
-        df_state[("lai", f"({veg_idx},)")] = self.lai_id
-        df_state[("gdd", f"({veg_idx},)")] = self.gdd_id
-        df_state[("sdd", f"({veg_idx},)")] = self.sdd_id
+        df_state[("lai_id", f"({veg_idx},)")] = self.lai_id
+        df_state[("gdd_id", f"({veg_idx},)")] = self.gdd_id
+        df_state[("sdd_id", f"({veg_idx},)")] = self.sdd_id
 
         # Add water use parameters
         df_wu = self.wu.to_df_state(veg_idx, grid_id)
@@ -311,17 +318,22 @@ class VegetatedSurfaceInitialState(SurfaceInitialState):
             wu=wu,
         )
 
+class InitialStatesEvetr(VegetatedSurfaceInitialState):
+    _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
 
-class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
+class InitialStateDectr(VegetatedSurfaceInitialState):
     """Initial state parameters for deciduous trees"""
 
-    porosity_id: float = Field(description="Initial porosity for deciduous trees")
-    decidcap_id: float = Field(
-        description="Initial deciduous capacity for deciduous trees"
+    porosity_id: float = Field(
+        default=0.2, description="Initial porosity for deciduous trees"
     )
+    decidcap_id: float = Field(
+        default=0.3, description="Initial deciduous capacity for deciduous trees"
+    )
+    _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
 
     @model_validator(mode="after")
-    def validate_surface_state(self) -> "DeciduousTreeSurfaceInitialState":
+    def validate_surface_state(self) -> "InitialStateDectr":
         """Validate state based on surface type"""
         # Skip validation if surface type not yet set
         if not hasattr(self, "_surface_type") or self._surface_type is None:
@@ -352,7 +364,7 @@ class DeciduousTreeSurfaceInitialState(VegetatedSurfaceInitialState):
     @classmethod
     def from_df_state(
         cls, df: pd.DataFrame, grid_id: int, surf_idx: int
-    ) -> "DeciduousTreeSurfaceInitialState":
+    ) -> "InitialStateDectr":
         """
         Reconstruct DeciduousTreeSurfaceInitialState from a DataFrame state format.
 
@@ -384,13 +396,13 @@ class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
     snowalb: float = Field(ge=0, le=1, description="Initial snow albedo", default=0.5)
-    paved: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
-    bldgs: SurfaceInitialState = Field(default_factory=SurfaceInitialState)
+    paved: PavedSurfaceInitialStates = Field(default_factory=PavedSurfaceInitialStates)
+    bldgs: BldgsSurfaceInitialStates = Field(default_factory=BldgsSurfaceInitialStates)
     evetr: VegetatedSurfaceInitialState = Field(
         default_factory=VegetatedSurfaceInitialState
     )
-    dectr: DeciduousTreeSurfaceInitialState = Field(
-        default_factory=DeciduousTreeSurfaceInitialState
+    dectr: InitialStateDectr = Field(
+        default_factory=InitialStateDectr
     )
     grass: VegetatedSurfaceInitialState = Field(
         default_factory=VegetatedSurfaceInitialState
@@ -417,7 +429,18 @@ class InitialStates(BaseModel):
     def set_surface_types(cls, data: Dict) -> Dict:
         """Set surface types for all surfaces before validation"""
         # Create instances if they don't exist
-        for surface_type in ["paved", "bldgs", "bsoil", "water"]:
+        if "paved" not in data:
+            data["paved"] = PavedSurfaceInitialStates()
+        elif isinstance(data["paved"], dict):
+            data["paved"] = PavedSurfaceInitialStates(**data["paved"])
+
+        if "bldgs" not in data:
+            data["bldgs"] = BldgsSurfaceInitialStates()
+        elif isinstance(data["bldgs"], dict):
+            data["bldgs"] = BldgsSurfaceInitialStates(**data["bldgs"])
+
+        # Handle basic surface types
+        for surface_type in ["bsoil", "water"]:
             if surface_type not in data:
                 data[surface_type] = SurfaceInitialState()
             if isinstance(data[surface_type], dict):
@@ -425,20 +448,23 @@ class InitialStates(BaseModel):
             data[surface_type].set_surface_type(SurfaceType(surface_type))
 
         # Handle vegetated surfaces
-        if "evetr" in data:
-            if isinstance(data["evetr"], dict):
-                data["evetr"] = VegetatedSurfaceInitialState(**data["evetr"])
-            data["evetr"].set_surface_type(SurfaceType.EVETR)
+        if "evetr" not in data:
+            data["evetr"] = VegetatedSurfaceInitialState()
+        if isinstance(data["evetr"], dict):
+            data["evetr"] = VegetatedSurfaceInitialState(**data["evetr"])
+        data["evetr"].set_surface_type(SurfaceType.EVETR)
 
-        if "dectr" in data:
-            if isinstance(data["dectr"], dict):
-                data["dectr"] = DeciduousTreeSurfaceInitialState(**data["dectr"])
-            data["dectr"].set_surface_type(SurfaceType.DECTR)
+        if "dectr" not in data:
+            data["dectr"] = InitialStateDectr()
+        if isinstance(data["dectr"], dict):
+            data["dectr"] = InitialStateDectr(**data["dectr"])
+        data["dectr"].set_surface_type(SurfaceType.DECTR)
 
-        if "grass" in data:
-            if isinstance(data["grass"], dict):
-                data["grass"] = VegetatedSurfaceInitialState(**data["grass"])
-            data["grass"].set_surface_type(SurfaceType.GRASS)
+        if "grass" not in data:
+            data["grass"] = VegetatedSurfaceInitialState()
+        if isinstance(data["grass"], dict):
+            data["grass"] = VegetatedSurfaceInitialState(**data["grass"])
+        data["grass"].set_surface_type(SurfaceType.GRASS)
 
         return data
 
@@ -496,7 +522,7 @@ class InitialStates(BaseModel):
             "paved": SurfaceInitialState,
             "bldgs": SurfaceInitialState,
             "evetr": VegetatedSurfaceInitialState,
-            "dectr": DeciduousTreeSurfaceInitialState,
+            "dectr": InitialStateDectr,
             "grass": VegetatedSurfaceInitialState,
             "bsoil": SurfaceInitialState,
             "water": SurfaceInitialState,
@@ -535,28 +561,56 @@ class ThermalLayers(BaseModel):
     k: List[float] = Field([1.0, 1.0, 1.0, 1.0, 1.0], min_items=5, max_items=5)
     cp: List[float] = Field([1000, 1000, 1000, 1000, 1000], min_items=5, max_items=5)
 
-    def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
+    def to_df_state(
+        self,
+        grid_id: int,
+        idx: int,
+        surf_type: Literal[
+            "paved",
+            "bldgs",
+            "evetr",
+            "dectr",
+            "grass",
+            "bsoil",
+            "water",
+            "roof",
+            "wall",
+        ],
+    ) -> pd.DataFrame:
         """Convert thermal layer parameters to DataFrame state format.
 
         Args:
             grid_id: Grid ID for the DataFrame index
-            surf_idx: Surface index for identifying columns
+            surf_type: Surface type or facet type ("roof" or "wall")
 
         Returns:
             pd.DataFrame: DataFrame containing thermal layer parameters
         """
         df_state = init_df_state(grid_id)
 
+        if surf_type == "roof":
+            suffix = "roof"
+        elif surf_type == "wall":
+            suffix = "wall"
+        else:
+            suffix = "surf"
+
         # Add thermal layer parameters
         for i in range(5):
-            df_state[("dz", f"({surf_idx},{i})")] = self.dz[i]
-            df_state[("k", f"({surf_idx},{i})")] = self.k[i]
-            df_state[("cp", f"({surf_idx},{i})")] = self.cp[i]
+            df_state[(f"dz_{suffix}", f"({idx}, {i})")] = self.dz[i]
+            df_state[(f"k_{suffix}", f"({idx}, {i})")] = self.k[i]
+            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.cp[i]
 
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "ThermalLayers":
+    def from_df_state(
+        cls,
+        df: pd.DataFrame,
+        grid_id: int,
+        idx: int,
+        surf_type: Union[SurfaceType, Literal["roof", "wall"]],
+    ) -> "ThermalLayers":
         """Reconstruct ThermalLayers instance from DataFrame.
 
         Args:
@@ -578,7 +632,6 @@ class ThermalLayers(BaseModel):
             cp.append(df.loc[grid_id, ("cp", f"({surf_idx},{i})")])
 
         return cls(dz=dz, k=k, cp=cp)
-
 
 
 class VegetationParams(BaseModel):
@@ -752,7 +805,7 @@ class StorageDrainParams(BaseModel):
         """
         # Create tuples for MultiIndex columns
         param_tuples = [
-            ("storedrainprm", f"({i},{surf_idx})")
+            ("storedrainprm", f"({i}, {surf_idx})")
             for i, _ in enumerate(
                 [
                     "store_min",
@@ -784,7 +837,9 @@ class StorageDrainParams(BaseModel):
                 "drain_coef_2",
             ]
         ):
-            df.loc[grid_id, ("storedrainprm", f"({i},{surf_idx})")] = getattr(self, var)
+            df.loc[grid_id, ("storedrainprm", f"({i}, {surf_idx})")] = getattr(
+                self, var
+            )
 
         return df
 
@@ -824,7 +879,9 @@ class OHM_Coefficient_season_wetness(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int, idx_a: int) -> "OHM_Coefficient_season_wetness":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int, idx_a: int
+    ) -> "OHM_Coefficient_season_wetness":
         """
         Reconstruct OHM_Coefficient_season_wetness from DataFrame state format.
 
@@ -846,7 +903,9 @@ class OHM_Coefficient_season_wetness(BaseModel):
 
         # Extract values for each season/wetness combination
         params = {
-            season_wetdry: df.loc[grid_id, ("ohm_coef", f"({surf_idx},{idx},{idx_a})")].item()
+            season_wetdry: df.loc[
+                grid_id, ("ohm_coef", f"({surf_idx},{idx},{idx_a})")
+            ].item()
             for season_wetdry, idx in season_wetdry_map.items()
         }
 
@@ -881,7 +940,9 @@ class OHMCoefficients(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "OHMCoefficients":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "OHMCoefficients":
         """
         Reconstruct OHMCoefficients from DataFrame state format.
 
@@ -899,7 +960,6 @@ class OHMCoefficients(BaseModel):
         a3 = OHM_Coefficient_season_wetness.from_df_state(df, grid_id, surf_idx, 2)
 
         return cls(a1=a1, a2=a2, a3=a3)
-
 
 
 class SurfaceProperties(BaseModel):
@@ -969,6 +1029,9 @@ class SurfaceProperties(BaseModel):
         # Get surface index
         surf_idx = self.get_surface_index()
 
+        # Get surface name
+        surf_name = self.get_surface_name()
+
         # Helper function to set values in DataFrame
         def set_df_value(col_name: str, value: float):
             idx_str = f"({surf_idx},)"
@@ -978,9 +1041,23 @@ class SurfaceProperties(BaseModel):
 
         # Get all properties of this class using introspection
         properties = [
-            attr
-            for attr in dir(self)
-            if not attr.startswith("_") and not callable(getattr(self, attr))
+            "sfr",
+            "emis",
+            "chanohm",
+            "cpanohm",
+            "kkanohm",
+            "ohm_threshsw",
+            "ohm_threshwd",
+            "soildepth",
+            "soilstorecap",
+            "statelimit",
+            "wetthresh",
+            "sathydraulicconduct",
+            "waterdist",
+            "storedrainprm",
+            "snowpacklimit",
+            "thermal_layers",
+            "irrfrac",
         ]
         # drop 'surface_type' and model-specific properties (e.g. model_xx)
         properties = [
@@ -995,7 +1072,6 @@ class SurfaceProperties(BaseModel):
             if property in [
                 "waterdist",
                 "storedrainprm",
-                "thermal_layers",
                 "ohm_coef",
                 "lai",
             ]:
@@ -1004,7 +1080,17 @@ class SurfaceProperties(BaseModel):
                     nested_df = nested_obj.to_df_state(grid_id, surf_idx)
                     dfs.append(nested_df)
                 continue
-
+            elif property == "thermal_layers":
+                nested_df = self.thermal_layers.to_df_state(
+                    grid_id, surf_idx, surf_name
+                )
+                dfs.append(nested_df)
+            elif property == "irrfrac":
+                value = getattr(self, property)
+                df_state.loc[grid_id, (f"{property}{surf_name}", "0")] = value
+            elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
+                value = getattr(self, property)
+                set_df_value(f"{property}_surf", value)
             else:
                 value = getattr(self, property)
                 set_df_value(property, value)
@@ -1019,13 +1105,6 @@ class SurfaceProperties(BaseModel):
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
     alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
-    emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
-    frfossilfuel_heat: float = Field(
-        ge=0, le=1, description="Fraction of fossil fuel heat", default=0.0
-    )
-    frfossilfuel_cool: float = Field(
-        ge=0, le=1, description="Fraction of fossil fuel cooling", default=0.0
-    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert non-vegetated surface properties to DataFrame state format."""
@@ -1039,7 +1118,7 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
             df_waterdist = self.waterdist.to_df_state(grid_id, surf_idx)
             df_base = pd.concat([df_base, df_waterdist], axis=1).sort_index(axis=1)
 
-        for attr in ["alb", "emis", "frfossilfuel_heat", "frfossilfuel_cool"]:
+        for attr in ["alb"]:
             df_base.loc[grid_id, (attr, f"({surf_idx},)")] = getattr(self, attr)
             df_base = df_base.sort_index(axis=1)
 
@@ -1047,7 +1126,7 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
 
 
 class PavedProperties(NonVegetatedSurfaceProperties):
-    surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
+    _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert paved surface properties to DataFrame state format."""
@@ -1071,7 +1150,7 @@ class PavedProperties(NonVegetatedSurfaceProperties):
                 and not attr.startswith("model_")
                 and attr
                 not in [
-                    "surface_type",
+                    "_surface_type",
                     "waterdist",
                     "storedrainprm",
                     "thermal_layers",
@@ -1117,72 +1196,83 @@ class BuildingLayer(BaseModel):
     wetthresh: float = Field(default=0.5)
     roof_albedo_dir_mult_fact: Optional[float] = Field(default=0.1)
     wall_specular_frac: Optional[float] = Field(default=0.1)
+    _facet_type: Literal["roof", "wall"] = PrivateAttr(default="roof")
 
     def to_df_state(
-        self, grid_id: int, layer_idx: int, is_roof: bool = True
+        self,
+        grid_id: int,
+        layer_idx: int,
+        facet_type: Literal["roof", "wall"],
     ) -> pd.DataFrame:
         """Convert building layer parameters to DataFrame state format.
 
         Args:
             grid_id: Grid ID for the DataFrame index
             layer_idx: Layer index (0 or 1 for two layers)
-            is_roof: True if this is a roof layer, False if wall layer
 
         Returns:
             pd.DataFrame: DataFrame containing building layer parameters
         """
         df_state = init_df_state(grid_id)
 
-        # Determine prefix based on layer type
-        prefix = "roof" if is_roof else "wall"
-
         # Add basic parameters
-        df_state[(f"{prefix}_alb", f"({layer_idx},)")] = self.alb
-        df_state[(f"{prefix}_emis", f"({layer_idx},)")] = self.emis
-        df_state[(f"{prefix}_statelimit", f"({layer_idx},)")] = self.statelimit
-        df_state[(f"{prefix}_soilstorecap", f"({layer_idx},)")] = self.soilstorecap
-        df_state[(f"{prefix}_wetthresh", f"({layer_idx},)")] = self.wetthresh
+        df_state[(f"alb_{facet_type}", f"({layer_idx},)")] = self.alb
+        df_state[(f"emis_{facet_type}", f"({layer_idx},)")] = self.emis
+        df_state[(f"statelimit_{facet_type}", f"({layer_idx},)")] = self.statelimit
+        df_state[(f"soilstorecap_{facet_type}", f"({layer_idx},)")] = self.soilstorecap
+        df_state[(f"wetthresh_{facet_type}", f"({layer_idx},)")] = self.wetthresh
+
+        # Determine prefix based on layer type
+        prefix = facet_type
 
         # Add layer-specific parameters
-        if is_roof and self.roof_albedo_dir_mult_fact is not None:
-            df_state[(f"{prefix}_albedo_dir_mult_fact", f"({layer_idx},)")] = (
+        if facet_type == "roof" and self.roof_albedo_dir_mult_fact is not None:
+            df_state[(f"{prefix}_albedo_dir_mult_fact", f"(0, {layer_idx})")] = (
                 self.roof_albedo_dir_mult_fact
             )
-        elif not is_roof and self.wall_specular_frac is not None:
-            df_state[(f"{prefix}_specular_frac", f"({layer_idx},)")] = (
+        elif facet_type == "wall" and self.wall_specular_frac is not None:
+            df_state[(f"{prefix}_specular_frac", f"(0, {layer_idx})")] = (
                 self.wall_specular_frac
             )
 
         # Add thermal layers
-        df_thermal = self.thermal_layers.to_df_state(grid_id, layer_idx)
+        df_thermal = self.thermal_layers.to_df_state(grid_id, layer_idx, facet_type)
         df_state = pd.concat([df_state, df_thermal], axis=1)
 
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, layer_idx: int, is_roof: bool = True) -> "BuildingLayer":
+    def from_df_state(
+        cls,
+        df: pd.DataFrame,
+        grid_id: int,
+        layer_idx: int,
+        facet_type: Literal["roof", "wall"],
+    ) -> "BuildingLayer":
         """Reconstruct BuildingLayer instance from DataFrame.
 
         Args:
             df: DataFrame containing building layer parameters.
             grid_id: Grid ID for the DataFrame index.
             layer_idx: Layer index (0 or 1 for two layers).
-            is_roof: True if this is a roof layer, False if wall layer.
+            facet_type: Facet type ("roof" or "wall").
 
         Returns:
             BuildingLayer: Reconstructed BuildingLayer instance.
         """
-        prefix = "roof" if is_roof else "wall"
+        prefix = facet_type
 
         params = {
             "alb": df.loc[grid_id, (f"{prefix}_alb", f"({layer_idx},)")],
             "emis": df.loc[grid_id, (f"{prefix}_emis", f"({layer_idx},)")],
             "statelimit": df.loc[grid_id, (f"{prefix}_statelimit", f"({layer_idx},)")],
-            "soilstorecap": df.loc[grid_id, (f"{prefix}_soilstorecap", f"({layer_idx},)")],
+            "soilstorecap": df.loc[
+                grid_id, (f"{prefix}_soilstorecap", f"({layer_idx},)")
+            ],
             "wetthresh": df.loc[grid_id, (f"{prefix}_wetthresh", f"({layer_idx},)")],
         }
 
-        if is_roof:
+        if facet_type == "roof":
             params["roof_albedo_dir_mult_fact"] = df.loc[
                 grid_id, (f"{prefix}_albedo_dir_mult_fact", f"({layer_idx},)")
             ]
@@ -1197,6 +1287,14 @@ class BuildingLayer(BaseModel):
         return cls(**params)
 
 
+class RoofLayer(BuildingLayer):
+    _facet_type: Literal["roof"] = "roof"
+
+
+class WallLayer(BuildingLayer):
+    _facet_type: Literal["wall"] = "wall"
+
+
 class VerticalLayers(BaseModel):
     nlayer: int
     height: List[float]
@@ -1204,8 +1302,8 @@ class VerticalLayers(BaseModel):
     veg_scale: List[float]
     building_frac: List[float]
     building_scale: List[float]
-    roofs: List[BuildingLayer]
-    walls: List[BuildingLayer]
+    roofs: List[RoofLayer]
+    walls: List[WallLayer]
 
     @model_validator(mode="after")
     def validate_building(self) -> "VerticalLayers":
@@ -1264,17 +1362,11 @@ class VerticalLayers(BaseModel):
 
         # Convert roof and wall properties to DataFrame format for each layer
         df_roofs = pd.concat(
-            [
-                self.roofs[i].to_df_state(grid_id, i, is_roof=True)
-                for i in range(self.nlayer)
-            ],
+            [self.roofs[i].to_df_state(grid_id, i, "roof") for i in range(self.nlayer)],
             axis=1,
         )
         df_walls = pd.concat(
-            [
-                self.walls[i].to_df_state(grid_id, i, is_roof=False)
-                for i in range(self.nlayer)
-            ],
+            [self.walls[i].to_df_state(grid_id, i, "wall") for i in range(self.nlayer)],
             axis=1,
         )
 
@@ -1283,8 +1375,9 @@ class VerticalLayers(BaseModel):
 
         return df_state
 
+
 class BuildingProperties(NonVegetatedSurfaceProperties):
-    surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
+    _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
     faibldg: float = Field(
         ge=0, default=0.3, description="Frontal area index of buildings"
     )
@@ -1306,42 +1399,21 @@ class BuildingProperties(NonVegetatedSurfaceProperties):
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert building properties to DataFrame state format."""
-        df_state = super().to_df_state(grid_id)
-        surf_idx = self.get_surface_index()
+        df_state = super().to_df_state(grid_id).sort_index(axis=1)
 
-        # Helper function to set values in DataFrame
-        # def set_df_value(col_name: str, value: float):
-        #     idx_str = f"({surf_idx},)"
-        #     if (col_name, idx_str) not in df_state.columns:
-        #         df_state[(col_name, idx_str)] = np.nan
-        #     df_state.loc[grid_id, (col_name, idx_str)] = value
-
-        def set_df_value(
-            df: pd.DataFrame, grid_id: int, col_name: str, idx_str: str, value: float
-        ) -> pd.DataFrame:
-            """Helper function to safely set values in DataFrame with MultiIndex columns."""
-            col = (col_name, idx_str)
-            if col not in df.columns:
-                df[col] = np.nan
-                df = df.sort_index(axis=1)
-            df.loc[grid_id, col] = value
-            return df
-
-        # Add all non-inherited properties
-        for attr in ["faibldg", "bldgh"]:
-            df_state = set_df_value(
-                df_state, grid_id, attr, f"({surf_idx},)", getattr(self, attr)
-            )
+        df_state.loc[grid_id, ("faibldg", "0")] = self.faibldg
+        df_state = df_state.sort_index(axis=1)
+        df_state.loc[grid_id, ("bldgh", "0")] = self.bldgh
 
         return df_state
 
 
 class BaresoilProperties(NonVegetatedSurfaceProperties):
-    surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
+    _surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
 
 
 class WaterProperties(NonVegetatedSurfaceProperties):
-    surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
+    _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
     flowchange: float = Field(default=0.0)
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -1356,9 +1428,7 @@ class WaterProperties(NonVegetatedSurfaceProperties):
                 df_state[(col_name, idx_str)] = np.nan
             df_state.loc[grid_id, (col_name, idx_str)] = value
 
-        list_attr = [
-            "flowchange",
-        ]
+        list_attr = ["flowchange"]
 
         # Add all non-inherited properties
         for attr in list_attr:
@@ -1800,10 +1870,7 @@ class HourlyProfile(BaseModel):
         # Generate hour keys 1-24 with uniform values
         hourly_values = {str(hour): uniform_value for hour in range(1, 25)}
 
-        return {
-            "working_day": hourly_values.copy(),
-            "holiday": hourly_values.copy()
-        }
+        return {"working_day": hourly_values.copy(), "holiday": hourly_values.copy()}
 
     def __init__(self, **data):
         # If no values provided, use defaults
@@ -1970,19 +2037,55 @@ class IrrigationParams(BaseModel):
 
 
 class AnthropogenicHeat(BaseModel):
-    qf0_beu: DayProfile = Field(description="Base anthropogenic heat flux for buildings, equipment and urban metabolism", default_factory=DayProfile)
-    qf_a: DayProfile = Field(description="Coefficient a for anthropogenic heat flux calculation", default_factory=DayProfile)
-    qf_b: DayProfile = Field(description="Coefficient b for anthropogenic heat flux calculation", default_factory=DayProfile)
-    qf_c: DayProfile = Field(description="Coefficient c for anthropogenic heat flux calculation", default_factory=DayProfile)
-    baset_cooling: DayProfile = Field(description="Base temperature for cooling degree days", default_factory=DayProfile)
-    baset_heating: DayProfile = Field(description="Base temperature for heating degree days", default_factory=DayProfile)
-    ah_min: DayProfile = Field(description="Minimum anthropogenic heat flux", default_factory=DayProfile)
-    ah_slope_cooling: DayProfile = Field(description="Slope of anthropogenic heat vs cooling degree days", default_factory=DayProfile)
-    ah_slope_heating: DayProfile = Field(description="Slope of anthropogenic heat vs heating degree days", default_factory=DayProfile)
-    ahprof_24hr: HourlyProfile = Field(description="24-hour profile of anthropogenic heat flux", default_factory=HourlyProfile)
-    popdensdaytime: DayProfile = Field(description="Daytime population density", default_factory=DayProfile)
-    popdensnighttime: float = Field(default=10.0, description="Nighttime population density")
-    popprof_24hr: HourlyProfile = Field(description="24-hour profile of population density", default_factory=HourlyProfile)
+    qf0_beu: DayProfile = Field(
+        description="Base anthropogenic heat flux for buildings, equipment and urban metabolism",
+        default_factory=DayProfile,
+    )
+    qf_a: DayProfile = Field(
+        description="Coefficient a for anthropogenic heat flux calculation",
+        default_factory=DayProfile,
+    )
+    qf_b: DayProfile = Field(
+        description="Coefficient b for anthropogenic heat flux calculation",
+        default_factory=DayProfile,
+    )
+    qf_c: DayProfile = Field(
+        description="Coefficient c for anthropogenic heat flux calculation",
+        default_factory=DayProfile,
+    )
+    baset_cooling: DayProfile = Field(
+        description="Base temperature for cooling degree days",
+        default_factory=DayProfile,
+    )
+    baset_heating: DayProfile = Field(
+        description="Base temperature for heating degree days",
+        default_factory=DayProfile,
+    )
+    ah_min: DayProfile = Field(
+        description="Minimum anthropogenic heat flux", default_factory=DayProfile
+    )
+    ah_slope_cooling: DayProfile = Field(
+        description="Slope of anthropogenic heat vs cooling degree days",
+        default_factory=DayProfile,
+    )
+    ah_slope_heating: DayProfile = Field(
+        description="Slope of anthropogenic heat vs heating degree days",
+        default_factory=DayProfile,
+    )
+    ahprof_24hr: HourlyProfile = Field(
+        description="24-hour profile of anthropogenic heat flux",
+        default_factory=HourlyProfile,
+    )
+    popdensdaytime: DayProfile = Field(
+        description="Daytime population density", default_factory=DayProfile
+    )
+    popdensnighttime: float = Field(
+        default=10.0, description="Nighttime population density"
+    )
+    popprof_24hr: HourlyProfile = Field(
+        description="24-hour profile of population density",
+        default_factory=HourlyProfile,
+    )
 
     # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -2075,20 +2178,47 @@ class AnthropogenicHeat(BaseModel):
 
 
 class CO2Params(BaseModel):
-    co2pointsource: float = Field(default=0.0, description="CO2 point source emission factor")
-    ef_umolco2perj: float = Field(default=0.0, description="CO2 emission factor per unit of fuel")
-    enef_v_jkm: float = Field(default=0.0, description="CO2 emission factor per unit of vehicle distance")
-    fcef_v_kgkm: DayProfile = Field(description="Fuel consumption efficiency for vehicles", default_factory=DayProfile)
-    frfossilfuel_heat: float = Field(default=0.0, description="Fraction of fossil fuel heat")
-    frfossilfuel_nonheat: float = Field(default=0.0, description="Fraction of fossil fuel non-heat")
-    maxfcmetab: float = Field(default=0.0, description="Maximum fuel consumption metabolic rate")
-    maxqfmetab: float = Field(default=0.0, description="Maximum heat production metabolic rate")
-    minfcmetab: float = Field(default=0.0, description="Minimum fuel consumption metabolic rate")
-    minqfmetab: float = Field(default=0.0, description="Minimum heat production metabolic rate")
-    trafficrate: DayProfile = Field(description="Traffic rate", default_factory=DayProfile)
+    co2pointsource: float = Field(
+        default=0.0, description="CO2 point source emission factor"
+    )
+    ef_umolco2perj: float = Field(
+        default=0.0, description="CO2 emission factor per unit of fuel"
+    )
+    enef_v_jkm: float = Field(
+        default=0.0, description="CO2 emission factor per unit of vehicle distance"
+    )
+    fcef_v_kgkm: DayProfile = Field(
+        description="Fuel consumption efficiency for vehicles",
+        default_factory=DayProfile,
+    )
+    frfossilfuel_heat: float = Field(
+        default=0.0, description="Fraction of fossil fuel heat"
+    )
+    frfossilfuel_nonheat: float = Field(
+        default=0.0, description="Fraction of fossil fuel non-heat"
+    )
+    maxfcmetab: float = Field(
+        default=0.0, description="Maximum fuel consumption metabolic rate"
+    )
+    maxqfmetab: float = Field(
+        default=0.0, description="Maximum heat production metabolic rate"
+    )
+    minfcmetab: float = Field(
+        default=0.0, description="Minimum fuel consumption metabolic rate"
+    )
+    minqfmetab: float = Field(
+        default=0.0, description="Minimum heat production metabolic rate"
+    )
+    trafficrate: DayProfile = Field(
+        description="Traffic rate", default_factory=DayProfile
+    )
     trafficunits: float = Field(default=0.0, description="Traffic units")
-    traffprof_24hr: HourlyProfile = Field(description="24-hour profile of traffic rate", default_factory=HourlyProfile)
-    humactivity_24hr: HourlyProfile = Field(description="24-hour profile of human activity", default_factory=HourlyProfile)
+    traffprof_24hr: HourlyProfile = Field(
+        description="24-hour profile of traffic rate", default_factory=HourlyProfile
+    )
+    humactivity_24hr: HourlyProfile = Field(
+        description="24-hour profile of human activity", default_factory=HourlyProfile
+    )
 
     # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -2189,10 +2319,19 @@ class CO2Params(BaseModel):
 
 
 class AnthropogenicEmissions(BaseModel):
-    startdls: float = Field(default=0.0, description="Start of daylight savings time in decimal day of year")
-    enddls: float = Field(default=0.0, description="End of daylight savings time in decimal day of year")
-    heat: AnthropogenicHeat = Field(description="Anthropogenic heat emission parameters", default_factory=AnthropogenicHeat)
-    co2: CO2Params = Field(description="CO2 emission parameters", default_factory=CO2Params)
+    startdls: float = Field(
+        default=0.0, description="Start of daylight savings time in decimal day of year"
+    )
+    enddls: float = Field(
+        default=0.0, description="End of daylight savings time in decimal day of year"
+    )
+    heat: AnthropogenicHeat = Field(
+        description="Anthropogenic heat emission parameters",
+        default_factory=AnthropogenicHeat,
+    )
+    co2: CO2Params = Field(
+        description="CO2 emission parameters", default_factory=CO2Params
+    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -2207,7 +2346,7 @@ class AnthropogenicEmissions(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set start and end daylight saving times
-        df_state.loc[grid_id, ("startdls", '0')] = self.startdls
+        df_state.loc[grid_id, ("startdls", "0")] = self.startdls
         df_state.loc[grid_id, ("enddls", "0")] = self.enddls
 
         # Add heat parameters
@@ -2248,24 +2387,33 @@ class AnthropogenicEmissions(BaseModel):
 
 
 class Conductance(BaseModel):
-    g_max: float = Field(description="Maximum conductance")
+    g_max: float = Field(default=40.0, description="Maximum conductance")
     g_k: float = Field(
-        description="Conductance parameter related to incoming solar radiation"
+        default=0.6,
+        description="Conductance parameter related to incoming solar radiation",
     )
     g_q_base: float = Field(
-        description="Base value for conductance parameter related to vapor pressure deficit"
+        default=0.03,
+        description="Base value for conductance parameter related to vapor pressure deficit",
     )
     g_q_shape: float = Field(
-        description="Shape parameter for conductance related to vapor pressure deficit"
+        default=0.9,
+        description="Shape parameter for conductance related to vapor pressure deficit",
     )
-    g_t: float = Field(description="Conductance parameter related to air temperature")
-    g_sm: float = Field(description="Conductance parameter related to soil moisture")
-    kmax: float = Field(description="Maximum incoming shortwave radiation")
-    gsmodel: int = Field(description="Stomatal conductance model selection")
-    s1: float = Field(description="Soil moisture threshold parameter")
-    s2: float = Field(description="Soil moisture threshold parameter")
-    tl: float = Field(description="Air temperature threshold parameter")
-    th: float = Field(description="Air temperature threshold parameter")
+    g_t: float = Field(
+        default=30.0, description="Conductance parameter related to air temperature"
+    )
+    g_sm: float = Field(
+        default=0.5, description="Conductance parameter related to soil moisture"
+    )
+    kmax: float = Field(
+        default=1200.0, description="Maximum incoming shortwave radiation"
+    )
+    gsmodel: int = Field(default=1, description="Stomatal conductance model selection")
+    s1: float = Field(default=0.2, description="Soil moisture threshold parameter")
+    s2: float = Field(default=0.5, description="Soil moisture threshold parameter")
+    tl: float = Field(default=0.0, description="Air temperature threshold parameter")
+    th: float = Field(default=50.0, description="Air temperature threshold parameter")
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -2296,7 +2444,7 @@ class Conductance(BaseModel):
         }
 
         for param_name, value in scalar_params.items():
-            df_state.loc[grid_id, (param_name, 0)] = value
+            df_state.loc[grid_id, (param_name, "0")] = value
 
         return df_state
 
@@ -2538,8 +2686,8 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
         # add ordinary float properties
         for attr in [
-            "alb_min",
-            "alb_max",
+            # "alb_min",
+            # "alb_max",
             "beta_bioco2",
             "beta_enh_bioco2",
             "alpha_bioco2",
@@ -2552,7 +2700,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             "ie_a",
             "ie_m",
         ]:
-            set_df_value(attr, f"({surf_idx},)", getattr(self, attr))
+            set_df_value(attr, f"({surf_idx-2},)", getattr(self, attr))
 
         df_lai = self.lai.to_df_state(grid_id, surf_idx)
         df_state = pd.concat([df_state, df_lai], axis=1).sort_index(axis=1)
@@ -2567,19 +2715,12 @@ class DectrProperties(VegetatedSurfaceProperties):
     dectreeh: float = Field(default=15.0, description="Deciduous tree height")
     pormin_dec: float = Field(default=0.2, description="Minimum porosity")
     pormax_dec: float = Field(default=0.6, description="Maximum porosity")
+    _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree properties to DataFrame state format."""
         # Get base properties from parent
         df_state = super().to_df_state(grid_id)
-        surf_idx = self.get_surface_index()
-
-        # Helper function to set values in DataFrame
-        def set_df_value(col_name: str, value: float):
-            idx_str = f"({surf_idx},)"
-            if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
-            df_state.loc[grid_id, (col_name, idx_str)] = value
 
         list_properties = [
             "faidectree",
@@ -2589,12 +2730,11 @@ class DectrProperties(VegetatedSurfaceProperties):
         ]
         # Add all non-inherited properties
         for attr in list_properties:
-            try:
-                value = getattr(self, attr)
-                if not isinstance(value, (BaseModel, Enum)):
-                    set_df_value(attr, value)
-            except Exception as e:
-                print(f"Warning: Could not set property {attr}: {str(e)}")
+            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr)
+
+        # specific properties
+        df_state.loc[grid_id, ("albmin_dectr", "0")] = self.alb_min
+        df_state.loc[grid_id, ("albmax_dectr", "0")] = self.alb_max
 
         return df_state
 
@@ -2604,7 +2744,7 @@ class EvetrProperties(VegetatedSurfaceProperties):
         default=0.1, description="Frontal area index of evergreen trees"
     )
     evetreeh: float = Field(default=15.0, description="Evergreen tree height")
-
+    _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert evergreen tree properties to DataFrame state format."""
         # Get base properties from parent
@@ -2621,12 +2761,11 @@ class EvetrProperties(VegetatedSurfaceProperties):
         # Add all non-inherited properties
         list_properties = ["faievetree", "evetreeh"]
         for attr in list_properties:
-            try:
-                value = getattr(self, attr)
-                if not isinstance(value, (BaseModel, Enum)):
-                    set_df_value(attr, value)
-            except Exception as e:
-                print(f"Warning: Could not set property {attr}: {str(e)}")
+            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr)
+
+        # specific properties
+        df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min
+        df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max
 
         return df_state
 
