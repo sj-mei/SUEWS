@@ -197,7 +197,7 @@ class SurfaceInitialState(BaseModel):
         Reconstruct SurfaceInitialState from a DataFrame state format.
 
         Args:
-            df (pd.DataFrame): DataFrame containing surface initial state parameters.
+            df (pd.DataFrame): DataFrame containing surface state parameters.
             grid_id (int): Grid ID for the DataFrame index.
             surf_idx (int): Surface index for identifying columns.
             str_type (str): Surface type prefix ("surf", "roof", or "wall").
@@ -205,32 +205,25 @@ class SurfaceInitialState(BaseModel):
         Returns:
             SurfaceInitialState: Instance of SurfaceInitialState.
         """
-        # Handle basic state parameters
-        state = df.loc[grid_id, (f"state_{str_type}", f"({surf_idx},)")]
-        soilstore = df.loc[grid_id, (f"soilstore_{str_type}", f"({surf_idx},)")]
+        # Base surface state parameters
+        state = df.loc[grid_id, ("state_surf", f"({surf_idx},)")]
+        soilstore = df.loc[grid_id, ("soilstore_surf", f"({surf_idx},)")]
 
-        # Handle optional snow/ice parameters
-        def get_optional_param(param_name):
-            try:
-                return df.loc[grid_id, (param_name, f"({surf_idx},)")]
-            except KeyError:
-                return None
+        # Snow/ice parameters
+        snowfrac = df.loc[grid_id, ("snowfrac", f"({surf_idx},)")]
+        snowpack = df.loc[grid_id, ("snowpack", f"({surf_idx},)")]
+        icefrac = df.loc[grid_id, ("icefrac", f"({surf_idx},)")]
+        snowwater = df.loc[grid_id, ("snowwater", f"({surf_idx},)")]
+        snowdens = df.loc[grid_id, ("snowdens", f"({surf_idx},)")]
 
-        snowfrac = get_optional_param("snowfrac")
-        snowpack = get_optional_param("snowpack")
-        icefrac = get_optional_param("icefrac")
-        snowwater = get_optional_param("snowwater")
-        snowdens = get_optional_param("snowdens")
-
-        # Handle temperature parameters
+        # Temperature parameters
         temperature = [
-            df.loc[grid_id, (f"temp_{str_type}", f"({surf_idx}, {i})")]  # Space added
-            for i in range(5)
+            df.loc[grid_id, ("temp_surf", f"({surf_idx}, {i})")] for i in range(5)
         ]
 
-        # Handle optional surface temperatures
-        tsfc = get_optional_param(f"tsfc_{str_type}")
-        tin = get_optional_param(f"tin_{str_type}")
+        # Exterior and interior surface temperature
+        tsfc = df.loc[grid_id, ("tsfc_surf", f"({surf_idx},)")]
+        tin = df.loc[grid_id, ("tin_surf", f"({surf_idx},)")]
 
         return cls(
             state=state,
@@ -244,8 +237,6 @@ class SurfaceInitialState(BaseModel):
             tsfc=tsfc,
             tin=tin,
         )
-
-
 
 class InitialStatePaved(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
@@ -882,16 +873,16 @@ class WaterDistribution(BaseModel):
             ]
         ):
             value = getattr(self, attr)
-            if value is not None:
+            if value is None:
+                list_waterdist_value.append(0.0)
+            else:
                 list_waterdist_value.append(value)
 
         # either to_soilstore or to_runoff must be provided - the other must be 0
-        if self.to_soilstore is None:
-            list_waterdist_value.append(0.0)
-            list_waterdist_value.append(self.to_runoff)
-        if self.to_runoff is None:
-            list_waterdist_value.append(self.to_soilstore)
-            list_waterdist_value.append(0.0)
+        to_soilstore_or_runoff = (
+            self.to_runoff if self.to_soilstore is None else self.to_soilstore
+        )
+        list_waterdist_value.append(to_soilstore_or_runoff)
 
         # 2. Create param_tuples and values - only add non-None values following the order of the list
         for i, value in enumerate(list_waterdist_value):

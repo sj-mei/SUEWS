@@ -2036,59 +2036,59 @@ CONTAINS
             StoreDrainPrm = phenState%StoreDrainPrm
 
             ! sfr_surf = [pavedPrm%sfr, bldgPrm%sfr, evetrPrm%sfr, dectrPrm%sfr, grassPrm%sfr, bsoilPrm%sfr, waterPrm%sfr]
-            WaterDist(1, 1) = pavedPrm%waterdist%to_bldg
-            WaterDist(2, 1) = pavedPrm%waterdist%to_evetr
-            WaterDist(3, 1) = pavedPrm%waterdist%to_dectr
-            WaterDist(4, 1) = pavedPrm%waterdist%to_grass
-            WaterDist(5, 1) = pavedPrm%waterdist%to_bsoil
-            WaterDist(6, 1) = pavedPrm%waterdist%to_water
-            WaterDist(7, 1) = pavedPrm%waterdist%to_soilstore
-            WaterDist(8, 1) = pavedPrm%waterdist%to_runoff
+            WaterDist(1, 1) = pavedPrm%waterdist%to_paved
+            WaterDist(2, 1) = pavedPrm%waterdist%to_bldg
+            WaterDist(3, 1) = pavedPrm%waterdist%to_evetr
+            WaterDist(4, 1) = pavedPrm%waterdist%to_dectr
+            WaterDist(5, 1) = pavedPrm%waterdist%to_grass
+            WaterDist(6, 1) = pavedPrm%waterdist%to_bsoil
+            WaterDist(7, 1) = pavedPrm%waterdist%to_water
+            WaterDist(8, 1) = pavedPrm%waterdist%to_soilstore
 
             WaterDist(1, 2) = bldgPrm%waterdist%to_paved
-            WaterDist(2, 2) = bldgPrm%waterdist%to_evetr
-            WaterDist(3, 2) = bldgPrm%waterdist%to_dectr
-            WaterDist(4, 2) = bldgPrm%waterdist%to_grass
-            WaterDist(5, 2) = bldgPrm%waterdist%to_bsoil
-            WaterDist(6, 2) = bldgPrm%waterdist%to_water
-            WaterDist(7, 2) = bldgPrm%waterdist%to_soilstore
-            WaterDist(8, 2) = bldgPrm%waterdist%to_runoff
+            WaterDist(2, 2) = bldgPrm%waterdist%to_bldg
+            WaterDist(3, 2) = bldgPrm%waterdist%to_evetr
+            WaterDist(4, 2) = bldgPrm%waterdist%to_dectr
+            WaterDist(5, 2) = bldgPrm%waterdist%to_grass
+            WaterDist(6, 2) = bldgPrm%waterdist%to_bsoil
+            WaterDist(7, 2) = bldgPrm%waterdist%to_water
+            WaterDist(8, 2) = bldgPrm%waterdist%to_soilstore
 
             WaterDist(1, 3) = evetrPrm%waterdist%to_paved
             WaterDist(2, 3) = evetrPrm%waterdist%to_bldg
-            WaterDist(3, 3) = evetrPrm%waterdist%to_dectr
-            WaterDist(4, 3) = evetrPrm%waterdist%to_grass
-            WaterDist(5, 3) = evetrPrm%waterdist%to_bsoil
-            WaterDist(6, 3) = evetrPrm%waterdist%to_water
-            WaterDist(7, 3) = evetrPrm%waterdist%to_soilstore
-            WaterDist(8, 3) = evetrPrm%waterdist%to_runoff
+            WaterDist(3, 3) = evetrPrm%waterdist%to_evetr
+            WaterDist(4, 3) = evetrPrm%waterdist%to_dectr
+            WaterDist(5, 3) = evetrPrm%waterdist%to_grass
+            WaterDist(6, 3) = evetrPrm%waterdist%to_bsoil
+            WaterDist(7, 3) = evetrPrm%waterdist%to_water
+            WaterDist(8, 3) = evetrPrm%waterdist%to_soilstore
 
             WaterDist(1, 4) = dectrPrm%waterdist%to_paved
             WaterDist(2, 4) = dectrPrm%waterdist%to_bldg
             WaterDist(3, 4) = dectrPrm%waterdist%to_evetr
-            WaterDist(4, 4) = dectrPrm%waterdist%to_grass
-            WaterDist(5, 4) = dectrPrm%waterdist%to_bsoil
-            WaterDist(6, 4) = dectrPrm%waterdist%to_water
-            WaterDist(7, 4) = dectrPrm%waterdist%to_soilstore
-            WaterDist(8, 4) = dectrPrm%waterdist%to_runoff
+            WaterDist(4, 4) = dectrPrm%waterdist%to_dectr
+            WaterDist(5, 4) = dectrPrm%waterdist%to_grass
+            WaterDist(6, 4) = dectrPrm%waterdist%to_bsoil
+            WaterDist(7, 4) = dectrPrm%waterdist%to_water
+            WaterDist(8, 4) = dectrPrm%waterdist%to_soilstore
 
             WaterDist(1, 5) = grassPrm%waterdist%to_paved
             WaterDist(2, 5) = grassPrm%waterdist%to_bldg
             WaterDist(3, 5) = grassPrm%waterdist%to_evetr
             WaterDist(4, 5) = grassPrm%waterdist%to_dectr
-            WaterDist(5, 5) = grassPrm%waterdist%to_bsoil
-            WaterDist(6, 5) = grassPrm%waterdist%to_water
-            WaterDist(7, 5) = grassPrm%waterdist%to_soilstore
-            WaterDist(8, 5) = grassPrm%waterdist%to_runoff
+            WaterDist(5, 5) = grassPrm%waterdist%to_grass
+            WaterDist(6, 5) = grassPrm%waterdist%to_bsoil
+            WaterDist(7, 5) = grassPrm%waterdist%to_water
+            WaterDist(8, 5) = grassPrm%waterdist%to_soilstore
 
             WaterDist(1, 6) = bsoilPrm%waterdist%to_paved
             WaterDist(2, 6) = bsoilPrm%waterdist%to_bldg
             WaterDist(3, 6) = bsoilPrm%waterdist%to_evetr
             WaterDist(4, 6) = bsoilPrm%waterdist%to_dectr
             WaterDist(5, 6) = bsoilPrm%waterdist%to_grass
-            WaterDist(6, 6) = bsoilPrm%waterdist%to_water
-            WaterDist(7, 6) = bsoilPrm%waterdist%to_soilstore
-            WaterDist(8, 6) = bsoilPrm%waterdist%to_runoff
+            WaterDist(6, 6) = bsoilPrm%waterdist%to_bsoil
+            WaterDist(7, 6) = bsoilPrm%waterdist%to_water
+            WaterDist(8, 6) = bsoilPrm%waterdist%to_soilstore
 
             ! Retain previous surface state_id and soil moisture state_id
             ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
