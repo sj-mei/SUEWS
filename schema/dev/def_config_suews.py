@@ -570,7 +570,7 @@ class InitialStates(BaseModel):
             df_state[(f"hdd_id", f"({i},)")] = 0
             df_state = df_state.sort_index(axis=1)
         # Drop duplicate columns while preserving first occurrence
-        df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="firslayer_namet")]
+        df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="first")]
 
         return df_state
 
