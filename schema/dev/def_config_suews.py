@@ -191,8 +191,7 @@ class SurfaceInitialState(BaseModel):
 
     @classmethod
     def from_df_state(
-        cls, df: pd.DataFrame, grid_id: int, surf_idx: int, str_type: str = "surf"
-    ) -> "SurfaceInitialState":
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "SurfaceInitialState":
         """
         Reconstruct SurfaceInitialState from a DataFrame state format.
 
