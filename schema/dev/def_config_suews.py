@@ -576,19 +576,8 @@ class InitialStates(BaseModel):
 
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "InitialStates":
-        """
-        Reconstruct InitialStates from a DataFrame state format.
-
-        Args:
-            df (pd.DataFrame): DataFrame containing initial states.
-            grid_id (int): Grid ID for the DataFrame index.
-
-        Returns:
-            InitialStates: Instance of InitialStates.
-        """
         snowalb = df.loc[grid_id, ("snowalb", "0")]
 
-        # Correct surface types to their respective classes
         surface_types = {
             "paved": InitialStatePaved,
             "bldgs": InitialStateBldgs,
@@ -599,29 +588,24 @@ class InitialStates(BaseModel):
             "water": InitialStateWater,
         }
 
-        # Reconstruct surface states
         surfaces = {
             name: surface_class.from_df_state(df, grid_id, idx)
             for idx, (name, surface_class) in enumerate(surface_types.items())
         }
 
-        # Reconstruct roof and wall states
-        def reconstruct_layers(layer_name: str, surface_class: Type[SurfaceInitialState]):
+        def reconstruct_layers(layer_name: str, surface_class: Type[SurfaceInitialState], n_layers: int) -> List[SurfaceInitialState]:
             layers = []
-            idx = 0
-            while True:
+            for idx in range(n_layers):
                 try:
                     layer = surface_class.from_df_state(df, grid_id, idx)
                     layers.append(layer)
-                    idx += 1
                 except KeyError:
                     break
             return layers
 
-        roofs = reconstruct_layers("roof", SurfaceInitialState)
-        walls = reconstruct_layers("wall", SurfaceInitialState)
+        roofs = reconstruct_layers("roof", SurfaceInitialState, len(cls.__fields__["roofs"].default))
+        walls = reconstruct_layers("wall", SurfaceInitialState, len(cls.__fields__["walls"].default))
 
-        # Ensure each surface is passed to the corresponding field
         return cls(
             snowalb=snowalb,
             paved=surfaces["paved"],
@@ -634,6 +618,7 @@ class InitialStates(BaseModel):
             roofs=roofs,
             walls=walls,
         )
+
 
 
 class ThermalLayers(BaseModel):
