@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union, Literal, Tuple
+from typing import Dict, List, Optional, Union, Literal, Tuple, Type
 from pydantic import (
     BaseModel,
     Field,
@@ -588,16 +588,18 @@ class InitialStates(BaseModel):
         """
         snowalb = df.loc[grid_id, ("snowalb", "0")]
 
-        # Reconstruct surface states
+        # Correct surface types to their respective classes
         surface_types = {
-            "paved": SurfaceInitialState,
-            "bldgs": SurfaceInitialState,
-            "evetr": VegInitialState,
+            "paved": InitialStatePaved,
+            "bldgs": InitialStateBldgs,
+            "evetr": InitialStateEvetr,
             "dectr": InitialStateDectr,
-            "grass": VegInitialState,
-            "bsoil": SurfaceInitialState,
-            "water": SurfaceInitialState,
+            "grass": InitialStateGrass,
+            "bsoil": InitialStateBsoil,
+            "water": InitialStateWater,
         }
+
+        # Reconstruct surface states
         surfaces = {
             name: surface_class.from_df_state(df, grid_id, idx)
             for idx, (name, surface_class) in enumerate(surface_types.items())
@@ -609,7 +611,7 @@ class InitialStates(BaseModel):
             idx = 0
             while True:
                 try:
-                    layer = surface_class.from_df_state(df, grid_id, idx, layer_name)
+                    layer = surface_class.from_df_state(df, grid_id, idx)
                     layers.append(layer)
                     idx += 1
                 except KeyError:
@@ -619,11 +621,18 @@ class InitialStates(BaseModel):
         roofs = reconstruct_layers("roof", SurfaceInitialState)
         walls = reconstruct_layers("wall", SurfaceInitialState)
 
+        # Ensure each surface is passed to the corresponding field
         return cls(
             snowalb=snowalb,
+            paved=surfaces["paved"],
+            bldgs=surfaces["bldgs"],
+            evetr=surfaces["evetr"],
+            dectr=surfaces["dectr"],
+            grass=surfaces["grass"],
+            bsoil=surfaces["bsoil"],
+            water=surfaces["water"],
             roofs=roofs,
             walls=walls,
-            **surfaces,
         )
 
 
