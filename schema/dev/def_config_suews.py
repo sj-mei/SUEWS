@@ -872,16 +872,16 @@ class WaterDistribution(BaseModel):
             ]
         ):
             value = getattr(self, attr)
-            if value is not None:
+            if value is None:
+                list_waterdist_value.append(0.0)
+            else:
                 list_waterdist_value.append(value)
 
         # either to_soilstore or to_runoff must be provided - the other must be 0
-        if self.to_soilstore is None:
-            list_waterdist_value.append(0.0)
-            list_waterdist_value.append(self.to_runoff)
-        if self.to_runoff is None:
-            list_waterdist_value.append(self.to_soilstore)
-            list_waterdist_value.append(0.0)
+        to_soilstore_or_runoff = (
+            self.to_runoff if self.to_soilstore is None else self.to_soilstore
+        )
+        list_waterdist_value.append(to_soilstore_or_runoff)
 
         # 2. Create param_tuples and values - only add non-None values following the order of the list
         for i, value in enumerate(list_waterdist_value):
