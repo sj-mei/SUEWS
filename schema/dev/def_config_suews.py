@@ -523,7 +523,7 @@ class InitialStates(BaseModel):
         ],
         description="Initial states for wall layers",
     )
-    import pdb; pdb.set_trace()
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
         df_state = init_df_state(grid_id)
