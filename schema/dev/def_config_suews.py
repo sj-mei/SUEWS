@@ -1331,14 +1331,19 @@ class SurfaceProperties(BaseModel):
         return df_final
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "SurfaceProperties":
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "SurfaceProperties":
         """Reconstruct surface properties from DataFrame state format."""
 
-        # Get surface index
-        surf_idx = cls.get_surface_index()
-
         # Get surface name
-        surf_name = cls.get_surface_name()
+        surf_name = [ 
+            "paved",
+            "bldgs",
+            "evetr",
+            "dectr",
+            "grass",
+            "bsoil",
+            "water",
+        ][surf_idx]
 
         # Get all properties of this class using introspection
         properties = [
@@ -1360,10 +1365,14 @@ class SurfaceProperties(BaseModel):
             "thermal_layers",
             "irrfrac",
         ]
+        
         # drop 'surface_type' and model-specific properties (e.g. model_xx)
         properties = [
             p for p in properties if p != "surface_type" and not p.startswith("model_")
         ]
+
+        # Create a dictionary to hold the properties and their values
+        property_values = {}
 
         # Process each property
         for property in properties:
@@ -1374,32 +1383,23 @@ class SurfaceProperties(BaseModel):
                 "ohm_coef",
                 "lai",
             ]:
-                nested_obj = getattr(cls, property)
+                nested_obj = cls.model_fields[property].annotation
                 if nested_obj is not None and hasattr(nested_obj, "from_df_state"):
-                    setattr(
-                        cls, property, nested_obj.from_df_state(df, grid_id, surf_idx)
-                    )
+                    property_values[property] = nested_obj.from_df_state(df, grid_id, surf_idx)
                 continue
             elif property == "thermal_layers":
-                setattr(
-                    cls,
-                    property,
-                    cls.thermal_layers.from_df_state(df, grid_id, surf_idx, surf_name),
+                property_values[property] = cls.model_fields["thermal_layers"].annotation.from_df_state(
+                    df, grid_id, surf_idx, surf_name
                 )
             elif property == "irrfrac":
-                setattr(
-                    cls, property, df.loc[grid_id, (f"{property}{surf_name}", "0")]
-                )
+                property_values[property] = df.loc[grid_id, (f"{property}{surf_name}", "0")]
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
-                setattr(
-                    cls,
-                    property,
-                    df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")],
-                )
+                property_values[property] = df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")]
             else:
-                setattr(cls, property, df.loc[grid_id, (property, f"({surf_idx},)")])
+                property_values[property] = df.loc[grid_id, (property, f"({surf_idx},)")]
 
-        return cls
+        import pdb; pdb.set_trace()
+        return cls(**property_values)
 
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
