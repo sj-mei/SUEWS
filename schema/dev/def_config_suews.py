@@ -191,7 +191,7 @@ class SurfaceInitialState(BaseModel):
 
     @classmethod
     def from_df_state(
-        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int, str_type: str = "surf"
     ) -> "SurfaceInitialState":
         """
         Reconstruct SurfaceInitialState from a DataFrame state format.
@@ -200,21 +200,37 @@ class SurfaceInitialState(BaseModel):
             df (pd.DataFrame): DataFrame containing surface initial state parameters.
             grid_id (int): Grid ID for the DataFrame index.
             surf_idx (int): Surface index for identifying columns.
+            str_type (str): Surface type prefix ("surf", "roof", or "wall").
 
         Returns:
             SurfaceInitialState: Instance of SurfaceInitialState.
         """
-        state = df.loc[grid_id, ("state", f"({surf_idx},)")]
-        soilstore = df.loc[grid_id, ("soilstore_id", f"({surf_idx},)")]
-        snowfrac = df.loc[grid_id, ("snowfrac", f"({surf_idx},)")]
-        snowpack = df.loc[grid_id, ("snowpack", f"({surf_idx},)")]
-        icefrac = df.loc[grid_id, ("icefrac", f"({surf_idx},)")]
-        snowwater = df.loc[grid_id, ("snowwater", f"({surf_idx},)")]
-        snowdens = df.loc[grid_id, ("snowdens", f"({surf_idx},)")]
+        # Handle basic state parameters
+        state = df.loc[grid_id, (f"state_{str_type}", f"({surf_idx},)")]
+        soilstore = df.loc[grid_id, (f"soilstore_{str_type}", f"({surf_idx},)")]
 
-        temperature = [df.loc[grid_id, ("t", f"({surf_idx},{i})")] for i in range(5)]
-        tsfc = df.loc[grid_id, ("tsfc", f"({surf_idx},)")]
-        tin = df.loc[grid_id, ("tin", f"({surf_idx},)")]
+        # Handle optional snow/ice parameters
+        def get_optional_param(param_name):
+            try:
+                return df.loc[grid_id, (param_name, f"({surf_idx},)")]
+            except KeyError:
+                return None
+
+        snowfrac = get_optional_param("snowfrac")
+        snowpack = get_optional_param("snowpack")
+        icefrac = get_optional_param("icefrac")
+        snowwater = get_optional_param("snowwater")
+        snowdens = get_optional_param("snowdens")
+
+        # Handle temperature parameters
+        temperature = [
+            df.loc[grid_id, (f"temp_{str_type}", f"({surf_idx}, {i})")]  # Space added
+            for i in range(5)
+        ]
+
+        # Handle optional surface temperatures
+        tsfc = get_optional_param(f"tsfc_{str_type}")
+        tin = get_optional_param(f"tin_{str_type}")
 
         return cls(
             state=state,
@@ -228,6 +244,7 @@ class SurfaceInitialState(BaseModel):
             tsfc=tsfc,
             tin=tin,
         )
+
 
 
 class InitialStatePaved(SurfaceInitialState):
@@ -318,10 +335,10 @@ class VegInitialState(SurfaceInitialState):
         base_instance = SurfaceInitialState.from_df_state(df, grid_id, surf_idx)
 
         # Vegetated surface-specific parameters
-        alb_id = df.loc[grid_id, ("alb", f"({surf_idx},)")]
-        lai_id = df.loc[grid_id, ("lai", f"({surf_idx},)")]
-        gdd_id = df.loc[grid_id, ("gdd", f"({surf_idx},)")]
-        sdd_id = df.loc[grid_id, ("sdd", f"({surf_idx},)")]
+        alb_id = df.loc[grid_id, ("alb_id", f"({surf_idx},)")]
+        lai_id = df.loc[grid_id, ("lai_id", f"({surf_idx},)")]
+        gdd_id = df.loc[grid_id, ("gdd_id", f"({surf_idx},)")]
+        sdd_id = df.loc[grid_id, ("sdd_id", f"({surf_idx},)")]
 
         # Reconstruct WaterUse instance
         veg_idx = surf_idx - 2
@@ -550,14 +567,14 @@ class InitialStates(BaseModel):
         }
 
         # Reconstruct roof and wall states
-        def reconstruct_layers(
-            layer_name: str, surface_class: Type[SurfaceInitialState]
-        ):
+        def reconstruct_layers(layer_name: str, surface_class: Type[SurfaceInitialState]):
             layers = []
-            for i in range(2):  # Assuming two layers for simplicity
+            idx = 0
+            while True:
                 try:
-                    layer = surface_class.from_df_state(df, grid_id, i)
+                    layer = surface_class.from_df_state(df, grid_id, idx, layer_name)
                     layers.append(layer)
+                    idx += 1
                 except KeyError:
                     break
             return layers
