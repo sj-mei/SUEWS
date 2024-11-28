@@ -452,6 +452,33 @@ class InitialStateGrass(VegInitialState):
         df_state = super().to_df_state(grid_id)
         df_state[("albgrass_id", "0")] = self.alb_id
         return df_state
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "InitialStateGrass":
+        """
+        Reconstruct InitialStateGrass from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing grass state parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            surf_idx (int): Surface index for identifying columns.
+
+        Returns:
+            InitialStateGrass: Instance of InitialStateGrass.
+        """
+        # Call the parent class to extract common fields
+        base_instance = super().from_df_state(df, grid_id, surf_idx)
+
+        # Extract the GRASS-specific field
+        alb_id = df.loc[grid_id, ("albgrass_id", "0")].item()
+
+        # Use `base_instance.dict()` to pass the existing attributes, excluding `alb_id` to avoid duplication
+        base_instance_dict = base_instance.dict()
+        base_instance_dict["alb_id"] = alb_id  # Update alb_id explicitly
+
+        # Return a new instance with the updated dictionary
+        return cls(**base_instance_dict)
+
 
 
 class InitialStateBsoil(SurfaceInitialState):
