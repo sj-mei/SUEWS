@@ -311,24 +311,19 @@ class VegInitialState(SurfaceInitialState):
         cls, df: pd.DataFrame, grid_id: int, surf_idx: int
     ) -> "VegInitialState":
         """
-        Reconstruct VegetatedSurfaceInitialState from a DataFrame state format.
-
-        Args:
-            df (pd.DataFrame): DataFrame containing vegetated surface state parameters.
-            grid_id (int): Grid ID for the DataFrame index.
-            surf_idx (int): Surface index for identifying columns.
-
-        Returns:
-            VegetatedSurfaceInitialState: Instance of VegetatedSurfaceInitialState.
-        """
-        # Base class reconstruction
+        Reconstruct VegetatedSurfaceInitialState from a DataFrame state format."""
         base_instance = SurfaceInitialState.from_df_state(df, grid_id, surf_idx)
 
         # Vegetated surface-specific parameters
-        alb_id = df.loc[grid_id, ("alb_id", f"({surf_idx},)")]
-        lai_id = df.loc[grid_id, ("lai_id", f"({surf_idx},)")]
-        gdd_id = df.loc[grid_id, ("gdd_id", f"({surf_idx},)")]
-        sdd_id = df.loc[grid_id, ("sdd_id", f"({surf_idx},)")]
+        alb_key = ("alb", f"({surf_idx},)")
+        lai_key = ("lai_id", f"({surf_idx - 2},)")
+        gdd_key = ("gdd_id", f"({surf_idx - 2},)")
+        sdd_key = ("sdd_id", f"({surf_idx - 2},)")
+
+        alb_id = df.loc[grid_id, alb_key]
+        lai_id = df.loc[grid_id, lai_key]
+        gdd_id = df.loc[grid_id, gdd_key]
+        sdd_id = df.loc[grid_id, sdd_key]
 
         # Reconstruct WaterUse instance
         veg_idx = surf_idx - 2
@@ -352,6 +347,31 @@ class InitialStateEvetr(VegInitialState):
         df_state = super().to_df_state(grid_id)
         df_state[("albevetr_id", "0")] = self.alb_id
         return df_state
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "InitialStateEvetr":
+        """
+        Reconstruct InitialStateEvetr from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing EVETR state parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            surf_idx (int): Surface index for identifying columns.
+
+        Returns:
+            InitialStateEvetr: Instance of InitialStateEvetr.
+        """
+        # Call the parent class to extract common fields
+        base_instance = super().from_df_state(df, grid_id, surf_idx)
+
+        # Extract the EVETR-specific field
+        alb_id = df.loc[grid_id, ("albevetr_id", "0")].item()
+
+        # Use `base_instance.dict()` to pass the existing attributes, excluding `alb_id` to avoid duplication
+        base_instance_dict = base_instance.dict()
+        base_instance_dict["alb_id"] = alb_id  # Update alb_id explicitly
+
+        # Return a new instance with the updated dictionary
+        return cls(**base_instance_dict)
 
 
 class InitialStateDectr(VegInitialState):
