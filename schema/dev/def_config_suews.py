@@ -603,8 +603,8 @@ class InitialStates(BaseModel):
                     break
             return layers
 
-        roofs = reconstruct_layers("roof", SurfaceInitialState, len(cls.__fields__["roofs"].default))
-        walls = reconstruct_layers("wall", SurfaceInitialState, len(cls.__fields__["walls"].default))
+        roofs = reconstruct_layers("roof", SurfaceInitialState, len(cls.model_fields["roofs"].default))
+        walls = reconstruct_layers("wall", SurfaceInitialState, len(cls.model_fields["walls"].default))
 
         return cls(
             snowalb=snowalb,
