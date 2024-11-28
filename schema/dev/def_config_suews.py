@@ -197,24 +197,32 @@ class SurfaceInitialState(BaseModel):
         Reconstruct SurfaceInitialState from a DataFrame state format.
 
         Args:
-            df (pd.DataFrame): DataFrame containing surface initial state parameters.
+            df (pd.DataFrame): DataFrame containing surface state parameters.
             grid_id (int): Grid ID for the DataFrame index.
             surf_idx (int): Surface index for identifying columns.
 
         Returns:
             SurfaceInitialState: Instance of SurfaceInitialState.
         """
-        state = df.loc[grid_id, ("state", f"({surf_idx},)")]
-        soilstore = df.loc[grid_id, ("soilstore_id", f"({surf_idx},)")]
+        # Base surface state parameters
+        state = df.loc[grid_id, ("state_surf", f"({surf_idx},)")]
+        soilstore = df.loc[grid_id, ("soilstore_surf", f"({surf_idx},)")]
+
+        # Snow/ice parameters
         snowfrac = df.loc[grid_id, ("snowfrac", f"({surf_idx},)")]
         snowpack = df.loc[grid_id, ("snowpack", f"({surf_idx},)")]
         icefrac = df.loc[grid_id, ("icefrac", f"({surf_idx},)")]
         snowwater = df.loc[grid_id, ("snowwater", f"({surf_idx},)")]
         snowdens = df.loc[grid_id, ("snowdens", f"({surf_idx},)")]
 
-        temperature = [df.loc[grid_id, ("t", f"({surf_idx},{i})")] for i in range(5)]
-        tsfc = df.loc[grid_id, ("tsfc", f"({surf_idx},)")]
-        tin = df.loc[grid_id, ("tin", f"({surf_idx},)")]
+        # Temperature parameters
+        temperature = [
+            df.loc[grid_id, ("temp_surf", f"({surf_idx}, {i})")] for i in range(5)
+        ]
+
+        # Exterior and interior surface temperature
+        tsfc = df.loc[grid_id, ("tsfc_surf", f"({surf_idx},)")]
+        tin = df.loc[grid_id, ("tin_surf", f"({surf_idx},)")]
 
         return cls(
             state=state,
@@ -228,7 +236,6 @@ class SurfaceInitialState(BaseModel):
             tsfc=tsfc,
             tin=tin,
         )
-
 
 class InitialStatePaved(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED

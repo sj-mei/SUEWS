@@ -64,14 +64,14 @@ def test_df_state_to_class(cls: type, ref_df: pd.DataFrame):
         "Conductance",
         "OHMCoefficients",
         "OHM_Coefficient_season_wetness",
-        # "SurfaceInitialState",
-        # "VegetatedSurfaceInitialState",
+        "SurfaceInitialState",
+        "VegetatedSurfaceInitialState",
         "DeciduousTreeSurfaceInitialState",
         # "InitialStates",
         "ModelPhysics",
         "IrrigationParams",
         "SnowParams",
-        "BsoilProperties",
+        # "BsoilProperties",
         "SnowAlb",
     ]:
         print(f"Skipping {cls.__name__} for now...")
