@@ -800,6 +800,7 @@ class WaterDistribution(BaseModel):
 
         # If surface type is provided, use its default distribution
         # surface_type = data.get('_surface_type')
+        import pdb; pdb.set_trace()
         if surface_type and surface_type in default_distributions:
             # Merge provided data with defaults, prioritising provided data
             merged_data = {**default_distributions[surface_type]}
@@ -949,6 +950,44 @@ class WaterDistribution(BaseModel):
         )
 
         return df
+    
+    @classmethod
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "WaterDistribution":
+        """
+        Reconstruct WaterDistribution from a DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing water distribution parameters.
+            grid_id (int): Grid ID for the DataFrame index.
+            surf_idx (int): Surface index for identifying columns.
+
+        Returns:
+            WaterDistribution: Instance of WaterDistribution.
+        """
+        # Define the parameter names and their indices
+        param_map = {
+            "to_paved": 0,
+            "to_bldgs": 1,
+            "to_evetr": 2,
+            "to_dectr": 3,
+            "to_grass": 4,
+            "to_bsoil": 5,
+            "to_water": 6,
+            # "to_soilstore": 7,
+            # "to_runoff": 8,
+        }
+
+        # Extract the values from the DataFrame
+        params = {
+            param: df.loc[grid_id, ("waterdist", f"({idx}, {surf_idx})")]
+            for param, idx in param_map.items()
+        }
+
+        # Create an instance using the extracted parameters
+        import pdb; pdb.set_trace()
+        return cls(**params)
 
 
 class StorageDrainParams(BaseModel):
