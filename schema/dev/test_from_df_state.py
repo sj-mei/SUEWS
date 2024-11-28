@@ -10,6 +10,7 @@ from def_config_suews import (
     # ... other existing imports
 )
 
+
 def load_df_state() -> pd.DataFrame:
     """Load the reference DataFrame from df_state.pkl"""
     # Try different possible locations
@@ -31,6 +32,7 @@ def load_df_state() -> pd.DataFrame:
 
     print("Error: df_state.pkl not found in any of these locations:", possible_paths)
     sys.exit(1)
+
 
 def get_all_classes_with_from_df_state() -> List[type]:
     """Get all classes that have from_df_state method"""
@@ -105,13 +107,21 @@ def test_df_state_to_class(cls: type, ref_df: pd.DataFrame):
         elif isinstance(instance, SurfaceInitialState):
             class_instance = instance.from_df_state(ref_df, grid_id, 0)
         elif isinstance(instance, DayProfile):
-            class_instance = instance.from_df_state(ref_df, grid_id, param_name="ah_min")
+            class_instance = instance.from_df_state(
+                ref_df, grid_id, param_name="ah_min"
+            )
         elif isinstance(instance, HourlyProfile):
-            class_instance = instance.from_df_state(ref_df, grid_id, param_name="ahprof_24hr")
+            class_instance = instance.from_df_state(
+                ref_df, grid_id, param_name="ahprof_24hr"
+            )
         elif isinstance(instance, WeeklyProfile):
-            class_instance = instance.from_df_state(ref_df, grid_id, param_name="daywatper")
+            class_instance = instance.from_df_state(
+                ref_df, grid_id, param_name="daywatper"
+            )
         elif isinstance(instance, ThermalLayers):
-            class_instance = instance.from_df_state(ref_df, grid_id, 0, surf_type="roof")
+            class_instance = instance.from_df_state(
+                ref_df, grid_id, 0, surf_type="roof"
+            )
         else:
             class_instance = instance.from_df_state(ref_df, grid_id)
     except Exception as e:
@@ -126,22 +136,101 @@ def test_df_state_to_class(cls: type, ref_df: pd.DataFrame):
         if key not in class_values:
             print(f"Error: {cls.__name__} missing attribute {key}")
             raise ValueError(f"{cls.__name__} missing attribute {key}")
-    print(f"{cls.__name__} successfully created from DataFrame and keys match expected instance")
+    print(
+        f"{cls.__name__} successfully created from DataFrame and keys match expected instance"
+    )
 
-    # for key, value in expected_values.items():
-    #     if not np.allclose(value, class_values[key]):
-    #         print(f"Error: {cls.__name__} attribute {key} does not match expected")
-    #         raise ValueError(f"{cls.__name__} attribute {key} does not match expected")
-    
+
+def test_suews_config_roundtrip():
+    """Test SUEWSConfig to_df_state and from_df_state roundtrip conversion"""
+    try:
+        print("\nTesting SUEWSConfig roundtrip conversion")
+
+        # Create a SUEWSConfig instance with multiple sites
+        config = SUEWSConfig(
+            name="test config",
+            description="test configuration for roundtrip testing",
+            site=[Site(), Site()]  # Create two sites
+        )
+
+        # Convert to DataFrame state
+        print("Converting to DataFrame state...")
+        df_state = config.to_df_state()
+        print(f"DataFrame has {len(df_state.columns)} columns and {len(df_state.index)} rows")
+
+        # Save DataFrame state for inspection if needed
+        df_state.to_pickle("../df_state_test.pkl")
+        print("Saved DataFrame state to ../df_state_test.pkl")
+
+        # Convert back to SUEWSConfig
+        print("Converting back to SUEWSConfig...")
+        config_reconstructed = SUEWSConfig.from_df_state(df_state)
+
+        # Compare the configurations
+        print("\nComparing configurations:")
+        print(f"Original sites: {len(config.site)}")
+        print(f"Reconstructed sites: {len(config_reconstructed.site)}")
+
+        if len(config.site) != len(config_reconstructed.site):
+            print("ERROR: Number of sites does not match!")
+            return False
+
+        # Compare model physics parameters for each site
+        for i, (orig_site, recon_site) in enumerate(zip(config.site, config_reconstructed.site)):
+            print(f"\nSite {i}:")
+
+            # Compare model physics
+            orig_physics = orig_site.model_physics
+            recon_physics = recon_site.model_physics
+            print("Model Physics:")
+            differences = []
+            for attr in dir(orig_physics):
+                if not attr.startswith('_') and not callable(getattr(orig_physics, attr)):
+                    orig_val = getattr(orig_physics, attr)
+                    recon_val = getattr(recon_physics, attr)
+                    if orig_val != recon_val:
+                        differences.append(f"  {attr}: {orig_val} -> {recon_val}")
+
+            if differences:
+                print("Differences found in Model Physics:")
+                for diff in differences:
+                    print(diff)
+            else:
+                print("  All model physics parameters match")
+
+            # Compare LUMPS parameters
+            orig_lumps = orig_site.lumps_params
+            recon_lumps = recon_site.lumps_params
+            print("\nLUMPS Parameters:")
+            differences = []
+            for attr in dir(orig_lumps):
+                if not attr.startswith('_') and not callable(getattr(orig_lumps, attr)):
+                    orig_val = getattr(orig_lumps, attr)
+                    recon_val = getattr(recon_lumps, attr)
+                    if orig_val != recon_val:
+                        differences.append(f"  {attr}: {orig_val} -> {recon_val}")
+
+            if differences:
+                print("Differences found in LUMPS Parameters:")
+                for diff in differences:
+                    print(diff)
+            else:
+                print("  All LUMPS parameters match")
+
+        print("\nRoundtrip conversion completed successfully")
+        return True
+
+    except Exception as e:
+        print(f"Error during test: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 
 def main():
     # Load initial df_state file
     ref_df = load_df_state()
-    print(f"Initital df_state has {len(ref_df.columns)} columns")
-
-    # Load reference Yaml
-    # with open('./config-suews.yml', 'r') as file:
+    print(f"Initial df_state has {len(ref_df.columns)} columns")
 
     # Get all classes with to_df_state
     classes = get_all_classes_with_from_df_state()
@@ -153,6 +242,14 @@ def main():
     # Test each class
     for cls in classes:
         test_df_state_to_class(cls, ref_df)
+
+    # Run the roundtrip test
+    print("\nRunning SUEWSConfig roundtrip test...")
+    success = test_suews_config_roundtrip()
+    if not success:
+        print("\nSUEWSConfig roundtrip test failed!")
+        sys.exit(1)
+    print("\nSUEWSConfig roundtrip test passed!")
 
 
 if __name__ == "__main__":

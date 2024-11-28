@@ -463,50 +463,6 @@ class InitialStates(BaseModel):
         description="Initial states for wall layers",
     )
 
-    # @model_validator(mode="before")
-    # @classmethod
-    # def set_surface_types(cls, data: Dict) -> Dict:
-    #     """Set surface types for all surfaces before validation"""
-    #     # Create instances if they don't exist
-    #     if "paved" not in data:
-    #         data["paved"] = InitialStatePaved()
-    #     elif isinstance(data["paved"], dict):
-    #         data["paved"] = InitialStatePaved(**data["paved"])
-
-    #     if "bldgs" not in data:
-    #         data["bldgs"] = InitialStateBldgs()
-    #     elif isinstance(data["bldgs"], dict):
-    #         data["bldgs"] = InitialStateBldgs(**data["bldgs"])
-
-    #     # Handle basic surface types
-    #     for surface_type in ["bsoil", "water"]:
-    #         if surface_type not in data:
-    #             data[surface_type] = SurfaceInitialState()
-    #         if isinstance(data[surface_type], dict):
-    #             data[surface_type] = SurfaceInitialState(**data[surface_type])
-    #         data[surface_type].set_surface_type(SurfaceType(surface_type))
-
-    #     # Handle vegetated surfaces
-    #     if "evetr" not in data:
-    #         data["evetr"] = VegInitialState()
-    #     if isinstance(data["evetr"], dict):
-    #         data["evetr"] = VegInitialState(**data["evetr"])
-    #     data["evetr"].set_surface_type(SurfaceType.EVETR)
-
-    #     if "dectr" not in data:
-    #         data["dectr"] = InitialStateDectr()
-    #     if isinstance(data["dectr"], dict):
-    #         data["dectr"] = InitialStateDectr(**data["dectr"])
-    #     data["dectr"].set_surface_type(SurfaceType.DECTR)
-
-    #     if "grass" not in data:
-    #         data["grass"] = VegInitialState()
-    #     if isinstance(data["grass"], dict):
-    #         data["grass"] = VegInitialState(**data["grass"])
-    #     data["grass"].set_surface_type(SurfaceType.GRASS)
-
-    #     return data
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
         df_state = init_df_state(grid_id)
@@ -1319,14 +1275,15 @@ class SurfaceProperties(BaseModel):
         df_final = pd.concat(dfs, axis=1).sort_index(axis=1)
         return df_final
 
-    def from_df_state(self, df: pd.DataFrame, grid_id: int) -> "SurfaceProperties":
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "SurfaceProperties":
         """Reconstruct surface properties from DataFrame state format."""
 
         # Get surface index
-        surf_idx = self.get_surface_index()
+        surf_idx = cls.get_surface_index()
 
         # Get surface name
-        surf_name = self.get_surface_name()
+        surf_name = cls.get_surface_name()
 
         # Get all properties of this class using introspection
         properties = [
@@ -1362,32 +1319,32 @@ class SurfaceProperties(BaseModel):
                 "ohm_coef",
                 "lai",
             ]:
-                nested_obj = getattr(self, property)
+                nested_obj = getattr(cls, property)
                 if nested_obj is not None and hasattr(nested_obj, "from_df_state"):
                     setattr(
-                        self, property, nested_obj.from_df_state(df, grid_id, surf_idx)
+                        cls, property, nested_obj.from_df_state(df, grid_id, surf_idx)
                     )
                 continue
             elif property == "thermal_layers":
                 setattr(
-                    self,
+                    cls,
                     property,
-                    self.thermal_layers.from_df_state(df, grid_id, surf_idx, surf_name),
+                    cls.thermal_layers.from_df_state(df, grid_id, surf_idx, surf_name),
                 )
             elif property == "irrfrac":
                 setattr(
-                    self, property, df.loc[grid_id, (f"{property}{surf_name}", "0")]
+                    cls, property, df.loc[grid_id, (f"{property}{surf_name}", "0")]
                 )
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
                 setattr(
-                    self,
+                    cls,
                     property,
                     df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")],
                 )
             else:
-                setattr(self, property, df.loc[grid_id, (property, f"({surf_idx},)")])
+                setattr(cls, property, df.loc[grid_id, (property, f"({surf_idx},)")])
 
-        return self
+        return cls
 
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
@@ -1572,16 +1529,12 @@ class BuildingLayer(BaseModel):
         # Extract optional parameters
         if facet_type == "roof":
             params["roof_albedo_dir_mult_fact"] = df.loc[
-                grid_id, (f"roof_albedo_dir_mult_fact", f"(0, {layer_idx})")
-            ]
+                grid_id, (f"roof_albedo_dir_mult_fact", f"(0, {layer_idx})")]
             params["wall_specular_frac"] = None  # Explicitly set to None for clarity
         elif facet_type == "wall":
             params["wall_specular_frac"] = df.loc[
-                grid_id, (f"wall_specular_frac", f"(0, {layer_idx})")
-            ]
-            params["roof_albedo_dir_mult_fact"] = (
-                None  # Explicitly set to None for clarity
-            )
+                grid_id, (f"wall_specular_frac", f"(0, {layer_idx})")]
+            params["roof_albedo_dir_mult_fact"] = None  # Explicitly set to None for clarity
 
         # Extract ThermalLayers
         thermal_layers = ThermalLayers.from_df_state(df, grid_id, layer_idx, facet_type)
@@ -1718,11 +1671,9 @@ class VerticalLayers(BaseModel):
         veg_frac = [df.loc[grid_id, ("veg_frac", f"({i},)")] for i in range(nlayer)]
         veg_scale = [df.loc[grid_id, ("veg_scale", f"({i},)")] for i in range(nlayer)]
         building_frac = [
-            df.loc[grid_id, ("building_frac", f"({i},)")] for i in range(nlayer)
-        ]
+            df.loc[grid_id, ("building_frac", f"({i},)")] for i in range(nlayer)]
         building_scale = [
-            df.loc[grid_id, ("building_scale", f"({i},)")] for i in range(nlayer)
-        ]
+            df.loc[grid_id, ("building_scale", f"({i},)")] for i in range(nlayer)]
 
         # Reconstruct roof and wall properties for each layer
         roofs = [RoofLayer.from_df_state(df, grid_id, i, "roof") for i in range(nlayer)]
@@ -2137,6 +2088,7 @@ class SPARTACUSParams(BaseModel):
     #                 df_state[(attr, "0")] = value
 
     #     return df_state
+
 
 
 class DayProfile(BaseModel):
@@ -3498,6 +3450,31 @@ class LandCover(BaseModel):
         df_state = pd.concat(list_df_state, axis=1)
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "LandCover":
+        """Reconstruct LandCover instance from DataFrame state.
+
+        Args:
+            df: DataFrame containing land cover parameters
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            LandCover: Reconstructed LandCover instance
+        """
+        # Reconstruct each surface type from the DataFrame
+        params = {
+            "paved": PavedProperties.from_df_state(df, grid_id),
+            "bldgs": BldgsProperties.from_df_state(df, grid_id),
+            "dectr": DectrProperties.from_df_state(df, grid_id),
+            "evetr": EvetrProperties.from_df_state(df, grid_id),
+            "grass": GrassProperties.from_df_state(df, grid_id),
+            "bsoil": BsoilProperties.from_df_state(df, grid_id),
+            "water": WaterProperties.from_df_state(df, grid_id)
+        }
+
+        # Return reconstructed instance
+        return cls(**params)
+
 
 class SiteProperties(BaseModel):
     lat: float = Field(
@@ -3614,6 +3591,46 @@ class SiteProperties(BaseModel):
         )
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "SiteProperties":
+        """Reconstruct SiteProperties from DataFrame state format.
+
+        Args:
+            df: DataFrame containing site properties
+            grid_id: Grid ID for the DataFrame index
+
+        Returns:
+            SiteProperties: Reconstructed instance
+        """
+        # Extract simple attributes
+        params = {}
+        for var in [
+            "lat",
+            "lng",
+            "alt",
+            "timezone",
+            "surfacearea",
+            "z",
+            "z0m_in",
+            "zdm_in",
+            "pipecapacity",
+            "runofftowater",
+            "narp_trans_site",
+        ]:
+            params[var] = df.loc[grid_id, (var, "0")]
+
+        # Extract complex attributes
+        params["lumps"] = LUMPSParams.from_df_state(df, grid_id)
+        params["spartacus"] = SPARTACUSParams.from_df_state(df, grid_id)
+        params["conductance"] = Conductance.from_df_state(df, grid_id)
+        params["irrigation"] = IrrigationParams.from_df_state(df, grid_id)
+        params["anthropogenic_emissions"] = AnthropogenicEmissions.from_df_state(df, grid_id)
+        params["snow"] = SnowParams.from_df_state(df, grid_id)
+        params["land_cover"] = LandCover.from_df_state(df, grid_id)
+        params["vertical_layers"] = VerticalLayers.from_df_state(df, grid_id)
+
+        return cls(**params)
+
 
 class Site(BaseModel):
     name: str = Field(description="Name of the site", default="test site")
@@ -3708,6 +3725,51 @@ class SUEWSConfig(BaseModel):
 
     @classmethod
     def from_df_state(cls, df: pd.DataFrame) -> "SUEWSConfig":
-        """Create config from DataFrame state"""
-        # TODO: add from_df_state
-        pass
+        """Create config from DataFrame state format.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing SUEWS configuration state.
+
+        Returns:
+            SUEWSConfig: Instance of SUEWSConfig reconstructed from DataFrame.
+        """
+        # Initialize with default values
+        config = cls()
+
+        # Get grid IDs from DataFrame index
+        grid_ids = df.index.tolist()
+
+        # Create list of sites
+        sites = []
+        for grid_id in grid_ids:
+            # Create site instance
+            site = Site(gridiv=grid_id)
+
+            # Set site properties
+            site_properties = SiteProperties.from_df_state(df, grid_id)
+            site.properties = site_properties
+
+            # Set initial states
+            initial_states = InitialStates.from_df_state(df, grid_id)
+            site.initial_states = initial_states
+
+            sites.append(site)
+
+        # Update config with reconstructed data
+        config.site = sites
+
+        # Reconstruct model
+        model = Model()
+        for grid_id in grid_ids:
+            # Set model control
+            model_control = ModelControl.from_df_state(df, grid_id)
+            model.control = model_control
+
+            # Set model physics
+            model_physics = ModelPhysics.from_df_state(df, grid_id)
+            model.physics = model_physics
+            break  # Only need one as model is shared across sites
+
+        config.model = model
+
+        return config
