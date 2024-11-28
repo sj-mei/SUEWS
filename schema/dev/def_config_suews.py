@@ -209,11 +209,18 @@ class SurfaceInitialState(BaseModel):
         soilstore = df.loc[grid_id, (f"soilstore_{str_type}", f"({surf_idx},)")]
 
         # Snow/ice parameters
-        snowfrac = df.loc[grid_id, (f"snowfrac", f"({surf_idx},)")]
-        snowpack = df.loc[grid_id, (f"snowpack", f"({surf_idx},)")]
-        icefrac = df.loc[grid_id, (f"icefrac", f"({surf_idx},)")]
-        snowwater = df.loc[grid_id, (f"snowwater", f"({surf_idx},)")]
-        snowdens = df.loc[grid_id, (f"snowdens", f"({surf_idx},)")]
+        if str_type not in ["roof", "wall"]:
+            snowfrac = df.loc[grid_id, (f"snowfrac", f"({surf_idx},)")]
+            snowpack = df.loc[grid_id, (f"snowpack", f"({surf_idx},)")]
+            icefrac = df.loc[grid_id, (f"icefrac", f"({surf_idx},)")]
+            snowwater = df.loc[grid_id, (f"snowwater", f"({surf_idx},)")]
+            snowdens = df.loc[grid_id, (f"snowdens", f"({surf_idx},)")]
+        else:
+            snowfrac = None
+            snowpack = None
+            icefrac = None
+            snowwater = None
+            snowdens = None
 
         # Temperature parameters
         temperature = [
@@ -516,7 +523,7 @@ class InitialStates(BaseModel):
         ],
         description="Initial states for wall layers",
     )
-
+    import pdb; pdb.set_trace()
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
         df_state = init_df_state(grid_id)
