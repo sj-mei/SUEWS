@@ -191,7 +191,7 @@ class SurfaceInitialState(BaseModel):
 
     @classmethod
     def from_df_state(
-        cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "SurfaceInitialState":
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int, str_type: str = "surf") -> "SurfaceInitialState":
         """
         Reconstruct SurfaceInitialState from a DataFrame state format.
 
@@ -205,24 +205,24 @@ class SurfaceInitialState(BaseModel):
             SurfaceInitialState: Instance of SurfaceInitialState.
         """
         # Base surface state parameters
-        state = df.loc[grid_id, ("state_surf", f"({surf_idx},)")]
-        soilstore = df.loc[grid_id, ("soilstore_surf", f"({surf_idx},)")]
+        state = df.loc[grid_id, (f"state_{str_type}", f"({surf_idx},)")]
+        soilstore = df.loc[grid_id, (f"soilstore_{str_type}", f"({surf_idx},)")]
 
         # Snow/ice parameters
-        snowfrac = df.loc[grid_id, ("snowfrac", f"({surf_idx},)")]
-        snowpack = df.loc[grid_id, ("snowpack", f"({surf_idx},)")]
-        icefrac = df.loc[grid_id, ("icefrac", f"({surf_idx},)")]
-        snowwater = df.loc[grid_id, ("snowwater", f"({surf_idx},)")]
-        snowdens = df.loc[grid_id, ("snowdens", f"({surf_idx},)")]
+        snowfrac = df.loc[grid_id, (f"snowfrac", f"({surf_idx},)")]
+        snowpack = df.loc[grid_id, (f"snowpack", f"({surf_idx},)")]
+        icefrac = df.loc[grid_id, (f"icefrac", f"({surf_idx},)")]
+        snowwater = df.loc[grid_id, (f"snowwater", f"({surf_idx},)")]
+        snowdens = df.loc[grid_id, (f"snowdens", f"({surf_idx},)")]
 
         # Temperature parameters
         temperature = [
-            df.loc[grid_id, ("temp_surf", f"({surf_idx}, {i})")] for i in range(5)
+            df.loc[grid_id, (f"temp_{str_type}", f"({surf_idx}, {i})")] for i in range(5)
         ]
 
         # Exterior and interior surface temperature
-        tsfc = df.loc[grid_id, ("tsfc_surf", f"({surf_idx},)")]
-        tin = df.loc[grid_id, ("tin_surf", f"({surf_idx},)")]
+        tsfc = df.loc[grid_id, (f"tsfc_{str_type}", f"({surf_idx},)")]
+        tin = df.loc[grid_id, (f"tin_{str_type}", f"({surf_idx},)")]
 
         return cls(
             state=state,
@@ -570,7 +570,7 @@ class InitialStates(BaseModel):
             df_state[(f"hdd_id", f"({i},)")] = 0
             df_state = df_state.sort_index(axis=1)
         # Drop duplicate columns while preserving first occurrence
-        df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="first")]
+        df_state = df_state.loc[:, ~df_state.columns.duplicated(keep="firslayer_namet")]
 
         return df_state
 
@@ -611,7 +611,7 @@ class InitialStates(BaseModel):
             idx = 0
             while True:
                 try:
-                    layer = surface_class.from_df_state(df, grid_id, idx)
+                    layer = surface_class.from_df_state(df, grid_id, idx, layer_name)
                     layers.append(layer)
                     idx += 1
                 except KeyError:
