@@ -1969,6 +1969,19 @@ class ModelPhysics(BaseModel):
     localclimatemethod: int = Field(default=0, description="Method used for local climate zone calculations")
     snowuse: int = Field(default=0, description="Include snow calculations (1) or not (0)")
 
+    @model_validator(mode="after")
+    def check_storageheatmethod(self) -> "ModelPhysics":
+        if (self.storageheatmethod == 1 and self.ohmincqf != 0):
+                raise ValueError(
+                    f"StorageHeatMethod is set to {self.storageheatmethod} "
+                    f"and OhmIncQf is set to {self.ohmincqf}. You should switch to OhmIncQf=0."
+                )
+        elif (self.storageheatmethod == 2 and self.ohmincqf != 1):
+            raise ValueError(
+                f"StorageHeatMethod is set to {self.storageheatmethod} "
+                f"and OhmIncQf is set to {self.ohmincqf}. You should switch to OhmIncQf=1."
+            )
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model physics properties to DataFrame state format."""
         df_state = init_df_state(grid_id)
@@ -3794,10 +3807,9 @@ class SUEWSConfig(BaseModel):
     class Config:
         extra = "allow"
 
-    ## This interclass model_validator refers to min and max ranges for OHMCoefficients loaded from an Excel file
-    ## and first checks that storageheatmethod and ohmincqf are set correctly.
+    ## This model_validator refers to min and max ranges for OHMCoefficients loaded from an Excel file
     # @model_validator(mode="after")
-    # def validate_OHMCoef_and_storageheatmethod(self) -> "SUEWSConfig":
+    # def validate_OHMCoeff(self) -> "SUEWSConfig":
     #     if (self.model.physics.storageheatmethod == 1 and self.model.physics.ohmincqf == 0) or (
     #         self.model.physics.storageheatmethod == 2 and self.model.physics.ohmincqf == 1
     #     ):
@@ -3828,22 +3840,6 @@ class SUEWSConfig(BaseModel):
     #             print(
     #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} and "
     #                 f"OhmIncQf is set to {self.model.physics.ohmincqf}. All valid and checked."
-    #             )
-    #         else:
-    #             print(
-    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} and "
-    #                 f"OhmIncQf is set to {self.model.physics.ohmincqf}."
-    #             )
-    #     else:
-    #         if self.model.physics.storageheatmethod == 1 and self.model.physics.ohmincqf != 0:
-    #             raise ValueError(
-    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} "
-    #                 f"and OhmIncQf is set to {self.model.physics.ohmincqf}. You should input OhmIncQf=0."
-    #             )
-    #         elif self.model.physics.storageheatmethod == 2 and self.model.physics.ohmincqf != 1:
-    #             raise ValueError(
-    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} "
-    #                 f"and OhmIncQf is set to {self.model.physics.ohmincqf}. You should input OhmIncQf=1."
     #             )
     #     return self
 
