@@ -1825,16 +1825,14 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
 
     @model_validator(mode="after")
     def validate_rsl_zd_range(self) -> "BldgsProperties":
-        # Existing validation
         sfr_bldg_lower_limit = 0.18
         if self.sfr < sfr_bldg_lower_limit:
             if self.faibldg < 0.25 * (1 - self.sfr):
-                error_message = ValueError(
+                raise ValueError(
                     "The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
                     f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
                     "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
                 )
-                exceptions.append(error_message)
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -2220,28 +2218,6 @@ class SPARTACUSParams(BaseModel):
 
         return cls(**params)
 
-    # def to_df_state(self, grid_id: int) -> pd.DataFrame:
-    #     """Convert SPARTACUS parameters to DataFrame state format.
-
-    #     Args:
-    #         grid_id: Grid ID for the DataFrame index
-
-    #     Returns:
-    #         pd.DataFrame: DataFrame containing SPARTACUS parameters
-    #     """
-    #     df_state = init_df_state(grid_id)
-
-    #     # Add all attributes except private ones
-    #     for attr in dir(self):
-    #         if not attr.startswith("_") and not callable(getattr(self, attr)):
-    #             value = getattr(self, attr)
-    #             if not isinstance(value, (BaseModel, Enum)):
-    #                 df_state[(attr, "0")] = value
-
-    #     return df_state
-
-
-
 class DayProfile(BaseModel):
     working_day: float = Field(default=1.0)
     holiday: float = Field(default=0.0)
@@ -2431,13 +2407,10 @@ class HourlyProfile(BaseModel):
         for profile in [self.working_day, self.holiday]:
             hours = [int(h) for h in profile.keys()]
             if not all(1 <= h <= 24 for h in hours):
-                error_message = ValueError("Hour values must be between 1 and 24")
-                exceptions.append(error_message)
-                # raise ValueError("Hour values must be between 1 and 24")
+                raise ValueError("Hour values must be between 1 and 24")
             if sorted(hours) != list(range(1, 25)):
                 error_message = ValueError("Must have all hours from 1 to 24")
-                exceptions.append(error_message)
-                # raise ValueError("Must have all hours from 1 to 24")
+                raise ValueError("Must have all hours from 1 to 24")
         return self
 
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
@@ -3140,17 +3113,9 @@ class LAIParams(BaseModel):
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
         if self.laimin > self.laimax:
-            error_message = ValueError(
-                f"laimin ({self.laimin}) must be less than or equal to laimax ({self.laimax})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
+            raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
         if self.baset > self.gddfull:
-            error_message = ValueError(
-                f"baset ({self.baset}) must be less than gddfull ({self.gddfull})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
+            raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
         return self
 
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
@@ -3278,11 +3243,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
-            error_message = ValueError(
-                f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -3479,21 +3440,13 @@ class SnowParams(BaseModel):
     @model_validator(mode="after")
     def validate_crw_range(self) -> "SnowParams":
         if self.crwmin >= self.crwmax:
-            error_message = ValueError(
-                f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+            raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
         return self
 
     @model_validator(mode="after")
     def validate_snowalb_range(self) -> "SnowParams":
         if self.snowalbmin >= self.snowalbmax:
-            error_message = ValueError(
-                f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+            raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
