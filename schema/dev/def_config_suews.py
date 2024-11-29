@@ -84,7 +84,7 @@ class SnowAlb(BaseModel):
 
 
 class WaterUse(BaseModel):
-    wu_total: float = Field(ge=0, description="Total water use", default=0.0)
+    wu_total: float = Field(ge=0, description="Total water use", default=0.0) #Default set to 0.0 means no irrigation.
     wu_auto: float = Field(ge=0, description="Automatic water use", default=0.0)
     wu_manual: float = Field(ge=0, description="Manual water use", default=0.0)
 
@@ -119,11 +119,9 @@ class WaterUse(BaseModel):
 class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
-    state: float = Field(ge=0, description="Initial state of the surface", default=0.0)
+    state: float = Field(ge=0, description="Initial state of the surface", default=0.0) # Default set to 0.0 means dry surface.
     soilstore: float = Field(ge=0, description="Initial soil store", default=0.0)
-    snowfrac: Optional[float] = Field(
-        ge=0, le=1, description="Snow fraction", default=0.0
-    )
+    snowfrac: Optional[float] = Field(ge=0, le=1, description="Snow fraction", default=0.0) # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
     icefrac: Optional[float] = Field(
         ge=0, le=1, description="Ice fraction", default=0.0
