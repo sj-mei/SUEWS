@@ -120,7 +120,7 @@ class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
     state: float = Field(ge=0, description="Initial state of the surface", default=0.0) # Default set to 0.0 means dry surface.
-    soilstore: float = Field(ge=10, description="Initial soil store", default=150.0) # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
+    soilstore: float = Field(ge=10, description="Initial soil store (essential for QE)", default=150.0) # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
     snowfrac: Optional[float] = Field(ge=0, le=1, description="Snow fraction", default=0.0) # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
     icefrac: Optional[float] = Field(
@@ -267,9 +267,9 @@ class InitialStateBldgs(SurfaceInitialState):
 class VegInitialState(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
-    alb_id: float = Field(description="Initial albedo for vegetated surfaces", default=0.1)
-    lai_id: float = Field(description="Initial leaf area index", default=1.0)
-    gdd_id: float = Field(description="Growing degree days ID", default=0) #We need to check this and give info for setting values.
+    alb_id: float = Field(description="Initial albedo for vegetated surfaces (depends on time of year).", default=0.25)
+    lai_id: float = Field(description="Initial leaf area index (depends on time of year).", default=1.0)
+    gdd_id: float = Field(description="Growing degree days  on day 1 of model run ID", default=0) #We need to check this and give info for setting values.
     sdd_id: float = Field(description="Senescence degree days ID", default=0) #This need to be consistent with GDD.
     wu: WaterUse = Field(default_factory=WaterUse)
 
@@ -1826,7 +1826,7 @@ class VerticalLayers(BaseModel):
 class BldgsProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
     faibldg: float = Field(ge=0, default=0.3, description="Frontal area index of buildings")
-    bldgh: float = Field(ge=0, default=10.0, description="Building height") #We need to check if there is a building - and then this has to be greather than 0, accordingly.
+    bldgh: float = Field(ge=3, default=10.0, description="Building height") #We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
     )
@@ -1955,44 +1955,19 @@ class ModelControl(BaseModel):
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: int = Field(
-        default=3, description="Method used to calculate net radiation"
-    )
-    emissionsmethod: int = Field(
-        default=2, description="Method used to calculate anthropogenic emissions"
-    )
-    storageheatmethod: int = Field(
-        default=1, description="Method used to calculate storage heat flux"
-    )
-    ohmincqf: int = Field(
-        default=0,
-        description="Include anthropogenic heat in OHM calculations (1) or not (0)",
-    )
-    roughlenmommethod: int = Field(
-        default=2, description="Method used to calculate momentum roughness length"
-    )
-    roughlenheatmethod: int = Field(
-        default=2, description="Method used to calculate heat roughness length"
-    )
-    stabilitymethod: int = Field(
-        default=2, description="Method used for atmospheric stability calculation"
-    )
-    smdmethod: int = Field(
-        default=1, description="Method used to calculate soil moisture deficit"
-    )
-    waterusemethod: int = Field(
-        default=1, description="Method used to calculate water use"
-    )
+    netradiationmethod: int = Field(default=3, description="Method used to calculate net radiation")
+    emissionsmethod: int = Field(default=2, description="Method used to calculate anthropogenic emissions")
+    storageheatmethod: int = Field(default=1, description="Method used to calculate storage heat flux")
+    ohmincqf: int = Field(default=0,description="Include anthropogenic heat in OHM calculations (1) or not (0)")
+    roughlenmommethod: int = Field(default=2, description="Method used to calculate momentum roughness length")
+    roughlenheatmethod: int = Field(default=2, description="Method used to calculate heat roughness length")
+    stabilitymethod: int = Field(default=2, description="Method used for atmospheric stability calculation")
+    smdmethod: int = Field(default=1, description="Method used to calculate soil moisture deficit")
+    waterusemethod: int = Field(default=1, description="Method used to calculate water use")
     diagmethod: int = Field(default=1, description="Method used for model diagnostics")
-    faimethod: int = Field(
-        default=1, description="Method used to calculate frontal area index"
-    )
-    localclimatemethod: int = Field(
-        default=0, description="Method used for local climate zone calculations"
-    )
-    snowuse: int = Field(
-        default=0, description="Include snow calculations (1) or not (0)"
-    )
+    faimethod: int = Field(default=1, description="Method used to calculate frontal area index")
+    localclimatemethod: int = Field(default=0, description="Method used for local climate zone calculations")
+    snowuse: int = Field(default=0, description="Include snow calculations (1) or not (0)")
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model physics properties to DataFrame state format."""
