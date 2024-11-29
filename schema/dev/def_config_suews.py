@@ -459,7 +459,7 @@ class InitialStateGrass(VegInitialState):
         df_state = super().to_df_state(grid_id)
         df_state[("albgrass_id", "0")] = self.alb_id
         return df_state
-    
+
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "InitialStateGrass":
         """
@@ -950,7 +950,7 @@ class WaterDistribution(BaseModel):
         )
 
         return df
-    
+
     @classmethod
     def from_df_state(
         cls, df: pd.DataFrame, grid_id: int, surf_idx: int
@@ -966,6 +966,19 @@ class WaterDistribution(BaseModel):
         Returns:
             WaterDistribution: Instance of WaterDistribution.
         """
+        dict_surface_type = {
+            0: SurfaceType.PAVED,
+            1: SurfaceType.BLDGS,
+            2: SurfaceType.EVETR,
+            3: SurfaceType.DECTR,
+            4: SurfaceType.GRASS,
+            5: SurfaceType.BSOIL,
+            6: SurfaceType.WATER,
+        }
+        surface_type = dict_surface_type[surf_idx]
+        # initialize an instance of this class
+        instance = cls(surface_type=surface_type)
+
         # Define the parameter names and their indices
         param_map = {
             "to_paved": 0,
@@ -984,10 +997,18 @@ class WaterDistribution(BaseModel):
             param: df.loc[grid_id, ("waterdist", f"({idx}, {surf_idx})")]
             for param, idx in param_map.items()
         }
+        for param, value in params.items():
+            if getattr(instance, param) is not None:
+                setattr(instance, param, value)
 
-        # Create an instance using the extracted parameters
-        import pdb; pdb.set_trace()
-        return cls(**params)
+        # set the last to_soilstore or to_runoff
+        waterdist_last = df.loc[grid_id, ("waterdist", f"(7, {surf_idx})")]
+        if getattr(instance, "to_soilstore") is None:
+            setattr(instance, "to_runoff", waterdist_last)
+        else:
+            setattr(instance, "to_soilstore", waterdist_last)
+
+        return instance
 
 
 class StorageDrainParams(BaseModel):
@@ -1374,7 +1395,7 @@ class SurfaceProperties(BaseModel):
         """Reconstruct surface properties from DataFrame state format."""
 
         # Get surface name
-        surf_name = [ 
+        surf_name = [
             "paved",
             "bldgs",
             "evetr",
@@ -1404,7 +1425,7 @@ class SurfaceProperties(BaseModel):
             "thermal_layers",
             "irrfrac",
         ]
-        
+
         # drop 'surface_type' and model-specific properties (e.g. model_xx)
         properties = [
             p for p in properties if p != "surface_type" and not p.startswith("model_")
@@ -1437,7 +1458,6 @@ class SurfaceProperties(BaseModel):
             else:
                 property_values[property] = df.loc[grid_id, (property, f"({surf_idx},)")]
 
-        import pdb; pdb.set_trace()
         return cls(**property_values)
 
 
@@ -1529,6 +1549,13 @@ class PavedProperties(NonVegetatedSurfaceProperties):
         # Merge all DataFrames
         df_final = pd.concat(dfs, axis=1)
         return df_final
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "PavedProperties":
+        """Reconstruct paved surface properties from DataFrame state format."""
+        surf_idx = 0
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        return instance
 
 
 class BuildingLayer(BaseModel):
