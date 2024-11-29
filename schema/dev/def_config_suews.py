@@ -1651,11 +1651,11 @@ class BuildingLayer(BaseModel):
         if facet_type == "roof":
             params["roof_albedo_dir_mult_fact"] = df.loc[
                 grid_id, (f"roof_albedo_dir_mult_fact", f"(0, {layer_idx})")]
-            params["wall_specular_frac"] = None  # Explicitly set to None for clarity
+
         elif facet_type == "wall":
             params["wall_specular_frac"] = df.loc[
                 grid_id, (f"wall_specular_frac", f"(0, {layer_idx})")]
-            params["roof_albedo_dir_mult_fact"] = None  # Explicitly set to None for clarity
+
 
         # Extract ThermalLayers
         thermal_layers = ThermalLayers.from_df_state(df, grid_id, layer_idx, facet_type)
@@ -2097,7 +2097,6 @@ class LUMPSParams(BaseModel):
         for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
             params[attr] = df.loc[grid_id, (attr, "0")]
 
-        print(params)
 
         return cls(**params)
 
