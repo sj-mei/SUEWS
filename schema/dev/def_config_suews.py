@@ -2278,25 +2278,6 @@ class DayProfile(BaseModel):
 
         return cls(**params)
 
-    # # this need to be fixed!
-    # def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
-    #     """Convert day profile to DataFrame state format.
-
-    #     Args:
-    #         grid_id: Grid ID for the DataFrame index
-    #         param_name: Name of the parameter this profile belongs to
-
-    #     Returns:
-    #         pd.DataFrame: DataFrame containing day profile parameters
-    #     """
-    #     df_state = init_df_state(grid_id)
-
-    #     # Set values for working day and holiday
-    #     df_state[(f"{param_name}_wd", "0")] = self.working_day
-    #     df_state[(f"{param_name}_we", "0")] = self.holiday
-
-    #     return df_state
-
 
 class WeeklyProfile(BaseModel):
     monday: float = 0.0
