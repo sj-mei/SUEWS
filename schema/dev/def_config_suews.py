@@ -52,7 +52,7 @@ class SurfaceType(str, Enum):
 
 
 class SnowAlb(BaseModel):
-    snowalb: float = Field(ge=0, le=1, description="Snow albedo", default=0.5)
+    snowalb: float = Field(ge=0, le=1, description="Snow albedo", default=0.7)
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert snow albedo to DataFrame state format.
@@ -120,7 +120,7 @@ class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
     state: float = Field(ge=0, description="Initial state of the surface", default=0.0) # Default set to 0.0 means dry surface.
-    soilstore: float = Field(ge=0, description="Initial soil store", default=0.0)
+    soilstore: float = Field(ge=10, description="Initial soil store", default=150.0) # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
     snowfrac: Optional[float] = Field(ge=0, le=1, description="Snow fraction", default=0.0) # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
     icefrac: Optional[float] = Field(
@@ -133,13 +133,9 @@ class SurfaceInitialState(BaseModel):
         max_items=5,
         description="Initial temperature for each thermal layer",
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
-    )
-    tsfc: Optional[float] = Field(
-        description="Initial exterior surface temperature", default=15.0
-    )
-    tin: Optional[float] = Field(
-        description="Initial interior surface temperature", default=20.0
-    )
+    ) # We need to check/undestand what model are these temperatures related to. ESTM? 
+    tsfc: Optional[float] = Field(description="Initial exterior surface temperature", default=15.0) 
+    tin: Optional[float] = Field(description="Initial interior surface temperature", default=20.0) #We need to know which model is using this. 
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
@@ -271,12 +267,10 @@ class InitialStateBldgs(SurfaceInitialState):
 class VegInitialState(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
-    alb_id: float = Field(
-        description="Initial albedo for vegetated surfaces", default=0.1
-    )
+    alb_id: float = Field(description="Initial albedo for vegetated surfaces", default=0.1)
     lai_id: float = Field(description="Initial leaf area index", default=1.0)
-    gdd_id: float = Field(description="Growing degree days ID", default=0)
-    sdd_id: float = Field(description="Senescence degree days ID", default=0)
+    gdd_id: float = Field(description="Growing degree days ID", default=0) #We need to check this and give info for setting values.
+    sdd_id: float = Field(description="Senescence degree days ID", default=0) #This need to be consistent with GDD.
     wu: WaterUse = Field(default_factory=WaterUse)
 
     @model_validator(mode="after")
@@ -1831,10 +1825,8 @@ class VerticalLayers(BaseModel):
 
 class BldgsProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
-    faibldg: float = Field(
-        ge=0, default=0.3, description="Frontal area index of buildings"
-    )
-    bldgh: float = Field(ge=0, default=10.0, description="Building height")
+    faibldg: float = Field(ge=0, default=0.3, description="Frontal area index of buildings")
+    bldgh: float = Field(ge=0, default=10.0, description="Building height") #We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
     )
