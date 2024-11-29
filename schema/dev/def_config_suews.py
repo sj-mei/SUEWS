@@ -133,7 +133,7 @@ class SurfaceInitialState(BaseModel):
         max_items=5,
         description="Initial temperature for each thermal layer",
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
-    ) # We need to check/undestand what model are these temperatures related to. ESTM? 
+    ) # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
     tsfc: Optional[float] = Field(description="Initial exterior surface temperature", default=15.0) 
     tin: Optional[float] = Field(description="Initial interior surface temperature", default=20.0) #We need to know which model is using this. 
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
