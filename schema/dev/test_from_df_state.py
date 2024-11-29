@@ -150,13 +150,15 @@ def test_suews_config_roundtrip():
         config = SUEWSConfig(
             name="test config",
             description="test configuration for roundtrip testing",
-            site=[Site(), Site()]  # Create two sites
+            site=[Site(), Site()],  # Create two sites
         )
 
         # Convert to DataFrame state
         print("Converting to DataFrame state...")
         df_state = config.to_df_state()
-        print(f"DataFrame has {len(df_state.columns)} columns and {len(df_state.index)} rows")
+        print(
+            f"DataFrame has {len(df_state.columns)} columns and {len(df_state.index)} rows"
+        )
 
         # Save DataFrame state for inspection if needed
         df_state.to_pickle("../df_state_test.pkl")
@@ -176,46 +178,48 @@ def test_suews_config_roundtrip():
             return False
 
         # Compare model physics parameters for each site
-        for i, (orig_site, recon_site) in enumerate(zip(config.site, config_reconstructed.site)):
+        for i, (orig_site, recon_site) in enumerate(
+            zip(config.site, config_reconstructed.site)
+        ):
             print(f"\nSite {i}:")
 
-            # Compare model physics
-            orig_physics = orig_site.model_physics
-            recon_physics = recon_site.model_physics
-            print("Model Physics:")
+            # Compare properties
+            orig_properties = orig_site.properties
+            recon_properties = recon_site.properties
+            print("Properties:")
+
+            # Get all attributes excluding magic methods and callables
+            attrs = [
+                attr
+                for attr in dir(orig_properties)
+                if not attr.startswith(("_", "model_"))
+                and not callable(getattr(orig_properties, attr))
+            ]
+
             differences = []
-            for attr in dir(orig_physics):
-                if not attr.startswith('_') and not callable(getattr(orig_physics, attr)):
-                    orig_val = getattr(orig_physics, attr)
-                    recon_val = getattr(recon_physics, attr)
-                    if orig_val != recon_val:
-                        differences.append(f"  {attr}: {orig_val} -> {recon_val}")
+            for attr in attrs:
+                orig_val = getattr(orig_properties, attr)
+                recon_val = getattr(recon_properties, attr)
+
+                # Handle numpy arrays and other sequence types
+                if isinstance(orig_val, (np.ndarray, list, tuple)):
+                    are_equal = np.array_equal(np.array(orig_val), np.array(recon_val))
+                else:
+                    are_equal = orig_val == recon_val
+
+                if not are_equal:
+                    differences.append(
+                        {"attr": attr, "original": orig_val, "reconstructed": recon_val}
+                    )
+                    print(f"  {attr}:")
+                    print(f"    Original: {orig_val}")
+                    print(f"    Reconstructed: {recon_val}")
 
             if differences:
-                print("Differences found in Model Physics:")
-                for diff in differences:
-                    print(diff)
+                print(f"\nFound {len(differences)} differences in properties")
+                return False
             else:
-                print("  All model physics parameters match")
-
-            # Compare LUMPS parameters
-            orig_lumps = orig_site.lumps_params
-            recon_lumps = recon_site.lumps_params
-            print("\nLUMPS Parameters:")
-            differences = []
-            for attr in dir(orig_lumps):
-                if not attr.startswith('_') and not callable(getattr(orig_lumps, attr)):
-                    orig_val = getattr(orig_lumps, attr)
-                    recon_val = getattr(recon_lumps, attr)
-                    if orig_val != recon_val:
-                        differences.append(f"  {attr}: {orig_val} -> {recon_val}")
-
-            if differences:
-                print("Differences found in LUMPS Parameters:")
-                for diff in differences:
-                    print(diff)
-            else:
-                print("  All LUMPS parameters match")
+                print("All properties match exactly")
 
         print("\nRoundtrip conversion completed successfully")
         return True
@@ -223,6 +227,7 @@ def test_suews_config_roundtrip():
     except Exception as e:
         print(f"Error during test: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return False
 

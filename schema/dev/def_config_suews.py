@@ -1939,6 +1939,14 @@ class ModelControl(BaseModel):
             set_df_value(attr, getattr(self, attr))
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "ModelControl":
+        """Reconstruct model control properties from DataFrame state format."""
+        instance = cls()
+        for attr in ["tstep", "diagnose"]:
+            setattr(instance, attr, df.loc[grid_id, (attr, "0")])
+        return instance
+
 
 class ModelPhysics(BaseModel):
     netradiationmethod: int = Field(
@@ -2088,6 +2096,8 @@ class LUMPSParams(BaseModel):
         params = {}
         for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
             params[attr] = df.loc[grid_id, (attr, "0")]
+
+        print(params)
 
         return cls(**params)
 
@@ -3882,7 +3892,7 @@ class SUEWSConfig(BaseModel):
             df_site = pd.concat([df_site, df_model], axis=1)
             list_df_site.append(df_site)
 
-        df = pd.concat(list_df_site, axis=1)
+        df = pd.concat(list_df_site, axis=0)
         # remove duplicate columns
         df = df.loc[:, ~df.columns.duplicated()]
         return df
