@@ -1981,6 +1981,16 @@ class ModelPhysics(BaseModel):
                 f"StorageHeatMethod is set to {self.storageheatmethod} "
                 f"and OhmIncQf is set to {self.ohmincqf}. You should switch to OhmIncQf=1."
             )
+        return self
+        
+    @model_validator(mode="after")
+    def check_snowusemethod(self) -> "ModelPhysics":
+        if (self.snowuse == 1):
+                raise ValueError(
+                    f"SnowUse is set to {self.storageheatmethod}. "
+                    f"You should switch to SnowUse=0."
+                )
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model physics properties to DataFrame state format."""
