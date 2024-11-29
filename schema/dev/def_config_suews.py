@@ -1972,14 +1972,14 @@ class ModelPhysics(BaseModel):
     @model_validator(mode="after")
     def check_storageheatmethod(self) -> "ModelPhysics":
         if (self.storageheatmethod == 1 and self.ohmincqf != 0):
-                raise ValueError(
-                    f"StorageHeatMethod is set to {self.storageheatmethod} "
-                    f"and OhmIncQf is set to {self.ohmincqf}. You should switch to OhmIncQf=0."
-                )
+            raise ValueError(
+                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n" 
+                f"You should switch to OhmIncQf=0.\n"
+            )
         elif (self.storageheatmethod == 2 and self.ohmincqf != 1):
             raise ValueError(
-                f"StorageHeatMethod is set to {self.storageheatmethod} "
-                f"and OhmIncQf is set to {self.ohmincqf}. You should switch to OhmIncQf=1."
+                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
+                f"You should switch to OhmIncQf=1.\n"
             )
         return self
         
@@ -1987,10 +1987,25 @@ class ModelPhysics(BaseModel):
     def check_snowusemethod(self) -> "ModelPhysics":
         if (self.snowuse == 1):
                 raise ValueError(
-                    f"SnowUse is set to {self.storageheatmethod}. "
-                    f"You should switch to SnowUse=0."
+                    f"\nSnowUse is set to {self.snowuse}.\n"
+                    f"There are no checks implemented for this case (snow calculations included in the run).\n"
+                    f"You should switch to SnowUse=0.\n"
                 )
         return self
+    # We then need to set to 0 (or None) all the snow-related parameters or rules
+    # in the code and return them accordingly in the yml file.
+    
+    @model_validator(mode="after")
+    def check_emissionsmethod(self) -> "ModelPhysics":
+        if (self.emissionsmethod == 45):
+                raise ValueError(
+                    f"\nEmissionsMethod is set to {self.emissionsmethod}.\n"
+                    f"There are no checks implemented for this case (CO2 calculations included in the run).\n"
+                    f"You should switch to EmissionsMethod=0, 1, 2, 3, or 4.\n"
+                )
+        return self
+    # We then need to set to 0 (or None) all the CO2-related parameters or rules
+    # in the code and return them accordingly in the yml file.
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model physics properties to DataFrame state format."""
