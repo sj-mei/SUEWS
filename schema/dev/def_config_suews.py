@@ -3373,8 +3373,8 @@ class DectrProperties(VegetatedSurfaceProperties):
         default=0.1, description="Frontal area index of deciduous trees"
     )
     dectreeh: float = Field(default=15.0, description="Deciduous tree height")
-    pormin_dec: float = Field(default=0.2, description="Minimum porosity")
-    pormax_dec: float = Field(default=0.6, description="Maximum porosity")
+    pormin_dec: float = Field(ge=0.1, le=0.9, default=0.2, description="Minimum porosity") #pormin_dec cannot be less than 0.1 and greater than 0.9
+    pormax_dec: float = Field(ge=0.1, le=0.9, default=0.6, description="Maximum porosity") #pormax_dec cannot be less than 0.1 and greater than 0.9
     capmax_dec: float = Field(default=100.0, description="Maximum capacity")
     capmin_dec: float = Field(default=10.0, description="Minimum capacity")
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
@@ -3382,6 +3382,14 @@ class DectrProperties(VegetatedSurfaceProperties):
         default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
         description="Water distribution for deciduous trees",
     )
+
+    @model_validator(mode="after")
+    def validate_porosity_range(self) -> "DectrProperties":
+        if self.pormin_dec >= self.pormax_dec:
+            raise ValueError(
+                f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec})."
+            )
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree properties to DataFrame state format."""
