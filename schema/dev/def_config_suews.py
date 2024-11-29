@@ -14,6 +14,24 @@ import yaml
 import pdb
 import math
 
+## The lines below load min and max ranges for OHMCoefficients from an Excel file
+# file_path = './SUEWS_OHMCoefficients.xlsx'
+# excel_data = pd.ExcelFile(file_path)
+# sheets_to_process = ["Soil", "Water", "Snow", "Paved", "Building", "Vegetation"]
+# min_max_values = {}
+# for sheet_name in sheets_to_process:
+#     if sheet_name in excel_data.sheet_names:  
+#         df = excel_data.parse(sheet_name, header=None)
+#         df = df.iloc[:, :4]  
+#         df.columns = ['Code', 'a1', 'a2', 'a3']  
+#         min_values = df.loc[df['Code'] == 'Min', ['a1', 'a2', 'a3']]
+#         max_values = df.loc[df['Code'] == 'Max', ['a1', 'a2', 'a3']]
+#         if not min_values.empty and not max_values.empty:
+#             min_max_values[sheet_name] = {
+#                 'a1': [min_values['a1'].values[0], max_values['a1'].values[0]],
+#                 'a2': [min_values['a2'].values[0], max_values['a2'].values[0]],
+#                 'a3': [min_values['a3'].values[0], max_values['a3'].values[0]],
+#             }
 
 def init_df_state(grid_id: int) -> pd.DataFrame:
     idx = pd.Index([grid_id], name="grid")
@@ -3810,6 +3828,59 @@ class SUEWSConfig(BaseModel):
 
     class Config:
         extra = "allow"
+
+    ## This interclass model_validator refers to min and max ranges for OHMCoefficients loaded from an Excel file
+    ## and first checks that storageheatmethod and ohmincqf are set correctly.
+    # @model_validator(mode="after")
+    # def validate_OHMCoef_and_storageheatmethod(self) -> "SUEWSConfig":
+    #     if (self.model.physics.storageheatmethod == 1 and self.model.physics.ohmincqf == 0) or (
+    #         self.model.physics.storageheatmethod == 2 and self.model.physics.ohmincqf == 1
+    #     ):
+    #         cover_to_sheet = {
+    #             "bldgs": "Building",
+    #             "grass": "Vegetation",
+    #             "evetr": "Vegetation",
+    #             "dectr": "Vegetation",
+    #             "water": "Water",
+    #             "bsoil": "Soil",
+    #             "paved": "Paved",
+    #         }
+    #         all_valid = True
+    #         for cover, sheet_name in cover_to_sheet.items():
+    #             land_cover = getattr(self.site[0].properties.land_cover, cover)
+    #             if land_cover.sfr > 0:
+    #                 for coef in ["a1", "a2", "a3"]:
+    #                     coef_values = getattr(land_cover.ohm_coef, coef)
+    #                     for season, value in coef_values.items():
+    #                         min_value, max_value = min_max_values[sheet_name][coef]  # Get ranges
+    #                         if not (min_value <= value <= max_value):
+    #                             raise ValueError(
+    #                                 f"{cover.capitalize()} {coef} ({season}): {value} "
+    #                                 f"is out of range [{min_value}, {max_value}]"
+    #                             )
+    #                             all_valid = False
+    #         if all_valid:
+    #             print(
+    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} and "
+    #                 f"OhmIncQf is set to {self.model.physics.ohmincqf}. All valid and checked."
+    #             )
+    #         else:
+    #             print(
+    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} and "
+    #                 f"OhmIncQf is set to {self.model.physics.ohmincqf}."
+    #             )
+    #     else:
+    #         if self.model.physics.storageheatmethod == 1 and self.model.physics.ohmincqf != 0:
+    #             raise ValueError(
+    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} "
+    #                 f"and OhmIncQf is set to {self.model.physics.ohmincqf}. You should input OhmIncQf=0."
+    #             )
+    #         elif self.model.physics.storageheatmethod == 2 and self.model.physics.ohmincqf != 1:
+    #             raise ValueError(
+    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} "
+    #                 f"and OhmIncQf is set to {self.model.physics.ohmincqf}. You should input OhmIncQf=1."
+    #             )
+    #     return self
 
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
         """Create MultiIndex from df_state_columns.txt"""
