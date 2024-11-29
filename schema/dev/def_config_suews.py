@@ -1837,7 +1837,7 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
         if self.sfr < sfr_bldg_lower_limit:
             if self.faibldg < 0.25 * (1 - self.sfr):
                 raise ValueError(
-                    "The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
+                    "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
                     f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
                     "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
                 )
