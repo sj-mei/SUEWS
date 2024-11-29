@@ -1847,6 +1847,13 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
 
         return df_state
 
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "BldgsProperties":
+        """Reconstruct building properties from DataFrame state format."""
+        surf_idx = 1
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        return instance
+
 
 class BsoilProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
@@ -1860,6 +1867,13 @@ class BsoilProperties(NonVegetatedSurfaceProperties):
         df_state = super().to_df_state(grid_id)
         # df_state.loc[grid_id, ("waterdist", "0")] = self.waterdist
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "BsoilProperties":
+        """Reconstruct bare soil properties from DataFrame state format."""
+        surf_idx = 5
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        return instance
 
 
 class WaterProperties(NonVegetatedSurfaceProperties):
@@ -1884,6 +1898,13 @@ class WaterProperties(NonVegetatedSurfaceProperties):
         df_state.loc[grid_id, ("flowchange", "0")] = self.flowchange
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "WaterProperties":
+        """Reconstruct water properties from DataFrame state format."""
+        surf_idx = 6
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        return instance
 
 
 class ModelControl(BaseModel):
@@ -3293,6 +3314,51 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         return df_state
 
 
+
+
+class EvetrProperties(VegetatedSurfaceProperties):
+    faievetree: float = Field(
+        default=0.1, description="Frontal area index of evergreen trees"
+    )
+    evetreeh: float = Field(default=15.0, description="Evergreen tree height")
+    _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
+    waterdist: WaterDistribution = Field(
+        default_factory=lambda: WaterDistribution(SurfaceType.EVETR),
+        description="Water distribution for evergreen trees",
+    )
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert evergreen tree properties to DataFrame state format."""
+        # Get base properties from parent
+        df_state = super().to_df_state(grid_id)
+        surf_idx = self.get_surface_index()
+
+        # Helper function to set values in DataFrame
+        def set_df_value(col_name: str, value: float):
+            idx_str = f"({surf_idx},)"
+            if (col_name, idx_str) not in df_state.columns:
+                df_state[(col_name, idx_str)] = np.nan
+            df_state.loc[grid_id, (col_name, idx_str)] = value
+
+        # Add all non-inherited properties
+        list_properties = ["faievetree", "evetreeh"]
+        for attr in list_properties:
+            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr)
+
+        # specific properties
+        df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min
+        df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max
+
+        return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "EvetrProperties":
+        """Reconstruct evergreen tree properties from DataFrame state format."""
+        surf_idx = 2
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        return instance
+
+
 class DectrProperties(VegetatedSurfaceProperties):
     faidectree: float = Field(
         default=0.1, description="Frontal area index of deciduous trees"
@@ -3331,42 +3397,12 @@ class DectrProperties(VegetatedSurfaceProperties):
 
         return df_state
 
-
-class EvetrProperties(VegetatedSurfaceProperties):
-    faievetree: float = Field(
-        default=0.1, description="Frontal area index of evergreen trees"
-    )
-    evetreeh: float = Field(default=15.0, description="Evergreen tree height")
-    _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
-    waterdist: WaterDistribution = Field(
-        default_factory=lambda: WaterDistribution(SurfaceType.EVETR),
-        description="Water distribution for evergreen trees",
-    )
-
-    def to_df_state(self, grid_id: int) -> pd.DataFrame:
-        """Convert evergreen tree properties to DataFrame state format."""
-        # Get base properties from parent
-        df_state = super().to_df_state(grid_id)
-        surf_idx = self.get_surface_index()
-
-        # Helper function to set values in DataFrame
-        def set_df_value(col_name: str, value: float):
-            idx_str = f"({surf_idx},)"
-            if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
-            df_state.loc[grid_id, (col_name, idx_str)] = value
-
-        # Add all non-inherited properties
-        list_properties = ["faievetree", "evetreeh"]
-        for attr in list_properties:
-            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr)
-
-        # specific properties
-        df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min
-        df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max
-
-        return df_state
-
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "DectrProperties":
+        """Reconstruct deciduous tree properties from DataFrame state format."""
+        surf_idx = 3
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        return instance
 
 class GrassProperties(VegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
@@ -3385,6 +3421,13 @@ class GrassProperties(VegetatedSurfaceProperties):
         df_state[("albmax_grass", "0")] = self.alb_max
 
         return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "GrassProperties":
+        """Reconstruct grass properties from DataFrame state format."""
+        surf_idx = 4
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        return instance
 
 
 class SnowParams(BaseModel):
@@ -3586,8 +3629,8 @@ class LandCover(BaseModel):
         params = {
             "paved": PavedProperties.from_df_state(df, grid_id),
             "bldgs": BldgsProperties.from_df_state(df, grid_id),
-            "dectr": DectrProperties.from_df_state(df, grid_id),
             "evetr": EvetrProperties.from_df_state(df, grid_id),
+            "dectr": DectrProperties.from_df_state(df, grid_id),
             "grass": GrassProperties.from_df_state(df, grid_id),
             "bsoil": BsoilProperties.from_df_state(df, grid_id),
             "water": WaterProperties.from_df_state(df, grid_id)
