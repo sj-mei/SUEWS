@@ -1968,6 +1968,7 @@ class ModelPhysics(BaseModel):
     faimethod: int = Field(default=1, description="Method used to calculate frontal area index")
     localclimatemethod: int = Field(default=0, description="Method used for local climate zone calculations")
     snowuse: int = Field(default=0, description="Include snow calculations (1) or not (0)")
+    stebbsmethod: int = Field(default=0, description="Method used for stebbs calculations")
 
     @model_validator(mode="after")
     def check_storageheatmethod(self) -> "ModelPhysics":
@@ -2032,6 +2033,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
+            "stebbsmethod",
         ]
         for attr in list_attr:
             set_df_value(attr, getattr(self, attr))
@@ -2066,6 +2068,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
+            "stebbsmethod",
         ]
 
         for attr in list_attr:
@@ -3665,12 +3668,12 @@ class ArchetypeProperties(BaseModel):
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert ArchetypeProperties to DataFrame state format."""
         # Create an empty DataFrame with MultiIndex columns
-        columns = [(field, "0") for field in self.model_fields.keys()]
+        columns = [(field.lower(), "0") for field in self.model_fields.keys()]
         df_state = pd.DataFrame(index=[grid_id], columns=pd.MultiIndex.from_tuples(columns))
 
         # Set the values in the DataFrame
         for field_name, field_info in self.model_fields.items():
-            df_state.loc[grid_id, (field_name, "0")] = getattr(self, field_name)
+            df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name)
 
         return df_state
     
@@ -3759,12 +3762,12 @@ class StebbsProperties(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Create an empty DataFrame with MultiIndex columns
-        columns = [(field, "0") for field in self.model_fields.keys()]
+        columns = [(field.lower(), "0") for field in self.model_fields.keys()]
         df_state = pd.DataFrame(index=[grid_id], columns=pd.MultiIndex.from_tuples(columns))
 
         # Set the values in the DataFrame
         for field_name, field_info in self.model_fields.items():
-            df_state.loc[grid_id, (field_name, "0")] = getattr(self, field_name)
+            df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name)
 
         return df_state
 
