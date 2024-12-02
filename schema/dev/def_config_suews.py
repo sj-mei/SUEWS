@@ -20,10 +20,10 @@ import math
 # sheets_to_process = ["Soil", "Water", "Snow", "Paved", "Building", "Vegetation"]
 # min_max_values = {}
 # for sheet_name in sheets_to_process:
-#     if sheet_name in excel_data.sheet_names:  
+#     if sheet_name in excel_data.sheet_names:
 #         df = excel_data.parse(sheet_name, header=None)
-#         df = df.iloc[:, :4]  
-#         df.columns = ['Code', 'a1', 'a2', 'a3']  
+#         df = df.iloc[:, :4]
+#         df.columns = ['Code', 'a1', 'a2', 'a3']
 #         min_values = df.loc[df['Code'] == 'Min', ['a1', 'a2', 'a3']]
 #         max_values = df.loc[df['Code'] == 'Max', ['a1', 'a2', 'a3']]
 #         if not min_values.empty and not max_values.empty:
@@ -134,8 +134,8 @@ class SurfaceInitialState(BaseModel):
         description="Initial temperature for each thermal layer",
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
     ) # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
-    tsfc: Optional[float] = Field(description="Initial exterior surface temperature", default=15.0) 
-    tin: Optional[float] = Field(description="Initial interior surface temperature", default=20.0) #We need to know which model is using this. 
+    tsfc: Optional[float] = Field(description="Initial exterior surface temperature", default=15.0)
+    tin: Optional[float] = Field(description="Initial interior surface temperature", default=20.0) #We need to know which model is using this.
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
@@ -264,7 +264,7 @@ class InitialStateBldgs(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
 
 
-class VegInitialState(SurfaceInitialState):
+class InitialStateVeg(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
     alb_id: float = Field(description="Initial albedo for vegetated surfaces (depends on time of year).", default=0.25)
@@ -274,7 +274,7 @@ class VegInitialState(SurfaceInitialState):
     wu: WaterUse = Field(default_factory=WaterUse)
 
     @model_validator(mode="after")
-    def validate_surface_state(self) -> "VegInitialState":
+    def validate_surface_state(self) -> "InitialStateVeg":
         """Validate state based on surface type"""
         # Skip validation if surface type not yet set
         if not hasattr(self, "_surface_type") or self._surface_type is None:
@@ -326,7 +326,7 @@ class VegInitialState(SurfaceInitialState):
     @classmethod
     def from_df_state(
         cls, df: pd.DataFrame, grid_id: int, surf_idx: int
-    ) -> "VegInitialState":
+    ) -> "InitialStateVeg":
         """
         Reconstruct VegetatedSurfaceInitialState from a DataFrame state format."""
         base_instance = SurfaceInitialState.from_df_state(df, grid_id, surf_idx)
@@ -356,7 +356,7 @@ class VegInitialState(SurfaceInitialState):
         )
 
 
-class InitialStateEvetr(VegInitialState):
+class InitialStateEvetr(InitialStateVeg):
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -391,7 +391,7 @@ class InitialStateEvetr(VegInitialState):
         return cls(**base_instance_dict)
 
 
-class InitialStateDectr(VegInitialState):
+class InitialStateDectr(InitialStateVeg):
     """Initial state parameters for deciduous trees"""
 
     porosity_id: float = Field(
@@ -448,7 +448,7 @@ class InitialStateDectr(VegInitialState):
             DeciduousTreeSurfaceInitialState: Instance of DeciduousTreeSurfaceInitialState.
         """
         # Base class reconstruction
-        base_instance = VegInitialState.from_df_state(df, grid_id, surf_idx)
+        base_instance = InitialStateVeg.from_df_state(df, grid_id, surf_idx)
 
         # Deciduous tree-specific parameters
         porosity_id = df.loc[grid_id, ("porosity_id", "0")]
@@ -461,7 +461,7 @@ class InitialStateDectr(VegInitialState):
         )
 
 
-class InitialStateGrass(VegInitialState):
+class InitialStateGrass(InitialStateVeg):
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -1973,7 +1973,7 @@ class ModelPhysics(BaseModel):
     def check_storageheatmethod(self) -> "ModelPhysics":
         if (self.storageheatmethod == 1 and self.ohmincqf != 0):
             raise ValueError(
-                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n" 
+                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
                 f"You should switch to OhmIncQf=0.\n"
             )
         elif (self.storageheatmethod == 2 and self.ohmincqf != 1):
@@ -1982,7 +1982,7 @@ class ModelPhysics(BaseModel):
                 f"You should switch to OhmIncQf=1.\n"
             )
         return self
-        
+
     @model_validator(mode="after")
     def check_snowusemethod(self) -> "ModelPhysics":
         if (self.snowuse == 1):
@@ -1994,7 +1994,7 @@ class ModelPhysics(BaseModel):
         return self
     # We then need to set to 0 (or None) all the snow-related parameters or rules
     # in the code and return them accordingly in the yml file.
-    
+
     @model_validator(mode="after")
     def check_emissionsmethod(self) -> "ModelPhysics":
         if (self.emissionsmethod == 45):
