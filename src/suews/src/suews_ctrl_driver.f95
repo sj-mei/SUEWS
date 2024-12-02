@@ -2043,7 +2043,7 @@ CONTAINS
             WaterDist(5, 1) = pavedPrm%waterdist%to_grass
             WaterDist(6, 1) = pavedPrm%waterdist%to_bsoil
             WaterDist(7, 1) = pavedPrm%waterdist%to_water
-            WaterDist(8, 1) = pavedPrm%waterdist%to_soilstore
+            WaterDist(8, 1) = pavedPrm%waterdist%to_soilstore_or_runoff
 
             WaterDist(1, 2) = bldgPrm%waterdist%to_paved
             WaterDist(2, 2) = bldgPrm%waterdist%to_bldg
@@ -2052,7 +2052,7 @@ CONTAINS
             WaterDist(5, 2) = bldgPrm%waterdist%to_grass
             WaterDist(6, 2) = bldgPrm%waterdist%to_bsoil
             WaterDist(7, 2) = bldgPrm%waterdist%to_water
-            WaterDist(8, 2) = bldgPrm%waterdist%to_soilstore
+            WaterDist(8, 2) = bldgPrm%waterdist%to_soilstore_or_runoff
 
             WaterDist(1, 3) = evetrPrm%waterdist%to_paved
             WaterDist(2, 3) = evetrPrm%waterdist%to_bldg
@@ -2061,7 +2061,7 @@ CONTAINS
             WaterDist(5, 3) = evetrPrm%waterdist%to_grass
             WaterDist(6, 3) = evetrPrm%waterdist%to_bsoil
             WaterDist(7, 3) = evetrPrm%waterdist%to_water
-            WaterDist(8, 3) = evetrPrm%waterdist%to_soilstore
+            WaterDist(8, 3) = evetrPrm%waterdist%to_soilstore_or_runoff
 
             WaterDist(1, 4) = dectrPrm%waterdist%to_paved
             WaterDist(2, 4) = dectrPrm%waterdist%to_bldg
@@ -2070,7 +2070,7 @@ CONTAINS
             WaterDist(5, 4) = dectrPrm%waterdist%to_grass
             WaterDist(6, 4) = dectrPrm%waterdist%to_bsoil
             WaterDist(7, 4) = dectrPrm%waterdist%to_water
-            WaterDist(8, 4) = dectrPrm%waterdist%to_soilstore
+            WaterDist(8, 4) = dectrPrm%waterdist%to_soilstore_or_runoff
 
             WaterDist(1, 5) = grassPrm%waterdist%to_paved
             WaterDist(2, 5) = grassPrm%waterdist%to_bldg
@@ -2079,7 +2079,7 @@ CONTAINS
             WaterDist(5, 5) = grassPrm%waterdist%to_grass
             WaterDist(6, 5) = grassPrm%waterdist%to_bsoil
             WaterDist(7, 5) = grassPrm%waterdist%to_water
-            WaterDist(8, 5) = grassPrm%waterdist%to_soilstore
+            WaterDist(8, 5) = grassPrm%waterdist%to_soilstore_or_runoff
 
             WaterDist(1, 6) = bsoilPrm%waterdist%to_paved
             WaterDist(2, 6) = bsoilPrm%waterdist%to_bldg
@@ -2088,7 +2088,7 @@ CONTAINS
             WaterDist(5, 6) = bsoilPrm%waterdist%to_grass
             WaterDist(6, 6) = bsoilPrm%waterdist%to_bsoil
             WaterDist(7, 6) = bsoilPrm%waterdist%to_water
-            WaterDist(8, 6) = bsoilPrm%waterdist%to_soilstore
+            WaterDist(8, 6) = bsoilPrm%waterdist%to_soilstore_or_runoff
 
             ! Retain previous surface state_id and soil moisture state_id
             ! stateOld = state_id !state_id of each surface [mm] for the previous timestep
@@ -4820,7 +4820,7 @@ CONTAINS
       pavedPrm%waterdist%to_grass = WaterDist(5, PavSurf)
       pavedPrm%waterdist%to_bsoil = WaterDist(6, PavSurf)
       pavedPrm%waterdist%to_water = WaterDist(7, PavSurf)
-      pavedPrm%waterdist%to_soilstore = WaterDist(8, PavSurf)
+      pavedPrm%waterdist%to_soilstore_or_runoff = WaterDist(8, PavSurf)
 
       bldgPrm%sfr = sfr_surf(BldgSurf)
       bldgPrm%faibldg = FAIBldg
@@ -4862,7 +4862,7 @@ CONTAINS
       bldgPrm%waterdist%to_grass = WaterDist(5, BldgSurf)
       bldgPrm%waterdist%to_bsoil = WaterDist(6, BldgSurf)
       bldgPrm%waterdist%to_water = WaterDist(7, BldgSurf)
-      bldgPrm%waterdist%to_soilstore = WaterDist(8, BldgSurf)
+      bldgPrm%waterdist%to_soilstore_or_runoff = WaterDist(8, BldgSurf)
 
       dectrPrm%sfr = sfr_surf(DecidSurf)
       dectrPrm%emis = emis(DecidSurf)
@@ -4928,7 +4928,7 @@ CONTAINS
       dectrPrm%waterdist%to_grass = WaterDist(5, DecidSurf)
       dectrPrm%waterdist%to_bsoil = WaterDist(6, DecidSurf)
       dectrPrm%waterdist%to_water = WaterDist(7, DecidSurf)
-      dectrPrm%waterdist%to_soilstore = WaterDist(8, DecidSurf)
+      dectrPrm%waterdist%to_soilstore_or_runoff = WaterDist(8, DecidSurf)
 
       evetrPrm%sfr = sfr_surf(ConifSurf)
       evetrPrm%emis = emis(ConifSurf)
@@ -4989,7 +4989,7 @@ CONTAINS
       evetrPrm%waterdist%to_grass = WaterDist(5, ConifSurf)
       evetrPrm%waterdist%to_bsoil = WaterDist(6, ConifSurf)
       evetrPrm%waterdist%to_water = WaterDist(7, ConifSurf)
-      evetrPrm%waterdist%to_soilstore = WaterDist(8, ConifSurf)
+      evetrPrm%waterdist%to_soilstore_or_runoff = WaterDist(8, ConifSurf)
 
       grassPrm%sfr = sfr_surf(GrassSurf)
       grassPrm%emis = emis(GrassSurf)
@@ -5048,7 +5048,7 @@ CONTAINS
       grassPrm%waterdist%to_grass = WaterDist(5, GrassSurf)
       grassPrm%waterdist%to_bsoil = WaterDist(6, GrassSurf)
       grassPrm%waterdist%to_water = WaterDist(7, GrassSurf)
-      grassPrm%waterdist%to_soilstore = WaterDist(8, GrassSurf)
+      grassPrm%waterdist%to_soilstore_or_runoff = WaterDist(8, GrassSurf)
 
       bsoilPrm%sfr = sfr_surf(BSoilSurf)
       bsoilPrm%emis = emis(BSoilSurf)
@@ -5094,7 +5094,7 @@ CONTAINS
       bsoilPrm%waterdist%to_grass = WaterDist(5, BSoilSurf)
       bsoilPrm%waterdist%to_bsoil = WaterDist(6, BSoilSurf)
       bsoilPrm%waterdist%to_water = WaterDist(7, BSoilSurf)
-      bsoilPrm%waterdist%to_soilstore = WaterDist(8, BSoilSurf)
+      bsoilPrm%waterdist%to_soilstore_or_runoff = WaterDist(8, BSoilSurf)
 
       waterPrm%sfr = sfr_surf(WaterSurf)
       waterPrm%emis = emis(WaterSurf)
