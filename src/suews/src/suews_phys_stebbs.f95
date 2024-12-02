@@ -1888,7 +1888,6 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%occupantData = (/self%occupants, self%metabolic_rate, &
                          self%ratio_metabolic_latent_sensible/)
 
-
    self%Tair_ind = stebbsState%IndoorAirStartTemperature + 273.15 ! # Indoor air temperature (K)
    self%Tindoormass = stebbsState%IndoorMassStartTemperature + 273.15 ! # Indoor mass temperature (K)
    self%Tintwallroof = stebbsState%WallIndoorSurfaceTemperature + 273.15 ! # Wall indoor surface temperature (K)
@@ -2069,7 +2068,6 @@ SUBROUTINE create_building(CASE, self, icase)
    self%viewFactors = (/self%BVF_extwall, self%GVF_extwall, self%SVF_extwall/) !  # Building, ground, and sky view factors
    self%occupantData = (/self%occupants, self%metabolic_rate, &
                          self%ratio_metabolic_latent_sensible/)
-
 
    self%Tair_ind = 20 + 273.15 ! # Indoor air temperature (K)
    self%Tindoormass = 20 + 273.15 ! # Indoor mass temperature (K)
