@@ -14,6 +14,24 @@ import yaml
 import pdb
 import math
 
+## The lines below load min and max ranges for OHMCoefficients from an Excel file
+# file_path = './SUEWS_OHMCoefficients.xlsx'
+# excel_data = pd.ExcelFile(file_path)
+# sheets_to_process = ["Soil", "Water", "Snow", "Paved", "Building", "Vegetation"]
+# min_max_values = {}
+# for sheet_name in sheets_to_process:
+#     if sheet_name in excel_data.sheet_names:
+#         df = excel_data.parse(sheet_name, header=None)
+#         df = df.iloc[:, :4]
+#         df.columns = ['Code', 'a1', 'a2', 'a3']
+#         min_values = df.loc[df['Code'] == 'Min', ['a1', 'a2', 'a3']]
+#         max_values = df.loc[df['Code'] == 'Max', ['a1', 'a2', 'a3']]
+#         if not min_values.empty and not max_values.empty:
+#             min_max_values[sheet_name] = {
+#                 'a1': [min_values['a1'].values[0], max_values['a1'].values[0]],
+#                 'a2': [min_values['a2'].values[0], max_values['a2'].values[0]],
+#                 'a3': [min_values['a3'].values[0], max_values['a3'].values[0]],
+#             }
 
 def init_df_state(grid_id: int) -> pd.DataFrame:
     idx = pd.Index([grid_id], name="grid")
@@ -34,7 +52,7 @@ class SurfaceType(str, Enum):
 
 
 class SnowAlb(BaseModel):
-    snowalb: float = Field(ge=0, le=1, description="Snow albedo", default=0.7) # default, sg 28/11/24
+    snowalb: float = Field(ge=0, le=1, description="Snow albedo", default=0.7)
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert snow albedo to DataFrame state format.
@@ -66,7 +84,7 @@ class SnowAlb(BaseModel):
 
 
 class WaterUse(BaseModel):
-    wu_total: float = Field(ge=0, description="Total water use", default=0.0)
+    wu_total: float = Field(ge=0, description="Total water use", default=0.0) #Default set to 0.0 means no irrigation.
     wu_auto: float = Field(ge=0, description="Automatic water use", default=0.0)
     wu_manual: float = Field(ge=0, description="Manual water use", default=0.0)
 
@@ -101,11 +119,9 @@ class WaterUse(BaseModel):
 class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
-    state: float = Field(ge=0, description="Initial state of the surface", default=0.0)
-    soilstore: float = Field(ge=0, description="Initial soil store - essential for QE", default=150.0) # default 150=full
-    snowfrac: Optional[float] = Field(
-        ge=0, le=1, description="Snow fraction", default=0.0
-    )  # TODO: Should be dependent on DOY and location
+    state: float = Field(ge=0, description="Initial state of the surface", default=0.0) # Default set to 0.0 means dry surface.
+    soilstore: float = Field(ge=10, description="Initial soil store (essential for QE)", default=150.0) # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
+    snowfrac: Optional[float] = Field(ge=0, le=1, description="Snow fraction", default=0.0) # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
     icefrac: Optional[float] = Field(
         ge=0, le=1, description="Ice fraction", default=0.0
@@ -117,13 +133,9 @@ class SurfaceInitialState(BaseModel):
         max_items=5,
         description="Initial temperature for each thermal layer",
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
-    ) # TODO: Should be surface dependent soil/wall/roof, should link to surface thickness? 
-    tsfc: Optional[float] = Field(
-        description="Initial exterior surface temperature", default=15.0
-    )
-    tin: Optional[float] = Field(
-        description="Initial interior surface temperature", default=20.0
-    )
+    ) # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
+    tsfc: Optional[float] = Field(description="Initial exterior surface temperature", default=15.0)
+    tin: Optional[float] = Field(description="Initial interior surface temperature", default=20.0) #We need to know which model is using this.
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
@@ -252,19 +264,17 @@ class InitialStateBldgs(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
 
 
-class VegInitialState(SurfaceInitialState):
+class InitialStateVeg(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
-    alb_id: float = Field(
-        description="Initial albedo for vegetated surfaces", default=0.1
-    )
-    lai_id: float = Field(description="Initial leaf area index", default=1.0)
-    gdd_id: float = Field(description="Growing degree days ID", default=0)
-    sdd_id: float = Field(description="Senescence degree days ID", default=0)
+    alb_id: float = Field(description="Initial albedo for vegetated surfaces (depends on time of year).", default=0.25)
+    lai_id: float = Field(description="Initial leaf area index (depends on time of year).", default=1.0)
+    gdd_id: float = Field(description="Growing degree days  on day 1 of model run ID", default=0) #We need to check this and give info for setting values.
+    sdd_id: float = Field(description="Senescence degree days ID", default=0) #This need to be consistent with GDD.
     wu: WaterUse = Field(default_factory=WaterUse)
 
     @model_validator(mode="after")
-    def validate_surface_state(self) -> "VegInitialState":
+    def validate_surface_state(self) -> "InitialStateVeg":
         """Validate state based on surface type"""
         # Skip validation if surface type not yet set
         if not hasattr(self, "_surface_type") or self._surface_type is None:
@@ -316,7 +326,7 @@ class VegInitialState(SurfaceInitialState):
     @classmethod
     def from_df_state(
         cls, df: pd.DataFrame, grid_id: int, surf_idx: int
-    ) -> "VegInitialState":
+    ) -> "InitialStateVeg":
         """
         Reconstruct VegetatedSurfaceInitialState from a DataFrame state format."""
         base_instance = SurfaceInitialState.from_df_state(df, grid_id, surf_idx)
@@ -346,7 +356,7 @@ class VegInitialState(SurfaceInitialState):
         )
 
 
-class InitialStateEvetr(VegInitialState):
+class InitialStateEvetr(InitialStateVeg):
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -381,7 +391,7 @@ class InitialStateEvetr(VegInitialState):
         return cls(**base_instance_dict)
 
 
-class InitialStateDectr(VegInitialState):
+class InitialStateDectr(InitialStateVeg):
     """Initial state parameters for deciduous trees"""
 
     porosity_id: float = Field(
@@ -438,7 +448,7 @@ class InitialStateDectr(VegInitialState):
             DeciduousTreeSurfaceInitialState: Instance of DeciduousTreeSurfaceInitialState.
         """
         # Base class reconstruction
-        base_instance = VegInitialState.from_df_state(df, grid_id, surf_idx)
+        base_instance = InitialStateVeg.from_df_state(df, grid_id, surf_idx)
 
         # Deciduous tree-specific parameters
         porosity_id = df.loc[grid_id, ("porosity_id", "0")]
@@ -451,7 +461,7 @@ class InitialStateDectr(VegInitialState):
         )
 
 
-class InitialStateGrass(VegInitialState):
+class InitialStateGrass(InitialStateVeg):
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -1815,26 +1825,22 @@ class VerticalLayers(BaseModel):
 
 class BldgsProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
-    faibldg: float = Field(
-        ge=0, default=0.3, description="Frontal area index of buildings"
-    )
-    bldgh: float = Field(ge=0, default=10.0, description="Building height")
+    faibldg: float = Field(ge=0, default=0.3, description="Frontal area index of buildings")
+    bldgh: float = Field(ge=3, default=10.0, description="Building height") #We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
     )
 
     @model_validator(mode="after")
     def validate_rsl_zd_range(self) -> "BldgsProperties":
-        # Existing validation
         sfr_bldg_lower_limit = 0.18
         if self.sfr < sfr_bldg_lower_limit:
             if self.faibldg < 0.25 * (1 - self.sfr):
-                error_message = ValueError(
-                    "The Frontal Area Index (FAI) is falling below the lower limit of: 0.25 * (1 - PAI), which is likely causing issues regarding negative displacement height (zd) in the RSL.\n"
+                raise ValueError(
+                    "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
                     f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
                     "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
                 )
-                exceptions.append(error_message)
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -1949,44 +1955,57 @@ class ModelControl(BaseModel):
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: int = Field(
-        default=3, description="Method used to calculate net radiation"
-    )
-    emissionsmethod: int = Field(
-        default=2, description="Method used to calculate anthropogenic emissions"
-    )
-    storageheatmethod: int = Field(
-        default=1, description="Method used to calculate storage heat flux"
-    )
-    ohmincqf: int = Field(
-        default=0,
-        description="Include anthropogenic heat in OHM calculations (1) or not (0)",
-    )
-    roughlenmommethod: int = Field(
-        default=2, description="Method used to calculate momentum roughness length"
-    )
-    roughlenheatmethod: int = Field(
-        default=2, description="Method used to calculate heat roughness length"
-    )
-    stabilitymethod: int = Field(
-        default=2, description="Method used for atmospheric stability calculation"
-    )
-    smdmethod: int = Field(
-        default=1, description="Method used to calculate soil moisture deficit"
-    )
-    waterusemethod: int = Field(
-        default=1, description="Method used to calculate water use"
-    )
+    netradiationmethod: int = Field(default=3, description="Method used to calculate net radiation")
+    emissionsmethod: int = Field(default=2, description="Method used to calculate anthropogenic emissions")
+    storageheatmethod: int = Field(default=1, description="Method used to calculate storage heat flux")
+    ohmincqf: int = Field(default=0,description="Include anthropogenic heat in OHM calculations (1) or not (0)")
+    roughlenmommethod: int = Field(default=2, description="Method used to calculate momentum roughness length")
+    roughlenheatmethod: int = Field(default=2, description="Method used to calculate heat roughness length")
+    stabilitymethod: int = Field(default=2, description="Method used for atmospheric stability calculation")
+    smdmethod: int = Field(default=1, description="Method used to calculate soil moisture deficit")
+    waterusemethod: int = Field(default=1, description="Method used to calculate water use")
     diagmethod: int = Field(default=1, description="Method used for model diagnostics")
-    faimethod: int = Field(
-        default=1, description="Method used to calculate frontal area index"
-    )
-    localclimatemethod: int = Field(
-        default=0, description="Method used for local climate zone calculations"
-    )
-    snowuse: int = Field(
-        default=0, description="Include snow calculations (1) or not (0)"
-    )
+    faimethod: int = Field(default=1, description="Method used to calculate frontal area index")
+    localclimatemethod: int = Field(default=0, description="Method used for local climate zone calculations")
+    snowuse: int = Field(default=0, description="Include snow calculations (1) or not (0)")
+
+    @model_validator(mode="after")
+    def check_storageheatmethod(self) -> "ModelPhysics":
+        if (self.storageheatmethod == 1 and self.ohmincqf != 0):
+            raise ValueError(
+                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
+                f"You should switch to OhmIncQf=0.\n"
+            )
+        elif (self.storageheatmethod == 2 and self.ohmincqf != 1):
+            raise ValueError(
+                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
+                f"You should switch to OhmIncQf=1.\n"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def check_snowusemethod(self) -> "ModelPhysics":
+        if (self.snowuse == 1):
+                raise ValueError(
+                    f"\nSnowUse is set to {self.snowuse}.\n"
+                    f"There are no checks implemented for this case (snow calculations included in the run).\n"
+                    f"You should switch to SnowUse=0.\n"
+                )
+        return self
+    # We then need to set to 0 (or None) all the snow-related parameters or rules
+    # in the code and return them accordingly in the yml file.
+
+    @model_validator(mode="after")
+    def check_emissionsmethod(self) -> "ModelPhysics":
+        if (self.emissionsmethod == 45):
+                raise ValueError(
+                    f"\nEmissionsMethod is set to {self.emissionsmethod}.\n"
+                    f"There are no checks implemented for this case (CO2 calculations included in the run).\n"
+                    f"You should switch to EmissionsMethod=0, 1, 2, 3, or 4.\n"
+                )
+        return self
+    # We then need to set to 0 (or None) all the CO2-related parameters or rules
+    # in the code and return them accordingly in the yml file.
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model physics properties to DataFrame state format."""
@@ -2220,28 +2239,6 @@ class SPARTACUSParams(BaseModel):
 
         return cls(**params)
 
-    # def to_df_state(self, grid_id: int) -> pd.DataFrame:
-    #     """Convert SPARTACUS parameters to DataFrame state format.
-
-    #     Args:
-    #         grid_id: Grid ID for the DataFrame index
-
-    #     Returns:
-    #         pd.DataFrame: DataFrame containing SPARTACUS parameters
-    #     """
-    #     df_state = init_df_state(grid_id)
-
-    #     # Add all attributes except private ones
-    #     for attr in dir(self):
-    #         if not attr.startswith("_") and not callable(getattr(self, attr)):
-    #             value = getattr(self, attr)
-    #             if not isinstance(value, (BaseModel, Enum)):
-    #                 df_state[(attr, "0")] = value
-
-    #     return df_state
-
-
-
 class DayProfile(BaseModel):
     working_day: float = Field(default=1.0)
     holiday: float = Field(default=0.0)
@@ -2301,25 +2298,6 @@ class DayProfile(BaseModel):
                 raise KeyError(f"Column {col} not found in DataFrame")
 
         return cls(**params)
-
-    # # this need to be fixed!
-    # def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
-    #     """Convert day profile to DataFrame state format.
-
-    #     Args:
-    #         grid_id: Grid ID for the DataFrame index
-    #         param_name: Name of the parameter this profile belongs to
-
-    #     Returns:
-    #         pd.DataFrame: DataFrame containing day profile parameters
-    #     """
-    #     df_state = init_df_state(grid_id)
-
-    #     # Set values for working day and holiday
-    #     df_state[(f"{param_name}_wd", "0")] = self.working_day
-    #     df_state[(f"{param_name}_we", "0")] = self.holiday
-
-    #     return df_state
 
 
 class WeeklyProfile(BaseModel):
@@ -2431,13 +2409,10 @@ class HourlyProfile(BaseModel):
         for profile in [self.working_day, self.holiday]:
             hours = [int(h) for h in profile.keys()]
             if not all(1 <= h <= 24 for h in hours):
-                error_message = ValueError("Hour values must be between 1 and 24")
-                exceptions.append(error_message)
-                # raise ValueError("Hour values must be between 1 and 24")
+                raise ValueError("Hour values must be between 1 and 24")
             if sorted(hours) != list(range(1, 25)):
                 error_message = ValueError("Must have all hours from 1 to 24")
-                exceptions.append(error_message)
-                # raise ValueError("Must have all hours from 1 to 24")
+                raise ValueError("Must have all hours from 1 to 24")
         return self
 
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
@@ -3140,17 +3115,9 @@ class LAIParams(BaseModel):
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
         if self.laimin > self.laimax:
-            error_message = ValueError(
-                f"laimin ({self.laimin}) must be less than or equal to laimax ({self.laimax})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
+            raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
         if self.baset > self.gddfull:
-            error_message = ValueError(
-                f"baset ({self.baset}) must be less than gddfull ({self.gddfull})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
+            raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
         return self
 
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
@@ -3278,11 +3245,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
-            error_message = ValueError(
-                f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -3373,8 +3336,8 @@ class DectrProperties(VegetatedSurfaceProperties):
         default=0.1, description="Frontal area index of deciduous trees"
     )
     dectreeh: float = Field(default=15.0, description="Deciduous tree height")
-    pormin_dec: float = Field(default=0.2, description="Minimum porosity")
-    pormax_dec: float = Field(default=0.6, description="Maximum porosity")
+    pormin_dec: float = Field(ge=0.1, le=0.9, default=0.2, description="Minimum porosity") #pormin_dec cannot be less than 0.1 and greater than 0.9
+    pormax_dec: float = Field(ge=0.1, le=0.9, default=0.6, description="Maximum porosity") #pormax_dec cannot be less than 0.1 and greater than 0.9
     capmax_dec: float = Field(default=100.0, description="Maximum capacity")
     capmin_dec: float = Field(default=10.0, description="Minimum capacity")
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
@@ -3382,6 +3345,14 @@ class DectrProperties(VegetatedSurfaceProperties):
         default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
         description="Water distribution for deciduous trees",
     )
+
+    @model_validator(mode="after")
+    def validate_porosity_range(self) -> "DectrProperties":
+        if self.pormin_dec >= self.pormax_dec:
+            raise ValueError(
+                f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec})."
+            )
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree properties to DataFrame state format."""
@@ -3471,21 +3442,13 @@ class SnowParams(BaseModel):
     @model_validator(mode="after")
     def validate_crw_range(self) -> "SnowParams":
         if self.crwmin >= self.crwmax:
-            error_message = ValueError(
-                f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+            raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
         return self
 
     @model_validator(mode="after")
     def validate_snowalb_range(self) -> "SnowParams":
         if self.snowalbmin >= self.snowalbmax:
-            error_message = ValueError(
-                f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax})."
-            )
-            exceptions.append(error_message)
-            # raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+            raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -4021,6 +3984,42 @@ class SUEWSConfig(BaseModel):
 
     class Config:
         extra = "allow"
+
+    ## This model_validator refers to min and max ranges for OHMCoefficients loaded from an Excel file
+    # @model_validator(mode="after")
+    # def validate_OHMCoeff(self) -> "SUEWSConfig":
+    #     if (self.model.physics.storageheatmethod == 1 and self.model.physics.ohmincqf == 0) or (
+    #         self.model.physics.storageheatmethod == 2 and self.model.physics.ohmincqf == 1
+    #     ):
+    #         cover_to_sheet = {
+    #             "bldgs": "Building",
+    #             "grass": "Vegetation",
+    #             "evetr": "Vegetation",
+    #             "dectr": "Vegetation",
+    #             "water": "Water",
+    #             "bsoil": "Soil",
+    #             "paved": "Paved",
+    #         }
+    #         all_valid = True
+    #         for cover, sheet_name in cover_to_sheet.items():
+    #             land_cover = getattr(self.site[0].properties.land_cover, cover)
+    #             if land_cover.sfr > 0:
+    #                 for coef in ["a1", "a2", "a3"]:
+    #                     coef_values = getattr(land_cover.ohm_coef, coef)
+    #                     for season, value in coef_values.items():
+    #                         min_value, max_value = min_max_values[sheet_name][coef]  # Get ranges
+    #                         if not (min_value <= value <= max_value):
+    #                             raise ValueError(
+    #                                 f"{cover.capitalize()} {coef} ({season}): {value} "
+    #                                 f"is out of range [{min_value}, {max_value}]"
+    #                             )
+    #                             all_valid = False
+    #         if all_valid:
+    #             print(
+    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} and "
+    #                 f"OhmIncQf is set to {self.model.physics.ohmincqf}. All valid and checked."
+    #             )
+    #     return self
 
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
         """Create MultiIndex from df_state_columns.txt"""
