@@ -1,46 +1,34 @@
-!
-!
-!
-!
 MODULE modulestebbsprecision
-!
+
    USE ISO_FORTRAN_ENV, ONLY: REAL64
-!
+
    IMPLICIT NONE
-!
+
    INTEGER, PARAMETER :: rprc = REAL64
-!
+
 END MODULE
-!
-!
-!
-!
+
 MODULE modulestebbs
-!
+
    USE modulestebbsprecision
-!
+
    REAL(rprc), PARAMETER :: sigma = 5.670E-8
-!
+
    INTEGER, SAVE :: flgtimecheck = 1
    INTEGER :: resolution
    INTEGER :: time_st, time_ed, count_p_sec, count_max ! Time check
-!
+
    INTEGER :: nbtype
-!
    CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: fnmls, cases
-!
    TYPE :: LBM
-!
       CHARACTER(len=256) :: &
          BuildingType, &
          BuildingName, &
          fnmlLBM, &
          CASE
-!
       INTEGER :: idLBM
       INTEGER :: flginit = 0
       INTEGER :: appliance_totalnumber
-!
       REAL(rprc) :: &
          Qtotal_heating, &
          Qtotal_cooling, &
@@ -160,11 +148,6 @@ MODULE modulestebbs
          minVwater_vessel, &
          minHeatingPower_DHW, &
          HeatingPower_DHW
-!
-!
-!
-!   STEBBS output
-!
       REAL(rprc) :: &
          qfm_dom, & ! Metabolic sensible and latent heat
          qheat_dom, & ! Hourly heating load  [W]
@@ -178,9 +161,6 @@ MODULE modulestebbs
          QS, & ! Storage heat flux    [W m-2]
          QBAE, & ! Building exchange    [W m-2]
          QWaste ! Waste heating        [W m-2]
-!
-!
-!
       REAL(rprc), DIMENSION(2) :: Ts, initTs
       REAL(rprc), DIMENSION(4) :: h_i, k_eff
       REAL(rprc), DIMENSION(2) :: h_o
@@ -192,30 +172,14 @@ MODULE modulestebbs
       REAL(rprc), DIMENSION(3) :: occupantData
       REAL(rprc), DIMENSION(3) :: HTsAverage, HWTsAverage
       REAL(rprc), DIMENSION(3) :: HWPowerAverage
-!
       REAL(rprc), DIMENSION(25) :: EnergyExchanges = 0.0
-!
-!
-!
    END TYPE
-!
    TYPE(LBM), ALLOCATABLE, DIMENSION(:) :: blds
-!
 END MODULE modulestebbs
-!
-!
-!
-!
 MODULE modulestebbsfunc
-!
    USE modulestebbsprecision
-!
    IMPLICIT NONE
-!
 CONTAINS
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: waterUseEnergyLossToDrains
    ! Parameters:
@@ -228,20 +192,13 @@ CONTAINS
    !   q_wt - energy lost to drains [J]
    !-------------------------------------------------------------------
    FUNCTION waterUseEnergyLossToDrains(rho, Cp, vFRo, Tout, timeResolution) RESULT(q_wt)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       INTEGER, INTENT(in) :: timeResolution
       REAL(rprc), INTENT(in) :: rho, Cp, vFRo, Tout
       REAL(rprc) :: q_wt
-!
       q_wt = rho*Cp*Tout*(vFRo*timeResolution)
-!
    END FUNCTION
-!
-!
    !-------------------------------------------------------------------
    ! Function: indoorConvectionHeatTransfer
    ! Description: Indoor Convection on wall surfaces: convective heat transfer between air node and wall node(s)
@@ -254,20 +211,12 @@ CONTAINS
    !   ind_cht - [W]
    !-------------------------------------------------------------------
    FUNCTION indoorConvectionHeatTransfer(h, A, Twi, Ti) RESULT(ind_cht)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: h, A, Twi, Ti
       REAL(rprc) :: ind_cht
-!
       ind_cht = h*A*(Ti - Twi)
-!
    END FUNCTION indoorConvectionHeatTransfer
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: internalConvectionHeatTransfer
    ! Description: Indoor Convection on wall surfaces: convective heat transfer between air node and wall node(s)
@@ -280,21 +229,12 @@ CONTAINS
    !   int_cht - heat transfer to internal objects [W]
    !-------------------------------------------------------------------
    FUNCTION internalConvectionHeatTransfer(h, A, Tio, Ti) RESULT(int_cht)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: h, A, Tio, Ti
       REAL(rprc) :: int_cht
-!
       int_cht = h*A*(Ti - Tio)
-!
    END FUNCTION internalConvectionHeatTransfer
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: indoorRadiativeHeatTransfer (NOT IMPLEMENTED)
    ! Description: Indoor radiative exchange between wall surfaces and mass internal object
@@ -303,21 +243,12 @@ CONTAINS
    !   q -
    !-------------------------------------------------------------------
    FUNCTION indoorRadiativeHeatTransfer() RESULT(q)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc) :: q
-!
       q = 0.0
-!
       RETURN
-!
    END FUNCTION indoorRadiativeHeatTransfer
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: outdoorConvectionHeatTransfer
    ! Description: Outdoor Convection on surfaces. Convective heat transfer between outside wall surface and ambient air node
@@ -330,22 +261,13 @@ CONTAINS
    !   out_cht - [W]
    !-------------------------------------------------------------------
    FUNCTION outdoorConvectionHeatTransfer(h, A, Two, Ta) RESULT(out_cht)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: h, A, Two, Ta
       REAL(rprc) :: out_cht
-!
       out_cht = h*A*(Two - Ta)
-!
       RETURN
-!
    END FUNCTION outdoorConvectionHeatTransfer
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: outdoorRadiativeHeatTransfer
    ! Description: Outdoor Convection on surfaces. Convective heat transfer between outside wall surface and ambient air node
@@ -359,24 +281,14 @@ CONTAINS
    !   out_cht - [W]
    !-------------------------------------------------------------------
    FUNCTION outdoorRadiativeHeatTransfer(f, A, emis, Two, Ts) RESULT(q)
-!
       USE modulestebbsprecision
       USE modulestebbs, ONLY: sigma
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: f, A, emis, Two, Ts
       REAL(rprc) :: q
-!
       q = A*f*sigma*emis*(Two**4.0 - Ts**4.0)
-!
       RETURN
-!
    END FUNCTION outdoorRadiativeHeatTransfer
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: lwoutdoorRadiativeHeatTransfer
    ! Description: Longwave radiative heat transfer between outside surface and ambient air
@@ -389,22 +301,14 @@ CONTAINS
    !   q - Longwave radiative heat transfer [W]
    !-------------------------------------------------------------------
    FUNCTION lwoutdoorRadiativeHeatTransfer(A, emis, Two, lw) RESULT(q)
-!
       USE modulestebbsprecision
       USE modulestebbs, ONLY: sigma
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: A, emis, Two, lw
       REAL(rprc) :: q
-!
       q = A*sigma*emis*(Two**4.0) - emis*lw*a ! Revised based on Yiqing's discovery
-!
       RETURN
-!
    END FUNCTION lwoutdoorRadiativeHeatTransfer
-!
-!
    !-------------------------------------------------------------------
    ! Function: windowInsolation
    ! Description: Window Solar Insolation. This should be added as heat gain to internal single mass object
@@ -416,21 +320,13 @@ CONTAINS
    !   wi_in - Window Insolation [W]
    !-------------------------------------------------------------------
    FUNCTION windowInsolation(Irr, Tr, A) RESULT(wi_in)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: Irr, Tr, A
       REAL(rprc) :: wi_in
-!
       wi_in = Irr*Tr*A
-!
       RETURN
-!
    END FUNCTION windowInsolation
-!
-!
    !-------------------------------------------------------------------
    ! Function: wallInsolation
    ! Description: Solar Insolation on surface. This should be added as heat gain to external surface of wall
@@ -442,23 +338,13 @@ CONTAINS
    !   wa_in - [W]
    !-------------------------------------------------------------------
    FUNCTION wallInsolation(Irr, Ab, A) RESULT(wa_in)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: Irr, Ab, A
       REAL(rprc) :: wa_in
-!
       wa_in = Irr*Ab*A
-!
       RETURN
-!
    END FUNCTION wallInsolation
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: wallConduction
    ! Description: Wall Component Conduction (can be floor/roof/wall/window)
@@ -472,21 +358,12 @@ CONTAINS
    !   wa_co - [W]
    !-------------------------------------------------------------------
    FUNCTION wallConduction(k_eff, A, Twi, Two, L) RESULT(wa_co)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: k_eff, Twi, Two, A, L
       REAL(rprc) :: wa_co
-!
       wa_co = k_eff*A*((Twi - Two)/L)
-!
    END FUNCTION wallConduction
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: windowConduction
    ! Description: Window Component Conduction (same as wall)
@@ -500,21 +377,12 @@ CONTAINS
    !   wi_co - [W]
    !-------------------------------------------------------------------
    FUNCTION windowConduction(k_eff, A, Twi, Two, L) RESULT(wi_co)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: k_eff, Twi, Two, A, L
       REAL(rprc) :: wi_co
-!
       wi_co = k_eff*A*((Twi - Two)/L)
-!
    END FUNCTION windowConduction
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: heating
    ! Description: Heating injected to building
@@ -527,25 +395,15 @@ CONTAINS
    !   q_heating - [W]
    !-------------------------------------------------------------------
    FUNCTION heating(Ts, Ti, epsilon, P) RESULT(q_heating)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: Ts, Ti, epsilon, P
       REAL(rprc) :: q_heating
-!
       q_heating = 0.0
-!
       IF (Ti < Ts) THEN
          q_heating = (P - (P/EXP(Ts - Ti)))*epsilon
       END IF
-!
    END FUNCTION heating
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: ventilationHeatTransfer
    ! Description: Building Ventilation rate heat transfer (i.e. not recirculated air)
@@ -559,21 +417,12 @@ CONTAINS
    !   q_in - the heat flux resulting in the building [W]
    !-------------------------------------------------------------------
    FUNCTION ventilationHeatTransfer(rho, Cp, V, To, Ti) RESULT(q_in)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: rho, Cp, V, To, Ti
       REAL(rprc) :: q_in
-!
       q_in = rho*Cp*V*(To - Ti)
-!
    END FUNCTION ventilationHeatTransfer
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: additionalSystemHeatingEnergy
    ! Description: Calculates the additional heat from the heating system due to system efficiency
@@ -584,22 +433,13 @@ CONTAINS
    !   qH_additional - additional heating energy [W]
    !-------------------------------------------------------------------
    FUNCTION additionalSystemHeatingEnergy(q_heating, epsilon) RESULT(qH_additional)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: q_heating, epsilon
       REAL(rprc) :: qH_additional
-!
       qH_additional = 0.0
       qH_additional = (q_heating/epsilon) - q_heating
-!
    END FUNCTION additionalSystemHeatingEnergy
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: cooling
    ! Description: Cooling of building (heat ejected)
@@ -612,25 +452,15 @@ CONTAINS
    !   q_cooling - [W]
    !-------------------------------------------------------------------
    FUNCTION cooling(Ts, Ti, COP, P) RESULT(q_cooling)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: Ts, Ti, COP, P
       REAL(rprc) :: q_cooling
-!
       q_cooling = 0.0
-!
       IF (Ti > Ts) THEN
          q_cooling = P - (P/EXP(Ti - Ts))
       END IF
-!
    END FUNCTION cooling
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: additionalSystemCoolingEnergy
    ! Description:  Calculates the additional heat from the cooling system due to system COP
@@ -641,21 +471,12 @@ CONTAINS
    !   qC_additional - additional cooling energy [W]
    !-------------------------------------------------------------------
    FUNCTION additionalSystemCoolingEnergy(q_cooling, COP) RESULT(qC_additional)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: q_cooling, COP
       REAL(rprc) :: qC_additional
-!
       qC_additional = q_cooling/COP
-!
    END FUNCTION additionalSystemCoolingEnergy
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: internalOccupancyGains
    ! Description: Calculates the internal gains from building occupants
@@ -667,26 +488,14 @@ CONTAINS
    !   qSL - latent heat and sensible heat from all occupants [W]
    !-------------------------------------------------------------------
    FUNCTION internalOccupancyGains(Occupants, metRate, LSR) RESULT(qSL)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: Occupants, metRate, LSR
       REAL(rprc) :: qSen, qLat
       REAL(rprc), DIMENSION(2) :: qSL
-!
-!  qSen = (metRate*Occupants)/(1.0+LSR)
-!  qLat = (metRate*Occupants)*LSR/(1.0+LSR)
-!
       qSL(1) = (metRate*Occupants)/(1.0 + LSR)
       qSL(2) = (metRate*Occupants)*LSR/(1.0 + LSR)
-!
    END FUNCTION internalOccupancyGains
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: internalApplianceGains
    ! Description:
@@ -698,22 +507,13 @@ CONTAINS
    !   qapp - total energy of appliances - assume all goes to heat (sensible) [W]
    !-------------------------------------------------------------------
    FUNCTION internalApplianceGains(P, f, n) RESULT(qapp)
-!
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       INTEGER, INTENT(in) :: n
       REAL(rprc), INTENT(in) :: P, f
       REAL(rprc) :: qapp
-!
       qapp = P*f*n
-!
    END FUNCTION internalApplianceGains
-!
-!
-!
-!
    !-------------------------------------------------------------------
    ! Function: ext_conv_coeff
    ! Description: Calculates the external convection coefficient using Eq. 11 Cole & Sturrock (1977)
@@ -726,91 +526,51 @@ CONTAINS
    FUNCTION ext_conv_coeff(wind_speed, dT) RESULT(hc)
 
       USE modulestebbsprecision
-!
       IMPLICIT NONE
-!
       REAL(rprc), INTENT(in) :: wind_speed, dT
       REAL(rprc) :: hn, a, b, Rf, hcglass, hc
-!
       hn = 1.31*(ABS(dT)**(1.0/3.0))
       a = 3.26
       b = 0.89
       Rf = 1.67 ! # Rough brick used from E+ Engineering Reference guide, Walton 1981
       hcglass = ((hn**2) + ((a*(wind_speed**b))**2))**(0.5)
       hc = hn + Rf*(hcglass - hn)
-!
    END FUNCTION ext_conv_coeff
-!
-!
-!
 END MODULE modulestebbsfunc
-!
-!
-!
-!
 MODULE modulesuewsstebbscouple
-!
    USE modulestebbsprecision
-!
    IMPLICIT NONE
-!
    REAL(rprc) :: Tair_out, Tsurf, Tground_deep, &
                  density_air_out, cp_air_out, &
                  Qsw_dn_extroof, Qsw_dn_extwall, &
                  Qlw_dn_extwall, Qlw_dn_extroof
-!
-!
-!
    TYPE :: suewsprop
-!
       INTEGER :: ntstep, timestep
       CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: datetime, hourmin
       REAL(rprc), ALLOCATABLE, DIMENSION(:) :: Tair, Tsurf, Kwall, Kroof, ws, Lroof, Lwall
-!
       INTEGER :: ntskip
       CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: datetime_exch, hourmin_exch
       REAL(rprc), ALLOCATABLE, DIMENSION(:) :: Tair_exch, Tsurf_exch, Kwall_exch, Kroof_exch, ws_exch, Lroof_exch, Lwall_exch
-!
    END TYPE
-!
-!
-!
    TYPE(suewsprop) :: sout
-!
 END MODULE modulesuewsstebbscouple
-!
-!
-!
-!
 SUBROUTINE setdatetime(datetimeLine)
-!
    USE modulestebbsprecision
    USE modulesuewsstebbscouple, ONLY: sout
-!
    IMPLICIT NONE
-!
    REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
-!
    INTEGER :: i
    CHARACTER(len=4) :: cyear
    CHARACTER(len=2) :: cmonth, cday, chour, cmin, csec
    INTEGER, DIMENSION(12) :: stmonth
    INTEGER, DIMENSION(12) :: stmonth_nonleap = (/0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334/)
    INTEGER, DIMENSION(12) :: stmonth_leap = (/0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335/)
-!
-!
-! Year
-!
    WRITE (cyear, '(i4)') INT(datetimeLine(1))
-!
    IF (MOD(INT(datetimeLine(1)), 4) == 0) THEN
       stmonth = stmonth_leap
    ELSE
       stmonth = stmonth_nonleap
    END IF
-!
-! DOY
-!
    DO i = 1, 11, 1
       IF (stmonth(i) < datetimeLine(2) .AND. datetimeLine(2) <= stmonth(i + 1)) THEN
          WRITE (cmonth, '(i2.2)') i
@@ -821,28 +581,14 @@ SUBROUTINE setdatetime(datetimeLine)
          WRITE (cday, '(i2.2)') INT(datetimeLine(2)) - stmonth(12)
       END IF
    END DO
-!
-!
-!
    WRITE (chour, '(i2.2)') INT(datetimeLine(3))
    WRITE (cmin, '(i2.2)') INT(datetimeLine(4))
    WRITE (csec, '(i2.2)') 0
-!
    sout%datetime(1) = TRIM(cyear//'-'//cmonth//'-'//cday)
    sout%hourmin(1) = TRIM(chour//':'//cmin//':'//csec)
-!
-!
-!
    RETURN
-!
 END SUBROUTINE setdatetime
-!
-!
-!
-!
 MODULE stebbs_module
-! SUBROUTINE stebbsonlinecouple(timestep, datetimeLine, Tair_sout, Tsurf_sout, &
-!                               Kroof_sout, Kwall_sout, Lwall_sout, Lroof_sout, ws)
 
 CONTAINS
 
@@ -851,29 +597,22 @@ CONTAINS
       modState, & ! Input/Output
       datetimeLine, &
       dataOutLineSTEBBS) ! Output
-!
       USE modulestebbs, ONLY: blds, cases, resolution
       USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
       USE modulestebbsprecision, ONLY: rprc ! Defines rprc as REAL64
       USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
-!
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
                                SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
                                HEAT_STATE, SUEWS_STATE, STEBBS_STATE, BUILDING_STATE
-!
       IMPLICIT NONE
-!
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
       TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
-!
       TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
-!
       REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
-!
       ! INTEGER :: i, ios
       ! INTEGER, INTENT(in) :: timestep ! MP replaced from line 706
       ! INTEGER :: timestep
@@ -881,12 +620,10 @@ CONTAINS
       ! CHARACTER(LEN=256) ::  filename
       ! CHARACTER(LEN=256), ALLOCATABLE :: file_list(:)
       ! INTEGER :: num_files
-!
       ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
       !                           Kwall_sout, Lwall_sout, Lroof_sout, ws
 
       REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine ! To replace
-!
       ! NAMELIST /settings/ nbtype, resolution
       ! namelist/io/cases
 
@@ -901,7 +638,6 @@ CONTAINS
                     QStar, QEC, QH, QS, QBAE, QWaste, &
                     Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
 
-!
       ASSOCIATE ( &
          timestep => timer%tstep, &
          heatState => modState%heatState, &
@@ -944,7 +680,6 @@ CONTAINS
 
             !       !
             IF (flginit == 0) THEN
-!          !
                ALLOCATE (cases(1))
                WRITE (*, *) 'Initialising STEBBS'
                ALLOCATE (blds(1))
@@ -1107,8 +842,6 @@ CONTAINS
                ! WRITE (*, *) 'QS: ', blds(1)%QS
                ! WRITE (*, *) 'QBAE: ', blds(1)%QBAE
                ! WRITE (*, *) 'QWaste: ', blds(1)%QWaste
-!          !
-!          !
                sout%ntstep = 1
                ALLOCATE (sout%datetime(sout%ntstep))
                ALLOCATE (sout%hourmin(sout%ntstep))
@@ -1131,11 +864,6 @@ CONTAINS
                !
             END IF
 
-! !
-! !
-! !
-!       ! Hand over SUEWS output to STEBBS input
-!       !
             sout%Tair(1) = Tair_sout
             sout%Tsurf(1) = Tsurf_sout
             sout%Kroof(1) = Kroof_sout
@@ -1148,14 +876,7 @@ CONTAINS
             sout%Tsurf_exch(1) = Tsurf_sout
             sout%ws(1) = ws
             sout%ws_exch(1) = ws
-!       !
-!       !
-!       !
             CALL setdatetime(datetimeLine)
-!       !
-!       !
-!       ! Time integration for each building type
-!       !
             ! nbtype = SIZE(blds)
             ! DO i = 1, nbtype, 1
             CALL suewsstebbscouple(blds(1), flginit, datetimeLine, &
@@ -1167,15 +888,6 @@ CONTAINS
                                    Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
                                    )
             ! END DO
-!       !
-!       !
-!       !
-!       ! Mush-up building-wise output to cast back to SUEWS
-!       !
-!       ! SHOULD DO THIS HERE
-!       !
-!       !
-!       !
             flginit = 1
 
             dataOutLineSTEBBS = [ws, Tair_sout, Tsurf_sout, Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
@@ -1187,30 +899,16 @@ CONTAINS
                                  Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
                                  ]
             RETURN
-!          !
          END ASSOCIATE
       END ASSOCIATE
 
    END SUBROUTINE stebbsonlinecouple
-!
 END MODULE stebbs_module
-!
-!
-!
 SUBROUTINE readsuewsout()
-!
    USE modulesuewsstebbscouple
-!
    IMPLICIT NONE
-!
    INTEGER :: i, reason, icrop
-!
-!
-!
    sout%timestep = 3600 ! 1hr, hard-coded for the test
-!
-!
-!
    OPEN (8, file='./SUEWS_output_res.csv', form='formatted')
 
    i = 0
@@ -1219,11 +917,8 @@ SUBROUTINE readsuewsout()
       IF (reason < 0) go to 333
       i = i + 1
    END DO
-!
 333 CONTINUE
-!
    sout%ntstep = i - 1
-!
    ALLOCATE (sout%datetime(sout%ntstep))
    ALLOCATE (sout%hourmin(sout%ntstep))
    ALLOCATE (sout%Tair(sout%ntstep))
@@ -1242,36 +937,19 @@ SUBROUTINE readsuewsout()
    ALLOCATE (sout%ws_exch(sout%ntstep))
    ALLOCATE (sout%Lroof_exch(sout%ntstep))
    ALLOCATE (sout%Lwall_exch(sout%ntstep))
-!
-!
-!
    REWIND (8)
-!
    READ (8, *)
-!
    DO i = 1, sout%ntstep, 1
       READ (8, *) sout%datetime(i), sout%hourmin(i), sout%Tair(i), sout%Tsurf(i), &
          sout%Kwall(i), sout%Kroof(i), sout%ws(i), sout%Lroof(i), sout%Lwall(i)
    END DO
-!
    WRITE (*, *) '    + SUEWS output profile'
    WRITE (*, *) '    + Date            : ', TRIM(sout%datetime(1)), ' ', TRIM(sout%hourmin(1)), ' - ', &
       TRIM(sout%datetime(sout%ntstep)), ' ', TRIM(sout%hourmin(sout%ntstep))
    WRITE (*, *) '    + Total data step : ', sout%ntstep
-!
    CLOSE (8)
-!
-!
-!
-!
    sout%ntskip = 12
-!
-! This is the clock rate of original SUEWS by the STEBBS
-! IF STEBBS uses 60 mins. output but SUEWS output 5 min. ntskip = 60/5 = 12
-!
-!
    OPEN (8, file='./SUEWS_output.csv', form='formatted')
-!
    READ (8, *)
 
    DO i = 1, sout%ntstep*sout%ntskip, 1
@@ -1286,19 +964,9 @@ SUBROUTINE readsuewsout()
          READ (8, *)
       END IF
    END DO
-!
    CLOSE (8)
-!
-!
-!
    RETURN
-!
 END SUBROUTINE readsuewsout
-!
-!
-!
-!
-!
 SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
                              qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                              Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
@@ -1308,7 +976,6 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
                              Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
                              ) ! Output
 
-!
    USE modulestebbsprecision
    USE modulestebbs, ONLY: LBM, resolution
    USE modulestebbsfunc, ONLY: ext_conv_coeff
@@ -1319,11 +986,8 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
       Qsw_dn_extroof, &
       Qsw_dn_extwall, &
       Qlw_dn_extwall, Qlw_dn_extroof
-!
    IMPLICIT NONE
-!
    TYPE(LBM) :: self
-!
    INTEGER :: tstep, i
    INTEGER, INTENT(in) :: flginit
    ! Internal variables
@@ -1345,16 +1009,11 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
    CHARACTER(len=256) :: CASE
    CHARACTER(len=256), DIMENSION(4) :: fout
    REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
-!
    CHARACTER(len=256) :: debug_array_dir
 
    ! CASE = self%CASE
    Area = self%Afootprint
-!
-!  Time integration start
-!
    DO tstep = 1, sout%ntstep, 1
-!
       Tair_out = sout%Tair(tstep) + 273.15
       Tground_deep = 273.15 + 10.0
       Tsurf = sout%Tsurf(tstep) + 273.15
@@ -1364,7 +1023,6 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
       Qsw_dn_extwall = sout%Kwall(tstep)
       Qlw_dn_extwall = sout%Lwall(tstep)
       Qlw_dn_extroof = sout%Lroof(tstep)
-!
       debug_array_dir = './debug_array.csv'
       IF (sout%ws_exch(tstep) < 0) THEN
          sout%ws_exch(tstep) = 0.2
@@ -1382,44 +1040,17 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
                                datetimeLine, &
                                flginit &
                                )
-!
-!
-!       Handle return values
-!
       bem_qf_1 = (/self%Qtotal_heating, self%Qtotal_cooling, self%EnergyExchanges(8), &
                    self%Qtotal_water_tank, self%Qmetabolic_sensible, self%Qmetabolic_latent/)
       bem_qf_1 = bem_qf_1/float(sout%timestep)
-!
-!       Metabolic sensible and latent heat
-!
       qfm_dom = bem_qf_1(5) + bem_qf_1(6)
-!
-!       Hourly heating load [W] and cooling load [W]
-!
       qheat_dom = bem_qf_1(1)
       qcool_dom = bem_qf_1(2)
-!
-!       Hot water
-!
       qfb_hw_dom = bem_qf_1(4)
-!
-!       Sensible heat to air [W]
-!
       qfb_dom_air = 0
-!
       dom_temp = self%Tair_ind - 273.15 ! [K] to deg.
-!
-!
-!
-!        ?? = (/self%setTwater_tank, self%Twater_tank, self%Twater_vessel,                   &
-!               self%Vwater_vessel, self%flowrate_water_supply, self%flowrate_water_drain/)
       energyEx = self%EnergyExchanges(:)/float(sout%timestep)
       !
-!       # calculate energy balance fluxes for a building, divided by footprint area [W m-2]
-!       # 1) for net all wave radiation Q*
-!       # knet from building = Qsw_transmitted_window + Qsw_absorbed_window + Qsw_absorbed_wallroof
-!       # Lnet = -Qlw_net_extwallroof_to_outair - Qlw_net_extwindow_to_outair
-!
       Qsw_transmitted_window = energyEx(1)/Area ! # transmitted solar radiation through windows [W m-2]
       Qsw_absorbed_window = energyEx(2)/Area ! # absorbed solar radiation by windows [W m-2]
       Qsw_absorbed_wallroof = energyEx(3)/Area ! #absorbed solar heat by walls [W m-2]
@@ -1430,48 +1061,26 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
       ! WRITE(*, *) 'Test: ', Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
       !  Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair
       ! WRITE(*, *) '2: ', Qstar
-!       # 2) sensible energy input into building (QEC)
-!
       qinternal = (energyEx(8) + bem_qf_1(5))/Area ! #sensible internal appliance gain and sensible metabolism [W m-2]
       qe_cool = qcool_dom/self%coeff_performance_cooling/Area ! #energy use by cooling  [W m-2]
       qe_heat = qheat_dom/self%heating_efficiency_air/Area ! #energy use by heating [W m-2]
       QEC = qinternal + qe_cool + qe_heat ! # [W m-2] , Notice: energy use by hot water has not been added yet
-!
-!       # 3) sensible heat flux (QH)
-!
       Qconv_extwindow_to_outair = energyEx(21)/Area ! #convection at windows [W m-2]
       Qconv_extwallroof_to_outair = energyEx(20)/Area ! #convection at wall [W m-2]
       QH = Qconv_extwallroof_to_outair + Qconv_extwindow_to_outair ! #[W m-2]
-!
-!       # 4) storage heat flux (QS)
-!
       qs = energyEx(23)/Area ! #heat storage/release by building fabric and indoor air  [W m-2]
       Qcond_ground = energyEx(17)/Area ! #conduction to external ground [W m-2], if assume ground floor is close to isolated, this flux should be close to 0
       QS = qs + Qcond_ground ! #[W m-2]
-!
-!       # 5) Building air exchange
-!
       Q_ventilation = energyEx(9)/Area ! #ventilation and infiltration
       QBAE = -Q_ventilation ! #[W m-2]
-!
-!       # 6) Waste heat by mechani cooling (waste heat by heating is released into indoor, so not in this part)
-!
       q_waste = energyEx(22)/Area ! # waste heat from cooling  include energy consumption
       QWaste = q_waste ! #[W m-2]
-!
-!       Temperature output
-!
       Textwallroof = self%Textwallroof ! # external surface temperature of wall [K]
       Tintwallroof = self%Tintwallroof ! # internal surface temperature of wall [K]
       Textwindow = self%Textwindow ! # external surface temperature of window [K]
       Tintwindow = self%Tintwindow ! # internal surface temperature of window [K]
       Tair_ind = self%Tair_ind ! # Indoor air temperature [K]
-!
    END DO
-!
-!
-! Store the STEBBS output to building type variables
-!
    self%qfm_dom = qfm_dom
    self%qheat_dom = qheat_dom
    self%qcool_dom = qcool_dom
@@ -1483,48 +1092,29 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
    self%QS = QS
    self%QBAE = QBAE
    self%QWaste = QWaste
-!
-!
    self%flginit = 1
-!
    RETURN
-!
 END SUBROUTINE suewsstebbscouple
-!
-!
-!
-!
 SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
                                density_air_out, cp_air_out, &
                                Qsw_dn_extroof, Qsw_dn_extwall, &
                                Qlw_dn_extwall, Qlw_dn_extroof, &
                                timestep, resolution, datetimeLine, flginit &
                                )
-!
    USE modulestebbsprecision
    USE modulestebbs, ONLY: LBM
-!
    IMPLICIT NONE
-!
    INTEGER :: timestep, resolution
    INTEGER, INTENT(in) :: flginit
    REAL(rprc) :: Tair_out, Tground_deep, Tsurf, density_air_out, &
                  cp_air_out, Qsw_dn_extroof, Qsw_dn_extwall, &
                  Qlw_dn_extwall, Qlw_dn_extroof
    REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
-!
    TYPE(LBM) :: self
-!
-!
-! ReinitialiseHC
-!
    self%Qtotal_heating = 0.0
    self%Qtotal_cooling = 0.0
    self%Qtotal_water_tank = 0.0
    self%qhwtDrain = 0.0
-!
-!
-!
    CALL tstep( &
       flginit, datetimeLine, Tair_out, Tground_deep, Tsurf, &
       density_air_out, cp_air_out, &
@@ -1608,16 +1198,8 @@ SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
       self%qhwtDrain, & !Qloss_drain
       self%Qmetabolic_sensible, & !qsensible_timestepTotal
       self%Qmetabolic_latent) !qlatent_timestepTotal
-!
-!
    RETURN
-!
 END SUBROUTINE timeStepCalculation
-!
-!
-!
-!
-!
 SUBROUTINE tstep( &
    flginit, datetimeLine, Tair_out, Tground_deep, Tsurf, &
    density_air_out, cp_air_out, &
@@ -1692,55 +1274,44 @@ SUBROUTINE tstep( &
    QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal, & !EE(23,24,25)
    Qloss_drain, & !qhwtDrain
    qsensible_timestepTotal, qlatent_timestepTotal) !Qmetabolic_sensible, Qmetabolic_latent
-!
    USE modulestebbsprecision
    USE modulestebbsfunc
-!
    IMPLICIT NONE
-!
    INTEGER, INTENT(in) :: flginit
    REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
    INTEGER :: i
    REAL(rprc) :: Tair_out, Tground_deep, Tsurf, &
                  density_air_out, cp_air_out, Qsw_dn_extroof, &
                  Qsw_dn_extwall, Qlw_dn_extwall, Qlw_dn_extroof
-!    /*** DOMESTIC HOT WATER ***/
    REAL(rprc) :: Twater_tank, & ! Water temperature in Hot Water Tank [K]
                  Tintwall_tank, & ! Hot water tank internal wall temperature [K]
                  Textwall_tank ! Hot water tank external wall temperature [K]
    REAL(rprc) :: dTwater_tank = 0.0, dTintwall_tank = 0.0, dTextwall_tank = 0.0
    REAL(rprc) :: thickness_tankwall ! Hot water tank wall thickness [m]
-!
    REAL(rprc) :: Tincomingwater_tank ! Water temperature of Water coming into the Water Tank [K]
    REAL(rprc) :: Vwater_tank, & ! Volume of Water in Hot Water Tank [m3]
                  Asurf_tank, & ! Surface Area of Hot Water Tank [m2]
                  Vwall_tank, & ! Wall volume of Hot Water Tank [m3]
                  setTwater_tank ! Water Tank setpoint temperature [K]
-!
    REAL(rprc) :: Twater_vessel, & ! Water temperature of water held in use in Building [K]
                  Tintwall_vessel, & ! Hot water tank internal wall temperature [K]
                  Textwall_vessel ! Hot water tank external wall temperature [K]
    REAL(rprc) :: dTwater_vessel = 0.0, dTintwall_vessel = 0.0, dTextwall_vessel = 0.0
    REAL(rprc) :: thickness_wall_vessel ! DHW vessels wall thickness [m]
-!
    REAL(rprc) :: Vwater_vessel ! Volume of water held in use in building [m3]
    REAL(rprc) :: dVwater_vessel = 0.0 ! Change in volume of Domestic Hot Water held in use in building [m3]
    REAL(rprc) :: Awater_vessel, & ! Surface Area of Hot Water in Vessels in Building [m2]
                  Vwall_vessel, & ! Wall volume of Hot water Vessels in Building [m3]
                  flowrate_water_supply, & ! Hot Water Flow Rate [m3 s-1]
                  flowrate_water_drain ! Draining of Domestic Hot Water held in building [m3 s-1]
-!
    REAL(rprc) :: cp_water, & ! Specific Heat Capacity of Domestic Hot Water [J kg-1 K-1]
                  cp_wall_tank, & ! Specific Heat Capacity of Hot Water Tank wall [J kg-1 K-1]
                  cp_wall_vessel ! Specific Heat Capacity of Vessels containing DHW in use in Building [J kg-1 K-1]
-!
    REAL(rprc) :: density_water, & ! Density of water [kg m-3]
                  density_wall_tank, & ! Density of hot water tank wall [kg m-3]
                  density_wall_vessel ! Density of vessels containing DHW in use in buildings [kg m-3]
-!
    REAL(rprc) :: BVF_tank, & ! water tank - building wall view factor [-]
                  MVF_tank ! water tank - building internal mass view factor [-]
-!
    REAL(rprc) :: conductivity_wall_tank, & ! Effective Wall conductivity of the Hot Water Tank [W m-1 K-1]
                  conv_coeff_intwall_tank, & ! Effective Internal Wall convection coefficient of the Hot Water Tank [W m-2 K-1]
                  conv_coeff_extwall_tank, & ! Effective External Wall convection coefficient of the Hot Water Tank [W m-2 K-1]
@@ -1749,22 +1320,16 @@ SUBROUTINE tstep( &
                  conv_coeff_intwall_vessel, & ! Effective Internal Wall convection coefficient of the Vessels holding DHW in use in Building [W m-2 K-1]
                  conv_coeff_extwall_vessel, & ! Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building [W m-2 K-1]
                  emissivity_extwall_vessel ! Effective External Wall emissivity of hot water being used within building [-]
-!    /** NOTE THAT LATENT HEAT FLUX RELATING TO HOT WATER USE CURRENTLY NOT IMPLEMENTED **/
-!
    REAL(rprc) :: maxheatingpower_water, & ! [deg C]
                  heating_efficiency_water ! [-]
-!    /*** END DOMESTIC HOT WATER ***/
-!
    REAL(rprc) :: winT, & ! // window transmisivity [-]
                  winA, & ! // window absorptivity [-]
                  winR, & ! // window reflectivity [-]
                  walT, & ! // wall transmisivity [-]
                  walA, & ! // wall absorptivity [-]
                  walR ! // wall reflectivity [-]
-!
    REAL(rprc) :: Qtotal_heating, & ! // currently only sensible but this needs to be  split into sensible and latent heat components
                  Qtotal_cooling ! // currently only sensible but this needs to be  split into sensible and latent heat components
-!
    REAL(rprc) :: height_building, ratio_window_wall, & ! [m], [-]
                  thickness_wallroof, thickness_groundfloor, depth_ground, thickness_window, & ! [m], [m], [m], [m]
                  !    //float height_building, width, depth, ratio_window_wall, thickness_wallroof, thickness_groundfloor, depth_ground, thickness_window;
@@ -1782,9 +1347,7 @@ SUBROUTINE tstep( &
                  windowTransmissivity, windowAbsorbtivity, windowReflectivity, & ! [-], [-], [-]
                  wallTransmisivity, wallAbsorbtivity, wallReflectivity, & ! [-], [-], [-]
                  BVF_extwall, GVF_extwall, SVF_extwall ! [-], [-], [-]
-!
    REAL(rprc) :: occupants ! Number of occupants [-]
-!
    REAL(rprc) :: metabolic_rate, ratio_metabolic_latent_sensible, & ! [W], [-]
                  appliance_power_rating ! [W]
    INTEGER :: appliance_totalnumber ! Number of appliances [-]
@@ -1796,14 +1359,11 @@ SUBROUTINE tstep( &
                  Afootprint, Vgroundfloor, & ! [m2], [m3]
                  Awindow, Vwindow, & ! [m2], [m3]
                  Vindoormass, Aindoormass ! Assumed internal mass as a cube [m3], [m2]
-!
    REAL(rprc) :: Tair_ind, Tindoormass, Tintwallroof, Textwallroof, & ! [K], [K], [K], [K]
                  Tintwindow, Textwindow, Tintgroundfloor, Textgroundfloor ! [K], [K], [K], [K]
    REAL(rprc) :: dTair_ind = 0.0, dTindoormass = 0.0, dTintwallroof = 0.0, & ! [K], [K], [K]
                  dTextwallroof = 0.0, dTintwindow = 0.0, dTextwindow = 0.0, & ! [K], [K], [K]
                  dTintgroundfloor = 0.0, dTextgroundfloor = 0.0 ! [K], [K]
-!
-!    /*** DOMESTIC HOT WATER ***/
    REAL(rprc) :: Qconv_water_to_inttankwall = 0.0, & ! heat flux to internal wall of hot water tank
                  Qconv_exttankwall_to_indair = 0.0, & ! convective heat flux to external wall of hot water tank
                  Qlw_net_exttankwall_to_intwallroof = 0.0, & !
@@ -1823,22 +1383,15 @@ SUBROUTINE tstep( &
                  Qtotal_net_extwall_tank = 0.0, Qtotal_net_water_vessel = 0.0, &
                  Qtotal_net_intwall_vessel = 0.0, Qtotal_net_extwall_vessel = 0.0
    REAL(rprc) :: qhwt_timestep = 0.0
-!
    REAL(rprc) :: VARatio_water_vessel = 0.0
    REAL(rprc) :: minVwater_vessel
    REAL(rprc) :: weighting_factor_heatcapacity_wallroof
-!    /************************************************************/
-!    /*** END DOMESTIC HOT WATER ***/
-!
    REAL(rprc), DIMENSION(2) :: Ts ! Heating and Cooling setpoint temperature (K)s, respectively
    REAL(rprc), DIMENSION(2) :: Qm ! Metabolic heat, sensible(1) and latent(2)
-!
    INTEGER :: timestep, resolution
-!
    REAL(rprc) :: Qf_ground_timestep = 0.0, &
                  q_heating_timestep = 0.0, &
                  q_cooling_timestep = 0.0
-!
    REAL(rprc) :: Qsw_transmitted_window = 0.0, Qsw_absorbed_window = 0.0, Qsw_absorbed_wallroof = 0.0, &
                  Qconv_indair_to_indoormass = 0.0, Qlw_net_intwallroof_to_allotherindoorsurfaces = 0.0, &
                  Qlw_net_intwindow_to_allotherindoorsurfaces = 0.0, Qlw_net_intgroundfloor_to_allotherindoorsurfaces = 0.0
@@ -1849,11 +1402,6 @@ SUBROUTINE tstep( &
    REAL(rprc) :: Qlw_net_extwallroof_to_outair = 0.0, Qlw_net_extwindow_to_outair = 0.0, &
                  Qconv_extwallroof_to_outair = 0.0, Qconv_extwindow_to_outair = 0.0
    REAL(rprc) :: QS_total = 0.0, QS_fabric = 0.0, QS_air = 0.0
-!    STS - 31/07/2018: Added parameters to return surface fluxes for each timestep.
-!    This allows model user to calculate QfB and Qs externally to the model
-!    and provide a more flexible interface to surface energy balance models.
-!
-! Output vars
    REAL(rprc), INTENT(inout) :: Qsw_transmitted_window_tstepTotal, &
                                 Qsw_absorbed_window_tstepTotal, &
                                 Qsw_absorbed_wallroof_tstepTotal, &
@@ -1880,17 +1428,11 @@ SUBROUTINE tstep( &
                                 qlatent_timestepTotal
    REAL(rprc), INTENT(inout) :: QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal
    REAL(rprc) :: Qmetabolic_sensible = 0.0, Qmetabolic_latent = 0.0
-!
    REAL(rprc) :: Qtotal_net_indoormass = 0.0, Qtotal_net_indair = 0.0, &
                  Qtotal_net_intwallroof = 0.0, Qtotal_net_extwallroof = 0.0, &
                  Qtotal_net_intwindow = 0.0, Qtotal_net_extwindow = 0.0, &
                  Qtotal_net_intgroundfloor = 0.0, Qtotal_net_extgroundfloor = 0.0
-!
-!
    CHARACTER(len=256) :: fout
-!
-! Output cleaning
-!
    Qsw_transmitted_window_tstepTotal = 0.0
    Qsw_absorbed_window_tstepTotal = 0.0
    Qsw_absorbed_wallroof_tstepTotal = 0.0
@@ -1918,34 +1460,20 @@ SUBROUTINE tstep( &
    QS_tstepTotal = 0.0
    QS_fabric_tstepTotal = 0.0
    QS_air_tstepTotal = 0.0
-!
-!
-!
-!
-! Simulation starts
-!    //Used to recalculate Area of DHW in use
    IF (Awater_vessel > 0.0) THEN
       VARatio_water_vessel = Vwater_vessel/Awater_vessel
    END IF
-!
-!    if ((timestep % resolution) == 0) {
-!        for (int i=0;i<(timestep/resolution);i++) {
    IF (MOD(timestep, resolution) == 0) THEN
       looptime: DO i = 1, INT(timestep/resolution), 1
-!
          Qsw_transmitted_window = windowInsolation(Qsw_dn_extwall, winT, Awindow)
          Qsw_absorbed_window = windowInsolation(Qsw_dn_extwall, winA, Awindow)
-!            // Awallroof excludes windows and includes floor area
          Qsw_absorbed_wallroof = &
             wallInsolation(Qsw_dn_extwall, walA, Awallroof - Afootprint) + &
             wallInsolation(Qsw_dn_extroof, walA, Afootprint) !//separate the wall and roof
-!//            printf("Qconv_indair_to_indoormass: %f  Tindoormass: %f  Tair_ind: %f  ", Qconv_indair_to_indoormass, Tindoormass, Tair_ind);
          Qconv_indair_to_indoormass = internalConvectionHeatTransfer(conv_coeff_indoormass, Aindoormass, Tindoormass, Tair_ind)
-!//            printf("Qconv_indair_to_indoormass: %f  Tindoormass: %f  Tair_ind: %f \n", Qconv_indair_to_indoormass, Tindoormass, Tair_ind);
          Qlw_net_intwallroof_to_allotherindoorsurfaces = indoorRadiativeHeatTransfer() ! //  for wall internal radiative exchange
          Qlw_net_intwindow_to_allotherindoorsurfaces = Qlw_net_intwallroof_to_allotherindoorsurfaces ! //  for window internal radiative exchange - TODO: currently no distinction in internal radiative exchanges
          Qlw_net_intgroundfloor_to_allotherindoorsurfaces = Qlw_net_intwallroof_to_allotherindoorsurfaces ! //  for ground floor internal radiative exchange - TODO: currently no distinction in internal radiative exchanges
-!//
          Q_appliance = &
             internalApplianceGains(appliance_power_rating, appliance_usage_factor, appliance_totalnumber)
          Q_ventilation = &
@@ -1956,16 +1484,13 @@ SUBROUTINE tstep( &
             indoorConvectionHeatTransfer(conv_coeff_intwindow, Awindow, Tintwindow, Tair_ind)
          Qconv_indair_to_intgroundfloor = &
             indoorConvectionHeatTransfer(conv_coeff_intgroundfloor, Afootprint, Tintgroundfloor, Tair_ind)
-!//
          q_heating_timestep = heating(Ts(1), Tair_ind, heating_efficiency_air, maxheatingpower_air)
          q_cooling_timestep = cooling(Ts(2), Tair_ind, coeff_performance_cooling, maxcoolingpower_air)
 
          !internalOccupancyGains(occupants, metabolic_rate, ratio_metabolic_latent_sensible, Qmetabolic_sensible, Qmetabolic_latent)
          Qm = internalOccupancyGains(occupants, metabolic_rate, ratio_metabolic_latent_sensible)
-!
          Qmetabolic_sensible = Qm(1)
          Qmetabolic_latent = Qm(2)
-!
          Qloss_efficiency_heating_air = &
             additionalSystemHeatingEnergy(q_heating_timestep, heating_efficiency_air)
          Qcond_wallroof = &
@@ -1989,9 +1514,6 @@ SUBROUTINE tstep( &
          Qconv_extwallroof_to_outair = outdoorConvectionHeatTransfer(conv_coeff_extwallroof, Awallroof, Textwallroof, Tair_out)
          Qconv_extwindow_to_outair = outdoorConvectionHeatTransfer(conv_coeff_extwindow, Awindow, Textwindow, Tair_out)
 
-!
-!            /**************************/
-!            /*** DOMESTIC HOT WATER ***/
          ifVwater_tank: IF (Vwater_tank > 0.0) THEN
             ! // convective heat flux to internal wall of hot water tank
             Qconv_water_to_inttankwall = &
@@ -2025,14 +1547,8 @@ SUBROUTINE tstep( &
             ! //Heat release from hot water heating due to efficiency losses
             Qloss_efficiency_heating_water = &
                additionalSystemHeatingEnergy(qhwt_timestep, heating_efficiency_water)
-!
          END IF ifVwater_tank
-!
-!
-!
-!
          ifVwater_vessel: IF (Vwater_vessel > 0.0) THEN
-!
             ! // heat flux to internal wall of vessels holding DHW in use in building
             Qconv_water_to_intvesselwall = &
                indoorConvectionHeatTransfer &
@@ -2058,69 +1574,28 @@ SUBROUTINE tstep( &
 
             ! //Heat transfer due to use and replacement of water
             ! //qhwt_v = waterUseHeatTransfer(density_water, cp_water, flowrate_water_supply, Tincomingwater_tank, Twater_tank)
-!
          ELSEIF (Vwater_vessel == minVwater_vessel .AND. &
                  flowrate_water_supply < flowrate_water_drain) THEN
-!
             ! //Set Drain Flow rate to be same as usage flow rate to avoid hot water storage going below the set minimum threshold (minVwater_vessel)
             flowrate_water_drain = flowrate_water_supply
-!
          END IF ifVwater_vessel
-!
-!
-!
-!
-!            //TODO: Need to consider the latent component of heat transfer for the DHW in use here also.
 
-!            /************************************************************/
-!            // Need to calculate the temperature change in the hot water tank due to energy flux
          Qtotal_net_water_tank = qhwt_timestep - Qconv_water_to_inttankwall
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change in the hot water tank internal walls to energy flux
          Qtotal_net_intwall_tank = Qconv_water_to_inttankwall - Qcond_tankwall
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change in the hot water tank external walls to energy flux
          Qtotal_net_extwall_tank = &
             Qcond_tankwall - Qconv_exttankwall_to_indair - &
             Qlw_net_exttankwall_to_intwallroof - Qlw_net_exttankwall_to_indoormass
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change in the DHW vessels (i.e. in use hot water) due to energy flux
          Qtotal_net_water_vessel = -Qconv_water_to_intvesselwall
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change in tthe DHW vessels (i.e. in use hot water) internal walls to energy flux
          Qtotal_net_intwall_vessel = Qconv_water_to_intvesselwall - Qcond_vesselwall
-!            /************************************************************/
 
-!            /************************************************************/
-!            // Need to calculate the temperature change in the hot water tank external walls to energy flux
          Qtotal_net_extwall_vessel = &
             Qcond_vesselwall - Qconv_extvesselwall_to_indair - &
             Qlw_net_extvesselwall_to_wallroof - Qlw_net_extvesselwall_to_indoormass
-!            /************************************************************/
 
-!            /*** END DOMESTIC HOT WATER ***/
-!            /******************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change in the internal mass object due to energy flux, given its heat capacity
          Qtotal_net_indoormass = &
             Qsw_transmitted_window + Qconv_indair_to_indoormass + &
             Qlw_net_intwallroof_to_allotherindoorsurfaces + &
             Qlw_net_exttankwall_to_indoormass + Qlw_net_extvesselwall_to_indoormass
-!
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change in the internal volume of air due to energy flux to/from internal mass object AND to/from internal walls.
-!            // and to/from hot water tanks and to/from the DHW held in use in the building.
          Qtotal_net_indair = &
             Q_appliance + Qmetabolic_sensible + Q_ventilation + &
             q_heating_timestep - q_cooling_timestep - Qconv_indair_to_indoormass - &
@@ -2128,123 +1603,62 @@ SUBROUTINE tstep( &
             Qconv_indair_to_intwindow - Qconv_indair_to_intgroundfloor + &
             Qloss_efficiency_heating_air + Qconv_exttankwall_to_indair + &
             Qconv_extvesselwall_to_indair + Qloss_efficiency_heating_water
-!
-!            // TODO: Have not yet considered the latent heat component from occupancy gains!!
-!
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change of the internal wall surface due to internal heat exchanges and conduction through wall. Need an internal wall thermal mass also.
          Qtotal_net_intwallroof = &
             Qconv_indair_to_intwallroof - Qcond_wallroof - &
             Qlw_net_intwallroof_to_allotherindoorsurfaces + &
             Qlw_net_exttankwall_to_intwallroof + Qlw_net_extvesselwall_to_wallroof
-!
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change of the external wall surface due to the conduction through the wall as well as wall surface exchanges with outside environment. Need an external wall thermal mass also.
          Qtotal_net_extwallroof = &
             Qcond_wallroof + Qsw_absorbed_wallroof - &
             Qlw_net_extwallroof_to_outair - Qconv_extwallroof_to_outair
 
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change of the internal window surface due to internal heat exchanges and conduction through wall. Need an internal window thermal mass also.
          Qtotal_net_intwindow = &
             Qconv_indair_to_intwindow - Qcond_window - &
             Qlw_net_intwindow_to_allotherindoorsurfaces
 
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change of the external window surface due to the conduction through the window as well as window surface exchanges with outside environment. Need an external window thermal mass also.
          Qtotal_net_extwindow = &
             Qcond_window + Qsw_absorbed_window - &
             Qlw_net_extwindow_to_outair - Qconv_extwindow_to_outair
-!
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change of the internal ground floor surface due to internal heat exchanges and conduction through floor. Need an internal floor thermal mass also.
          Qtotal_net_intgroundfloor = &
             Qconv_indair_to_intgroundfloor - Qcond_groundfloor - &
             Qlw_net_intgroundfloor_to_allotherindoorsurfaces
 
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Need to calculate the temperature change of the external ground floor surface due to the conduction through the floor as well as surface exchanges with outside ground environment. Need an external wall thermal mass also.
          Qtotal_net_extgroundfloor = Qcond_groundfloor - Qcond_ground
 
-!            // Accumulate the heat storage flux by wall/roof, window, floor, internal mass and air
          QS_total = &
             Qtotal_net_extwallroof + Qtotal_net_intwallroof + &
             Qtotal_net_extwindow + Qtotal_net_intwindow + &
             Qtotal_net_extgroundfloor + Qtotal_net_intgroundfloor + &
             Qtotal_net_indoormass + Qtotal_net_indair
-!
          QS_fabric = &
             Qtotal_net_extwallroof + Qtotal_net_intwallroof + Qtotal_net_extwindow + &
             Qtotal_net_intwindow + Qtotal_net_extgroundfloor + Qtotal_net_intgroundfloor + &
             Qtotal_net_indoormass
-!
          QS_air = Qtotal_net_indair
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // Detected Qf for SUEWS will be the outside wall and window heat flux, ventilation losses, and any additional HVAC system heat ejection related to system COP/efficiency.
-!            // TODO: Consider Heat Storage Flux in this calculation. Where these fluxes are negative they represent the building absorbing heat from outside. This is part of Storage heat flux. There is also a question of how (or even if you can)  separate storage flux from QfB for solar passive gains.
-!            //if (Qlw_net_extwallroof_to_outair < 0) Qlw_net_extwallroof_to_outair=0;  These lines are deleted, negatiev fluxes could happen, indicating building absorbs heat from outdoor environment
-!            //if (Qlw_net_extwindow_to_outair < 0) Qlw_net_extwindow_to_outair=0;
-!            //if (qwoc < 0) qwoc=0;
-!            //if (Qconv_extwindow_to_outair < 0) Qconv_extwindow_to_outair=0;
-!            //if (Q_ventilation > 0) Q_ventilation=0;
-!
          Qf_ground_timestep = Qcond_ground*resolution
-!
-!            /************************************************************/
-!
-!            /************************************************************/
-!            // STS - 31/0718: Adds time resolution heat flux to all building Energy Exchanges
-!            // for building model timestep. Allows for calculating QfB and
-!            // Qs outside of building energy model.
          Qsw_transmitted_window_tstepTotal = &
             Qsw_transmitted_window_tstepTotal + Qsw_transmitted_window*resolution
-!
          Qsw_absorbed_window_tstepTotal = &
             Qsw_absorbed_window_tstepTotal + Qsw_absorbed_window*resolution
-!
          Qsw_absorbed_wallroof_tstepTotal = &
             Qsw_absorbed_wallroof_tstepTotal + Qsw_absorbed_wallroof*resolution
-!
          Qconv_indair_to_indoormass_tstepTotal = &
             Qconv_indair_to_indoormass_tstepTotal + Qconv_indair_to_indoormass*resolution
-!
          Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal = &
             Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal + &
             Qlw_net_intwallroof_to_allotherindoorsurfaces*resolution
-!
          Qlw_net_intwindow_to_allotherindoorsurfaces_tstepTotal = &
             Qlw_net_intwindow_to_allotherindoorsurfaces_tstepTotal + &
             Qlw_net_intwindow_to_allotherindoorsurfaces*resolution
-!
          Qlw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal = &
             Qlw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal + &
             Qlw_net_intgroundfloor_to_allotherindoorsurfaces*resolution
-!
          Q_appliance_tstepTotal = Q_appliance_tstepTotal + Q_appliance*resolution
-!
          Q_ventilation_tstepTotal = Q_ventilation_tstepTotal + Q_ventilation*resolution
-!
          Qconv_indair_to_intwallroof_tstepTotal = &
             Qconv_indair_to_intwallroof_tstepTotal + &
             Qconv_indair_to_intwallroof*resolution
-!
          Qconv_indair_to_intwindow_tstepTotal = &
             Qconv_indair_to_intwindow_tstepTotal + Qconv_indair_to_intwindow*resolution
-!
          Qconv_indair_to_intgroundfloor_tstepTotal = &
             Qconv_indair_to_intgroundfloor_tstepTotal + Qconv_indair_to_intgroundfloor*resolution
 
@@ -2278,176 +1692,89 @@ SUBROUTINE tstep( &
          qsensible_timestepTotal = qsensible_timestepTotal + Qmetabolic_sensible*resolution
 
          qlatent_timestepTotal = qlatent_timestepTotal + Qmetabolic_latent*resolution
-!            /************************************************************/
-!            //Adds timestep of heat storage flux
          QS_tstepTotal = QS_tstepTotal + QS_total*resolution
          QS_fabric_tstepTotal = QS_fabric_tstepTotal + QS_fabric*resolution
          QS_air_tstepTotal = QS_air_tstepTotal + QS_air*resolution
-!            /************************************************************/
-!            // Adds timestep heating/cooling to overall heating/cooling for building model
          Qtotal_heating = Qtotal_heating + (q_heating_timestep*resolution)
          Qtotal_cooling = Qtotal_cooling + (q_cooling_timestep*resolution)
-!
-!            /***** DOMESTIC HOT WATER HEATING *****/
          Qtotal_water_tank = Qtotal_water_tank + (qhwt_timestep*resolution)
-!            /**************************************/
-!
-!            /************************************************************/
-!
-!            /*******************************************************************/
-!            //Building temperature changes calculated for each lumped component
-!            /*******************************************************************/
-!            /************************************************************/
-!            // Temperature Changes calculated for next timestep
-!
-!            /****************************/
-!            /**** DOMESTIC HOT WATER ****/
-!
-!            // temperature (K) of DHW in use in Building due to heat transfer to building
          IF (Vwater_vessel > 0.0) THEN
             dTwater_vessel = &
                (Qtotal_net_water_vessel/(density_water*cp_water)*Vwater_vessel)*resolution
 
             Twater_vessel = Twater_vessel + dTwater_vessel
          END IF
-!
-!            //DHW "vessel" Internal Wall surface temperature (K)
          IF (Vwall_vessel > 0.0) THEN
             dTintwall_vessel = &
                (Qtotal_net_intwall_vessel/((density_wall_vessel*cp_wall_vessel)*(Vwall_vessel/2)))*resolution
             Tintwall_vessel = Tintwall_vessel + dTintwall_vessel
 
-!            //DHW "vessel" External Wall surface temperature (K)
             dTextwall_vessel = &
                (Qtotal_net_extwall_vessel/((density_wall_vessel*cp_wall_vessel)*(Vwall_vessel/2)))*resolution
             Textwall_vessel = Textwall_vessel + dTextwall_vessel
          END IF
-!
-!            //Heat transfer to sewer/drain based on water in building going to drain.
          Qloss_drain = &
             waterUseEnergyLossToDrains(density_water, cp_water, flowrate_water_drain, Twater_vessel, resolution)
-!
-!            //Need to recalculate the volume of DHW in use in building before calculating the temperature (K) of DHW in use.
          dVwater_vessel = (flowrate_water_supply - flowrate_water_drain)*resolution
          Vwater_vessel = Vwater_vessel + dVwater_vessel
-!
-!            //Avoid going below a given minimum volume
          IF (Vwater_vessel < minVwater_vessel) THEN
             Vwater_vessel = minVwater_vessel
          END IF
-!
-!            //Need to recalculate the temperature after mixing of water
          Twater_vessel = &
             (((flowrate_water_supply*resolution)*Twater_tank) + &
              ((Vwater_vessel - (flowrate_water_supply*resolution))*Twater_vessel))/Vwater_vessel
-!
-!            /**********/
-!            //Recalculate DHW vessel surface area and wall volume based on new volume and maintaining the previous
          IF (Vwater_vessel > 0.0) THEN ! //Checks that Volume isn't zero
             Awater_vessel = Vwater_vessel/VARatio_water_vessel
          ELSE ! // if Volume is zero it makes the area also zero
             Awater_vessel = 0.0
          END IF
          Vwall_vessel = Awater_vessel*thickness_wall_vessel
-!            /**********/
-!
-!            //Hot Water Tank water temperature (K)
          IF (Vwater_tank > 0.0) THEN
             dTwater_tank = (Qtotal_net_water_tank/((density_water*cp_water)*Vwater_tank))*resolution !//(Q_hwt/((density_water*cp_water)*Vwater_tank))*resolution ! // resolution in seconds
             Twater_tank = Twater_tank + dTwater_tank
-!//                write(*,*)"HWT Water Temperature: %f, dTwt: %f, Heating Q_hwt_timestep: %f \n", Twater_tank, dTwt, qhwt_timestep
          END IF
-!
-!            // Hot Water Tank Internal Wall surface temperature (K)
          dTintwall_tank = &
             (Qtotal_net_intwall_tank/((density_wall_tank*cp_wall_tank)*(Vwall_tank/2)))*resolution
          Tintwall_tank = Tintwall_tank + dTintwall_tank
-!
-!            // Hot Water Tank External Wall surface temperature (K)
          dTextwall_tank = &
             (Qtotal_net_extwall_tank/((density_wall_tank*cp_wall_tank)*(Vwall_tank/2)))*resolution
          Textwall_tank = Textwall_tank + dTextwall_tank
-!
-!            //Need to recalculate the volume of water in hot water tank before calculating the temperature (K) after mixing with mains water
-!            //NOTE: Currently not implemented as the water tank volume is considered constant at all times.
-!            //dVwt = (flowrate_water_supply - flowrate_water_supply)*resolution;
-!            //Vwater_tank = Vwater_tank + dVwt;
-!
-!            //Need to recalculate the temperature after mixing of mains water with hot water remaining in the tank
          Twater_tank = &
             (((flowrate_water_supply*resolution)*Tincomingwater_tank) + &
              ((Vwater_tank - (flowrate_water_supply*resolution))*Twater_tank))/Vwater_tank
-!
-!            /** END DOMESTIC HOT WATER **/
-!            /****************************/
-!
-!
-!            // Indoor thermal mass temperature (K)
          dTindoormass = (Qtotal_net_indoormass/((density_indoormass*cp_indoormass)*Vindoormass))*resolution ! // resolution in seconds
          Tindoormass = Tindoormass + dTindoormass
-!
-!            // Indoor air temperature (K)
          dTair_ind = (Qtotal_net_indair/((density_air_ind*cp_air_ind)*Vair_ind))*resolution ! // resolution in seconds
          Tair_ind = Tair_ind + dTair_ind
-!
-!            // print "dTi: " + str(dTi)
-!            // print "Tair_ind: " + str(self.Tair_ind)
-!            // print "Qtotal_net_indair: " + str(Qtotal_net_indair)
-!            // print "q_heating_timestep: " + str(q_heating_timestep)
-!
-!            // Internal wall surface temperature (K), use x1 to split heat capacity, impacting surface temperature change with time
          dTintwallroof = &
             (Qtotal_net_intwallroof/((density_wallroof*cp_wallroof)* &
                                      (Vwallroof*(1 - weighting_factor_heatcapacity_wallroof))))*resolution ! // resolution in seconds
          Tintwallroof = Tintwallroof + dTintwallroof
-!
-!            // print "Tintwallroof: " + str(self.Tintwallroof)
-!
-!            // External wall surface temperature (K)
          dTextwallroof = &
             (Qtotal_net_extwallroof/((density_wallroof*cp_wallroof)* &
                                      (Vwallroof*weighting_factor_heatcapacity_wallroof)))*resolution !  // resolution in seconds
          Textwallroof = Textwallroof + dTextwallroof
-!
-!            // Internal window surface temperature (K)
          dTintwindow = (Qtotal_net_intwindow/((density_window*cp_window)*(Vwindow/2)))*resolution ! // resolution in seconds
          Tintwindow = Tintwindow + dTintwindow
-!
-!            // External window surface temperture
          dTextwindow = (Qtotal_net_extwindow/((density_window*cp_window)*(Vwindow/2)))*resolution ! // resolution in seconds
          Textwindow = Textwindow + dTextwindow
-!
-!            // Internal ground floor surface temperature (K)
          dTintgroundfloor = &
             (Qtotal_net_intgroundfloor/((density_groundfloor*cp_groundfloor)*(Vgroundfloor/2)))* &
             resolution ! // resolution in seconds
          Tintgroundfloor = Tintgroundfloor + dTintgroundfloor
-!
-!            // External ground floor surface temperature (K)
          dTextgroundfloor = &
             (Qtotal_net_extgroundfloor/((density_groundfloor*cp_groundfloor)*(Vgroundfloor/2)))* &
             resolution !  // resolution in seconds
          Textgroundfloor = Textgroundfloor + dTextgroundfloor
-!            /************************************************************/
 
       END DO looptime
    ELSE !iftimestepresolution
       !  printf("Timestep: %i not equally divisible by given resolution: %i.\n", timestep, resolution)
       WRITE (*, *) "Timestep: ", timestep, " not equally divisible by given resolution: ", resolution
    END IF
-!
-!
-!
 END SUBROUTINE tstep
-!
-!
-!
-!
 SUBROUTINE reinitialiseTemperatures
 END SUBROUTINE reinitialiseTemperatures
-!
-!
-!
 SUBROUTINE gen_building(stebbsState, bldgState, self)
 
    USE modulestebbs, ONLY: LBM
@@ -2466,12 +1793,9 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%Qmetabolic_sensible = 0.0 ! # Sensible heat flux from people in building
    self%Qmetabolic_latent = 0.0 ! # Latent heat flux from people in building
 
-!        ############ DOMESTIC HOT WATER TOTAL HEATING ############
    self%Qtotal_water_tank = 0.0
    self%qhwtDrain = 0.0
-!
    self%EnergyExchanges(:) = 0.0
-!        ########## END DOMESTIC HOT WATER TOTAL HEATING ##########
 
    ! self%BuildingType = bldgState%BuildingType
    ! self%BuildingName = bldgState%BuildingName
@@ -2563,10 +1887,7 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%viewFactors = (/self%BVF_extwall, self%GVF_extwall, self%SVF_extwall/) !  # Building, ground, and sky view factors
    self%occupantData = (/self%occupants, self%metabolic_rate, &
                          self%ratio_metabolic_latent_sensible/)
-!            #            self.applianceData = [self.appliance_power_rating,self.appliance_totalnumber,self.appliance_usage_factor] # List of appliance related factors [Average appliance power rating, Number of appliances, factor usage of appliances (0 to 1)]
 
-!            #            self.heatingSystem = [self.maxheatingpower_air,self.heating_efficiency_air]
-!            #            self.coolingSystem = [self.maxcoolingpower_air,self.coeff_performance_cooling]
 
    self%Tair_ind = stebbsState%IndoorAirStartTemperature + 273.15 ! # Indoor air temperature (K)
    self%Tindoormass = stebbsState%IndoorMassStartTemperature + 273.15 ! # Indoor mass temperature (K)
@@ -2629,8 +1950,6 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%conv_coeff_extwall_vessel = stebbsState%HotWaterTankExternalWallConvectionCoefficient ! # Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building
    self%emissivity_extwall_vessel = stebbsState%DHWVesselWallConductivity ! # Effective External Wall emissivity of hot water being used within building
 
-!            ## NOTE THAT LATENT HEAT FLUX RELATING TO HOT WATER USE CURRENTLY NOT IMPLEMENTED ##
-!
    self%maxheatingpower_water = bldgState%MaximumHotWaterHeatingPower ! # Watts
    self%heating_efficiency_water = stebbsState%HotWaterHeatingEfficiency
    self%minVwater_vessel = stebbsState%MinimumVolumeOfDHWinUse ! # m3
@@ -2641,20 +1960,12 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%HWPowerAverage = (/30000, 30000, 30000/)
 
 END SUBROUTINE gen_building
-!
-!
 SUBROUTINE create_building(CASE, self, icase)
-!
    USE modulestebbs, ONLY: LBM
-!
    IMPLICIT NONE
-!
    INTEGER, INTENT(in) :: icase
    CHARACTER(len=256) :: CASE
    TYPE(LBM) :: self
-!
-!
-!
    self%idLBM = icase
    ! self%fnmlLBM = './BuildClasses/'//TRIM(CASE)//'.nml'
    self%fnmlLBM = TRIM(CASE)
@@ -2665,13 +1976,9 @@ SUBROUTINE create_building(CASE, self, icase)
    self%Qmetabolic_sensible = 0.0 ! # Sensible heat flux from people in building
    self%Qmetabolic_latent = 0.0 ! # Latent heat flux from people in building
 
-!        ############ DOMESTIC HOT WATER TOTAL HEATING ############
    self%Qtotal_water_tank = 0.0
    self%qhwtDrain = 0.0
-!
    self%EnergyExchanges(:) = 0.0
-!        ########## END DOMESTIC HOT WATER TOTAL HEATING ##########
-!
    self%BuildingType = 'None'
    self%BuildingName = 'Default'
    self%ratio_window_wall = 0.4 ! # window to wall ratio
@@ -2762,10 +2069,7 @@ SUBROUTINE create_building(CASE, self, icase)
    self%viewFactors = (/self%BVF_extwall, self%GVF_extwall, self%SVF_extwall/) !  # Building, ground, and sky view factors
    self%occupantData = (/self%occupants, self%metabolic_rate, &
                          self%ratio_metabolic_latent_sensible/)
-!            #            self.applianceData = [self.appliance_power_rating,self.appliance_totalnumber,self.appliance_usage_factor] # List of appliance related factors [Average appliance power rating, Number of appliances, factor usage of appliances (0 to 1)]
 
-!            #            self.heatingSystem = [self.maxheatingpower_air,self.heating_efficiency_air]
-!            #            self.coolingSystem = [self.maxcoolingpower_air,self.coeff_performance_cooling]
 
    self%Tair_ind = 20 + 273.15 ! # Indoor air temperature (K)
    self%Tindoormass = 20 + 273.15 ! # Indoor mass temperature (K)
@@ -2821,8 +2125,6 @@ SUBROUTINE create_building(CASE, self, icase)
    self%conv_coeff_extwall_vessel = 4 ! # Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building
    self%emissivity_extwall_vessel = 0.88 ! # Effective External Wall emissivity of hot water being used within building
 
-!            ## NOTE THAT LATENT HEAT FLUX RELATING TO HOT WATER USE CURRENTLY NOT IMPLEMENTED ##
-!
    self%maxheatingpower_water = 3000 ! # Watts
    self%heating_efficiency_water = 0.95
    self%minVwater_vessel = 0.1 ! # m3
@@ -2831,88 +2133,5 @@ SUBROUTINE create_building(CASE, self, icase)
    self%HeatingPower_DHW = 3000
 
    self%HWPowerAverage = (/30000, 30000, 30000/)
-!
-!
-!
    RETURN
-!
 END SUBROUTINE create_building
-!
-!
-!
-!
-! #ifndef STEBBSONLINE
-!   program main
-! #else
-!   subroutine main_for_offline
-! #endif
-! !
-!   use modulestebbs
-! !
-!   implicit none
-! !
-!   integer      :: i, j
-! !
-! !
-! !
-!   if ( flgtimecheck == 1 )  call system_clock(time_st, count_p_sec, count_max)
-! !
-! !
-! !
-! ! Test two building types
-! !
-!   read(*,*)nbtype
-!   allocate(cases(nbtype))
-!   allocate(blds(nbtype))
-! !
-! !
-! !
-!   resolution = 1
-! !
-! !
-! !
-!   write(*,*)'++++ STEBBS ++++'
-!   write(*,*)'    + Input namelist case name...'
-! !
-! !
-! !
-!   do i = 1, nbtype, 1
-!       read(*,*)cases(i)
-!       write(*,*)'    + Namelist : ' , './BuildClasses/'// trim(cases(i))//'.nml'
-! !
-!       call create_building(cases(i),blds(i),i)
-! !
-!   enddo
-! !
-! !
-! !
-!   call readsuewsout()
-! !
-! !
-! !
-!   do i = 1, nbtype, 1
-!       call suewsstebbscouple(blds(i))
-!   enddo
-! !
-! !
-! !
-!   do i = 1, nbtype, 1
-!   do j = 1, 4, 1
-!     close(j + 100*i)
-!   enddo
-!   enddo
-! !
-! !
-! !
-!   if ( flgtimecheck == 1 ) then
-!       call system_clock(time_ed)
-!       write(*,*) '    + Elapsed time : ' , real( time_ed - time_st ) / real(count_p_sec)
-!   endif
-! !
-! !
-! !
-! #ifndef STEBBSONLINE
-!   end program
-! #else
-!   end subroutine
-! #endif
