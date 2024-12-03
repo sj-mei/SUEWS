@@ -85,7 +85,7 @@ def gen_WS_DF(df_met):
     Parameters
     ----------
     df_met : pd.DataFrame
-        A dataframe of meterological info that mush include these columns/variables:
+        A dataframe of meterological info that must include these columns/variables:
         - T2: near surface air temperature at 2 m agl
         - RH2: near surface relative humidity at 2 m agl
         - U10: near surface wind speed at 10 m agl
@@ -155,7 +155,7 @@ def gen_WS_DF(df_met):
     return df_ws
 
 
-def pick_year(df_output, n=5):
+def pick_year(df_output, n=1):
     # root mean square differences
     df_rmsd_mon = cal_rmsd_mon(df_output)
 
@@ -500,7 +500,7 @@ DATA PERIODS,1,1,Data,Sunday,1/1,12/31
     """
     text_meta = text_meta.split("\n")[1:-1]
     #change the default latitude, longuitude and timezone from args, which will be used to calculate solar position and received direct solar radiation at each surface in EnergyPlus
-    text_meta[0] = text_meta[0].replace('lat',str(lat)) 
+    text_meta[0] = text_meta[0].replace('lat',str(lat))
     text_meta[0] = text_meta[0].replace('lon',str(lon))
     text_meta[0] = text_meta[0].replace('tz',str(tz))
     # lines = []

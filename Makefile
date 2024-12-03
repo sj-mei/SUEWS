@@ -87,9 +87,11 @@ livehtml:
 
 # If wanted, clean all *.o files after build
 clean:
-	$(MAKE) -C $(suews_dir) clean
-	$(MAKE) -C $(docs_dir) clean
+	$(MAKE) -C $(suews_dir) clean || true
+	$(MAKE) -C $(supy_dir) clean || true
+	$(MAKE) -C $(docs_dir) clean || true
 	rm -rf build dist *.egg-info
+	rm -rf ./ext_lib/spartacus-surface//*/*.mod
 
 # this is to test cibuildwheel locally
 cibw:
