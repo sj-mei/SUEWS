@@ -748,8 +748,19 @@ class WaterDistribution(BaseModel):
     to_water: Optional[float] = Field(None, ge=0, le=1)
     to_runoff: Optional[float] = Field(None, ge=0, le=1)  # For paved/bldgs
     to_soilstore: Optional[float] = Field(None, ge=0, le=1)  # For vegetated surfaces
+    _surface_type: Optional[SurfaceType] = PrivateAttr(None)
 
-    def __init__(self, surface_type: SurfaceType):
+    def __init__(self, surface_type: Optional[SurfaceType] = None, **data):
+        # Store surface type as private attribute
+        super().__init__(**data)
+        self._surface_type = surface_type
+
+        # If surface type is provided, set default values
+        if surface_type:
+            self._set_defaults(surface_type)
+            self.validate_distribution(surface_type)
+
+    def _set_defaults(self, surface_type: SurfaceType):
         # Default distributions based on surface type
         default_distributions = {
             SurfaceType.PAVED: {
@@ -808,16 +819,11 @@ class WaterDistribution(BaseModel):
             },
         }
 
-        # If surface type is provided, use its default distribution
-        # surface_type = data.get('_surface_type')
-        #import pdb; pdb.set_trace()
-        if surface_type and surface_type in default_distributions:
-            # Merge provided data with defaults, prioritising provided data
-            merged_data = {**default_distributions[surface_type]}
-            super().__init__(**merged_data)
-        else:
-            # If no surface type or invalid surface type, just use provided data
-            super().__init__()
+        if surface_type in default_distributions:
+            defaults = default_distributions[surface_type]
+            for key, value in defaults.items():
+                if getattr(self, key) is None:
+                    setattr(self, key, value)
 
     def validate_distribution(self, surface_type: SurfaceType) -> None:
         """Validate water distribution based on surface type"""
@@ -3676,7 +3682,7 @@ class ArchetypeProperties(BaseModel):
             df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name)
 
         return df_state
-    
+
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "ArchetypeProperties":
         """Reconstruct ArchetypeProperties from DataFrame state format."""
