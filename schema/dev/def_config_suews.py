@@ -33,6 +33,7 @@ import math
 #                 'a3': [min_values['a3'].values[0], max_values['a3'].values[0]],
 #             }
 
+
 def init_df_state(grid_id: int) -> pd.DataFrame:
     idx = pd.Index([grid_id], name="grid")
     col = pd.MultiIndex.from_tuples([("gridiv", "0")], names=["var", "ind_dim"])
@@ -84,7 +85,9 @@ class SnowAlb(BaseModel):
 
 
 class WaterUse(BaseModel):
-    wu_total: float = Field(ge=0, description="Total water use", default=0.0) #Default set to 0.0 means no irrigation.
+    wu_total: float = Field(
+        ge=0, description="Total water use", default=0.0
+    )  # Default set to 0.0 means no irrigation.
     wu_auto: float = Field(ge=0, description="Automatic water use", default=0.0)
     wu_manual: float = Field(ge=0, description="Manual water use", default=0.0)
 
@@ -119,9 +122,15 @@ class WaterUse(BaseModel):
 class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
-    state: float = Field(ge=0, description="Initial state of the surface", default=0.0) # Default set to 0.0 means dry surface.
-    soilstore: float = Field(ge=10, description="Initial soil store (essential for QE)", default=150.0) # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
-    snowfrac: Optional[float] = Field(ge=0, le=1, description="Snow fraction", default=0.0) # Default set to 0.0 means no snow on the ground.
+    state: float = Field(
+        ge=0, description="Initial state of the surface", default=0.0
+    )  # Default set to 0.0 means dry surface.
+    soilstore: float = Field(
+        ge=10, description="Initial soil store (essential for QE)", default=150.0
+    )  # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
+    snowfrac: Optional[float] = Field(
+        ge=0, le=1, description="Snow fraction", default=0.0
+    )  # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
     icefrac: Optional[float] = Field(
         ge=0, le=1, description="Ice fraction", default=0.0
@@ -133,9 +142,13 @@ class SurfaceInitialState(BaseModel):
         max_items=5,
         description="Initial temperature for each thermal layer",
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
-    ) # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
-    tsfc: Optional[float] = Field(description="Initial exterior surface temperature", default=15.0)
-    tin: Optional[float] = Field(description="Initial interior surface temperature", default=20.0) #We need to know which model is using this.
+    )  # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
+    tsfc: Optional[float] = Field(
+        description="Initial exterior surface temperature", default=15.0
+    )
+    tin: Optional[float] = Field(
+        description="Initial interior surface temperature", default=20.0
+    )  # We need to know which model is using this.
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
@@ -203,7 +216,8 @@ class SurfaceInitialState(BaseModel):
 
     @classmethod
     def from_df_state(
-        cls, df: pd.DataFrame, grid_id: int, surf_idx: int, str_type: str = "surf") -> "SurfaceInitialState":
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int, str_type: str = "surf"
+    ) -> "SurfaceInitialState":
         """
         Reconstruct SurfaceInitialState from a DataFrame state format.
 
@@ -236,7 +250,8 @@ class SurfaceInitialState(BaseModel):
 
         # Temperature parameters
         temperature = [
-            df.loc[grid_id, (f"temp_{str_type}", f"({surf_idx}, {i})")] for i in range(5)
+            df.loc[grid_id, (f"temp_{str_type}", f"({surf_idx}, {i})")]
+            for i in range(5)
         ]
 
         # Exterior and interior surface temperature
@@ -256,6 +271,7 @@ class SurfaceInitialState(BaseModel):
             tin=tin,
         )
 
+
 class InitialStatePaved(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
 
@@ -267,10 +283,19 @@ class InitialStateBldgs(SurfaceInitialState):
 class InitialStateVeg(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
-    alb_id: float = Field(description="Initial albedo for vegetated surfaces (depends on time of year).", default=0.25)
-    lai_id: float = Field(description="Initial leaf area index (depends on time of year).", default=1.0)
-    gdd_id: float = Field(description="Growing degree days  on day 1 of model run ID", default=0) #We need to check this and give info for setting values.
-    sdd_id: float = Field(description="Senescence degree days ID", default=0) #This need to be consistent with GDD.
+    alb_id: float = Field(
+        description="Initial albedo for vegetated surfaces (depends on time of year).",
+        default=0.25,
+    )
+    lai_id: float = Field(
+        description="Initial leaf area index (depends on time of year).", default=1.0
+    )
+    gdd_id: float = Field(
+        description="Growing degree days  on day 1 of model run ID", default=0
+    )  # We need to check this and give info for setting values.
+    sdd_id: float = Field(
+        description="Senescence degree days ID", default=0
+    )  # This need to be consistent with GDD.
     wu: WaterUse = Field(default_factory=WaterUse)
 
     @model_validator(mode="after")
@@ -364,8 +389,11 @@ class InitialStateEvetr(InitialStateVeg):
         df_state = super().to_df_state(grid_id)
         df_state[("albevetr_id", "0")] = self.alb_id
         return df_state
+
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "InitialStateEvetr":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "InitialStateEvetr":
         """
         Reconstruct InitialStateEvetr from a DataFrame state format.
 
@@ -471,7 +499,9 @@ class InitialStateGrass(InitialStateVeg):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "InitialStateGrass":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "InitialStateGrass":
         """
         Reconstruct InitialStateGrass from a DataFrame state format.
 
@@ -495,7 +525,6 @@ class InitialStateGrass(InitialStateVeg):
 
         # Return a new instance with the updated dictionary
         return cls(**base_instance_dict)
-
 
 
 class InitialStateBsoil(SurfaceInitialState):
@@ -610,7 +639,9 @@ class InitialStates(BaseModel):
             for idx, (name, surface_class) in enumerate(surface_types.items())
         }
 
-        def reconstruct_layers(layer_name: str, surface_class: Type[SurfaceInitialState], n_layers: int) -> List[SurfaceInitialState]:
+        def reconstruct_layers(
+            layer_name: str, surface_class: Type[SurfaceInitialState], n_layers: int
+        ) -> List[SurfaceInitialState]:
             layers = []
             for idx in range(n_layers):
                 try:
@@ -620,8 +651,12 @@ class InitialStates(BaseModel):
                     break
             return layers
 
-        roofs = reconstruct_layers("roof", SurfaceInitialState, len(cls.model_fields["roofs"].default))
-        walls = reconstruct_layers("wall", SurfaceInitialState, len(cls.model_fields["walls"].default))
+        roofs = reconstruct_layers(
+            "roof", SurfaceInitialState, len(cls.model_fields["roofs"].default)
+        )
+        walls = reconstruct_layers(
+            "wall", SurfaceInitialState, len(cls.model_fields["walls"].default)
+        )
 
         return cls(
             snowalb=snowalb,
@@ -635,7 +670,6 @@ class InitialStates(BaseModel):
             roofs=roofs,
             walls=walls,
         )
-
 
 
 class ThermalLayers(BaseModel):
@@ -748,8 +782,19 @@ class WaterDistribution(BaseModel):
     to_water: Optional[float] = Field(None, ge=0, le=1)
     to_runoff: Optional[float] = Field(None, ge=0, le=1)  # For paved/bldgs
     to_soilstore: Optional[float] = Field(None, ge=0, le=1)  # For vegetated surfaces
+    _surface_type: Optional[SurfaceType] = PrivateAttr(None)
 
-    def __init__(self, surface_type: SurfaceType):
+    def __init__(self, surface_type: Optional[SurfaceType] = None, **data):
+        # Store surface type as private attribute
+        super().__init__(**data)
+        self._surface_type = surface_type
+
+        # If surface type is provided, set default values
+        if surface_type:
+            self._set_defaults(surface_type)
+            self.validate_distribution(surface_type)
+
+    def _set_defaults(self, surface_type: SurfaceType):
         # Default distributions based on surface type
         default_distributions = {
             SurfaceType.PAVED: {
@@ -808,16 +853,11 @@ class WaterDistribution(BaseModel):
             },
         }
 
-        # If surface type is provided, use its default distribution
-        # surface_type = data.get('_surface_type')
-        #import pdb; pdb.set_trace()
-        if surface_type and surface_type in default_distributions:
-            # Merge provided data with defaults, prioritising provided data
-            merged_data = {**default_distributions[surface_type]}
-            super().__init__(**merged_data)
-        else:
-            # If no surface type or invalid surface type, just use provided data
-            super().__init__()
+        if surface_type in default_distributions:
+            defaults = default_distributions[surface_type]
+            for key, value in defaults.items():
+                if getattr(self, key) is None:
+                    setattr(self, key, value)
 
     def validate_distribution(self, surface_type: SurfaceType) -> None:
         """Validate water distribution based on surface type"""
@@ -1401,7 +1441,9 @@ class SurfaceProperties(BaseModel):
         return df_final
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "SurfaceProperties":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "SurfaceProperties":
         """Reconstruct surface properties from DataFrame state format."""
 
         # Get surface name
@@ -1455,18 +1497,26 @@ class SurfaceProperties(BaseModel):
             ]:
                 nested_obj = cls.model_fields[property].annotation
                 if nested_obj is not None and hasattr(nested_obj, "from_df_state"):
-                    property_values[property] = nested_obj.from_df_state(df, grid_id, surf_idx)
+                    property_values[property] = nested_obj.from_df_state(
+                        df, grid_id, surf_idx
+                    )
                 continue
             elif property == "thermal_layers":
-                property_values[property] = cls.model_fields["thermal_layers"].annotation.from_df_state(
-                    df, grid_id, surf_idx, surf_name
-                )
+                property_values[property] = cls.model_fields[
+                    "thermal_layers"
+                ].annotation.from_df_state(df, grid_id, surf_idx, surf_name)
             elif property == "irrfrac":
-                property_values[property] = df.loc[grid_id, (f"{property}{surf_name}", "0")]
+                property_values[property] = df.loc[
+                    grid_id, (f"{property}{surf_name}", "0")
+                ]
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
-                property_values[property] = df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")]
+                property_values[property] = df.loc[
+                    grid_id, (f"{property}_surf", f"({surf_idx},)")
+                ]
             else:
-                property_values[property] = df.loc[grid_id, (property, f"({surf_idx},)")]
+                property_values[property] = df.loc[
+                    grid_id, (property, f"({surf_idx},)")
+                ]
 
         return cls(**property_values)
 
@@ -1660,12 +1710,13 @@ class BuildingLayer(BaseModel):
         # Extract optional parameters
         if facet_type == "roof":
             params["roof_albedo_dir_mult_fact"] = df.loc[
-                grid_id, (f"roof_albedo_dir_mult_fact", f"(0, {layer_idx})")]
+                grid_id, (f"roof_albedo_dir_mult_fact", f"(0, {layer_idx})")
+            ]
 
         elif facet_type == "wall":
             params["wall_specular_frac"] = df.loc[
-                grid_id, (f"wall_specular_frac", f"(0, {layer_idx})")]
-
+                grid_id, (f"wall_specular_frac", f"(0, {layer_idx})")
+            ]
 
         # Extract ThermalLayers
         thermal_layers = ThermalLayers.from_df_state(df, grid_id, layer_idx, facet_type)
@@ -1802,9 +1853,11 @@ class VerticalLayers(BaseModel):
         veg_frac = [df.loc[grid_id, ("veg_frac", f"({i},)")] for i in range(nlayer)]
         veg_scale = [df.loc[grid_id, ("veg_scale", f"({i},)")] for i in range(nlayer)]
         building_frac = [
-            df.loc[grid_id, ("building_frac", f"({i},)")] for i in range(nlayer)]
+            df.loc[grid_id, ("building_frac", f"({i},)")] for i in range(nlayer)
+        ]
         building_scale = [
-            df.loc[grid_id, ("building_scale", f"({i},)")] for i in range(nlayer)]
+            df.loc[grid_id, ("building_scale", f"({i},)")] for i in range(nlayer)
+        ]
 
         # Reconstruct roof and wall properties for each layer
         roofs = [RoofLayer.from_df_state(df, grid_id, i, "roof") for i in range(nlayer)]
@@ -1825,8 +1878,12 @@ class VerticalLayers(BaseModel):
 
 class BldgsProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
-    faibldg: float = Field(ge=0, default=0.3, description="Frontal area index of buildings")
-    bldgh: float = Field(ge=3, default=10.0, description="Building height") #We need to check if there is a building - and then this has to be greather than 0, accordingly.
+    faibldg: float = Field(
+        ge=0, default=0.3, description="Frontal area index of buildings"
+    )
+    bldgh: float = Field(
+        ge=3, default=10.0, description="Building height"
+    )  # We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
     )
@@ -1955,28 +2012,56 @@ class ModelControl(BaseModel):
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: int = Field(default=3, description="Method used to calculate net radiation")
-    emissionsmethod: int = Field(default=2, description="Method used to calculate anthropogenic emissions")
-    storageheatmethod: int = Field(default=1, description="Method used to calculate storage heat flux")
-    ohmincqf: int = Field(default=0,description="Include anthropogenic heat in OHM calculations (1) or not (0)")
-    roughlenmommethod: int = Field(default=2, description="Method used to calculate momentum roughness length")
-    roughlenheatmethod: int = Field(default=2, description="Method used to calculate heat roughness length")
-    stabilitymethod: int = Field(default=2, description="Method used for atmospheric stability calculation")
-    smdmethod: int = Field(default=1, description="Method used to calculate soil moisture deficit")
-    waterusemethod: int = Field(default=1, description="Method used to calculate water use")
+    netradiationmethod: int = Field(
+        default=3, description="Method used to calculate net radiation"
+    )
+    emissionsmethod: int = Field(
+        default=2, description="Method used to calculate anthropogenic emissions"
+    )
+    storageheatmethod: int = Field(
+        default=1, description="Method used to calculate storage heat flux"
+    )
+    ohmincqf: int = Field(
+        default=0,
+        description="Include anthropogenic heat in OHM calculations (1) or not (0)",
+    )
+    roughlenmommethod: int = Field(
+        default=2, description="Method used to calculate momentum roughness length"
+    )
+    roughlenheatmethod: int = Field(
+        default=2, description="Method used to calculate heat roughness length"
+    )
+    stabilitymethod: int = Field(
+        default=2, description="Method used for atmospheric stability calculation"
+    )
+    smdmethod: int = Field(
+        default=1, description="Method used to calculate soil moisture deficit"
+    )
+    waterusemethod: int = Field(
+        default=1, description="Method used to calculate water use"
+    )
     diagmethod: int = Field(default=1, description="Method used for model diagnostics")
-    faimethod: int = Field(default=1, description="Method used to calculate frontal area index")
-    localclimatemethod: int = Field(default=0, description="Method used for local climate zone calculations")
-    snowuse: int = Field(default=0, description="Include snow calculations (1) or not (0)")
+    faimethod: int = Field(
+        default=1, description="Method used to calculate frontal area index"
+    )
+    localclimatemethod: int = Field(
+        default=0, description="Method used for local climate zone calculations"
+    )
+    snowuse: int = Field(
+        default=0, description="Include snow calculations (1) or not (0)"
+    )
+    stebbsmethod: int = Field(
+        default=0, description="Method used for stebbs calculations"
+    )
 
     @model_validator(mode="after")
     def check_storageheatmethod(self) -> "ModelPhysics":
-        if (self.storageheatmethod == 1 and self.ohmincqf != 0):
+        if self.storageheatmethod == 1 and self.ohmincqf != 0:
             raise ValueError(
                 f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
                 f"You should switch to OhmIncQf=0.\n"
             )
-        elif (self.storageheatmethod == 2 and self.ohmincqf != 1):
+        elif self.storageheatmethod == 2 and self.ohmincqf != 1:
             raise ValueError(
                 f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
                 f"You should switch to OhmIncQf=1.\n"
@@ -1985,25 +2070,27 @@ class ModelPhysics(BaseModel):
 
     @model_validator(mode="after")
     def check_snowusemethod(self) -> "ModelPhysics":
-        if (self.snowuse == 1):
-                raise ValueError(
-                    f"\nSnowUse is set to {self.snowuse}.\n"
-                    f"There are no checks implemented for this case (snow calculations included in the run).\n"
-                    f"You should switch to SnowUse=0.\n"
-                )
+        if self.snowuse == 1:
+            raise ValueError(
+                f"\nSnowUse is set to {self.snowuse}.\n"
+                f"There are no checks implemented for this case (snow calculations included in the run).\n"
+                f"You should switch to SnowUse=0.\n"
+            )
         return self
+
     # We then need to set to 0 (or None) all the snow-related parameters or rules
     # in the code and return them accordingly in the yml file.
 
     @model_validator(mode="after")
     def check_emissionsmethod(self) -> "ModelPhysics":
-        if (self.emissionsmethod == 45):
-                raise ValueError(
-                    f"\nEmissionsMethod is set to {self.emissionsmethod}.\n"
-                    f"There are no checks implemented for this case (CO2 calculations included in the run).\n"
-                    f"You should switch to EmissionsMethod=0, 1, 2, 3, or 4.\n"
-                )
+        if self.emissionsmethod == 45:
+            raise ValueError(
+                f"\nEmissionsMethod is set to {self.emissionsmethod}.\n"
+                f"There are no checks implemented for this case (CO2 calculations included in the run).\n"
+                f"You should switch to EmissionsMethod=0, 1, 2, 3, or 4.\n"
+            )
         return self
+
     # We then need to set to 0 (or None) all the CO2-related parameters or rules
     # in the code and return them accordingly in the yml file.
 
@@ -2032,6 +2119,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
+            "stebbsmethod",
         ]
         for attr in list_attr:
             set_df_value(attr, getattr(self, attr))
@@ -2066,6 +2154,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
+            "stebbsmethod",
         ]
 
         for attr in list_attr:
@@ -2115,7 +2204,6 @@ class LUMPSParams(BaseModel):
         params = {}
         for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
             params[attr] = df.loc[grid_id, (attr, "0")]
-
 
         return cls(**params)
 
@@ -2238,6 +2326,7 @@ class SPARTACUSParams(BaseModel):
         params = {param: df.loc[grid_id, (param, "0")] for param in spartacus_params}
 
         return cls(**params)
+
 
 class DayProfile(BaseModel):
     working_day: float = Field(default=1.0)
@@ -3115,9 +3204,13 @@ class LAIParams(BaseModel):
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
         if self.laimin > self.laimax:
-            raise ValueError(f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax}).")
+            raise ValueError(
+                f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax})."
+            )
         if self.baset > self.gddfull:
-            raise ValueError(f"baset {self.baset} must be less than gddfull ({self.gddfull}).")
+            raise ValueError(
+                f"baset {self.baset} must be less than gddfull ({self.gddfull})."
+            )
         return self
 
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
@@ -3245,7 +3338,9 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
-            raise ValueError(f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max}).")
+            raise ValueError(
+                f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max})."
+            )
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -3284,8 +3379,6 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         df_state = pd.concat([df_state, df_lai], axis=1).sort_index(axis=1)
 
         return df_state
-
-
 
 
 class EvetrProperties(VegetatedSurfaceProperties):
@@ -3336,8 +3429,12 @@ class DectrProperties(VegetatedSurfaceProperties):
         default=0.1, description="Frontal area index of deciduous trees"
     )
     dectreeh: float = Field(default=15.0, description="Deciduous tree height")
-    pormin_dec: float = Field(ge=0.1, le=0.9, default=0.2, description="Minimum porosity") #pormin_dec cannot be less than 0.1 and greater than 0.9
-    pormax_dec: float = Field(ge=0.1, le=0.9, default=0.6, description="Maximum porosity") #pormax_dec cannot be less than 0.1 and greater than 0.9
+    pormin_dec: float = Field(
+        ge=0.1, le=0.9, default=0.2, description="Minimum porosity"
+    )  # pormin_dec cannot be less than 0.1 and greater than 0.9
+    pormax_dec: float = Field(
+        ge=0.1, le=0.9, default=0.6, description="Maximum porosity"
+    )  # pormax_dec cannot be less than 0.1 and greater than 0.9
     capmax_dec: float = Field(default=100.0, description="Maximum capacity")
     capmin_dec: float = Field(default=10.0, description="Minimum capacity")
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
@@ -3383,6 +3480,7 @@ class DectrProperties(VegetatedSurfaceProperties):
         surf_idx = 3
         instance = super().from_df_state(df, grid_id, surf_idx)
         return instance
+
 
 class GrassProperties(VegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
@@ -3442,13 +3540,17 @@ class SnowParams(BaseModel):
     @model_validator(mode="after")
     def validate_crw_range(self) -> "SnowParams":
         if self.crwmin >= self.crwmax:
-            raise ValueError(f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax}).")
+            raise ValueError(
+                f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax})."
+            )
         return self
 
     @model_validator(mode="after")
     def validate_snowalb_range(self) -> "SnowParams":
         if self.snowalbmin >= self.snowalbmax:
-            raise ValueError(f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax}).")
+            raise ValueError(
+                f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax})."
+            )
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -3605,10 +3707,421 @@ class LandCover(BaseModel):
             "dectr": DectrProperties.from_df_state(df, grid_id),
             "grass": GrassProperties.from_df_state(df, grid_id),
             "bsoil": BsoilProperties.from_df_state(df, grid_id),
-            "water": WaterProperties.from_df_state(df, grid_id)
+            "water": WaterProperties.from_df_state(df, grid_id),
         }
 
         # Return reconstructed instance
+        return cls(**params)
+
+
+class ArchetypeProperties(BaseModel):
+    # BuildingCode=''
+    # BuildingClass=''
+    # BuildingType=''
+    # BuildingName=''
+    BuildingCount: int = Field(
+        default=1, description="Number of buildings of this archetype [-]"
+    )
+    Occupants: int = Field(
+        default=1, description="Number of occupants present in building [-]"
+    )
+    hhs0: int = Field(default=0, description="")
+    age_0_4: int = Field(default=0, description="")
+    age_5_11: int = Field(default=0, description="")
+    age_12_18: int = Field(default=0, description="")
+    age_19_64: int = Field(default=0, description="")
+    age_65plus: int = Field(default=0, description="")
+    stebbs_Height: float = Field(default=0.0, description="Building height [m]")
+    FootprintArea: float = Field(
+        default=0.0, description="Building footprint area [m2]"
+    )
+    WallExternalArea: float = Field(
+        default=0.0, description="External wall area (including window area) [m2]"
+    )
+    RatioInternalVolume: float = Field(
+        default=0.0,
+        description="Ratio of internal mass volume to total building volume [-]",
+    )
+    WWR: float = Field(default=0.0, description="window to wall ratio [-]")
+    WallThickness: float = Field(
+        default=0.0, description="Thickness of external wall and roof (weighted) [m]"
+    )
+    WallEffectiveConductivity: float = Field(
+        default=0.0,
+        description="Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]",
+    )
+    WallDensity: float = Field(
+        default=0.0,
+        description="Effective density of the walls and roof (weighted) [kg m-3]",
+    )
+    WallCp: float = Field(
+        default=0.0,
+        description="Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]",
+    )
+    Wallx1: float = Field(
+        default=0.0,
+        description="Weighting factor for heat capacity of walls and roof [-]",
+    )
+    WallExternalEmissivity: float = Field(
+        default=0.0,
+        description="Emissivity of the external surface of walls and roof [-]",
+    )
+    WallInternalEmissivity: float = Field(
+        default=0.0,
+        description="Emissivity of the internal surface of walls and roof [-]",
+    )
+    WallTransmissivity: float = Field(
+        default=0.0, description="Transmissivity of walls and roof [-]"
+    )
+    WallAbsorbtivity: float = Field(
+        default=0.0, description="Absorbtivity of walls and roof [-]"
+    )
+    WallReflectivity: float = Field(
+        default=0.0,
+        description="Reflectivity of the external surface of walls and roof [-]",
+    )
+    FloorThickness: float = Field(
+        default=0.0, description="Thickness of ground floor [m]"
+    )
+    GroundFloorEffectiveConductivity: float = Field(
+        default=0.0,
+        description="Effective thermal conductivity of ground floor [W m-1 K-1]",
+    )
+    GroundFloorDensity: float = Field(
+        default=0.0, description="Density of the ground floor [kg m-3]"
+    )
+    GroundFloorCp: float = Field(
+        default=0.0,
+        description="Effective specific heat capacity of the ground floor [J kg-1 K-1]",
+    )
+    WindowThickness: float = Field(default=0.0, description="Window thickness [m]")
+    WindowEffectiveConductivity: float = Field(
+        default=0.0, description="Effective thermal conductivity of windows [W m-1 K-1]"
+    )
+    WindowDensity: float = Field(
+        default=0.0, description="Effective density of the windows [kg m-3]"
+    )
+    WindowCp: float = Field(
+        default=0.0,
+        description="Effective specific heat capacity of windows [J kg-1 K-1]",
+    )
+    WindowExternalEmissivity: float = Field(
+        default=0.0, description="Emissivity of the external surface of windows [-]"
+    )
+    WindowInternalEmissivity: float = Field(
+        default=0.0, description="Emissivity of the internal surface of windows [-]"
+    )
+    WindowTransmissivity: float = Field(
+        default=0.0, description="Transmissivity of windows [-]"
+    )
+    WindowAbsorbtivity: float = Field(
+        default=0.0, description="Absorbtivity of windows [-]"
+    )
+    WindowReflectivity: float = Field(
+        default=0.0, description="Reflectivity of the external surface of windows [-]"
+    )
+    InternalMassDensity: float = Field(
+        default=0.0, description="Effective density of the internal mass [kg m-3]"
+    )
+    InternalMassCp: float = Field(
+        default=0.0, description="Specific heat capacity of internal mass [J kg-1 K-1]"
+    )
+    InternalMassEmissivity: float = Field(
+        default=0.0, description="Emissivity of internal mass [-]"
+    )
+    MaxHeatingPower: float = Field(
+        default=0.0, description="Maximum power demand of heating system [W]"
+    )
+    WaterTankWaterVolume: float = Field(
+        default=0.0, description="Volume of water in hot water tank [m3]"
+    )
+    MaximumHotWaterHeatingPower: float = Field(
+        default=0.0, description="Maximum power demand of water heating system [W]"
+    )
+    HeatingSetpointTemperature: float = Field(
+        default=0.0, description="Heating setpoint temperature [degC]"
+    )
+    CoolingSetpointTemperature: float = Field(
+        default=0.0, description="Cooling setpoint temperature [degC]"
+    )
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert ArchetypeProperties to DataFrame state format."""
+
+        df_state = init_df_state(grid_id)
+
+        # Create an empty DataFrame with MultiIndex columns
+        columns = [(field.lower(), "0") for field in self.model_fields.keys()]
+        df_state = pd.DataFrame(
+            index=[grid_id], columns=pd.MultiIndex.from_tuples(columns)
+        )
+
+        # Set the values in the DataFrame
+        for field_name, field_info in self.model_fields.items():
+            df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name)
+
+        return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "ArchetypeProperties":
+        """Reconstruct ArchetypeProperties from DataFrame state format."""
+        # Extract the values from the DataFrame
+        params = {
+            field_name: df.loc[grid_id, (field_name, "0")]
+            for field_name in cls.model_fields.keys()
+        }
+
+        # Create an instance using the extracted parameters
+        return cls(**params)
+
+
+class StebbsProperties(BaseModel):
+    WallInternalConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Internal convection coefficient of walls and roof [W m-2 K-1]",
+    )
+    InternalMassConvectionCoefficient: float = Field(
+        default=0.0, description="Convection coefficient of internal mass [W m-2 K-1]"
+    )
+    FloorInternalConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Internal convection coefficient of ground floor [W m-2 K-1]",
+    )
+    WindowInternalConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Internal convection coefficient of windows [W m-2 K-1]",
+    )
+    WallExternalConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Initial external convection coefficient of walls and roof [W m-2 K-1]",
+    )
+    WindowExternalConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Initial external convection coefficient of windows [W m-2 K-1]",
+    )
+    GroundDepth: float = Field(
+        default=0.0, description="Depth of external ground (deep soil) [m]"
+    )
+    ExternalGroundConductivity: float = Field(default=0.0, description="")
+    IndoorAirDensity: float = Field(
+        default=0.0, description="Density of indoor air [kg m-3]"
+    )
+    IndoorAirCp: float = Field(
+        default=0.0, description="Specific heat capacity of indoor air [J kg-1 K-1]"
+    )
+    WallBuildingViewFactor: float = Field(
+        default=0.0, description="Building view factor of external walls [-]"
+    )
+    WallGroundViewFactor: float = Field(
+        default=0.0, description="Ground view factor of external walls [-]"
+    )
+    WallSkyViewFactor: float = Field(
+        default=0.0, description="Sky view factor of external walls [-]"
+    )
+    MetabolicRate: float = Field(
+        default=0.0, description="Metabolic rate of building occupants [W]"
+    )
+    LatentSensibleRatio: float = Field(
+        default=0.0,
+        description="Latent-to-sensible ratio of metabolic energy release of occupants [-]",
+    )
+    ApplianceRating: float = Field(
+        default=0.0, description="Power demand of single appliance [W]"
+    )
+    TotalNumberofAppliances: float = Field(
+        default=0, description="Number of appliances present in building [-]"
+    )
+    ApplianceUsageFactor: float = Field(
+        default=0.0, description="Number of appliances in use [-]"
+    )
+    HeatingSystemEfficiency: float = Field(
+        default=0.0, description="Efficiency of space heating system [-]"
+    )
+    MaxCoolingPower: float = Field(
+        default=0.0, description="Maximum power demand of cooling system [W]"
+    )
+    CoolingSystemCOP: float = Field(
+        default=0.0, description="Coefficient of performance of cooling system [-]"
+    )
+    VentilationRate: float = Field(
+        default=0.0, description="Ventilation rate (air changes per hour, ACH) [h-1]"
+    )
+    IndoorAirStartTemperature: float = Field(
+        default=0.0, description="Initial indoor air temperature [degC]"
+    )
+    IndoorMassStartTemperature: float = Field(
+        default=0.0, description="Initial indoor mass temperature [degC]"
+    )
+    WallIndoorSurfaceTemperature: float = Field(
+        default=0.0, description="Initial wall/roof indoor surface temperature [degC]"
+    )
+    WallOutdoorSurfaceTemperature: float = Field(
+        default=0.0, description="Initial wall/roof outdoor surface temperature [degC]"
+    )
+    WindowIndoorSurfaceTemperature: float = Field(
+        default=0.0, description="Initial window indoor surface temperature [degC]"
+    )
+    WindowOutdoorSurfaceTemperature: float = Field(
+        default=0.0, description="Initial window outdoor surface temperature [degC]"
+    )
+    GroundFloorIndoorSurfaceTemperature: float = Field(
+        default=0.0,
+        description="Initial ground floor indoor surface temperature [degC]",
+    )
+    GroundFloorOutdoorSurfaceTemperature: float = Field(
+        default=0.0,
+        description="Initial ground floor outdoor surface temperature [degC]",
+    )
+    WaterTankTemperature: float = Field(
+        default=0.0, description="Initial water temperature in hot water tank [degC]"
+    )
+    InternalWallWaterTankTemperature: float = Field(
+        default=0.0,
+        description="Initial hot water tank internal wall temperature [degC]",
+    )
+    ExternalWallWaterTankTemperature: float = Field(
+        default=0.0,
+        description="Initial hot water tank external wall temperature [degC]",
+    )
+    WaterTankWallThickness: float = Field(
+        default=0.0, description="Hot water tank wall thickness [m]"
+    )
+    MainsWaterTemperature: float = Field(
+        default=0.0,
+        description="Temperature of water coming into the water tank [degC]",
+    )
+    WaterTankSurfaceArea: float = Field(
+        default=0.0, description="Surface area of hot water tank cylinder [m2]"
+    )
+    HotWaterHeatingSetpointTemperature: float = Field(
+        default=0.0, description="Water tank setpoint temperature [degC]"
+    )
+    HotWaterTankWallEmissivity: float = Field(
+        default=0.0,
+        description="Effective external wall emissivity of the hot water tank [-]",
+    )
+    DomesticHotWaterTemperatureInUseInBuilding: float = Field(
+        default=0.0,
+        description="Initial water temperature of water held in use in building [degC]",
+    )
+    InternalWallDHWVesselTemperature: float = Field(
+        default=0.0,
+        description="Initial hot water vessel internal wall temperature [degC]",
+    )
+    ExternalWallDHWVesselTemperature: float = Field(
+        default=0.0,
+        description="Initial hot water vessel external wall temperature [degC]",
+    )
+    DHWVesselWallThickness: float = Field(
+        default=0.0, description="Hot water vessel wall thickness [m]"
+    )
+    DHWWaterVolume: float = Field(
+        default=0.0, description="Volume of water held in use in building [m3]"
+    )
+    DHWSurfaceArea: float = Field(
+        default=0.0, description="Surface area of hot water in vessels in building [m2]"
+    )
+    DHWVesselEmissivity: float = Field(
+        default=0.0,
+        description="NEEDS CHECKED! NOT USED (assumed same as DHWVesselWallEmissivity) [-]",
+    )
+    HotWaterFlowRate: float = Field(
+        default=0.0, description="Hot water flow rate from tank to vessel [m3 s-1]"
+    )
+    DHWDrainFlowRate: float = Field(
+        default=0.0,
+        description="Flow rate of hot water held in building to drain [m3 s-1]",
+    )
+    DHWSpecificHeatCapacity: float = Field(
+        default=0.0, description="Specific heat capacity of hot water [J kg-1 K-1]"
+    )
+    HotWaterTankSpecificHeatCapacity: float = Field(
+        default=0.0,
+        description="Specific heat capacity of hot water tank wal [J kg-1 K-1]",
+    )
+    DHWVesselSpecificHeatCapacity: float = Field(
+        default=0.0,
+        description="Specific heat capacity of vessels containing hot water in use in buildings [J kg-1 K-1]",
+    )
+    DHWDensity: float = Field(
+        default=0.0, description="Density of hot water in use [kg m-3]"
+    )
+    HotWaterTankWallDensity: float = Field(
+        default=0.0, description="Density of hot water tank wall [kg m-3]"
+    )
+    DHWVesselDensity: float = Field(
+        default=0.0,
+        description="Density of vessels containing hot water in use [kg m-3]",
+    )
+    HotWaterTankBuildingWallViewFactor: float = Field(
+        default=0.0,
+        description="Water tank/vessel internal building wall/roof view factor [-]",
+    )
+    HotWaterTankInternalMassViewFactor: float = Field(
+        default=0.0,
+        description="Water tank/vessel building internal mass view factor [-]",
+    )
+    HotWaterTankWallConductivity: float = Field(
+        default=0.0,
+        description="Effective wall conductivity of the hot water tank [W m-1 K-1]",
+    )
+    HotWaterTankInternalWallConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Effective internal wall convection coefficient of the hot water tank [W m-2 K-1]",
+    )
+    HotWaterTankExternalWallConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Effective external wall convection coefficient of the hot water tank [W m-2 K-1]",
+    )
+    DHWVesselWallConductivity: float = Field(
+        default=0.0,
+        description="Effective wall conductivity of the hot water tank [W m-1 K-1]",
+    )
+    DHWVesselInternalWallConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Effective internal wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]",
+    )
+    DHWVesselExternalWallConvectionCoefficient: float = Field(
+        default=0.0,
+        description="Effective external wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]",
+    )
+    DHWVesselWallEmissivity: float = Field(
+        default=0.0,
+        description="Effective external wall emissivity of hot water being used within building [-]",
+    )
+    HotWaterHeatingEfficiency: float = Field(
+        default=0.0, description="Efficiency of hot water system [-]"
+    )
+    MinimumVolumeOfDHWinUse: float = Field(
+        default=0.0, description="Minimum volume of hot water in use [m3]"
+    )
+
+    def to_df_state(self, grid_id: int) -> pd.DataFrame:
+        """Convert StebbsProperties to DataFrame state format."""
+        df_state = init_df_state(grid_id)
+
+        # Create an empty DataFrame with MultiIndex columns
+        columns = [(field.lower(), "0") for field in self.model_fields.keys()]
+        df_state = pd.DataFrame(
+            index=[grid_id], columns=pd.MultiIndex.from_tuples(columns)
+        )
+
+        # Set the values in the DataFrame
+        for field_name, field_info in self.model_fields.items():
+            df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name)
+
+        return df_state
+
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "StebbsProperties":
+        """Reconstruct StebbsProperties from DataFrame state format."""
+        # Extract the values from the DataFrame
+        params = {
+            field_name: df.loc[grid_id, (field_name, "0")]
+            for field_name in cls.model_fields.keys()
+        }
+
+        # Create an instance using the extracted parameters
         return cls(**params)
 
 
@@ -3656,6 +4169,14 @@ class SiteProperties(BaseModel):
     spartacus: SPARTACUSParams = Field(
         default_factory=SPARTACUSParams,
         description="Parameters for Solar Parametrizations for Radiative Transfer through Urban Canopy Scheme",
+    )
+    stebbs: StebbsProperties = Field(
+        default_factory=StebbsProperties,
+        description="Parameters for the STEBBS building energy model",
+    )
+    building_archetype: ArchetypeProperties = Field(
+        default_factory=ArchetypeProperties,
+        description="Parameters for building archetypes",
     )
     conductance: Conductance = Field(
         default_factory=Conductance,
@@ -3710,6 +4231,8 @@ class SiteProperties(BaseModel):
         df_snow = self.snow.to_df_state(grid_id)
         df_land_cover = self.land_cover.to_df_state(grid_id)
         df_vertical_layers = self.vertical_layers.to_df_state(grid_id)
+        df_stebbs = self.stebbs.to_df_state(grid_id)
+        df_building_archetype = self.building_archetype.to_df_state(grid_id)
 
         df_state = pd.concat(
             [
@@ -3722,6 +4245,8 @@ class SiteProperties(BaseModel):
                 df_snow,
                 df_land_cover,
                 df_vertical_layers,
+                df_stebbs,
+                df_building_archetype,
             ],
             axis=1,
         )
@@ -3760,7 +4285,9 @@ class SiteProperties(BaseModel):
         params["spartacus"] = SPARTACUSParams.from_df_state(df, grid_id)
         params["conductance"] = Conductance.from_df_state(df, grid_id)
         params["irrigation"] = IrrigationParams.from_df_state(df, grid_id)
-        params["anthropogenic_emissions"] = AnthropogenicEmissions.from_df_state(df, grid_id)
+        params["anthropogenic_emissions"] = AnthropogenicEmissions.from_df_state(
+            df, grid_id
+        )
         params["snow"] = SnowParams.from_df_state(df, grid_id)
         params["land_cover"] = LandCover.from_df_state(df, grid_id)
         params["vertical_layers"] = VerticalLayers.from_df_state(df, grid_id)
@@ -3893,6 +4420,11 @@ class SUEWSConfig(BaseModel):
         df = pd.concat(list_df_site, axis=0)
         # remove duplicate columns
         df = df.loc[:, ~df.columns.duplicated()]
+
+        # set index name
+        df.index.set_names("grid", inplace=True)
+        # set column names
+        df.columns.set_names(["var", "ind_dim"], inplace=True)
         return df
 
     @classmethod

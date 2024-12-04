@@ -347,7 +347,7 @@ CONTAINS
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, SUEWS_SITE, &
                                PHENOLOGY_STATE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                ROUGHNESS_STATE, HEAT_STATE, solar_State, &
-                               SUEWS_STATE, BldgSurf
+                               SUEWS_STATE, BldgSurf, STEBBS_STATE
 
       IMPLICIT NONE
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
@@ -390,8 +390,8 @@ CONTAINS
       REAL(KIND(1D0)) :: svf_ground, svf_roof
       REAL(KIND(1D0)) :: svf_veg
       REAL(KIND(1D0)) :: svf_aveg
-      REAL(KIND(1D0)) :: Kdown, Keast, Knorth, Ksouth, Kup2d, Kwest
-      REAL(KIND(1D0)) :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+      ! REAL(KIND(1D0)) :: Kdown, Keast, Knorth, Ksouth, Kup2d, Kwest
+      ! REAL(KIND(1D0)) :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
 
       ! Internal grids
       !Search directions for Ground View Factors (GVF)
@@ -414,7 +414,8 @@ CONTAINS
          roughnessState => modState%roughnessState, &
          heatState => modState%heatState, &
          solarState => modState%solarState, &
-         phenState => modState%phenState &
+         phenState => modState%phenState, &
+         stebbsState => modState%stebbsState &
          )
          ASSOCIATE ( &
             pavedPrm => siteInfo%lc_paved, &
@@ -467,7 +468,19 @@ CONTAINS
             DiagMethod => config%DiagMethod, &
             StabilityMethod => config%StabilityMethod, &
             EmissionsMethod => config%EmissionsMethod, &
-            Diagnose => config%Diagnose &
+            Diagnose => config%Diagnose, &
+            Kdown2d => stebbsState%Kdown2d, &
+            Kup2d => stebbsState%Kup2d, &
+            Kwest => stebbsState%Kwest, &
+            Keast => stebbsState%Keast, &
+            Knorth => stebbsState%Knorth, &
+            Ksouth => stebbsState%Ksouth, &
+            Ldown2d => stebbsState%Ldown2d, &
+            Lup2d => stebbsState%Lup2d, &
+            Lwest => stebbsState%Lwest, &
+            Least => stebbsState%Least, &
+            Lnorth => stebbsState%Lnorth, &
+            Lsouth => stebbsState%Lsouth &
             )
             IF (sfr_surf(BldgSurf) > 0) THEN
                ! do BEERS calculation
@@ -541,7 +554,7 @@ CONTAINS
                      CALL cylindric_wedge(zen, svfalfa, F_sh)
 
                      ! Calculation of shortwave daytime radiative fluxes !!!
-                     CALL KRoof(radI, radD, radG, F_sh, altitude, svf_roof, svf_veg, shadowroof, psi, alb_bldg, Kdown)
+                     CALL KRoof(radI, radD, radG, F_sh, altitude, svf_roof, svf_veg, shadowroof, psi, alb_bldg, Kdown2d)
                      !Kdown2d = radI*shadowroof*SIN(altitude*DEG2RAD) &
                      !          + radD*svfr &
                      !          ! TODO: #6 F_sh issue: used below is calculated as a variable but
@@ -619,7 +632,7 @@ CONTAINS
                      radD = 0
 
                      !Nocturnal Kfluxes set to 0
-                     Kdown = 0.0
+                     Kdown2d = 0.0
                      Kwest = 0.0
                      Kup2d = 0.0
                      Keast = 0.0
@@ -664,12 +677,12 @@ CONTAINS
                               Least, Lnorth, Lsouth, Lwest) ! output
 
                   ! Calculation of radiant flux density and Tmrt (Mean radiant temperature) !!!
-                  Sstr = absK*(Kdown*Fup + Kup2d*Fup + Knorth*Fside + Keast*Fside + Ksouth*Fside + Kwest*Fside) &
+                  Sstr = absK*(Kdown2d*Fup + Kup2d*Fup + Knorth*Fside + Keast*Fside + Ksouth*Fside + Kwest*Fside) &
                          + absL*(Ldown2d*Fup + Lup2d*Fup + Lnorth*Fside + Least*Fside + Lsouth*Fside + Lwest*Fside)
                   Tmrt = SQRT(SQRT((Sstr/(absL*SBC)))) - 273.15
 
                   dataOutLineBEERS = [azimuth_deg, altitude, radG, radI, radD, &
-                                      Kdown, Kup2d, Ksouth, Kwest, Knorth, Keast, &
+                                      Kdown2d, Kup2d, Ksouth, Kwest, Knorth, Keast, &
                                       Ldown2d, Lup2d, Lsouth, Lwest, Lnorth, Least, &
                                       Tmrt, I0, CI, shadowground, shadowwalls, svf_ground, svf_roof, svf_bldg_veg, &
                                       emis_sky, &

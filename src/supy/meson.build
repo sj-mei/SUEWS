@@ -60,6 +60,8 @@ py.install_sources(
             'sample_run/Input/SUEWS_Veg.txt',
             'sample_run/Input/SUEWS_Water.txt',
             'sample_run/Input/SUEWS_WithinGridWaterDist.txt',
+            'sample_run/Input/test_stebbs_building_typologies.nml',
+            'sample_run/Input/test_stebbs_general_params.nml'
         ],
     ],
     subdir: 'supy',

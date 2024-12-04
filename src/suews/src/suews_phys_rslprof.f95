@@ -229,9 +229,11 @@ CONTAINS
          ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
          CALL RSL_cal_prms( &
             StabilityMethod, & !input
-            nz_above, zarray(nz_can + 1:nz), & !input
+            !nz_above, zarray(nz_can + 1:nz), & !input
+            nz_above + 1, zarray(nz_can:nz), & !input
             zh, L_MOD, sfr_surf, FAI, PAI, & !input
-            psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
+            !psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
+            psihatm_z(nz_can:nz), psihath_z(nz_can:nz), & ! Calculate psihatm_z at zH
             zH_RSL, L_MOD_RSL, & ! output
             Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
 
@@ -1060,9 +1062,11 @@ CONTAINS
                ! Step 0: Calculate grid-cell dependent constants and Beta (crucial for H&F method)
                CALL RSL_cal_prms( &
                   StabilityMethod, & !input
-                  nz_above, zarray(nz_can + 1:nz), & !input
+                  !nz_above, zarray(nz_can + 1:nz), & !input
+                  nz_above + 1, zarray(nz_can:nz), & !input
                   zh, L_MOD, sfr_surf, FAI, PAI, & !input
-                  psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
+                  !psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
+                  psihatm_z(nz_can:nz), psihath_z(nz_can:nz), & !output
                   zH_RSL, L_MOD_RSL, & ! output
                   Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx)
 
@@ -1694,7 +1698,8 @@ CONTAINS
       ! output
       REAL(KIND(1D0)) :: zd_RSL ! zd used in RSL
 
-      zd_RSL = Zh_RSL - (beta**2.)*Lc
+      !zd_RSL = Zh_RSL - (beta**2.)*Lc
+      zd_RSL = Zh_RSL/(1.-EXP(-Zh_RSL/((beta**2.)*Lc))) - (beta**2.)*Lc
       !correct negative values using rule of thumb, TS 24 Jun 2020
       ! if (zd_RSL < 0) zd_RSL = 0.7*Zh_RSL
 
@@ -1890,7 +1895,8 @@ CONTAINS
                                     psihatm_top, psihatm_mid, &
                                     z_top, z_mid, z_btm, &
                                     cm, c2m, &
-                                    zh_RSL, zd_RSL, L_MOD, beta, elm, Lc)
+                                    zh_RSL, zd_RSL, L_MOD_RSL, beta, elm, Lc)
+         !zh_RSL, zd_RSL, L_MOD, beta, elm, Lc)
          psihatm_array(iz - 2) = psihatm_btm
          psihatm_top = psihatm_mid
          psihatm_mid = psihatm_btm
