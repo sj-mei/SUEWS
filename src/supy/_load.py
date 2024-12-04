@@ -1242,9 +1242,10 @@ def load_SUEWS_SurfaceChar_df(path_input):
         elif var == "waterdist":
             dim_x = dict_var_ndim[var]  # [-1::-1]
             val_x0 = val.reshape((len_grid, 9, 6))
-            # directly load the values for commen land covers
+            # directly load the values for common land covers
             val_x1 = val_x0[:, :7]
             # process the ToSoilStore and ToRunoff entries
+            # since only one of ToSoilStore and ToRunoff can be non-zero for each row, we sum them up and combine them
             val_x2 = val_x0[:, 7:].reshape(len_grid, 6, 2).sum(axis=2).reshape(-1, 1, 6)
             # combine valuees of common land convers and special cases
             val_x = np.hstack((val_x1, val_x2))
