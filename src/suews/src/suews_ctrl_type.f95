@@ -55,7 +55,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: to_grass
       REAL(KIND(1D0)) :: to_bsoil
       REAL(KIND(1D0)) :: to_water
-      REAL(KIND(1D0)) :: to_soilstore
+      REAL(KIND(1D0)) :: to_soilstore_or_runoff
    END TYPE WATER_DIST_PRM
 
    TYPE, PUBLIC :: bioCO2_PRM
