@@ -65,7 +65,7 @@ MODULE ctrl_output
    END TYPE varAttr
 
    ! initialise valist
-   TYPE(varAttr) :: varListAll(1200)
+   TYPE(varAttr) :: varListAll(1400)
 
    ! datetime:
    DATA(varListAll(n), n=1, 5)/ &
@@ -1166,6 +1166,60 @@ MODULE ctrl_output
       varAttr('SS_Wall_14', 'mm', f104, 'soil store of wall level 14', aA, 'EHC', 0), &
       varAttr('SS_Wall_15', 'mm', f104, 'soil store of wall level 15', aA, 'EHC', 0) &
       /
+   ! STEBBS info
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 &
+        + ncolumnsDataOutSnow - 5 &
+        + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + ncolumnsDataOutEHC - 5 &
+        + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutBEERS - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL - 5 &
+        + ncolumnsDataOutDebug - 5 &
+        + ncolumnsDataOutSPARTACUS - 5 &
+        + ncolumnsDataOutEHC - 5 &
+        + ncolumnsDataOutSTEBBS - 5 &
+        )/ &
+      varAttr('ws', 'm s-1', f104, 'Wind speed', aA, 'STEBBS', 0), &
+      varAttr('Tair', 'degC', f104, 'Air temperature', aA, 'STEBBS', 0), &
+      varAttr('Tsurf', 'degC', f104, 'Surface temperature', aA, 'STEBBS', 0), &
+      varAttr('Kroof', 'W m-2', f104, 'Downward shortwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Lroof', 'W m-2', f104, 'Downward longwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Kwall', 'W m-2', f104, 'Downward shortwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Lwall', 'W m-2', f104, 'Downward longwave radiation', aA, 'STEBBS', 0), &
+      varAttr('Qheat_dom', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qcool_dom', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('dom_temp', 'degC', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('qfb_hw_dom', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('qfm_dom', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('qfb_dom_air', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qsw_transmitted_window', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qsw_absorbed_window', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qsw_absorbed_wallroof', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qcond_ground', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qlw_net_extwallroof_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qlw_net_extwindow_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qconv_extwallroof_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Qconv_extwindow_to_outair', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('QStar', 'W m-2', f104, 'Net all-wave radiation', aA, 'STEBBS', 0), &
+      varAttr('QEC', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('QH', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('QS', 'W m-2', f104, '(TEMP)', aA, 'STEBBS', 0), &
+      varAttr('QBAE', 'W m-2', f104, '(TEMP)', aA, 'STEBBS', 0), &
+      varAttr('QWaste', 'W m-2', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Textwallroof', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Tintwallroof', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Textwindow', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Tintwindow', '', f104, 'TEMP', aA, 'STEBBS', 0), &
+      varAttr('Tair_ind', '', f104, 'TEMP', aA, 'STEBBS', 0) &
+      /
 
 CONTAINS
    ! main wrapper that handles both txt and nc files
@@ -1180,9 +1234,9 @@ CONTAINS
 
       INTEGER :: n_group_use, err, outLevel, i
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE :: varListX
-      CHARACTER(len=10) :: groupList0(10)
+      CHARACTER(len=10) :: groupList0(11)
       CHARACTER(len=10), DIMENSION(:), ALLOCATABLE :: grpList
-      LOGICAL :: groupCond(10)
+      LOGICAL :: groupCond(11)
 
       ! determine outLevel
       SELECT CASE (WriteOutOption)
@@ -1206,6 +1260,7 @@ CONTAINS
       groupList0(8) = 'debug'
       groupList0(9) = 'SPARTACUS'
       groupList0(10) = 'EHC'
+      groupList0(11) = 'STEBBS'
       groupCond = [ &
                   .TRUE., &
                   .TRUE., &
@@ -1216,7 +1271,8 @@ CONTAINS
                   .TRUE., &
                   .TRUE., &
                   .TRUE., &
-                  StorageHeatMethod == 5 &
+                  StorageHeatMethod == 5, &
+                  .TRUE. &
                   ]
       n_group_use = COUNT(groupCond)
 
@@ -1318,6 +1374,9 @@ CONTAINS
       CASE ('EHC') !EHC
          dataOutX = dataOutEHC(1:irMax, 1:n_var, Gridiv)
 
+      CASE ('STEBBS') !STEBBS
+         dataOutX = dataOutSTEBBS(1:irMax, 1:n_var, Gridiv)
+
       CASE ('DailyState') !DailyState
          ! get correct day index
          CALL unique(INT(PACK(dataOutSUEWS(1:irMax, 2, Gridiv), &
@@ -1411,7 +1470,6 @@ CONTAINS
       fn = 9
       OPEN (fn, file=TRIM(ADJUSTL(FileOutX)), status='unknown')
       ! PRINT*, 'FileOutX in SUEWS_Output_Init: ',FileOutX
-
       ! write out headers
       WRITE (fn, FormatOut) headerOut
       CLOSE (fn)

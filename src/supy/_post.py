@@ -323,9 +323,9 @@ def pack_df_debug_raw(dict_debug):
         pandas.DataFrame: A DataFrame containing the packed debug information.
     """
 
+    # import pdb; pdb.set_trace()
     dict_df_debug = {}
     for k, v in dict_debug.items():
-
         if has_dict(v):
             dict_df_debug[k] = pack_df_debug_raw(v)
         else:
