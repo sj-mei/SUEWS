@@ -3744,118 +3744,178 @@ class ArchetypeProperties(BaseModel):
     # age_19_64: int = Field(default=0, description="")
     # age_65plus: int = Field(default=0, description="")
 
-    stebbs_Height: float = Field(default=0.0, description="Building height [m]")
+    stebbs_Height: float = Field(
+        default=10.0,
+        description="Building height [m]",
+        gt=0.0,
+    )
     FootprintArea: float = Field(
-        default=0.0, description="Building footprint area [m2]"
+        default=64.0,
+        description="Building footprint area [m2]",
+        gt=0.0,
     )
     WallExternalArea: float = Field(
-        default=0.0, description="External wall area (including window area) [m2]"
+        default=80.0,
+        description="External wall area (including window area) [m2]",
+        gt=0.0,
     )
     RatioInternalVolume: float = Field(
-        default=0.0,
+        default=0.01,
         description="Ratio of internal mass volume to total building volume [-]",
+        ge=0.0, le=1.0,
     )
-    WWR: float = Field(default=0.0, description="window to wall ratio [-]")
+    WWR: float = Field(
+        default=0.20,
+        description="window to wall ratio [-]",
+        ge=0.0, le=1.0,
+    )
     WallThickness: float = Field(
-        default=0.0, description="Thickness of external wall and roof (weighted) [m]"
+        default=20.0,
+        description="Thickness of external wall and roof (weighted) [m]",
+        gt=0.0,
     )
     WallEffectiveConductivity: float = Field(
-        default=0.0,
+        default=60.0,
         description="Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]",
+        gt=0.0,
     )
     WallDensity: float = Field(
-        default=0.0,
+        default=1600.0,
         description="Effective density of the walls and roof (weighted) [kg m-3]",
+        gt=0.0,
     )
     WallCp: float = Field(
-        default=0.0,
+        default=850.0,
         description="Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]",
+        gt=0.0,
     )
     Wallx1: float = Field(
-        default=0.0,
+        default=1.0,
         description="Weighting factor for heat capacity of walls and roof [-]",
+        ge=0.0, le=1.0,
     )
     WallExternalEmissivity: float = Field(
-        default=0.0,
+        default=0.9,
         description="Emissivity of the external surface of walls and roof [-]",
+        ge=0.0, le=1.0,
     )
     WallInternalEmissivity: float = Field(
-        default=0.0,
+        default=0.9,
         description="Emissivity of the internal surface of walls and roof [-]",
+        ge=0.0, le=1.0,
     )
     WallTransmissivity: float = Field(
-        default=0.0, description="Transmissivity of walls and roof [-]"
+        default=0.0,
+        description="Transmissivity of walls and roof [-]",
+        ge=0.0, le=1.0,
     )
     WallAbsorbtivity: float = Field(
-        default=0.0, description="Absorbtivity of walls and roof [-]"
+        default=0.8,
+        description="Absorbtivity of walls and roof [-]",
+        ge=0.0, le=1.0,
     )
     WallReflectivity: float = Field(
-        default=0.0,
+        default=0.2,
         description="Reflectivity of the external surface of walls and roof [-]",
+        ge=0.0, le=1.0,
     )
     FloorThickness: float = Field(
-        default=0.0, description="Thickness of ground floor [m]"
+        default=0.2,
+        description="Thickness of ground floor [m]",
+        gt=0.0,
     )
     GroundFloorEffectiveConductivity: float = Field(
-        default=0.0,
+        default=0.15,
         description="Effective thermal conductivity of ground floor [W m-1 K-1]",
+        gt=0.0,
     )
     GroundFloorDensity: float = Field(
-        default=0.0, description="Density of the ground floor [kg m-3]"
+        default=500.0,
+        description="Density of the ground floor [kg m-3]",
+        gt=0.0,
     )
     GroundFloorCp: float = Field(
-        default=0.0,
+        default=1500.0,
         description="Effective specific heat capacity of the ground floor [J kg-1 K-1]",
+        gt=0.0,
     )
-    WindowThickness: float = Field(default=0.0, description="Window thickness [m]")
+    WindowThickness: float = Field(
+        default=0.015,
+        description="Window thickness [m]",
+        gt=0.0,
+    )
     WindowEffectiveConductivity: float = Field(
-        default=0.0, description="Effective thermal conductivity of windows [W m-1 K-1]"
+        default=1.0,
+        description="Effective thermal conductivity of windows [W m-1 K-1]",
+        gt=0.0,
     )
     WindowDensity: float = Field(
-        default=0.0, description="Effective density of the windows [kg m-3]"
+        default=2500.0,
+        description="Effective density of the windows [kg m-3]",
+        gt=0.0,
     )
     WindowCp: float = Field(
-        default=0.0,
+        default=840.0,
         description="Effective specific heat capacity of windows [J kg-1 K-1]",
+        gt=0.0,
     )
     WindowExternalEmissivity: float = Field(
-        default=0.0, description="Emissivity of the external surface of windows [-]"
+        default=0.90,
+        description="Emissivity of the external surface of windows [-]",
+        ge=0.0, le=1.0,
     )
     WindowInternalEmissivity: float = Field(
-        default=0.0, description="Emissivity of the internal surface of windows [-]"
+        default=0.90,
+        description="Emissivity of the internal surface of windows [-]",
+        ge=0.0, le=1.0,
     )
     WindowTransmissivity: float = Field(
-        default=0.0, description="Transmissivity of windows [-]"
+        default=0.90,
+        description="Transmissivity of windows [-]",
+        ge=0.0, le=1.0,
     )
     WindowAbsorbtivity: float = Field(
-        default=0.0, description="Absorbtivity of windows [-]"
+        default=0.01,
+        description="Absorbtivity of windows [-]",
+        ge=0.0, le=1.0,
     )
     WindowReflectivity: float = Field(
-        default=0.0, description="Reflectivity of the external surface of windows [-]"
+        default=0.09,
+        description="Reflectivity of the external surface of windows [-]",
+        ge=0.0, le=1.0,
     )
+    # TODO: Add defaults below here
     InternalMassDensity: float = Field(
-        default=0.0, description="Effective density of the internal mass [kg m-3]"
+        default=0.0,
+        description="Effective density of the internal mass [kg m-3]"
     )
     InternalMassCp: float = Field(
-        default=0.0, description="Specific heat capacity of internal mass [J kg-1 K-1]"
+        default=0.0,
+        description="Specific heat capacity of internal mass [J kg-1 K-1]"
     )
     InternalMassEmissivity: float = Field(
-        default=0.0, description="Emissivity of internal mass [-]"
+        default=0.0,
+        description="Emissivity of internal mass [-]"
     )
     MaxHeatingPower: float = Field(
-        default=0.0, description="Maximum power demand of heating system [W]"
+        default=0.0,
+        description="Maximum power demand of heating system [W]"
     )
     WaterTankWaterVolume: float = Field(
-        default=0.0, description="Volume of water in hot water tank [m3]"
+        default=0.0,
+        description="Volume of water in hot water tank [m3]"
     )
     MaximumHotWaterHeatingPower: float = Field(
-        default=0.0, description="Maximum power demand of water heating system [W]"
+        default=0.0,
+        description="Maximum power demand of water heating system [W]"
     )
     HeatingSetpointTemperature: float = Field(
-        default=0.0, description="Heating setpoint temperature [degC]"
+        default=0.0,
+        description="Heating setpoint temperature [degC]"
     )
     CoolingSetpointTemperature: float = Field(
-        default=0.0, description="Cooling setpoint temperature [degC]"
+        default=0.0,
+        description="Cooling setpoint temperature [degC]"
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
