@@ -651,17 +651,17 @@ CONTAINS
             ws => atmState%U10_ms, &
             Tair_sout => atmState%t2_C, &
             Tsurf_sout => heatState%Tsurf, &
-            Kroof_sout => stebbsState%Kdown2d, &
-            Lroof_sout => stebbsState%Ldown2d, &
+            Kroof_sout => heatState%Kdown2d, &
+            Lroof_sout => heatState%Ldown2d, &
             ! Create an array of the wall states
-            Knorth => stebbsState%Knorth, &
-            Ksouth => stebbsState%Ksouth, &
-            Keast => stebbsState%Keast, &
-            Kwest => stebbsState%Kwest, &
-            Lnorth => stebbsState%Lnorth, &
-            Lsouth => stebbsState%Lsouth, &
-            Least => stebbsState%Least, &
-            Lwest => stebbsState%Lwest &
+            Knorth => heatState%Knorth, &
+            Ksouth => heatState%Ksouth, &
+            Keast => heatState%Keast, &
+            Kwest => heatState%Kwest, &
+            Lnorth => heatState%Lnorth, &
+            Lsouth => heatState%Lsouth, &
+            Least => heatState%Least, &
+            Lwest => heatState%Lwest &
             )
 
             wallStatesK(1) = Knorth
