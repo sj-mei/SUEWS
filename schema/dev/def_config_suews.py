@@ -1085,11 +1085,11 @@ class StorageDrainParams(BaseModel):
             for i, _ in enumerate(
                 [
                     "store_min",
-                    "store_max",
-                    "store_cap",
                     "drain_eq",
                     "drain_coef_1",
                     "drain_coef_2",
+                    "store_max",
+                    "store_cap",
                 ]
             )
         ]
@@ -1106,11 +1106,11 @@ class StorageDrainParams(BaseModel):
         for i, var in enumerate(
             [
                 "store_min",
-                "store_max",
-                "store_cap",
                 "drain_eq",
                 "drain_coef_1",
                 "drain_coef_2",
+                "store_max",
+                "store_cap",
             ]
         ):
             df.loc[grid_id, ("storedrainprm", f"({i}, {surf_idx})")] = getattr(
@@ -1137,11 +1137,11 @@ class StorageDrainParams(BaseModel):
         # Define the parameter names and their indices
         param_map = {
             "store_min": 0,
-            "store_max": 1,
-            "store_cap": 2,
-            "drain_eq": 3,
-            "drain_coef_1": 4,
-            "drain_coef_2": 5,
+            "drain_eq": 1,
+            "drain_coef_1": 2,
+            "drain_coef_2": 3,
+            "store_max": 4,
+            "store_cap": 5,
         }
 
         # Extract the values from the DataFrame
@@ -3715,22 +3715,35 @@ class LandCover(BaseModel):
 
 
 class ArchetypeProperties(BaseModel):
-    # BuildingCode=''
-    # BuildingClass=''
-    # BuildingType=''
-    # BuildingName=''
+    # Not used in STEBBS - DAVE only
+    # BuildingCode='1'
+    # BuildingClass='SampleClass'
+
+    BuildingType='SampleType'
+    BuildingName='SampleBuilding'
     BuildingCount: int = Field(
         default=1, description="Number of buildings of this archetype [-]"
     )
     Occupants: int = Field(
         default=1, description="Number of occupants present in building [-]"
     )
-    hhs0: int = Field(default=0, description="")
-    age_0_4: int = Field(default=0, description="")
-    age_5_11: int = Field(default=0, description="")
-    age_12_18: int = Field(default=0, description="")
-    age_19_64: int = Field(default=0, description="")
-    age_65plus: int = Field(default=0, description="")
+
+    # Not used in STEBBS - DAVE only
+    # hhs0: int = Field(default=0, description="")
+    # hhs1: int = Field(default=0, description="")
+    # hhs2: int = Field(default=0, description="")
+    # hhs3: int = Field(default=0, description="")
+    # hhs4: int = Field(default=0, description="")
+    # hhs5: int = Field(default=0, description="")
+    # hhs6: int = Field(default=0, description="")
+    # hhs7: int = Field(default=0, description="")
+    # hhs8: int = Field(default=0, description="")
+    # age_0_4: int = Field(default=0, description="")
+    # age_5_11: int = Field(default=0, description="")
+    # age_12_18: int = Field(default=0, description="")
+    # age_19_64: int = Field(default=0, description="")
+    # age_65plus: int = Field(default=0, description="")
+
     stebbs_Height: float = Field(default=0.0, description="Building height [m]")
     FootprintArea: float = Field(
         default=0.0, description="Building footprint area [m2]"
