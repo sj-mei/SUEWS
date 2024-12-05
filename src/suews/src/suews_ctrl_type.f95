@@ -729,6 +729,21 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
       REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
       REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
+
+      ! Beers radiation
+      REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
+      REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
+      REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
+      REAL(KIND(1D0)) :: Ksouth ! incoming shortwave radiation from south [W m-2]
+      REAL(KIND(1D0)) :: Knorth ! incoming shortwave radiation from north [W m-2]
+      REAL(KIND(1D0)) :: Keast ! incoming shortwave radiation from east [W m-2]
+      REAL(KIND(1D0)) :: Ldown2d ! incoming longwave radiation onto roof [W m-2]
+      REAL(KIND(1D0)) :: Lup2d ! outgoing longwave radiation from roof [W m-2]
+      REAL(KIND(1D0)) :: Lwest ! incoming longwave radiation from west [W m-2]
+      REAL(KIND(1D0)) :: Lsouth ! incoming longwave radiation from south [W m-2]
+      REAL(KIND(1D0)) :: Lnorth ! incoming longwave radiation from north [W m-2]
+      REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
+
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHeatState_c
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
@@ -818,20 +833,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: DHWVesselWallEmissivity ! Effective external wall emissivity of hot water being used within building [-]
       REAL(KIND(1D0)) :: HotWaterHeatingEfficiency ! Efficiency of hot water system [-]
       REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse ! Minimum volume of hot water in use [m3]
-
-      ! Beers output for STEBBS
-      REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
-      REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
-      REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
-      REAL(KIND(1D0)) :: Ksouth ! incoming shortwave radiation from south [W m-2]
-      REAL(KIND(1D0)) :: Knorth ! incoming shortwave radiation from north [W m-2]
-      REAL(KIND(1D0)) :: Keast ! incoming shortwave radiation from east [W m-2]
-      REAL(KIND(1D0)) :: Ldown2d ! incoming longwave radiation onto roof [W m-2]
-      REAL(KIND(1D0)) :: Lup2d ! outgoing longwave radiation from roof [W m-2]
-      REAL(KIND(1D0)) :: Lwest ! incoming longwave radiation from west [W m-2]
-      REAL(KIND(1D0)) :: Lsouth ! incoming longwave radiation from south [W m-2]
-      REAL(KIND(1D0)) :: Lnorth ! incoming longwave radiation from north [W m-2]
-      REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
 
    END TYPE STEBBS_STATE
 
