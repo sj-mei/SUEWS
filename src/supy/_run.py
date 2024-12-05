@@ -8,7 +8,6 @@ import time
 
 # import logging
 import traceback
-from ast import literal_eval
 from pathlib import Path
 from typing import Tuple
 import pandas
@@ -527,8 +526,9 @@ def pack_var(ser_var: pd.Series) -> np.ndarray:
     try:
         # Convert index strings to tuples of integers
         # e.g. '(1,2)' -> (1,2)
+        # import pdb; pdb.set_trace()
         index_tuples = [
-            tuple(map(int, idx.strip('()').split(',')))
+            tuple(map(int, filter(None, idx.strip('()').split(','))))
             for idx in ser_var.index
         ]
 
@@ -543,11 +543,12 @@ def pack_var(ser_var: pd.Series) -> np.ndarray:
         dimensions = np.array(ser_var_indexed.index[-1]) + 1
 
         # Reshape using Fortran-style ordering to match original
+        # return np.array(ser_var_indexed.values).reshape(dimensions, order="F")
         return np.array(ser_var_indexed.values).reshape(dimensions, order="F")
 
     except (ValueError, AttributeError) as e:
         # Log error and fall back to scalar handling
-        # print(f"Error reshaping Series: {e}")
+        print(f"Error reshaping Series: {e}")
         return np.array([ser_var.iloc[0]])
 
 
