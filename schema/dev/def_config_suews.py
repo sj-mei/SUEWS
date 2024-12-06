@@ -2056,6 +2056,13 @@ class ModelPhysics(BaseModel):
 
     @model_validator(mode="after")
     def check_storageheatmethod(self) -> "ModelPhysics":
+        options = [0, 1, 3, 4] # Based on the ReadTheDocs documentation
+        if self.storageheatmethod not in options:
+            raise ValueError(
+                f"\nStorageHeatMethod is set to {self.storageheatmethod}.\n"
+                f"You should switch to one of the following options: {options}.\n"
+                f"For more details, please refer to the documentation: https://suews.readthedocs.io/en/latest/input_files/RunControl/scheme_options.html#cmdoption-arg-StorageHeatMethod"
+            )
         if self.storageheatmethod == 1 and self.ohmincqf != 0:
             raise ValueError(
                 f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
@@ -3733,10 +3740,12 @@ class ArchetypeProperties(BaseModel):
     BuildingType: str = 'SampleType'
     BuildingName: str = 'SampleBuilding'
     BuildingCount: int = Field(
-        default=1, description="Number of buildings of this archetype [-]"
+        default=1, description="Number of buildings of this archetype [-]",
+        ge=0,
     )
     Occupants: int = Field(
-        default=1, description="Number of occupants present in building [-]"
+        default=1, description="Number of occupants present in building [-]",
+        ge=0,
     )
 
     # Not used in STEBBS - DAVE only
@@ -3934,6 +3943,21 @@ class ArchetypeProperties(BaseModel):
         default=25.0,
         description="Cooling setpoint temperature [degC]",
     )
+
+    @model_validator(mode="after")
+    def validate_radiation_properties(self) -> "ArchetypeProperties":
+        wall_radiation_tot = self.WallTransmissivity + self.WallAbsorbtivity + self.WallReflectivity
+        window_radiation_tot = self.WindowTransmissivity + self.WindowAbsorbtivity + self.WindowReflectivity
+        if wall_radiation_tot != 1:
+            raise ValueError(
+                f"Sum of WallTransmissivity ({self.WallTransmissivity}), WallAbsorbtivity ({self.WallAbsorbtivity}), and WallReflectivity ({self.WallReflectivity}) must be equal to 1."
+            )
+        if window_radiation_tot != 1:
+            raise ValueError(
+                f"Sum of WindowTransmissivity ({self.WindowTransmissivity}), WindowAbsorbtivity ({self.WindowAbsorbtivity}), and WindowReflectivity ({self.WindowReflectivity}) must be equal to 1.\n"
+                f"Current total: {window_radiation_tot}"
+            )
+        return self
 
     @model_validator(mode="after")
     def validate_setpoint_temperature_range(self) -> "ArchetypeProperties":
