@@ -3771,7 +3771,7 @@ class ArchetypeProperties(BaseModel):
         gt=0.0,
     )
     RatioInternalVolume: float = Field(
-        default=0.01,
+        default=0.00,
         description="Ratio of internal mass volume to total building volume [-]",
         ge=0.0, le=1.0,
     )
@@ -3898,36 +3898,50 @@ class ArchetypeProperties(BaseModel):
     # TODO: Add defaults below here
     InternalMassDensity: float = Field(
         default=0.0,
-        description="Effective density of the internal mass [kg m-3]"
+        description="Effective density of the internal mass [kg m-3]",
+        ge=0.0,
     )
     InternalMassCp: float = Field(
         default=0.0,
-        description="Specific heat capacity of internal mass [J kg-1 K-1]"
+        description="Specific heat capacity of internal mass [J kg-1 K-1]",
+        ge=0.0,
     )
     InternalMassEmissivity: float = Field(
         default=0.0,
-        description="Emissivity of internal mass [-]"
+        description="Emissivity of internal mass [-]",
+        ge=0.0, le=1.0,
     )
     MaxHeatingPower: float = Field(
         default=0.0,
-        description="Maximum power demand of heating system [W]"
+        description="Maximum power demand of heating system [W]",
+        ge=0.0,
     )
     WaterTankWaterVolume: float = Field(
         default=0.0,
-        description="Volume of water in hot water tank [m3]"
+        description="Volume of water in hot water tank [m3]",
+        ge=0.0,
     )
     MaximumHotWaterHeatingPower: float = Field(
         default=0.0,
-        description="Maximum power demand of water heating system [W]"
+        description="Maximum power demand of water heating system [W]",
+        ge=0.0,
     )
     HeatingSetpointTemperature: float = Field(
-        default=0.0,
-        description="Heating setpoint temperature [degC]"
+        default=15.0,
+        description="Heating setpoint temperature [degC]",
     )
     CoolingSetpointTemperature: float = Field(
-        default=0.0,
-        description="Cooling setpoint temperature [degC]"
+        default=25.0,
+        description="Cooling setpoint temperature [degC]",
     )
+
+    @model_validator(mode="after")
+    def validate_setpoint_temperature_range(self) -> "ArchetypeProperties":
+        if self.HeatingSetpointTemperature >= self.CoolingSetpointTemperature:
+            raise ValueError(
+                f"HeatingSetpointTemperature ({self.HeatingSetpointTemperature}) must be less than CoolingSetpointTemperature ({self.CoolingSetpointTemperature})."
+            )
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert ArchetypeProperties to DataFrame state format."""
