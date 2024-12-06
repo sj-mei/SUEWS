@@ -2091,6 +2091,16 @@ class ModelPhysics(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def check_stebbsmethod(self) -> "ModelPhysics":
+        if not self.stebbsmethod in [0, 1]:
+            raise ValueError(
+                f"\nStebbsMethod is set to {self.stebbsmethod}.\n"
+                f"This is is not a valid method.\n"
+                f"You should set to StebbsMethod to 0 or 1.\n"
+            )
+        return self
+
     # We then need to set to 0 (or None) all the CO2-related parameters or rules
     # in the code and return them accordingly in the yml file.
 
