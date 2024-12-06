@@ -4550,3 +4550,4 @@ class SUEWSConfig(BaseModel):
         config.model = model
 
         return config
+
