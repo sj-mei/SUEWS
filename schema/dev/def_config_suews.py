@@ -4013,224 +4013,303 @@ class ArchetypeProperties(BaseModel):
 
 class StebbsProperties(BaseModel):
     WallInternalConvectionCoefficient: float = Field(
-        default=0.0,
         description="Internal convection coefficient of walls and roof [W m-2 K-1]",
+        default=0.0,
     )
     InternalMassConvectionCoefficient: float = Field(
-        default=0.0, description="Convection coefficient of internal mass [W m-2 K-1]"
+        description="Convection coefficient of internal mass [W m-2 K-1]",
+        default=0.0, 
     )
     FloorInternalConvectionCoefficient: float = Field(
-        default=0.0,
         description="Internal convection coefficient of ground floor [W m-2 K-1]",
+        default=0.0,
     )
     WindowInternalConvectionCoefficient: float = Field(
-        default=0.0,
         description="Internal convection coefficient of windows [W m-2 K-1]",
+        default=0.0,
     )
     WallExternalConvectionCoefficient: float = Field(
-        default=0.0,
         description="Initial external convection coefficient of walls and roof [W m-2 K-1]",
+        default=0.0,
     )
     WindowExternalConvectionCoefficient: float = Field(
-        default=0.0,
         description="Initial external convection coefficient of windows [W m-2 K-1]",
+        default=0.0,
     )
     GroundDepth: float = Field(
-        default=0.0, description="Depth of external ground (deep soil) [m]"
+        description="Depth of external ground (deep soil) [m]",
+        default=1.0,
+        gt=0.0,
     )
-    ExternalGroundConductivity: float = Field(default=0.0, description="")
+    ExternalGroundConductivity: float = Field(
+        description="Conductivity of external ground (deep soil) [W m-1 K-1]",
+        default=0.0,
+    )
     IndoorAirDensity: float = Field(
-        default=0.0, description="Density of indoor air [kg m-3]"
+        description="Density of indoor air [kg m-3]",
+        default=1.2,
+        gt=0.0,
     )
     IndoorAirCp: float = Field(
-        default=0.0, description="Specific heat capacity of indoor air [J kg-1 K-1]"
+        description="Specific heat capacity of indoor air [J kg-1 K-1]",
+        default=1000.0,
+        gt=0.0,
     )
     WallBuildingViewFactor: float = Field(
-        default=0.0, description="Building view factor of external walls [-]"
+        description="Building view factor of external walls [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     WallGroundViewFactor: float = Field(
-        default=0.0, description="Ground view factor of external walls [-]"
+        description="Ground view factor of external walls [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     WallSkyViewFactor: float = Field(
-        default=0.0, description="Sky view factor of external walls [-]"
+        description="Sky view factor of external walls [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     MetabolicRate: float = Field(
-        default=0.0, description="Metabolic rate of building occupants [W]"
+        description="Metabolic rate of building occupants [W]",
+        default=0.0,
+        ge=0.0,
     )
     LatentSensibleRatio: float = Field(
-        default=0.0,
         description="Latent-to-sensible ratio of metabolic energy release of occupants [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     ApplianceRating: float = Field(
-        default=0.0, description="Power demand of single appliance [W]"
+        description="Power demand of single appliance [W]",
+        default=0.0,
+        ge=0.0,
     )
-    TotalNumberofAppliances: float = Field(
-        default=0, description="Number of appliances present in building [-]"
+    TotalNumberofAppliances: int = Field(
+        description="Number of appliances present in building [-]",
+        default=0,
+        ge=0,
     )
     ApplianceUsageFactor: float = Field(
-        default=0.0, description="Number of appliances in use [-]"
+        description="Number of appliances in use [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     HeatingSystemEfficiency: float = Field(
-        default=0.0, description="Efficiency of space heating system [-]"
+        description="Efficiency of space heating system [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     MaxCoolingPower: float = Field(
-        default=0.0, description="Maximum power demand of cooling system [W]"
+        description="Maximum power demand of cooling system [W]",
+        default=0.0,
+        ge=0.0,
     )
     CoolingSystemCOP: float = Field(
-        default=0.0, description="Coefficient of performance of cooling system [-]"
+        description="Coefficient of performance of cooling system [-]",
+        default=0.0,
     )
     VentilationRate: float = Field(
-        default=0.0, description="Ventilation rate (air changes per hour, ACH) [h-1]"
+        description="Ventilation rate (air changes per hour, ACH) [h-1]",
+        default=0.0,
+        ge=0.0,
     )
     IndoorAirStartTemperature: float = Field(
-        default=0.0, description="Initial indoor air temperature [degC]"
+        description="Initial indoor air temperature [degC]",
+        default=20.0,
     )
     IndoorMassStartTemperature: float = Field(
-        default=0.0, description="Initial indoor mass temperature [degC]"
+        description="Initial indoor mass temperature [degC]",
+        default=20.0,
     )
     WallIndoorSurfaceTemperature: float = Field(
-        default=0.0, description="Initial wall/roof indoor surface temperature [degC]"
+        description="Initial wall/roof indoor surface temperature [degC]",
+        default=20.0,
     )
     WallOutdoorSurfaceTemperature: float = Field(
-        default=0.0, description="Initial wall/roof outdoor surface temperature [degC]"
+        description="Initial wall/roof outdoor surface temperature [degC]",
+        default=10.0,
     )
     WindowIndoorSurfaceTemperature: float = Field(
-        default=0.0, description="Initial window indoor surface temperature [degC]"
+        description="Initial window indoor surface temperature [degC]",
+        default=20.0,
     )
     WindowOutdoorSurfaceTemperature: float = Field(
-        default=0.0, description="Initial window outdoor surface temperature [degC]"
+        description="Initial window outdoor surface temperature [degC]",
+        default=10.0,
     )
     GroundFloorIndoorSurfaceTemperature: float = Field(
-        default=0.0,
         description="Initial ground floor indoor surface temperature [degC]",
+        default=20.0,
     )
     GroundFloorOutdoorSurfaceTemperature: float = Field(
-        default=0.0,
         description="Initial ground floor outdoor surface temperature [degC]",
+        default=10.0,
     )
     WaterTankTemperature: float = Field(
-        default=0.0, description="Initial water temperature in hot water tank [degC]"
+        description="Initial water temperature in hot water tank [degC]",
+        default=0.0,
     )
     InternalWallWaterTankTemperature: float = Field(
-        default=0.0,
         description="Initial hot water tank internal wall temperature [degC]",
+        default=0.0,
     )
     ExternalWallWaterTankTemperature: float = Field(
-        default=0.0,
         description="Initial hot water tank external wall temperature [degC]",
+        default=0.0,
     )
     WaterTankWallThickness: float = Field(
-        default=0.0, description="Hot water tank wall thickness [m]"
+        description="Hot water tank wall thickness [m]",
+        default=0.0,
+        ge=0.0,
     )
     MainsWaterTemperature: float = Field(
-        default=0.0,
         description="Temperature of water coming into the water tank [degC]",
+        default=0.0,
     )
     WaterTankSurfaceArea: float = Field(
-        default=0.0, description="Surface area of hot water tank cylinder [m2]"
+        description="Surface area of hot water tank cylinder [m2]",
+        default=0.0,
+        ge=0.0,
     )
     HotWaterHeatingSetpointTemperature: float = Field(
-        default=0.0, description="Water tank setpoint temperature [degC]"
+        description="Water tank setpoint temperature [degC]",
+        default=0.0,
     )
     HotWaterTankWallEmissivity: float = Field(
-        default=0.0,
         description="Effective external wall emissivity of the hot water tank [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     DomesticHotWaterTemperatureInUseInBuilding: float = Field(
-        default=0.0,
         description="Initial water temperature of water held in use in building [degC]",
+        default=0.0,
     )
     InternalWallDHWVesselTemperature: float = Field(
-        default=0.0,
         description="Initial hot water vessel internal wall temperature [degC]",
+        default=0.0,
     )
     ExternalWallDHWVesselTemperature: float = Field(
-        default=0.0,
         description="Initial hot water vessel external wall temperature [degC]",
+        default=0.0,
     )
     DHWVesselWallThickness: float = Field(
-        default=0.0, description="Hot water vessel wall thickness [m]"
+        description="Hot water vessel wall thickness [m]",
+        default=0.0,
+        ge=0.0,
     )
     DHWWaterVolume: float = Field(
-        default=0.0, description="Volume of water held in use in building [m3]"
+        description="Volume of water held in use in building [m3]",
+        default=0.0,
+        ge=0.0,
     )
     DHWSurfaceArea: float = Field(
-        default=0.0, description="Surface area of hot water in vessels in building [m2]"
+        description="Surface area of hot water in vessels in building [m2]",
+        default=0.0,
+        ge=0.0,
     )
     DHWVesselEmissivity: float = Field(
-        default=0.0,
         description="NEEDS CHECKED! NOT USED (assumed same as DHWVesselWallEmissivity) [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     HotWaterFlowRate: float = Field(
-        default=0.0, description="Hot water flow rate from tank to vessel [m3 s-1]"
+        description="Hot water flow rate from tank to vessel [m3 s-1]",
+        default=0.0,
+        ge=0.0,
     )
     DHWDrainFlowRate: float = Field(
-        default=0.0,
         description="Flow rate of hot water held in building to drain [m3 s-1]",
+        default=0.0,
+        ge=0.0,
     )
     DHWSpecificHeatCapacity: float = Field(
-        default=0.0, description="Specific heat capacity of hot water [J kg-1 K-1]"
+        description="Specific heat capacity of hot water [J kg-1 K-1]",
+        default=0.0,
+        ge=0.0,
     )
     HotWaterTankSpecificHeatCapacity: float = Field(
-        default=0.0,
         description="Specific heat capacity of hot water tank wal [J kg-1 K-1]",
+        default=0.0,
+        ge=0.0,
     )
     DHWVesselSpecificHeatCapacity: float = Field(
-        default=0.0,
         description="Specific heat capacity of vessels containing hot water in use in buildings [J kg-1 K-1]",
+        default=0.0,
+        ge=0.0,
     )
     DHWDensity: float = Field(
-        default=0.0, description="Density of hot water in use [kg m-3]"
+        description="Density of hot water in use [kg m-3]",
+        default=0.0,
+        ge=0.0,
     )
     HotWaterTankWallDensity: float = Field(
-        default=0.0, description="Density of hot water tank wall [kg m-3]"
+        description="Density of hot water tank wall [kg m-3]",
+        default=0.0,
+        ge=0.0,
     )
     DHWVesselDensity: float = Field(
-        default=0.0,
         description="Density of vessels containing hot water in use [kg m-3]",
+        default=0.0,
+        ge=0.0,
     )
     HotWaterTankBuildingWallViewFactor: float = Field(
-        default=0.0,
         description="Water tank/vessel internal building wall/roof view factor [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     HotWaterTankInternalMassViewFactor: float = Field(
-        default=0.0,
         description="Water tank/vessel building internal mass view factor [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     HotWaterTankWallConductivity: float = Field(
-        default=0.0,
         description="Effective wall conductivity of the hot water tank [W m-1 K-1]",
+        default=0.0,
     )
     HotWaterTankInternalWallConvectionCoefficient: float = Field(
-        default=0.0,
         description="Effective internal wall convection coefficient of the hot water tank [W m-2 K-1]",
+        default=0.0,
     )
     HotWaterTankExternalWallConvectionCoefficient: float = Field(
-        default=0.0,
         description="Effective external wall convection coefficient of the hot water tank [W m-2 K-1]",
+        default=0.0,
     )
     DHWVesselWallConductivity: float = Field(
-        default=0.0,
         description="Effective wall conductivity of the hot water tank [W m-1 K-1]",
+        default=0.0,
     )
     DHWVesselInternalWallConvectionCoefficient: float = Field(
-        default=0.0,
         description="Effective internal wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]",
+        default=0.0,
     )
     DHWVesselExternalWallConvectionCoefficient: float = Field(
-        default=0.0,
         description="Effective external wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]",
+        default=0.0,
     )
     DHWVesselWallEmissivity: float = Field(
-        default=0.0,
         description="Effective external wall emissivity of hot water being used within building [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     HotWaterHeatingEfficiency: float = Field(
-        default=0.0, description="Efficiency of hot water system [-]"
+        description="Efficiency of hot water system [-]",
+        default=0.0,
+        ge=0.0, le=1.0,
     )
     MinimumVolumeOfDHWinUse: float = Field(
-        default=0.0, description="Minimum volume of hot water in use [m3]"
+        description="Minimum volume of hot water in use [m3]",
+        default=0.0,
+        ge=0.0,
     )
+
+    @model_validator(mode="after")
+    def validate_appliance_properties(self) -> "StebbsProperties":
+        if self.TotalNumberofAppliances > 0 and self.ApplianceRating == 0:
+            raise ValueError(
+                f"ApplianceRating ({self.ApplianceRating}) must be greater than 0 if TotalNumberofAppliances ({self.TotalNumberofAppliances}) is greater than 0."
+            )
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert StebbsProperties to DataFrame state format."""
