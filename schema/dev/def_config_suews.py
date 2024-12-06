@@ -2103,11 +2103,12 @@ class ModelPhysics(BaseModel):
 
     @model_validator(mode="after")
     def check_stebbsmethod(self) -> "ModelPhysics":
-        if not self.stebbsmethod in [0, 1]:
+        options = [0, 1]
+        if not self.stebbsmethod in options:
             raise ValueError(
                 f"\nStebbsMethod is set to {self.stebbsmethod}.\n"
                 f"This is is not a valid method.\n"
-                f"You should set to StebbsMethod to 0 or 1.\n"
+                f"You should set to StebbsMethod from {options}.\n"
             )
         return self
 
@@ -3740,11 +3741,13 @@ class ArchetypeProperties(BaseModel):
     BuildingType: str = 'SampleType'
     BuildingName: str = 'SampleBuilding'
     BuildingCount: int = Field(
-        default=1, description="Number of buildings of this archetype [-]",
-        ge=0,
+        description="Number of buildings of this archetype [-]",
+        default=1,
+        gt=0,
     )
     Occupants: int = Field(
-        default=1, description="Number of occupants present in building [-]",
+        description="Number of occupants present in building [-]",
+        default=1,
         ge=0,
     )
 
@@ -3765,183 +3768,183 @@ class ArchetypeProperties(BaseModel):
     # age_65plus: int = Field(default=0, description="")
 
     stebbs_Height: float = Field(
-        default=10.0,
         description="Building height [m]",
+        default=10.0,
         gt=0.0,
     )
     FootprintArea: float = Field(
-        default=64.0,
         description="Building footprint area [m2]",
+        default=64.0,
         gt=0.0,
     )
     WallExternalArea: float = Field(
-        default=80.0,
         description="External wall area (including window area) [m2]",
+        default=80.0,
         gt=0.0,
     )
     RatioInternalVolume: float = Field(
-        default=0.00,
         description="Ratio of internal mass volume to total building volume [-]",
+        default=0.00,
         ge=0.0, le=1.0,
     )
     WWR: float = Field(
-        default=0.20,
         description="window to wall ratio [-]",
+        default=0.20,
         ge=0.0, le=1.0,
     )
     WallThickness: float = Field(
-        default=20.0,
         description="Thickness of external wall and roof (weighted) [m]",
+        default=20.0,
         gt=0.0,
     )
     WallEffectiveConductivity: float = Field(
-        default=60.0,
         description="Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]",
+        default=60.0,
         gt=0.0,
     )
     WallDensity: float = Field(
-        default=1600.0,
         description="Effective density of the walls and roof (weighted) [kg m-3]",
+        default=1600.0,
         gt=0.0,
     )
     WallCp: float = Field(
-        default=850.0,
         description="Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]",
+        default=850.0,
         gt=0.0,
     )
     Wallx1: float = Field(
-        default=1.0,
         description="Weighting factor for heat capacity of walls and roof [-]",
+        default=1.0,
         ge=0.0, le=1.0,
     )
     WallExternalEmissivity: float = Field(
-        default=0.9,
         description="Emissivity of the external surface of walls and roof [-]",
+        default=0.9,
         ge=0.0, le=1.0,
     )
     WallInternalEmissivity: float = Field(
-        default=0.9,
         description="Emissivity of the internal surface of walls and roof [-]",
+        default=0.9,
         ge=0.0, le=1.0,
     )
     WallTransmissivity: float = Field(
-        default=0.0,
         description="Transmissivity of walls and roof [-]",
+        default=0.0,
         ge=0.0, le=1.0,
     )
     WallAbsorbtivity: float = Field(
-        default=0.8,
         description="Absorbtivity of walls and roof [-]",
+        default=0.8,
         ge=0.0, le=1.0,
     )
     WallReflectivity: float = Field(
-        default=0.2,
         description="Reflectivity of the external surface of walls and roof [-]",
+        default=0.2,
         ge=0.0, le=1.0,
     )
     FloorThickness: float = Field(
-        default=0.2,
         description="Thickness of ground floor [m]",
+        default=0.2,
         gt=0.0,
     )
     GroundFloorEffectiveConductivity: float = Field(
-        default=0.15,
         description="Effective thermal conductivity of ground floor [W m-1 K-1]",
+        default=0.15,
         gt=0.0,
     )
     GroundFloorDensity: float = Field(
-        default=500.0,
         description="Density of the ground floor [kg m-3]",
+        default=500.0,
         gt=0.0,
     )
     GroundFloorCp: float = Field(
-        default=1500.0,
         description="Effective specific heat capacity of the ground floor [J kg-1 K-1]",
+        default=1500.0,
         gt=0.0,
     )
     WindowThickness: float = Field(
-        default=0.015,
         description="Window thickness [m]",
+        default=0.015,
         gt=0.0,
     )
     WindowEffectiveConductivity: float = Field(
-        default=1.0,
         description="Effective thermal conductivity of windows [W m-1 K-1]",
+        default=1.0,
         gt=0.0,
     )
     WindowDensity: float = Field(
-        default=2500.0,
         description="Effective density of the windows [kg m-3]",
+        default=2500.0,
         gt=0.0,
     )
     WindowCp: float = Field(
-        default=840.0,
         description="Effective specific heat capacity of windows [J kg-1 K-1]",
+        default=840.0,
         gt=0.0,
     )
     WindowExternalEmissivity: float = Field(
-        default=0.90,
         description="Emissivity of the external surface of windows [-]",
+        default=0.90,
         ge=0.0, le=1.0,
     )
     WindowInternalEmissivity: float = Field(
-        default=0.90,
         description="Emissivity of the internal surface of windows [-]",
+        default=0.90,
         ge=0.0, le=1.0,
     )
     WindowTransmissivity: float = Field(
-        default=0.90,
         description="Transmissivity of windows [-]",
+        default=0.90,
         ge=0.0, le=1.0,
     )
     WindowAbsorbtivity: float = Field(
-        default=0.01,
         description="Absorbtivity of windows [-]",
+        default=0.01,
         ge=0.0, le=1.0,
     )
     WindowReflectivity: float = Field(
-        default=0.09,
         description="Reflectivity of the external surface of windows [-]",
+        default=0.09,
         ge=0.0, le=1.0,
     )
     # TODO: Add defaults below here
     InternalMassDensity: float = Field(
-        default=0.0,
         description="Effective density of the internal mass [kg m-3]",
+        default=0.0,
         ge=0.0,
     )
     InternalMassCp: float = Field(
-        default=0.0,
         description="Specific heat capacity of internal mass [J kg-1 K-1]",
+        default=0.0,
         ge=0.0,
     )
     InternalMassEmissivity: float = Field(
-        default=0.0,
         description="Emissivity of internal mass [-]",
+        default=0.0,
         ge=0.0, le=1.0,
     )
     MaxHeatingPower: float = Field(
-        default=0.0,
         description="Maximum power demand of heating system [W]",
+        default=0.0,
         ge=0.0,
     )
     WaterTankWaterVolume: float = Field(
-        default=0.0,
         description="Volume of water in hot water tank [m3]",
+        default=0.0,
         ge=0.0,
     )
     MaximumHotWaterHeatingPower: float = Field(
-        default=0.0,
         description="Maximum power demand of water heating system [W]",
+        default=0.0,
         ge=0.0,
     )
     HeatingSetpointTemperature: float = Field(
-        default=15.0,
         description="Heating setpoint temperature [degC]",
+        default=15.0,
     )
     CoolingSetpointTemperature: float = Field(
-        default=25.0,
         description="Cooling setpoint temperature [degC]",
+        default=25.0,
     )
 
     @model_validator(mode="after")
@@ -3950,12 +3953,11 @@ class ArchetypeProperties(BaseModel):
         window_radiation_tot = self.WindowTransmissivity + self.WindowAbsorbtivity + self.WindowReflectivity
         if wall_radiation_tot != 1:
             raise ValueError(
-                f"Sum of WallTransmissivity ({self.WallTransmissivity}), WallAbsorbtivity ({self.WallAbsorbtivity}), and WallReflectivity ({self.WallReflectivity}) must be equal to 1."
+                f"Sum of WallTransmissivity ({self.WallTransmissivity}), WallAbsorbtivity ({self.WallAbsorbtivity}), and WallReflectivity ({self.WallReflectivity}) must be equal to 1. Current total: {window_radiation_tot}"
             )
         if window_radiation_tot != 1:
             raise ValueError(
-                f"Sum of WindowTransmissivity ({self.WindowTransmissivity}), WindowAbsorbtivity ({self.WindowAbsorbtivity}), and WindowReflectivity ({self.WindowReflectivity}) must be equal to 1.\n"
-                f"Current total: {window_radiation_tot}"
+                f"Sum of WindowTransmissivity ({self.WindowTransmissivity}), WindowAbsorbtivity ({self.WindowAbsorbtivity}), and WindowReflectivity ({self.WindowReflectivity}) must be equal to 1. Current total: {window_radiation_tot}"
             )
         return self
 
