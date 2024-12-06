@@ -4692,3 +4692,9 @@ class SUEWSConfig(BaseModel):
         config.model = model
 
         return config
+
+def gen_default_yml():
+    config = SUEWSConfig()
+    # Convert model dump to YAML format
+    with open('./config-suews-default.yml', 'w') as file:
+        yaml.dump(config.model_dump(exclude_none=True), file, sort_keys=False, allow_unicode=True)
