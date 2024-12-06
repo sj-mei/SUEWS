@@ -2090,6 +2090,9 @@ class ModelPhysics(BaseModel):
                 f"You should switch to EmissionsMethod=0, 1, 2, 3, or 4.\n"
             )
         return self
+    
+    # We then need to set to 0 (or None) all the CO2-related parameters or rules
+    # in the code and return them accordingly in the yml file.
 
     @model_validator(mode="after")
     def check_stebbsmethod(self) -> "ModelPhysics":
@@ -2101,8 +2104,6 @@ class ModelPhysics(BaseModel):
             )
         return self
 
-    # We then need to set to 0 (or None) all the CO2-related parameters or rules
-    # in the code and return them accordingly in the yml file.
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model physics properties to DataFrame state format."""
