@@ -13,7 +13,7 @@
     physics:
       netradiationmethod: 3
       emissionsmethod: 2
-      storageheatmethod: 1
+      storageheatmethod: 2
       ohmincqf: 1 # this could be merged above as storageheatmethod=2
       roughlenmommethod: 2
       roughlenheatmethod: 2
@@ -24,13 +24,14 @@
       faimethod: 0
       localclimatemethod: 0
       snowuse: 0
+      stebbsmethod: 0
   site:
     - name: london
       gridiv: 1
       properties:
         lat: 51.5074
         lng: 0.1278
-        alt: 0
+        alt: 10
         timezone: 0
         surfacearea: 1
         z: 40
