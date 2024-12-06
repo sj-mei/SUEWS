@@ -3967,6 +3967,18 @@ class ArchetypeProperties(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def validate_internal_mass_properties(self) -> "ArchetypeProperties":
+        if self.RatioInternalVolume > 0 and self.InternalMassDensity == 0:
+            raise ValueError(
+                f"InternalMassDensity ({self.InternalMassDensity}) must be greater than 0 if RatioInternalVolume ({self.RatioInternalVolume}) is greater than 0."
+            )
+        if self.RatioInternalVolume > 0 and self.InternalMassCp == 0:
+            raise ValueError(
+                f"InternalMassCp ({self.InternalMassCp}) must be greater than 0 if RatioInternalVolume ({self.RatioInternalVolume}) is greater than 0."
+            )
+        return self
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert ArchetypeProperties to DataFrame state format."""
 
