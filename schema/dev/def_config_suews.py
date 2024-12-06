@@ -2051,7 +2051,7 @@ class ModelPhysics(BaseModel):
         default=0, description="Include snow calculations (1) or not (0)"
     )
     stebbsmethod: int = Field(
-        default=0, description="Method used for stebbs calculations"
+        default=0, description="Method for using stebbs calculations"
     )
 
     @model_validator(mode="after")
@@ -3719,8 +3719,8 @@ class ArchetypeProperties(BaseModel):
     # BuildingCode='1'
     # BuildingClass='SampleClass'
 
-    BuildingType='SampleType'
-    BuildingName='SampleBuilding'
+    BuildingType: str = 'SampleType'
+    BuildingName: str = 'SampleBuilding'
     BuildingCount: int = Field(
         default=1, description="Number of buildings of this archetype [-]"
     )
