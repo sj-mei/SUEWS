@@ -405,3 +405,9 @@ src/supy_driver/log.build
 log.build
 save-AVL_6_vars273/
 AVL_*_vars*
+error_info.md
+SuPy.log*
+test-debug.py
+test-debug.ipynb
+file_list.txt
+schema/dev/convert-yml-df.ipynb
