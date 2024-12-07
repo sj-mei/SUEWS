@@ -406,3 +406,7 @@ log.build
 save-AVL_6_vars273/
 AVL_*_vars*
 file_list.txt
+SuPy.log*
+test-debug.py
+test-debug.ipynb
+error_info.md
