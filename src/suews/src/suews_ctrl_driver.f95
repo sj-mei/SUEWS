@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
-                            SUEWS_STATE, SUEWS_DEBUG, &
+                            SUEWS_STATE, SUEWS_DEBUG, STEBBS_STATE, BUILDING_STATE, &
                             output_line, output_block
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
@@ -56,10 +56,12 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
-      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC
+      ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC, &
+      ncolumnsDataOutSTEBBS
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main, BEERS_cal_main_DTS
+   USE stebbs_module, ONLY: stebbsonlinecouple
    USE version, ONLY: git_commit, compiler_ver
    USE time_module, ONLY: SUEWS_cal_dectime_DTS, SUEWS_cal_tstep_DTS, SUEWS_cal_weekday_DTS, &
                           SUEWS_cal_DLS_DTS
@@ -104,6 +106,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
       ! save all output variables in a single derived type
       TYPE(output_line), INTENT(OUT) :: outputLine
       ! ########################################################################################
@@ -203,6 +206,7 @@ CONTAINS
             dataOutLineDebug = -999.
             dataOutLineSPARTACUS = -999.
             dataOutLineDailyState = -999.
+            dataOutLineSTEBBS = -999.
 
             !########################################################################################
             !           main calculation starts here
@@ -458,6 +462,17 @@ CONTAINS
 
             debugState%state_15_beers = modState
 
+            !==============use STEBBS to get localised radiation flux==================
+            ! MP 12 Sep 2024: STEBBS is a simplified BEM
+            IF (config%stebbsmethod == 1) THEN
+               IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
+               CALL stebbsonlinecouple( &
+                  timer, config, forcing, siteInfo, & ! input
+                  modState, & ! input/output:
+                  datetimeLine, & ! input
+                  dataOutLineSTEBBS) ! output
+            END IF
+
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
             CALL SUEWS_update_outputLine_DTS( &
@@ -505,6 +520,7 @@ CONTAINS
             outputLine%dataOutLineSnow = [datetimeLine, dataOutLineSnow]
             outputLine%dataoutLineRSL = [datetimeLine, dataOutLineRSL]
             outputLine%dataOutLineESTM = [datetimeLine, dataOutLineESTM]
+            outputLine%dataOutLineSTEBBS = [datetimeLine, dataOutLineSTEBBS]
 
          END ASSOCIATE
       END ASSOCIATE
@@ -3648,9 +3664,12 @@ CONTAINS
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
       dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
-      dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineEHC, & !input
+      dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineEHC, &
+      dataOutLineSTEBBS, & !input
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS, &
-      dataOutEHC) !inout
+      dataOutEHC, &
+      dataOutSTEBBS &
+      ) !inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: ReadLinesMetdata
@@ -3669,6 +3688,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutBEERS), INTENT(in) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutDebug), INTENT(in) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSPARTACUS), INTENT(in) :: dataOutLineSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS), INTENT(in) :: dataOutLineSTEBBS
 
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
@@ -3678,6 +3698,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutBEERS(ReadLinesMetdata, ncolumnsdataOutBEERS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSPARTACUS(ReadLinesMetdata, ncolumnsDataOutSPARTACUS, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutSTEBBS(ReadLinesMetdata, ncolumnsDataOutSTEBBS, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
@@ -3690,6 +3711,7 @@ CONTAINS
       dataOutBEERS(ir, 1:ncolumnsdataOutBEERS, Gridiv) = [set_nan(dataOutLineBEERS)]
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
+      dataOutSTEBBS(ir, 1:ncolumnsDataOutSTEBBS, Gridiv) = [(dataOutLineSTEBBS)]
 
       IF (SnowUse == 1) THEN
          dataOutSnow(ir, 1:ncolumnsDataOutSnow, Gridiv) = [set_nan(dataOutLineSnow)]
@@ -4094,6 +4116,40 @@ CONTAINS
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      stebbsmethod, & ! stebbs building input
+      BuildingCount, Occupants, hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus, stebbs_Height, &
+      FootprintArea, WallExternalArea, RatioInternalVolume, WWR, WallThickness, WallEffectiveConductivity, &
+      WallDensity, WallCp, Wallx1, WallExternalEmissivity, WallInternalEmissivity, WallTransmissivity, &
+      WallAbsorbtivity, WallReflectivity, FloorThickness, GroundFloorEffectiveConductivity, &
+      GroundFloorDensity, GroundFloorCp, WindowThickness, WindowEffectiveConductivity, &
+      WindowDensity, WindowCp, WindowExternalEmissivity, WindowInternalEmissivity, WindowTransmissivity, &
+      WindowAbsorbtivity, WindowReflectivity, InternalMassDensity, InternalMassCp, InternalMassEmissivity, &
+      MaxHeatingPower, WaterTankWaterVolume, MaximumHotWaterHeatingPower, HeatingSetpointTemperature, &
+      CoolingSetpointTemperature, &
+      WallInternalConvectionCoefficient, InternalMassConvectionCoefficient, & ! stebbs general input
+      FloorInternalConvectionCoefficient, WindowInternalConvectionCoefficient, &
+      WallExternalConvectionCoefficient, WindowExternalConvectionCoefficient, &
+      GroundDepth, ExternalGroundConductivity, IndoorAirDensity, IndoorAirCp, &
+      WallBuildingViewFactor, WallGroundViewFactor, WallSkyViewFactor, &
+      MetabolicRate, LatentSensibleRatio, ApplianceRating, &
+      TotalNumberofAppliances, ApplianceUsageFactor, HeatingSystemEfficiency, &
+      MaxCoolingPower, CoolingSystemCOP, VentilationRate, IndoorAirStartTemperature, &
+      IndoorMassStartTemperature, WallIndoorSurfaceTemperature, &
+      WallOutdoorSurfaceTemperature, WindowIndoorSurfaceTemperature, &
+      WindowOutdoorSurfaceTemperature, GroundFloorIndoorSurfaceTemperature, &
+      GroundFloorOutdoorSurfaceTemperature, WaterTankTemperature, &
+      InternalWallWaterTankTemperature, ExternalWallWaterTankTemperature, &
+      WaterTankWallThickness, MainsWaterTemperature, WaterTankSurfaceArea, &
+      HotWaterHeatingSetpointTemperature, HotWaterTankWallEmissivity, &
+      DomesticHotWaterTemperatureInUseInBuilding, InternalWallDHWVesselTemperature, &
+      ExternalWallDHWVesselTemperature, DHWVesselWallThickness, DHWWaterVolume, &
+      DHWSurfaceArea, DHWVesselEmissivity, HotWaterFlowRate, DHWDrainFlowRate, &
+      DHWSpecificHeatCapacity, HotWaterTankSpecificHeatCapacity, DHWVesselSpecificHeatCapacity, &
+      DHWDensity, HotWaterTankWallDensity, DHWVesselDensity, HotWaterTankBuildingWallViewFactor, &
+      HotWaterTankInternalMassViewFactor, HotWaterTankWallConductivity, HotWaterTankInternalWallConvectionCoefficient, &
+      HotWaterTankExternalWallConvectionCoefficient, DHWVesselWallConductivity, DHWVesselInternalWallConvectionCoefficient, &
+      DHWVesselExternalWallConvectionCoefficient, DHWVesselWallEmissivity, HotWaterHeatingEfficiency, &
+      MinimumVolumeOfDHWinUse, &
       height, building_frac, veg_frac, building_scale, veg_scale, & !input: SPARTACUS
       alb_roof, emis_roof, alb_wall, emis_wall, &
       roof_albedo_dir_mult_fact, wall_specular_frac, &
@@ -4179,6 +4235,8 @@ CONTAINS
       INTEGER, INTENT(IN) :: SnowUse ! Determines whether the snow part of the model runs[-]
       LOGICAL, INTENT(IN) :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER, INTENT(IN) :: OHMIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
+      ! INTEGER, INTENT(IN) :: nbtype ! number of building types [-] STEBBS
+      INTEGER, INTENT(IN) :: stebbsmethod ! method to calculate building energy use [-] STEBBS
 
       ! ---lumps-related variables
       TYPE(LUMPS_PRM) :: lumpsPrm
@@ -4449,6 +4507,120 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(INOUT) :: porosity_id !Porosity of deciduous trees [-]
       REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) :: StoreDrainPrm !coefficients used in drainage calculation [-]
 
+      ! ---stebbs related states
+      TYPE(STEBBS_STATE) :: stebbsState
+      REAL(KIND(1D0)) :: WallInternalConvectionCoefficient
+      REAL(KIND(1D0)) :: InternalMassConvectionCoefficient
+      REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient
+      REAL(KIND(1D0)) :: WindowInternalConvectionCoefficient
+      REAL(KIND(1D0)) :: WallExternalConvectionCoefficient
+      REAL(KIND(1D0)) :: WindowExternalConvectionCoefficient
+      REAL(KIND(1D0)) :: GroundDepth
+      REAL(KIND(1D0)) :: ExternalGroundConductivity
+      REAL(KIND(1D0)) :: IndoorAirDensity
+      REAL(KIND(1D0)) :: IndoorAirCp
+      REAL(KIND(1D0)) :: WallBuildingViewFactor
+      REAL(KIND(1D0)) :: WallGroundViewFactor
+      REAL(KIND(1D0)) :: WallSkyViewFactor
+      REAL(KIND(1D0)) :: MetabolicRate
+      REAL(KIND(1D0)) :: LatentSensibleRatio
+      REAL(KIND(1D0)) :: ApplianceRating
+      REAL(KIND(1D0)) :: TotalNumberofAppliances
+      REAL(KIND(1D0)) :: ApplianceUsageFactor
+      REAL(KIND(1D0)) :: HeatingSystemEfficiency
+      REAL(KIND(1D0)) :: MaxCoolingPower
+      REAL(KIND(1D0)) :: CoolingSystemCOP
+      REAL(KIND(1D0)) :: VentilationRate
+      REAL(KIND(1D0)) :: IndoorAirStartTemperature
+      REAL(KIND(1D0)) :: IndoorMassStartTemperature
+      REAL(KIND(1D0)) :: WallIndoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WallOutdoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WindowIndoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WindowOutdoorSurfaceTemperature
+      REAL(KIND(1D0)) :: GroundFloorIndoorSurfaceTemperature
+      REAL(KIND(1D0)) :: GroundFloorOutdoorSurfaceTemperature
+      REAL(KIND(1D0)) :: WaterTankTemperature
+      REAL(KIND(1D0)) :: InternalWallWaterTankTemperature
+      REAL(KIND(1D0)) :: ExternalWallWaterTankTemperature
+      REAL(KIND(1D0)) :: WaterTankWallThickness
+      REAL(KIND(1D0)) :: MainsWaterTemperature
+      REAL(KIND(1D0)) :: WaterTankSurfaceArea
+      REAL(KIND(1D0)) :: HotWaterHeatingSetpointTemperature
+      REAL(KIND(1D0)) :: HotWaterTankWallEmissivity
+      REAL(KIND(1D0)) :: DomesticHotWaterTemperatureInUseInBuilding
+      REAL(KIND(1D0)) :: InternalWallDHWVesselTemperature
+      REAL(KIND(1D0)) :: ExternalWallDHWVesselTemperature
+      REAL(KIND(1D0)) :: DHWVesselWallThickness
+      REAL(KIND(1D0)) :: DHWWaterVolume
+      REAL(KIND(1D0)) :: DHWSurfaceArea
+      REAL(KIND(1D0)) :: DHWVesselEmissivity
+      REAL(KIND(1D0)) :: HotWaterFlowRate
+      REAL(KIND(1D0)) :: DHWDrainFlowRate
+      REAL(KIND(1D0)) :: DHWSpecificHeatCapacity
+      REAL(KIND(1D0)) :: HotWaterTankSpecificHeatCapacity
+      REAL(KIND(1D0)) :: DHWVesselSpecificHeatCapacity
+      REAL(KIND(1D0)) :: DHWDensity
+      REAL(KIND(1D0)) :: HotWaterTankWallDensity
+      REAL(KIND(1D0)) :: DHWVesselDensity
+      REAL(KIND(1D0)) :: HotWaterTankBuildingWallViewFactor
+      REAL(KIND(1D0)) :: HotWaterTankInternalMassViewFactor
+      REAL(KIND(1D0)) :: HotWaterTankWallConductivity
+      REAL(KIND(1D0)) :: HotWaterTankInternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: HotWaterTankExternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: DHWVesselWallConductivity
+      REAL(KIND(1D0)) :: DHWVesselInternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: DHWVesselExternalWallConvectionCoefficient
+      REAL(KIND(1D0)) :: DHWVesselWallEmissivity
+      REAL(KIND(1D0)) :: HotWaterHeatingEfficiency
+      REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse
+
+      ! ---stebbs building related states
+      TYPE(BUILDING_STATE) :: bldgState
+      REAL(KIND(1D0)) :: BuildingCount
+      REAL(KIND(1D0)) :: Occupants
+      REAL(KIND(1D0)) :: hhs0
+      REAL(KIND(1D0)) :: age_0_4
+      REAL(KIND(1D0)) :: age_5_11
+      REAL(KIND(1D0)) :: age_12_18
+      REAL(KIND(1D0)) :: age_19_64
+      REAL(KIND(1D0)) :: age_65plus
+      REAL(KIND(1D0)) :: stebbs_Height
+      REAL(KIND(1D0)) :: FootprintArea
+      REAL(KIND(1D0)) :: WallExternalArea
+      REAL(KIND(1D0)) :: RatioInternalVolume
+      REAL(KIND(1D0)) :: WWR
+      REAL(KIND(1D0)) :: WallThickness
+      REAL(KIND(1D0)) :: WallEffectiveConductivity
+      REAL(KIND(1D0)) :: WallDensity
+      REAL(KIND(1D0)) :: WallCp
+      REAL(KIND(1D0)) :: Wallx1
+      REAL(KIND(1D0)) :: WallExternalEmissivity
+      REAL(KIND(1D0)) :: WallInternalEmissivity
+      REAL(KIND(1D0)) :: WallTransmissivity
+      REAL(KIND(1D0)) :: WallAbsorbtivity
+      REAL(KIND(1D0)) :: WallReflectivity
+      REAL(KIND(1D0)) :: FloorThickness
+      REAL(KIND(1D0)) :: GroundFloorEffectiveConductivity
+      REAL(KIND(1D0)) :: GroundFloorDensity
+      REAL(KIND(1D0)) :: GroundFloorCp
+      REAL(KIND(1D0)) :: WindowThickness
+      REAL(KIND(1D0)) :: WindowEffectiveConductivity
+      REAL(KIND(1D0)) :: WindowDensity
+      REAL(KIND(1D0)) :: WindowCp
+      REAL(KIND(1D0)) :: WindowExternalEmissivity
+      REAL(KIND(1D0)) :: WindowInternalEmissivity
+      REAL(KIND(1D0)) :: WindowTransmissivity
+      REAL(KIND(1D0)) :: WindowAbsorbtivity
+      REAL(KIND(1D0)) :: WindowReflectivity
+      REAL(KIND(1D0)) :: InternalMassDensity
+      REAL(KIND(1D0)) :: InternalMassCp
+      REAL(KIND(1D0)) :: InternalMassEmissivity
+      REAL(KIND(1D0)) :: MaxHeatingPower
+      REAL(KIND(1D0)) :: WaterTankWaterVolume
+      REAL(KIND(1D0)) :: MaximumHotWaterHeatingPower
+      REAL(KIND(1D0)) :: HeatingSetpointTemperature
+      REAL(KIND(1D0)) :: CoolingSetpointTemperature
+
       ! lumped states
       TYPE(SUEWS_DEBUG), INTENT(OUT) :: debug_state
       TYPE(SUEWS_STATE) :: mod_state
@@ -4478,6 +4650,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug) :: dataOutBlockDebug
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS) :: dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState) :: dataOutBlockDailyState
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSTEBBS) :: dataOutBlockSTEBBS
       ! ########################################################################################
 
       ! internal temporal iteration related variables
@@ -4507,6 +4680,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLinedebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) :: dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) :: dataOutBlockSnow_X
@@ -4517,6 +4691,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDebug, 1) :: dataOutBlockDebug_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS, 1) :: dataOutBlockSPARTACUS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState, 1) :: dataOutBlockDailyState_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSTEBBS, 1) :: dataOutBlockSTEBBS_X
 
       ! REAL(KIND(1D0)), DIMENSION(10) :: MetForcingData_grid ! fake array as a placeholder
 
@@ -4590,6 +4765,9 @@ CONTAINS
       config%DiagQS = 0
       config%EvapMethod = 2
       config%LAImethod = 1
+      config%stebbsmethod = stebbsmethod
+
+      ! config%nbtype = nbtype
 
       lumpsPrm%raincover = RAINCOVER
       lumpsPrm%rainmaxres = RainMaxRes
@@ -5187,6 +5365,122 @@ CONTAINS
       phenState%lenDay_id = lenDay_id
       phenState%StoreDrainPrm = StoreDrainPrm
 
+      ! assign stebbs values
+      stebbsState%WallInternalConvectionCoefficient = WallInternalConvectionCoefficient
+      stebbsState%InternalMassConvectionCoefficient = InternalMassConvectionCoefficient
+      stebbsState%FloorInternalConvectionCoefficient = FloorInternalConvectionCoefficient
+      stebbsState%WindowInternalConvectionCoefficient = WindowInternalConvectionCoefficient
+      stebbsState%WallExternalConvectionCoefficient = WallExternalConvectionCoefficient
+      stebbsState%WindowExternalConvectionCoefficient = WindowExternalConvectionCoefficient
+      stebbsState%GroundDepth = GroundDepth
+      stebbsState%ExternalGroundConductivity = ExternalGroundConductivity
+      stebbsState%IndoorAirDensity = IndoorAirDensity
+      stebbsState%IndoorAirCp = IndoorAirCp
+      stebbsState%WallBuildingViewFactor = WallBuildingViewFactor
+      stebbsState%WallGroundViewFactor = WallGroundViewFactor
+      stebbsState%WallSkyViewFactor = WallSkyViewFactor
+      stebbsState%MetabolicRate = MetabolicRate
+      stebbsState%LatentSensibleRatio = LatentSensibleRatio
+      stebbsState%ApplianceRating = ApplianceRating
+      stebbsState%TotalNumberofAppliances = TotalNumberofAppliances
+      stebbsState%ApplianceUsageFactor = ApplianceUsageFactor
+      stebbsState%HeatingSystemEfficiency = HeatingSystemEfficiency
+      stebbsState%MaxCoolingPower = MaxCoolingPower
+      stebbsState%CoolingSystemCOP = CoolingSystemCOP
+      stebbsState%VentilationRate = VentilationRate
+      stebbsState%IndoorAirStartTemperature = IndoorAirStartTemperature
+      stebbsState%IndoorMassStartTemperature = IndoorMassStartTemperature
+      stebbsState%WallIndoorSurfaceTemperature = WallIndoorSurfaceTemperature
+      stebbsState%WallOutdoorSurfaceTemperature = WallOutdoorSurfaceTemperature
+      stebbsState%WindowIndoorSurfaceTemperature = WindowIndoorSurfaceTemperature
+      stebbsState%WindowOutdoorSurfaceTemperature = WindowOutdoorSurfaceTemperature
+      stebbsState%GroundFloorIndoorSurfaceTemperature = GroundFloorIndoorSurfaceTemperature
+      stebbsState%GroundFloorOutdoorSurfaceTemperature = GroundFloorOutdoorSurfaceTemperature
+      stebbsState%WaterTankTemperature = WaterTankTemperature
+      stebbsState%InternalWallWaterTankTemperature = InternalWallWaterTankTemperature
+      stebbsState%ExternalWallWaterTankTemperature = ExternalWallWaterTankTemperature
+      stebbsState%WaterTankWallThickness = WaterTankWallThickness
+      stebbsState%MainsWaterTemperature = MainsWaterTemperature
+      stebbsState%WaterTankSurfaceArea = WaterTankSurfaceArea
+      stebbsState%HotWaterHeatingSetpointTemperature = HotWaterHeatingSetpointTemperature
+      stebbsState%HotWaterTankWallEmissivity = HotWaterTankWallEmissivity
+      stebbsState%DomesticHotWaterTemperatureInUseInBuilding = DomesticHotWaterTemperatureInUseInBuilding
+      stebbsState%InternalWallDHWVesselTemperature = InternalWallDHWVesselTemperature
+      stebbsState%ExternalWallDHWVesselTemperature = ExternalWallDHWVesselTemperature
+      stebbsState%DHWVesselWallThickness = DHWVesselWallThickness
+      stebbsState%DHWWaterVolume = DHWWaterVolume
+      stebbsState%DHWSurfaceArea = DHWSurfaceArea
+      stebbsState%DHWVesselEmissivity = DHWVesselEmissivity
+      stebbsState%HotWaterFlowRate = HotWaterFlowRate
+      stebbsState%DHWDrainFlowRate = DHWDrainFlowRate
+      stebbsState%DHWSpecificHeatCapacity = DHWSpecificHeatCapacity
+      stebbsState%HotWaterTankSpecificHeatCapacity = HotWaterTankSpecificHeatCapacity
+      stebbsState%DHWVesselSpecificHeatCapacity = DHWVesselSpecificHeatCapacity
+      stebbsState%DHWDensity = DHWDensity
+      stebbsState%HotWaterTankWallDensity = HotWaterTankWallDensity
+      stebbsState%DHWVesselDensity = DHWVesselDensity
+      stebbsState%HotWaterTankBuildingWallViewFactor = HotWaterTankBuildingWallViewFactor
+      stebbsState%HotWaterTankInternalMassViewFactor = HotWaterTankInternalMassViewFactor
+      stebbsState%HotWaterTankWallConductivity = HotWaterTankWallConductivity
+      stebbsState%HotWaterTankInternalWallConvectionCoefficient = HotWaterTankInternalWallConvectionCoefficient
+      stebbsState%HotWaterTankExternalWallConvectionCoefficient = HotWaterTankExternalWallConvectionCoefficient
+      stebbsState%DHWVesselWallConductivity = DHWVesselWallConductivity
+      stebbsState%DHWVesselInternalWallConvectionCoefficient = DHWVesselInternalWallConvectionCoefficient
+      stebbsState%DHWVesselExternalWallConvectionCoefficient = DHWVesselExternalWallConvectionCoefficient
+      stebbsState%DHWVesselWallEmissivity = DHWVesselWallEmissivity
+      stebbsState%HotWaterHeatingEfficiency = HotWaterHeatingEfficiency
+      stebbsState%MinimumVolumeOfDHWinUse = MinimumVolumeOfDHWinUse
+
+      ! assign stebbs building parameters
+      ! bldgState%BuildingCode
+      ! bldgState%BuildingClass
+      ! bldgState%BuildingType
+      ! bldgState%BuildingName
+      bldgState%BuildingCount = BuildingCount
+      bldgState%Occupants = Occupants
+      bldgState%hhs0 = hhs0
+      bldgState%age_0_4 = age_0_4
+      bldgState%age_5_11 = age_5_11
+      bldgState%age_12_18 = age_12_18
+      bldgState%age_19_64 = age_19_64
+      bldgState%age_65plus = age_65plus
+      bldgState%stebbs_Height = stebbs_Height
+      bldgState%FootprintArea = FootprintArea
+      bldgState%WallExternalArea = WallExternalArea
+      bldgState%RatioInternalVolume = RatioInternalVolume
+      bldgState%WWR = WWR
+      bldgState%WallThickness = WallThickness
+      bldgState%WallEffectiveConductivity = WallEffectiveConductivity
+      bldgState%WallDensity = WallDensity
+      bldgState%WallCp = WallCp
+      bldgState%Wallx1 = Wallx1
+      bldgState%WallExternalEmissivity = WallExternalEmissivity
+      bldgState%WallInternalEmissivity = WallInternalEmissivity
+      bldgState%WallTransmissivity = WallTransmissivity
+      bldgState%WallAbsorbtivity = WallAbsorbtivity
+      bldgState%WallReflectivity = WallReflectivity
+      bldgState%FloorThickness = FloorThickness
+      bldgState%GroundFloorEffectiveConductivity = GroundFloorEffectiveConductivity
+      bldgState%GroundFloorDensity = GroundFloorDensity
+      bldgState%GroundFloorCp = GroundFloorCp
+      bldgState%WindowThickness = WindowThickness
+      bldgState%WindowEffectiveConductivity = WindowEffectiveConductivity
+      bldgState%WindowDensity = WindowDensity
+      bldgState%WindowCp = WindowCp
+      bldgState%WindowExternalEmissivity = WindowExternalEmissivity
+      bldgState%WindowInternalEmissivity = WindowInternalEmissivity
+      bldgState%WindowTransmissivity = WindowTransmissivity
+      bldgState%WindowAbsorbtivity = WindowAbsorbtivity
+      bldgState%WindowReflectivity = WindowReflectivity
+      bldgState%InternalMassDensity = InternalMassDensity
+      bldgState%InternalMassCp = InternalMassCp
+      bldgState%InternalMassEmissivity = InternalMassEmissivity
+      bldgState%MaxHeatingPower = MaxHeatingPower
+      bldgState%WaterTankWaterVolume = WaterTankWaterVolume
+      bldgState%MaximumHotWaterHeatingPower = MaximumHotWaterHeatingPower
+      bldgState%HeatingSetpointTemperature = HeatingSetpointTemperature
+      bldgState%CoolingSetpointTemperature = CoolingSetpointTemperature
+
       ! ! transfer states into modState
       mod_State%anthroemisState = anthroEmisState
       mod_State%hydroState = hydroState
@@ -5194,6 +5488,8 @@ CONTAINS
       mod_State%ohmState = ohmState
       mod_State%snowState = snowState
       mod_State%phenState = phenState
+      mod_State%stebbsState = stebbsState
+      mod_State%bldgState = bldgState
 
       ! ############# evaluation for DTS variables (end) #############
       CALL siteInfo%ALLOCATE(nlayer)
@@ -5300,9 +5596,12 @@ CONTAINS
             output_line_suews%dataOutLineBEERS, &
             output_line_suews%dataOutLinedebug, &
             output_line_suews%dataOutLineSPARTACUS, &
-            output_line_suews%dataOutLineEHC, & !input
+            output_line_suews%dataOutLineEHC, &
+            output_line_suews%dataOutLineSTEBBS, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
-            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X) !inout
+            dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X, &
+            dataOutBlockSTEBBS_X &
+            ) !inout
 
       END DO
 
@@ -5377,6 +5676,7 @@ CONTAINS
       dataOutBlockDebug = dataOutBlockDebug_X(:, :, 1)
       dataOutBlockSPARTACUS = dataOutBlockSPARTACUS_X(:, :, 1)
       ! dataOutBlockDailyState = dataOutBlockDailyState_X(:, :, 1)
+      dataOutBlockSTEBBS = dataOutBlockSTEBBS_X(:, :, 1)
 
       ! initialize output block
       CALL output_block_suews%cleanup()
@@ -5393,6 +5693,7 @@ CONTAINS
       output_block_suews%dataOutBlockDebug = dataOutBlockDebug
       output_block_suews%dataOutBlockSPARTACUS = dataOutBlockSPARTACUS
       output_block_suews%dataOutBlockDailyState = dataOutBlockDailyState
+      output_block_suews%dataOutBlockSTEBBS = dataOutBlockSTEBBS
 
    END SUBROUTINE SUEWS_cal_multitsteps
 

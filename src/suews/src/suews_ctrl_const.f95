@@ -87,7 +87,8 @@ MODULE allocateArray
                          ncolumnsDataOutDailyState = 49, &
                          ncolumnsDataOutRSL = 30*4 + 5 + 13 + 2, &
                          ncolumnsDataOutDebug = 5 + 103 + 14 + 5 + 4 + 3 + 1, &
-                         ncolumnsDataOutSPARTACUS = 5 + 7 + 4*15 + 3 + 6*15 + 2*15 + 4
+                         ncolumnsDataOutSPARTACUS = 5 + 7 + 4*15 + 3 + 6*15 + 2*15 + 4, &
+                         ncolumnsDataOutSTEBBS = 5 + 32
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect) :: HeaderSiteSelect_File !Header for SiteSelect.txt
@@ -164,6 +165,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutESTM !ESTM output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutEHC !EHC output matrix
    REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutDailyState !DailyState output array
+   REAL(KIND(1D0)), DIMENSION(:, :, :), ALLOCATABLE :: dataOutSTEBBS !STEBBS output array
 
    ! -------- output per each timestep ----------------------------------------------------------------
    REAL(KIND(1D0)), DIMENSION(5) :: datetimeLine ! output of datetime info per each timestep
@@ -175,6 +177,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug) :: dataOutLineDebug ! output line for debugging info
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS) :: dataOutLineSPARTACUS ! output line for SPARTACUS per each timestep (1hr?)
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS ! output of STEBBS results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: DailyStateLine ! output of DailyState results per each timestep
 
    REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: MetForDisagg !Array for original met forcing data (for disaggregation)
@@ -1156,7 +1159,8 @@ MODULE data_in
               !  nRow, &                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
               !  nCol, &                 !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
               DiagnoseDisaggESTM, & !Set to 1 to get print-out of ESTM forcing disaggregation progress
-              DiagQN, DiagQS !Set to 1 to print values/components
+              DiagQN, DiagQS, & !Set to 1 to print values/components
+              stebbsmethod !Stebbins
 
    ! For more complex downscaling allow different RainAmongN for different intensities
    INTEGER, DIMENSION(5) :: MultRainAmongN ! RainAmongN for each intensity bin
