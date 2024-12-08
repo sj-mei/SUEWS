@@ -281,7 +281,7 @@ def run_supy(
     logging_level=logging.INFO,
     check_input=False,
     serial_mode=False,
-    debug_mode=False,  # TODO: #275 to be implemented to enable debug mode
+    debug_mode=False,
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Perform supy simulation.
 
@@ -376,10 +376,10 @@ def run_supy(
 
     if n_grid > 1 and os.name != "nt" and (not serial_mode):
         logger_supy.info(f"SuPy is running in parallel mode")
-        res_supy = run_supy_par(df_forcing, df_state_init, save_state, chunk_day)
+        res_supy = run_supy_par(df_forcing, df_state_init, save_state, chunk_day, debug_mode)
     else:
         logger_supy.info(f"SuPy is running in serial mode")
-        res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
+        res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day, debug_mode)
         # try:
         #     res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
         # except:
