@@ -562,6 +562,7 @@ CONTAINS
          )
 
          ASSOCIATE ( &
+            flag_test => config%flag_test, &
             tsfc0_out_surf => heatState%tsfc0_out_surf, &
             qn_surf => heatState%qn_surf, &
             qs_surf => heatState%qs_surf, &
@@ -597,7 +598,8 @@ CONTAINS
             )
 
             dataoutlineDebug = &
-               [tsfc0_out_surf, &
+               [MERGE(1D0, 0D0, flag_test), &
+                tsfc0_out_surf, &
                 qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
                 wu_surf, ev0_surf, ev_surf, drain_surf, &
                 modState_init%hydroState%state_surf, hydroState%state_surf, &
@@ -4081,6 +4083,7 @@ CONTAINS
    END SUBROUTINE output_size
 
    SUBROUTINE SUEWS_cal_multitsteps( &
+      flag_test, &
       MetForcingBlock, len_sim, &
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
       AH_SLOPE_Heating, &
@@ -4180,6 +4183,7 @@ CONTAINS
       output_block_suews, debug_state) !output
 
       IMPLICIT NONE
+      LOGICAL, INTENT(IN) :: flag_test
 
       ! ############# DTS variables (start) #############
       ! ---anthropogenic heat-related variables
@@ -4697,10 +4701,6 @@ CONTAINS
 
       TYPE(output_block), INTENT(OUT) :: output_block_suews
 
-      ! ############# memory allocation for DTS variables (start) #############
-
-      ! ############# memory allocation for DTS variables (end) #############
-
       ! ############# evaluation for DTS variables (start) #############
       siteInfo%lat = lat
       siteInfo%lon = lng
@@ -4767,8 +4767,10 @@ CONTAINS
       config%LAImethod = 1
       config%stebbsmethod = stebbsmethod
 
-      ! config%nbtype = nbtype
+      ! testing flag
+      config%flag_test = flag_test
 
+      ! lumps parameters
       lumpsPrm%raincover = RAINCOVER
       lumpsPrm%rainmaxres = RainMaxRes
       lumpsPrm%drainrt = DRAINRT
