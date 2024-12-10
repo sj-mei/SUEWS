@@ -252,12 +252,31 @@ CONTAINS
             g_ta = (Tair - tl)*(th - Tair)**tc/tc2
          END IF
 
-         ! soil moisture deficit ----
-         sdp = S1/G_sm + S2
+         ! soil moisture deficit
+         ! =======================================================================================
+         ! TS 20241210: added comments to explain the numerical implications of the parameters
+         ! G_sm: soil moisture sensitivity parameter (>0) - larger values mean stronger sensitivity
+         !       - Increase G_sm for steeper response to soil moisture changes
+         !       - Decrease G_sm for more gradual response
+         ! S1: parameter controlling the baseline conductance by moving the response curve up/down
+         !     - Increase S1 to lower the overall conductance values
+         !     - Decrease S1 to increase conductance values
+         ! S2: soil moisture deficit threshold (mm) - shifts response curve along x-axis
+         !     - Increase S2 to delay moisture stress response
+         !     - Decrease S2 for earlier onset of moisture limitation
+         ! The exp() term will be large and positive when xsmd > S2, making g_smd small
+         ! When smd < S2, exp() term becomes smaller, allowing g_smd to approach 1
+         ! Example parameter ranges:
+         ! - G_sm: typically 0.01-0.5, higher for drought-sensitive vegetation
+         ! - S1: typically 0 to 5, adjust based on baseline conductance needs
+         ! - S2: typically 10-100 mm, adjust based on vegetation drought tolerance
+         ! =======================================================================================
          IF (SMDMethod > 0) THEN !Modified from ==1 to > 0 by HCW 31/07/2014
-            g_smd = 1 - EXP(G_sm*(xsmd - sdp)) !Measured soil moisture deficit is used
+            ! Measured soil moisture deficit is used
+            g_smd = 1 - EXP(G_sm*(xsmd - S2) - S1)
          ELSE
-            g_smd = 1 - EXP(G_sm*(vsmd - sdp)) !Modelled is used
+            ! Modelled soil moisture deficit is used
+            g_smd = 1 - EXP(G_sm*(vsmd - S2) - S1)
             IF (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) == 0 .OR. sfr_surf(WaterSurf) == 1) THEN
                g_smd = 0 !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
             END IF
