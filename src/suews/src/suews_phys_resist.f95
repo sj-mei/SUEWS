@@ -259,8 +259,8 @@ CONTAINS
          !       - Increase G_sm for steeper response to soil moisture changes
          !       - Decrease G_sm for more gradual response
          ! S1: parameter controlling the baseline conductance by moving the response curve up/down
-         !     - Increase S1 to lower the overall conductance values
-         !     - Decrease S1 to increase conductance values
+         !     - Increase S1 to increase the overall conductance values
+         !     - Decrease S1 to decrease the overall conductance values
          ! S2: soil moisture deficit threshold (mm) - shifts response curve along x-axis
          !     - Increase S2 to delay moisture stress response
          !     - Decrease S2 for earlier onset of moisture limitation
@@ -270,13 +270,25 @@ CONTAINS
          ! - G_sm: typically 0.01-0.5, higher for drought-sensitive vegetation
          ! - S1: typically 0 to 5, adjust based on baseline conductance needs
          ! - S2: typically 10-100 mm, adjust based on vegetation drought tolerance
+         ! Calculate the threshold for moisture stress
+         ! =======================================================================================
+         ! TS 20241211: restore the threshold-based approach for easier interpretation
+         sdp = S1/G_sm + S2
+         ! with sdp, the following equation can be interpreted as:
+         ! when xsmd > sdp, water stress effect kicks in
+         ! when xsmd < sdp, water stress effect is not active
+         ! meanwhile,
+         ! - G_sm holds the meaning of the sensitivity of the response to soil moisture - larger values --> stronger sensitivity
+         ! - use MIN(xsmd - sdp, 0.0) to ensure g_smd is non-negative
          ! =======================================================================================
          IF (SMDMethod > 0) THEN !Modified from ==1 to > 0 by HCW 31/07/2014
             ! Measured soil moisture deficit is used
-            g_smd = 1 - EXP(G_sm*(xsmd - S2) - S1)
+            ! g_smd = 1 - EXP(G_sm*(xsmd - sdp))
+            g_smd = 1 - EXP(G_sm*(MIN(xsmd - sdp, 0.0)))
          ELSE
             ! Modelled soil moisture deficit is used
-            g_smd = 1 - EXP(G_sm*(vsmd - S2) - S1)
+            ! g_smd = 1 - EXP(G_sm*(vsmd - sdp))
+            g_smd = 1 - EXP(G_sm*(MIN(vsmd - sdp, 0.0)))
             IF (sfr_surf(ConifSurf) + sfr_surf(DecidSurf) + sfr_surf(GrassSurf) == 0 .OR. sfr_surf(WaterSurf) == 1) THEN
                g_smd = 0 !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
             END IF
