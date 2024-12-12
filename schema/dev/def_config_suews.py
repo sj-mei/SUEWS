@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union, Literal, Tuple, Type
+from typing import Dict, List, Optional, Union, Literal, Tuple, Type, Generic, TypeVar
 from pydantic import (
     BaseModel,
     Field,
@@ -14,25 +14,17 @@ import yaml
 import pdb
 import math
 
-## The lines below load min and max ranges for OHMCoefficients from an Excel file
-# file_path = './SUEWS_OHMCoefficients.xlsx'
-# excel_data = pd.ExcelFile(file_path)
-# sheets_to_process = ["Soil", "Water", "Snow", "Paved", "Building", "Vegetation"]
-# min_max_values = {}
-# for sheet_name in sheets_to_process:
-#     if sheet_name in excel_data.sheet_names:
-#         df = excel_data.parse(sheet_name, header=None)
-#         df = df.iloc[:, :4]
-#         df.columns = ['Code', 'a1', 'a2', 'a3']
-#         min_values = df.loc[df['Code'] == 'Min', ['a1', 'a2', 'a3']]
-#         max_values = df.loc[df['Code'] == 'Max', ['a1', 'a2', 'a3']]
-#         if not min_values.empty and not max_values.empty:
-#             min_max_values[sheet_name] = {
-#                 'a1': [min_values['a1'].values[0], max_values['a1'].values[0]],
-#                 'a2': [min_values['a2'].values[0], max_values['a2'].values[0]],
-#                 'a3': [min_values['a3'].values[0], max_values['a3'].values[0]],
-#             }
+T = TypeVar('T')
 
+class ValueWithDOI(BaseModel, Generic[T]):
+    value: T
+    DOI: Optional[str] = None
+
+    def __str__(self):
+        return f"{self.value}"
+
+    def __repr__(self):
+        return f"{self.value}"
 
 def init_df_state(grid_id: int) -> pd.DataFrame:
     idx = pd.Index([grid_id], name="grid")
@@ -53,7 +45,11 @@ class SurfaceType(str, Enum):
 
 
 class SnowAlb(BaseModel):
-    snowalb: float = Field(ge=0, le=1, description="Snow albedo", default=0.7)
+    snowalb: ValueWithDOI[float] = Field(
+        description="Snow albedo",
+        default=ValueWithDOI(value=0.7),
+        ge=0, le=1,
+    )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert snow albedo to DataFrame state format.
@@ -65,7 +61,7 @@ class SnowAlb(BaseModel):
             pd.DataFrame: DataFrame containing snow albedo parameters
         """
         df_state = init_df_state(grid_id)
-        df_state[("snowalb", "0")] = self.snowalb
+        df_state[("snowalb", "0")] = self.snowalb.value
         return df_state
 
     @classmethod
@@ -81,7 +77,7 @@ class SnowAlb(BaseModel):
             SnowAlb: Instance of SnowAlb.
         """
         snowalb = df.loc[grid_id, ("snowalb", "0")]
-        return cls(snowalb=snowalb)
+        return cls(snowalb=ValueWithDOI(value=snowalb))
 
 
 class WaterUse(BaseModel):
@@ -3719,8 +3715,8 @@ class ArchetypeProperties(BaseModel):
     # BuildingCode='1'
     # BuildingClass='SampleClass'
 
-    BuildingType='SampleType'
-    BuildingName='SampleBuilding'
+    BuildingType: str='SampleType'
+    BuildingName: str='SampleBuilding'
     BuildingCount: int = Field(
         default=1, description="Number of buildings of this archetype [-]"
     )
