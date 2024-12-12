@@ -20,11 +20,44 @@ class ValueWithDOI(BaseModel, Generic[T]):
     value: T
     DOI: Optional[str] = None
 
+    # def __init__(self, value: Generic[T], DOI: Optional[str] = None):
+    #     super().__init__(value=value, DOI=DOI)
+
     def __str__(self):
         return f"{self.value}"
 
     def __repr__(self):
         return f"{self.value}"
+    
+    def __eq__(self, other):
+        if isinstance(other, ValueWithDOI):
+            return self.value == other.value
+        return self.value == other
+
+    def __lt__(self, other):
+        if isinstance(other, ValueWithDOI):
+            return self.value < other.value
+        return self.value < other
+
+    def __le__(self, other):
+        if isinstance(other, ValueWithDOI):
+            return self.value <= other.value
+        return self.value <= other
+
+    def __gt__(self, other):
+        if isinstance(other, ValueWithDOI):
+            return self.value > other.value
+        return self.value > other
+
+    def __ge__(self, other):
+        if isinstance(other, ValueWithDOI):
+            return self.value >= other.value
+        return self.value >= other
+
+    def __ne__(self, other):
+        if isinstance(other, ValueWithDOI):
+            return self.value != other.value
+        return self.value != other
 
 def init_df_state(grid_id: int) -> pd.DataFrame:
     idx = pd.Index([grid_id], name="grid")
@@ -81,18 +114,28 @@ class SnowAlb(BaseModel):
 
 
 class WaterUse(BaseModel):
-    wu_total: float = Field(
-        ge=0, description="Total water use", default=0.0
+    wu_total: ValueWithDOI[float] = Field(
+        description="Total water use",
+        default=ValueWithDOI(value=0.0),
+        ge=0,
     )  # Default set to 0.0 means no irrigation.
-    wu_auto: float = Field(ge=0, description="Automatic water use", default=0.0)
-    wu_manual: float = Field(ge=0, description="Manual water use", default=0.0)
+    wu_auto: ValueWithDOI[float] = Field(
+        description="Automatic water use",
+        default=ValueWithDOI(value=0.0),
+        ge=0,
+    )
+    wu_manual: ValueWithDOI[float] = Field(
+        description="Manual water use",
+        default=ValueWithDOI(value=0.0),
+        ge=0,
+    )
 
     def to_df_state(self, veg_idx: int, grid_id: int) -> pd.DataFrame:
         """Convert water use to DataFrame state format."""
         df_state = init_df_state(grid_id)
-        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 0},)")] = self.wu_total
-        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")] = self.wu_auto
-        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")] = self.wu_manual
+        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 0},)")] = self.wu_total.value
+        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")] = self.wu_auto.value
+        df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")] = self.wu_manual.value
         return df_state
 
     @classmethod
@@ -108,11 +151,11 @@ class WaterUse(BaseModel):
         Returns:
             WaterUse: Instance of WaterUse.
         """
-        wu_total = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 0},)")]
-        wu_auto = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")]
-        wu_manual = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")]
+        wu_total = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 0},)")].item()
+        wu_auto = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")].item()
+        wu_manual = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")].item()
 
-        return cls(wu_total=wu_total, wu_auto=wu_auto, wu_manual=wu_manual)
+        return cls(wu_total=ValueWithDOI[float](value=wu_total), wu_auto=ValueWithDOI[float](value=wu_auto), wu_manual=ValueWithDOI[float](value=wu_manual))
 
 
 class SurfaceInitialState(BaseModel):
