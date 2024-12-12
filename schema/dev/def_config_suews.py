@@ -165,14 +165,20 @@ class WaterUse(BaseModel):
 class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
-    state: float = Field(
-        ge=0, description="Initial state of the surface", default=0.0
+    state: ValueWithDOI[float] = Field(
+        description="Initial state of the surface",
+        default=ValueWithDOI(0.0),
+        ge=0,
     )  # Default set to 0.0 means dry surface.
-    soilstore: float = Field(
-        ge=10, description="Initial soil store (essential for QE)", default=150.0
+    soilstore: ValueWithDOI[float] = Field(
+        description="Initial soil store (essential for QE)",
+        default=ValueWithDOI(150.0),
+        ge=10,
     )  # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
-    snowfrac: Optional[float] = Field(
-        ge=0, le=1, description="Snow fraction", default=0.0
+    snowfrac: Optional[Union[ValueWithDOI[float], None]] = Field(
+        description="Snow fraction",
+        default=ValueWithDOI(0.0),
+        ge=0, le=1,
     )  # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
     icefrac: Optional[float] = Field(
@@ -231,12 +237,12 @@ class SurfaceInitialState(BaseModel):
             idx = vert_idx
             str_type = "roof" if is_roof else "wall"
         # Set basic state parameters
-        df_state[(f"state_{str_type}", f"({idx},)")] = self.state
-        df_state[(f"soilstore_{str_type}", f"({idx},)")] = self.soilstore
+        df_state[(f"state_{str_type}", f"({idx},)")] = self.state.value
+        df_state[(f"soilstore_{str_type}", f"({idx},)")] = self.soilstore.value
 
         # Set snow/ice parameters if present
         if self.snowfrac is not None:
-            df_state[(f"snowfrac", f"({idx},)")] = self.snowfrac
+            df_state[(f"snowfrac", f"({idx},)")] = self.snowfrac.value
         if self.snowpack is not None:
             df_state[(f"snowpack", f"({idx},)")] = self.snowpack
         if self.icefrac is not None:
@@ -302,9 +308,9 @@ class SurfaceInitialState(BaseModel):
         tin = df.loc[grid_id, (f"tin_{str_type}", f"({surf_idx},)")]
 
         return cls(
-            state=state,
-            soilstore=soilstore,
-            snowfrac=snowfrac,
+            state=ValueWithDOI[float](state),
+            soilstore=ValueWithDOI[float](soilstore),
+            snowfrac=ValueWithDOI[float](snowfrac) if snowfrac is not None else None,
             snowpack=snowpack,
             icefrac=icefrac,
             snowwater=snowwater,
