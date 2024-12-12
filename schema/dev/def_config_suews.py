@@ -285,7 +285,7 @@ class SurfaceInitialState(BaseModel):
 
         # Snow/ice parameters
         if str_type not in ["roof", "wall"]:
-            snowfrac = df.loc[grid_id, (f"snowfrac", f"({surf_idx},)")]
+            snowfrac = ValueWithDOI[float](df.loc[grid_id, (f"snowfrac", f"({surf_idx},)")])
             snowpack = df.loc[grid_id, (f"snowpack", f"({surf_idx},)")]
             icefrac = df.loc[grid_id, (f"icefrac", f"({surf_idx},)")]
             snowwater = df.loc[grid_id, (f"snowwater", f"({surf_idx},)")]
@@ -310,7 +310,7 @@ class SurfaceInitialState(BaseModel):
         return cls(
             state=ValueWithDOI[float](state),
             soilstore=ValueWithDOI[float](soilstore),
-            snowfrac=ValueWithDOI[float](snowfrac) if snowfrac is not None else None,
+            snowfrac=snowfrac,
             snowpack=snowpack,
             icefrac=icefrac,
             snowwater=snowwater,
