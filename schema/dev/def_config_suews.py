@@ -20,8 +20,8 @@ class ValueWithDOI(BaseModel, Generic[T]):
     value: T
     DOI: Optional[str] = None
 
-    # def __init__(self, value: Generic[T], DOI: Optional[str] = None):
-    #     super().__init__(value=value, DOI=DOI)
+    def __init__(self, value: T, DOI: Optional[str] = None):
+        super().__init__(value=value, DOI=DOI)
 
     def __str__(self):
         return f"{self.value}"
@@ -80,7 +80,7 @@ class SurfaceType(str, Enum):
 class SnowAlb(BaseModel):
     snowalb: ValueWithDOI[float] = Field(
         description="Snow albedo",
-        default=ValueWithDOI(value=0.7),
+        default=ValueWithDOI(0.7),
         ge=0, le=1,
     )
 
@@ -110,7 +110,7 @@ class SnowAlb(BaseModel):
             SnowAlb: Instance of SnowAlb.
         """
         snowalb = df.loc[grid_id, ("snowalb", "0")]
-        return cls(snowalb=ValueWithDOI(value=snowalb))
+        return cls(snowalb=ValueWithDOI(snowalb))
 
 
 class WaterUse(BaseModel):
@@ -155,7 +155,11 @@ class WaterUse(BaseModel):
         wu_auto = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")].item()
         wu_manual = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")].item()
 
-        return cls(wu_total=ValueWithDOI[float](value=wu_total), wu_auto=ValueWithDOI[float](value=wu_auto), wu_manual=ValueWithDOI[float](value=wu_manual))
+        return cls(
+            wu_total=ValueWithDOI[float](wu_total),
+            wu_auto=ValueWithDOI[float](wu_auto),
+            wu_manual=ValueWithDOI[float](wu_manual)
+        )
 
 
 class SurfaceInitialState(BaseModel):
