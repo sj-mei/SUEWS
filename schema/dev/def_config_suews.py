@@ -180,12 +180,26 @@ class SurfaceInitialState(BaseModel):
         default=ValueWithDOI(0.0),
         ge=0, le=1,
     )  # Default set to 0.0 means no snow on the ground.
-    snowpack: Optional[float] = Field(ge=0, description="Snow pack", default=0.0)
-    icefrac: Optional[float] = Field(
-        ge=0, le=1, description="Ice fraction", default=0.0
+    snowpack: Optional[Union[ValueWithDOI[float], None]] = Field(
+        description="Snow pack",
+        default=ValueWithDOI(0.0),
+        ge=0,
     )
-    snowwater: Optional[float] = Field(ge=0, description="Snow water", default=0.0)
-    snowdens: Optional[float] = Field(ge=0, description="Snow density", default=0.0)
+    icefrac: Optional[Union[ValueWithDOI[float], None]] = Field(
+        description="Ice fraction",
+        default=ValueWithDOI(0.0),
+        ge=0, le=1,
+    )
+    snowwater: Optional[Union[ValueWithDOI[float], None]] = Field(
+        description="Snow water",
+        default=ValueWithDOI(0.0),
+        ge=0,
+    )
+    snowdens: Optional[Union[ValueWithDOI[float], None]] = Field(
+        description="Snow density",
+        default=ValueWithDOI(0.0),
+        ge=0,
+    )
     temperature: List[float] = Field(
         min_items=5,
         max_items=5,
@@ -244,13 +258,13 @@ class SurfaceInitialState(BaseModel):
         if self.snowfrac is not None:
             df_state[(f"snowfrac", f"({idx},)")] = self.snowfrac.value
         if self.snowpack is not None:
-            df_state[(f"snowpack", f"({idx},)")] = self.snowpack
+            df_state[(f"snowpack", f"({idx},)")] = self.snowpack.value
         if self.icefrac is not None:
-            df_state[(f"icefrac", f"({idx},)")] = self.icefrac
+            df_state[(f"icefrac", f"({idx},)")] = self.icefrac.value
         if self.snowwater is not None:
-            df_state[(f"snowwater", f"({idx},)")] = self.snowwater
+            df_state[(f"snowwater", f"({idx},)")] = self.snowwater.value
         if self.snowdens is not None:
-            df_state[(f"snowdens", f"({idx},)")] = self.snowdens
+            df_state[(f"snowdens", f"({idx},)")] = self.snowdens.value
 
         # Set temperature parameters
         for i, temp in enumerate(self.temperature):
@@ -286,10 +300,10 @@ class SurfaceInitialState(BaseModel):
         # Snow/ice parameters
         if str_type not in ["roof", "wall"]:
             snowfrac = ValueWithDOI[float](df.loc[grid_id, (f"snowfrac", f"({surf_idx},)")])
-            snowpack = df.loc[grid_id, (f"snowpack", f"({surf_idx},)")]
-            icefrac = df.loc[grid_id, (f"icefrac", f"({surf_idx},)")]
-            snowwater = df.loc[grid_id, (f"snowwater", f"({surf_idx},)")]
-            snowdens = df.loc[grid_id, (f"snowdens", f"({surf_idx},)")]
+            snowpack = ValueWithDOI[float](df.loc[grid_id, (f"snowpack", f"({surf_idx},)")])
+            icefrac = ValueWithDOI[float](df.loc[grid_id, (f"icefrac", f"({surf_idx},)")])
+            snowwater = ValueWithDOI[float](df.loc[grid_id, (f"snowwater", f"({surf_idx},)")])
+            snowdens = ValueWithDOI[float](df.loc[grid_id, (f"snowdens", f"({surf_idx},)")])
         else:
             snowfrac = None
             snowpack = None
