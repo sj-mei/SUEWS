@@ -1404,31 +1404,30 @@ class OHMCoefficients(BaseModel):
 
 class SurfaceProperties(BaseModel):
     """Base properties for all surface types"""
-
     sfr: ValueWithDOI[float] = Field(ge=0, le=1, description="Surface fraction", default=ValueWithDOI(1.0 / 7))
-    emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
-    chanohm: Optional[float] = Field(default=0.0)
-    cpanohm: Optional[float] = Field(default=1200.0)
-    kkanohm: Optional[float] = Field(default=0.4)
-    ohm_threshsw: Optional[float] = Field(default=0.0)
-    ohm_threshwd: Optional[float] = Field(default=0.0)
+    emis: ValueWithDOI[float] = Field(ge=0, le=1, description="Surface emissivity", default=ValueWithDOI(0.95))
+    chanohm: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
+    cpanohm: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(1200.0))
+    kkanohm: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.4))
+    ohm_threshsw: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
+    ohm_threshwd: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
     ohm_coef: Optional[OHMCoefficients] = Field(default_factory=OHMCoefficients)
-    soildepth: float = Field(default=0.15)
-    soilstorecap: float = Field(default=150.0)
-    statelimit: float = Field(default=10.0)
-    wetthresh: float = Field(default=0.5)
-    sathydraulicconduct: float = Field(default=0.0001)
+    soildepth: ValueWithDOI[float] = Field(default=ValueWithDOI(0.15))
+    soilstorecap: ValueWithDOI[float] = Field(default=ValueWithDOI(150.0))
+    statelimit: ValueWithDOI[float] = Field(default=ValueWithDOI(10.0))
+    wetthresh: ValueWithDOI[float] = Field(default=ValueWithDOI(0.5))
+    sathydraulicconduct: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0001))
     waterdist: Optional[WaterDistribution] = Field(
         default=None, description="Water distribution parameters"
     )
     storedrainprm: StorageDrainParams = Field(
         default_factory=StorageDrainParams, description="Storage and drain parameters"
     )
-    snowpacklimit: Optional[float] = Field(default=10.0)
+    snowpacklimit: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(10.0))
     thermal_layers: ThermalLayers = Field(
         default_factory=ThermalLayers, description="Thermal layers for the surface"
     )
-    irrfrac: Optional[float] = Field(default=0.0)
+    irrfrac: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
     def set_surface_type(self, surface_type: SurfaceType):
@@ -1528,12 +1527,15 @@ class SurfaceProperties(BaseModel):
                 dfs.append(nested_df)
             elif property == "irrfrac":
                 value = getattr(self, property)
+                value = value.value if isinstance(value, ValueWithDOI) else value
                 df_state.loc[grid_id, (f"{property}{surf_name}", "0")] = value
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
                 value = getattr(self, property)
+                value = value.value if isinstance(value, ValueWithDOI) else value
                 set_df_value(f"{property}_surf", value)
             else:
                 value = getattr(self, property)
+                value = value.value if isinstance(value, ValueWithDOI) else value
                 set_df_value(property, value)
             # except Exception as e:
             #     print(f"Warning: Could not set property {property}: {str(e)}")
@@ -1617,17 +1619,14 @@ class SurfaceProperties(BaseModel):
                     "thermal_layers"
                 ].annotation.from_df_state(df, grid_id, surf_idx, surf_name)
             elif property == "irrfrac":
-                property_values[property] = df.loc[
-                    grid_id, (f"{property}{surf_name}", "0")
-                ]
+                value = df.loc[grid_id, (f"{property}{surf_name}", "0")]
+                property_values[property] = ValueWithDOI(value)
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
-                property_values[property] = df.loc[
-                    grid_id, (f"{property}_surf", f"({surf_idx},)")
-                ]
+                value = df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")]
+                property_values[property] = ValueWithDOI(value)
             else:
-                property_values[property] = df.loc[
-                    grid_id, (property, f"({surf_idx},)")
-                ]
+                value = df.loc[grid_id, (property, f"({surf_idx},)")]
+                property_values[property] = ValueWithDOI(value)
 
         return cls(**property_values)
 
@@ -2003,7 +2002,7 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
     def validate_rsl_zd_range(self) -> "BldgsProperties":
         sfr_bldg_lower_limit = 0.18
         if self.sfr < sfr_bldg_lower_limit:
-            if self.faibldg < 0.25 * (1 - self.sfr):
+            if self.faibldg < 0.25 * (1 - self.sfr.value):
                 raise ValueError(
                     "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
                     f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
