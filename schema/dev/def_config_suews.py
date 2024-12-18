@@ -5,8 +5,9 @@ from pydantic import (
     model_validator,
     field_validator,
     PrivateAttr,
+    conlist,
 )
-import numpy as np
+# import numpy as np
 from enum import Enum
 import pandas as pd
 import scipy as sp
@@ -200,19 +201,29 @@ class SurfaceInitialState(BaseModel):
         default=ValueWithDOI(0.0),
         ge=0,
     )
-    temperature: List[float] = Field(
-        min_items=5,
-        max_items=5,
+    temperature: ValueWithDOI[List[float]] = Field(
         description="Initial temperature for each thermal layer",
-        default=[15.0, 15.0, 15.0, 15.0, 15.0],
+        default=ValueWithDOI([15.0, 15.0, 15.0, 15.0, 15.0]),
     )  # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
-    tsfc: Optional[float] = Field(
-        description="Initial exterior surface temperature", default=15.0
+    tsfc: Optional[Union[ValueWithDOI[float], None]] = Field(
+        description="Initial exterior surface temperature",
+        default=ValueWithDOI(15.0),
     )
-    tin: Optional[float] = Field(
-        description="Initial interior surface temperature", default=20.0
+    tin: Optional[Union[ValueWithDOI[float], None]] = Field(
+        description="Initial interior surface temperature",
+        default=ValueWithDOI(20.0)
     )  # We need to know which model is using this.
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
+
+    @field_validator("temperature", mode="before")
+    def validate_temperature(cls, v):
+        if isinstance(v, dict):
+            value = v['value']
+        else:
+            value = v.value
+        if len(value) != 5:
+            raise ValueError("temperature must have exactly 5 items")
+        return v
 
     def set_surface_type(self, surface_type: SurfaceType):
         """Set surface type"""
@@ -267,13 +278,13 @@ class SurfaceInitialState(BaseModel):
             df_state[(f"snowdens", f"({idx},)")] = self.snowdens.value
 
         # Set temperature parameters
-        for i, temp in enumerate(self.temperature):
+        for i, temp in enumerate(self.temperature.value):
             df_state[(f"temp_{str_type}", f"({idx}, {i})")] = temp
 
         if self.tsfc is not None:
-            df_state[(f"tsfc_{str_type}", f"({idx},)")] = self.tsfc
+            df_state[(f"tsfc_{str_type}", f"({idx},)")] = self.tsfc.value
         if self.tin is not None:
-            df_state[(f"tin_{str_type}", f"({idx},)")] = self.tin
+            df_state[(f"tin_{str_type}", f"({idx},)")] = self.tin.value
 
         return df_state
 
@@ -294,8 +305,8 @@ class SurfaceInitialState(BaseModel):
             SurfaceInitialState: Instance of SurfaceInitialState.
         """
         # Base surface state parameters
-        state = df.loc[grid_id, (f"state_{str_type}", f"({surf_idx},)")]
-        soilstore = df.loc[grid_id, (f"soilstore_{str_type}", f"({surf_idx},)")]
+        state = ValueWithDOI[float](df.loc[grid_id, (f"state_{str_type}", f"({surf_idx},)")])
+        soilstore = ValueWithDOI[float](df.loc[grid_id, (f"soilstore_{str_type}", f"({surf_idx},)")])
 
         # Snow/ice parameters
         if str_type not in ["roof", "wall"]:
@@ -312,18 +323,18 @@ class SurfaceInitialState(BaseModel):
             snowdens = None
 
         # Temperature parameters
-        temperature = [
+        temperature = ValueWithDOI[List[float]]([
             df.loc[grid_id, (f"temp_{str_type}", f"({surf_idx}, {i})")]
             for i in range(5)
-        ]
+        ])
 
         # Exterior and interior surface temperature
-        tsfc = df.loc[grid_id, (f"tsfc_{str_type}", f"({surf_idx},)")]
-        tin = df.loc[grid_id, (f"tin_{str_type}", f"({surf_idx},)")]
+        tsfc = ValueWithDOI[float](df.loc[grid_id, (f"tsfc_{str_type}", f"({surf_idx},)")])
+        tin = ValueWithDOI[float](df.loc[grid_id, (f"tin_{str_type}", f"({surf_idx},)")])
 
         return cls(
-            state=ValueWithDOI[float](state),
-            soilstore=ValueWithDOI[float](soilstore),
+            state=state,
+            soilstore=soilstore,
             snowfrac=snowfrac,
             snowpack=snowpack,
             icefrac=icefrac,
@@ -346,18 +357,21 @@ class InitialStateBldgs(SurfaceInitialState):
 class InitialStateVeg(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
-    alb_id: float = Field(
+    alb_id: ValueWithDOI[float] = Field(
         description="Initial albedo for vegetated surfaces (depends on time of year).",
-        default=0.25,
+        default=ValueWithDOI(0.25),
     )
-    lai_id: float = Field(
-        description="Initial leaf area index (depends on time of year).", default=1.0
+    lai_id: ValueWithDOI[float] = Field(
+        description="Initial leaf area index (depends on time of year).",
+        default=ValueWithDOI(1.0)
     )
-    gdd_id: float = Field(
-        description="Growing degree days  on day 1 of model run ID", default=0
+    gdd_id: ValueWithDOI[float] = Field(
+        description="Growing degree days  on day 1 of model run ID",
+        default=ValueWithDOI(0)
     )  # We need to check this and give info for setting values.
-    sdd_id: float = Field(
-        description="Senescence degree days ID", default=0
+    sdd_id: ValueWithDOI[float] = Field(
+        description="Senescence degree days ID",
+        default=ValueWithDOI(0)
     )  # This need to be consistent with GDD.
     wu: WaterUse = Field(default_factory=WaterUse)
 
@@ -396,11 +410,11 @@ class InitialStateVeg(SurfaceInitialState):
 
         # Add vegetated surface specific parameters
         # alb is universal so use surf_idx
-        df_state[("alb", f"({surf_idx},)")] = self.alb_id
+        df_state[("alb", f"({surf_idx},)")] = self.alb_id.value
         # others are aligned with veg_idx
-        df_state[("lai_id", f"({veg_idx},)")] = self.lai_id
-        df_state[("gdd_id", f"({veg_idx},)")] = self.gdd_id
-        df_state[("sdd_id", f"({veg_idx},)")] = self.sdd_id
+        df_state[("lai_id", f"({veg_idx},)")] = self.lai_id.value
+        df_state[("gdd_id", f"({veg_idx},)")] = self.gdd_id.value
+        df_state[("sdd_id", f"({veg_idx},)")] = self.sdd_id.value
 
         # Add water use parameters
         df_wu = self.wu.to_df_state(veg_idx, grid_id)
@@ -430,12 +444,18 @@ class InitialStateVeg(SurfaceInitialState):
         gdd_id = df.loc[grid_id, gdd_key]
         sdd_id = df.loc[grid_id, sdd_key]
 
+        # Convert to ValueWithDOI
+        alb_id = ValueWithDOI[float](alb_id)
+        lai_id = ValueWithDOI[float](lai_id)
+        gdd_id = ValueWithDOI[float](gdd_id)
+        sdd_id = ValueWithDOI[float](sdd_id)
+
         # Reconstruct WaterUse instance
         veg_idx = surf_idx - 2
         wu = WaterUse.from_df_state(df, veg_idx, grid_id)
 
         return cls(
-            **base_instance.dict(),
+            **base_instance.model_dump(),
             alb_id=alb_id,
             lai_id=lai_id,
             gdd_id=gdd_id,
@@ -450,7 +470,7 @@ class InitialStateEvetr(InitialStateVeg):
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert evergreen tree initial state to DataFrame state format."""
         df_state = super().to_df_state(grid_id)
-        df_state[("albevetr_id", "0")] = self.alb_id
+        df_state[("albevetr_id", "0")] = self.alb_id.value
         return df_state
 
     @classmethod
@@ -475,8 +495,8 @@ class InitialStateEvetr(InitialStateVeg):
         alb_id = df.loc[grid_id, ("albevetr_id", "0")].item()
 
         # Use `base_instance.dict()` to pass the existing attributes, excluding `alb_id` to avoid duplication
-        base_instance_dict = base_instance.dict()
-        base_instance_dict["alb_id"] = alb_id  # Update alb_id explicitly
+        base_instance_dict = base_instance.model_dump()
+        base_instance_dict["alb_id"] = {"value": alb_id}  # Update alb_id explicitly
 
         # Return a new instance with the updated dictionary
         return cls(**base_instance_dict)
@@ -485,11 +505,11 @@ class InitialStateEvetr(InitialStateVeg):
 class InitialStateDectr(InitialStateVeg):
     """Initial state parameters for deciduous trees"""
 
-    porosity_id: float = Field(
-        default=0.2, description="Initial porosity for deciduous trees"
+    porosity_id: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.2), description="Initial porosity for deciduous trees"
     )
-    decidcap_id: float = Field(
-        default=0.3, description="Initial deciduous capacity for deciduous trees"
+    decidcap_id: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.3), description="Initial deciduous capacity for deciduous trees"
     )
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
 
@@ -517,9 +537,9 @@ class InitialStateDectr(InitialStateVeg):
         df_state = super().to_df_state(grid_id)
 
         # Add deciduous tree specific parameters
-        df_state[("porosity_id", "0")] = self.porosity_id
-        df_state[("decidcap_id", "0")] = self.decidcap_id
-        df_state[("albdectr_id", "0")] = self.alb_id
+        df_state[("porosity_id", "0")] = self.porosity_id.value
+        df_state[("decidcap_id", "0")] = self.decidcap_id.value
+        df_state[("albdectr_id", "0")] = self.alb_id.value
 
         return df_state
 
@@ -545,8 +565,12 @@ class InitialStateDectr(InitialStateVeg):
         porosity_id = df.loc[grid_id, ("porosity_id", "0")]
         decidcap_id = df.loc[grid_id, ("decidcap_id", "0")]
 
+        # Convert to ValueWithDOI
+        porosity_id = ValueWithDOI[float](porosity_id)
+        decidcap_id = ValueWithDOI[float](decidcap_id)
+
         return cls(
-            **base_instance.dict(),
+            **base_instance.model_dump(),
             porosity_id=porosity_id,
             decidcap_id=decidcap_id,
         )
@@ -558,7 +582,7 @@ class InitialStateGrass(InitialStateVeg):
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert grass initial state to DataFrame state format."""
         df_state = super().to_df_state(grid_id)
-        df_state[("albgrass_id", "0")] = self.alb_id
+        df_state[("albgrass_id", "0")] = self.alb_id.value
         return df_state
 
     @classmethod
@@ -583,8 +607,8 @@ class InitialStateGrass(InitialStateVeg):
         alb_id = df.loc[grid_id, ("albgrass_id", "0")].item()
 
         # Use `base_instance.dict()` to pass the existing attributes, excluding `alb_id` to avoid duplication
-        base_instance_dict = base_instance.dict()
-        base_instance_dict["alb_id"] = alb_id  # Update alb_id explicitly
+        base_instance_dict = base_instance.model_dump()
+        base_instance_dict["alb_id"] = {"value": alb_id}  # Update alb_id explicitly
 
         # Return a new instance with the updated dictionary
         return cls(**base_instance_dict)
@@ -1000,7 +1024,8 @@ class WaterDistribution(BaseModel):
 
         # Validate sum
         total = sum(values)
-        if not np.isclose(total, 1.0, rtol=1e-5):
+        # if not np.isclose(total, 1.0, rtol=1e-5):
+        if not math.isclose(total, 1.0, rel_tol=1e-5):
             raise ValueError(f"Water distribution sum must be 1.0, got {total}")
 
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
@@ -1429,7 +1454,8 @@ class SurfaceProperties(BaseModel):
         def set_df_value(col_name: str, value: float):
             idx_str = f"({surf_idx},)"
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.loc[grid_id, (col_name, idx_str)] = value
 
         # Get all properties of this class using introspection
@@ -2015,7 +2041,8 @@ class WaterProperties(NonVegetatedSurfaceProperties):
         def set_df_value(col_name: str, value: float):
             idx_str = f"({surf_idx},)"
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.loc[grid_id, (col_name, idx_str)] = value
 
         list_attr = ["flowchange"]
@@ -2057,7 +2084,8 @@ class ModelControl(BaseModel):
         def set_df_value(col_name: str, value: float):
             idx_str = "0"
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.at[grid_id, (col_name, idx_str)] = value
 
         list_attr = ["tstep", "diagnose"]
@@ -2165,7 +2193,8 @@ class ModelPhysics(BaseModel):
         def set_df_value(col_name: str, value: float):
             idx_str = "0"
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.at[grid_id, (col_name, idx_str)] = int(value)
 
         list_attr = [
@@ -3193,7 +3222,8 @@ class LAIPowerCoefficients(BaseModel):
         def set_df_value(col_name: str, indices: Tuple, value: float):
             idx_str = str(indices)
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.at[grid_id, (col_name, idx_str)] = value
 
         # Set power coefficients in order
@@ -3295,7 +3325,8 @@ class LAIParams(BaseModel):
         def set_df_value(col_name: str, indices: Union[Tuple, int], value: float):
             idx_str = str(indices) if isinstance(indices, int) else str(indices)
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.at[grid_id, (col_name, idx_str)] = value
 
         # Set basic LAI parameters
@@ -3417,7 +3448,8 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         # Helper function to set values in DataFrame
         def set_df_value(col_name: str, idx_str: str, value: float):
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.loc[grid_id, (col_name, idx_str)] = value
 
         # add ordinary float properties
@@ -3465,7 +3497,8 @@ class EvetrProperties(VegetatedSurfaceProperties):
         def set_df_value(col_name: str, value: float):
             idx_str = f"({surf_idx},)"
             if (col_name, idx_str) not in df_state.columns:
-                df_state[(col_name, idx_str)] = np.nan
+                # df_state[(col_name, idx_str)] = np.nan
+                df_state[(col_name, idx_str)] = None
             df_state.loc[grid_id, (col_name, idx_str)] = value
 
         # Add all non-inherited properties
