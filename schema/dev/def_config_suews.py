@@ -1262,17 +1262,17 @@ class StorageDrainParams(BaseModel):
 
 
 class OHM_Coefficient_season_wetness(BaseModel):
-    summer_dry: float = Field(
-        default=0.0, description="OHM coefficient for summer dry conditions"
+    summer_dry: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="OHM coefficient for summer dry conditions"
     )
-    summer_wet: float = Field(
-        default=0.0, description="OHM coefficient for summer wet conditions"
+    summer_wet: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="OHM coefficient for summer wet conditions"
     )
-    winter_dry: float = Field(
-        default=0.0, description="OHM coefficient for winter dry conditions"
+    winter_dry: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="OHM coefficient for winter dry conditions"
     )
-    winter_wet: float = Field(
-        default=0.0, description="OHM coefficient for winter wet conditions"
+    winter_wet: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="OHM coefficient for winter wet conditions"
     )
 
     def to_df_state(self, grid_id: int, surf_idx: int, idx_a: int) -> pd.DataFrame:
@@ -1299,7 +1299,7 @@ class OHM_Coefficient_season_wetness(BaseModel):
         # Set values for each season/wetness combination
         for season_wetdry, idx in season_wetdry_map.items():
             str_idx = f"({surf_idx}, {idx}, {idx_a})"
-            df_state.loc[grid_id, ("ohm_coef", str_idx)] = getattr(self, season_wetdry)
+            df_state.loc[grid_id, ("ohm_coef", str_idx)] = getattr(self, season_wetdry).value
 
         return df_state
 
@@ -1333,6 +1333,9 @@ class OHM_Coefficient_season_wetness(BaseModel):
             ]
             for season_wetdry, idx in season_wetdry_map.items()
         }
+
+        # Convert to ValueWithDOI
+        params = {key: ValueWithDOI(value) for key, value in params.items()}
 
         return cls(**params)
 
@@ -1402,7 +1405,7 @@ class OHMCoefficients(BaseModel):
 class SurfaceProperties(BaseModel):
     """Base properties for all surface types"""
 
-    sfr: float = Field(ge=0, le=1, description="Surface fraction", default=1.0 / 7)
+    sfr: ValueWithDOI[float] = Field(ge=0, le=1, description="Surface fraction", default=ValueWithDOI(1.0 / 7))
     emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
     chanohm: Optional[float] = Field(default=0.0)
     cpanohm: Optional[float] = Field(default=1200.0)
