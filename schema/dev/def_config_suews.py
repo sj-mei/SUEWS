@@ -7,7 +7,7 @@ from pydantic import (
     PrivateAttr,
     conlist,
 )
-# import numpy as np
+import numpy as np
 from enum import Enum
 import pandas as pd
 import scipy as sp
@@ -22,6 +22,10 @@ class ValueWithDOI(BaseModel, Generic[T]):
     DOI: Optional[str] = None
 
     def __init__(self, value: T, DOI: Optional[str] = None):
+        if isinstance(value, (np.float64, np.float32)):
+            value = float(value)
+        elif isinstance(value, (np.int64, np.int32)):
+            value = int(value)
         super().__init__(value=value, DOI=DOI)
 
     def __str__(self):
@@ -858,27 +862,27 @@ class ThermalLayers(BaseModel):
 
 
 class VegetationParams(BaseModel):
-    porosity_id: int
-    gdd_id: int = Field(description="Growing degree days ID")
-    sdd_id: int = Field(description="Senescence degree days ID")
-    lai: Dict[str, Union[float, List[float]]] = Field(
+    porosity_id: ValueWithDOI[int]
+    gdd_id: ValueWithDOI[int] = Field(description="Growing degree days ID")
+    sdd_id: ValueWithDOI[int] = Field(description="Senescence degree days ID")
+    lai: Dict[str, Union[ValueWithDOI[float], List[ValueWithDOI[float]]]] = Field(
         description="Leaf area index parameters"
     )
-    ie_a: float = Field(description="Irrigation efficiency coefficient a")
-    ie_m: float = Field(description="Irrigation efficiency coefficient m")
+    ie_a: ValueWithDOI[float] = Field(description="Irrigation efficiency coefficient a")
+    ie_m: ValueWithDOI[float] = Field(description="Irrigation efficiency coefficient m")
 
 
 class WaterDistribution(BaseModel):
     # Optional fields for all possible distributions
-    to_paved: Optional[float] = Field(None, ge=0, le=1)
-    to_bldgs: Optional[float] = Field(None, ge=0, le=1)
-    to_dectr: Optional[float] = Field(None, ge=0, le=1)
-    to_evetr: Optional[float] = Field(None, ge=0, le=1)
-    to_grass: Optional[float] = Field(None, ge=0, le=1)
-    to_bsoil: Optional[float] = Field(None, ge=0, le=1)
-    to_water: Optional[float] = Field(None, ge=0, le=1)
-    to_runoff: Optional[float] = Field(None, ge=0, le=1)  # For paved/bldgs
-    to_soilstore: Optional[float] = Field(None, ge=0, le=1)  # For vegetated surfaces
+    to_paved: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)
+    to_bldgs: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)
+    to_dectr: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)
+    to_evetr: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)
+    to_grass: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)
+    to_bsoil: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)
+    to_water: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)
+    to_runoff: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)  # For paved/bldgs
+    to_soilstore: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)  # For vegetated surfaces
     _surface_type: Optional[SurfaceType] = PrivateAttr(None)
 
     def __init__(self, surface_type: Optional[SurfaceType] = None, **data):
@@ -895,58 +899,58 @@ class WaterDistribution(BaseModel):
         # Default distributions based on surface type
         default_distributions = {
             SurfaceType.PAVED: {
-                "to_bldgs": 0.2,
-                "to_evetr": 0.1,
-                "to_dectr": 0.1,
-                "to_grass": 0.1,
-                "to_bsoil": 0.1,
-                "to_water": 0.1,
-                "to_runoff": 0.3,
+                "to_bldgs": ValueWithDOI(0.2),
+                "to_evetr": ValueWithDOI(0.1),
+                "to_dectr": ValueWithDOI(0.1),
+                "to_grass": ValueWithDOI(0.1),
+                "to_bsoil": ValueWithDOI(0.1),
+                "to_water": ValueWithDOI(0.1),
+                "to_runoff": ValueWithDOI(0.3),
             },
             SurfaceType.BLDGS: {
-                "to_paved": 0.2,
-                "to_evetr": 0.1,
-                "to_dectr": 0.1,
-                "to_grass": 0.1,
-                "to_bsoil": 0.1,
-                "to_water": 0.1,
-                "to_runoff": 0.3,
+                "to_paved": ValueWithDOI(0.2),
+                "to_evetr": ValueWithDOI(0.1),
+                "to_dectr": ValueWithDOI(0.1),
+                "to_grass": ValueWithDOI(0.1),
+                "to_bsoil": ValueWithDOI(0.1),
+                "to_water": ValueWithDOI(0.1),
+                "to_runoff": ValueWithDOI(0.3),
             },
             SurfaceType.EVETR: {
-                "to_paved": 0.1,
-                "to_bldgs": 0.1,
-                "to_dectr": 0.1,
-                "to_grass": 0.1,
-                "to_bsoil": 0.1,
-                "to_water": 0.1,
-                "to_soilstore": 0.4,
+                "to_paved": ValueWithDOI(0.1),
+                "to_bldgs": ValueWithDOI(0.1),
+                "to_dectr": ValueWithDOI(0.1),
+                "to_grass": ValueWithDOI(0.1),
+                "to_bsoil": ValueWithDOI(0.1),
+                "to_water": ValueWithDOI(0.1),
+                "to_soilstore": ValueWithDOI(0.4),
             },
             SurfaceType.DECTR: {
-                "to_paved": 0.1,
-                "to_bldgs": 0.1,
-                "to_evetr": 0.1,
-                "to_grass": 0.1,
-                "to_bsoil": 0.1,
-                "to_water": 0.1,
-                "to_soilstore": 0.4,
+                "to_paved": ValueWithDOI(0.1),
+                "to_bldgs": ValueWithDOI(0.1),
+                "to_evetr": ValueWithDOI(0.1),
+                "to_grass": ValueWithDOI(0.1),
+                "to_bsoil": ValueWithDOI(0.1),
+                "to_water": ValueWithDOI(0.1),
+                "to_soilstore": ValueWithDOI(0.4),
             },
             SurfaceType.GRASS: {
-                "to_paved": 0.1,
-                "to_bldgs": 0.1,
-                "to_dectr": 0.1,
-                "to_evetr": 0.1,
-                "to_bsoil": 0.1,
-                "to_water": 0.1,
-                "to_soilstore": 0.4,
+                "to_paved": ValueWithDOI(0.1),
+                "to_bldgs": ValueWithDOI(0.1),
+                "to_dectr": ValueWithDOI(0.1),
+                "to_evetr": ValueWithDOI(0.1),
+                "to_bsoil": ValueWithDOI(0.1),
+                "to_water": ValueWithDOI(0.1),
+                "to_soilstore": ValueWithDOI(0.4),
             },
             SurfaceType.BSOIL: {
-                "to_paved": 0.1,
-                "to_bldgs": 0.1,
-                "to_dectr": 0.1,
-                "to_evetr": 0.1,
-                "to_grass": 0.1,
-                "to_water": 0.1,
-                "to_soilstore": 0.4,
+                "to_paved": ValueWithDOI(0.1),
+                "to_bldgs": ValueWithDOI(0.1),
+                "to_dectr": ValueWithDOI(0.1),
+                "to_evetr": ValueWithDOI(0.1),
+                "to_grass": ValueWithDOI(0.1),
+                "to_water": ValueWithDOI(0.1),
+                "to_soilstore": ValueWithDOI(0.4),
             },
         }
 
@@ -1033,7 +1037,7 @@ class WaterDistribution(BaseModel):
             values.append(value)
 
         # Validate sum
-        total = sum(values)
+        total = sum(value.value if isinstance(value, ValueWithDOI) else value for value in values)
         # if not np.isclose(total, 1.0, rtol=1e-5):
         if not math.isclose(total, 1.0, rel_tol=1e-5):
             raise ValueError(f"Water distribution sum must be 1.0, got {total}")
@@ -1088,6 +1092,9 @@ class WaterDistribution(BaseModel):
 
         # Create MultiIndex columns
         columns = pd.MultiIndex.from_tuples(param_tuples, names=["var", "ind_dim"])
+
+        # Convert ValueWithDOI to float
+        values = [value.value if isinstance(value, ValueWithDOI) else value for value in values]
 
         # Create DataFrame with single row
         df = pd.DataFrame(
@@ -1146,11 +1153,13 @@ class WaterDistribution(BaseModel):
             for param, idx in param_map.items()
         }
         for param, value in params.items():
+            value = ValueWithDOI(value)
             if getattr(instance, param) is not None:
                 setattr(instance, param, value)
 
         # set the last to_soilstore or to_runoff
         waterdist_last = df.loc[grid_id, ("waterdist", f"(7, {surf_idx})")]
+        waterdist_last = ValueWithDOI(waterdist_last)
         if getattr(instance, "to_soilstore") is None:
             setattr(instance, "to_runoff", waterdist_last)
         else:
