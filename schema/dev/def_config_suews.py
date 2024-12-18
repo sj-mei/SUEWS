@@ -625,7 +625,11 @@ class InitialStateWater(SurfaceInitialState):
 class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
-    snowalb: float = Field(ge=0, le=1, description="Initial snow albedo", default=0.5)
+    snowalb: ValueWithDOI[float] = Field(
+        description="Initial snow albedo",
+        default=ValueWithDOI(0.5),
+        ge=0, le=1,
+    )
     paved: InitialStatePaved = Field(default_factory=InitialStatePaved)
     bldgs: InitialStateBldgs = Field(default_factory=InitialStateBldgs)
     evetr: InitialStateEvetr = Field(default_factory=InitialStateEvetr)
@@ -655,7 +659,7 @@ class InitialStates(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Add snowalb
-        df_state[("snowalb", "0")] = self.snowalb
+        df_state[("snowalb", "0")] = self.snowalb.value
 
         # Add surface states
         surfaces = {
@@ -710,6 +714,7 @@ class InitialStates(BaseModel):
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "InitialStates":
         snowalb = df.loc[grid_id, ("snowalb", "0")]
+        snowalb = ValueWithDOI[float](snowalb)
 
         surface_types = {
             "paved": InitialStatePaved,
@@ -760,9 +765,9 @@ class InitialStates(BaseModel):
 
 
 class ThermalLayers(BaseModel):
-    dz: List[float] = Field([0.1, 0.2, 0.3, 0.4, 0.5], min_items=5, max_items=5)
-    k: List[float] = Field([1.0, 1.0, 1.0, 1.0, 1.0], min_items=5, max_items=5)
-    cp: List[float] = Field([1000, 1000, 1000, 1000, 1000], min_items=5, max_items=5)
+    dz: ValueWithDOI[List[float]] = Field(default=ValueWithDOI([0.1, 0.2, 0.3, 0.4, 0.5]))
+    k: ValueWithDOI[List[float]] = Field(default=ValueWithDOI([1.0, 1.0, 1.0, 1.0, 1.0]))
+    cp: ValueWithDOI[List[float]] = Field(default=ValueWithDOI([1000, 1000, 1000, 1000, 1000]))
 
     def to_df_state(
         self,
@@ -800,9 +805,9 @@ class ThermalLayers(BaseModel):
 
         # Add thermal layer parameters
         for i in range(5):
-            df_state[(f"dz_{suffix}", f"({idx}, {i})")] = self.dz[i]
-            df_state[(f"k_{suffix}", f"({idx}, {i})")] = self.k[i]
-            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.cp[i]
+            df_state[(f"dz_{suffix}", f"({idx}, {i})")] = self.dz.value[i]
+            df_state[(f"k_{suffix}", f"({idx}, {i})")] = self.k.value[i]
+            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.cp.value[i]
 
         return df_state
 
@@ -842,6 +847,11 @@ class ThermalLayers(BaseModel):
             dz.append(df.loc[grid_id, (f"dz_{suffix}", f"({idx}, {i})")])
             k.append(df.loc[grid_id, (f"k_{suffix}", f"({idx}, {i})")])
             cp.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
+
+        # Convert to ValueWithDOI
+        dz = ValueWithDOI[List[float]](dz)
+        k = ValueWithDOI[List[float]](k)
+        cp = ValueWithDOI[List[float]](cp)
 
         # Return reconstructed instance
         return cls(dz=dz, k=k, cp=cp)
