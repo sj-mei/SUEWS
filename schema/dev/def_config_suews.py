@@ -1989,13 +1989,13 @@ class VerticalLayers(BaseModel):
         )
 
 
-class BldgsProperties(NonVegetatedSurfaceProperties):
+class BldgsProperties(NonVegetatedSurfaceProperties): # May need to move VWD for waterdist to here for referencing
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
-    faibldg: float = Field(
-        ge=0, default=0.3, description="Frontal area index of buildings"
+    faibldg: ValueWithDOI[float] = Field(
+        ge=0, default=ValueWithDOI(0.3), description="Frontal area index of buildings"
     )
-    bldgh: float = Field(
-        ge=3, default=10.0, description="Building height"
+    bldgh: ValueWithDOI[float] = Field(
+        ge=3, default=ValueWithDOI(10.0), description="Building height"
     )  # We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
@@ -2005,7 +2005,7 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
     def validate_rsl_zd_range(self) -> "BldgsProperties":
         sfr_bldg_lower_limit = 0.18
         if self.sfr < sfr_bldg_lower_limit:
-            if self.faibldg < 0.25 * (1 - self.sfr.value):
+            if self.faibldg.value < 0.25 * (1 - self.sfr.value):
                 raise ValueError(
                     "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
                     f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
@@ -2017,9 +2017,9 @@ class BldgsProperties(NonVegetatedSurfaceProperties):
         """Convert building properties to DataFrame state format."""
         df_state = super().to_df_state(grid_id).sort_index(axis=1)
 
-        df_state.loc[grid_id, ("faibldg", "0")] = self.faibldg
+        df_state.loc[grid_id, ("faibldg", "0")] = self.faibldg.value
         df_state = df_state.sort_index(axis=1)
-        df_state.loc[grid_id, ("bldgh", "0")] = self.bldgh
+        df_state.loc[grid_id, ("bldgh", "0")] = self.bldgh.value
 
         return df_state
 
