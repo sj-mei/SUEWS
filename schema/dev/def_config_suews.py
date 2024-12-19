@@ -3057,11 +3057,11 @@ class CO2Params(BaseModel): # TODO: May need to add the ValueWithDOI to the prof
 
 
 class AnthropogenicEmissions(BaseModel):
-    startdls: float = Field(
-        default=0.0, description="Start of daylight savings time in decimal day of year"
+    startdls: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Start of daylight savings time in decimal day of year"
     )
-    enddls: float = Field(
-        default=0.0, description="End of daylight savings time in decimal day of year"
+    enddls: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="End of daylight savings time in decimal day of year"
     )
     heat: AnthropogenicHeat = Field(
         description="Anthropogenic heat emission parameters",
@@ -3084,8 +3084,8 @@ class AnthropogenicEmissions(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set start and end daylight saving times
-        df_state.loc[grid_id, ("startdls", "0")] = self.startdls
-        df_state.loc[grid_id, ("enddls", "0")] = self.enddls
+        df_state.loc[grid_id, ("startdls", "0")] = self.startdls.value
+        df_state.loc[grid_id, ("enddls", "0")] = self.enddls.value
 
         # Add heat parameters
         df_heat = self.heat.to_df_state(grid_id)
@@ -3112,8 +3112,8 @@ class AnthropogenicEmissions(BaseModel):
         Returns:
             AnthropogenicEmissions: Instance of AnthropogenicEmissions.
         """
-        startdls = df.loc[grid_id, ("startdls", "0")]
-        enddls = df.loc[grid_id, ("enddls", "0")]
+        startdls = ValueWithDOI(df.loc[grid_id, ("startdls", "0")])
+        enddls = ValueWithDOI(df.loc[grid_id, ("enddls", "0")])
 
         # Reconstruct heat parameters
         heat = AnthropogenicHeat.from_df_state(df, grid_id)
