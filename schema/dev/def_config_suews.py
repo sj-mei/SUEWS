@@ -1411,7 +1411,7 @@ class SurfaceProperties(BaseModel):
     kkanohm: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.4))
     ohm_threshsw: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
     ohm_threshwd: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
-    ohm_coef: Optional[OHMCoefficients] = Field(default_factory=OHMCoefficients)
+    ohm_coef: Optional[OHMCoefficients] = Field(default_factory=OHMCoefficients) # NEEDS TO BE CHANGED for REF
     soildepth: ValueWithDOI[float] = Field(default=ValueWithDOI(0.15))
     soilstorecap: ValueWithDOI[float] = Field(default=ValueWithDOI(150.0))
     statelimit: ValueWithDOI[float] = Field(default=ValueWithDOI(10.0))
@@ -1632,7 +1632,7 @@ class SurfaceProperties(BaseModel):
 
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
-    alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
+    alb: ValueWithDOI[float] = Field(ge=0, le=1, description="Surface albedo", default=ValueWithDOI(0.1))
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert non-vegetated surface properties to DataFrame state format."""
@@ -1647,7 +1647,7 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
             df_base = pd.concat([df_base, df_waterdist], axis=1).sort_index(axis=1)
 
         for attr in ["alb"]:
-            df_base.loc[grid_id, (attr, f"({surf_idx},)")] = getattr(self, attr)
+            df_base.loc[grid_id, (attr, f"({surf_idx},)")] = getattr(self, attr).value
             df_base = df_base.sort_index(axis=1)
 
         return df_base
