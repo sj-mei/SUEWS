@@ -3220,20 +3220,20 @@ class Conductance(BaseModel):
 
 
 class LAIPowerCoefficients(BaseModel):
-    growth_lai: float = Field(
-        default=0.1,
+    growth_lai: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1),
         description="Power coefficient for LAI in growth equation (LAIPower[1])",
     )
-    growth_gdd: float = Field(
-        default=0.1,
+    growth_gdd: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1),
         description="Power coefficient for GDD in growth equation (LAIPower[2])",
     )
-    senescence_lai: float = Field(
-        default=0.1,
+    senescence_lai: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1),
         description="Power coefficient for LAI in senescence equation (LAIPower[3])",
     )
-    senescence_sdd: float = Field(
-        default=0.1,
+    senescence_sdd: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1),
         description="Power coefficient for SDD in senescence equation (LAIPower[4])",
     )
 
@@ -3268,7 +3268,7 @@ class LAIPowerCoefficients(BaseModel):
 
         # Set power coefficients in order
         for i, value in enumerate(self.to_list()):
-            set_df_value("laipower", (i, veg_idx), value)
+            set_df_value("laipower", (i, veg_idx), value.value)
 
         return df_state
 
@@ -3289,10 +3289,10 @@ class LAIPowerCoefficients(BaseModel):
         """
         # Map each coefficient to its corresponding index
         coefficients = [
-            df.loc[grid_id, ("laipower", f"(0, {veg_idx})")],
-            df.loc[grid_id, ("laipower", f"(1, {veg_idx})")],
-            df.loc[grid_id, ("laipower", f"(2, {veg_idx})")],
-            df.loc[grid_id, ("laipower", f"(3, {veg_idx})")],
+            ValueWithDOI(df.loc[grid_id, ("laipower", f"(0, {veg_idx})")]),
+            ValueWithDOI(df.loc[grid_id, ("laipower", f"(1, {veg_idx})")]),
+            ValueWithDOI(df.loc[grid_id, ("laipower", f"(2, {veg_idx})")]),
+            ValueWithDOI(df.loc[grid_id, ("laipower", f"(3, {veg_idx})")]),
         ]
 
         # Return the instance with coefficients
