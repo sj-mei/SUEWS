@@ -3648,33 +3648,33 @@ class GrassProperties(VegetatedSurfaceProperties):
 
 
 class SnowParams(BaseModel):
-    crwmax: float = Field(default=0.1, description="Maximum water capacity of snow")
-    crwmin: float = Field(default=0.05, description="Minimum water capacity of snow")
-    narp_emis_snow: float = Field(default=0.99, description="Snow surface emissivity")
-    preciplimit: float = Field(
-        default=2.2, description="Limit for snow vs rain precipitation"
+    crwmax: ValueWithDOI[float] = Field(default=ValueWithDOI(0.1), description="Maximum water capacity of snow")
+    crwmin: ValueWithDOI[float] = Field(default=ValueWithDOI(0.05), description="Minimum water capacity of snow")
+    narp_emis_snow: ValueWithDOI[float] = Field(default=ValueWithDOI(0.99), description="Snow surface emissivity")
+    preciplimit: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(2.2), description="Limit for snow vs rain precipitation"
     )
-    preciplimitalb: float = Field(
-        default=0.1, description="Precipitation limit for albedo aging"
+    preciplimitalb: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1), description="Precipitation limit for albedo aging"
     )
-    snowalbmax: float = Field(default=0.85, description="Maximum snow albedo")
-    snowalbmin: float = Field(default=0.4, description="Minimum snow albedo")
-    snowdensmin: float = Field(
-        default=100.0, description="Minimum snow density (kg m-3)"
+    snowalbmax: ValueWithDOI[float] = Field(default=ValueWithDOI(0.85), description="Maximum snow albedo")
+    snowalbmin: ValueWithDOI[float] = Field(default=ValueWithDOI(0.4), description="Minimum snow albedo")
+    snowdensmin: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(100.0), description="Minimum snow density (kg m-3)"
     )
-    snowdensmax: float = Field(
-        default=400.0, description="Maximum snow density (kg m-3)"
+    snowdensmax: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(400.0), description="Maximum snow density (kg m-3)"
     )
-    snowlimbldg: float = Field(default=0.1, description="Snow limit on buildings")
-    snowlimpaved: float = Field(default=0.1, description="Snow limit on paved surfaces")
+    snowlimbldg: ValueWithDOI = Field(default=ValueWithDOI(0.1), description="Snow limit on buildings")
+    snowlimpaved: ValueWithDOI = Field(default=ValueWithDOI(0.1), description="Snow limit on paved surfaces")
     snowprof_24hr: HourlyProfile = Field(
         default_factory=HourlyProfile, description="24-hour snow profile"
     )
-    tau_a: float = Field(default=0.018, description="Aging constant for cold snow")
-    tau_f: float = Field(default=0.11, description="Aging constant for melting snow")
-    tau_r: float = Field(default=0.05, description="Aging constant for refreezing snow")
-    tempmeltfact: float = Field(default=0.12, description="Temperature melt factor")
-    radmeltfact: float = Field(default=0.0016, description="Radiation melt factor")
+    tau_a: ValueWithDOI[float] = Field(default=ValueWithDOI(0.018), description="Aging constant for cold snow")
+    tau_f: ValueWithDOI[float] = Field(default=ValueWithDOI(0.11), description="Aging constant for melting snow")
+    tau_r: ValueWithDOI[float] = Field(default=ValueWithDOI(0.05), description="Aging constant for refreezing snow")
+    tempmeltfact: ValueWithDOI[float] = Field(default=ValueWithDOI(0.12), description="Temperature melt factor")
+    radmeltfact: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0016), description="Radiation melt factor")
 
     @model_validator(mode="after")
     def validate_crw_range(self) -> "SnowParams":
@@ -3724,7 +3724,7 @@ class SnowParams(BaseModel):
             "radmeltfact": self.radmeltfact,
         }
         for param_name, value in scalar_params.items():
-            df_state.loc[grid_id, (param_name, "0")] = value
+            df_state.loc[grid_id, (param_name, "0")] = value.value
 
         df_hourly_profile = self.snowprof_24hr.to_df_state(grid_id, "snowprof_24hr")
         df_state = df_state.combine_first(df_hourly_profile)
@@ -3762,6 +3762,9 @@ class SnowParams(BaseModel):
             "tempmeltfact": df.loc[grid_id, ("tempmeltfact", "0")],
             "radmeltfact": df.loc[grid_id, ("radmeltfact", "0")],
         }
+
+        # Convert scalar parameters to ValueWithDOI
+        scalar_params = {key: ValueWithDOI(value) for key, value in scalar_params.items()}
 
         # Extract HourlyProfile
         snowprof_24hr = HourlyProfile.from_df_state(df, grid_id, "snowprof_24hr")
