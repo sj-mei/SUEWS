@@ -3863,11 +3863,11 @@ class ArchetypeProperties(BaseModel):
 
     BuildingType: str='SampleType'
     BuildingName: str='SampleBuilding'
-    BuildingCount: int = Field(
-        default=1, description="Number of buildings of this archetype [-]"
+    BuildingCount: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(1), description="Number of buildings of this archetype [-]"
     )
-    Occupants: int = Field(
-        default=1, description="Number of occupants present in building [-]"
+    Occupants: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(1), description="Number of occupants present in building [-]"
     )
 
     # Not used in STEBBS - DAVE only
@@ -3886,177 +3886,177 @@ class ArchetypeProperties(BaseModel):
     # age_19_64: int = Field(default=0, description="")
     # age_65plus: int = Field(default=0, description="")
 
-    stebbs_Height: float = Field(
-        default=10.0,
+    stebbs_Height: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(10.0),
         description="Building height [m]",
         gt=0.0,
     )
-    FootprintArea: float = Field(
-        default=64.0,
+    FootprintArea: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(64.0),
         description="Building footprint area [m2]",
         gt=0.0,
     )
-    WallExternalArea: float = Field(
-        default=80.0,
+    WallExternalArea: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(80.0),
         description="External wall area (including window area) [m2]",
         gt=0.0,
     )
-    RatioInternalVolume: float = Field(
-        default=0.01,
+    RatioInternalVolume: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.01),
         description="Ratio of internal mass volume to total building volume [-]",
         ge=0.0, le=1.0,
     )
-    WWR: float = Field(
-        default=0.20,
+    WWR: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.20),
         description="window to wall ratio [-]",
         ge=0.0, le=1.0,
     )
-    WallThickness: float = Field(
-        default=20.0,
+    WallThickness: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(20.0),
         description="Thickness of external wall and roof (weighted) [m]",
         gt=0.0,
     )
-    WallEffectiveConductivity: float = Field(
-        default=60.0,
+    WallEffectiveConductivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(60.0),
         description="Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]",
         gt=0.0,
     )
-    WallDensity: float = Field(
-        default=1600.0,
+    WallDensity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1600.0),
         description="Effective density of the walls and roof (weighted) [kg m-3]",
         gt=0.0,
     )
-    WallCp: float = Field(
-        default=850.0,
+    WallCp: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(850.0),
         description="Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]",
         gt=0.0,
     )
-    Wallx1: float = Field(
-        default=1.0,
+    Wallx1: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1.0),
         description="Weighting factor for heat capacity of walls and roof [-]",
         ge=0.0, le=1.0,
     )
-    WallExternalEmissivity: float = Field(
-        default=0.9,
+    WallExternalEmissivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.9),
         description="Emissivity of the external surface of walls and roof [-]",
         ge=0.0, le=1.0,
     )
-    WallInternalEmissivity: float = Field(
-        default=0.9,
+    WallInternalEmissivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.9),
         description="Emissivity of the internal surface of walls and roof [-]",
         ge=0.0, le=1.0,
     )
-    WallTransmissivity: float = Field(
-        default=0.0,
+    WallTransmissivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Transmissivity of walls and roof [-]",
         ge=0.0, le=1.0,
     )
-    WallAbsorbtivity: float = Field(
-        default=0.8,
+    WallAbsorbtivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.8),
         description="Absorbtivity of walls and roof [-]",
         ge=0.0, le=1.0,
     )
-    WallReflectivity: float = Field(
-        default=0.2,
+    WallReflectivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.2),
         description="Reflectivity of the external surface of walls and roof [-]",
         ge=0.0, le=1.0,
     )
-    FloorThickness: float = Field(
-        default=0.2,
+    FloorThickness: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.2),
         description="Thickness of ground floor [m]",
         gt=0.0,
     )
-    GroundFloorEffectiveConductivity: float = Field(
-        default=0.15,
+    GroundFloorEffectiveConductivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.15),
         description="Effective thermal conductivity of ground floor [W m-1 K-1]",
         gt=0.0,
     )
-    GroundFloorDensity: float = Field(
-        default=500.0,
+    GroundFloorDensity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(500.0),
         description="Density of the ground floor [kg m-3]",
         gt=0.0,
     )
-    GroundFloorCp: float = Field(
-        default=1500.0,
+    GroundFloorCp: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1500.0),
         description="Effective specific heat capacity of the ground floor [J kg-1 K-1]",
         gt=0.0,
     )
-    WindowThickness: float = Field(
-        default=0.015,
+    WindowThickness: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.015),
         description="Window thickness [m]",
         gt=0.0,
     )
-    WindowEffectiveConductivity: float = Field(
-        default=1.0,
+    WindowEffectiveConductivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1.0),
         description="Effective thermal conductivity of windows [W m-1 K-1]",
         gt=0.0,
     )
-    WindowDensity: float = Field(
-        default=2500.0,
+    WindowDensity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(2500.0),
         description="Effective density of the windows [kg m-3]",
         gt=0.0,
     )
-    WindowCp: float = Field(
-        default=840.0,
+    WindowCp: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(840.0),
         description="Effective specific heat capacity of windows [J kg-1 K-1]",
         gt=0.0,
     )
-    WindowExternalEmissivity: float = Field(
-        default=0.90,
+    WindowExternalEmissivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.90),
         description="Emissivity of the external surface of windows [-]",
         ge=0.0, le=1.0,
     )
-    WindowInternalEmissivity: float = Field(
-        default=0.90,
+    WindowInternalEmissivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.90),
         description="Emissivity of the internal surface of windows [-]",
         ge=0.0, le=1.0,
     )
-    WindowTransmissivity: float = Field(
-        default=0.90,
+    WindowTransmissivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.90),
         description="Transmissivity of windows [-]",
         ge=0.0, le=1.0,
     )
-    WindowAbsorbtivity: float = Field(
-        default=0.01,
+    WindowAbsorbtivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.01),
         description="Absorbtivity of windows [-]",
         ge=0.0, le=1.0,
     )
-    WindowReflectivity: float = Field(
-        default=0.09,
+    WindowReflectivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.09),
         description="Reflectivity of the external surface of windows [-]",
         ge=0.0, le=1.0,
     )
     # TODO: Add defaults below here
-    InternalMassDensity: float = Field(
-        default=0.0,
+    InternalMassDensity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Effective density of the internal mass [kg m-3]"
     )
-    InternalMassCp: float = Field(
-        default=0.0,
+    InternalMassCp: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Specific heat capacity of internal mass [J kg-1 K-1]"
     )
-    InternalMassEmissivity: float = Field(
-        default=0.0,
+    InternalMassEmissivity: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Emissivity of internal mass [-]"
     )
-    MaxHeatingPower: float = Field(
-        default=0.0,
+    MaxHeatingPower: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Maximum power demand of heating system [W]"
     )
-    WaterTankWaterVolume: float = Field(
-        default=0.0,
+    WaterTankWaterVolume: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Volume of water in hot water tank [m3]"
     )
-    MaximumHotWaterHeatingPower: float = Field(
-        default=0.0,
+    MaximumHotWaterHeatingPower: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Maximum power demand of water heating system [W]"
     )
-    HeatingSetpointTemperature: float = Field(
-        default=0.0,
+    HeatingSetpointTemperature: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Heating setpoint temperature [degC]"
     )
-    CoolingSetpointTemperature: float = Field(
-        default=0.0,
+    CoolingSetpointTemperature: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0),
         description="Cooling setpoint temperature [degC]"
     )
 
@@ -4073,7 +4073,7 @@ class ArchetypeProperties(BaseModel):
 
         # Set the values in the DataFrame
         for field_name, field_info in self.model_fields.items():
-            df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name)
+            df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name).value
 
         return df_state
 
@@ -4085,6 +4085,9 @@ class ArchetypeProperties(BaseModel):
             field_name: df.loc[grid_id, (field_name, "0")]
             for field_name in cls.model_fields.keys()
         }
+
+        # Convert params to ValueWithDOI
+        params = {key: ValueWithDOI(value) for key, value in params.items()}
 
         # Create an instance using the extracted parameters
         return cls(**params)
