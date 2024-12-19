@@ -1653,7 +1653,7 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
         return df_base
 
 
-class PavedProperties(NonVegetatedSurfaceProperties):
+class PavedProperties(NonVegetatedSurfaceProperties):  # May need to move VWD for waterdist to here for referencing
     _surface_type: Literal[SurfaceType.PAVED] = SurfaceType.PAVED
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.PAVED),
@@ -1728,17 +1728,17 @@ class PavedProperties(NonVegetatedSurfaceProperties):
         return instance
 
 
-class BuildingLayer(BaseModel):
-    alb: float = Field(ge=0, le=1, description="Surface albedo", default=0.1)
-    emis: float = Field(ge=0, le=1, description="Surface emissivity", default=0.95)
+class BuildingLayer(BaseModel): # May need to move VWD for thermal layers here for referencing
+    alb: ValueWithDOI[float] = Field(ge=0, le=1, description="Surface albedo", default=ValueWithDOI(0.1))
+    emis: ValueWithDOI[float] = Field(ge=0, le=1, description="Surface emissivity", default=ValueWithDOI(0.95))
     thermal_layers: ThermalLayers = Field(
         default_factory=ThermalLayers, description="Thermal layers for the surface"
     )
-    statelimit: float = Field(default=10.0)
-    soilstorecap: float = Field(default=150.0)
-    wetthresh: float = Field(default=0.5)
-    roof_albedo_dir_mult_fact: Optional[float] = Field(default=0.1)
-    wall_specular_frac: Optional[float] = Field(default=0.1)
+    statelimit: ValueWithDOI[float] = Field(default=ValueWithDOI(10.0))
+    soilstorecap: ValueWithDOI[float] = Field(default=ValueWithDOI(150.0))
+    wetthresh: ValueWithDOI[float] = Field(default=ValueWithDOI(0.5))
+    roof_albedo_dir_mult_fact: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.1))
+    wall_specular_frac: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.1))
     _facet_type: Literal["roof", "wall"] = PrivateAttr(default="roof")
 
     def to_df_state(
@@ -1759,11 +1759,11 @@ class BuildingLayer(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Add basic parameters
-        df_state[(f"alb_{facet_type}", f"({layer_idx},)")] = self.alb
-        df_state[(f"emis_{facet_type}", f"({layer_idx},)")] = self.emis
-        df_state[(f"statelimit_{facet_type}", f"({layer_idx},)")] = self.statelimit
-        df_state[(f"soilstorecap_{facet_type}", f"({layer_idx},)")] = self.soilstorecap
-        df_state[(f"wetthresh_{facet_type}", f"({layer_idx},)")] = self.wetthresh
+        df_state[(f"alb_{facet_type}", f"({layer_idx},)")] = self.alb.value
+        df_state[(f"emis_{facet_type}", f"({layer_idx},)")] = self.emis.value
+        df_state[(f"statelimit_{facet_type}", f"({layer_idx},)")] = self.statelimit.value
+        df_state[(f"soilstorecap_{facet_type}", f"({layer_idx},)")] = self.soilstorecap.value
+        df_state[(f"wetthresh_{facet_type}", f"({layer_idx},)")] = self.wetthresh.value
 
         # Determine prefix based on layer type
         prefix = facet_type
@@ -1771,11 +1771,11 @@ class BuildingLayer(BaseModel):
         # Add layer-specific parameters
         if facet_type == "roof" and self.roof_albedo_dir_mult_fact is not None:
             df_state[(f"{prefix}_albedo_dir_mult_fact", f"(0, {layer_idx})")] = (
-                self.roof_albedo_dir_mult_fact
+                self.roof_albedo_dir_mult_fact.value
             )
         elif facet_type == "wall" and self.wall_specular_frac is not None:
             df_state[(f"{prefix}_specular_frac", f"(0, {layer_idx})")] = (
-                self.wall_specular_frac
+                self.wall_specular_frac.value
             )
 
         # Add thermal layers
@@ -1830,6 +1830,9 @@ class BuildingLayer(BaseModel):
 
         # Extract ThermalLayers
         thermal_layers = ThermalLayers.from_df_state(df, grid_id, layer_idx, facet_type)
+
+        # Convert params to VWD - move below thermal_layers if needed
+        params = {key: ValueWithDOI(value) for key, value in params.items()}
 
         # Add thermal_layers to params
         params["thermal_layers"] = thermal_layers
