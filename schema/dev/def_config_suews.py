@@ -3305,32 +3305,32 @@ class LAIPowerCoefficients(BaseModel):
 
 
 class LAIParams(BaseModel):
-    baset: float = Field(
-        default=10.0,
+    baset: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(10.0),
         description="Base Temperature for initiating growing degree days (GDD) for leaf growth [degC]",
     )
-    gddfull: float = Field(
-        default=100.0,
+    gddfull: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(100.0),
         description="Growing degree days (GDD) needed for full capacity of LAI [degC]",
     )
-    basete: float = Field(
-        default=10.0,
+    basete: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(10.0),
         description="Base temperature for initiating senescence degree days (SDD) for leaf off [degC]",
     )
-    sddfull: float = Field(
-        default=100.0,
+    sddfull: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(100.0),
         description="Senescence degree days (SDD) needed to initiate leaf off [degC]",
     )
-    laimin: float = Field(default=0.1, description="Leaf-off wintertime value [m2 m-2]")
-    laimax: float = Field(
-        default=10.0, description="Full leaf-on summertime value [m2 m-2]"
+    laimin: ValueWithDOI[float] = Field(default=ValueWithDOI(0.1), description="Leaf-off wintertime value [m2 m-2]")
+    laimax: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(10.0), description="Full leaf-on summertime value [m2 m-2]"
     )
     laipower: LAIPowerCoefficients = Field(
         default_factory=LAIPowerCoefficients,
         description="LAI calculation power parameters for growth and senescence",
     )
-    laitype: int = Field(
-        default=0,
+    laitype: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(0),
         description="LAI calculation choice (0: original, 1: new high latitude)",
     )
 
@@ -3381,7 +3381,7 @@ class LAIParams(BaseModel):
         }
 
         for param, value in lai_params.items():
-            set_df_value(param, (veg_idx,), value)
+            set_df_value(param, (veg_idx,), value.value)
 
         # Add LAI power coefficients using the LAIPowerCoefficients to_df_state method
         if self.laipower:
@@ -3426,6 +3426,9 @@ class LAIParams(BaseModel):
             "laimax": get_df_value("laimax", (veg_idx,)),
             "laitype": int(get_df_value("laitype", (veg_idx,))),
         }
+
+        # Convert scalar parameters to ValueWithDOI
+        lai_params = {key: ValueWithDOI(value) for key, value in lai_params.items()}
 
         # Extract LAI power coefficients
         laipower = LAIPowerCoefficients.from_df_state(df, grid_id, veg_idx)
