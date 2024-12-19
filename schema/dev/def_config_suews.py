@@ -2031,7 +2031,7 @@ class BldgsProperties(NonVegetatedSurfaceProperties): # May need to move VWD for
         return instance
 
 
-class BsoilProperties(NonVegetatedSurfaceProperties):
+class BsoilProperties(NonVegetatedSurfaceProperties): # May need to move VWD for waterdist to here for referencing
     _surface_type: Literal[SurfaceType.BSOIL] = SurfaceType.BSOIL
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BSOIL),
@@ -2054,7 +2054,7 @@ class BsoilProperties(NonVegetatedSurfaceProperties):
 
 class WaterProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
-    flowchange: float = Field(default=0.0)
+    flowchange: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0))
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert water surface properties to DataFrame state format."""
@@ -2072,7 +2072,7 @@ class WaterProperties(NonVegetatedSurfaceProperties):
         list_attr = ["flowchange"]
 
         # Add all non-inherited properties
-        df_state.loc[grid_id, ("flowchange", "0")] = self.flowchange
+        df_state.loc[grid_id, ("flowchange", "0")] = self.flowchange.value
 
         return df_state
 
