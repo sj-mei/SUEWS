@@ -2283,10 +2283,10 @@ class ModelPhysics(BaseModel):
 
 
 class LUMPSParams(BaseModel):
-    raincover: float = Field(ge=0, le=1, default=0.25)
-    rainmaxres: float = Field(ge=0, le=20, default=0.25)
-    drainrt: float = Field(ge=0, le=1, default=0.25)
-    veg_type: int = Field(default=1)
+    raincover: ValueWithDOI[float] = Field(ge=0, le=1, default=ValueWithDOI(0.25))
+    rainmaxres: ValueWithDOI[float] = Field(ge=0, le=20, default=ValueWithDOI(0.25))
+    drainrt: ValueWithDOI[float] = Field(ge=0, le=1, default=ValueWithDOI(0.25))
+    veg_type: ValueWithDOI[int] = Field(default=ValueWithDOI(1))
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert LUMPS parameters to DataFrame state format.
@@ -2301,7 +2301,7 @@ class LUMPSParams(BaseModel):
 
         # Add all attributes
         for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
-            df_state[(attr, "0")] = getattr(self, attr)
+            df_state[(attr, "0")] = getattr(self, attr).value
 
         return df_state
 
@@ -2320,6 +2320,9 @@ class LUMPSParams(BaseModel):
         params = {}
         for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
             params[attr] = df.loc[grid_id, (attr, "0")]
+
+        # Convert attributes to ValueWithDOI
+        params = {key: ValueWithDOI(value) for key, value in params.items()}
 
         return cls(**params)
 
@@ -2672,15 +2675,15 @@ class HourlyProfile(BaseModel):
         return cls(working_day=working_day, holiday=holiday)
 
 
-class IrrigationParams(BaseModel):
-    h_maintain: float = Field(
-        default=0.5, description="Soil moisture threshold for irrigation"
+class IrrigationParams(BaseModel): # TODO: May need to add ValueWithDOI to the profiles here
+    h_maintain: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Soil moisture threshold for irrigation"
     )
-    faut: float = Field(default=0.0, description="Fraction of automatic irrigation")
-    ie_start: float = Field(default=0.0, description="Start time of irrigation (hour)")
-    ie_end: float = Field(default=0.0, description="End time of irrigation (hour)")
-    internalwateruse_h: float = Field(
-        default=0.0, description="Internal water use per hour"
+    faut: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0), description="Fraction of automatic irrigation")
+    ie_start: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0), description="Start time of irrigation (hour)")
+    ie_end: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0), description="End time of irrigation (hour)")
+    internalwateruse_h: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Internal water use per hour"
     )
     daywatper: WeeklyProfile = Field(default_factory=WeeklyProfile)
     daywat: WeeklyProfile = Field(default_factory=WeeklyProfile)
@@ -2700,11 +2703,11 @@ class IrrigationParams(BaseModel):
 
         df_state = init_df_state(grid_id)
 
-        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain
-        df_state.loc[grid_id, ("faut", "0")] = self.faut
-        df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start
-        df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end
-        df_state.loc[grid_id, ("internalwateruse_h", "0")] = self.internalwateruse_h
+        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain.value
+        df_state.loc[grid_id, ("faut", "0")] = self.faut.value
+        df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start.value
+        df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end.value
+        df_state.loc[grid_id, ("internalwateruse_h", "0")] = self.internalwateruse_h.value
 
         df_daywatper = self.daywatper.to_df_state(grid_id, "daywatper")
         df_daywat = self.daywat.to_df_state(grid_id, "daywat")
@@ -2738,6 +2741,13 @@ class IrrigationParams(BaseModel):
         ie_start = df.loc[grid_id, ("ie_start", "0")]
         ie_end = df.loc[grid_id, ("ie_end", "0")]
         internalwateruse_h = df.loc[grid_id, ("internalwateruse_h", "0")]
+
+        # Conver to ValueWithDOI
+        h_maintain = ValueWithDOI(h_maintain)
+        faut = ValueWithDOI(faut)
+        ie_start = ValueWithDOI(ie_start)
+        ie_end = ValueWithDOI(ie_end)
+        internalwateruse_h = ValueWithDOI(internalwateruse_h)
 
         # Extract WeeklyProfile attributes
         daywatper = WeeklyProfile.from_df_state(df, grid_id, "daywatper")
