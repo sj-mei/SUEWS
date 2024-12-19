@@ -3437,39 +3437,39 @@ class LAIParams(BaseModel):
 
 
 class VegetatedSurfaceProperties(SurfaceProperties):
-    alb_min: float = Field(ge=0, le=1, description="Minimum albedo", default=0.2)
-    alb_max: float = Field(ge=0, le=1, description="Maximum albedo", default=0.3)
-    beta_bioco2: float = Field(
-        default=0.6, description="Biogenic CO2 exchange coefficient"
+    alb_min: ValueWithDOI[float] = Field(ge=0, le=1, description="Minimum albedo", default=ValueWithDOI(0.2))
+    alb_max: ValueWithDOI[float] = Field(ge=0, le=1, description="Maximum albedo", default=ValueWithDOI(0.3))
+    beta_bioco2: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.6), description="Biogenic CO2 exchange coefficient"
     )
-    beta_enh_bioco2: float = Field(
-        default=0.7, description="Enhanced biogenic CO2 exchange coefficient"
+    beta_enh_bioco2: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.7), description="Enhanced biogenic CO2 exchange coefficient"
     )
-    alpha_bioco2: float = Field(
-        default=0.8, description="Biogenic CO2 exchange coefficient"
+    alpha_bioco2: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.8), description="Biogenic CO2 exchange coefficient"
     )
-    alpha_enh_bioco2: float = Field(
-        default=0.9, description="Enhanced biogenic CO2 exchange coefficient"
+    alpha_enh_bioco2: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.9), description="Enhanced biogenic CO2 exchange coefficient"
     )
-    resp_a: float = Field(default=1.0, description="Respiration coefficient")
-    resp_b: float = Field(default=1.1, description="Respiration coefficient")
-    theta_bioco2: float = Field(
-        default=1.2, description="Biogenic CO2 exchange coefficient"
+    resp_a: ValueWithDOI[float] = Field(default=ValueWithDOI(1.0), description="Respiration coefficient")
+    resp_b: ValueWithDOI[float] = Field(default=ValueWithDOI(1.1), description="Respiration coefficient")
+    theta_bioco2: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1.2), description="Biogenic CO2 exchange coefficient"
     )
-    maxconductance: float = Field(
-        default=0.5, description="Maximum surface conductance"
+    maxconductance: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Maximum surface conductance"
     )
-    min_res_bioco2: float = Field(
-        default=0.1, description="Minimum respiratory biogenic CO2"
+    min_res_bioco2: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1), description="Minimum respiratory biogenic CO2"
     )
     lai: LAIParams = Field(
         default_factory=LAIParams, description="Leaf area index parameters"
     )
-    ie_a: float = Field(
-        default=0.5, description="Irrigation efficiency coefficient-automatic"
+    ie_a: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Irrigation efficiency coefficient-automatic"
     )
-    ie_m: float = Field(
-        default=0.6, description="Irrigation efficiency coefficient-manual"
+    ie_m: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.6), description="Irrigation efficiency coefficient-manual"
     )
 
     @model_validator(mode="after")
@@ -3511,7 +3511,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             "ie_a",
             "ie_m",
         ]:
-            set_df_value(attr, f"({surf_idx-2},)", getattr(self, attr))
+            set_df_value(attr, f"({surf_idx-2},)", getattr(self, attr).value)
 
         df_lai = self.lai.to_df_state(grid_id, surf_idx)
         df_state = pd.concat([df_state, df_lai], axis=1).sort_index(axis=1)
@@ -3519,11 +3519,11 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         return df_state
 
 
-class EvetrProperties(VegetatedSurfaceProperties):
-    faievetree: float = Field(
-        default=0.1, description="Frontal area index of evergreen trees"
+class EvetrProperties(VegetatedSurfaceProperties): # TODO: Move waterdist VWD here?
+    faievetree: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1), description="Frontal area index of evergreen trees"
     )
-    evetreeh: float = Field(default=15.0, description="Evergreen tree height")
+    evetreeh: ValueWithDOI[float] = Field(default=ValueWithDOI(15.0), description="Evergreen tree height")
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.EVETR),
@@ -3547,11 +3547,11 @@ class EvetrProperties(VegetatedSurfaceProperties):
         # Add all non-inherited properties
         list_properties = ["faievetree", "evetreeh"]
         for attr in list_properties:
-            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr)
+            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr).value
 
         # specific properties
-        df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min
-        df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max
+        df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min.value
+        df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max.value
 
         return df_state
 
@@ -3564,18 +3564,18 @@ class EvetrProperties(VegetatedSurfaceProperties):
 
 
 class DectrProperties(VegetatedSurfaceProperties):
-    faidectree: float = Field(
-        default=0.1, description="Frontal area index of deciduous trees"
+    faidectree: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.1), description="Frontal area index of deciduous trees"
     )
-    dectreeh: float = Field(default=15.0, description="Deciduous tree height")
-    pormin_dec: float = Field(
-        ge=0.1, le=0.9, default=0.2, description="Minimum porosity"
+    dectreeh: ValueWithDOI[float] = Field(default=ValueWithDOI(15.0), description="Deciduous tree height")
+    pormin_dec: ValueWithDOI[float] = Field(
+        ge=0.1, le=0.9, default=ValueWithDOI(0.2), description="Minimum porosity"
     )  # pormin_dec cannot be less than 0.1 and greater than 0.9
-    pormax_dec: float = Field(
-        ge=0.1, le=0.9, default=0.6, description="Maximum porosity"
+    pormax_dec: ValueWithDOI[float] = Field(
+        ge=0.1, le=0.9, default=ValueWithDOI(0.6), description="Maximum porosity"
     )  # pormax_dec cannot be less than 0.1 and greater than 0.9
-    capmax_dec: float = Field(default=100.0, description="Maximum capacity")
-    capmin_dec: float = Field(default=10.0, description="Minimum capacity")
+    capmax_dec: ValueWithDOI[float] = Field(default=ValueWithDOI(100.0), description="Maximum capacity")
+    capmin_dec: ValueWithDOI[float] = Field(default=ValueWithDOI(10.0), description="Minimum capacity")
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
@@ -3605,11 +3605,11 @@ class DectrProperties(VegetatedSurfaceProperties):
         ]
         # Add all non-inherited properties
         for attr in list_properties:
-            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr)
+            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr).value
 
         # specific properties
-        df_state.loc[grid_id, ("albmin_dectr", "0")] = self.alb_min
-        df_state.loc[grid_id, ("albmax_dectr", "0")] = self.alb_max
+        df_state.loc[grid_id, ("albmin_dectr", "0")] = self.alb_min.value
+        df_state.loc[grid_id, ("albmax_dectr", "0")] = self.alb_max.value
 
         return df_state
 
@@ -3634,8 +3634,8 @@ class GrassProperties(VegetatedSurfaceProperties):
         df_state = super().to_df_state(grid_id)
 
         # add specific properties
-        df_state[("albmin_grass", "0")] = self.alb_min
-        df_state[("albmax_grass", "0")] = self.alb_max
+        df_state[("albmin_grass", "0")] = self.alb_min.value
+        df_state[("albmax_grass", "0")] = self.alb_max.value
 
         return df_state
 
