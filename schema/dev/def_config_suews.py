@@ -2771,7 +2771,7 @@ class IrrigationParams(BaseModel): # TODO: May need to add ValueWithDOI to the p
         )
 
 
-class AnthropogenicHeat(BaseModel):
+class AnthropogenicHeat(BaseModel): # TODO: May need to add the ValueWithDOI to the profiles here
     qf0_beu: DayProfile = Field(
         description="Base anthropogenic heat flux for buildings, equipment and urban metabolism",
         default_factory=DayProfile,
@@ -2912,42 +2912,42 @@ class AnthropogenicHeat(BaseModel):
         )
 
 
-class CO2Params(BaseModel):
-    co2pointsource: float = Field(
-        default=0.0, description="CO2 point source emission factor"
+class CO2Params(BaseModel): # TODO: May need to add the ValueWithDOI to the profiles here
+    co2pointsource: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="CO2 point source emission factor"
     )
-    ef_umolco2perj: float = Field(
-        default=0.0, description="CO2 emission factor per unit of fuel"
+    ef_umolco2perj: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="CO2 emission factor per unit of fuel"
     )
-    enef_v_jkm: float = Field(
-        default=0.0, description="CO2 emission factor per unit of vehicle distance"
+    enef_v_jkm: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="CO2 emission factor per unit of vehicle distance"
     )
     fcef_v_kgkm: DayProfile = Field(
         description="Fuel consumption efficiency for vehicles",
         default_factory=DayProfile,
     )
-    frfossilfuel_heat: float = Field(
-        default=0.0, description="Fraction of fossil fuel heat"
+    frfossilfuel_heat: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Fraction of fossil fuel heat"
     )
-    frfossilfuel_nonheat: float = Field(
-        default=0.0, description="Fraction of fossil fuel non-heat"
+    frfossilfuel_nonheat: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Fraction of fossil fuel non-heat"
     )
-    maxfcmetab: float = Field(
-        default=0.0, description="Maximum fuel consumption metabolic rate"
+    maxfcmetab: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Maximum fuel consumption metabolic rate"
     )
-    maxqfmetab: float = Field(
-        default=0.0, description="Maximum heat production metabolic rate"
+    maxqfmetab: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Maximum heat production metabolic rate"
     )
-    minfcmetab: float = Field(
-        default=0.0, description="Minimum fuel consumption metabolic rate"
+    minfcmetab: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Minimum fuel consumption metabolic rate"
     )
-    minqfmetab: float = Field(
-        default=0.0, description="Minimum heat production metabolic rate"
+    minqfmetab: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Minimum heat production metabolic rate"
     )
     trafficrate: DayProfile = Field(
         description="Traffic rate", default_factory=DayProfile
     )
-    trafficunits: float = Field(default=0.0, description="Traffic units")
+    trafficunits: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0), description="Traffic units")
     traffprof_24hr: HourlyProfile = Field(
         description="24-hour profile of traffic rate", default_factory=HourlyProfile
     )
@@ -2970,16 +2970,16 @@ class CO2Params(BaseModel):
         df_state = init_df_state(grid_id)
 
         scalar_params = {
-            "co2pointsource": self.co2pointsource,
-            "ef_umolco2perj": self.ef_umolco2perj,
-            "enef_v_jkm": self.enef_v_jkm,
-            "frfossilfuel_heat": self.frfossilfuel_heat,
-            "frfossilfuel_nonheat": self.frfossilfuel_nonheat,
-            "maxfcmetab": self.maxfcmetab,
-            "maxqfmetab": self.maxqfmetab,
-            "minfcmetab": self.minfcmetab,
-            "minqfmetab": self.minqfmetab,
-            "trafficunits": self.trafficunits,
+            "co2pointsource": self.co2pointsource.value,
+            "ef_umolco2perj": self.ef_umolco2perj.value,
+            "enef_v_jkm": self.enef_v_jkm.value,
+            "frfossilfuel_heat": self.frfossilfuel_heat.value,
+            "frfossilfuel_nonheat": self.frfossilfuel_nonheat.value,
+            "maxfcmetab": self.maxfcmetab.value,
+            "maxqfmetab": self.maxqfmetab.value,
+            "minfcmetab": self.minfcmetab.value,
+            "minqfmetab": self.minqfmetab.value,
+            "trafficunits": self.trafficunits.value,
         }
         for param_name, value in scalar_params.items():
             df_state.loc[grid_id, (param_name, "0")] = value
@@ -3028,6 +3028,9 @@ class CO2Params(BaseModel):
             "minqfmetab": df.loc[grid_id, ("minqfmetab", "0")],
             "trafficunits": df.loc[grid_id, ("trafficunits", "0")],
         }
+
+        # Convert scalar attributes to ValueWithDOI
+        scalar_params = {key: ValueWithDOI(value) for key, value in scalar_params.items()}
 
         # Extract DayProfile attributes
         day_profiles = {
