@@ -4341,41 +4341,41 @@ class StebbsProperties(BaseModel):
 
 
 class SiteProperties(BaseModel):
-    lat: float = Field(
-        ge=-90, le=90, description="Latitude of the site in degrees", default=51.5
+    lat: ValueWithDOI[float] = Field(
+        ge=-90, le=90, description="Latitude of the site in degrees", default=ValueWithDOI(51.5)
     )
-    lng: float = Field(
-        ge=-180, le=180, description="Longitude of the site in degrees", default=-0.13
+    lng: ValueWithDOI[float] = Field(
+        ge=-180, le=180, description="Longitude of the site in degrees", default=ValueWithDOI(-0.13)
     )
-    alt: float = Field(
-        gt=0, description="Altitude of the site in metres above sea level", default=40.0
+    alt: ValueWithDOI[float] = Field(
+        gt=0, description="Altitude of the site in metres above sea level", default=ValueWithDOI(40.0)
     )
-    timezone: int = Field(
-        ge=-12, le=12, description="Time zone offset from UTC in hours", default=0
+    timezone: ValueWithDOI[int] = Field(
+        ge=-12, le=12, description="Time zone offset from UTC in hours", default=ValueWithDOI(0)
     )
-    surfacearea: float = Field(
+    surfacearea: ValueWithDOI[float] = Field(
         gt=0,
         description="Total surface area of the site in square metres",
-        default=10000.0,
+        default=ValueWithDOI(10000.0),
     )
-    z: float = Field(gt=0, description="Measurement height in metres", default=10.0)
-    z0m_in: float = Field(
-        gt=0, description="Momentum roughness length in metres", default=1.0
+    z: ValueWithDOI[float] = Field(gt=0, description="Measurement height in metres", default=ValueWithDOI(10.0))
+    z0m_in: ValueWithDOI[float] = Field(
+        gt=0, description="Momentum roughness length in metres", default=ValueWithDOI(1.0)
     )
-    zdm_in: float = Field(
-        gt=0, description="Zero-plane displacement height in metres", default=5.0
+    zdm_in: ValueWithDOI[float] = Field(
+        gt=0, description="Zero-plane displacement height in metres", default=ValueWithDOI(5.0)
     )
-    pipecapacity: float = Field(
-        gt=0, description="Maximum capacity of drainage pipes in mm/hr", default=100.0
+    pipecapacity: ValueWithDOI[float] = Field(
+        gt=0, description="Maximum capacity of drainage pipes in mm/hr", default=ValueWithDOI(100.0)
     )
-    runofftowater: float = Field(
+    runofftowater: ValueWithDOI[float] = Field(
         ge=0,
         le=1,
         description="Fraction of excess water going to water bodies",
-        default=0.0,
+        default=ValueWithDOI(0.0),
     )
-    narp_trans_site: float = Field(
-        description="Site-specific NARP transmission coefficient", default=0.2
+    narp_trans_site: ValueWithDOI[float] = Field(
+        description="Site-specific NARP transmission coefficient", default=ValueWithDOI(0.2)
     )
     lumps: LUMPSParams = Field(
         default_factory=LUMPSParams,
@@ -4435,7 +4435,7 @@ class SiteProperties(BaseModel):
             "runofftowater",
             "narp_trans_site",
         ]:
-            df_state.loc[grid_id, (f"{var}", "0")] = getattr(self, var)
+            df_state.loc[grid_id, (f"{var}", "0")] = getattr(self, var).value
 
         # complex attributes
         df_lumps = self.lumps.to_df_state(grid_id)
@@ -4493,7 +4493,7 @@ class SiteProperties(BaseModel):
             "runofftowater",
             "narp_trans_site",
         ]:
-            params[var] = df.loc[grid_id, (var, "0")]
+            params[var] = ValueWithDOI(df.loc[grid_id, (var, "0")])
 
         # Extract complex attributes
         params["lumps"] = LUMPSParams.from_df_state(df, grid_id)
