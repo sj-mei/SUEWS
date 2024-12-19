@@ -3125,33 +3125,33 @@ class AnthropogenicEmissions(BaseModel):
 
 
 class Conductance(BaseModel):
-    g_max: float = Field(default=40.0, description="Maximum conductance")
-    g_k: float = Field(
-        default=0.6,
+    g_max: ValueWithDOI[float] = Field(default=ValueWithDOI(40.0), description="Maximum conductance")
+    g_k: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.6),
         description="Conductance parameter related to incoming solar radiation",
     )
-    g_q_base: float = Field(
-        default=0.03,
+    g_q_base: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.03),
         description="Base value for conductance parameter related to vapor pressure deficit",
     )
-    g_q_shape: float = Field(
-        default=0.9,
+    g_q_shape: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.9),
         description="Shape parameter for conductance related to vapor pressure deficit",
     )
-    g_t: float = Field(
-        default=30.0, description="Conductance parameter related to air temperature"
+    g_t: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(30.0), description="Conductance parameter related to air temperature"
     )
-    g_sm: float = Field(
-        default=0.5, description="Conductance parameter related to soil moisture"
+    g_sm: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Conductance parameter related to soil moisture"
     )
-    kmax: float = Field(
-        default=1200.0, description="Maximum incoming shortwave radiation"
+    kmax: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1200.0), description="Maximum incoming shortwave radiation"
     )
-    gsmodel: int = Field(default=1, description="Stomatal conductance model selection")
-    s1: float = Field(default=0.2, description="Soil moisture threshold parameter")
-    s2: float = Field(default=0.5, description="Soil moisture threshold parameter")
-    tl: float = Field(default=0.0, description="Air temperature threshold parameter")
-    th: float = Field(default=50.0, description="Air temperature threshold parameter")
+    gsmodel: ValueWithDOI[int] = Field(default=ValueWithDOI(1), description="Stomatal conductance model selection")
+    s1: ValueWithDOI[float] = Field(default=ValueWithDOI(0.2), description="Soil moisture threshold parameter")
+    s2: ValueWithDOI[float] = Field(default=ValueWithDOI(0.5), description="Soil moisture threshold parameter")
+    tl: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0), description="Air temperature threshold parameter")
+    th: ValueWithDOI[float] = Field(default=ValueWithDOI(50.0), description="Air temperature threshold parameter")
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -3182,7 +3182,7 @@ class Conductance(BaseModel):
         }
 
         for param_name, value in scalar_params.items():
-            df_state.loc[grid_id, (param_name, "0")] = value
+            df_state.loc[grid_id, (param_name, "0")] = value.value
 
         return df_state
 
@@ -3212,6 +3212,9 @@ class Conductance(BaseModel):
             "tl": df.loc[grid_id, ("tl", "0")],
             "th": df.loc[grid_id, ("th", "0")],
         }
+
+        # Convert scalar parameters to ValueWithDOI
+        scalar_params = {key: ValueWithDOI(value) for key, value in scalar_params.items()}
 
         return cls(**scalar_params)
 
