@@ -2135,8 +2135,8 @@ class ModelControl(BaseModel):
     tstep: int = Field(
         default=300, description="Time step in seconds for model calculations"
     )
-    forcing_file: str = Field(
-        default="forcing.txt", description="Path to meteorological forcing data file"
+    forcing_file: ValueWithDOI[str] = Field(
+        default=ValueWithDOI("forcing.txt"), description="Path to meteorological forcing data file"
     )
     output_file: str = Field(
         default="output.txt", description="Path to model output file"
@@ -2146,6 +2146,8 @@ class ModelControl(BaseModel):
         default=0,
         description="Level of diagnostic output (0=none, 1=basic, 2=detailed)",
     )
+
+    ref: Optional[Reference] = None
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model control properties to DataFrame state format."""
