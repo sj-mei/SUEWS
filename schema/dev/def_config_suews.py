@@ -2176,46 +2176,46 @@ class ModelControl(BaseModel):
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: int = Field(
-        default=3, description="Method used to calculate net radiation"
+    netradiationmethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(3), description="Method used to calculate net radiation"
     )
-    emissionsmethod: int = Field(
-        default=2, description="Method used to calculate anthropogenic emissions"
+    emissionsmethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(2), description="Method used to calculate anthropogenic emissions"
     )
-    storageheatmethod: int = Field(
-        default=1, description="Method used to calculate storage heat flux"
+    storageheatmethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(1), description="Method used to calculate storage heat flux"
     )
-    ohmincqf: int = Field(
-        default=0,
+    ohmincqf: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(0),
         description="Include anthropogenic heat in OHM calculations (1) or not (0)",
     )
-    roughlenmommethod: int = Field(
-        default=2, description="Method used to calculate momentum roughness length"
+    roughlenmommethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(2), description="Method used to calculate momentum roughness length"
     )
-    roughlenheatmethod: int = Field(
-        default=2, description="Method used to calculate heat roughness length"
+    roughlenheatmethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(2), description="Method used to calculate heat roughness length"
     )
-    stabilitymethod: int = Field(
-        default=2, description="Method used for atmospheric stability calculation"
+    stabilitymethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(2), description="Method used for atmospheric stability calculation"
     )
-    smdmethod: int = Field(
-        default=1, description="Method used to calculate soil moisture deficit"
+    smdmethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(1), description="Method used to calculate soil moisture deficit"
     )
-    waterusemethod: int = Field(
-        default=1, description="Method used to calculate water use"
+    waterusemethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(1), description="Method used to calculate water use"
     )
-    diagmethod: int = Field(default=1, description="Method used for model diagnostics")
-    faimethod: int = Field(
-        default=1, description="Method used to calculate frontal area index"
+    diagmethod: ValueWithDOI[int] = Field(default=ValueWithDOI(1), description="Method used for model diagnostics")
+    faimethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(1), description="Method used to calculate frontal area index"
     )
-    localclimatemethod: int = Field(
-        default=0, description="Method used for local climate zone calculations"
+    localclimatemethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(0), description="Method used for local climate zone calculations"
     )
-    snowuse: int = Field(
-        default=0, description="Include snow calculations (1) or not (0)"
+    snowuse: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(0), description="Include snow calculations (1) or not (0)"
     )
-    stebbsmethod: int = Field(
-        default=0, description="Method used for stebbs calculations"
+    stebbsmethod: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(0), description="Method used for stebbs calculations"
     )
 
     ref: Optional[Reference] = None
@@ -2270,7 +2270,7 @@ class ModelPhysics(BaseModel):
             if (col_name, idx_str) not in df_state.columns:
                 # df_state[(col_name, idx_str)] = np.nan
                 df_state[(col_name, idx_str)] = None
-            df_state.at[grid_id, (col_name, idx_str)] = int(value)
+            df_state.at[grid_id, (col_name, idx_str)] = int(value.value)
 
         list_attr = [
             "netradiationmethod",
@@ -2326,7 +2326,7 @@ class ModelPhysics(BaseModel):
 
         for attr in list_attr:
             try:
-                properties[attr] = int(df.loc[grid_id, (attr, "0")])
+                properties[attr] = ValueWithDOI(int(df.loc[grid_id, (attr, "0")]))
             except KeyError:
                 raise ValueError(f"Missing attribute '{attr}' in the DataFrame")
 
