@@ -25,8 +25,6 @@ class Reference(BaseModel):
 
 class ValueWithDOI(BaseModel, Generic[T]):
     value: T
-    # ref: Optional[str] = None
-    # DOI: Optional[str] = None
     ref: Optional[Reference] = None
 
     def __init__(self, value: T, ref: Optional[Reference] = None):
@@ -1191,12 +1189,12 @@ class WaterDistribution(BaseModel):
 
 
 class StorageDrainParams(BaseModel):
-    store_min: float = Field(ge=0, default=0.0)
-    store_max: float = Field(ge=0, default=10.0)
-    store_cap: float = Field(ge=0, default=10.0)
-    drain_eq: int = Field(default=0)
-    drain_coef_1: float = Field(default=0.013)
-    drain_coef_2: float = Field(default=1.71)
+    store_min: ValueWithDOI[float] = Field(ge=0, default=ValueWithDOI(0.0))
+    store_max: ValueWithDOI[float] = Field(ge=0, default=ValueWithDOI(10.0))
+    store_cap: ValueWithDOI[float] = Field(ge=0, default=ValueWithDOI(10.0))
+    drain_eq: ValueWithDOI[int] = Field(default=ValueWithDOI(0))
+    drain_coef_1: ValueWithDOI[float] = Field(default=ValueWithDOI(0.013))
+    drain_coef_2: ValueWithDOI[float] = Field(default=ValueWithDOI(1.71))
 
     ref: Optional[Reference] = None
 
@@ -1246,7 +1244,7 @@ class StorageDrainParams(BaseModel):
         ):
             df.loc[grid_id, ("storedrainprm", f"({i}, {surf_idx})")] = getattr(
                 self, var
-            )
+            ).value
 
         return df
 
@@ -1280,6 +1278,9 @@ class StorageDrainParams(BaseModel):
             param: df.loc[grid_id, ("storedrainprm", f"({idx}, {surf_idx})")]
             for param, idx in param_map.items()
         }
+
+        # Conver params to ValueWithDOI
+        params = {key: ValueWithDOI(value) for key, value in params.items()}
 
         # Create an instance using the extracted parameters
         return cls(**params)
