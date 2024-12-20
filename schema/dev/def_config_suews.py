@@ -1893,27 +1893,27 @@ class WallLayer(BuildingLayer):
 
 
 class VerticalLayers(BaseModel):
-    nlayer: int = Field(
-        default=3, description="Number of vertical layers in the urban canopy"
+    nlayer: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(3), description="Number of vertical layers in the urban canopy"
     )
-    height: List[float] = Field(
-        default=[0.0, 10.0, 20.0, 30.0],
+    height: ValueWithDOI[List[float]] = Field(
+        default=ValueWithDOI([0.0, 10.0, 20.0, 30.0]),
         description="Heights of layer boundaries in metres, length must be nlayer+1",
     )
-    veg_frac: List[float] = Field(
-        default=[0.0, 0.0, 0.0],
+    veg_frac: ValueWithDOI[List[float]] = Field(
+        default=ValueWithDOI([0.0, 0.0, 0.0]),
         description="Fraction of vegetation in each layer, length must be nlayer",
     )
-    veg_scale: List[float] = Field(
-        default=[1.0, 1.0, 1.0],
+    veg_scale: ValueWithDOI[List[float]] = Field(
+        default=ValueWithDOI([1.0, 1.0, 1.0]),
         description="Scaling factor for vegetation in each layer, length must be nlayer",
     )
-    building_frac: List[float] = Field(
-        default=[0.4, 0.3, 0.3],
+    building_frac: ValueWithDOI[List[float]] = Field(
+        default=ValueWithDOI([0.4, 0.3, 0.3]),
         description="Fraction of buildings in each layer, must sum to 1.0, length must be nlayer",
     )
-    building_scale: List[float] = Field(
-        default=[1.0, 1.0, 1.0],
+    building_scale: ValueWithDOI[List[float]] = Field(
+        default=ValueWithDOI([1.0, 1.0, 1.0]),
         description="Scaling factor for buildings in each layer, length must be nlayer",
     )
     roofs: List[RoofLayer] = Field(
@@ -1930,15 +1930,15 @@ class VerticalLayers(BaseModel):
     @model_validator(mode="after")
     def validate_building(self) -> "VerticalLayers":
         # Validate building heights
-        if len(self.height) != self.nlayer + 1:
+        if len(self.height.value) != self.nlayer.value + 1:
             raise ValueError(
-                f"Number of building heights ({len(self.height)}) must match nlayer+1 = ({self.nlayer+1})"
+                f"Number of building heights ({len(self.height.value)}) must match nlayer+1 = ({self.nlayer.value+1})"
             )
 
         # Validate building fractions
-        if len(self.building_frac) != self.nlayer:
+        if len(self.building_frac.value) != self.nlayer.value:
             raise ValueError(
-                f"Number of building fractions ({len(self.building_frac)}) must match nlayer ({self.nlayer})"
+                f"Number of building fractions ({len(self.building_frac.value)}) must match nlayer ({self.nlayer.value})"
             )
         # This rule is not correct, we just need building_frac to be in range [0,1]
         # if not math.isclose(sum(self.building_frac), 1.0, rel_tol=1e-9):
@@ -1947,21 +1947,21 @@ class VerticalLayers(BaseModel):
         #    )
 
         # Validate building scales
-        if len(self.building_scale) != self.nlayer:
+        if len(self.building_scale.value) != self.nlayer.value:
             raise ValueError(
-                f"Number of building scales ({len(self.building_scale)}) must match nlayer ({self.nlayer})"
+                f"Number of building scales ({len(self.building_scale.value)}) must match nlayer ({self.nlayer.value})"
             )
 
         # Validate number of roof layers matches nlayer
-        if len(self.roofs) != self.nlayer:
+        if len(self.roofs) != self.nlayer.value:
             raise ValueError(
-                f"Number of roof layers ({len(self.roof)}) must match nlayer ({self.nlayer})"
+                f"Number of roof layers ({len(self.roof)}) must match nlayer ({self.nlayer.value})"
             )
 
         # Validate number of wall layers matches nlayer
-        if len(self.walls) != self.nlayer:
+        if len(self.walls) != self.nlayer.value:
             raise ValueError(
-                f"Number of wall layers ({len(self.wall)}) must match nlayer ({self.nlayer})"
+                f"Number of wall layers ({len(self.wall)}) must match nlayer ({self.nlayer.value})"
             )
 
         return self
@@ -1972,24 +1972,24 @@ class VerticalLayers(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set number of vertical layers
-        df_state[(f"nlayer", "0")] = self.nlayer
+        df_state[(f"nlayer", "0")] = self.nlayer.value
 
         # Set heights for each layer boundary (nlayer + 1 heights needed)
-        for i in range(self.nlayer + 1):
-            df_state[("height", f"({i},)")] = self.height[i]
+        for i in range(self.nlayer.value + 1):
+            df_state[("height", f"({i},)")] = self.height.value[i]
 
         # Set vegetation and building parameters for each layer
         for var in ["veg_frac", "veg_scale", "building_frac", "building_scale"]:
-            for i in range(self.nlayer):
-                df_state[(f"{var}", f"({i},)")] = getattr(self, var)[i]
+            for i in range(self.nlayer.value):
+                df_state[(f"{var}", f"({i},)")] = getattr(self, var).value[i]
 
         # Convert roof and wall properties to DataFrame format for each layer
         df_roofs = pd.concat(
-            [self.roofs[i].to_df_state(grid_id, i, "roof") for i in range(self.nlayer)],
+            [self.roofs[i].to_df_state(grid_id, i, "roof") for i in range(self.nlayer.value)],
             axis=1,
         )
         df_walls = pd.concat(
-            [self.walls[i].to_df_state(grid_id, i, "wall") for i in range(self.nlayer)],
+            [self.walls[i].to_df_state(grid_id, i, "wall") for i in range(self.nlayer.value)],
             axis=1,
         )
 
@@ -2023,12 +2023,12 @@ class VerticalLayers(BaseModel):
 
         # Construct and return VerticalLayers instance
         return cls(
-            nlayer=nlayer,
-            height=height,
-            veg_frac=veg_frac,
-            veg_scale=veg_scale,
-            building_frac=building_frac,
-            building_scale=building_scale,
+            nlayer=ValueWithDOI(nlayer),
+            height=ValueWithDOI(height),
+            veg_frac=ValueWithDOI(veg_frac),
+            veg_scale=ValueWithDOI(veg_scale),
+            building_frac=ValueWithDOI(building_frac),
+            building_scale=ValueWithDOI(building_scale),
             roofs=roofs,
             walls=walls,
         )
