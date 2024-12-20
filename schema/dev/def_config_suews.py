@@ -17,16 +17,24 @@ import math
 
 T = TypeVar('T')
 
-class ValueWithDOI(BaseModel, Generic[T]):
-    value: T
+class Reference(BaseModel):
+    desc: Optional[str] = None
+    ID: Optional[str] = None
     DOI: Optional[str] = None
 
-    def __init__(self, value: T, DOI: Optional[str] = None):
+
+class ValueWithDOI(BaseModel, Generic[T]):
+    value: T
+    # ref: Optional[str] = None
+    # DOI: Optional[str] = None
+    ref: Optional[Reference] = None
+
+    def __init__(self, value: T, ref: Optional[Reference] = None):
         if isinstance(value, (np.float64, np.float32)):
             value = float(value)
         elif isinstance(value, (np.int64, np.int32)):
             value = int(value)
-        super().__init__(value=value, DOI=DOI)
+        super().__init__(value=value, ref=ref)
 
     def __str__(self):
         return f"{self.value}"
@@ -135,6 +143,8 @@ class WaterUse(BaseModel):
         ge=0,
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, veg_idx: int, grid_id: int) -> pd.DataFrame:
         """Convert water use to DataFrame state format."""
         df_state = init_df_state(grid_id)
@@ -218,6 +228,8 @@ class SurfaceInitialState(BaseModel):
         default=ValueWithDOI(20.0)
     )  # We need to know which model is using this.
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
+
+    ref: Optional[Reference] = None
 
     @field_validator("temperature", mode="before")
     def validate_temperature(cls, v):
@@ -379,6 +391,8 @@ class InitialStateVeg(SurfaceInitialState):
     )  # This need to be consistent with GDD.
     wu: WaterUse = Field(default_factory=WaterUse)
 
+    ref: Optional[Reference] = None
+
     @model_validator(mode="after")
     def validate_surface_state(self) -> "InitialStateVeg":
         """Validate state based on surface type"""
@@ -516,6 +530,8 @@ class InitialStateDectr(InitialStateVeg):
         default=ValueWithDOI(0.3), description="Initial deciduous capacity for deciduous trees"
     )
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
+
+    ref: Optional[Reference] = None
 
     @model_validator(mode="after")
     def validate_surface_state(self) -> "InitialStateDectr":
@@ -773,6 +789,8 @@ class ThermalLayers(BaseModel):
     k: ValueWithDOI[List[float]] = Field(default=ValueWithDOI([1.0, 1.0, 1.0, 1.0, 1.0]))
     cp: ValueWithDOI[List[float]] = Field(default=ValueWithDOI([1000, 1000, 1000, 1000, 1000]))
 
+    ref: Optional[Reference] = None
+
     def to_df_state(
         self,
         grid_id: int,
@@ -871,6 +889,8 @@ class VegetationParams(BaseModel):
     ie_a: ValueWithDOI[float] = Field(description="Irrigation efficiency coefficient a")
     ie_m: ValueWithDOI[float] = Field(description="Irrigation efficiency coefficient m")
 
+    ref: Optional[Reference] = None
+
 
 class WaterDistribution(BaseModel):
     # Optional fields for all possible distributions
@@ -884,6 +904,8 @@ class WaterDistribution(BaseModel):
     to_runoff: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)  # For paved/bldgs
     to_soilstore: Optional[ValueWithDOI[float]] = Field(None, ge=0, le=1)  # For vegetated surfaces
     _surface_type: Optional[SurfaceType] = PrivateAttr(None)
+
+    ref: Optional[Reference] = None
 
     def __init__(self, surface_type: Optional[SurfaceType] = None, **data):
         # Store surface type as private attribute
@@ -1176,6 +1198,8 @@ class StorageDrainParams(BaseModel):
     drain_coef_1: float = Field(default=0.013)
     drain_coef_2: float = Field(default=1.71)
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
         """Convert storage and drain parameters to DataFrame state format.
 
@@ -1275,6 +1299,8 @@ class OHM_Coefficient_season_wetness(BaseModel):
         default=ValueWithDOI(0.0), description="OHM coefficient for winter wet conditions"
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int, surf_idx: int, idx_a: int) -> pd.DataFrame:
         """Convert OHM coefficients to DataFrame state format.
 
@@ -1354,6 +1380,8 @@ class OHMCoefficients(BaseModel):
         description="OHM coefficient a3 for different seasons and wetness conditions",
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
         """Convert OHM coefficients to DataFrame state format.
 
@@ -1411,7 +1439,7 @@ class SurfaceProperties(BaseModel):
     kkanohm: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.4))
     ohm_threshsw: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
     ohm_threshwd: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
-    ohm_coef: Optional[OHMCoefficients] = Field(default_factory=OHMCoefficients) # NEEDS TO BE CHANGED for REF
+    ohm_coef: Optional[ValueWithDOI[OHMCoefficients]] = Field(default_factory=lambda: ValueWithDOI(OHMCoefficients()))
     soildepth: ValueWithDOI[float] = Field(default=ValueWithDOI(0.15))
     soilstorecap: ValueWithDOI[float] = Field(default=ValueWithDOI(150.0))
     statelimit: ValueWithDOI[float] = Field(default=ValueWithDOI(10.0))
@@ -1429,6 +1457,8 @@ class SurfaceProperties(BaseModel):
     )
     irrfrac: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.0))
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
+
+    ref: Optional[Reference] = None
 
     def set_surface_type(self, surface_type: SurfaceType):
         self._surface_type = surface_type
@@ -1741,6 +1771,8 @@ class BuildingLayer(BaseModel): # May need to move VWD for thermal layers here f
     wall_specular_frac: Optional[ValueWithDOI[float]] = Field(default=ValueWithDOI(0.1))
     _facet_type: Literal["roof", "wall"] = PrivateAttr(default="roof")
 
+    ref: Optional[Reference] = None
+
     def to_df_state(
         self,
         grid_id: int,
@@ -1882,6 +1914,8 @@ class VerticalLayers(BaseModel):
         description="Properties for wall surfaces in each layer, length must be nlayer",
     )
 
+    ref: Optional[Reference] = None
+
     @model_validator(mode="after")
     def validate_building(self) -> "VerticalLayers":
         # Validate building heights
@@ -2000,6 +2034,8 @@ class BldgsProperties(NonVegetatedSurfaceProperties): # May need to move VWD for
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
     )
+
+    ref: Optional[Reference] = None
 
     @model_validator(mode="after")
     def validate_rsl_zd_range(self) -> "BldgsProperties":
@@ -2169,6 +2205,8 @@ class ModelPhysics(BaseModel):
         default=0, description="Method used for stebbs calculations"
     )
 
+    ref: Optional[Reference] = None
+
     @model_validator(mode="after")
     def check_storageheatmethod(self) -> "ModelPhysics":
         if self.storageheatmethod == 1 and self.ohmincqf != 0:
@@ -2288,6 +2326,8 @@ class LUMPSParams(BaseModel):
     drainrt: ValueWithDOI[float] = Field(ge=0, le=1, default=ValueWithDOI(0.25))
     veg_type: ValueWithDOI[int] = Field(default=ValueWithDOI(1))
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert LUMPS parameters to DataFrame state format.
 
@@ -2375,6 +2415,8 @@ class SPARTACUSParams(BaseModel):
         description="Vegetation single scattering albedo for shortwave radiation",
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert SPARTACUS parameters to DataFrame state format.
@@ -2451,6 +2493,8 @@ class DayProfile(BaseModel):
     working_day: float = Field(default=1.0)
     holiday: float = Field(default=0.0)
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
         """
         Convert day profile to DataFrame state format.
@@ -2516,6 +2560,8 @@ class WeeklyProfile(BaseModel):
     friday: float = 0.0
     saturday: float = 0.0
     sunday: float = 0.0
+
+    ref: Optional[Reference] = None
 
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
         """Convert weekly profile to DataFrame state format.
@@ -2583,6 +2629,8 @@ class WeeklyProfile(BaseModel):
 class HourlyProfile(BaseModel):
     working_day: Dict[str, float]
     holiday: Dict[str, float]
+
+    ref: Optional[Reference] = None
 
     @classmethod
     def __init_default_values__(cls) -> Dict[str, Dict[str, float]]:
@@ -2689,6 +2737,8 @@ class IrrigationParams(BaseModel): # TODO: May need to add ValueWithDOI to the p
     daywat: WeeklyProfile = Field(default_factory=WeeklyProfile)
     wuprofa_24hr: HourlyProfile = Field(default_factory=HourlyProfile)
     wuprofm_24hr: HourlyProfile = Field(default_factory=HourlyProfile)
+
+    ref: Optional[Reference] = None
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -2821,6 +2871,8 @@ class AnthropogenicHeat(BaseModel): # TODO: May need to add the ValueWithDOI to 
         description="24-hour profile of population density",
         default_factory=HourlyProfile,
     )
+
+    ref: Optional[Reference] = None
 
     # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -2955,6 +3007,8 @@ class CO2Params(BaseModel): # TODO: May need to add the ValueWithDOI to the prof
         description="24-hour profile of human activity", default_factory=HourlyProfile
     )
 
+    ref: Optional[Reference] = None
+
     # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -3071,6 +3125,8 @@ class AnthropogenicEmissions(BaseModel):
         description="CO2 emission parameters", default_factory=CO2Params
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert anthropogenic emissions parameters to DataFrame state format.
@@ -3152,6 +3208,8 @@ class Conductance(BaseModel):
     s2: ValueWithDOI[float] = Field(default=ValueWithDOI(0.5), description="Soil moisture threshold parameter")
     tl: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0), description="Air temperature threshold parameter")
     th: ValueWithDOI[float] = Field(default=ValueWithDOI(50.0), description="Air temperature threshold parameter")
+
+    ref: Optional[Reference] = Reference(ref='Test ref', DOI="test doi", ID="test id")
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -3236,6 +3294,8 @@ class LAIPowerCoefficients(BaseModel):
         default=ValueWithDOI(0.1),
         description="Power coefficient for SDD in senescence equation (LAIPower[4])",
     )
+
+    ref: Optional[Reference] = None
 
     def to_list(self) -> List[float]:
         """Convert to list format for Fortran interface"""
@@ -3333,6 +3393,8 @@ class LAIParams(BaseModel):
         default=ValueWithDOI(0),
         description="LAI calculation choice (0: original, 1: new high latitude)",
     )
+
+    ref: Optional[Reference] = None
 
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
@@ -3472,6 +3534,8 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         default=ValueWithDOI(0.6), description="Irrigation efficiency coefficient-manual"
     )
 
+    ref: Optional[Reference] = None
+
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
         if self.alb_min > self.alb_max:
@@ -3530,6 +3594,8 @@ class EvetrProperties(VegetatedSurfaceProperties): # TODO: Move waterdist VWD he
         description="Water distribution for evergreen trees",
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert evergreen tree properties to DataFrame state format."""
         # Get base properties from parent
@@ -3581,6 +3647,8 @@ class DectrProperties(VegetatedSurfaceProperties):
         default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
         description="Water distribution for deciduous trees",
     )
+
+    ref: Optional[Reference] = None
 
     @model_validator(mode="after")
     def validate_porosity_range(self) -> "DectrProperties":
@@ -3675,6 +3743,8 @@ class SnowParams(BaseModel):
     tau_r: ValueWithDOI[float] = Field(default=ValueWithDOI(0.05), description="Aging constant for refreezing snow")
     tempmeltfact: ValueWithDOI[float] = Field(default=ValueWithDOI(0.12), description="Temperature melt factor")
     radmeltfact: ValueWithDOI[float] = Field(default=ValueWithDOI(0.0016), description="Radiation melt factor")
+
+    ref: Optional[Reference] = None
 
     @model_validator(mode="after")
     def validate_crw_range(self) -> "SnowParams":
@@ -3800,6 +3870,8 @@ class LandCover(BaseModel):
         default_factory=WaterProperties,
         description="Properties for water surfaces like lakes and ponds",
     )
+
+    ref: Optional[Reference] = None
 
     @model_validator(mode="after")
     def set_surface_types(self) -> "LandCover":
@@ -4060,19 +4132,23 @@ class ArchetypeProperties(BaseModel):
         description="Cooling setpoint temperature [degC]"
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert ArchetypeProperties to DataFrame state format."""
 
         df_state = init_df_state(grid_id)
 
         # Create an empty DataFrame with MultiIndex columns
-        columns = [(field.lower(), "0") for field in self.model_fields.keys()]
+        columns = [(field.lower(), "0") for field in self.model_fields.keys() if field != "ref"]
         df_state = pd.DataFrame(
             index=[grid_id], columns=pd.MultiIndex.from_tuples(columns)
         )
 
         # Set the values in the DataFrame
         for field_name, field_info in self.model_fields.items():
+            if field_name == "ref":
+                continue
             attribute = getattr(self, field_name)
             if type(attribute) != str:
                 attribute = attribute.value
@@ -4086,7 +4162,7 @@ class ArchetypeProperties(BaseModel):
         # Extract the values from the DataFrame
         params = {
             field_name: df.loc[grid_id, (field_name, "0")]
-            for field_name in cls.model_fields.keys()
+            for field_name in cls.model_fields.keys() if field_name != "ref"
         }
 
         # Convert params to ValueWithDOI
@@ -4317,18 +4393,22 @@ class StebbsProperties(BaseModel):
         default=ValueWithDOI(0.0), description="Minimum volume of hot water in use [m3]"
     )
 
+    ref: Optional[Reference] = None
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert StebbsProperties to DataFrame state format."""
         df_state = init_df_state(grid_id)
 
         # Create an empty DataFrame with MultiIndex columns
-        columns = [(field.lower(), "0") for field in self.model_fields.keys()]
+        columns = [(field.lower(), "0") for field in self.model_fields.keys() if field != "ref"]
         df_state = pd.DataFrame(
             index=[grid_id], columns=pd.MultiIndex.from_tuples(columns)
         )
 
         # Set the values in the DataFrame
         for field_name, field_info in self.model_fields.items():
+            if field_name == "ref":
+                continue
             df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(self, field_name).value
 
         return df_state
@@ -4339,7 +4419,7 @@ class StebbsProperties(BaseModel):
         # Extract the values from the DataFrame
         params = {
             field_name: df.loc[grid_id, (field_name, "0")]
-            for field_name in cls.model_fields.keys()
+            for field_name in cls.model_fields.keys() if field_name != "ref"
         }
 
         # Convert params to ValueWithDOI
@@ -4425,6 +4505,8 @@ class SiteProperties(BaseModel):
         default_factory=VerticalLayers,
         description="Parameters for vertical layer structure",
     )
+
+    ref: Optional[Reference] = None
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert site properties to DataFrame state format"""
