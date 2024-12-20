@@ -2381,50 +2381,50 @@ class LUMPSParams(BaseModel):
 
 
 class SPARTACUSParams(BaseModel):
-    air_ext_lw: float = Field(
-        default=0.0, description="Air extinction coefficient for longwave radiation"
+    air_ext_lw: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Air extinction coefficient for longwave radiation"
     )
-    air_ext_sw: float = Field(
-        default=0.0, description="Air extinction coefficient for shortwave radiation"
+    air_ext_sw: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.0), description="Air extinction coefficient for shortwave radiation"
     )
-    air_ssa_lw: float = Field(
-        default=0.5, description="Air single scattering albedo for longwave radiation"
+    air_ssa_lw: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Air single scattering albedo for longwave radiation"
     )
-    air_ssa_sw: float = Field(
-        default=0.5, description="Air single scattering albedo for shortwave radiation"
+    air_ssa_sw: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Air single scattering albedo for shortwave radiation"
     )
-    ground_albedo_dir_mult_fact: float = Field(
-        default=1.0, description="Multiplication factor for direct ground albedo"
+    ground_albedo_dir_mult_fact: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1.0), description="Multiplication factor for direct ground albedo"
     )
-    n_stream_lw_urban: int = Field(
-        default=2, description="Number of streams for longwave radiation in urban areas"
+    n_stream_lw_urban: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(2), description="Number of streams for longwave radiation in urban areas"
     )
-    n_stream_sw_urban: int = Field(
-        default=2,
+    n_stream_sw_urban: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(2),
         description="Number of streams for shortwave radiation in urban areas",
     )
-    n_vegetation_region_urban: int = Field(
-        default=1, description="Number of vegetation regions in urban areas"
+    n_vegetation_region_urban: ValueWithDOI[int] = Field(
+        default=ValueWithDOI(1), description="Number of vegetation regions in urban areas"
     )
-    sw_dn_direct_frac: float = Field(
-        default=0.5,
+    sw_dn_direct_frac: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5),
         description="Fraction of downward shortwave radiation that is direct",
     )
-    use_sw_direct_albedo: float = Field(
-        default=1.0, description="Flag to use direct albedo for shortwave radiation"
+    use_sw_direct_albedo: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(1.0), description="Flag to use direct albedo for shortwave radiation"
     )
-    veg_contact_fraction_const: float = Field(
-        default=0.5, description="Constant vegetation contact fraction"
+    veg_contact_fraction_const: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Constant vegetation contact fraction"
     )
-    veg_fsd_const: float = Field(
-        default=0.5, description="Constant vegetation fractional standard deviation"
+    veg_fsd_const: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5), description="Constant vegetation fractional standard deviation"
     )
-    veg_ssa_lw: float = Field(
-        default=0.5,
+    veg_ssa_lw: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5),
         description="Vegetation single scattering albedo for longwave radiation",
     )
-    veg_ssa_sw: float = Field(
-        default=0.5,
+    veg_ssa_sw: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0.5),
         description="Vegetation single scattering albedo for shortwave radiation",
     )
 
@@ -2463,7 +2463,7 @@ class SPARTACUSParams(BaseModel):
 
         # Assign each parameter to its corresponding column in the DataFrame
         for param_name, value in spartacus_params.items():
-            df_state[(param_name, "0")] = value
+            df_state[(param_name, "0")] = value.value
 
         return df_state
 
@@ -2497,7 +2497,7 @@ class SPARTACUSParams(BaseModel):
             "veg_ssa_sw",
         }
 
-        params = {param: df.loc[grid_id, (param, "0")] for param in spartacus_params}
+        params = {param: ValueWithDOI(df.loc[grid_id, (param, "0")]) for param in spartacus_params}
 
         return cls(**params)
 
