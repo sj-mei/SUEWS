@@ -544,7 +544,12 @@ def pack_var(ser_var: pd.Series) -> np.ndarray:
 
         # Reshape using Fortran-style ordering to match original
         # return np.array(ser_var_indexed.values).reshape(dimensions, order="F")
-        return np.array(ser_var_indexed.values).reshape(dimensions, order="F")
+        res = np.array(ser_var_indexed.values).reshape(dimensions, order="F")
+
+        try:
+            return res.astype(float)
+        except:
+            return res
 
     except (ValueError, AttributeError) as e:
         # Log error and fall back to scalar handling
@@ -562,7 +567,7 @@ def pack_grid_dict(ser_grid):
     dict_var = {}
     for var in list_var:
         if var not in ["file_init"]:
-            dict_var[var] = pack_var(ser_grid[var]).astype(float)
+            dict_var[var] = pack_var(ser_grid[var])
         else:
             pass
     # dict_var = {
