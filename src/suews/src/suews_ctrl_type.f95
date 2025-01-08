@@ -841,12 +841,12 @@ MODULE SUEWS_DEF_DTS
       ! CHARACTER(LEN=50) :: BuildingName !
       REAL(KIND(1D0)) :: BuildingCount ! Number of buildings of this archetype [-]
       REAL(KIND(1D0)) :: Occupants ! Number of occupants present in building [-]
-      REAL(KIND(1D0)) :: hhs0 !
-      REAL(KIND(1D0)) :: age_0_4 !
-      REAL(KIND(1D0)) :: age_5_11 !
-      REAL(KIND(1D0)) :: age_12_18 !
-      REAL(KIND(1D0)) :: age_19_64 !
-      REAL(KIND(1D0)) :: age_65plus !
+      ! REAL(KIND(1D0)) :: hhs0 !
+      ! REAL(KIND(1D0)) :: age_0_4 !
+      ! REAL(KIND(1D0)) :: age_5_11 !
+      ! REAL(KIND(1D0)) :: age_12_18 !
+      ! REAL(KIND(1D0)) :: age_19_64 !
+      ! REAL(KIND(1D0)) :: age_65plus !
       REAL(KIND(1D0)) :: stebbs_Height ! Building height [m]
       REAL(KIND(1D0)) :: FootprintArea ! Building footprint area [m2]
       REAL(KIND(1D0)) :: WallExternalArea ! External wall area (including window area) [m2]
