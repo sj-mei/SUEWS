@@ -4118,7 +4118,7 @@ CONTAINS
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
       stebbsmethod, & ! stebbs building input
       BuildingCount, Occupants, &
-      ! hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus, 
+      ! hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus,
       stebbs_Height, &
       FootprintArea, WallExternalArea, RatioInternalVolume, WWR, WallThickness, WallEffectiveConductivity, &
       WallDensity, WallCp, Wallx1, WallExternalEmissivity, WallInternalEmissivity, WallTransmissivity, &
