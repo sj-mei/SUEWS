@@ -549,7 +549,7 @@ def pack_var(ser_var: pd.Series) -> np.ndarray:
         try:
             return res.astype(float)
         except:
-            return res
+            return res.astype(str)
 
     except (ValueError, AttributeError) as e:
         # Log error and fall back to scalar handling
