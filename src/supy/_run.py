@@ -543,7 +543,6 @@ def pack_var(ser_var: pd.Series) -> np.ndarray:
         dimensions = np.array(ser_var_indexed.index[-1]) + 1
 
         # Reshape using Fortran-style ordering to match original
-        # return np.array(ser_var_indexed.values).reshape(dimensions, order="F")
         res = np.array(ser_var_indexed.values).reshape(dimensions, order="F")
 
         try:
