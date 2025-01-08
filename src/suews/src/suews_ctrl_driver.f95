@@ -4117,7 +4117,9 @@ CONTAINS
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
       stebbsmethod, & ! stebbs building input
-      BuildingCount, Occupants, hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus, stebbs_Height, &
+      BuildingCount, Occupants, &
+      ! hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus,
+      stebbs_Height, &
       FootprintArea, WallExternalArea, RatioInternalVolume, WWR, WallThickness, WallEffectiveConductivity, &
       WallDensity, WallCp, Wallx1, WallExternalEmissivity, WallInternalEmissivity, WallTransmissivity, &
       WallAbsorbtivity, WallReflectivity, FloorThickness, GroundFloorEffectiveConductivity, &
@@ -4578,12 +4580,12 @@ CONTAINS
       TYPE(BUILDING_STATE) :: bldgState
       REAL(KIND(1D0)) :: BuildingCount
       REAL(KIND(1D0)) :: Occupants
-      REAL(KIND(1D0)) :: hhs0
-      REAL(KIND(1D0)) :: age_0_4
-      REAL(KIND(1D0)) :: age_5_11
-      REAL(KIND(1D0)) :: age_12_18
-      REAL(KIND(1D0)) :: age_19_64
-      REAL(KIND(1D0)) :: age_65plus
+      ! REAL(KIND(1D0)) :: hhs0
+      ! REAL(KIND(1D0)) :: age_0_4
+      ! REAL(KIND(1D0)) :: age_5_11
+      ! REAL(KIND(1D0)) :: age_12_18
+      ! REAL(KIND(1D0)) :: age_19_64
+      ! REAL(KIND(1D0)) :: age_65plus
       REAL(KIND(1D0)) :: stebbs_Height
       REAL(KIND(1D0)) :: FootprintArea
       REAL(KIND(1D0)) :: WallExternalArea
@@ -5438,12 +5440,12 @@ CONTAINS
       ! bldgState%BuildingName
       bldgState%BuildingCount = BuildingCount
       bldgState%Occupants = Occupants
-      bldgState%hhs0 = hhs0
-      bldgState%age_0_4 = age_0_4
-      bldgState%age_5_11 = age_5_11
-      bldgState%age_12_18 = age_12_18
-      bldgState%age_19_64 = age_19_64
-      bldgState%age_65plus = age_65plus
+      ! bldgState%hhs0 = hhs0
+      ! bldgState%age_0_4 = age_0_4
+      ! bldgState%age_5_11 = age_5_11
+      ! bldgState%age_12_18 = age_12_18
+      ! bldgState%age_19_64 = age_19_64
+      ! bldgState%age_65plus = age_65plus
       bldgState%stebbs_Height = stebbs_Height
       bldgState%FootprintArea = FootprintArea
       bldgState%WallExternalArea = WallExternalArea
