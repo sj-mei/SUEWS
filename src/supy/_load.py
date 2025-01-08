@@ -1242,9 +1242,10 @@ def load_SUEWS_SurfaceChar_df(path_input):
         elif var == "waterdist":
             dim_x = dict_var_ndim[var]  # [-1::-1]
             val_x0 = val.reshape((len_grid, 9, 6))
-            # directly load the values for commen land covers
+            # directly load the values for common land covers
             val_x1 = val_x0[:, :7]
             # process the ToSoilStore and ToRunoff entries
+            # since only one of ToSoilStore and ToRunoff can be non-zero for each row, we sum them up and combine them
             val_x2 = val_x0[:, 7:].reshape(len_grid, 6, 2).sum(axis=2).reshape(-1, 1, 6)
             # combine valuees of common land convers and special cases
             val_x = np.hstack((val_x1, val_x2))
@@ -1313,6 +1314,7 @@ dict_RunControl_default = {
     "kdownzen": 1,
     "suppresswarnings": 0,
     "resolutionfilesin": 0,
+    "stebbsmethod": 0,
 }
 
 
@@ -1331,8 +1333,29 @@ def load_SUEWS_dict_ModConfig(path_runcontrol, dict_default=dict_RunControl_defa
         / dict_RunControl["fileinputpath"]
         / "SUEWS_SPARTACUS.nml"
     )
+
+    # load STEBBS-specific variables:
+    path_stebbs_typologies = (
+        path_runcontrol.parent
+        / dict_RunControl["fileinputpath"]
+        / "test_stebbs_building_typologies.nml"
+    )
+    path_stebbs_general = (
+        path_runcontrol.parent
+        / dict_RunControl["fileinputpath"]
+        / "test_stebbs_general_params.nml"
+    )
+
     dict_RunControl_x = {k[0]: v for k, v in load_SUEWS_nml(path_spartacus).items()}
     dict_RunControl.update(dict_RunControl_x)
+
+    dict_RunControl_y = {k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()}
+    dict_RunControl.update(dict_RunControl_y)
+
+    dict_RunControl_z = {
+        k[0]: v for k, v in load_SUEWS_nml(path_stebbs_general).items()
+    }
+    dict_RunControl.update(dict_RunControl_z)
 
     return dict_RunControl
 
@@ -1475,6 +1498,7 @@ def load_SUEWS_InitialCond_df(path_runcontrol):
         df_init.columns.to_flat_index(),
         names=["var", "ind_dim"],
     )
+
     # for k in dict_InitCond_default:
     #     df_init.loc[:, (k, "0")] = dict_InitCond_default[k]
 
