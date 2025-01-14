@@ -4,7 +4,7 @@ model:
   control:
     tstep: 300
     forcing_file:
-      value: /Input/Kc_2012_data_60.txt
+      value: ./Input/Kc_2012_data_60.txt
     kdownzen:
       value: 0
     output_file: output.txt

@@ -39,7 +39,7 @@ class ValueWithDOI(BaseModel, Generic[T]):
 
     def __repr__(self):
         return f"{self.value}"
-    
+
     def __eq__(self, other):
         if isinstance(other, ValueWithDOI):
             return self.value == other.value
@@ -1327,7 +1327,7 @@ class OHMCoefficients(BaseModel):
             df_state.loc[grid_id, ("ohm_coef", str_idx)] = getattr(self, aX).value
 
         return df_state
-        
+
     @classmethod
     def from_df_state(
         cls, df: pd.DataFrame, grid_id: int, surf_idx: int, idx_s: int
@@ -4804,7 +4804,7 @@ class SUEWSConfig(BaseModel):
         """Convert config to YAML format"""
         with open(path, 'w') as file:
             yaml.dump(self.model_dump(exclude_none=True), file, sort_keys=False, allow_unicode=True)
-    
+
 
 def init_config_from_yaml(path: str = "./config-suews.yml") -> SUEWSConfig:
     """Initialize SUEWSConfig from YAML file"""

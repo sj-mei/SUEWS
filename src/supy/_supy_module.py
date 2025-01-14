@@ -214,8 +214,9 @@ def load_forcing_grid(
             path_site = path_init.parent
             path_input = path_site / dict_mod_cfg["fileinputpath"]
         else:
-            path_site = str(path_init.parent)
-            path_input = path_site + init_config_from_yaml(path=path_init).model.control.forcing_file.value
+            config = init_config_from_yaml(path=path_init)
+            path_site = path_init.parent
+            path_input = path_site / config.model.control.forcing_file.value
 
         tstep_mod, lat, lon, alt, timezone = df_state_init.loc[
             grid, [(x, "0") for x in ["tstep", "lat", "lng", "alt", "timezone"]]
@@ -293,14 +294,14 @@ def load_sample_data() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """
     from ._env import trv_supy_module
 
-    trv_SampleData = trv_supy_module / "sample_run"
+    trv_sample_data = trv_supy_module / "sample_run"
     # path_runcontrol = trv_SampleData / "RunControl.nml"
-    path_defaultConfig = trv_SampleData / "defaultConfig.yml"
+    path_config_default = trv_sample_data / "defaultConfig.yml"
     # try:
-    df_state_init = init_supy(path_defaultConfig, force_reload=False)
+    df_state_init = init_supy(path_config_default, force_reload=False)
     # except:
     #     df_state_init = init_supy(path_runcontrol, force_reload=False)
-    df_forcing = load_forcing_grid(path_defaultConfig, df_state_init.index[0], df_state_init=df_state_init)
+    df_forcing = load_forcing_grid(path_config_default, df_state_init.index[0], df_state_init=df_state_init)
     return df_state_init, df_forcing
 
 
