@@ -103,10 +103,10 @@ def init_supy(
     else:
         if path_init_x.suffix == ".yml":
             # SUEWS `config_suews.yaml`:
-            print("Loading config from yaml")
+            logger_supy.info("Loading config from yaml")
             df_state_init = init_config_from_yaml(path=path_init_x).to_df_state()
         else:
-            print("Input is not a yaml file, loading from other sources.\nWARNING: These methods will be deprecated in later versions.")
+            logger_supy.warning("Input is not a yaml file, loading from other sources. These methods will be deprecated in later versions.", stacklevel=2)
             if path_init_x.suffix == ".nml":
                 # SUEWS `RunControl.nml`:
                 df_state_init = load_InitialCond_grid_df(
@@ -244,7 +244,7 @@ def load_forcing_grid(
                 df_forcing_met_tstep = resample_forcing_met(
                     df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen
                 )
-        
+
 
         # coerced precision here to prevent numerical errors inside Fortran
         df_forcing = df_forcing_met_tstep.round(10)
@@ -270,6 +270,13 @@ def load_forcing_grid(
 # load sample data for quickly starting a demo run
 # TODO: to deprecate this by renaming for case consistency: load_SampleData-->load_sample_data
 def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+    logger_supy.warning(
+        "This function name will be deprecated. Please use `load_sample_data()` instead.",
+        stacklevel=2
+    )
+    return load_sample_data()
+
+def load_sample_data() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Load sample data for quickly starting a demo run.
 
     Returns
@@ -281,13 +288,13 @@ def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     Examples
     --------
 
-    >>> df_state_init, df_forcing = supy.load_SampleData()
+    >>> df_state_init, df_forcing = supy.load_sample_data()
 
     """
     from ._env import trv_supy_module
 
     trv_SampleData = trv_supy_module / "sample_run"
-    path_runcontrol = trv_SampleData / "RunControl.nml"
+    # path_runcontrol = trv_SampleData / "RunControl.nml"
     path_defaultConfig = trv_SampleData / "defaultConfig.yml"
     # try:
     df_state_init = init_supy(path_defaultConfig, force_reload=False)
