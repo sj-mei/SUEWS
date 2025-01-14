@@ -808,6 +808,42 @@ def load_SUEWS_Forcing_met_df_pattern(path_input, file_pattern):
     return df_forcing_met
 
 
+
+def load_SUEWS_Forcing_met_df_yaml(path_forcing):
+    from pathlib import Path
+    from .util._io import read_suews
+
+    if isinstance(path_forcing, str):
+        path_forcing = Path(path_forcing).resolve()
+        df_forcing_met = read_suews(path_forcing)
+    elif isinstance(path_forcing, list):
+        path_forcing = [Path(p).resolve() for p in path_forcing]
+        df_forcing_met = pd.concat([read_suews(fn) for fn in path_forcing])
+    else:
+        import pdb; pdb.set_trace()
+    # `drop_duplicates` in case some duplicates mixed
+    df_forcing_met = df_forcing_met.drop_duplicates()
+    # drop `isec`: redundant for this dataframe
+    col_suews_met_forcing = list(dict_var_type_forcing.keys())[:-1]
+    # rename these columns to match variables via the driver interface
+    df_forcing_met.columns = col_suews_met_forcing
+
+    # convert unit from kPa to hPa
+    df_forcing_met["pres"] *= 10
+
+    # add `isec` for WRF-SUEWS interface
+    df_forcing_met["isec"] = 0
+
+    # set correct data types
+    df_forcing_met[["iy", "id", "it", "imin", "isec"]] = df_forcing_met[
+        ["iy", "id", "it", "imin", "isec"]
+    ].astype(np.int64)
+
+    df_forcing_met = set_index_dt(df_forcing_met)
+    
+    return df_forcing_met
+
+
 # TODO: add support for loading multi-grid forcing datasets
 # def load_SUEWS_Forcing_df(dir_site, ser_mod_cfg, df_state_init):
 #     pass

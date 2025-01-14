@@ -33,6 +33,7 @@ from ._load import (
     load_SUEWS_dict_ModConfig,
     load_df_state,
     resample_forcing_met,
+    load_SUEWS_Forcing_met_df_yaml,
 )
 from ._run import run_supy_par, run_supy_ser
 from ._save import get_save_info, save_df_output, save_df_state, save_initcond_nml
@@ -213,8 +214,8 @@ def load_forcing_grid(
             path_site = path_init.parent
             path_input = path_site / dict_mod_cfg["fileinputpath"]
         else:
-            path_site = path_init.parent
-            path_input = path_site / init_config_from_yaml(path=path_init).model.control.forcing_file.value
+            path_site = str(path_init.parent)
+            path_input = path_site + init_config_from_yaml(path=path_init).model.control.forcing_file.value
 
         tstep_mod, lat, lon, alt, timezone = df_state_init.loc[
             grid, [(x, "0") for x in ["tstep", "lat", "lng", "alt", "timezone"]]
@@ -222,14 +223,28 @@ def load_forcing_grid(
 
         # load raw data
         # met forcing
-        df_forcing_met = load_SUEWS_Forcing_met_df_raw(
-            path_input, filecode, grid, tstep_met_in, multiplemetfiles
-        )
-
-        # resample raw data from tstep_in to tstep_mod
-        df_forcing_met_tstep = resample_forcing_met(
-            df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen
-        )
+        if path_init.suffix == ".nml":
+            df_forcing_met = load_SUEWS_Forcing_met_df_raw(
+                path_input, filecode, grid, tstep_met_in, multiplemetfiles
+            )
+            # resample raw data from tstep_in to tstep_mod
+            df_forcing_met_tstep = resample_forcing_met(
+                df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen
+            )
+        elif path_init.suffix == ".yml":
+            df_forcing_met = load_SUEWS_Forcing_met_df_yaml(path_input)
+            tstep_met_in = df_forcing_met.index[1] - df_forcing_met.index[0]
+            tstep_met_in = int(tstep_met_in.total_seconds())
+            kdownzen = init_config_from_yaml(path=path_init).model.control.kdownzen.value
+            if kdownzen is None:
+                df_forcing_met_tstep = resample_forcing_met(
+                    df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone
+                )
+            else:
+                df_forcing_met_tstep = resample_forcing_met(
+                    df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen
+                )
+        
 
         # coerced precision here to prevent numerical errors inside Fortran
         df_forcing = df_forcing_met_tstep.round(10)
@@ -278,7 +293,7 @@ def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     df_state_init = init_supy(path_defaultConfig, force_reload=False)
     # except:
     #     df_state_init = init_supy(path_runcontrol, force_reload=False)
-    df_forcing = load_forcing_grid(path_runcontrol, df_state_init.index[0], df_state_init=df_state_init)
+    df_forcing = load_forcing_grid(path_defaultConfig, df_state_init.index[0], df_state_init=df_state_init)
     return df_state_init, df_forcing
 
 

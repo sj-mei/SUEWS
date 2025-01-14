@@ -2138,6 +2138,9 @@ class ModelControl(BaseModel):
     forcing_file: ValueWithDOI[str] = Field(
         default=ValueWithDOI("forcing.txt"), description="Path to meteorological forcing data file"
     )
+    kdownzen: Optional[ValueWithDOI[int]] = Field(
+        default=None, description="Use zenithal correction for downward shortwave radiation"
+    )
     output_file: str = Field(
         default="output.txt", description="Path to model output file"
     )
