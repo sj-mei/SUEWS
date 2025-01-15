@@ -1,23 +1,16 @@
 MODULE modulestebbsprecision
-
    USE ISO_FORTRAN_ENV, ONLY: REAL64
-
    IMPLICIT NONE
-
    INTEGER, PARAMETER :: rprc = REAL64
+END MODULE modulestebbsprecision
 
-END MODULE
 
 MODULE modulestebbs
-
    USE modulestebbsprecision
-
    REAL(rprc), PARAMETER :: sigma = 5.670E-8
-
    INTEGER, SAVE :: flgtimecheck = 1
    INTEGER :: resolution
    INTEGER :: time_st, time_ed, count_p_sec, count_max ! Time check
-
    INTEGER :: nbtype
    CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: fnmls, cases
    TYPE :: LBM
@@ -176,10 +169,13 @@ MODULE modulestebbs
    END TYPE
    TYPE(LBM), ALLOCATABLE, DIMENSION(:) :: blds
 END MODULE modulestebbs
+
+
 MODULE modulestebbsfunc
    USE modulestebbsprecision
    IMPLICIT NONE
 CONTAINS
+
    !-------------------------------------------------------------------
    ! Function: waterUseEnergyLossToDrains
    ! Parameters:
@@ -198,7 +194,8 @@ CONTAINS
       REAL(rprc), INTENT(in) :: rho, Cp, vFRo, Tout
       REAL(rprc) :: q_wt
       q_wt = rho*Cp*Tout*(vFRo*timeResolution)
-   END FUNCTION
+   END FUNCTION waterUseEnergyLossToDrains
+
    !-------------------------------------------------------------------
    ! Function: indoorConvectionHeatTransfer
    ! Description: Indoor Convection on wall surfaces: convective heat transfer between air node and wall node(s)
@@ -217,6 +214,7 @@ CONTAINS
       REAL(rprc) :: ind_cht
       ind_cht = h*A*(Ti - Twi)
    END FUNCTION indoorConvectionHeatTransfer
+
    !-------------------------------------------------------------------
    ! Function: internalConvectionHeatTransfer
    ! Description: Indoor Convection on wall surfaces: convective heat transfer between air node and wall node(s)
@@ -235,6 +233,7 @@ CONTAINS
       REAL(rprc) :: int_cht
       int_cht = h*A*(Ti - Tio)
    END FUNCTION internalConvectionHeatTransfer
+
    !-------------------------------------------------------------------
    ! Function: indoorRadiativeHeatTransfer (NOT IMPLEMENTED)
    ! Description: Indoor radiative exchange between wall surfaces and mass internal object
@@ -249,6 +248,7 @@ CONTAINS
       q = 0.0
       RETURN
    END FUNCTION indoorRadiativeHeatTransfer
+
    !-------------------------------------------------------------------
    ! Function: outdoorConvectionHeatTransfer
    ! Description: Outdoor Convection on surfaces. Convective heat transfer between outside wall surface and ambient air node
@@ -268,6 +268,7 @@ CONTAINS
       out_cht = h*A*(Two - Ta)
       RETURN
    END FUNCTION outdoorConvectionHeatTransfer
+
    !-------------------------------------------------------------------
    ! Function: outdoorRadiativeHeatTransfer
    ! Description: Outdoor Convection on surfaces. Convective heat transfer between outside wall surface and ambient air node
@@ -289,6 +290,7 @@ CONTAINS
       q = A*f*sigma*emis*(Two**4.0 - Ts**4.0)
       RETURN
    END FUNCTION outdoorRadiativeHeatTransfer
+
    !-------------------------------------------------------------------
    ! Function: lwoutdoorRadiativeHeatTransfer
    ! Description: Longwave radiative heat transfer between outside surface and ambient air
@@ -309,6 +311,7 @@ CONTAINS
       q = A*sigma*emis*(Two**4.0) - emis*lw*a ! Revised based on Yiqing's discovery
       RETURN
    END FUNCTION lwoutdoorRadiativeHeatTransfer
+
    !-------------------------------------------------------------------
    ! Function: windowInsolation
    ! Description: Window Solar Insolation. This should be added as heat gain to internal single mass object
@@ -327,6 +330,7 @@ CONTAINS
       wi_in = Irr*Tr*A
       RETURN
    END FUNCTION windowInsolation
+
    !-------------------------------------------------------------------
    ! Function: wallInsolation
    ! Description: Solar Insolation on surface. This should be added as heat gain to external surface of wall
@@ -345,6 +349,7 @@ CONTAINS
       wa_in = Irr*Ab*A
       RETURN
    END FUNCTION wallInsolation
+
    !-------------------------------------------------------------------
    ! Function: wallConduction
    ! Description: Wall Component Conduction (can be floor/roof/wall/window)
@@ -364,6 +369,7 @@ CONTAINS
       REAL(rprc) :: wa_co
       wa_co = k_eff*A*((Twi - Two)/L)
    END FUNCTION wallConduction
+
    !-------------------------------------------------------------------
    ! Function: windowConduction
    ! Description: Window Component Conduction (same as wall)
@@ -383,6 +389,7 @@ CONTAINS
       REAL(rprc) :: wi_co
       wi_co = k_eff*A*((Twi - Two)/L)
    END FUNCTION windowConduction
+
    !-------------------------------------------------------------------
    ! Function: heating
    ! Description: Heating injected to building
@@ -404,6 +411,7 @@ CONTAINS
          q_heating = (P - (P/EXP(Ts - Ti)))*epsilon
       END IF
    END FUNCTION heating
+
    !-------------------------------------------------------------------
    ! Function: ventilationHeatTransfer
    ! Description: Building Ventilation rate heat transfer (i.e. not recirculated air)
@@ -423,6 +431,7 @@ CONTAINS
       REAL(rprc) :: q_in
       q_in = rho*Cp*V*(To - Ti)
    END FUNCTION ventilationHeatTransfer
+
    !-------------------------------------------------------------------
    ! Function: additionalSystemHeatingEnergy
    ! Description: Calculates the additional heat from the heating system due to system efficiency
@@ -440,6 +449,7 @@ CONTAINS
       qH_additional = 0.0
       qH_additional = (q_heating/epsilon) - q_heating
    END FUNCTION additionalSystemHeatingEnergy
+
    !-------------------------------------------------------------------
    ! Function: cooling
    ! Description: Cooling of building (heat ejected)
@@ -461,6 +471,7 @@ CONTAINS
          q_cooling = P - (P/EXP(Ti - Ts))
       END IF
    END FUNCTION cooling
+
    !-------------------------------------------------------------------
    ! Function: additionalSystemCoolingEnergy
    ! Description:  Calculates the additional heat from the cooling system due to system COP
@@ -477,6 +488,7 @@ CONTAINS
       REAL(rprc) :: qC_additional
       qC_additional = q_cooling/COP
    END FUNCTION additionalSystemCoolingEnergy
+
    !-------------------------------------------------------------------
    ! Function: internalOccupancyGains
    ! Description: Calculates the internal gains from building occupants
@@ -496,6 +508,7 @@ CONTAINS
       qSL(1) = (metRate*Occupants)/(1.0 + LSR)
       qSL(2) = (metRate*Occupants)*LSR/(1.0 + LSR)
    END FUNCTION internalOccupancyGains
+
    !-------------------------------------------------------------------
    ! Function: internalApplianceGains
    ! Description:
@@ -514,6 +527,7 @@ CONTAINS
       REAL(rprc) :: qapp
       qapp = P*f*n
    END FUNCTION internalApplianceGains
+
    !-------------------------------------------------------------------
    ! Function: ext_conv_coeff
    ! Description: Calculates the external convection coefficient using Eq. 11 Cole & Sturrock (1977)
@@ -537,6 +551,8 @@ CONTAINS
       hc = hn + Rf*(hcglass - hn)
    END FUNCTION ext_conv_coeff
 END MODULE modulestebbsfunc
+
+
 MODULE modulesuewsstebbscouple
    USE modulestebbsprecision
    IMPLICIT NONE
@@ -554,6 +570,8 @@ MODULE modulesuewsstebbscouple
    END TYPE
    TYPE(suewsprop) :: sout
 END MODULE modulesuewsstebbscouple
+
+
 SUBROUTINE setdatetime(datetimeLine)
    USE modulestebbsprecision
    USE modulesuewsstebbscouple, ONLY: sout
@@ -588,6 +606,8 @@ SUBROUTINE setdatetime(datetimeLine)
    sout%hourmin(1) = TRIM(chour//':'//cmin//':'//csec)
    RETURN
 END SUBROUTINE setdatetime
+
+
 MODULE stebbs_module
 
 CONTAINS
@@ -904,6 +924,8 @@ CONTAINS
 
    END SUBROUTINE stebbsonlinecouple
 END MODULE stebbs_module
+
+
 SUBROUTINE readsuewsout()
    USE modulesuewsstebbscouple
    IMPLICIT NONE
@@ -967,6 +989,8 @@ SUBROUTINE readsuewsout()
    CLOSE (8)
    RETURN
 END SUBROUTINE readsuewsout
+
+
 SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
                              qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                              Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
@@ -1955,6 +1979,7 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%HWPowerAverage = (/30000, 30000, 30000/)
 
 END SUBROUTINE gen_building
+
 SUBROUTINE create_building(CASE, self, icase)
    USE modulestebbs, ONLY: LBM
    IMPLICIT NONE
