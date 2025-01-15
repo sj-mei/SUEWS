@@ -12,7 +12,6 @@ MODULE modulestebbs
    INTEGER :: resolution
    INTEGER :: time_st, time_ed, count_p_sec, count_max ! Time check
    INTEGER :: nbtype
-   CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: fnmls, cases
 
    !-------------------------------------------------------------------
    ! Type: LBM (Lumped Building Model)
@@ -191,7 +190,7 @@ MODULE modulestebbs
       REAL(rprc), DIMENSION(25) :: EnergyExchanges = 0.0
    END TYPE
 
-   TYPE(LBM), ALLOCATABLE, DIMENSION(:) :: blds
+   TYPE(LBM) :: bldg
 END MODULE modulestebbs
 
 
@@ -641,7 +640,7 @@ CONTAINS
       modState, & ! Input/Output
       datetimeLine, &
       dataOutLineSTEBBS) ! Output
-      USE modulestebbs, ONLY: blds, cases, resolution
+      USE modulestebbs, ONLY: bldg, resolution
       USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
       USE modulestebbsprecision, ONLY: rprc ! Defines rprc as REAL64
       USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
@@ -724,11 +723,9 @@ CONTAINS
 
             !       !
             IF (flginit == 0) THEN
-               ALLOCATE (cases(1))
                WRITE (*, *) 'Initialising STEBBS'
-               ALLOCATE (blds(1))
                resolution = 1
-               CALL gen_building(stebbsState, bldgState, blds(1))
+               CALL gen_building(stebbsState, bldgState, bldg)
                ! call create_building(cases(1),blds(1),1)
 
                ! Print out all values of blds(1) to check initialization
@@ -923,7 +920,7 @@ CONTAINS
             CALL setdatetime(datetimeLine)
             ! nbtype = SIZE(blds)
             ! DO i = 1, nbtype, 1
-            CALL suewsstebbscouple(blds(1), flginit, datetimeLine, &
+            CALL suewsstebbscouple(bldg, flginit, datetimeLine, &
                                    qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                                    Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
                                    Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
@@ -1143,6 +1140,7 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
    self%flginit = 1
    RETURN
 END SUBROUTINE suewsstebbscouple
+
 SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
                                density_air_out, cp_air_out, &
                                Qsw_dn_extroof, Qsw_dn_extwall, &
@@ -1248,6 +1246,7 @@ SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
       self%Qmetabolic_latent) !qlatent_timestepTotal
    RETURN
 END SUBROUTINE timeStepCalculation
+
 SUBROUTINE tstep( &
    flginit, datetimeLine, Tair_out, Tground_deep, Tsurf, &
    density_air_out, cp_air_out, &
@@ -1817,8 +1816,8 @@ SUBROUTINE tstep( &
       WRITE (*, *) "Timestep: ", timestep, " not equally divisible by given resolution: ", resolution
    END IF
 END SUBROUTINE tstep
-SUBROUTINE reinitialiseTemperatures
-END SUBROUTINE reinitialiseTemperatures
+
+
 SUBROUTINE gen_building(stebbsState, bldgState, self)
 
    USE modulestebbs, ONLY: LBM
@@ -1897,6 +1896,7 @@ SUBROUTINE gen_building(stebbsState, bldgState, self)
    self%heating_efficiency_air = stebbsState%HeatingSystemEfficiency
    self%maxcoolingpower_air = stebbsState%MaxCoolingPower
    self%coeff_performance_cooling = stebbsState%CoolingSystemCOP
+
    self%Vair_ind = &
       (self%Afootprint*self%height_building)* &
       (1 - self%ratioInternalVolume) ! # Multiplied by factor that accounts for internal mass
