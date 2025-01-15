@@ -103,10 +103,10 @@ def init_supy(
     else:
         if path_init_x.suffix == ".yml":
             # SUEWS `config_suews.yaml`:
-            print("Loading config from yaml")
+            logger_supy.info("Loading config from yaml")
             df_state_init = init_config_from_yaml(path=path_init_x).to_df_state()
         else:
-            print("Input is not a yaml file, loading from other sources.\nWARNING: These methods will be deprecated in later versions.")
+            logger_supy.warning("Input is not a yaml file, loading from other sources. These methods will be deprecated in later versions.", stacklevel=2)
             if path_init_x.suffix == ".nml":
                 # SUEWS `RunControl.nml`:
                 df_state_init = load_InitialCond_grid_df(
@@ -214,8 +214,9 @@ def load_forcing_grid(
             path_site = path_init.parent
             path_input = path_site / dict_mod_cfg["fileinputpath"]
         else:
-            path_site = str(path_init.parent)
-            path_input = path_site + init_config_from_yaml(path=path_init).model.control.forcing_file.value
+            config = init_config_from_yaml(path=path_init)
+            path_site = path_init.parent
+            path_input = path_site / config.model.control.forcing_file.value
 
         tstep_mod, lat, lon, alt, timezone = df_state_init.loc[
             grid, [(x, "0") for x in ["tstep", "lat", "lng", "alt", "timezone"]]
@@ -244,7 +245,7 @@ def load_forcing_grid(
                 df_forcing_met_tstep = resample_forcing_met(
                     df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen
                 )
-        
+
 
         # coerced precision here to prevent numerical errors inside Fortran
         df_forcing = df_forcing_met_tstep.round(10)
@@ -270,6 +271,13 @@ def load_forcing_grid(
 # load sample data for quickly starting a demo run
 # TODO: to deprecate this by renaming for case consistency: load_SampleData-->load_sample_data
 def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+    logger_supy.warning(
+        "This function name will be deprecated. Please use `load_sample_data()` instead.",
+        stacklevel=2
+    )
+    return load_sample_data()
+
+def load_sample_data() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Load sample data for quickly starting a demo run.
 
     Returns
@@ -281,19 +289,14 @@ def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     Examples
     --------
 
-    >>> df_state_init, df_forcing = supy.load_SampleData()
+    >>> df_state_init, df_forcing = supy.load_sample_data()
 
     """
-    from ._env import trv_supy_module
 
-    trv_SampleData = trv_supy_module / "sample_run"
-    path_runcontrol = trv_SampleData / "RunControl.nml"
-    path_defaultConfig = trv_SampleData / "defaultConfig.yml"
-    # try:
-    df_state_init = init_supy(path_defaultConfig, force_reload=False)
-    # except:
-    #     df_state_init = init_supy(path_runcontrol, force_reload=False)
-    df_forcing = load_forcing_grid(path_defaultConfig, df_state_init.index[0], df_state_init=df_state_init)
+    trv_sample_data = trv_supy_module / "sample_run"
+    path_config_default = trv_sample_data / "defaultConfig.yml"
+    df_state_init = init_supy(path_config_default, force_reload=False)
+    df_forcing = load_forcing_grid(path_config_default, df_state_init.index[0], df_state_init=df_state_init)
     return df_state_init, df_forcing
 
 
@@ -313,7 +316,7 @@ def run_supy(
     logging_level=logging.INFO,
     check_input=False,
     serial_mode=False,
-    debug_mode=False,  # TODO: #275 to be implemented to enable debug mode
+    debug_mode=False,
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Perform supy simulation.
 
@@ -408,10 +411,10 @@ def run_supy(
 
     if n_grid > 1 and os.name != "nt" and (not serial_mode):
         logger_supy.info(f"SuPy is running in parallel mode")
-        res_supy = run_supy_par(df_forcing, df_state_init, save_state, chunk_day)
+        res_supy = run_supy_par(df_forcing, df_state_init, save_state, chunk_day, debug_mode)
     else:
         logger_supy.info(f"SuPy is running in serial mode")
-        res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
+        res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day, debug_mode)
         # try:
         #     res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
         # except:

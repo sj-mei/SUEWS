@@ -579,6 +579,7 @@ MODULE ctrl_output
         + ncolumnsDataOutRSL - 5 &
         + ncolumnsDataOutDebug - 5 &
         )/ &
+      varAttr('flag_test', '-', f104, 'flag for testing', aA, 'debug', 0), &
       varAttr('Tsfc_Paved', 'degC', f104, 'surface temperature for paved surface', aA, 'debug', 0), &
       varAttr('Tsfc_Bldgs', 'degC', f104, 'surface temperature for building surface', aA, 'debug', 0), &
       varAttr('Tsfc_EveTr', 'degC', f104, 'surface temperature for evergreen tree surface', aA, 'debug', 0), &

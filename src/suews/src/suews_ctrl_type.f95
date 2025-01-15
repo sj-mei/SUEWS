@@ -33,6 +33,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: LAImethod ! boolean to determine if calculate LAI [-]
       INTEGER :: localClimateMethod ! method to choose local climate variables [-] 0: not use; 1: use local climate variables
       INTEGER :: stebbsmethod ! method to calculate building energy [-]
+      LOGICAL :: flag_test ! FOR DEBUGGING ONLY: boolean to test specific functions [-]
    END TYPE SUEWS_CONFIG
 
    TYPE, PUBLIC :: SURF_STORE_PRM
