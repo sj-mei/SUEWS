@@ -813,7 +813,7 @@ def load_SUEWS_Forcing_met_df_yaml(path_forcing):
     from pathlib import Path
     from .util._io import read_suews
 
-    if isinstance(path_forcing, str):
+    if isinstance(path_forcing, (str, Path)):
         path_forcing = Path(path_forcing).resolve()
         df_forcing_met = read_suews(path_forcing)
     elif isinstance(path_forcing, list):
@@ -840,7 +840,7 @@ def load_SUEWS_Forcing_met_df_yaml(path_forcing):
     ].astype(np.int64)
 
     df_forcing_met = set_index_dt(df_forcing_met)
-    
+
     return df_forcing_met
 
 
