@@ -4,7 +4,6 @@ MODULE modulestebbsprecision
    INTEGER, PARAMETER :: rprc = REAL64
 END MODULE modulestebbsprecision
 
-
 MODULE modulestebbs
    USE modulestebbsprecision
    REAL(rprc), PARAMETER :: sigma = 5.670E-8
@@ -38,10 +37,10 @@ MODULE modulestebbs
    !-------------------------------------------------------------------
    TYPE :: LBM
       CHARACTER(len=256) :: &
-         BuildingType, &  ! Type/usage of building (e.g., residential, office)
-         BuildingName, &  ! Identifier for the building
-         fnmlLBM, &      ! Path to building's namelist file
-         CASE            ! Case identifier
+         BuildingType, & ! Type/usage of building (e.g., residential, office)
+         BuildingName, & ! Identifier for the building
+         fnmlLBM, & ! Path to building's namelist file
+         CASE ! Case identifier
       INTEGER :: idLBM
       INTEGER :: flginit = 0
       INTEGER :: appliance_totalnumber
@@ -193,7 +192,6 @@ MODULE modulestebbs
 
    TYPE(LBM), ALLOCATABLE, DIMENSION(:) :: blds
 END MODULE modulestebbs
-
 
 MODULE modulestebbsfunc
    USE modulestebbsprecision
@@ -576,7 +574,6 @@ CONTAINS
    END FUNCTION ext_conv_coeff
 END MODULE modulestebbsfunc
 
-
 MODULE modulesuewsstebbscouple
    USE modulestebbsprecision
    IMPLICIT NONE
@@ -594,7 +591,6 @@ MODULE modulesuewsstebbscouple
    END TYPE
    TYPE(suewsprop) :: sout
 END MODULE modulesuewsstebbscouple
-
 
 SUBROUTINE setdatetime(datetimeLine)
    USE modulestebbsprecision
@@ -630,7 +626,6 @@ SUBROUTINE setdatetime(datetimeLine)
    sout%hourmin(1) = TRIM(chour//':'//cmin//':'//csec)
    RETURN
 END SUBROUTINE setdatetime
-
 
 MODULE stebbs_module
 
@@ -949,7 +944,6 @@ CONTAINS
    END SUBROUTINE stebbsonlinecouple
 END MODULE stebbs_module
 
-
 SUBROUTINE readsuewsout()
    USE modulesuewsstebbscouple
    IMPLICIT NONE
@@ -1013,7 +1007,6 @@ SUBROUTINE readsuewsout()
    CLOSE (8)
    RETURN
 END SUBROUTINE readsuewsout
-
 
 SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
                              qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
