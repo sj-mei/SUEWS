@@ -13,12 +13,35 @@ MODULE modulestebbs
    INTEGER :: time_st, time_ed, count_p_sec, count_max ! Time check
    INTEGER :: nbtype
    CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: fnmls, cases
+
+   !-------------------------------------------------------------------
+   ! Type: LBM (Lumped Building Model)
+   ! Description: A simplified building energy model that represents a building as a set of
+   !             lumped thermal masses (walls, windows, indoor air, etc.) and calculates
+   !             heat transfer between them. This approach reduces computational complexity
+   !             while maintaining reasonable accuracy for urban-scale simulations.
+   !
+   ! Key components:
+   ! - Building geometry (footprint, height, wall areas)
+   ! - Thermal properties (conductivity, density, heat capacity)
+   ! - System characteristics (HVAC, hot water)
+   ! - Energy exchanges (conduction, convection, radiation)
+   ! - Internal gains (occupants, appliances)
+   !
+   ! References:
+   ! - Based on simplified building energy parameterisation schemes
+   ! - Similar to EnergyPlus's "zone" concept but more simplified
+   !
+   ! Note: This is part of STEBBS (Simplified Thermal Energy Balance for Building Scheme)
+   !       which provides a computationally efficient way to simulate building energy
+   !       dynamics in urban climate models.
+   !-------------------------------------------------------------------
    TYPE :: LBM
       CHARACTER(len=256) :: &
-         BuildingType, &
-         BuildingName, &
-         fnmlLBM, &
-         CASE
+         BuildingType, &  ! Type/usage of building (e.g., residential, office)
+         BuildingName, &  ! Identifier for the building
+         fnmlLBM, &      ! Path to building's namelist file
+         CASE            ! Case identifier
       INTEGER :: idLBM
       INTEGER :: flginit = 0
       INTEGER :: appliance_totalnumber
@@ -167,6 +190,7 @@ MODULE modulestebbs
       REAL(rprc), DIMENSION(3) :: HWPowerAverage
       REAL(rprc), DIMENSION(25) :: EnergyExchanges = 0.0
    END TYPE
+
    TYPE(LBM), ALLOCATABLE, DIMENSION(:) :: blds
 END MODULE modulestebbs
 
