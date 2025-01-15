@@ -1232,7 +1232,6 @@ SUBROUTINE tstep( &
    Tair_ind, Tindoormass, Tintwallroof, Textwallroof, & !IO
    Tintwindow, Textwindow, Tintgroundfloor, Textgroundfloor, & !IO
    Ts, & !IO
-   !  Ts(1), Ts(2),                                                          &
    appliance_totalnumber, timestep, resolution, &
    Qtotal_water_tank, Twater_tank, Tintwall_tank, & !IO
    Textwall_tank, thickness_tankwall, Tincomingwater_tank, & !IO
@@ -1249,10 +1248,7 @@ SUBROUTINE tstep( &
    emissivity_extwall_vessel, maxheatingpower_water, &
    heating_efficiency_water, minVwater_vessel, &
    weighting_factor_heatcapacity_wallroof, &
-   !
-   ! Output only variables
-   !
-   Qsw_transmitted_window_tstepTotal, & !EE(1)
+   Qsw_transmitted_window_tstepTotal, & !EE(1) ! Output only variables &
    Qsw_absorbed_window_tstepTotal, & !EE(2)
    Qsw_absorbed_wallroof_tstepTotal, & !EE(3)
    Qconv_indair_to_indoormass_tstepTotal, & !EE(4)
