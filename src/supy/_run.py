@@ -119,7 +119,7 @@ def suews_cal_tstep(dict_state_start, dict_met_forcing_tstep):
 
 # high-level wrapper: suews_cal_tstep
 # def suews_cal_tstep_multi(df_state_start_grid, df_met_forcing_block):
-def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
+def suews_cal_tstep_multi(dict_state_start, df_forcing_block, debug_mode=False):
     from ._post import pack_df_output_block
 
     # use single dict as input for suews_cal_main
@@ -141,8 +141,12 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block):
         }
     )
 
-    dict_input = {k: dict_input[k] for k in list_var_input_multitsteps}
+    if debug_mode:
+        dict_input["flag_test"] = True
+    else:
+        dict_input["flag_test"] = False
 
+    dict_input = {k: dict_input[k] for k in list_var_input_multitsteps}
     # main calculation:
 
     try:
@@ -203,6 +207,7 @@ def run_supy_ser(
     df_state_init: pandas.DataFrame,
     save_state=False,
     chunk_day=3660,
+    debug_mode=False,
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Perform supy simulation.
 
@@ -219,6 +224,9 @@ def run_supy_ser(
     chunk_day : int, optional
         chunk size (`chunk_day` days) to split simulation periods so memory usage can be reduced.
         (the default is 3660, which implies ~10-year forcing chunks used in simulations).
+    debug_mode : bool, optional
+        flag for debug mode, which will set `flag_test` to True in the input dictionary.
+        (the default is False, which instructs supy not to run in debug mode).
 
     Returns
     -------
@@ -386,7 +394,7 @@ def run_supy_ser(
 
         try:
             list_res_grid = [
-                suews_cal_tstep_multi(dict_state_input, df_forcing)
+                suews_cal_tstep_multi(dict_state_input, df_forcing, debug_mode)
                 for dict_state_input in list_dict_state_input
             ]
 
@@ -438,11 +446,38 @@ def run_supy_ser(
 
 
 def run_save_supy(
-    df_forcing_tstep, df_state_init_m, ind, save_state, n_yr, path_dir_temp
+    df_forcing_tstep, df_state_init_m, ind, save_state, chunk_day, path_dir_temp, debug_mode=False
 ):
+    """Run SuPy simulation and save results to temporary files.
+
+    Parameters
+    ----------
+    df_forcing_tstep : pandas.DataFrame
+        Forcing data for one grid
+    df_state_init_m : pandas.DataFrame
+        Initial model states for one grid
+    ind : int
+        Index identifier for output files
+    save_state : bool
+        Flag for saving model states at each time step
+    chunk_day : int
+        Chunk size (days) to split simulation periods
+    path_dir_temp : pathlib.Path
+        Path to temporary directory for saving results
+    debug_mode : bool
+        Flag for debug mode
+
+    Returns
+    -------
+    None
+        Results are saved to files in path_dir_temp:
+        - {ind}_out.pkl: Output results DataFrame
+        - {ind}_state.pkl: Final model states DataFrame
+        - {ind}_debug.pkl: Debug information DataFrame
+    """
     # run supy in serial mode
     df_output, df_state_final, df_debug = run_supy_ser(
-        df_forcing_tstep, df_state_init_m, save_state, n_yr
+        df_forcing_tstep, df_state_init_m, save_state, chunk_day, debug_mode
     )
     # save to path_dir_temp
     path_out = path_dir_temp / f"{ind}_out.pkl"
@@ -454,13 +489,35 @@ def run_save_supy(
 
 
 # parallel mode: only used on Linux/macOS; Windows is not supported yet.
-def run_supy_par(df_forcing_tstep, df_state_init_m, save_state, n_yr):
+def run_supy_par(df_forcing_tstep, df_state_init_m, save_state, chunk_day, debug_mode=False):
+    """Perform supy simulation in parallel mode.
+
+    Parameters
+    ----------
+    df_forcing_tstep : pandas.DataFrame
+        Forcing data for all grids
+    df_state_init_m : pandas.DataFrame
+        Initial model states for all grids
+    save_state : bool
+        Flag for saving model states at each time step
+    chunk_day : int
+        Chunk size (days) to split simulation periods
+    debug_mode : bool
+        Flag for debug mode
+
+    Returns
+    -------
+    Tuple[pandas.DataFrame, pandas.DataFrame, pandas.DataFrame]
+        - df_output: Output results
+        - df_state_final: Final model states
+        - df_debug: Debug information
+    """
     n_grid = df_state_init_m.index.size
     list_forcing = [df_forcing_tstep for _ in range(n_grid)]
     list_state = [df_state_init_m.iloc[[i]] for i in np.arange(n_grid)]
     list_save_state = [save_state for _ in range(n_grid)]
-    list_n_yr = [n_yr for _ in range(n_grid)]
-
+    list_chunk_day = [chunk_day for _ in range(n_grid)]
+    list_debug_mode = [debug_mode for _ in range(n_grid)]
     # create a temp directory for results
     with tempfile.TemporaryDirectory() as dir_temp:
         path_dir_temp = Path(dir_temp).resolve()
@@ -476,8 +533,9 @@ def run_supy_par(df_forcing_tstep, df_state_init_m, save_state, n_yr):
                     list_state,
                     np.arange(n_grid),
                     list_save_state,
-                    list_n_yr,
+                    list_chunk_day,
                     list_dir_temp,
+                    list_debug_mode,
                 ),
             )
 
@@ -543,8 +601,12 @@ def pack_var(ser_var: pd.Series) -> np.ndarray:
         dimensions = np.array(ser_var_indexed.index[-1]) + 1
 
         # Reshape using Fortran-style ordering to match original
-        # return np.array(ser_var_indexed.values).reshape(dimensions, order="F")
-        return np.array(ser_var_indexed.values).reshape(dimensions, order="F")
+        res = np.array(ser_var_indexed.values).reshape(dimensions, order="F")
+
+        try:
+            return res.astype(float)
+        except:
+            return res.astype(str)
 
     except (ValueError, AttributeError) as e:
         # Log error and fall back to scalar handling
@@ -562,7 +624,7 @@ def pack_grid_dict(ser_grid):
     dict_var = {}
     for var in list_var:
         if var not in ["file_init"]:
-            dict_var[var] = pack_var(ser_grid[var]).astype(float)
+            dict_var[var] = pack_var(ser_grid[var])
         else:
             pass
     # dict_var = {

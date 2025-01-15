@@ -32,6 +32,9 @@ flag_full_test = all(
     ]
 )
 
+# Load sample data once, as it will be used frequently later to save time.
+df_state_init, df_forcing_tstep = sp.load_SampleData()
+
 
 class TestSuPy(TestCase):
     def setUp(self):
@@ -49,7 +52,7 @@ class TestSuPy(TestCase):
     def test_is_supy_running_single_step(self):
         print("\n========================================")
         print("Testing if single-tstep mode can run...")
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
+
         df_forcing_part = df_forcing_tstep.iloc[: 12 * 8]
         df_output, df_state = sp.run_supy(
             df_forcing_part, df_state_init, save_state=True
@@ -69,7 +72,7 @@ class TestSuPy(TestCase):
     def test_is_supy_running_multi_step(self):
         print("\n========================================")
         print("Testing if multi-tstep mode can run...")
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
+
         df_forcing_part = df_forcing_tstep.iloc[: 288 * 10]
         df_output, df_state = sp.run_supy(
             df_forcing_part, df_state_init, check_input=True
@@ -104,12 +107,14 @@ class TestSuPy(TestCase):
         print("\n========================================")
         print("Testing if multi-grid simulation can run in parallel...")
         n_grid = 4
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
-        df_state_init = pd.concat([df_state_init for x in range(n_grid)])
-        df_state_init.index = pd.RangeIndex(n_grid, name="grid")
+
+        df_state_init_base = df_state_init.copy()
+
+        df_state_init_multi = pd.concat([df_state_init_base for x in range(n_grid)])
+        df_state_init_multi.index = pd.RangeIndex(n_grid, name="grid")
         df_forcing_part = df_forcing_tstep.iloc[: 288 * 60]
         t_start = time()
-        df_output, df_state = sp.run_supy(df_forcing_part, df_state_init)
+        df_output, df_state = sp.run_supy(df_forcing_part, df_state_init_multi)
         t_end = time()
 
         test_success_sim = np.all(
@@ -136,14 +141,32 @@ class TestSuPy(TestCase):
             # capturedOutput = io.StringIO()  # Create StringIO object
             # sys.stdout = capturedOutput  # and redirect stdout.
             # Call function.
-            n_grid = df_state_init.index.size
+            n_grid = df_state_init_multi.index.size
             print(f"Running time: {t_end-t_start:.2f} s for {n_grid} grids")
             # sys.stdout = sys.__stdout__  # Reset redirect.
             # Now works as before.
             # print("Captured:\n", capturedOutput.getvalue())
 
-        test_non_empty = np.all([not df_output.empty, not df_state.empty,])
+        test_non_empty = np.all(
+            [
+                not df_output.empty,
+                not df_state.empty,
+            ]
+        )
         self.assertTrue(test_non_empty)
+
+    #  test if flag_test can be set to True
+    def test_is_flag_test_working(self):
+        print("\n========================================")
+        print("Testing if flag_test can be set to True...")
+        df_forcing_part = df_forcing_tstep.iloc[: 288 * 10]
+        df_output, df_state, df_debug = sp.run_supy(
+            df_forcing_part,
+            df_state_init,
+            debug_mode=True,
+        )
+        # check if `flag_test` in `df_output.debug` equals 1.0
+        self.assertTrue((df_output.debug.flag_test == 1.0).all())
 
     # # test if single-tstep and multi-tstep modes can produce the same SUEWS results
     # @skipUnless(flag_full_test, "Full test is not required.")
@@ -350,7 +373,7 @@ class TestSuPy(TestCase):
     def test_dailystate_meaningful(self):
         print("\n========================================")
         print("Testing if dailystate are written out correctly...")
-        df_state_init, df_forcing_tstep = sp.load_SampleData()
+        # df_state_init, df_forcing_tstep = sp.load_SampleData()
         n_days = 10
         df_forcing_part = df_forcing_tstep.iloc[: 288 * n_days]
 
@@ -359,3 +382,37 @@ class TestSuPy(TestCase):
         df_dailystate = df_output.DailyState
         n_days_test = df_dailystate.dropna().drop_duplicates().shape[0]
         self.assertEqual(n_days_test, n_days)
+
+    # test if the water balance is closed
+    def test_water_balance_closed(self):
+        print("\n========================================")
+        print("Testing if water balance is closed...")
+        n_days = 100
+        df_forcing_part = df_forcing_tstep.iloc[: 288 * n_days]
+        df_output, df_state = sp.run_supy(df_forcing_part, df_state_init)
+
+        # get soilstore
+        df_soilstore = df_output.loc[1,"debug"].filter(regex="^ss_.*_next$")
+        ser_sfr_surf = df_state_init.sfr_surf.iloc[0]
+        ser_soilstore = df_soilstore.dot(ser_sfr_surf.values)
+
+        # get water balance
+        df_water = df_output.SUEWS[['Rain','Irr','Evap','RO','State']].assign(
+            SoilStore=ser_soilstore,
+            TotalStore=ser_soilstore+df_output.SUEWS.State
+        )
+        # ===============================
+        # check if water balance is closed
+        # ===============================
+        # change in total store
+        ser_totalstore_change = df_water.TotalStore.diff().dropna()
+        # water input
+        ser_water_in = df_water.Rain+df_water.Irr
+        # water output
+        ser_water_out = df_water.Evap+df_water.RO
+        # water balance
+        ser_water_balance = ser_water_in-ser_water_out
+        # test if water balance is closed
+        test_dif = (ser_totalstore_change-ser_water_balance).abs().max() < 1e-6
+        self.assertTrue(test_dif)
+

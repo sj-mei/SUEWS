@@ -250,6 +250,11 @@ CONTAINS
                   PRINT *, 'iteration is ', i_iter
                END IF
 
+               ! #316: restore initial hydroState as hydrostate should not be changed during iterations
+               ! IF (config%flag_test) THEN
+               hydroState = modState_init%hydroState
+               ! snowstate should probably be restored as well but not done for now - should be revisited
+               ! END IF
                !==============main calculation start=======================
 
                ! WIP notes: TS 23 Aug 2023
@@ -562,6 +567,7 @@ CONTAINS
          )
 
          ASSOCIATE ( &
+            flag_test => config%flag_test, &
             tsfc0_out_surf => heatState%tsfc0_out_surf, &
             qn_surf => heatState%qn_surf, &
             qs_surf => heatState%qs_surf, &
@@ -597,7 +603,8 @@ CONTAINS
             )
 
             dataoutlineDebug = &
-               [tsfc0_out_surf, &
+               [MERGE(1D0, 0D0, flag_test), &
+                tsfc0_out_surf, &
                 qn_surf, qs_surf, qe0_surf, qe_surf, qh_surf, & ! energy balance
                 wu_surf, ev0_surf, ev_surf, drain_surf, &
                 modState_init%hydroState%state_surf, hydroState%state_surf, &
@@ -4081,6 +4088,7 @@ CONTAINS
    END SUBROUTINE output_size
 
    SUBROUTINE SUEWS_cal_multitsteps( &
+      flag_test, &
       MetForcingBlock, len_sim, &
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
       AH_SLOPE_Heating, &
@@ -4117,7 +4125,9 @@ CONTAINS
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
       stebbsmethod, & ! stebbs building input
-      BuildingCount, Occupants, hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus, stebbs_Height, &
+      BuildingCount, Occupants, &
+      ! hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus,
+      stebbs_Height, &
       FootprintArea, WallExternalArea, RatioInternalVolume, WWR, WallThickness, WallEffectiveConductivity, &
       WallDensity, WallCp, Wallx1, WallExternalEmissivity, WallInternalEmissivity, WallTransmissivity, &
       WallAbsorbtivity, WallReflectivity, FloorThickness, GroundFloorEffectiveConductivity, &
@@ -4180,6 +4190,7 @@ CONTAINS
       output_block_suews, debug_state) !output
 
       IMPLICIT NONE
+      LOGICAL, INTENT(IN) :: flag_test
 
       ! ############# DTS variables (start) #############
       ! ---anthropogenic heat-related variables
@@ -4578,12 +4589,12 @@ CONTAINS
       TYPE(BUILDING_STATE) :: bldgState
       REAL(KIND(1D0)) :: BuildingCount
       REAL(KIND(1D0)) :: Occupants
-      REAL(KIND(1D0)) :: hhs0
-      REAL(KIND(1D0)) :: age_0_4
-      REAL(KIND(1D0)) :: age_5_11
-      REAL(KIND(1D0)) :: age_12_18
-      REAL(KIND(1D0)) :: age_19_64
-      REAL(KIND(1D0)) :: age_65plus
+      ! REAL(KIND(1D0)) :: hhs0
+      ! REAL(KIND(1D0)) :: age_0_4
+      ! REAL(KIND(1D0)) :: age_5_11
+      ! REAL(KIND(1D0)) :: age_12_18
+      ! REAL(KIND(1D0)) :: age_19_64
+      ! REAL(KIND(1D0)) :: age_65plus
       REAL(KIND(1D0)) :: stebbs_Height
       REAL(KIND(1D0)) :: FootprintArea
       REAL(KIND(1D0)) :: WallExternalArea
@@ -4697,10 +4708,6 @@ CONTAINS
 
       TYPE(output_block), INTENT(OUT) :: output_block_suews
 
-      ! ############# memory allocation for DTS variables (start) #############
-
-      ! ############# memory allocation for DTS variables (end) #############
-
       ! ############# evaluation for DTS variables (start) #############
       siteInfo%lat = lat
       siteInfo%lon = lng
@@ -4767,8 +4774,10 @@ CONTAINS
       config%LAImethod = 1
       config%stebbsmethod = stebbsmethod
 
-      ! config%nbtype = nbtype
+      ! testing flag
+      config%flag_test = flag_test
 
+      ! lumps parameters
       lumpsPrm%raincover = RAINCOVER
       lumpsPrm%rainmaxres = RainMaxRes
       lumpsPrm%drainrt = DRAINRT
@@ -5438,12 +5447,12 @@ CONTAINS
       ! bldgState%BuildingName
       bldgState%BuildingCount = BuildingCount
       bldgState%Occupants = Occupants
-      bldgState%hhs0 = hhs0
-      bldgState%age_0_4 = age_0_4
-      bldgState%age_5_11 = age_5_11
-      bldgState%age_12_18 = age_12_18
-      bldgState%age_19_64 = age_19_64
-      bldgState%age_65plus = age_65plus
+      ! bldgState%hhs0 = hhs0
+      ! bldgState%age_0_4 = age_0_4
+      ! bldgState%age_5_11 = age_5_11
+      ! bldgState%age_12_18 = age_12_18
+      ! bldgState%age_19_64 = age_19_64
+      ! bldgState%age_65plus = age_65plus
       bldgState%stebbs_Height = stebbs_Height
       bldgState%FootprintArea = FootprintArea
       bldgState%WallExternalArea = WallExternalArea

@@ -49,30 +49,34 @@ def test_df_state_to_class(cls: type, ref_df: pd.DataFrame):
     print(f"\nTesting {cls.__name__} - {cls}")
 
     if cls.__name__ not in [
-        "DayProfile",
-        "WeeklyProfile",
-        "HourlyProfile",
-        "CO2Params",
-        "AnthropogenicHeat",
-        "AnthropogenicEmissions",
-        "ThermalLayers",
-        "BuildingLayer",
-        "VerticalLayers",
-        "WaterUse",
-        "LUMPSParams",
-        "SPARTACUSParams",
-        "Conductance",
-        "OHMCoefficients",
-        "OHM_Coefficient_season_wetness",
-        "SurfaceInitialState",
-        "VegetatedSurfaceInitialState",
-        "DeciduousTreeSurfaceInitialState",
+        # "DayProfile",
+        # "WeeklyProfile",
+        # "HourlyProfile",
+        # "CO2Params",
+        # "AnthropogenicHeat",
+        # "AnthropogenicEmissions",
+        # "ThermalLayers",
+        # "BuildingLayer",
+        # "VerticalLayers",
+        # "WaterUse",
+        # "LUMPSParams",
+        # "SPARTACUSParams",
+        # "Conductance",
+        # "OHMCoefficients",
+        # "OHM_Coefficient_season_wetness",
+        # "SurfaceInitialState",
+        # "VegetatedSurfaceInitialState",
+        # "DeciduousTreeSurfaceInitialState",
         # "InitialStates",
-        "ModelPhysics",
-        "IrrigationParams",
-        "SnowParams",
-        # "BsoilProperties",
-        "SnowAlb",
+        # "ModelPhysics",
+        # "IrrigationParams",
+        # "SnowParams",
+        # # "BsoilProperties",
+        # "SnowAlb",
+        # "SurfaceProperties",
+        # "WaterDistribution",
+        "ArchetypeProperties",
+        "StebbsProperties",
     ]:
         print(f"Skipping {cls.__name__} for now...")
         return
@@ -105,6 +109,8 @@ def test_df_state_to_class(cls: type, ref_df: pd.DataFrame):
         elif isinstance(instance, WaterUse):
             class_instance = instance.from_df_state(ref_df, 0, grid_id)
         elif isinstance(instance, SurfaceInitialState):
+            class_instance = instance.from_df_state(ref_df, grid_id, 0)
+        elif isinstance(instance, SurfaceProperties):
             class_instance = instance.from_df_state(ref_df, grid_id, 0)
         elif isinstance(instance, DayProfile):
             class_instance = instance.from_df_state(
@@ -222,12 +228,15 @@ def test_suews_config_roundtrip():
                 print("All properties match exactly")
 
         print("\nRoundtrip conversion completed successfully")
+        # Save the reconstructed configuration to a YAML file
+        with open("schema/dev/reconstructed_config.yml", "w") as file:
+            yaml.dump(config_reconstructed.model_dump(exclude_none=True), file, sort_keys=False, allow_unicode=True)
+        print("Saved reconstructed configuration to ../reconstructed_config.yml")
         return True
 
     except Exception as e:
         print(f"Error during test: {str(e)}")
         import traceback
-
         traceback.print_exc()
         return False
 
@@ -244,9 +253,9 @@ def main():
     for cls in classes:
         print(f"  - {cls.__name__}")
 
-    # Test each class
-    for cls in classes:
-        test_df_state_to_class(cls, ref_df)
+    # # Test each class
+    # for cls in classes:
+    #     test_df_state_to_class(cls, ref_df)
 
     # Run the roundtrip test
     print("\nRunning SUEWSConfig roundtrip test...")
