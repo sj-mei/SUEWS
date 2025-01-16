@@ -23,6 +23,7 @@ from ._supy_module import (
     save_supy,
     check_forcing,
     check_state,
+    load_config_from_df,
 )
 
 
