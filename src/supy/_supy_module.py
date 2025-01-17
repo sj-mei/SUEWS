@@ -331,7 +331,7 @@ def init_config(df_state: pd.DataFrame=None):
     Initialise SUEWS configuration object either from existing df_state dataframe or as the default configuration.
     """
 
-    if df_state is not None:
+    if df_state is None:
         from .util._config import SUEWSConfig
         return SUEWSConfig()
     
