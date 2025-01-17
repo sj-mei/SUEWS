@@ -1692,6 +1692,13 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
             df_base = df_base.sort_index(axis=1)
 
         return df_base
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "NonVegetatedSurfaceProperties":
+        """Reconstruct non-vegetated surface properties from DataFrame state format."""
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        instance.alb = ValueWithDOI(df.loc[grid_id, ("alb", f"({surf_idx},)")])
+        return instance
 
 
 class PavedProperties(NonVegetatedSurfaceProperties):  # May need to move VWD for waterdist to here for referencing
