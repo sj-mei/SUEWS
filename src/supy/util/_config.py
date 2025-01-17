@@ -2137,6 +2137,7 @@ class WaterProperties(NonVegetatedSurfaceProperties):
         """Reconstruct water properties from DataFrame state format."""
         surf_idx = 6
         instance = super().from_df_state(df, grid_id, surf_idx)
+        instance.flowchange = ValueWithDOI(df.loc[grid_id, ("flowchange", f"0")])
         return instance
 
 
