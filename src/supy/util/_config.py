@@ -2075,6 +2075,8 @@ class BldgsProperties(NonVegetatedSurfaceProperties): # May need to move VWD for
         """Reconstruct building properties from DataFrame state format."""
         surf_idx = 1
         instance = super().from_df_state(df, grid_id, surf_idx)
+        instance.bldgh = ValueWithDOI(df.loc[grid_id, ("bldgh", "0")])
+        instance.faibldg = ValueWithDOI(df.loc[grid_id, ("faibldg", "0")])
         return instance
 
 
@@ -2151,6 +2153,15 @@ class ModelControl(BaseModel):
     )
 
     ref: Optional[Reference] = None
+
+    @field_validator("tstep", "diagnose")
+    def validate_int_float(cls, v):
+        if isinstance(v, (np.float64, np.float32)):
+            return float(v)
+        elif isinstance(v, (np.int64, np.int32)):
+            return int(v)
+        return v
+
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model control properties to DataFrame state format."""
