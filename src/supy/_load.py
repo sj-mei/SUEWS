@@ -1333,7 +1333,19 @@ def load_SUEWS_dict_ModConfig(path_runcontrol, dict_default=dict_RunControl_defa
         / "SUEWS_SPARTACUS.nml"
     )
 
+    dict_RunControl_x = {k[0]: v for k, v in load_SUEWS_nml(path_spartacus).items()}
+    dict_RunControl.update(dict_RunControl_x)
+
     # load STEBBS-specific variables:
+    if dict_RunControl["stebbsmethod"] == 1:
+        import pdb; pdb.set_trace()
+    else:
+        from ._env import trv_supy_module
+
+        trv_SampleData = trv_supy_module / "sample_run"
+        path_stebbs_general = trv_SampleData / "Input/test_stebbs_general_params.nml"
+        path_stebbs_typologies = trv_SampleData / "Input/test_stebbs_building_typologies.nml"
+
     path_stebbs_typologies = (
         path_runcontrol.parent
         / dict_RunControl["fileinputpath"]
@@ -1344,9 +1356,6 @@ def load_SUEWS_dict_ModConfig(path_runcontrol, dict_default=dict_RunControl_defa
         / dict_RunControl["fileinputpath"]
         / "test_stebbs_general_params.nml"
     )
-
-    dict_RunControl_x = {k[0]: v for k, v in load_SUEWS_nml(path_spartacus).items()}
-    dict_RunControl.update(dict_RunControl_x)
 
     dict_RunControl_y = {k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()}
     dict_RunControl.update(dict_RunControl_y)
