@@ -922,69 +922,69 @@ CONTAINS
    END SUBROUTINE stebbs_cal_main
 END MODULE stebbs_module
 
-SUBROUTINE readsuewsout()
-   USE modulesuewsstebbscouple
-   IMPLICIT NONE
-   INTEGER :: i, reason, icrop
-   stebbs_output%timestep = 3600 ! 1hr, hard-coded for the test
-   OPEN (8, file='./SUEWS_output_res.csv', form='formatted')
+! SUBROUTINE readsuewsout()
+!    USE modulesuewsstebbscouple
+!    IMPLICIT NONE
+!    INTEGER :: i, reason, icrop
+!    stebbs_output%timestep = 3600 ! 1hr, hard-coded for the test
+!    OPEN (8, file='./SUEWS_output_res.csv', form='formatted')
 
-   i = 0
-   DO WHILE (.TRUE.)
-      READ (8, *, iostat=reason)
-      IF (reason < 0) go to 333
-      i = i + 1
-   END DO
-333 CONTINUE
-   stebbs_output%ntstep = i - 1
-   ALLOCATE (stebbs_output%datetime(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%hourmin(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Tair(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Tsurf(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Kwall(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Kroof(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%ws(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Lroof(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Lwall(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%datetime_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%hourmin_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Tair_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Tsurf_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Kwall_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Kroof_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%ws_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Lroof_exch(stebbs_output%ntstep))
-   ALLOCATE (stebbs_output%Lwall_exch(stebbs_output%ntstep))
-   REWIND (8)
-   READ (8, *)
-   DO i = 1, stebbs_output%ntstep, 1
-      READ (8, *) stebbs_output%datetime(i), stebbs_output%hourmin(i), stebbs_output%Tair(i), stebbs_output%Tsurf(i), &
-         stebbs_output%Kwall(i), stebbs_output%Kroof(i), stebbs_output%ws(i), stebbs_output%Lroof(i), stebbs_output%Lwall(i)
-   END DO
-   WRITE (*, *) '    + SUEWS output profile'
-   WRITE (*, *) '    + Date            : ', TRIM(stebbs_output%datetime(1)), ' ', TRIM(stebbs_output%hourmin(1)), ' - ', &
-      TRIM(stebbs_output%datetime(stebbs_output%ntstep)), ' ', TRIM(stebbs_output%hourmin(stebbs_output%ntstep))
-   WRITE (*, *) '    + Total data step : ', stebbs_output%ntstep
-   CLOSE (8)
-   stebbs_output%ntskip = 12
-   OPEN (8, file='./SUEWS_output.csv', form='formatted')
-   READ (8, *)
+!    i = 0
+!    DO WHILE (.TRUE.)
+!       READ (8, *, iostat=reason)
+!       IF (reason < 0) go to 333
+!       i = i + 1
+!    END DO
+! 333 CONTINUE
+!    stebbs_output%ntstep = i - 1
+!    ALLOCATE (stebbs_output%datetime(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%hourmin(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Tair(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Tsurf(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Kwall(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Kroof(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%ws(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Lroof(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Lwall(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%datetime_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%hourmin_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Tair_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Tsurf_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Kwall_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Kroof_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%ws_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Lroof_exch(stebbs_output%ntstep))
+!    ALLOCATE (stebbs_output%Lwall_exch(stebbs_output%ntstep))
+!    REWIND (8)
+!    READ (8, *)
+!    DO i = 1, stebbs_output%ntstep, 1
+!       READ (8, *) stebbs_output%datetime(i), stebbs_output%hourmin(i), stebbs_output%Tair(i), stebbs_output%Tsurf(i), &
+!          stebbs_output%Kwall(i), stebbs_output%Kroof(i), stebbs_output%ws(i), stebbs_output%Lroof(i), stebbs_output%Lwall(i)
+!    END DO
+!    WRITE (*, *) '    + SUEWS output profile'
+!    WRITE (*, *) '    + Date            : ', TRIM(stebbs_output%datetime(1)), ' ', TRIM(stebbs_output%hourmin(1)), ' - ', &
+!       TRIM(stebbs_output%datetime(stebbs_output%ntstep)), ' ', TRIM(stebbs_output%hourmin(stebbs_output%ntstep))
+!    WRITE (*, *) '    + Total data step : ', stebbs_output%ntstep
+!    CLOSE (8)
+!    stebbs_output%ntskip = 12
+!    OPEN (8, file='./SUEWS_output.csv', form='formatted')
+!    READ (8, *)
 
-   DO i = 1, stebbs_output%ntstep*stebbs_output%ntskip, 1
-      IF (MOD(i - 1, stebbs_output%ntskip) == 0) THEN
-         icrop = INT((i - 1)/stebbs_output%ntskip) + 1
-         READ (8, *) stebbs_output%datetime_exch(icrop), stebbs_output%hourmin_exch(icrop), &
-            stebbs_output%Tair_exch(icrop), stebbs_output%Tsurf_exch(icrop), &
-            stebbs_output%Kwall_exch(icrop), stebbs_output%Kroof_exch(icrop), &
-            stebbs_output%ws_exch(icrop), stebbs_output%Lroof_exch(icrop), &
-            stebbs_output%Lwall_exch(icrop)
-      ELSE
-         READ (8, *)
-      END IF
-   END DO
-   CLOSE (8)
-   RETURN
-END SUBROUTINE readsuewsout
+!    DO i = 1, stebbs_output%ntstep*stebbs_output%ntskip, 1
+!       IF (MOD(i - 1, stebbs_output%ntskip) == 0) THEN
+!          icrop = INT((i - 1)/stebbs_output%ntskip) + 1
+!          READ (8, *) stebbs_output%datetime_exch(icrop), stebbs_output%hourmin_exch(icrop), &
+!             stebbs_output%Tair_exch(icrop), stebbs_output%Tsurf_exch(icrop), &
+!             stebbs_output%Kwall_exch(icrop), stebbs_output%Kroof_exch(icrop), &
+!             stebbs_output%ws_exch(icrop), stebbs_output%Lroof_exch(icrop), &
+!             stebbs_output%Lwall_exch(icrop)
+!       ELSE
+!          READ (8, *)
+!       END IF
+!    END DO
+!    CLOSE (8)
+!    RETURN
+! END SUBROUTINE readsuewsout
 
 SUBROUTINE stebbs_cal(self, flginit, datetimeLine, &
                              qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
