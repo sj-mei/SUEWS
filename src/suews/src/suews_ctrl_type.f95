@@ -818,7 +818,7 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE ROUGHNESS_STATE
 
-   TYPE, PUBLIC :: STEBBS_STATE
+   TYPE, PUBLIC :: STEBBS_PRM
       ! Collect general parameters for STEBBS
       REAL(KIND(1D0)) :: WallInternalConvectionCoefficient ! Internal convection coefficient of walls and roof [W m-2 K-1]
       REAL(KIND(1D0)) :: InternalMassConvectionCoefficient ! Convection coefficient of internal mass [W m-2 K-1]
@@ -885,7 +885,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: HotWaterHeatingEfficiency ! Efficiency of hot water system [-]
       REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse ! Minimum volume of hot water in use [m3]
 
-   END TYPE STEBBS_STATE
+   END TYPE STEBBS_PRM
 
 
 
@@ -901,7 +901,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(HYDRO_STATE) :: hydroState
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
-      TYPE(STEBBS_STATE) :: stebbsState
+      TYPE(STEBBS_PRM) :: stebbsState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c

@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
-                            SUEWS_STATE, SUEWS_DEBUG, STEBBS_STATE, BLDG_ARCHTYPE_PRM, &
+                            SUEWS_STATE, SUEWS_DEBUG, STEBBS_PRM, BLDG_ARCHTYPE_PRM, &
                             output_line, output_block
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
@@ -4519,7 +4519,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) :: StoreDrainPrm !coefficients used in drainage calculation [-]
 
       ! ---stebbs related states
-      TYPE(STEBBS_STATE) :: stebbsState
+      TYPE(STEBBS_PRM) :: stebbsState
       REAL(KIND(1D0)) :: WallInternalConvectionCoefficient
       REAL(KIND(1D0)) :: InternalMassConvectionCoefficient
       REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient

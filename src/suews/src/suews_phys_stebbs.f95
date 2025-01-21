@@ -624,7 +624,7 @@ CONTAINS
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
                                SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
-                               HEAT_STATE, SUEWS_STATE, STEBBS_STATE, BLDG_ARCHTYPE_PRM
+                               HEAT_STATE, SUEWS_STATE, STEBBS_PRM, BLDG_ARCHTYPE_PRM
       IMPLICIT NONE
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
@@ -1793,11 +1793,11 @@ END SUBROUTINE tstep
 SUBROUTINE gen_building(stebbsState, bldgarchtypePrm, self)
 
    USE modulestebbs, ONLY: LBM
-   USE SUEWS_DEF_DTS, ONLY: BLDG_ARCHTYPE_PRM, STEBBS_STATE
+   USE SUEWS_DEF_DTS, ONLY: BLDG_ARCHTYPE_PRM, STEBBS_PRM
    IMPLICIT NONE
    TYPE(LBM) :: self
 
-   TYPE(STEBBS_STATE), INTENT(IN) :: stebbsState
+   TYPE(STEBBS_PRM), INTENT(IN) :: stebbsState
    TYPE(BLDG_ARCHTYPE_PRM), INTENT(IN) :: bldgarchtypePrm
 
    ! self%idLBM = bldgState%BuildingName
