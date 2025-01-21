@@ -898,13 +898,13 @@ CONTAINS
             ! nbtype = SIZE(blds)
             ! DO i = 1, nbtype, 1
             CALL stebbs_cal(bldg(1), flginit, datetimeLine, &
-                                   qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
-                                   Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                                   Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-                                   Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
-                                   QStar, QEC, QH, QS, QBAE, QWaste, &
-                                   Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
-                                   )
+                            qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                            Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                            Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                            Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                            QStar, QEC, QH, QS, QBAE, QWaste, &
+                            Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
+                            )
             ! END DO
             flginit = 1
 
@@ -988,13 +988,13 @@ END MODULE stebbs_module
 ! END SUBROUTINE readsuewsout
 
 SUBROUTINE stebbs_cal(self, flginit, datetimeLine, &
-                             qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
-                             Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                             Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-                             Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
-                             QStar, QEC, QH, QS, QBAE, QWaste, &
-                             Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
-                             ) ! Output
+                      qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
+                      Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+                      Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
+                      Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
+                      QStar, QEC, QH, QS, QBAE, QWaste, &
+                      Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
+                      ) ! Output
 
    USE modulestebbsprecision, ONLY: rprc
    USE modulestebbs, ONLY: LBM, resolution

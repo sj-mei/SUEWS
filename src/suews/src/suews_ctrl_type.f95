@@ -891,8 +891,6 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE STEBBS_PRM
 
-
-
    ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE
       TYPE(flag_STATE) :: flagState

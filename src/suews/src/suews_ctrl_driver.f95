@@ -5428,8 +5428,6 @@ CONTAINS
       stebbsPrm%HotWaterHeatingEfficiency = HotWaterHeatingEfficiency
       stebbsPrm%MinimumVolumeOfDHWinUse = MinimumVolumeOfDHWinUse
 
-
-
       stebbsState%MainsWaterTemperature = MainsWaterTemperature
       stebbsState%IndoorAirStartTemperature = IndoorAirStartTemperature
       stebbsState%IndoorMassStartTemperature = IndoorMassStartTemperature
