@@ -807,18 +807,18 @@ CONTAINS
                IF (SnowUse == 0) THEN
                   !No snow calculations!
                   AddWater(i_receiver) = AddWater(i_receiver) &
-                  + (Drain(i_contributor)*sfr_surf(i_contributor)&
-                  /sfr_surf(i_receiver))*WaterDist(i_receiver, i_contributor) !Original
+                                         + (Drain(i_contributor)*sfr_surf(i_contributor) &
+                                            /sfr_surf(i_receiver))*WaterDist(i_receiver, i_contributor) !Original
 
                ELSE
                   !Snow included, This needs to be fixed at some point. LJ Mar 2013
                   AddWaterRunoff(i_contributor) = AddWaterRunoff(i_contributor) &
-                  + WaterDist(i_receiver, i_contributor) !No receiving surface -> runoff
+                                                  + WaterDist(i_receiver, i_contributor) !No receiving surface -> runoff
                END IF
 
             ELSE
                AddWaterRunoff(i_contributor) = AddWaterRunoff(i_contributor) &
-               + WaterDist(i_receiver, i_contributor) !If no receiving surface exists,
+                                               + WaterDist(i_receiver, i_contributor) !If no receiving surface exists,
                !water fraction goes to AddWaterRunoff
             END IF
          END DO
