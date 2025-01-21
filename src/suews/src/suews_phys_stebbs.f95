@@ -896,7 +896,7 @@ CONTAINS
             CALL setdatetime(datetimeLine)
             ! nbtype = SIZE(blds)
             ! DO i = 1, nbtype, 1
-            CALL suewsstebbscouple(bldg(1), flginit, datetimeLine, &
+            CALL stebbs_cal(bldg(1), flginit, datetimeLine, &
                                    qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                                    Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
                                    Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
@@ -986,7 +986,7 @@ SUBROUTINE readsuewsout()
    RETURN
 END SUBROUTINE readsuewsout
 
-SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
+SUBROUTINE stebbs_cal(self, flginit, datetimeLine, &
                              qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                              Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
                              Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
@@ -1113,7 +1113,7 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
    self%QWaste = QWaste
    self%flginit = 1
    RETURN
-END SUBROUTINE suewsstebbscouple
+END SUBROUTINE stebbs_cal
 
 SUBROUTINE timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
                                density_air_out, cp_air_out, &
