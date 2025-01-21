@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
                             HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
-                            SUEWS_STATE, SUEWS_DEBUG, STEBBS_STATE, BUILDING_STATE, &
+                            SUEWS_STATE, SUEWS_DEBUG, STEBBS_STATE, BLDG_ARCHTYPE_PRM, &
                             output_line, output_block
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
@@ -4586,7 +4586,7 @@ CONTAINS
       REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse
 
       ! ---stebbs building related states
-      TYPE(BUILDING_STATE) :: bldgState
+      TYPE(BLDG_ARCHTYPE_PRM) :: bldgarchtypePrm
       REAL(KIND(1D0)) :: BuildingCount
       REAL(KIND(1D0)) :: Occupants
       ! REAL(KIND(1D0)) :: hhs0
@@ -5445,50 +5445,50 @@ CONTAINS
       ! bldgState%BuildingClass
       ! bldgState%BuildingType
       ! bldgState%BuildingName
-      bldgState%BuildingCount = BuildingCount
-      bldgState%Occupants = Occupants
+      bldgarchtypePrm%BuildingCount = BuildingCount
+      bldgarchtypePrm%Occupants = Occupants
       ! bldgState%hhs0 = hhs0
       ! bldgState%age_0_4 = age_0_4
       ! bldgState%age_5_11 = age_5_11
       ! bldgState%age_12_18 = age_12_18
       ! bldgState%age_19_64 = age_19_64
       ! bldgState%age_65plus = age_65plus
-      bldgState%stebbs_Height = stebbs_Height
-      bldgState%FootprintArea = FootprintArea
-      bldgState%WallExternalArea = WallExternalArea
-      bldgState%RatioInternalVolume = RatioInternalVolume
-      bldgState%WWR = WWR
-      bldgState%WallThickness = WallThickness
-      bldgState%WallEffectiveConductivity = WallEffectiveConductivity
-      bldgState%WallDensity = WallDensity
-      bldgState%WallCp = WallCp
-      bldgState%Wallx1 = Wallx1
-      bldgState%WallExternalEmissivity = WallExternalEmissivity
-      bldgState%WallInternalEmissivity = WallInternalEmissivity
-      bldgState%WallTransmissivity = WallTransmissivity
-      bldgState%WallAbsorbtivity = WallAbsorbtivity
-      bldgState%WallReflectivity = WallReflectivity
-      bldgState%FloorThickness = FloorThickness
-      bldgState%GroundFloorEffectiveConductivity = GroundFloorEffectiveConductivity
-      bldgState%GroundFloorDensity = GroundFloorDensity
-      bldgState%GroundFloorCp = GroundFloorCp
-      bldgState%WindowThickness = WindowThickness
-      bldgState%WindowEffectiveConductivity = WindowEffectiveConductivity
-      bldgState%WindowDensity = WindowDensity
-      bldgState%WindowCp = WindowCp
-      bldgState%WindowExternalEmissivity = WindowExternalEmissivity
-      bldgState%WindowInternalEmissivity = WindowInternalEmissivity
-      bldgState%WindowTransmissivity = WindowTransmissivity
-      bldgState%WindowAbsorbtivity = WindowAbsorbtivity
-      bldgState%WindowReflectivity = WindowReflectivity
-      bldgState%InternalMassDensity = InternalMassDensity
-      bldgState%InternalMassCp = InternalMassCp
-      bldgState%InternalMassEmissivity = InternalMassEmissivity
-      bldgState%MaxHeatingPower = MaxHeatingPower
-      bldgState%WaterTankWaterVolume = WaterTankWaterVolume
-      bldgState%MaximumHotWaterHeatingPower = MaximumHotWaterHeatingPower
-      bldgState%HeatingSetpointTemperature = HeatingSetpointTemperature
-      bldgState%CoolingSetpointTemperature = CoolingSetpointTemperature
+      bldgarchtypePrm%stebbs_Height = stebbs_Height
+      bldgarchtypePrm%FootprintArea = FootprintArea
+      bldgarchtypePrm%WallExternalArea = WallExternalArea
+      bldgarchtypePrm%RatioInternalVolume = RatioInternalVolume
+      bldgarchtypePrm%WWR = WWR
+      bldgarchtypePrm%WallThickness = WallThickness
+      bldgarchtypePrm%WallEffectiveConductivity = WallEffectiveConductivity
+      bldgarchtypePrm%WallDensity = WallDensity
+      bldgarchtypePrm%WallCp = WallCp
+      bldgarchtypePrm%Wallx1 = Wallx1
+      bldgarchtypePrm%WallExternalEmissivity = WallExternalEmissivity
+      bldgarchtypePrm%WallInternalEmissivity = WallInternalEmissivity
+      bldgarchtypePrm%WallTransmissivity = WallTransmissivity
+      bldgarchtypePrm%WallAbsorbtivity = WallAbsorbtivity
+      bldgarchtypePrm%WallReflectivity = WallReflectivity
+      bldgarchtypePrm%FloorThickness = FloorThickness
+      bldgarchtypePrm%GroundFloorEffectiveConductivity = GroundFloorEffectiveConductivity
+      bldgarchtypePrm%GroundFloorDensity = GroundFloorDensity
+      bldgarchtypePrm%GroundFloorCp = GroundFloorCp
+      bldgarchtypePrm%WindowThickness = WindowThickness
+      bldgarchtypePrm%WindowEffectiveConductivity = WindowEffectiveConductivity
+      bldgarchtypePrm%WindowDensity = WindowDensity
+      bldgarchtypePrm%WindowCp = WindowCp
+      bldgarchtypePrm%WindowExternalEmissivity = WindowExternalEmissivity
+      bldgarchtypePrm%WindowInternalEmissivity = WindowInternalEmissivity
+      bldgarchtypePrm%WindowTransmissivity = WindowTransmissivity
+      bldgarchtypePrm%WindowAbsorbtivity = WindowAbsorbtivity
+      bldgarchtypePrm%WindowReflectivity = WindowReflectivity
+      bldgarchtypePrm%InternalMassDensity = InternalMassDensity
+      bldgarchtypePrm%InternalMassCp = InternalMassCp
+      bldgarchtypePrm%InternalMassEmissivity = InternalMassEmissivity
+      bldgarchtypePrm%MaxHeatingPower = MaxHeatingPower
+      bldgarchtypePrm%WaterTankWaterVolume = WaterTankWaterVolume
+      bldgarchtypePrm%MaximumHotWaterHeatingPower = MaximumHotWaterHeatingPower
+      bldgarchtypePrm%HeatingSetpointTemperature = HeatingSetpointTemperature
+      bldgarchtypePrm%CoolingSetpointTemperature = CoolingSetpointTemperature
 
       ! ! transfer states into modState
       mod_State%anthroemisState = anthroEmisState
@@ -5498,7 +5498,7 @@ CONTAINS
       mod_State%snowState = snowState
       mod_State%phenState = phenState
       mod_State%stebbsState = stebbsState
-      mod_State%bldgState = bldgState
+
 
       ! ############# evaluation for DTS variables (end) #############
       CALL siteInfo%ALLOCATE(nlayer)
@@ -5517,6 +5517,7 @@ CONTAINS
       siteInfo%lc_grass = grassPrm
       siteInfo%lc_bsoil = bsoilPrm
       siteInfo%lc_water = waterPrm
+      siteInfo%bldg_archtype = bldgarchtypePrm
       CALL siteInfo%cal_surf(config)
 
       !   allocate output arrays
