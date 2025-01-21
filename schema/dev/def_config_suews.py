@@ -2214,7 +2214,7 @@ class ModelPhysics(BaseModel):
     snowuse: ValueWithDOI[int] = Field(
         default=ValueWithDOI(0), description="Include snow calculations (1) or not (0)"
     )
-    stebbsmethod: ValueWithDOI[int] = Field(
+    stebbsuse: ValueWithDOI[int] = Field(
         default=ValueWithDOI(0), description="Method used for stebbs calculations"
     )
 
@@ -2268,13 +2268,13 @@ class ModelPhysics(BaseModel):
     # in the code and return them accordingly in the yml file.
 
     @model_validator(mode="after")
-    def check_stebbsmethod(self) -> "ModelPhysics":
+    def check_stebbsuse(self) -> "ModelPhysics":
         options = [0, 1]
-        if not self.stebbsmethod in options:
+        if not self.stebbsuse in options:
             raise ValueError(
-                f"\nStebbsMethod is set to {self.stebbsmethod}.\n"
+                f"\nstebbsuse is set to {self.stebbsuse}.\n"
                 f"This is is not a valid method.\n"
-                f"You should set to StebbsMethod from {options}.\n"
+                f"You should set to stebbsuse from {options}.\n"
             )
         return self
 
@@ -2305,7 +2305,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
-            "stebbsmethod",
+            "stebbsuse",
         ]
         for attr in list_attr:
             set_df_value(attr, getattr(self, attr))
@@ -2340,7 +2340,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
-            "stebbsmethod",
+            "stebbsuse",
         ]
 
         for attr in list_attr:
