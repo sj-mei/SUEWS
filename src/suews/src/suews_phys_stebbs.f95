@@ -6,7 +6,6 @@ END MODULE modulestebbsprecision
 
 MODULE modulestebbs
    USE modulestebbsprecision, ONLY: rprc
-   INTEGER, PARAMETER :: rprc = REAL64
    REAL(rprc), PARAMETER :: sigma = 5.670E-8
    INTEGER, SAVE :: flgtimecheck = 1
    INTEGER :: resolution
@@ -702,7 +701,6 @@ CONTAINS
             IF (flginit == 0) THEN
                WRITE (*, *) 'Initialising STEBBS'
                resolution = 1
-               IF (.NOT. ALLOCATED(bldg)) ALLOCATE (bldg(1))
                CALL gen_building(stebbsState, bldgState, bldg(1))
                ! call create_building(cases(1),blds(1),1)
 
