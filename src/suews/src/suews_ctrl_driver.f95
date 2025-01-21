@@ -60,7 +60,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSTEBBS
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
-   USE beers_module, ONLY: BEERS_cal_main, BEERS_cal_main_DTS
+   USE beers_module, ONLY: BEERS_cal_main_DTS
    USE stebbs_module, ONLY: stebbsonlinecouple
    USE version, ONLY: git_commit, compiler_ver
    USE time_module, ONLY: SUEWS_cal_dectime_DTS, SUEWS_cal_tstep_DTS, SUEWS_cal_weekday_DTS, &
