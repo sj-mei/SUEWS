@@ -469,7 +469,7 @@ CONTAINS
 
             !==============use STEBBS to get localised radiation flux==================
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
-            IF (config%STEBBS_Use == 1) THEN
+            IF (config%STEBBSUse == 1) THEN
                IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
                CALL stebbs_cal_main( &
                   timer, config, forcing, siteInfo, & ! input
@@ -4124,7 +4124,7 @@ CONTAINS
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
-      stebbsmethod, & ! stebbs building input
+      STEBBSUse, & ! stebbs building input
       BuildingCount, Occupants, &
       ! hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus,
       stebbs_Height, &
@@ -4247,7 +4247,7 @@ CONTAINS
       LOGICAL, INTENT(IN) :: use_sw_direct_albedo !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER, INTENT(IN) :: OHMIncQF ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
       ! INTEGER, INTENT(IN) :: nbtype ! number of building types [-] STEBBS
-      INTEGER, INTENT(IN) :: stebbsmethod ! method to calculate building energy use [-] STEBBS
+      INTEGER, INTENT(IN) :: STEBBSUse ! method to calculate building energy use [-] STEBBS
 
       ! ---lumps-related variables
       TYPE(LUMPS_PRM) :: lumpsPrm
@@ -4768,11 +4768,11 @@ CONTAINS
       config%use_sw_direct_albedo = use_sw_direct_albedo
       config%ohmIncQF = OHMIncQF
       config%localClimateMethod = localClimateMethod
+      config%STEBBSUse = STEBBSUse
       ! these options are fixed
       config%DiagQS = 0
       config%EvapMethod = 2
       config%LAImethod = 1
-      config%STEBBS_Use = stebbsmethod
 
       ! testing flag
       config%flag_test = flag_test

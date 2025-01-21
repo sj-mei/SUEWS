@@ -32,7 +32,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: EvapMethod ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER :: LAImethod ! boolean to determine if calculate LAI [-]
       INTEGER :: localClimateMethod ! method to choose local climate variables [-] 0: not use; 1: use local climate variables
-      INTEGER :: STEBBS_Use ! whether to use STEBBS [-]
+      INTEGER :: STEBBSUse ! whether to use STEBBS [-]
       LOGICAL :: flag_test ! FOR DEBUGGING ONLY: boolean to test specific functions [-]
    END TYPE SUEWS_CONFIG
 
