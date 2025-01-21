@@ -818,6 +818,25 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE ROUGHNESS_STATE
 
+   TYPE, PUBLIC :: STEBBS_STATE
+      ! Temperature-related variables extracted from STEBBS_PRM
+      REAL(KIND(1D0)) :: IndoorAirStartTemperature ! Initial indoor air temperature [degC]
+      REAL(KIND(1D0)) :: IndoorMassStartTemperature ! Initial indoor mass temperature [degC]
+      REAL(KIND(1D0)) :: WallIndoorSurfaceTemperature ! Initial wall/roof indoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WallOutdoorSurfaceTemperature ! Initial wall/roof outdoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WindowIndoorSurfaceTemperature ! Initial window indoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WindowOutdoorSurfaceTemperature ! Initial window outdoor surface temperature [degC]
+      REAL(KIND(1D0)) :: GroundFloorIndoorSurfaceTemperature ! Initial ground floor indoor surface temperature [degC]
+      REAL(KIND(1D0)) :: GroundFloorOutdoorSurfaceTemperature ! Initial ground floor indoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WaterTankTemperature ! Initial water temperature in hot water tank [degC]
+      REAL(KIND(1D0)) :: InternalWallWaterTankTemperature ! Initial hot water tank internal wall temperature [degC]
+      REAL(KIND(1D0)) :: ExternalWallWaterTankTemperature ! Initial hot water tank external wall temperature [degC]
+      REAL(KIND(1D0)) :: MainsWaterTemperature ! Temperature of water coming into the water tank [degC]
+      REAL(KIND(1D0)) :: DomesticHotWaterTemperatureInUseInBuilding ! Initial water temperature of water held in use in building [degC]
+      REAL(KIND(1D0)) :: InternalWallDHWVesselTemperature ! Initial hot water vessel internal wall temperature [degC]
+      REAL(KIND(1D0)) :: ExternalWallDHWVesselTemperature ! Initial hot water vessel external wall temperature [degC]
+   END TYPE STEBBS_STATE
+
    TYPE, PUBLIC :: STEBBS_PRM
       ! Collect general parameters for STEBBS
       REAL(KIND(1D0)) :: WallInternalConvectionCoefficient ! Internal convection coefficient of walls and roof [W m-2 K-1]
@@ -842,25 +861,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: MaxCoolingPower ! Maximum power demand of cooling system [W]
       REAL(KIND(1D0)) :: CoolingSystemCOP ! Coefficient of performance of cooling system [-]
       REAL(KIND(1D0)) :: VentilationRate ! Ventilation rate (air changes per hour, ACH) [h-1]
-      REAL(KIND(1D0)) :: IndoorAirStartTemperature ! Initial indoor air temperature [degC]
-      REAL(KIND(1D0)) :: IndoorMassStartTemperature ! Initial indoor mass temperature [degC]
-      REAL(KIND(1D0)) :: WallIndoorSurfaceTemperature ! Initial wall/roof indoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WallOutdoorSurfaceTemperature ! Initial wall/roof outdoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WindowIndoorSurfaceTemperature ! Initial window indoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WindowOutdoorSurfaceTemperature ! Initial window outdoor surface temperature [degC]
-      REAL(KIND(1D0)) :: GroundFloorIndoorSurfaceTemperature ! Initial ground floor indoor surface temperature [degC]
-      REAL(KIND(1D0)) :: GroundFloorOutdoorSurfaceTemperature ! Initial ground floor outdoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WaterTankTemperature ! Initial water temperature in hot water tank [degC]
-      REAL(KIND(1D0)) :: InternalWallWaterTankTemperature ! Initial hot water tank internal wall temperature [degC]
-      REAL(KIND(1D0)) :: ExternalWallWaterTankTemperature ! Initial hot water tank external wall temperature [degC]
       REAL(KIND(1D0)) :: WaterTankWallThickness ! Hot water tank wall thickness [m]
-      REAL(KIND(1D0)) :: MainsWaterTemperature ! Temperature of water coming into the water tank [degC]
       REAL(KIND(1D0)) :: WaterTankSurfaceArea ! Surface area of hot water tank cylinder [m2]
       REAL(KIND(1D0)) :: HotWaterHeatingSetpointTemperature ! Water tank setpoint temperature [degC]
       REAL(KIND(1D0)) :: HotWaterTankWallEmissivity ! Effective external wall emissivity of the hot water tank [-]
-      REAL(KIND(1D0)) :: DomesticHotWaterTemperatureInUseInBuilding ! Initial water temperature of water held in use in building [degC]
-      REAL(KIND(1D0)) :: InternalWallDHWVesselTemperature ! Initial hot water vessel internal wall temperature [degC]
-      REAL(KIND(1D0)) :: ExternalWallDHWVesselTemperature ! Initial hot water vessel external wall temperature [degC]
       REAL(KIND(1D0)) :: DHWVesselWallThickness ! Hot water vessel wall thickness [m]
       REAL(KIND(1D0)) :: DHWWaterVolume ! Volume of water held in use in building [m3]
       REAL(KIND(1D0)) :: DHWSurfaceArea ! Surface area of hot water in vessels in building [m2]
@@ -901,7 +905,8 @@ MODULE SUEWS_DEF_DTS
       TYPE(HYDRO_STATE) :: hydroState
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
-      TYPE(STEBBS_PRM) :: stebbsState
+      TYPE(STEBBS_PRM) :: stebbsParam
+      TYPE(STEBBS_STATE) :: stebbsState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c

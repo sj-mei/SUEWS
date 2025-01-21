@@ -4519,7 +4519,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) :: StoreDrainPrm !coefficients used in drainage calculation [-]
 
       ! ---stebbs related states
-      TYPE(STEBBS_PRM) :: stebbsState
+      TYPE(STEBBS_PRM) :: stebbsPrm
       REAL(KIND(1D0)) :: WallInternalConvectionCoefficient
       REAL(KIND(1D0)) :: InternalMassConvectionCoefficient
       REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient
@@ -5375,70 +5375,70 @@ CONTAINS
       phenState%StoreDrainPrm = StoreDrainPrm
 
       ! assign stebbs values
-      stebbsState%WallInternalConvectionCoefficient = WallInternalConvectionCoefficient
-      stebbsState%InternalMassConvectionCoefficient = InternalMassConvectionCoefficient
-      stebbsState%FloorInternalConvectionCoefficient = FloorInternalConvectionCoefficient
-      stebbsState%WindowInternalConvectionCoefficient = WindowInternalConvectionCoefficient
-      stebbsState%WallExternalConvectionCoefficient = WallExternalConvectionCoefficient
-      stebbsState%WindowExternalConvectionCoefficient = WindowExternalConvectionCoefficient
-      stebbsState%GroundDepth = GroundDepth
-      stebbsState%ExternalGroundConductivity = ExternalGroundConductivity
-      stebbsState%IndoorAirDensity = IndoorAirDensity
-      stebbsState%IndoorAirCp = IndoorAirCp
-      stebbsState%WallBuildingViewFactor = WallBuildingViewFactor
-      stebbsState%WallGroundViewFactor = WallGroundViewFactor
-      stebbsState%WallSkyViewFactor = WallSkyViewFactor
-      stebbsState%MetabolicRate = MetabolicRate
-      stebbsState%LatentSensibleRatio = LatentSensibleRatio
-      stebbsState%ApplianceRating = ApplianceRating
-      stebbsState%TotalNumberofAppliances = TotalNumberofAppliances
-      stebbsState%ApplianceUsageFactor = ApplianceUsageFactor
-      stebbsState%HeatingSystemEfficiency = HeatingSystemEfficiency
-      stebbsState%MaxCoolingPower = MaxCoolingPower
-      stebbsState%CoolingSystemCOP = CoolingSystemCOP
-      stebbsState%VentilationRate = VentilationRate
-      stebbsState%IndoorAirStartTemperature = IndoorAirStartTemperature
-      stebbsState%IndoorMassStartTemperature = IndoorMassStartTemperature
-      stebbsState%WallIndoorSurfaceTemperature = WallIndoorSurfaceTemperature
-      stebbsState%WallOutdoorSurfaceTemperature = WallOutdoorSurfaceTemperature
-      stebbsState%WindowIndoorSurfaceTemperature = WindowIndoorSurfaceTemperature
-      stebbsState%WindowOutdoorSurfaceTemperature = WindowOutdoorSurfaceTemperature
-      stebbsState%GroundFloorIndoorSurfaceTemperature = GroundFloorIndoorSurfaceTemperature
-      stebbsState%GroundFloorOutdoorSurfaceTemperature = GroundFloorOutdoorSurfaceTemperature
-      stebbsState%WaterTankTemperature = WaterTankTemperature
-      stebbsState%InternalWallWaterTankTemperature = InternalWallWaterTankTemperature
-      stebbsState%ExternalWallWaterTankTemperature = ExternalWallWaterTankTemperature
-      stebbsState%WaterTankWallThickness = WaterTankWallThickness
-      stebbsState%MainsWaterTemperature = MainsWaterTemperature
-      stebbsState%WaterTankSurfaceArea = WaterTankSurfaceArea
-      stebbsState%HotWaterHeatingSetpointTemperature = HotWaterHeatingSetpointTemperature
-      stebbsState%HotWaterTankWallEmissivity = HotWaterTankWallEmissivity
-      stebbsState%DomesticHotWaterTemperatureInUseInBuilding = DomesticHotWaterTemperatureInUseInBuilding
-      stebbsState%InternalWallDHWVesselTemperature = InternalWallDHWVesselTemperature
-      stebbsState%ExternalWallDHWVesselTemperature = ExternalWallDHWVesselTemperature
-      stebbsState%DHWVesselWallThickness = DHWVesselWallThickness
-      stebbsState%DHWWaterVolume = DHWWaterVolume
-      stebbsState%DHWSurfaceArea = DHWSurfaceArea
-      stebbsState%DHWVesselEmissivity = DHWVesselEmissivity
-      stebbsState%HotWaterFlowRate = HotWaterFlowRate
-      stebbsState%DHWDrainFlowRate = DHWDrainFlowRate
-      stebbsState%DHWSpecificHeatCapacity = DHWSpecificHeatCapacity
-      stebbsState%HotWaterTankSpecificHeatCapacity = HotWaterTankSpecificHeatCapacity
-      stebbsState%DHWVesselSpecificHeatCapacity = DHWVesselSpecificHeatCapacity
-      stebbsState%DHWDensity = DHWDensity
-      stebbsState%HotWaterTankWallDensity = HotWaterTankWallDensity
-      stebbsState%DHWVesselDensity = DHWVesselDensity
-      stebbsState%HotWaterTankBuildingWallViewFactor = HotWaterTankBuildingWallViewFactor
-      stebbsState%HotWaterTankInternalMassViewFactor = HotWaterTankInternalMassViewFactor
-      stebbsState%HotWaterTankWallConductivity = HotWaterTankWallConductivity
-      stebbsState%HotWaterTankInternalWallConvectionCoefficient = HotWaterTankInternalWallConvectionCoefficient
-      stebbsState%HotWaterTankExternalWallConvectionCoefficient = HotWaterTankExternalWallConvectionCoefficient
-      stebbsState%DHWVesselWallConductivity = DHWVesselWallConductivity
-      stebbsState%DHWVesselInternalWallConvectionCoefficient = DHWVesselInternalWallConvectionCoefficient
-      stebbsState%DHWVesselExternalWallConvectionCoefficient = DHWVesselExternalWallConvectionCoefficient
-      stebbsState%DHWVesselWallEmissivity = DHWVesselWallEmissivity
-      stebbsState%HotWaterHeatingEfficiency = HotWaterHeatingEfficiency
-      stebbsState%MinimumVolumeOfDHWinUse = MinimumVolumeOfDHWinUse
+      stebbsPrm%WallInternalConvectionCoefficient = WallInternalConvectionCoefficient
+      stebbsPrm%InternalMassConvectionCoefficient = InternalMassConvectionCoefficient
+      stebbsPrm%FloorInternalConvectionCoefficient = FloorInternalConvectionCoefficient
+      stebbsPrm%WindowInternalConvectionCoefficient = WindowInternalConvectionCoefficient
+      stebbsPrm%WallExternalConvectionCoefficient = WallExternalConvectionCoefficient
+      stebbsPrm%WindowExternalConvectionCoefficient = WindowExternalConvectionCoefficient
+      stebbsPrm%GroundDepth = GroundDepth
+      stebbsPrm%ExternalGroundConductivity = ExternalGroundConductivity
+      stebbsPrm%IndoorAirDensity = IndoorAirDensity
+      stebbsPrm%IndoorAirCp = IndoorAirCp
+      stebbsPrm%WallBuildingViewFactor = WallBuildingViewFactor
+      stebbsPrm%WallGroundViewFactor = WallGroundViewFactor
+      stebbsPrm%WallSkyViewFactor = WallSkyViewFactor
+      stebbsPrm%MetabolicRate = MetabolicRate
+      stebbsPrm%LatentSensibleRatio = LatentSensibleRatio
+      stebbsPrm%ApplianceRating = ApplianceRating
+      stebbsPrm%TotalNumberofAppliances = TotalNumberofAppliances
+      stebbsPrm%ApplianceUsageFactor = ApplianceUsageFactor
+      stebbsPrm%HeatingSystemEfficiency = HeatingSystemEfficiency
+      stebbsPrm%MaxCoolingPower = MaxCoolingPower
+      stebbsPrm%CoolingSystemCOP = CoolingSystemCOP
+      stebbsPrm%VentilationRate = VentilationRate
+      stebbsPrm%IndoorAirStartTemperature = IndoorAirStartTemperature
+      stebbsPrm%IndoorMassStartTemperature = IndoorMassStartTemperature
+      stebbsPrm%WallIndoorSurfaceTemperature = WallIndoorSurfaceTemperature
+      stebbsPrm%WallOutdoorSurfaceTemperature = WallOutdoorSurfaceTemperature
+      stebbsPrm%WindowIndoorSurfaceTemperature = WindowIndoorSurfaceTemperature
+      stebbsPrm%WindowOutdoorSurfaceTemperature = WindowOutdoorSurfaceTemperature
+      stebbsPrm%GroundFloorIndoorSurfaceTemperature = GroundFloorIndoorSurfaceTemperature
+      stebbsPrm%GroundFloorOutdoorSurfaceTemperature = GroundFloorOutdoorSurfaceTemperature
+      stebbsPrm%WaterTankTemperature = WaterTankTemperature
+      stebbsPrm%InternalWallWaterTankTemperature = InternalWallWaterTankTemperature
+      stebbsPrm%ExternalWallWaterTankTemperature = ExternalWallWaterTankTemperature
+      stebbsPrm%WaterTankWallThickness = WaterTankWallThickness
+      stebbsPrm%MainsWaterTemperature = MainsWaterTemperature
+      stebbsPrm%WaterTankSurfaceArea = WaterTankSurfaceArea
+      stebbsPrm%HotWaterHeatingSetpointTemperature = HotWaterHeatingSetpointTemperature
+      stebbsPrm%HotWaterTankWallEmissivity = HotWaterTankWallEmissivity
+      stebbsPrm%DomesticHotWaterTemperatureInUseInBuilding = DomesticHotWaterTemperatureInUseInBuilding
+      stebbsPrm%InternalWallDHWVesselTemperature = InternalWallDHWVesselTemperature
+      stebbsPrm%ExternalWallDHWVesselTemperature = ExternalWallDHWVesselTemperature
+      stebbsPrm%DHWVesselWallThickness = DHWVesselWallThickness
+      stebbsPrm%DHWWaterVolume = DHWWaterVolume
+      stebbsPrm%DHWSurfaceArea = DHWSurfaceArea
+      stebbsPrm%DHWVesselEmissivity = DHWVesselEmissivity
+      stebbsPrm%HotWaterFlowRate = HotWaterFlowRate
+      stebbsPrm%DHWDrainFlowRate = DHWDrainFlowRate
+      stebbsPrm%DHWSpecificHeatCapacity = DHWSpecificHeatCapacity
+      stebbsPrm%HotWaterTankSpecificHeatCapacity = HotWaterTankSpecificHeatCapacity
+      stebbsPrm%DHWVesselSpecificHeatCapacity = DHWVesselSpecificHeatCapacity
+      stebbsPrm%DHWDensity = DHWDensity
+      stebbsPrm%HotWaterTankWallDensity = HotWaterTankWallDensity
+      stebbsPrm%DHWVesselDensity = DHWVesselDensity
+      stebbsPrm%HotWaterTankBuildingWallViewFactor = HotWaterTankBuildingWallViewFactor
+      stebbsPrm%HotWaterTankInternalMassViewFactor = HotWaterTankInternalMassViewFactor
+      stebbsPrm%HotWaterTankWallConductivity = HotWaterTankWallConductivity
+      stebbsPrm%HotWaterTankInternalWallConvectionCoefficient = HotWaterTankInternalWallConvectionCoefficient
+      stebbsPrm%HotWaterTankExternalWallConvectionCoefficient = HotWaterTankExternalWallConvectionCoefficient
+      stebbsPrm%DHWVesselWallConductivity = DHWVesselWallConductivity
+      stebbsPrm%DHWVesselInternalWallConvectionCoefficient = DHWVesselInternalWallConvectionCoefficient
+      stebbsPrm%DHWVesselExternalWallConvectionCoefficient = DHWVesselExternalWallConvectionCoefficient
+      stebbsPrm%DHWVesselWallEmissivity = DHWVesselWallEmissivity
+      stebbsPrm%HotWaterHeatingEfficiency = HotWaterHeatingEfficiency
+      stebbsPrm%MinimumVolumeOfDHWinUse = MinimumVolumeOfDHWinUse
 
       ! assign stebbs building parameters
       ! bldgState%BuildingCode
@@ -5497,7 +5497,7 @@ CONTAINS
       mod_State%ohmState = ohmState
       mod_State%snowState = snowState
       mod_State%phenState = phenState
-      mod_State%stebbsState = stebbsState
+      mod_State%stebbsState = stebbsPrm
 
 
       ! ############# evaluation for DTS variables (end) #############
