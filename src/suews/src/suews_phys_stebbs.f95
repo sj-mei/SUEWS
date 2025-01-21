@@ -162,18 +162,18 @@ MODULE modulestebbs
       REAL(rprc) :: minVwater_vessel
       REAL(rprc) :: minHeatingPower_DHW
       REAL(rprc) :: HeatingPower_DHW
-      REAL(rprc) :: qfm_dom    ! Metabolic sensible and latent heat
-      REAL(rprc) :: qheat_dom  ! Hourly heating load  [W]
-      REAL(rprc) :: qcool_dom  ! Hourly cooling load  [W]
+      REAL(rprc) :: qfm_dom ! Metabolic sensible and latent heat
+      REAL(rprc) :: qheat_dom ! Hourly heating load  [W]
+      REAL(rprc) :: qcool_dom ! Hourly cooling load  [W]
       REAL(rprc) :: qfb_hw_dom ! Hot water
-      REAL(rprc) :: qfb_dom_air! Sensible heat to air [W]
-      REAL(rprc) :: dom_temp   ! Domain temperature   [W]
-      REAL(rprc) :: QStar      ! Net radiation        [W m-2]
-      REAL(rprc) :: QEC        ! Energy use           [W m-2]
-      REAL(rprc) :: QH         ! Sensible heat flux   [W m-2]
-      REAL(rprc) :: QS         ! Storage heat flux    [W m-2]
-      REAL(rprc) :: QBAE       ! Building exchange    [W m-2]
-      REAL(rprc) :: QWaste     ! Waste heating        [W m-2]
+      REAL(rprc) :: qfb_dom_air ! Sensible heat to air [W]
+      REAL(rprc) :: dom_temp ! Domain temperature   [W]
+      REAL(rprc) :: QStar ! Net radiation        [W m-2]
+      REAL(rprc) :: QEC ! Energy use           [W m-2]
+      REAL(rprc) :: QH ! Sensible heat flux   [W m-2]
+      REAL(rprc) :: QS ! Storage heat flux    [W m-2]
+      REAL(rprc) :: QBAE ! Building exchange    [W m-2]
+      REAL(rprc) :: QWaste ! Waste heating        [W m-2]
       REAL(rprc), DIMENSION(2) :: Ts, initTs
       REAL(rprc), DIMENSION(4) :: h_i, k_eff
       REAL(rprc), DIMENSION(2) :: h_o
@@ -194,7 +194,7 @@ MODULE modulestebbs
 END MODULE modulestebbs
 
 MODULE modulestebbsfunc
-   USE modulestebbsprecision , ONLY: rprc
+   USE modulestebbsprecision, ONLY: rprc
    IMPLICIT NONE
 CONTAINS
 
@@ -702,7 +702,7 @@ CONTAINS
             IF (flginit == 0) THEN
                WRITE (*, *) 'Initialising STEBBS'
                resolution = 1
-               if (.not. allocated(bldg)) allocate(bldg(1))
+               IF (.NOT. ALLOCATED(bldg)) ALLOCATE (bldg(1))
                CALL gen_building(stebbsState, bldgState, bldg(1))
                ! call create_building(cases(1),blds(1),1)
 
@@ -1791,7 +1791,6 @@ SUBROUTINE tstep( &
       WRITE (*, *) "Timestep: ", timestep, " not equally divisible by given resolution: ", resolution
    END IF
 END SUBROUTINE tstep
-
 
 SUBROUTINE gen_building(stebbsState, bldgState, self)
 
