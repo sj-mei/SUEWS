@@ -41,7 +41,7 @@ py.install_sources(
             'util/rules.csv',
         ],
         [
-            'sample_run/defaultConfig.yml',
+            'sample_run/sample_config.yml',
             'sample_run/RunControl.nml',
             'sample_run/Input/ESTMinput.nml',
             'sample_run/Input/GridLayoutKc.nml',
