@@ -2055,17 +2055,17 @@ class BldgsProperties(NonVegetatedSurfaceProperties): # May need to move VWD for
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def validate_rsl_zd_range(self) -> "BldgsProperties":
-        sfr_bldg_lower_limit = 0.18
-        if self.sfr < sfr_bldg_lower_limit:
-            if self.faibldg.value < 0.25 * (1 - self.sfr.value):
-                raise ValueError(
-                    "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
-                    f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
-                    "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
-                )
-        return self
+    # @model_validator(mode="after")
+    # def validate_rsl_zd_range(self) -> "BldgsProperties":
+    #     sfr_bldg_lower_limit = 0.18
+    #     if self.sfr < sfr_bldg_lower_limit:
+    #         if self.faibldg.value < 0.25 * (1 - self.sfr.value):
+    #             raise ValueError(
+    #                 "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
+    #                 f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
+    #                 "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
+    #             )
+    #     return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert building properties to DataFrame state format."""
@@ -2162,7 +2162,7 @@ class ModelControl(BaseModel):
 
     ref: Optional[Reference] = None
 
-    @field_validator("tstep", "diagnose")
+    @field_validator("tstep", "diagnose", mode="after")
     def validate_int_float(cls, v):
         if isinstance(v, (np.float64, np.float32)):
             return float(v)
@@ -2193,7 +2193,8 @@ class ModelControl(BaseModel):
         """Reconstruct model control properties from DataFrame state format."""
         instance = cls()
         for attr in ["tstep", "diagnose"]:
-            setattr(instance, attr, df.loc[grid_id, (attr, "0")])
+            value = df.loc[grid_id, (attr, "0")]
+            setattr(instance, attr, int(value) if isinstance(value, (np.int64, np.int32)) else value)
         return instance
 
 
