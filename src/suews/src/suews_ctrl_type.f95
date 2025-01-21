@@ -905,7 +905,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(HYDRO_STATE) :: hydroState
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
-      TYPE(STEBBS_PRM) :: stebbsParam
+      TYPE(STEBBS_PRM) :: stebbsPrm
       TYPE(STEBBS_STATE) :: stebbsState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c

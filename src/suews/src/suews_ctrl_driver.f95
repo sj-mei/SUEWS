@@ -13,7 +13,7 @@ MODULE SUEWS_Driver
                             SUEWS_SITE, LUMPS_PRM, EHC_PRM, LC_PAVED_PRM, LC_BLDG_PRM, LC_DECTR_PRM, LC_EVETR_PRM, &
                             LC_GRASS_PRM, LC_BSOIL_PRM, LC_WATER_PRM, anthroEmis_STATE, &
                             OHM_STATE, PHENOLOGY_STATE, SNOW_STATE, SUEWS_FORCING, SUEWS_TIMER, &
-                            HYDRO_STATE, HEAT_STATE, &
+                            HYDRO_STATE, HEAT_STATE, STEBBS_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
                             SUEWS_STATE, SUEWS_DEBUG, STEBBS_PRM, BLDG_ARCHTYPE_PRM, &
                             output_line, output_block
@@ -4520,6 +4520,7 @@ CONTAINS
 
       ! ---stebbs related states
       TYPE(STEBBS_PRM) :: stebbsPrm
+      TYPE(STEBBS_STATE) :: stebbsState
       REAL(KIND(1D0)) :: WallInternalConvectionCoefficient
       REAL(KIND(1D0)) :: InternalMassConvectionCoefficient
       REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient
@@ -5397,25 +5398,12 @@ CONTAINS
       stebbsPrm%MaxCoolingPower = MaxCoolingPower
       stebbsPrm%CoolingSystemCOP = CoolingSystemCOP
       stebbsPrm%VentilationRate = VentilationRate
-      stebbsPrm%IndoorAirStartTemperature = IndoorAirStartTemperature
-      stebbsPrm%IndoorMassStartTemperature = IndoorMassStartTemperature
-      stebbsPrm%WallIndoorSurfaceTemperature = WallIndoorSurfaceTemperature
-      stebbsPrm%WallOutdoorSurfaceTemperature = WallOutdoorSurfaceTemperature
-      stebbsPrm%WindowIndoorSurfaceTemperature = WindowIndoorSurfaceTemperature
-      stebbsPrm%WindowOutdoorSurfaceTemperature = WindowOutdoorSurfaceTemperature
-      stebbsPrm%GroundFloorIndoorSurfaceTemperature = GroundFloorIndoorSurfaceTemperature
-      stebbsPrm%GroundFloorOutdoorSurfaceTemperature = GroundFloorOutdoorSurfaceTemperature
-      stebbsPrm%WaterTankTemperature = WaterTankTemperature
-      stebbsPrm%InternalWallWaterTankTemperature = InternalWallWaterTankTemperature
-      stebbsPrm%ExternalWallWaterTankTemperature = ExternalWallWaterTankTemperature
+
       stebbsPrm%WaterTankWallThickness = WaterTankWallThickness
-      stebbsPrm%MainsWaterTemperature = MainsWaterTemperature
       stebbsPrm%WaterTankSurfaceArea = WaterTankSurfaceArea
       stebbsPrm%HotWaterHeatingSetpointTemperature = HotWaterHeatingSetpointTemperature
       stebbsPrm%HotWaterTankWallEmissivity = HotWaterTankWallEmissivity
-      stebbsPrm%DomesticHotWaterTemperatureInUseInBuilding = DomesticHotWaterTemperatureInUseInBuilding
-      stebbsPrm%InternalWallDHWVesselTemperature = InternalWallDHWVesselTemperature
-      stebbsPrm%ExternalWallDHWVesselTemperature = ExternalWallDHWVesselTemperature
+
       stebbsPrm%DHWVesselWallThickness = DHWVesselWallThickness
       stebbsPrm%DHWWaterVolume = DHWWaterVolume
       stebbsPrm%DHWSurfaceArea = DHWSurfaceArea
@@ -5439,6 +5427,24 @@ CONTAINS
       stebbsPrm%DHWVesselWallEmissivity = DHWVesselWallEmissivity
       stebbsPrm%HotWaterHeatingEfficiency = HotWaterHeatingEfficiency
       stebbsPrm%MinimumVolumeOfDHWinUse = MinimumVolumeOfDHWinUse
+
+
+
+      stebbsState%MainsWaterTemperature = MainsWaterTemperature
+      stebbsState%IndoorAirStartTemperature = IndoorAirStartTemperature
+      stebbsState%IndoorMassStartTemperature = IndoorMassStartTemperature
+      stebbsState%WallIndoorSurfaceTemperature = WallIndoorSurfaceTemperature
+      stebbsState%WallOutdoorSurfaceTemperature = WallOutdoorSurfaceTemperature
+      stebbsState%WindowIndoorSurfaceTemperature = WindowIndoorSurfaceTemperature
+      stebbsState%WindowOutdoorSurfaceTemperature = WindowOutdoorSurfaceTemperature
+      stebbsState%GroundFloorIndoorSurfaceTemperature = GroundFloorIndoorSurfaceTemperature
+      stebbsState%GroundFloorOutdoorSurfaceTemperature = GroundFloorOutdoorSurfaceTemperature
+      stebbsState%WaterTankTemperature = WaterTankTemperature
+      stebbsState%InternalWallWaterTankTemperature = InternalWallWaterTankTemperature
+      stebbsState%ExternalWallWaterTankTemperature = ExternalWallWaterTankTemperature
+      stebbsState%DomesticHotWaterTemperatureInUseInBuilding = DomesticHotWaterTemperatureInUseInBuilding
+      stebbsState%InternalWallDHWVesselTemperature = InternalWallDHWVesselTemperature
+      stebbsState%ExternalWallDHWVesselTemperature = ExternalWallDHWVesselTemperature
 
       ! assign stebbs building parameters
       ! bldgState%BuildingCode
@@ -5497,8 +5503,8 @@ CONTAINS
       mod_State%ohmState = ohmState
       mod_State%snowState = snowState
       mod_State%phenState = phenState
-      mod_State%stebbsState = stebbsPrm
-
+      mod_State%stebbsState = stebbsState
+      mod_State%stebbsPrm = stebbsPrm
 
       ! ############# evaluation for DTS variables (end) #############
       CALL siteInfo%ALLOCATE(nlayer)
