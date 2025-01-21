@@ -614,7 +614,14 @@ def resample_linear_avg(data_raw_avg, tstep_in, tstep_mod):
 
 # resample input met forcing to tstep required by model
 def resample_forcing_met(
-    data_met_raw, tstep_in, tstep_mod, lat=51, lon=0, alt=100, timezone=0, kdownzen=0
+    data_met_raw,
+    tstep_in,
+    tstep_mod,
+    lat=51,
+    lon=0,
+    alt=100,
+    timezone=0,
+    kdownzen=0,
 ):
     if tstep_in % tstep_mod != 0:
         raise RuntimeError(
@@ -808,7 +815,6 @@ def load_SUEWS_Forcing_met_df_pattern(path_input, file_pattern):
     return df_forcing_met
 
 
-
 def load_SUEWS_Forcing_met_df_yaml(path_forcing):
     from pathlib import Path
     from .util._io import read_suews
@@ -820,7 +826,9 @@ def load_SUEWS_Forcing_met_df_yaml(path_forcing):
         path_forcing = [Path(p).resolve() for p in path_forcing]
         df_forcing_met = pd.concat([read_suews(fn) for fn in path_forcing])
     else:
-        import pdb; pdb.set_trace()
+        import pdb
+
+        pdb.set_trace()
     # `drop_duplicates` in case some duplicates mixed
     df_forcing_met = df_forcing_met.drop_duplicates()
     # drop `isec`: redundant for this dataframe
@@ -1385,7 +1393,9 @@ def load_SUEWS_dict_ModConfig(path_runcontrol, dict_default=dict_RunControl_defa
     dict_RunControl_x = {k[0]: v for k, v in load_SUEWS_nml(path_spartacus).items()}
     dict_RunControl.update(dict_RunControl_x)
 
-    dict_RunControl_y = {k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()}
+    dict_RunControl_y = {
+        k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()
+    }
     dict_RunControl.update(dict_RunControl_y)
 
     dict_RunControl_z = {

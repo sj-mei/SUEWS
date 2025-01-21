@@ -106,7 +106,10 @@ def init_supy(
             logger_supy.info("Loading config from yaml")
             df_state_init = init_config_from_yaml(path=path_init_x).to_df_state()
         else:
-            logger_supy.warning("Input is not a yaml file, loading from other sources. These methods will be deprecated in later versions.", stacklevel=2)
+            logger_supy.warning(
+                "Input is not a yaml file, loading from other sources. These methods will be deprecated in later versions.",
+                stacklevel=2,
+            )
             if path_init_x.suffix == ".nml":
                 # SUEWS `RunControl.nml`:
                 df_state_init = load_InitialCond_grid_df(
@@ -120,7 +123,9 @@ def init_supy(
                 logger_supy.critical(
                     f"{path_init_x} is NOT a valid file to initialise SuPy!"
                 )
-                raise RuntimeError("{path_init_x} is NOT a valid file to initialise SuPy!")
+                raise RuntimeError(
+                    "{path_init_x} is NOT a valid file to initialise SuPy!"
+                )
         if check_input:
             try:
                 list_issues = check_state(df_state_init)
@@ -219,7 +224,17 @@ def load_forcing_grid(
             path_input = path_site / config.model.control.forcing_file.value
 
         tstep_mod, lat, lon, alt, timezone = df_state_init.loc[
-            grid, [(x, "0") for x in ["tstep", "lat", "lng", "alt", "timezone"]]
+            grid,
+            [
+                (x, "0")
+                for x in [
+                    "tstep",
+                    "lat",
+                    "lng",
+                    "alt",
+                    "timezone",
+                ]
+            ],
         ].values
 
         # load raw data
@@ -230,22 +245,37 @@ def load_forcing_grid(
             )
             # resample raw data from tstep_in to tstep_mod
             df_forcing_met_tstep = resample_forcing_met(
-                df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen
+                df_forcing_met,
+                tstep_met_in,
+                tstep_mod,
+                lat,
+                lon,
+                alt,
+                timezone,
+                kdownzen,
             )
         elif path_init.suffix == ".yml":
             df_forcing_met = load_SUEWS_Forcing_met_df_yaml(path_input)
             tstep_met_in = df_forcing_met.index[1] - df_forcing_met.index[0]
             tstep_met_in = int(tstep_met_in.total_seconds())
-            kdownzen = init_config_from_yaml(path=path_init).model.control.kdownzen.value
+            kdownzen = init_config_from_yaml(
+                path=path_init
+            ).model.control.kdownzen.value
             if kdownzen is None:
                 df_forcing_met_tstep = resample_forcing_met(
                     df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone
                 )
             else:
                 df_forcing_met_tstep = resample_forcing_met(
-                    df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen
+                    df_forcing_met,
+                    tstep_met_in,
+                    tstep_mod,
+                    lat,
+                    lon,
+                    alt,
+                    timezone,
+                    kdownzen,
                 )
-
 
         # coerced precision here to prevent numerical errors inside Fortran
         df_forcing = df_forcing_met_tstep.round(10)
@@ -273,9 +303,10 @@ def load_forcing_grid(
 def load_SampleData() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     logger_supy.warning(
         "This function name will be deprecated. Please use `load_sample_data()` instead.",
-        stacklevel=2
+        stacklevel=2,
     )
     return load_sample_data()
+
 
 def load_sample_data() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Load sample data for quickly starting a demo run.
@@ -296,7 +327,9 @@ def load_sample_data() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     trv_sample_data = trv_supy_module / "sample_run"
     path_config_default = trv_sample_data / "defaultConfig.yml"
     df_state_init = init_supy(path_config_default, force_reload=False)
-    df_forcing = load_forcing_grid(path_config_default, df_state_init.index[0], df_state_init=df_state_init)
+    df_forcing = load_forcing_grid(
+        path_config_default, df_state_init.index[0], df_state_init=df_state_init
+    )
     return df_state_init, df_forcing
 
 
@@ -411,10 +444,14 @@ def run_supy(
 
     if n_grid > 1 and os.name != "nt" and (not serial_mode):
         logger_supy.info(f"SuPy is running in parallel mode")
-        res_supy = run_supy_par(df_forcing, df_state_init, save_state, chunk_day, debug_mode)
+        res_supy = run_supy_par(
+            df_forcing, df_state_init, save_state, chunk_day, debug_mode
+        )
     else:
         logger_supy.info(f"SuPy is running in serial mode")
-        res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day, debug_mode)
+        res_supy = run_supy_ser(
+            df_forcing, df_state_init, save_state, chunk_day, debug_mode
+        )
         # try:
         #     res_supy = run_supy_ser(df_forcing, df_state_init, save_state, chunk_day)
         # except:
@@ -433,7 +470,6 @@ def run_supy(
         return df_output, df_state_final, res_debug
     else:
         return df_output, df_state_final
-
 
 
 ##############################################################################
