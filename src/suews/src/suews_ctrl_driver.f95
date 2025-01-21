@@ -61,7 +61,7 @@ MODULE SUEWS_Driver
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main_DTS
-   USE stebbs_module, ONLY: stebbsonlinecouple
+   USE stebbs_module, ONLY: stebbs_cal_main
    USE version, ONLY: git_commit, compiler_ver
    USE time_module, ONLY: SUEWS_cal_dectime_DTS, SUEWS_cal_tstep_DTS, SUEWS_cal_weekday_DTS, &
                           SUEWS_cal_DLS_DTS
@@ -471,7 +471,7 @@ CONTAINS
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
             IF (config%stebbsmethod == 1) THEN
                IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
-               CALL stebbsonlinecouple( &
+               CALL stebbs_cal_main( &
                   timer, config, forcing, siteInfo, & ! input
                   modState, & ! input/output:
                   datetimeLine, & ! input

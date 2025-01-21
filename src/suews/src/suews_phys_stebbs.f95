@@ -561,7 +561,7 @@ MODULE modulesuewsstebbscouple
                  density_air_out, cp_air_out, &
                  Qsw_dn_extroof, Qsw_dn_extwall, &
                  Qlw_dn_extwall, Qlw_dn_extroof
-   TYPE :: suewsprop
+   TYPE :: STEBBS_OUT
       INTEGER :: ntstep, timestep
       CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: datetime, hourmin
       REAL(rprc), ALLOCATABLE, DIMENSION(:) :: Tair, Tsurf, Kwall, Kroof, ws, Lroof, Lwall
@@ -569,11 +569,11 @@ MODULE modulesuewsstebbscouple
       CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: datetime_exch, hourmin_exch
       REAL(rprc), ALLOCATABLE, DIMENSION(:) :: Tair_exch, Tsurf_exch, Kwall_exch, Kroof_exch, ws_exch, Lroof_exch, Lwall_exch
    END TYPE
-   TYPE(suewsprop) :: sout
+   TYPE(STEBBS_OUT) :: stebbs_output
 END MODULE modulesuewsstebbscouple
 
 SUBROUTINE setdatetime(datetimeLine)
-   USE modulesuewsstebbscouple, ONLY: sout
+   USE modulesuewsstebbscouple, ONLY: stebbs_output
    USE modulestebbsprecision, ONLY: rprc
    IMPLICIT NONE
    REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
@@ -602,8 +602,8 @@ SUBROUTINE setdatetime(datetimeLine)
    WRITE (chour, '(i2.2)') INT(datetimeLine(3))
    WRITE (cmin, '(i2.2)') INT(datetimeLine(4))
    WRITE (csec, '(i2.2)') 0
-   sout%datetime(1) = TRIM(cyear//'-'//cmonth//'-'//cday)
-   sout%hourmin(1) = TRIM(chour//':'//cmin//':'//csec)
+   stebbs_output%datetime(1) = TRIM(cyear//'-'//cmonth//'-'//cday)
+   stebbs_output%hourmin(1) = TRIM(chour//':'//cmin//':'//csec)
    RETURN
 END SUBROUTINE setdatetime
 
@@ -611,13 +611,13 @@ MODULE stebbs_module
 
 CONTAINS
 
-   SUBROUTINE stebbsonlinecouple( &
+   SUBROUTINE stebbs_cal_main( &
       timer, config, forcing, siteInfo, & ! Input
       modState, & ! Input/Output
       datetimeLine, &
       dataOutLineSTEBBS) ! Output
       USE modulestebbs, ONLY: bldg, resolution
-      USE modulesuewsstebbscouple, ONLY: sout ! Defines sout
+      USE modulesuewsstebbscouple, ONLY: stebbs_output ! Defines stebbs_output
       USE modulestebbsprecision, ONLY: rprc ! Defines rprc as REAL64
       USE allocateArray, ONLY: ncolumnsDataOutSTEBBS
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, LC_PAVED_PRM, LC_BLDG_PRM, &
@@ -648,7 +648,7 @@ CONTAINS
 
       REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
       REAL(rprc) :: Kwall_sout, Lwall_sout
-      REAL(rprc) :: Tsurf_sout
+      ! REAL(rprc) :: Tsurf_sout
 
       REAL(rprc) :: qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                     Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
@@ -859,40 +859,40 @@ CONTAINS
                ! WRITE (*, *) 'QS: ', blds(1)%QS
                ! WRITE (*, *) 'QBAE: ', blds(1)%QBAE
                ! WRITE (*, *) 'QWaste: ', blds(1)%QWaste
-               sout%ntstep = 1
-               ALLOCATE (sout%datetime(sout%ntstep))
-               ALLOCATE (sout%hourmin(sout%ntstep))
-               ALLOCATE (sout%Tair(sout%ntstep))
-               ALLOCATE (sout%Tsurf(sout%ntstep))
-               ALLOCATE (sout%Kwall(sout%ntstep))
-               ALLOCATE (sout%Kroof(sout%ntstep))
-               ALLOCATE (sout%ws(sout%ntstep))
-               ALLOCATE (sout%Lroof(sout%ntstep))
-               ALLOCATE (sout%Lwall(sout%ntstep))
-               ALLOCATE (sout%datetime_exch(sout%ntstep))
-               ALLOCATE (sout%hourmin_exch(sout%ntstep))
-               ALLOCATE (sout%Tair_exch(sout%ntstep))
-               ALLOCATE (sout%Tsurf_exch(sout%ntstep))
-               ALLOCATE (sout%Kwall_exch(sout%ntstep))
-               ALLOCATE (sout%Kroof_exch(sout%ntstep))
-               ALLOCATE (sout%ws_exch(sout%ntstep))
-               ALLOCATE (sout%Lroof_exch(sout%ntstep))
-               ALLOCATE (sout%Lwall_exch(sout%ntstep))
+               stebbs_output%ntstep = 1
+               ALLOCATE (stebbs_output%datetime(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%hourmin(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Tair(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Tsurf(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Kwall(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Kroof(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%ws(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Lroof(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Lwall(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%datetime_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%hourmin_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Tair_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Tsurf_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Kwall_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Kroof_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%ws_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Lroof_exch(stebbs_output%ntstep))
+               ALLOCATE (stebbs_output%Lwall_exch(stebbs_output%ntstep))
                !
             END IF
 
-            sout%Tair(1) = Tair_sout
-            sout%Tsurf(1) = Tsurf_sout
-            sout%Kroof(1) = Kroof_sout
-            sout%Kwall(1) = Kwall_sout
-            sout%Lwall(1) = Lwall_sout
-            sout%Lroof(1) = Lroof_sout
-            sout%timestep = timestep
+            stebbs_output%Tair(1) = Tair_sout
+            stebbs_output%Tsurf(1) = Tsurf_sout
+            stebbs_output%Kroof(1) = Kroof_sout
+            stebbs_output%Kwall(1) = Kwall_sout
+            stebbs_output%Lwall(1) = Lwall_sout
+            stebbs_output%Lroof(1) = Lroof_sout
+            stebbs_output%timestep = timestep
             ! sout%timestep = 3600
-            sout%Tair_exch(1) = Tair_sout
-            sout%Tsurf_exch(1) = Tsurf_sout
-            sout%ws(1) = ws
-            sout%ws_exch(1) = ws
+            stebbs_output%Tair_exch(1) = Tair_sout
+            stebbs_output%Tsurf_exch(1) = Tsurf_sout
+            stebbs_output%ws(1) = ws
+            stebbs_output%ws_exch(1) = ws
             CALL setdatetime(datetimeLine)
             ! nbtype = SIZE(blds)
             ! DO i = 1, nbtype, 1
@@ -919,14 +919,14 @@ CONTAINS
          END ASSOCIATE
       END ASSOCIATE
 
-   END SUBROUTINE stebbsonlinecouple
+   END SUBROUTINE stebbs_cal_main
 END MODULE stebbs_module
 
 SUBROUTINE readsuewsout()
    USE modulesuewsstebbscouple
    IMPLICIT NONE
    INTEGER :: i, reason, icrop
-   sout%timestep = 3600 ! 1hr, hard-coded for the test
+   stebbs_output%timestep = 3600 ! 1hr, hard-coded for the test
    OPEN (8, file='./SUEWS_output_res.csv', form='formatted')
 
    i = 0
@@ -936,48 +936,48 @@ SUBROUTINE readsuewsout()
       i = i + 1
    END DO
 333 CONTINUE
-   sout%ntstep = i - 1
-   ALLOCATE (sout%datetime(sout%ntstep))
-   ALLOCATE (sout%hourmin(sout%ntstep))
-   ALLOCATE (sout%Tair(sout%ntstep))
-   ALLOCATE (sout%Tsurf(sout%ntstep))
-   ALLOCATE (sout%Kwall(sout%ntstep))
-   ALLOCATE (sout%Kroof(sout%ntstep))
-   ALLOCATE (sout%ws(sout%ntstep))
-   ALLOCATE (sout%Lroof(sout%ntstep))
-   ALLOCATE (sout%Lwall(sout%ntstep))
-   ALLOCATE (sout%datetime_exch(sout%ntstep))
-   ALLOCATE (sout%hourmin_exch(sout%ntstep))
-   ALLOCATE (sout%Tair_exch(sout%ntstep))
-   ALLOCATE (sout%Tsurf_exch(sout%ntstep))
-   ALLOCATE (sout%Kwall_exch(sout%ntstep))
-   ALLOCATE (sout%Kroof_exch(sout%ntstep))
-   ALLOCATE (sout%ws_exch(sout%ntstep))
-   ALLOCATE (sout%Lroof_exch(sout%ntstep))
-   ALLOCATE (sout%Lwall_exch(sout%ntstep))
+   stebbs_output%ntstep = i - 1
+   ALLOCATE (stebbs_output%datetime(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%hourmin(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Tair(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Tsurf(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Kwall(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Kroof(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%ws(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Lroof(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Lwall(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%datetime_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%hourmin_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Tair_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Tsurf_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Kwall_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Kroof_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%ws_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Lroof_exch(stebbs_output%ntstep))
+   ALLOCATE (stebbs_output%Lwall_exch(stebbs_output%ntstep))
    REWIND (8)
    READ (8, *)
-   DO i = 1, sout%ntstep, 1
-      READ (8, *) sout%datetime(i), sout%hourmin(i), sout%Tair(i), sout%Tsurf(i), &
-         sout%Kwall(i), sout%Kroof(i), sout%ws(i), sout%Lroof(i), sout%Lwall(i)
+   DO i = 1, stebbs_output%ntstep, 1
+      READ (8, *) stebbs_output%datetime(i), stebbs_output%hourmin(i), stebbs_output%Tair(i), stebbs_output%Tsurf(i), &
+         stebbs_output%Kwall(i), stebbs_output%Kroof(i), stebbs_output%ws(i), stebbs_output%Lroof(i), stebbs_output%Lwall(i)
    END DO
    WRITE (*, *) '    + SUEWS output profile'
-   WRITE (*, *) '    + Date            : ', TRIM(sout%datetime(1)), ' ', TRIM(sout%hourmin(1)), ' - ', &
-      TRIM(sout%datetime(sout%ntstep)), ' ', TRIM(sout%hourmin(sout%ntstep))
-   WRITE (*, *) '    + Total data step : ', sout%ntstep
+   WRITE (*, *) '    + Date            : ', TRIM(stebbs_output%datetime(1)), ' ', TRIM(stebbs_output%hourmin(1)), ' - ', &
+      TRIM(stebbs_output%datetime(stebbs_output%ntstep)), ' ', TRIM(stebbs_output%hourmin(stebbs_output%ntstep))
+   WRITE (*, *) '    + Total data step : ', stebbs_output%ntstep
    CLOSE (8)
-   sout%ntskip = 12
+   stebbs_output%ntskip = 12
    OPEN (8, file='./SUEWS_output.csv', form='formatted')
    READ (8, *)
 
-   DO i = 1, sout%ntstep*sout%ntskip, 1
-      IF (MOD(i - 1, sout%ntskip) == 0) THEN
-         icrop = INT((i - 1)/sout%ntskip) + 1
-         READ (8, *) sout%datetime_exch(icrop), sout%hourmin_exch(icrop), &
-            sout%Tair_exch(icrop), sout%Tsurf_exch(icrop), &
-            sout%Kwall_exch(icrop), sout%Kroof_exch(icrop), &
-            sout%ws_exch(icrop), sout%Lroof_exch(icrop), &
-            sout%Lwall_exch(icrop)
+   DO i = 1, stebbs_output%ntstep*stebbs_output%ntskip, 1
+      IF (MOD(i - 1, stebbs_output%ntskip) == 0) THEN
+         icrop = INT((i - 1)/stebbs_output%ntskip) + 1
+         READ (8, *) stebbs_output%datetime_exch(icrop), stebbs_output%hourmin_exch(icrop), &
+            stebbs_output%Tair_exch(icrop), stebbs_output%Tsurf_exch(icrop), &
+            stebbs_output%Kwall_exch(icrop), stebbs_output%Kroof_exch(icrop), &
+            stebbs_output%ws_exch(icrop), stebbs_output%Lroof_exch(icrop), &
+            stebbs_output%Lwall_exch(icrop)
       ELSE
          READ (8, *)
       END IF
@@ -999,7 +999,7 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
    USE modulestebbs, ONLY: LBM, resolution
    USE modulestebbsfunc, ONLY: ext_conv_coeff
    USE modulesuewsstebbscouple, ONLY: &
-      sout, &
+      stebbs_output, &
       Tair_out, Tground_deep, Tsurf, density_air_out, &
       cp_air_out, &
       Qsw_dn_extroof, &
@@ -1032,43 +1032,43 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
 
    ! CASE = self%CASE
    Area = self%Afootprint
-   DO tstep = 1, sout%ntstep, 1
-      Tair_out = sout%Tair(tstep) + 273.15
+   DO tstep = 1, stebbs_output%ntstep, 1
+      Tair_out = stebbs_output%Tair(tstep) + 273.15
       Tground_deep = 273.15 + 10.0
-      Tsurf = sout%Tsurf(tstep) + 273.15
+      Tsurf = stebbs_output%Tsurf(tstep) + 273.15
       density_air_out = 1.225
       cp_air_out = 1005.0
-      Qsw_dn_extroof = sout%Kroof(tstep)
-      Qsw_dn_extwall = sout%Kwall(tstep)
-      Qlw_dn_extwall = sout%Lwall(tstep)
-      Qlw_dn_extroof = sout%Lroof(tstep)
+      Qsw_dn_extroof = stebbs_output%Kroof(tstep)
+      Qsw_dn_extwall = stebbs_output%Kwall(tstep)
+      Qlw_dn_extwall = stebbs_output%Lwall(tstep)
+      Qlw_dn_extroof = stebbs_output%Lroof(tstep)
       debug_array_dir = './debug_array.csv'
-      IF (sout%ws_exch(tstep) < 0) THEN
-         sout%ws_exch(tstep) = 0.2
+      IF (stebbs_output%ws_exch(tstep) < 0) THEN
+         stebbs_output%ws_exch(tstep) = 0.2
          ! WRITE (*, *) 'Wind speed is negative, set to 0.2'
       END IF
 
-      self%h_o(1) = ext_conv_coeff(sout%ws_exch(tstep), sout%Tair_exch(tstep) - sout%Tsurf_exch(tstep))
-      self%h_o(2) = ext_conv_coeff(sout%ws_exch(tstep), sout%Tair_exch(tstep) - sout%Tsurf_exch(tstep))
+      self%h_o(1) = ext_conv_coeff(stebbs_output%ws_exch(tstep), stebbs_output%Tair_exch(tstep) - stebbs_output%Tsurf_exch(tstep))
+      self%h_o(2) = ext_conv_coeff(stebbs_output%ws_exch(tstep), stebbs_output%Tair_exch(tstep) - stebbs_output%Tsurf_exch(tstep))
 
       CALL timeStepCalculation(self, Tair_out, Tground_deep, Tsurf, &
                                density_air_out, cp_air_out, &
                                Qsw_dn_extroof, Qsw_dn_extwall, &
-                               Qlw_dn_extwall, Qlw_dn_extroof, sout%timestep, &
+                               Qlw_dn_extwall, Qlw_dn_extroof, stebbs_output%timestep, &
                                resolution, &
                                datetimeLine, &
                                flginit &
                                )
       bem_qf_1 = (/self%Qtotal_heating, self%Qtotal_cooling, self%EnergyExchanges(8), &
                    self%Qtotal_water_tank, self%Qmetabolic_sensible, self%Qmetabolic_latent/)
-      bem_qf_1 = bem_qf_1/float(sout%timestep)
+      bem_qf_1 = bem_qf_1/float(stebbs_output%timestep)
       qfm_dom = bem_qf_1(5) + bem_qf_1(6)
       qheat_dom = bem_qf_1(1)
       qcool_dom = bem_qf_1(2)
       qfb_hw_dom = bem_qf_1(4)
       qfb_dom_air = 0
       dom_temp = self%Tair_ind - 273.15 ! [K] to deg.
-      energyEx = self%EnergyExchanges(:)/float(sout%timestep)
+      energyEx = self%EnergyExchanges(:)/float(stebbs_output%timestep)
       !
       Qsw_transmitted_window = energyEx(1)/Area ! # transmitted solar radiation through windows [W m-2]
       Qsw_absorbed_window = energyEx(2)/Area ! # absorbed solar radiation by windows [W m-2]
