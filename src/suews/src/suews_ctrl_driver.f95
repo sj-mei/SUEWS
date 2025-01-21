@@ -469,7 +469,7 @@ CONTAINS
 
             !==============use STEBBS to get localised radiation flux==================
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
-            IF (config%stebbsmethod == 1) THEN
+            IF (config%STEBBS_Use == 1) THEN
                IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
                CALL stebbs_cal_main( &
                   timer, config, forcing, siteInfo, & ! input
@@ -4772,7 +4772,7 @@ CONTAINS
       config%DiagQS = 0
       config%EvapMethod = 2
       config%LAImethod = 1
-      config%stebbsmethod = stebbsmethod
+      config%STEBBS_Use = stebbsmethod
 
       ! testing flag
       config%flag_test = flag_test
