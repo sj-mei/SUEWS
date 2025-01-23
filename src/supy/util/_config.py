@@ -4674,6 +4674,17 @@ class Model(BaseModel):
         description="Model physics parameters including surface properties, coefficients, etc.",
     )
 
+    @model_validator(mode="after")
+    def validate_radiation_method(self) -> "Model":
+        if self.physics.netradiationmethod.value == 1 and self.control.forcing_file.value == "forcing.txt":
+            raise ValueError(
+                "NetRadiationMethod is set to 1 (using observed Ldown). "
+                "The sample forcing file lacks observed Ldown. Use netradiation = 3 for sample forcing. "
+                "If not using sample forcing, ensure that the forcing file contains Ldown and rename from forcing.txt."
+                # TODO: This is a temporary solution. We need to provide a better way to catch this.
+            )
+        return self
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model to DataFrame state format"""
         df_state = init_df_state(grid_id)
@@ -4681,6 +4692,16 @@ class Model(BaseModel):
         df_physics = self.physics.to_df_state(grid_id)
         df_state = pd.concat([df_state, df_control, df_physics], axis=1)
         return df_state
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "Model":
+        """Reconstruct Model from DataFrame state format."""
+        # Extract control and physics parameters
+        control = ModelControl.from_df_state(df, grid_id)
+        physics = ModelPhysics.from_df_state(df, grid_id)
+
+        # Create an instance using the extracted parameters
+        return cls(control=control, physics=physics)
 
 
 class SUEWSConfig(BaseModel):
@@ -4808,18 +4829,18 @@ class SUEWSConfig(BaseModel):
         config.site = sites
 
         # Reconstruct model
-        model = Model()
-        for grid_id in grid_ids:
-            # Set model control
-            model_control = ModelControl.from_df_state(df, grid_id)
-            model.control = model_control
+        config.model = Model.from_df_state(df, grid_ids[0])
+        # for grid_id in grid_ids:
+        #     # Set model control
+        #     model_control = ModelControl.from_df_state(df, grid_id)
+        #     model.control = model_control
 
-            # Set model physics
-            model_physics = ModelPhysics.from_df_state(df, grid_id)
-            model.physics = model_physics
-            break  # Only need one as model is shared across sites
+        #     # Set model physics
+        #     model_physics = ModelPhysics.from_df_state(df, grid_id)
+        #     model.physics = model_physics
+        #     break  # Only need one as model is shared across sites
 
-        config.model = model
+        # config.model = model
 
         return config
 
