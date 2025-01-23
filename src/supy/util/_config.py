@@ -2055,12 +2055,12 @@ class BldgsProperties(NonVegetatedSurfaceProperties): # May need to move VWD for
 
     ref: Optional[Reference] = None
 
-    # @model_validator(mode="after")
+    # @model_validator(mode="after")    # This is no longer appropriate - may be reintroduced and altered
     # def validate_rsl_zd_range(self) -> "BldgsProperties":
     #     sfr_bldg_lower_limit = 0.18
     #     if self.sfr < sfr_bldg_lower_limit:
     #         if self.faibldg.value < 0.25 * (1 - self.sfr.value):
-    #             raise ValueError(
+    #             raise ValueError(         # This should be a warning not raising an error
     #                 "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
     #                 f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
     #                 "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
@@ -4197,7 +4197,7 @@ class ArchetypeProperties(BaseModel):
         """Reconstruct ArchetypeProperties from DataFrame state format."""
         # Extract the values from the DataFrame
         params = {
-            field_name: df.loc[grid_id, (field_name, "0")]
+            field_name: df.loc[grid_id, (field_name.lower(), "0")]
             for field_name in cls.model_fields.keys() if field_name != "ref"
         }
 
@@ -4454,7 +4454,7 @@ class StebbsProperties(BaseModel):
         """Reconstruct StebbsProperties from DataFrame state format."""
         # Extract the values from the DataFrame
         params = {
-            field_name: df.loc[grid_id, (field_name, "0")]
+            field_name: df.loc[grid_id, (field_name.lower(), "0")]
             for field_name in cls.model_fields.keys() if field_name != "ref"
         }
 
@@ -4633,6 +4633,9 @@ class SiteProperties(BaseModel):
         params["snow"] = SnowParams.from_df_state(df, grid_id)
         params["land_cover"] = LandCover.from_df_state(df, grid_id)
         params["vertical_layers"] = VerticalLayers.from_df_state(df, grid_id)
+
+        params["stebbs"] = StebbsProperties.from_df_state(df, grid_id)
+        params["building_archetype"] = ArchetypeProperties.from_df_state(df, grid_id)
 
         return cls(**params)
 
