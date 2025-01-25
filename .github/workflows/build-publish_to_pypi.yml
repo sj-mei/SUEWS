@@ -8,6 +8,7 @@ on:
       - "src/supy_driver/**"
       - ".github/workflows/build-publish_to_pypi.yml"
       - "test/**"
+      - "pyproject.toml"
 
   pull_request:
     paths: # PR events containing matching files
@@ -15,7 +16,7 @@ on:
       - "src/supy/**"
       - "src/supy_driver/**"
       - ".github/workflows/build-publish_to_pypi.yml"
-
+      - "pyproject.toml"
 jobs:
   build_wheels:
     name: Build wheel for ${{ matrix.python }}-${{ matrix.buildplat[1] }} ${{ matrix.buildplat[2] }}
