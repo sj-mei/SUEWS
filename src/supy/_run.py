@@ -644,12 +644,14 @@ def pack_grid_dict(ser_grid):
             #     raise ValueError(f"Packed values for variable '{var}' are different between old and new methods.")
 
             # dict_var[var] = pack_var(ser_grid[var])
-            dict_var[var] = pack_var_old(ser_grid[var])
-            # try:
-            #     dict_var[var] = pack_var(ser_grid[var])
-            # except Exception as e:
-            #     print(f"Error packing variable '{var}': {e}")
-            #     dict_var[var] = pack_var_old(ser_grid[var])
+            # dict_var[var] = pack_var_old(ser_grid[var])
+            try:
+                # dict_var[var] = pack_var(ser_grid[var])
+                dict_var[var] = pack_var_old(ser_grid[var])
+            except Exception as e:
+                print(f"Error packing variable '{var}': {e}")
+                # dict_var[var] = pack_var_old(ser_grid[var])
+                dict_var[var] = pack_var(ser_grid[var])
         else:
             pass
     # dict_var = {
