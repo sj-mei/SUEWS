@@ -1370,28 +1370,28 @@ def load_SUEWS_dict_ModConfig(path_runcontrol, dict_default=dict_RunControl_defa
         / "SUEWS_SPARTACUS.nml"
     )
 
-    # # load STEBBS-specific variables:
-    # path_stebbs_typologies = (
-    #     path_runcontrol.parent
-    #     / dict_RunControl["fileinputpath"]
-    #     / "test_stebbs_building_typologies.nml"
-    # )
-    # path_stebbs_general = (
-    #     path_runcontrol.parent
-    #     / dict_RunControl["fileinputpath"]
-    #     / "test_stebbs_general_params.nml"
-    # )
+    # load STEBBS-specific variables:
+    path_stebbs_typologies = (
+        path_runcontrol.parent
+        / dict_RunControl["fileinputpath"]
+        / "test_stebbs_building_typologies.nml"
+    )
+    path_stebbs_general = (
+        path_runcontrol.parent
+        / dict_RunControl["fileinputpath"]
+        / "test_stebbs_general_params.nml"
+    )
 
     dict_RunControl_x = {k[0]: v for k, v in load_SUEWS_nml(path_spartacus).items()}
     dict_RunControl.update(dict_RunControl_x)
 
-    # dict_RunControl_y = {k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()}
-    # dict_RunControl.update(dict_RunControl_y)
+    dict_RunControl_y = {k[0]: v for k, v in load_SUEWS_nml(path_stebbs_typologies).items()}
+    dict_RunControl.update(dict_RunControl_y)
 
-    # dict_RunControl_z = {
-    #     k[0]: v for k, v in load_SUEWS_nml(path_stebbs_general).items()
-    # }
-    # dict_RunControl.update(dict_RunControl_z)
+    dict_RunControl_z = {
+        k[0]: v for k, v in load_SUEWS_nml(path_stebbs_general).items()
+    }
+    dict_RunControl.update(dict_RunControl_z)
 
     return dict_RunControl
 
