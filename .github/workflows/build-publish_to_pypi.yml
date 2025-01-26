@@ -29,13 +29,24 @@ jobs:
             - [macos-latest, macosx, arm64]
             - [windows-2019, win, AMD64]
 
-        python: ["cp310", "cp311", "cp312"]
+        python: ["cp310", "cp311", "cp312", "cp313"]
 
       fail-fast: false
 
     env:
       IS_32_BIT: ${{ matrix.buildplat[2] == 'x86' }}
       WHEEL_NAME: ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
+      CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
+      CIBW_ARCHS: ${{ matrix.buildplat[2] }}
+      CIBW_ENVIRONMENT_PASS_LINUX: RUNNER_OS
+      CIBW_PYTHON: "cp310: 3.10.16"
+      CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
+      CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel" # Use delvewheel on windows
+      CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
+      CIBW_TEST_REQUIRES: pytest
+      CIBW_TEST_COMMAND_MACOS: "python -m pytest '{project}/test'"
+      CIBW_TEST_COMMAND_LINUX: "python -m pytest '{project}/test'"
+      CIBW_TEST_COMMAND_WINDOWS: "python -m pytest {project}\\test"
 
     steps:
       - uses: actions/checkout@v4
@@ -49,17 +60,6 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.5
-        env:
-          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-          CIBW_ARCHS: ${{ matrix.buildplat[2] }}
-          CIBW_ENVIRONMENT_PASS_LINUX: RUNNER_OS
-          CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel" # Use delvewheel on windows
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
-          CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND_MACOS: "python -m pytest '{project}/test'"
-          CIBW_TEST_COMMAND_LINUX: "python -m pytest '{project}/test'"
-          CIBW_TEST_COMMAND_WINDOWS: "python -m pytest {project}\\test"
 
       - name: Setup tmate session for debugging
         if: failure()
