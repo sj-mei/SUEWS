@@ -46,6 +46,9 @@ jobs:
       CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
       CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel" # Use delvewheel on windows
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
+      CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
+        delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} &&
+        pipx run abi3audit --strict --report {wheel}
       CIBW_TEST_REQUIRES: pytest
       CIBW_TEST_COMMAND_MACOS: "python -m pytest '{project}/test'"
       CIBW_TEST_COMMAND_LINUX: "python -m pytest '{project}/test'"
@@ -62,7 +65,7 @@ jobs:
             python-version: 3.12
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.20
+        uses: pypa/cibuildwheel@v2.22
 
       - name: Setup tmate session for debugging
         if: failure()
