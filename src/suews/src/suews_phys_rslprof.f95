@@ -1954,13 +1954,13 @@ CONTAINS
 
       ! ## Issue 338 - beta
       IF (PAI >= 0.0 .AND. PAI <= 0.2) THEN
-          betaN2 = 0.24
+         betaN2 = 0.24
       ELSE IF (PAI > 0.2 .AND. PAI <= 0.4) THEN
-          betaN2 = 0.32
+         betaN2 = 0.32
       ELSE IF (PAI > 0.4 .AND. PAI <= 1.0) THEN
-          betaN2 = 0.40
+         betaN2 = 0.40
       ELSE
-          betaN2 = 0.35
+         betaN2 = 0.35
       END IF
 
       betaHF = cal_beta_lc(stabilityMethod, betaN2, lc_over_L)
