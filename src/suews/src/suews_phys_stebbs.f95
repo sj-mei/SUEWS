@@ -954,26 +954,26 @@ CONTAINS
             flginit = 1
 
             dataOutLineSTEBBS = [ &
-               ! Forcing
-               ws, Tair_sout, Tsurf_sout, Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
-               ! Temperatures
-               Tair_ind, Tindoormass, Tintwallroof, Textwallroof, Tintwindow, Textwindow, Tintgroundfloor, &
-               Textgroundfloor, Qtotal_heating, Qtotal_cooling, Qsw_transmitted_window_tstepTotal, &
-               sw_absorbed_window_tstepTotal, Qsw_absorbed_wallroof_tstepTotal, Qconv_indair_to_indoormass_tstepTotal, &
-               Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal, &
-               lw_net_intwindow_to_allotherindoorsurfaces_tstepTotal, &
-               lw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal, Q_appliance_tstepTotal, &
-               Q_ventilation_tstepTotal, Qconv_indair_to_intwallroof_tstepTotal, Qconv_indair_to_intwindow_tstepTotal, &
-               Qconv_indair_to_intgroundfloor_tstepTotal, Qloss_efficiency_heating_air_tstepTotal, &
-               Qcond_wallroof_tstepTotal, Qcond_window_tstepTotal, Qcond_groundfloor_tstepTotal, &
-               Qcond_ground_tstepTotal, Qlw_net_extwallroof_to_outair_tstepTotal, &
-               Qlw_net_extwindow_to_outair_tstepTotal, Qconv_extwallroof_to_outair_tstepTotal, &
-               Qconv_extwindow_to_outair_tstepTotal, q_cooling_timestepTotal, Qtotal_water_tank, Qloss_drain, &
-               Twater_tank, Tintwall_tank, Textwall_tank, Twater_vessel, Tintwall_vessel, Textwall_vessel, &
-               Vwater_vessel, Awater_vessel, Vwall_vessel, qsensible_timestepTotal, qlatent_timestepTotal, &
-               QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal, &
-               Vwall_tank, Vwater_tank &
-               ]
+                                ! Forcing
+                                ws, Tair_sout, Tsurf_sout, Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
+                                ! Temperatures
+                                Tair_ind, Tindoormass, Tintwallroof, Textwallroof, Tintwindow, Textwindow, Tintgroundfloor, &
+                                Textgroundfloor, Qtotal_heating, Qtotal_cooling, Qsw_transmitted_window_tstepTotal, &
+                           sw_absorbed_window_tstepTotal, Qsw_absorbed_wallroof_tstepTotal, Qconv_indair_to_indoormass_tstepTotal, &
+                                Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal, &
+                                lw_net_intwindow_to_allotherindoorsurfaces_tstepTotal, &
+                                lw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal, Q_appliance_tstepTotal, &
+                           Q_ventilation_tstepTotal, Qconv_indair_to_intwallroof_tstepTotal, Qconv_indair_to_intwindow_tstepTotal, &
+                                Qconv_indair_to_intgroundfloor_tstepTotal, Qloss_efficiency_heating_air_tstepTotal, &
+                                Qcond_wallroof_tstepTotal, Qcond_window_tstepTotal, Qcond_groundfloor_tstepTotal, &
+                                Qcond_ground_tstepTotal, Qlw_net_extwallroof_to_outair_tstepTotal, &
+                                Qlw_net_extwindow_to_outair_tstepTotal, Qconv_extwallroof_to_outair_tstepTotal, &
+                                Qconv_extwindow_to_outair_tstepTotal, q_cooling_timestepTotal, Qtotal_water_tank, Qloss_drain, &
+                                Twater_tank, Tintwall_tank, Textwall_tank, Twater_vessel, Tintwall_vessel, Textwall_vessel, &
+                                Vwater_vessel, Awater_vessel, Vwall_vessel, qsensible_timestepTotal, qlatent_timestepTotal, &
+                                QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal, &
+                                Vwall_tank, Vwater_tank &
+                                ]
             RETURN
          END ASSOCIATE
       END ASSOCIATE
@@ -1044,23 +1044,23 @@ SUBROUTINE readsuewsout()
    RETURN
 END SUBROUTINE readsuewsout
 SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
-   Tair_ind, Tindoormass, Tintwallroof, Textwallroof, Tintwindow, Textwindow, Tintgroundfloor, &
-   Textgroundfloor, Qtotal_heating, Qtotal_cooling, Qsw_transmitted_window_tstepTotal, &
-   Qsw_absorbed_window_tstepTotal, Qsw_absorbed_wallroof_tstepTotal, Qconv_indair_to_indoormass_tstepTotal, &
-   Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal, &
-   Qlw_net_intwindow_to_allotherindoorsurfaces_tstepTotal, &
-   Qlw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal, Q_appliance_tstepTotal, &
-   Q_ventilation_tstepTotal, Qconv_indair_to_intwallroof_tstepTotal, Qconv_indair_to_intwindow_tstepTotal, &
-   Qconv_indair_to_intgroundfloor_tstepTotal, Qloss_efficiency_heating_air_tstepTotal, &
-   Qcond_wallroof_tstepTotal, Qcond_window_tstepTotal, Qcond_groundfloor_tstepTotal, &
-   Qcond_ground_tstepTotal, Qlw_net_extwallroof_to_outair_tstepTotal, &
-   Qlw_net_extwindow_to_outair_tstepTotal, Qconv_extwallroof_to_outair_tstepTotal, &
-   Qconv_extwindow_to_outair_tstepTotal, q_cooling_timestepTotal, Qtotal_water_tank, Qloss_drain, &
-   Twater_tank, Tintwall_tank, Textwall_tank, Twater_vessel, Tintwall_vessel, Textwall_vessel, &
-   Vwater_vessel, Awater_vessel, Vwall_vessel, qsensible_timestepTotal, qlatent_timestepTotal, &
-   QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal, &
-   Vwall_tank, Vwater_tank &
-   ) ! Output
+                             Tair_ind, Tindoormass, Tintwallroof, Textwallroof, Tintwindow, Textwindow, Tintgroundfloor, &
+                             Textgroundfloor, Qtotal_heating, Qtotal_cooling, Qsw_transmitted_window_tstepTotal, &
+                          Qsw_absorbed_window_tstepTotal, Qsw_absorbed_wallroof_tstepTotal, Qconv_indair_to_indoormass_tstepTotal, &
+                             Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal, &
+                             Qlw_net_intwindow_to_allotherindoorsurfaces_tstepTotal, &
+                             Qlw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal, Q_appliance_tstepTotal, &
+                           Q_ventilation_tstepTotal, Qconv_indair_to_intwallroof_tstepTotal, Qconv_indair_to_intwindow_tstepTotal, &
+                             Qconv_indair_to_intgroundfloor_tstepTotal, Qloss_efficiency_heating_air_tstepTotal, &
+                             Qcond_wallroof_tstepTotal, Qcond_window_tstepTotal, Qcond_groundfloor_tstepTotal, &
+                             Qcond_ground_tstepTotal, Qlw_net_extwallroof_to_outair_tstepTotal, &
+                             Qlw_net_extwindow_to_outair_tstepTotal, Qconv_extwallroof_to_outair_tstepTotal, &
+                             Qconv_extwindow_to_outair_tstepTotal, q_cooling_timestepTotal, Qtotal_water_tank, Qloss_drain, &
+                             Twater_tank, Tintwall_tank, Textwall_tank, Twater_vessel, Tintwall_vessel, Textwall_vessel, &
+                             Vwater_vessel, Awater_vessel, Vwall_vessel, qsensible_timestepTotal, qlatent_timestepTotal, &
+                             QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal, &
+                             Vwall_tank, Vwater_tank &
+                             ) ! Output
 
    USE modulestebbsprecision
    USE modulestebbs, ONLY: LBM, resolution
@@ -1222,46 +1222,46 @@ SUBROUTINE suewsstebbscouple(self, flginit, datetimeLine, &
       Vwall_tank = self%Vwall_tank
       Vwater_tank = self%Vwater_tank
 
-   !    bem_qf_1 = (/self%Qtotal_heating, self%Qtotal_cooling, self%EnergyExchanges(8), &
-   !                 self%Qtotal_water_tank, self%Qmetabolic_sensible, self%Qmetabolic_latent/)
-   !    bem_qf_1 = bem_qf_1/float(sout%timestep)
-   !    qfm_dom = bem_qf_1(5) + bem_qf_1(6)
-   !    qheat_dom = bem_qf_1(1)
-   !    qcool_dom = bem_qf_1(2)
-   !    qfb_hw_dom = bem_qf_1(4)
-   !    qfb_dom_air = 0
-   !    dom_temp = self%Tair_ind - 273.15 ! [K] to deg.
-   !    energyEx = self%EnergyExchanges(:)/float(sout%timestep)
-   !    !
-   !    Qsw_transmitted_window = energyEx(1)/Area ! # transmitted solar radiation through windows [W m-2]
-   !    Qsw_absorbed_window = energyEx(2)/Area ! # absorbed solar radiation by windows [W m-2]
-   !    Qsw_absorbed_wallroof = energyEx(3)/Area ! #absorbed solar heat by walls [W m-2]
-   !    Qlw_net_extwallroof_to_outair = energyEx(18)/Area ! # longwave radiation at external wall [W m-2]
-   !    Qlw_net_extwindow_to_outair = energyEx(19)/Area ! #longwave radiation at external windows [W m-2]
-   !    QStar = Qsw_transmitted_window + Qsw_absorbed_window + Qsw_absorbed_wallroof &
-   !            - Qlw_net_extwallroof_to_outair - Qlw_net_extwindow_to_outair
-   !    ! WRITE(*, *) 'Test: ', Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-   !    !  Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair
-   !    ! WRITE(*, *) '2: ', Qstar
-   !    qinternal = (energyEx(8) + bem_qf_1(5))/Area ! #sensible internal appliance gain and sensible metabolism [W m-2]
-   !    qe_cool = qcool_dom/self%coeff_performance_cooling/Area ! #energy use by cooling  [W m-2]
-   !    qe_heat = qheat_dom/self%heating_efficiency_air/Area ! #energy use by heating [W m-2]
-   !    QEC = qinternal + qe_cool + qe_heat ! # [W m-2] , Notice: energy use by hot water has not been added yet
-   !    Qconv_extwindow_to_outair = energyEx(21)/Area ! #convection at windows [W m-2]
-   !    Qconv_extwallroof_to_outair = energyEx(20)/Area ! #convection at wall [W m-2]
-   !    QH = Qconv_extwallroof_to_outair + Qconv_extwindow_to_outair ! #[W m-2]
-   !    qs = energyEx(23)/Area ! #heat storage/release by building fabric and indoor air  [W m-2]
-   !    Qcond_ground = energyEx(17)/Area ! #conduction to external ground [W m-2], if assume ground floor is close to isolated, this flux should be close to 0
-   !    QS = qs + Qcond_ground ! #[W m-2]
-   !    Q_ventilation = energyEx(9)/Area ! #ventilation and infiltration
-   !    QBAE = -Q_ventilation ! #[W m-2]
-   !    q_waste = energyEx(22)/Area ! # waste heat from cooling  include energy consumption
-   !    QWaste = q_waste ! #[W m-2]
-   !    Textwallroof = self%Textwallroof ! # external surface temperature of wall [K]
-   !    Tintwallroof = self%Tintwallroof ! # internal surface temperature of wall [K]
-   !    Textwindow = self%Textwindow ! # external surface temperature of window [K]
-   !    Tintwindow = self%Tintwindow ! # internal surface temperature of window [K]
-   !    Tair_ind = self%Tair_ind ! # Indoor air temperature [K]
+      !    bem_qf_1 = (/self%Qtotal_heating, self%Qtotal_cooling, self%EnergyExchanges(8), &
+      !                 self%Qtotal_water_tank, self%Qmetabolic_sensible, self%Qmetabolic_latent/)
+      !    bem_qf_1 = bem_qf_1/float(sout%timestep)
+      !    qfm_dom = bem_qf_1(5) + bem_qf_1(6)
+      !    qheat_dom = bem_qf_1(1)
+      !    qcool_dom = bem_qf_1(2)
+      !    qfb_hw_dom = bem_qf_1(4)
+      !    qfb_dom_air = 0
+      !    dom_temp = self%Tair_ind - 273.15 ! [K] to deg.
+      !    energyEx = self%EnergyExchanges(:)/float(sout%timestep)
+      !    !
+      !    Qsw_transmitted_window = energyEx(1)/Area ! # transmitted solar radiation through windows [W m-2]
+      !    Qsw_absorbed_window = energyEx(2)/Area ! # absorbed solar radiation by windows [W m-2]
+      !    Qsw_absorbed_wallroof = energyEx(3)/Area ! #absorbed solar heat by walls [W m-2]
+      !    Qlw_net_extwallroof_to_outair = energyEx(18)/Area ! # longwave radiation at external wall [W m-2]
+      !    Qlw_net_extwindow_to_outair = energyEx(19)/Area ! #longwave radiation at external windows [W m-2]
+      !    QStar = Qsw_transmitted_window + Qsw_absorbed_window + Qsw_absorbed_wallroof &
+      !            - Qlw_net_extwallroof_to_outair - Qlw_net_extwindow_to_outair
+      !    ! WRITE(*, *) 'Test: ', Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
+      !    !  Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair
+      !    ! WRITE(*, *) '2: ', Qstar
+      !    qinternal = (energyEx(8) + bem_qf_1(5))/Area ! #sensible internal appliance gain and sensible metabolism [W m-2]
+      !    qe_cool = qcool_dom/self%coeff_performance_cooling/Area ! #energy use by cooling  [W m-2]
+      !    qe_heat = qheat_dom/self%heating_efficiency_air/Area ! #energy use by heating [W m-2]
+      !    QEC = qinternal + qe_cool + qe_heat ! # [W m-2] , Notice: energy use by hot water has not been added yet
+      !    Qconv_extwindow_to_outair = energyEx(21)/Area ! #convection at windows [W m-2]
+      !    Qconv_extwallroof_to_outair = energyEx(20)/Area ! #convection at wall [W m-2]
+      !    QH = Qconv_extwallroof_to_outair + Qconv_extwindow_to_outair ! #[W m-2]
+      !    qs = energyEx(23)/Area ! #heat storage/release by building fabric and indoor air  [W m-2]
+      !    Qcond_ground = energyEx(17)/Area ! #conduction to external ground [W m-2], if assume ground floor is close to isolated, this flux should be close to 0
+      !    QS = qs + Qcond_ground ! #[W m-2]
+      !    Q_ventilation = energyEx(9)/Area ! #ventilation and infiltration
+      !    QBAE = -Q_ventilation ! #[W m-2]
+      !    q_waste = energyEx(22)/Area ! # waste heat from cooling  include energy consumption
+      !    QWaste = q_waste ! #[W m-2]
+      !    Textwallroof = self%Textwallroof ! # external surface temperature of wall [K]
+      !    Tintwallroof = self%Tintwallroof ! # internal surface temperature of wall [K]
+      !    Textwindow = self%Textwindow ! # external surface temperature of window [K]
+      !    Tintwindow = self%Tintwindow ! # internal surface temperature of window [K]
+      !    Tair_ind = self%Tair_ind ! # Indoor air temperature [K]
    END DO
    ! self%qfm_dom = qfm_dom
    ! self%qheat_dom = qheat_dom
