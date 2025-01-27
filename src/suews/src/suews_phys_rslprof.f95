@@ -1904,7 +1904,7 @@ CONTAINS
                                     psihath_top, psihath_mid, &
                                     z_top, z_mid, z_btm, &
                                     ch, c2h, &
-                                    zH_RSL, zd_RSL, L_MOD, beta, elm, Lc)
+                                    zH_RSL, zd_RSL, L_MOD_RSL, beta, elm, Lc)
          psihath_top = psihath_mid
          psihath_mid = psihath_btm
          psihath_array(iz - 2) = psihath_btm
