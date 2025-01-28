@@ -26,11 +26,7 @@ dependencies = [
     "matplotlib",
     "chardet",
     "scipy",
-<<<<<<< HEAD
-    "pydantic",
-=======
     "pydantic",                                    # for yaml-based config
->>>>>>> origin/matthewp/issue324
     "f90wrap==0.2.15",                             # f90wrap is required for f2py-based supy driver
     "dask",                                        # needs dask for parallel tasks
     "f90nml",                                      # utility for namelist files
