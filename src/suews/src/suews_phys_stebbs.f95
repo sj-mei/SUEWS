@@ -650,12 +650,64 @@ CONTAINS
       REAL(rprc) :: Kwall_sout, Lwall_sout
       ! REAL(rprc) :: Tsurf_sout
 
-      REAL(rprc) :: qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
-                    Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                    Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-                    Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
-                    QStar, QEC, QH, QS, QBAE, QWaste, &
-                    Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind
+      ! Output variables
+      REAL(rprc) :: ws
+      REAL(rprc) :: Tair_sout
+      ! REAL(rprc) :: Tsurf_sout
+      REAL(rprc) :: Kroof_sout
+      REAL(rprc) :: Lroof_sout
+      ! REAL(rprc) :: Kwall_sout
+      ! REAL(rprc) :: Lwall_sout
+      REAL(rprc) :: Tair_ind
+      REAL(rprc) :: Tindoormass
+      REAL(rprc) :: Tintwallroof
+      REAL(rprc) :: Textwallroof
+      REAL(rprc) :: Tintwindow
+      REAL(rprc) :: Textwindow
+      REAL(rprc) :: Tintgroundfloor
+      REAL(rprc) :: Textgroundfloor
+      REAL(rprc) :: Qtotal_heating
+      REAL(rprc) :: Qtotal_cooling
+      REAL(rprc) :: Qsw_transmitted_window_tstepTotal
+      REAL(rprc) :: sw_absorbed_window_tstepTotal
+      REAL(rprc) :: Qsw_absorbed_wallroof_tstepTotal
+      REAL(rprc) :: Qconv_indair_to_indoormass_tstepTotal
+      REAL(rprc) :: Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal
+      REAL(rprc) :: lw_net_intwindow_to_allotherindoorsurfaces_tstepTotal
+      REAL(rprc) :: lw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal
+      REAL(rprc) :: Q_appliance_tstepTotal
+      REAL(rprc) :: Q_ventilation_tstepTotal
+      REAL(rprc) :: Qconv_indair_to_intwallroof_tstepTotal
+      REAL(rprc) :: Qconv_indair_to_intwindow_tstepTotal
+      REAL(rprc) :: Qconv_indair_to_intgroundfloor_tstepTotal
+      REAL(rprc) :: Qloss_efficiency_heating_air_tstepTotal
+      REAL(rprc) :: Qcond_wallroof_tstepTotal
+      REAL(rprc) :: Qcond_window_tstepTotal
+      REAL(rprc) :: Qcond_groundfloor_tstepTotal
+      REAL(rprc) :: Qcond_ground_tstepTotal
+      REAL(rprc) :: Qlw_net_extwallroof_to_outair_tstepTotal
+      REAL(rprc) :: Qlw_net_extwindow_to_outair_tstepTotal
+      REAL(rprc) :: Qconv_extwallroof_to_outair_tstepTotal
+      REAL(rprc) :: Qconv_extwindow_to_outair_tstepTotal
+      REAL(rprc) :: q_cooling_timestepTotal
+      REAL(rprc) :: Qtotal_water_tank
+      REAL(rprc) :: Qloss_drain
+      REAL(rprc) :: Twater_tank
+      REAL(rprc) :: Tintwall_tank
+      REAL(rprc) :: Textwall_tank
+      REAL(rprc) :: Twater_vessel
+      REAL(rprc) :: Tintwall_vessel
+      REAL(rprc) :: Textwall_vessel
+      REAL(rprc) :: Vwater_vessel
+      REAL(rprc) :: Awater_vessel
+      REAL(rprc) :: Vwall_vessel
+      REAL(rprc) :: qsensible_timestepTotal
+      REAL(rprc) :: qlatent_timestepTotal
+      REAL(rprc) :: QS_tstepTotal
+      REAL(rprc) :: QS_fabric_tstepTotal
+      REAL(rprc) :: QS_air_tstepTotal
+      REAL(rprc) :: Vwall_tank
+      REAL(rprc) :: Vwater_tank
 
       ASSOCIATE ( &
          timestep => timer%tstep, &
@@ -908,14 +960,27 @@ CONTAINS
             ! END DO
             flginit = 1
 
-            dataOutLineSTEBBS = [ws, Tair_sout, Tsurf_sout, Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
-                                 qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
-                                 Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
-                                 Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
-                                 Qconv_extwallroof_to_outair, Qconv_extwindow_to_outair, &
-                                 QStar, QEC, QH, QS, QBAE, QWaste, &
-                                 Textwallroof, Tintwallroof, Textwindow, Tintwindow, Tair_ind &
-                                 ]
+            dataOutLineSTEBBS = [ &
+                                ! Forcing
+                                ws, Tair_sout, Tsurf_sout, Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
+                                ! Temperatures
+                                Tair_ind, Tindoormass, Tintwallroof, Textwallroof, Tintwindow, Textwindow, Tintgroundfloor, &
+                                Textgroundfloor, Qtotal_heating, Qtotal_cooling, Qsw_transmitted_window_tstepTotal, &
+                           sw_absorbed_window_tstepTotal, Qsw_absorbed_wallroof_tstepTotal, Qconv_indair_to_indoormass_tstepTotal, &
+                                Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal, &
+                                lw_net_intwindow_to_allotherindoorsurfaces_tstepTotal, &
+                                lw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal, Q_appliance_tstepTotal, &
+                           Q_ventilation_tstepTotal, Qconv_indair_to_intwallroof_tstepTotal, Qconv_indair_to_intwindow_tstepTotal, &
+                                Qconv_indair_to_intgroundfloor_tstepTotal, Qloss_efficiency_heating_air_tstepTotal, &
+                                Qcond_wallroof_tstepTotal, Qcond_window_tstepTotal, Qcond_groundfloor_tstepTotal, &
+                                Qcond_ground_tstepTotal, Qlw_net_extwallroof_to_outair_tstepTotal, &
+                                Qlw_net_extwindow_to_outair_tstepTotal, Qconv_extwallroof_to_outair_tstepTotal, &
+                                Qconv_extwindow_to_outair_tstepTotal, q_cooling_timestepTotal, Qtotal_water_tank, Qloss_drain, &
+                                Twater_tank, Tintwall_tank, Textwall_tank, Twater_vessel, Tintwall_vessel, Textwall_vessel, &
+                                Vwater_vessel, Awater_vessel, Vwall_vessel, qsensible_timestepTotal, qlatent_timestepTotal, &
+                                QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal, &
+                                Vwall_tank, Vwater_tank &
+                                ]
             RETURN
          END ASSOCIATE
       END ASSOCIATE
@@ -1014,14 +1079,56 @@ SUBROUTINE stebbs_cal(self, flginit, datetimeLine, &
    REAL(rprc) :: Area, qinternal, qe_cool, qe_heat, q_waste, q_ventilation
 
    ! Output variables with INTENT(OUT)
-   REAL(rprc), INTENT(OUT) :: qfm_dom, qheat_dom, qcool_dom, qfb_hw_dom, qfb_dom_air, &
-                              dom_temp, Qsw_transmitted_window, Qsw_absorbed_window, &
-                              Qsw_absorbed_wallroof, Qlw_net_extwallroof_to_outair, &
-                              Qlw_net_extwindow_to_outair, QStar, QEC, &
-                              Qconv_extwindow_to_outair, Qconv_extwallroof_to_outair, &
-                              QH, QS, Qcond_ground, QBAE, QWaste, &
-                              Textwallroof, Tintwallroof, Textwindow, Tintwindow, &
-                              Tair_ind
+   REAL(rprc), INTENT(OUT) :: Tair_ind
+   REAL(rprc), INTENT(OUT) :: Tindoormass
+   REAL(rprc), INTENT(OUT) :: Tintwallroof
+   REAL(rprc), INTENT(OUT) :: Textwallroof
+   REAL(rprc), INTENT(OUT) :: Tintwindow
+   REAL(rprc), INTENT(OUT) :: Textwindow
+   REAL(rprc), INTENT(OUT) :: Tintgroundfloor
+   REAL(rprc), INTENT(OUT) :: Textgroundfloor
+   REAL(rprc), INTENT(OUT) :: Qtotal_heating
+   REAL(rprc), INTENT(OUT) :: Qtotal_cooling
+   REAL(rprc), INTENT(OUT) :: Qsw_transmitted_window_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qsw_absorbed_window_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qsw_absorbed_wallroof_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qconv_indair_to_indoormass_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qlw_net_intwindow_to_allotherindoorsurfaces_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qlw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Q_appliance_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Q_ventilation_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qconv_indair_to_intwallroof_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qconv_indair_to_intwindow_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qconv_indair_to_intgroundfloor_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qloss_efficiency_heating_air_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qcond_wallroof_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qcond_window_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qcond_groundfloor_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qcond_ground_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qlw_net_extwallroof_to_outair_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qlw_net_extwindow_to_outair_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qconv_extwallroof_to_outair_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Qconv_extwindow_to_outair_tstepTotal
+   REAL(rprc), INTENT(OUT) :: q_cooling_timestepTotal
+   REAL(rprc), INTENT(OUT) :: Qtotal_water_tank
+   REAL(rprc), INTENT(OUT) :: Qloss_drain
+   REAL(rprc), INTENT(OUT) :: Twater_tank
+   REAL(rprc), INTENT(OUT) :: Tintwall_tank
+   REAL(rprc), INTENT(OUT) :: Textwall_tank
+   REAL(rprc), INTENT(OUT) :: Twater_vessel
+   REAL(rprc), INTENT(OUT) :: Tintwall_vessel
+   REAL(rprc), INTENT(OUT) :: Textwall_vessel
+   REAL(rprc), INTENT(OUT) :: Vwater_vessel
+   REAL(rprc), INTENT(OUT) :: Awater_vessel
+   REAL(rprc), INTENT(OUT) :: Vwall_vessel
+   REAL(rprc), INTENT(OUT) :: qsensible_timestepTotal
+   REAL(rprc), INTENT(OUT) :: qlatent_timestepTotal
+   REAL(rprc), INTENT(OUT) :: QS_tstepTotal
+   REAL(rprc), INTENT(OUT) :: QS_fabric_tstepTotal
+   REAL(rprc), INTENT(OUT) :: QS_air_tstepTotal
+   REAL(rprc), INTENT(OUT) :: Vwall_tank
+   REAL(rprc), INTENT(OUT) :: Vwater_tank
 
    ! Other declarations
    REAL(rprc), DIMENSION(6) :: bem_qf_1
@@ -1101,18 +1208,18 @@ SUBROUTINE stebbs_cal(self, flginit, datetimeLine, &
       Tintwindow = self%Tintwindow ! # internal surface temperature of window [K]
       Tair_ind = self%Tair_ind ! # Indoor air temperature [K]
    END DO
-   self%qfm_dom = qfm_dom
-   self%qheat_dom = qheat_dom
-   self%qcool_dom = qcool_dom
-   self%qfb_hw_dom = qfb_hw_dom
-   self%dom_temp = dom_temp
-   self%QStar = QStar
-   self%QEC = QEC
-   self%QH = QH
-   self%QS = QS
-   self%QBAE = QBAE
-   self%QWaste = QWaste
-   self%flginit = 1
+   ! self%qfm_dom = qfm_dom
+   ! self%qheat_dom = qheat_dom
+   ! self%qcool_dom = qcool_dom
+   ! self%qfb_hw_dom = qfb_hw_dom
+   ! self%dom_temp = dom_temp
+   ! self%QStar = QStar
+   ! self%QEC = QEC
+   ! self%QH = QH
+   ! self%QS = QS
+   ! self%QBAE = QBAE
+   ! self%QWaste = QWaste
+   ! self%flginit = 1
    RETURN
 END SUBROUTINE stebbs_cal
 
@@ -1477,9 +1584,12 @@ SUBROUTINE tstep( &
    QS_tstepTotal = 0.0
    QS_fabric_tstepTotal = 0.0
    QS_air_tstepTotal = 0.0
+
+   ! Used to recalculate Area of DHW in use
    IF (Awater_vessel > 0.0) THEN
       VARatio_water_vessel = Vwater_vessel/Awater_vessel
    END IF
+
    IF (MOD(timestep, resolution) == 0) THEN
       looptime: DO i = 1, INT(timestep/resolution), 1
          Qsw_transmitted_window = windowInsolation(Qsw_dn_extwall, winT, Awindow)

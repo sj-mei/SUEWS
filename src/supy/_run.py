@@ -1,3 +1,4 @@
+from ast import literal_eval
 from shutil import rmtree
 import tempfile
 import copy
@@ -8,6 +9,7 @@ import time
 
 # import logging
 import traceback
+from ast import literal_eval
 from pathlib import Path
 from typing import Tuple
 import pandas
@@ -562,6 +564,12 @@ def run_supy_par(df_forcing_tstep, df_state_init_m, save_state, chunk_day, debug
 # main calculation end here
 ##############################################################################
 
+# pack one Series of var into np.array
+def pack_var_old(ser_var):
+    dim = np.array(literal_eval(ser_var.index[-1])) + 1
+    val = np.array(ser_var.values.reshape(dim), order="F").astype(float)
+    return val
+
 
 # pack one Series of var into np.array
 def pack_var(ser_var: pd.Series) -> np.ndarray:
@@ -600,8 +608,9 @@ def pack_var(ser_var: pd.Series) -> np.ndarray:
         # Add 1 since indices are 0-based
         dimensions = np.array(ser_var_indexed.index[-1]) + 1
 
-        # Reshape using Fortran-style ordering to match original
-        res = np.array(ser_var_indexed.values).reshape(dimensions, order="F")
+        # Reshape - NO need to use Fortran-style ordering
+        # res = np.array(ser_var_indexed.values).reshape(dimensions, order="F")
+        res = np.array(ser_var_indexed.values).reshape(dimensions)
 
         try:
             return res.astype(float)
@@ -624,7 +633,25 @@ def pack_grid_dict(ser_grid):
     dict_var = {}
     for var in list_var:
         if var not in ["file_init"]:
-            dict_var[var] = pack_var(ser_grid[var])
+            # print(f"var: {var}")
+            # val_packed = pack_var(ser_grid[var])
+            # val_packed_old = pack_var_old(ser_grid[var])
+            # # Test if the old and new packed values are different
+            # if not np.array_equal(val_packed_old, val_packed):
+            #     # Save the input Series as a pickle file for debugging
+            #     ser_grid.to_pickle("ser_grid_debug.pkl")
+            #     # Stop execution
+            #     raise ValueError(f"Packed values for variable '{var}' are different between old and new methods.")
+
+            # dict_var[var] = pack_var(ser_grid[var])
+            # dict_var[var] = pack_var_old(ser_grid[var])
+            try:
+                # dict_var[var] = pack_var(ser_grid[var])
+                dict_var[var] = pack_var_old(ser_grid[var])
+            except Exception as e:
+                print(f"Error packing variable '{var}': {e}")
+                # dict_var[var] = pack_var_old(ser_grid[var])
+                dict_var[var] = pack_var(ser_grid[var])
         else:
             pass
     # dict_var = {

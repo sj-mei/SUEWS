@@ -809,7 +809,6 @@ CONTAINS
                   AddWater(i_receiver) = AddWater(i_receiver) &
                                          + (Drain(i_contributor)*sfr_surf(i_contributor) &
                                             /sfr_surf(i_receiver))*WaterDist(i_receiver, i_contributor) !Original
-
                ELSE
                   !Snow included, This needs to be fixed at some point. LJ Mar 2013
                   AddWaterRunoff(i_contributor) = AddWaterRunoff(i_contributor) &
@@ -817,9 +816,9 @@ CONTAINS
                END IF
 
             ELSE
+               !If no receiving surface exists, water fraction goes to AddWaterRunoff
                AddWaterRunoff(i_contributor) = AddWaterRunoff(i_contributor) &
-                                               + WaterDist(i_receiver, i_contributor) !If no receiving surface exists,
-               !water fraction goes to AddWaterRunoff
+                                               + WaterDist(i_receiver, i_contributor)
             END IF
          END DO
       END DO
