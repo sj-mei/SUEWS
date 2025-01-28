@@ -1642,9 +1642,12 @@ SUBROUTINE tstep( &
    QS_tstepTotal = 0.0
    QS_fabric_tstepTotal = 0.0
    QS_air_tstepTotal = 0.0
+
+   ! Used to recalculate Area of DHW in use
    IF (Awater_vessel > 0.0) THEN
       VARatio_water_vessel = Vwater_vessel/Awater_vessel
    END IF
+   
    IF (MOD(timestep, resolution) == 0) THEN
       looptime: DO i = 1, INT(timestep/resolution), 1
          Qsw_transmitted_window = windowInsolation(Qsw_dn_extwall, winT, Awindow)
