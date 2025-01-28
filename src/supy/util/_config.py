@@ -4202,7 +4202,8 @@ class ArchetypeProperties(BaseModel):
         }
 
         # Convert params to ValueWithDOI
-        params = {key: ValueWithDOI(value) for key, value in params.items()}
+        non_value_with_doi = ["BuildingType", "BuildingName"]
+        params = {key: ValueWithDOI(value) for key, value in params.items() if key not in non_value_with_doi}
 
         # Create an instance using the extracted parameters
         return cls(**params)
