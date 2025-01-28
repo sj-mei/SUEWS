@@ -325,51 +325,12 @@ def load_sample_data() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """
 
     trv_sample_data = trv_supy_module / "sample_run"
-    # path_config_default = trv_sample_data / "defaultConfig.yml"
-    path_config_default = trv_sample_data / "RunControl.nml" # TODO: to be deprecated - but keep for now to pass tests
+    path_config_default = trv_sample_data / "defaultConfig.yml"
     df_state_init = init_supy(path_config_default, force_reload=False)
     df_forcing = load_forcing_grid(
         path_config_default, df_state_init.index[0], df_state_init=df_state_init
     )
     return df_state_init, df_forcing
-
-
-def load_config_from_df(df_state: pd.DataFrame):
-    """Load SUEWS configuration from `df_state`.
-
-    Parameters
-    ----------
-    df_state : pd.DataFrame
-        DataFrame of model states.
-
-    Returns
-    -------
-    config : SUEWSConfig
-        SUEWS configuration.
-
-    Examples
-    --------
-    >>> df_state_init, df_forcing = supy.load_sample_data()
-    >>> config = supy.load_config_from_df(df_state_init)
-
-    """
-
-    from .util._config import SUEWSConfig
-
-    config = SUEWSConfig.from_df_state(df_state)
-
-    return config
-
-def init_config(df_state: pd.DataFrame=None):
-    """
-    Initialise SUEWS configuration object either from existing df_state dataframe or as the default configuration.
-    """
-
-    if df_state is None:
-        from .util._config import SUEWSConfig
-        return SUEWSConfig()
-    
-    return load_config_from_df(df_state)
 
 
 # input processing code end here

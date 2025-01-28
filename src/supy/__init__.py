@@ -19,12 +19,10 @@ from ._supy_module import (
     load_SampleData,
     load_sample_data,
     load_forcing_grid,
-    load_config_from_df,
     run_supy,
     save_supy,
     check_forcing,
     check_state,
-    init_config,
 )
 
 
