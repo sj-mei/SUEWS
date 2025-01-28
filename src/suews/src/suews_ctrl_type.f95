@@ -32,9 +32,6 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: EvapMethod ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER :: LAImethod ! boolean to determine if calculate LAI [-]
       INTEGER :: localClimateMethod ! method to choose local climate variables [-] 0: not use; 1: use local climate variables
-      ! INTEGER :: nbtype ! number of building type [-]
-      ! INTEGER :: resolution ! STEBBS time resolution [-]
-      ! CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: cases ! case of building type, the array size should be consistent to nbtype [-]
       INTEGER :: stebbsmethod ! method to calculate building energy [-]
       LOGICAL :: flag_test ! FOR DEBUGGING ONLY: boolean to test specific functions [-]
    END TYPE SUEWS_CONFIG
@@ -56,7 +53,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: to_grass
       REAL(KIND(1D0)) :: to_bsoil
       REAL(KIND(1D0)) :: to_water
-      REAL(KIND(1D0)) :: to_soilstore
+      REAL(KIND(1D0)) :: to_soilstore_or_runoff
    END TYPE WATER_DIST_PRM
 
    TYPE, PUBLIC :: bioCO2_PRM
@@ -730,6 +727,21 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
       REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
       REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
+
+      ! Beers radiation
+      REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
+      REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
+      REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
+      REAL(KIND(1D0)) :: Ksouth ! incoming shortwave radiation from south [W m-2]
+      REAL(KIND(1D0)) :: Knorth ! incoming shortwave radiation from north [W m-2]
+      REAL(KIND(1D0)) :: Keast ! incoming shortwave radiation from east [W m-2]
+      REAL(KIND(1D0)) :: Ldown2d ! incoming longwave radiation onto roof [W m-2]
+      REAL(KIND(1D0)) :: Lup2d ! outgoing longwave radiation from roof [W m-2]
+      REAL(KIND(1D0)) :: Lwest ! incoming longwave radiation from west [W m-2]
+      REAL(KIND(1D0)) :: Lsouth ! incoming longwave radiation from south [W m-2]
+      REAL(KIND(1D0)) :: Lnorth ! incoming longwave radiation from north [W m-2]
+      REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
+
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHeatState_c
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
@@ -820,20 +832,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: HotWaterHeatingEfficiency ! Efficiency of hot water system [-]
       REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse ! Minimum volume of hot water in use [m3]
 
-      ! Beers output for STEBBS
-      REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
-      REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
-      REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
-      REAL(KIND(1D0)) :: Ksouth ! incoming shortwave radiation from south [W m-2]
-      REAL(KIND(1D0)) :: Knorth ! incoming shortwave radiation from north [W m-2]
-      REAL(KIND(1D0)) :: Keast ! incoming shortwave radiation from east [W m-2]
-      REAL(KIND(1D0)) :: Ldown2d ! incoming longwave radiation onto roof [W m-2]
-      REAL(KIND(1D0)) :: Lup2d ! outgoing longwave radiation from roof [W m-2]
-      REAL(KIND(1D0)) :: Lwest ! incoming longwave radiation from west [W m-2]
-      REAL(KIND(1D0)) :: Lsouth ! incoming longwave radiation from south [W m-2]
-      REAL(KIND(1D0)) :: Lnorth ! incoming longwave radiation from north [W m-2]
-      REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
-
    END TYPE STEBBS_STATE
 
    TYPE, PUBLIC :: BUILDING_STATE
@@ -844,12 +842,12 @@ MODULE SUEWS_DEF_DTS
       ! CHARACTER(LEN=50) :: BuildingName !
       REAL(KIND(1D0)) :: BuildingCount ! Number of buildings of this archetype [-]
       REAL(KIND(1D0)) :: Occupants ! Number of occupants present in building [-]
-      REAL(KIND(1D0)) :: hhs0 !
-      REAL(KIND(1D0)) :: age_0_4 !
-      REAL(KIND(1D0)) :: age_5_11 !
-      REAL(KIND(1D0)) :: age_12_18 !
-      REAL(KIND(1D0)) :: age_19_64 !
-      REAL(KIND(1D0)) :: age_65plus !
+      ! REAL(KIND(1D0)) :: hhs0 !
+      ! REAL(KIND(1D0)) :: age_0_4 !
+      ! REAL(KIND(1D0)) :: age_5_11 !
+      ! REAL(KIND(1D0)) :: age_12_18 !
+      ! REAL(KIND(1D0)) :: age_19_64 !
+      ! REAL(KIND(1D0)) :: age_65plus !
       REAL(KIND(1D0)) :: stebbs_Height ! Building height [m]
       REAL(KIND(1D0)) :: FootprintArea ! Building footprint area [m2]
       REAL(KIND(1D0)) :: WallExternalArea ! External wall area (including window area) [m2]
