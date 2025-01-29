@@ -17,7 +17,6 @@
 from ._supy_module import (
     init_supy,
     load_SampleData,
-    load_sample_data,
     load_forcing_grid,
     run_supy,
     save_supy,
