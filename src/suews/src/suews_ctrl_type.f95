@@ -410,6 +410,58 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: flowchange ! special term in water
    END TYPE LC_WATER_PRM
 
+     TYPE, PUBLIC :: BUILDING_ARCHETYPE_PRM
+      ! This type is used to collect building archetypes for STEBBS
+      ! CHARACTER(LEN=50) :: BuildingCode !
+      ! CHARACTER(LEN=50) :: BuildingClass !
+      ! CHARACTER(LEN=50) :: BuildingType !
+      ! CHARACTER(LEN=50) :: BuildingName !
+      REAL(KIND(1D0)) :: BuildingCount ! Number of buildings of this archetype [-]
+      REAL(KIND(1D0)) :: Occupants ! Number of occupants present in building [-]
+      REAL(KIND(1D0)) :: hhs0 !
+      REAL(KIND(1D0)) :: age_0_4 !
+      REAL(KIND(1D0)) :: age_5_11 !
+      REAL(KIND(1D0)) :: age_12_18 !
+      REAL(KIND(1D0)) :: age_19_64 !
+      REAL(KIND(1D0)) :: age_65plus !
+      REAL(KIND(1D0)) :: stebbs_Height ! Building height [m]
+      REAL(KIND(1D0)) :: FootprintArea ! Building footprint area [m2]
+      REAL(KIND(1D0)) :: WallExternalArea ! External wall area (including window area) [m2]
+      REAL(KIND(1D0)) :: RatioInternalVolume ! Ratio of internal mass volume to total building volume [-]
+      REAL(KIND(1D0)) :: WWR ! window to wall ratio [-]
+      REAL(KIND(1D0)) :: WallThickness ! Thickness of external wall and roof (weighted) [m]
+      REAL(KIND(1D0)) :: WallEffectiveConductivity ! Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]
+      REAL(KIND(1D0)) :: WallDensity ! Effective density of the walls and roof (weighted) [kg m-3]
+      REAL(KIND(1D0)) :: WallCp ! Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]
+      REAL(KIND(1D0)) :: Wallx1 ! Weighting factor for heat capacity of walls and roof [-]
+      REAL(KIND(1D0)) :: WallExternalEmissivity ! Emissivity of the external surface of walls and roof [-]
+      REAL(KIND(1D0)) :: WallInternalEmissivity ! Emissivity of the internal surface of walls and roof [-]
+      REAL(KIND(1D0)) :: WallTransmissivity ! Transmissivity of walls and roof [-]
+      REAL(KIND(1D0)) :: WallAbsorbtivity ! Absorbtivity of walls and roof [-]
+      REAL(KIND(1D0)) :: WallReflectivity ! Reflectivity of the external surface of walls and roof [-]
+      REAL(KIND(1D0)) :: FloorThickness ! Thickness of ground floor [m]
+      REAL(KIND(1D0)) :: GroundFloorEffectiveConductivity ! Effective thermal conductivity of ground floor [W m-1 K-1]
+      REAL(KIND(1D0)) :: GroundFloorDensity ! Density of the ground floor [kg m-3]
+      REAL(KIND(1D0)) :: GroundFloorCp ! Effective specific heat capacity of the ground floor [J kg-1 K-1]
+      REAL(KIND(1D0)) :: WindowThickness ! Window thickness [m]
+      REAL(KIND(1D0)) :: WindowEffectiveConductivity ! Effective thermal conductivity of windows [W m-1 K-1]
+      REAL(KIND(1D0)) :: WindowDensity ! Effective density of the windows [kg m-3]
+      REAL(KIND(1D0)) :: WindowCp ! Effective specific heat capacity of windows [J kg-1 K-1]
+      REAL(KIND(1D0)) :: WindowExternalEmissivity ! Emissivity of the external surface of windows [-]
+      REAL(KIND(1D0)) :: WindowInternalEmissivity ! Emissivity of the internal surface of windows [-]
+      REAL(KIND(1D0)) :: WindowTransmissivity ! Transmissivity of windows [-]
+      REAL(KIND(1D0)) :: WindowAbsorbtivity ! Absorbtivity of windows [-]
+      REAL(KIND(1D0)) :: WindowReflectivity ! Reflectivity of the external surface of windows [-]
+      REAL(KIND(1D0)) :: InternalMassDensity ! Effective density of the internal mass [kg m-3]
+      REAL(KIND(1D0)) :: InternalMassCp ! Specific heat capacity of internal mass [J kg-1 K-1]
+      REAL(KIND(1D0)) :: InternalMassEmissivity ! Emissivity of internal mass [-]
+      REAL(KIND(1D0)) :: MaxHeatingPower ! Maximum power demand of heating system [W]
+      REAL(KIND(1D0)) :: WaterTankWaterVolume ! Volume of water in hot water tank [m3]
+      REAL(KIND(1D0)) :: MaximumHotWaterHeatingPower ! Maximum power demand of water heating system [W]
+      REAL(KIND(1D0)) :: HeatingSetpointTemperature ! Heating setpoint temperature [degC]
+      REAL(KIND(1D0)) :: CoolingSetpointTemperature ! Cooling setpoint temperature [degC]
+   END TYPE BUILDING_ARCHETYPE_PRM
+
    TYPE, PUBLIC :: SUEWS_SITE
       REAL(KIND(1D0)) :: lat !latitude [deg]
       REAL(KIND(1D0)) :: lon !longitude [deg]
@@ -453,6 +505,8 @@ MODULE SUEWS_DEF_DTS
       TYPE(LC_GRASS_PRM) :: lc_grass
       TYPE(LC_BSOIL_PRM) :: lc_bsoil
       TYPE(LC_WATER_PRM) :: lc_water
+
+      TYPE(BUILDING_ARCHETYPE_PRM) :: building_archtype
 
    CONTAINS
       PROCEDURE :: ALLOCATE => allocate_site_prm_c
@@ -836,57 +890,6 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE STEBBS_STATE
 
-   TYPE, PUBLIC :: BUILDING_STATE
-      ! This type is used to collect building archetypes for STEBBS
-      ! CHARACTER(LEN=50) :: BuildingCode !
-      ! CHARACTER(LEN=50) :: BuildingClass !
-      ! CHARACTER(LEN=50) :: BuildingType !
-      ! CHARACTER(LEN=50) :: BuildingName !
-      REAL(KIND(1D0)) :: BuildingCount ! Number of buildings of this archetype [-]
-      REAL(KIND(1D0)) :: Occupants ! Number of occupants present in building [-]
-      REAL(KIND(1D0)) :: hhs0 !
-      REAL(KIND(1D0)) :: age_0_4 !
-      REAL(KIND(1D0)) :: age_5_11 !
-      REAL(KIND(1D0)) :: age_12_18 !
-      REAL(KIND(1D0)) :: age_19_64 !
-      REAL(KIND(1D0)) :: age_65plus !
-      REAL(KIND(1D0)) :: stebbs_Height ! Building height [m]
-      REAL(KIND(1D0)) :: FootprintArea ! Building footprint area [m2]
-      REAL(KIND(1D0)) :: WallExternalArea ! External wall area (including window area) [m2]
-      REAL(KIND(1D0)) :: RatioInternalVolume ! Ratio of internal mass volume to total building volume [-]
-      REAL(KIND(1D0)) :: WWR ! window to wall ratio [-]
-      REAL(KIND(1D0)) :: WallThickness ! Thickness of external wall and roof (weighted) [m]
-      REAL(KIND(1D0)) :: WallEffectiveConductivity ! Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]
-      REAL(KIND(1D0)) :: WallDensity ! Effective density of the walls and roof (weighted) [kg m-3]
-      REAL(KIND(1D0)) :: WallCp ! Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]
-      REAL(KIND(1D0)) :: Wallx1 ! Weighting factor for heat capacity of walls and roof [-]
-      REAL(KIND(1D0)) :: WallExternalEmissivity ! Emissivity of the external surface of walls and roof [-]
-      REAL(KIND(1D0)) :: WallInternalEmissivity ! Emissivity of the internal surface of walls and roof [-]
-      REAL(KIND(1D0)) :: WallTransmissivity ! Transmissivity of walls and roof [-]
-      REAL(KIND(1D0)) :: WallAbsorbtivity ! Absorbtivity of walls and roof [-]
-      REAL(KIND(1D0)) :: WallReflectivity ! Reflectivity of the external surface of walls and roof [-]
-      REAL(KIND(1D0)) :: FloorThickness ! Thickness of ground floor [m]
-      REAL(KIND(1D0)) :: GroundFloorEffectiveConductivity ! Effective thermal conductivity of ground floor [W m-1 K-1]
-      REAL(KIND(1D0)) :: GroundFloorDensity ! Density of the ground floor [kg m-3]
-      REAL(KIND(1D0)) :: GroundFloorCp ! Effective specific heat capacity of the ground floor [J kg-1 K-1]
-      REAL(KIND(1D0)) :: WindowThickness ! Window thickness [m]
-      REAL(KIND(1D0)) :: WindowEffectiveConductivity ! Effective thermal conductivity of windows [W m-1 K-1]
-      REAL(KIND(1D0)) :: WindowDensity ! Effective density of the windows [kg m-3]
-      REAL(KIND(1D0)) :: WindowCp ! Effective specific heat capacity of windows [J kg-1 K-1]
-      REAL(KIND(1D0)) :: WindowExternalEmissivity ! Emissivity of the external surface of windows [-]
-      REAL(KIND(1D0)) :: WindowInternalEmissivity ! Emissivity of the internal surface of windows [-]
-      REAL(KIND(1D0)) :: WindowTransmissivity ! Transmissivity of windows [-]
-      REAL(KIND(1D0)) :: WindowAbsorbtivity ! Absorbtivity of windows [-]
-      REAL(KIND(1D0)) :: WindowReflectivity ! Reflectivity of the external surface of windows [-]
-      REAL(KIND(1D0)) :: InternalMassDensity ! Effective density of the internal mass [kg m-3]
-      REAL(KIND(1D0)) :: InternalMassCp ! Specific heat capacity of internal mass [J kg-1 K-1]
-      REAL(KIND(1D0)) :: InternalMassEmissivity ! Emissivity of internal mass [-]
-      REAL(KIND(1D0)) :: MaxHeatingPower ! Maximum power demand of heating system [W]
-      REAL(KIND(1D0)) :: WaterTankWaterVolume ! Volume of water in hot water tank [m3]
-      REAL(KIND(1D0)) :: MaximumHotWaterHeatingPower ! Maximum power demand of water heating system [W]
-      REAL(KIND(1D0)) :: HeatingSetpointTemperature ! Heating setpoint temperature [degC]
-      REAL(KIND(1D0)) :: CoolingSetpointTemperature ! Cooling setpoint temperature [degC]
-   END TYPE BUILDING_STATE
 
    ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE
@@ -901,7 +904,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
       TYPE(STEBBS_STATE) :: stebbsState
-      TYPE(BUILDING_STATE) :: bldgState
+      ! TYPE(BUILDING_STATE) :: bldgState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
