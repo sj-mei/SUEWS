@@ -36,7 +36,7 @@ model:
       value: 0
     snowuse:
       value: 0
-    stebbsuse:
+    stebbsmethod:
       value: 0
 site:
 - name: test site

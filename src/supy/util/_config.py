@@ -2217,7 +2217,7 @@ class ModelPhysics(BaseModel):
     snowuse: ValueWithDOI[int] = Field(
         default=ValueWithDOI(0), description="Include snow calculations (1) or not (0)"
     )
-    stebbsuse: ValueWithDOI[int] = Field(
+    stebbsmethod: ValueWithDOI[int] = Field(
         default=ValueWithDOI(0), description="Method used for stebbs calculations"
     )
 
@@ -2289,7 +2289,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
-            "stebbsuse",
+            "stebbsmethod",
         ]
         for attr in list_attr:
             set_df_value(attr, getattr(self, attr))
@@ -2324,7 +2324,7 @@ class ModelPhysics(BaseModel):
             "faimethod",
             "localclimatemethod",
             "snowuse",
-            "stebbsuse",
+            "stebbsmethod",
         ]
 
         for attr in list_attr:
