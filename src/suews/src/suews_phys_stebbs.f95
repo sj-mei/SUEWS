@@ -608,7 +608,7 @@ CONTAINS
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, &
                                SUEWS_SITE, atm_state, ROUGHNESS_STATE, &
-                               HEAT_STATE, SUEWS_STATE, STEBBS_STATE, BUILDING_ARCHETYPE_PRM
+                               HEAT_STATE, SUEWS_STATE, STEBBS_STATE, BUILDING_ARCHETYPE_PRM, STEBBS_PRM
       IMPLICIT NONE
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
       TYPE(SUEWS_TIMER), INTENT(IN) :: timer
@@ -616,24 +616,11 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
       TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
       REAL(KIND(1D0)), INTENT(OUT), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
-      ! INTEGER :: i, ios
-      ! INTEGER, INTENT(in) :: timestep ! MP replaced from line 706
-      ! INTEGER :: timestep
       INTEGER, SAVE :: flginit = 0
-      ! CHARACTER(LEN=256) ::  filename
-      ! CHARACTER(LEN=256), ALLOCATABLE :: file_list(:)
-      ! INTEGER :: num_files
-      ! REAL(rprc), INTENT(in) :: Tair_sout, Tsurf_sout, Kroof_sout, &
-      !                           Kwall_sout, Lwall_sout, Lroof_sout, ws
-
-      REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine ! To replace
-      ! NAMELIST /settings/ nbtype, resolution
-      ! namelist/io/cases
-
+      REAL(rprc), DIMENSION(5), INTENT(in) :: datetimeLine
       REAL(KIND(1D0)), DIMENSION(4) :: wallStatesK, wallStatesL
       REAL(rprc) :: Kwall_sout, Lwall_sout
       REAL(rprc) :: Tsurf_sout
-
       REAL(rprc) :: qheat_dom, qcool_dom, dom_temp, qfb_hw_dom, qfm_dom, qfb_dom_air, &
                     Qsw_transmitted_window, Qsw_absorbed_window, Qsw_absorbed_wallroof, &
                     Qcond_ground, Qlw_net_extwallroof_to_outair, Qlw_net_extwindow_to_outair, &
@@ -647,7 +634,8 @@ CONTAINS
          atmState => modState%atmState, &
          roughnessState => modState%roughnessState, &
          stebbsState => modState%stebbsState, &
-         building_archtype => siteInfo%building_archtype &
+         building_archtype => siteInfo%building_archtype, &
+         stebbsPrm => siteInfo%stebbs &
          )
 
          ASSOCIATE ( &
@@ -687,7 +675,7 @@ CONTAINS
                WRITE (*, *) 'Initialising STEBBS'
                ALLOCATE (blds(1))
                resolution = 1
-               CALL gen_building(stebbsState, building_archtype, blds(1))
+               CALL gen_building(stebbsState, stebbsPrm, building_archtype, blds(1))
                ! call create_building(cases(1),blds(1),1)
 
                ! Print out all values of blds(1) to check initialization
@@ -1778,16 +1766,17 @@ SUBROUTINE tstep( &
 END SUBROUTINE tstep
 SUBROUTINE reinitialiseTemperatures
 END SUBROUTINE reinitialiseTemperatures
-SUBROUTINE gen_building(stebbsState, building_archtype, self)
+
+SUBROUTINE gen_building(stebbsState, stebbsPrm, building_archtype, self)
 
    USE modulestebbs, ONLY: LBM
-   USE SUEWS_DEF_DTS, ONLY: BUILDING_ARCHETYPE_PRM, STEBBS_STATE
+   USE SUEWS_DEF_DTS, ONLY: BUILDING_ARCHETYPE_PRM, STEBBS_STATE, STEBBS_PRM
    IMPLICIT NONE
    TYPE(LBM) :: self
 
    TYPE(STEBBS_STATE), INTENT(IN) :: stebbsState
    TYPE(BUILDING_ARCHETYPE_PRM), INTENT(IN) :: building_archtype
-
+   TYPE(STEBBS_PRM), INTENT(IN) :: stebbsPrm
    ! self%idLBM = bldgState%BuildingName
 
    self%Qtotal_heating = 0.0 ! currently only sensible but this needs to be  split into sensible and latent heat components
@@ -1809,14 +1798,14 @@ SUBROUTINE gen_building(stebbsState, building_archtype, self)
    self%ratioInternalVolume = building_archtype%RatioInternalVolume
    self%thickness_wallroof = building_archtype%WallThickness
    self%thickness_groundfloor = building_archtype%FloorThickness
-   self%depth_ground = stebbsState%GroundDepth
+   self%depth_ground = stebbsPrm%GroundDepth
    self%thickness_window = building_archtype%WindowThickness
-   self%conv_coeff_intwallroof = stebbsState%WallInternalConvectionCoefficient
-   self%conv_coeff_indoormass = stebbsState%InternalMassConvectionCoefficient
-   self%conv_coeff_intgroundfloor = stebbsState%FloorInternalConvectionCoefficient
-   self%conv_coeff_intwindow = stebbsState%WindowInternalConvectionCoefficient
-   self%conv_coeff_extwallroof = stebbsState%WallExternalConvectionCoefficient
-   self%conv_coeff_extwindow = stebbsState%WindowExternalConvectionCoefficient
+   self%conv_coeff_intwallroof = stebbsPrm%WallInternalConvectionCoefficient
+   self%conv_coeff_indoormass = stebbsPrm%InternalMassConvectionCoefficient
+   self%conv_coeff_intgroundfloor = stebbsPrm%FloorInternalConvectionCoefficient
+   self%conv_coeff_intwindow = stebbsPrm%WindowInternalConvectionCoefficient
+   self%conv_coeff_extwallroof = stebbsPrm%WallExternalConvectionCoefficient
+   self%conv_coeff_extwindow = stebbsPrm%WindowExternalConvectionCoefficient
    self%conductivity_wallroof = building_archtype%WallEffectiveConductivity
    self%conductivity_groundfloor = building_archtype%GroundFloorEffectiveConductivity
    self%conductivity_window = building_archtype%WindowEffectiveConductivity
@@ -1826,12 +1815,12 @@ SUBROUTINE gen_building(stebbsState, building_archtype, self)
    self%density_groundfloor = building_archtype%GroundFloorDensity
    self%density_window = building_archtype%WindowDensity
    self%density_indoormass = building_archtype%InternalMassDensity
-   self%density_air_ind = stebbsState%IndoorAirDensity
+   self%density_air_ind = stebbsPrm%IndoorAirDensity
    self%cp_wallroof = building_archtype%WallCp
    self%cp_groundfloor = building_archtype%GroundFloorCp
    self%cp_window = building_archtype%WindowCp
    self%cp_indoormass = building_archtype%InternalMassCp
-   self%cp_air_ind = stebbsState%IndoorAirCp
+   self%cp_air_ind = stebbsPrm%IndoorAirCp
    self%emissivity_extwallroof = building_archtype%WallExternalEmissivity
    self%emissivity_intwallroof = building_archtype%WallInternalEmissivity
    self%emissivity_indoormass = building_archtype%InternalMassEmissivity
@@ -1843,23 +1832,23 @@ SUBROUTINE gen_building(stebbsState, building_archtype, self)
    self%wallTransmisivity = building_archtype%WallTransmissivity
    self%wallAbsorbtivity = building_archtype%WallAbsorbtivity
    self%wallReflectivity = building_archtype%WallReflectivity
-   self%BVF_extwall = stebbsState%WallBuildingViewFactor
-   self%GVF_extwall = stebbsState%WallGroundViewFactor
-   self%SVF_extwall = stebbsState%WallSkyViewFactor
+   self%BVF_extwall = stebbsPrm%WallBuildingViewFactor
+   self%GVF_extwall = stebbsPrm%WallGroundViewFactor
+   self%SVF_extwall = stebbsPrm%WallSkyViewFactor
    self%occupants = building_archtype%Occupants
-   self%metabolic_rate = stebbsState%MetabolicRate
-   self%ratio_metabolic_latent_sensible = stebbsState%LatentSensibleRatio
-   self%appliance_power_rating = stebbsState%ApplianceRating
-   self%appliance_totalnumber = INT(stebbsState%TotalNumberofAppliances)
-   self%appliance_usage_factor = stebbsState%ApplianceUsageFactor
+   self%metabolic_rate = stebbsPrm%MetabolicRate
+   self%ratio_metabolic_latent_sensible = stebbsPrm%LatentSensibleRatio
+   self%appliance_power_rating = stebbsPrm%ApplianceRating
+   self%appliance_totalnumber = INT(stebbsPrm%TotalNumberofAppliances)
+   self%appliance_usage_factor = stebbsPrm%ApplianceUsageFactor
    self%maxheatingpower_air = building_archtype%MaxHeatingPower
-   self%heating_efficiency_air = stebbsState%HeatingSystemEfficiency
-   self%maxcoolingpower_air = stebbsState%MaxCoolingPower
-   self%coeff_performance_cooling = stebbsState%CoolingSystemCOP
+   self%heating_efficiency_air = stebbsPrm%HeatingSystemEfficiency
+   self%maxcoolingpower_air = stebbsPrm%MaxCoolingPower
+   self%coeff_performance_cooling = stebbsPrm%CoolingSystemCOP
    self%Vair_ind = &
       (self%Afootprint*self%height_building)* &
       (1 - self%ratioInternalVolume) ! # Multiplied by factor that accounts for internal mass
-   self%ventilation_rate = self%Vair_ind*stebbsState%VentilationRate/3600.0 ! Fixed at begining to have no natural ventilation. Given in units of volume of air per second
+   self%ventilation_rate = self%Vair_ind*stebbsPrm%VentilationRate/3600.0 ! Fixed at begining to have no natural ventilation. Given in units of volume of air per second
    self%Awallroof = &
       (self%wallExternalArea*(1 - self%ratio_window_wall)) + &
       self%Afootprint ! # last component accounts for the roof as not considered seperately in the model
@@ -1910,51 +1899,55 @@ SUBROUTINE gen_building(stebbsState, building_archtype, self)
    self%Twater_tank = stebbsState%WaterTankTemperature + 273.15 ! # Water temperature (K) in Hot Water Tank
    self%Tintwall_tank = stebbsState%InternalWallWaterTankTemperature + 273.15 ! # Hot water tank internal wall temperature (K)
    self%Textwall_tank = stebbsState%ExternalWallWaterTankTemperature + 273.15 ! # Hot water tank external wall temperature (K)
-   self%thickness_tankwall = stebbsState%WaterTankWallThickness ! # Hot water tank wall thickness (m)
+   self%thickness_tankwall = stebbsPrm%WaterTankWallThickness ! # Hot water tank wall thickness (m)
    self%Tincomingwater_tank = stebbsState%MainsWaterTemperature + 273.15 ! # Water temperature (K) of Water coming into the Water Tank
    self%Vwater_tank = building_archtype%WaterTankWaterVolume ! # Volume of Water in Hot Water Tank (m^3)  h = 1.5, (2/(1.5*3.14))^0.5 = r =
-   self%Asurf_tank = stebbsState%WaterTankSurfaceArea ! # Surface Area of Hot Water Tank(m^2) - cylinder h= 1.5
+   self%Asurf_tank = stebbsPrm%WaterTankSurfaceArea ! # Surface Area of Hot Water Tank(m^2) - cylinder h= 1.5
    self%Vwall_tank = self%Asurf_tank*self%thickness_tankwall ! # Wall volume of Hot Water Tank(m^2)
-   self%setTwater_tank = stebbsState%HotWaterHeatingSetpointTemperature + 273.15 ! # Water Tank setpoint temperature (K)
-   self%init_wtTs = stebbsState%HotWaterHeatingSetpointTemperature + 273.15 ! # Initial Water Tank setpoint temperature (K)
+   self%setTwater_tank = stebbsPrm%HotWaterHeatingSetpointTemperature + 273.15 ! # Water Tank setpoint temperature (K)
+   self%init_wtTs = stebbsPrm%HotWaterHeatingSetpointTemperature + 273.15 ! # Initial Water Tank setpoint temperature (K)
    self%Twater_vessel = stebbsState%DomesticHotWaterTemperatureInUseInBuilding + 273.15 ! # Water temperature (K) of water held in use in Building
    self%Tintwall_vessel = stebbsState%InternalWallDHWVesselTemperature + 273.15 ! # Hot water vessel internal wall temperature (K)
    self%Textwall_vessel = stebbsState%ExternalWallDHWVesselTemperature + 273.15 ! # Hot water vessel external wall temperature (K)
-   self%thickness_wall_vessel = stebbsState%DHWVesselWallThickness ! # DHW vessels wall thickness (m)
+   self%thickness_wall_vessel = stebbsPrm%DHWVesselWallThickness ! # DHW vessels wall thickness (m)
 
-   self%Vwater_vessel = stebbsState%DHWWaterVolume ! # Volume of water held in use in building (m^3)
-   self%Awater_vessel = stebbsState%DHWSurfaceArea ! # Surface Area of Hot Water in Vessels in Building (m^2)
+   self%Vwater_vessel = stebbsPrm%DHWWaterVolume ! # Volume of water held in use in building (m^3)
+   self%Awater_vessel = stebbsPrm%DHWSurfaceArea ! # Surface Area of Hot Water in Vessels in Building (m^2)
    self%Vwall_vessel = self%Awater_vessel*self%thickness_wall_vessel ! # Wall volume of Hot water Vessels in Building
-   self%flowrate_water_supply = stebbsState%HotWaterFlowRate ! # Hot Water Flow Rate in m^3 / s
-   self%flowrate_water_drain = stebbsState%DHWDrainFlowRate ! # Draining of Domestic Hot Water held in building
+   self%flowrate_water_supply = stebbsPrm%HotWaterFlowRate ! # Hot Water Flow Rate in m^3 / s
+   self%flowrate_water_drain = stebbsPrm%DHWDrainFlowRate ! # Draining of Domestic Hot Water held in building
 
-   self%single_flowrate_water_supply = stebbsState%HotWaterFlowRate ! # Hot Water Flow Rate in m^3 s^-1 for a single HW unit
-   self%single_flowrate_water_drain = stebbsState%DHWDrainFlowRate ! # Draining of Domestic Hot Water held in building
+   self%single_flowrate_water_supply = stebbsPrm%HotWaterFlowRate ! # Hot Water Flow Rate in m^3 s^-1 for a single HW unit
+   self%flowrate_water_supply = stebbsPrm%HotWaterFlowRate ! # Hot Water Flow Rate in m^3 / s
+   self%flowrate_water_drain = stebbsPrm%DHWDrainFlowRate ! # Draining of Domestic Hot Water held in building
 
-   self%cp_water = stebbsState%DHWSpecificHeatCapacity ! # Specific Heat Capacity of Domestic Hot Water (J/kg K)
-   self%cp_wall_tank = stebbsState%HotWaterTankSpecificHeatCapacity ! # Specific Heat Capacity of Hot Water Tank wall
-   self%cp_wall_vessel = stebbsState%DHWVesselSpecificHeatCapacity ! # Specific Heat Capacity of Vessels containing DHW in use in Building (value here is based on MDPE)
+   self%single_flowrate_water_supply = stebbsPrm%HotWaterFlowRate ! # Hot Water Flow Rate in m^3 s^-1 for a single HW unit
+   self%single_flowrate_water_drain = stebbsPrm%DHWDrainFlowRate ! # Draining of Domestic Hot Water held in building
 
-   self%density_water = stebbsState%DHWDensity ! # Density of water
-   self%density_wall_tank = stebbsState%HotWaterTankWallDensity ! # Density of hot water tank wall
-   self%density_wall_vessel = stebbsState%DHWVesselDensity ! # Density of vessels containing DHW in use in buildings
+   self%cp_water = stebbsPrm%DHWSpecificHeatCapacity ! # Specific Heat Capacity of Domestic Hot Water (J/kg K)
+   self%cp_wall_tank = stebbsPrm%HotWaterTankSpecificHeatCapacity ! # Specific Heat Capacity of Hot Water Tank wall
+   self%cp_wall_vessel = stebbsPrm%DHWVesselSpecificHeatCapacity ! # Specific Heat Capacity of Vessels containing DHW in use in Building (value here is based on MDPE)
 
-   self%BVF_tank = stebbsState%HotWaterTankBuildingWallViewFactor ! # water tank - building wall view factor
-   self%MVF_tank = stebbsState%HotWaterTankInternalMassViewFactor ! # water tank - building internal mass view factor
+   self%density_water = stebbsPrm%DHWDensity ! # Density of water
+   self%density_wall_tank = stebbsPrm%HotWaterTankWallDensity ! # Density of hot water tank wall
+   self%density_wall_vessel = stebbsPrm%DHWVesselDensity ! # Density of vessels containing DHW in use in buildings
 
-   self%conductivity_wall_tank = stebbsState%HotWaterTankWallConductivity ! # Effective Wall conductivity of the Hot Water Tank (based on polyurethan foam given in https://www.lsta.lt/files/events/28_jarfelt.pdf and from https://www.sciencedirect.com/science/article/pii/S0360544214011189?via%3Dihub)
-   self%conv_coeff_intwall_tank = stebbsState%HotWaterTankInternalWallConvectionCoefficient ! # Effective Internal Wall convection coefficient of the Hot Water Tank (W/m2 . K) given in http://orbit.dtu.dk/fedora/objects/orbit:77843/datastreams/file_2640258/content
-   self%conv_coeff_extwall_tank = stebbsState%HotWaterTankExternalWallConvectionCoefficient ! # Effective External Wall convection coefficient of the Hot Water Tank (W/m2 . K) given in http://orbit.dtu.dk/fedora/objects/orbit:77843/datastreams/file_2640258/content
+   self%BVF_tank = stebbsPrm%HotWaterTankBuildingWallViewFactor ! # water tank - building wall view factor
+   self%MVF_tank = stebbsPrm%HotWaterTankInternalMassViewFactor ! # water tank - building internal mass view factor
 
-   self%emissivity_extwall_tank = stebbsState%HotWaterTankWallEmissivity
-   self%conductivity_wall_vessel = stebbsState%DHWVesselWallConductivity
-   self%conv_coeff_intwall_vessel = stebbsState%DHWVesselInternalWallConvectionCoefficient
-   self%conv_coeff_extwall_vessel = stebbsState%HotWaterTankExternalWallConvectionCoefficient ! # Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building
-   self%emissivity_extwall_vessel = stebbsState%DHWVesselWallConductivity ! # Effective External Wall emissivity of hot water being used within building
+   self%conductivity_wall_tank = stebbsPrm%HotWaterTankWallConductivity ! # Effective Wall conductivity of the Hot Water Tank
+   self%conv_coeff_intwall_tank = stebbsPrm%HotWaterTankInternalWallConvectionCoefficient ! # Effective Internal Wall convection coefficient of the Hot Water Tank
+   self%conv_coeff_extwall_tank = stebbsPrm%HotWaterTankExternalWallConvectionCoefficient ! # Effective External Wall convection coefficient of the Hot Water Tank
+
+   self%emissivity_extwall_tank = stebbsPrm%HotWaterTankWallEmissivity
+   self%conductivity_wall_vessel = stebbsPrm%DHWVesselWallConductivity
+   self%conv_coeff_intwall_vessel = stebbsPrm%DHWVesselInternalWallConvectionCoefficient
+   self%conv_coeff_extwall_vessel = stebbsPrm%HotWaterTankExternalWallConvectionCoefficient ! # Effective Enternal Wall convection coefficient of the Vessels holding DHW in use in Building
+   self%emissivity_extwall_vessel = stebbsPrm%DHWVesselWallConductivity ! # Effective External Wall emissivity of hot water being used within building
 
    self%maxheatingpower_water = building_archtype%MaximumHotWaterHeatingPower ! # Watts
-   self%heating_efficiency_water = stebbsState%HotWaterHeatingEfficiency
-   self%minVwater_vessel = stebbsState%MinimumVolumeOfDHWinUse ! # m3
+   self%heating_efficiency_water = stebbsPrm%HotWaterHeatingEfficiency
+   self%minVwater_vessel = stebbsPrm%MinimumVolumeOfDHWinUse ! # m3
 
    self%minHeatingPower_DHW = building_archtype%MaximumHotWaterHeatingPower
    self%HeatingPower_DHW = building_archtype%MaximumHotWaterHeatingPower
@@ -1962,6 +1955,7 @@ SUBROUTINE gen_building(stebbsState, building_archtype, self)
    self%HWPowerAverage = (/30000, 30000, 30000/)
 
 END SUBROUTINE gen_building
+
 SUBROUTINE create_building(CASE, self, icase)
    USE modulestebbs, ONLY: LBM
    IMPLICIT NONE

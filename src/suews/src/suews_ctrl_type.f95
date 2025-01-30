@@ -462,6 +462,61 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: CoolingSetpointTemperature ! Cooling setpoint temperature [degC]
    END TYPE BUILDING_ARCHETYPE_PRM
 
+
+   TYPE, PUBLIC :: STEBBS_PRM
+            ! Collect general parameters for STEBBS
+      REAL(KIND(1D0)) :: WallInternalConvectionCoefficient ! Internal convection coefficient of walls and roof [W m-2 K-1]
+      REAL(KIND(1D0)) :: InternalMassConvectionCoefficient ! Convection coefficient of internal mass [W m-2 K-1]
+      REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient ! Internal convection coefficient of ground floor [W m-2 K-1]
+      REAL(KIND(1D0)) :: WindowInternalConvectionCoefficient ! Internal convection coefficient of windows [W m-2 K-1]
+      REAL(KIND(1D0)) :: WallExternalConvectionCoefficient ! Initial external convection coefficient of walls and roof [W m-2 K-1]
+      REAL(KIND(1D0)) :: WindowExternalConvectionCoefficient ! Initial external convection coefficient of windows [W m-2 K-1]
+      REAL(KIND(1D0)) :: GroundDepth ! Depth of external ground (deep soil) [m]
+      REAL(KIND(1D0)) :: ExternalGroundConductivity
+      REAL(KIND(1D0)) :: IndoorAirDensity ! Density of indoor air [kg m-3]
+      REAL(KIND(1D0)) :: IndoorAirCp ! Specific heat capacity of indoor air [J kg-1 K-1]
+      REAL(KIND(1D0)) :: WallBuildingViewFactor ! Building view factor of external walls [-]
+      REAL(KIND(1D0)) :: WallGroundViewFactor ! Ground view factor of external walls [-]
+      REAL(KIND(1D0)) :: WallSkyViewFactor ! Sky view factor of external walls [-]
+      REAL(KIND(1D0)) :: MetabolicRate ! Metabolic rate of building occupants [W]
+      REAL(KIND(1D0)) :: LatentSensibleRatio ! Latent-to-sensible ratio of metabolic energy release of occupants [-]
+      REAL(KIND(1D0)) :: ApplianceRating ! Power demand of single appliance [W]
+      REAL(KIND(1D0)) :: TotalNumberofAppliances ! Number of appliances present in building [-]
+      REAL(KIND(1D0)) :: ApplianceUsageFactor ! Number of appliances in use [-]
+      REAL(KIND(1D0)) :: HeatingSystemEfficiency ! Efficiency of space heating system [-]
+      REAL(KIND(1D0)) :: MaxCoolingPower ! Maximum power demand of cooling system [W]
+      REAL(KIND(1D0)) :: CoolingSystemCOP ! Coefficient of performance of cooling system [-]
+      REAL(KIND(1D0)) :: VentilationRate ! Ventilation rate (air changes per hour, ACH) [h-1]
+      REAL(KIND(1D0)) :: WaterTankWallThickness ! Hot water tank wall thickness [m]
+      REAL(KIND(1D0)) :: WaterTankSurfaceArea ! Surface area of hot water tank cylinder [m2]
+      REAL(KIND(1D0)) :: HotWaterHeatingSetpointTemperature ! Water tank setpoint temperature [degC]
+      REAL(KIND(1D0)) :: HotWaterTankWallEmissivity ! Effective external wall emissivity of the hot water tank [-]
+      REAL(KIND(1D0)) :: DHWVesselWallThickness ! Hot water vessel wall thickness [m]
+      REAL(KIND(1D0)) :: DHWWaterVolume ! Volume of water held in use in building [m3]
+      REAL(KIND(1D0)) :: DHWSurfaceArea ! Surface area of hot water in vessels in building [m2]
+      REAL(KIND(1D0)) :: DHWVesselEmissivity ! NEEDS CHECKED! NOT USED (assumed same as DHWVesselWallEmissivity) [-]
+      REAL(KIND(1D0)) :: HotWaterFlowRate ! Hot water flow rate from tank to vessel [m3 s-1]
+      REAL(KIND(1D0)) :: DHWDrainFlowRate ! Flow rate of hot water held in building to drain [m3 s-1]
+      REAL(KIND(1D0)) :: DHWSpecificHeatCapacity ! Specific heat capacity of hot water [J kg-1 K-1]
+      REAL(KIND(1D0)) :: HotWaterTankSpecificHeatCapacity ! Specific heat capacity of hot water tank wal [J kg-1 K-1]
+      REAL(KIND(1D0)) :: DHWVesselSpecificHeatCapacity ! Specific heat capacity of vessels containing hot water in use in buildings [J kg-1 K-1]
+      REAL(KIND(1D0)) :: DHWDensity ! Density of hot water in use [kg m-3]
+      REAL(KIND(1D0)) :: HotWaterTankWallDensity ! Density of hot water tank wall [kg m-3]
+      REAL(KIND(1D0)) :: DHWVesselDensity ! Density of vessels containing hot water in use [kg m-3]
+      REAL(KIND(1D0)) :: HotWaterTankBuildingWallViewFactor ! Water tank/vessel internal building wall/roof view factor [-]
+      REAL(KIND(1D0)) :: HotWaterTankInternalMassViewFactor ! Water tank/vessel building internal mass view factor [-]
+      REAL(KIND(1D0)) :: HotWaterTankWallConductivity ! Effective wall conductivity of the hot water tank [W m-1 K-1]
+      REAL(KIND(1D0)) :: HotWaterTankInternalWallConvectionCoefficient ! Effective internal wall convection coefficient of the hot water tank [W m-2 K-1]
+      REAL(KIND(1D0)) :: HotWaterTankExternalWallConvectionCoefficient ! Effective external wall convection coefficient of the hot water tank [W m-2 K-1]
+      REAL(KIND(1D0)) :: DHWVesselWallConductivity ! Effective wall conductivity of the hot water tank [W m-1 K-1]
+      REAL(KIND(1D0)) :: DHWVesselInternalWallConvectionCoefficient ! Effective internal wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]
+      REAL(KIND(1D0)) :: DHWVesselExternalWallConvectionCoefficient ! Effective external wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]
+      REAL(KIND(1D0)) :: DHWVesselWallEmissivity ! Effective external wall emissivity of hot water being used within building [-]
+      REAL(KIND(1D0)) :: HotWaterHeatingEfficiency ! Efficiency of hot water system [-]
+      REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse ! Minimum volume of hot water in use [m3]
+
+   END TYPE STEBBS_PRM
+
    TYPE, PUBLIC :: SUEWS_SITE
       REAL(KIND(1D0)) :: lat !latitude [deg]
       REAL(KIND(1D0)) :: lon !longitude [deg]
@@ -507,6 +562,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(LC_WATER_PRM) :: lc_water
 
       TYPE(BUILDING_ARCHETYPE_PRM) :: building_archtype
+      TYPE(STEBBS_PRM) :: stebbs
 
    CONTAINS
       PROCEDURE :: ALLOCATE => allocate_site_prm_c
@@ -808,73 +864,8 @@ MODULE SUEWS_DEF_DTS
    END TYPE ROUGHNESS_STATE
 
    TYPE, PUBLIC :: STEBBS_STATE
-      ! Collect general parameters for STEBBS
-      REAL(KIND(1D0)) :: WallInternalConvectionCoefficient ! Internal convection coefficient of walls and roof [W m-2 K-1]
-      REAL(KIND(1D0)) :: InternalMassConvectionCoefficient ! Convection coefficient of internal mass [W m-2 K-1]
-      REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient ! Internal convection coefficient of ground floor [W m-2 K-1]
-      REAL(KIND(1D0)) :: WindowInternalConvectionCoefficient ! Internal convection coefficient of windows [W m-2 K-1]
-      REAL(KIND(1D0)) :: WallExternalConvectionCoefficient ! Initial external convection coefficient of walls and roof [W m-2 K-1]
-      REAL(KIND(1D0)) :: WindowExternalConvectionCoefficient ! Initial external convection coefficient of windows [W m-2 K-1]
-      REAL(KIND(1D0)) :: GroundDepth ! Depth of external ground (deep soil) [m]
-      REAL(KIND(1D0)) :: ExternalGroundConductivity
-      REAL(KIND(1D0)) :: IndoorAirDensity ! Density of indoor air [kg m-3]
-      REAL(KIND(1D0)) :: IndoorAirCp ! Specific heat capacity of indoor air [J kg-1 K-1]
-      REAL(KIND(1D0)) :: WallBuildingViewFactor ! Building view factor of external walls [-]
-      REAL(KIND(1D0)) :: WallGroundViewFactor ! Ground view factor of external walls [-]
-      REAL(KIND(1D0)) :: WallSkyViewFactor ! Sky view factor of external walls [-]
-      REAL(KIND(1D0)) :: MetabolicRate ! Metabolic rate of building occupants [W]
-      REAL(KIND(1D0)) :: LatentSensibleRatio ! Latent-to-sensible ratio of metabolic energy release of occupants [-]
-      REAL(KIND(1D0)) :: ApplianceRating ! Power demand of single appliance [W]
-      REAL(KIND(1D0)) :: TotalNumberofAppliances ! Number of appliances present in building [-]
-      REAL(KIND(1D0)) :: ApplianceUsageFactor ! Number of appliances in use [-]
-      REAL(KIND(1D0)) :: HeatingSystemEfficiency ! Efficiency of space heating system [-]
-      REAL(KIND(1D0)) :: MaxCoolingPower ! Maximum power demand of cooling system [W]
-      REAL(KIND(1D0)) :: CoolingSystemCOP ! Coefficient of performance of cooling system [-]
-      REAL(KIND(1D0)) :: VentilationRate ! Ventilation rate (air changes per hour, ACH) [h-1]
-      REAL(KIND(1D0)) :: IndoorAirStartTemperature ! Initial indoor air temperature [degC]
-      REAL(KIND(1D0)) :: IndoorMassStartTemperature ! Initial indoor mass temperature [degC]
-      REAL(KIND(1D0)) :: WallIndoorSurfaceTemperature ! Initial wall/roof indoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WallOutdoorSurfaceTemperature ! Initial wall/roof outdoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WindowIndoorSurfaceTemperature ! Initial window indoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WindowOutdoorSurfaceTemperature ! Initial window outdoor surface temperature [degC]
-      REAL(KIND(1D0)) :: GroundFloorIndoorSurfaceTemperature ! Initial ground floor indoor surface temperature [degC]
-      REAL(KIND(1D0)) :: GroundFloorOutdoorSurfaceTemperature ! Initial ground floor outdoor surface temperature [degC]
-      REAL(KIND(1D0)) :: WaterTankTemperature ! Initial water temperature in hot water tank [degC]
-      REAL(KIND(1D0)) :: InternalWallWaterTankTemperature ! Initial hot water tank internal wall temperature [degC]
-      REAL(KIND(1D0)) :: ExternalWallWaterTankTemperature ! Initial hot water tank external wall temperature [degC]
-      REAL(KIND(1D0)) :: WaterTankWallThickness ! Hot water tank wall thickness [m]
-      REAL(KIND(1D0)) :: MainsWaterTemperature ! Temperature of water coming into the water tank [degC]
-      REAL(KIND(1D0)) :: WaterTankSurfaceArea ! Surface area of hot water tank cylinder [m2]
-      REAL(KIND(1D0)) :: HotWaterHeatingSetpointTemperature ! Water tank setpoint temperature [degC]
-      REAL(KIND(1D0)) :: HotWaterTankWallEmissivity ! Effective external wall emissivity of the hot water tank [-]
-      REAL(KIND(1D0)) :: DomesticHotWaterTemperatureInUseInBuilding ! Initial water temperature of water held in use in building [degC]
-      REAL(KIND(1D0)) :: InternalWallDHWVesselTemperature ! Initial hot water vessel internal wall temperature [degC]
-      REAL(KIND(1D0)) :: ExternalWallDHWVesselTemperature ! Initial hot water vessel external wall temperature [degC]
-      REAL(KIND(1D0)) :: DHWVesselWallThickness ! Hot water vessel wall thickness [m]
-      REAL(KIND(1D0)) :: DHWWaterVolume ! Volume of water held in use in building [m3]
-      REAL(KIND(1D0)) :: DHWSurfaceArea ! Surface area of hot water in vessels in building [m2]
-      REAL(KIND(1D0)) :: DHWVesselEmissivity ! NEEDS CHECKED! NOT USED (assumed same as DHWVesselWallEmissivity) [-]
-      REAL(KIND(1D0)) :: HotWaterFlowRate ! Hot water flow rate from tank to vessel [m3 s-1]
-      REAL(KIND(1D0)) :: DHWDrainFlowRate ! Flow rate of hot water held in building to drain [m3 s-1]
-      REAL(KIND(1D0)) :: DHWSpecificHeatCapacity ! Specific heat capacity of hot water [J kg-1 K-1]
-      REAL(KIND(1D0)) :: HotWaterTankSpecificHeatCapacity ! Specific heat capacity of hot water tank wal [J kg-1 K-1]
-      REAL(KIND(1D0)) :: DHWVesselSpecificHeatCapacity ! Specific heat capacity of vessels containing hot water in use in buildings [J kg-1 K-1]
-      REAL(KIND(1D0)) :: DHWDensity ! Density of hot water in use [kg m-3]
-      REAL(KIND(1D0)) :: HotWaterTankWallDensity ! Density of hot water tank wall [kg m-3]
-      REAL(KIND(1D0)) :: DHWVesselDensity ! Density of vessels containing hot water in use [kg m-3]
-      REAL(KIND(1D0)) :: HotWaterTankBuildingWallViewFactor ! Water tank/vessel internal building wall/roof view factor [-]
-      REAL(KIND(1D0)) :: HotWaterTankInternalMassViewFactor ! Water tank/vessel building internal mass view factor [-]
-      REAL(KIND(1D0)) :: HotWaterTankWallConductivity ! Effective wall conductivity of the hot water tank [W m-1 K-1]
-      REAL(KIND(1D0)) :: HotWaterTankInternalWallConvectionCoefficient ! Effective internal wall convection coefficient of the hot water tank [W m-2 K-1]
-      REAL(KIND(1D0)) :: HotWaterTankExternalWallConvectionCoefficient ! Effective external wall convection coefficient of the hot water tank [W m-2 K-1]
-      REAL(KIND(1D0)) :: DHWVesselWallConductivity ! Effective wall conductivity of the hot water tank [W m-1 K-1]
-      REAL(KIND(1D0)) :: DHWVesselInternalWallConvectionCoefficient ! Effective internal wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]
-      REAL(KIND(1D0)) :: DHWVesselExternalWallConvectionCoefficient ! Effective external wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]
-      REAL(KIND(1D0)) :: DHWVesselWallEmissivity ! Effective external wall emissivity of hot water being used within building [-]
-      REAL(KIND(1D0)) :: HotWaterHeatingEfficiency ! Efficiency of hot water system [-]
-      REAL(KIND(1D0)) :: MinimumVolumeOfDHWinUse ! Minimum volume of hot water in use [m3]
 
-      ! Beers output for STEBBS
+      ! Beers output for STEBBS - TODO: these should be kept in the HEAT_STATE type -
       REAL(KIND(1D0)) :: Kdown2d ! incoming shortwave radiation onto roof [W m-2]
       REAL(KIND(1D0)) :: Kup2d ! outgoing shortwave radiation from roof [W m-2]
       REAL(KIND(1D0)) :: Kwest ! incoming shortwave radiation from west [W m-2]
@@ -887,6 +878,23 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Lsouth ! incoming longwave radiation from south [W m-2]
       REAL(KIND(1D0)) :: Lnorth ! incoming longwave radiation from north [W m-2]
       REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
+
+      ! Initial conditions that are updated during runtime
+      REAL(KIND(1D0)) :: IndoorAirStartTemperature ! Initial indoor air temperature [degC]
+      REAL(KIND(1D0)) :: IndoorMassStartTemperature ! Initial indoor mass temperature [degC]
+      REAL(KIND(1D0)) :: WallIndoorSurfaceTemperature ! Initial wall/roof indoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WallOutdoorSurfaceTemperature ! Initial wall/roof outdoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WindowIndoorSurfaceTemperature ! Initial window indoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WindowOutdoorSurfaceTemperature ! Initial window outdoor surface temperature [degC]
+      REAL(KIND(1D0)) :: GroundFloorIndoorSurfaceTemperature ! Initial ground floor indoor surface temperature [degC]
+      REAL(KIND(1D0)) :: GroundFloorOutdoorSurfaceTemperature ! Initial ground floor outdoor surface temperature [degC]
+      REAL(KIND(1D0)) :: WaterTankTemperature ! Initial water temperature in hot water tank [degC]
+      REAL(KIND(1D0)) :: InternalWallWaterTankTemperature ! Initial hot water tank internal wall temperature [degC]
+      REAL(KIND(1D0)) :: ExternalWallWaterTankTemperature ! Initial hot water tank external wall temperature [degC]
+      REAL(KIND(1D0)) :: MainsWaterTemperature ! Temperature of water coming into the water tank [degC]
+      REAL(KIND(1D0)) :: DomesticHotWaterTemperatureInUseInBuilding ! Initial water temperature of water held in use in building [degC]
+      REAL(KIND(1D0)) :: InternalWallDHWVesselTemperature ! Initial hot water vessel internal wall temperature [degC]
+      REAL(KIND(1D0)) :: ExternalWallDHWVesselTemperature ! Initial hot water vessel external wall temperature [degC]
 
    END TYPE STEBBS_STATE
 
