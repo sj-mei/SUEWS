@@ -1,3 +1,6 @@
+from pathlib import Path
+import sys
+
 print("""
 ===============================================================================
 This is a Python script to move generated files to proper location for meson build.
@@ -5,10 +8,9 @@ It is called by the meson build system.
 
 """)
 
-from pathlib import Path
-import os
-import sys
-
+print("print debugging info for move_output_gen.py")
+for i, arg in enumerate(sys.argv):
+    print(f"sys.argv[{i}]: {arg}")
 # receive two arguments from the command line
 OUTPUT = sys.argv[1:-1]
 OUTDIR = sys.argv[-1]

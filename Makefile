@@ -61,8 +61,6 @@ suews:
 # NOTE: `--no-build-isolation` is used to avoid dependency issues with the editable install.
 # ref: https://mesonbuild.com/meson-python/how-to-guides/editable-installs.html#editable-installs
 dev:
-	rm -rf build
-	rm -rf .pytest_cache
 	$(PYTHON) -m pip install --no-build-isolation --editable .
 
 # install supy locally
