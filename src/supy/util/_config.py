@@ -10,7 +10,6 @@ from pydantic import (
 import numpy as np
 from enum import Enum
 import pandas as pd
-import scipy as sp
 import yaml
 import pdb
 import math
@@ -2224,41 +2223,45 @@ class ModelPhysics(BaseModel):
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
-    def check_storageheatmethod(self) -> "ModelPhysics":
+    def check_all(self) -> "ModelPhysics":
+        """
+        Collect and aggregate all validation checks for ModelPhysics,
+        so multiple errors (if any) can be raised together
+        """
+        errors = []
+        # storageheatmethod check
         if self.storageheatmethod == 1 and self.ohmincqf != 0:
-            raise ValueError(
+            errors.append(
                 f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
                 f"You should switch to OhmIncQf=0.\n"
             )
         elif self.storageheatmethod == 2 and self.ohmincqf != 1:
-            raise ValueError(
+            errors.append(
                 f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
                 f"You should switch to OhmIncQf=1.\n"
             )
-        return self
 
-    @model_validator(mode="after")
-    def check_snowusemethod(self) -> "ModelPhysics":
+        # snowusemethod check
         if self.snowuse == 1:
-            raise ValueError(
+            errors.append(
                 f"\nSnowUse is set to {self.snowuse}.\n"
                 f"There are no checks implemented for this case (snow calculations included in the run).\n"
                 f"You should switch to SnowUse=0.\n"
             )
-        return self
 
-    # We then need to set to 0 (or None) all the snow-related parameters or rules
-    # in the code and return them accordingly in the yml file.
-
-    @model_validator(mode="after")
-    def check_emissionsmethod(self) -> "ModelPhysics":
+        # emissionsmethod check
         if self.emissionsmethod == 45:
-            raise ValueError(
+            errors.append(
                 f"\nEmissionsMethod is set to {self.emissionsmethod}.\n"
                 f"There are no checks implemented for this case (CO2 calculations included in the run).\n"
                 f"You should switch to EmissionsMethod=0, 1, 2, 3, or 4.\n"
             )
+
+        if errors:
+            raise ValueError("\n".join(errors))
+
         return self
+
 
     # We then need to set to 0 (or None) all the CO2-related parameters or rules
     # in the code and return them accordingly in the yml file.
@@ -3763,19 +3766,23 @@ class SnowParams(BaseModel):
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
-    def validate_crw_range(self) -> "SnowParams":
+    def validate_all(self) -> "SnowParams":
+        """
+        Aggregate all validation checks for SnowParams,
+        so multiple errors (if any) can be raised together
+        """
+        errors = []
         if self.crwmin >= self.crwmax:
-            raise ValueError(
+            errors.append(
                 f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax})."
             )
-        return self
-
-    @model_validator(mode="after")
-    def validate_snowalb_range(self) -> "SnowParams":
         if self.snowalbmin >= self.snowalbmax:
-            raise ValueError(
+            errors.append(
                 f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax})."
             )
+        if errors:
+            raise ValueError("\n".join(errors))
+
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -4813,4 +4820,3 @@ def init_config_from_yaml(path: str = "./config-suews.yml") -> SUEWSConfig:
     with open(path, 'r') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
     return SUEWSConfig(**config)
-

@@ -37,9 +37,11 @@ py.install_sources(
             'util/_spinup.py',
             'util/_tmy.py',
             'util/_wrf.py',
+            'util/_config.py',
             'util/rules.csv',
         ],
         [
+            'sample_run/sample_config.yml',
             'sample_run/RunControl.nml',
             'sample_run/Input/ESTMinput.nml',
             'sample_run/Input/GridLayoutKc.nml',
