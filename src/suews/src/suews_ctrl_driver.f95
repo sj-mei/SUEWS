@@ -4632,7 +4632,6 @@ CONTAINS
 
       TYPE(STEBBS_PRM) :: stebbsPrm
 
-
       ! lumped states
       TYPE(SUEWS_DEBUG), INTENT(OUT) :: debug_state
       TYPE(SUEWS_STATE) :: mod_state

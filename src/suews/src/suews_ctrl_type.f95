@@ -462,9 +462,8 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: CoolingSetpointTemperature ! Cooling setpoint temperature [degC]
    END TYPE BUILDING_ARCHETYPE_PRM
 
-
    TYPE, PUBLIC :: STEBBS_PRM
-            ! Collect general parameters for STEBBS
+      ! Collect general parameters for STEBBS
       REAL(KIND(1D0)) :: WallInternalConvectionCoefficient ! Internal convection coefficient of walls and roof [W m-2 K-1]
       REAL(KIND(1D0)) :: InternalMassConvectionCoefficient ! Convection coefficient of internal mass [W m-2 K-1]
       REAL(KIND(1D0)) :: FloorInternalConvectionCoefficient ! Internal convection coefficient of ground floor [W m-2 K-1]
