@@ -410,7 +410,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: flowchange ! special term in water
    END TYPE LC_WATER_PRM
 
-     TYPE, PUBLIC :: BUILDING_ARCHETYPE_PRM
+   TYPE, PUBLIC :: BUILDING_ARCHETYPE_PRM
       ! This type is used to collect building archetypes for STEBBS
       ! CHARACTER(LEN=50) :: BuildingCode !
       ! CHARACTER(LEN=50) :: BuildingClass !
@@ -889,7 +889,6 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Least ! incoming longwave radiation from east [W m-2]
 
    END TYPE STEBBS_STATE
-
 
    ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE

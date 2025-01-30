@@ -5438,8 +5438,6 @@ CONTAINS
       stebbsState%HotWaterHeatingEfficiency = HotWaterHeatingEfficiency
       stebbsState%MinimumVolumeOfDHWinUse = MinimumVolumeOfDHWinUse
 
-
-
       ! ! transfer states into modState
       mod_State%anthroemisState = anthroEmisState
       mod_State%hydroState = hydroState

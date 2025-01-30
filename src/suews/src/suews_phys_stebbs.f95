@@ -590,7 +590,7 @@ SUBROUTINE setdatetime(datetimeLine)
 END SUBROUTINE setdatetime
 MODULE stebbs_module
 
-   use modulestebbsprecision, ONLY: rprc
+   USE modulestebbsprecision, ONLY: rprc
    ! use modulestebbs, ONLY: blds, cases, resolution
 
 CONTAINS
