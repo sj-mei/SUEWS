@@ -129,7 +129,7 @@ build_lib=static_library(
   build_by_default: true,
 )
 
-run_command('bash', '-c', 'sleep 5 && ls -l')
+# run_command('bash', '-c', 'sleep 5 && ls -l')
 
 ##################################################################
 # 2. use f90wrap to generate the modified fortran code with support for derived type
