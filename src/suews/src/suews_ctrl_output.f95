@@ -1206,12 +1206,12 @@ MODULE ctrl_output
       varAttr('Qtotal_heat', 'W', f104, 'Total heating', aA, 'STEBBS', 0), &
       varAttr('Qtotal_cool', 'W', f104, 'Total cooling', aA, 'STEBBS', 0), &
       varAttr('Qsw_trans_win', 'W', f104, 'Shortwave transmitted through window', aA, 'STEBBS', 0), &
-      varAttr('sw_abs_win', 'W', f104, 'Shortwave absorbed by window', aA, 'STEBBS', 0), &
+      varAttr('Qsw_abs_win', 'W', f104, 'Shortwave absorbed by window', aA, 'STEBBS', 0), &
       varAttr('Qsw_abs_wall', 'W', f104, 'Shortwave absorbed by wall/roof', aA, 'STEBBS', 0), &
       varAttr('Qconv_indair', 'W', f104, 'Convective heat from indoor air to indoor mass', aA, 'STEBBS', 0), &
       varAttr('Qlw_net_intwall', 'W', f104, 'Net longwave from internal wall/roof to other indoor surfaces', aA, 'STEBBS', 0), &
-      varAttr('lw_net_intwin', 'W', f104, 'Net longwave from internal window to other indoor surfaces', aA, 'STEBBS', 0), &
-      varAttr('lw_net_intgrnd', 'W', f104, 'Net longwave from internal ground floor to other indoor surfaces', aA, 'STEBBS', 0), &
+      varAttr('Qlw_net_intwin', 'W', f104, 'Net longwave from internal window to other indoor surfaces', aA, 'STEBBS', 0), &
+      varAttr('Qlw_net_intgrnd', 'W', f104, 'Net longwave from internal ground floor to other indoor surfaces', aA, 'STEBBS', 0), &
       varAttr('Q_appliance', 'W', f104, 'Appliance heat', aA, 'STEBBS', 0), &
       varAttr('Q_ventilation', 'W', f104, 'Ventilation heat', aA, 'STEBBS', 0), &
       varAttr('Qconv_indwall', 'W', f104, 'Convective heat from indoor air to internal wall/roof', aA, 'STEBBS', 0), &
