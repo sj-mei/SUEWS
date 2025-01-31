@@ -955,17 +955,21 @@ CONTAINS
 
             dataOutLineSTEBBS = [ &
                                 ! Forcing
-                                ws, Tair_sout, Tsurf_sout, Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
+                                ws, Tair_sout, Tsurf_sout, &
+                                Kroof_sout, Lroof_sout, Kwall_sout, Lwall_sout, &
                                 ! Temperatures
-                                Tair_ind, Tindoormass, Tintwallroof, Textwallroof, Tintwindow, Textwindow, Tintgroundfloor, &
+                                Tair_ind, Tindoormass, Tintwallroof, Textwallroof, Tintwindow, &
+                                Textwindow, Tintgroundfloor, &
                                 Textgroundfloor, Qtotal_heating, &
                                 Qtotal_cooling, Qsw_transmitted_window_tstepTotal, &
-                                Qsw_absorbed_window_tstepTotal, Qsw_absorbed_wallroof_tstepTotal,    Qconv_indair_to_indoormass_tstepTotal, &
+                                Qsw_absorbed_window_tstepTotal, Qsw_absorbed_wallroof_tstepTotal, &
+                                Qconv_indair_to_indoormass_tstepTotal, &
                                 Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal, &
                                 Qlw_net_intwindow_to_allotherindoorsurfaces_tstepTotal, &
                                 Qlw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal, &
                                 Q_appliance_tstepTotal, &
-                                Q_ventilation_tstepTotal, Qconv_indair_to_intwallroof_tstepTotal, Qconv_indair_to_intwindow_tstepTotal, &
+                                Q_ventilation_tstepTotal, Qconv_indair_to_intwallroof_tstepTotal, &
+                                Qconv_indair_to_intwindow_tstepTotal, &
                                 Qconv_indair_to_intgroundfloor_tstepTotal, &
                                 Qloss_efficiency_heating_air_tstepTotal, &
                                 Qcond_wallroof_tstepTotal, Qcond_window_tstepTotal, &
@@ -978,7 +982,8 @@ CONTAINS
                                 Qtotal_water_tank, Qloss_drain, &
                                 Twater_tank, Tintwall_tank, Textwall_tank, Twater_vessel, &
                                 Tintwall_vessel, Textwall_vessel, &
-                                Vwater_vessel, Awater_vessel, Vwall_vessel, qsensible_timestepTotal, qlatent_timestepTotal, &
+                                Vwater_vessel, Awater_vessel, Vwall_vessel, qsensible_timestepTotal, &
+                                qlatent_timestepTotal, &
                                 QS_tstepTotal, QS_fabric_tstepTotal, QS_air_tstepTotal, &
                                 Vwall_tank, Vwater_tank &
                                 ]
