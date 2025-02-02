@@ -32,9 +32,6 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: EvapMethod ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER :: LAImethod ! boolean to determine if calculate LAI [-]
       INTEGER :: localClimateMethod ! method to choose local climate variables [-] 0: not use; 1: use local climate variables
-      ! INTEGER :: nbtype ! number of building type [-]
-      ! INTEGER :: resolution ! STEBBS time resolution [-]
-      ! CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: cases ! case of building type, the array size should be consistent to nbtype [-]
       INTEGER :: stebbsmethod ! method to calculate building energy [-]
       LOGICAL :: flag_test ! FOR DEBUGGING ONLY: boolean to test specific functions [-]
    END TYPE SUEWS_CONFIG
@@ -910,7 +907,6 @@ MODULE SUEWS_DEF_DTS
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
       TYPE(STEBBS_STATE) :: stebbsState
-      ! TYPE(BUILDING_STATE) :: bldgState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
