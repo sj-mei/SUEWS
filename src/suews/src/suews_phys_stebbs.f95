@@ -682,65 +682,6 @@ CONTAINS
       REAL(rprc) :: Vwall_tank
       REAL(rprc) :: Vwater_tank
 
-      ! Output variables
-      REAL(rprc) :: ws
-      REAL(rprc) :: Tair_sout
-      ! REAL(rprc) :: Tsurf_sout
-      REAL(rprc) :: Kroof_sout
-      REAL(rprc) :: Lroof_sout
-      ! REAL(rprc) :: Kwall_sout
-      ! REAL(rprc) :: Lwall_sout
-      REAL(rprc) :: Tair_ind
-      REAL(rprc) :: Tindoormass
-      REAL(rprc) :: Tintwallroof
-      REAL(rprc) :: Textwallroof
-      REAL(rprc) :: Tintwindow
-      REAL(rprc) :: Textwindow
-      REAL(rprc) :: Tintgroundfloor
-      REAL(rprc) :: Textgroundfloor
-      REAL(rprc) :: Qtotal_heating
-      REAL(rprc) :: Qtotal_cooling
-      REAL(rprc) :: Qsw_transmitted_window_tstepTotal
-      REAL(rprc) :: Qsw_absorbed_window_tstepTotal
-      REAL(rprc) :: Qsw_absorbed_wallroof_tstepTotal
-      REAL(rprc) :: Qconv_indair_to_indoormass_tstepTotal
-      REAL(rprc) :: Qlw_net_intwallroof_to_allotherindoorsurfaces_tstepTotal
-      REAL(rprc) :: Qlw_net_intwindow_to_allotherindoorsurfaces_tstepTotal
-      REAL(rprc) :: Qlw_net_intgroundfloor_to_allotherindoorsurfaces_tstepTotal
-      REAL(rprc) :: Q_appliance_tstepTotal
-      REAL(rprc) :: Q_ventilation_tstepTotal
-      REAL(rprc) :: Qconv_indair_to_intwallroof_tstepTotal
-      REAL(rprc) :: Qconv_indair_to_intwindow_tstepTotal
-      REAL(rprc) :: Qconv_indair_to_intgroundfloor_tstepTotal
-      REAL(rprc) :: Qloss_efficiency_heating_air_tstepTotal
-      REAL(rprc) :: Qcond_wallroof_tstepTotal
-      REAL(rprc) :: Qcond_window_tstepTotal
-      REAL(rprc) :: Qcond_groundfloor_tstepTotal
-      REAL(rprc) :: Qcond_ground_tstepTotal
-      REAL(rprc) :: Qlw_net_extwallroof_to_outair_tstepTotal
-      REAL(rprc) :: Qlw_net_extwindow_to_outair_tstepTotal
-      REAL(rprc) :: Qconv_extwallroof_to_outair_tstepTotal
-      REAL(rprc) :: Qconv_extwindow_to_outair_tstepTotal
-      REAL(rprc) :: q_cooling_timestepTotal
-      REAL(rprc) :: Qtotal_water_tank
-      REAL(rprc) :: Qloss_drain
-      REAL(rprc) :: Twater_tank
-      REAL(rprc) :: Tintwall_tank
-      REAL(rprc) :: Textwall_tank
-      REAL(rprc) :: Twater_vessel
-      REAL(rprc) :: Tintwall_vessel
-      REAL(rprc) :: Textwall_vessel
-      REAL(rprc) :: Vwater_vessel
-      REAL(rprc) :: Awater_vessel
-      REAL(rprc) :: Vwall_vessel
-      REAL(rprc) :: qsensible_timestepTotal
-      REAL(rprc) :: qlatent_timestepTotal
-      REAL(rprc) :: QS_tstepTotal
-      REAL(rprc) :: QS_fabric_tstepTotal
-      REAL(rprc) :: QS_air_tstepTotal
-      REAL(rprc) :: Vwall_tank
-      REAL(rprc) :: Vwater_tank
-
       ASSOCIATE ( &
          timestep => timer%tstep, &
          heatState => modState%heatState, &
