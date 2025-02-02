@@ -8,7 +8,21 @@ MODULE modulestebbsprecision
 
 END MODULE
 
-MODULE modulestebbsgit rebase --continue
+
+MODULE modulestebbs
+
+   USE modulestebbsprecision
+
+   REAL(rprc), PARAMETER :: sigma = 5.670E-8
+
+   INTEGER, SAVE :: flgtimecheck = 1
+   INTEGER :: resolution
+   INTEGER :: time_st, time_ed, count_p_sec, count_max ! Time check
+
+   INTEGER :: nbtype
+   CHARACTER(len=256), ALLOCATABLE, DIMENSION(:) :: fnmls, cases
+   TYPE :: LBM
+      CHARACTER(len=256) :: &
          BuildingType, &
          BuildingName, &
          fnmlLBM, &
