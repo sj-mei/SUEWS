@@ -2309,6 +2309,10 @@ class EmissionsMethod(Enum):
     CO2_AND_ENERGY_AND_VOC_AND_NOX_AND_SO2 = 45
     CO2_AND_ENERGY_AND_VOC_AND_NOX_AND_SO2_AND_PM = 111
 
+    def __int__(self):
+        """Representation showing just the value"""
+        return self.value
+
 # TODO: implement the Enum for other physics schemes
 
 class ModelPhysics(BaseModel):
