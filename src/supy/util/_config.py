@@ -2312,6 +2312,17 @@ class EmissionsMethod(Enum):
     def __int__(self):
         """Representation showing just the value"""
         return self.value
+    
+    def __repr__(self):
+        """Representation showing the name and value"""
+        return str(self.value)
+    
+
+def yaml_equivalent_of_default(dumper, data):
+    return dumper.represent_scalar("tag:yaml.org,2002:int", str(data.value))
+
+yaml.add_representer(EmissionsMethod, yaml_equivalent_of_default)
+
 
 # TODO: implement the Enum for other physics schemes
 
@@ -4442,7 +4453,7 @@ class ArchetypeProperties(BaseModel):
         """Reconstruct ArchetypeProperties from DataFrame state format."""
         # Extract the values from the DataFrame
         params = {
-            field_name: df.loc[grid_id, (field_name, "0")]
+            field_name: df.loc[grid_id, (field_name.lower(), "0")]
             for field_name in cls.model_fields.keys()
             if field_name != "ref"
         }
@@ -4727,7 +4738,7 @@ class StebbsProperties(BaseModel):
         """Reconstruct StebbsProperties from DataFrame state format."""
         # Extract the values from the DataFrame
         params = {
-            field_name: df.loc[grid_id, (field_name, "0")]
+            field_name: df.loc[grid_id, (field_name.lower(), "0")]
             for field_name in cls.model_fields.keys()
             if field_name != "ref"
         }
@@ -5146,7 +5157,18 @@ class SUEWSConfig(BaseModel):
                 file,
                 sort_keys=False,
                 allow_unicode=True,
+                # Dumper=yaml.SafeDumper,
             )
+
+# import json
+# class CustomJSONEncoder(json.JSONEncoder):
+#     def default(self, obj):
+#         if isinstance(obj, EmissionsMethod):
+#             return int(obj)
+#         if isinstance(obj, ValueWithDOI):
+#             return obj.value
+#         return super().default(obj)
+
 
 
 def init_config_from_yaml(path: str = "./config-suews.yml") -> SUEWSConfig:
