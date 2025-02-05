@@ -5157,18 +5157,7 @@ class SUEWSConfig(BaseModel):
                 file,
                 sort_keys=False,
                 allow_unicode=True,
-                # Dumper=yaml.SafeDumper,
             )
-
-# import json
-# class CustomJSONEncoder(json.JSONEncoder):
-#     def default(self, obj):
-#         if isinstance(obj, EmissionsMethod):
-#             return int(obj)
-#         if isinstance(obj, ValueWithDOI):
-#             return obj.value
-#         return super().default(obj)
-
 
 
 def init_config_from_yaml(path: str = "./config-suews.yml") -> SUEWSConfig:
