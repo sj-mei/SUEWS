@@ -1,4 +1,3 @@
-
 import yaml
 from typing import Optional
 import numpy as np
@@ -29,66 +28,234 @@ class EmissionsMethod(Enum):
         return str(self.value)
 
 
+
+
+
+class NetRadiationMethod(Enum):
+    OBSERVED_LDOWN = 1  # Using observed Ldown
+    OBSERVED_LDOWN_LOUT = 2  # Using observed Ldown and Lout
+    MODELLED = 3  # Using modelled radiation components
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class StorageHeatMethod(Enum):
+    OHM_WITHOUT_QF = 1  # OHM without anthropogenic heat
+    OHM_WITH_QF = 2  # OHM with anthropogenic heat
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+class OhmIncQf(Enum):
+    INCLUDE = 1  # Include anthropogenic heat in OHM calculations
+    EXCLUDE = 0  # Exclude anthropogenic heat in OHM calculations
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class RoughnessMethod(Enum):
+    FIXED = 1  # Fixed roughness length
+    VARIABLE = 2  # Variable roughness length based on vegetation state
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class StabilityMethod(Enum):
+    NEUTRAL = 1  # Neutral stability
+    VARIABLE = 2  # Variable stability based on atmospheric conditions
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class SMDMethod(Enum):
+    BASIC = 1  # Basic soil moisture deficit calculation
+    ADVANCED = 2  # Advanced soil moisture deficit calculation with more processes
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class WaterUseMethod(Enum):
+    NONE = 0  # No water use calculation
+    BASIC = 1  # Basic water use calculation
+    ADVANCED = 2  # Advanced water use calculation with irrigation
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class DiagMethod(Enum):
+    NONE = 0  # No diagnostics
+    BASIC = 1  # Basic diagnostics
+    DETAILED = 2  # Detailed diagnostics
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class FAIMethod(Enum):
+    FIXED = 1  # Fixed frontal area index
+    VARIABLE = 2  # Variable frontal area index based on vegetation state
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class LocalClimateMethod(Enum):
+    NONE = 0  # No local climate zone calculations
+    BASIC = 1  # Basic local climate zone calculations
+    DETAILED = 2  # Detailed local climate zone calculations
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
+class StebbsMethod(Enum):
+    NONE = 0  # No STEBBS calculations
+    BASIC = 1  # Basic STEBBS calculations
+    DETAILED = 2  # Detailed STEBBS calculations
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+class SnowUse(Enum):
+    ENABLED = 1  # Using snow calculations
+    DISABLED = 0  # Not using snow calculations
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
+
+
 def yaml_equivalent_of_default(dumper, data):
+    """Convert enum values to YAML scalar integers.
+
+    This function is used as a YAML representer for enum classes. It converts the enum value
+    to a string and represents it as a YAML integer scalar.
+
+    Args:
+        dumper: The YAML dumper instance
+        data: The enum value to be converted
+
+    Returns:
+        A YAML scalar node containing the integer value of the enum
+    """
     return dumper.represent_scalar("tag:yaml.org,2002:int", str(data.value))
 
-
-yaml.add_representer(EmissionsMethod, yaml_equivalent_of_default)
+# Register YAML representers for all enums
+for enum_class in [
+    NetRadiationMethod,
+    EmissionsMethod,
+    StorageHeatMethod,
+    RoughnessMethod,
+    StabilityMethod,
+    SMDMethod,
+    WaterUseMethod,
+    DiagMethod,
+    FAIMethod,
+    LocalClimateMethod,
+    StebbsMethod,
+    SnowUse,
+    OhmIncQf,
+]:
+    yaml.add_representer(enum_class, yaml_equivalent_of_default)
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(3), description="Method used to calculate net radiation"
+    netradiationmethod: ValueWithDOI[NetRadiationMethod] = Field(
+        default=ValueWithDOI(NetRadiationMethod.MODELLED),
+        description="Method used to calculate net radiation",
     )
     emissionsmethod: ValueWithDOI[EmissionsMethod] = Field(
         default=ValueWithDOI(EmissionsMethod.CO2_AND_ENERGY),
         description="Method used to calculate anthropogenic emissions",
     )
-    storageheatmethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(1),
+    storageheatmethod: ValueWithDOI[StorageHeatMethod] = Field(
+        default=ValueWithDOI(StorageHeatMethod.OHM_WITHOUT_QF),
         description="Method used to calculate storage heat flux",
     )
-    ohmincqf: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(0),
+    ohmincqf: ValueWithDOI[OhmIncQf] = Field(
+        default=ValueWithDOI(OhmIncQf.EXCLUDE),
         description="Include anthropogenic heat in OHM calculations (1) or not (0)",
     )
-    roughlenmommethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(2),
+    roughlenmommethod: ValueWithDOI[RoughnessMethod] = Field(
+        default=ValueWithDOI(RoughnessMethod.VARIABLE),
         description="Method used to calculate momentum roughness length",
     )
-    roughlenheatmethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(2),
+    roughlenheatmethod: ValueWithDOI[RoughnessMethod] = Field(
+        default=ValueWithDOI(RoughnessMethod.VARIABLE),
         description="Method used to calculate heat roughness length",
     )
-    stabilitymethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(2),
+    stabilitymethod: ValueWithDOI[StabilityMethod] = Field(
+        default=ValueWithDOI(StabilityMethod.VARIABLE),
         description="Method used for atmospheric stability calculation",
     )
-    smdmethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(1),
+    smdmethod: ValueWithDOI[SMDMethod] = Field(
+        default=ValueWithDOI(SMDMethod.BASIC),
         description="Method used to calculate soil moisture deficit",
     )
-    waterusemethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(1), description="Method used to calculate water use"
+    waterusemethod: ValueWithDOI[WaterUseMethod] = Field(
+        default=ValueWithDOI(WaterUseMethod.BASIC),
+        description="Method used to calculate water use",
     )
-    diagmethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(1), description="Method used for model diagnostics"
+    diagmethod: ValueWithDOI[DiagMethod] = Field(
+        default=ValueWithDOI(DiagMethod.BASIC),
+        description="Method used for model diagnostics",
     )
-    faimethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(1),
+    faimethod: ValueWithDOI[FAIMethod] = Field(
+        default=ValueWithDOI(FAIMethod.FIXED),
         description="Method used to calculate frontal area index",
     )
-    localclimatemethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(0),
+    localclimatemethod: ValueWithDOI[LocalClimateMethod] = Field(
+        default=ValueWithDOI(LocalClimateMethod.NONE),
         description="Method used for local climate zone calculations",
     )
-    snowuse: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(0),
+    snowuse: ValueWithDOI[SnowUse] = Field(
+        default=ValueWithDOI(SnowUse.DISABLED),
         description="Include snow calculations (1) or not (0)",
-        enum=[0, 1],
     )
-    stebbsmethod: ValueWithDOI[int] = Field(
-        default=ValueWithDOI(0), description="Method used for stebbs calculations"
+    stebbsmethod: ValueWithDOI[StebbsMethod] = Field(
+        default=ValueWithDOI(StebbsMethod.NONE),
+        description="Method used for stebbs calculations",
     )
 
     ref: Optional[Reference] = None
