@@ -1,27 +1,19 @@
-"""Time profile models for SUEWS."""
-
-from typing import Dict, Optional
-from pydantic import (
-    BaseModel,
-    Field,
-    model_validator,
-    field_validator,
-)
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import Optional, Dict
 import pandas as pd
-
-from .base import ValueWithDOI, Reference
-from .surface.base import init_df_state
+from .type import Reference
+from .type import init_df_state
 
 
 class DayProfile(BaseModel):
-    """Daily profile with working day and holiday values."""
     working_day: float = Field(default=1.0)
     holiday: float = Field(default=0.0)
 
     ref: Optional[Reference] = None
 
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
-        """Convert day profile to DataFrame state format.
+        """
+        Convert day profile to DataFrame state format.
 
         Args:
             grid_id (int): Grid ID for the DataFrame index.
@@ -30,6 +22,7 @@ class DayProfile(BaseModel):
         Returns:
             pd.DataFrame: DataFrame containing day profile parameters.
         """
+
         df_state = init_df_state(grid_id)
 
         day_map = {
@@ -43,8 +36,11 @@ class DayProfile(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "DayProfile":
-        """Reconstruct DayProfile from DataFrame state format.
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, param_name: str
+    ) -> "DayProfile":
+        """
+        Reconstruct DayProfile from a DataFrame state format.
 
         Args:
             df (pd.DataFrame): DataFrame containing day profile parameters.
@@ -54,11 +50,13 @@ class DayProfile(BaseModel):
         Returns:
             DayProfile: Instance of DayProfile.
         """
+
         day_map = {
             "working_day": 0,
             "holiday": 1,
         }
 
+        # Extract values for working day and holiday from the DataFrame
         params = {}
         for day, idx in day_map.items():
             col = (param_name, f"({idx},)")
@@ -71,7 +69,6 @@ class DayProfile(BaseModel):
 
 
 class WeeklyProfile(BaseModel):
-    """Weekly profile with values for each day."""
     monday: float = 0.0
     tuesday: float = 0.0
     wednesday: float = 0.0
@@ -111,8 +108,10 @@ class WeeklyProfile(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "WeeklyProfile":
-        """Reconstruct WeeklyProfile from DataFrame state format.
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, param_name: str
+    ) -> "WeeklyProfile":
+        """Reconstruct WeeklyProfile from a DataFrame state format.
 
         Args:
             df: DataFrame containing weekly profile parameters
@@ -144,7 +143,6 @@ class WeeklyProfile(BaseModel):
 
 
 class HourlyProfile(BaseModel):
-    """Hourly profile with working day and holiday values for each hour."""
     working_day: Dict[str, float]
     holiday: Dict[str, float]
 
@@ -185,6 +183,7 @@ class HourlyProfile(BaseModel):
             if not all(1 <= h <= 24 for h in hours):
                 raise ValueError("Hour values must be between 1 and 24")
             if sorted(hours) != list(range(1, 25)):
+                error_message = ValueError("Must have all hours from 1 to 24")
                 raise ValueError("Must have all hours from 1 to 24")
         return self
 
@@ -211,8 +210,10 @@ class HourlyProfile(BaseModel):
         return df_state
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, param_name: str) -> "HourlyProfile":
-        """Reconstruct HourlyProfile from DataFrame state format.
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, param_name: str
+    ) -> "HourlyProfile":
+        """Reconstruct HourlyProfile from a DataFrame state format.
 
         Args:
             df: DataFrame containing hourly profile parameters

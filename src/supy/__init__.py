@@ -31,6 +31,8 @@ from ._supy_module import (
 # utilities
 from . import util
 
+# data model
+from . import data_model
 
 # version info
 from ._version import show_version, __version__

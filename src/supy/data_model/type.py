@@ -1,11 +1,23 @@
-from typing import Dict, List, Optional, Union, Literal, TypeVar, Generic
-from pydantic import BaseModel, Field
+from typing import TypeVar, Optional, Generic
+from pydantic import BaseModel
 import numpy as np
+import pandas as pd
+from enum import Enum
+
+class SurfaceType(str, Enum):
+    PAVED = "paved"
+    BLDGS = "bldgs"
+    EVETR = "evetr"
+    DECTR = "dectr"
+    GRASS = "grass"
+    BSOIL = "bsoil"
+    WATER = "water"
+
 
 T = TypeVar("T")
 
+
 class Reference(BaseModel):
-    """Reference information for model parameters."""
     desc: Optional[str] = None
     ID: Optional[str] = None
     DOI: Optional[str] = None
@@ -21,6 +33,7 @@ class ValueWithDOI(BaseModel, Generic[T]):
         value (T): The wrapped value of generic type T
         ref (Optional[Reference]): Optional reference information for the value
     """
+
     value: T
     ref: Optional[Reference] = None
 
@@ -75,3 +88,11 @@ class ValueWithDOI(BaseModel, Generic[T]):
         if isinstance(other, ValueWithDOI):
             return self.value != other.value
         return self.value != other
+
+
+def init_df_state(grid_id: int) -> pd.DataFrame:
+    idx = pd.Index([grid_id], name="grid")
+    col = pd.MultiIndex.from_tuples([("gridiv", "0")], names=["var", "ind_dim"])
+    df_state = pd.DataFrame(index=idx, columns=col)
+    df_state.loc[grid_id, ("gridiv", "0")] = grid_id
+    return df_state
