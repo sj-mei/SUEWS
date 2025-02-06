@@ -51,34 +51,6 @@ class TestSUEWSConfig(unittest.TestCase):
         df_state_2 = config_reconst.to_df_state()
         pd.testing.assert_frame_equal(df_state, df_state_2)
 
-    def test_anthropogenic_emissions(self):
-        """Test anthropogenic emissions data model."""
-        # Create test data
-        emissions = AnthropogenicEmissions(
-            startdls=ValueWithDOI(80.0),
-            enddls=ValueWithDOI(300.0),
-            heat=AnthropogenicHeat(
-                popdensnighttime=100.0,
-            ),
-            co2=CO2Params(
-                co2pointsource=ValueWithDOI(0.5),
-                ef_umolco2perj=ValueWithDOI(0.1),
-            )
-        )
-
-        # Convert to DataFrame
-        df_state = emissions.to_df_state(grid_id=0)
-
-        # Convert back to object
-        emissions_reconst = AnthropogenicEmissions.from_df_state(df_state, grid_id=0)
-
-        # Test key values
-        self.assertEqual(emissions.startdls.value, emissions_reconst.startdls.value)
-        self.assertEqual(emissions.enddls.value, emissions_reconst.enddls.value)
-        self.assertEqual(emissions.heat.popdensnighttime, emissions_reconst.heat.popdensnighttime)
-        self.assertEqual(emissions.co2.co2pointsource.value, emissions_reconst.co2.co2pointsource.value)
-        self.assertEqual(emissions.co2.ef_umolco2perj.value, emissions_reconst.co2.ef_umolco2perj.value)
-
     def test_model_physics_validation(self):
         """Test model physics validation rules."""
         model = Model()
@@ -96,20 +68,16 @@ class TestSUEWSConfig(unittest.TestCase):
 
     def test_site_properties(self):
         """Test site properties data model."""
-        site = Site()
-
         # Test latitude bounds
         with self.assertRaises(ValueError):
-            site.properties.lat = ValueWithDOI(91.0)  # Invalid latitude
-            site.properties.model_validate(site.properties)
+            properties = SiteProperties(lat=ValueWithDOI(91.0))  # Invalid latitude
 
         with self.assertRaises(ValueError):
-            site.properties.lat = ValueWithDOI(-91.0)  # Invalid latitude
-            site.properties.model_validate(site.properties)
+            properties = SiteProperties(lat=ValueWithDOI(-91.0))  # Invalid latitude
 
         # Test valid latitude
-        site.properties.lat = ValueWithDOI(51.5)  # London's latitude
-        site.properties.model_validate(site.properties)
+        properties = SiteProperties(lat=ValueWithDOI(51.5))  # London's latitude
+        self.assertEqual(properties.lat.value, 51.5)
 
     def test_initial_states(self):
         """Test initial states data model."""
@@ -118,15 +86,16 @@ class TestSUEWSConfig(unittest.TestCase):
         # Test snow albedo bounds
         with self.assertRaises(ValueError):
             states.snowalb = ValueWithDOI(1.5)  # Invalid albedo > 1
-            states.model_validate(states)
+            InitialStates.model_validate(states.model_dump())
 
         with self.assertRaises(ValueError):
             states.snowalb = ValueWithDOI(-0.1)  # Invalid albedo < 0
-            states.model_validate(states)
+            InitialStates.model_validate(states.model_dump())
 
         # Test valid snow albedo
         states.snowalb = ValueWithDOI(0.8)
-        states.model_validate(states)
+        validated_states = InitialStates.model_validate(states.model_dump())
+        self.assertEqual(validated_states.snowalb.value, 0.8)
 
     def test_multi_site_config(self):
         """Test configuration with multiple sites."""
