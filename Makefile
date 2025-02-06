@@ -69,7 +69,7 @@ install:
 
 # make supy dist and test
 test:
-	$(PYTHON) -m pytest test
+	$(PYTHON) -m pytest test -v --tb=short --cov=supy --cov-report=term-missing
 
 # make supy wheels using cibuild
 wheel:
