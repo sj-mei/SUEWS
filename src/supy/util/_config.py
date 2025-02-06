@@ -5138,3 +5138,9 @@ class SUEWSConfig(BaseModel):
                 sort_keys=False,
                 allow_unicode=True,
             )
+
+def init_config_from_yaml(path: str = "./config-suews.yml") -> SUEWSConfig:
+    """Initialize SUEWSConfig from YAML file"""
+    with open(path, "r") as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+    return SUEWSConfig(**config)

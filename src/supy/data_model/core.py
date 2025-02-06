@@ -37,6 +37,20 @@ class SUEWSConfig(BaseModel):
     class Config:
         extra = "allow"
 
+    @classmethod
+    def from_yaml(cls, path: str) -> "SUEWSConfig":
+        """Initialize SUEWSConfig from YAML file.
+
+        Args:
+            path (str): Path to YAML configuration file
+
+        Returns:
+            SUEWSConfig: Instance of SUEWSConfig initialized from YAML
+        """
+        with open(path, "r") as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
+        return cls(**config)
+
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
         """Create MultiIndex from df_state_columns.txt"""
         with open(columns_file, "r") as f:

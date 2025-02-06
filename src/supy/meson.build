@@ -69,8 +69,10 @@ py.install_sources(
         [
             'data_model/__init__.py',
             'data_model/core.py',
+            'data_model/hydro.py',
             'data_model/human_activity.py',
             'data_model/model.py',
+            'data_model/ohm.py',
             'data_model/profile.py',
             'data_model/site.py',
             'data_model/state.py',

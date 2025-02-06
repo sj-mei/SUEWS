@@ -1,8 +1,7 @@
 from pydantic import BaseModel, Field, PrivateAttr
 from typing import Optional
 import pandas as pd
-from .type import ValueWithDOI, Reference
-from .site import SurfaceType
+from .type import ValueWithDOI, Reference, SurfaceType
 import math
 
 

@@ -1,9 +1,8 @@
-from dataclasses import Field
 from typing import Optional, Union, List, Literal, Type
 import pandas as pd
-from pydantic import BaseModel, field_validator, model_validator, PrivateAttr
+from pydantic import BaseModel, Field, field_validator, model_validator, PrivateAttr
 
-from .type import ValueWithDOI, Reference
+from .type import ValueWithDOI, Reference, init_df_state
 from .site import SurfaceType
 
 

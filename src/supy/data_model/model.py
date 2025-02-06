@@ -7,7 +7,7 @@ import pandas as pd
 from enum import Enum
 
 from .type import ValueWithDOI, Reference
-from .state import init_df_state
+from .type import init_df_state
 
 
 class EmissionsMethod(Enum):

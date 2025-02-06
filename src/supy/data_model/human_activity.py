@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 from .type import ValueWithDOI, Reference
 from .profile import HourlyProfile, WeeklyProfile, DayProfile
-from .state import init_df_state
+from .type import init_df_state
 
 
 class IrrigationParams(
@@ -481,7 +481,7 @@ class AnthropogenicEmissions(BaseModel):
         # Reconstruct CO2 parameters
         co2 = CO2Params.from_df_state(df, grid_id)
 
-        return cls(startdls=startdls, enddls=enddls, heat=heat, co2=co2)
+        return cls(startdls=startdls, enddls=enddls, heat=heat.model_dump(), co2=co2.model_dump())
 
 class AnthropogenicHeat(
     BaseModel
