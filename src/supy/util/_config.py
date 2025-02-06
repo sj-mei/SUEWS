@@ -33,6 +33,7 @@ class ValueWithDOI(BaseModel, Generic[T]):
         value (T): The wrapped value of generic type T
         ref (Optional[Reference]): Optional reference information for the value
     """
+
     value: T
     ref: Optional[Reference] = None
 
@@ -1769,7 +1770,9 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
         return df_base
 
     @classmethod
-    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "NonVegetatedSurfaceProperties":
+    def from_df_state(
+        cls, df: pd.DataFrame, grid_id: int, surf_idx: int
+    ) -> "NonVegetatedSurfaceProperties":
         """Reconstruct non-vegetated surface properties from DataFrame state format."""
         instance = super().from_df_state(df, grid_id, surf_idx)
         instance.alb = ValueWithDOI(df.loc[grid_id, ("alb", f"({surf_idx},)")])
@@ -2272,7 +2275,6 @@ class ModelControl(BaseModel):
             return int(v)
         return v
 
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model control properties to DataFrame state format."""
         df_state = init_df_state(grid_id)
@@ -2296,8 +2298,13 @@ class ModelControl(BaseModel):
         instance = cls()
         for attr in ["tstep", "diagnose"]:
             value = df.loc[grid_id, (attr, "0")]
-            setattr(instance, attr, int(value) if isinstance(value, (np.int64, np.int32)) else value)
+            setattr(
+                instance,
+                attr,
+                int(value) if isinstance(value, (np.int64, np.int32)) else value,
+            )
         return instance
+
 
 class EmissionsMethod(Enum):
     # just a demo to show how to use Enum for emissionsmethod
@@ -2312,19 +2319,21 @@ class EmissionsMethod(Enum):
     def __int__(self):
         """Representation showing just the value"""
         return self.value
-    
+
     def __repr__(self):
         """Representation showing the name and value"""
         return str(self.value)
-    
+
 
 def yaml_equivalent_of_default(dumper, data):
     return dumper.represent_scalar("tag:yaml.org,2002:int", str(data.value))
+
 
 yaml.add_representer(EmissionsMethod, yaml_equivalent_of_default)
 
 
 # TODO: implement the Enum for other physics schemes
+
 
 class ModelPhysics(BaseModel):
     netradiationmethod: ValueWithDOI[int] = Field(
@@ -2375,7 +2384,7 @@ class ModelPhysics(BaseModel):
     snowuse: ValueWithDOI[int] = Field(
         default=ValueWithDOI(0),
         description="Include snow calculations (1) or not (0)",
-        enum=[0, 1]
+        enum=[0, 1],
     )
     stebbsmethod: ValueWithDOI[int] = Field(
         default=ValueWithDOI(0), description="Method used for stebbs calculations"
@@ -4460,7 +4469,11 @@ class ArchetypeProperties(BaseModel):
 
         # Convert params to ValueWithDOI
         non_value_with_doi = ["BuildingType", "BuildingName"]
-        params = {key: ValueWithDOI(value) for key, value in params.items() if key not in non_value_with_doi}
+        params = {
+            key: ValueWithDOI(value)
+            for key, value in params.items()
+            if key not in non_value_with_doi
+        }
 
         # Create an instance using the extracted parameters
         return cls(**params)
@@ -4981,7 +4994,10 @@ class Model(BaseModel):
 
     @model_validator(mode="after")
     def validate_radiation_method(self) -> "Model":
-        if self.physics.netradiationmethod.value == 1 and self.control.forcing_file.value == "forcing.txt":
+        if (
+            self.physics.netradiationmethod.value == 1
+            and self.control.forcing_file.value == "forcing.txt"
+        ):
             raise ValueError(
                 "NetRadiationMethod is set to 1 (using observed Ldown). "
                 "The sample forcing file lacks observed Ldown. Use netradiation = 3 for sample forcing. "
@@ -5029,42 +5045,6 @@ class SUEWSConfig(BaseModel):
 
     class Config:
         extra = "allow"
-
-    ## This model_validator refers to min and max ranges for OHMCoefficients loaded from an Excel file
-    # @model_validator(mode="after")
-    # def validate_OHMCoeff(self) -> "SUEWSConfig":
-    #     if (self.model.physics.storageheatmethod == 1 and self.model.physics.ohmincqf == 0) or (
-    #         self.model.physics.storageheatmethod == 2 and self.model.physics.ohmincqf == 1
-    #     ):
-    #         cover_to_sheet = {
-    #             "bldgs": "Building",
-    #             "grass": "Vegetation",
-    #             "evetr": "Vegetation",
-    #             "dectr": "Vegetation",
-    #             "water": "Water",
-    #             "bsoil": "Soil",
-    #             "paved": "Paved",
-    #         }
-    #         all_valid = True
-    #         for cover, sheet_name in cover_to_sheet.items():
-    #             land_cover = getattr(self.site[0].properties.land_cover, cover)
-    #             if land_cover.sfr > 0:
-    #                 for coef in ["a1", "a2", "a3"]:
-    #                     coef_values = getattr(land_cover.ohm_coef, coef)
-    #                     for season, value in coef_values.items():
-    #                         min_value, max_value = min_max_values[sheet_name][coef]  # Get ranges
-    #                         if not (min_value <= value <= max_value):
-    #                             raise ValueError(
-    #                                 f"{cover.capitalize()} {coef} ({season}): {value} "
-    #                                 f"is out of range [{min_value}, {max_value}]"
-    #                             )
-    #                             all_valid = False
-    #         if all_valid:
-    #             print(
-    #                 f"StorageHeatMethod is set to {self.model.physics.storageheatmethod} and "
-    #                 f"OhmIncQf is set to {self.model.physics.ohmincqf}. All valid and checked."
-    #             )
-    #     return self
 
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
         """Create MultiIndex from df_state_columns.txt"""
@@ -5158,7 +5138,6 @@ class SUEWSConfig(BaseModel):
                 sort_keys=False,
                 allow_unicode=True,
             )
-
 
 def init_config_from_yaml(path: str = "./config-suews.yml") -> SUEWSConfig:
     """Initialize SUEWSConfig from YAML file"""
