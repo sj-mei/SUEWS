@@ -1859,7 +1859,7 @@ CONTAINS
 
       ! Step 2:
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
-      beta = cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L)
+      beta = cal_beta_RSL(StabilityMethod, FAI, PAI, sfr_tr, lc_over_L)
 
       ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
       Scc = 0.5 + 0.3*TANH(2.*lc_over_L)
@@ -1919,13 +1919,14 @@ CONTAINS
 
    END SUBROUTINE RSL_cal_prms
 
-   FUNCTION cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L) RESULT(beta)
+   FUNCTION cal_beta_RSL(StabilityMethod, FAI, PAI, sfr_tr, lc_over_L) RESULT(beta)
       ! Step 2:
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: StabilityMethod ! stability method
       REAL(KIND(1D0)), INTENT(in) :: PAI
+      REAL(KIND(1D0)), INTENT(in) :: FAI
       REAL(KIND(1D0)), INTENT(in) :: sfr_tr
       REAL(KIND(1D0)), INTENT(in) :: lc_over_L
 
@@ -1954,16 +1955,10 @@ CONTAINS
       !   betaN2 = 0.35
       !END IF
 
-      ! ## Issue 338 - beta
-      IF (PAI >= 0.0 .AND. PAI <= 0.2) THEN
-         betaN2 = 0.24
-      ELSE IF (PAI > 0.2 .AND. PAI <= 0.4) THEN
-         betaN2 = 0.32
-      ELSE IF (PAI > 0.4 .AND. PAI <= 1.0) THEN
-         betaN2 = 0.40
-      ELSE
-         betaN2 = 0.35
-      END IF
+      ! ## Issue 338 - beta # beta for Hstd/Hmean = 0 (Uniform Case)
+      betaN2 = (3.444 * FAI**0.971) / (1 + 10.487 * FAI**0.971)
+      betaN2 = MAX(betaN2, 0.15)
+      ! TODO: Include a funcion based on FAI for each Hstd/Hstd band and better minimum value
 
       betaHF = cal_beta_lc(stabilityMethod, betaN2, lc_over_L)
 

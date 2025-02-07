@@ -183,6 +183,7 @@ def load_forcing_grid(
 
     try:
         path_init = Path(path_init).expanduser().resolve()
+        df_state_init = init_supy(path_init, force_reload)
     except FileNotFoundError:
         logger_supy.exception(f"{path_init} does not exists!")
     else:
