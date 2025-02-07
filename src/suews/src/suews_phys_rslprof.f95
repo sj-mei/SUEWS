@@ -1956,7 +1956,7 @@ CONTAINS
       !END IF
 
       ! ## Issue 338 - beta # beta for Hstd/Hmean = 0 (Uniform Case)
-      betaN2 = (3.444 * FAI**0.971) / (1 + 10.487 * FAI**0.971)
+      betaN2 = (3.444*FAI**0.971)/(1 + 10.487*FAI**0.971)
       betaN2 = MAX(betaN2, 0.15)
       ! TODO: Include a funcion based on FAI for each Hstd/Hstd band and better minimum value
 
