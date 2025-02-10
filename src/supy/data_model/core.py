@@ -67,8 +67,9 @@ class SUEWSConfig(BaseModel):
     def to_df_state(self) -> pd.DataFrame:
         """Convert config to DataFrame state format"""
         list_df_site = []
-        for grid_id in range(len(self.site)):
-            df_site = self.site[grid_id].to_df_state(grid_id)
+        for i in range(len(self.site)):
+            grid_id = self.site[i].gridiv
+            df_site = self.site[i].to_df_state(grid_id)
             df_model = self.model.to_df_state(grid_id)
             df_site = pd.concat([df_site, df_model], axis=1)
             list_df_site.append(df_site)
