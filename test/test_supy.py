@@ -1,4 +1,3 @@
-import os
 import tempfile
 from pathlib import Path
 import io
@@ -150,14 +149,8 @@ class TestSuPy(TestCase):
 
         # only print to screen on macOS due incompatibility on Windows
         if platform.system() == "Darwin":
-            # capturedOutput = io.StringIO()  # Create StringIO object
-            # sys.stdout = capturedOutput  # and redirect stdout.
-            # Call function.
             n_grid = df_state_init_multi.index.size
             print(f"Running time: {t_end-t_start:.2f} s for {n_grid} grids")
-            # sys.stdout = sys.__stdout__  # Reset redirect.
-            # Now works as before.
-            # print("Captured:\n", capturedOutput.getvalue())
 
         test_non_empty = np.all(
             [
@@ -187,13 +180,6 @@ class TestSuPy(TestCase):
     #     print("Testing if single-tstep and multi-tstep modes can produce the same SUEWS results...")
     #     df_state_init, df_forcing_tstep = sp.load_SampleData()
     #     df_forcing_part = df_forcing_tstep.iloc[: 12*8]
-
-    #     # output group for testing
-    #     list_grp_test = [
-    #         "SUEWS",
-    #         # "DailyState",
-    #         "RSL",
-    #     ]
 
     # # single-step results
     # df_output_s, df_state_s = sp.run_supy(
@@ -427,4 +413,3 @@ class TestSuPy(TestCase):
         # test if water balance is closed
         test_dif = (ser_totalstore_change-ser_water_balance).abs().max() < 1e-6
         self.assertTrue(test_dif)
-
