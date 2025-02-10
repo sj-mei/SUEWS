@@ -467,6 +467,32 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         df_state = pd.concat([df_state, df_lai], axis=1).sort_index(axis=1)
 
         return df_state
+    
+    @classmethod
+    def from_df_state(cls, df: pd.DataFrame, grid_id: int, surf_idx: int) -> "VegetatedSurfaceProperties":
+        """Reconstruct vegetated surface properties from DataFrame state format."""
+        instance = super().from_df_state(df, grid_id, surf_idx)
+        # add ordinary float properties
+        for attr in [
+            # "alb_min",
+            # "alb_max",
+            "beta_bioco2",
+            "beta_enh_bioco2",
+            "alpha_bioco2",
+            "alpha_enh_bioco2",
+            "resp_a",
+            "resp_b",
+            "theta_bioco2",
+            "maxconductance",
+            "min_res_bioco2",
+            "ie_a",
+            "ie_m",
+        ]:
+            setattr(instance, attr, ValueWithDOI(df.loc[grid_id, (attr, f"({surf_idx-2},)")]))
+
+        instance.lai = LAIParams.from_df_state(df, grid_id, surf_idx)
+
+        return instance
 
 
 class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD here?
@@ -514,6 +540,13 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
         """Reconstruct evergreen tree properties from DataFrame state format."""
         surf_idx = 2
         instance = super().from_df_state(df, grid_id, surf_idx)
+
+        instance.faievetree = ValueWithDOI(df.loc[grid_id, ("faievetree", "0")])
+        instance.evetreeh = ValueWithDOI(df.loc[grid_id, ("evetreeh", "0")])
+
+        instance.alb_min = ValueWithDOI(df.loc[grid_id, ("albmin_evetr", "0")])
+        instance.alb_max = ValueWithDOI(df.loc[grid_id, ("albmax_evetr", "0")])
+
         return instance
 
 
@@ -580,6 +613,17 @@ class DectrProperties(VegetatedSurfaceProperties):
         """Reconstruct deciduous tree properties from DataFrame state format."""
         surf_idx = 3
         instance = super().from_df_state(df, grid_id, surf_idx)
+
+        instance.faidectree = ValueWithDOI(df.loc[grid_id, ("faidectree", "0")])
+        instance.dectreeh = ValueWithDOI(df.loc[grid_id, ("dectreeh", "0")])
+        instance.pormin_dec = ValueWithDOI(df.loc[grid_id, ("pormin_dec", "0")])
+        instance.pormax_dec = ValueWithDOI(df.loc[grid_id, ("pormax_dec", "0")])
+        instance.capmax_dec = ValueWithDOI(df.loc[grid_id, ("capmax_dec", "0")])
+        instance.capmin_dec = ValueWithDOI(df.loc[grid_id, ("capmin_dec", "0")])
+
+        instance.alb_min = ValueWithDOI(df.loc[grid_id, ("albmin_dectr", "0")])
+        instance.alb_max = ValueWithDOI(df.loc[grid_id, ("albmax_dectr", "0")])
+
         return instance
 
 
@@ -606,6 +650,10 @@ class GrassProperties(VegetatedSurfaceProperties):
         """Reconstruct grass properties from DataFrame state format."""
         surf_idx = 4
         instance = super().from_df_state(df, grid_id, surf_idx)
+
+        instance.alb_min = ValueWithDOI(df.loc[grid_id, ("albmin_grass", "0")])
+        instance.alb_max = ValueWithDOI(df.loc[grid_id, ("albmax_grass", "0")])
+
         return instance
 
 
