@@ -494,13 +494,17 @@ class InitialStateDectr(InitialStateVeg):
         # Deciduous tree-specific parameters
         porosity_id = df.loc[grid_id, ("porosity_id", "0")]
         decidcap_id = df.loc[grid_id, ("decidcap_id", "0")]
+        alb_id = df.loc[grid_id, ("albdectr_id", "0")]
 
         # Convert to ValueWithDOI
         porosity_id = ValueWithDOI[float](porosity_id)
         decidcap_id = ValueWithDOI[float](decidcap_id)
+        base_instance_dict = base_instance.model_dump()
+        base_instance_dict["alb_id"] = {"value": alb_id}  # Update alb_id explicitly
+
 
         return cls(
-            **base_instance.model_dump(),
+            **base_instance_dict,
             porosity_id=porosity_id,
             decidcap_id=decidcap_id,
         )
