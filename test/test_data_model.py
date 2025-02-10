@@ -49,7 +49,37 @@ class TestSUEWSConfig(unittest.TestCase):
 
         # Test if DataFrame conversion preserves structure
         df_state_2 = config_reconst.to_df_state()
+
         pd.testing.assert_frame_equal(df_state, df_state_2)
+
+    def test_df_state_conversion_cycle(self):
+        """Test conversion cycle starting from a DataFrame state."""
+        print("\n========================================")
+        print("Testing DataFrame-YAML-DataFrame conversion cycle for SUEWS configuration...")
+
+        # Load initial DataFrame state
+        df_state_init = sp.load_sample_data()[0]
+        df_state_init2 = sp.load_sample_data()[0]
+        # Fix sample data to pass validation
+        df_state_init2["stabilitymethod"] = 2
+        df_state_init2["smdmethod"] = 1
+        df_state_init2["faimethod"] = 1
+        for i in range(1, 7):
+            if df_state_init2[("soilstore_surf", f"({i},)")].values[0] < 10:
+                df_state_init2[("soilstore_surf", f"({i},)")] = 10
+
+        # Create config object from DataFrame
+        config_from_df = SUEWSConfig.from_df_state(df_state_init2)
+
+        # Convert back to DataFrame
+        df_state_reconst = config_from_df.to_df_state()
+
+        # # Compare the initial and reconstructed DataFrame states
+        # for param in df_state_init.columns:
+        #     df_state_reconst[param] = df_state_init[param]
+
+        # Compare the initial and reconstructed DataFrame states
+        pd.testing.assert_frame_equal(df_state_init, df_state_reconst)
 
     def test_model_physics_validation(self):
         """Test model physics validation rules."""
@@ -120,6 +150,7 @@ class TestSUEWSConfig(unittest.TestCase):
         config_reconst = SUEWSConfig.from_df_state(df_state)
         self.assertEqual(len(config_reconst.site), 3)
         self.assertEqual([site.gridiv for site in config_reconst.site], [0, 1, 2])
+    
 
 if __name__ == '__main__':
     unittest.main()
