@@ -86,12 +86,9 @@ class SUEWSConfig(BaseModel):
 
         # Reindex columns to match the sample data columns order
         sample_columns = load_sample_data()[0].columns
-        matching_columns = [col for col in sample_columns if col in df.columns]
-        non_matching_columns = [col for col in df.columns if col not in sample_columns]
 
         # Reindex to match sample columns and then append non-matching columns
-        df = df.reindex(columns=matching_columns + non_matching_columns)
-
+        df = df.reindex(columns=sample_columns)
         return df
 
     @classmethod

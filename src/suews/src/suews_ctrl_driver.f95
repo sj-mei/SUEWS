@@ -4586,8 +4586,8 @@ CONTAINS
 
       ! ---stebbs building related states
       TYPE(BUILDING_ARCHETYPE_PRM) :: building_archtype
-      REAL(KIND(1D0)) :: buildingname
-      REAL(KIND(1D0)) :: buildingtype
+      CHARACTER(LEN=10) :: buildingname
+      CHARACTER(LEN=10) :: buildingtype
       REAL(KIND(1D0)) :: BuildingCount
       REAL(KIND(1D0)) :: Occupants
       REAL(KIND(1D0)) :: hhs0
