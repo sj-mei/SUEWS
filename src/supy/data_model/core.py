@@ -10,10 +10,11 @@ from pydantic import (
 import numpy as np
 import pandas as pd
 import yaml
-
+import supy as sp
 
 from .model import Model
 from .site import Site, SiteProperties, InitialStates
+from .. import load_sample_data
 
 
 class SUEWSConfig(BaseModel):
@@ -82,6 +83,15 @@ class SUEWSConfig(BaseModel):
         df.index.set_names("grid", inplace=True)
         # set column names
         df.columns.set_names(["var", "ind_dim"], inplace=True)
+
+        # Reindex columns to match the sample data columns order
+        sample_columns = load_sample_data()[0].columns
+        matching_columns = [col for col in sample_columns if col in df.columns]
+        non_matching_columns = [col for col in df.columns if col not in sample_columns]
+
+        # Reindex to match sample columns and then append non-matching columns
+        df = df.reindex(columns=matching_columns + non_matching_columns)
+
         return df
 
     @classmethod
