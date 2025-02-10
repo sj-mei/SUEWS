@@ -3927,6 +3927,7 @@ CONTAINS
       veg_fsd_const, veg_contact_fraction_const, &
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
       stebbsmethod, & ! stebbs building input
+      buildingname, buildingtype, &
       BuildingCount, Occupants, hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus, stebbs_Height, &
       FootprintArea, WallExternalArea, RatioInternalVolume, WWR, WallThickness, WallEffectiveConductivity, &
       WallDensity, WallCp, Wallx1, WallExternalEmissivity, WallInternalEmissivity, WallTransmissivity, &
@@ -4389,6 +4390,8 @@ CONTAINS
 
       ! ---stebbs building related states
       TYPE(BUILDING_ARCHETYPE_PRM) :: building_archtype
+      REAL(KIND(1D0)) :: buildingname
+      REAL(KIND(1D0)) :: buildingtype
       REAL(KIND(1D0)) :: BuildingCount
       REAL(KIND(1D0)) :: Occupants
       REAL(KIND(1D0)) :: hhs0
