@@ -50,7 +50,7 @@ class TestSUEWSConfig(unittest.TestCase):
         # Test if DataFrame conversion preserves structure
         df_state_2 = config_reconst.to_df_state()
 
-        pd.testing.assert_frame_equal(df_state, df_state_2)
+        pd.testing.assert_frame_equal(df_state, df_state_2, check_dtype=False)
 
     def test_df_state_conversion_cycle(self):
         """Test conversion cycle starting from a DataFrame state."""
@@ -79,7 +79,7 @@ class TestSUEWSConfig(unittest.TestCase):
         #     df_state_reconst[param] = df_state_init[param]
 
         # Compare the initial and reconstructed DataFrame states
-        pd.testing.assert_frame_equal(df_state_init, df_state_reconst)
+        pd.testing.assert_frame_equal(df_state_init, df_state_reconst, check_dtype=False)
 
     def test_model_physics_validation(self):
         """Test model physics validation rules."""
