@@ -215,6 +215,7 @@ class FAIMethod(Enum):
     '''
     TODO: Add more detailed description for each method
     '''
+    ZERO = 0 # Not documented
     FIXED = 1  # Fixed frontal area index
     VARIABLE = 2  # Variable frontal area index based on vegetation state
 
