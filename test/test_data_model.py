@@ -63,9 +63,6 @@ class TestSUEWSConfig(unittest.TestCase):
         df_state_init2 = df_state_init.copy()
         
         # Fix sample data to pass validation
-        df_state_init2["stabilitymethod"] = 2
-        df_state_init2["smdmethod"] = 1
-        df_state_init2["faimethod"] = 1
         for i in range(1, 7):
             if df_state_init2[("soilstore_surf", f"({i},)")].values[0] < 10:
                 df_state_init2[("soilstore_surf", f"({i},)")] = 10
@@ -83,11 +80,6 @@ class TestSUEWSConfig(unittest.TestCase):
         
         df_state_reconst[("ohm_threshsw", f"(7,)")] = df_state_init[("ohm_threshsw", f"(7,)")]
         df_state_reconst[("ohm_threshwd", f"(7,)")] = df_state_init[("ohm_threshwd", f"(7,)")]
-
-        # Reset physics options changed from df_state_init to df_state_init2
-        df_state_reconst["stabilitymethod"] = df_state_init["stabilitymethod"]
-        df_state_reconst["smdmethod"] = df_state_init["smdmethod"]
-        df_state_reconst["faimethod"] = df_state_init["faimethod"]
 
         for i in range(1, 7):
             if df_state_init[("soilstore_surf", f"({i},)")].values[0] < 10:
