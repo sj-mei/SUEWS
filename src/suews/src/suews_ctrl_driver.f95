@@ -3928,7 +3928,9 @@ CONTAINS
       ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
       stebbsmethod, & ! stebbs building input
       buildingname, buildingtype, &
-      BuildingCount, Occupants, hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus, stebbs_Height, &
+      BuildingCount, Occupants, &
+      ! hhs0, age_0_4, age_5_11, age_12_18, age_19_64, age_65plus, ! NOT USED
+      stebbs_Height, &
       FootprintArea, WallExternalArea, RatioInternalVolume, WWR, WallThickness, WallEffectiveConductivity, &
       WallDensity, WallCp, Wallx1, WallExternalEmissivity, WallInternalEmissivity, WallTransmissivity, &
       WallAbsorbtivity, WallReflectivity, FloorThickness, GroundFloorEffectiveConductivity, &
@@ -4394,12 +4396,12 @@ CONTAINS
       CHARACTER(LEN=10) :: buildingtype
       REAL(KIND(1D0)) :: BuildingCount
       REAL(KIND(1D0)) :: Occupants
-      REAL(KIND(1D0)) :: hhs0
-      REAL(KIND(1D0)) :: age_0_4
-      REAL(KIND(1D0)) :: age_5_11
-      REAL(KIND(1D0)) :: age_12_18
-      REAL(KIND(1D0)) :: age_19_64
-      REAL(KIND(1D0)) :: age_65plus
+      ! REAL(KIND(1D0)) :: hhs0
+      ! REAL(KIND(1D0)) :: age_0_4
+      ! REAL(KIND(1D0)) :: age_5_11
+      ! REAL(KIND(1D0)) :: age_12_18
+      ! REAL(KIND(1D0)) :: age_19_64
+      ! REAL(KIND(1D0)) :: age_65plus
       REAL(KIND(1D0)) :: stebbs_Height
       REAL(KIND(1D0)) :: FootprintArea
       REAL(KIND(1D0)) :: WallExternalArea
@@ -5291,12 +5293,12 @@ CONTAINS
       ! bldgState%BuildingName
       building_archtype%BuildingCount = BuildingCount
       building_archtype%Occupants = Occupants
-      building_archtype%hhs0 = hhs0
-      building_archtype%age_0_4 = age_0_4
-      building_archtype%age_5_11 = age_5_11
-      building_archtype%age_12_18 = age_12_18
-      building_archtype%age_19_64 = age_19_64
-      building_archtype%age_65plus = age_65plus
+      ! building_archtype%hhs0 = hhs0
+      ! building_archtype%age_0_4 = age_0_4
+      ! building_archtype%age_5_11 = age_5_11
+      ! building_archtype%age_12_18 = age_12_18
+      ! building_archtype%age_19_64 = age_19_64
+      ! building_archtype%age_65plus = age_65plus
       building_archtype%stebbs_Height = stebbs_Height
       building_archtype%FootprintArea = FootprintArea
       building_archtype%WallExternalArea = WallExternalArea
