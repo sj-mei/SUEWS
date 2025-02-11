@@ -373,6 +373,9 @@ class LAIParams(BaseModel):
 
 
 class VegetatedSurfaceProperties(SurfaceProperties):
+    alb: ValueWithDOI[float] = Field(
+        ge=0, le=1, description="Albedo", default=ValueWithDOI(0.2)
+    )
     alb_min: ValueWithDOI[float] = Field(
         ge=0, le=1, description="Minimum albedo", default=ValueWithDOI(0.2)
     )
@@ -447,6 +450,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
         # add ordinary float properties
         for attr in [
+            "alb",
             # "alb_min",
             # "alb_max",
             "beta_bioco2",
@@ -474,6 +478,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         instance = super().from_df_state(df, grid_id, surf_idx)
         # add ordinary float properties
         for attr in [
+            "alb",
             # "alb_min",
             # "alb_max",
             "beta_bioco2",
@@ -496,6 +501,9 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
 
 class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD here?
+    alb: ValueWithDOI[float] = Field(
+        ge=0, le=1, default=ValueWithDOI(0.2), description="Albedo"
+    )
     faievetree: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.1), description="Frontal area index of evergreen trees"
     )
@@ -530,6 +538,7 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
             df_state.loc[grid_id, (attr, "0")] = getattr(self, attr).value
 
         # specific properties
+        df_state.loc[grid_id, ("alb", "(2,)")] = self.alb.value
         df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min.value
         df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max.value
 
@@ -541,6 +550,7 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
         surf_idx = 2
         instance = super().from_df_state(df, grid_id, surf_idx)
 
+        instance.alb = ValueWithDOI(df.loc[grid_id, ("alb", "(2,)")])
         instance.faievetree = ValueWithDOI(df.loc[grid_id, ("faievetree", "0")])
         instance.evetreeh = ValueWithDOI(df.loc[grid_id, ("evetreeh", "0")])
 
@@ -551,6 +561,9 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
 
 
 class DectrProperties(VegetatedSurfaceProperties):
+    alb: ValueWithDOI[float] = Field(
+        ge=0, le=1, default=ValueWithDOI(0.2), description="Albedo"
+    )
     faidectree: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.1), description="Frontal area index of deciduous trees"
     )
@@ -603,6 +616,7 @@ class DectrProperties(VegetatedSurfaceProperties):
             df_state.loc[grid_id, (attr, "0")] = getattr(self, attr).value
 
         # specific properties
+        df_state.loc[grid_id, ("alb", "(3,)")] = self.alb.value
         df_state.loc[grid_id, ("albmin_dectr", "0")] = self.alb_min.value
         df_state.loc[grid_id, ("albmax_dectr", "0")] = self.alb_max.value
 
@@ -614,6 +628,7 @@ class DectrProperties(VegetatedSurfaceProperties):
         surf_idx = 3
         instance = super().from_df_state(df, grid_id, surf_idx)
 
+        instance.alb = ValueWithDOI(df.loc[grid_id, ("alb", "(3,)")])
         instance.faidectree = ValueWithDOI(df.loc[grid_id, ("faidectree", "0")])
         instance.dectreeh = ValueWithDOI(df.loc[grid_id, ("dectreeh", "0")])
         instance.pormin_dec = ValueWithDOI(df.loc[grid_id, ("pormin_dec", "0")])
@@ -628,6 +643,9 @@ class DectrProperties(VegetatedSurfaceProperties):
 
 
 class GrassProperties(VegetatedSurfaceProperties):
+    alb: ValueWithDOI[float] = Field(
+        ge=0, le=1, default=ValueWithDOI(0.2), description="Minimum albedo"
+    )
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.GRASS),
@@ -640,6 +658,7 @@ class GrassProperties(VegetatedSurfaceProperties):
         df_state = super().to_df_state(grid_id)
 
         # add specific properties
+        df_state.loc[grid_id, ("alb", "(4,)")] = self.alb.value
         df_state[("albmin_grass", "0")] = self.alb_min.value
         df_state[("albmax_grass", "0")] = self.alb_max.value
 
@@ -651,6 +670,7 @@ class GrassProperties(VegetatedSurfaceProperties):
         surf_idx = 4
         instance = super().from_df_state(df, grid_id, surf_idx)
 
+        instance.alb = ValueWithDOI(df.loc[grid_id, ("alb", "(4,)")])
         instance.alb_min = ValueWithDOI(df.loc[grid_id, ("albmin_grass", "0")])
         instance.alb_max = ValueWithDOI(df.loc[grid_id, ("albmax_grass", "0")])
 
