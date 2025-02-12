@@ -249,7 +249,7 @@ CONTAINS
                   PRINT *, '=========================== '
                   PRINT *, 'iteration is ', i_iter
                END IF
-
+               
                ! #316: restore initial hydroState as hydrostate should not be changed during iterations
                ! IF (config%flag_test) THEN
                hydroState = modState_init%hydroState
@@ -469,13 +469,13 @@ CONTAINS
 
             !==============use STEBBS to get localised radiation flux==================
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
-            IF (config%stebbsmethod == 1) THEN
+            IF (config%stebbsmethod == 1 .OR. config%stebbsmethod == 2) THEN
                IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
                CALL stebbsonlinecouple( &
-                  timer, config, forcing, siteInfo, & ! input
-                  modState, & ! input/output:
-                  datetimeLine, & ! input
-                  dataOutLineSTEBBS) ! output
+                 timer, config, forcing, siteInfo, & ! input
+                 modState, & ! input/output:
+                 datetimeLine, & ! input
+                 dataOutLineSTEBBS) ! output
             END IF
 
             !==============translation of  output variables into output array===========
