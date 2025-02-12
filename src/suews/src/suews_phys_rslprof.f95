@@ -111,7 +111,9 @@ CONTAINS
       REAL(KIND(1D0)) :: L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
       ! real(KIND(1D0))::L_stab ! threshold for Obukhov length under stable conditions
       ! real(KIND(1D0))::L_unstab ! threshold for Obukhov length under unstable conditions
-      REAL(KIND(1D0)) :: zStd ! Standard deviation of buildings heights
+      REAL(KIND(1D0)) :: zStd ! Standard deviation of buildings heights !added vlavor
+      REAL(KIND(1D0)) :: SurfaceArea
+      REAL(KIND(1D0)) :: nBuildings
       REAL(KIND(1D0)) :: zH_RSL ! mean canyon height used in RSL module with thresholds applied
       REAL(KIND(1D0)) :: dz_above ! height step above canopy
       REAL(KIND(1D0)) :: dz_can ! height step within canopy
@@ -231,7 +233,7 @@ CONTAINS
             StabilityMethod, & !input
             !nz_above, zarray(nz_can + 1:nz), & !input
             nz_above + 1, zarray(nz_can:nz), & !input
-            zh, zStd, L_MOD, sfr_surf, FAI, PAI, & !input
+            zh, zStd, L_MOD, sfr_surf, FAI, PAI, SurfaceArea, nBuildings, & !input
             !psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
             psihatm_z(nz_can:nz), psihath_z(nz_can:nz), & ! Calculate psihatm_z at zH
             zH_RSL, L_MOD_RSL, & ! output
@@ -919,7 +921,7 @@ CONTAINS
 
          ASSOCIATE ( &
             zStd => siteInfo%h_std, &
-            nBuilding => siteInfo%n_buildings, &
+            nBuildings => siteInfo%n_buildings, &
             pavedPrm => siteInfo%lc_paved, &
             bldgPrm => siteInfo%lc_bldg, &
             evetrPrm => siteInfo%lc_evetr, &
@@ -1065,7 +1067,7 @@ CONTAINS
                   StabilityMethod, & !input
                   !nz_above, zarray(nz_can + 1:nz), & !input
                   nz_above + 1, zarray(nz_can:nz), & !input
-                  zh, zStd, L_MOD, sfr_surf, FAI, PAI, & !input
+                  zh, zStd, L_MOD, sfr_surf, FAI, PAI, SurfaceArea, nBuildings, & !input
                   !psihatm_z(nz_can + 1:nz), psihath_z(nz_can + 1:nz), & !output
                   psihatm_z(nz_can:nz), psihath_z(nz_can:nz), & !output
                   zH_RSL, L_MOD_RSL, & ! output
@@ -1752,7 +1754,7 @@ CONTAINS
    END FUNCTION cal_z0_RSL
 
    SUBROUTINE RSL_cal_prms( &
-      StabilityMethod, nz_above, z_array, zh, zStd, L_MOD, sfr_surf, FAI, PAI, & !input
+      StabilityMethod, nz_above, z_array, zh, zStd, L_MOD, sfr_surf, FAI, PAI, SurfaceArea, nBuildings, & !input
       psihatm_array, psihath_array, zH_RSL, L_MOD_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, fx) !output
 
       IMPLICIT NONE
@@ -1800,6 +1802,11 @@ CONTAINS
       ! real(KIND(1D0)) ::betaNL
       REAL(KIND(1D0)) :: Lc_min ! LB Oct2021 - minimum value of Lc
       REAL(KIND(1D0)) :: dim_bluffbody ! LB Oct2021 - horizontal building dimensions
+      REAL(KIND(1D0)) :: SurfaceArea ! Grid Surface Area: TODO Check units
+      REAL(KIND(1D0)) :: nBuildings ! Number of Buildings in Grid
+      REAL(KIND(1D0)) :: Dx
+      REAL(KIND(1D0)) :: Lx
+      REAL(KIND(1D0)) :: zR
 
       REAL(KIND(1D0)), PARAMETER :: cd_tree = 1.2 ! drag coefficient tree canopy !!!!needs adjusting!!!
       REAL(KIND(1D0)), PARAMETER :: a_tree = 0.05 ! the foliage area per unit volume !!!!needs adjusting!!!
@@ -1876,6 +1883,15 @@ CONTAINS
       CALL cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, fx, c2h, ch)
       CALL cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2m, cm)
 
+      ! Calculate blending height - the height until which the RSL affects
+      ! ref: eqn 10 & 11 in Harman (2012, BLM) #TODO  include reference
+      Dx = SQRT(SurfaceArea / nBuildings)
+      Lx = SQRT(Dx**2 * PAI)
+      zR = zH_RSL + 1.5 * (Dx - Lx)
+
+      !print *, 'zR, zR_zH, Dx, Lx, SurfaceArea nBuildings:', zR, zR/zH_RSL, Dx, Lx, SurfaceArea, nBuildings
+      !STOP "Debugging here"
+
       ! calculate psihat values at desirable heights
       psihatm_top = 0
       psihatm_mid = 0
@@ -1899,7 +1915,13 @@ CONTAINS
                                     cm, c2m, &
                                     zh_RSL, zd_RSL, L_MOD_RSL, beta, elm, Lc)
          !zh_RSL, zd_RSL, L_MOD, beta, elm, Lc)
-         psihatm_array(iz - 2) = psihatm_btm
+         IF (z_btm < zR) THEN
+            psihatm_array(iz - 2) = psihatm_btm
+         ELSE
+            psihatm_btm = 0
+            psihatm_array(iz - 2) = psihatm_btm
+         END IF
+         !psihatm_array(iz - 2) = psihatm_btm
          psihatm_top = psihatm_mid
          psihatm_mid = psihatm_btm
 
