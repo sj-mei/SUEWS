@@ -3426,7 +3426,7 @@ CONTAINS
 
             l_mod_x = MAX(MIN(9999., l_mod), -9999.)
 
-            LAI_wt = DOT_PRODUCT(LAI_id(:), sfr_surf(1 + 2:nvegsurf + 2))
+            LAI_wt = DOT_PRODUCT(LAI_id(:), sfr_surf(1 + 2:nvegsurf + 2)/SUM(sfr_surf(1 + 2:nvegsurf + 2)))
 
             ! Calculate areally-weighted albedo
             bulkalbedo = DOT_PRODUCT(alb, sfr_surf)
