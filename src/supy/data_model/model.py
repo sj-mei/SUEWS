@@ -25,12 +25,12 @@ class EmissionsMethod(Enum):
     '''
     # just a demo to show how to use Enum for emissionsmethod
     NO_EMISSIONS = 0
-    CO2_ONLY = 1
-    CO2_AND_ENERGY = 2
-    CO2_AND_ENERGY_AND_VOC = 3
-    CO2_AND_ENERGY_AND_VOC_AND_NOX = 4
-    CO2_AND_ENERGY_AND_VOC_AND_NOX_AND_SO2 = 45
-    CO2_AND_ENERGY_AND_VOC_AND_NOX_AND_SO2_AND_PM = 111
+    L11 = 1
+    J11 = 2
+    L11_UPDATED = 3
+    J19 = 4
+    J19_UPDATED = 4
+  
 
     def __int__(self):
         """Representation showing just the value"""
@@ -313,7 +313,7 @@ class ModelPhysics(BaseModel):
         description="Method used to calculate net radiation",
     )
     emissionsmethod: ValueWithDOI[EmissionsMethod] = Field(
-        default=ValueWithDOI(EmissionsMethod.CO2_AND_ENERGY),
+        default=ValueWithDOI(EmissionsMethod.J11),
         description="Method used to calculate anthropogenic emissions",
     )
     storageheatmethod: ValueWithDOI[StorageHeatMethod] = Field(
