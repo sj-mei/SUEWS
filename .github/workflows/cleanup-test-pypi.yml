@@ -1,0 +1,36 @@
+name: Cleanup TestPyPI Releases
+
+on:
+  workflow_dispatch: # Allows manual trigger
+  push:
+    paths:
+      - src/supy/**
+      - src/suews/**
+      - src/supy_driver/**
+      - .github/workflows/cleanup-test-pypi.yml
+  schedule:
+    - cron: '15 0 * * 6'  # Runs every Saturday at 00:15
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install pypi-cleanup
+        run: pip install pypi-cleanup
+
+      - name: Run pypi-cleanup
+        env:
+          TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: |
+          pypi-cleanup --username __token__ \
+                       --password $TEST_PYPI_API_TOKEN \
+                       --package supy \
+                       --all --verbose
