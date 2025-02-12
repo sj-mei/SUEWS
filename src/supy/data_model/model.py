@@ -118,6 +118,7 @@ class RoughnessMethod(Enum):
     '''
     FIXED = 1  # Fixed roughness length
     VARIABLE = 2  # Variable roughness length based on vegetation state
+    FIVE = 5  # Not documented
 
     def __int__(self):
         return self.value
