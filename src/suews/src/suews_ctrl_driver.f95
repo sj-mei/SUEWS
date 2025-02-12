@@ -122,6 +122,7 @@ CONTAINS
          ! modState
          flagState => modState%flagState, &
          hydroState => modState%hydroState, &
+         phenState => modState%phenState, &
          heatstate => modState%heatState, &
          snowState => modState%snowState &
          )
@@ -249,10 +250,14 @@ CONTAINS
                   PRINT *, '=========================== '
                   PRINT *, 'iteration is ', i_iter
                END IF
-
+               ! ========================================================================================
+               ! IMPORTANT: restore initial states as they SHOULD NOT be changed during iterations
                ! #316: restore initial hydroState as hydrostate should not be changed during iterations
                ! IF (config%flag_test) THEN
                hydroState = modState_init%hydroState
+               ! #369: restore initial phenState as phenState should not be changed during iterations
+               phenState = modState_init%phenState
+               ! ========================================================================================
                ! snowstate should probably be restored as well but not done for now - should be revisited
                ! END IF
                !==============main calculation start=======================
