@@ -3504,7 +3504,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_surf
 
-
 !===============set variable of invalid value to NAN=====================
    ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
       IMPLICIT NONE
