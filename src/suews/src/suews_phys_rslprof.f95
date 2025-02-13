@@ -1885,9 +1885,9 @@ CONTAINS
 
       ! Calculate blending height - the height until which the RSL affects
       ! ref: eqn 10 & 11 in Harman (2012, BLM) #TODO  include reference
-      Dx = SQRT(SurfaceArea / nBuildings)
-      Lx = SQRT(Dx**2 * PAI)
-      zR = zH_RSL + 1.5 * (Dx - Lx)
+      Dx = SQRT(SurfaceArea/nBuildings)
+      Lx = SQRT(Dx**2*PAI)
+      zR = zH_RSL + 1.5*(Dx - Lx)
 
       !print *, 'zR, zR_zH, Dx, Lx, SurfaceArea nBuildings:', zR, zR/zH_RSL, Dx, Lx, SurfaceArea, nBuildings
       !STOP "Debugging here"
@@ -1983,14 +1983,14 @@ CONTAINS
       !END IF
 
       ! ## Issue 338 - beta # beta for Hstd/Hmean = 0 (Uniform Case)
-      H_ = zStd / zH_RSL
+      H_ = zStd/zH_RSL
 
       IF (H_ < 0.25) THEN
-         betaN2 = (3.444 * FAI**0.971) / (1 + 10.487 * FAI**0.971)
+         betaN2 = (3.444*FAI**0.971)/(1 + 10.487*FAI**0.971)
       ELSEIF (H_ >= 0.25 .AND. H_ <= 0.50) THEN
-         betaN2 = (0.264 * FAI**0.348) / (1 - 0.511 * FAI**0.348)
+         betaN2 = (0.264*FAI**0.348)/(1 - 0.511*FAI**0.348)
       ELSE
-         betaN2 = (6.822 * FAI**1.365) / (1 + 14.808 * FAI**1.365)
+         betaN2 = (6.822*FAI**1.365)/(1 + 14.808*FAI**1.365)
       END IF
       betaN2 = MAX(betaN2, 0.15)
 
