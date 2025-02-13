@@ -32,8 +32,7 @@ MODULE SUEWS_Driver
    USE ESTM_module, ONLY: ESTM
    USE EHC_module, ONLY: EHC
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
-   USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine, update_DailyStateLine_DTS, &
-                                SUEWS_cal_DailyState_DTS
+   USE DailyState_module, ONLY: update_DailyStateLine_DTS, SUEWS_cal_DailyState
    USE WaterDist_module, ONLY: &
       drainage, cal_water_storage_surf, &
       cal_water_storage_building, &
@@ -43,7 +42,6 @@ MODULE SUEWS_Driver
       SUEWS_cal_HorizontalSoilWater_DTS, &
       SUEWS_cal_WaterUse, SUEWS_cal_WaterUse_DTS
    USE ctrl_output, ONLY: varListAll
-   USE DailyState_module, ONLY: SUEWS_update_DailyState
    USE lumps_module, ONLY: LUMPS_cal_QHQE, LUMPS_cal_QHQE_DTS
    USE evap_module, ONLY: cal_evap_multi
    USE rsl_module, ONLY: RSLProfile, RSLProfile_DTS
@@ -122,6 +120,7 @@ CONTAINS
          ! modState
          flagState => modState%flagState, &
          hydroState => modState%hydroState, &
+         phenState => modState%phenState, &
          heatstate => modState%heatState, &
          snowState => modState%snowState &
          )
@@ -249,10 +248,14 @@ CONTAINS
                   PRINT *, '=========================== '
                   PRINT *, 'iteration is ', i_iter
                END IF
-
+               ! ========================================================================================
+               ! IMPORTANT: restore initial states as they SHOULD NOT be changed during iterations
                ! #316: restore initial hydroState as hydrostate should not be changed during iterations
                ! IF (config%flag_test) THEN
                hydroState = modState_init%hydroState
+               ! #369: restore initial phenState as phenState should not be changed during iterations
+               phenState = modState_init%phenState
+               ! ========================================================================================
                ! snowstate should probably be restored as well but not done for now - should be revisited
                ! END IF
                !==============main calculation start=======================
@@ -300,7 +303,7 @@ CONTAINS
 
                !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
-               CALL SUEWS_cal_DailyState_DTS( &
+               CALL SUEWS_cal_DailyState( &
                   timer, config, forcing, siteInfo, & !input
                   modState) ! input/output:
 
@@ -323,7 +326,7 @@ CONTAINS
                debugState%state_03_wateruse = modState
 
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
-               CALL SUEWS_cal_AnthropogenicEmission_DTS( &
+               CALL SUEWS_cal_AnthropogenicEmission( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
 
@@ -469,7 +472,7 @@ CONTAINS
 
             !==============use STEBBS to get localised radiation flux==================
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
-            IF (config%stebbsmethod == 1) THEN
+            IF (config%stebbsmethod == 1 .OR. config%stebbsmethod == 2) THEN
                IF (Diagnose == 1) WRITE (*, *) 'Calling STEBBS...'
                CALL stebbsonlinecouple( &
                   timer, config, forcing, siteInfo, & ! input
@@ -480,14 +483,14 @@ CONTAINS
 
             !==============translation of  output variables into output array===========
             IF (Diagnose == 1) WRITE (*, *) 'Calling BEERS_cal_main_DTS...'
-            CALL SUEWS_update_outputLine_DTS( &
+            CALL SUEWS_update_outputLine( &
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
                datetimeLine, dataOutLineSUEWS) !output
 
             IF (config%StorageHeatMethod == 5) THEN
                IF (Diagnose == 1) WRITE (*, *) 'Calling ECH_update_outputLine_DTS...'
-               CALL EHC_update_outputLine_DTS( &
+               CALL EHC_update_outputLine( &
                   timer, & !input
                   modState, & ! input/output:
                   datetimeLine, dataOutLineEHC) !output
@@ -734,112 +737,7 @@ CONTAINS
    END SUBROUTINE suews_update_tsurf
 
 ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
-   ! SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
-   !    AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, & ! input:
-   !    dayofWeek_id, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
-   !    FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
-   !    imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, &
-   !    PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-   !    QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
-   !    Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
-   !    Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff) ! output:
-
-   !    IMPLICIT NONE
-
-   !    ! INTEGER, INTENT(in)::Diagnose
-   !    INTEGER, INTENT(in) :: DLS ! daylighting savings
-   !    INTEGER, INTENT(in) :: EmissionsMethod !0 - Use values in met forcing file, or default QF;1 - Method according to Loridan et al. (2011) : SAHP; 2 - Method according to Jarvi et al. (2011)   : SAHP_2
-   !    ! INTEGER, INTENT(in) :: id
-   !    INTEGER, INTENT(in) :: it ! hour [H]
-   !    INTEGER, INTENT(in) :: imin ! minutes [M]
-   !    ! INTEGER, INTENT(in) :: nsh
-   !    INTEGER, DIMENSION(3), INTENT(in) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
-
-   !    REAL(KIND(1D0)), DIMENSION(6, 2), INTENT(in) :: HDD_id ! Heating Degree Days (see SUEWS_DailyState.f95)
-
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: AH_MIN ! miniumum anthropogenic heat flux [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: AH_SLOPE_Heating ! heating slope for the anthropogenic heat flux calculation [W m-2 K-1]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: AH_SLOPE_Cooling ! cooling slope for the anthropogenic heat flux calculation [W m-2 K-1]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: FcEF_v_kgkm ! CO2 Emission factor [kg km-1]
-   !    ! REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::NumCapita
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: PopDensDaytime ! Daytime population density [people ha-1] (i.e. workers)
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: QF0_BEU ! Fraction of base value coming from buildings [-]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_A ! Base value for QF [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_B ! Parameter related to heating degree days [W m-2 K-1 (Cap ha-1 )-1]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: Qf_C ! Parameter related to cooling degree days [W m-2 K-1 (Cap ha-1 )-1]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Heating ! base temperatrue for heating degree day [degC]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: BaseT_Cooling ! base temperature for cooling degree day [degC]
-   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(in) :: TrafficRate ! Traffic rate [veh km m-2 s-1]
-
-   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: AHProf_24hr ! diurnal profile of anthropogenic heat flux (AVERAGE of the multipliers is equal to 1) [-]
-   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: HumActivity_24hr ! diurnal profile of human activity [-]
-   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: TraffProf_24hr ! diurnal profile of traffic activity calculation[-]
-   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: PopProf_24hr ! diurnal profile of population [-]
-
-   !    REAL(KIND(1D0)), INTENT(in) :: CO2PointSource ! point source [kgC day-1]
-   !    REAL(KIND(1D0)), INTENT(in) :: EF_umolCO2perJ !co2 emission factor [umol J-1]
-   !    REAL(KIND(1D0)), INTENT(in) :: EnEF_v_Jkm ! energy emission factor [J K m-1]
-   !    REAL(KIND(1D0)), INTENT(in) :: FrFossilFuel_Heat ! fraction of fossil fuel heat [-]
-   !    REAL(KIND(1D0)), INTENT(in) :: FrFossilFuel_NonHeat ! fraction of fossil fuel non heat [-]
-   !    REAL(KIND(1D0)), INTENT(in) :: MaxFCMetab ! maximum FC metabolism [umol m-2 s-1]
-   !    REAL(KIND(1D0)), INTENT(in) :: MaxQFMetab ! maximum QF Metabolism [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: MinFCMetab ! minimum QF metabolism [umol m-2 s-1]
-   !    REAL(KIND(1D0)), INTENT(in) :: MinQFMetab ! minimum FC metabolism [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: PopDensNighttime ! nighttime population density [ha-1] (i.e. residents)
-   !    REAL(KIND(1D0)), INTENT(in) :: QF_obs ! observed anthropogenic heat flux from met forcing file when EmissionMethod=0 [W m-2]
-   !    REAL(KIND(1D0)), INTENT(in) :: Temp_C ! air temperature [degC]
-   !    REAL(KIND(1D0)), INTENT(in) :: TrafficUnits ! traffic units choice [-]
-
-   !    ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr_surf
-   !    ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac
-   !    REAL(KIND(1D0)), INTENT(IN) :: SurfaceArea !surface area [m-2]
-
-   !    REAL(KIND(1D0)), INTENT(out) :: Fc_anthro ! anthropogenic co2 flux  [umol m-2 s-1]
-   !    REAL(KIND(1D0)), INTENT(out) :: Fc_build ! co2 emission from building component [umol m-2 s-1]
-   !    REAL(KIND(1D0)), INTENT(out) :: Fc_metab ! co2 emission from metabolism component [umol m-2 s-1]
-   !    REAL(KIND(1D0)), INTENT(out) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
-   !    REAL(KIND(1D0)), INTENT(out) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
-   !    REAL(KIND(1D0)), INTENT(out) :: QF ! anthropogeic heat flux when EmissionMethod = 0 [W m-2]
-   !    REAL(KIND(1D0)), INTENT(out) :: QF_SAHP !total anthropogeic heat flux when EmissionMethod is not 0 [W m-2]
-
-   !    INTEGER, PARAMETER :: notUsedI = -999
-   !    REAL(KIND(1D0)), PARAMETER :: notUsed = -999
-
-   !    IF (EmissionsMethod == 0) THEN ! use observed qf
-   !       qf = QF_obs
-   !    ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
-   !       CALL AnthropogenicEmissions( &
-   !          CO2PointSource, EmissionsMethod, &
-   !          it, imin, DLS, DayofWeek_id, &
-   !          EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
-   !          FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
-   !          MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
-   !          PopDensDaytime, PopDensNighttime, &
-   !          Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
-   !          AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
-   !          BaseT_Heating, BaseT_Cooling, &
-   !          TrafficRate, &
-   !          QF0_BEU, QF_SAHP, &
-   !          Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
-   !          AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr, SurfaceArea)
-
-   !    ELSE
-   !       CALL ErrorHint(73, 'RunControl.nml:EmissionsMethod unusable', notUsed, notUsed, EmissionsMethod)
-   !    END IF
-
-   !    IF (EmissionsMethod >= 1) qf = QF_SAHP
-
-   !    IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
-   !       Fc_anthro = 0
-   !       Fc_metab = 0
-   !       Fc_traff = 0
-   !       Fc_build = 0
-   !       Fc_point = 0
-   !    END IF
-
-   ! END SUBROUTINE SUEWS_cal_AnthropogenicEmission
-
-   SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS( &
+   SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
       timer, config, forcing, siteInfo, & ! input
       modState) ! input/output:
       ! anthroEmisState, &
@@ -1013,7 +911,7 @@ CONTAINS
          END ASSOCIATE
       END ASSOCIATE
 
-   END SUBROUTINE SUEWS_cal_AnthropogenicEmission_DTS
+   END SUBROUTINE SUEWS_cal_AnthropogenicEmission
 ! ================================================================================
 
 !==============BIOGENIC CO2 flux==================================================
@@ -3287,8 +3185,7 @@ CONTAINS
 !========================================================================
 
 !==============Update output arrays=========================
-
-   SUBROUTINE SUEWS_update_outputLine_DTS( &
+   SUBROUTINE SUEWS_update_outputLine( &
       timer, config, forcing, siteInfo, & ! input
       modState, & ! input/output:
       datetimeLine, dataOutLineSUEWS) !output
@@ -3426,7 +3323,7 @@ CONTAINS
 
             l_mod_x = MAX(MIN(9999., l_mod), -9999.)
 
-            LAI_wt = DOT_PRODUCT(LAI_id(:), sfr_surf(1 + 2:nvegsurf + 2))
+            LAI_wt = DOT_PRODUCT(LAI_id(:), sfr_surf(1 + 2:nvegsurf + 2)/SUM(sfr_surf(1 + 2:nvegsurf + 2)))
 
             ! Calculate areally-weighted albedo
             bulkalbedo = DOT_PRODUCT(alb, sfr_surf)
@@ -3472,107 +3369,11 @@ CONTAINS
             !====================update output line end==============================
          END ASSOCIATE
       END ASSOCIATE
-   END SUBROUTINE SUEWS_update_outputLine_DTS
+   END SUBROUTINE SUEWS_update_outputLine
 !========================================================================
 
 !==============Update output arrays=========================
-   ! SUBROUTINE EHC_update_outputLine( &
-   !    iy, id, it, imin, dectime, nlayer, & !input
-   !    tsfc_out_surf, qs_surf, &
-   !    tsfc_out_roof, &
-   !    Qn_roof, &
-   !    QS_roof, &
-   !    QE_roof, &
-   !    QH_roof, &
-   !    state_roof, &
-   !    soilstore_roof, &
-   !    tsfc_out_wall, &
-   !    Qn_wall, &
-   !    QS_wall, &
-   !    QE_wall, &
-   !    QH_wall, &
-   !    state_wall, &
-   !    soilstore_wall, &
-   !    datetimeLine, dataOutLineEHC) !output
-   !    IMPLICIT NONE
-
-   !    REAL(KIND(1D0)), PARAMETER :: NAN = -999
-   !    INTEGER, PARAMETER :: n_fill = 15
-
-   !    INTEGER, INTENT(in) :: iy ! year [YYYY]
-   !    INTEGER, INTENT(in) :: id ! day of the year [DOY]
-   !    INTEGER, INTENT(in) :: it ! hour [H]
-   !    INTEGER, INTENT(in) :: imin ! minutes [M]
-
-   !    INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy [-]
-   !    REAL(KIND(1D0)), INTENT(in) :: dectime !decimal time [-]
-
-   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: tsfc_out_surf !surface temperature [degC]
-   !    REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: qs_surf !heat storage flux of each surface type [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_out_roof !roof surface temperature [degC]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: Qn_roof !net all-wave radiation of the roof [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QS_roof !heat storage flux of the roof [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QE_roof !latent heat flux of the roof [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QH_roof !sensible heat flux of the roof [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_roof !wetness state of the roof [mm]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_roof !soil moisture of roof [mm]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: tsfc_out_wall !wall surface temperature [degC]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: Qn_wall !net all-wave radiation of the wall [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QS_wall !heat storage flux of the wall [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QE_wall !latent heat flux of the wall [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: QH_wall !sensible heat flux of the wall [W m-2]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: state_wall !wetness state of the wall [mm]
-   !    REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: soilstore_wall !soil moisture of wall [mm]
-
-   !    REAL(KIND(1D0)), DIMENSION(5), INTENT(OUT) :: datetimeLine !date & time
-   !    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5), INTENT(out) :: dataOutLineEHC
-   !    ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
-   !    ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
-   !    ! INTEGER:: is
-   !    ! REAL(KIND(1D0)) :: LAI_wt !area weighted LAI [m2 m-2]
-   !    ! REAL(KIND(1D0)) :: RH2_pct ! RH2 in percentage [-]
-
-   !    ! the variables below with '_x' endings stand for 'exported' values
-   !    ! REAL(KIND(1D0)) :: ResistSurf_x !output surface resistance [s m-1]
-   !    ! REAL(KIND(1D0)) :: surf_chang_per_tstep_x !output change in state_id (exluding snowpack) per timestep [mm]
-   !    ! REAL(KIND(1D0)) :: l_mod_x !output  Obukhov length [m]
-   !    ! REAL(KIND(1D0)) :: bulkalbedo !output area-weighted albedo [-]
-   !    ! REAL(KIND(1D0)) :: smd_nsurf_x(nsurf) !output soil moisture deficit for each surface [mm]
-   !    ! REAL(KIND(1D0)) :: state_x(nsurf) !output wetness status of each surfaces[mm]
-   !    ! REAL(KIND(1D0)) :: wu_DecTr !water use for deciduous tree and shrubs [mm]
-   !    ! REAL(KIND(1D0)) :: wu_EveTr !water use of evergreen tree and shrubs [mm]
-   !    ! REAL(KIND(1D0)) :: wu_Grass !water use for grass [mm]
-
-   !    ! date & time:
-   !    datetimeLine = [ &
-   !                   REAL(iy, KIND(1D0)), REAL(id, KIND(1D0)), &
-   !                   REAL(it, KIND(1D0)), REAL(imin, KIND(1D0)), dectime]
-   !    !Define the overall output matrix to be printed out step by step
-   !    dataOutLineEHC = [ &
-   !                     tsfc_out_surf, qs_surf, & !output
-   !                     fill_result_x(tsfc_out_roof, n_fill), &
-   !                     fill_result_x(Qn_roof, n_fill), &
-   !                     fill_result_x(QS_roof, n_fill), &
-   !                     fill_result_x(QE_roof, n_fill), &
-   !                     fill_result_x(QH_roof, n_fill), &
-   !                     fill_result_x(state_roof, n_fill), &
-   !                     fill_result_x(soilstore_roof, n_fill), &
-   !                     fill_result_x(tsfc_out_wall, n_fill), &
-   !                     fill_result_x(Qn_wall, n_fill), &
-   !                     fill_result_x(QS_wall, n_fill), &
-   !                     fill_result_x(QE_wall, n_fill), &
-   !                     fill_result_x(QH_wall, n_fill), &
-   !                     fill_result_x(state_wall, n_fill), &
-   !                     fill_result_x(soilstore_wall, n_fill) &
-   !                     ]
-   !    ! set invalid values to NAN
-   !    ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
-
-   !    !====================update output line end==============================
-
-   ! END SUBROUTINE EHC_update_outputLine
-
-   SUBROUTINE EHC_update_outputLine_DTS( &
+   SUBROUTINE EHC_update_outputLine( &
       timer, & !input
       modState, & ! input/output:
       datetimeLine, dataOutLineEHC) !output
@@ -3651,7 +3452,7 @@ CONTAINS
             !====================update output line end==============================
          END ASSOCIATE
       END ASSOCIATE
-   END SUBROUTINE EHC_update_outputLine_DTS
+   END SUBROUTINE EHC_update_outputLine
 !========================================================================
 
    FUNCTION fill_result_x(res_valid, n_fill) RESULT(res_filled)
