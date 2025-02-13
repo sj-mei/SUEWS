@@ -4088,6 +4088,7 @@ CONTAINS
    END SUBROUTINE output_size
 
    SUBROUTINE SUEWS_cal_multitsteps( &
+      n_buildings, h_std, & ! Variables for RSL
       flag_test, &
       MetForcingBlock, len_sim, &
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
@@ -4208,6 +4209,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: NARP_TRANS_SITE !atmospheric transmissivity for NARP [-]
       REAL(KIND(1D0)), INTENT(IN) :: CO2PointSource ! point source [kgC day-1]
       REAL(KIND(1D0)), INTENT(IN) :: FlowChange !Difference between the input and output flow in the water body [mm]
+      REAL(KIND(1D0)), INTENT(IN) :: n_buildings !Number of Buildings in the grid
+      REAL(KIND(1D0)), INTENT(IN) :: h_std !Standard deviation of buildings !vlavor
 
       ! ---forcing-related variables
       TYPE(SUEWS_FORCING) :: forcing
@@ -4725,6 +4728,8 @@ CONTAINS
       siteInfo%flowchange = FlowChange
       siteInfo%sfr_surf = sfr_surf
       siteInfo%nlayer = nlayer
+      siteInfo%n_buildings = n_buildings
+      siteInfo%h_std = h_std !vlavor
       ! siteInfo%nlayer = nlayer
 
       ! forcing%kdown = kdown
