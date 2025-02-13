@@ -1983,9 +1983,6 @@ CONTAINS
       !END IF
 
       ! ## Issue 338 - beta # beta for Hstd/Hmean = 0 (Uniform Case)
-<<<<<<< HEAD
-      betaN2 = (3.444*FAI**0.971)/(1 + 10.487*FAI**0.971)
-=======
       H_ = zStd / zH_RSL
 
       IF (H_ < 0.25) THEN
@@ -1995,8 +1992,6 @@ CONTAINS
       ELSE
          betaN2 = (6.822 * FAI**1.365) / (1 + 14.808 * FAI**1.365)
       END IF
-
->>>>>>> 476c746d (Adding h_std, n_buildings and including betaN2 function for different Hstd/Hmean bands)
       betaN2 = MAX(betaN2, 0.15)
 
       betaHF = cal_beta_lc(stabilityMethod, betaN2, lc_over_L)
