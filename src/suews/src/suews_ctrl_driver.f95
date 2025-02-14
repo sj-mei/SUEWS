@@ -29,6 +29,7 @@ MODULE SUEWS_Driver
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters, SUEWS_cal_RoughnessParameters_DTS
    USE OHM_module, ONLY: OHM
+   USE OHM_yl, ONLY: OHM_yl_cal
    USE ESTM_module, ONLY: ESTM
    USE EHC_module, ONLY: EHC
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
@@ -1786,8 +1787,10 @@ CONTAINS
                   ! PRINT *, 'QS_surf after ESTM_ehc', QS_surf
                   ! PRINT *, '------------------------------------'
                   ! PRINT *, ''
-               END IF
 
+                  END IF
+                  ! ELSEIF (StorageHeatMethod == 6) THEN
+               CALL OHM_yl_cal(timer, modState) ! WIP hard-coded values within subroutine
             END ASSOCIATE
          END ASSOCIATE
       END ASSOCIATE
