@@ -437,7 +437,7 @@ CONTAINS
       RETURN
    END SUBROUTINE BoundaryLayerResistance
 
-   SUBROUTINE SUEWS_cal_RoughnessParameters_DTS( &
+   SUBROUTINE SUEWS_cal_RoughnessParameters( &
       timer, config, forcing, siteInfo, & !input
       modState) ! input/output:
       ! phenState, &
@@ -684,7 +684,7 @@ CONTAINS
 
          END ASSOCIATE
       END ASSOCIATE
-   END SUBROUTINE SUEWS_cal_RoughnessParameters_DTS
+   END SUBROUTINE SUEWS_cal_RoughnessParameters
 
    FUNCTION cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar) RESULT(z0V)
       ! TS 31 Jul 2018: make this a separate funciton for reuse

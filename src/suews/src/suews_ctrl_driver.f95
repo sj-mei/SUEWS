@@ -25,7 +25,7 @@ MODULE SUEWS_Driver
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
    ! USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            SUEWS_cal_RoughnessParameters_DTS
+                            SUEWS_cal_RoughnessParameters
    USE OHM_module, ONLY: OHM
    USE ESTM_module, ONLY: ESTM
    USE EHC_module, ONLY: EHC
@@ -222,7 +222,7 @@ CONTAINS
 
             !==============surface roughness calculation=======================
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
-            CALL SUEWS_cal_RoughnessParameters_DTS( &
+            CALL SUEWS_cal_RoughnessParameters( &
                timer, config, forcing, siteInfo, & !input
                modState) ! input/output:
 
