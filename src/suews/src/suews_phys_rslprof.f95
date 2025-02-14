@@ -1885,9 +1885,9 @@ CONTAINS
 
       ! Calculate blending height zR - the height at which RSL influences both momentum and heat # Issue338
       ! ref: eqn 21 in Grimmond (1999, JAM)
-      Dx = SQRT(SurfaceArea / nBuildings)
-      Lx = SQRT(Dx**2 * PAI)
-      zR = zH_RSL + 1.5 * (Dx - Lx)
+      Dx = SQRT(SurfaceArea/nBuildings)
+      Lx = SQRT(Dx**2*PAI)
+      zR = zH_RSL + 1.5*(Dx - Lx)
 
       ! calculate psihat values at desirable heights
       psihatm_top = 0
@@ -1987,14 +1987,14 @@ CONTAINS
 
       ! Include betaN2 parametrized based on UrbanTALES dataset (https://urbantales.vercel.app/) #Issue338
       ! betaN2 = f(H_, FAI)
-      H_ = zStd / zH_RSL
+      H_ = zStd/zH_RSL
 
       IF (H_ < 0.25) THEN
-         betaN2 = (3.444 * FAI**0.971) / (1 + 10.487 * FAI**0.971)
+         betaN2 = (3.444*FAI**0.971)/(1 + 10.487*FAI**0.971)
       ELSEIF (H_ >= 0.25 .AND. H_ <= 0.50) THEN
-         betaN2 = (0.264 * FAI**0.348) / (1 - 0.511 * FAI**0.348)
+         betaN2 = (0.264*FAI**0.348)/(1 - 0.511*FAI**0.348)
       ELSE
-         betaN2 = (6.822 * FAI**1.365) / (1 + 14.808 * FAI**1.365)
+         betaN2 = (6.822*FAI**1.365)/(1 + 14.808*FAI**1.365)
       END IF
       betaN2 = MIN(MAX(betaN2, 0.15), 0.50) !
 
