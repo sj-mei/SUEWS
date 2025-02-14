@@ -1788,8 +1788,8 @@ CONTAINS
                   ! PRINT *, '------------------------------------'
                   ! PRINT *, ''
 
-                  END IF
-                  ! ELSEIF (StorageHeatMethod == 6) THEN
+               END IF
+               ! ELSEIF (StorageHeatMethod == 6) THEN
                CALL OHM_yl_cal(timer, modState) ! WIP hard-coded values within subroutine
             END ASSOCIATE
          END ASSOCIATE
