@@ -1883,14 +1883,11 @@ CONTAINS
       CALL cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, fx, c2h, ch)
       CALL cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2m, cm)
 
-      ! Calculate blending height - the height until which the RSL affects
-      ! ref: eqn 10 & 11 in Harman (2012, BLM) #TODO  include reference
+      ! Calculate blending height zR - the height at which RSL influences both momentum and heat # Issue338
+      ! ref: eqn 21 in Grimmond (1999, JAM)
       Dx = SQRT(SurfaceArea / nBuildings)
       Lx = SQRT(Dx**2 * PAI)
       zR = zH_RSL + 1.5 * (Dx - Lx)
-
-      !print *, 'zR, zR_zH, Dx, Lx, SurfaceArea nBuildings:', zR, zR/zH_RSL, Dx, Lx, SurfaceArea, nBuildings
-      !STOP "Debugging here"
 
       ! calculate psihat values at desirable heights
       psihatm_top = 0
@@ -1918,7 +1915,7 @@ CONTAINS
          IF (z_btm < zR) THEN
             psihatm_array(iz - 2) = psihatm_btm
          ELSE
-            psihatm_btm = 0
+            psihatm_btm = 0 ! psihah = 0 if z>zR
             psihatm_array(iz - 2) = psihatm_btm
          END IF
          !psihatm_array(iz - 2) = psihatm_btm
@@ -1931,7 +1928,13 @@ CONTAINS
                                     z_top, z_mid, z_btm, &
                                     ch, c2h, &
                                     zH_RSL, zd_RSL, L_MOD_RSL, beta, elm, Lc)
-         psihath_top = psihath_mid
+         IF (z_btm < zR) THEN
+            psihath_array(iz - 2) = psihath_btm
+         ELSE
+            psihath_btm = 0 ! psihah = 0 if z>zR
+            psihath_array(iz - 2) = psihath_btm
+         END IF
+         !psihath_top = psihath_mid
          psihath_mid = psihath_btm
          psihath_array(iz - 2) = psihath_btm
 
@@ -1982,7 +1985,8 @@ CONTAINS
       !   betaN2 = 0.35
       !END IF
 
-      ! ## Issue 338 - beta # beta for Hstd/Hmean = 0 (Uniform Case)
+      ! Include betaN2 parametrized based on UrbanTALES dataset (https://urbantales.vercel.app/) #Issue338
+      ! betaN2 = f(H_, FAI)
       H_ = zStd / zH_RSL
 
       IF (H_ < 0.25) THEN
@@ -1992,7 +1996,7 @@ CONTAINS
       ELSE
          betaN2 = (6.822 * FAI**1.365) / (1 + 14.808 * FAI**1.365)
       END IF
-      betaN2 = MAX(betaN2, 0.15)
+      betaN2 = MIN(MAX(betaN2, 0.15), 0.50) !
 
       betaHF = cal_beta_lc(stabilityMethod, betaN2, lc_over_L)
 
