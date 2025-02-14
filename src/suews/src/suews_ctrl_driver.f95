@@ -34,13 +34,13 @@ MODULE SUEWS_Driver
    USE WaterDist_module, ONLY: &
       drainage, cal_water_storage_surf, &
       cal_water_storage_building, &
-      SUEWS_cal_SoilState, SUEWS_cal_SoilState_DTS, &
+      SUEWS_cal_SoilState, &
       SUEWS_update_SoilMoist, SUEWS_update_SoilMoist_DTS, &
       ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
       SUEWS_cal_HorizontalSoilWater_DTS, &
       SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
-   USE lumps_module, ONLY: LUMPS_cal_QHQE, LUMPS_cal_QHQE_DTS
+   USE lumps_module, ONLY: LUMPS_cal_QHQE_DTS
    USE evap_module, ONLY: cal_evap_multi
    USE rsl_module, ONLY: RSLProfile, RSLProfile_DTS
    USE anemsn_module, ONLY: AnthropogenicEmissions
