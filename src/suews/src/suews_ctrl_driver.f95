@@ -25,7 +25,7 @@ MODULE SUEWS_Driver
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
-   USE AnOHM_module, ONLY: AnOHM
+   ! USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters, SUEWS_cal_RoughnessParameters_DTS
    USE OHM_module, ONLY: OHM
@@ -40,7 +40,7 @@ MODULE SUEWS_Driver
       SUEWS_update_SoilMoist, SUEWS_update_SoilMoist_DTS, &
       ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
       SUEWS_cal_HorizontalSoilWater_DTS, &
-      SUEWS_cal_WaterUse, SUEWS_cal_WaterUse_DTS
+      SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE lumps_module, ONLY: LUMPS_cal_QHQE, LUMPS_cal_QHQE_DTS
    USE evap_module, ONLY: cal_evap_multi
@@ -60,7 +60,7 @@ MODULE SUEWS_Driver
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main, BEERS_cal_main_DTS
    USE stebbs_module, ONLY: stebbsonlinecouple
-   USE version, ONLY: git_commit, compiler_ver
+   USE version, ONLY: git_commit, compiler_ver ! these are automatically generated during compilation time
    USE time_module, ONLY: SUEWS_cal_dectime_DTS, SUEWS_cal_tstep_DTS, SUEWS_cal_weekday_DTS, &
                           SUEWS_cal_DLS_DTS
 
@@ -319,7 +319,7 @@ CONTAINS
 
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
                !=================Gives the external and internal water uses per timestep=================
-               CALL SUEWS_cal_WaterUse_DTS( &
+               CALL SUEWS_cal_WaterUse( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
 
