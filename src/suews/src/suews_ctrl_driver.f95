@@ -20,8 +20,6 @@ MODULE SUEWS_Driver
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition, NARP_cal_SunPosition_DTS
-   USE time_module, ONLY: suews_cal_dectime, SUEWS_cal_tstep, SUEWS_cal_weekday, &
-                          SUEWS_cal_DLS
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE SPARTACUS_MODULE, ONLY: SPARTACUS
@@ -5259,19 +5257,19 @@ CONTAINS
 
    END FUNCTION cal_tair_av
 
-   FUNCTION cal_tsfc(qh, avdens, avcp, RA, temp_c) RESULT(tsfc_C)
+   FUNCTION cal_tsfc(qh, dens_air, vcp_air, RA, temp_c) RESULT(tsfc_C)
       ! calculate surface/skin temperature
       ! TS, 23 Oct 2019
       IMPLICIT NONE
       REAL(KIND(1D0)), INTENT(in) :: qh ! sensible heat flux [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: avdens ! air density [kg m-3]
-      REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J m-3 K-1]
+      REAL(KIND(1D0)), INTENT(in) :: dens_air ! air density [kg m-3]
+      REAL(KIND(1D0)), INTENT(in) :: vcp_air !air volumetric heat capacity [J m-3 K-1]
       REAL(KIND(1D0)), INTENT(in) :: RA !Aerodynamic resistance [s m^-1]
       REAL(KIND(1D0)), INTENT(in) :: temp_C ! air temperature [C]
 
       REAL(KIND(1D0)) :: tsfc_C ! surface temperature [C]
 
-      tsfc_C = qh/(avdens*avcp)*RA + temp_C
+      tsfc_C = qh/(dens_air*vcp_air)*RA + temp_C
    END FUNCTION cal_tsfc
 
 END MODULE SUEWS_Driver
