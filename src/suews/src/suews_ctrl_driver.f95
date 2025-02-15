@@ -3276,20 +3276,20 @@ CONTAINS
             !Define the overall output matrix to be printed out step by step
             dataOutLineEHC = [ &
                              tsfc_out_surf, qs_surf, & !output
-                             fill_result(tsfc_out_roof, n_fill), &
-                             fill_result(Qn_roof, n_fill), &
-                             fill_result(QS_roof, n_fill), &
-                             fill_result(QE_roof, n_fill), &
-                             fill_result(QH_roof, n_fill), &
-                             fill_result(state_roof, n_fill), &
-                             fill_result(soilstore_roof, n_fill), &
-                             fill_result(tsfc_out_wall, n_fill), &
-                             fill_result(Qn_wall, n_fill), &
-                             fill_result(QS_wall, n_fill), &
-                             fill_result(QE_wall, n_fill), &
-                             fill_result(QH_wall, n_fill), &
-                             fill_result(state_wall, n_fill), &
-                             fill_result(soilstore_wall, n_fill) &
+                             fill_sim_res(tsfc_out_roof, n_fill), &
+                             fill_sim_res(Qn_roof, n_fill), &
+                             fill_sim_res(QS_roof, n_fill), &
+                             fill_sim_res(QE_roof, n_fill), &
+                             fill_sim_res(QH_roof, n_fill), &
+                             fill_sim_res(state_roof, n_fill), &
+                             fill_sim_res(soilstore_roof, n_fill), &
+                             fill_sim_res(tsfc_out_wall, n_fill), &
+                             fill_sim_res(Qn_wall, n_fill), &
+                             fill_sim_res(QS_wall, n_fill), &
+                             fill_sim_res(QE_wall, n_fill), &
+                             fill_sim_res(QH_wall, n_fill), &
+                             fill_sim_res(state_wall, n_fill), &
+                             fill_sim_res(soilstore_wall, n_fill) &
                              ]
 
             ! set invalid values to NAN
@@ -3301,7 +3301,7 @@ CONTAINS
    END SUBROUTINE EHC_update_outputLine
 !========================================================================
 
-   FUNCTION fill_result(res_valid, n_fill) RESULT(res_filled)
+   FUNCTION fill_sim_res(res_valid, n_fill) RESULT(res_filled)
       IMPLICIT NONE
       REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: res_valid
       INTEGER, INTENT(IN) :: n_fill
@@ -3310,7 +3310,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
 
       res_filled = RESHAPE(res_valid, [n_fill], pad=[NAN])
-   END FUNCTION fill_result
+   END FUNCTION fill_sim_res
 
 !==============Update output arrays=========================
    SUBROUTINE SUEWS_update_output( &
