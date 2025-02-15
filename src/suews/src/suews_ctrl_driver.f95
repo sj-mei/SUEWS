@@ -630,9 +630,7 @@ CONTAINS
    SUBROUTINE suews_update_tsurf( &
       timer, config, forcing, siteInfo, & ! input
       modState) ! input/output:
-      ! flagState, &
-      ! atmState, &
-      ! heatState) ! inout
+
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE, flag_STATE, &
@@ -643,9 +641,6 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(SUEWS_STATE), INTENT(inout) :: modState
-      ! TYPE(HEAT_STATE), INTENT(inout) :: heatState
-      ! TYPE(atm_STATE), INTENT(inout) :: atmState
-      ! TYPE(flag_STATE), INTENT(inout) :: flagState
 
       INTEGER :: i_surf, i_layer
       REAL(KIND(1D0)) :: dif_tsfc_iter, ratio_iter
@@ -924,16 +919,6 @@ CONTAINS
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
 
       TYPE(SUEWS_STATE), INTENT(INout) :: modState
-
-      ! TYPE(atm_state), INTENT(IN) :: atmState
-      ! TYPE(HYDRO_STATE), INTENT(IN) :: hydroState
-      ! TYPE(anthroEmis_STATE), INTENT(INout) :: anthroEmisState
-
-      ! TYPE(CONDUCTANCE_PRM), INTENT(in) :: conductancePrm
-      ! TYPE(PHENOLOGY_STATE), INTENT(IN) :: phenState
-      ! TYPE(SNOW_STATE), INTENT(IN) :: snowState
-
-      ! REAL(KIND(1D0)), INTENT(in) :: vsmd !Soil moisture deficit for vegetated surfaces only [mm]
 
       REAL(KIND(1D0)) :: gfunc2 !gdq*gtemp*gs*gq for photosynthesis calculations (With modelled 2 meter temperature)
       REAL(KIND(1D0)) :: dq !Specific humidity deficit [g/kg]
@@ -2738,36 +2723,7 @@ CONTAINS
 
       TYPE(SUEWS_STATE), INTENT(inout) :: modState
 
-      ! TYPE(HEAT_STATE), INTENT(inout) :: heatState
-      ! TYPE(snow_STATE), INTENT(in) :: snowState
-      ! TYPE(atm_state), INTENT(IN) :: atmState
-
       INTEGER, PARAMETER :: qhMethod = 1 ! 1 = the redidual method; 2 = the resistance method
-      ! INTEGER, INTENT(in) :: nlayer !number of vertical levels in urban canopy [-]
-
-      ! REAL(KIND(1D0)), INTENT(in) :: qn !net all-wave radiation [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: qf ! anthropogenic heat flux [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: QmRain !melt heat for rain on snow [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: qe !latent heat flux [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: qs !heat storage flux [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: QmFreez !heat related to freezing of surface store [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: qm !Snowmelt-related heat [W m-2]
-      ! REAL(KIND(1D0)), INTENT(in) :: avdens !air density [kg m-3]
-      ! REAL(KIND(1D0)), INTENT(in) :: avcp !air heat capacity [J kg-1 K-1]
-      ! REAL(KIND(1D0)), INTENT(in) :: tsurf
-      ! REAL(KIND(1D0)) :: Temp_C !air temperature [degC]
-
-      ! REAL(KIND(1D0)), INTENT(out) :: qh ! turtbulent sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)), INTENT(out) :: qh_resist !resistance bnased sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)), INTENT(out) :: qh_residual ! residual based sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(out) :: qh_resist_surf !resistance-based sensible heat flux [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_roof !resistance-based sensible heat flux of roof [W m-2]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(out) :: qh_resist_wall !resistance-based sensible heat flux of wall [W m-2]
-
-      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_roof !surface fraction of roof [-]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_roof !roof surface temperature [degC]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(in) :: sfr_wall !surface fraction of wall [-]
-      ! REAL(KIND(1D0)), DIMENSION(nlayer) :: tsfc_wall !wall surface temperature[degC]
 
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
       INTEGER :: is
@@ -3320,20 +3276,20 @@ CONTAINS
             !Define the overall output matrix to be printed out step by step
             dataOutLineEHC = [ &
                              tsfc_out_surf, qs_surf, & !output
-                             fill_result_x(tsfc_out_roof, n_fill), &
-                             fill_result_x(Qn_roof, n_fill), &
-                             fill_result_x(QS_roof, n_fill), &
-                             fill_result_x(QE_roof, n_fill), &
-                             fill_result_x(QH_roof, n_fill), &
-                             fill_result_x(state_roof, n_fill), &
-                             fill_result_x(soilstore_roof, n_fill), &
-                             fill_result_x(tsfc_out_wall, n_fill), &
-                             fill_result_x(Qn_wall, n_fill), &
-                             fill_result_x(QS_wall, n_fill), &
-                             fill_result_x(QE_wall, n_fill), &
-                             fill_result_x(QH_wall, n_fill), &
-                             fill_result_x(state_wall, n_fill), &
-                             fill_result_x(soilstore_wall, n_fill) &
+                             fill_result(tsfc_out_roof, n_fill), &
+                             fill_result(Qn_roof, n_fill), &
+                             fill_result(QS_roof, n_fill), &
+                             fill_result(QE_roof, n_fill), &
+                             fill_result(QH_roof, n_fill), &
+                             fill_result(state_roof, n_fill), &
+                             fill_result(soilstore_roof, n_fill), &
+                             fill_result(tsfc_out_wall, n_fill), &
+                             fill_result(Qn_wall, n_fill), &
+                             fill_result(QS_wall, n_fill), &
+                             fill_result(QE_wall, n_fill), &
+                             fill_result(QH_wall, n_fill), &
+                             fill_result(state_wall, n_fill), &
+                             fill_result(soilstore_wall, n_fill) &
                              ]
 
             ! set invalid values to NAN
@@ -3345,7 +3301,7 @@ CONTAINS
    END SUBROUTINE EHC_update_outputLine
 !========================================================================
 
-   FUNCTION fill_result_x(res_valid, n_fill) RESULT(res_filled)
+   FUNCTION fill_result(res_valid, n_fill) RESULT(res_filled)
       IMPLICIT NONE
       REAL(KIND(1D0)), DIMENSION(:), INTENT(IN) :: res_valid
       INTEGER, INTENT(IN) :: n_fill
@@ -3354,7 +3310,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER :: NAN = -999
 
       res_filled = RESHAPE(res_valid, [n_fill], pad=[NAN])
-   END FUNCTION fill_result_x
+   END FUNCTION fill_result
 
 !==============Update output arrays=========================
    SUBROUTINE SUEWS_update_output( &
@@ -3716,11 +3672,6 @@ CONTAINS
 
       ! ---timer-related variables
       TYPE(SUEWS_TIMER) :: timer
-      ! INTEGER :: iy ! year [y]
-      ! INTEGER :: id ! day of year, 1-366 [-]
-      ! INTEGER :: it ! hour, 0-23 [h]
-      ! INTEGER :: imin !minutes, 0-59 [min]
-      ! INTEGER :: isec ! seconds, 0-59 [s]
 
       INTEGER, INTENT(IN) :: tstep !timestep [s]
       INTEGER, INTENT(IN) :: tstep_prev ! tstep size of the previous step [s]
@@ -4175,11 +4126,6 @@ CONTAINS
       INTEGER :: ir
       ! met forcing variables
       INTEGER, PARAMETER :: gridiv_x = 1 ! a dummy gridiv as this routine is only one grid
-      ! REAL(KIND(1D0)) :: qh_obs
-      ! REAL(KIND(1D0)) :: qe_obs
-      ! REAL(KIND(1D0)) :: kdiff
-      ! REAL(KIND(1D0)) :: kdir
-      ! REAL(KIND(1D0)) :: wdir
 
       REAL(KIND(1D0)), DIMENSION(5) :: datetimeLine
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5) :: dataOutLineSUEWS
@@ -4226,30 +4172,7 @@ CONTAINS
       siteInfo%flowchange = FlowChange
       siteInfo%sfr_surf = sfr_surf
       siteInfo%nlayer = nlayer
-      ! siteInfo%nlayer = nlayer
 
-      ! forcing%kdown = kdown
-      ! forcing%ldown = ldown_obs
-      !forcing%RH = avRh
-      ! forcing%pres = Press_hPa
-      !forcing%U = avU1
-      ! forcing%rain = Precip
-      ! forcing%Wuh = wu_m3
-      ! forcing%fcld = fcld_obs
-      ! forcing%LAI_obs = LAI_obs
-      ! forcing%snowfrac = snowFrac_obs
-      ! forcing%xsmd = xsmd
-      !forcing%qn1_obs = qn1_obs
-      !forcing%qs_obs = qs_obs
-      !forcing%qf_obs = qf_obs
-      ! forcing%Tair_av_5d = Tair_av
-      ! forcing%temp_c = Temp_C
-
-      ! timer%id = id
-      ! timer%imin = imin
-      ! timer%isec = isec
-      ! timer%it = it
-      ! timer%iy = iy
       timer%tstep = tstep
       timer%tstep_prev = tstep_prev
       timer%dt_since_start = dt_since_start
@@ -4286,24 +4209,6 @@ CONTAINS
 
       ! ESTM_ehc
       CALL ehcPrm%ALLOCATE(nlayer, ndepth)
-      ! ALLOCATE (ehcPrm%soil_storecap_roof(nlayer))
-      ! ALLOCATE (ehcPrm%soil_storecap_wall(nlayer))
-      ! ALLOCATE (ehcPrm%state_limit_roof(nlayer))
-      ! ALLOCATE (ehcPrm%state_limit_wall(nlayer))
-      ! ALLOCATE (ehcPrm%wet_thresh_roof(nlayer))
-      ! ALLOCATE (ehcPrm%wet_thresh_wall(nlayer))
-      ! ALLOCATE (ehcPrm%tin_roof(nlayer))
-      ! ALLOCATE (ehcPrm%tin_wall(nlayer))
-      ! ALLOCATE (ehcPrm%tin_surf(nlayer))
-      ! ALLOCATE (ehcPrm%k_roof(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%k_wall(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%k_surf(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%cp_roof(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%cp_wall(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%cp_surf(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%dz_roof(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%dz_wall(nlayer, ndepth))
-      ! ALLOCATE (ehcPrm%dz_surf(nlayer, ndepth))
       ehcPrm%soil_storecap_roof = SoilStoreCap_roof
       ehcPrm%soil_storecap_wall = SoilStoreCap_wall
       ehcPrm%state_limit_roof = StateLimit_roof
@@ -4341,16 +4246,6 @@ CONTAINS
 
       CALL spartacusLayerPrm%ALLOCATE(nlayer)
 
-      ! ALLOCATE (spartacusLayerPrm%building_frac(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%building_scale(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%veg_frac(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%veg_scale(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%alb_roof(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%emis_roof(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%alb_wall(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%emis_wall(nlayer))
-      ! ALLOCATE (spartacusLayerPrm%roof_albedo_dir_mult_fact(nspec, nlayer))
-      ! ALLOCATE (spartacusLayerPrm%wall_specular_frac(nspec, nlayer))
       spartacusLayerPrm%building_frac = building_frac
       spartacusLayerPrm%building_scale = building_scale
       spartacusLayerPrm%veg_frac = veg_frac
@@ -4476,13 +4371,9 @@ CONTAINS
       !WRITE(*, *) 'OHM_COEF_pav', OHM_coef
 
       pavedPrm%ohm%ohm_coef_lc(1)%summer_wet = OHM_coef(PavSurf, 1, 1)
-      !WRITE(*, *) 'PavSurf_OHM_COEF_A1_SUMMER_WET', OHM_coef(PavSurf, 1, 1)
       pavedPrm%ohm%ohm_coef_lc(1)%summer_dry = OHM_coef(PavSurf, 2, 1)
-      !WRITE(*, *) 'PavSurf_OHM_COEF_A1_SUMMER_DRY', OHM_coef(PavSurf, 2, 1)
       pavedPrm%ohm%ohm_coef_lc(1)%winter_wet = OHM_coef(PavSurf, 3, 1)
-      !WRITE(*, *) 'PavSurf_OHM_COEF_A1_WINTER_WRT', OHM_coef(PavSurf, 3, 1)
       pavedPrm%ohm%ohm_coef_lc(1)%winter_dry = OHM_coef(PavSurf, 4, 1)
-      ! WRITE(*, *) 'PavSurf_OHM_COEF_A1_WINTER_DRY', OHM_coef(PavSurf, 4, 1),
 
       pavedPrm%ohm%ohm_coef_lc(2)%summer_wet = OHM_coef(PavSurf, 1, 2)
       pavedPrm%ohm%ohm_coef_lc(2)%summer_dry = OHM_coef(PavSurf, 2, 2)
@@ -4523,19 +4414,16 @@ CONTAINS
       bldgPrm%ohm%ohm_coef_lc(1)%summer_dry = OHM_coef(BldgSurf, 2, 1)
       bldgPrm%ohm%ohm_coef_lc(1)%winter_wet = OHM_coef(BldgSurf, 3, 1)
       bldgPrm%ohm%ohm_coef_lc(1)%winter_dry = OHM_coef(BldgSurf, 4, 1)
-      ! WRITE(*,*) 'bldgPrm_OHM_COEF_A1', bldgPrm%ohm%ohm_coef_lc(1)
 
       bldgPrm%ohm%ohm_coef_lc(2)%summer_wet = OHM_coef(BldgSurf, 1, 2)
       bldgPrm%ohm%ohm_coef_lc(2)%summer_dry = OHM_coef(BldgSurf, 2, 2)
       bldgPrm%ohm%ohm_coef_lc(2)%winter_wet = OHM_coef(BldgSurf, 3, 2)
       bldgPrm%ohm%ohm_coef_lc(2)%winter_dry = OHM_coef(BldgSurf, 4, 2)
-      ! WRITE(*,*) 'bldgPrm_OHM_COEF_A2', bldgPrm%ohm%ohm_coef_lc(2)
 
       bldgPrm%ohm%ohm_coef_lc(3)%summer_wet = OHM_coef(BldgSurf, 1, 3)
       bldgPrm%ohm%ohm_coef_lc(3)%summer_dry = OHM_coef(BldgSurf, 2, 3)
       bldgPrm%ohm%ohm_coef_lc(3)%winter_wet = OHM_coef(BldgSurf, 3, 3)
       bldgPrm%ohm%ohm_coef_lc(3)%winter_dry = OHM_coef(BldgSurf, 4, 3)
-      ! WRITE(*,*) 'bldgPrm_OHM_COEF_A3', bldgPrm%ohm%ohm_coef_lc(3)
 
       bldgPrm%soil%soildepth = SoilDepth(BldgSurf)
       bldgPrm%soil%soilstorecap = SoilStoreCap_surf(BldgSurf)
@@ -4977,18 +4865,8 @@ CONTAINS
       siteInfo%stebbs = stebbsPrm
 
       ! assign stebbs building parameters
-      ! bldgState%BuildingCode
-      ! bldgState%BuildingClass
-      ! bldgState%BuildingType
-      ! bldgState%BuildingName
       building_archtype%BuildingCount = BuildingCount
       building_archtype%Occupants = Occupants
-      ! building_archtype%hhs0 = hhs0
-      ! building_archtype%age_0_4 = age_0_4
-      ! building_archtype%age_5_11 = age_5_11
-      ! building_archtype%age_12_18 = age_12_18
-      ! building_archtype%age_19_64 = age_19_64
-      ! building_archtype%age_65plus = age_65plus
       building_archtype%stebbs_Height = stebbs_Height
       building_archtype%FootprintArea = FootprintArea
       building_archtype%WallExternalArea = WallExternalArea
@@ -5079,12 +4957,6 @@ CONTAINS
          forcing%Wuh = MetForcingBlock(ir, 19)
          forcing%xsmd = MetForcingBlock(ir, 20)
          forcing%LAI_obs = MetForcingBlock(ir, 21)
-         !qh_obs = MetForcingBlock(ir, 6)
-         !qe_obs = MetForcingBlock(ir, 7)
-         ! kdiff = MetForcingBlock(ir, 22)
-         ! kdir = MetForcingBlock(ir, 23)
-         ! wdir = MetForcingBlock(ir, 24)
-         ! config%Diagnose = 1
 
          !CALL SUEWS_cal_Main( &
          CALL SUEWS_cal_Main( &
