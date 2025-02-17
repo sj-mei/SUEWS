@@ -1790,7 +1790,7 @@ CONTAINS
 
                   END IF
                   ! ELSEIF (StorageHeatMethod == 6) THEN
-               CALL OHM_yl_cal(timer, modState) ! WIP hard-coded values within subroutine
+               CALL OHM_yl_cal(timer, modState, avu1, ohmState%qn_av, Tair_mav_5d) ! WIP hard-coded values within subroutine
             END ASSOCIATE
          END ASSOCIATE
       END ASSOCIATE

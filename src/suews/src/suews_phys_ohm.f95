@@ -347,18 +347,18 @@ END MODULE OHM_module
 
 MODULE OHM_yl
    ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
-   
+
    IMPLICIT NONE
    CONTAINS
 
-   SUBROUTINE OHM_yl_cal(timer, modState)
+   SUBROUTINE OHM_yl_cal(timer, modState,  avu1, qn_av, Tair_mav_5d)
       USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_STATE
 
       IMPLICIT NONE
       
       ! Input parameters
       TYPE(SUEWS_TIMER), INTENT(in) :: timer ! Timer
-      TYPE(SUEWS_STATE), INTENT(in) :: modState ! Model state 
+      TYPE(SUEWS_STATE), INTENT(in) :: modState ! Model state
 
       ! Building material properties
       REAL(KIND(1D0)) :: d = 0.1125 ! Thickness [m]
@@ -367,9 +367,12 @@ MODULE OHM_yl
       REAL(KIND(1D0)) :: lambda_c = 2.575 ! Building surface to plan area ratio [-]
 
       ! Meteorology
-      REAL(KIND(1D0)) :: WS = 1.0 ! Wind speed [ms-1]
-      REAL(KIND(1D0)) :: QStar = 1.0 ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
-      REAL(KIND(1D0)) :: dTair = 1.0 ! Mid-night (00:00) 2m-air temperature difference compared to the previous day (°C)
+      REAL(KIND(1D0)), INTENT(in) :: avu1 ! Wind speed [ms-1]
+      REAL(KIND(1D0)) :: WS ! Wind speed [ms-1]
+      REAL(KIND(1D0)), INTENT(in) :: qn_av
+      REAL(KIND(1D0)) :: QStar ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
+      REAL(KIND(1D0)) :: dTair ! Mid-night (00:00) 2m-air temperature difference compared to the previous day (°C)
 
       ! Local variables for file I/O
       INTEGER :: iunit, ios
@@ -397,67 +400,18 @@ MODULE OHM_yl
          id => timer%id &
          )
 
-      ! Set the CSV filename
-      csv_filename = './example_OHM.csv'
+      WS = avu1
+      QStar = qn_av
+      dTair = Tair_mav_5d
+
+      ! ! Set the CSV filename
+      ! csv_filename = './example_OHM.csv'
 
       ! Open the CSV file for reading
       ! Only perform calculations once per day (assuming 300s timestep and 86400s in a day)
       IF (id /= id_prev) THEN
          id_prev = id
 
-         ! Open the CSV file for reading
-         OPEN(NEWUNIT=iunit_csv, FILE=csv_filename, STATUS='OLD', ACTION='READ', IOSTAT=ios_csv, IOMSG=iomsg)
-         IF (ios_csv /= 0) THEN
-            PRINT *, 'Error opening CSV file: ', TRIM(iomsg)
-            STOP
-         END IF
-
-         ! Skip the header line
-         READ(iunit_csv, '(A)', IOSTAT=ios_csv) csv_date
-         IF (ios_csv /= 0) THEN
-            PRINT *, 'Error reading CSV header: ', TRIM(iomsg)
-            STOP
-         END IF
-         
-         ! Initialize row number
-         row_num = 0
-
-         ! Read the CSV file line by line to find the matching row
-         DO
-            row_num = row_num + 1
-            ! PRINT *, 'Row number: ', row_num, ' ID: ', id
-            READ(iunit_csv, '(A)', IOSTAT=ios_csv, IOMSG=iomsg) csv_line
-            ! Check if there was an error reading the CSV file
-            IF (ios_csv /= 0) THEN
-               PRINT *, 'Error reading CSV file with error: ', TRIM(iomsg)
-               EXIT
-            END IF
-            ! Split the line into separate variables
-            pos1 = INDEX(csv_line, ',')
-            csv_date = csv_line(1:pos1-1)
-            pos2 = INDEX(csv_line(pos1+1:), ',') + pos1
-            READ(csv_line(pos1+1:pos2-1), *) csv_WS
-            pos3 = INDEX(csv_line(pos2+1:), ',') + pos2
-            READ(csv_line(pos2+1:pos3-1), *) csv_dTair
-            pos4 = INDEX(csv_line(pos3+1:), ',') + pos3
-            READ(csv_line(pos3+1:pos4-1), *) csv_QStar
-            pos5 = INDEX(csv_line(pos4+1:), ',') + pos4
-            READ(csv_line(pos4+1:pos5-1), *) csv_a1_cal
-            pos6 = INDEX(csv_line(pos5+1:), ',') + pos5
-            READ(csv_line(pos5+1:pos6-1), *) csv_a2_cal
-            READ(csv_line(pos6+1:), *) csv_a3_cal
-            ! Check if the current row number matches id
-            IF (row_num == id) THEN
-               WS = csv_WS
-               dTair = csv_dTair
-               QStar = csv_QStar
-               EXIT
-            END IF
-         END DO
-
-         ! Close the CSV file
-         CLOSE(iunit_csv)
-         ! Call subroutines to calculate coefficients
          CALL calculate_a1(d, C, k, lambda_c, WS, QStar, a1)
          CALL calculate_a2(d, C, k, WS, QStar, lambda_c, a2)
          CALL calculate_a3(QStar, dTair, a1, lambda_c, a3)
