@@ -3993,169 +3993,169 @@ class ArchetypeProperties(BaseModel):
     stebbs_Height: ValueWithDOI[float] = Field(
         default=ValueWithDOI(10.0),
         description="Building height [m]",
-        #default=10.0,
+        default=10.0,
         gt=0.0,
     )
     FootprintArea: ValueWithDOI[float] = Field(
         default=ValueWithDOI(64.0),
         description="Building footprint area [m2]",
-        #default=64.0,
+        default=64.0,
         gt=0.0,
     )
     WallExternalArea: ValueWithDOI[float] = Field(
         default=ValueWithDOI(80.0),
         description="External wall area (including window area) [m2]",
-        #default=80.0,
+        default=80.0,
         gt=0.0,
     )
     RatioInternalVolume: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.01),
         description="Ratio of internal mass volume to total building volume [-]",
-        #default=0.00,
+        default=0.00,
         ge=0.0, le=1.0,
     )
     WWR: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.20),
         description="window to wall ratio [-]",
-        #default=0.20,
+        default=0.20,
         ge=0.0, le=1.0,
     )
     WallThickness: ValueWithDOI[float] = Field(
         default=ValueWithDOI(20.0),
         description="Thickness of external wall and roof (weighted) [m]",
-        #default=20.0,
+        default=20.0,
         gt=0.0,
     )
     WallEffectiveConductivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(60.0),
         description="Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]",
-        #default=60.0,
+        default=60.0,
         gt=0.0,
     )
     WallDensity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(1600.0),
         description="Effective density of the walls and roof (weighted) [kg m-3]",
-        #default=1600.0,
+        default=1600.0,
         gt=0.0,
     )
     WallCp: ValueWithDOI[float] = Field(
         default=ValueWithDOI(850.0),
         description="Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]",
-        #default=850.0,
+        default=850.0,
         gt=0.0,
     )
     Wallx1: ValueWithDOI[float] = Field(
         default=ValueWithDOI(1.0),
         description="Weighting factor for heat capacity of walls and roof [-]",
-        #default=1.0,
+        default=1.0,
         ge=0.0, le=1.0,
     )
     WallExternalEmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.9),
         description="Emissivity of the external surface of walls and roof [-]",
-        #default=0.9,
+        default=0.9,
         ge=0.0, le=1.0,
     )
     WallInternalEmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.9),
         description="Emissivity of the internal surface of walls and roof [-]",
-        #default=0.9,
+        default=0.9,
         ge=0.0, le=1.0,
     )
     WallTransmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Transmissivity of walls and roof [-]",
-        #default=0.0,
+        default=0.0,
         ge=0.0, le=1.0,
     )
     WallAbsorbtivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.8),
         description="Absorbtivity of walls and roof [-]",
-        #default=0.8,
+        default=0.8,
         ge=0.0, le=1.0,
     )
     WallReflectivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.2),
         description="Reflectivity of the external surface of walls and roof [-]",
-        #default=0.2,
+        default=0.2,
         ge=0.0, le=1.0,
     )
     FloorThickness: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.2),
         description="Thickness of ground floor [m]",
-        #default=0.2,
+        default=0.2,
         gt=0.0,
     )
     GroundFloorEffectiveConductivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.15),
         description="Effective thermal conductivity of ground floor [W m-1 K-1]",
-        #default=0.15,
+        default=0.15,
         gt=0.0,
     )
     GroundFloorDensity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(500.0),
         description="Density of the ground floor [kg m-3]",
-        #default=500.0,
+        default=500.0,
         gt=0.0,
     )
     GroundFloorCp: ValueWithDOI[float] = Field(
         default=ValueWithDOI(1500.0),
         description="Effective specific heat capacity of the ground floor [J kg-1 K-1]",
-        #default=1500.0,
+        default=1500.0,
         gt=0.0,
     )
     WindowThickness: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.015),
         description="Window thickness [m]",
-        #default=0.015,
+        default=0.015,
         gt=0.0,
     )
     WindowEffectiveConductivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(1.0),
         description="Effective thermal conductivity of windows [W m-1 K-1]",
-        #default=1.0,
+        default=1.0,
         gt=0.0,
     )
     WindowDensity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(2500.0),
         description="Effective density of the windows [kg m-3]",
-        #default=2500.0,
+        default=2500.0,
         gt=0.0,
     )
     WindowCp: ValueWithDOI[float] = Field(
         default=ValueWithDOI(840.0),
         description="Effective specific heat capacity of windows [J kg-1 K-1]",
-        #default=840.0,
+        default=840.0,
         gt=0.0,
     )
     WindowExternalEmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.90),
         description="Emissivity of the external surface of windows [-]",
-        #default=0.90,
+        default=0.90,
         ge=0.0, le=1.0,
     )
     WindowInternalEmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.90),
         description="Emissivity of the internal surface of windows [-]",
-        #default=0.90,
+        default=0.90,
         ge=0.0, le=1.0,
     )
     WindowTransmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.90),
         description="Transmissivity of windows [-]",
-        #default=0.90,
+        default=0.90,
         ge=0.0, le=1.0,
     )
     WindowAbsorbtivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.01),
         description="Absorbtivity of windows [-]",
-        #default=0.01,
+        default=0.01,
         ge=0.0, le=1.0,
     )
     WindowReflectivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.09),
         description="Reflectivity of the external surface of windows [-]",
-        #default=0.09,
+        default=0.09,
         ge=0.0, le=1.0,
     )
     # TODO: Add defaults below here
@@ -4236,7 +4236,7 @@ class StebbsProperties(BaseModel):
     WallInternalConvectionCoefficient: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Internal convection coefficient of walls and roof [W m-2 K-1]",
-        #default=0.0,
+        default=0.0,
     )
     InternalMassConvectionCoefficient: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0), description="Convection coefficient of internal mass [W m-2 K-1]"
@@ -4244,22 +4244,22 @@ class StebbsProperties(BaseModel):
     FloorInternalConvectionCoefficient: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Internal convection coefficient of ground floor [W m-2 K-1]",
-        #default=0.0,
+        default=0.0,
     )
     WindowInternalConvectionCoefficient: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Internal convection coefficient of windows [W m-2 K-1]",
-        #default=0.0,
+        default=0.0,
     )
     WallExternalConvectionCoefficient: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial external convection coefficient of walls and roof [W m-2 K-1]",
-        #default=0.0,
+        default=0.0,
     )
     WindowExternalConvectionCoefficient: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial external convection coefficient of windows [W m-2 K-1]",
-        #default=0.0,
+        default=0.0,
     )
     GroundDepth: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0), description="Depth of external ground (deep soil) [m]"
@@ -4286,7 +4286,7 @@ class StebbsProperties(BaseModel):
     LatentSensibleRatio: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Latent-to-sensible ratio of metabolic energy release of occupants [-]",
-        #default=0.0,
+        default=0.0,
         ge=0.0, le=1.0,
     )
     ApplianceRating: ValueWithDOI[float] = Field(
@@ -4331,12 +4331,12 @@ class StebbsProperties(BaseModel):
     GroundFloorIndoorSurfaceTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial ground floor indoor surface temperature [degC]",
-        #default=20.0,
+        default=20.0,
     )
     GroundFloorOutdoorSurfaceTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial ground floor outdoor surface temperature [degC]",
-        #default=10.0,
+        default=10.0,
     )
     WaterTankTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0), description="Initial water temperature in hot water tank [degC]"
@@ -4344,12 +4344,12 @@ class StebbsProperties(BaseModel):
     InternalWallWaterTankTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial hot water tank internal wall temperature [degC]",
-        #default=0.0,
+        default=0.0,
     )
     ExternalWallWaterTankTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial hot water tank external wall temperature [degC]",
-        #default=0.0,
+        default=0.0,
     )
     WaterTankWallThickness: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0), description="Hot water tank wall thickness [m]"
@@ -4357,7 +4357,7 @@ class StebbsProperties(BaseModel):
     MainsWaterTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Temperature of water coming into the water tank [degC]",
-        #default=0.0,
+        default=0.0,
     )
     WaterTankSurfaceArea: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0), description="Surface area of hot water tank cylinder [m2]"
@@ -4368,23 +4368,23 @@ class StebbsProperties(BaseModel):
     HotWaterTankWallEmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Effective external wall emissivity of the hot water tank [-]",
-        #default=0.0,
+        default=0.0,
         ge=0.0, le=1.0,
     )
     DomesticHotWaterTemperatureInUseInBuilding: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial water temperature of water held in use in building [degC]",
-        #default=0.0,
+        default=0.0,
     )
     InternalWallDHWVesselTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial hot water vessel internal wall temperature [degC]",
-        #default=0.0,
+        default=0.0,
     )
     ExternalWallDHWVesselTemperature: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Initial hot water vessel external wall temperature [degC]",
-        #default=0.0,
+        default=0.0,
     )
     DHWVesselWallThickness: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0), description="Hot water vessel wall thickness [m]"
@@ -4398,7 +4398,7 @@ class StebbsProperties(BaseModel):
     DHWVesselEmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="NEEDS CHECKED! NOT USED (assumed same as DHWVesselWallEmissivity) [-]",
-        #default=0.0,
+        default=0.0,
         ge=0.0, le=1.0,
     )
     HotWaterFlowRate: ValueWithDOI[float] = Field(
@@ -4407,7 +4407,7 @@ class StebbsProperties(BaseModel):
     DHWDrainFlowRate: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Flow rate of hot water held in building to drain [m3 s-1]",
-        #default=0.0,
+        default=0.0,
         ge=0.0,
     )
     DHWSpecificHeatCapacity: ValueWithDOI[float] = Field(
@@ -4416,13 +4416,13 @@ class StebbsProperties(BaseModel):
     HotWaterTankSpecificHeatCapacity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Specific heat capacity of hot water tank wal [J kg-1 K-1]",
-        #default=0.0,
+        default=0.0,
         ge=0.0,
     )
     DHWVesselSpecificHeatCapacity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Specific heat capacity of vessels containing hot water in use in buildings [J kg-1 K-1]",
-        #default=0.0,
+        default=0.0,
         ge=0.0,
     )
     DHWDensity: ValueWithDOI[float] = Field(
@@ -4434,25 +4434,25 @@ class StebbsProperties(BaseModel):
     DHWVesselDensity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Density of vessels containing hot water in use [kg m-3]",
-        #default=0.0,
+        default=0.0,
         ge=0.0,
     )
     HotWaterTankBuildingWallViewFactor: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Water tank/vessel internal building wall/roof view factor [-]",
-        #default=0.0,
+        default=0.0,
         ge=0.0, le=1.0,
     )
     HotWaterTankInternalMassViewFactor: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Water tank/vessel building internal mass view factor [-]",
-        #default=0.0,
+        default=0.0,
         ge=0.0, le=1.0,
     )
     HotWaterTankWallConductivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Effective wall conductivity of the hot water tank [W m-1 K-1]",
-        #default=0.0,
+        default=0.0,
     )
     HotWaterTankInternalWallConvectionCoefficient: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
@@ -4477,7 +4477,7 @@ class StebbsProperties(BaseModel):
     DHWVesselWallEmissivity: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0.0),
         description="Effective external wall emissivity of hot water being used within building [-]",
-        #default=0.0,
+        default=0.0,
         ge=0.0, le=1.0,
     )
     HotWaterHeatingEfficiency: ValueWithDOI[float] = Field(
