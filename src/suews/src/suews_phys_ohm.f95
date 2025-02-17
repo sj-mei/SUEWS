@@ -348,14 +348,15 @@ END MODULE OHM_module
 MODULE OHM_yl
    ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
 
+
    IMPLICIT NONE
-   CONTAINS
+CONTAINS
 
    SUBROUTINE OHM_yl_cal(timer, modState,  avu1, qn_av, Tair_mav_5d)
       USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_STATE
 
       IMPLICIT NONE
-      
+
       ! Input parameters
       TYPE(SUEWS_TIMER), INTENT(in) :: timer ! Timer
       TYPE(SUEWS_STATE), INTENT(in) :: modState ! Model state
@@ -395,7 +396,7 @@ MODULE OHM_yl
       INTEGER :: csv_year, csv_month, csv_day
       INTEGER :: pos1, pos2, pos3, pos4, pos5, pos6
 
-      ASSOCIATE( &
+      ASSOCIATE ( &
          tstep => timer%tstep, &
          id => timer%id &
          )
@@ -407,36 +408,36 @@ MODULE OHM_yl
       ! ! Set the CSV filename
       ! csv_filename = './example_OHM.csv'
 
-      ! Open the CSV file for reading
-      ! Only perform calculations once per day (assuming 300s timestep and 86400s in a day)
-      IF (id /= id_prev) THEN
-         id_prev = id
+         ! Open the CSV file for reading
+         ! Only perform calculations once per day (assuming 300s timestep and 86400s in a day)
+         IF (id /= id_prev) THEN
+            id_prev = id
 
          CALL calculate_a1(d, C, k, lambda_c, WS, QStar, a1)
          CALL calculate_a2(d, C, k, WS, QStar, lambda_c, a2)
          CALL calculate_a3(QStar, dTair, a1, lambda_c, a3)
 
-         ! Create a filename for the coefficients file
-         filename = 'OHM_coefficients.csv'
+            ! Create a filename for the coefficients file
+            filename = 'OHM_coefficients.csv'
 
-         ! Open the file for appending
-         OPEN(NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
-         IF (ios /= 0) THEN
-         ! If the file does not exist, create it and write the header
-         OPEN(NEWUNIT=iunit, FILE=filename, STATUS='NEW', ACTION='WRITE', IOSTAT=ios)
-         IF (ios /= 0) THEN
-            PRINT *, 'Error opening file: ', filename
-            STOP
+            ! Open the file for appending
+            OPEN (NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
+            IF (ios /= 0) THEN
+               ! If the file does not exist, create it and write the header
+               OPEN (NEWUNIT=iunit, FILE=filename, STATUS='NEW', ACTION='WRITE', IOSTAT=ios)
+               IF (ios /= 0) THEN
+                  PRINT *, 'Error opening file: ', filename
+                  STOP
+               END IF
+               WRITE (iunit, '(A)') 'id,WS,dTair,QStar,a1,a2,a3'
+            END IF
+
+            ! Write the coefficients to the file
+WRITE (iunit, '(I4, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15)') id, WS, dTair, QStar, a1, a2, a3
+
+            ! Close the file
+            CLOSE (iunit)
          END IF
-         WRITE(iunit, '(A)') 'id,WS,dTair,QStar,a1,a2,a3'
-         END IF
-
-         ! Write the coefficients to the file
-         WRITE(iunit, '(I4, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15)') id, WS, dTair, QStar, a1, a2, a3
-
-         ! Close the file
-         CLOSE(iunit)
-      END IF
 
       END ASSOCIATE
 
@@ -456,7 +457,7 @@ MODULE OHM_yl
       REAL(KIND(1D0)), INTENT(out) :: a1 ! OHM coefficient a1
 
       ! Local variables
-      REAL(KIND(1D0)) :: TA       ! Thermal admittance
+      REAL(KIND(1D0)) :: TA ! Thermal admittance
       REAL(KIND(1D0)) :: S_a1
       REAL(KIND(1D0)) :: omega_a1
       REAL(KIND(1D0)) :: theta_a1
@@ -473,16 +474,16 @@ MODULE OHM_yl
       END IF
 
       ! Compute thermal admittance
-      TA = SQRT(C * k)
+      TA = SQRT(C*k)
 
       ! Compute required coefficients
-      S_a1 = 0.296 * LOG(TA) - 0.00027 * (QStar / lambda_c) * LOG(TA) - 0.1185 * WS - 1.194
-      omega_a1 = -14.8 * LOG(SQRT(k) / C) + 2.25 * WS * LOG(SQRT(k) / C) + 29.69 * WS - 190.01
-      theta_a1 = 0.0000161 * C - 4.481E-06 * C * WS - 3.32 * k - 0.1056 * (QStar / lambda_c) + 10.673
+      S_a1 = 0.296*LOG(TA) - 0.00027*(QStar/lambda_c)*LOG(TA) - 0.1185*WS - 1.194
+      omega_a1 = -14.8*LOG(SQRT(k)/C) + 2.25*WS*LOG(SQRT(k)/C) + 29.69*WS - 190.01
+      theta_a1 = 0.0000161*C - 4.481E-06*C*WS - 3.32*k - 0.1056*(QStar/lambda_c) + 10.673
       y0_a1 = 0.01
 
       ! Compute final a1 value
-      a1 = S_a1 + (y0_a1 - S_a1) * EXP(-theta_a1 * d) * COS(omega_a1 * d)
+      a1 = S_a1 + (y0_a1 - S_a1)*EXP(-theta_a1*d)*COS(omega_a1*d)
 
    END SUBROUTINE calculate_a1
 
@@ -500,8 +501,8 @@ MODULE OHM_yl
       REAL(KIND(1D0)), INTENT(out) :: a2 ! OHM coefficient a2
 
       ! Local variables
-      REAL(KIND(1D0)) :: TA      ! Thermal admittance
-      REAL(KIND(1D0)) :: TD      ! Thermal diffusivity
+      REAL(KIND(1D0)) :: TA ! Thermal admittance
+      REAL(KIND(1D0)) :: TD ! Thermal diffusivity
       REAL(KIND(1D0)) :: S_a2
       REAL(KIND(1D0)) :: omega_a2
       REAL(KIND(1D0)) :: theta_a2
@@ -519,18 +520,18 @@ MODULE OHM_yl
       END IF
 
       ! Compute thermal admittance and diffusivity
-      TA = SQRT(C * k)
-      TD = k / C
+      TA = SQRT(C*k)
+      TD = k/C
 
       ! Compute required coefficients
-      S_a2 = -7.81E-05 * TA + 0.00348 * (QStar / lambda_c) + 0.013 * WS + 0.123
-      omega_a2 = -9.44 * LOG(TD) + 1.68 * WS - 126
-      theta_a2 = 1.05E-05 * C - 6.67 * k - 0.1203 * (QStar / lambda_c) - 3.48 * WS + 28
-      y0_a2 = 1.29E-07 * C + 0.0603 * k - 0.000796 * (QStar / lambda_c) - 0.146 * WS + 0.091
-      n = 3.33E+04 * TD + 507.28 * QStar * TD / lambda_c - 1.54E+04 * (TD / WS) + 0.0161
+      S_a2 = -7.81E-05*TA + 0.00348*(QStar/lambda_c) + 0.013*WS + 0.123
+      omega_a2 = -9.44*LOG(TD) + 1.68*WS - 126
+      theta_a2 = 1.05E-05*C - 6.67*k - 0.1203*(QStar/lambda_c) - 3.48*WS + 28
+      y0_a2 = 1.29E-07*C + 0.0603*k - 0.000796*(QStar/lambda_c) - 0.146*WS + 0.091
+      n = 3.33E+04*TD + 507.28*QStar*TD/lambda_c - 1.54E+04*(TD/WS) + 0.0161
 
       ! Compute final a2 value
-      a2 = S_a2 + ((y0_a2 - S_a2) + n * ((theta_a2**2 + omega_a2**2) / omega_a2) * SIN(omega_a2 * d)) * EXP(-theta_a2 * d)
+      a2 = S_a2 + ((y0_a2 - S_a2) + n*((theta_a2**2 + omega_a2**2)/omega_a2)*SIN(omega_a2*d))*EXP(-theta_a2*d)
 
    END SUBROUTINE calculate_a2
 
@@ -549,12 +550,11 @@ MODULE OHM_yl
       REAL(KIND(1D0)) :: slope
 
       ! Compute the slope factor; note: the factor 5.2 is based on the default for a one-building, five-surface model.
-      slope = -1 + 5.2 * lambda_c * dTair / QStar
+      slope = -1 + 5.2*lambda_c*dTair/QStar
 
       ! Compute final a3 value
-      a3 = a1 * slope * QStar
+      a3 = a1*slope*QStar
 
    END SUBROUTINE calculate_a3
-
 
 END MODULE OHM_yl
