@@ -1938,7 +1938,6 @@ CONTAINS
          psihath_top = psihath_mid
          psihath_mid = psihath_btm
 
-
       END DO
 
       ! calculate z0 iteratively
