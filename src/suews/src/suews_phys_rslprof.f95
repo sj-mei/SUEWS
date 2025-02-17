@@ -1934,9 +1934,10 @@ CONTAINS
             psihath_btm = 0 ! psihah = 0 if z>zR
             psihath_array(iz - 2) = psihath_btm
          END IF
-         !psihath_top = psihath_mid
+         !psihath_array(iz - 2) = psihath_btm
+         psihath_top = psihath_mid
          psihath_mid = psihath_btm
-         psihath_array(iz - 2) = psihath_btm
+
 
       END DO
 
