@@ -19,7 +19,8 @@ CONTAINS
                   soilstore_id, SoilStoreCap, state_id, &
                   BldgSurf, WaterSurf, &
                   SnowUse, SnowFrac, &
-                  DiagQS, &
+                  ws, t2_prev, &
+                  StorageHeatMethod, DiagQS, timer, &
                   a1, a2, a3, qs, deltaQi)
       ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
       ! Calculates net storage heat flux (QS) from Eq 4, Grimmond et al. 1991, Atm Env.
@@ -45,16 +46,26 @@ CONTAINS
       !   - No canyons implemented at the moment [OHM_coef(nsurf+1,,)]
       !========================================================================================
 
+      USE datetime_module, ONLY: datetime, timedelta
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER
+
       IMPLICIT NONE
+      TYPE(SUEWS_TIMER) :: timer
+      INTEGER, INTENT(in) :: StorageHeatMethod ! 
       INTEGER, INTENT(in) :: tstep ! time step [s]
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
+
+      INTEGER :: iy, id, it, imin, isec, new_day
+      TYPE(datetime) :: time_now, time_prev, time_next
+      LOGICAL :: first_tstep_Q, last_tstep_Q
+      INTEGER :: tstep_prev
 
       REAL(KIND(1D0)), INTENT(in) :: qn1 ! net all-wave radiation
       REAL(KIND(1D0)), INTENT(in) :: qn1_S ! net all-wave radiation over snow
       REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf) ! surface fractions
       REAL(KIND(1D0)), INTENT(in) :: SnowFrac(nsurf) ! snow fractions of each surface
       REAL(KIND(1D0)), INTENT(in) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
-      REAL(KIND(1D0)), INTENT(in) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients
+      REAL(KIND(1D0)), INTENT(inout) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients
       REAL(KIND(1D0)), INTENT(in) :: OHM_threshSW(nsurf + 1), OHM_threshWD(nsurf + 1) ! OHM thresholds
       REAL(KIND(1D0)), INTENT(in) :: soilstore_id(nsurf) ! soil moisture
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap(nsurf) ! capacity of soil store
@@ -82,6 +93,10 @@ CONTAINS
       ! REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+1) ! storage heat flux of snow surfaces
       REAL(KIND(1D0)), INTENT(out) :: deltaQi(nsurf) ! storage heat flux of snow surfaces
 
+      REAL(KIND(1D0)), INTENT(in) :: ws ! wind speed [m/s]
+      REAL(KIND(1D0)), INTENT(inout) :: t2_prev ! previous 2m-air temperature [°C]
+
+      REAL(KIND(1D0)) :: a1_bldg, a2_bldg, a3_bldg ! Dynamic OHM coefficients of buildings
       REAL(KIND(1D0)), INTENT(out) :: a1, a2, a3 ! OHM coefficients of grid
 
       ! REAL(KIND(1d0)):: nsh_nna ! number of timesteps per hour with non -999 values (used for spinup)
@@ -98,12 +113,59 @@ CONTAINS
       !real(kind(1d0)):: OHM_TForSummer = 10  !Use summer coefficients if 5-day Tair >= 10 degC - modified for UK HCW 14 Dec 2015
       !real(kind(1d0)):: OHM_SMForWet = 0.9  !Use wet coefficients if SM close to soil capacity
 
+      IF (StorageHeatMethod == 6) THEN
+         ! get timestamps
+         ASSOCIATE( &
+               iy => timer%iy, &
+               id => timer%id, &
+               it => timer%it, &
+               imin => timer%imin, &
+               isec => timer%isec, &
+               new_day => timer%new_day &
+            )
+            time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
+            time_prev = time_now - timedelta(seconds=tstep_prev)
+            time_next = time_now + timedelta(seconds=tstep)
+
+            ! test if time at now is the first/last tstep of today
+            first_tstep_Q = time_now%getDay() /= time_prev%getDay()
+            last_tstep_Q = time_now%getDay() /= time_next%getDay()
+
+            IF (first_tstep_Q .AND. new_day == 1) THEN
+               CALL OHM_yl_cal(dt_since_start, &
+                  ws, Tair_mav_5d, t2_prev, qn_av_prev, & ! Input
+                  a1_bldg, a2_bldg, a3_bldg & ! Output
+               )
+               new_day = 0
+               t2_prev = Tair_mav_5d
+            ELSE IF (last_tstep_Q) THEN
+               new_day = 1
+            END IF
+         END ASSOCIATE
+
+         OHM_coef(2, 1, 1) = a1_bldg
+         OHM_coef(2, 2, 1) = a1_bldg
+         OHM_coef(2, 3, 1) = a1_bldg
+         OHM_coef(2, 4, 1) = a1_bldg
+
+         OHM_coef(2, 1, 2) = a2_bldg
+         OHM_coef(2, 2, 2) = a2_bldg
+         OHM_coef(2, 3, 2) = a2_bldg
+         OHM_coef(2, 4, 2) = a2_bldg
+
+         OHM_coef(2, 1, 3) = a3_bldg
+         OHM_coef(2, 2, 3) = a3_bldg
+         OHM_coef(2, 3, 3) = a3_bldg
+         OHM_coef(2, 4, 3) = a3_bldg
+         
       CALL OHM_coef_cal(sfr_surf, nsurf, &
                         Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
                         soilstore_id, SoilStoreCap, state_id, &
                         BldgSurf, WaterSurf, &
                         SnowUse, SnowFrac, &
                         a1, a2, a3)
+
+      END IF
       ! WRITE(*,*) '----- OHM coeffs new-----'
       ! WRITE(*,*) a1,a2,a3
 
@@ -343,23 +405,16 @@ CONTAINS
 
    END SUBROUTINE OHM_QS_cal
 
-END MODULE OHM_module
 
-MODULE OHM_yl
-   ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
-
-
-   IMPLICIT NONE
-CONTAINS
-
-   SUBROUTINE OHM_yl_cal(timer, modState,  avu1, qn_av, Tair_mav_5d)
-      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER, SUEWS_STATE
+   SUBROUTINE OHM_yl_cal(dt_since_start, &
+         ws, t2_now, t2_prev, qstar, & ! Input
+         a1, a2, a3 & ! Output
+      )
+      ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
 
       IMPLICIT NONE
-
       ! Input parameters
-      TYPE(SUEWS_TIMER), INTENT(in) :: timer ! Timer
-      TYPE(SUEWS_STATE), INTENT(in) :: modState ! Model state
+      INTEGER, INTENT(in) :: dt_since_start ! Time since simulation starts [s]
 
       ! Building material properties
       REAL(KIND(1D0)) :: d = 0.1125 ! Thickness [m]
@@ -368,12 +423,11 @@ CONTAINS
       REAL(KIND(1D0)) :: lambda_c = 2.575 ! Building surface to plan area ratio [-]
 
       ! Meteorology
-      REAL(KIND(1D0)), INTENT(in) :: avu1 ! Wind speed [ms-1]
-      REAL(KIND(1D0)) :: WS ! Wind speed [ms-1]
-      REAL(KIND(1D0)), INTENT(in) :: qn_av
-      REAL(KIND(1D0)) :: QStar ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
-      REAL(KIND(1D0)), INTENT(in) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
-      REAL(KIND(1D0)) :: dTair ! Mid-night (00:00) 2m-air temperature difference compared to the previous day (°C)
+      REAL(KIND(1D0)) :: ws ! Wind speed [ms-1]
+      REAL(KIND(1D0)) :: t2_now ! Current 2m-air temperature [°C]
+      REAL(KIND(1D0)) :: t2_prev ! Previous midnight 2m-air temperature [°C]
+      REAL(KIND(1D0)) :: dtair ! Mid-night (00:00) 2m-air temperature difference compared to the previous day (°C)
+      REAL(KIND(1D0)) :: qstar ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
 
       ! Local variables for file I/O
       INTEGER :: iunit, ios
@@ -396,50 +450,37 @@ CONTAINS
       INTEGER :: csv_year, csv_month, csv_day
       INTEGER :: pos1, pos2, pos3, pos4, pos5, pos6
 
-      ASSOCIATE ( &
-         tstep => timer%tstep, &
-         id => timer%id &
-         )
+      ! Ensure wind speed is positive
+      IF (ws <= 0) THEN
+         ws = 0.1
+      END IF
 
-      WS = avu1
-      QStar = qn_av
-      dTair = Tair_mav_5d
+      dTair = t2_now - t2_prev
 
-      ! ! Set the CSV filename
-      ! csv_filename = './example_OHM.csv'
+      CALL calculate_a1(d, C, k, lambda_c, WS, QStar, a1)
+      CALL calculate_a2(d, C, k, WS, QStar, lambda_c, a2)
+      CALL calculate_a3(QStar, dTair, a1, lambda_c, a3)
 
-         ! Open the CSV file for reading
-         ! Only perform calculations once per day (assuming 300s timestep and 86400s in a day)
-         IF (id /= id_prev) THEN
-            id_prev = id
+      ! Create a filename for the coefficients file
+      filename = 'OHM_coefficients.csv'
 
-         CALL calculate_a1(d, C, k, lambda_c, WS, QStar, a1)
-         CALL calculate_a2(d, C, k, WS, QStar, lambda_c, a2)
-         CALL calculate_a3(QStar, dTair, a1, lambda_c, a3)
-
-            ! Create a filename for the coefficients file
-            filename = 'OHM_coefficients.csv'
-
-            ! Open the file for appending
-            OPEN (NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
-            IF (ios /= 0) THEN
-               ! If the file does not exist, create it and write the header
-               OPEN (NEWUNIT=iunit, FILE=filename, STATUS='NEW', ACTION='WRITE', IOSTAT=ios)
-               IF (ios /= 0) THEN
-                  PRINT *, 'Error opening file: ', filename
-                  STOP
-               END IF
-               WRITE (iunit, '(A)') 'id,WS,dTair,QStar,a1,a2,a3'
-            END IF
-
-            ! Write the coefficients to the file
-WRITE (iunit, '(I4, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15)') id, WS, dTair, QStar, a1, a2, a3
-
-            ! Close the file
-            CLOSE (iunit)
+      ! Open the file for appending
+      OPEN (NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
+      IF (ios /= 0) THEN
+         ! If the file does not exist, create it and write the header
+         OPEN (NEWUNIT=iunit, FILE=filename, STATUS='NEW', ACTION='WRITE', IOSTAT=ios)
+         IF (ios /= 0) THEN
+            PRINT *, 'Error opening file: ', filename
+            STOP
          END IF
+         WRITE (iunit, '(A)') 'ts,ws,dtair,qstar,a1,a2,a3'
+      END IF
 
-      END ASSOCIATE
+      ! Write the coefficients to the file
+      WRITE (iunit, '(I10, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15)') dt_since_start, WS, dTair, QStar, a1, a2, a3
+
+      ! Close the file
+      CLOSE (iunit)
 
    END SUBROUTINE OHM_yl_cal
 
@@ -557,4 +598,4 @@ WRITE (iunit, '(I4, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20
 
    END SUBROUTINE calculate_a3
 
-END MODULE OHM_yl
+END MODULE OHM_module

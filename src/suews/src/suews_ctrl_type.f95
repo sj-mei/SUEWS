@@ -615,6 +615,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
       REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
       REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
+      REAL(KIND(1D0)) :: t2_prev ! previous day midnight air temperature [degC]
    END TYPE OHM_STATE
 
    TYPE, PUBLIC :: solar_State
@@ -939,7 +940,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: id !
       INTEGER :: imin !
       INTEGER :: isec !
-      INTEGER :: it !
+      INTEGER :: it ! Hour of day
       INTEGER :: iy !
       INTEGER :: tstep !
       INTEGER :: tstep_prev !
@@ -954,6 +955,8 @@ MODULE SUEWS_DEF_DTS
       INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
 
       INTEGER :: DLS !daylight saving time offset [h]
+
+      INTEGER :: new_day ! flag to indicate a new day
 
    END TYPE SUEWS_TIMER
 

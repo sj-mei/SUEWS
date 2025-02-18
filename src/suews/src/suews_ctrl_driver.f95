@@ -27,7 +27,6 @@ MODULE SUEWS_Driver
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             SUEWS_cal_RoughnessParameters
    USE OHM_module, ONLY: OHM
-   USE OHM_yl, ONLY: OHM_yl_cal
    USE ESTM_module, ONLY: ESTM
    USE EHC_module, ONLY: EHC
    USE Snow_module, ONLY: SnowCalc, MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
@@ -307,7 +306,7 @@ CONTAINS
                   modState) ! input/output:
 
                debugState%state_01_dailystate = modState
-
+               
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
@@ -1448,6 +1447,7 @@ CONTAINS
             a1 => ohmState%a1, &
             a2 => ohmState%a2, &
             a3 => ohmState%a3, &
+            t2_prev => ohmState%t2_prev, &
             alb => phenState%alb, &
             StoreDrainPrm => phenState%StoreDrainPrm, &
             id => timer%id, &
@@ -1672,7 +1672,7 @@ CONTAINS
                IF (StorageHeatMethod == 0) THEN !Use observed QS
                   qs = qs_obs
 
-               ELSEIF (StorageHeatMethod == 1) THEN !Use OHM to calculate QS
+               ELSEIF (StorageHeatMethod == 1 .OR. StorageHeatMethod == 6) THEN !Use OHM to calculate QS
                   Tair_mav_5d = HDD_id(10)
                   IF (Diagnose == 1) WRITE (*, *) 'Calling OHM...'
                   CALL OHM(qn_use, ohmState%qn_av, ohmState%dqndt, &
@@ -1687,7 +1687,8 @@ CONTAINS
                            soilstore_id, SoilStoreCap, state_id, &
                            BldgSurf, WaterSurf, &
                            SnowUse, SnowFrac, &
-                           DiagQS, &
+                           atmState%U10_ms, t2_prev, &
+                           StorageHeatMethod, DiagQS, timer, &
                            a1, a2, a3, qs, deltaQi)
                   QS_surf = qs
                   QS_roof = qs
@@ -1761,8 +1762,6 @@ CONTAINS
                   ! PRINT *, ''
 
                   END IF
-                  ! ELSEIF (StorageHeatMethod == 6) THEN
-               CALL OHM_yl_cal(timer, modState, avu1, ohmState%qn_av, Tair_mav_5d) ! WIP hard-coded values within subroutine
             END ASSOCIATE
          END ASSOCIATE
       END ASSOCIATE
@@ -4769,6 +4768,7 @@ CONTAINS
       ohmState%dqndt = dqndt
       ohmState%qn_s_av = qn_s_av
       ohmState%dqnsdt = dqnsdt
+      ohmState%t2_prev = 0.0
 
       ! snow related:
       snowState%snowfallCum = SnowfallCum
@@ -4988,8 +4988,7 @@ CONTAINS
          forcing%Wuh = MetForcingBlock(ir, 19)
          forcing%xsmd = MetForcingBlock(ir, 20)
          forcing%LAI_obs = MetForcingBlock(ir, 21)
-
-         !CALL SUEWS_cal_Main( &
+         
          CALL SUEWS_cal_Main( &
             timer, forcing, config, siteInfo, &
             mod_State, &
