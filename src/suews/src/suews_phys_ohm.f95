@@ -51,7 +51,7 @@ CONTAINS
 
       IMPLICIT NONE
       TYPE(SUEWS_TIMER) :: timer
-      INTEGER, INTENT(in) :: StorageHeatMethod ! 
+      INTEGER, INTENT(in) :: StorageHeatMethod !
       INTEGER, INTENT(in) :: tstep ! time step [s]
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
 
@@ -115,13 +115,13 @@ CONTAINS
 
       IF (StorageHeatMethod == 6) THEN
          ! get timestamps
-         ASSOCIATE( &
-               iy => timer%iy, &
-               id => timer%id, &
-               it => timer%it, &
-               imin => timer%imin, &
-               isec => timer%isec, &
-               new_day => timer%new_day &
+         ASSOCIATE ( &
+            iy => timer%iy, &
+            id => timer%id, &
+            it => timer%it, &
+            imin => timer%imin, &
+            isec => timer%isec, &
+            new_day => timer%new_day &
             )
             time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
             time_prev = time_now - timedelta(seconds=tstep_prev)
@@ -133,9 +133,9 @@ CONTAINS
 
             IF (first_tstep_Q .AND. new_day == 1) THEN
                CALL OHM_yl_cal(dt_since_start, &
-                  ws, Tair_mav_5d, t2_prev, qn_av_prev, & ! Input
-                  a1_bldg, a2_bldg, a3_bldg & ! Output
-               )
+                               ws, Tair_mav_5d, t2_prev, qn_av_prev, & ! Input
+                               a1_bldg, a2_bldg, a3_bldg & ! Output
+                               )
                new_day = 0
                t2_prev = Tair_mav_5d
             ELSE IF (last_tstep_Q) THEN
@@ -157,13 +157,13 @@ CONTAINS
          OHM_coef(2, 2, 3) = a3_bldg
          OHM_coef(2, 3, 3) = a3_bldg
          OHM_coef(2, 4, 3) = a3_bldg
-         
-      CALL OHM_coef_cal(sfr_surf, nsurf, &
-                        Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
-                        soilstore_id, SoilStoreCap, state_id, &
-                        BldgSurf, WaterSurf, &
-                        SnowUse, SnowFrac, &
-                        a1, a2, a3)
+
+         CALL OHM_coef_cal(sfr_surf, nsurf, &
+                           Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
+                           soilstore_id, SoilStoreCap, state_id, &
+                           BldgSurf, WaterSurf, &
+                           SnowUse, SnowFrac, &
+                           a1, a2, a3)
 
       END IF
       ! WRITE(*,*) '----- OHM coeffs new-----'
@@ -405,11 +405,10 @@ CONTAINS
 
    END SUBROUTINE OHM_QS_cal
 
-
    SUBROUTINE OHM_yl_cal(dt_since_start, &
-         ws, t2_now, t2_prev, qstar, & ! Input
-         a1, a2, a3 & ! Output
-      )
+                         ws, t2_now, t2_prev, qstar, & ! Input
+                         a1, a2, a3 & ! Output
+                         )
       ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
 
       IMPLICIT NONE

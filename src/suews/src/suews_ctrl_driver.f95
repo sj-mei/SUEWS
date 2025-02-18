@@ -306,7 +306,7 @@ CONTAINS
                   modState) ! input/output:
 
                debugState%state_01_dailystate = modState
-               
+
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
@@ -1761,7 +1761,7 @@ CONTAINS
                   ! PRINT *, '------------------------------------'
                   ! PRINT *, ''
 
-                  END IF
+               END IF
             END ASSOCIATE
          END ASSOCIATE
       END ASSOCIATE
@@ -4988,7 +4988,7 @@ CONTAINS
          forcing%Wuh = MetForcingBlock(ir, 19)
          forcing%xsmd = MetForcingBlock(ir, 20)
          forcing%LAI_obs = MetForcingBlock(ir, 21)
-         
+
          CALL SUEWS_cal_Main( &
             timer, forcing, config, siteInfo, &
             mod_State, &
