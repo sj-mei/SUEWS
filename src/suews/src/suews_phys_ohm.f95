@@ -20,6 +20,7 @@ CONTAINS
                   BldgSurf, WaterSurf, &
                   SnowUse, SnowFrac, &
                   ws, t2_prev, &
+                  ws_rav, qn_rav, &
                   StorageHeatMethod, DiagQS, timer, &
                   a1, a2, a3, qs, deltaQi)
       ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
@@ -95,6 +96,8 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) :: ws ! wind speed [m/s]
       REAL(KIND(1D0)), INTENT(inout) :: t2_prev ! previous 2m-air temperature [°C]
+      REAL(KIND(1D0)), INTENT(inout) :: ws_rav ! running average of wind speed [m/s]
+      REAL(KIND(1D0)), INTENT(inout) :: qn_rav ! running average of net all-wave radiation [W m-2]
 
       REAL(KIND(1D0)) :: a1_bldg, a2_bldg, a3_bldg ! Dynamic OHM coefficients of buildings
       REAL(KIND(1D0)), INTENT(out) :: a1, a2, a3 ! OHM coefficients of grid
@@ -121,7 +124,9 @@ CONTAINS
                it => timer%it, &
                imin => timer%imin, &
                isec => timer%isec, &
-               new_day => timer%new_day &
+               tstep_prev => timer%tstep_prev, &
+               new_day => timer%new_day, &
+               dt_since_start_prev => timer%dt_since_start_prev &
             )
             time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
             time_prev = time_now - timedelta(seconds=tstep_prev)
@@ -131,9 +136,19 @@ CONTAINS
             first_tstep_Q = time_now%getDay() /= time_prev%getDay()
             last_tstep_Q = time_now%getDay() /= time_next%getDay()
 
+            IF (dt_since_start /= dt_since_start_prev) THEN
+               IF (dt_since_start < 86400) THEN
+                  ws_rav = ws_rav + (ws - ws_rav)/(dt_since_start/tstep)
+                  qn_rav = qn_rav + (qn1 - qn_rav)/(dt_since_start/tstep)
+               ELSE
+                  ws_rav = ws_rav + (ws - ws_rav)/(86400/tstep)
+                  qn_rav = qn_rav + (qn1 - qn_rav)/(86400/tstep)
+               END IF
+            END IF
+
             IF (first_tstep_Q .AND. new_day == 1) THEN
                CALL OHM_yl_cal(dt_since_start, &
-                  ws, Tair_mav_5d, t2_prev, qn_av_prev, & ! Input
+                  ws_rav, Tair_mav_5d, t2_prev, qn_rav, & ! Input
                   a1_bldg, a2_bldg, a3_bldg & ! Output
                )
                new_day = 0
@@ -141,6 +156,8 @@ CONTAINS
             ELSE IF (last_tstep_Q) THEN
                new_day = 1
             END IF
+
+            dt_since_start_prev = dt_since_start
          END ASSOCIATE
 
          OHM_coef(2, 1, 1) = a1_bldg
@@ -455,11 +472,11 @@ CONTAINS
          ws = 0.1
       END IF
 
-      dTair = t2_now - t2_prev
+      dtair = t2_now - t2_prev
 
-      CALL calculate_a1(d, C, k, lambda_c, WS, QStar, a1)
-      CALL calculate_a2(d, C, k, WS, QStar, lambda_c, a2)
-      CALL calculate_a3(QStar, dTair, a1, lambda_c, a3)
+      CALL calculate_a1(d, C, k, lambda_c, ws, qstar, a1)
+      CALL calculate_a2(d, C, k, ws, qstar, lambda_c, a2)
+      CALL calculate_a3(qstar, dtair, a1, lambda_c, a3)
 
       ! Create a filename for the coefficients file
       filename = 'OHM_coefficients.csv'
@@ -477,7 +494,7 @@ CONTAINS
       END IF
 
       ! Write the coefficients to the file
-      WRITE (iunit, '(I10, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15)') dt_since_start, WS, dTair, QStar, a1, a2, a3
+      WRITE (iunit, '(I10, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15)') dt_since_start, ws, dtair, qstar, a1, a2, a3
 
       ! Close the file
       CLOSE (iunit)

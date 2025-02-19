@@ -1448,6 +1448,8 @@ CONTAINS
             a2 => ohmState%a2, &
             a3 => ohmState%a3, &
             t2_prev => ohmState%t2_prev, &
+            ws_rav => ohmState%ws_rav, &
+            qn_rav => ohmState%qn_rav, &
             alb => phenState%alb, &
             StoreDrainPrm => phenState%StoreDrainPrm, &
             id => timer%id, &
@@ -1688,6 +1690,7 @@ CONTAINS
                            BldgSurf, WaterSurf, &
                            SnowUse, SnowFrac, &
                            atmState%U10_ms, t2_prev, &
+                           ws_rav, qn_rav, &
                            StorageHeatMethod, DiagQS, timer, &
                            a1, a2, a3, qs, deltaQi)
                   QS_surf = qs

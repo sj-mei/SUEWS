@@ -584,7 +584,7 @@ MODULE SUEWS_DEF_DTS
       ! HDD_id(1) ---- Heating [degC]: used for accumulation during calculation
       ! HDD_id(2) ---- Cooling [degC]: used for accumulation during calculation
       ! HDD_id(3) ---- Daily mean temp [degC]: used for accumulation during calculation
-      ! HDD_id(4) ---- 5-day running mean temp [degC]: used for actual calculation
+      ! HDD_id(4) ----  
       ! HDD_id(5) ---- Daily precip total [mm]
       ! HDD_id(6) ---- Days since rain [d]
       ! second half used for storage of the first half for the prevous day
@@ -616,6 +616,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
       REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
       REAL(KIND(1D0)) :: t2_prev ! previous day midnight air temperature [degC]
+      REAL(KIND(1D0)) :: ws_rav ! running average of wind speed [m s-1]
+      REAL(KIND(1D0)) :: tair_prev
+      REAL(KIND(1D0)) :: qn_rav ! running average of net radiation [W m-2]
    END TYPE OHM_STATE
 
    TYPE, PUBLIC :: solar_State
@@ -945,6 +948,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: tstep !
       INTEGER :: tstep_prev !
       INTEGER :: dt_since_start !
+      INTEGER :: dt_since_start_prev !
 
       ! values that are derived from tstep
       INTEGER :: nsh ! number of timesteps per hour
