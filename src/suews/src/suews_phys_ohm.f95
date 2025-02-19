@@ -52,7 +52,7 @@ CONTAINS
 
       IMPLICIT NONE
       TYPE(SUEWS_TIMER) :: timer
-      INTEGER, INTENT(in) :: StorageHeatMethod ! 
+      INTEGER, INTENT(in) :: StorageHeatMethod !
       INTEGER, INTENT(in) :: tstep ! time step [s]
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
 
@@ -174,13 +174,13 @@ CONTAINS
          OHM_coef(2, 2, 3) = a3_bldg
          OHM_coef(2, 3, 3) = a3_bldg
          OHM_coef(2, 4, 3) = a3_bldg
-         
-      CALL OHM_coef_cal(sfr_surf, nsurf, &
-                        Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
-                        soilstore_id, SoilStoreCap, state_id, &
-                        BldgSurf, WaterSurf, &
-                        SnowUse, SnowFrac, &
-                        a1, a2, a3)
+
+         CALL OHM_coef_cal(sfr_surf, nsurf, &
+                           Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
+                           soilstore_id, SoilStoreCap, state_id, &
+                           BldgSurf, WaterSurf, &
+                           SnowUse, SnowFrac, &
+                           a1, a2, a3)
 
       END IF
       ! WRITE(*,*) '----- OHM coeffs new-----'
@@ -422,11 +422,10 @@ CONTAINS
 
    END SUBROUTINE OHM_QS_cal
 
-
    SUBROUTINE OHM_yl_cal(dt_since_start, &
-         ws, t2_now, t2_prev, qstar, & ! Input
-         a1, a2, a3 & ! Output
-      )
+                         ws, t2_now, t2_prev, qstar, & ! Input
+                         a1, a2, a3 & ! Output
+                         )
       ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
 
       IMPLICIT NONE
