@@ -15,6 +15,7 @@ import supy as sp
 from .model import Model
 from .site import Site, SiteProperties, InitialStates
 from .. import load_sample_data
+import os
 
 
 class SUEWSConfig(BaseModel):
@@ -85,10 +86,11 @@ class SUEWSConfig(BaseModel):
         df.columns.set_names(["var", "ind_dim"], inplace=True)
 
         # Reindex columns to match the sample data columns order
-        sample_columns = load_sample_data()[0].columns
-
-        # Reindex to match sample columns and then append non-matching columns
-        df = df.reindex(columns=sample_columns)
+        package_dir = os.path.dirname(__file__)
+        columns_file_path = os.path.join(package_dir, "df_state_columns.txt")
+        with open(columns_file_path, "r") as file:
+            sample_columns = file.read().splitlines()
+        df = df.reindex(columns=sample_columns, level=0)
         return df
 
     @classmethod
