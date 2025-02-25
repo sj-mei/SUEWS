@@ -48,7 +48,7 @@ CONTAINS
       ! To Do:
       !   - No canyons implemented at the moment [OHM_coef(nsurf+1,,)]
       !========================================================================================
-      
+
       USE allocateArray, ONLY: ndepth
       USE datetime_module, ONLY: datetime, timedelta
       USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER
@@ -58,7 +58,7 @@ CONTAINS
       INTEGER, INTENT(in) :: StorageHeatMethod !
       INTEGER, INTENT(in) :: tstep ! time step [s]
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
-      
+
       INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy
 
       INTEGER :: iy, id, it, imin, isec, new_day
@@ -133,15 +133,15 @@ CONTAINS
 
       IF (StorageHeatMethod == 6) THEN
          ! get timestamps
-         ASSOCIATE( &
-               iy => timer%iy, &
-               id => timer%id, &
-               it => timer%it, &
-               imin => timer%imin, &
-               isec => timer%isec, &
-               tstep_prev => timer%tstep_prev, &
-               new_day => timer%new_day, &
-               dt_since_start_prev => timer%dt_since_start_prev &
+         ASSOCIATE ( &
+            iy => timer%iy, &
+            id => timer%id, &
+            it => timer%it, &
+            imin => timer%imin, &
+            isec => timer%isec, &
+            tstep_prev => timer%tstep_prev, &
+            new_day => timer%new_day, &
+            dt_since_start_prev => timer%dt_since_start_prev &
             )
             time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
             time_prev = time_now - timedelta(seconds=tstep_prev)
