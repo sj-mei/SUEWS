@@ -1139,7 +1139,8 @@ CONTAINS
          atmState => modState%atmState, &
          phenState => modState%phenState, &
          snowState => modState%snowState, &
-         heatState => modState%heatState &
+         heatState => modState%heatState, &
+         ohmState => modState%ohmState &
          )
          ASSOCIATE ( &
             alb_prev => phenState%alb, &
@@ -1689,7 +1690,7 @@ CONTAINS
                            soilstore_id, SoilStoreCap, state_id, &
                            BldgSurf, WaterSurf, &
                            SnowUse, SnowFrac, &
-                           atmState%U10_ms, t2_prev, &
+                           atmState%U_hbh, atmState%T2_C, t2_prev, &
                            ws_rav, qn_rav, nlayer, &
                            dz_roof, cp_roof, k_roof, &
                            dz_wall, cp_wall, k_wall, &

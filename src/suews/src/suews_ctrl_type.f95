@@ -645,7 +645,8 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: vpd_hPa !Vapour pressure deficit in hPa
       REAL(KIND(1D0)) :: vpd_pa !Vapour pressure deficit in Pa
       REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
-      REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
+      REAL(KIND(1D0)) :: U_hbh ! wind speed at half building height [m s-1]
+      REAL(KIND(1D0)) :: T2_C !modelled 2 meter air temperature [degC]
       REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
       REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
       REAL(KIND(1D0)) :: L_mod !Obukhov length [m]

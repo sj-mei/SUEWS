@@ -19,7 +19,7 @@ CONTAINS
                   soilstore_id, SoilStoreCap, state_id, &
                   BldgSurf, WaterSurf, &
                   SnowUse, SnowFrac, &
-                  ws, t2_prev, &
+                  ws, T2_C, T2_prev, &
                   ws_rav, qn_rav, nlayer, &
                   dz_roof, cp_roof, k_roof, &
                   dz_wall, cp_wall, k_wall, &
@@ -99,8 +99,9 @@ CONTAINS
       ! REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+1) ! storage heat flux of snow surfaces
       REAL(KIND(1D0)), INTENT(out) :: deltaQi(nsurf) ! storage heat flux of snow surfaces
 
-      REAL(KIND(1D0)), INTENT(in) :: ws ! wind speed [m/s]
-      REAL(KIND(1D0)), INTENT(inout) :: t2_prev ! previous 2m-air temperature [°C]
+      REAL(KIND(1D0)), INTENT(in) :: ws ! wind speed at half building height [m/s]
+      REAL(KIND(1D0)), INTENT(in) :: T2_C ! current 2m-air temperature [°C]
+      REAL(KIND(1D0)), INTENT(inout) :: T2_prev ! previous 2m midnight air temperature [°C]
       REAL(KIND(1D0)), INTENT(inout) :: ws_rav ! running average of wind speed [m/s]
       REAL(KIND(1D0)), INTENT(inout) :: qn_rav ! running average of net all-wave radiation [W m-2]
 
@@ -162,12 +163,12 @@ CONTAINS
 
             IF (first_tstep_Q .AND. new_day == 1) THEN
                CALL OHM_yl_cal(dt_since_start, &
-                  ws_rav, Tair_mav_5d, t2_prev, qn_rav, & ! Input
+                  ws_rav, T2_C, T2_prev, qn_rav, & ! Input
                   dz_wall(1,1), cp_wall(1,1), k_wall(1,1), &
                   a1_bldg, a2_bldg, a3_bldg & ! Output
                )
                new_day = 0
-               t2_prev = Tair_mav_5d
+               T2_prev = T2_C
             ELSE IF (last_tstep_Q) THEN
                new_day = 1
             END IF
