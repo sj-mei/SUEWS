@@ -1690,7 +1690,9 @@ CONTAINS
                            BldgSurf, WaterSurf, &
                            SnowUse, SnowFrac, &
                            atmState%U10_ms, t2_prev, &
-                           ws_rav, qn_rav, &
+                           ws_rav, qn_rav, nlayer, &
+                           dz_roof, cp_roof, k_roof, &
+                           dz_wall, cp_wall, k_wall, &
                            StorageHeatMethod, DiagQS, timer, &
                            a1, a2, a3, qs, deltaQi)
                   QS_surf = qs

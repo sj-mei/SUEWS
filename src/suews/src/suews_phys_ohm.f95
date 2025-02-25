@@ -20,7 +20,9 @@ CONTAINS
                   BldgSurf, WaterSurf, &
                   SnowUse, SnowFrac, &
                   ws, t2_prev, &
-                  ws_rav, qn_rav, &
+                  ws_rav, qn_rav, nlayer, &
+                  dz_roof, cp_roof, k_roof, &
+                  dz_wall, cp_wall, k_wall, &
                   StorageHeatMethod, DiagQS, timer, &
                   a1, a2, a3, qs, deltaQi)
       ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
@@ -46,7 +48,8 @@ CONTAINS
       ! To Do:
       !   - No canyons implemented at the moment [OHM_coef(nsurf+1,,)]
       !========================================================================================
-
+      
+      USE allocateArray, ONLY: ndepth
       USE datetime_module, ONLY: datetime, timedelta
       USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER
 
@@ -55,6 +58,8 @@ CONTAINS
       INTEGER, INTENT(in) :: StorageHeatMethod !
       INTEGER, INTENT(in) :: tstep ! time step [s]
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
+      
+      INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy
 
       INTEGER :: iy, id, it, imin, isec, new_day
       TYPE(datetime) :: time_now, time_prev, time_next
@@ -98,6 +103,15 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: t2_prev ! previous 2m-air temperature [°C]
       REAL(KIND(1D0)), INTENT(inout) :: ws_rav ! running average of wind speed [m/s]
       REAL(KIND(1D0)), INTENT(inout) :: qn_rav ! running average of net all-wave radiation [W m-2]
+
+      ! Building material properties
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_roof
+
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
 
       REAL(KIND(1D0)) :: a1_bldg, a2_bldg, a3_bldg ! Dynamic OHM coefficients of buildings
       REAL(KIND(1D0)), INTENT(out) :: a1, a2, a3 ! OHM coefficients of grid
@@ -149,6 +163,7 @@ CONTAINS
             IF (first_tstep_Q .AND. new_day == 1) THEN
                CALL OHM_yl_cal(dt_since_start, &
                   ws_rav, Tair_mav_5d, t2_prev, qn_rav, & ! Input
+                  dz_wall(1,1), cp_wall(1,1), k_wall(1,1), &
                   a1_bldg, a2_bldg, a3_bldg & ! Output
                )
                new_day = 0
@@ -424,6 +439,7 @@ CONTAINS
 
    SUBROUTINE OHM_yl_cal(dt_since_start, &
                          ws, t2_now, t2_prev, qstar, & ! Input
+                         d, C, k, &
                          a1, a2, a3 & ! Output
                          )
       ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
@@ -433,9 +449,9 @@ CONTAINS
       INTEGER, INTENT(in) :: dt_since_start ! Time since simulation starts [s]
 
       ! Building material properties
-      REAL(KIND(1D0)) :: d = 0.1125 ! Thickness [m]
-      REAL(KIND(1D0)) :: C = 1274*1225 ! Volumetric heat capacity (specific heat * density) [J K-1 m-3]
-      REAL(KIND(1D0)) :: k = 0.322 ! Thermal conductivity [W m-1 K-1]
+      REAL(KIND(1D0)) :: d ! Thickness [m]
+      REAL(KIND(1D0)) :: C ! Volumetric heat capacity (specific heat * density) [J K-1 m-3]
+      REAL(KIND(1D0)) :: k ! Thermal conductivity [W m-1 K-1]
       REAL(KIND(1D0)) :: lambda_c = 2.575 ! Building surface to plan area ratio [-]
 
       ! Meteorology
@@ -489,11 +505,11 @@ CONTAINS
             PRINT *, 'Error opening file: ', filename
             STOP
          END IF
-         WRITE (iunit, '(A)') 'ts,ws,dtair,qstar,a1,a2,a3'
+         WRITE (iunit, '(A)') 'ts,ws,dtair,qstar,a1,a2,a3,d,C,k'
       END IF
 
       ! Write the coefficients to the file
-      WRITE (iunit, '(I10, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15, ",", F20.15)') dt_since_start, ws, dtair, qstar, a1, a2, a3
+      WRITE (iunit, '(I10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10)') dt_since_start, ws, dtair, qstar, a1, a2, a3, d, C, k
 
       ! Close the file
       CLOSE (iunit)
