@@ -163,10 +163,10 @@ CONTAINS
 
             IF (first_tstep_Q .AND. new_day == 1) THEN
                CALL OHM_yl_cal(dt_since_start, &
-                  ws_rav, T2_C, T2_prev, qn_rav, & ! Input
-                  dz_wall(1,1), cp_wall(1,1), k_wall(1,1), &
-                  a1_bldg, a2_bldg, a3_bldg & ! Output
-               )
+                               ws_rav, T2_C, T2_prev, qn_rav, & ! Input
+                               dz_wall(1, 1), cp_wall(1, 1), k_wall(1, 1), &
+                               a1_bldg, a2_bldg, a3_bldg & ! Output
+                               )
                new_day = 0
                T2_prev = T2_C
             ELSE IF (last_tstep_Q) THEN
