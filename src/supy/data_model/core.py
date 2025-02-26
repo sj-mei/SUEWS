@@ -40,6 +40,7 @@ class SUEWSConfig(BaseModel):
         extra = "allow"
 
     # Sort the filtered columns numerically
+    @staticmethod
     def sort_key(col):
         try:
             return (col[0], ast.literal_eval(col[1]))
