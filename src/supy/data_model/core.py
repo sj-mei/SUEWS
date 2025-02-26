@@ -80,15 +80,10 @@ class SUEWSConfig(BaseModel):
         # remove duplicate columns
         df = df.loc[:, ~df.columns.duplicated()]
 
-        # set index name
-        df.index.set_names("grid", inplace=True)
-        # set column names
-        df.columns.set_names(["var", "ind_dim"], inplace=True)
-
         # Fix level=1 columns sorted alphabetically not numerically (i.e. 10 < 2)
         # Filter columns based on level=0 criteria
-        level_0_counts = df_state.columns.get_level_values(0).value_counts()
-        columns_to_sort = [col for col in df_state.columns if level_0_counts[col[0]] >= 10]
+        level_0_counts = df.columns.get_level_values(0).value_counts()
+        columns_to_sort = [col for col in df.columns if level_0_counts[col[0]] >= 10]
 
         # Sort the filtered columns numerically
         def sort_key(col):
@@ -100,12 +95,17 @@ class SUEWSConfig(BaseModel):
         sorted_columns = sorted(columns_to_sort, key=sort_key)
 
         # Combine the sorted columns with the remaining columns
-        remaining_columns = [col for col in df_state.columns if col not in columns_to_sort]
+        remaining_columns = [col for col in df.columns if col not in columns_to_sort]
         final_columns = remaining_columns + sorted_columns
 
         # Reindex the DataFrame using the final column order
-        df_state = df_state.reindex(columns=pd.MultiIndex.from_tuples(final_columns))
+        df = df.reindex(columns=pd.MultiIndex.from_tuples(final_columns))
         
+        # set index name
+        df.index.set_names("grid", inplace=True)
+        # set column names
+        df.columns.set_names(["var", "ind_dim"], inplace=True)
+
         return df
 
     @classmethod
