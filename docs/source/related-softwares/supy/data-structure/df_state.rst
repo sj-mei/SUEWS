@@ -1321,7 +1321,7 @@
     :Dimensionality:
         (8,)
     :Dimensionality Remarks:
-        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)} 
+        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)}
     :SUEWS-related variables:
         `OHMThresh_SW`
 
@@ -1333,7 +1333,7 @@
     :Dimensionality:
         (8,)
     :Dimensionality Remarks:
-        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)} 
+        8: { `Paved`, `Bldgs`, `EveTr`, `DecTr`, `Grass`, `BSoil`, `Water`, one extra land cover type (currently NOT used)}
     :SUEWS-related variables:
         `OHMThresh_WD`
 
@@ -1959,13 +1959,13 @@
 .. option:: surfacearea
 
     :Description:
-        Area of the grid [ha].
+        Area of the grid [|m^2|].
     :Dimensionality:
         0
     :Dimensionality Remarks:
         Scalar
     :SUEWS-related variables:
-        `SurfaceArea`
+        `SurfaceArea` - note the unit in SUEWS SiteSelect.txt is ha
 
 
 .. option:: sw_dn_direct_frac
