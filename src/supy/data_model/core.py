@@ -39,6 +39,13 @@ class SUEWSConfig(BaseModel):
     class Config:
         extra = "allow"
 
+    # Sort the filtered columns numerically
+    def sort_key(col):
+        try:
+            return (col[0], ast.literal_eval(col[1]))
+        except ValueError:
+            return (col[0], col[1])
+
     @classmethod
     def from_yaml(cls, path: str) -> "SUEWSConfig":
         """Initialize SUEWSConfig from YAML file.
@@ -84,15 +91,8 @@ class SUEWSConfig(BaseModel):
         # Filter columns based on level=0 criteria
         level_0_counts = df.columns.get_level_values(0).value_counts()
         columns_to_sort = [col for col in df.columns if level_0_counts[col[0]] >= 10]
-
-        # Sort the filtered columns numerically
-        def sort_key(col):
-            try:
-                return (col[0], ast.literal_eval(col[1]))
-            except ValueError:
-                return (col[0], col[1])
-
-        sorted_columns = sorted(columns_to_sort, key=sort_key)
+        import pdb; pdb.set_trace()
+        sorted_columns = sorted(columns_to_sort, key=self.sort_key)
 
         # Combine the sorted columns with the remaining columns
         remaining_columns = [col for col in df.columns if col not in columns_to_sort]
