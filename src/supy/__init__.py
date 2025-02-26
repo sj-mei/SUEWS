@@ -34,6 +34,9 @@ from . import util
 # data model
 from . import data_model
 
+# post-processing
+from ._post import resample_output
+
 # version info
 from ._version import show_version, __version__
 
