@@ -91,7 +91,7 @@ class SUEWSConfig(BaseModel):
         # Filter columns based on level=0 criteria
         level_0_counts = df.columns.get_level_values(0).value_counts()
         columns_to_sort = [col for col in df.columns if level_0_counts[col[0]] >= 10]
-        import pdb; pdb.set_trace()
+
         sorted_columns = sorted(columns_to_sort, key=self.sort_key)
 
         # Combine the sorted columns with the remaining columns
