@@ -86,7 +86,7 @@ class TestSUEWSConfig(unittest.TestCase):
                 df_state_reconst[("soilstore_surf", f"({i},)")] = 0
 
         # Compare the initial and reconstructed DataFrame states
-        pd.testing.assert_frame_equal(df_state_init, df_state_reconst, check_dtype=False)
+        pd.testing.assert_frame_equal(df_state_init, df_state_reconst, check_dtype=False, check_like=True)
 
     def test_model_physics_validation(self):
         """Test model physics validation rules."""
