@@ -7,7 +7,7 @@ MODULE SUEWS_DEF_DTS
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
       ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC, &
-      ncolumnsDataOutSTEBBS
+      ncolumnsDataOutSTEBBS, ncolumnsDataOutNHood
 
    IMPLICIT NONE
    ! in the following, the type definitions starting with `SUEWS_` are used in the main program
@@ -896,6 +896,15 @@ MODULE SUEWS_DEF_DTS
 
    END TYPE STEBBS_STATE
 
+   TYPE, PUBLIC :: NHOOD_STATE
+
+      REAL(KIND(1D0)) :: U_hbh_1dravg ! 24hr running average wind speed at half building height [m s-1]
+      REAL(KIND(1D0)) :: QN_1dravg ! 24hr running average net all-wave radiation [W m-2]
+      REAL(KIND(1D0)) :: Tair_mn_prev ! Previous midnight air temperature [degC]
+      REAL(KIND(1D0)) :: iter_count ! iteration count of convergence loop [-]
+   
+   END TYPE NHOOD_STATE
+
    ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE
       TYPE(flag_STATE) :: flagState
@@ -909,6 +918,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(HEAT_STATE) :: heatState
       TYPE(ROUGHNESS_STATE) :: roughnessState
       TYPE(STEBBS_STATE) :: stebbsState
+      TYPE(NHOOD_STATE) :: nhoodState
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
@@ -968,6 +978,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDailyState
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSTEBBS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockNHood
    CONTAINS
       ! Procedures
       PROCEDURE :: init => output_block_init
@@ -987,6 +998,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS) :: dataOutLineSTEBBS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood) :: dataOutLineNHood
    CONTAINS
       ! Procedures
       PROCEDURE :: init => output_line_init
@@ -1056,6 +1068,7 @@ CONTAINS
       self%dataOutLineSPARTACUS = -999.0
       self%dataOutLineDailyState = -999.0
       self%dataOutLineSTEBBS = -999.0
+      self%dataOutLineNHood = -999.0
    END SUBROUTINE output_line_init
 
    SUBROUTINE output_block_init(self, len)
@@ -1073,6 +1086,7 @@ CONTAINS
       ALLOCATE (self%dataOutBlockSPARTACUS(len, ncolumnsDataOutSPARTACUS))
       ALLOCATE (self%dataOutBlockDailyState(len, ncolumnsDataOutDailyState))
       ALLOCATE (self%dataOutBlockSTEBBS(len, ncolumnsDataOutSTEBBS))
+      ALLOCATE (self%dataOutBlockNHood(len, ncolumnsDataOutNHood))
 
       ! Set default values
       self%dataOutBlockSUEWS = -999.0
@@ -1085,6 +1099,7 @@ CONTAINS
       self%dataOutBlockSPARTACUS = -999.0
       self%dataOutBlockDailyState = -999.0
       self%dataOutBlockSTEBBS = -999.0
+      self%dataOutBlockNHood = -999.0
 
    END SUBROUTINE output_block_init
 
@@ -1102,6 +1117,7 @@ CONTAINS
       IF (ALLOCATED(self%dataOutBlockSPARTACUS)) DEALLOCATE (self%dataOutBlockSPARTACUS)
       IF (ALLOCATED(self%dataOutBlockDailyState)) DEALLOCATE (self%dataOutBlockDailyState)
       IF (ALLOCATED(self%dataOutBlockSTEBBS)) DEALLOCATE (self%dataOutBlockSTEBBS)
+      IF (ALLOCATED(self%dataOutBlockNHood)) DEALLOCATE (self%dataOutBlockNHood)
 
    END SUBROUTINE output_block_finalize
 
