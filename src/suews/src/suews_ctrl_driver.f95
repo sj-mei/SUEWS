@@ -53,7 +53,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
       ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC, &
-      ncolumnsDataOutSTEBBS
+      ncolumnsDataOutSTEBBS, ncolumnsDataOutNHood
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main, BEERS_cal_main_DTS
@@ -103,6 +103,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood - 5) :: dataOutLineNHood
       ! save all output variables in a single derived type
       TYPE(output_line), INTENT(OUT) :: outputLine
       ! ########################################################################################
@@ -120,7 +121,8 @@ CONTAINS
          hydroState => modState%hydroState, &
          phenState => modState%phenState, &
          heatstate => modState%heatState, &
-         snowState => modState%snowState &
+         snowState => modState%snowState, &
+         nhoodState => modState%nhoodState &
          )
          ASSOCIATE ( &
             ! timer
@@ -237,6 +239,15 @@ CONTAINS
             IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
             CALL SUEWS_update_atmState(timer, forcing, modState)
 
+
+            !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
+            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
+            CALL SUEWS_cal_DailyState( &
+               timer, config, forcing, siteInfo, & !input
+               modState) ! input/output:
+
+            debugState%state_01_dailystate = modState
+
             ! start iteration-based calculation
             ! through iterations, the surface temperature is examined to be converged
             i_iter = 1
@@ -252,7 +263,7 @@ CONTAINS
                ! IF (config%flag_test) THEN
                hydroState = modState_init%hydroState
                ! #369: restore initial phenState as phenState should not be changed during iterations
-               phenState = modState_init%phenState
+               ! phenState = modState_init%phenState
                ! ========================================================================================
                ! snowstate should probably be restored as well but not done for now - should be revisited
                ! END IF
@@ -293,20 +304,6 @@ CONTAINS
                !    modState_<module_name> & ! model states as input to the module <inout>
                ! &)
                ! --------------------------------------------------------------------------------
-
-               ! WIP notes: TS 03 Sep 2023
-               ! upgrade the interface following this order:
-               ! 1. add `timer, config, forcing, siteInfo` as input
-               ! 2. add `xxState_prev` and `xxState_next` as input and output, respectively
-
-               !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
-               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
-               CALL SUEWS_cal_DailyState( &
-                  timer, config, forcing, siteInfo, & !input
-                  modState) ! input/output:
-
-               debugState%state_01_dailystate = modState
-
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
@@ -314,6 +311,10 @@ CONTAINS
                   modState) ! input/output:
 
                debugState%state_02_soilmoist = modState
+               ! WIP notes: TS 03 Sep 2023
+               ! upgrade the interface following this order:
+               ! 1. add `timer, config, forcing, siteInfo` as input
+               ! 2. add `xxState_prev` and `xxState_next` as input and output, respectively
 
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
                !=================Gives the external and internal water uses per timestep=================
@@ -429,6 +430,9 @@ CONTAINS
 
                !==============main calculation end=======================
             END DO ! end iteration for tsurf calculations
+
+            ! Save iteration count to debugState
+            nhoodState%iter_count = i_iter
 
             !==============================================================
             ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
@@ -3319,10 +3323,12 @@ CONTAINS
       ir, gridiv, &
       dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
       dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineEHC, &
-      dataOutLineSTEBBS, & !input
+      dataOutLineSTEBBS, &
+      dataOutLineNHood, & !input
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS, &
       dataOutEHC, &
-      dataOutSTEBBS &
+      dataOutSTEBBS, &
+      dataOutNHood &
       ) !inout
       IMPLICIT NONE
 
@@ -3343,6 +3349,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutDebug), INTENT(in) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSPARTACUS), INTENT(in) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS), INTENT(in) :: dataOutLineSTEBBS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood), INTENT(in) :: dataOutLineNHood
 
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
@@ -3353,6 +3360,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSPARTACUS(ReadLinesMetdata, ncolumnsDataOutSPARTACUS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSTEBBS(ReadLinesMetdata, ncolumnsDataOutSTEBBS, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutNHood(ReadLinesMetdata, ncolumnsDataOutNHood, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
@@ -3378,7 +3386,8 @@ CONTAINS
       IF (storageheatmethod == 5) THEN
          dataOutEHC(ir, 1:ncolumnsDataOutEHC, Gridiv) = [set_nan(dataOutLineEHC)]
       END IF
-
+      
+      dataOutNHood(ir, 1:ncolumnsDataOutNHood, Gridiv) = [set_nan(dataOutLineNHood)]
       !====================update output arrays end==============================
 
    END SUBROUTINE SUEWS_update_output
@@ -4117,6 +4126,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS) :: dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState) :: dataOutBlockDailyState
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSTEBBS) :: dataOutBlockSTEBBS
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutNHood) :: dataOutBlockNHood
       ! ########################################################################################
 
       ! internal temporal iteration related variables
@@ -4142,6 +4152,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood - 5) :: dataOutLineNHood
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) :: dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) :: dataOutBlockSnow_X
@@ -4153,6 +4164,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS, 1) :: dataOutBlockSPARTACUS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState, 1) :: dataOutBlockDailyState_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSTEBBS, 1) :: dataOutBlockSTEBBS_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutNHood, 1) :: dataOutBlockNHood_X
 
       ! REAL(KIND(1D0)), DIMENSION(10) :: MetForcingData_grid ! fake array as a placeholder
 
@@ -5013,10 +5025,12 @@ CONTAINS
             output_line_suews%dataOutLinedebug, &
             output_line_suews%dataOutLineSPARTACUS, &
             output_line_suews%dataOutLineEHC, &
-            output_line_suews%dataOutLineSTEBBS, & !input
+            output_line_suews%dataOutLineSTEBBS, & 
+            output_line_suews%dataOutLineNHood, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
             dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X, &
-            dataOutBlockSTEBBS_X &
+            dataOutBlockSTEBBS_X, &
+            dataOutBlockNHood_X &
             ) !inout
 
       END DO
