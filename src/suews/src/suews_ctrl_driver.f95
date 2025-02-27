@@ -239,7 +239,6 @@ CONTAINS
             IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
             CALL SUEWS_update_atmState(timer, forcing, modState)
 
-
             !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
             CALL SUEWS_cal_DailyState( &
@@ -3386,7 +3385,7 @@ CONTAINS
       IF (storageheatmethod == 5) THEN
          dataOutEHC(ir, 1:ncolumnsDataOutEHC, Gridiv) = [set_nan(dataOutLineEHC)]
       END IF
-      
+
       dataOutNHood(ir, 1:ncolumnsDataOutNHood, Gridiv) = [set_nan(dataOutLineNHood)]
       !====================update output arrays end==============================
 
@@ -5025,7 +5024,7 @@ CONTAINS
             output_line_suews%dataOutLinedebug, &
             output_line_suews%dataOutLineSPARTACUS, &
             output_line_suews%dataOutLineEHC, &
-            output_line_suews%dataOutLineSTEBBS, & 
+            output_line_suews%dataOutLineSTEBBS, &
             output_line_suews%dataOutLineNHood, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
             dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X, &

@@ -1274,7 +1274,7 @@ MODULE ctrl_output
         )/ &
       varAttr('iter_count', '-', f104, 'iteration count of convergence loop', aA, 'NHood', 0) &
       /
-   CONTAINS
+CONTAINS
    ! main wrapper that handles both txt and nc files
    SUBROUTINE SUEWS_Output(irMax, iv, Gridiv, iyr)
       IMPLICIT NONE
@@ -1314,7 +1314,7 @@ MODULE ctrl_output
       groupList0(9) = 'SPARTACUS'
       groupList0(10) = 'EHC'
       groupList0(11) = 'STEBBS'
-      
+
       groupCond = [ &
                   .TRUE., &
                   .TRUE., &

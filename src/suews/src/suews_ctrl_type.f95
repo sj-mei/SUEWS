@@ -902,7 +902,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: QN_1dravg ! 24hr running average net all-wave radiation [W m-2]
       REAL(KIND(1D0)) :: Tair_mn_prev ! Previous midnight air temperature [degC]
       REAL(KIND(1D0)) :: iter_count ! iteration count of convergence loop [-]
-   
+
    END TYPE NHOOD_STATE
 
    ! incorporate all model states into one lumped type
