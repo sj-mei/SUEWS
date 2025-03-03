@@ -108,7 +108,7 @@ CONTAINS
       TYPE(output_line), INTENT(OUT) :: outputLine
       ! ########################################################################################
 
-      TYPE(SUEWS_STATE) :: modState_init
+      TYPE(SUEWS_STATE) :: modState_tstepstart
 
       ! these local variables are used in iteration
       INTEGER, PARAMETER :: max_iter = 30 ! maximum number of iteration
@@ -135,9 +135,9 @@ CONTAINS
             ev_surf => hydroState%ev_surf, &
             ev0_surf => hydroState%ev0_surf, &
             ! heatState
-            tsfc0_out_surf => heatState%tsfc0_out_surf, &
-            tsfc0_out_roof => heatState%tsfc0_out_roof, &
-            tsfc0_out_wall => heatState%tsfc0_out_wall, &
+            tsfc_surf_stepstart => heatState%tsfc_surf_stepstart, &
+            tsfc_roof_stepstart => heatState%tsfc_roof_stepstart, &
+            tsfc_wall_stepstart => heatState%tsfc_wall_stepstart, &
             tsfc_surf => heatState%tsfc_surf, &
             tsfc_roof => heatState%tsfc_roof, &
             tsfc_wall => heatState%tsfc_wall, &
@@ -160,10 +160,10 @@ CONTAINS
             ! IF (Diagnose == 1) WRITE (*, *) 'dectime', dectime
 
             ! ############# memory allocation for DTS variables (start) #############
-            CALL modState_init%ALLOCATE(nlayer, ndepth)
+            CALL modState_tstepstart%ALLOCATE(nlayer, ndepth)
             CALL debugState%init(nlayer, ndepth)
             ! save initial values of model states
-            modState_init = modState
+            modState_tstepstart = modState
 
             ! ########################################3
             ! set initial values for output arrays
@@ -215,11 +215,11 @@ CONTAINS
             flag_converge = .FALSE.
 
             ! save surface temperature at the beginning of the time step
-            tsfc0_out_surf = tsfc_surf
+            tsfc_surf_stepstart = tsfc_surf
             ! ! TODO: ESTM work: to allow heterogeneous surface temperatures
             IF (config%StorageHeatMethod == 5 .OR. config%NetRadiationMethod > 1000) THEN
-               tsfc0_out_roof = tsfc_roof
-               tsfc0_out_wall = tsfc_wall
+               tsfc_roof_stepstart = tsfc_roof
+               tsfc_wall_stepstart = tsfc_wall
             END IF
 
             !==============surface roughness calculation=======================
@@ -260,7 +260,9 @@ CONTAINS
                ! IMPORTANT: restore initial states as they SHOULD NOT be changed during iterations
                ! #316: restore initial hydroState as hydrostate should not be changed during iterations
                ! IF (config%flag_test) THEN
-               hydroState = modState_init%hydroState
+               ! restore all initial states but surface temperatures
+               CALL restore_state(modState, modState_tstepstart)
+               ! hydroState = modState_init%hydroState
                ! #369: restore initial phenState as phenState should not be changed during iterations
                ! phenState = modState_init%phenState
                ! ========================================================================================
@@ -510,7 +512,7 @@ CONTAINS
             ! here we may still use the original output array but another derived type can be used for enriched debugging info
             CALL update_debug_info( &
                timer, config, forcing, siteInfo, & ! input
-               modState_init, & ! input
+               modState_tstepstart, & ! input
                modState, & ! inout
                dataoutlineDebug) ! output
 
@@ -572,7 +574,7 @@ CONTAINS
 
          ASSOCIATE ( &
             flag_test => config%flag_test, &
-            tsfc0_out_surf => heatState%tsfc0_out_surf, &
+            tsfc0_out_surf => heatState%tsfc_surf_stepstart, &
             qn_surf => heatState%qn_surf, &
             qs_surf => heatState%qs_surf, &
             qe0_surf => heatState%qe0_surf, &
@@ -667,9 +669,9 @@ CONTAINS
             QH_roof => heatState%QH_roof, &
             QH_wall => heatState%QH_wall, &
             qh => heatState%qh, &
-            tsfc0_out_surf => heatState%tsfc0_out_surf, &
-            tsfc0_out_roof => heatState%tsfc0_out_roof, &
-            tsfc0_out_wall => heatState%tsfc0_out_wall, &
+            tsfc0_out_surf => heatState%tsfc_surf_stepstart, &
+            tsfc0_out_roof => heatState%tsfc_roof_stepstart, &
+            tsfc0_out_wall => heatState%tsfc_wall_stepstart, &
             tsfc_surf => heatState%tsfc_surf, &
             tsfc_roof => heatState%tsfc_roof, &
             tsfc_wall => heatState%tsfc_wall, &
@@ -5184,5 +5186,47 @@ CONTAINS
 
       tsfc_C = qh/(dens_air*vcp_air)*RA + temp_C
    END FUNCTION cal_tsfc
+
+   SUBROUTINE restore_state(mod_state, mod_state_stepstart)
+      ! restore model state from the beginning of the time step while keeping the surface temperature updated from last iteration
+      ! TS, 03 Mar 2025
+      IMPLICIT NONE
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: mod_state ! model state being updated during the time step
+      TYPE(SUEWS_STATE), INTENT(IN) :: mod_state_stepstart ! model state saved at the beginning of the time step
+
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof_tmp ! temporary surface temperature of roof saved at the beginning of the time step
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall_tmp ! temporary surface temperature of wall saved at the beginning of the time step
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf_tmp ! temporary surface temperature saved at the beginning of the time step
+      INTEGER :: nlayer ! number of vertical layers
+      INTEGER :: nsurf ! number of surfaces
+
+      ! get dimension information from surface temperature variables
+      nlayer = SIZE(mod_state%heatstate%tsfc_roof)
+      nsurf = SIZE(mod_state%heatstate%tsfc_surf)
+
+      ! allocate temporary surface temperature arrays
+      ALLOCATE (tsfc_roof_tmp(nlayer))
+      ALLOCATE (tsfc_wall_tmp(nlayer))
+      ALLOCATE (tsfc_surf_tmp(nsurf))
+
+      ! save surface temperature updated from last iteration and use it as initial surface temperature for the next iteration
+      tsfc_roof_tmp = mod_state%heatstate%tsfc_roof
+      tsfc_wall_tmp = mod_state%heatstate%tsfc_wall
+      tsfc_surf_tmp = mod_state%heatstate%tsfc_surf
+
+      ! restore model state from the beginning of the time step
+      mod_state = mod_state_stepstart
+
+      ! restore surface temperature
+      mod_state%heatstate%tsfc_roof = tsfc_roof_tmp
+      mod_state%heatstate%tsfc_wall = tsfc_wall_tmp
+      mod_state%heatstate%tsfc_surf = tsfc_surf_tmp
+
+      ! deallocate temporary surface temperature arrays
+      DEALLOCATE (tsfc_roof_tmp)
+      DEALLOCATE (tsfc_wall_tmp)
+      DEALLOCATE (tsfc_surf_tmp)
+
+   END SUBROUTINE restore_state
 
 END MODULE SUEWS_Driver
