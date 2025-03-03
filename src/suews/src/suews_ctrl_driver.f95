@@ -5187,28 +5187,27 @@ CONTAINS
       tsfc_C = qh/(dens_air*vcp_air)*RA + temp_C
    END FUNCTION cal_tsfc
 
-    subroutine restore_state(mod_state, mod_state_stepstart)
+   SUBROUTINE restore_state(mod_state, mod_state_stepstart)
       ! restore model state from the beginning of the time step while keeping the surface temperature updated from last iteration
       ! TS, 03 Mar 2025
       IMPLICIT NONE
-      type(SUEWS_STATE), INTENT(INOUT) :: mod_state ! model state being updated during the time step
-      type(SUEWS_STATE), INTENT(IN) :: mod_state_stepstart ! model state saved at the beginning of the time step
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: mod_state ! model state being updated during the time step
+      TYPE(SUEWS_STATE), INTENT(IN) :: mod_state_stepstart ! model state saved at the beginning of the time step
 
-      real(kind(1d0)), dimension(:), allocatable :: tsfc_roof_tmp ! temporary surface temperature of roof saved at the beginning of the time step
-      real(kind(1d0)), dimension(:), allocatable :: tsfc_wall_tmp ! temporary surface temperature of wall saved at the beginning of the time step
-      real(kind(1d0)), dimension(:), allocatable :: tsfc_surf_tmp ! temporary surface temperature saved at the beginning of the time step
-      integer :: nlayer ! number of vertical layers
-      integer :: nsurf ! number of surfaces
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof_tmp ! temporary surface temperature of roof saved at the beginning of the time step
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall_tmp ! temporary surface temperature of wall saved at the beginning of the time step
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf_tmp ! temporary surface temperature saved at the beginning of the time step
+      INTEGER :: nlayer ! number of vertical layers
+      INTEGER :: nsurf ! number of surfaces
 
       ! get dimension information from surface temperature variables
-      nlayer = size(mod_state%heatstate%tsfc_roof)
-      nsurf = size(mod_state%heatstate%tsfc_surf)
-
+      nlayer = SIZE(mod_state%heatstate%tsfc_roof)
+      nsurf = SIZE(mod_state%heatstate%tsfc_surf)
 
       ! allocate temporary surface temperature arrays
-      allocate(tsfc_roof_tmp(nlayer))
-      allocate(tsfc_wall_tmp(nlayer))
-      allocate(tsfc_surf_tmp(nsurf))
+      ALLOCATE (tsfc_roof_tmp(nlayer))
+      ALLOCATE (tsfc_wall_tmp(nlayer))
+      ALLOCATE (tsfc_surf_tmp(nsurf))
 
       ! save surface temperature updated from last iteration and use it as initial surface temperature for the next iteration
       tsfc_roof_tmp = mod_state%heatstate%tsfc_roof
@@ -5224,10 +5223,10 @@ CONTAINS
       mod_state%heatstate%tsfc_surf = tsfc_surf_tmp
 
       ! deallocate temporary surface temperature arrays
-      deallocate(tsfc_roof_tmp)
-      deallocate(tsfc_wall_tmp)
-      deallocate(tsfc_surf_tmp)
+      DEALLOCATE (tsfc_roof_tmp)
+      DEALLOCATE (tsfc_wall_tmp)
+      DEALLOCATE (tsfc_surf_tmp)
 
-   end subroutine restore_state
+   END SUBROUTINE restore_state
 
 END MODULE SUEWS_Driver
