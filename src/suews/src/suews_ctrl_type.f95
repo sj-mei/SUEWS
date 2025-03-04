@@ -967,10 +967,21 @@ MODULE SUEWS_DEF_DTS
       TYPE(ROUGHNESS_STATE) :: roughnessState
       TYPE(STEBBS_STATE) :: stebbsState
       TYPE(NHOOD_STATE) :: nhoodState
+
+      ! Add array of pointers to states
+      TYPE(state_ptr), DIMENSION(12), PRIVATE :: state_ptrs
+
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
+      PROCEDURE :: check_and_reset_states => check_and_reset_unsafe_states
+      PROCEDURE, PRIVATE :: init_state_ptrs
    END TYPE SUEWS_STATE
+
+   ! Define a wrapper type for pointers to different state types
+   TYPE :: state_ptr
+      CLASS(*), POINTER :: ptr => NULL()
+   END TYPE
 
    ! ********** SUEWS_forcing schema **********
    TYPE, PUBLIC :: SUEWS_FORCING
@@ -1499,5 +1510,35 @@ CONTAINS
       END ASSOCIATE
 
    END SUBROUTINE SUEWS_cal_surf_DTS
+
+   SUBROUTINE check_and_reset_unsafe_states(self, ref_state)
+      CLASS(SUEWS_STATE), INTENT(inout) :: self
+      TYPE(SUEWS_STATE), INTENT(in) :: ref_state
+
+      ! Loop over all states and reset if unsafe
+      DO i = 1, SIZE(self%state_ptrs)
+         IF (.NOT. self%state_ptrs(i)%ptr%iter_safe) THEN
+            self%state_ptrs(i)%ptr = ref_state%state_ptrs(i)%ptr
+         END IF
+      END DO
+   END SUBROUTINE check_and_reset_unsafe_states
+
+   SUBROUTINE init_state_ptrs(self)
+      CLASS(SUEWS_STATE), INTENT(inout) :: self
+
+      self%state_ptrs(1)%ptr => self%flagState
+      self%state_ptrs(2)%ptr => self%anthroemisState
+      self%state_ptrs(3)%ptr => self%ohmState
+      self%state_ptrs(4)%ptr => self%solState
+      self%state_ptrs(5)%ptr => self%atmState
+      self%state_ptrs(6)%ptr => self%phenState
+      self%state_ptrs(7)%ptr => self%snowState
+      self%state_ptrs(8)%ptr => self%hydroState
+      self%state_ptrs(9)%ptr => self%heatState
+      self%state_ptrs(10)%ptr => self%roughnessState
+      self%state_ptrs(11)%ptr => self%stebbsState
+      self%state_ptrs(12)%ptr => self%nhoodState
+
+   END SUBROUTINE init_state_ptrs
 
 END MODULE SUEWS_DEF_DTS
