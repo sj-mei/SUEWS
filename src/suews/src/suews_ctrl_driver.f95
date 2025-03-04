@@ -256,7 +256,7 @@ CONTAINS
                ! #316: restore initial hydroState as hydrostate should not be changed during iterations
                ! IF (config%flag_test) THEN
                ! restore all initial states but surface temperatures
-               
+
                ! hydroState = modState_init%hydroState
                ! #369: restore initial phenState as phenState should not be changed during iterations
                ! phenState = modState_init%phenState
@@ -433,7 +433,6 @@ CONTAINS
 
                !==============main calculation end=======================
             END DO ! end iteration for tsurf calculations
-
 
             !==============================================================
             ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
