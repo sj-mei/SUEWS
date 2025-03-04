@@ -2712,7 +2712,6 @@ CONTAINS
    SUBROUTINE SUEWS_cal_QH( &
       timer, config, forcing, siteInfo, & ! input
       modState) ! input/output:
-      use ieee_arithmetic
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE, &
@@ -2848,10 +2847,6 @@ CONTAINS
             QH_surf = QN_surf + qf - qs_surf - qe_surf
             QH_roof = QN_roof + qf - qs_roof - qe_roof
             QH_wall = QN_wall + qf - qs_wall - qe_wall
-
-            IF (ieee_is_nan(qh)) THEN
-               CALL ABORT()
-            END IF
 
          END ASSOCIATE
       END ASSOCIATE
@@ -5202,6 +5197,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf_tmp ! temporary surface temperature saved at the beginning of the time step
       TYPE(HEAT_STATE) :: heatstate_tmp ! temporary heat state saved at the beginning of the time step
       TYPE(ATM_STATE) :: atmstate_tmp ! temporary atmosphere state saved at the beginning of the time step
+      TYPE(ROUGHNESS_STATE) :: roughnessstate_tmp ! temporary roughness state saved at the beginning of the time step
       INTEGER :: nlayer ! number of vertical layers
       INTEGER :: nsurf ! number of surfaces
 
@@ -5221,6 +5217,7 @@ CONTAINS
 
       heatstate_tmp = mod_state%heatstate
       atmstate_tmp = mod_state%atmstate
+      roughnessstate_tmp = mod_state%roughnessstate
 
       ! restore model state from the beginning of the time step
       mod_state = mod_state_stepstart
@@ -5232,6 +5229,7 @@ CONTAINS
 
       mod_state%heatstate = heatstate_tmp
       mod_state%atmstate = atmstate_tmp
+      mod_state%roughnessstate = roughnessstate_tmp
 
       ! deallocate temporary surface temperature arrays
       DEALLOCATE (tsfc_roof_tmp)
