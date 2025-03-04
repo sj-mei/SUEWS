@@ -574,6 +574,9 @@ MODULE SUEWS_DEF_DTS
       LOGICAL :: flag_converge ! flag for convergence of surface temperature
       INTEGER :: i_iter ! number of iterations for convergence
 
+      ! flag for iteration safety - NO - as we are using this for indicate convergence
+      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+
    END TYPE flag_STATE
 
    TYPE, PUBLIC :: anthroEmis_STATE
@@ -605,6 +608,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Fc_point ! co2 emission from point source [umol m-2 s-1]
       REAL(KIND(1D0)) :: Fc_respi !co2 flux from respiration [umol m-2 s-1]
       REAL(KIND(1D0)) :: Fc_traff ! co2 emission from traffic component [umol m-2 s-1]
+
+      ! flag for iteration safety - NO
+      ! HDD_id includes extensive quantities and thus cannot be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .FALSE.
    END TYPE anthroEmis_STATE
 
    TYPE, PUBLIC :: OHM_STATE
@@ -615,11 +622,19 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
       REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
       REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
+
+      ! flag for iteration safety - YES
+      ! all variables are intensive and thus can be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .TRUE.
    END TYPE OHM_STATE
 
    TYPE, PUBLIC :: solar_State
       REAL(KIND(1D0)) :: azimuth_deg !solar azimuth [angle]
       REAL(KIND(1D0)) :: ZENITH_deg !solar zenith angle [deg]
+
+      ! flag for iteration safety - YES
+      ! all variables are intensive and thus can be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .TRUE.
    END TYPE solar_State
 
    TYPE, PUBLIC :: atm_state
@@ -654,6 +669,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: Tair_av ! 5-day moving average of air temperature [degC]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: rss_surf ! surface resistance adjusted by surface wetness state[s m-1]
 
+      ! flag for iteration safety - YES
+      ! all variables are intensive and thus can be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .TRUE.
    END TYPE atm_state
 
    TYPE, PUBLIC :: PHENOLOGY_STATE
@@ -661,12 +679,12 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: lai_id ! Initial LAI values.
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: GDD_id ! Growing Degree Days [degC](see SUEWS_DailyState.f95)
       REAL(KIND(1D0)), DIMENSION(nvegsurf) :: SDD_id ! Senescence Degree Days [degC](see SUEWS_DailyState.f95)
-      REAL(KIND(1D0)) :: VegPhenLumps
-      REAL(KIND(1D0)) :: porosity_id !
+      REAL(KIND(1D0)) :: VegPhenLumps ! phenology indicator used lumps [-] - NOT USED - TO BE REMOVED
+      REAL(KIND(1D0)) :: porosity_id ! porosity of each surface type [-]
       REAL(KIND(1D0)) :: decidcap_id ! Storage capacity of deciduous surface `DecTr`; updated each day in simulaiton due to changes in LAI.
-      REAL(KIND(1D0)) :: albDecTr_id !
-      REAL(KIND(1D0)) :: albEveTr_id !
-      REAL(KIND(1D0)) :: albGrass_id !
+      REAL(KIND(1D0)) :: albDecTr_id ! albedo of deciduous tree surface [-]
+      REAL(KIND(1D0)) :: albEveTr_id ! albedo of evergreen tree surface [-]
+      REAL(KIND(1D0)) :: albGrass_id ! albedo of grass surface [-]
       REAL(KIND(1D0)) :: Tmin_id ! Daily minimum temperature [degC]
       REAL(KIND(1D0)) :: Tmax_id ! Daily maximum temperature [degC]
       REAL(KIND(1D0)) :: lenDay_id ! daytime length [h]
@@ -680,10 +698,15 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: g_ta ! surface conductance function for air temperature [-]
       REAL(KIND(1D0)) :: g_smd ! surface conductance function for soil moisture deficit [-]
       REAL(KIND(1D0)) :: g_lai ! surface conductance function for LAI [-]
+
+      ! flag for iteration safety - NO
+      ! GDD_id and SDD_id include extensive quantities and thus cannot be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+
    END TYPE PHENOLOGY_STATE
 
    TYPE, PUBLIC :: SNOW_STATE
-      REAL(KIND(1D0)) :: snowfallCum !
+      REAL(KIND(1D0)) :: snowfallCum ! cumulative snowfall [mm]
       REAL(KIND(1D0)) :: snowalb ! albedo of snow [-]
       REAL(KIND(1D0)) :: chSnow_per_interval ! change state_id of snow and surface per time interval [mm]
       REAL(KIND(1D0)) :: mwh !snowmelt [mm]
@@ -711,6 +734,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(NSURF) :: qn_ind_snow !net all-wave radiation on snowpack [W m-2]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: deltaQi ! storage heat flux of snow surfaces [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: Tsurf_ind_snow !snowpack surface temperature [C]
+
+      ! flag for iteration safety - NO
+      ! multiple variables (e.g. snowpack, snowwater, snowfallCum, etc) include extensive quantities and thus cannot be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .FALSE.
    END TYPE SNOW_STATE
 
    TYPE, PUBLIC :: HYDRO_STATE
@@ -779,6 +806,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: addWaterBody = 0
       REAL(KIND(1D0)), DIMENSION(NSURF) :: AddWater = 0
       REAL(KIND(1D0)), DIMENSION(NSURF) :: frac_water2runoff = 0
+
+      ! flag for iteration safety - NO
+      ! multiple variables (e.g. soilstore_surf, state_surf, etc) include extensive quantities and thus cannot be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .FALSE.
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHydroState_c
       PROCEDURE :: DEALLOCATE => deallocHydroState_c
@@ -839,6 +870,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: TSfc_C ! surface temperature [degC]
       REAL(KIND(1D0)) :: tsurf !surface temperatue [degC]
       REAL(KIND(1D0)) :: QH_Init !initialised sensible heat flux [W m-2]
+
+      ! flag for iteration safety - YES
+      ! all variables are intensive and thus can be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .TRUE.
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHeatState_c
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
@@ -848,17 +883,21 @@ MODULE SUEWS_DEF_DTS
       ! this type is used to collect the intermediate results in the SUEWS model
 
       ! calculated values of FAI
-      REAL(KIND(1D0)) :: FAIBldg_use
-      REAL(KIND(1D0)) :: FAIEveTree_use
-      REAL(KIND(1D0)) :: FAIDecTree_use
+      REAL(KIND(1D0)) :: FAIBldg_use ! frontal area index of buildings [-]
+      REAL(KIND(1D0)) :: FAIEveTree_use ! frontal area index of evergreen trees [-]
+      REAL(KIND(1D0)) :: FAIDecTree_use ! frontal area index of deciduous trees [-]
 
-      REAL(KIND(1D0)) :: FAI
-      REAL(KIND(1D0)) :: PAI
-      REAL(KIND(1D0)) :: Zh ! effective height of bluff bodies
-      REAL(KIND(1D0)) :: z0m ! aerodynamic roughness length
+      REAL(KIND(1D0)) :: FAI ! frontal area index [-]
+      REAL(KIND(1D0)) :: PAI ! plan area index [-]
+      REAL(KIND(1D0)) :: Zh ! effective height of bluff bodies [m]
+      REAL(KIND(1D0)) :: z0m ! aerodynamic roughness length [m]
       REAL(KIND(1D0)) :: z0v ! roughness for heat [m]
-      REAL(KIND(1D0)) :: zdm ! zero-plance displacement
-      REAL(KIND(1D0)) :: ZZD ! z-zdm
+      REAL(KIND(1D0)) :: zdm ! zero-plance displacement [m]
+      REAL(KIND(1D0)) :: ZZD ! z-zdm [m]
+
+      ! flag for iteration safety - YES
+      ! all variables are intensive and thus can be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .TRUE.
 
    END TYPE ROUGHNESS_STATE
 
@@ -895,6 +934,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: InternalWallDHWVesselTemperature ! Initial hot water vessel internal wall temperature [degC]
       REAL(KIND(1D0)) :: ExternalWallDHWVesselTemperature ! Initial hot water vessel external wall temperature [degC]
 
+      ! flag for iteration safety - YES
+      ! all variables are intensive and thus can be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .TRUE.
+
    END TYPE STEBBS_STATE
 
    TYPE, PUBLIC :: NHOOD_STATE
@@ -903,6 +946,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: QN_1dravg ! 24hr running average net all-wave radiation [W m-2]
       REAL(KIND(1D0)) :: Tair_mn_prev ! Previous midnight air temperature [degC]
       REAL(KIND(1D0)) :: iter_count ! iteration count of convergence loop [-]
+
+      ! flag for iteration safety - NO
+      ! iter_count is used to count the number of iterations and thus cannot be used for iteration safety
+      LOGICAL, PARAMETER :: iter_safe = .FALSE.
 
    END TYPE NHOOD_STATE
 
