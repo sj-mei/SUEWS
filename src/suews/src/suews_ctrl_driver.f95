@@ -239,14 +239,6 @@ CONTAINS
             IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
             CALL SUEWS_update_atmState(timer, forcing, modState)
 
-            !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
-            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
-            CALL SUEWS_cal_DailyState( &
-               timer, config, forcing, siteInfo, & !input
-               modState) ! input/output:
-
-            debugState%state_01_dailystate = modState
-
             ! start iteration-based calculation
             ! through iterations, the surface temperature is examined to be converged
             i_iter = 1
@@ -256,12 +248,15 @@ CONTAINS
                   PRINT *, '=========================== '
                   PRINT *, 'iteration is ', i_iter
                END IF
+               IF ((.NOT. flag_converge) .AND. i_iter > 1) THEN
+                  CALL restore_state(modState, modState_tstepstart)
+               END IF
                ! ========================================================================================
                ! IMPORTANT: restore initial states as they SHOULD NOT be changed during iterations
                ! #316: restore initial hydroState as hydrostate should not be changed during iterations
                ! IF (config%flag_test) THEN
                ! restore all initial states but surface temperatures
-               CALL restore_state(modState, modState_tstepstart)
+               
                ! hydroState = modState_init%hydroState
                ! #369: restore initial phenState as phenState should not be changed during iterations
                ! phenState = modState_init%phenState
@@ -305,6 +300,13 @@ CONTAINS
                !    modState_<module_name> & ! model states as input to the module <inout>
                ! &)
                ! --------------------------------------------------------------------------------
+               !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
+               CALL SUEWS_cal_DailyState( &
+                  timer, config, forcing, siteInfo, & !input
+                  modState) ! input/output:
+
+               debugState%state_01_dailystate = modState
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
@@ -432,8 +434,6 @@ CONTAINS
                !==============main calculation end=======================
             END DO ! end iteration for tsurf calculations
 
-            ! Save iteration count to debugState
-            nhoodState%iter_count = i_iter
 
             !==============================================================
             ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
@@ -722,7 +722,6 @@ CONTAINS
                ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
                ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
                ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
-
             END IF
 
             ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
@@ -2713,7 +2712,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_QH( &
       timer, config, forcing, siteInfo, & ! input
       modState) ! input/output:
-
+      use ieee_arithmetic
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE, &
@@ -2849,6 +2848,10 @@ CONTAINS
             QH_surf = QN_surf + qf - qs_surf - qe_surf
             QH_roof = QN_roof + qf - qs_roof - qe_roof
             QH_wall = QN_wall + qf - qs_wall - qe_wall
+
+            IF (ieee_is_nan(qh)) THEN
+               CALL ABORT()
+            END IF
 
          END ASSOCIATE
       END ASSOCIATE
@@ -5197,6 +5200,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof_tmp ! temporary surface temperature of roof saved at the beginning of the time step
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall_tmp ! temporary surface temperature of wall saved at the beginning of the time step
       REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf_tmp ! temporary surface temperature saved at the beginning of the time step
+      TYPE(HEAT_STATE) :: heatstate_tmp ! temporary heat state saved at the beginning of the time step
+      TYPE(ATM_STATE) :: atmstate_tmp ! temporary atmosphere state saved at the beginning of the time step
       INTEGER :: nlayer ! number of vertical layers
       INTEGER :: nsurf ! number of surfaces
 
@@ -5214,6 +5219,9 @@ CONTAINS
       tsfc_wall_tmp = mod_state%heatstate%tsfc_wall
       tsfc_surf_tmp = mod_state%heatstate%tsfc_surf
 
+      heatstate_tmp = mod_state%heatstate
+      atmstate_tmp = mod_state%atmstate
+
       ! restore model state from the beginning of the time step
       mod_state = mod_state_stepstart
 
@@ -5221,6 +5229,9 @@ CONTAINS
       mod_state%heatstate%tsfc_roof = tsfc_roof_tmp
       mod_state%heatstate%tsfc_wall = tsfc_wall_tmp
       mod_state%heatstate%tsfc_surf = tsfc_surf_tmp
+
+      mod_state%heatstate = heatstate_tmp
+      mod_state%atmstate = atmstate_tmp
 
       ! deallocate temporary surface temperature arrays
       DEALLOCATE (tsfc_roof_tmp)
