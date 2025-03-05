@@ -79,17 +79,22 @@ document.addEventListener('DOMContentLoaded', function () {
             if (mainContainer) {
                 mainContainer.classList.toggle('split-layout');
 
-                // Update button icon
+                // Update button icon and text
                 const icon = this.querySelector('i');
                 if (icon) {
                     if (mainContainer.classList.contains('split-layout')) {
-                        icon.className = 'fas fa-stream';
-                    } else {
                         icon.className = 'fas fa-columns';
+                        this.innerHTML = '<i class="fas fa-columns"></i> Horizontal Layout';
+                    } else {
+                        icon.className = 'fas fa-stream';
+                        this.innerHTML = '<i class="fas fa-stream"></i> Vertical Layout';
                     }
                 }
             }
         });
+
+        // Set initial button text
+        toggleLayoutBtn.innerHTML = '<i class="fas fa-stream"></i> Vertical Layout';
     }
 });
 
