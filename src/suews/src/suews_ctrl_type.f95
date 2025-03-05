@@ -574,7 +574,7 @@ MODULE SUEWS_DEF_DTS
       LOGICAL :: flag_converge ! flag for convergence of surface temperature
       INTEGER :: i_iter ! number of iterations for convergence
 
-      ! flag for iteration safety - NO - as we are using this for indicate convergence
+      ! flag for iteration safety - YES - as we this should be updated every iteration
       LOGICAL :: iter_safe = .TRUE.
 
    END TYPE flag_STATE
