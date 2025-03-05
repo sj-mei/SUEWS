@@ -593,7 +593,7 @@ def run_supy_sample(
     check_input=False,
     serial_mode=False,
     debug_mode=False,
-) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+) -> Tuple[pandas.DataFrame, pandas.DataFrame, pandas.DataFrame]:
     """Quickly run SuPy with sample data and return output dataframes.
 
     This function loads sample data and runs SuPy simulation in one step,
@@ -642,7 +642,7 @@ def run_supy_sample(
         df_forcing = df_forcing[start:end]
 
     # Run SuPy with the sample data
-    df_output, df_state_final = run_supy(
+    res_supy = run_supy(
         df_forcing=df_forcing,
         df_state_init=df_state_init,
         save_state=save_state,
@@ -652,7 +652,11 @@ def run_supy_sample(
         serial_mode=serial_mode,
         debug_mode=debug_mode,
     )
-
-    return df_output, df_state_final
+    if debug_mode:
+        df_output, df_state_final, df_debug = res_supy
+        return df_output, df_state_final, df_debug
+    else:
+        df_output, df_state_final = res_supy
+        return df_output, df_state_final
 
 
