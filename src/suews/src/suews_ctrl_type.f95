@@ -575,7 +575,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: i_iter ! number of iterations for convergence
 
       ! flag for iteration safety - NO - as we are using this for indicate convergence
-      LOGICAL :: iter_safe = .FALSE.
+      LOGICAL :: iter_safe = .TRUE.
 
    END TYPE flag_STATE
 
