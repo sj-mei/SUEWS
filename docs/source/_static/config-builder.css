@@ -63,6 +63,7 @@ body {
     cursor: help;
     color: #6c757d;
     margin-left: 5px;
+    font-size: 1rem;
 }
 
 .subcategory-tabs {

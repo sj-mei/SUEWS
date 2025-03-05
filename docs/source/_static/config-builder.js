@@ -654,6 +654,11 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
     // Format the label to include both the wrapper type and the actual field name
     const displayLabel = resolvedSchema.title || `ValueWithDOI[${formatPropertyName(propKey)}]`;
 
+    // Get the description from the property schema first, then from the resolved schema
+    const description = propSchema.description || resolvedSchema.description || null;
+
+    console.log(`ValueWithDOI field: ${path}, description: ${description}`);
+
     // Create form field with DOI
     createValueWithDOIField(
         container,
@@ -662,7 +667,7 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
         fieldType,
         propData.value,
         propData.ref,
-        resolvedSchema.description,
+        description,
         (value) => {
             // Convert value to appropriate type
             const convertedValue = convertValueToType(value, valueSchema.type);
@@ -1526,6 +1531,10 @@ function createFormField(container, id, label, type, value, description, onChang
         if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
             new bootstrap.Tooltip(icon);
         }
+
+        console.log(`Added info icon for field: ${id}, description: ${description}`);
+    } else {
+        console.log(`No description available for field: ${id}`);
     }
 
     fieldDiv.appendChild(labelDiv);
@@ -1652,6 +1661,10 @@ function createValueWithDOIField(container, id, label, type, value, ref, descrip
         if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
             new bootstrap.Tooltip(icon);
         }
+
+        console.log(`Added info icon for field: ${id}, description: ${description}`);
+    } else {
+        console.log(`No description available for field: ${id}`);
     }
 
     fieldDiv.appendChild(labelDiv);
