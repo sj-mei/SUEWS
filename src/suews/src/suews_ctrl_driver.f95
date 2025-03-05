@@ -248,21 +248,13 @@ CONTAINS
                   PRINT *, '=========================== '
                   PRINT *, 'iteration is ', i_iter
                END IF
+               ! ========================================================================================
+               ! #374: solve the issue of iteration safety
+               ! IMPORTANT: restore some initial states as they SHOULD NOT be changed during iterations
                IF ((.NOT. flag_converge) .AND. i_iter > 1) THEN
-                  CALL restore_state(modState, modState_tstepstart)
+                  CALL modState%check_and_reset_states(modState_tstepstart)
                END IF
                ! ========================================================================================
-               ! IMPORTANT: restore initial states as they SHOULD NOT be changed during iterations
-               ! #316: restore initial hydroState as hydrostate should not be changed during iterations
-               ! IF (config%flag_test) THEN
-               ! restore all initial states but surface temperatures
-
-               ! hydroState = modState_init%hydroState
-               ! #369: restore initial phenState as phenState should not be changed during iterations
-               ! phenState = modState_init%phenState
-               ! ========================================================================================
-               ! snowstate should probably be restored as well but not done for now - should be revisited
-               ! END IF
                !==============main calculation start=======================
 
                ! WIP notes: TS 23 Aug 2023
