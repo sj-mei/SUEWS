@@ -1555,5 +1555,4 @@ CONTAINS
       END IF
    END SUBROUTINE check_and_reset_unsafe_states
 
-
 END MODULE SUEWS_DEF_DTS
