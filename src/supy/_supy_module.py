@@ -585,6 +585,8 @@ def save_supy(
 
 
 def run_supy_sample(
+    start=None,
+    end=None,
     save_state=False,
     chunk_day=3660,
     logging_level=logging.INFO,
@@ -630,6 +632,14 @@ def run_supy_sample(
     """
     # Load sample data
     df_state_init, df_forcing = load_sample_data()
+
+    # subset forcing data
+    if start is not None:
+        df_forcing = df_forcing[start:]
+    if end is not None:
+        df_forcing = df_forcing[:end]
+    if start is not None and end is not None:
+        df_forcing = df_forcing[start:end]
 
     # Run SuPy with the sample data
     df_output, df_state_final = run_supy(
