@@ -55,11 +55,14 @@ body {
     margin-bottom: 8px;
     font-weight: 500;
     color: #212529;
+    display: flex;
+    align-items: center;
 }
 
 .description-icon {
     cursor: help;
     color: #6c757d;
+    margin-left: 5px;
 }
 
 .subcategory-tabs {

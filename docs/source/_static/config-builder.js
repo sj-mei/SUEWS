@@ -651,11 +651,14 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
     const min = valueSchema.minimum !== undefined ? valueSchema.minimum : null;
     const max = valueSchema.maximum !== undefined ? valueSchema.maximum : null;
 
+    // Format the label to include both the wrapper type and the actual field name
+    const displayLabel = resolvedSchema.title || `ValueWithDOI[${formatPropertyName(propKey)}]`;
+
     // Create form field with DOI
     createValueWithDOIField(
         container,
         path.replace(/\./g, '-'),
-        resolvedSchema.title || formatPropertyName(propKey),
+        displayLabel,
         fieldType,
         propData.value,
         propData.ref,
@@ -1626,7 +1629,14 @@ function createValueWithDOIField(container, id, label, type, value, ref, descrip
 
     const labelEl = document.createElement('label');
     labelEl.setAttribute('for', id);
-    labelEl.textContent = label;
+
+    // Extract the actual field name from the path if it's in the format ValueWithDOI[FieldName]
+    const bracketMatch = label.match(/ValueWithDOI\[(.*?)\]/);
+    if (bracketMatch && bracketMatch[1]) {
+        labelEl.textContent = bracketMatch[1];
+    } else {
+        labelEl.textContent = label;
+    }
 
     labelDiv.appendChild(labelEl);
 
