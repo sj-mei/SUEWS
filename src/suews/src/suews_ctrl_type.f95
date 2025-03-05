@@ -575,7 +575,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: i_iter ! number of iterations for convergence
 
       ! flag for iteration safety - NO - as we are using this for indicate convergence
-      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+      LOGICAL :: iter_safe = .FALSE.
 
    END TYPE flag_STATE
 
@@ -611,7 +611,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - NO
       ! HDD_id includes extensive quantities and thus cannot be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+      LOGICAL :: iter_safe = .FALSE.
    END TYPE anthroEmis_STATE
 
    TYPE, PUBLIC :: OHM_STATE
@@ -625,7 +625,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - YES
       ! all variables are intensive and thus can be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .TRUE.
+      LOGICAL :: iter_safe = .TRUE.
    END TYPE OHM_STATE
 
    TYPE, PUBLIC :: solar_State
@@ -634,7 +634,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - YES
       ! all variables are intensive and thus can be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .TRUE.
+      LOGICAL :: iter_safe = .TRUE.
    END TYPE solar_State
 
    TYPE, PUBLIC :: atm_state
@@ -671,7 +671,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - YES
       ! all variables are intensive and thus can be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .TRUE.
+      LOGICAL :: iter_safe = .TRUE.
    END TYPE atm_state
 
    TYPE, PUBLIC :: PHENOLOGY_STATE
@@ -701,7 +701,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - NO
       ! GDD_id and SDD_id include extensive quantities and thus cannot be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+      LOGICAL :: iter_safe = .FALSE.
 
    END TYPE PHENOLOGY_STATE
 
@@ -737,7 +737,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - NO
       ! multiple variables (e.g. snowpack, snowwater, snowfallCum, etc) include extensive quantities and thus cannot be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+      LOGICAL :: iter_safe = .FALSE.
    END TYPE SNOW_STATE
 
    TYPE, PUBLIC :: HYDRO_STATE
@@ -809,7 +809,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - NO
       ! multiple variables (e.g. soilstore_surf, state_surf, etc) include extensive quantities and thus cannot be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+      LOGICAL :: iter_safe = .FALSE.
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHydroState_c
       PROCEDURE :: DEALLOCATE => deallocHydroState_c
@@ -873,7 +873,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - YES
       ! all variables are intensive and thus can be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .TRUE.
+      LOGICAL :: iter_safe = .TRUE.
    CONTAINS
       PROCEDURE :: ALLOCATE => allocHeatState_c
       PROCEDURE :: DEALLOCATE => deallocHeatState_c
@@ -897,7 +897,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - YES
       ! all variables are intensive and thus can be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .TRUE.
+      LOGICAL :: iter_safe = .TRUE.
 
    END TYPE ROUGHNESS_STATE
 
@@ -936,7 +936,7 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - YES
       ! all variables are intensive and thus can be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .TRUE.
+      LOGICAL :: iter_safe = .TRUE.
 
    END TYPE STEBBS_STATE
 
@@ -949,11 +949,10 @@ MODULE SUEWS_DEF_DTS
 
       ! flag for iteration safety - NO
       ! iter_count is used to count the number of iterations and thus cannot be used for iteration safety
-      LOGICAL, PARAMETER :: iter_safe = .FALSE.
+      LOGICAL :: iter_safe = .FALSE.
 
    END TYPE NHOOD_STATE
 
-   ! incorporate all model states into one lumped type
    TYPE, PUBLIC :: SUEWS_STATE
       TYPE(flag_STATE) :: flagState
       TYPE(anthroEmis_STATE) :: anthroemisState
@@ -968,20 +967,11 @@ MODULE SUEWS_DEF_DTS
       TYPE(STEBBS_STATE) :: stebbsState
       TYPE(NHOOD_STATE) :: nhoodState
 
-      ! Add array of pointers to states
-      TYPE(state_ptr), DIMENSION(12), PRIVATE :: state_ptrs
-
    CONTAINS
       PROCEDURE :: ALLOCATE => allocSUEWSState_c
       PROCEDURE :: DEALLOCATE => deallocSUEWSState_c
       PROCEDURE :: check_and_reset_states => check_and_reset_unsafe_states
-      PROCEDURE, PRIVATE :: init_state_ptrs
    END TYPE SUEWS_STATE
-
-   ! Define a wrapper type for pointers to different state types
-   TYPE :: state_ptr
-      CLASS(*), POINTER :: ptr => NULL()
-   END TYPE
 
    ! ********** SUEWS_forcing schema **********
    TYPE, PUBLIC :: SUEWS_FORCING
@@ -1515,30 +1505,55 @@ CONTAINS
       CLASS(SUEWS_STATE), INTENT(inout) :: self
       TYPE(SUEWS_STATE), INTENT(in) :: ref_state
 
-      ! Loop over all states and reset if unsafe
-      DO i = 1, SIZE(self%state_ptrs)
-         IF (.NOT. self%state_ptrs(i)%ptr%iter_safe) THEN
-            self%state_ptrs(i)%ptr = ref_state%state_ptrs(i)%ptr
-         END IF
-      END DO
+      ! Direct checks for each component
+      IF (.NOT. self%flagState%iter_safe) THEN
+         self%flagState = ref_state%flagState
+      END IF
+
+      IF (.NOT. self%anthroemisState%iter_safe) THEN
+         self%anthroemisState = ref_state%anthroemisState
+      END IF
+
+      IF (.NOT. self%ohmState%iter_safe) THEN
+         self%ohmState = ref_state%ohmState
+      END IF
+
+      IF (.NOT. self%solarState%iter_safe) THEN
+         self%solarState = ref_state%solarState
+      END IF
+
+      IF (.NOT. self%atmState%iter_safe) THEN
+         self%atmState = ref_state%atmState
+      END IF
+
+      IF (.NOT. self%phenState%iter_safe) THEN
+         self%phenState = ref_state%phenState
+      END IF
+
+      IF (.NOT. self%snowState%iter_safe) THEN
+         self%snowState = ref_state%snowState
+      END IF
+
+      IF (.NOT. self%hydroState%iter_safe) THEN
+         self%hydroState = ref_state%hydroState
+      END IF
+
+      IF (.NOT. self%heatState%iter_safe) THEN
+         self%heatState = ref_state%heatState
+      END IF
+
+      IF (.NOT. self%roughnessState%iter_safe) THEN
+         self%roughnessState = ref_state%roughnessState
+      END IF
+
+      IF (.NOT. self%stebbsState%iter_safe) THEN
+         self%stebbsState = ref_state%stebbsState
+      END IF
+
+      IF (.NOT. self%nhoodState%iter_safe) THEN
+         self%nhoodState = ref_state%nhoodState
+      END IF
    END SUBROUTINE check_and_reset_unsafe_states
 
-   SUBROUTINE init_state_ptrs(self)
-      CLASS(SUEWS_STATE), INTENT(inout) :: self
-
-      self%state_ptrs(1)%ptr => self%flagState
-      self%state_ptrs(2)%ptr => self%anthroemisState
-      self%state_ptrs(3)%ptr => self%ohmState
-      self%state_ptrs(4)%ptr => self%solState
-      self%state_ptrs(5)%ptr => self%atmState
-      self%state_ptrs(6)%ptr => self%phenState
-      self%state_ptrs(7)%ptr => self%snowState
-      self%state_ptrs(8)%ptr => self%hydroState
-      self%state_ptrs(9)%ptr => self%heatState
-      self%state_ptrs(10)%ptr => self%roughnessState
-      self%state_ptrs(11)%ptr => self%stebbsState
-      self%state_ptrs(12)%ptr => self%nhoodState
-
-   END SUBROUTINE init_state_ptrs
 
 END MODULE SUEWS_DEF_DTS
