@@ -25,6 +25,8 @@ from ._supy_module import (
     check_forcing,
     check_state,
     init_config,
+    run_supy_sample,
+    resample_output,
 )
 
 
