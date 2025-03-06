@@ -53,7 +53,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOLWEIG, ncolumnsDataOutBEERS, &
       ncolumnsDataOutDebug, ncolumnsDataOutSPARTACUS, ncolumnsDataOutEHC, &
-      ncolumnsDataOutSTEBBS
+      ncolumnsDataOutSTEBBS, ncolumnsDataOutNHood
    USE moist, ONLY: avcp, avdens, lv_J_kg
    USE solweig_module, ONLY: SOLWEIG_cal_main
    USE beers_module, ONLY: BEERS_cal_main, BEERS_cal_main_DTS
@@ -103,11 +103,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood - 5) :: dataOutLineNHood
       ! save all output variables in a single derived type
       TYPE(output_line), INTENT(OUT) :: outputLine
       ! ########################################################################################
 
-      TYPE(SUEWS_STATE) :: modState_init
+      TYPE(SUEWS_STATE) :: modState_tstepstart
 
       ! these local variables are used in iteration
       INTEGER, PARAMETER :: max_iter = 30 ! maximum number of iteration
@@ -120,7 +121,8 @@ CONTAINS
          hydroState => modState%hydroState, &
          phenState => modState%phenState, &
          heatstate => modState%heatState, &
-         snowState => modState%snowState &
+         snowState => modState%snowState, &
+         nhoodState => modState%nhoodState &
          )
          ASSOCIATE ( &
             ! timer
@@ -133,9 +135,9 @@ CONTAINS
             ev_surf => hydroState%ev_surf, &
             ev0_surf => hydroState%ev0_surf, &
             ! heatState
-            tsfc0_out_surf => heatState%tsfc0_out_surf, &
-            tsfc0_out_roof => heatState%tsfc0_out_roof, &
-            tsfc0_out_wall => heatState%tsfc0_out_wall, &
+            tsfc_surf_stepstart => heatState%tsfc_surf_stepstart, &
+            tsfc_roof_stepstart => heatState%tsfc_roof_stepstart, &
+            tsfc_wall_stepstart => heatState%tsfc_wall_stepstart, &
             tsfc_surf => heatState%tsfc_surf, &
             tsfc_roof => heatState%tsfc_roof, &
             tsfc_wall => heatState%tsfc_wall, &
@@ -158,10 +160,10 @@ CONTAINS
             ! IF (Diagnose == 1) WRITE (*, *) 'dectime', dectime
 
             ! ############# memory allocation for DTS variables (start) #############
-            CALL modState_init%ALLOCATE(nlayer, ndepth)
+            CALL modState_tstepstart%ALLOCATE(nlayer, ndepth)
             CALL debugState%init(nlayer, ndepth)
             ! save initial values of model states
-            modState_init = modState
+            modState_tstepstart = modState
 
             ! ########################################3
             ! set initial values for output arrays
@@ -213,11 +215,11 @@ CONTAINS
             flag_converge = .FALSE.
 
             ! save surface temperature at the beginning of the time step
-            tsfc0_out_surf = tsfc_surf
+            tsfc_surf_stepstart = tsfc_surf
             ! ! TODO: ESTM work: to allow heterogeneous surface temperatures
             IF (config%StorageHeatMethod == 5 .OR. config%NetRadiationMethod > 1000) THEN
-               tsfc0_out_roof = tsfc_roof
-               tsfc0_out_wall = tsfc_wall
+               tsfc_roof_stepstart = tsfc_roof
+               tsfc_wall_stepstart = tsfc_wall
             END IF
 
             !==============surface roughness calculation=======================
@@ -247,15 +249,12 @@ CONTAINS
                   PRINT *, 'iteration is ', i_iter
                END IF
                ! ========================================================================================
-               ! IMPORTANT: restore initial states as they SHOULD NOT be changed during iterations
-               ! #316: restore initial hydroState as hydrostate should not be changed during iterations
-               ! IF (config%flag_test) THEN
-               hydroState = modState_init%hydroState
-               ! #369: restore initial phenState as phenState should not be changed during iterations
-               phenState = modState_init%phenState
+               ! #374: solve the issue of iteration safety
+               ! IMPORTANT: restore some initial states as they SHOULD NOT be changed during iterations
+               IF ((.NOT. flag_converge) .AND. i_iter > 1) THEN
+                  CALL modState%check_and_reset_states(modState_tstepstart)
+               END IF
                ! ========================================================================================
-               ! snowstate should probably be restored as well but not done for now - should be revisited
-               ! END IF
                !==============main calculation start=======================
 
                ! WIP notes: TS 23 Aug 2023
@@ -293,12 +292,6 @@ CONTAINS
                !    modState_<module_name> & ! model states as input to the module <inout>
                ! &)
                ! --------------------------------------------------------------------------------
-
-               ! WIP notes: TS 03 Sep 2023
-               ! upgrade the interface following this order:
-               ! 1. add `timer, config, forcing, siteInfo` as input
-               ! 2. add `xxState_prev` and `xxState_next` as input and output, respectively
-
                !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
                CALL SUEWS_cal_DailyState( &
@@ -306,7 +299,6 @@ CONTAINS
                   modState) ! input/output:
 
                debugState%state_01_dailystate = modState
-
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
@@ -314,6 +306,10 @@ CONTAINS
                   modState) ! input/output:
 
                debugState%state_02_soilmoist = modState
+               ! WIP notes: TS 03 Sep 2023
+               ! upgrade the interface following this order:
+               ! 1. add `timer, config, forcing, siteInfo` as input
+               ! 2. add `xxState_prev` and `xxState_next` as input and output, respectively
 
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
                !=================Gives the external and internal water uses per timestep=================
@@ -419,6 +415,10 @@ CONTAINS
 
                debugState%state_12_tsurf = modState
 
+               IF (i_iter == 1) THEN
+                  modState_tstepstart = modState
+               END IF
+
                i_iter = i_iter + 1
                IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
                   IF (diagnose == 1) PRINT *, 'Iteration did not converge in', i_iter, ' iterations'
@@ -507,7 +507,7 @@ CONTAINS
             ! here we may still use the original output array but another derived type can be used for enriched debugging info
             CALL update_debug_info( &
                timer, config, forcing, siteInfo, & ! input
-               modState_init, & ! input
+               modState_tstepstart, & ! input
                modState, & ! inout
                dataoutlineDebug) ! output
 
@@ -569,7 +569,7 @@ CONTAINS
 
          ASSOCIATE ( &
             flag_test => config%flag_test, &
-            tsfc0_out_surf => heatState%tsfc0_out_surf, &
+            tsfc0_out_surf => heatState%tsfc_surf_stepstart, &
             qn_surf => heatState%qn_surf, &
             qs_surf => heatState%qs_surf, &
             qe0_surf => heatState%qe0_surf, &
@@ -664,9 +664,9 @@ CONTAINS
             QH_roof => heatState%QH_roof, &
             QH_wall => heatState%QH_wall, &
             qh => heatState%qh, &
-            tsfc0_out_surf => heatState%tsfc0_out_surf, &
-            tsfc0_out_roof => heatState%tsfc0_out_roof, &
-            tsfc0_out_wall => heatState%tsfc0_out_wall, &
+            tsfc0_out_surf => heatState%tsfc_surf_stepstart, &
+            tsfc0_out_roof => heatState%tsfc_roof_stepstart, &
+            tsfc0_out_wall => heatState%tsfc_wall_stepstart, &
             tsfc_surf => heatState%tsfc_surf, &
             tsfc_roof => heatState%tsfc_roof, &
             tsfc_wall => heatState%tsfc_wall, &
@@ -717,7 +717,6 @@ CONTAINS
                ! PRINT *, ' qh_residual: ', qh_residual, ' qh_resist: ', qh_resist
                ! PRINT *, ' dif_qh: ', ABS(qh_residual - qh_resist)
                ! PRINT *, ' abs. dif_tsfc: ', dif_tsfc_iter
-
             END IF
 
             ! note: tsfc has an upper limit of temp_c+50 to avoid numerical errors
@@ -2708,7 +2707,6 @@ CONTAINS
    SUBROUTINE SUEWS_cal_QH( &
       timer, config, forcing, siteInfo, & ! input
       modState) ! input/output:
-
       USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_FORCING, SUEWS_TIMER, SUEWS_SITE, LC_PAVED_PRM, LC_BLDG_PRM, &
                                LC_EVETR_PRM, LC_DECTR_PRM, LC_GRASS_PRM, &
                                LC_BSOIL_PRM, LC_WATER_PRM, HEAT_STATE, &
@@ -3319,10 +3317,12 @@ CONTAINS
       ir, gridiv, &
       dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineBEERS, &
       dataoutlineDebug, dataoutlineSPARTACUS, dataOutLineEHC, &
-      dataOutLineSTEBBS, & !input
+      dataOutLineSTEBBS, &
+      dataOutLineNHood, & !input
       dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutBEERS, dataOutDebug, dataOutSPARTACUS, &
       dataOutEHC, &
-      dataOutSTEBBS &
+      dataOutSTEBBS, &
+      dataOutNHood &
       ) !inout
       IMPLICIT NONE
 
@@ -3343,6 +3343,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutDebug), INTENT(in) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsdataOutSPARTACUS), INTENT(in) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS), INTENT(in) :: dataOutLineSTEBBS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood), INTENT(in) :: dataOutLineNHood
 
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
@@ -3353,6 +3354,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(inout) :: dataOutDebug(ReadLinesMetdata, ncolumnsDataOutDebug, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSPARTACUS(ReadLinesMetdata, ncolumnsDataOutSPARTACUS, NumberOfGrids)
       REAL(KIND(1D0)), INTENT(inout) :: dataOutSTEBBS(ReadLinesMetdata, ncolumnsDataOutSTEBBS, NumberOfGrids)
+      REAL(KIND(1D0)), INTENT(inout) :: dataOutNHood(ReadLinesMetdata, ncolumnsDataOutNHood, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
@@ -3379,6 +3381,7 @@ CONTAINS
          dataOutEHC(ir, 1:ncolumnsDataOutEHC, Gridiv) = [set_nan(dataOutLineEHC)]
       END IF
 
+      dataOutNHood(ir, 1:ncolumnsDataOutNHood, Gridiv) = [set_nan(dataOutLineNHood)]
       !====================update output arrays end==============================
 
    END SUBROUTINE SUEWS_update_output
@@ -4117,6 +4120,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS) :: dataOutBlockSPARTACUS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState) :: dataOutBlockDailyState
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSTEBBS) :: dataOutBlockSTEBBS
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutNHood) :: dataOutBlockNHood
       ! ########################################################################################
 
       ! internal temporal iteration related variables
@@ -4142,6 +4146,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5) :: dataOutLineDailyState
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS - 5) :: dataOutLineSTEBBS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood - 5) :: dataOutLineNHood
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) :: dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) :: dataOutBlockSnow_X
@@ -4153,6 +4158,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSPARTACUS, 1) :: dataOutBlockSPARTACUS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutDailyState, 1) :: dataOutBlockDailyState_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSTEBBS, 1) :: dataOutBlockSTEBBS_X
+      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutNHood, 1) :: dataOutBlockNHood_X
 
       ! REAL(KIND(1D0)), DIMENSION(10) :: MetForcingData_grid ! fake array as a placeholder
 
@@ -5013,10 +5019,12 @@ CONTAINS
             output_line_suews%dataOutLinedebug, &
             output_line_suews%dataOutLineSPARTACUS, &
             output_line_suews%dataOutLineEHC, &
-            output_line_suews%dataOutLineSTEBBS, & !input
+            output_line_suews%dataOutLineSTEBBS, &
+            output_line_suews%dataOutLineNHood, & !input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, & !
             dataOutBlockRSL_X, dataOutBlockBEERS_X, dataOutBlockDebug_X, dataOutBlockSPARTACUS_X, dataOutBlockEHC_X, &
-            dataOutBlockSTEBBS_X &
+            dataOutBlockSTEBBS_X, &
+            dataOutBlockNHood_X &
             ) !inout
 
       END DO
@@ -5171,5 +5179,58 @@ CONTAINS
 
       tsfc_C = qh/(dens_air*vcp_air)*RA + temp_C
    END FUNCTION cal_tsfc
+
+   SUBROUTINE restore_state(mod_state, mod_state_stepstart)
+      ! restore model state from the beginning of the time step while keeping the surface temperature updated from last iteration
+      ! TS, 03 Mar 2025
+      IMPLICIT NONE
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: mod_state ! model state being updated during the time step
+      TYPE(SUEWS_STATE), INTENT(IN) :: mod_state_stepstart ! model state saved at the beginning of the time step
+
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof_tmp ! temporary surface temperature of roof saved at the beginning of the time step
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall_tmp ! temporary surface temperature of wall saved at the beginning of the time step
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf_tmp ! temporary surface temperature saved at the beginning of the time step
+      TYPE(HEAT_STATE) :: heatstate_tmp ! temporary heat state saved at the beginning of the time step
+      TYPE(ATM_STATE) :: atmstate_tmp ! temporary atmosphere state saved at the beginning of the time step
+      TYPE(ROUGHNESS_STATE) :: roughnessstate_tmp ! temporary roughness state saved at the beginning of the time step
+      INTEGER :: nlayer ! number of vertical layers
+      INTEGER :: nsurf ! number of surfaces
+
+      ! get dimension information from surface temperature variables
+      nlayer = SIZE(mod_state%heatstate%tsfc_roof)
+      nsurf = SIZE(mod_state%heatstate%tsfc_surf)
+
+      ! allocate temporary surface temperature arrays
+      ALLOCATE (tsfc_roof_tmp(nlayer))
+      ALLOCATE (tsfc_wall_tmp(nlayer))
+      ALLOCATE (tsfc_surf_tmp(nsurf))
+
+      ! save surface temperature updated from last iteration and use it as initial surface temperature for the next iteration
+      tsfc_roof_tmp = mod_state%heatstate%tsfc_roof
+      tsfc_wall_tmp = mod_state%heatstate%tsfc_wall
+      tsfc_surf_tmp = mod_state%heatstate%tsfc_surf
+
+      heatstate_tmp = mod_state%heatstate
+      atmstate_tmp = mod_state%atmstate
+      roughnessstate_tmp = mod_state%roughnessstate
+
+      ! restore model state from the beginning of the time step
+      mod_state = mod_state_stepstart
+
+      ! restore surface temperature
+      mod_state%heatstate%tsfc_roof = tsfc_roof_tmp
+      mod_state%heatstate%tsfc_wall = tsfc_wall_tmp
+      mod_state%heatstate%tsfc_surf = tsfc_surf_tmp
+
+      mod_state%heatstate = heatstate_tmp
+      mod_state%atmstate = atmstate_tmp
+      mod_state%roughnessstate = roughnessstate_tmp
+
+      ! deallocate temporary surface temperature arrays
+      DEALLOCATE (tsfc_roof_tmp)
+      DEALLOCATE (tsfc_wall_tmp)
+      DEALLOCATE (tsfc_surf_tmp)
+
+   END SUBROUTINE restore_state
 
 END MODULE SUEWS_Driver
