@@ -237,7 +237,9 @@ def load_forcing_grid(
             df_forcing_met = load_SUEWS_Forcing_met_df_yaml(path_input)
             tstep_met_in = df_forcing_met.index[1] - df_forcing_met.index[0]
             tstep_met_in = int(tstep_met_in.total_seconds())
-            kdownzen = init_config_from_yaml(path=path_init).model.control.kdownzen.value
+            kdownzen = init_config_from_yaml(path=path_init).model.control.kdownzen
+            if kdownzen is not None:
+                kdownzen = kdownzen.value
             if kdownzen is None:
                 df_forcing_met_tstep = resample_forcing_met(
                     df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone

@@ -815,11 +815,14 @@ def load_SUEWS_Forcing_met_df_yaml(path_forcing):
 
     if isinstance(path_forcing, (str, Path)):
         path_forcing = Path(path_forcing).resolve()
-        df_forcing_met = read_suews(path_forcing)
-    elif isinstance(path_forcing, list):
+        if path_forcing.is_dir():
+            path_forcing = sorted(path_forcing.glob('*'))
+        else:
+            df_forcing_met = read_suews(path_forcing)
+    if isinstance(path_forcing, list):
         path_forcing = [Path(p).resolve() for p in path_forcing]
         df_forcing_met = pd.concat([read_suews(fn) for fn in path_forcing])
-    else:
+    if not isinstance(path_forcing, (str, Path)) and not isinstance(path_forcing, list):
         import pdb; pdb.set_trace()
     # `drop_duplicates` in case some duplicates mixed
     df_forcing_met = df_forcing_met.drop_duplicates()
