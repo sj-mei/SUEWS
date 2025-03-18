@@ -4166,7 +4166,7 @@ CONTAINS
 
       TYPE(output_block), INTENT(OUT) :: output_block_suews
 
-      call state_block%init(nlayer, ndepth, len_sim)
+      CALL state_block%init(nlayer, ndepth, len_sim)
 
       ! ############# evaluation for DTS variables (start) #############
       siteInfo%lat = lat
@@ -5009,9 +5009,8 @@ CONTAINS
          !============ update DailyStateBlock ===============
          dataOutBlockDailyState(ir, :) = [output_line_suews%dataOutLineDailyState]
 
-
          !============ update state_block ===============
-         state_block%block(ir) = mod_State
+         state_block%BLOCK(ir) = mod_State
 
          !============ write out results ===============
          ! works at each timestep
