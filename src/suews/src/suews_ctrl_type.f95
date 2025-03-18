@@ -1079,7 +1079,37 @@ MODULE SUEWS_DEF_DTS
       PROCEDURE :: init => init_suews_debug
    END TYPE SUEWS_DEBUG
 
+   TYPE, PUBLIC :: SUEWS_STATE_BLOCK
+      TYPE(SUEWS_STATE), DIMENSION(:), ALLOCATABLE :: block
+   CONTAINS
+      PROCEDURE :: init => init_suews_state_block
+   END TYPE SUEWS_STATE_BLOCK
+
 CONTAINS
+
+   SUBROUTINE init_suews_state_block(self, nlayer, ndepth, len_sim)
+      CLASS(SUEWS_STATE_BLOCK), INTENT(inout) :: self
+      INTEGER, INTENT(in) :: nlayer, ndepth
+      INTEGER, INTENT(in) :: len_sim
+      INTEGER :: ir
+
+      ! allocate debug_state_block
+      ALLOCATE (self%block(len_sim))
+
+      ! initialise each element
+      DO ir = 1, len_sim
+         CALL self%block(ir)%ALLOCATE(nlayer, ndepth)
+      END DO
+   END SUBROUTINE init_suews_state_block
+
+   ! SUBROUTINE dealloc_suews_debug_block(self)
+   !    CLASS(SUEWS_DEBUG_BLOCK), INTENT(inout) :: self
+
+   !    ! deallocate each element
+   !    DO ir = 1, len_sim
+   !       CALL self(ir)%dealloc()
+   !    END DO
+   ! END SUBROUTINE dealloc_suews_debug_block
 
    SUBROUTINE init_suews_debug(self, nlayer, ndepth)
       CLASS(SUEWS_DEBUG), INTENT(inout) :: self

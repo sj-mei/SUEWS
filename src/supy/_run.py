@@ -32,8 +32,8 @@ from ._post import (
     pack_df_output_line,
     pack_df_output_array,
     pack_df_state,
-    pack_dict_debug,
-    pack_df_debug,
+    pack_dict_dts,
+    pack_df_dts,
 )
 
 
@@ -152,7 +152,7 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block, debug_mode=False):
     # main calculation:
 
     try:
-        res_suews_tstep_multi, res_mod_state = sd.suews_cal_multitsteps(**dict_input)
+        res_suews_tstep_multi, res_debug, res_state = sd.suews_cal_multitsteps(**dict_input)
 
     except Exception as ex:
         # show trace info
@@ -193,13 +193,20 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block, debug_mode=False):
         dict_output_array = dict(zip(list_var, list_arr))
         df_output_block = pack_df_output_block(dict_output_array, df_forcing_block)
 
-        # TODO: #233 res_mod_state will be used in the future for debugging purpose
         # convert res_mod_state to a dict
         # Assuming dts_debug is your object instance
         # deepcopy is used to avoid reference issue when passing the object
-        dict_debug = copy.deepcopy(pack_dict_debug(res_mod_state))
+        dict_debug = copy.deepcopy(pack_dict_dts(res_debug))
 
-        return dict_state_end, df_output_block, dict_debug
+        # convert res_state to a dict
+        # dict_state = copy.deepcopy(
+        #     {
+        #         ir: pack_dict_dts(dts_state)
+        #         for ir, dts_state in enumerate(res_state.block)
+        #     }
+        # )
+
+        return dict_state_end, df_output_block, dict_debug, res_state
 
 
 # dataframe based wrapper
@@ -400,7 +407,7 @@ def run_supy_ser(
                 for dict_state_input in list_dict_state_input
             ]
 
-            list_dict_state_end, list_df_output, list_dict_debug = zip(*list_res_grid)
+            list_dict_state_end, list_df_output, list_dict_debug, list_res_state = zip(*list_res_grid)
 
         except Exception as e:
             path_zip_debug = save_zip_debug(df_forcing, df_state_init, error_info=e)
@@ -442,9 +449,14 @@ def run_supy_ser(
             (tstep_final, grid): debug
             for grid, debug in zip(list_grid, list_dict_debug)
         }
-        df_debug = pack_df_debug(dict_debug)
+        df_debug = pack_df_dts(dict_debug)
 
-    return df_output, df_state_final, df_debug
+        # collect state info
+        dict_res_state = {
+            grid: res_state for grid, res_state in zip(list_grid, list_res_state)
+        }
+
+    return df_output, df_state_final, df_debug, dict_res_state
 
 
 def run_save_supy(

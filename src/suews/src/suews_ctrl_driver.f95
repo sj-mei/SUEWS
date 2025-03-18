@@ -16,6 +16,7 @@ MODULE SUEWS_Driver
                             HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
                             SUEWS_STATE, SUEWS_DEBUG, STEBBS_STATE, BUILDING_ARCHETYPE_PRM, STEBBS_PRM, &
+                            SUEWS_STATE_BLOCK, &
                             output_line, output_block
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
@@ -3644,7 +3645,7 @@ CONTAINS
       WaterDist, WaterUseMethod, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      output_block_suews, debug_state) !output
+      output_block_suews, debug_state, state_block) !output
 
       IMPLICIT NONE
       LOGICAL, INTENT(IN) :: flag_test
@@ -4092,6 +4093,7 @@ CONTAINS
 
       ! lumped states
       TYPE(SUEWS_DEBUG), INTENT(OUT) :: debug_state
+      TYPE(SUEWS_STATE_BLOCK), INTENT(OUT) :: state_block
       TYPE(SUEWS_STATE) :: mod_state
       ! ############# DTS variables (end) #############
 
@@ -4163,6 +4165,8 @@ CONTAINS
       ! REAL(KIND(1D0)), DIMENSION(10) :: MetForcingData_grid ! fake array as a placeholder
 
       TYPE(output_block), INTENT(OUT) :: output_block_suews
+
+      call state_block%init(nlayer, ndepth, len_sim)
 
       ! ############# evaluation for DTS variables (start) #############
       siteInfo%lat = lat
@@ -5004,6 +5008,10 @@ CONTAINS
 
          !============ update DailyStateBlock ===============
          dataOutBlockDailyState(ir, :) = [output_line_suews%dataOutLineDailyState]
+
+
+         !============ update state_block ===============
+         state_block%block(ir) = mod_State
 
          !============ write out results ===============
          ! works at each timestep

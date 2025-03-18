@@ -267,36 +267,83 @@ def is_numeric(obj):
     return False
 
 
-def pack_dict_debug(dts_debug):
-    """
-    Packs the debug information from the given `dts_debug` object into a dictionary.
+def inspect_dts_structure(dts_obj):
+    """Inspect debug object structure once and cache the property paths"""
+    props = {}
+    for attr in dir(dts_obj):
+        if not attr.startswith("_") and not callable(getattr(dts_obj, attr)):
+            val = getattr(dts_obj, attr)
+            # If it's a nested object, get its properties too
+            if hasattr(val, "__dict__"):
+                sub_props = [
+                    sub_attr
+                    for sub_attr in dir(val)
+                    if not sub_attr.startswith("_")
+                    and not callable(getattr(val, sub_attr))
+                ]
+                props[attr] = sub_props
+            else:
+                props[attr] = None
+    return props
+
+
+def fast_pack_dts(dts_obj, structure=None):
+    """Pack debug object using cached structure or inspect if needed"""
+    if structure is None:
+        structure = inspect_dts_structure(dts_obj)
+
+    result = {}
+    for attr, sub_props in structure.items():
+        val = getattr(dts_obj, attr)
+        if sub_props:
+            # Nested object
+            result[attr] = {sub_prop: getattr(val, sub_prop) for sub_prop in sub_props}
+        else:
+            # Direct value
+            result[attr] = val
+
+    return result
+
+
+def pack_dts_batch(dts_objs, structure):
+    """Process multiple derived type objects at once"""
+    return [fast_pack_dts(obj, structure) for obj in dts_objs]
+
+
+def pack_dts_selective(dts_obj, needed_vars):
+    """Pack only specified variables from derived type object
 
     Args:
-        dts_debug: The debug object containing the debug information.
-
-    Returns:
-        dict: A dictionary containing the packed debug information.
+        dts_obj: Fortran derived type object
+        needed_vars: dict of {state_name: [var_names]} to extract
     """
+    result = {}
+    get = getattr
 
-    list_props = [
-        attr
-        for attr in dir(dts_debug)
-        if not attr.startswith("_")
-        and not attr.endswith("_")
-        and not callable(getattr(dts_debug, attr))
-    ]
-    dict_debug = {
-        prop: (
-            # iterate over the list of properties to get numerical values
-            getattr(dts_debug, prop)
-            if is_numeric(getattr(dts_debug, prop))
-            # if some properties are fortran derived types then iterate use this function
-            else pack_dict_debug(copy.deepcopy(getattr(dts_debug, prop)))
-        )
-        for prop in list_props
-    }
+    for state, vars in needed_vars.items():
+        state_obj = get(dts_obj, state)
+        if vars:  # If specific variables are requested
+            result[state] = {var: get(state_obj, var) for var in vars}
+        else:  # If None, get all non-private attributes
+            result[state] = get(state_obj)
 
-    return dict_debug
+    return result
+
+
+def pack_dict_dts(dts):
+    """Fast version that assumes well-formed DTS objects"""
+    dict_dts = {}
+    for attr in dir(dts):
+        # Skip magic methods with one check
+        if not attr.startswith("_"):
+            val = getattr(dts, attr)
+            # Most values should be numeric, so check that first
+            if isinstance(val, (int, float, bool, np.ndarray)):
+                dict_dts[attr] = val
+            # Only recurse if not numeric and not callable
+            elif not callable(val):
+                dict_dts[attr] = pack_dict_dts(val)
+    return dict_dts
 
 
 def has_dict(d):
@@ -312,9 +359,9 @@ def has_dict(d):
     return any(isinstance(v, dict) for v in d.values())
 
 
-def pack_df_debug_raw(dict_debug):
+def pack_df_dts_raw(dict_dts):
     """
-    Packs a dictionary of debug information into a pandas DataFrame.
+    Packs a dictionary of DTS-derived information into a pandas DataFrame.
 
     Args:
         dict_debug (dict): A dictionary containing debug information.
@@ -324,31 +371,31 @@ def pack_df_debug_raw(dict_debug):
     """
 
     # import pdb; pdb.set_trace()
-    dict_df_debug = {}
-    for k, v in dict_debug.items():
+    dict_df_dts = {}
+    for k, v in dict_dts.items():
         if has_dict(v):
-            dict_df_debug[k] = pack_df_debug_raw(v)
+            dict_df_dts[k] = pack_df_dts_raw(v)
         else:
-            dict_df_debug[k] = pd.Series(v)
+            dict_df_dts[k] = pd.Series(v)
 
-    df_debug = pd.concat(dict_df_debug, axis=0)
+    df_dts = pd.concat(dict_df_dts, axis=0)
 
-    return df_debug
+    return df_dts
 
 
-def pack_df_debug(dict_debug):
+def pack_df_dts(dict_dts):
     """
-    Packs the debug dictionary into a DataFrame.
+    Packs the DTS-derived dictionary into a DataFrame.
 
     Args:
-        dict_debug (dict): The debug dictionary containing the debug information.
+        dict_dts (dict): The DTS-derived dictionary containing the DTS-derived information.
 
     Returns:
-        pandas.DataFrame: The packed DataFrame with debug information.
+        pandas.DataFrame: The packed DataFrame with DTS-derived information.
 
     """
-    df_debug_raw = pack_df_debug_raw(dict_debug)
-    df_debug_raw.index = df_debug_raw.index.rename(
+    df_dts_raw = pack_df_dts_raw(dict_dts)
+    df_dts_raw.index = df_dts_raw.index.rename(
         [
             "datetime",
             "grid",
@@ -357,9 +404,9 @@ def pack_df_debug(dict_debug):
             "var",
         ]
     )
-    df_debug = (
-        df_debug_raw.unstack(level=["group", "var"])
+    df_dts = (
+        df_dts_raw.unstack(level=["group", "var"])
         .sort_index(level=0, axis=1)
         .dropna(axis=1, how="all")
     )
-    return df_debug
+    return df_dts
