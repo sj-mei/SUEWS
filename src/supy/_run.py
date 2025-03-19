@@ -35,8 +35,8 @@ from ._post import (
     pack_df_output_line,
     pack_df_output_array,
     pack_df_state,
-    pack_dict_dts,
-    pack_df_dts,
+    pack_dts,
+    pack_dict_dts_datetime_grid,
 )
 
 
@@ -252,11 +252,11 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block, debug_mode=False):
         # Assuming dts_debug is your object instance
         # deepcopy is used to avoid reference issue when passing the object
         if debug_mode:
-            dict_debug = copy.deepcopy(pack_dict_dts(state_debug))
-            res_state = block_mod_state # save the raw object
+            dict_debug = copy.deepcopy(pack_dts(state_debug))
+            dts_state = block_mod_state # save the raw object
         else:
             dict_debug = None
-            res_state = None
+            dts_state = None
 
         # convert res_state to a dict
         # dict_state = copy.deepcopy(
@@ -266,7 +266,7 @@ def suews_cal_tstep_multi(dict_state_start, df_forcing_block, debug_mode=False):
         #     }
         # )
         if debug_mode:
-            return dict_state_end, df_output_block, dict_debug, res_state
+            return dict_state_end, df_output_block, dict_debug, dts_state
         else:
             return dict_state_end, df_output_block
 
@@ -437,12 +437,12 @@ def run_supy_ser(
         list_df_output = []
         list_df_state = []
         list_df_debug = []
-        list_res_state = []
+        list_dts_state = []
         for grp in grp_forcing_chunk.groups:
             # get forcing of a specific year
             df_forcing_chunk = grp_forcing_chunk.get_group(grp)
             # run supy: actual execution done in the `else` clause below
-            df_output_chunk, df_state_final_chunk, df_debug_chunk, res_state_chunk = (
+            df_output_chunk, df_state_final_chunk, df_debug_chunk, dts_state_chunk = (
                 run_supy_ser(
                     df_forcing_chunk,
                     df_state_init_chunk,
@@ -455,7 +455,7 @@ def run_supy_ser(
             list_df_output.append(df_output_chunk)
             list_df_state.append(df_state_final_chunk)
             list_df_debug.append(df_debug_chunk)
-            list_res_state.append(res_state_chunk)
+            list_dts_state.append(dts_state_chunk)
         # re-organise results of each year
         df_output = pd.concat(list_df_output).sort_index()
         df_state_final = pd.concat(list_df_state).sort_index().drop_duplicates()
@@ -473,7 +473,7 @@ def run_supy_ser(
                 for dict_state_input in list_dict_state_input
             ]
             if debug_mode:
-                list_dict_state_end, list_df_output, list_dict_debug, list_res_state = (
+                list_dict_state_end, list_df_output, list_dict_debug, list_dts_state = (
                     zip(*list_res_grid)
                 )
             else:
@@ -519,18 +519,18 @@ def run_supy_ser(
                 (tstep_final, grid): debug
                 for grid, debug in zip(list_grid, list_dict_debug)
             }
-            df_debug = pack_df_dts(dict_debug)
+            df_debug = pack_dict_dts_datetime_grid(dict_debug)
 
             # collect state info
-            dict_res_state = {
-                grid: res_state for grid, res_state in zip(list_grid, list_res_state)
+            dict_dts_state = {
+                grid: dts_state for grid, dts_state in zip(list_grid, list_dts_state)
             }
         else:
             df_debug = None
-            dict_res_state = None
+            dict_dts_state = None
 
 
-    return df_output, df_state_final, df_debug, dict_res_state
+    return df_output, df_state_final, df_debug, dict_dts_state
 
 
 def run_save_supy(
