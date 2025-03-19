@@ -418,3 +418,5 @@ data_met_raw.pkl
 test-quick.py
 df_water*.pkl
 quick-test.ipynb
+supy_input_dict_*.pkl
+quick-test-script.py

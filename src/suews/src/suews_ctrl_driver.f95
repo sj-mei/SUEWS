@@ -72,8 +72,8 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Main( &
       timer, forcing, config, siteInfo, &
       modState, &
-      debugState, &
-      outputLine) ! output
+      outputLine, &
+      debugState) ! output
 
       IMPLICIT NONE
 
@@ -86,7 +86,7 @@ CONTAINS
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
 
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
-      TYPE(SUEWS_DEBUG), INTENT(OUT) :: debugState
+      TYPE(SUEWS_DEBUG), INTENT(OUT), OPTIONAL :: debugState
 
       TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
       ! ####################################################################################
@@ -162,7 +162,9 @@ CONTAINS
 
             ! ############# memory allocation for DTS variables (start) #############
             CALL modState_tstepstart%ALLOCATE(nlayer, ndepth)
-            CALL debugState%init(nlayer, ndepth)
+            IF (PRESENT(debugState)) THEN
+               CALL debugState%init(nlayer, ndepth)
+            END IF
             ! save initial values of model states
             modState_tstepstart = modState
 
@@ -298,15 +300,17 @@ CONTAINS
                CALL SUEWS_cal_DailyState( &
                   timer, config, forcing, siteInfo, & !input
                   modState) ! input/output:
-
-               debugState%state_01_dailystate = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_01_dailystate = modState
+               end if
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_02_soilmoist = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_02_soilmoist = modState
+               end if
                ! WIP notes: TS 03 Sep 2023
                ! upgrade the interface following this order:
                ! 1. add `timer, config, forcing, siteInfo` as input
@@ -317,15 +321,17 @@ CONTAINS
                CALL SUEWS_cal_WaterUse( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_03_wateruse = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_03_wateruse = modState
+               end if
 
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
                CALL SUEWS_cal_AnthropogenicEmission( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_04_anthroemis = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_04_anthroemis = modState
+               end if
 
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
@@ -337,16 +343,18 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   modState, & ! input/output:
                   dataOutLineSPARTACUS) ! output
-
-               debugState%state_05_qn = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_05_qn = modState
+               end if
 
                IF (diagnose == 1) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
                CALL SUEWS_cal_Qs( &
                   timer, config, forcing, siteInfo, & !input
                   modState, & ! input/output:
                   dataOutLineESTM)
-
-               debugState%state_06_qs = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_06_qs = modState
+               end if
 
                !==================Energy related to snow melting/freezing processes=======
                IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -356,16 +364,18 @@ CONTAINS
                CALL LUMPS_cal_QHQE_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_07_qhqe_lumps = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_07_qhqe_lumps = modState
+               end if
 
                !============= calculate water balance =============
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
                CALL SUEWS_cal_Water( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_08_water = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_08_water = modState
+               end if
                !============= calculate water balance end =============
 
                !===============Resistance Calculations=======================
@@ -373,8 +383,9 @@ CONTAINS
                CALL SUEWS_cal_Resistance( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_09_resist = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_09_resist = modState
+               end if
                !===================Resistance Calculations End=======================
 
                !===================Calculate surface hydrology and related soil water=======================
@@ -395,8 +406,9 @@ CONTAINS
                   CALL SUEWS_cal_QE( &
                      timer, config, forcing, siteInfo, & ! input
                      modState) ! input/output:
-
-                  debugState%state_10_qe = modState
+                  if (config%flag_test .and. present(debugState)) then
+                     debugState%state_10_qe = modState
+                  end if
                   !======== Evaporation and surface state_id end========
                END IF
 
@@ -405,16 +417,18 @@ CONTAINS
                CALL SUEWS_cal_QH( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_11_qh = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_11_qh = modState
+               end if
                !============ Sensible heat flux end ===============
 
                ! ============ update surface temperature of this iteration ===============
                CALL suews_update_tsurf( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_12_tsurf = modState
+               if (config%flag_test .and. present(debugState)) then
+                  debugState%state_12_tsurf = modState
+               end if
 
                IF (i_iter == 1) THEN
                   modState_tstepstart = modState
@@ -440,16 +454,18 @@ CONTAINS
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
                dataoutLineRSL) ! output
-
-            debugState%state_13_rsl = modState
+            if (config%flag_test .and. present(debugState)) then
+               debugState%state_13_rsl = modState
+            end if
 
             ! ============ BIOGENIC CO2 FLUX =======================
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_BiogenCO2_DTS...'
             CALL SUEWS_cal_BiogenCO2( &
                timer, config, forcing, siteInfo, & ! input
                modState) ! input/output:
-
-            debugState%state_14_biogenco2 = modState
+            if (config%flag_test .and. present(debugState)) then
+               debugState%state_14_biogenco2 = modState
+            end if
 
             ! calculations of diagnostics end
             !==============================================================
@@ -466,8 +482,9 @@ CONTAINS
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
                dataOutLineBEERS) ! output
-
-            debugState%state_15_beers = modState
+            if (config%flag_test .and. present(debugState)) then
+               debugState%state_15_beers = modState
+            end if
 
             !==============use STEBBS to get localised radiation flux==================
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
@@ -3645,7 +3662,7 @@ CONTAINS
       WaterDist, WaterUseMethod, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      output_block_suews, debug_state, state_block) !output
+      output_block_suews, state_debug, block_mod_state) !output
 
       IMPLICIT NONE
       LOGICAL, INTENT(IN) :: flag_test
@@ -4092,8 +4109,8 @@ CONTAINS
       TYPE(STEBBS_PRM) :: stebbsPrm
 
       ! lumped states
-      TYPE(SUEWS_DEBUG), INTENT(OUT) :: debug_state
-      TYPE(SUEWS_STATE_BLOCK), INTENT(OUT) :: state_block
+      TYPE(SUEWS_DEBUG), INTENT(OUT), OPTIONAL :: state_debug
+      TYPE(SUEWS_STATE_BLOCK), INTENT(OUT), OPTIONAL :: block_mod_state
       TYPE(SUEWS_STATE) :: mod_state
       ! ############# DTS variables (end) #############
 
@@ -4166,7 +4183,10 @@ CONTAINS
 
       TYPE(output_block), INTENT(OUT) :: output_block_suews
 
-      call state_block%init(nlayer, ndepth, len_sim)
+      if (flag_test .and. present(block_mod_state)) then
+
+         call block_mod_state%init(nlayer, ndepth, len_sim)
+      end if
 
       ! ############# evaluation for DTS variables (start) #############
       siteInfo%lat = lat
@@ -4996,22 +5016,28 @@ CONTAINS
          forcing%xsmd = MetForcingBlock(ir, 20)
          forcing%LAI_obs = MetForcingBlock(ir, 21)
 
-         !CALL SUEWS_cal_Main( &
-         CALL SUEWS_cal_Main( &
-            timer, forcing, config, siteInfo, &
-            mod_State, &
-            debug_state, &
-            output_line_suews) !output
-
+         if (config%flag_test .and. present(state_debug)) then
+            CALL SUEWS_cal_Main( &
+               timer, forcing, config, siteInfo, &
+               mod_State, &
+               output_line_suews, &
+               state_debug) !output
+         else
+            CALL SUEWS_cal_Main( &
+               timer, forcing, config, siteInfo, &
+               mod_State, &
+               output_line_suews) !output
+         end if
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
          timer%dt_since_start = timer%dt_since_start + timer%tstep
 
          !============ update DailyStateBlock ===============
          dataOutBlockDailyState(ir, :) = [output_line_suews%dataOutLineDailyState]
 
-
          !============ update state_block ===============
-         state_block%block(ir) = mod_State
+         if (config%flag_test .and. present(state_debug)) then
+            block_mod_state%block(ir) = mod_State
+         end if
 
          !============ write out results ===============
          ! works at each timestep
