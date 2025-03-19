@@ -1080,7 +1080,7 @@ MODULE SUEWS_DEF_DTS
    END TYPE SUEWS_DEBUG
 
    TYPE, PUBLIC :: SUEWS_STATE_BLOCK
-      TYPE(SUEWS_STATE), DIMENSION(:), ALLOCATABLE :: block
+      TYPE(SUEWS_STATE), DIMENSION(:), ALLOCATABLE :: BLOCK
    CONTAINS
       PROCEDURE :: init => init_suews_state_block
    END TYPE SUEWS_STATE_BLOCK
@@ -1094,11 +1094,11 @@ CONTAINS
       INTEGER :: ir
 
       ! allocate debug_state_block
-      ALLOCATE (self%block(len_sim))
+      ALLOCATE (self%BLOCK(len_sim))
 
       ! initialise each element
       DO ir = 1, len_sim
-         CALL self%block(ir)%ALLOCATE(nlayer, ndepth)
+         CALL self%BLOCK(ir)%ALLOCATE(nlayer, ndepth)
       END DO
    END SUBROUTINE init_suews_state_block
 
