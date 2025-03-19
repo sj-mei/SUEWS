@@ -447,6 +447,7 @@ def run_supy_ser(
                     df_forcing_chunk,
                     df_state_init_chunk,
                     chunk_day=chunk_day,
+                    debug_mode=debug_mode,
                 )
             )
             df_state_init_chunk = df_state_final_chunk.copy()
@@ -566,19 +567,33 @@ def run_save_supy(
         Results are saved to files in path_dir_temp:
         - {ind}_out.pkl: Output results DataFrame
         - {ind}_state.pkl: Final model states DataFrame
-        - {ind}_debug.pkl: Debug information DataFrame
+        - {ind}_debug.pkl: Debug information DataFrame (if debug_mode=True)
+        - {ind}_state_obj.pkl: Raw state objects (if debug_mode=True)
     """
     # run supy in serial mode
-    df_output, df_state_final, df_debug = run_supy_ser(
+    result = run_supy_ser(
         df_forcing_tstep, df_state_init_m, save_state, chunk_day, debug_mode
     )
-    # save to path_dir_temp
+
+    # Save results based on debug mode
+    if debug_mode:
+        df_output, df_state_final, df_debug, res_state = result
+        # save debug data
+        path_debug = path_dir_temp / f"{ind}_debug.pkl"
+        df_debug.to_pickle(path_debug)
+        # save state objects
+        path_state_obj = path_dir_temp / f"{ind}_state_obj.pkl"
+        with open(path_state_obj, 'wb') as f:
+            import pickle
+            pickle.dump(res_state, f)
+    else:
+        df_output, df_state_final, _, _ = result
+
+    # save output and state data (always)
     path_out = path_dir_temp / f"{ind}_out.pkl"
     path_state = path_dir_temp / f"{ind}_state.pkl"
-    path_debug = path_dir_temp / f"{ind}_debug.pkl"
     df_output.to_pickle(path_out)
     df_state_final.to_pickle(path_state)
-    df_debug.to_pickle(path_debug)
 
 
 # parallel mode: only used on Linux/macOS; Windows is not supported yet.
@@ -602,10 +617,11 @@ def run_supy_par(
 
     Returns
     -------
-    Tuple[pandas.DataFrame, pandas.DataFrame, pandas.DataFrame]
+    Tuple[pandas.DataFrame, pandas.DataFrame, pandas.DataFrame, dict]
         - df_output: Output results
         - df_state_final: Final model states
-        - df_debug: Debug information
+        - df_debug: Debug information (None if debug_mode=False)
+        - dict_res_state: Raw state objects (None if debug_mode=False)
     """
     n_grid = df_state_init_m.index.size
     list_forcing = [df_forcing_tstep for _ in range(n_grid)]
@@ -634,7 +650,7 @@ def run_supy_par(
                 ),
             )
 
-        # load dumped h5 files
+        # load dumped pickle files
         df_output = pd.concat(
             [pd.read_pickle(path_dir_temp / f"{n}_out.pkl") for n in np.arange(n_grid)]
         )
@@ -644,14 +660,27 @@ def run_supy_par(
                 for n in np.arange(n_grid)
             ]
         )
-        df_debug = pd.concat(
-            [
-                pd.read_pickle(path_dir_temp / f"{n}_debug.pkl")
-                for n in np.arange(n_grid)
-            ]
-        )
 
-    return df_output, df_state_final, df_debug
+        # Handle debug mode data if available
+        if debug_mode:
+            df_debug = pd.concat(
+                [
+                    pd.read_pickle(path_dir_temp / f"{n}_debug.pkl")
+                    for n in np.arange(n_grid)
+                ]
+            )
+            # Load state objects
+            import pickle
+            dict_res_state = {}
+            for n in np.arange(n_grid):
+                path_state_obj = path_dir_temp / f"{n}_state_obj.pkl"
+                with open(path_state_obj, 'rb') as f:
+                    dict_res_state[n] = pickle.load(f)
+        else:
+            df_debug = None
+            dict_res_state = None
+
+    return df_output, df_state_final, df_debug, dict_res_state
 
 
 # main calculation end here
