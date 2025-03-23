@@ -4,6 +4,7 @@ import copy
 from .supy_driver import suews_driver as sd
 from .supy_driver import suews_def_dts as sd_dts
 
+
 ##############################################################################
 # post-processing part
 # get variable information from Fortran
@@ -417,7 +418,9 @@ def fast_pack_dts(dts_obj, dict_structure=None):
         val = getattr(dts_obj, attr)
         if list_sub_props:
             # Nested object
-            dict_result[attr] = {sub_prop: getattr(val, sub_prop) for sub_prop in list_sub_props}
+            dict_result[attr] = {
+                sub_prop: getattr(val, sub_prop) for sub_prop in list_sub_props
+            }
         else:
             # Direct value
             dict_result[attr] = val
@@ -592,8 +595,9 @@ def pack_dict_dts(dict_dts):
 
 
 sample_dts = sd_dts.SUEWS_STATE_BLOCK()
-sample_dts.init(3,3,3)
+sample_dts.init(3, 3, 3)
 dict_structure = inspect_dts_structure(sample_dts.block[0])
+
 
 def pack_dict_dts_datetime_grid(dict_dts_datetime_grid):
     """
@@ -648,40 +652,36 @@ def pack_dict_dts_datetime_grid(dict_dts_datetime_grid):
     return df_dts
 
 
-def pack_dts_state_selective(dict_dts_state, dict_vars_sel=dict_structure):
+def pack_dts_state_selective(
+    dict_dts_state,
+    df_output,
+    dict_vars_sel=dict_structure,
+):
     """
     Selectively extract and pack specified variables from a debug state dictionary into a DataFrame.
-
-    This function allows efficient extraction of only needed variables from debug state objects,
-    reducing processing time and memory usage when analyzing large debug states.
 
     Parameters
     ----------
     dict_dts_state : dict
         Dictionary containing debug state information (typically from res_state)
+    df_output : pandas.DataFrame
+        DataFrame containing simulation output, used to get datetime index
     dict_vars_sel : dict
         Dictionary mapping state categories to lists of specific variables to extract.
         Format: {'state_category': ['var1', 'var2', ...], ...}
         Example: {'heatState': ['qn', 'qh', 'qe'], 'atmState': ['RH2']}
-        If a value is None or an empty list, all variables in that state will be extracted.
+        If a value is None or empty list, all variables in that state will be extracted.
 
     Returns
     -------
     pandas.DataFrame
         DataFrame containing only the requested variables, with MultiIndex columns organized
-        by state category and variable name.
-
-    Examples
-    --------
-    >>> # Extract specific energy balance variables for analysis
-    >>> needed_vars = {
-    >>>     'heatState': ['qn', 'qh', 'qe', 'qs'],
-    >>>     'atmState': ['RH2', 'temp_c']
-    >>> }
-    >>> df_energy = pack_dts_state_selective(res_state, needed_vars)
-    >>> df_energy[('heatState', 'qn')].plot()  # Plot net radiation
+        by state category and variable name, and datetime index.
     """
     dict_result = {}
+
+    # retrieve datetime from df_output
+    list_datetime = df_output.index.get_level_values("datetime")
 
     # Process each state block
     for grid_id, state_block in dict_dts_state.items():
@@ -701,8 +701,10 @@ def pack_dts_state_selective(dict_dts_state, dict_vars_sel=dict_structure):
                 # If list_var is None or empty, get all non-private attributes
                 if not list_var:
                     list_var = [
-                        attr for attr in dir(state_obj)
-                        if not attr.startswith('_') and not callable(getattr(state_obj, attr))
+                        attr
+                        for attr in dir(state_obj)
+                        if not attr.startswith("_")
+                        and not callable(getattr(state_obj, attr))
                     ]
 
                 # Extract only specified variables from the state category
@@ -730,16 +732,30 @@ def pack_dts_state_selective(dict_dts_state, dict_vars_sel=dict_structure):
         if list_rows:
             # Create DataFrame with MultiIndex columns
             df_grid = pd.DataFrame(list_rows)
-            df_grid.index = pd.RangeIndex(len(list_rows), name='timestep')
-            df_grid.columns = pd.MultiIndex.from_tuples(df_grid.columns, names=['state', 'variable'])
 
-            # Add grid information
-            df_grid = df_grid.assign(grid=grid_id)
-            df_grid.set_index('grid', append=True, inplace=True)
-            list_dfs.append(df_grid.swaplevel(0, 1, axis=0))
+            # Use datetime index if available
+            if list_datetime is not None and len(list_datetime) == len(list_rows):
+                df_grid.index = list_datetime
+                df_grid.index.name = "datetime"
+            else:
+                df_grid.index = pd.RangeIndex(len(list_rows), name="timestep")
+
+            if not df_grid.empty:
+                df_grid.columns = pd.MultiIndex.from_tuples(df_grid.columns, names=['state', 'variable'])
+                # Add grid information
+                df_grid = df_grid.assign(grid=grid_id)
+                df_grid.set_index('grid', append=True, inplace=True)
+
+                # Reorder index levels to put datetime first if present
+                if 'datetime' in df_grid.index.names:
+                    df_grid = df_grid.reorder_levels(['datetime', 'grid'])
+
+                list_dfs.append(df_grid)
 
     if not list_dfs:
         return pd.DataFrame()
 
-    # Combine all grid DataFrames
-    return pd.concat(list_dfs).sort_index()
+    # Combine all grid DataFrames and ensure proper index ordering
+    df_combined = pd.concat(list_dfs).sort_index().swaplevel(0, 1, axis=0)
+
+    return df_combined
