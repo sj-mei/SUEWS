@@ -468,11 +468,11 @@ def run_supy(
     logger_supy.info(f"====================\n")
 
     # unpack results
-    df_output, df_state_final, res_debug = res_supy
+    df_output, df_state_final, res_debug, res_state = res_supy
 
     # return results based on debugging needs
     if debug_mode:
-        return df_output, df_state_final, res_debug
+        return df_output, df_state_final, res_debug, res_state
     else:
         return df_output, df_state_final
 
