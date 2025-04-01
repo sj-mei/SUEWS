@@ -133,6 +133,7 @@ class SUEWSConfig(BaseModel):
 
         # set column names
         df.columns.set_names(["var", "ind_dim"], inplace=True)
+        df.index.name = "grid"
 
         return df
 
