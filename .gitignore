@@ -420,3 +420,7 @@ df_water*.pkl
 quick-test.ipynb
 supy_input_dict_*.pkl
 quick-test-script.py
+
+# binary files
+SUEWS_V20*
+
