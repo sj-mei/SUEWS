@@ -150,6 +150,7 @@ def load_forcing_grid(
     check_input=False,
     force_reload=True,
     df_state_init: pd.DataFrame = None,
+    config = None
 ) -> pd.DataFrame:
     """Load forcing data for a specific grid included in the index of `df_state_init </data-structure/supy-io.ipynb#df_state_init:-model-initial-states>`.
 
@@ -215,7 +216,8 @@ def load_forcing_grid(
             path_site = path_init.parent
             path_input = path_site / dict_mod_cfg["fileinputpath"]
         else:
-            config = init_config_from_yaml(path=path_init)
+            if config is None:
+                config = init_config_from_yaml(path=path_init)
             path_site = path_init.parent
             path_input = path_site / config.model.control.forcing_file.value
 
@@ -237,7 +239,7 @@ def load_forcing_grid(
             df_forcing_met = load_SUEWS_Forcing_met_df_yaml(path_input)
             tstep_met_in = df_forcing_met.index[1] - df_forcing_met.index[0]
             tstep_met_in = int(tstep_met_in.total_seconds())
-            kdownzen = init_config_from_yaml(path=path_init).model.control.kdownzen
+            kdownzen = config.model.control.kdownzen
             if kdownzen is not None:
                 kdownzen = kdownzen.value
             if kdownzen is None:
