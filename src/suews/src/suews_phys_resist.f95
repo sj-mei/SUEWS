@@ -190,6 +190,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: gfunc !gdq*gtemp*gs*gq for photosynthesis calculations
       REAL(KIND(1D0)), INTENT(out) :: gsc !Surface Layer Conductance
       REAL(KIND(1D0)), INTENT(out) :: RS !Surface resistance
+      REAL(KIND(1D0)), PARAMETER :: gsc_min = 0.1 !Minimum surface conductance
 
       REAL(KIND(1D0)) :: &
          ! g_lai, & !G(LAI)
@@ -316,15 +317,15 @@ CONTAINS
          END DO
 
          IF (avkdn <= 0) THEN !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
-            gsc = 0.1
+            gsc = gsc_min
          ELSE
             ! Multiply parts together
-            gsc = (G_max*g_kdown*g_dq*g_ta*g_smd*g_lai)
+            gsc = MAX(gsc_min, G_max*g_kdown*g_dq*g_ta*g_smd*g_lai)
          END IF
 
          IF (gsc <= 0) THEN
             CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=1): gs <= 0, setting to 0.1 mm s-1', gsc, id_real, it)
-            gsc = 0.1
+            gsc = gsc_min
          END IF
 
       ELSEIF (gsModel == 2 .OR. gsModel == 4) THEN
@@ -388,15 +389,16 @@ CONTAINS
          END DO
 
          IF (avkdn <= 0) THEN !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
-            gsc = 0.1
+            gsc = gsc_min
          ELSE
             ! Multiply parts together
-            gsc = (G_max*g_kdown*g_dq*g_ta*g_smd*g_lai)
+            gsc = MAX(gsc_min, G_max*g_kdown*g_dq*g_ta*g_smd*g_lai)
+
          END IF
 
          IF (gsc <= 0) THEN
             CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=2): gsc <= 0, setting to 0.1 mm s-1', gsc, id_real, it)
-            gsc = 0.1
+            gsc = gsc_min
          END IF
 
       ELSEIF (gsModel < 1 .OR. gsModel > 4) THEN

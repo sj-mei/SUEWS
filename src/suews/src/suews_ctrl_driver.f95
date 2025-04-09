@@ -430,9 +430,9 @@ CONTAINS
                   debugState%state_12_tsurf = modState
                END IF
 
-               IF (i_iter == 1) THEN
-                  modState_tstepstart = modState
-               END IF
+               ! IF (i_iter == 1) THEN
+               !    modState_tstepstart = modState
+               ! END IF
 
                i_iter = i_iter + 1
                IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
@@ -2564,6 +2564,7 @@ CONTAINS
 
                ! runoff_per_interval = runoff_per_interval_in
                state_surf = state_surf_in
+               ! soilstore_surf = soilstore_surf_in
                ! soilstore_id = soilstore_surf_in
 
                ! nsh_real = 3600/tstep*1.D0

@@ -57,4 +57,4 @@ from ._debug import diag_rsl, diag_rsl_prm, save_zip_debug
 
 from ._spinup import get_spinup_state
 
-from ._config import SUEWSConfig, init_config_from_yaml
+# from ._config import SUEWSConfig, init_config_from_yaml

@@ -266,7 +266,7 @@ CONTAINS
                   0D0, &
                   PervFraction /= 0)
          ! EvPart needs be distributed to each pervious surface weighted by sfr_surf(is)
-         EvPart = EvPart*sfr_surf(is)/PervFraction
+         ! EvPart = EvPart*sfr_surf(is)/PervFraction
          ! Add surplus evaporation to ev for pervious surfaces
          ev = ev + EvPart
 
@@ -422,7 +422,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: drain_surf !Drainage of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: WU_surf !external water use of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: ev_surf_in !Evaporation
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_surf_in !Evaporation
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: soilstore_surf_in !soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac_in !needed whether storage was already calculated in snow equations
 
       ! REAL(KIND(1D0)), INTENT(in) :: NonWaterFraction !Capacity of pipes to transfer water
