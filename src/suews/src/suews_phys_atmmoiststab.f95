@@ -267,6 +267,9 @@ CONTAINS
          TStar = (-H/UStar)
          L_MOD = (UStar**2)/(G_T_K*TStar)
 
+         ! cap L_MOD to be within [-1000,1000]
+         L_MOD = MIN(1000., MAX(-1000., L_MOD))
+
          ! IF(UStar<0.001000)THEN       !If u* too small
          !    UStar=KUZ/(LOG(Zzd/z0m))
          !    PRINT*, 'UStar info',UStar,KUZ,(LOG(Zzd/z0m)),Zzd,z0m
@@ -313,7 +316,8 @@ CONTAINS
 
       ! TS 11 Feb 2021: limit UStar and TStar to reasonable ranges
       ! under all conditions, min(UStar)==0.001 m s-1 (Jimenez et al 2012, MWR, https://doi.org/10.1175/mwr-d-11-00056.1
-      UStar = MAX(0.001, UStar)
+      ! also limit UStar to max 3 m s-1 to prevent potential issues in other stability-related calcualtions
+      UStar = MIN(MAX(0.001, UStar), 3.0)
       ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
       IF (z0L < -neut_limit) UStar = MAX(0.15, UStar)
 
@@ -341,6 +345,9 @@ CONTAINS
       REAL(KIND(1D0)) :: zl, psim
       INTEGER :: StabilityMethod
 
+      ! limit zL to be within [-2,1]
+      zL = MIN(1., MAX(-2., zL))
+
       SELECT CASE (StabilityMethod)
       CASE (J12)
          psim = psi_mom_J12(ZL)
@@ -361,6 +368,9 @@ CONTAINS
 
       REAL(KIND(1D0)) :: zl, psih
       INTEGER :: StabilityMethod
+
+      ! limit zL to be within [-2,1]
+      zL = MIN(1., MAX(-2., zL))
 
       SELECT CASE (StabilityMethod)
       CASE (J12)
