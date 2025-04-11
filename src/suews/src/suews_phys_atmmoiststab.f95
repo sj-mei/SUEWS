@@ -6,10 +6,10 @@ MODULE AtmMoistStab_module
    REAL(KIND(1D0)), PARAMETER :: grav = 9.80665 !g - gravity - physics today august 1987
 
    ! scheme code
-   INTEGER, PARAMETER :: J12 = 2 ! Cheng and Brutsaert (2005)
+   INTEGER, PARAMETER :: W16 = 2 ! Ward et al (2016) based on {unstable: Dyer (1974) modified Hogstrom (1988); and stable: Van Ulden & Holtslag (1985)}
    INTEGER, PARAMETER :: k75 = 3 ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
    INTEGER, PARAMETER :: B71 = 4 ! Businger et al (1971) modifed  Hogstrom (1988)
-
+   INTEGER, PARAMETER :: J12 = 5 ! Cheng and Brutsaert (2005)
 CONTAINS
 
    SUBROUTINE SUEWS_update_atmState(timer, forcing, modState)
@@ -232,7 +232,7 @@ CONTAINS
                                   'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]', &
                                   Zzd, zdm, notUsedI)
 
-      UStar = KUZ/LOG(Zzd/z0m) !Initial setting of u* and calc. of L_MOD (neutral situation)
+      UStar = KUZ/LOG(Zzd/z0m) ! Initial guess for UStar assuming neutral conditions — used only to seed the iteration
       IF (ABS(H_init) < 0.001) THEN ! prevent zero TStar
          h = 0.001
       ELSE
@@ -249,6 +249,8 @@ CONTAINS
       LOLD = -999.
       z0L = z0m/L_MOD !z0m roughness length
       DO WHILE ((ABS(LOLD - L_MOD) > 0.01) .AND. (i < 330)) !NT: add error threshold !Iteration starts
+         ! cap L_MOD to be within [-500,500]
+         ! LOLD = MIN(MAX(-2000., L_MOD), 2000.)
          LOLD = L_MOD
          zL = zzd/L_MOD
          z0L = z0m/L_MOD !z0m roughness length
@@ -267,8 +269,8 @@ CONTAINS
          TStar = (-H/UStar)
          L_MOD = (UStar**2)/(G_T_K*TStar)
 
-         ! cap L_MOD to be within [-1000,1000]
-         L_MOD = MIN(1000., MAX(-1000., L_MOD))
+         ! cap L_MOD to be within [-500,500]
+         ! L_MOD = MIN(MAX(-2000., L_MOD), 2000.)
 
          ! IF(UStar<0.001000)THEN       !If u* too small
          !    UStar=KUZ/(LOG(Zzd/z0m))
@@ -284,9 +286,8 @@ CONTAINS
          i = i + 1
       END DO
 
-      ! limit zL to be within [-5,5]
-      ! IF (zL < -5 .OR. zL > 5) THEN
-      ! zL = MIN(5., MAX(-5., zL))
+      ! limit zL to be within [-2,2]
+      zL = MIN(2., MAX(-2., zL))
       ! limit other output variables as well as z/L
       ! L_MOD = zzd/zL
       ! limit L_mod to 3.e4 for consistency with output
@@ -317,14 +318,12 @@ CONTAINS
       ! TS 11 Feb 2021: limit UStar and TStar to reasonable ranges
       ! under all conditions, min(UStar)==0.001 m s-1 (Jimenez et al 2012, MWR, https://doi.org/10.1175/mwr-d-11-00056.1
       ! also limit UStar to max 3 m s-1 to prevent potential issues in other stability-related calcualtions
-      UStar = MIN(MAX(0.001, UStar), 3.0)
-      ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
-      IF (z0L < -neut_limit) UStar = MAX(0.15, UStar)
+      ! UStar = MIN(MAX(0.001, UStar), 3.0)
+      ! ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
+      ! IF (z0L < -neut_limit) UStar = MAX(0.15, UStar)
 
-      ! update associated variables
-      TStar = (-H/UStar)
-      L_MOD = (UStar**2)/(G_T_K*TStar)
-      zL = zzd/L_MOD
+      ! ! update associated variables
+      ! zL = zzd/L_MOD
 
       ! if ( L_MOD<-990 ) then
       !   print*, 'L_MOD too low',L_MOD
@@ -345,10 +344,11 @@ CONTAINS
       REAL(KIND(1D0)) :: zl, psim
       INTEGER :: StabilityMethod
 
-      ! limit zL to be within [-2,1]
-      zL = MIN(1., MAX(-2., zL))
 
       SELECT CASE (StabilityMethod)
+      CASE (W16)
+         psim = psi_mom_W16(ZL)
+
       CASE (J12)
          psim = psi_mom_J12(ZL)
 
@@ -369,10 +369,11 @@ CONTAINS
       REAL(KIND(1D0)) :: zl, psih
       INTEGER :: StabilityMethod
 
-      ! limit zL to be within [-2,1]
-      zL = MIN(1., MAX(-2., zL))
 
       SELECT CASE (StabilityMethod)
+      CASE (W16)
+         psih = psi_heat_W16(ZL)
+
       CASE (J12)
          psih = psi_heat_J12(ZL)
 
@@ -869,7 +870,72 @@ CONTAINS
       END IF
 
    END FUNCTION
+
    ! ------------------------------------
+      ! Based on stab_fn_mom for StabilityMethod == 2 use W16 case (Ward et al. 2016, Urban Climate)
+      FUNCTION psi_mom_W16(ZL) RESULT(psym)
+      !     PSYM - stability FUNCTION for momentum
+      !Modified by LJ Mar 2010
+      !Input: Stability (z-d)/L
+      ! Note: Unstable part corresponds to Dyer (1974) mod. Hogstrom (1988)
+      ! Note: Stable part corresponds to Van Ulden & Holtslag (1985) p 1206 in original code
+
+      ! use mod_z ! Original dependency - removed as not needed in isolated function
+      ! use mod_k ! Original dependency - removed as not needed in isolated function
+
+      IMPLICIT NONE
+
+      ! REAL (KIND(1d0)), PARAMETER :: neut_limit = 1.E-4 ! Limit for neutral stability (Assumed from context)
+      REAL (KIND(1d0)):: piover2,psym,zl,x,x2
+
+      PIOVER2=ACOS(-1.)/2.
+      !PRINT*,StabilityMethod,zl,"stab_fn_mom:" ! Original print statement commented out
+      IF(abs(zL)<neut_limit) THEN
+         psym=0
+      ELSEIF(zL<-neut_limit) THEN    !Unstable
+         !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
+         X=(1.-(15.2*zl))**0.25
+         X2=LOG((1+(X**2.))/2.)
+         PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
+
+      ELSEIF(zL>neut_limit) THEN            !Stable
+         !Van Ulden & Holtslag (1985) p 1206
+         PSYM=(-17.*(1.-EXP(-0.29*zl)))
+
+      ENDIF
+      RETURN
+   END FUNCTION psi_mom_W16
+
+   !_______________________________________________________________
+   !
+   FUNCTION psi_heat_W16(ZL) RESULT (psyh)
+      ! Based on stab_fn_heat for StabilityMethod == 2
+      ! PSYH - stability function for heat
+      !Input: Stability (z-d)/L
+      ! Note: Unstable part corresponds to Dyer (1974) mod. Hogstrom (1988)
+      ! Note: Stable part corresponds to Dyer (1974) mod. Hogstrom (1988) (implicit else case)
+
+      ! use mod_k ! Original dependency - removed as not needed in isolated function
+      IMPLICIT NONE
+
+      ! REAL (KIND(1d0)), PARAMETER :: neut_limit = 1.E-4 ! Limit for neutral stability (Assumed from context)
+      REAL (KIND(1d0)):: zl, psyh, x
+
+      IF(abs(zl)<neut_limit)THEN      !Neutral
+         psyh=0
+      ELSEIF(zL<-neut_limit) THEN     ! Unstable
+         ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
+         x=0.95*(1.-15.2*zl)**0.5
+         ! PSYH=2*LOG((1+x**2)/2) ! Original line from snippet - potentially incorrect B-D form
+         PSYH=2*LOG((1+x)/2)      ! Corrected form based on standard B-D type functions
+      ELSE IF (zL>neut_limit) THEN    !Stable
+         ! Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988) (implicit else case)
+         PSYH=(-4.5)*Zl
+      ENDIF
+
+      RETURN
+   END FUNCTION psi_heat_W16
+
 
    !==================================================================
    ! previous implementations
