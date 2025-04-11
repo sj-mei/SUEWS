@@ -344,7 +344,6 @@ CONTAINS
       REAL(KIND(1D0)) :: zl, psim
       INTEGER :: StabilityMethod
 
-
       SELECT CASE (StabilityMethod)
       CASE (W16)
          psim = psi_mom_W16(ZL)
@@ -368,7 +367,6 @@ CONTAINS
 
       REAL(KIND(1D0)) :: zl, psih
       INTEGER :: StabilityMethod
-
 
       SELECT CASE (StabilityMethod)
       CASE (W16)
@@ -872,8 +870,8 @@ CONTAINS
    END FUNCTION
 
    ! ------------------------------------
-      ! Based on stab_fn_mom for StabilityMethod == 2 use W16 case (Ward et al. 2016, Urban Climate)
-      FUNCTION psi_mom_W16(ZL) RESULT(psym)
+   ! Based on stab_fn_mom for StabilityMethod == 2 use W16 case (Ward et al. 2016, Urban Climate)
+   FUNCTION psi_mom_W16(ZL) RESULT(psym)
       !     PSYM - stability FUNCTION for momentum
       !Modified by LJ Mar 2010
       !Input: Stability (z-d)/L
@@ -886,29 +884,29 @@ CONTAINS
       IMPLICIT NONE
 
       ! REAL (KIND(1d0)), PARAMETER :: neut_limit = 1.E-4 ! Limit for neutral stability (Assumed from context)
-      REAL (KIND(1d0)):: piover2,psym,zl,x,x2
+      REAL(KIND(1D0)) :: piover2, psym, zl, x, x2
 
-      PIOVER2=ACOS(-1.)/2.
+      PIOVER2 = ACOS(-1.)/2.
       !PRINT*,StabilityMethod,zl,"stab_fn_mom:" ! Original print statement commented out
-      IF(abs(zL)<neut_limit) THEN
-         psym=0
-      ELSEIF(zL<-neut_limit) THEN    !Unstable
+      IF (ABS(zL) < neut_limit) THEN
+         psym = 0
+      ELSEIF (zL < -neut_limit) THEN !Unstable
          !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
-         X=(1.-(15.2*zl))**0.25
-         X2=LOG((1+(X**2.))/2.)
-         PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
+         X = (1.-(15.2*zl))**0.25
+         X2 = LOG((1 + (X**2.))/2.)
+         PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
 
-      ELSEIF(zL>neut_limit) THEN            !Stable
+      ELSEIF (zL > neut_limit) THEN !Stable
          !Van Ulden & Holtslag (1985) p 1206
-         PSYM=(-17.*(1.-EXP(-0.29*zl)))
+         PSYM = (-17.*(1.-EXP(-0.29*zl)))
 
-      ENDIF
+      END IF
       RETURN
    END FUNCTION psi_mom_W16
 
    !_______________________________________________________________
    !
-   FUNCTION psi_heat_W16(ZL) RESULT (psyh)
+   FUNCTION psi_heat_W16(ZL) RESULT(psyh)
       ! Based on stab_fn_heat for StabilityMethod == 2
       ! PSYH - stability function for heat
       !Input: Stability (z-d)/L
@@ -919,23 +917,22 @@ CONTAINS
       IMPLICIT NONE
 
       ! REAL (KIND(1d0)), PARAMETER :: neut_limit = 1.E-4 ! Limit for neutral stability (Assumed from context)
-      REAL (KIND(1d0)):: zl, psyh, x
+      REAL(KIND(1D0)) :: zl, psyh, x
 
-      IF(abs(zl)<neut_limit)THEN      !Neutral
-         psyh=0
-      ELSEIF(zL<-neut_limit) THEN     ! Unstable
+      IF (ABS(zl) < neut_limit) THEN !Neutral
+         psyh = 0
+      ELSEIF (zL < -neut_limit) THEN ! Unstable
          ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
-         x=0.95*(1.-15.2*zl)**0.5
+         x = 0.95*(1.-15.2*zl)**0.5
          ! PSYH=2*LOG((1+x**2)/2) ! Original line from snippet - potentially incorrect B-D form
-         PSYH=2*LOG((1+x)/2)      ! Corrected form based on standard B-D type functions
-      ELSE IF (zL>neut_limit) THEN    !Stable
-         ! Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988) (implicit else case)
-         PSYH=(-4.5)*Zl
-      ENDIF
+         PSYH = 2*LOG((1 + x)/2) ! Corrected form based on standard B-D type functions
+      ELSE IF (zL > neut_limit) THEN !Stable
+         ! Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988) (implicit else case)
+         PSYH = (-4.5)*Zl
+      END IF
 
       RETURN
    END FUNCTION psi_heat_W16
-
 
    !==================================================================
    ! previous implementations
