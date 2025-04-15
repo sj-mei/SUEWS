@@ -530,6 +530,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
       REAL(KIND(1D0)) :: n_buildings ! n_buildings
       REAL(KIND(1D0)) :: h_std ! zStd_RSL
+      REAL(KIND(1D0)) :: lambda_c ! Building surface to plan area ratio [-]
 
       ! surface cover fractions related
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]
@@ -587,7 +588,7 @@ MODULE SUEWS_DEF_DTS
       ! HDD_id(1) ---- Heating [degC]: used for accumulation during calculation
       ! HDD_id(2) ---- Cooling [degC]: used for accumulation during calculation
       ! HDD_id(3) ---- Daily mean temp [degC]: used for accumulation during calculation
-      ! HDD_id(4) ---- 5-day running mean temp [degC]: used for actual calculation
+      ! HDD_id(4) ----
       ! HDD_id(5) ---- Daily precip total [mm]
       ! HDD_id(6) ---- Days since rain [d]
       ! second half used for storage of the first half for the prevous day
@@ -622,9 +623,13 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
       REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
       REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
+      ! all variables are intensive and thus can be used for iteration safety
+      REAL(KIND(1D0)) :: t2_prev ! previous day midnight air temperature [degC]
+      REAL(KIND(1D0)) :: ws_rav ! running average of wind speed [m s-1]
+      REAL(KIND(1D0)) :: tair_prev
+      REAL(KIND(1D0)) :: qn_rav ! running average of net radiation [W m-2]
 
       ! flag for iteration safety - YES
-      ! all variables are intensive and thus can be used for iteration safety
       LOGICAL :: iter_safe = .TRUE.
    END TYPE OHM_STATE
 
@@ -656,7 +661,8 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: vpd_hPa !Vapour pressure deficit in hPa
       REAL(KIND(1D0)) :: vpd_pa !Vapour pressure deficit in Pa
       REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
-      REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
+      REAL(KIND(1D0)) :: U_hbh ! wind speed at half building height [m s-1]
+      REAL(KIND(1D0)) :: T2_C !modelled 2 meter air temperature [degC]
       REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
       REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
       REAL(KIND(1D0)) :: L_mod !Obukhov length [m]
@@ -998,11 +1004,12 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: id !
       INTEGER :: imin !
       INTEGER :: isec !
-      INTEGER :: it !
+      INTEGER :: it ! Hour of day
       INTEGER :: iy !
       INTEGER :: tstep !
       INTEGER :: tstep_prev !
       INTEGER :: dt_since_start !
+      INTEGER :: dt_since_start_prev !
 
       ! values that are derived from tstep
       INTEGER :: nsh ! number of timesteps per hour
@@ -1013,6 +1020,8 @@ MODULE SUEWS_DEF_DTS
       INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
 
       INTEGER :: DLS !daylight saving time offset [h]
+
+      INTEGER :: new_day ! flag to indicate a new day
 
    END TYPE SUEWS_TIMER
 

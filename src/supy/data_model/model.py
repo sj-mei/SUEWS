@@ -90,6 +90,7 @@ class StorageHeatMethod(Enum):
     ANOHM = 3
     ESTM = 4
     FIVE = 5
+    OHM_YL = 6
 
     def __int__(self):
         return self.value
