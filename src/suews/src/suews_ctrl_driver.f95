@@ -3586,7 +3586,7 @@ CONTAINS
       sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
-      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & 
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
       lambda_c, & !input
       stebbsmethod, & ! stebbs building input
       buildingname, buildingtype, &
