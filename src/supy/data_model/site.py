@@ -1755,10 +1755,10 @@ class SiteProperties(BaseModel):
         description="Standard deviation of building heights in the site",
     )
 
-    lambda_c: Optional[ValueWithDOI[float]] = Field(
+    lambda_c: ValueWithDOI[float] = Field(
         default=ValueWithDOI(0),
         description="Building surface to plan area ratio [-]",
-        gt=0
+        ge=0
     )
 
     ref: Optional[Reference] = None

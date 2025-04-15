@@ -89,6 +89,7 @@ class StorageHeatMethod(Enum):
     OHM_WITHOUT_QF = 1
     ANOHM = 3
     ESTM = 4
+    OHM_YL = 6
 
     def __int__(self):
         return self.value
