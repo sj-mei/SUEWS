@@ -530,6 +530,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
       REAL(KIND(1D0)) :: n_buildings ! n_buildings
       REAL(KIND(1D0)) :: h_std ! zStd_RSL
+      REAL(KIND(1D0)) :: lambda_c ! Building surface to plan area ratio [-]
 
       ! surface cover fractions related
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]

@@ -23,6 +23,7 @@ CONTAINS
                   ws_rav, qn_rav, nlayer, &
                   dz_roof, cp_roof, k_roof, &
                   dz_wall, cp_wall, k_wall, &
+                  lambda_c, &
                   StorageHeatMethod, DiagQS, timer, &
                   a1, a2, a3, qs, deltaQi)
       ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
@@ -114,6 +115,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall
       REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
 
+      REAL(KIND(1D0)), INTENT(IN) :: lambda_c ! Building surface to plan area ratio [-]
+
       REAL(KIND(1D0)) :: a1_bldg, a2_bldg, a3_bldg ! Dynamic OHM coefficients of buildings
       REAL(KIND(1D0)), INTENT(out) :: a1, a2, a3 ! OHM coefficients of grid
 
@@ -131,7 +134,15 @@ CONTAINS
       !real(kind(1d0)):: OHM_TForSummer = 10  !Use summer coefficients if 5-day Tair >= 10 degC - modified for UK HCW 14 Dec 2015
       !real(kind(1d0)):: OHM_SMForWet = 0.9  !Use wet coefficients if SM close to soil capacity
 
+      CALL OHM_coef_cal(sfr_surf, nsurf, &
+                        Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
+                        soilstore_id, SoilStoreCap, state_id, &
+                        BldgSurf, WaterSurf, &
+                        SnowUse, SnowFrac, &
+                        a1, a2, a3)
+
       IF (StorageHeatMethod == 6) THEN
+         ! MP 14/04/2025
          ! get timestamps
          ASSOCIATE ( &
             iy => timer%iy, &
@@ -164,7 +175,7 @@ CONTAINS
             IF (first_tstep_Q .AND. new_day == 1) THEN
                CALL OHM_yl_cal(dt_since_start, &
                                ws_rav, T2_C, T2_prev, qn_rav, & ! Input
-                               dz_wall(1, 1), cp_wall(1, 1), k_wall(1, 1), &
+                               dz_wall(1, 1), cp_wall(1, 1), k_wall(1, 1), lambda_c, &
                                a1_bldg, a2_bldg, a3_bldg & ! Output
                                )
                new_day = 0
@@ -190,13 +201,6 @@ CONTAINS
          OHM_coef(2, 2, 3) = a3_bldg
          OHM_coef(2, 3, 3) = a3_bldg
          OHM_coef(2, 4, 3) = a3_bldg
-
-         CALL OHM_coef_cal(sfr_surf, nsurf, &
-                           Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
-                           soilstore_id, SoilStoreCap, state_id, &
-                           BldgSurf, WaterSurf, &
-                           SnowUse, SnowFrac, &
-                           a1, a2, a3)
 
       END IF
       ! WRITE(*,*) '----- OHM coeffs new-----'
@@ -440,7 +444,7 @@ CONTAINS
 
    SUBROUTINE OHM_yl_cal(dt_since_start, &
                          ws, t2_now, t2_prev, qstar, & ! Input
-                         d, C, k, &
+                         d, C, k, lambda_c, &
                          a1, a2, a3 & ! Output
                          )
       ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
@@ -453,7 +457,7 @@ CONTAINS
       REAL(KIND(1D0)) :: d ! Thickness [m]
       REAL(KIND(1D0)) :: C ! Volumetric heat capacity (specific heat * density) [J K-1 m-3]
       REAL(KIND(1D0)) :: k ! Thermal conductivity [W m-1 K-1]
-      REAL(KIND(1D0)) :: lambda_c = 2.575 ! Building surface to plan area ratio [-]
+      REAL(KIND(1D0)) :: lambda_c ! Building surface to plan area ratio [-]
 
       ! Meteorology
       REAL(KIND(1D0)) :: ws ! Wind speed [ms-1]

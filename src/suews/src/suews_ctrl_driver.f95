@@ -1410,6 +1410,7 @@ CONTAINS
             sfr_roof => siteInfo%sfr_roof, &
             sfr_wall => siteInfo%sfr_wall, &
             sfr_surf => siteInfo%sfr_surf, &
+            lambda_c => siteInfo%lambda_c, &
             StorageHeatMethod => config%StorageHeatMethod, &
             OHMIncQF => config%OHMIncQF, &
             Diagnose => config%Diagnose, &
@@ -1694,6 +1695,7 @@ CONTAINS
                            ws_rav, qn_rav, nlayer, &
                            dz_roof, cp_roof, k_roof, &
                            dz_wall, cp_wall, k_wall, &
+                           lambda_c, &
                            StorageHeatMethod, DiagQS, timer, &
                            a1, a2, a3, qs, deltaQi)
                   QS_surf = qs
@@ -3584,7 +3586,8 @@ CONTAINS
       sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
-      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & 
+      lambda_c, & !input
       stebbsmethod, & ! stebbs building input
       buildingname, buildingtype, &
       BuildingCount, Occupants, &
@@ -3674,6 +3677,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: FlowChange !Difference between the input and output flow in the water body [mm]
       REAL(KIND(1D0)), INTENT(IN) :: n_buildings !Number of buildings [-]
       REAL(KIND(1D0)), INTENT(IN) :: h_std ! Standard deviation of buildins [m]
+      REAL(KIND(1D0)), INTENT(IN) :: lambda_c ! Building surface to plan area ratio [-]
 
       ! ---forcing-related variables
       TYPE(SUEWS_FORCING) :: forcing
@@ -4185,6 +4189,7 @@ CONTAINS
       siteInfo%nlayer = nlayer
       siteInfo%n_buildings = n_buildings
       siteInfo%h_std = h_std
+      siteInfo%lambda_c = lambda_c
       ! siteInfo%nlayer = nlayer
 
       ! forcing%kdown = kdown
