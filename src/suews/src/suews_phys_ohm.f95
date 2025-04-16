@@ -203,7 +203,7 @@ CONTAINS
                         BldgSurf, WaterSurf, &
                         SnowUse, SnowFrac, &
                         a1, a2, a3)
-                        
+
       ! WRITE(*,*) '----- OHM coeffs new-----'
       ! WRITE(*,*) a1,a2,a3
 
