@@ -499,26 +499,26 @@ CONTAINS
       CALL calculate_a2(d, C, k, ws, qstar, lambda_c, a2)
       CALL calculate_a3(qstar, dtair, a1, lambda_c, a3)
 
-      ! Create a filename for the coefficients file
-      filename = 'OHM_coefficients.csv'
-
-      ! Open the file for appending
-      OPEN (NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
-      IF (ios /= 0) THEN
-         ! If the file does not exist, create it and write the header
-         OPEN (NEWUNIT=iunit, FILE=filename, STATUS='NEW', ACTION='WRITE', IOSTAT=ios)
-         IF (ios /= 0) THEN
-            PRINT *, 'Error opening file: ', filename
-            STOP
-         END IF
-         WRITE (iunit, '(A)') 'ts,ws,dtair,qstar,a1,a2,a3,d,C,k'
-      END IF
-
-      ! Write the coefficients to the file
-      WRITE (iunit, '(I10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10)') dt_since_start, ws, dtair, qstar, a1, a2, a3, d, C, k
-
-      ! Close the file
-      CLOSE (iunit)
+      !! Create a filename for the coefficients file
+      !filename = 'OHM_coefficients.csv'
+      !
+      !! Open the file for appending
+      !OPEN (NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
+      !IF (ios /= 0) THEN
+      !   ! If the file does not exist, create it and write the header
+      !   OPEN (NEWUNIT=iunit, FILE=filename, STATUS='NEW', ACTION='WRITE', IOSTAT=ios)
+      !   IF (ios /= 0) THEN
+      !      PRINT *, 'Error opening file: ', filename
+      !      STOP
+      !   END IF
+      !   WRITE (iunit, '(A)') 'ts,ws,dtair,qstar,a1,a2,a3,d,C,k'
+      !END IF
+      !
+      !! Write the coefficients to the file
+      !WRITE (iunit, '(I10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10)') dt_since_start, ws, dtair, qstar, a1, a2, a3, d, C, k
+      !
+      !! Close the file
+      !CLOSE (iunit)
 
    END SUBROUTINE OHM_yl_cal
 
