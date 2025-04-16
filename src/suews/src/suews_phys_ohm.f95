@@ -19,7 +19,7 @@ CONTAINS
                   soilstore_id, SoilStoreCap, state_id, &
                   BldgSurf, WaterSurf, &
                   SnowUse, SnowFrac, &
-                  ws, T2_C, T2_prev, &
+                  ws, T_hbh_C, T_prev, &
                   ws_rav, qn_rav, nlayer, &
                   dz_roof, cp_roof, k_roof, &
                   dz_wall, cp_wall, k_wall, &
@@ -101,8 +101,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: deltaQi(nsurf) ! storage heat flux of snow surfaces
 
       REAL(KIND(1D0)), INTENT(in) :: ws ! wind speed at half building height [m/s]
-      REAL(KIND(1D0)), INTENT(in) :: T2_C ! current 2m-air temperature [°C]
-      REAL(KIND(1D0)), INTENT(inout) :: T2_prev ! previous 2m midnight air temperature [°C]
+      REAL(KIND(1D0)), INTENT(in) :: T_hbh_C ! current half building height temperature [°C]
+      REAL(KIND(1D0)), INTENT(inout) :: T_prev ! previous midnight air temperature [°C]
       REAL(KIND(1D0)), INTENT(inout) :: ws_rav ! running average of wind speed [m/s]
       REAL(KIND(1D0)), INTENT(inout) :: qn_rav ! running average of net all-wave radiation [W m-2]
 
@@ -133,13 +133,6 @@ CONTAINS
    !!real(kind(1d0)):: OHM_TForSummer = 5  !Use summer coefficients if 5-day Tair >= 5 degC
       !real(kind(1d0)):: OHM_TForSummer = 10  !Use summer coefficients if 5-day Tair >= 10 degC - modified for UK HCW 14 Dec 2015
       !real(kind(1d0)):: OHM_SMForWet = 0.9  !Use wet coefficients if SM close to soil capacity
-
-      CALL OHM_coef_cal(sfr_surf, nsurf, &
-                        Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
-                        soilstore_id, SoilStoreCap, state_id, &
-                        BldgSurf, WaterSurf, &
-                        SnowUse, SnowFrac, &
-                        a1, a2, a3)
 
       IF (StorageHeatMethod == 6) THEN
          ! MP 14/04/2025
@@ -174,12 +167,12 @@ CONTAINS
 
             IF (first_tstep_Q .AND. new_day == 1) THEN
                CALL OHM_yl_cal(dt_since_start, &
-                               ws_rav, T2_C, T2_prev, qn_rav, & ! Input
+                               ws_rav, T_hbh_C, T_prev, qn_rav, & ! Input
                                dz_wall(1, 1), cp_wall(1, 1), k_wall(1, 1), lambda_c, &
                                a1_bldg, a2_bldg, a3_bldg & ! Output
                                )
                new_day = 0
-               T2_prev = T2_C
+               T_prev = T_hbh_C
             ELSE IF (last_tstep_Q) THEN
                new_day = 1
             END IF
@@ -203,6 +196,14 @@ CONTAINS
          OHM_coef(2, 4, 3) = a3_bldg
 
       END IF
+
+      CALL OHM_coef_cal(sfr_surf, nsurf, &
+                        Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
+                        soilstore_id, SoilStoreCap, state_id, &
+                        BldgSurf, WaterSurf, &
+                        SnowUse, SnowFrac, &
+                        a1, a2, a3)
+                        
       ! WRITE(*,*) '----- OHM coeffs new-----'
       ! WRITE(*,*) a1,a2,a3
 
@@ -443,7 +444,7 @@ CONTAINS
    END SUBROUTINE OHM_QS_cal
 
    SUBROUTINE OHM_yl_cal(dt_since_start, &
-                         ws, t2_now, t2_prev, qstar, & ! Input
+                         ws, t_now, t_prev, qstar, & ! Input
                          d, C, k, lambda_c, &
                          a1, a2, a3 & ! Output
                          )
@@ -461,8 +462,8 @@ CONTAINS
 
       ! Meteorology
       REAL(KIND(1D0)) :: ws ! Wind speed [ms-1]
-      REAL(KIND(1D0)) :: t2_now ! Current 2m-air temperature [°C]
-      REAL(KIND(1D0)) :: t2_prev ! Previous midnight 2m-air temperature [°C]
+      REAL(KIND(1D0)) :: t_now ! Current 2m-air temperature [°C]
+      REAL(KIND(1D0)) :: t_prev ! Previous midnight 2m-air temperature [°C]
       REAL(KIND(1D0)) :: dtair ! Mid-night (00:00) 2m-air temperature difference compared to the previous day (°C)
       REAL(KIND(1D0)) :: qstar ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
 
@@ -492,7 +493,7 @@ CONTAINS
          ws = 0.1
       END IF
 
-      dtair = t2_now - t2_prev
+      dtair = t_now - t_prev
 
       CALL calculate_a1(d, C, k, lambda_c, ws, qstar, a1)
       CALL calculate_a2(d, C, k, ws, qstar, lambda_c, a2)
