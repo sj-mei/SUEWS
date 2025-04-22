@@ -311,7 +311,7 @@ class TestSuPy(TestCase):
     def test_benchmark1_same(self):
         print("\n========================================")
         print("Testing if benchmark1 output is the same...")
-        path_to_bm1 = "./test/benchmark1/"
+        path_to_bm1 = "./benchmark1/"
         path_to_bm1_yml = path_to_bm1 + "benchmark1.yml"
         p_df_bm1 = path_to_bm1 + "benchmark1.pkl"
 
