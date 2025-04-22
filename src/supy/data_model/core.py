@@ -39,6 +39,14 @@ class SUEWSConfig(BaseModel):
     class Config:
         extra = "allow"
 
+    # Sort the filtered columns numerically
+    @staticmethod
+    def sort_key(col):
+        try:
+            return (col[0], ast.literal_eval(col[1]))
+        except ValueError:
+            return (col[0], col[1])
+
     @classmethod
     def from_yaml(cls, path: str) -> "SUEWSConfig":
         """Initialize SUEWSConfig from YAML file.
