@@ -454,12 +454,18 @@ def run_supy_ser(
             # collect results
             list_df_output.append(df_output_chunk)
             list_df_state.append(df_state_final_chunk)
-            list_df_debug.append(df_debug_chunk)
-            list_dts_state.append(dts_state_chunk)
+            if df_debug_chunk is not None:
+                list_df_debug.append(df_debug_chunk)
+            if dts_state_chunk is not None:
+                list_dts_state.append(dts_state_chunk)
         # re-organise results of each year
         df_output = pd.concat(list_df_output).sort_index()
         df_state_final = pd.concat(list_df_state).sort_index().drop_duplicates()
-        df_debug = pd.concat(list_df_debug).sort_index()
+        if debug_mode:
+            df_debug = pd.concat(list_df_debug).sort_index()
+        else:
+            df_debug = None
+            dict_dts_state = None
 
     else:
         # for single-chunk run (1 chunk = {chunk_day} days), directly put df_forcing into supy_driver for calculation
