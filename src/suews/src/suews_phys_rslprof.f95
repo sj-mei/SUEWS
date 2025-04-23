@@ -959,6 +959,8 @@ CONTAINS
             T2_C => atmState%T2_C, &
             q2_gkg => atmState%q2_gkg, &
             U10_ms => atmState%U10_ms, &
+            U_hbh => atmState%U_hbh, &
+            T_hbh_C => atmState%T_hbh_C, &
             RH2 => atmState%RH2, &
             Zh => roughnessState%Zh, &
             z0m => roughnessState%z0m, &
@@ -1198,6 +1200,9 @@ CONTAINS
             END IF
             ! get relative humidity:
             RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
+            ! get wind speed and air temp at half building height
+            U_hbh = dataoutLineURSL(10)
+            T_hbh_C = dataoutLineTRSL(10)
 
          END ASSOCIATE
       END ASSOCIATE

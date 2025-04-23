@@ -6,7 +6,6 @@ from .type import ValueWithDOI, Reference
 
 from .type import init_df_state
 
-
 from .ohm import OHM_Coefficient_season_wetness
 
 from .type import SurfaceType

@@ -364,6 +364,7 @@ wheelhouse/
 src/supy/wheelhouse/
 dev-test/
 SuPy.log
+SuPy.log.*
 
 # auto-generated version info file
 _version_scm.py
@@ -417,3 +418,9 @@ data_met_raw.pkl
 test-quick.py
 df_water*.pkl
 quick-test.ipynb
+supy_input_dict_*.pkl
+quick-test-script.py
+
+# binary files
+SUEWS_V20*
+

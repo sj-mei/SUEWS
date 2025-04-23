@@ -19,7 +19,12 @@ CONTAINS
                   soilstore_id, SoilStoreCap, state_id, &
                   BldgSurf, WaterSurf, &
                   SnowUse, SnowFrac, &
-                  DiagQS, &
+                  ws, T_hbh_C, T_prev, &
+                  ws_rav, qn_rav, nlayer, &
+                  dz_roof, cp_roof, k_roof, &
+                  dz_wall, cp_wall, k_wall, &
+                  lambda_c, &
+                  StorageHeatMethod, DiagQS, timer, &
                   a1, a2, a3, qs, deltaQi)
       ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
       ! Calculates net storage heat flux (QS) from Eq 4, Grimmond et al. 1991, Atm Env.
@@ -45,16 +50,29 @@ CONTAINS
       !   - No canyons implemented at the moment [OHM_coef(nsurf+1,,)]
       !========================================================================================
 
+      USE allocateArray, ONLY: ndepth
+      USE datetime_module, ONLY: datetime, timedelta
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_TIMER
+
       IMPLICIT NONE
+      TYPE(SUEWS_TIMER) :: timer
+      INTEGER, INTENT(in) :: StorageHeatMethod !
       INTEGER, INTENT(in) :: tstep ! time step [s]
       INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
+
+      INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy
+
+      INTEGER :: iy, id, it, imin, isec, new_day
+      TYPE(datetime) :: time_now, time_prev, time_next
+      LOGICAL :: first_tstep_Q, last_tstep_Q
+      INTEGER :: tstep_prev
 
       REAL(KIND(1D0)), INTENT(in) :: qn1 ! net all-wave radiation
       REAL(KIND(1D0)), INTENT(in) :: qn1_S ! net all-wave radiation over snow
       REAL(KIND(1D0)), INTENT(in) :: sfr_surf(nsurf) ! surface fractions
       REAL(KIND(1D0)), INTENT(in) :: SnowFrac(nsurf) ! snow fractions of each surface
       REAL(KIND(1D0)), INTENT(in) :: Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
-      REAL(KIND(1D0)), INTENT(in) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients
+      REAL(KIND(1D0)), INTENT(inout) :: OHM_coef(nsurf + 1, 4, 3) ! OHM coefficients
       REAL(KIND(1D0)), INTENT(in) :: OHM_threshSW(nsurf + 1), OHM_threshWD(nsurf + 1) ! OHM thresholds
       REAL(KIND(1D0)), INTENT(in) :: soilstore_id(nsurf) ! soil moisture
       REAL(KIND(1D0)), INTENT(in) :: SoilStoreCap(nsurf) ! capacity of soil store
@@ -82,6 +100,24 @@ CONTAINS
       ! REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+1) ! storage heat flux of snow surfaces
       REAL(KIND(1D0)), INTENT(out) :: deltaQi(nsurf) ! storage heat flux of snow surfaces
 
+      REAL(KIND(1D0)), INTENT(in) :: ws ! wind speed at half building height [m/s]
+      REAL(KIND(1D0)), INTENT(in) :: T_hbh_C ! current half building height temperature [°C]
+      REAL(KIND(1D0)), INTENT(inout) :: T_prev ! previous midnight air temperature [°C]
+      REAL(KIND(1D0)), INTENT(inout) :: ws_rav ! running average of wind speed [m/s]
+      REAL(KIND(1D0)), INTENT(inout) :: qn_rav ! running average of net all-wave radiation [W m-2]
+
+      ! Building material properties
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_roof
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_roof
+
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: k_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: cp_wall
+      REAL(KIND(1D0)), DIMENSION(nlayer, ndepth), INTENT(in) :: dz_wall
+
+      REAL(KIND(1D0)), INTENT(IN) :: lambda_c ! Building surface to plan area ratio [-]
+
+      REAL(KIND(1D0)) :: a1_bldg, a2_bldg, a3_bldg ! Dynamic OHM coefficients of buildings
       REAL(KIND(1D0)), INTENT(out) :: a1, a2, a3 ! OHM coefficients of grid
 
       ! REAL(KIND(1d0)):: nsh_nna ! number of timesteps per hour with non -999 values (used for spinup)
@@ -98,12 +134,76 @@ CONTAINS
       !real(kind(1d0)):: OHM_TForSummer = 10  !Use summer coefficients if 5-day Tair >= 10 degC - modified for UK HCW 14 Dec 2015
       !real(kind(1d0)):: OHM_SMForWet = 0.9  !Use wet coefficients if SM close to soil capacity
 
+      IF (StorageHeatMethod == 6) THEN
+         ! MP 14/04/2025
+         ! get timestamps
+         ASSOCIATE ( &
+            iy => timer%iy, &
+            id => timer%id, &
+            it => timer%it, &
+            imin => timer%imin, &
+            isec => timer%isec, &
+            tstep_prev => timer%tstep_prev, &
+            new_day => timer%new_day, &
+            dt_since_start_prev => timer%dt_since_start_prev &
+            )
+            time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
+            time_prev = time_now - timedelta(seconds=tstep_prev)
+            time_next = time_now + timedelta(seconds=tstep)
+
+            ! test if time at now is the first/last tstep of today
+            first_tstep_Q = time_now%getDay() /= time_prev%getDay()
+            last_tstep_Q = time_now%getDay() /= time_next%getDay()
+
+            IF (dt_since_start /= dt_since_start_prev) THEN
+               IF (dt_since_start < 86400) THEN
+                  ws_rav = ws_rav + (ws - ws_rav)/(dt_since_start/tstep)
+                  qn_rav = qn_rav + (qn1 - qn_rav)/(dt_since_start/tstep)
+               ELSE
+                  ws_rav = ws_rav + (ws - ws_rav)/(86400/tstep)
+                  qn_rav = qn_rav + (qn1 - qn_rav)/(86400/tstep)
+               END IF
+            END IF
+
+            IF (first_tstep_Q .AND. new_day == 1) THEN
+               CALL OHM_yl_cal(dt_since_start, &
+                               ws_rav, T_hbh_C, T_prev, qn_rav, & ! Input
+                               dz_wall(1, 1), cp_wall(1, 1), k_wall(1, 1), lambda_c, &
+                               a1_bldg, a2_bldg, a3_bldg & ! Output
+                               )
+               new_day = 0
+               T_prev = T_hbh_C
+            ELSE IF (last_tstep_Q) THEN
+               new_day = 1
+            END IF
+
+            dt_since_start_prev = dt_since_start
+         END ASSOCIATE
+
+         OHM_coef(2, 1, 1) = a1_bldg
+         OHM_coef(2, 2, 1) = a1_bldg
+         OHM_coef(2, 3, 1) = a1_bldg
+         OHM_coef(2, 4, 1) = a1_bldg
+
+         OHM_coef(2, 1, 2) = a2_bldg
+         OHM_coef(2, 2, 2) = a2_bldg
+         OHM_coef(2, 3, 2) = a2_bldg
+         OHM_coef(2, 4, 2) = a2_bldg
+
+         OHM_coef(2, 1, 3) = a3_bldg
+         OHM_coef(2, 2, 3) = a3_bldg
+         OHM_coef(2, 3, 3) = a3_bldg
+         OHM_coef(2, 4, 3) = a3_bldg
+
+      END IF
+
       CALL OHM_coef_cal(sfr_surf, nsurf, &
                         Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
                         soilstore_id, SoilStoreCap, state_id, &
                         BldgSurf, WaterSurf, &
                         SnowUse, SnowFrac, &
                         a1, a2, a3)
+
       ! WRITE(*,*) '----- OHM coeffs new-----'
       ! WRITE(*,*) a1,a2,a3
 
@@ -342,5 +442,198 @@ CONTAINS
       qs = qn1*a1 + dqndt*a2 + a3 !Eq 4, Grimmond et al. 1991
 
    END SUBROUTINE OHM_QS_cal
+
+   SUBROUTINE OHM_yl_cal(dt_since_start, &
+                         ws, t_now, t_prev, qstar, & ! Input
+                         d, C, k, lambda_c, &
+                         a1, a2, a3 & ! Output
+                         )
+      ! Liu (2025) parameterisation of objective hysteresis model coefficients to improve building storage heat flux accuracy
+
+      IMPLICIT NONE
+      ! Input parameters
+      INTEGER, INTENT(in) :: dt_since_start ! Time since simulation starts [s]
+
+      ! Building material properties
+      REAL(KIND(1D0)) :: d ! Thickness [m]
+      REAL(KIND(1D0)) :: C ! Volumetric heat capacity (specific heat * density) [J K-1 m-3]
+      REAL(KIND(1D0)) :: k ! Thermal conductivity [W m-1 K-1]
+      REAL(KIND(1D0)) :: lambda_c ! Building surface to plan area ratio [-]
+
+      ! Meteorology
+      REAL(KIND(1D0)) :: ws ! Wind speed [ms-1]
+      REAL(KIND(1D0)) :: t_now ! Current 2m-air temperature [°C]
+      REAL(KIND(1D0)) :: t_prev ! Previous midnight 2m-air temperature [°C]
+      REAL(KIND(1D0)) :: dtair ! Mid-night (00:00) 2m-air temperature difference compared to the previous day (°C)
+      REAL(KIND(1D0)) :: qstar ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
+
+      ! Local variables for file I/O
+      INTEGER :: iunit, ios
+      CHARACTER(LEN=100) :: filename
+
+      ! Output parameters
+      REAL(KIND(1D0)) :: a1, a2, a3 ! OHM coefficients
+
+      ! Local variables for reading CSV file
+      INTEGER :: id_prev = 0
+      INTEGER :: iunit_csv, ios_csv
+      CHARACTER(LEN=100) :: csv_filename
+      CHARACTER(LEN=100) :: csv_date
+      CHARACTER(LEN=256) :: csv_line
+      REAL(KIND(1D0)) :: csv_WS, csv_QStar, csv_dTair
+      REAL(KIND(1D0)) :: csv_a1_cal, csv_a2_cal, csv_a3_cal
+      INTEGER :: csv_tstep
+      CHARACTER(LEN=256) :: iomsg
+      INTEGER :: row_num
+      INTEGER :: csv_year, csv_month, csv_day
+      INTEGER :: pos1, pos2, pos3, pos4, pos5, pos6
+
+      ! Ensure wind speed is positive
+      IF (ws <= 0) THEN
+         ws = 0.1
+      END IF
+
+      dtair = t_now - t_prev
+
+      CALL calculate_a1(d, C, k, lambda_c, ws, qstar, a1)
+      CALL calculate_a2(d, C, k, ws, qstar, lambda_c, a2)
+      CALL calculate_a3(qstar, dtair, a1, lambda_c, a3)
+
+      !! Create a filename for the coefficients file
+      !filename = 'OHM_coefficients.csv'
+      !
+      !! Open the file for appending
+      !OPEN (NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
+      !IF (ios /= 0) THEN
+      !   ! If the file does not exist, create it and write the header
+      !   OPEN (NEWUNIT=iunit, FILE=filename, STATUS='NEW', ACTION='WRITE', IOSTAT=ios)
+      !   IF (ios /= 0) THEN
+      !      PRINT *, 'Error opening file: ', filename
+      !      STOP
+      !   END IF
+      !   WRITE (iunit, '(A)') 'ts,ws,dtair,qstar,a1,a2,a3,d,C,k'
+      !END IF
+      !
+      !! Write the coefficients to the file
+      !WRITE (iunit, '(I10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10, ",", F20.10)') dt_since_start, ws, dtair, qstar, a1, a2, a3, d, C, k
+      !
+      !! Close the file
+      !CLOSE (iunit)
+
+   END SUBROUTINE OHM_yl_cal
+
+   SUBROUTINE calculate_a1(d, C, k, lambda_c, WS, QStar, a1)
+      IMPLICIT NONE
+      ! Input parameters
+      REAL(KIND(1D0)), INTENT(in) :: d ! Thickness [m]
+      REAL(KIND(1D0)), INTENT(in) :: C ! Volumetric heat capacity (specific heat * density) [J K-1 m-3]
+      REAL(KIND(1D0)), INTENT(in) :: k ! Thermal conductivity [W m-1 K-1]
+      REAL(KIND(1D0)), INTENT(in) :: lambda_c ! Building surface to plan area ratio [-]
+      REAL(KIND(1D0)), INTENT(in) :: WS ! Wind speed [ms-1]
+      REAL(KIND(1D0)), INTENT(in) :: QStar ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
+
+      ! Output parameter
+      REAL(KIND(1D0)), INTENT(out) :: a1 ! OHM coefficient a1
+
+      ! Local variables
+      REAL(KIND(1D0)) :: TA ! Thermal admittance
+      REAL(KIND(1D0)) :: S_a1
+      REAL(KIND(1D0)) :: omega_a1
+      REAL(KIND(1D0)) :: theta_a1
+      REAL(KIND(1D0)) :: y0_a1
+
+      ! Validate inputs
+      IF (d <= 0 .OR. C <= 0 .OR. k <= 0 .OR. lambda_c <= 0) THEN
+         PRINT *, "Thickness (d), heat capacity (C), conductivity (k), and lambda_c must be positive."
+         STOP
+      END IF
+      IF (WS < 0) THEN
+         PRINT *, "Wind speed (WS) cannot be negative."
+         STOP
+      END IF
+
+      ! Compute thermal admittance
+      TA = SQRT(C*k)
+
+      ! Compute required coefficients
+      S_a1 = 0.296*LOG(TA) - 0.00027*(QStar/lambda_c)*LOG(TA) - 0.1185*WS - 1.194
+      omega_a1 = -14.8*LOG(SQRT(k)/C) + 2.25*WS*LOG(SQRT(k)/C) + 29.69*WS - 190.01
+      theta_a1 = 0.0000161*C - 4.481E-06*C*WS - 3.32*k - 0.1056*(QStar/lambda_c) + 10.673
+      y0_a1 = 0.01
+
+      ! Compute final a1 value
+      a1 = S_a1 + (y0_a1 - S_a1)*EXP(-theta_a1*d)*COS(omega_a1*d)
+
+   END SUBROUTINE calculate_a1
+
+   SUBROUTINE calculate_a2(d, C, k, WS, QStar, lambda_c, a2)
+      IMPLICIT NONE
+      ! Input parameters
+      REAL(KIND(1D0)), INTENT(in) :: d ! Thickness [m]
+      REAL(KIND(1D0)), INTENT(in) :: C ! Volumetric heat capacity (specific heat * density) [J K-1 m-3]
+      REAL(KIND(1D0)), INTENT(in) :: k ! Thermal conductivity [W m-1 K-1]
+      REAL(KIND(1D0)), INTENT(in) :: WS ! Wind speed [ms-1]
+      REAL(KIND(1D0)), INTENT(in) :: QStar ! Daily mean net all-wave radiation (normalized by building footprint area) [W m-2]
+      REAL(KIND(1D0)), INTENT(in) :: lambda_c ! Building surface to plan area ratio [-]
+
+      ! Output parameter
+      REAL(KIND(1D0)), INTENT(out) :: a2 ! OHM coefficient a2
+
+      ! Local variables
+      REAL(KIND(1D0)) :: TA ! Thermal admittance
+      REAL(KIND(1D0)) :: TD ! Thermal diffusivity
+      REAL(KIND(1D0)) :: S_a2
+      REAL(KIND(1D0)) :: omega_a2
+      REAL(KIND(1D0)) :: theta_a2
+      REAL(KIND(1D0)) :: y0_a2
+      REAL(KIND(1D0)) :: n
+
+      ! Validate inputs
+      IF (d <= 0 .OR. C <= 0 .OR. k <= 0 .OR. lambda_c <= 0) THEN
+         PRINT *, "Thickness (d), heat capacity (C), conductivity (k), and lambda_c must be positive."
+         STOP
+      END IF
+      IF (WS <= 0) THEN
+         PRINT *, "Wind speed (WS) must be positive."
+         STOP
+      END IF
+
+      ! Compute thermal admittance and diffusivity
+      TA = SQRT(C*k)
+      TD = k/C
+
+      ! Compute required coefficients
+      S_a2 = -7.81E-05*TA + 0.00348*(QStar/lambda_c) + 0.013*WS + 0.123
+      omega_a2 = -9.44*LOG(TD) + 1.68*WS - 126
+      theta_a2 = 1.05E-05*C - 6.67*k - 0.1203*(QStar/lambda_c) - 3.48*WS + 28
+      y0_a2 = 1.29E-07*C + 0.0603*k - 0.000796*(QStar/lambda_c) - 0.146*WS + 0.091
+      n = 3.33E+04*TD + 507.28*QStar*TD/lambda_c - 1.54E+04*(TD/WS) + 0.0161
+
+      ! Compute final a2 value
+      a2 = S_a2 + ((y0_a2 - S_a2) + n*((theta_a2**2 + omega_a2**2)/omega_a2)*SIN(omega_a2*d))*EXP(-theta_a2*d)
+
+   END SUBROUTINE calculate_a2
+
+   SUBROUTINE calculate_a3(QStar, dTair, a1, lambda_c, a3)
+      IMPLICIT NONE
+      ! Input parameters
+      REAL(KIND(1D0)), INTENT(in) :: QStar ! Daily mean net all-wave radiation normalized by building footprint area (W m-2)
+      REAL(KIND(1D0)), INTENT(in) :: dTair ! Mid-night (00:00) 2m-air temperature difference compared to the previous day (°C)
+      REAL(KIND(1D0)), INTENT(in) :: a1 ! Coefficient a1 derived from building material and meteorological condition
+      REAL(KIND(1D0)), INTENT(in) :: lambda_c ! Building surface to plan area ratio (dimensionless)
+
+      ! Output parameter
+      REAL(KIND(1D0)), INTENT(out) :: a3 ! OHM coefficient a3
+
+      ! Local variables
+      REAL(KIND(1D0)) :: slope
+
+      ! Compute the slope factor; note: the factor 5.2 is based on the default for a one-building, five-surface model.
+      slope = -1 + 5.2*lambda_c*dTair/QStar
+
+      ! Compute final a3 value
+      a3 = a1*slope*QStar
+
+   END SUBROUTINE calculate_a3
 
 END MODULE OHM_module

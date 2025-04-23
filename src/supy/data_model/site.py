@@ -844,13 +844,13 @@ class LandCover(BaseModel):
         default_factory=BldgsProperties,
         description="Properties for building surfaces including roofs and walls",
     )
-    dectr: DectrProperties = Field(
-        default_factory=DectrProperties,
-        description="Properties for deciduous trees and vegetation",
-    )
     evetr: EvetrProperties = Field(
         default_factory=EvetrProperties,
         description="Properties for evergreen trees and vegetation",
+    )
+    dectr: DectrProperties = Field(
+        default_factory=DectrProperties,
+        description="Properties for deciduous trees and vegetation",
     )
     grass: GrassProperties = Field(
         default_factory=GrassProperties, description="Properties for grass surfaces"
@@ -1755,6 +1755,12 @@ class SiteProperties(BaseModel):
         description="Standard deviation of building heights in the site",
     )
 
+    lambda_c: ValueWithDOI[float] = Field(
+        default=ValueWithDOI(0),
+        description="Building surface to plan area ratio [-]",
+        ge=0
+    )
+
     ref: Optional[Reference] = None
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -1776,6 +1782,7 @@ class SiteProperties(BaseModel):
             "narp_trans_site",
             "n_buildings",
             "h_std",
+            "lambda_c"
         ]:
             df_state.loc[grid_id, (f"{var}", "0")] = getattr(self, var).value
 
@@ -1836,6 +1843,7 @@ class SiteProperties(BaseModel):
             "narp_trans_site",
             "n_buildings",
             "h_std",
+            "lambda_c"
         ]:
             params[var] = ValueWithDOI(df.loc[grid_id, (var, "0")])
 
