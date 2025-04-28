@@ -1466,6 +1466,9 @@ CONTAINS
             a1 => ohmState%a1, &
             a2 => ohmState%a2, &
             a3 => ohmState%a3, &
+            a1_bldg => ohmState%a1_bldg, &
+            a2_bldg => ohmState%a2_bldg, &
+            a3_bldg => ohmState%a3_bldg, &
             t2_prev => ohmState%t2_prev, &
             ws_rav => ohmState%ws_rav, &
             qn_rav => ohmState%qn_rav, &
@@ -1716,6 +1719,7 @@ CONTAINS
                            dz_wall, cp_wall, k_wall, &
                            lambda_c, &
                            StorageHeatMethod, DiagQS, timer, &
+                           a1_bldg, a2_bldg, a3_bldg, &
                            a1, a2, a3, qs, deltaQi)
                   QS_surf = qs
                   QS_roof = qs
