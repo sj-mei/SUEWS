@@ -25,6 +25,7 @@ CONTAINS
                   dz_wall, cp_wall, k_wall, &
                   lambda_c, &
                   StorageHeatMethod, DiagQS, timer, &
+                  a1_bldg, a2_bldg, a3_bldg, &
                   a1, a2, a3, qs, deltaQi)
       ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
       ! Calculates net storage heat flux (QS) from Eq 4, Grimmond et al. 1991, Atm Env.
@@ -117,7 +118,7 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(IN) :: lambda_c ! Building surface to plan area ratio [-]
 
-      REAL(KIND(1D0)) :: a1_bldg, a2_bldg, a3_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)), INTENT(INOUT) :: a1_bldg, a2_bldg, a3_bldg ! Dynamic OHM coefficients of buildings
       REAL(KIND(1D0)), INTENT(out) :: a1, a2, a3 ! OHM coefficients of grid
 
       ! REAL(KIND(1d0)):: nsh_nna ! number of timesteps per hour with non -999 values (used for spinup)

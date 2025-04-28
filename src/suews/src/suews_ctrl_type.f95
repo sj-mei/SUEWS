@@ -628,6 +628,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: ws_rav ! running average of wind speed [m s-1]
       REAL(KIND(1D0)) :: tair_prev
       REAL(KIND(1D0)) :: qn_rav ! running average of net radiation [W m-2]
+      REAL(KIND(1D0)) :: a1_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a2_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a3_bldg ! Dynamic OHM coefficients of buildings
 
       ! flag for iteration safety - YES
       LOGICAL :: iter_safe = .TRUE.
