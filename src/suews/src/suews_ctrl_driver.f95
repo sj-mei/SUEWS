@@ -3983,6 +3983,15 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(INOUT) :: qn_s_av ! weighted average of qn over snow [W m-2]
       REAL(KIND(1D0)), INTENT(INOUT) :: dqnsdt ! Rate of change of net radiation [W m-2 h-1]
 
+      ! Used in OHM calcs - need to be reset between supy calls - TODO: Should allow passing initial values
+      REAL(KIND(1D0)) :: t2_prev ! previous day midnight air temperature [degC]
+      REAL(KIND(1D0)) :: ws_rav ! running average of wind speed [m s-1]
+      REAL(KIND(1D0)) :: tair_prev
+      REAL(KIND(1D0)) :: qn_rav ! running average of net radiation [W m-2]
+      REAL(KIND(1D0)) :: a1_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a2_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a3_bldg ! Dynamic OHM coefficients of buildings
+
       ! ---snow related states
       TYPE(SNOW_STATE) :: snowState
       REAL(KIND(1D0)), INTENT(INOUT) :: SnowfallCum !cumulated snow falling [mm]
@@ -4817,6 +4826,14 @@ CONTAINS
       ohmState%qn_s_av = qn_s_av
       ohmState%dqnsdt = dqnsdt
       ohmState%t2_prev = 0.0
+
+      ohmState%t2_prev = 0.0 ! previous day midnight air temperature [degC]
+      ohmState%ws_rav = 2.0 ! running average of wind speed [m s-1]
+      ohmState%tair_prev = 0.0
+      ohmState%qn_rav = 0.0 ! running average of net radiation [W m-2]
+      ohmState%a1_bldg = 0.0 ! Dynamic OHM coefficients of buildings
+      ohmState%a2_bldg = 0.0 ! Dynamic OHM coefficients of buildings
+      ohmState%a3_bldg = 0.0 ! Dynamic OHM coefficients of buildings
 
       ! snow related:
       snowState%snowfallCum = SnowfallCum
