@@ -4263,6 +4263,10 @@ CONTAINS
       timer%tstep = tstep
       timer%tstep_prev = tstep_prev
       timer%dt_since_start = dt_since_start
+      
+      ! For dynamic OHM
+      timer%new_day = 0
+      timer%dt_since_start_prev = 0
 
       config%Diagnose = Diagnose
       config%DiagMethod = DiagMethod
@@ -4825,7 +4829,6 @@ CONTAINS
       ohmState%dqndt = dqndt
       ohmState%qn_s_av = qn_s_av
       ohmState%dqnsdt = dqnsdt
-      ohmState%t2_prev = 0.0
 
       ohmState%t2_prev = 0.0 ! previous day midnight air temperature [degC]
       ohmState%ws_rav = 2.0 ! running average of wind speed [m s-1]
