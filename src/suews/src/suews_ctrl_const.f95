@@ -1387,7 +1387,7 @@ MODULE snowMod
                       CRWmin, & !Free water holding capacity of deep SnowPack
                       CRWmax !Free water holding capacity of shallow SnowPack
 
-   REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval = 0 ! Removal of snow in mm
+   REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval = 0. ! Removal of snow in mm
    REAL(KIND(1D0)), DIMENSION(0:23, 2) :: SnowProf_24hr ! Timing of snow removal (0 or 1) Hourly, WD/WE
 
    INTEGER :: SnowFractionChoice = 2 !Choice how fraction of snow is calculated
