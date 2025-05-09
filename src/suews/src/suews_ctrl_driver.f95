@@ -99,6 +99,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5) :: dataOutLineEHC
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataoutLineRSL
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineURSL ! wind speed array [m s-1]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineTRSL ! Temperature array [C]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineqRSL ! Specific humidity array [g kg-1]
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
@@ -174,10 +177,12 @@ CONTAINS
             mwh = 0.
             MwStore = 0.
             chSnow_per_interval = 0.
+
+            ! Check if this is updated across timesteps
             SnowRemoval = 0.
-            Qm = 0
-            QmFreez = 0
-            QmRain = 0
+            Qm = 0.
+            QmFreez = 0.
+            QmRain = 0.
 
             ! these output variables are used for debugging
             qe0_surf = 0 ! QE from PM: only meaningful when snowuse=0
@@ -204,6 +209,9 @@ CONTAINS
             dataOutLineESTM = -999.
             dataOutLineEHC = -999.
             dataoutLineRSL = -999.
+            !dataoutLineURSL = -999.
+            !dataoutLineTRSL = -999.
+            !dataoutLineqRSL = -999.
             dataOutLineBEERS = -999.
             dataOutLineDebug = -999.
             dataOutLineSPARTACUS = -999.
@@ -389,8 +397,9 @@ CONTAINS
                !===================Resistance Calculations End=======================
 
                !===================Calculate surface hydrology and related soil water=======================
+               ! MP: Until Snow has been fixed this should not be used (TODO)
                IF (config%SnowUse == 1) THEN
-
+                  WRITE(*, *) "WARNING SNOW ON! Not recommended at the moment"
                   ! ===================Calculate snow related hydrology=======================
                   ! #234 the snow parts needs more work to be done
                   ! TS 18 Oct 2023: snow is temporarily turned off for easier implementation of other functionalities
@@ -453,6 +462,7 @@ CONTAINS
             CALL RSLProfile_DTS( &
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
+               !dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, 
                dataoutLineRSL) ! output
             IF (config%flag_test .AND. PRESENT(debugState)) THEN
                debugState%state_13_rsl = modState
@@ -2798,7 +2808,7 @@ CONTAINS
             qs => heatState%qs, &
             QmRain => snowState%QmRain, &
             QmFreez => snowState%QmFreez, &
-            qm => snowState%qm, &
+            Qm => snowState%Qm, &
             xsmd => forcing%xsmd, &
             Temp_C => forcing%Temp_C, &
             RA_h => atmState%RA_h, &
@@ -2826,7 +2836,6 @@ CONTAINS
             storageheatmethod => config%StorageHeatMethod, &
             Diagnose => config%Diagnose &
             )
-
             ! tsfc_surf = heatState_out%tsfc_surf
             ! tsfc_roof = heatState_out%tsfc_roof
             ! tsfc_wall = heatState_out%tsfc_wall
@@ -3192,9 +3201,11 @@ CONTAINS
             state_surf => hydroState%state_surf &
             )
 
-            ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
-            state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_surf)
-            smd_surf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_surf)
+            !! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
+            !state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_surf)
+            state_x = state_surf
+            !smd_surf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_surf)
+            smd_surf_x = smd_surf
 
             ResistSurf_x = MIN(9999., RS)
 
@@ -3965,6 +3976,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: state_wall !wetness status of wall [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) :: soilstore_surf !soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) :: state_surf !wetness status of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_surf !soil moisture deficit for each surface   
       REAL(KIND(1D0)), DIMENSION(9), INTENT(INOUT) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm]
 
       ! ---heat storage related states
@@ -4808,12 +4820,16 @@ CONTAINS
       ! ESTM_ehc related:
       ! water balance related:
       CALL hydroState%ALLOCATE(nlayer)
+      ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
+      state_surf = UNPACK(SPREAD(0.0D0, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_surf)
+      smd_surf = UNPACK(SPREAD(0.0D0, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_surf)
       hydroState%soilstore_roof = soilstore_roof
       hydroState%state_roof = state_roof
       hydroState%soilstore_wall = soilstore_wall
       hydroState%state_wall = state_wall
       hydroState%soilstore_surf = soilstore_surf
       hydroState%state_surf = state_surf
+      hydroState%smd_surf = smd_surf
       hydroState%WUDay_id = WUDay_id
 
       CALL heatState%ALLOCATE(nsurf, nlayer, ndepth)
@@ -4930,7 +4946,7 @@ CONTAINS
       stebbsState%DomesticHotWaterTemperatureInUseInBuilding = DomesticHotWaterTemperatureInUseInBuilding
       stebbsState%InternalWallDHWVesselTemperature = InternalWallDHWVesselTemperature
       stebbsState%ExternalWallDHWVesselTemperature = ExternalWallDHWVesselTemperature
-
+      
       ! ! transfer states into modState
       mod_State%anthroemisState = anthroEmisState
       mod_State%hydroState = hydroState
@@ -5006,7 +5022,6 @@ CONTAINS
       !   allocate output arrays
 
       Diagnose = 0
-
       DO ir = 1, len_sim, 1
          ! =============================================================================
          ! === Translate met data from MetForcingBlock to variable names used in model ==
