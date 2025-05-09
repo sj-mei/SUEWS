@@ -209,9 +209,9 @@ CONTAINS
             dataOutLineESTM = -999.
             dataOutLineEHC = -999.
             dataoutLineRSL = -999.
-            !dataoutLineURSL = -999.
-            !dataoutLineTRSL = -999.
-            !dataoutLineqRSL = -999.
+            dataoutLineURSL = -999.
+            dataoutLineTRSL = -999.
+            dataoutLineqRSL = -999.
             dataOutLineBEERS = -999.
             dataOutLineDebug = -999.
             dataOutLineSPARTACUS = -999.
@@ -462,7 +462,7 @@ CONTAINS
             CALL RSLProfile_DTS( &
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
-               !dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, 
+               dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, &
                dataoutLineRSL) ! output
             IF (config%flag_test .AND. PRESENT(debugState)) THEN
                debugState%state_13_rsl = modState
