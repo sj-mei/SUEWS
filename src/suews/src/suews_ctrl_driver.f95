@@ -399,7 +399,7 @@ CONTAINS
                !===================Calculate surface hydrology and related soil water=======================
                ! MP: Until Snow has been fixed this should not be used (TODO)
                IF (config%SnowUse == 1) THEN
-                  WRITE(*, *) "WARNING SNOW ON! Not recommended at the moment"
+                  WRITE (*, *) "WARNING SNOW ON! Not recommended at the moment"
                   ! ===================Calculate snow related hydrology=======================
                   ! #234 the snow parts needs more work to be done
                   ! TS 18 Oct 2023: snow is temporarily turned off for easier implementation of other functionalities
@@ -3976,7 +3976,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: state_wall !wetness status of wall [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) :: soilstore_surf !soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) :: state_surf !wetness status of each surface type [mm]
-      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_surf !soil moisture deficit for each surface   
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_surf !soil moisture deficit for each surface
       REAL(KIND(1D0)), DIMENSION(9), INTENT(INOUT) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm]
 
       ! ---heat storage related states
@@ -4275,7 +4275,7 @@ CONTAINS
       timer%tstep = tstep
       timer%tstep_prev = tstep_prev
       timer%dt_since_start = dt_since_start
-      
+
       ! For dynamic OHM
       timer%new_day = 0
       timer%dt_since_start_prev = 0
@@ -4946,7 +4946,7 @@ CONTAINS
       stebbsState%DomesticHotWaterTemperatureInUseInBuilding = DomesticHotWaterTemperatureInUseInBuilding
       stebbsState%InternalWallDHWVesselTemperature = InternalWallDHWVesselTemperature
       stebbsState%ExternalWallDHWVesselTemperature = ExternalWallDHWVesselTemperature
-      
+
       ! ! transfer states into modState
       mod_State%anthroemisState = anthroEmisState
       mod_State%hydroState = hydroState
