@@ -641,40 +641,40 @@ CONTAINS
 
       !========================================================================
       !Initialize variables for the calculation of water storages and evaporation
-      ev_tot = 0
-      qe_tot = 0
-      runoff_tot = 0
-      surf_chang_tot = 0
+      ev_tot = 0.
+      qe_tot = 0.
+      runoff_tot = 0.
+      surf_chang_tot = 0.
 
       !swe = 0
-      chSnow_tot = 0
+      chSnow_tot = 0.
       !runoffPipes = 0
       !mwstore = 0
       !runoffwaterbody = 0
-      rss_surf = 0
+      rss_surf = 0.
       state_id = stateOld
-      SnowDepth = 0
-      ev_snow = 0
-      !SnowRemoval = 0
-      tlv_sub = 0
+      SnowDepth = 0.
+      ev_snow = 0.
+      ! SnowRemoval = 0.
+      tlv_sub = 0.
 
       ! Use weekday or weekend snow clearing profile
       iu = 1 !Set to 1=weekday
       IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) iu = 2 !Set to 2=weekend
 
       !write(*,*) is
-      runoffSnow_surf(is) = 0 !Initialize for runoff caused by snowmelting
-      runoff_snowfree(is) = 0
+      runoffSnow_surf(is) = 0. !Initialize for runoff caused by snowmelting
+      runoff_snowfree(is) = 0.
       ! runoffSoil(is) = 0
-      chang(is) = 0
-      changSnow(is) = 0
-      runoffTest = 0
-      SnowToSurf(is) = 0
-      EvPart = 0
-      ev_snowfree = 0
-      snowFracFresh1 = 0
-      snowFracFresh2 = 0
-      snowFracOld = 0
+      chang(is) = 0.
+      changSnow(is) = 0.
+      runoffTest = 0.
+      SnowToSurf(is) = 0.
+      EvPart = 0.
+      ev_snowfree = 0.
+      snowFracFresh1 = 0.
+      snowFracFresh2 = 0.
+      snowFracOld = 0.
 
       !Initial SnowPack + meltwater in it
       snowTotInit = SnowPack(is) + SnowWater(is)

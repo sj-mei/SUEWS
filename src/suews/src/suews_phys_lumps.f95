@@ -230,7 +230,7 @@ CONTAINS
       INTEGER, PARAMETER :: ivGrass = 3
 
       ! TS 25 Aug 2022: remove Qm from input list as LUMPS is used for initial guess and Qm could be zero
-      REAL(KIND(1D0)), PARAMETER :: Qm = 0 !Snow melt associated heat flux
+      ! REAL(KIND(1D0)), PARAMETER :: Qm = 0 !Snow melt associated heat flux
 
       INTEGER :: veg_type !Defines how vegetation is calculated for LUMPS
       ! INTEGER :: SnowUse ! option of snow module
@@ -279,7 +279,8 @@ CONTAINS
          phenState => modState%phenState, &
          atmState => modState%atmState, &
          heatState => modState%heatState, &
-         flagState => modState%flagState &
+         flagState => modState%flagState, &
+         snowState => modState%snowState &
          )
 
          ASSOCIATE ( &
@@ -310,7 +311,8 @@ CONTAINS
             TempVeg => phenState%TempVeg, &
             VegPhenLumps => phenState%VegPhenLumps, &
             SnowUse => config%SnowUse, &
-            lumpsPrm => siteInfo%lumps &
+            lumpsPrm => siteInfo%lumps, &
+            Qm => snowState%Qm &
             )
 
             IF (i_iter == 1) THEN

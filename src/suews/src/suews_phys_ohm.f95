@@ -63,10 +63,11 @@ CONTAINS
 
       INTEGER, INTENT(in) :: nlayer ! number of vertical levels in urban canopy
 
-      INTEGER :: iy, id, it, imin, isec, new_day
+      !INTEGER :: iy, id, it, imin, isec
+      !new_day
       TYPE(datetime) :: time_now, time_prev, time_next
       LOGICAL :: first_tstep_Q, last_tstep_Q
-      INTEGER :: tstep_prev
+      !INTEGER :: tstep_prev
 
       REAL(KIND(1D0)), INTENT(in) :: qn1 ! net all-wave radiation
       REAL(KIND(1D0)), INTENT(in) :: qn1_S ! net all-wave radiation over snow
@@ -503,7 +504,7 @@ CONTAINS
       !! Create a filename for the coefficients file
       !filename = 'OHM_coefficients.csv'
       !
-      !! Open the file for appending
+      ! Open the file for appending
       !OPEN (NEWUNIT=iunit, FILE=filename, STATUS='OLD', ACTION='WRITE', POSITION='APPEND', IOSTAT=ios)
       !IF (ios /= 0) THEN
       !   ! If the file does not exist, create it and write the header

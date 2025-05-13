@@ -723,9 +723,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: mwstore !overall met water [mm]
 
       REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
-      REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
-      REAL(KIND(1D0)) :: QmFreez !heat related to freezing of surface store [W m-2]
-      REAL(KIND(1D0)) :: QmRain !melt heat for rain on snow [W m-2]
+      REAL(KIND(1D0)) :: Qm = 0.0 !Snowmelt-related heat [W m-2]
+      REAL(KIND(1D0)) :: QmFreez = 0.0 !heat related to freezing of surface store [W m-2]
+      REAL(KIND(1D0)) :: QmRain = 0.0 !melt heat for rain on snow [W m-2]
 
       REAL(KIND(1D0)) :: swe !overall snow water equavalent[mm]
 
@@ -733,7 +733,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: RAsnow !Aerodynamic resistance for snow [s m-1]
       REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
 
-      REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
+      REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval = 0.0 !snow removal [mm]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: icefrac ! fraction of ice in snowpack [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowdens ! snow density [kg m-3]
@@ -789,12 +789,12 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: wu_ext !external water use [mm]
       REAL(KIND(1D0)) :: wu_int !internal water use [mm]
 
-      REAL(KIND(1D0)) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
+      REAL(KIND(1D0)) :: runoffAGveg = 0.0 !Above ground runoff from vegetated surfaces for all surface area [mm]
+      REAL(KIND(1D0)) :: runoffAGimpervious = 0.0 !Above ground runoff from impervious surface for all surface area [mm]
       REAL(KIND(1D0)) :: runoff_per_tstep !runoff water at each time step [mm]
-      REAL(KIND(1D0)) :: runoffPipes !runoff to pipes [mm]
+      REAL(KIND(1D0)) :: runoffPipes = 0.0 !runoff to pipes [mm]
       REAL(KIND(1D0)) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-      REAL(KIND(1D0)) :: runoffwaterbody !Above ground runoff from water body for all surface area [mm]
+      REAL(KIND(1D0)) :: runoffwaterbody = 0.0 !Above ground runoff from water body for all surface area [mm]
       REAL(KIND(1D0)) :: smd !soil moisture deficit [mm]
       REAL(KIND(1D0)) :: SoilState !Area-averaged soil moisture  for whole surface [mm]
       REAL(KIND(1D0)) :: state_per_tstep !state_id at each timestep [mm]
@@ -1061,6 +1061,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS) :: dataOutLineSTEBBS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood) :: dataOutLineNHood
+
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineURSL ! wind speed array [m s-1]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineTRSL ! Temperature array [C]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineqRSL ! Specific humidity array [g kg-1]
    CONTAINS
       ! Procedures
       PROCEDURE :: init => output_line_init
@@ -1155,6 +1159,11 @@ CONTAINS
       self%dataOutLineESTM = -999.0
       self%dataOutLineEHC = -999.0
       self%dataOutLineRSL = -999.0
+      ! Assign dataOutLineURSL, TRSL, qRSL
+      self%dataOutLineURSL = -999.0
+      self%dataOutLineTRSL = -999.0
+      self%dataOutLineqRSL = -999.0
+
       self%dataOutLineBEERS = -999.0
       self%dataOutLineDebug = -999.0
       self%dataOutLineSPARTACUS = -999.0
