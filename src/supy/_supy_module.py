@@ -39,7 +39,8 @@ from ._run import run_supy_par, run_supy_ser
 from ._save import get_save_info, save_df_output, save_df_state, save_initcond_nml
 from ._post import resample_output
 
-from .util._config import init_config_from_yaml
+# from .util._config import init_config_from_yaml
+from .data_model import init_config_from_yaml
 
 
 # set up logging module
@@ -150,6 +151,7 @@ def load_forcing_grid(
     check_input=False,
     force_reload=True,
     df_state_init: pd.DataFrame = None,
+    config = None
 ) -> pd.DataFrame:
     """Load forcing data for a specific grid included in the index of `df_state_init </data-structure/supy-io.ipynb#df_state_init:-model-initial-states>`.
 
@@ -215,7 +217,8 @@ def load_forcing_grid(
             path_site = path_init.parent
             path_input = path_site / dict_mod_cfg["fileinputpath"]
         else:
-            config = init_config_from_yaml(path=path_init)
+            if config is None:
+                config = init_config_from_yaml(path=path_init)
             path_site = path_init.parent
             path_input = path_site / config.model.control.forcing_file.value
 
@@ -237,7 +240,9 @@ def load_forcing_grid(
             df_forcing_met = load_SUEWS_Forcing_met_df_yaml(path_input)
             tstep_met_in = df_forcing_met.index[1] - df_forcing_met.index[0]
             tstep_met_in = int(tstep_met_in.total_seconds())
-            kdownzen = init_config_from_yaml(path=path_init).model.control.kdownzen.value
+            kdownzen = config.model.control.kdownzen
+            if kdownzen is not None:
+                kdownzen = kdownzen.value
             if kdownzen is None:
                 df_forcing_met_tstep = resample_forcing_met(
                     df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone
@@ -295,8 +300,8 @@ def load_sample_data() -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """
 
     trv_sample_data = trv_supy_module / "sample_run"
-    # path_config_default = trv_sample_data / "defaultConfig.yml"
-    path_config_default = trv_sample_data / "RunControl.nml" # TODO: to be deprecated - but keep for now to pass tests
+    path_config_default = trv_sample_data / "sample_config.yml"
+    # path_config_default = trv_sample_data / "RunControl.nml" # TODO: to be deprecated - but keep for now to pass tests
     df_state_init = init_supy(path_config_default, force_reload=False)
     df_forcing = load_forcing_grid(path_config_default, df_state_init.index[0], df_state_init=df_state_init)
     return df_state_init, df_forcing
@@ -466,11 +471,11 @@ def run_supy(
     logger_supy.info(f"====================\n")
 
     # unpack results
-    df_output, df_state_final, res_debug = res_supy
+    df_output, df_state_final, res_debug, res_state = res_supy
 
     # return results based on debugging needs
     if debug_mode:
-        return df_output, df_state_final, res_debug
+        return df_output, df_state_final, res_debug, res_state
     else:
         return df_output, df_state_final
 

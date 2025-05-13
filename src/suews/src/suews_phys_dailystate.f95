@@ -444,7 +444,8 @@ CONTAINS
 
                ! before
                ! Set the flag based on i_iter
-               execute_subroutines = (i_iter == 1)
+               ! execute_subroutines = (i_iter == 1)
+               execute_subroutines = .TRUE.
 
                LAIPower(:, 1) = evetrLAIPower
                LAIPower(:, 2) = dectrLAIPower

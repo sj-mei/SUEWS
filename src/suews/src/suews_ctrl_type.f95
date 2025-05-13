@@ -530,6 +530,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: flowchange ! Difference in input and output flows for water surface
       REAL(KIND(1D0)) :: n_buildings ! n_buildings
       REAL(KIND(1D0)) :: h_std ! zStd_RSL
+      REAL(KIND(1D0)) :: lambda_c ! Building surface to plan area ratio [-]
 
       ! surface cover fractions related
       REAL(KIND(1D0)), DIMENSION(NSURF) :: sfr_surf !surface cover fraction[-]
@@ -587,7 +588,7 @@ MODULE SUEWS_DEF_DTS
       ! HDD_id(1) ---- Heating [degC]: used for accumulation during calculation
       ! HDD_id(2) ---- Cooling [degC]: used for accumulation during calculation
       ! HDD_id(3) ---- Daily mean temp [degC]: used for accumulation during calculation
-      ! HDD_id(4) ---- 5-day running mean temp [degC]: used for actual calculation
+      ! HDD_id(4) ----
       ! HDD_id(5) ---- Daily precip total [mm]
       ! HDD_id(6) ---- Days since rain [d]
       ! second half used for storage of the first half for the prevous day
@@ -622,9 +623,16 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: a1 !AnOHM coefficients of grid [-]
       REAL(KIND(1D0)) :: a2 ! AnOHM coefficients of grid [h]
       REAL(KIND(1D0)) :: a3 !AnOHM coefficients of grid [W m-2]
+      ! all variables are intensive and thus can be used for iteration safety
+      REAL(KIND(1D0)) :: t2_prev ! previous day midnight air temperature [degC]
+      REAL(KIND(1D0)) :: ws_rav ! running average of wind speed [m s-1]
+      REAL(KIND(1D0)) :: tair_prev
+      REAL(KIND(1D0)) :: qn_rav ! running average of net radiation [W m-2]
+      REAL(KIND(1D0)) :: a1_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a2_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a3_bldg ! Dynamic OHM coefficients of buildings
 
       ! flag for iteration safety - YES
-      ! all variables are intensive and thus can be used for iteration safety
       LOGICAL :: iter_safe = .TRUE.
    END TYPE OHM_STATE
 
@@ -656,7 +664,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: vpd_hPa !Vapour pressure deficit in hPa
       REAL(KIND(1D0)) :: vpd_pa !Vapour pressure deficit in Pa
       REAL(KIND(1D0)) :: U10_ms !average wind speed at 10m [W m-1]
-      REAL(KIND(1D0)) :: t2_C !modelled 2 meter air temperature [degC]
+      REAL(KIND(1D0)) :: U_hbh ! wind speed at half building height [m s-1]
+      REAL(KIND(1D0)) :: T2_C !modelled 2 meter air temperature [degC]
+      REAL(KIND(1D0)) :: T_hbh_C ! air temperature at half building height [Deg C]
       REAL(KIND(1D0)) :: q2_gkg ! Air specific humidity at 2 m [g kg-1]
       REAL(KIND(1D0)) :: RH2 ! air relative humidity at 2m [-]
       REAL(KIND(1D0)) :: L_mod !Obukhov length [m]
@@ -713,9 +723,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: mwstore !overall met water [mm]
 
       REAL(KIND(1D0)) :: qn_snow !net all-wave radiation on snow surface [W m-2]
-      REAL(KIND(1D0)) :: Qm !Snowmelt-related heat [W m-2]
-      REAL(KIND(1D0)) :: QmFreez !heat related to freezing of surface store [W m-2]
-      REAL(KIND(1D0)) :: QmRain !melt heat for rain on snow [W m-2]
+      REAL(KIND(1D0)) :: Qm = 0.0 !Snowmelt-related heat [W m-2]
+      REAL(KIND(1D0)) :: QmFreez = 0.0 !heat related to freezing of surface store [W m-2]
+      REAL(KIND(1D0)) :: QmRain = 0.0 !melt heat for rain on snow [W m-2]
 
       REAL(KIND(1D0)) :: swe !overall snow water equavalent[mm]
 
@@ -723,7 +733,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: RAsnow !Aerodynamic resistance for snow [s m-1]
       REAL(KIND(1D0)) :: sIce_hpa !satured curve on snow [hPa]
 
-      REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval !snow removal [mm]
+      REAL(KIND(1D0)), DIMENSION(2) :: SnowRemoval = 0.0 !snow removal [mm]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: icefrac ! fraction of ice in snowpack [-]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: snowdens ! snow density [kg m-3]
@@ -779,12 +789,12 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: wu_ext !external water use [mm]
       REAL(KIND(1D0)) :: wu_int !internal water use [mm]
 
-      REAL(KIND(1D0)) :: runoffAGveg !Above ground runoff from vegetated surfaces for all surface area [mm]
-      REAL(KIND(1D0)) :: runoffAGimpervious !Above ground runoff from impervious surface for all surface area [mm]
+      REAL(KIND(1D0)) :: runoffAGveg = 0.0 !Above ground runoff from vegetated surfaces for all surface area [mm]
+      REAL(KIND(1D0)) :: runoffAGimpervious = 0.0 !Above ground runoff from impervious surface for all surface area [mm]
       REAL(KIND(1D0)) :: runoff_per_tstep !runoff water at each time step [mm]
-      REAL(KIND(1D0)) :: runoffPipes !runoff to pipes [mm]
+      REAL(KIND(1D0)) :: runoffPipes = 0.0 !runoff to pipes [mm]
       REAL(KIND(1D0)) :: runoffSoil_per_tstep !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-      REAL(KIND(1D0)) :: runoffwaterbody !Above ground runoff from water body for all surface area [mm]
+      REAL(KIND(1D0)) :: runoffwaterbody = 0.0 !Above ground runoff from water body for all surface area [mm]
       REAL(KIND(1D0)) :: smd !soil moisture deficit [mm]
       REAL(KIND(1D0)) :: SoilState !Area-averaged soil moisture  for whole surface [mm]
       REAL(KIND(1D0)) :: state_per_tstep !state_id at each timestep [mm]
@@ -998,11 +1008,12 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: id !
       INTEGER :: imin !
       INTEGER :: isec !
-      INTEGER :: it !
+      INTEGER :: it ! Hour of day
       INTEGER :: iy !
       INTEGER :: tstep !
       INTEGER :: tstep_prev !
       INTEGER :: dt_since_start !
+      INTEGER :: dt_since_start_prev !
 
       ! values that are derived from tstep
       INTEGER :: nsh ! number of timesteps per hour
@@ -1013,6 +1024,8 @@ MODULE SUEWS_DEF_DTS
       INTEGER, DIMENSION(3) :: dayofWeek_id ! 1 - day of week; 2 - month; 3 - season
 
       INTEGER :: DLS !daylight saving time offset [h]
+
+      INTEGER :: new_day ! flag to indicate a new day
 
    END TYPE SUEWS_TIMER
 
@@ -1048,6 +1061,10 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState) :: dataOutLineDailyState
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSTEBBS) :: dataOutLineSTEBBS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutNHood) :: dataOutLineNHood
+
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineURSL ! wind speed array [m s-1]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineTRSL ! Temperature array [C]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineqRSL ! Specific humidity array [g kg-1]
    CONTAINS
       ! Procedures
       PROCEDURE :: init => output_line_init
@@ -1079,7 +1096,37 @@ MODULE SUEWS_DEF_DTS
       PROCEDURE :: init => init_suews_debug
    END TYPE SUEWS_DEBUG
 
+   TYPE, PUBLIC :: SUEWS_STATE_BLOCK
+      TYPE(SUEWS_STATE), DIMENSION(:), ALLOCATABLE :: BLOCK
+   CONTAINS
+      PROCEDURE :: init => init_suews_state_block
+   END TYPE SUEWS_STATE_BLOCK
+
 CONTAINS
+
+   SUBROUTINE init_suews_state_block(self, nlayer, ndepth, len_sim)
+      CLASS(SUEWS_STATE_BLOCK), INTENT(inout) :: self
+      INTEGER, INTENT(in) :: nlayer, ndepth
+      INTEGER, INTENT(in) :: len_sim
+      INTEGER :: ir
+
+      ! allocate debug_state_block
+      ALLOCATE (self%BLOCK(len_sim))
+
+      ! initialise each element
+      DO ir = 1, len_sim
+         CALL self%BLOCK(ir)%ALLOCATE(nlayer, ndepth)
+      END DO
+   END SUBROUTINE init_suews_state_block
+
+   ! SUBROUTINE dealloc_suews_debug_block(self)
+   !    CLASS(SUEWS_DEBUG_BLOCK), INTENT(inout) :: self
+
+   !    ! deallocate each element
+   !    DO ir = 1, len_sim
+   !       CALL self(ir)%dealloc()
+   !    END DO
+   ! END SUBROUTINE dealloc_suews_debug_block
 
    SUBROUTINE init_suews_debug(self, nlayer, ndepth)
       CLASS(SUEWS_DEBUG), INTENT(inout) :: self
@@ -1112,6 +1159,11 @@ CONTAINS
       self%dataOutLineESTM = -999.0
       self%dataOutLineEHC = -999.0
       self%dataOutLineRSL = -999.0
+      ! Assign dataOutLineURSL, TRSL, qRSL
+      self%dataOutLineURSL = -999.0
+      self%dataOutLineTRSL = -999.0
+      self%dataOutLineqRSL = -999.0
+
       self%dataOutLineBEERS = -999.0
       self%dataOutLineDebug = -999.0
       self%dataOutLineSPARTACUS = -999.0

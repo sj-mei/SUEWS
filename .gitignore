@@ -558,3 +558,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+supy_input_dict_*.pkl
+quick-test-script.py
+
+# binary files
+SUEWS_V20*
+

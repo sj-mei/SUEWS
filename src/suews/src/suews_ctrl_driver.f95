@@ -16,6 +16,7 @@ MODULE SUEWS_Driver
                             HYDRO_STATE, HEAT_STATE, &
                             ROUGHNESS_STATE, solar_State, atm_state, flag_STATE, &
                             SUEWS_STATE, SUEWS_DEBUG, STEBBS_STATE, BUILDING_ARCHETYPE_PRM, STEBBS_PRM, &
+                            SUEWS_STATE_BLOCK, &
                             output_line, output_block
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom, SUEWS_update_atmState
@@ -71,8 +72,8 @@ CONTAINS
    SUBROUTINE SUEWS_cal_Main( &
       timer, forcing, config, siteInfo, &
       modState, &
-      debugState, &
-      outputLine) ! output
+      outputLine, &
+      debugState) ! output
 
       IMPLICIT NONE
 
@@ -85,7 +86,7 @@ CONTAINS
       TYPE(SUEWS_CONFIG), INTENT(IN) :: config
 
       TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
-      TYPE(SUEWS_DEBUG), INTENT(OUT) :: debugState
+      TYPE(SUEWS_DEBUG), INTENT(OUT), OPTIONAL :: debugState
 
       TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
       ! ####################################################################################
@@ -98,6 +99,9 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutESTM - 5) :: dataOutLineESTM
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutEHC - 5) :: dataOutLineEHC
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5) :: dataoutLineRSL
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineURSL ! wind speed array [m s-1]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineTRSL ! Temperature array [C]
+      REAL(KIND(1D0)), DIMENSION(30) :: dataoutLineqRSL ! Specific humidity array [g kg-1]
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutBEERS - 5) :: dataOutLineBEERS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDebug - 5) :: dataOutLineDebug
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSPARTACUS - 5) :: dataOutLineSPARTACUS
@@ -161,7 +165,9 @@ CONTAINS
 
             ! ############# memory allocation for DTS variables (start) #############
             CALL modState_tstepstart%ALLOCATE(nlayer, ndepth)
-            CALL debugState%init(nlayer, ndepth)
+            IF (PRESENT(debugState)) THEN
+               CALL debugState%init(nlayer, ndepth)
+            END IF
             ! save initial values of model states
             modState_tstepstart = modState
 
@@ -171,10 +177,12 @@ CONTAINS
             mwh = 0.
             MwStore = 0.
             chSnow_per_interval = 0.
+
+            ! Check if this is updated across timesteps
             SnowRemoval = 0.
-            Qm = 0
-            QmFreez = 0
-            QmRain = 0
+            Qm = 0.
+            QmFreez = 0.
+            QmRain = 0.
 
             ! these output variables are used for debugging
             qe0_surf = 0 ! QE from PM: only meaningful when snowuse=0
@@ -201,6 +209,9 @@ CONTAINS
             dataOutLineESTM = -999.
             dataOutLineEHC = -999.
             dataoutLineRSL = -999.
+            dataoutLineURSL = -999.
+            dataoutLineTRSL = -999.
+            dataoutLineqRSL = -999.
             dataOutLineBEERS = -999.
             dataOutLineDebug = -999.
             dataOutLineSPARTACUS = -999.
@@ -297,15 +308,17 @@ CONTAINS
                CALL SUEWS_cal_DailyState( &
                   timer, config, forcing, siteInfo, & !input
                   modState) ! input/output:
-
-               debugState%state_01_dailystate = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_01_dailystate = modState
+               END IF
                !======== Calculate soil moisture =========
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
                CALL SUEWS_update_SoilMoist_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_02_soilmoist = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_02_soilmoist = modState
+               END IF
                ! WIP notes: TS 03 Sep 2023
                ! upgrade the interface following this order:
                ! 1. add `timer, config, forcing, siteInfo` as input
@@ -316,15 +329,17 @@ CONTAINS
                CALL SUEWS_cal_WaterUse( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_03_wateruse = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_03_wateruse = modState
+               END IF
 
                ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
                CALL SUEWS_cal_AnthropogenicEmission( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_04_anthroemis = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_04_anthroemis = modState
+               END IF
 
                ! ========================================================================
                ! N.B.: the following parts involves snow-related calculations.
@@ -336,16 +351,18 @@ CONTAINS
                   timer, config, forcing, siteInfo, & ! input
                   modState, & ! input/output:
                   dataOutLineSPARTACUS) ! output
-
-               debugState%state_05_qn = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_05_qn = modState
+               END IF
 
                IF (diagnose == 1) PRINT *, 'Tsfc_surf before QS', heatState%tsfc_surf
                CALL SUEWS_cal_Qs( &
                   timer, config, forcing, siteInfo, & !input
                   modState, & ! input/output:
                   dataOutLineESTM)
-
-               debugState%state_06_qs = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_06_qs = modState
+               END IF
 
                !==================Energy related to snow melting/freezing processes=======
                IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -355,16 +372,18 @@ CONTAINS
                CALL LUMPS_cal_QHQE_DTS( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_07_qhqe_lumps = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_07_qhqe_lumps = modState
+               END IF
 
                !============= calculate water balance =============
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Water...'
                CALL SUEWS_cal_Water( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_08_water = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_08_water = modState
+               END IF
                !============= calculate water balance end =============
 
                !===============Resistance Calculations=======================
@@ -372,13 +391,15 @@ CONTAINS
                CALL SUEWS_cal_Resistance( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_09_resist = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_09_resist = modState
+               END IF
                !===================Resistance Calculations End=======================
 
                !===================Calculate surface hydrology and related soil water=======================
+               ! MP: Until Snow has been fixed this should not be used (TODO)
                IF (config%SnowUse == 1) THEN
-
+                  WRITE (*, *) "WARNING SNOW ON! Not recommended at the moment"
                   ! ===================Calculate snow related hydrology=======================
                   ! #234 the snow parts needs more work to be done
                   ! TS 18 Oct 2023: snow is temporarily turned off for easier implementation of other functionalities
@@ -394,8 +415,9 @@ CONTAINS
                   CALL SUEWS_cal_QE( &
                      timer, config, forcing, siteInfo, & ! input
                      modState) ! input/output:
-
-                  debugState%state_10_qe = modState
+                  IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                     debugState%state_10_qe = modState
+                  END IF
                   !======== Evaporation and surface state_id end========
                END IF
 
@@ -404,20 +426,22 @@ CONTAINS
                CALL SUEWS_cal_QH( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_11_qh = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_11_qh = modState
+               END IF
                !============ Sensible heat flux end ===============
 
                ! ============ update surface temperature of this iteration ===============
                CALL suews_update_tsurf( &
                   timer, config, forcing, siteInfo, & ! input
                   modState) ! input/output:
-
-               debugState%state_12_tsurf = modState
-
-               IF (i_iter == 1) THEN
-                  modState_tstepstart = modState
+               IF (config%flag_test .AND. PRESENT(debugState)) THEN
+                  debugState%state_12_tsurf = modState
                END IF
+
+               ! IF (i_iter == 1) THEN
+               !    modState_tstepstart = modState
+               ! END IF
 
                i_iter = i_iter + 1
                IF (i_iter == max_iter .AND. .NOT. flag_converge) THEN
@@ -438,17 +462,20 @@ CONTAINS
             CALL RSLProfile_DTS( &
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
+               dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, &
                dataoutLineRSL) ! output
-
-            debugState%state_13_rsl = modState
+            IF (config%flag_test .AND. PRESENT(debugState)) THEN
+               debugState%state_13_rsl = modState
+            END IF
 
             ! ============ BIOGENIC CO2 FLUX =======================
             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_BiogenCO2_DTS...'
             CALL SUEWS_cal_BiogenCO2( &
                timer, config, forcing, siteInfo, & ! input
                modState) ! input/output:
-
-            debugState%state_14_biogenco2 = modState
+            IF (config%flag_test .AND. PRESENT(debugState)) THEN
+               debugState%state_14_biogenco2 = modState
+            END IF
 
             ! calculations of diagnostics end
             !==============================================================
@@ -465,8 +492,9 @@ CONTAINS
                timer, config, forcing, siteInfo, & ! input
                modState, & ! input/output:
                dataOutLineBEERS) ! output
-
-            debugState%state_15_beers = modState
+            IF (config%flag_test .AND. PRESENT(debugState)) THEN
+               debugState%state_15_beers = modState
+            END IF
 
             !==============use STEBBS to get localised radiation flux==================
             ! MP 12 Sep 2024: STEBBS is a simplified BEM
@@ -1138,7 +1166,8 @@ CONTAINS
          atmState => modState%atmState, &
          phenState => modState%phenState, &
          snowState => modState%snowState, &
-         heatState => modState%heatState &
+         heatState => modState%heatState, &
+         ohmState => modState%ohmState &
          )
          ASSOCIATE ( &
             alb_prev => phenState%alb, &
@@ -1408,6 +1437,7 @@ CONTAINS
             sfr_roof => siteInfo%sfr_roof, &
             sfr_wall => siteInfo%sfr_wall, &
             sfr_surf => siteInfo%sfr_surf, &
+            lambda_c => siteInfo%lambda_c, &
             StorageHeatMethod => config%StorageHeatMethod, &
             OHMIncQF => config%OHMIncQF, &
             Diagnose => config%Diagnose, &
@@ -1446,6 +1476,12 @@ CONTAINS
             a1 => ohmState%a1, &
             a2 => ohmState%a2, &
             a3 => ohmState%a3, &
+            a1_bldg => ohmState%a1_bldg, &
+            a2_bldg => ohmState%a2_bldg, &
+            a3_bldg => ohmState%a3_bldg, &
+            t2_prev => ohmState%t2_prev, &
+            ws_rav => ohmState%ws_rav, &
+            qn_rav => ohmState%qn_rav, &
             alb => phenState%alb, &
             StoreDrainPrm => phenState%StoreDrainPrm, &
             id => timer%id, &
@@ -1487,20 +1523,22 @@ CONTAINS
                OHM_coef(1, 3, 3) = pavedPrm%ohm%ohm_coef_lc(3)%winter_wet
                OHM_coef(1, 4, 3) = pavedPrm%ohm%ohm_coef_lc(3)%winter_dry
 
-               OHM_coef(2, 1, 1) = bldgPrm%ohm%ohm_coef_lc(1)%summer_wet
-               OHM_coef(2, 2, 1) = bldgPrm%ohm%ohm_coef_lc(1)%summer_dry
-               OHM_coef(2, 3, 1) = bldgPrm%ohm%ohm_coef_lc(1)%winter_wet
-               OHM_coef(2, 4, 1) = bldgPrm%ohm%ohm_coef_lc(1)%winter_dry
+               IF (storageheatmethod /= 6) THEN
+                  OHM_coef(2, 1, 1) = bldgPrm%ohm%ohm_coef_lc(1)%summer_wet
+                  OHM_coef(2, 2, 1) = bldgPrm%ohm%ohm_coef_lc(1)%summer_dry
+                  OHM_coef(2, 3, 1) = bldgPrm%ohm%ohm_coef_lc(1)%winter_wet
+                  OHM_coef(2, 4, 1) = bldgPrm%ohm%ohm_coef_lc(1)%winter_dry
 
-               OHM_coef(2, 1, 2) = bldgPrm%ohm%ohm_coef_lc(2)%summer_wet
-               OHM_coef(2, 2, 2) = bldgPrm%ohm%ohm_coef_lc(2)%summer_dry
-               OHM_coef(2, 3, 2) = bldgPrm%ohm%ohm_coef_lc(2)%winter_wet
-               OHM_coef(2, 4, 2) = bldgPrm%ohm%ohm_coef_lc(2)%winter_dry
+                  OHM_coef(2, 1, 2) = bldgPrm%ohm%ohm_coef_lc(2)%summer_wet
+                  OHM_coef(2, 2, 2) = bldgPrm%ohm%ohm_coef_lc(2)%summer_dry
+                  OHM_coef(2, 3, 2) = bldgPrm%ohm%ohm_coef_lc(2)%winter_wet
+                  OHM_coef(2, 4, 2) = bldgPrm%ohm%ohm_coef_lc(2)%winter_dry
 
-               OHM_coef(2, 1, 3) = bldgPrm%ohm%ohm_coef_lc(3)%summer_wet
-               OHM_coef(2, 2, 3) = bldgPrm%ohm%ohm_coef_lc(3)%summer_dry
-               OHM_coef(2, 3, 3) = bldgPrm%ohm%ohm_coef_lc(3)%winter_wet
-               OHM_coef(2, 4, 3) = bldgPrm%ohm%ohm_coef_lc(3)%winter_dry
+                  OHM_coef(2, 1, 3) = bldgPrm%ohm%ohm_coef_lc(3)%summer_wet
+                  OHM_coef(2, 2, 3) = bldgPrm%ohm%ohm_coef_lc(3)%summer_dry
+                  OHM_coef(2, 3, 3) = bldgPrm%ohm%ohm_coef_lc(3)%winter_wet
+                  OHM_coef(2, 4, 3) = bldgPrm%ohm%ohm_coef_lc(3)%winter_dry
+               END IF
 
                OHM_coef(3, 1, 1) = evetrPrm%ohm%ohm_coef_lc(1)%summer_wet
                OHM_coef(3, 2, 1) = evetrPrm%ohm%ohm_coef_lc(1)%summer_dry
@@ -1670,7 +1708,7 @@ CONTAINS
                IF (StorageHeatMethod == 0) THEN !Use observed QS
                   qs = qs_obs
 
-               ELSEIF (StorageHeatMethod == 1) THEN !Use OHM to calculate QS
+               ELSEIF (StorageHeatMethod == 1 .OR. StorageHeatMethod == 6) THEN !Use OHM to calculate QS
                   Tair_mav_5d = HDD_id(10)
                   IF (Diagnose == 1) WRITE (*, *) 'Calling OHM...'
                   CALL OHM(qn_use, ohmState%qn_av, ohmState%dqndt, &
@@ -1685,7 +1723,13 @@ CONTAINS
                            soilstore_id, SoilStoreCap, state_id, &
                            BldgSurf, WaterSurf, &
                            SnowUse, SnowFrac, &
-                           DiagQS, &
+                           atmState%U_hbh, atmState%T_hbh_C, t2_prev, &
+                           ws_rav, qn_rav, nlayer, &
+                           dz_roof, cp_roof, k_roof, &
+                           dz_wall, cp_wall, k_wall, &
+                           lambda_c, &
+                           StorageHeatMethod, DiagQS, timer, &
+                           a1_bldg, a2_bldg, a3_bldg, &
                            a1, a2, a3, qs, deltaQi)
                   QS_surf = qs
                   QS_roof = qs
@@ -1757,8 +1801,8 @@ CONTAINS
                   ! PRINT *, 'QS_surf after ESTM_ehc', QS_surf
                   ! PRINT *, '------------------------------------'
                   ! PRINT *, ''
-               END IF
 
+               END IF
             END ASSOCIATE
          END ASSOCIATE
       END ASSOCIATE
@@ -2546,6 +2590,7 @@ CONTAINS
 
                ! runoff_per_interval = runoff_per_interval_in
                state_surf = state_surf_in
+               ! soilstore_surf = soilstore_surf_in
                ! soilstore_id = soilstore_surf_in
 
                ! nsh_real = 3600/tstep*1.D0
@@ -2763,7 +2808,7 @@ CONTAINS
             qs => heatState%qs, &
             QmRain => snowState%QmRain, &
             QmFreez => snowState%QmFreez, &
-            qm => snowState%qm, &
+            Qm => snowState%Qm, &
             xsmd => forcing%xsmd, &
             Temp_C => forcing%Temp_C, &
             RA_h => atmState%RA_h, &
@@ -2791,7 +2836,6 @@ CONTAINS
             storageheatmethod => config%StorageHeatMethod, &
             Diagnose => config%Diagnose &
             )
-
             ! tsfc_surf = heatState_out%tsfc_surf
             ! tsfc_roof = heatState_out%tsfc_roof
             ! tsfc_wall = heatState_out%tsfc_wall
@@ -3157,9 +3201,11 @@ CONTAINS
             state_surf => hydroState%state_surf &
             )
 
-            ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
-            state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_surf)
-            smd_surf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_surf)
+            !! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
+            !state_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_surf)
+            state_x = state_surf
+            !smd_surf_x = UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_surf)
+            smd_surf_x = smd_surf
 
             ResistSurf_x = MIN(9999., RS)
 
@@ -3579,7 +3625,8 @@ CONTAINS
       sw_dn_direct_frac, air_ext_sw, air_ssa_sw, &
       veg_ssa_sw, air_ext_lw, air_ssa_lw, veg_ssa_lw, &
       veg_fsd_const, veg_contact_fraction_const, &
-      ground_albedo_dir_mult_fact, use_sw_direct_albedo, & !input
+      ground_albedo_dir_mult_fact, use_sw_direct_albedo, &
+      lambda_c, & !input
       stebbsmethod, & ! stebbs building input
       buildingname, buildingtype, &
       BuildingCount, Occupants, &
@@ -3644,7 +3691,7 @@ CONTAINS
       WaterDist, WaterUseMethod, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      output_block_suews, debug_state) !output
+      output_block_suews, state_debug, block_mod_state) !output
 
       IMPLICIT NONE
       LOGICAL, INTENT(IN) :: flag_test
@@ -3669,6 +3716,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN) :: FlowChange !Difference between the input and output flow in the water body [mm]
       REAL(KIND(1D0)), INTENT(IN) :: n_buildings !Number of buildings [-]
       REAL(KIND(1D0)), INTENT(IN) :: h_std ! Standard deviation of buildins [m]
+      REAL(KIND(1D0)), INTENT(IN) :: lambda_c ! Building surface to plan area ratio [-]
 
       ! ---forcing-related variables
       TYPE(SUEWS_FORCING) :: forcing
@@ -3928,6 +3976,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nlayer), INTENT(INOUT) :: state_wall !wetness status of wall [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) :: soilstore_surf !soil moisture of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) :: state_surf !wetness status of each surface type [mm]
+      REAL(KIND(1D0)), DIMENSION(NSURF) :: smd_surf !soil moisture deficit for each surface
       REAL(KIND(1D0)), DIMENSION(9), INTENT(INOUT) :: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm]
 
       ! ---heat storage related states
@@ -3945,6 +3994,15 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(INOUT) :: dqndt ! rate of change of net radiation [W m-2 h-1]
       REAL(KIND(1D0)), INTENT(INOUT) :: qn_s_av ! weighted average of qn over snow [W m-2]
       REAL(KIND(1D0)), INTENT(INOUT) :: dqnsdt ! Rate of change of net radiation [W m-2 h-1]
+
+      ! Used in OHM calcs - need to be reset between supy calls - TODO: Should allow passing initial values
+      REAL(KIND(1D0)) :: t2_prev ! previous day midnight air temperature [degC]
+      REAL(KIND(1D0)) :: ws_rav ! running average of wind speed [m s-1]
+      REAL(KIND(1D0)) :: tair_prev
+      REAL(KIND(1D0)) :: qn_rav ! running average of net radiation [W m-2]
+      REAL(KIND(1D0)) :: a1_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a2_bldg ! Dynamic OHM coefficients of buildings
+      REAL(KIND(1D0)) :: a3_bldg ! Dynamic OHM coefficients of buildings
 
       ! ---snow related states
       TYPE(SNOW_STATE) :: snowState
@@ -4091,7 +4149,8 @@ CONTAINS
       TYPE(STEBBS_PRM) :: stebbsPrm
 
       ! lumped states
-      TYPE(SUEWS_DEBUG), INTENT(OUT) :: debug_state
+      TYPE(SUEWS_DEBUG), INTENT(OUT), OPTIONAL :: state_debug
+      TYPE(SUEWS_STATE_BLOCK), INTENT(OUT), OPTIONAL :: block_mod_state
       TYPE(SUEWS_STATE) :: mod_state
       ! ############# DTS variables (end) #############
 
@@ -4164,6 +4223,11 @@ CONTAINS
 
       TYPE(output_block), INTENT(OUT) :: output_block_suews
 
+      IF (flag_test .AND. PRESENT(block_mod_state)) THEN
+
+         CALL block_mod_state%init(nlayer, ndepth, len_sim)
+      END IF
+
       ! ############# evaluation for DTS variables (start) #############
       siteInfo%lat = lat
       siteInfo%lon = lng
@@ -4183,6 +4247,7 @@ CONTAINS
       siteInfo%nlayer = nlayer
       siteInfo%n_buildings = n_buildings
       siteInfo%h_std = h_std
+      siteInfo%lambda_c = lambda_c
       ! siteInfo%nlayer = nlayer
 
       ! forcing%kdown = kdown
@@ -4210,6 +4275,10 @@ CONTAINS
       timer%tstep = tstep
       timer%tstep_prev = tstep_prev
       timer%dt_since_start = dt_since_start
+
+      ! For dynamic OHM
+      timer%new_day = 0
+      timer%dt_since_start_prev = 0
 
       config%Diagnose = Diagnose
       config%DiagMethod = DiagMethod
@@ -4751,12 +4820,16 @@ CONTAINS
       ! ESTM_ehc related:
       ! water balance related:
       CALL hydroState%ALLOCATE(nlayer)
+      ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
+      state_surf = UNPACK(SPREAD(0.0D0, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=state_surf)
+      smd_surf = UNPACK(SPREAD(0.0D0, dim=1, ncopies=SIZE(sfr_surf)), mask=(sfr_surf < 0.00001), field=smd_surf)
       hydroState%soilstore_roof = soilstore_roof
       hydroState%state_roof = state_roof
       hydroState%soilstore_wall = soilstore_wall
       hydroState%state_wall = state_wall
       hydroState%soilstore_surf = soilstore_surf
       hydroState%state_surf = state_surf
+      hydroState%smd_surf = smd_surf
       hydroState%WUDay_id = WUDay_id
 
       CALL heatState%ALLOCATE(nsurf, nlayer, ndepth)
@@ -4772,6 +4845,14 @@ CONTAINS
       ohmState%dqndt = dqndt
       ohmState%qn_s_av = qn_s_av
       ohmState%dqnsdt = dqnsdt
+
+      ohmState%t2_prev = 0.0 ! previous day midnight air temperature [degC]
+      ohmState%ws_rav = 2.0 ! running average of wind speed [m s-1]
+      ohmState%tair_prev = 0.0
+      ohmState%qn_rav = 0.0 ! running average of net radiation [W m-2]
+      ohmState%a1_bldg = 0.0 ! Dynamic OHM coefficients of buildings
+      ohmState%a2_bldg = 0.0 ! Dynamic OHM coefficients of buildings
+      ohmState%a3_bldg = 0.0 ! Dynamic OHM coefficients of buildings
 
       ! snow related:
       snowState%snowfallCum = SnowfallCum
@@ -4941,7 +5022,6 @@ CONTAINS
       !   allocate output arrays
 
       Diagnose = 0
-
       DO ir = 1, len_sim, 1
          ! =============================================================================
          ! === Translate met data from MetForcingBlock to variable names used in model ==
@@ -4992,18 +5072,28 @@ CONTAINS
          forcing%xsmd = MetForcingBlock(ir, 20)
          forcing%LAI_obs = MetForcingBlock(ir, 21)
 
-         !CALL SUEWS_cal_Main( &
-         CALL SUEWS_cal_Main( &
-            timer, forcing, config, siteInfo, &
-            mod_State, &
-            debug_state, &
-            output_line_suews) !output
-
+         IF (config%flag_test .AND. PRESENT(state_debug)) THEN
+            CALL SUEWS_cal_Main( &
+               timer, forcing, config, siteInfo, &
+               mod_State, &
+               output_line_suews, &
+               state_debug) !output
+         ELSE
+            CALL SUEWS_cal_Main( &
+               timer, forcing, config, siteInfo, &
+               mod_State, &
+               output_line_suews) !output
+         END IF
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
          timer%dt_since_start = timer%dt_since_start + timer%tstep
 
          !============ update DailyStateBlock ===============
          dataOutBlockDailyState(ir, :) = [output_line_suews%dataOutLineDailyState]
+
+         !============ update state_block ===============
+         IF (config%flag_test .AND. PRESENT(state_debug)) THEN
+            block_mod_state%BLOCK(ir) = mod_State
+         END IF
 
          !============ write out results ===============
          ! works at each timestep

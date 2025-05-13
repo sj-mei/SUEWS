@@ -29,6 +29,12 @@ from ._supy_module import (
     resample_output,
 )
 
+# debug utilities
+from ._post import (
+    pack_dts_state_selective,
+    inspect_dts_structure,
+    dict_structure,
+)
 
 # utilities
 from . import util
