@@ -43,8 +43,8 @@ class TestSUEWSConfig(unittest.TestCase):
             config_reconst.model.physics.netradiationmethod.value
         )
         self.assertEqual(
-            self.config.site[0].properties.lat.value,
-            config_reconst.site[0].properties.lat.value
+            self.config.sites[0].properties.lat.value,
+            config_reconst.sites[0].properties.lat.value
         )
 
         # Test if DataFrame conversion preserves structure
@@ -61,7 +61,7 @@ class TestSUEWSConfig(unittest.TestCase):
         # Load initial DataFrame state
         df_state_init = sp.load_sample_data()[0]
         df_state_init2 = df_state_init.copy()
-        
+
         # Fix sample data to pass validation
         for i in range(1, 7):
             if df_state_init2[("soilstore_surf", f"({i},)")].values[0] < 10:
@@ -77,7 +77,7 @@ class TestSUEWSConfig(unittest.TestCase):
         for x in range(4):
             for y in range(3):
                 df_state_reconst[("ohm_coef", f"(7, {x}, {y})")] = df_state_init[("ohm_coef", f"(7, {x}, {y})")]
-        
+
         df_state_reconst[("ohm_threshsw", f"(7,)")] = df_state_init[("ohm_threshsw", f"(7,)")]
         df_state_reconst[("ohm_threshwd", f"(7,)")] = df_state_init[("ohm_threshwd", f"(7,)")]
 
@@ -139,7 +139,7 @@ class TestSUEWSConfig(unittest.TestCase):
         config = SUEWSConfig(
             name="Multi-site test",
             description="Test configuration with multiple sites",
-            site=[
+            sites=[
                 Site(gridiv=0),
                 Site(gridiv=1),
                 Site(gridiv=2),
@@ -155,9 +155,9 @@ class TestSUEWSConfig(unittest.TestCase):
 
         # Convert back and check if sites are preserved
         config_reconst = SUEWSConfig.from_df_state(df_state)
-        self.assertEqual(len(config_reconst.site), 3)
-        self.assertEqual([site.gridiv for site in config_reconst.site], [0, 1, 2])
-    
+        self.assertEqual(len(config_reconst.sites), 3)
+        self.assertEqual([site.gridiv for site in config_reconst.sites], [0, 1, 2])
+
 
 if __name__ == '__main__':
     unittest.main()
