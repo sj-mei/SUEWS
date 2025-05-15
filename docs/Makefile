@@ -9,6 +9,14 @@ SOURCEDIR     = source
 BUILDDIR      = build
 SUPYDIR      = ./source/related-softwares/supy
 
+
+
+LIVEHTML_OPTS  = \
+  --re-ignore 'supy\.util\..*' \
+  --ignore "source/SuPy.log" \
+  --ignore "source/yaml_input/*.rst" \
+  --fresh-env
+
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
@@ -20,11 +28,16 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-livehtml:
-	sphinx-autobuild --re-ignore ["supy.util.*"] -b html -a  "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
 pip:
 	pip install -e ../src/supy
 
 proc-csv:
 	python $(SUPYDIR)/proc_var_info/gen_rst.py
+
+
+livehtml:
+	sphinx-autobuild $(LIVEHTML_OPTS) \
+		-b html \
+		-a "$(SOURCEDIR)" "$(BUILDDIR)"\
+		$(SPHINXOPTS)

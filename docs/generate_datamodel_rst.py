@@ -92,10 +92,32 @@ def generate_rst_for_model(
         rst_content.append("")
 
         # Description
-        description = getattr(field_info, "description", None)
-        if description:
-            rst_content.append(f"   {description.strip()}")
-            rst_content.append("")
+        description_parts = []
+        base_description = getattr(field_info, "description", None)
+        if base_description:
+            description_parts.append(f"   {base_description.strip()}")
+
+        # YAML structure hint for ValueWithDOI fields
+        origin_type_for_doi_check = get_origin(field_type_hint) or field_type_hint
+        if hasattr(origin_type_for_doi_check, "__name__") and origin_type_for_doi_check.__name__ == "ValueWithDOI":
+            doi_args = get_args(field_type_hint)
+            val_type_name_for_yaml = "..." # Default placeholder
+            is_complex_value = False
+            if doi_args:
+                inner_arg_type = get_origin(doi_args[0]) or doi_args[0]
+                if hasattr(inner_arg_type, "__name__") and inner_arg_type.__name__ in all_supy_models and issubclass(inner_arg_type, BaseModel):
+                    is_complex_value = True # The value itself is a documented model
+                else:
+                    val_type_name_for_yaml = get_user_friendly_type_name(doi_args[0])
+
+            hint = f"   In YAML, this is typically specified using a ``value`` key, e.g.: ``{field_name}: {{value: {val_type_name_for_yaml}}}``."
+            if is_complex_value:
+                hint += " The structure of this ``value`` is detailed in the linked section below."
+            description_parts.append(hint)
+
+        if description_parts:
+            rst_content.extend(description_parts)
+            rst_content.append("") # Blank line after description block
 
         # Unit (Placeholder - requires units in Pydantic model or parsing from description)
         # Example: unit = field_info.json_schema_extra.get('unit') if field_info.json_schema_extra else None
@@ -108,10 +130,10 @@ def generate_rst_for_model(
             rst_content.append(f"   :Unit: {unit}")
         else:
             # Try to parse from description, e.g., "Some value [unit]"
-            if description and "[" in description and "]" in description:
+            if base_description and "[" in base_description and "]" in base_description:
                 try:
-                    parsed_unit = description[
-                        description.rfind("[") + 1 : description.rfind("]")
+                    parsed_unit = base_description[
+                        base_description.rfind("[") + 1 : base_description.rfind("]")
                     ]
                     if (
                         len(parsed_unit) < 10 and not " " in parsed_unit
@@ -186,18 +208,61 @@ def generate_rst_for_model(
                 hasattr(origin_pt, "__name__")
                 and origin_pt.__name__ in all_supy_models
                 and issubclass(origin_pt, BaseModel)
-                and origin_pt != model_class
+                and origin_pt != model_class  # Do not link to self
             ):
-                nested_model_to_document = origin_pt
-                break
+                # Prioritize the model that is directly the field's type or the first arg of ValueWithDOI/List/Dict
+                if field_type_hint == origin_pt or \
+                   (get_origin(field_type_hint) in [list, List, dict, Dict] and get_args(field_type_hint) and (get_origin(get_args(field_type_hint)[0]) or get_args(field_type_hint)[0]) == origin_pt) or \
+                   (hasattr(get_origin(field_type_hint) or field_type_hint, "__name__") and (get_origin(field_type_hint) or field_type_hint).__name__ == "ValueWithDOI" and get_args(field_type_hint) and (get_origin(get_args(field_type_hint)[0]) or get_args(field_type_hint)[0]) == origin_pt):
+                    nested_model_to_document = origin_pt
+                    break
+                if not nested_model_to_document: # Fallback if no direct match yet
+                    nested_model_to_document = origin_pt
+
 
         if nested_model_to_document:
-            nested_model_name = nested_model_to_document.__name__
-            rst_content.append("")
-            rst_content.append(
-                f"   Details for this parameter group can be found in the :doc:`{nested_model_name.lower()}` section."
-            )
-            # Recursively generate RST for the nested model
+            nested_model_name_lower = nested_model_to_document.__name__.lower()
+            rst_content.append("") # Blank line before link text
+
+            origin_of_field = get_origin(field_type_hint)
+            args_of_field = get_args(field_type_hint)
+            link_message = ""
+
+            is_value_doi_wrapping_model = (hasattr(origin_of_field or field_type_hint, "__name__") and \
+                                           (origin_of_field or field_type_hint).__name__ == "ValueWithDOI" and \
+                                           args_of_field and \
+                                           (get_origin(args_of_field[0]) or args_of_field[0]) == nested_model_to_document)
+
+            if is_value_doi_wrapping_model:
+                link_message = (
+                    f"   The structure for the ``value`` key of ``{field_name}`` is detailed in "
+                    f":doc:`{nested_model_name_lower}`."
+                )
+            elif origin_of_field is list or origin_of_field is List:
+                link_message = (
+                    f"   Each item in the ``{field_name}`` list must conform to the "
+                    f":doc:`{nested_model_name_lower}` structure."
+                )
+            elif origin_of_field is dict or origin_of_field is Dict:
+                link_message = (
+                    f"   Each value in the ``{field_name}`` mapping (dictionary) must conform to the "
+                    f":doc:`{nested_model_name_lower}` structure."
+                )
+            elif (get_origin(field_type_hint) or field_type_hint) == nested_model_to_document:
+                # Direct nesting: my_field: NestedModelType
+                link_message = (
+                    f"   The ``{field_name}`` parameter group is defined by the "
+                    f":doc:`{nested_model_name_lower}` structure."
+                )
+            else:
+                # Fallback if the exact relationship isn't matched by above (e.g. Union types)
+                link_message = (
+                    f"   For ``{field_name}``, if using the {nested_model_to_document.__name__} structure, "
+                    f"see :doc:`{nested_model_name_lower}` for details."
+                )
+
+            rst_content.append(link_message)
+            # The recursive call was here, it should remain to generate the linked doc.
             generate_rst_for_model(
                 nested_model_to_document, output_dir, processed_models, all_supy_models
             )
@@ -232,16 +297,7 @@ def main():
     output_dir = docs_source_path / output_dir_name
     output_dir.mkdir(exist_ok=True)
 
-    # Clean up previously generated RST files in the output directory
-    print(f"Cleaning up previously generated .rst files in {output_dir}...")
-    for rst_file in output_dir.glob("*.rst"):
-        try:
-            rst_file.unlink()
-            print(f"  Deleted {rst_file}")
-        except OSError as e:
-            print(f"  Error deleting {rst_file}: {e}")
-    print("Cleanup complete.")
-    print("")  # Add a blank line for better log readability
+    # Do NOT clean up previously generated RST files. Only generate new/updated ones.
 
     processed_models = set()
     all_supy_data_models = {}
@@ -267,10 +323,10 @@ def main():
     top_level_model_names = [
         "Model",
         "Site",
-        "SiteProperties",
-        "LandCover",
-        "SnowParams",
-        "InitialStates",
+        # "SiteProperties",
+        # "LandCover",
+        # "SnowParams",
+        # "InitialStates",
     ]  # Add more as needed
 
     models_to_process = []
@@ -290,28 +346,8 @@ def main():
             model_class, output_dir, processed_models, all_supy_data_models
         )
 
-    # Create an index.rst for the generated files
-    index_rst_path = output_dir / "yaml_input.rst"
-    with open(index_rst_path, "w") as f:
-        f.write(".. _yaml_input:\n\n")
-        f.write("User Input Configuration Reference\n")
-        f.write("===================================\n\n")
-        f.write(
-            "This section provides a detailed reference for all parameters required to configure the SUEWS model.\n\n"
-        )
-        f.write(".. toctree::\n")
-        f.write("   :maxdepth: 2\n")
-        f.write("   :caption: Configuration Sections:\n\n")
-        # Sort files for consistent toctree
-        generated_files = sorted(
-            [p.stem for p in output_dir.glob("*.rst") if p.name != index_rst_path.name]
-        )
-        for rst_file_stem in generated_files:
-            f.write(f"   {rst_file_stem}\n")
-    print(f"Generated index: {index_rst_path}")
-    print(
-        f"\nMake sure to add '{output_dir_name}/{index_rst_path.name}' to your main Sphinx toctree in 'docs/source/index.rst' or other relevant files."
-    )
+    # Do NOT generate an index file here. User will manage their own index file.
+    print(f"RST files for models written to {output_dir}. Please create your own index file if needed.")
 
 
 if __name__ == "__main__":

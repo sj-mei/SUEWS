@@ -53,7 +53,7 @@ import supy
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath('_ext'))
+sys.path.insert(0, os.path.abspath("_ext"))
 
 print(r"this build is made by:", "\n", sys.version)
 # determine if in RTD environment
@@ -72,23 +72,41 @@ else:
 # Add the directory containing generate_datamodel_rst.py to sys.path
 # so it can be imported. conf.py is in docs/source/, script is in docs/
 # The script itself handles adding 'src' to its own path for 'supy' imports.
-path_docs_dir = Path(__file__).resolve().parent.parent # This should be the 'docs' directory
+path_docs_dir = (
+    Path(__file__).resolve().parent.parent
+)  # This should be the 'docs' directory
 if str(path_docs_dir) not in sys.path:
     sys.path.insert(0, str(path_docs_dir))
 
 try:
     import generate_datamodel_rst
+
     # Call the main function from the script to generate .rst files
     # This will create/update files in docs/source/user_inputs_reference/
     print("Attempting to generate Pydantic model RST files for user inputs...")
     generate_datamodel_rst.main()
     print("Finished generating Pydantic model RST files.")
 except ImportError as e_import:
-    print(f"ERROR: Could not import 'generate_datamodel_rst.py'. Ensure it is in the 'docs' directory. Details: {e_import}")
+    print(
+        f"ERROR: Could not import 'generate_datamodel_rst.py'. Ensure it is in the 'docs' directory. Details: {e_import}"
+    )
     print(f"Current sys.path: {sys.path}")
 except Exception as e_run:
     print(f"ERROR: Running 'generate_datamodel_rst.main()' failed. Details: {e_run}")
 # --- END: Call to generate_datamodel_rst.py ---
+
+
+# # --- BEGIN: Generate JSON Schema from SUEWSConfig ---
+# try:
+#     schema_script = Path(__file__).resolve().parent.parent / "gen_schema.py"
+#     if schema_script.exists():
+#         print(f"Generating schema.json using {schema_script} ...")
+#         subprocess.run([sys.executable, str(schema_script)], check=True)
+#     else:
+#         print(f"WARNING: {schema_script} not found. Skipping schema generation.")
+# except Exception as e:
+#     print(f"ERROR: Could not generate schema.json: {e}")
+# # --- END: Generate JSON Schema from SUEWSConfig ---
 
 
 def subprocess_cmd(command):
@@ -99,6 +117,7 @@ def subprocess_cmd(command):
 
 # run script to generate rst files for df_{group}
 # subprocess_cmd('cd supy/proc_var_info; python3 gen_rst.py')
+
 
 # load all csv as a whole df
 def load_df_csv(path_csv):
@@ -124,7 +143,7 @@ def load_df_opt_desc(file_options):
         file_options,
         sep=r"\n",
         skipinitialspace=True,
-        )
+    )
     ser_opts = ser_opts.iloc[:, 0]
     ind_opt = ser_opts.index[ser_opts.str.contains(".. option::")]
     ser_opt_name = ser_opts[ind_opt].str.replace(".. option::", "").str.strip()
@@ -209,7 +228,6 @@ if read_the_docs_build:
     # update `today`
     dt_today = datetime.today()
 else:
-
     dt_today = datetime(2021, 11, 11)
     # subprocess.call("doxygen", shell=True)
     pass
@@ -254,8 +272,9 @@ extensions = [
     "sphinx_last_updated_by_git",
     "sphinx_click.ext",
     # 'exhale'
-    'sphinx.ext.napoleon',
-    'suews_config_editor',  # Our custom extension
+    "sphinx.ext.napoleon",
+    # 'suews_config_editor',  # Our custom extension
+    # 'sphinx-jsonschema', # to genenrate docs based JSON Schema from SUEWSConfig
 ]
 
 # email_automode = True
@@ -324,7 +343,11 @@ language = "en"
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
 
-exclude_patterns = ["_build", "**.ipynb_checkpoints"]
+exclude_patterns = [
+    "_build",
+    "**.ipynb_checkpoints",
+    "build",
+]
 # tags.add('html')
 # if tags.has('html'):
 #     exclude_patterns = ['references.rst']
@@ -440,7 +463,7 @@ html_static_path = ["_static", "doxygenoutput"]
 # html_extra_path = ['doxygenoutput']
 
 # Copy React build output to _static
-html_extra_path = ['../suews-config-ui/dist']
+html_extra_path = ["../suews-config-ui/dist"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -734,7 +757,6 @@ class AuthorYearLabelStyle(BaseLabelStyle):
 
 
 class JsaiStyle(UnsrtStyle):
-
     default_label_style = "author_year_label"
 
 
@@ -776,7 +798,6 @@ class LabelStyle_key(BaseLabelStyle):
 
 
 class LabelStyle_key(UnsrtStyle):
-
     default_label_style = LabelStyle_key
 
 
@@ -830,9 +851,7 @@ class MyStyle_author_year(UnsrtStyle):
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
-        return sentence[
-            optional[self.format_doi(e)],
-        ]
+        return sentence[optional[self.format_doi(e)],]
 
     def get_book_template(self, e):
         template = toplevel[
@@ -858,9 +877,7 @@ class MyStyle_year_author(UnsrtStyle):
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
-        return sentence[
-            optional[self.format_doi(e)],
-        ]
+        return sentence[optional[self.format_doi(e)],]
 
     def get_book_template(self, e):
         template = toplevel[
@@ -878,6 +895,7 @@ class MyStyle_year_author(UnsrtStyle):
 
 register_plugin("pybtex.style.formatting", "refs_recent", MyStyle_year_author)
 
+
 # reading list style
 class MyStyle_author_year_note(UnsrtStyle):
     default_sorting_style = "author_year_title"
@@ -886,9 +904,7 @@ class MyStyle_author_year_note(UnsrtStyle):
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
-        return sentence[
-            optional[self.format_doi(e)],
-        ]
+        return sentence[optional[self.format_doi(e)],]
 
     def get_book_template(self, e):
         template = toplevel[
@@ -912,17 +928,15 @@ register_plugin("pybtex.style.formatting", "rl", MyStyle_author_year_note)
 register_plugin("pybtex.style.sorting", "year_author_title", MySort_year_author_title)
 
 
-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 
 # These paths are either relative to html_static_path or fully qualified paths (eg. https://...)
 html_css_files = [
-    'suews-config-ui/main.css',
+    "suews-config-ui/main.css",
 ]
 
 html_js_files = [
-    'suews-config-ui/main.js',
+    "suews-config-ui/main.js",
 ]
-
