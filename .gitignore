@@ -564,3 +564,5 @@ quick-test-script.py
 # binary files
 SUEWS_V20*
 
+# auto-generated files for building docs
+docs/schema.json
