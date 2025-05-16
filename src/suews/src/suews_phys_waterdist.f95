@@ -521,9 +521,9 @@ CONTAINS
       ev_roof, state_roof_in, soilstore_roof_in, & ! input:
       sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
       ev_wall, state_wall_in, soilstore_wall_in, & ! input:
-!       ev_roof_out,
+      !       ev_roof_out,
       state_roof_out, soilstore_roof_out, runoff_roof, & ! general output:
-!       ev_wall_out,
+      !       ev_wall_out,
       state_wall_out, soilstore_wall_out, runoff_wall, & ! general output:
       state_building, soilstore_building, runoff_building, SoilStoreCap_building)
 

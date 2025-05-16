@@ -240,11 +240,11 @@ CONTAINS
 !       END IF
       H = H_init
       IF (H == 0) THEN
-            TStar = 0
-            L_MOD = 0
+         TStar = 0
+         L_MOD = 0
       ELSE
-            TStar = (-H/UStar)
-            L_MOD = (UStar**2)/(G_T_K*TStar)
+         TStar = (-H/UStar)
+         L_MOD = (UStar**2)/(G_T_K*TStar)
       END IF
 
       IF (LOG(zzd/z0m) < 0.001000) THEN
@@ -302,17 +302,17 @@ CONTAINS
          i = i + 1
       END DO
       IF (i == 330) THEN
-            ! Assume neutral conditions
+         ! Assume neutral conditions
 !             WRITE(*, *) L_MOD
-            zL = 0
-            L_MOD = 0
-            UStar = 0
-            TStar = 0
-      else
-            ! MP L_MOD accepted - update zL and z0L for consistency
-            zL = zzd/L_MOD
-            zL = MIN(0.5, MAX(-2., zL))
-            z0L = z0m/L_MOD !z0m roughness length
+         zL = 0
+         L_MOD = 0
+         UStar = 0
+         TStar = 0
+      ELSE
+         ! MP L_MOD accepted - update zL and z0L for consistency
+         zL = zzd/L_MOD
+         zL = MIN(0.5, MAX(-2., zL))
+         z0L = z0m/L_MOD !z0m roughness length
       END IF
       ! limit zL to be within [-2,2]
 !       zL = MIN(2., MAX(-2., zL))

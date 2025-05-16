@@ -371,10 +371,10 @@ CONTAINS
                !==========================Turbulent Fluxes================================
                IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
                CALL LUMPS_cal_QHQE_DTS( &
-                     timer, config, forcing, siteInfo, & ! input
-                     modState) ! input/output:
+                  timer, config, forcing, siteInfo, & ! input
+                  modState) ! input/output:
                IF (config%flag_test .AND. PRESENT(debugState)) THEN
-                     debugState%state_07_qhqe_lumps = modState
+                  debugState%state_07_qhqe_lumps = modState
                END IF
 
                !============= calculate water balance =============
@@ -2650,9 +2650,9 @@ CONTAINS
                      ev_roof, state_roof_in, soilstore_roof_in, & ! input:
                      sfr_wall, StateLimit_wall, SoilStoreCap_wall, WetThresh_wall, & ! input:
                      ev_wall, state_wall_in, soilstore_wall_in, & ! input:
-!                      ev_roof,
+                     !                      ev_roof,
                      state_roof, soilstore_roof, runoff_roof, & ! general output:
-!                      ev_wall,
+                     !                      ev_wall,
                      state_wall, soilstore_wall, runoff_wall, & ! general output:
                      state_building, soilstore_building, runoff_building, capStore_builing)
 
@@ -2851,32 +2851,32 @@ CONTAINS
             ! choose output QH
             SELECT CASE (QHMethod)
             CASE (1)
-                  qh_residual = (qn + qf + QmRain) - (qe + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
-                  ! Testing: qh_resist here is a dummy test - difference in QH per cycle
+               qh_residual = (qn + qf + QmRain) - (qe + qs + Qm + QmFreez) !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
+               ! Testing: qh_resist here is a dummy test - difference in QH per cycle
 !                   IF ((QH / QE) < 1) THEN
 !                         qh_resist = qh - qh_residual
 !                         qs = qs - qh_resist
 !                         ! Dumping energy into QS
 !                         qh_residual = (qn + qf + QmRain) - (qe + qs + Qm + QmFreez)
 !                   END IF
-                  qh = qh_residual
+               qh = qh_residual
             CASE (2)
-            ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
-            ! Aerodynamic-Resistance-based method
+               ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
+               ! Aerodynamic-Resistance-based method
                DO is = 1, nsurf
                   IF (RA_h /= 0) THEN
-                        qh_resist_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA_h
+                     qh_resist_surf(is) = avdens*avcp*(tsfc_surf(is) - Temp_C)/RA_h
                   ELSE
-                        qh_resist_surf(is) = NAN
+                     qh_resist_surf(is) = NAN
                   END IF
                END DO
                IF (storageheatmethod == 5) THEN
                   DO is = 1, nlayer
                      IF (RA_h /= 0) THEN
-                         qh_resist_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA_h
-                         qh_resist_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA_h
+                        qh_resist_roof(is) = avdens*avcp*(tsfc_roof(is) - Temp_C)/RA_h
+                        qh_resist_wall(is) = avdens*avcp*(tsfc_wall(is) - Temp_C)/RA_h
                      ELSE
-                         qh_resist_surf(is) = NAN
+                        qh_resist_surf(is) = NAN
                      END IF
                   END DO
 
@@ -2886,7 +2886,7 @@ CONTAINS
                   !    qh_resist = NAN
                   ! END IF
                   ! aggregate QH of roof and wall
-                     qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
+                  qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
                END IF
 
                qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
