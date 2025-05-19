@@ -211,6 +211,7 @@ CONTAINS
       REAL(KIND(1D0)) :: G_T_K, &
                          KUZ, &
                          LOLD, &
+                         zLOLD, &
                          psim, &
                          z0l, &
                          psimz0, &
@@ -239,13 +240,16 @@ CONTAINS
 !          h = H_init
 !       END IF
       H = H_init
-      IF (H == 0) THEN
-         TStar = 0
-         L_MOD = 0
+      IF (H == 0.) THEN
+         TStar = 0.
+         L_MOD = 0.
+         zL = 0.
       ELSE
          TStar = (-H/UStar)
          L_MOD = (UStar**2)/(G_T_K*TStar)
+         zL = zzd/L_MOD
       END IF
+
 
       IF (LOG(zzd/z0m) < 0.001000) THEN
          ! PRINT*, 1/(z0m-z0m)
@@ -253,11 +257,15 @@ CONTAINS
       END IF
       i = 1
       LOLD = -999.
+      zLOLD = -999.
       z0L = z0m/L_MOD !z0m roughness length
-      DO WHILE ((ABS(LOLD - L_MOD) > 0.001) .AND. (i < 330)) !NT: add error threshold !Iteration starts
+
+      !DO WHILE ((ABS(LOLD - L_MOD) > 0.01) .AND. (i < 330)) !NT: add error threshold !Iteration starts
+      DO WHILE ((ABS(zLOLD-zL) > 0.001) .AND. (i < 330))
          ! cap L_MOD to be within [-500,500]
          ! LOLD = MIN(MAX(-2000., L_MOD), 2000.)
          LOLD = L_MOD
+         zLOLD = zL
          zL = zzd/L_MOD
          zL = MIN(0.5, MAX(-2., zL))
          L_MOD = zzd/zL
@@ -278,12 +286,17 @@ CONTAINS
          UStar = MAX(0.001, UStar)
          ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
 
-         IF (H == 0) THEN
-            TStar = 0
-            L_MOD = 0
+         IF (H == 0.) THEN
+            TStar = 0.
+            L_MOD = 0.
+            zL = 0.
          ELSE
             TStar = (-H/UStar)
             L_MOD = (UStar**2)/(G_T_K*TStar)
+            zL = zzd/L_MOD
+            zL = MIN(0.5, MAX(-2., zL))
+            L_MOD = zzd/zL
+            z0L = z0m/L_MOD
          END IF
          ! cap L_MOD to be within [-500,500]
          ! L_MOD = MIN(MAX(-2000., L_MOD), 2000.)
@@ -301,19 +314,7 @@ CONTAINS
 
          i = i + 1
       END DO
-      IF (i == 330) THEN
-         ! Assume neutral conditions
-!             WRITE(*, *) L_MOD
-         zL = 0
-         L_MOD = 0
-         UStar = 0
-         TStar = 0
-      ELSE
-         ! MP L_MOD accepted - update zL and z0L for consistency
-         zL = zzd/L_MOD
-         zL = MIN(0.5, MAX(-2., zL))
-         z0L = z0m/L_MOD !z0m roughness length
-      END IF
+
       ! limit zL to be within [-2,2]
 !       zL = MIN(2., MAX(-2., zL))
       ! limit other output variables as well as z/L

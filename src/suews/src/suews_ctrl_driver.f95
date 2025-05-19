@@ -740,7 +740,7 @@ CONTAINS
 
             ! Test if sensible heat fluxes converge in iterations
             ! MP Testing 0.1 -> 0.05
-            IF (dif_tsfc_iter > .001) THEN
+            IF (dif_tsfc_iter > .05) THEN
                flag_converge = .FALSE.
             ELSE
                flag_converge = .TRUE.
@@ -2892,11 +2892,13 @@ CONTAINS
                qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
 
                qh = qh_resist
-               ! update QH of all facets
-               QH_surf = QN_surf + qf - qs_surf - qe_surf
-               QH_roof = QN_roof + qf - qs_roof - qe_roof
-               QH_wall = QN_wall + qf - qs_wall - qe_wall
-            END SELECT
+            END SELECT 
+            
+            ! update QH of all facets
+            QH_surf = QN_surf + qf - qs_surf - qe_surf
+            QH_roof = QN_roof + qf - qs_roof - qe_roof
+            QH_wall = QN_wall + qf - qs_wall - qe_wall
+            !END SELECT
 
          END ASSOCIATE
       END ASSOCIATE
