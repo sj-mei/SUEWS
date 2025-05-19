@@ -250,7 +250,6 @@ CONTAINS
          zL = zzd/L_MOD
       END IF
 
-
       IF (LOG(zzd/z0m) < 0.001000) THEN
          ! PRINT*, 1/(z0m-z0m)
          CALL ErrorHint(17, 'In stability subroutine, (z-zd) < z0.', zzd, z0m, notUsedI)
@@ -261,7 +260,7 @@ CONTAINS
       z0L = z0m/L_MOD !z0m roughness length
 
       !DO WHILE ((ABS(LOLD - L_MOD) > 0.01) .AND. (i < 330)) !NT: add error threshold !Iteration starts
-      DO WHILE ((ABS(zLOLD-zL) > 0.001) .AND. (i < 330))
+      DO WHILE ((ABS(zLOLD - zL) > 0.001) .AND. (i < 330))
          ! cap L_MOD to be within [-500,500]
          ! LOLD = MIN(MAX(-2000., L_MOD), 2000.)
          LOLD = L_MOD

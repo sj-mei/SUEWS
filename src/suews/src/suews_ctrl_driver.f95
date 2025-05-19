@@ -2892,8 +2892,8 @@ CONTAINS
                qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
 
                qh = qh_resist
-            END SELECT 
-            
+            END SELECT
+
             ! update QH of all facets
             QH_surf = QN_surf + qf - qs_surf - qe_surf
             QH_roof = QN_roof + qf - qs_roof - qe_roof
