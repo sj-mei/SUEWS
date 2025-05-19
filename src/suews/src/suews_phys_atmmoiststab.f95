@@ -60,7 +60,7 @@ CONTAINS
 
       REAL(KIND(1D0)) :: tair_av_next
 
-      REAL(KIND(1D0)), PARAMETER :: len_day_s = 24*3600 ! day length in seconds
+      REAL(KIND(1D0)), PARAMETER :: len_day_s = 24.*3600. ! day length in seconds
       REAL(KIND(1D0)) :: len_cal_s ! length of average period in seconds
       REAL(KIND(1D0)) :: temp_k ! temp in K
 
@@ -233,13 +233,19 @@ CONTAINS
                                   Zzd, zdm, notUsedI)
 
       UStar = KUZ/LOG(Zzd/z0m) ! Initial guess for UStar assuming neutral conditions — used only to seed the iteration
-      IF (ABS(H_init) < 0.001) THEN ! prevent zero TStar
-         h = 0.001
+!       IF (ABS(H_init) < 0.001) THEN ! prevent zero TStar
+!          h = 0.001 * (h_init/ABS(h_init))
+!       ELSE
+!          h = H_init
+!       END IF
+      H = H_init
+      IF (H == 0) THEN
+         TStar = 0
+         L_MOD = 0
       ELSE
-         h = H_init
+         TStar = (-H/UStar)
+         L_MOD = (UStar**2)/(G_T_K*TStar)
       END IF
-      TStar = (-H/UStar)
-      L_MOD = (UStar**2)/(G_T_K*TStar)
 
       IF (LOG(zzd/z0m) < 0.001000) THEN
          ! PRINT*, 1/(z0m-z0m)
@@ -248,11 +254,13 @@ CONTAINS
       i = 1
       LOLD = -999.
       z0L = z0m/L_MOD !z0m roughness length
-      DO WHILE ((ABS(LOLD - L_MOD) > 0.01) .AND. (i < 330)) !NT: add error threshold !Iteration starts
+      DO WHILE ((ABS(LOLD - L_MOD) > 0.001) .AND. (i < 330)) !NT: add error threshold !Iteration starts
          ! cap L_MOD to be within [-500,500]
          ! LOLD = MIN(MAX(-2000., L_MOD), 2000.)
          LOLD = L_MOD
          zL = zzd/L_MOD
+         zL = MIN(0.5, MAX(-2., zL))
+         L_MOD = zzd/zL
          z0L = z0m/L_MOD !z0m roughness length
 
          ! IF (zL>2)THEN
@@ -265,10 +273,18 @@ CONTAINS
          psimz0 = stab_psi_mom(StabilityMethod, z0L)
 
          UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0) !Friction velocity in non-neutral situation
+         ! TS 11 Feb 2021: limit UStar and TStar to reasonable ranges
+         ! under all conditions, min(UStar)==0.001 m s-1 (Jimenez et al 2012, MWR, https://doi.org/10.1175/mwr-d-11-00056.1
+         UStar = MAX(0.001, UStar)
+         ! under convective/unstable condition, min(UStar)==0.15 m s-1: (Schumann 1988, BLM, https://doi.org/10.1007/BF00123019)
 
-         TStar = (-H/UStar)
-         L_MOD = (UStar**2)/(G_T_K*TStar)
-
+         IF (H == 0) THEN
+            TStar = 0
+            L_MOD = 0
+         ELSE
+            TStar = (-H/UStar)
+            L_MOD = (UStar**2)/(G_T_K*TStar)
+         END IF
          ! cap L_MOD to be within [-500,500]
          ! L_MOD = MIN(MAX(-2000., L_MOD), 2000.)
 
@@ -285,9 +301,21 @@ CONTAINS
 
          i = i + 1
       END DO
-
+      IF (i == 330) THEN
+         ! Assume neutral conditions
+!             WRITE(*, *) L_MOD
+         zL = 0
+         L_MOD = 0
+         UStar = 0
+         TStar = 0
+      ELSE
+         ! MP L_MOD accepted - update zL and z0L for consistency
+         zL = zzd/L_MOD
+         zL = MIN(0.5, MAX(-2., zL))
+         z0L = z0m/L_MOD !z0m roughness length
+      END IF
       ! limit zL to be within [-2,2]
-      zL = MIN(2., MAX(-2., zL))
+!       zL = MIN(2., MAX(-2., zL))
       ! limit other output variables as well as z/L
       ! L_MOD = zzd/zL
       ! limit L_mod to 3.e4 for consistency with output
