@@ -3,9 +3,8 @@
 RunControl.nml
 --------------
 
-The file **RunControl.nml** is a namelist that specifies the options for
-the model run. It must be located in the same directory as the
-executable file.
+The file **RunControl.nml** is a namelist that specifies the options for the model run.
+It must be located in the same directory as the executable file.
 
 A sample file of **RunControl.nml** looks like
 
