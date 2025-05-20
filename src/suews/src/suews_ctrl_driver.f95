@@ -454,6 +454,8 @@ CONTAINS
                !==============main calculation end=======================
             END DO ! end iteration for tsurf calculations
 
+            ! MP: Add test for QH zL signs - recalculate zL if the same
+
             !==============================================================
             ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
 
