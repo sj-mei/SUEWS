@@ -455,6 +455,12 @@ CONTAINS
             END DO ! end iteration for tsurf calculations
 
             ! MP: Add test for QH zL signs - recalculate zL if the same
+            IF (modState%heatState%QH * modState%atmState%zL > 0) THEN
+               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
+               CALL SUEWS_cal_Resistance( &
+                  timer, config, forcing, siteInfo, & ! input
+                  modState) ! input/output:
+            END IF
 
             !==============================================================
             ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
@@ -2826,6 +2832,7 @@ CONTAINS
             qh_resist_roof => heatState%qh_resist_roof, &
             qh_resist_wall => heatState%qh_resist_wall, &
             qh => heatState%qh, &
+            qh_init => heatState%qh_init, &
             qh_resist => heatState%qh_resist, &
             qh_residual => heatState%qh_residual, &
             qh_surf => heatState%qh_surf, &
@@ -2890,7 +2897,8 @@ CONTAINS
                   ! aggregate QH of roof and wall
                   qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
                END IF
-
+               
+               ! MP: TODO - Check if this works correctly
                qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
 
                qh = qh_resist
@@ -2901,6 +2909,7 @@ CONTAINS
             QH_roof = QN_roof + qf - qs_roof - qe_roof
             QH_wall = QN_wall + qf - qs_wall - qe_wall
             !END SELECT
+            qh_init = qh
 
          END ASSOCIATE
       END ASSOCIATE
