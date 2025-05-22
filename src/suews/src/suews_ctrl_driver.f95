@@ -454,7 +454,7 @@ CONTAINS
             END DO ! end iteration for tsurf calculations
 
             ! MP: Add test for QH zL signs - recalculate zL if the same
-            IF (modState%heatState%QH * modState%atmState%zL > 0) THEN
+            IF (modState%heatState%QH*modState%atmState%zL > 0) THEN
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Resistance...'
                CALL SUEWS_cal_Resistance( &
                   timer, config, forcing, siteInfo, & ! input
@@ -2896,7 +2896,7 @@ CONTAINS
                   ! aggregate QH of roof and wall
                   qh_resist_surf(BldgSurf) = (DOT_PRODUCT(qh_resist_roof, sfr_roof) + DOT_PRODUCT(qh_resist_wall, sfr_wall))/2.
                END IF
-               
+
                ! MP: TODO - Check if this works correctly
                qh_resist = DOT_PRODUCT(qh_resist_surf, sfr_surf)
 
