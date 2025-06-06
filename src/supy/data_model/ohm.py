@@ -1,22 +1,25 @@
 from typing import Optional
 import pandas as pd
 from pydantic import BaseModel, Field
-from .type import ValueWithDOI, Reference
+from .type import RefValue, Reference
 from .type import init_df_state
 
 
 class OHMCoefficients(BaseModel):
-    a1: ValueWithDOI[float] = Field(
-        description="OHM coefficient a1 for different seasons and wetness conditions",
-        default=ValueWithDOI(0.0),
+    a1: RefValue[float] = Field(
+        description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation",
+        unit="dimensionless",
+        default=RefValue(0.0),
     )
-    a2: ValueWithDOI[float] = Field(
-        description="OHM coefficient a2 for different seasons and wetness conditions",
-        default=ValueWithDOI(0.0),
+    a2: RefValue[float] = Field(
+        description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation",
+        unit="h",
+        default=RefValue(0.0),
     )
-    a3: ValueWithDOI[float] = Field(
-        description="OHM coefficient a3 for different seasons and wetness conditions",
-        default=ValueWithDOI(0.0),
+    a3: RefValue[float] = Field(
+        description="OHM coefficient a3: constant offset term for storage heat flux",
+        unit="W m^-2",
+        default=RefValue(0.0),
     )
 
     ref: Optional[Reference] = None
@@ -71,8 +74,8 @@ class OHMCoefficients(BaseModel):
             for aX, idx in a_map.items()
         }
 
-        # Convert to ValueWithDOI
-        params = {key: ValueWithDOI(value) for key, value in params.items()}
+        # Convert to RefValue
+        params = {key: RefValue(value) for key, value in params.items()}
 
         return cls(**params)
 
