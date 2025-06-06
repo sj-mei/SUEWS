@@ -23,8 +23,8 @@ class Reference(BaseModel):
     DOI: Optional[str] = None
 
 
-class ValueWithDOI(BaseModel, Generic[T]):
-    """A class that wraps a value with an optional DOI reference.
+class RefValue(BaseModel, Generic[T]):
+    """A class that wraps a value with an optional reference.
 
     This class allows storing a value along with its reference information (e.g. DOI).
     It handles numeric type conversion and implements comparison operators.
@@ -55,37 +55,37 @@ class ValueWithDOI(BaseModel, Generic[T]):
 
     def __eq__(self, other):
         """Equal comparison operator"""
-        if isinstance(other, ValueWithDOI):
+        if isinstance(other, RefValue):
             return self.value == other.value
         return self.value == other
 
     def __lt__(self, other):
         """Less than comparison operator"""
-        if isinstance(other, ValueWithDOI):
+        if isinstance(other, RefValue):
             return self.value < other.value
         return self.value < other
 
     def __le__(self, other):
         """Less than or equal comparison operator"""
-        if isinstance(other, ValueWithDOI):
+        if isinstance(other, RefValue):
             return self.value <= other.value
         return self.value <= other
 
     def __gt__(self, other):
         """Greater than comparison operator"""
-        if isinstance(other, ValueWithDOI):
+        if isinstance(other, RefValue):
             return self.value > other.value
         return self.value > other
 
     def __ge__(self, other):
         """Greater than or equal comparison operator"""
-        if isinstance(other, ValueWithDOI):
+        if isinstance(other, RefValue):
             return self.value >= other.value
         return self.value >= other
 
     def __ne__(self, other):
         """Not equal comparison operator"""
-        if isinstance(other, ValueWithDOI):
+        if isinstance(other, RefValue):
             return self.value != other.value
         return self.value != other
 
