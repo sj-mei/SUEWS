@@ -152,8 +152,8 @@ class TestSUEWSConfig(unittest.TestCase):
 
         # Convert back and check if sites are preserved
         config_reconst = SUEWSConfig.from_df_state(df_state)
-        self.assertEqual(len(config_reconst.site), 3)
-        self.assertEqual([site.gridiv for site in config_reconst.site], [0, 1, 2])
+        self.assertEqual(len(config_reconst.sites), 3)
+        self.assertEqual([site.gridiv for site in config_reconst.sites], [0, 1, 2])
 
 
 if __name__ == '__main__':

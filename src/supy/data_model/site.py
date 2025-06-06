@@ -2023,7 +2023,7 @@ class SiteProperties(BaseModel):
             value = getattr(self, field, None)
             if value is None:
                 errors.append(f"Required field '{field}' is missing")
-            elif isinstance(value, ValueWithDOI) and value.value is None:
+            elif isinstance(value, RefValue) and value.value is None:
                 errors.append(f"Required field '{field}' has no value")
 
         # Additional validation rules
