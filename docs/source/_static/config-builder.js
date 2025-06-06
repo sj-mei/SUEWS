@@ -1,28 +1,12 @@
+// Global variables
+let schema = null;
+let configData = {};
+let ajv = null;
+let importModal = null;
+let validationModal = null;
+
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM loaded, initializing application...');
-
-    // Check for required elements
-    const requiredElements = [
-        'importModal', 'validationModal', 'preview-container',
-        'importBtn', 'exportJsonBtn', 'exportYamlBtn', 'newBtn', 'validateBtn',
-        'confirmImport', 'jsonPreview', 'yamlPreview'
-    ];
-
-    const missingElements = [];
-    requiredElements.forEach(id => {
-        if (!document.getElementById(id)) {
-            missingElements.push(id);
-        }
-    });
-
-    if (missingElements.length > 0) {
-        console.error('Missing required elements:', missingElements);
-        // Create an error message at the top of the page
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'alert alert-danger';
-        errorDiv.innerHTML = `<strong>Error:</strong> Missing required HTML elements: ${missingElements.join(', ')}`;
-        document.body.insertBefore(errorDiv, document.body.firstChild);
-    }
 
     // Initialize Bootstrap modals if they exist
     const importModalEl = document.getElementById('importModal');
@@ -106,12 +90,7 @@ function setupEventListeners() {
         importBtn.addEventListener('click', showImportModal);
     }
 
-    // Export buttons
-    const exportJsonBtn = document.getElementById('exportJsonBtn');
-    if (exportJsonBtn) {
-        exportJsonBtn.addEventListener('click', () => exportConfig('json'));
-    }
-
+    // Export button
     const exportYamlBtn = document.getElementById('exportYamlBtn');
     if (exportYamlBtn) {
         exportYamlBtn.addEventListener('click', () => exportConfig('yaml'));
@@ -135,16 +114,7 @@ function setupEventListeners() {
         confirmImport.addEventListener('click', importConfig);
     }
 
-    // Preview format radio buttons
-    const jsonPreview = document.getElementById('jsonPreview');
-    if (jsonPreview) {
-        jsonPreview.addEventListener('change', updatePreview);
-    }
-
-    const yamlPreview = document.getElementById('yamlPreview');
-    if (yamlPreview) {
-        yamlPreview.addEventListener('change', updatePreview);
-    }
+    // Preview format is now always YAML - no radio buttons needed
 }
 
 // Add this function to display debug information on the page
@@ -740,7 +710,7 @@ function convertValueToType(value, type) {
     }
 }
 
-// Update the preview
+// Update the preview (YAML format only)
 function updatePreview() {
     try {
         const previewContainer = document.getElementById('preview-container');
@@ -751,23 +721,26 @@ function updatePreview() {
             return; // Exit the function if container doesn't exist
         }
 
-        const previewFormat = document.querySelector('input[name="previewFormat"]:checked')?.value || 'json';
-
         try {
-            if (previewFormat === 'json') {
-                previewContainer.innerHTML = `<pre>${JSON.stringify(configData, null, 2)}</pre>`;
-            } else {
-                // Check if jsyaml is defined
-                if (typeof jsyaml === 'undefined') {
-                    previewContainer.innerHTML = `<div class="alert alert-warning">YAML library not loaded. Showing JSON instead.</div>
-                                                <pre>${JSON.stringify(configData, null, 2)}</pre>`;
-                } else {
-                    previewContainer.innerHTML = `<pre>${jsyaml.dump(configData)}</pre>`;
-                }
+            // Check if jsyaml is defined
+            if (typeof jsyaml === 'undefined') {
+                previewContainer.textContent = 'YAML library not loaded. Cannot generate preview.';
+                return;
             }
+
+            // Always generate YAML format
+            const yamlOutput = jsyaml.dump(configData, {
+                indent: 2,
+                lineWidth: -1,
+                noRefs: true,
+                sortKeys: false,
+                flowLevel: -1
+            });
+
+            previewContainer.textContent = yamlOutput;
         } catch (error) {
-            console.error('Error generating preview:', error);
-            previewContainer.innerHTML = `<div class="alert alert-danger">Error generating preview: ${error.message}</div>`;
+            console.error('Error generating YAML preview:', error);
+            previewContainer.textContent = `Error generating preview: ${error.message}`;
         }
     } catch (outerError) {
         // Catch any errors in the outer function
@@ -781,44 +754,60 @@ function showImportModal() {
     importModal.show();
 }
 
-// Import configuration
+// Import configuration (YAML only)
 function importConfig() {
-    const importData = document.getElementById('importData').value;
-    const importFormat = document.querySelector('input[name="importFormat"]:checked').value;
+    const importText = document.getElementById('importText').value;
+    const importFile = document.getElementById('importFile').files[0];
 
-    try {
-        let importedConfig;
+    if (!importText && !importFile) {
+        alert('Please provide a YAML configuration either by pasting text or selecting a file.');
+        return;
+    }
 
-        if (importFormat === 'json') {
-            importedConfig = JSON.parse(importData);
-        } else {
-            importedConfig = jsyaml.load(importData);
-        }
+    const processYaml = (yamlContent) => {
+        try {
+            // Parse YAML
+            const importedConfig = jsyaml.load(yamlContent);
 
-        // Validate imported config against schema
-        if (schema) {
-            const validate = ajv.compile(schema);
-            const valid = validate(importedConfig);
+            // Validate imported config against schema
+            if (schema && ajv) {
+                const validate = ajv.compile(schema);
+                const valid = validate(importedConfig);
 
-            if (!valid) {
-                showValidationErrors(validate.errors);
-                return;
+                if (!valid) {
+                    showValidationErrors(validate.errors);
+                    return;
+                }
             }
+
+            // Update config data
+            configData = importedConfig;
+
+            // Regenerate form
+            generateForm();
+
+            // Update preview
+            updatePreview();
+
+            // Close modal
+            importModal.hide();
+
+            alert('Configuration imported successfully!');
+        } catch (error) {
+            alert(`Error importing YAML configuration: ${error.message}`);
         }
+    };
 
-        // Update config data
-        configData = importedConfig;
-
-        // Regenerate form
-        generateForm();
-
-        // Update preview
-        updatePreview();
-
-        // Close modal
-        importModal.hide();
-    } catch (error) {
-        alert(`Error importing configuration: ${error.message}`);
+    if (importFile) {
+        // Read file
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            processYaml(e.target.result);
+        };
+        reader.readAsText(importFile);
+    } else {
+        // Use pasted text
+        processYaml(importText);
     }
 }
 
@@ -865,22 +854,55 @@ function resetForm() {
 
 // Validate configuration
 function validateConfig() {
+    console.log('Validate button clicked');
+    console.log('Schema available:', !!schema);
+    console.log('Ajv available:', !!ajv);
+    console.log('Config data:', configData);
+
     if (!schema) {
         alert('Schema not loaded. Cannot validate configuration.');
         return;
     }
 
-    const validate = ajv.compile(schema);
-    const valid = validate(configData);
-
-    if (valid) {
-        document.getElementById('validationResults').innerHTML =
-            '<div class="alert alert-success">Configuration is valid!</div>';
-    } else {
-        showValidationErrors(validate.errors);
+    if (!ajv) {
+        alert('Validation library (Ajv) not loaded. Cannot validate configuration.');
+        return;
     }
 
-    validationModal.show();
+    try {
+        const validate = ajv.compile(schema);
+        const valid = validate(configData);
+
+        console.log('Validation result:', valid);
+        console.log('Validation errors:', validate.errors);
+
+        if (valid) {
+            document.getElementById('validationResults').innerHTML =
+                '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Configuration is valid!</div>';
+
+            // Update status indicator
+            if (window.updateValidationStatus) {
+                window.updateValidationStatus('valid', 'Valid');
+            }
+        } else {
+            showValidationErrors(validate.errors);
+
+            // Update status indicator
+            if (window.updateValidationStatus) {
+                window.updateValidationStatus('invalid', `${validate.errors.length} errors`);
+            }
+        }
+
+        if (validationModal) {
+            validationModal.show();
+        } else {
+            console.error('Validation modal not initialized');
+            alert('Validation modal not available');
+        }
+    } catch (error) {
+        console.error('Error during validation:', error);
+        alert(`Validation error: ${error.message}`);
+    }
 }
 
 // Show validation errors

@@ -23,7 +23,7 @@ LIVEHTML_OPTS  = \
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile pip testyaml
+.PHONY: help Makefile pip testyaml config-ui schema
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
@@ -43,3 +43,14 @@ livehtml:
 		-b html \
 		-a "$(SOURCEDIR)" "$(BUILDDIR)"\
 		$(SPHINXOPTS)
+
+schema:
+	@echo "Generating JSON schema from SUEWSConfig Pydantic model..."
+	python gen_schema.py
+
+config-ui:
+	@echo "Starting SUEWS Configuration UI server..."
+	@echo "This will serve the config UI at http://localhost:8080"
+	@echo "Press Ctrl+C to stop the server"
+	@echo ""
+	cd source/_static && python run_server.py

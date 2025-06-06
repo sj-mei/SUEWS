@@ -102,9 +102,10 @@ The documentation includes a sophisticated web-based configuration builder that 
 - **Validation**: Live validation against the canonical schema
 
 ### Usage
-1. Generate schema: `python gen_schema.py`
-2. Access via documentation: `docs/source/_static/index.html`
-3. Use configuration builder: `docs/source/_static/config-builder.html`
+1. Generate schema: `make schema`
+2. Start local server: `make config-ui`
+3. Open browser to: `http://localhost:8080/index.html`
+4. For production: Access via deployed documentation at `_static/index.html`
 
 ### Integration
 - Schema auto-generated from `src/supy/data_model/core.py:SUEWSConfig`
@@ -148,8 +149,11 @@ make pip
 # Process CSV tables
 make proc-csv
 
-# Generate configuration schema
-python gen_schema.py
+# Generate configuration schema from Pydantic models
+make schema
+
+# Start local server for configuration UI testing
+make config-ui
 
 # Get help
 make help
@@ -183,8 +187,13 @@ All dependencies specified in `env.yml`:
 
 ### Schema Updates
 1. Modify Pydantic models in `src/supy/data_model/`
-2. Run `python gen_schema.py` to regenerate schema
+2. Run `make schema` to regenerate schema
 3. Configuration UI automatically uses updated schema
+
+### Local Development
+1. Run `make config-ui` to start local server
+2. Access configuration UI at `http://localhost:8080/index.html`
+3. Test configuration builder at `http://localhost:8080/config-builder.html`
 
 ### Custom Features
 - Dynamic table generation from CSV + RST descriptions
