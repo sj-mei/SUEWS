@@ -81,23 +81,49 @@ This directory contains the complete documentation build system for SUEWS (Surfa
 #### Styling and Configuration
 - **`_static/`**: Custom CSS, JavaScript, and theme overrides
   - `theme_overrides.css`: RTD theme customizations
-  - Web application assets and Node.js modules
+  - **Configuration UI system**: Interactive YAML config builder
+    - `config-builder.html`: Main configuration interface
+    - `config-builder.js`: Configuration logic and validation
+    - `config-builder.css`: UI styling
+    - `suews-config-schema.json`: JSON Schema from Pydantic models
+    - `index.html`: Landing page for configuration tools
 
 - **`_ext/`**: Custom Sphinx extensions
 
-### Special Features
+## Configuration UI System
 
-#### Multi-format Output
+### Schema-Driven Configuration Builder
+
+The documentation includes a sophisticated web-based configuration builder that helps users create SUEWS YAML configurations:
+
+- **Schema Generation**: `gen_schema.py` extracts JSON Schema from SUEWSConfig Pydantic model
+- **Interactive Forms**: Bootstrap-based UI with real-time validation
+- **Export Capability**: Generate YAML/JSON files ready for SUEWS
+- **Validation**: Live validation against the canonical schema
+
+### Usage
+1. Generate schema: `python gen_schema.py`
+2. Access via documentation: `docs/source/_static/index.html`
+3. Use configuration builder: `docs/source/_static/config-builder.html`
+
+### Integration
+- Schema auto-generated from `src/supy/data_model/core.py:SUEWSConfig`
+- UI integrated into Sphinx documentation build
+- Single source of truth: Pydantic models → JSON Schema → Web UI
+
+## Special Features
+
+### Multi-format Output
 - **HTML**: Web documentation with search, cross-references
 - **PDF**: LaTeX-generated manual via `lualatex`/`pdflatex`
 - **API docs**: Doxygen-generated Fortran/C API reference
 
-#### Interactive Elements
-- **Web UI**: Configuration interface in `suews-config-ui/`
+### Interactive Elements
+- **Configuration Builder**: Schema-driven YAML generator
 - **Jupyter integration**: Via `nbsphinx` for notebook documentation
 - **Live preview**: `make livehtml` with auto-rebuild
 
-#### Bibliography System
+### Bibliography System
 - Custom citation styles with `sphinxcontrib.bibtex`
 - Author-year format with parenthetical citations
 - Multiple bibliography files for different reference types
@@ -122,6 +148,9 @@ make pip
 # Process CSV tables
 make proc-csv
 
+# Generate configuration schema
+python gen_schema.py
+
 # Get help
 make help
 ```
@@ -133,6 +162,7 @@ The build system automatically:
 - Updates bibliography formatting
 - Handles multi-language content
 - Manages cross-references and links
+- Generates JSON Schema for configuration UI
 
 ### Dependencies
 All dependencies specified in `env.yml`:
@@ -150,6 +180,11 @@ All dependencies specified in `env.yml`:
 2. Update `index.rst` table of contents if needed
 3. Add images to `images/` with descriptive names
 4. Use proper cross-referencing syntax
+
+### Schema Updates
+1. Modify Pydantic models in `src/supy/data_model/`
+2. Run `python gen_schema.py` to regenerate schema
+3. Configuration UI automatically uses updated schema
 
 ### Custom Features
 - Dynamic table generation from CSV + RST descriptions
