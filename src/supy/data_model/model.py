@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 import pandas as pd
 from enum import Enum
 
-from .type import ValueWithDOI, Reference
+from .type import RefValue, Reference
 from .type import init_df_state
 
 
@@ -16,7 +16,7 @@ class EmissionsMethod(Enum):
     1: Not recommended in this version. QF calculated according to Loridan et al. [2011] using coefficients specified. Modelled values will be used even if QF is provided in the meteorological forcing file. CO2 emission is not calculated
 
     2: Recommended in this version. QF calculated according to Järvi et al. [2011] using coefficients specified and diurnal patterns specified. Modelled values will be used even if QF is provided in the meteorological forcing file. CO2 emission is not calculated
-    
+
     3: Updated Loridan et al. [2011] method using daily (not instantaneous) air temperature (HDD(id-1,3)) using coefficients specified. CO2 emission is not calculated
 
     4: Järvi et al. [2019] method, in addition to anthropogenic heat due to building energy use calculated by Järvi et al. [2011], that due to metabolism and traffic is also calculated using coefficients specified and diurnal patterns specified. Modelled values will be used even if QF is provided in the meteorological forcing file. CO2 emission is not calculated
@@ -30,7 +30,7 @@ class EmissionsMethod(Enum):
     L11_UPDATED = 3
     J19 = 4
     J19_UPDATED = 4
-  
+
 
     def __int__(self):
         """Representation showing just the value"""
@@ -134,20 +134,20 @@ class StabilityMethod(Enum):
     '''
     0: Not used
     1: Not used
-    2: 
+    2:
     Momentum:
         unstable: Dyer [1974] modified by Högström [1988]
         stable: Van Ulden and Holtslag [1985]
     Heat: Dyer [1974] modified by Högström [1988]
     Not recommended in this version.
-    
+
     3:
     Momentum: Campbell and Norman [1998] (Eq 7.27, Pg97)
     Heat
         unstable: Campbell and Norman [1998]
         stable: Campbell and Norman [1998]
     Recommended in this version.
-    
+
     4:
     Momentum: Businger et al. [1971] modified by Högström [1988]
     Heat: Businger et al. [1971] modified by Högström [1988]
@@ -266,7 +266,7 @@ class SnowUse(Enum):
     DISABLED = 0  # Snow calculations are performed
     ENABLED = 1  # Snow calculations are not performed
     '''
-    DISABLED = 0 
+    DISABLED = 0
     ENABLED = 1
 
     def __int__(self):
@@ -311,61 +311,75 @@ for enum_class in [
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: ValueWithDOI[NetRadiationMethod] = Field(
-        default=ValueWithDOI(NetRadiationMethod.LDOWN_AIR),
+    netradiationmethod: RefValue[NetRadiationMethod] = Field(
+        default=RefValue(NetRadiationMethod.LDOWN_AIR),
         description="Method used to calculate net radiation",
+        unit="dimensionless"
     )
-    emissionsmethod: ValueWithDOI[EmissionsMethod] = Field(
-        default=ValueWithDOI(EmissionsMethod.J11),
+    emissionsmethod: RefValue[EmissionsMethod] = Field(
+        default=RefValue(EmissionsMethod.J11),
         description="Method used to calculate anthropogenic emissions",
+        unit="dimensionless"
     )
-    storageheatmethod: ValueWithDOI[StorageHeatMethod] = Field(
-        default=ValueWithDOI(StorageHeatMethod.OHM_WITHOUT_QF),
+    storageheatmethod: RefValue[StorageHeatMethod] = Field(
+        default=RefValue(StorageHeatMethod.OHM_WITHOUT_QF),
         description="Method used to calculate storage heat flux",
+        unit="dimensionless"
     )
-    ohmincqf: ValueWithDOI[OhmIncQf] = Field(
-        default=ValueWithDOI(OhmIncQf.EXCLUDE),
+    ohmincqf: RefValue[OhmIncQf] = Field(
+        default=RefValue(OhmIncQf.EXCLUDE),
         description="Include anthropogenic heat in OHM calculations (1) or not (0)",
+        unit="dimensionless"
     )
-    roughlenmommethod: ValueWithDOI[RoughnessMethod] = Field(
-        default=ValueWithDOI(RoughnessMethod.VARIABLE),
+    roughlenmommethod: RefValue[RoughnessMethod] = Field(
+        default=RefValue(RoughnessMethod.VARIABLE),
         description="Method used to calculate momentum roughness length",
+        unit="dimensionless"
     )
-    roughlenheatmethod: ValueWithDOI[RoughnessMethod] = Field(
-        default=ValueWithDOI(RoughnessMethod.VARIABLE),
+    roughlenheatmethod: RefValue[RoughnessMethod] = Field(
+        default=RefValue(RoughnessMethod.VARIABLE),
         description="Method used to calculate heat roughness length",
+        unit="dimensionless"
     )
-    stabilitymethod: ValueWithDOI[StabilityMethod] = Field(
-        default=ValueWithDOI(StabilityMethod.CAMPBELL_NORMAN),
+    stabilitymethod: RefValue[StabilityMethod] = Field(
+        default=RefValue(StabilityMethod.CAMPBELL_NORMAN),
         description="Method used for atmospheric stability calculation",
+        unit="dimensionless"
     )
-    smdmethod: ValueWithDOI[SMDMethod] = Field(
-        default=ValueWithDOI(SMDMethod.MODELLED),
+    smdmethod: RefValue[SMDMethod] = Field(
+        default=RefValue(SMDMethod.MODELLED),
         description="Method used to calculate soil moisture deficit",
+        unit="dimensionless"
     )
-    waterusemethod: ValueWithDOI[WaterUseMethod] = Field(
-        default=ValueWithDOI(WaterUseMethod.MODELLED),
+    waterusemethod: RefValue[WaterUseMethod] = Field(
+        default=RefValue(WaterUseMethod.MODELLED),
         description="Method used to calculate water use",
+        unit="dimensionless"
     )
-    diagmethod: ValueWithDOI[DiagMethod] = Field(
-        default=ValueWithDOI(DiagMethod.VARIABLE),
+    diagmethod: RefValue[DiagMethod] = Field(
+        default=RefValue(DiagMethod.VARIABLE),
         description="Method used for model diagnostics",
+        unit="dimensionless"
     )
-    faimethod: ValueWithDOI[FAIMethod] = Field(
-        default=ValueWithDOI(FAIMethod.FIXED),
+    faimethod: RefValue[FAIMethod] = Field(
+        default=RefValue(FAIMethod.FIXED),
         description="Method used to calculate frontal area index",
+        unit="dimensionless"
     )
-    localclimatemethod: ValueWithDOI[LocalClimateMethod] = Field(
-        default=ValueWithDOI(LocalClimateMethod.NONE),
+    localclimatemethod: RefValue[LocalClimateMethod] = Field(
+        default=RefValue(LocalClimateMethod.NONE),
         description="Method used for local climate zone calculations",
+        unit="dimensionless"
     )
-    snowuse: ValueWithDOI[SnowUse] = Field(
-        default=ValueWithDOI(SnowUse.DISABLED),
+    snowuse: RefValue[SnowUse] = Field(
+        default=RefValue(SnowUse.DISABLED),
         description="Include snow calculations (1) or not (0)",
+        unit="dimensionless"
     )
-    stebbsmethod: ValueWithDOI[StebbsMethod] = Field(
-        default=ValueWithDOI(StebbsMethod.NONE),
+    stebbsmethod: RefValue[StebbsMethod] = Field(
+        default=RefValue(StebbsMethod.NONE),
         description="Method used for stebbs calculations",
+        unit="dimensionless"
     )
 
     ref: Optional[Reference] = None
@@ -479,7 +493,7 @@ class ModelPhysics(BaseModel):
 
         for attr in list_attr:
             try:
-                properties[attr] = ValueWithDOI(int(df.loc[grid_id, (attr, "0")]))
+                properties[attr] = RefValue(int(df.loc[grid_id, (attr, "0")]))
             except KeyError:
                 raise ValueError(f"Missing attribute '{attr}' in the DataFrame")
 
@@ -490,11 +504,11 @@ class ModelControl(BaseModel):
     tstep: int = Field(
         default=300, description="Time step in seconds for model calculations"
     )
-    forcing_file: ValueWithDOI[str] = Field(
-        default=ValueWithDOI("forcing.txt"),
+    forcing_file: RefValue[str] = Field(
+        default=RefValue("forcing.txt"),
         description="Path to meteorological forcing data file",
     )
-    kdownzen: Optional[ValueWithDOI[int]] = Field(
+    kdownzen: Optional[RefValue[int]] = Field(
         default=None,
         description="Use zenithal correction for downward shortwave radiation",
     )

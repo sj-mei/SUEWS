@@ -5,6 +5,9 @@
 <!-- [doc]: Documentation updates -->
 <!-- [change]: Changes exposed to users -->
 
+- 06 Jun 2025:
+  - [doc] Added comprehensive unit documentation to all RefValue parameters in data model, improving dimensional consistency and user understanding of expected parameter scales and ranges (#398)
+
 - 18 Feb 2023:
   - [maintenance] merged supy into suews
   - [maintenance] re-organised file structure

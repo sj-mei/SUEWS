@@ -426,3 +426,7 @@ SUEWS_V20*
 
 # quick test script
 quick-test.py
+
+# CLAUDE.md is an auxiliary file for Claude AI used locally
+CLAUDE.md
+.claude/settings.local.json
