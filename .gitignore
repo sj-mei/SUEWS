@@ -564,6 +564,7 @@ quick-test-script.py
 # binary files
 SUEWS_V20*
 
+<<<<<<< HEAD
 # quick test script
 quick-test.py
 
@@ -572,3 +573,9 @@ CLAUDE.md
 .claude/settings.local.json
 # auto-generated files for building docs
 docs/schema.json
+=======
+# auto-generated files for building docs
+docs/schema.json
+# quick test script
+quick-test.py
+>>>>>>> 4be962f409c3d75c0025c849cdee3f259a55d6f3
