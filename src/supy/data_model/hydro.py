@@ -8,6 +8,7 @@ import math
 class WaterDistribution(BaseModel):
     # Optional fields for all possible distributions
     to_paved: Optional[RefValue[float]] = Field(
+        None,
         description="Fraction of water redistributed to paved surfaces within the grid",
         unit="dimensionless",
         ge=0,
