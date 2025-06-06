@@ -30,7 +30,9 @@ document.addEventListener('DOMContentLoaded', function () {
             ajv = new Ajv({
                 allErrors: true,
                 verbose: true,
-                jsonPointers: true
+                jsonPointers: true,
+                unknownFormats: 'ignore',
+                strict: false
             });
             console.log('Ajv initialized successfully');
         } else {
@@ -456,7 +458,8 @@ function generateObjectFields(objSchema, objData, container, path) {
 
     // Process each property in the schema
     Object.keys(resolvedSchema.properties).forEach(propKey => {
-        let propSchema = resolvedSchema.properties[propKey];
+        const originalPropSchema = resolvedSchema.properties[propKey];
+        let propSchema = originalPropSchema;
 
         // Handle $ref in property schema
         if (propSchema.$ref && propSchema.$ref.startsWith('#/$defs/')) {
@@ -482,16 +485,16 @@ function generateObjectFields(objSchema, objData, container, path) {
 
         // Get the section for this property
         let section = defaultSection;
-        if (propSchema.section) {
-            if (!sections[propSchema.section]) {
-                sections[propSchema.section] = document.createElement('div');
-                sections[propSchema.section].className = 'form-section';
+        if (originalPropSchema.section) {
+            if (!sections[originalPropSchema.section]) {
+                sections[originalPropSchema.section] = document.createElement('div');
+                sections[originalPropSchema.section].className = 'form-section';
                 const sectionTitle = document.createElement('h4');
-                sectionTitle.textContent = propSchema.section;
-                sections[propSchema.section].appendChild(sectionTitle);
-                container.appendChild(sections[propSchema.section]);
+                sectionTitle.textContent = originalPropSchema.section;
+                sections[originalPropSchema.section].appendChild(sectionTitle);
+                container.appendChild(sections[originalPropSchema.section]);
             }
-            section = sections[propSchema.section];
+            section = sections[originalPropSchema.section];
         }
 
         // Generate field based on property type
@@ -501,7 +504,7 @@ function generateObjectFields(objSchema, objData, container, path) {
         if (propSchema.properties &&
             propSchema.properties.value &&
             propSchema.properties.ref) {
-            generateValueWithDOIField(propSchema, objData[propKey], section, propPath, propKey);
+            generateValueWithDOIField(originalPropSchema, objData[propKey], section, propPath, propKey);
         } else if (propSchema.type === 'object') {
             // Create a collapsible card for nested objects
             const card = document.createElement('div');
@@ -517,7 +520,7 @@ function generateObjectFields(objSchema, objData, container, path) {
             collapseButton.className = 'btn btn-link';
             collapseButton.setAttribute('data-bs-toggle', 'collapse');
             collapseButton.setAttribute('data-bs-target', `#collapse-${propPath.replace(/\./g, '-')}`);
-            collapseButton.textContent = propSchema.title || formatPropertyName(propKey);
+            collapseButton.textContent = originalPropSchema.title || propSchema.title || formatPropertyName(propKey);
 
             cardTitle.appendChild(collapseButton);
             cardHeader.appendChild(cardTitle);
@@ -551,7 +554,7 @@ function generateObjectFields(objSchema, objData, container, path) {
             collapseButton.className = 'btn btn-link';
             collapseButton.setAttribute('data-bs-toggle', 'collapse');
             collapseButton.setAttribute('data-bs-target', `#collapse-${propPath.replace(/\./g, '-')}`);
-            collapseButton.textContent = propSchema.title || formatPropertyName(propKey);
+            collapseButton.textContent = originalPropSchema.title || propSchema.title || formatPropertyName(propKey);
 
             cardTitle.appendChild(collapseButton);
             cardHeader.appendChild(cardTitle);
@@ -572,7 +575,7 @@ function generateObjectFields(objSchema, objData, container, path) {
             section.appendChild(card);
         } else {
             // Generate field for primitive type
-            generatePrimitiveField(propSchema, objData[propKey], section, propPath, propKey);
+            generatePrimitiveField(originalPropSchema, objData[propKey], section, propPath, propKey);
         }
     });
 }
@@ -621,13 +624,13 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
     const min = valueSchema.minimum !== undefined ? valueSchema.minimum : null;
     const max = valueSchema.maximum !== undefined ? valueSchema.maximum : null;
 
-    // Format the label to include both the wrapper type and the actual field name
-    const displayLabel = resolvedSchema.title || `ValueWithDOI[${formatPropertyName(propKey)}]`;
+    // Use the property's title first, then format the property name, avoiding the generic ValueWithDOI title
+    const displayLabel = propSchema.title || formatPropertyName(propKey);
 
     // Get the description from the property schema first, then from the resolved schema
     const description = propSchema.description || resolvedSchema.description || null;
 
-    console.log(`ValueWithDOI field: ${path}, description: ${description}`);
+    console.log(`ValueWithDOI field: ${path}, label: ${displayLabel}, description: ${description}`);
 
     // Create form field with DOI
     createValueWithDOIField(
@@ -852,6 +855,41 @@ function resetForm() {
     }
 }
 
+// Convert JSON Schema Draft 2020-12 to v6 compatible format
+function convertSchemaToV6Compatible(schema) {
+    // This function recursively converts newer schema features to v6 compatible ones
+    function convertObject(obj) {
+        if (typeof obj !== 'object' || obj === null) {
+            return obj;
+        }
+
+        if (Array.isArray(obj)) {
+            return obj.map(convertObject);
+        }
+
+        const converted = {};
+        for (const [key, value] of Object.entries(obj)) {
+            // Convert newer keywords to older equivalents where possible
+            if (key === 'prefixItems') {
+                // Convert prefixItems to items (simplified)
+                converted.items = convertObject(value);
+            } else if (key === 'unevaluatedProperties') {
+                // Skip unevaluatedProperties as it's not supported in v6
+                continue;
+            } else if (key === 'unevaluatedItems') {
+                // Skip unevaluatedItems as it's not supported in v6
+                continue;
+            } else {
+                converted[key] = convertObject(value);
+            }
+        }
+
+        return converted;
+    }
+
+    return convertObject(schema);
+}
+
 // Validate configuration
 function validateConfig() {
     console.log('Validate button clicked');
@@ -870,7 +908,19 @@ function validateConfig() {
     }
 
     try {
-        const validate = ajv.compile(schema);
+        // Check if schema has the problematic $schema property and handle it
+        let schemaToUse = { ...schema };
+
+        if (schema.$schema && schema.$schema.includes('2020-12')) {
+            console.log('Detected JSON Schema Draft 2020-12, adapting for Ajv v6...');
+            // Remove the $schema property to avoid compatibility issues
+            delete schemaToUse.$schema;
+
+            // Convert any 2020-12 specific features to v6 compatible ones
+            schemaToUse = convertSchemaToV6Compatible(schemaToUse);
+        }
+
+        const validate = ajv.compile(schemaToUse);
         const valid = validate(configData);
 
         console.log('Validation result:', valid);
@@ -901,7 +951,27 @@ function validateConfig() {
         }
     } catch (error) {
         console.error('Error during validation:', error);
-        alert(`Validation error: ${error.message}`);
+
+        // Provide more helpful error messages
+        let errorMessage = error.message;
+        if (error.message.includes('schema')) {
+            errorMessage = 'Schema validation error. The configuration schema may be incompatible with the current validator.';
+        }
+
+        document.getElementById('validationResults').innerHTML =
+            `<div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Validation Error:</strong><br>
+                ${errorMessage}
+                <br><br>
+                <small>This may be due to schema compatibility issues. Please check the console for more details.</small>
+            </div>`;
+
+        if (validationModal) {
+            validationModal.show();
+        } else {
+            alert(`Validation error: ${errorMessage}`);
+        }
     }
 }
 
@@ -918,20 +988,27 @@ function showValidationErrors(errors) {
         errorItem.className = 'validation-error';
 
         // Format the error message
-        let message = `${error.instancePath || '/'}: ${error.message}`;
+        const errorPath = error.instancePath || error.dataPath || '/';
+        let message = `${errorPath}: ${error.message || 'Unknown validation error'}`;
 
         // Add additional details for specific error types
-        if (error.keyword === 'enum') {
+        if (error.keyword === 'enum' && error.params && error.params.allowedValues) {
             message += `. Allowed values: ${error.params.allowedValues.join(', ')}`;
-        } else if (error.keyword === 'required') {
+        } else if (error.keyword === 'required' && error.params && error.params.missingProperty) {
             message += `: ${error.params.missingProperty}`;
         }
 
         errorItem.textContent = message;
 
         // Add button to navigate to the field if possible
-        const fieldId = error.instancePath.substring(1).replace(/\//g, '.').replace(/\[(\d+)\]/g, '[$1]');
-        const field = document.getElementById(fieldId);
+        const instancePath = error.instancePath || error.dataPath || '';
+        let fieldId = '';
+        if (instancePath) {
+            fieldId = instancePath.startsWith('/') ?
+                instancePath.substring(1).replace(/\//g, '.').replace(/\[(\d+)\]/g, '[$1]') :
+                instancePath.replace(/\//g, '.').replace(/\[(\d+)\]/g, '[$1]');
+        }
+        const field = fieldId ? document.getElementById(fieldId) : null;
 
         if (field) {
             const navButton = document.createElement('button');
@@ -1275,6 +1352,7 @@ function generateGeneralFields() {
 
 // Generate field for primitive value
 function generatePrimitiveField(propSchema, propData, container, path, propKey) {
+    const originalPropSchema = propSchema;
     // Handle $ref in schema
     let resolvedSchema = propSchema;
     if (propSchema.$ref && propSchema.$ref.startsWith('#/$defs/')) {
@@ -1302,10 +1380,10 @@ function generatePrimitiveField(propSchema, propData, container, path, propKey) 
     createFormField(
         container,
         path.replace(/\./g, '-'),
-        resolvedSchema.title || formatPropertyName(propKey),
+        originalPropSchema.title || resolvedSchema.title || formatPropertyName(propKey),
         fieldType,
         propData,
-        resolvedSchema.description,
+        originalPropSchema.description || resolvedSchema.description,
         (value) => {
             // Convert value to appropriate type
             const convertedValue = convertValueToType(value, resolvedSchema.type);
@@ -1649,7 +1727,7 @@ function createFormField(container, id, label, type, value, description, onChang
 
 // Add the missing createValueWithDOIField function
 function createValueWithDOIField(container, id, label, type, value, ref, description, onValueChange, onRefChange, options = null, min = null, max = null) {
-    console.log(`Creating ValueWithDOI field: ${id}, type: ${type}`);
+    console.log(`Creating ValueWithDOI field: ${id}, label: ${label}, type: ${type}`);
 
     const fieldDiv = document.createElement('div');
     fieldDiv.className = 'form-field value-with-doi';
@@ -1661,13 +1739,8 @@ function createValueWithDOIField(container, id, label, type, value, ref, descrip
     const labelEl = document.createElement('label');
     labelEl.setAttribute('for', id);
 
-    // Extract the actual field name from the path if it's in the format ValueWithDOI[FieldName]
-    const bracketMatch = label.match(/ValueWithDOI\[(.*?)\]/);
-    if (bracketMatch && bracketMatch[1]) {
-        labelEl.textContent = bracketMatch[1];
-    } else {
-        labelEl.textContent = label;
-    }
+    // Use the label as-is since it should already be properly formatted
+    labelEl.textContent = label;
 
     labelDiv.appendChild(labelEl);
 
