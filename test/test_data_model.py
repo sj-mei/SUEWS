@@ -9,10 +9,7 @@ from supy.data_model import (
     Site,
     SiteProperties,
     InitialStates,
-    AnthropogenicEmissions,
-    AnthropogenicHeat,
-    CO2Params,
-    ValueWithDOI,
+    RefValue,
 )
 
 
@@ -94,26 +91,26 @@ class TestSUEWSConfig(unittest.TestCase):
 
         # Test storageheatmethod and ohmincqf validation
         with self.assertRaises(ValueError):
-            model.physics.storageheatmethod = ValueWithDOI(1)
-            model.physics.ohmincqf = ValueWithDOI(1)
+            model.physics.storageheatmethod = RefValue(1)
+            model.physics.ohmincqf = RefValue(1)
             model.physics.model_validate(model.physics)
 
         with self.assertRaises(ValueError):
-            model.physics.storageheatmethod = ValueWithDOI(2)
-            model.physics.ohmincqf = ValueWithDOI(0)
+            model.physics.storageheatmethod = RefValue(2)
+            model.physics.ohmincqf = RefValue(0)
             model.physics.model_validate(model.physics)
 
     def test_site_properties(self):
         """Test site properties data model."""
         # Test latitude bounds
         with self.assertRaises(ValueError):
-            properties = SiteProperties(lat=ValueWithDOI(91.0))  # Invalid latitude
+            properties = SiteProperties(lat=RefValue(91.0))  # Invalid latitude
 
         with self.assertRaises(ValueError):
-            properties = SiteProperties(lat=ValueWithDOI(-91.0))  # Invalid latitude
+            properties = SiteProperties(lat=RefValue(-91.0))  # Invalid latitude
 
         # Test valid latitude
-        properties = SiteProperties(lat=ValueWithDOI(51.5))  # London's latitude
+        properties = SiteProperties(lat=RefValue(51.5))  # London's latitude
         self.assertEqual(properties.lat.value, 51.5)
 
     def test_initial_states(self):
@@ -122,15 +119,15 @@ class TestSUEWSConfig(unittest.TestCase):
 
         # Test snow albedo bounds
         with self.assertRaises(ValueError):
-            states.snowalb = ValueWithDOI(1.5)  # Invalid albedo > 1
+            states.snowalb = RefValue(1.5)  # Invalid albedo > 1
             InitialStates.model_validate(states.model_dump())
 
         with self.assertRaises(ValueError):
-            states.snowalb = ValueWithDOI(-0.1)  # Invalid albedo < 0
+            states.snowalb = RefValue(-0.1)  # Invalid albedo < 0
             InitialStates.model_validate(states.model_dump())
 
         # Test valid snow albedo
-        states.snowalb = ValueWithDOI(0.8)
+        states.snowalb = RefValue(0.8)
         validated_states = InitialStates.model_validate(states.model_dump())
         self.assertEqual(validated_states.snowalb.value, 0.8)
 
@@ -155,8 +152,8 @@ class TestSUEWSConfig(unittest.TestCase):
 
         # Convert back and check if sites are preserved
         config_reconst = SUEWSConfig.from_df_state(df_state)
-        self.assertEqual(len(config_reconst.sites), 3)
-        self.assertEqual([site.gridiv for site in config_reconst.sites], [0, 1, 2])
+        self.assertEqual(len(config_reconst.site), 3)
+        self.assertEqual([site.gridiv for site in config_reconst.site], [0, 1, 2])
 
 
 if __name__ == '__main__':
