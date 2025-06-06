@@ -1,8 +1,7 @@
-import math
 from typing import Optional
-from pydantic import BaseModel, Field, PrivateAttr, model_validator
+from pydantic import BaseModel, Field, model_validator
 from .type import RefValue, Reference
-from .profile import HourlyProfile, DayProfile, WeeklyProfile
+from .profile import HourlyProfile
 from .type import init_df_state
 from .surface import (
     SurfaceType,
@@ -39,7 +38,7 @@ class VegetationParams(BaseModel):
 
 class Conductance(BaseModel):
     g_max: RefValue[float] = Field(
-        default=RefValue(40.0), 
+        default=RefValue(40.0),
         description="Maximum surface conductance for photosynthesis",
         unit="mm s^-1"
     )
@@ -69,32 +68,32 @@ class Conductance(BaseModel):
         unit="dimensionless"
     )
     kmax: RefValue[float] = Field(
-        default=RefValue(1200.0), 
+        default=RefValue(1200.0),
         description="Maximum incoming shortwave radiation",
         unit="W m^-2"
     )
     gsmodel: RefValue[int] = Field(
-        default=RefValue(1), 
+        default=RefValue(1),
         description="Stomatal conductance model selection",
         unit="dimensionless"
     )
     s1: RefValue[float] = Field(
-        default=RefValue(0.2), 
+        default=RefValue(0.2),
         description="Lower soil moisture threshold for conductance response",
         unit="dimensionless"
     )
     s2: RefValue[float] = Field(
-        default=RefValue(0.5), 
+        default=RefValue(0.5),
         description="Parameter related to soil moisture dependence",
         unit="mm"
     )
     tl: RefValue[float] = Field(
-        default=RefValue(0.0), 
+        default=RefValue(0.0),
         description="Lower air temperature threshold for conductance response",
         unit="degC"
     )
     th: RefValue[float] = Field(
-        default=RefValue(50.0), 
+        default=RefValue(50.0),
         description="Upper air temperature threshold for conductance response",
         unit="degC"
     )
@@ -282,12 +281,12 @@ class LAIParams(BaseModel):
         unit="degC*day"
     )
     laimin: RefValue[float] = Field(
-        default=RefValue(0.1), 
+        default=RefValue(0.1),
         description="Leaf-off wintertime LAI value",
         unit="m^2 m^-2"
     )
     laimax: RefValue[float] = Field(
-        default=RefValue(10.0), 
+        default=RefValue(10.0),
         description="Full leaf-on summertime LAI value",
         unit="m^2 m^-2"
     )
@@ -407,20 +406,20 @@ class LAIParams(BaseModel):
 
 class VegetatedSurfaceProperties(SurfaceProperties):
     alb: RefValue[float] = Field(
-        ge=0, le=1, 
-        description="Albedo", 
+        ge=0, le=1,
+        description="Albedo",
         unit="dimensionless",
         default=RefValue(0.2)
     )
     alb_min: RefValue[float] = Field(
-        ge=0, le=1, 
-        description="Minimum albedo", 
+        ge=0, le=1,
+        description="Minimum albedo",
         unit="dimensionless",
         default=RefValue(0.2)
     )
     alb_max: RefValue[float] = Field(
-        ge=0, le=1, 
-        description="Maximum albedo", 
+        ge=0, le=1,
+        description="Maximum albedo",
         unit="dimensionless",
         default=RefValue(0.3)
     )
@@ -548,18 +547,18 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
 class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD here?
     alb: RefValue[float] = Field(
-        ge=0, le=1, 
-        default=RefValue(0.2), 
+        ge=0, le=1,
+        default=RefValue(0.2),
         description="Albedo",
         unit="dimensionless"
     )
     faievetree: RefValue[float] = Field(
-        default=RefValue(0.1), 
+        default=RefValue(0.1),
         description="Frontal area index of evergreen trees",
         unit="dimensionless"
     )
     evetreeh: RefValue[float] = Field(
-        default=RefValue(15.0), 
+        default=RefValue(15.0),
         description="Evergreen tree height",
         unit="m"
     )
@@ -615,40 +614,40 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
 
 class DectrProperties(VegetatedSurfaceProperties):
     alb: RefValue[float] = Field(
-        ge=0, le=1, 
-        default=RefValue(0.2), 
+        ge=0, le=1,
+        default=RefValue(0.2),
         description="Albedo",
         unit="dimensionless"
     )
     faidectree: RefValue[float] = Field(
-        default=RefValue(0.1), 
+        default=RefValue(0.1),
         description="Frontal area index of deciduous trees",
         unit="dimensionless"
     )
     dectreeh: RefValue[float] = Field(
-        default=RefValue(15.0), 
+        default=RefValue(15.0),
         description="Deciduous tree height",
         unit="m"
     )
     pormin_dec: RefValue[float] = Field(
-        ge=0.1, le=0.9, 
-        default=RefValue(0.2), 
+        ge=0.1, le=0.9,
+        default=RefValue(0.2),
         description="Minimum porosity",
         unit="dimensionless"
     )  # pormin_dec cannot be less than 0.1 and greater than 0.9
     pormax_dec: RefValue[float] = Field(
-        ge=0.1, le=0.9, 
-        default=RefValue(0.6), 
+        ge=0.1, le=0.9,
+        default=RefValue(0.6),
         description="Maximum porosity",
         unit="dimensionless"
     )  # pormax_dec cannot be less than 0.1 and greater than 0.9
     capmax_dec: RefValue[float] = Field(
-        default=RefValue(100.0), 
+        default=RefValue(100.0),
         description="Maximum water capacity",
         unit="mm"
     )
     capmin_dec: RefValue[float] = Field(
-        default=RefValue(10.0), 
+        default=RefValue(10.0),
         description="Minimum water capacity",
         unit="mm"
     )
@@ -749,57 +748,57 @@ class GrassProperties(VegetatedSurfaceProperties):
 
 class SnowParams(BaseModel):
     crwmax: RefValue[float] = Field(
-        default=RefValue(0.1), 
+        default=RefValue(0.1),
         description="Maximum water holding capacity of snow",
         unit="mm"
     )
     crwmin: RefValue[float] = Field(
-        default=RefValue(0.05), 
+        default=RefValue(0.05),
         description="Minimum water holding capacity of snow",
         unit="mm"
     )
     narp_emis_snow: RefValue[float] = Field(
-        default=RefValue(0.99), 
+        default=RefValue(0.99),
         description="Snow surface emissivity",
         unit="dimensionless"
     )
     preciplimit: RefValue[float] = Field(
-        default=RefValue(2.2), 
+        default=RefValue(2.2),
         description="Temperature threshold for snow vs rain precipitation",
         unit="degC"
     )
     preciplimitalb: RefValue[float] = Field(
-        default=RefValue(0.1), 
+        default=RefValue(0.1),
         description="Precipitation threshold for snow albedo aging",
         unit="mm"
     )
     snowalbmax: RefValue[float] = Field(
-        default=RefValue(0.85), 
+        default=RefValue(0.85),
         description="Maximum snow albedo",
         unit="dimensionless"
     )
     snowalbmin: RefValue[float] = Field(
-        default=RefValue(0.4), 
+        default=RefValue(0.4),
         description="Minimum snow albedo",
         unit="dimensionless"
     )
     snowdensmin: RefValue[float] = Field(
-        default=RefValue(100.0), 
+        default=RefValue(100.0),
         description="Minimum snow density",
         unit="kg m^-3"
     )
     snowdensmax: RefValue[float] = Field(
-        default=RefValue(400.0), 
+        default=RefValue(400.0),
         description="Maximum snow density",
         unit="kg m^-3"
     )
     snowlimbldg: RefValue = Field(
-        default=RefValue(0.1), 
+        default=RefValue(0.1),
         description="Maximum snow depth limit on buildings",
         unit="m"
     )
     snowlimpaved: RefValue = Field(
-        default=RefValue(0.1), 
+        default=RefValue(0.1),
         description="Maximum snow depth limit on paved surfaces",
         unit="m"
     )
@@ -807,27 +806,27 @@ class SnowParams(BaseModel):
         default_factory=HourlyProfile, description="24-hour snow profile"
     )
     tau_a: RefValue[float] = Field(
-        default=RefValue(0.018), 
+        default=RefValue(0.018),
         description="Time constant for snow albedo aging in cold snow",
         unit="dimensionless"
     )
     tau_f: RefValue[float] = Field(
-        default=RefValue(0.11), 
+        default=RefValue(0.11),
         description="Time constant for snow albedo aging in melting snow",
         unit="dimensionless"
     )
     tau_r: RefValue[float] = Field(
-        default=RefValue(0.05), 
+        default=RefValue(0.05),
         description="Time constant for snow albedo aging in refreezing snow",
         unit="dimensionless"
     )
     tempmeltfact: RefValue[float] = Field(
-        default=RefValue(0.12), 
+        default=RefValue(0.12),
         description="Hourly temperature melt factor of snow",
         unit="mm K^-1 h^-1"
     )
     radmeltfact: RefValue[float] = Field(
-        default=RefValue(0.0016), 
+        default=RefValue(0.0016),
         description="Hourly radiation melt factor of snow",
         unit="mm W^-1 m^2 h^-1"
     )
@@ -1282,14 +1281,14 @@ class ArchetypeProperties(BaseModel):
 
         # Create an empty DataFrame with MultiIndex columns
         columns = [
-            (field.lower(), "0") for field in self.model_fields.keys() if field != "ref"
+            (field.lower(), "0") for field in self.__class__.model_fields.keys() if field != "ref"
         ]
         df_state = pd.DataFrame(
             index=[grid_id], columns=pd.MultiIndex.from_tuples(columns)
         )
 
         # Set the values in the DataFrame
-        for field_name, field_info in self.model_fields.items():
+        for field_name, field_info in self.__class__.model_fields.items():
             if field_name == "ref":
                 continue
             attribute = getattr(self, field_name)
@@ -1629,14 +1628,14 @@ class StebbsProperties(BaseModel):
 
         # Create an empty DataFrame with MultiIndex columns
         columns = [
-            (field.lower(), "0") for field in self.model_fields.keys() if field != "ref"
+            (field.lower(), "0") for field in self.__class__.model_fields.keys() if field != "ref"
         ]
         df_state = pd.DataFrame(
             index=[grid_id], columns=pd.MultiIndex.from_tuples(columns)
         )
 
         # Set the values in the DataFrame
-        for field_name, field_info in self.model_fields.items():
+        for field_name, field_info in self.__class__.model_fields.items():
             if field_name == "ref":
                 continue
             df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(
@@ -1891,8 +1890,8 @@ class SiteProperties(BaseModel):
         default=RefValue(10000.0),
     )
     z: RefValue[float] = Field(
-        gt=0, 
-        description="Measurement height", 
+        gt=0,
+        description="Measurement height",
         unit="m",
         default=RefValue(10.0)
     )
