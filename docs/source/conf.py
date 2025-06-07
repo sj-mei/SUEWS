@@ -68,47 +68,6 @@ else:
     supy.show_version()
 
 
-# --- BEGIN: Call to generate_datamodel_rst.py ---
-# Add the directory containing generate_datamodel_rst.py to sys.path
-# so it can be imported. conf.py is in docs/source/, script is in docs/
-# The script itself handles adding 'src' to its own path for 'supy' imports.
-path_docs_dir = (
-    Path(__file__).resolve().parent.parent
-)  # This should be the 'docs' directory
-if str(path_docs_dir) not in sys.path:
-    sys.path.insert(0, str(path_docs_dir))
-
-try:
-    import generate_datamodel_rst
-
-    # Call the main function from the script to generate .rst files
-    # This will create/update files in docs/source/user_inputs_reference/
-    print("Attempting to generate Pydantic model RST files for user inputs...")
-    generate_datamodel_rst.main()
-    print("Finished generating Pydantic model RST files.")
-except ImportError as e_import:
-    print(
-        f"ERROR: Could not import 'generate_datamodel_rst.py'. Ensure it is in the 'docs' directory. Details: {e_import}"
-    )
-    print(f"Current sys.path: {sys.path}")
-except Exception as e_run:
-    print(f"ERROR: Running 'generate_datamodel_rst.main()' failed. Details: {e_run}")
-# --- END: Call to generate_datamodel_rst.py ---
-
-
-# # --- BEGIN: Generate JSON Schema from SUEWSConfig ---
-# try:
-#     schema_script = Path(__file__).resolve().parent.parent / "gen_schema.py"
-#     if schema_script.exists():
-#         print(f"Generating schema.json using {schema_script} ...")
-#         subprocess.run([sys.executable, str(schema_script)], check=True)
-#     else:
-#         print(f"WARNING: {schema_script} not found. Skipping schema generation.")
-# except Exception as e:
-#     print(f"ERROR: Could not generate schema.json: {e}")
-# # --- END: Generate JSON Schema from SUEWSConfig ---
-
-
 def subprocess_cmd(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     proc_stdout = process.communicate()[0].strip()

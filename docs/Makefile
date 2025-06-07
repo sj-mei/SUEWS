@@ -17,17 +17,18 @@ LIVEHTML_OPTS  = \
 	-j auto \
 	--re-ignore 'supy\.util\..*' \
 	--ignore "source/SuPy.log" \
-	--ignore "source/yaml_input/*.rst"
+	--ignore "source/inputs/yaml/schema/*.rst"
 
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile pip testyaml config-ui schema
+.PHONY: help Makefile pip testyaml config-ui schema generate-rst
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
+# We make it depend on generate-rst to ensure schema is always up-to-date.
+%: Makefile generate-rst
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 
@@ -37,8 +38,11 @@ pip:
 proc-csv:
 	python $(SUPYDIR)/proc_var_info/gen_rst.py
 
+generate-rst:
+	@echo "Generating RST files for data models..."
+	python generate_datamodel_rst.py
 
-livehtml:
+livehtml: generate-rst
 	sphinx-autobuild $(LIVEHTML_OPTS) \
 		-b html \
 		-a "$(SOURCEDIR)" "$(BUILDDIR)"\

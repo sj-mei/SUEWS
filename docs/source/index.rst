@@ -111,8 +111,7 @@ How to support SUEWS?
 
    installation
    workflow
-   yaml_input/yaml_input
-   input_files/input_files
+   inputs/index
    output_files/output_files
    troubleshooting
    related-softwares/related_softwares

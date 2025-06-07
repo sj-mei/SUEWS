@@ -1,3 +1,17 @@
+"""
+SUEWS Data Model RST Generator
+
+This script generates reStructuredText (.rst) files for the SUEWS Pydantic data models.
+It should be run manually by developers whenever the data model definitions in
+`src/supy/data_model/` are changed.
+
+The generated files are saved in `docs/source/inputs/yaml/schema/` and are used
+by Sphinx to build the official documentation.
+
+To run this script, navigate to the `docs/` directory and execute:
+    python generate_datamodel_rst.py
+"""
+
 import inspect
 import importlib
 from pathlib import Path
@@ -46,8 +60,8 @@ def get_user_friendly_type_name(type_hint: Any) -> str:
             return f"Mapping from {get_user_friendly_type_name(args[0])} to {get_user_friendly_type_name(args[1])}"
         return "Mapping"
     if hasattr(type_hint, "__name__"):
-        # Check if it's a ValueWithDOI wrapper
-        if type_hint.__name__ == "ValueWithDOI" and args:
+        # Check if it's a RefValue wrapper
+        if type_hint.__name__ == "RefValue" and args:
             return f"Value (type: {get_user_friendly_type_name(args[0])}) with DOI/Reference"
         return type_hint.__name__
     return str(type_hint)
@@ -97,9 +111,9 @@ def generate_rst_for_model(
         if base_description:
             description_parts.append(f"   {base_description.strip()}")
 
-        # YAML structure hint for ValueWithDOI fields
+        # YAML structure hint for RefValue fields
         origin_type_for_doi_check = get_origin(field_type_hint) or field_type_hint
-        if hasattr(origin_type_for_doi_check, "__name__") and origin_type_for_doi_check.__name__ == "ValueWithDOI":
+        if hasattr(origin_type_for_doi_check, "__name__") and origin_type_for_doi_check.__name__ == "RefValue":
             doi_args = get_args(field_type_hint)
             val_type_name_for_yaml = "..." # Default placeholder
             is_complex_value = False
@@ -119,24 +133,23 @@ def generate_rst_for_model(
             rst_content.extend(description_parts)
             rst_content.append("") # Blank line after description block
 
-        # Unit (Placeholder - requires units in Pydantic model or parsing from description)
-        # Example: unit = field_info.json_schema_extra.get('unit') if field_info.json_schema_extra else None
-        unit = None  # Placeholder
-        if hasattr(field_info, "json_schema_extra") and isinstance(
-            field_info.json_schema_extra, dict
-        ):
+        # Unit
+        unit = None
+        # Extract unit from the `unit` kwarg in `Field`
+        if isinstance(field_info.json_schema_extra, dict):
             unit = field_info.json_schema_extra.get("unit")
+
         if unit:
             rst_content.append(f"   :Unit: {unit}")
         else:
-            # Try to parse from description, e.g., "Some value [unit]"
+            # Fallback: Try to parse from description, e.g., "Some value [unit]"
             if base_description and "[" in base_description and "]" in base_description:
                 try:
                     parsed_unit = base_description[
                         base_description.rfind("[") + 1 : base_description.rfind("]")
                     ]
                     if (
-                        len(parsed_unit) < 10 and not " " in parsed_unit
+                        len(parsed_unit) < 20 and " " not in parsed_unit
                     ):  # Basic sanity check
                         rst_content.append(f"   :Unit: {parsed_unit}")
                 except:
@@ -210,10 +223,10 @@ def generate_rst_for_model(
                 and issubclass(origin_pt, BaseModel)
                 and origin_pt != model_class  # Do not link to self
             ):
-                # Prioritize the model that is directly the field's type or the first arg of ValueWithDOI/List/Dict
+                # Prioritize the model that is directly the field's type or the first arg of RefValue/List/Dict
                 if field_type_hint == origin_pt or \
                    (get_origin(field_type_hint) in [list, List, dict, Dict] and get_args(field_type_hint) and (get_origin(get_args(field_type_hint)[0]) or get_args(field_type_hint)[0]) == origin_pt) or \
-                   (hasattr(get_origin(field_type_hint) or field_type_hint, "__name__") and (get_origin(field_type_hint) or field_type_hint).__name__ == "ValueWithDOI" and get_args(field_type_hint) and (get_origin(get_args(field_type_hint)[0]) or get_args(field_type_hint)[0]) == origin_pt):
+                   (hasattr(get_origin(field_type_hint) or field_type_hint, "__name__") and (get_origin(field_type_hint) or field_type_hint).__name__ == "RefValue" and get_args(field_type_hint) and (get_origin(get_args(field_type_hint)[0]) or get_args(field_type_hint)[0]) == origin_pt):
                     nested_model_to_document = origin_pt
                     break
                 if not nested_model_to_document: # Fallback if no direct match yet
@@ -228,12 +241,12 @@ def generate_rst_for_model(
             args_of_field = get_args(field_type_hint)
             link_message = ""
 
-            is_value_doi_wrapping_model = (hasattr(origin_of_field or field_type_hint, "__name__") and \
-                                           (origin_of_field or field_type_hint).__name__ == "ValueWithDOI" and \
+            is_ref_value_wrapping_model = (hasattr(origin_of_field or field_type_hint, "__name__") and \
+                                           (origin_of_field or field_type_hint).__name__ == "RefValue" and \
                                            args_of_field and \
                                            (get_origin(args_of_field[0]) or args_of_field[0]) == nested_model_to_document)
 
-            if is_value_doi_wrapping_model:
+            if is_ref_value_wrapping_model:
                 link_message = (
                     f"   The structure for the ``value`` key of ``{field_name}`` is detailed in "
                     f":doc:`{nested_model_name_lower}`."
@@ -292,7 +305,7 @@ def get_all_models_in_module(module) -> Dict[str, Type[BaseModel]]:
 
 
 def main():
-    output_dir_name = "yaml_input"
+    output_dir_name = "inputs/yaml/schema"
     docs_source_path = PROJECT_ROOT / "docs" / "source"
     output_dir = docs_source_path / output_dir_name
     output_dir.mkdir(exist_ok=True)

@@ -7,6 +7,8 @@ Input files
 
    Since 2025, SUEWS adopts a new input file format, which is a YAML file, please refer to :ref:`yaml_input` for more details. To accomdate larger compatibility of input files, we sill keep the following sections operational as of May 2025 but will deprecate the table-based input files in the future (end of 2025 estimated; content may still be kept for reference).
 
+   For users looking to migrate from the old table-based format to the new YAML format, please see our :doc:`../transition_guide`.
+
 
 
 SUEWS allows you to input a large number of parameters to describe the characteristics of your site.
