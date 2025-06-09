@@ -248,10 +248,15 @@ inc_suews_mod = include_directories('../suews/mod')
 link_args_windows = []
 c_args_windows = []
 
-if host_machine.system() == 'windows' and host_machine.cpu_family() == 'x86'
-  # Only 32-bit Windows MinGW provides _setjmpex in msvcrt
-  link_args_windows = ['-lmsvcrt']
-  c_args_windows = ['-D__MINGW_USE_VC_SETJMP=1']
+if host_machine.system() == 'windows'
+  if host_machine.cpu_family() == 'x86'
+    # 32-bit: need VC-compatible setjmp and link against msvcrt
+    link_args_windows = ['-lmsvcrt']
+    c_args_windows = ['-D__MINGW_USE_VC_SETJMP=1']
+  else
+    # 64-bit MinGW places _setjmpex in libmingwex
+    link_args_windows = ['-lmingwex']
+  endif
 endif
 
 ext_supy_driver = py.extension_module(
