@@ -9,6 +9,15 @@
 # 4. build the python extension module
 
 ##################################################################
+# to fix newer windows (later than 2019) build
+if host_machine.system() == 'windows'
+  add_project_arguments(
+    '-D__MINGW_USE_VC_SETJMP=1',
+    language : ['c', 'cpp', 'fortran']
+  )
+endif
+
+##################################################################
 # set the compiler flags
 fortran_compiler = meson.get_compiler('fortran')
 if fortran_compiler.get_id() == 'gcc'
