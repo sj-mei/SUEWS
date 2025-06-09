@@ -245,6 +245,11 @@ dep_suews = [dep_lib_src, dep_lib_suews]
 
 inc_suews_mod = include_directories('../suews/mod')
 
+link_args_windows = []
+if host_machine.system() == 'windows'
+  link_args_windows = ['-lmsvcrt']
+endif
+
 ext_supy_driver = py.extension_module(
   '_supy_driver',
   sources: [
@@ -262,6 +267,7 @@ ext_supy_driver = py.extension_module(
     dep_quadmath,
     dep_suews,
   ],
+  link_args: link_args_windows,
   install: true,
   subdir: 'supy',
 
