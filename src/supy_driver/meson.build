@@ -250,6 +250,11 @@ if host_machine.system() == 'windows'
   link_args_windows = ['-lmsvcrt']
 endif
 
+c_args_windows = []
+if host_machine.system() == 'windows'
+  c_args_windows = ['-D__MINGW_USE_VC_SETJMP=1']
+endif
+
 ext_supy_driver = py.extension_module(
   '_supy_driver',
   sources: [
@@ -261,6 +266,7 @@ ext_supy_driver = py.extension_module(
     inc_np,
     inc_suews_mod, # the path is relative to the current directory where the meson.build file is located
   ],
+  c_args: c_args_windows,
   dependencies: [
     dep_py,
     dep_fortranobject,
@@ -270,7 +276,6 @@ ext_supy_driver = py.extension_module(
   link_args: link_args_windows,
   install: true,
   subdir: 'supy',
-
 )
 
 # move the generated `supy_driver.py` to the correct directory
