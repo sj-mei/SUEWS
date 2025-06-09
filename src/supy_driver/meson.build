@@ -216,16 +216,10 @@ inc_np = include_directories(incdir_numpy, incdir_f2py)
 # gh-25000
 dep_quadmath = fortran_compiler.find_library('quadmath', required: true)
 
-c_args_windows = []
-if host_machine.system() == 'windows'
-  c_args_windows = ['-D__MINGW_USE_VC_SETJMP=1']
-endif
-
 # Share this object across multiple modules.
 lib_fortranobject = static_library(
   '_fortranobject',
   fortranobject_c,
-  c_args: c_args_windows,
   dependencies: dep_py,
   include_directories: [inc_np, inc_f2py],
 )
@@ -252,8 +246,12 @@ dep_suews = [dep_lib_src, dep_lib_suews]
 inc_suews_mod = include_directories('../suews/mod')
 
 link_args_windows = []
-if host_machine.system() == 'windows'
+c_args_windows = []
+
+if host_machine.system() == 'windows' and host_machine.cpu_family() == 'x86'
+  # Only 32-bit Windows MinGW provides _setjmpex in msvcrt
   link_args_windows = ['-lmsvcrt']
+  c_args_windows = ['-D__MINGW_USE_VC_SETJMP=1']
 endif
 
 ext_supy_driver = py.extension_module(
