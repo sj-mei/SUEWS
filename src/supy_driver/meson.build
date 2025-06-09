@@ -246,15 +246,14 @@ dep_suews = [dep_lib_src, dep_lib_suews]
 inc_suews_mod = include_directories('../suews/mod')
 
 link_args_windows = []
-c_args_windows = []
+c_args_windows = ['-D__MINGW_USE_VC_SETJMP=1']
 
 if host_machine.system() == 'windows'
   if host_machine.cpu_family() == 'x86'
-    # 32-bit: need VC-compatible setjmp and link against msvcrt
+    # 32-bit MSVCRT build – link explicitly for _setjmp
     link_args_windows = ['-lmsvcrt']
-    c_args_windows = ['-D__MINGW_USE_VC_SETJMP=1']
   else
-    # 64-bit MinGW places _setjmpex in libmingwex
+    # 64-bit: _setjmp is in the default CRT; add mingwex for safety
     link_args_windows = ['-lmingwex']
   endif
 endif
