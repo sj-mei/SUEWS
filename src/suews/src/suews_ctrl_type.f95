@@ -110,8 +110,8 @@ MODULE SUEWS_DEF_DTS
    END TYPE OHM_PRM
 
    TYPE, PUBLIC :: SOIL_PRM
-      REAL(KIND(1D0)) :: soildepth
-      REAL(KIND(1D0)) :: soilstorecap
+      REAL(KIND(1D0)) :: soildepth ! Depth of soil beneath the surface [mm]
+      REAL(KIND(1D0)) :: soilstorecap ! Capacity of soil store [mm]
       REAL(KIND(1D0)) :: sathydraulicconduct ! !Hydraulic conductivity for saturated soil [mm s-1]
    END TYPE SOIL_PRM
 
@@ -282,9 +282,9 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_roof ! thermal conductivity of roof [W m-1 K]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_wall ! thermal conductivity of wall [W m-1 K]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_surf ! thermal conductivity of v [W m-1 K]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof ! Heat capacity of roof [J m-3 K-1]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall ! Heat capacity of wall [J m-3 K-1]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf ! Heat capacity of each surface [J m-3 K-1]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof ! Volumetric Heat capacity of roof [J m-3 K-1]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall ! Volumetric Heat capacity of wall [J m-3 K-1]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf ! Volumetric Heat capacity of each surface [J m-3 K-1]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof ! thickness of each layer in roof [m]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall ! thickness of each layer in wall [m]
       REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf ! thickness of each layer in surface [m]
