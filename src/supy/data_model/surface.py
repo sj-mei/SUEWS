@@ -24,7 +24,7 @@ class ThermalLayers(BaseModel):
         description="Thermal conductivity of each thermal layer",
         unit="W m^-1 K^-1",
     )
-    cp: RefValue[List[float]] = Field(
+    cv: RefValue[List[float]] = Field(
         default=RefValue([1000, 1000, 1000, 1000, 1000]),
         description="Volumetric heat capacity of each thermal layer",
         unit="J m^-3 K^-1",
@@ -70,7 +70,7 @@ class ThermalLayers(BaseModel):
         for i in range(5):
             df_state[(f"dz_{suffix}", f"({idx}, {i})")] = self.dz.value[i]
             df_state[(f"k_{suffix}", f"({idx}, {i})")] = self.k.value[i]
-            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.cp.value[i]
+            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.cv.value[i] # TODO: Change df_state to use cv instead of cp
 
         return df_state
 
@@ -95,7 +95,7 @@ class ThermalLayers(BaseModel):
         """
         dz = []
         k = []
-        cp = []
+        cv = []
 
         # Determine suffix based on surf_type
         if surf_type == "roof":
@@ -109,15 +109,15 @@ class ThermalLayers(BaseModel):
         for i in range(5):
             dz.append(df.loc[grid_id, (f"dz_{suffix}", f"({idx}, {i})")])
             k.append(df.loc[grid_id, (f"k_{suffix}", f"({idx}, {i})")])
-            cp.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
+            cv.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
 
         # Convert to RefValue
         dz = RefValue[List[float]](dz)
         k = RefValue[List[float]](k)
-        cp = RefValue[List[float]](cp)
+        cv = RefValue[List[float]](cv)
 
         # Return reconstructed instance
-        return cls(dz=dz, k=k, cp=cp)
+        return cls(dz=dz, k=k, cv=cv)
 
 
 class SurfaceProperties(BaseModel):
