@@ -142,7 +142,7 @@ class SurfaceProperties(BaseModel):
         description="Bulk transfer coefficient for this surface to use in AnOHM",
         unit="J m^-3 K^-1",
     )
-    cpanohm: Optional[RefValue[float]] = Field(
+    cvanohm: Optional[RefValue[float]] = Field(
         default=RefValue(1200.0),
         description="Volumetric heat capacity for this surface to use in AnOHM",
         unit="J m^-3 K^-1",
@@ -269,7 +269,7 @@ class SurfaceProperties(BaseModel):
             "sfr",
             "emis",
             "chanohm",
-            "cpanohm",
+            "cvanohm",
             "kkanohm",
             "ohm_coef",
             "ohm_threshsw",
@@ -318,6 +318,10 @@ class SurfaceProperties(BaseModel):
                 value = getattr(self, property)
                 value = value.value if isinstance(value, RefValue) else value
                 set_df_value(f"{property}_surf", value)
+            elif property == "cvanohm":  # Moved to cp in df_state
+                value = getattr(self, property)
+                value = value.value if isinstance(value, RefValue) else value
+                set_df_value("cpanohm", value)
             else:
                 value = getattr(self, property)
                 value = value.value if isinstance(value, RefValue) else value
@@ -360,7 +364,7 @@ class SurfaceProperties(BaseModel):
             "sfr",
             "emis",
             "chanohm",
-            "cpanohm",
+            "cvanohm",
             "kkanohm",
             "ohm_coef",
             "ohm_threshsw",
@@ -417,6 +421,9 @@ class SurfaceProperties(BaseModel):
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
                 value = df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")]
                 property_values[property] = RefValue(value)
+            elif property == "cvanohm":  # Moved to cp in df_state
+                value = df.loc[grid_id, ("cpanohm", f"({surf_idx},)")]
+                property_values["cvanohm"] = RefValue(value)
             else:
                 value = df.loc[grid_id, (property, f"({surf_idx},)")]
                 property_values[property] = RefValue(value)
