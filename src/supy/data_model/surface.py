@@ -176,7 +176,7 @@ class SurfaceProperties(BaseModel):
         unit="mm",
     )
     statelimit: RefValue[float] = Field(
-        default=RefValue(10.0),
+        default=RefValue(10.0), # TODO: Check if this is an appropriate default
         description="Minimum water storage capacity for state change",
         unit="mm",
     )
@@ -191,7 +191,7 @@ class SurfaceProperties(BaseModel):
         unit="mm s^-1",
     )
     waterdist: Optional[WaterDistribution] = Field(
-        default=None,
+        default=None, # TODO: Can this be None?
         description="Water distribution parameters",
     )
     storedrainprm: StorageDrainParams = Field(
