@@ -300,7 +300,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
       REAL(KIND(1D0)) :: state
-      REAL(KIND(1D0)) :: statelimit
+      REAL(KIND(1D0)) :: statelimit ! upper limit to the surface state [mm]
       REAL(KIND(1D0)) :: irrfracpaved
       REAL(KIND(1D0)) :: wetthresh
       TYPE(WATER_DIST_PRM) :: waterdist
@@ -315,7 +315,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
       REAL(KIND(1D0)) :: state
-      REAL(KIND(1D0)) :: statelimit
+      REAL(KIND(1D0)) :: statelimit ! upper limit to the surface state [mm]
       REAL(KIND(1D0)) :: irrfracbldgs
       REAL(KIND(1D0)) :: wetthresh
       TYPE(WATER_DIST_PRM) :: waterdist
@@ -333,7 +333,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: alb_max
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
-      REAL(KIND(1D0)) :: statelimit ! ******* dummy variable *******
+      REAL(KIND(1D0)) :: statelimit ! upper limit to the surface state [mm] ! ******* dummy variable *******
       REAL(KIND(1D0)) :: capmax_dec ! Maximum water storage capacity for upper surfaces (i.e. canopy) (absent for evergreen trees ??)
       REAL(KIND(1D0)) :: capmin_dec ! Minimum water storage capacity for upper surfaces (i.e. canopy).
       REAL(KIND(1D0)) :: irrfracdectr
@@ -373,7 +373,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: alb_max
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
-      REAL(KIND(1D0)) :: statelimit
+      REAL(KIND(1D0)) :: statelimit ! upper limit to the surface state [mm]
       REAL(KIND(1D0)) :: irrfracgrass
       REAL(KIND(1D0)) :: wetthresh
       TYPE(bioCO2_PRM) :: bioco2
@@ -389,7 +389,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
-      REAL(KIND(1D0)) :: statelimit
+      REAL(KIND(1D0)) :: statelimit ! upper limit to the surface state [mm]
       REAL(KIND(1D0)) :: irrfracbsoil
       REAL(KIND(1D0)) :: wetthresh
       TYPE(WATER_DIST_PRM) :: waterdist
@@ -401,7 +401,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: emis
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
-      REAL(KIND(1D0)) :: statelimit
+      REAL(KIND(1D0)) :: statelimit ! upper limit to the surface state [mm]
       REAL(KIND(1D0)) :: irrfracwater
       REAL(KIND(1D0)) :: wetthresh ! ******* dummy variable *******
       REAL(KIND(1D0)) :: flowchange ! special term in water
