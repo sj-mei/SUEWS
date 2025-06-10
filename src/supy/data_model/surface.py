@@ -166,9 +166,9 @@ class SurfaceProperties(BaseModel):
         default_factory=OHM_Coefficient_season_wetness
     )
     soildepth: RefValue[float] = Field(
-        default=RefValue(0.15),
+        default=RefValue(150),
         description="Depth of soil layer for hydrological calculations",
-        unit="m",
+        unit="mm",
     )
     soilstorecap: RefValue[float] = Field(
         default=RefValue(150.0),
