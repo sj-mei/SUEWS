@@ -1979,8 +1979,8 @@ class SiteProperties(BaseModel):
 
     lambda_c: RefValue[float] = Field(
         default=RefValue(0),
-        description="Building surface to plan area ratio [-]",
-        unit="dimensionless",
+        description="External building surface area to plan area ratio",
+        unit="m^2 m^-2",
         ge=0
     )
 
