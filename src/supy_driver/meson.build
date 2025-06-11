@@ -49,6 +49,13 @@ add_global_arguments(cflags, language: 'c')
 
 # flags for converting f95 to fpp
 fpp_flags = ['-E', '-x', 'f95-cpp-input', '-fPIC']
+
+# Use UCRT for everything when on Windows
+if host_machine.system() == 'windows'
+  # The UCRT64 msys2 environment implicitly handles linking to the UCRT.
+  # Explicitly adding '-mcrtdll=ucrtbase' can fail with older GCC versions.
+  # Note: We don't use -D__USE_MINGW_SETJMP_NON_SEH with UCRT64 as it supports SEH properly
+endif
 ##################################################################
 
 ##################################################################
