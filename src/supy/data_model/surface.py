@@ -135,11 +135,14 @@ class SurfaceProperties(BaseModel):
         le=1,
         description="Surface emissivity for longwave radiation",
         unit="dimensionless",
-        default=RefValue(0.95),
+        default=RefValue(
+            value=0.95,
+            ref=Reference(desc="example value description")
+        ),
     )
     chanohm: Optional[RefValue[float]] = Field(
         default=RefValue(0.0),
-        description="Bulk transfer coefficient for this surface to use in AnOHM",
+        description="Bulk transfer coefficient for this surface. Option: AnOHM",
         unit="J m^-3 K^-1",
     )
     cvanohm: Optional[RefValue[float]] = Field(
