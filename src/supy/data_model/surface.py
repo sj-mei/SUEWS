@@ -24,7 +24,7 @@ class ThermalLayers(BaseModel):
         description="Thermal conductivity of each thermal layer",
         unit="W m^-1 K^-1",
     )
-    cv: RefValue[List[float]] = Field(
+    rho_cp: RefValue[List[float]] = Field(
         default=RefValue([1000, 1000, 1000, 1000, 1000]),
         description="Volumetric heat capacity of each thermal layer",
         unit="J m^-3 K^-1",
@@ -70,7 +70,7 @@ class ThermalLayers(BaseModel):
         for i in range(5):
             df_state[(f"dz_{suffix}", f"({idx}, {i})")] = self.dz.value[i]
             df_state[(f"k_{suffix}", f"({idx}, {i})")] = self.k.value[i]
-            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.cv.value[i] # TODO: Change df_state to use cv instead of cp
+            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.rho_cp.value[i] # TODO: Change df_state to use rho_cp instead of cp
 
         return df_state
 
@@ -95,7 +95,7 @@ class ThermalLayers(BaseModel):
         """
         dz = []
         k = []
-        cv = []
+        rho_cp = []
 
         # Determine suffix based on surf_type
         if surf_type == "roof":
@@ -109,15 +109,15 @@ class ThermalLayers(BaseModel):
         for i in range(5):
             dz.append(df.loc[grid_id, (f"dz_{suffix}", f"({idx}, {i})")])
             k.append(df.loc[grid_id, (f"k_{suffix}", f"({idx}, {i})")])
-            cv.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
+            rho_cp.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
 
         # Convert to RefValue
         dz = RefValue[List[float]](dz)
         k = RefValue[List[float]](k)
-        cv = RefValue[List[float]](cv)
+        rho_cp = RefValue[List[float]](rho_cp)
 
         # Return reconstructed instance
-        return cls(dz=dz, k=k, cv=cv)
+        return cls(dz=dz, k=k, rho_cp=rho_cp)
 
 
 class SurfaceProperties(BaseModel):
@@ -145,7 +145,7 @@ class SurfaceProperties(BaseModel):
         description="Bulk transfer coefficient for this surface. Option: AnOHM",
         unit="J m^-3 K^-1",
     )
-    cvanohm: Optional[RefValue[float]] = Field(
+    rho_cpanohm: Optional[RefValue[float]] = Field(
         default=RefValue(1200.0),
         description="Volumetric heat capacity for this surface to use in AnOHM",
         unit="J m^-3 K^-1",
@@ -272,7 +272,7 @@ class SurfaceProperties(BaseModel):
             "sfr",
             "emis",
             "chanohm",
-            "cvanohm",
+            "rho_cpanohm",
             "kkanohm",
             "ohm_coef",
             "ohm_threshsw",
@@ -321,7 +321,7 @@ class SurfaceProperties(BaseModel):
                 value = getattr(self, property)
                 value = value.value if isinstance(value, RefValue) else value
                 set_df_value(f"{property}_surf", value)
-            elif property == "cvanohm":  # Moved to cp in df_state
+            elif property == "rho_cpanohm":  # Moved to cp in df_state
                 value = getattr(self, property)
                 value = value.value if isinstance(value, RefValue) else value
                 set_df_value("cpanohm", value)
@@ -367,7 +367,7 @@ class SurfaceProperties(BaseModel):
             "sfr",
             "emis",
             "chanohm",
-            "cvanohm",
+            "rho_cpanohm",
             "kkanohm",
             "ohm_coef",
             "ohm_threshsw",
@@ -424,9 +424,9 @@ class SurfaceProperties(BaseModel):
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
                 value = df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")]
                 property_values[property] = RefValue(value)
-            elif property == "cvanohm":  # Moved to cp in df_state
+            elif property == "rho_cpanohm":  # Moved to cp in df_state
                 value = df.loc[grid_id, ("cpanohm", f"({surf_idx},)")]
-                property_values["cvanohm"] = RefValue(value)
+                property_values["rho_cpanohm"] = RefValue(value)
             else:
                 value = df.loc[grid_id, (property, f"({surf_idx},)")]
                 property_values[property] = RefValue(value)
