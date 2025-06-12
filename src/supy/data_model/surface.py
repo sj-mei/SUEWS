@@ -140,17 +140,17 @@ class SurfaceProperties(BaseModel):
             ref=Reference(desc="example value description")
         ),
     )
-    chanohm: Optional[RefValue[float]] = Field(
+    ch_anohm: Optional[RefValue[float]] = Field(
         default=RefValue(0.0),
         description="Bulk transfer coefficient for this surface. Option: AnOHM",
         unit="J m^-3 K^-1",
     )
-    rho_cpanohm: Optional[RefValue[float]] = Field(
+    rho_cp_anohm: Optional[RefValue[float]] = Field(
         default=RefValue(1200.0),
         description="Volumetric heat capacity for this surface to use in AnOHM",
         unit="J m^-3 K^-1",
     )
-    kkanohm: Optional[RefValue[float]] = Field(
+    k_anohm: Optional[RefValue[float]] = Field(
         default=RefValue(0.4),
         description="Thermal conductivity for this surface to use in AnOHM",
         unit="W m^-1 K^-1",
@@ -271,9 +271,9 @@ class SurfaceProperties(BaseModel):
         properties = [
             "sfr",
             "emis",
-            "chanohm",
-            "rho_cpanohm",
-            "kkanohm",
+            "ch_anohm",
+            "rho_cp_anohm",
+            "k_anohm",
             "ohm_coef",
             "ohm_threshsw",
             "ohm_threshwd",
@@ -321,10 +321,18 @@ class SurfaceProperties(BaseModel):
                 value = getattr(self, property)
                 value = value.value if isinstance(value, RefValue) else value
                 set_df_value(f"{property}_surf", value)
-            elif property == "rho_cpanohm":  # Moved to cp in df_state
+            elif property == "rho_cp_anohm":  # Moved to cp in df_state
                 value = getattr(self, property)
                 value = value.value if isinstance(value, RefValue) else value
                 set_df_value("cpanohm", value)
+            elif property == "ch_anohm":  # Moved to ch in df_state
+                value = getattr(self, property)
+                value = value.value if isinstance(value, RefValue) else value
+                set_df_value("chanohm", value)
+            elif property == "k_anohm":  # Moved to k in df_state
+                value = getattr(self, property)
+                value = value.value if isinstance(value, RefValue) else value
+                set_df_value("kkanohm", value)
             else:
                 value = getattr(self, property)
                 value = value.value if isinstance(value, RefValue) else value
@@ -366,9 +374,9 @@ class SurfaceProperties(BaseModel):
         properties = [
             "sfr",
             "emis",
-            "chanohm",
-            "rho_cpanohm",
-            "kkanohm",
+            "ch_anohm",
+            "rho_cp_anohm",
+            "k_anohm",
             "ohm_coef",
             "ohm_threshsw",
             "ohm_threshwd",
@@ -424,9 +432,15 @@ class SurfaceProperties(BaseModel):
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
                 value = df.loc[grid_id, (f"{property}_surf", f"({surf_idx},)")]
                 property_values[property] = RefValue(value)
-            elif property == "rho_cpanohm":  # Moved to cp in df_state
+            elif property == "rho_cp_anohm":  # Moved to cp in df_state
                 value = df.loc[grid_id, ("cpanohm", f"({surf_idx},)")]
-                property_values["rho_cpanohm"] = RefValue(value)
+                property_values["rho_cp_anohm"] = RefValue(value)
+            elif property == "ch_anohm":  # Moved to ch in df_state
+                value = df.loc[grid_id, ("chanohm", f"({surf_idx},)")]
+                property_values["ch_anohm"] = RefValue(value)
+            elif property == "k_anohm":  # Moved to k in df_state
+                value = df.loc[grid_id, ("kkanohm", f"({surf_idx},)")]
+                property_values["k_anohm"] = RefValue(value)
             else:
                 value = df.loc[grid_id, (property, f"({surf_idx},)")]
                 property_values[property] = RefValue(value)
