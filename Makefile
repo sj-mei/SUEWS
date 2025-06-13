@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs dev
+.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
@@ -51,7 +51,13 @@ suews:
 # NOTE: `--no-build-isolation` is used to avoid dependency issues with the editable install.
 # ref: https://mesonbuild.com/meson-python/how-to-guides/editable-installs.html#editable-installs
 dev:
-	$(PYTHON) -m pip install --no-build-isolation --editable .
+	@echo "Building supy with development install..."
+	@if [ -x "/opt/homebrew/bin/gfortran" ]; then \
+		echo "Using Homebrew gfortran for better macOS compatibility"; \
+		FC=/opt/homebrew/bin/gfortran $(PYTHON) -m pip install --no-build-isolation --editable .; \
+	else \
+		$(PYTHON) -m pip install --no-build-isolation --editable .; \
+	fi
 
 # install supy locally
 install:
@@ -65,21 +71,49 @@ test:
 wheel:
 	$(PYTHON) -m pip wheel --no-deps . -w wheelhouse
 
-# documentation
-docs:
+# documentation (requires built package)
+docs: 
+	@echo "Building documentation (this will install supy if needed)..."
+	$(PYTHON) -m pip install --no-build-isolation --editable . || echo "Build may have failed, trying docs anyway..."
 	$(MAKE) -B -C $(docs_dir) html
 
-# live html documentation
+# live html documentation (requires built package)
 livehtml:
+	@echo "Starting live documentation server (this will install supy if needed)..."
+	$(PYTHON) -m pip install --no-build-isolation --editable . || echo "Build may have failed, trying docs anyway..."
 	$(MAKE) -B -C $(docs_dir) livehtml
 
-# If wanted, clean all *.o files after build
+# Generate JSON schema from SUEWSConfig Pydantic model
+schema: dev
+	@echo "Generating JSON schema from SUEWSConfig Pydantic model..."
+	cd $(docs_dir) && $(PYTHON) gen_schema.py
+
+# Process CSV files for documentation
+proc-csv: dev
+	@echo "Processing CSV files for documentation..."
+	cd $(docs_dir) && $(PYTHON) source/related-softwares/supy/proc_var_info/gen_rst.py
+
+# Start SUEWS Configuration UI server
+config-ui:
+	@echo "Starting SUEWS Configuration UI server..."
+	@echo "This will serve the config UI at http://localhost:8080"
+	@echo "Press Ctrl+C to stop the server"
+	@echo ""
+	cd $(docs_dir)/source/_static && $(PYTHON) run_server.py
+
+# Clean all build artifacts
 clean:
+	@echo "Cleaning SUEWS build artifacts..."
 	$(MAKE) -C $(suews_dir) clean || true
-	$(MAKE) -C $(supy_dir) clean || true
-	$(MAKE) -C $(docs_dir) clean || true
-	rm -rf build dist *.egg-info
-	rm -rf ./ext_lib/spartacus-surface//*/*.mod
+	@echo "Cleaning documentation build..."
+	-cd $(docs_dir) && rm -rf build/ || true
+	@echo "Cleaning Python build artifacts..."
+	rm -rf build/ dist/ *.egg-info/ wheelhouse/
+	@echo "Cleaning temporary files..."
+	find . -name "*.pyc" -delete || true
+	find . -name "__pycache__" -type d -exec rm -rf {} + || true
+	find . -name "*.log" -delete || true
+	@echo "Clean complete."
 
 # this is to test cibuildwheel locally
 cibw:
