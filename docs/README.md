@@ -7,8 +7,9 @@ This directory contains the complete documentation build system for SUEWS (Surfa
 ### Build System
 - **`Makefile`**: Build automation for Sphinx documentation
 - **`make.bat`**: Windows build script
-- **`env.yml`**: Conda environment for documentation dependencies
 - **`build/`**: Generated documentation output (HTML, PDF, etc.)
+
+> **Note**: Documentation dependencies are now included in the unified `../env.yml` environment file.
 
 ### Source Content (`source/`)
 - **`conf.py`**: Sphinx configuration with custom styles, themes, and plugins

@@ -11,6 +11,7 @@
   - [feature] Created interactive web-based configuration builder with real-time validation, Bootstrap UI, and YAML/JSON export capabilities
   - [feature] Added automatic JSON Schema generation from Pydantic data models for configuration validation and UI integration
   - [doc] Enhanced documentation system with modernised structure and comprehensive migration guides from table-based to YAML-based configuration
+  - [maintenance] Unified development and documentation environments into single `environment.yml` file to simplify workflow and reduce maintenance overhead
   - [maintenance] Migrated from deprecated `_config.py` to dedicated `data_model` subpackage with type-safe Pydantic models
   - [maintenance] Improved Windows build compatibility with UCRT support, enhanced CI/CD workflows, and Windows-specific compiler optimisations
 
