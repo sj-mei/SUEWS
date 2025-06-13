@@ -1408,7 +1408,7 @@ CONTAINS
       REAL(KIND(1D0)) :: OHM_threshSW(nsurf + 1) ! Temperature threshold determining whether summer/winter OHM coefficients are applied [degC]
       REAL(KIND(1D0)) :: OHM_threshWD(nsurf + 1) ! Soil moisture threshold determining whether wet/dry OHM coefficients are applied [-]
 
-      REAL(KIND(1D0)) :: SoilStoreCap(nsurf) ! capacity of soil store [J m-3 K-1]
+      REAL(KIND(1D0)) :: SoilStoreCap(nsurf) ! capacity of soil store [mm]
 
       REAL(KIND(1D0)) :: state_id(nsurf) ! wetness status [mm]
 
