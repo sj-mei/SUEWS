@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui
+.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
@@ -71,25 +71,31 @@ test:
 wheel:
 	$(PYTHON) -m pip wheel --no-deps . -w wheelhouse
 
+# Helper target to check for local supy installation
+check-dev-install:
+	@if ! $(PYTHON) -c "import supy" >/dev/null 2>&1; then \
+		echo "ERROR: 'supy' not found. Please install it in editable mode first by running:"; \
+		echo "  make dev"; \
+		exit 1; \
+	fi
+
 # documentation (requires built package)
-docs: 
-	@echo "Building documentation (this will install supy if needed)..."
-	$(PYTHON) -m pip install --no-build-isolation --editable . || echo "Build may have failed, trying docs anyway..."
+docs: check-dev-install
+	@echo "Building documentation..."
 	$(MAKE) -B -C $(docs_dir) html
 
 # live html documentation (requires built package)
-livehtml:
-	@echo "Starting live documentation server (this will install supy if needed)..."
-	$(PYTHON) -m pip install --no-build-isolation --editable . || echo "Build may have failed, trying docs anyway..."
+livehtml: check-dev-install
+	@echo "Starting live documentation server..."
 	$(MAKE) -B -C $(docs_dir) livehtml
 
 # Generate JSON schema from SUEWSConfig Pydantic model
-schema: dev
+schema: check-dev-install
 	@echo "Generating JSON schema from SUEWSConfig Pydantic model..."
 	cd $(docs_dir) && $(PYTHON) gen_schema.py
 
 # Process CSV files for documentation
-proc-csv: dev
+proc-csv: check-dev-install
 	@echo "Processing CSV files for documentation..."
 	cd $(docs_dir) && $(PYTHON) source/related-softwares/supy/proc_var_info/gen_rst.py
 
