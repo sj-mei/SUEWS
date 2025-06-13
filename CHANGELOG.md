@@ -5,6 +5,15 @@
 <!-- [doc]: Documentation updates -->
 <!-- [change]: Changes exposed to users -->
 
+- 13 Jun 2025:
+  - [feature] Added YAML-based configuration system with comprehensive conversion tools and interactive web UI (#343)
+  - [feature] Implemented `to_yaml.py` command-line tool for converting legacy table-based inputs to modern YAML format with optional version upgrade support
+  - [feature] Created interactive web-based configuration builder with real-time validation, Bootstrap UI, and YAML/JSON export capabilities
+  - [feature] Added automatic JSON Schema generation from Pydantic data models for configuration validation and UI integration
+  - [doc] Enhanced documentation system with modernised structure and comprehensive migration guides from table-based to YAML-based configuration
+  - [maintenance] Migrated from deprecated `_config.py` to dedicated `data_model` subpackage with type-safe Pydantic models
+  - [maintenance] Improved Windows build compatibility with UCRT support, enhanced CI/CD workflows, and Windows-specific compiler optimisations
+
 - 06 Jun 2025:
   - [doc] Added comprehensive unit documentation to all RefValue parameters in data model, improving dimensional consistency and user understanding of expected parameter scales and ranges (#398)
 
