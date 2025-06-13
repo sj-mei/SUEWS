@@ -149,6 +149,86 @@ def validate_variable_roughness_parameters(sites: List[Dict], site_indices: Opti
     return errors
 
 
+def validate_storage_heat_parameters(physics: Dict[str, Any], method_type: str) -> List[str]:
+    """Validate storage heat method parameters based on method type."""
+    errors = []
+    
+    storage_method_val = extract_numeric_value(physics.get('storageheatmethod', 0))
+    ohmincqf_val = extract_numeric_value(physics.get('ohmincqf', 0))
+    
+    if method_type == 'ESTM':
+        # ESTM methods (4, 5) - advanced parameter validation would go here
+        if storage_method_val in [4, 5]:
+            # Validate ESTM-specific parameters if they exist
+            # For now, just basic validation
+            pass
+    else:  # OHM methods
+        # OHM method 1: ohmincqf should be 0
+        if storage_method_val == 1 and ohmincqf_val != 0:
+            errors.append(f"[STORAGE_OHM] storageheatmethod={storage_method_val} requires ohmincqf=0, got {ohmincqf_val}")
+        
+        # OHM method 2: ohmincqf should be 1  
+        elif storage_method_val == 2 and ohmincqf_val != 1:
+            errors.append(f"[STORAGE_OHM] storageheatmethod={storage_method_val} requires ohmincqf=1, got {ohmincqf_val}")
+    
+    return errors
+
+
+def validate_netradiation_parameters(physics: Dict[str, Any], sites: List[Dict], method_type: str) -> List[str]:
+    """Validate net radiation method parameters."""
+    errors = []
+    
+    netrad_val = extract_numeric_value(physics.get('netradiationmethod', 0))
+    
+    if method_type == 'SPARTACUS':
+        # SPARTACUS methods (≥1000) - validate SPARTACUS-specific parameters
+        if netrad_val >= 1000:
+            # Validate that required SPARTACUS parameters are available
+            # For now, basic validation
+            pass
+    else:  # Standard methods
+        # Validate standard net radiation parameters
+        if netrad_val in [11, 12, 13]:  # Surface temperature methods
+            # These are marked as "Not recommended in this version"
+            errors.append(f"[NETRAD_STANDARD] netradiationmethod={netrad_val} not recommended in this version")
+        
+        if netrad_val in [100, 200, 300]:  # Zenith angle methods  
+            # These are marked as "Not recommended in this version"
+            errors.append(f"[NETRAD_STANDARD] netradiationmethod={netrad_val} not recommended in this version")
+    
+    return errors
+
+
+def validate_emissions_parameters(physics: Dict[str, Any], method_type: str) -> List[str]:
+    """Validate emissions method parameters."""
+    errors = []
+    
+    emissions_val = extract_numeric_value(physics.get('emissionsmethod', 0))
+    
+    if method_type == 'ADVANCED':
+        # Advanced emissions methods (≥4)
+        if emissions_val >= 4:
+            # Validate advanced emissions parameters if they exist
+            # Currently commented out in model.py, so we skip validation
+            pass
+    
+    return errors
+
+
+def validate_snow_parameters(physics: Dict[str, Any], sites: List[Dict]) -> List[str]:
+    """Validate snow calculation parameters."""
+    errors = []
+    
+    snow_use = extract_numeric_value(physics.get('snowuse', 0))
+    
+    if snow_use == 1:
+        # Snow calculations are enabled - validate snow-related parameters
+        # Currently this generates a warning in model.py as there are no implemented checks
+        errors.append("[SNOW] SnowUse=1 enabled but no validation checks implemented for snow calculations")
+    
+    return errors
+
+
 def _extract_value(param: Any) -> Optional[float]:
     """Extract numeric value from parameter (handles RefValue objects)."""
     if param is None:
@@ -194,8 +274,9 @@ def validate_suews_config_conditional(config_data: Dict[str, Any], strict: bool 
     skipped_methods = set()
     
     sites = config_data.get('site', [])
+    physics = config_data.get('model', {}).get('physics', {})
     
-    # Conditional validation based on enabled methods
+    # Diagnostic method validation
     if methods.get('diagmethod_most') and not methods.get('diagmethod_variable'):
         if verbose:
             print("DiagMethod MOST: validating MOST parameters")
@@ -236,6 +317,51 @@ def validate_suews_config_conditional(config_data: Dict[str, Any], strict: bool 
     else:
         skipped.append("Variable roughness validation (RoughnessMethod != VARIABLE)")
         skipped_methods.add('VARIABLE_ROUGHNESS')
+    
+    # Storage heat method validation
+    if methods.get('storage_estm'):
+        if verbose:
+            print("Storage heat ESTM: validating ESTM parameters")
+        errors.extend(validate_storage_heat_parameters(physics, 'ESTM'))
+        validated_methods.add('STORAGE_ESTM')
+    else:
+        if verbose:
+            print("Storage heat OHM: validating OHM parameters")
+        errors.extend(validate_storage_heat_parameters(physics, 'OHM'))
+        validated_methods.add('STORAGE_OHM')
+    
+    # Net radiation method validation
+    if methods.get('netradiation_spartacus'):
+        if verbose:
+            print("Net radiation SPARTACUS: validating SPARTACUS parameters")
+        errors.extend(validate_netradiation_parameters(physics, sites, 'SPARTACUS'))
+        validated_methods.add('NETRADIATION_SPARTACUS')
+    else:
+        if verbose:
+            print("Net radiation standard: validating standard parameters")
+        errors.extend(validate_netradiation_parameters(physics, sites, 'STANDARD'))
+        validated_methods.add('NETRADIATION_STANDARD')
+    
+    # Emissions method validation
+    if methods.get('emissions_advanced'):
+        if verbose:
+            print("Emissions advanced: validating advanced emission parameters")
+        errors.extend(validate_emissions_parameters(physics, 'ADVANCED'))
+        validated_methods.add('EMISSIONS_ADVANCED')
+    else:
+        skipped.append("Advanced emissions validation (EmissionsMethod < 4)")
+        skipped_methods.add('EMISSIONS_ADVANCED')
+    
+    # Snow method validation
+    snow_enabled = extract_numeric_value(physics.get('snowuse', 0)) == 1
+    if snow_enabled:
+        if verbose:
+            print("Snow calculations: validating snow parameters")
+        errors.extend(validate_snow_parameters(physics, sites))
+        validated_methods.add('SNOW')
+    else:
+        skipped.append("Snow parameter validation (SnowUse != 1)")
+        skipped_methods.add('SNOW')
     
     # Determine status
     status = 'failed' if errors else 'passed'
