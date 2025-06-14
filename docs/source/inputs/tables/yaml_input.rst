@@ -15,6 +15,23 @@ The YAML input is structured around two principal sections:
 
 This separation allows you to flexibly manage multiple sites with a single set of model settings, or to tailor site-specific configurations as needed.
 
+Interactive Configuration Builder
+----------------------------------
+
+.. tip::
+
+   **NEW**: Use our interactive web-based configuration builder to create YAML files with ease!
+
+   🚀 **Launch the builder**: `SUEWS Configuration Builder <../../_static/index.html>`__
+
+   The configuration builder provides:
+   
+   - **User-friendly interface**: No need to manually edit YAML syntax
+   - **Parameter guidance**: Built-in help and documentation for each parameter
+   - **Real-time validation**: Catch configuration errors before running SUEWS
+   - **Export functionality**: Download your complete `config_suews.yml` file
+   - **Schema compliance**: Automatically ensures your configuration follows the correct format
+
 .. note::
    The examples below showcase a subset of the available parameters for brevity. Field names directly correspond to their definitions in the SUEWS data models. Refer to the detailed schema documentation for a comprehensive list of all configurable options and their specific data types. Many parameters are defined using a ``ValueWithDOI`` type, which means they expect a nested ``value:`` key in the YAML structure, as shown in the examples.
 

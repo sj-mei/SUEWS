@@ -1,36 +1,42 @@
 .. _input_files:
 
-Input files
-===========
-
-.. note::
-
-   Since 2025, SUEWS adopts a new input file format, which is a YAML file, please refer to :ref:`yaml_input` for more details. To accomdate larger compatibility of input files, we sill keep the following sections operational as of May 2025 but will deprecate the table-based input files in the future (end of 2025 estimated; content may still be kept for reference).
-
-   For users looking to migrate from the old table-based format to the new YAML format, please see our :doc:`../transition_guide`.
-
-
-
-SUEWS allows you to input a large number of parameters to describe the characteristics of your site.
-
-
-YAML-based approach
--------------------
-
-For the new YAML-based input file format, please refer to :ref:`yaml_input`.
-
-
-
-
-Conventional table-based approach (prior to 2025)
---------------------------------------------------
+Table-based Input Files (Legacy Format)
+========================================
 
 .. warning::
 
-   For new users, please use the YAML-based approach - the conventional table-based approach will be deprecated soon.
+   **DEPRECATED FORMAT**: Table-based input files are deprecated as of 2025 and will be removed by end of 2025.
+
+   **For new users**: Please use the modern :ref:`YAML format <yaml_input>` instead.
+
+   **For existing users**: Please migrate to the YAML format using:
+
+   - 🌐 **Interactive builder**: `SUEWS Configuration Builder <../../_static/index.html>`__ (recommended for beginners)
+   - 📖 **Migration guide**: :doc:`Transition Guide <transition_guide>` (see below)
+
+
+
+This documentation covers the legacy table-based input format used in SUEWS prior to 2025. These files allow you to specify detailed parameters to describe the characteristics of your site using multiple CSV/text files.
+
+Legacy Table-based Format
+--------------------------
+
+The table-based approach uses multiple files to define model parameters:
 
 the overall control is done via :doc:`RunControl/RunControl`.
 
+Migration to YAML Format
+-------------------------
+
+For existing users of table-based inputs, we provide comprehensive migration support:
+
+.. toctree::
+   :maxdepth: 2
+
+   ../transition_guide
+
+Legacy Format Reference
+-----------------------
 
 
 

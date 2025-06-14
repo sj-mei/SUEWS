@@ -17,21 +17,21 @@ Waterproperties
    :Unit: dimensionless
    :Default: ``0.95``
 
-.. option:: chanohm <RefValue[float] (Optional)>
+.. option:: ch_anohm <RefValue[float] (Optional)>
 
-   Bulk transfer coefficient for this surface to use in AnOHM
+   Bulk transfer coefficient for this surface. Option: AnOHM
 
    :Unit: J m^-3 K^-1
    :Default: ``0.0``
 
-.. option:: cpanohm <RefValue[float] (Optional)>
+.. option:: rho_cp_anohm <RefValue[float] (Optional)>
 
    Volumetric heat capacity for this surface to use in AnOHM
 
    :Unit: J m^-3 K^-1
    :Default: ``1200.0``
 
-.. option:: kkanohm <RefValue[float] (Optional)>
+.. option:: k_anohm <RefValue[float] (Optional)>
 
    Thermal conductivity for this surface to use in AnOHM
 
@@ -62,8 +62,8 @@ Waterproperties
 
    Depth of soil layer for hydrological calculations
 
-   :Unit: m
-   :Default: ``0.15``
+   :Unit: mm
+   :Default: ``150``
 
 .. option:: soilstorecap <RefValue[float]>
 

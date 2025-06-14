@@ -17,7 +17,7 @@ Thermallayers
    :Unit: W m^-1 K^-1
    :Default: ``[1.0, 1.0, 1.0, 1.0, 1.0]``
 
-.. option:: cp <RefValue[List[float]]>
+.. option:: rho_cp <RefValue[List[float]]>
 
    Volumetric heat capacity of each thermal layer
 

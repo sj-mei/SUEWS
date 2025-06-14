@@ -29,10 +29,7 @@ Installation and Setup
 
 .. code-block:: bash
 
-   # Via conda (recommended)
-   conda install -c conda-forge supy
-   
-   # Or via pip
+   # Install SuPy (includes SUEWS)
    pip install supy
 
 **Set up your Python environment:**
@@ -56,7 +53,7 @@ Quick Start: Sample Data Tutorial
 .. code-block:: python
 
    # Load built-in sample data - no configuration needed!
-   df_state_init, df_forcing = sp.sample_run()
+   df_state_init, df_forcing = sp.load_sample_data()
    
    # Examine the sample data
    print("📊 Sample forcing data:")
@@ -276,11 +273,15 @@ Once you have a YAML configuration file:
 
    import supy as sp
    
-   # Load your custom configuration
-   config = sp.load_config("path/to/your/config_suews.yml")
+   # Note: YAML configuration loading functionality is in development
+   # For now, use sample data or legacy table-based inputs
+   # Future API will include:
+   # config = sp.load_config("path/to/your/config_suews.yml")
+   # df_state_init, df_forcing = sp.prepare_inputs(config)
    
-   # Prepare inputs with your meteorological data
-   df_state_init, df_forcing = sp.prepare_inputs(config)
+   # Current approach for custom configurations:
+   df_state_init, df_forcing = sp.load_sample_data()  # Start with sample data
+   # Then modify parameters as needed using pandas operations
    
    # Run simulation for your site
    df_output, df_state_final = sp.run_supy(df_forcing, df_state_init)
@@ -326,19 +327,31 @@ Multi-Site and Comparative Studies
    from multiprocessing import Pool
    import pandas as pd
    
-   # Load configurations for multiple sites
-   site_configs = [
-       sp.load_config("london_site.yml"),
-       sp.load_config("manchester_site.yml"), 
-       sp.load_config("birmingham_site.yml")
-   ]
+   # Load sample data and modify for different sites
+   def create_site_config(site_name, lat, lng, urban_fraction):
+       """Create configuration for a single site"""
+       df_state, df_forcing = sp.load_sample_data()
+       
+       # Modify site characteristics
+       # Note: This uses pandas operations until YAML config API is available
+       # df_state.loc[:, ('lat', 0)] = lat
+       # df_state.loc[:, ('lng', 0)] = lng
+       # df_state.loc[:, ('sfr_surf', slice(None))] = urban_fraction
+       
+       return site_name, df_state, df_forcing
    
-   def run_single_site(config):
+   def run_single_site(site_data):
        """Run SUEWS for a single site"""
-       df_state, df_forcing = sp.prepare_inputs(config)
+       site_name, df_state, df_forcing = site_data
        df_output, df_final = sp.run_supy(df_forcing, df_state)
-       site_name = config['sites'][0]['name']
        return site_name, df_output
+   
+   # Create configurations for multiple sites
+   site_configs = [
+       create_site_config("London", 51.51, -0.12, [0.4, 0.4, 0.1, 0.1, 0.0, 0.0, 0.0]),
+       create_site_config("Manchester", 53.48, -2.24, [0.3, 0.5, 0.1, 0.1, 0.0, 0.0, 0.0]),
+       create_site_config("Birmingham", 52.48, -1.90, [0.35, 0.45, 0.1, 0.1, 0.0, 0.0, 0.0])
+   ]
    
    # Parallel execution across all sites
    with Pool() as pool:
@@ -372,12 +385,14 @@ Climate Change Impact Studies
    scenario_results = {}
    
    for scenario_name, met_file in scenarios.items():
-       # Load scenario-specific meteorological data
-       config = sp.load_config("site_config.yml")
-       config['model']['control']['forcing_file']['value'] = met_file
+       # Load base configuration with sample data
+       df_state, df_forcing = sp.load_sample_data()
+       
+       # Replace meteorological forcing with scenario data
+       # df_forcing = pd.read_csv(met_file)  # Load scenario-specific met data
+       # Note: Actual implementation would load and format the scenario data
        
        # Run simulation
-       df_state, df_forcing = sp.prepare_inputs(config)
        df_output, _ = sp.run_supy(df_forcing, df_state)
        scenario_results[scenario_name] = df_output
    
@@ -502,9 +517,12 @@ Migration Process
 
 .. code-block:: python
 
-   # Test migrated configuration
-   config = sp.load_config("migrated_config.yml")
-   df_state, df_forcing = sp.prepare_inputs(config)
+   # For now, manually test configuration changes
+   # Future: config = sp.load_config("migrated_config.yml")
+   # Future: df_state, df_forcing = sp.prepare_inputs(config)
+   
+   # Current approach: Load sample data and verify structure
+   df_state, df_forcing = sp.load_sample_data()
    
    # Short validation run
    df_output, _ = sp.run_supy(df_forcing.head(144), df_state)  # 1 day

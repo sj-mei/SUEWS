@@ -1,7 +1,7 @@
 .. _supy_index:
 
-SuPy: SUEWS that speaks Python
-------------------------------
+SuPy: The Modern SUEWS Interface
+--------------------------------
 
 .. image:: https://img.shields.io/pypi/pyversions/supy.svg
     :target: https://pypi.org/project/supy

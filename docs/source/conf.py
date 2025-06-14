@@ -318,7 +318,7 @@ pygments_style = "sphinx"
 default_role = "any"
 
 # some text replacement defintions
-rst_prolog = """
+rst_prolog = r"""
 .. |km^-1| replace:: km\ :sup:`-1`
 .. |mm^-1| replace:: mm\ :sup:`-1`
 .. |m^-1| replace:: m\ :sup:`-1`
@@ -557,6 +557,18 @@ def source_read_handler(app, docname, source):
         # and do nothing
         return
 
+    # Add deprecation warning to table-based input documentation
+    deprecation_warning = ""
+    if docname.startswith("inputs/tables/") and not docname.endswith("index"):
+        deprecation_warning = """
+.. warning::
+
+   **DEPRECATED**: This table-based input format is deprecated as of 2025. 
+   Please use the modern :ref:`YAML format <yaml_input>` instead. 
+   See our :doc:`transition guide </inputs/transition_guide>` for migration help.
+
+"""
+
     # modify the issue link to provide page specific URL
     str_base = "docs/source"
     str_repo = html_context["github_repo"]
@@ -574,7 +586,7 @@ def source_read_handler(app, docname, source):
     str_GHPage = f"""
 .. _GitHub Issues: {str_url}
 """
-    rendered = "\n".join([str_GHPage, src])
+    rendered = "\n".join([str_GHPage, deprecation_warning, src])
     source[0] = rendered.rstrip("\n")
 
 

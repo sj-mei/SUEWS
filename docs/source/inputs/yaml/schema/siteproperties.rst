@@ -35,8 +35,8 @@ Siteproperties
 
    Total surface area of the site
 
-   :Unit: m^2
-   :Default: ``10000.0``
+   :Unit: ha
+   :Default: ``1.0``
 
 .. option:: z <RefValue[float]>
 
@@ -176,9 +176,9 @@ Siteproperties
 
 .. option:: lambda_c <RefValue[float]>
 
-   Building surface to plan area ratio [-]
+   External building surface area to plan area ratio
 
-   :Unit: dimensionless
+   :Unit: m^2 m^-2
    :Default: ``0``
 
 .. option:: ref <Reference (Optional)>
