@@ -40,7 +40,10 @@ supy_dir = src/supy
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
-all: install test
+all: help
+
+# Legacy targets for backwards compatibility
+install-and-test: install test
 
 # Display help information
 help:
@@ -49,17 +52,18 @@ help:
 	@echo "Quick Start - Choose your environment:"
 	@echo "  1. mamba/conda:  mamba activate suews-dev && make dev"
 	@echo "  2. uv:           make uv-dev"
-	@echo "  3. deactivate:   make deactivate (shows command to run)"
+	@echo "  3. Deactivate:    make deactivate (shows command to run)"
 	@echo ""
 	@echo "Build and Development:"
 	@echo "  dev             - Smart build: auto-detects environment and uses appropriate settings"
 	@echo "  uv-dev          - Create uv environment + build SUEWS (complete setup)"
-	@echo "  install         - Install SUEWS (not editable)"
-	@echo "  wheel           - Build distribution wheels"  
+	@echo "  install         - Install SUEWS to current Python environment (not editable)"
+	@echo "  wheel           - Build distribution wheels"
 	@echo "  clean           - Clean all build artifacts"
 	@echo ""
 	@echo "Legacy/Manual Commands:"
 	@echo "  mamba-dev       - Build SUEWS with mamba environment (manual isolated build)"
+	@echo "  install-and-test - Install SUEWS to current Python environment + run tests (old 'make all')"
 	@echo ""
 	@echo "Environment Management:"
 	@echo "  uv-sync         - Create and sync uv development environment"
@@ -77,14 +81,15 @@ help:
 	@echo "  proc-csv        - Process CSV files for documentation"
 	@echo "  config-ui       - Start SUEWS Configuration UI server (http://localhost:8080)"
 	@echo ""
-	@echo "Environment Activation:"
-	@echo "  mamba/conda:  mamba activate suews-dev"
-	@echo "  uv:           source /tmp/suews-uv-env/bin/activate (after make uv-dev)"
-	@echo ""
 	@echo "Notes:"
 	@echo "  * mamba: Traditional conda environment with all dependencies"
-	@echo "  * uv: Lightweight environment with faster dependency resolution"  
-	@echo "  * Both environments use isolated build directories to avoid conflicts"
+	@echo "  * uv: Lightweight environment with faster dependency resolution"
+	@echo "  * Both environments use worktree-specific isolated build directories"
+	@echo "  * Worktree ID: $(WORKTREE_ID) (unique per git worktree)"
+	@echo "  * Activation commands:"
+	@echo "    - mamba/conda: mamba activate suews-dev"
+	@echo "    - uv: source $(UV_ENV_DIR)/bin/activate (after make uv-dev)"
+	@echo "  * To deactivate: use 'make deactivate' for environment-specific commands"
 	@echo "  * Use 'make help' to see this help again"
 
 # make suews driver library
@@ -100,16 +105,16 @@ dev:
 	@echo "Building supy with development install..."
 	@if [ -n "$$CONDA_DEFAULT_ENV" ] || [ -n "$$MAMBA_DEFAULT_ENV" ]; then \
 		echo "Detected conda/mamba environment: $$CONDA_DEFAULT_ENV$$MAMBA_DEFAULT_ENV"; \
-		echo "Using isolated build directory for mamba environment"; \
+		echo "Using isolated build directory for mamba environment: $(BUILD_BASE_DIR)/mamba-build"; \
 		if [ -x "/opt/homebrew/bin/gfortran" ]; then \
 			echo "Using Homebrew gfortran for better macOS compatibility"; \
-			mkdir -p /tmp/suews-builds/mamba-build; \
-			MESON_BUILD_ROOT="/tmp/suews-builds/mamba-build" FC=/opt/homebrew/bin/gfortran $(PYTHON) -m pip install --no-build-isolation --editable .; \
+			mkdir -p $(BUILD_BASE_DIR)/mamba-build; \
+			MESON_BUILD_ROOT="$(BUILD_BASE_DIR)/mamba-build" FC=/opt/homebrew/bin/gfortran $(PYTHON) -m pip install --no-build-isolation --editable .; \
 		else \
-			mkdir -p /tmp/suews-builds/mamba-build; \
-			MESON_BUILD_ROOT="/tmp/suews-builds/mamba-build" $(PYTHON) -m pip install --no-build-isolation --editable .; \
+			mkdir -p $(BUILD_BASE_DIR)/mamba-build; \
+			MESON_BUILD_ROOT="$(BUILD_BASE_DIR)/mamba-build" $(PYTHON) -m pip install --no-build-isolation --editable .; \
 		fi \
-	elif [ -n "$$VIRTUAL_ENV" ] && [[ "$$VIRTUAL_ENV" == *"/tmp/suews-uv-env"* ]]; then \
+	elif [ -n "$$VIRTUAL_ENV" ] && [[ "$$VIRTUAL_ENV" == *"suews-uv-env"* ]]; then \
 		echo "Detected uv environment: $$VIRTUAL_ENV"; \
 		echo "Using default build approach for uv environment"; \
 		if [ -x "/opt/homebrew/bin/gfortran" ]; then \
@@ -204,41 +209,42 @@ cibw:
 uv-clean:
 	@echo "Cleaning uv environment and build directory..."
 ifeq ($(OS),Windows_NT)
-	rm -rf "%TEMP%\suews-uv-env"
-	rm -rf "%TEMP%\suews-builds\uv-build"
+	rm -rf "$(UV_ENV_DIR)"
+	rm -rf "$(BUILD_BASE_DIR)\uv-build"
 else
-	rm -rf /tmp/suews-uv-env
-	rm -rf /tmp/suews-builds/uv-build
+	rm -rf "$(UV_ENV_DIR)"
+	rm -rf "$(BUILD_BASE_DIR)/uv-build"
 endif
 
 uv-sync: uv-clean
 	@echo "Creating uv development environment outside project directory..."
+	@echo "Worktree ID: $(WORKTREE_ID)"
 ifeq ($(OS),Windows_NT)
-	@echo "Environment: %TEMP%\suews-uv-env"
-	@echo "Build directory: %TEMP%\suews-builds\uv-build"
-	@mkdir "%TEMP%\suews-builds" 2>nul || true
-	uv venv --python 3.12 "%TEMP%\suews-uv-env"
+	@echo "Environment: $(UV_ENV_DIR)"
+	@echo "Build directory: $(BUILD_BASE_DIR)\uv-build"
+	@mkdir "$(BUILD_BASE_DIR)" 2>nul || true
+	set VIRTUAL_ENV= && uv venv --python 3.12 "$(UV_ENV_DIR)"
 else
-	@echo "Environment: /tmp/suews-uv-env"
-	@echo "Build directory: /tmp/suews-builds/uv-build"
-	@mkdir -p /tmp/suews-builds
-	uv venv --python 3.12 /tmp/suews-uv-env
+	@echo "Environment: $(UV_ENV_DIR)"
+	@echo "Build directory: $(BUILD_BASE_DIR)/uv-build"
+	@mkdir -p "$(BUILD_BASE_DIR)"
+	unset VIRTUAL_ENV; uv venv --python 3.12 "$(UV_ENV_DIR)"
 endif
 	@echo "Installing build requirements..."
 ifeq ($(OS),Windows_NT)
-	"%TEMP%\suews-uv-env\Scripts\activate" && uv pip install pip setuptools meson-python wheel pytest f90wrap==0.2.16 numpy
+	"$(UV_ENV_DIR)\Scripts\activate" && uv pip install pip setuptools meson-python wheel pytest f90wrap==0.2.16 numpy
 else
-	. /tmp/suews-uv-env/bin/activate && uv pip install pip setuptools meson-python wheel pytest f90wrap==0.2.16 numpy
+	. "$(UV_ENV_DIR)/bin/activate" && uv pip install pip setuptools meson-python wheel pytest f90wrap==0.2.16 numpy
 endif
 	@echo "Installing supy in editable mode with dev dependencies..."
 ifeq ($(OS),Windows_NT)
-	"%TEMP%\suews-uv-env\Scripts\activate" && python -m pip install --no-build-isolation --editable ".[dev]"
+	"$(UV_ENV_DIR)\Scripts\activate" && python -m pip install --no-build-isolation --editable ".[dev]"
 else
 	@if [ -x "/opt/homebrew/bin/gfortran" ]; then \
 		echo "Using Homebrew gfortran for better macOS compatibility"; \
-		. /tmp/suews-uv-env/bin/activate && FC=/opt/homebrew/bin/gfortran python -m pip install --no-build-isolation --editable ".[dev]"; \
+		. "$(UV_ENV_DIR)/bin/activate" && FC=/opt/homebrew/bin/gfortran python -m pip install --no-build-isolation --editable ".[dev]"; \
 	else \
-		. /tmp/suews-uv-env/bin/activate && python -m pip install --no-build-isolation --editable ".[dev]"; \
+		. "$(UV_ENV_DIR)/bin/activate" && python -m pip install --no-build-isolation --editable ".[dev]"; \
 	fi
 endif
 
@@ -247,26 +253,27 @@ uv-dev: uv-sync
 	@echo "SUEWS development environment ready with uv!"
 	@echo "Activate with:"
 ifeq ($(OS),Windows_NT)
-	@echo "  %TEMP%\\suews-uv-env\\Scripts\\activate"
+	@echo "  $(UV_ENV_DIR)\\Scripts\\activate"
 else
-	@echo "  source /tmp/suews-uv-env/bin/activate"
+	@echo "  source $(UV_ENV_DIR)/bin/activate"
 endif
 
 # Enhanced mamba development with isolated builds
 mamba-dev:
 	@echo "Building supy with mamba environment (isolated build)..."
+	@echo "Worktree ID: $(WORKTREE_ID)"
 ifeq ($(OS),Windows_NT)
-	@echo "Build directory: %TEMP%\suews-builds\mamba-build"
-	@mkdir "%TEMP%\suews-builds" 2>nul || true
-	set "MESON_BUILD_ROOT=%TEMP%\suews-builds\mamba-build" && $(PYTHON) -m pip install --no-build-isolation --editable .
+	@echo "Build directory: $(BUILD_BASE_DIR)\mamba-build"
+	@mkdir "$(BUILD_BASE_DIR)" 2>nul || true
+	set "MESON_BUILD_ROOT=$(BUILD_BASE_DIR)\mamba-build" && $(PYTHON) -m pip install --no-build-isolation --editable .
 else
-	@echo "Build directory: /tmp/suews-builds/mamba-build"
-	@mkdir -p /tmp/suews-builds
+	@echo "Build directory: $(BUILD_BASE_DIR)/mamba-build"
+	@mkdir -p "$(BUILD_BASE_DIR)"
 	@if [ -x "/opt/homebrew/bin/gfortran" ]; then \
 		echo "Using Homebrew gfortran for better macOS compatibility"; \
-		MESON_BUILD_ROOT="/tmp/suews-builds/mamba-build" FC=/opt/homebrew/bin/gfortran $(PYTHON) -m pip install --no-build-isolation --editable .; \
+		MESON_BUILD_ROOT="$(BUILD_BASE_DIR)/mamba-build" FC=/opt/homebrew/bin/gfortran $(PYTHON) -m pip install --no-build-isolation --editable .; \
 	else \
-		MESON_BUILD_ROOT="/tmp/suews-builds/mamba-build" $(PYTHON) -m pip install --no-build-isolation --editable .; \
+		MESON_BUILD_ROOT="$(BUILD_BASE_DIR)/mamba-build" $(PYTHON) -m pip install --no-build-isolation --editable .; \
 	fi
 endif
 
@@ -290,24 +297,34 @@ deactivate:
 
 # Show command to activate uv environment
 uv-activate:
-	@if [ -d "/tmp/suews-uv-env" ]; then \
+	@if [ -d "$(UV_ENV_DIR)" ]; then \
 		echo "uv environment found. Activate with either:"; \
-		echo "  source /tmp/suews-uv-env/bin/activate  (traditional)"; \
-		echo "  cd /tmp && uv run python [script]      (uv direct)"; \
-		echo "Note: uv doesn't have a direct 'activate' command, use source"; \
+		echo "  source $(UV_ENV_DIR)/bin/activate  (traditional)"; \
+		echo "  make uv                            (spawn new shell)"; \
+		echo "Worktree ID: $(WORKTREE_ID)"; \
 	else \
-		echo "uv environment not found at /tmp/suews-uv-env"; \
+		echo "uv environment not found at $(UV_ENV_DIR)"; \
 		echo "Run 'make uv-dev' to create it first"; \
 	fi
 
+# Generate unique identifiers for this worktree
+WORKTREE_ID := $(shell basename "$(PWD)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
+ifeq ($(OS),Windows_NT)
+	UV_ENV_DIR := $(TEMP)/suews-uv-env-$(WORKTREE_ID)
+	BUILD_BASE_DIR := $(TEMP)/suews-builds-$(WORKTREE_ID)
+else
+	UV_ENV_DIR := /tmp/suews-uv-env-$(WORKTREE_ID)
+	BUILD_BASE_DIR := /tmp/suews-builds-$(WORKTREE_ID)
+endif
+
 # Spawn new shell with uv environment activated
 uv:
-	@if [ -d "/tmp/suews-uv-env" ]; then \
+	@if [ -d "$(UV_ENV_DIR)" ]; then \
 		echo "Activating uv environment in new zsh shell..."; \
 		echo "Type 'exit' to return to your original environment"; \
-		echo 'source ~/.zshrc 2>/dev/null || true; source /tmp/suews-uv-env/bin/activate; echo "uv environment activated!"; exec zsh' > /tmp/uv-activate-tmp.zsh; \
-		zsh /tmp/uv-activate-tmp.zsh; \
-		rm -f /tmp/uv-activate-tmp.zsh; \
+		echo 'source ~/.zshrc 2>/dev/null || true; source $(UV_ENV_DIR)/bin/activate; echo "uv environment activated!"; exec zsh' > /tmp/uv-activate-tmp-$(WORKTREE_ID).zsh; \
+		zsh /tmp/uv-activate-tmp-$(WORKTREE_ID).zsh; \
+		rm -f /tmp/uv-activate-tmp-$(WORKTREE_ID).zsh; \
 	else \
 		echo "uv environment not found. Run 'make uv-dev' first"; \
 	fi
