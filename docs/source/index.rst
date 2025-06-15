@@ -127,10 +127,11 @@ How to support SUEWS?
    workflow
    sub-tutorials/tutorials
    inputs/index
-   data-structures/supy-io
    output_files/output_files
+   api
+   data-structures/supy-io
+   integration/index
    troubleshooting
-   related-softwares/related_softwares
    benchmark/benchmark_report
    notation
 
@@ -142,7 +143,7 @@ How to support SUEWS?
    :hidden:
 
    contributing/contributing
-   api
+   fortran-api
    acknowledgement
    version-history/version-history
    GitHub repository <https://github.com/UMEP-dev/SUEWS>

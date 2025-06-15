@@ -577,3 +577,15 @@ docs/schema.json
 # SPARTACUS surface - these are copied/generated files from submodule
 src/suews/ext_lib/spartacus-surface/**/*.f95
 
+# Tutorial output files - generated when running notebooks
+docs/source/tutorials/python/*_BEERS_*.txt
+docs/source/tutorials/python/*_DailyState.txt
+docs/source/tutorials/python/*_debug_*.txt
+docs/source/tutorials/python/*_EHC_*.txt
+docs/source/tutorials/python/*_RSL_*.txt
+docs/source/tutorials/python/*_SUEWS_*.txt
+docs/source/tutorials/python/df_state.csv
+
+# Auto-generated Sphinx API documentation
+docs/source/_autosummary/
+

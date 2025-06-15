@@ -1,18 +1,31 @@
-.. _suews_related_softwares:
+.. _complementary_tools:
 
-SUEWS-related Software
-================================
+Complementary Tools and Interfaces
+===================================
 
-SUEWS integrates with a range of urban climate modelling tools and platforms. While SUEWS is primarily accessed through the Python interface (SuPy), it also connects with broader urban modelling ecosystems.
+SUEWS integrates with urban climate modelling tools and platforms that provide complementary functionality to the core Python interface.
 
 .. note::
-   
-   **SuPy** is the primary modern interface for SUEWS and is documented throughout this manual. The tools below provide complementary functionality or legacy access methods.
+
+   **SuPy** is the primary modern interface for SUEWS and is documented throughout this manual. The tools below provide additional capabilities for specific workflows and use cases.
+
+Graphical Interfaces
+--------------------
 
 .. toctree::
   :maxdepth: 1
 
   umep
-  lumps-fraise
-  supy/index
+
+
+External Model Integration
+--------------------------
+
+For external model coupling and integration examples, see :doc:`../integration/index`.
+
+**Integration Capabilities:**
+- **Atmospheric models**: WRF coupling for mesoscale simulations
+- **Building energy models**: Exchange with detailed energy simulation tools
+- **Traffic emissions**: Dynamic traffic emission model coupling
+- **Climate scenarios**: Integration with climate model output
 

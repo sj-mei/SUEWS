@@ -16,7 +16,6 @@ The modern SUEWS interface uses Python and provides the most capable and user-fr
   ../tutorials/python/quick-start
   ../tutorials/python/setup-own-site
   ../tutorials/python/impact-studies
-  ../tutorials/python/external-interaction
 
 **Installation:**
 
@@ -30,7 +29,7 @@ The modern SUEWS interface uses Python and provides the most capable and user-fr
 - **pandas integration**: Powerful data analysis and visualisation
 - **Interactive notebooks**: Hands-on learning with immediate results
 - **Parallel processing**: Efficient multi-site and scenario analysis
-- **External model coupling**: Integration with other atmospheric models
+- **External model coupling**: Integration with other atmospheric models (see :doc:`../integration/index`)
 
 **Scientific Foundation:**
 All SuPy results maintain the scientific rigour of SUEWS (see :ref:`SUEWS publications <Recent_publications>` and :ref:`Parameterisations and sub-models within SUEWS`), enhanced by the `Python scientific ecosystem <https://scipy.org>`_.
@@ -39,7 +38,7 @@ Additional Data Analysis Tools
 ------------------------------
 
 - **Data structures**: :doc:`../data-structures/supy-io` - Understanding SuPy's pandas-based data organisation
-- **API reference**: :doc:`../related-softwares/supy/api` - Complete function documentation
+- **API reference**: :doc:`../api/supy` - Complete function documentation
 
 Legacy UMEP/QGIS Tutorials
 ---------------------------

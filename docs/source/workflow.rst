@@ -162,7 +162,7 @@ The simulation produces comprehensive urban climate data:
 
 For the full hands-on experience, run the complete tutorial notebook:
 
-📓 **Interactive Notebook**: :doc:`Complete Quick Start Tutorial <related-softwares/supy/tutorial/quick-start>`
+📓 **Interactive Notebook**: :doc:`Complete Quick Start Tutorial <tutorials/python/quick-start>`
 
 This notebook includes:
 - Detailed explanations of each step
@@ -255,7 +255,7 @@ Setup Your Site Tutorial
 
 For detailed guidance on configuring SUEWS for your specific site:
 
-📓 **Interactive Tutorial**: :doc:`Setup Your Own Site <related-softwares/supy/tutorial/setup-own-site>`
+📓 **Interactive Tutorial**: :doc:`Setup Your Own Site <tutorials/python/setup-own-site>`
 
 This comprehensive notebook covers:
 - Site characterisation and data collection
@@ -411,7 +411,7 @@ Climate Change Impact Studies
        'Storage Heat': rcp85['QS'].mean() - baseline['QS'].mean()
    }
 
-**Complete Tutorial**: :doc:`Impact Studies <related-softwares/supy/tutorial/impact-studies>`
+**Complete Tutorial**: :doc:`Impact Studies <tutorials/python/impact-studies>`
 
 Model Coupling and Integration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -435,7 +435,7 @@ SuPy enables integration with other atmospheric and urban models:
        
        return wrf_fluxes
 
-**Complete Tutorial**: :doc:`External Model Integration <related-softwares/supy/tutorial/external-interaction>`
+**Complete Tutorial**: :doc:`External Model Integration <integration/external-interaction>`
 
 Advanced Analysis Patterns
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

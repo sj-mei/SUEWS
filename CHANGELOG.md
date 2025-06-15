@@ -6,13 +6,12 @@
 <!-- [change]: Changes exposed to users -->
 
 - 15 Jun 2025:
-  - [feature] Added uv-based development environment support with `make uv-dev` command for faster dependency resolution and modern Python package management
-  - [feature] Implemented cross-platform isolated build directories (`/tmp/suews-builds/`) to prevent environment conflicts between mamba and uv setups
-  - [feature] Enhanced `make dev` with automatic environment detection (mamba/conda vs uv) and appropriate build configuration
-  - [feature] Added new Makefile targets: `make uv` (environment activation), `make uv-clean`, `make uv-sync`, `make deactivate` (environment management helper)
+  - [feature] Implemented cross-platform isolated build directories (`/tmp/suews-builds/`) to prevent environment conflicts
+  - [feature] Enhanced `make dev` with automatic environment detection and appropriate build configuration
+  - [feature] Added new Makefile target: `make deactivate` (environment management helper)
   - [feature] Comprehensive help system with `make help` displaying Quick Start guide and complete command reference
   - [maintenance] Improved cross-platform compatibility for Windows, macOS, and Linux build environments
-  - [maintenance] Enhanced Makefile with unified development workflow supporting both traditional conda/mamba and modern uv approaches
+  - [maintenance] Enhanced Makefile with unified development workflow
   - [maintenance] Added automatic .gitignore rules for SPARTACUS generated files to prevent repository pollution
   - [bugfix] Resolved meson build conflicts between different Python environments by implementing isolated build directories
   - [bugfix] Fixed numpy path issues when using virtual environments located within project directory structure

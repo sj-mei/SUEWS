@@ -16,14 +16,16 @@ Start here for your SUEWS learning journey:
   quick-start
   setup-own-site
   impact-studies
-  external-interaction
 
 **Recommended Learning Path:**
 
 1. **[Quick Start](quick-start.ipynb)** - Your first SUEWS simulation using built-in sample data
 2. **[Setup Your Own Site](setup-own-site.ipynb)** - Configure SUEWS for your research location  
 3. **[Impact Studies](impact-studies.ipynb)** - Climate change and scenario analysis
-4. **[External Integration](external-interaction.ipynb)** - Coupling with other atmospheric models
+
+**Advanced Topics:**
+
+- **Model Coupling**: See :doc:`../../integration/index` for external model integration examples
 
 Prerequisites
 -------------
