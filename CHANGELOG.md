@@ -5,6 +5,19 @@
 <!-- [doc]: Documentation updates -->
 <!-- [change]: Changes exposed to users -->
 
+- 15 Jun 2025:
+  - [feature] Added uv-based development environment support with `make uv-dev` command for faster dependency resolution and modern Python package management
+  - [feature] Implemented cross-platform isolated build directories (`/tmp/suews-builds/`) to prevent environment conflicts between mamba and uv setups
+  - [feature] Enhanced `make dev` with automatic environment detection (mamba/conda vs uv) and appropriate build configuration
+  - [feature] Added new Makefile targets: `make uv` (environment activation), `make uv-clean`, `make uv-sync`, `make deactivate` (environment management helper)
+  - [feature] Comprehensive help system with `make help` displaying Quick Start guide and complete command reference
+  - [maintenance] Improved cross-platform compatibility for Windows, macOS, and Linux build environments
+  - [maintenance] Enhanced Makefile with unified development workflow supporting both traditional conda/mamba and modern uv approaches
+  - [maintenance] Added automatic .gitignore rules for SPARTACUS generated files to prevent repository pollution
+  - [bugfix] Resolved meson build conflicts between different Python environments by implementing isolated build directories
+  - [bugfix] Fixed numpy path issues when using virtual environments located within project directory structure
+  - [doc] Updated CLAUDE.md with comprehensive changelog management guidelines and development workflow documentation
+
 - 13 Jun 2025:
   - [feature] Added YAML-based configuration system with comprehensive conversion tools and interactive web UI (#343)
   - [feature] Implemented `to_yaml.py` command-line tool for converting legacy table-based inputs to modern YAML format with optional version upgrade support

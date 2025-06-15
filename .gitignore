@@ -574,3 +574,6 @@ CLAUDE.md
 # auto-generated files for building docs
 docs/schema.json
 
+# SPARTACUS surface - these are copied/generated files from submodule
+src/suews/ext_lib/spartacus-surface/**/*.f95
+
