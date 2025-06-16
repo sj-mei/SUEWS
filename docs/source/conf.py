@@ -181,7 +181,7 @@ if read_the_docs_build:
     subprocess.call("doxygen", shell=True)
 
     # generate summary tables using info in `Input_Options.rst`
-    path_csv = path_source / "input_files/SUEWS_SiteInfo/csv-table"
+    path_csv = path_source / "inputs/tables/SUEWS_SiteInfo/csv-table"
     gen_csv_suews(path_csv)
 
     # update `today`
