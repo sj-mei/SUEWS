@@ -18,7 +18,7 @@ authors = [
     { name = "Prof Sue Grimmond", email = "c.s.grimmond@reading.ac.uk" },
 ]
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 
 license = { text = "GPL-V3.0" }
 
@@ -44,6 +44,7 @@ dependencies = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -69,7 +70,7 @@ suews-convert = "supy.cmd.table_converter:convert_table_cmd"
 dev = [
     # Development and testing
     "pytest",
-    "pytest-cov", 
+    "pytest-cov",
     "ruff",
     # Personal analysis tools
     "geopandas",
