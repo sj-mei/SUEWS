@@ -78,6 +78,7 @@ make claude-dev LOCATION=/Users/username/Projects/suews-research
 - **`Dockerfile.claude-dev`**: Production-ready container with complete SUEWS environment
 - **`claude-sandbox.config.json`**: Configuration for Claude Code Sandbox
 - **`setup-claude-dev.sh`**: Automated setup script
+- **`test-docker-workflow.md`**: Comprehensive Docker testing workflow and troubleshooting guide
 - **`.dockerignore`**: Optimised Docker build context
 - **`README.md`**: This comprehensive guide
 
@@ -296,6 +297,16 @@ Mount external datasets by placing them in:
 - **File system**: Isolated container environment
 
 ## Troubleshooting
+
+### Docker Testing Workflow
+
+For comprehensive Docker environment testing and troubleshooting, see [`test-docker-workflow.md`](test-docker-workflow.md), which includes:
+
+- Step-by-step testing procedures
+- Performance benchmarking scripts
+- Comprehensive troubleshooting solutions
+- Success criteria verification
+- Resource monitoring tools
 
 ### Common Issues
 

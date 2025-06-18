@@ -230,7 +230,7 @@ fortranobject_c = incdir_f2py / 'fortranobject.c'
 inc_np = include_directories(incdir_numpy, incdir_f2py)
 
 # gh-25000
-dep_quadmath = fortran_compiler.find_library('quadmath', required: true)
+dep_quadmath = fortran_compiler.find_library('quadmath', required: false)
 
 # Share this object across multiple modules.
 lib_fortranobject = static_library(
