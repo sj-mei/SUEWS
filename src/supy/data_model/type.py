@@ -1,5 +1,5 @@
-from typing import TypeVar, Optional, Generic
-from pydantic import BaseModel, Field
+from typing import TypeVar, Optional, Generic, Union, Any
+from pydantic import BaseModel, Field, validator, root_validator, field_validator
 import numpy as np
 import pandas as pd
 from enum import Enum
@@ -43,21 +43,21 @@ class RefValue(BaseModel, Generic[T]):
     Examples:
         # Physical quantity with units
         temperature: RefValue[float] = Field(
-            default=RefValue(15.0),
+            default=RefValue(15.0,
             description="Air temperature",
             unit="degC"
         )
 
         # Dimensionless ratio
         albedo: RefValue[float] = Field(
-            default=RefValue(0.2),
+            default=RefValue(0.2,
             description="Surface albedo",
             unit="dimensionless"
         )
 
         # Configuration parameter (no unit needed)
         method: RefValue[int] = Field(
-            default=RefValue(1),
+            default=RefValue(1,
             description="Calculation method selection"
         )
 
@@ -82,6 +82,13 @@ class RefValue(BaseModel, Generic[T]):
         elif isinstance(value, (np.int64, np.int32)):
             value = int(value)
         super().__init__(value=value, ref=ref)
+    
+    @classmethod
+    def wrap(cls, value: Union[T, 'RefValue[T]']) -> 'RefValue[T]':
+        """Auto-wrap simple values in RefValue, return RefValue unchanged"""
+        if isinstance(value, cls):
+            return value
+        return cls(value)
 
     def __str__(self):
         """String representation showing just the value"""
@@ -126,6 +133,71 @@ class RefValue(BaseModel, Generic[T]):
         if isinstance(other, RefValue):
             return self.value != other.value
         return self.value != other
+
+
+class FlexibleRefValue(BaseModel, Generic[T]):
+    """A flexible field that accepts both RefValue objects and simple values.
+    
+    This class acts as a union type that can store either:
+    - Simple values (int, float, str, etc.) - automatically wrapped in RefValue
+    - RefValue objects with optional reference metadata
+    
+    Usage:
+        # Simple value assignment (auto-wrapped)
+        temperature: FlexibleRefValue[float] = Field(default=15.0)
+        
+        # RefValue with reference
+        temperature: FlexibleRefValue[float] = Field(
+            default=RefValue(15.0, ref=Reference(DOI="10.1234/example"))
+        )
+    """
+    
+    _value: RefValue[T]
+    
+    def __init__(self, value: Union[T, RefValue[T]] = None, **data):
+        if value is not None:
+            if isinstance(value, RefValue):
+                _value = value
+            else:
+                _value = RefValue(value)
+            super().__init__(_value=_value)
+        elif '_value' in data:
+            # Auto-wrap if not RefValue
+            if not isinstance(data['_value'], RefValue):
+                data['_value'] = RefValue(data['_value'])
+            super().__init__(**data)
+        else:
+            # Handle pydantic initialization
+            super().__init__(**data)
+    
+    @property
+    def value(self) -> T:
+        """Direct access to the underlying value"""
+        return self._value.value
+    
+    @property
+    def ref(self) -> Optional[Reference]:
+        """Access to reference metadata"""
+        return self._value.ref
+    
+    @property
+    def refvalue(self) -> RefValue[T]:
+        """Access to the full RefValue object"""
+        return self._value
+    
+    def __str__(self):
+        return str(self._value.value)
+    
+    def __repr__(self):
+        return repr(self._value.value)
+    
+    # Delegate comparison operators to the underlying RefValue
+    def __eq__(self, other): return self._value == other
+    def __lt__(self, other): return self._value < other
+    def __le__(self, other): return self._value <= other
+    def __gt__(self, other): return self._value > other
+    def __ge__(self, other): return self._value >= other
+    def __ne__(self, other): return self._value != other
 
 
 def init_df_state(grid_id: int) -> pd.DataFrame:

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 import pandas as pd
-from .type import RefValue, Reference
+from .type import RefValue, Reference, FlexibleRefValue
 from .profile import HourlyProfile, WeeklyProfile, DayProfile
 from .type import init_df_state
 
@@ -9,28 +9,28 @@ from .type import init_df_state
 class IrrigationParams(
     BaseModel
 ):  # TODO: May need to add RefValue to the profiles here
-    h_maintain: RefValue[float] = Field(
-        default=RefValue(0.5),
+    h_maintain: FlexibleRefValue[float] = Field(
+        default=0.5,
         description="Water depth to maintain through irrigation",
         unit="mm",
     )
-    faut: RefValue[float] = Field(
-        default=RefValue(0.0),
+    faut: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Fraction of automatic irrigation",
         unit="dimensionless",
     )
-    ie_start: RefValue[float] = Field(
-        default=RefValue(0.0),
+    ie_start: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Start time of irrigation",
         unit="hour",
     )
-    ie_end: RefValue[float] = Field(
-        default=RefValue(0.0),
+    ie_end: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="End time of irrigation",
         unit="hour",
     )
-    internalwateruse_h: RefValue[float] = Field(
-        default=RefValue(0.0),
+    internalwateruse_h: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Internal water use rate",
         unit="mm h^-1",
     )
@@ -274,18 +274,18 @@ class AnthropogenicHeat(
 
 
 class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profiles here
-    co2pointsource: RefValue[float] = Field(
-        default=RefValue(0.0),
+    co2pointsource: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="CO2 point source emission factor",
         unit="kg m^-2 s^-1",
     )
-    ef_umolco2perj: RefValue[float] = Field(
-        default=RefValue(0.0),
+    ef_umolco2perj: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="CO2 emission factor per unit of fuel energy",
         unit="umol J^-1",
     )
-    enef_v_jkm: RefValue[float] = Field(
-        default=RefValue(0.0),
+    enef_v_jkm: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Vehicle energy consumption factor",
         unit="J km^-1",
     )
@@ -293,33 +293,33 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
         description="Fuel consumption efficiency for vehicles",
         default_factory=DayProfile,
     )
-    frfossilfuel_heat: RefValue[float] = Field(
-        default=RefValue(0.0),
+    frfossilfuel_heat: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Fraction of heating energy from fossil fuels",
         unit="dimensionless",
     )
-    frfossilfuel_nonheat: RefValue[float] = Field(
-        default=RefValue(0.0),
+    frfossilfuel_nonheat: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Fraction of non-heating energy from fossil fuels",
         unit="dimensionless",
     )
-    maxfcmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
+    maxfcmetab: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Maximum metabolic CO2 flux rate",
         unit="umol m^-2 s^-1",
     )
-    maxqfmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
+    maxqfmetab: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Maximum metabolic heat flux rate",
         unit="W m^-2",
     )
-    minfcmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
+    minfcmetab: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Minimum metabolic CO2 flux rate",
         unit="umol m^-2 s^-1",
     )
-    minqfmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
+    minqfmetab: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Minimum metabolic heat flux rate",
         unit="W m^-2",
     )
@@ -327,8 +327,8 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
         description="Traffic rate",
         default_factory=DayProfile,
     )
-    trafficunits: RefValue[float] = Field(
-        default=RefValue(0.0),
+    trafficunits: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Units for traffic density normalization",
         unit="vehicle km ha^-1",
     )
@@ -445,13 +445,13 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
 
 
 class AnthropogenicEmissions(BaseModel):
-    startdls: RefValue[float] = Field(
-        default=RefValue(0.0),
+    startdls: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="Start of daylight savings time in decimal day of year",
         unit="day",
     )
-    enddls: RefValue[float] = Field(
-        default=RefValue(0.0),
+    enddls: FlexibleRefValue[float] = Field(
+        default=0.0,
         description="End of daylight savings time in decimal day of year",
         unit="day",
     )

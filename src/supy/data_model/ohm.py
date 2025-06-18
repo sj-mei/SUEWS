@@ -1,25 +1,25 @@
 from typing import Optional
 import pandas as pd
 from pydantic import BaseModel, Field
-from .type import RefValue, Reference
+from .type import RefValue, Reference, FlexibleRefValue
 from .type import init_df_state
 
 
 class OHMCoefficients(BaseModel):
-    a1: RefValue[float] = Field(
+    a1: FlexibleRefValue[float] = Field(
         description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation",
         unit="dimensionless",
-        default=RefValue(0.0),
+        default=0.0,
     )
-    a2: RefValue[float] = Field(
+    a2: FlexibleRefValue[float] = Field(
         description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation",
         unit="h",
-        default=RefValue(0.0),
+        default=0.0,
     )
-    a3: RefValue[float] = Field(
+    a3: FlexibleRefValue[float] = Field(
         description="OHM coefficient a3: constant offset term for storage heat flux",
         unit="W m^-2",
-        default=RefValue(0.0),
+        default=0.0,
     )
 
     ref: Optional[Reference] = None
