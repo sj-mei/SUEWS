@@ -398,7 +398,7 @@ main() {
     echo ""
     echo "Next steps:"
     echo "1. Run: ./run-claude-dev.sh"
-    echo "2. Read: CLAUDE_DEV_GUIDE.md for detailed usage"
+    echo "2. Read: claude-dev/README.md for detailed usage"
     echo ""
     log_info "Happy coding with Claude! 🤖"
 }
