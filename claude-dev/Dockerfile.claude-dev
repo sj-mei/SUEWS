@@ -14,7 +14,7 @@ LABEL version="1.0"
 # Configure environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV MAMBA_ROOT_PREFIX=/opt/conda
-ENV PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
+ENV PATH=/usr/local/bin:/opt/conda/bin:$PATH
 ENV SUEWS_DEV_HOME=/workspace/SUEWS
 
 # 1. Install system dependencies optimised for SUEWS
@@ -62,38 +62,39 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 && \
 # 3. Install Micromamba for Python environment management
 RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-$(uname -m)/latest \
     -o /usr/local/bin/micromamba && \
-    chmod +x /usr/local/bin/micromamba && \
-    micromamba shell init -s bash -p $MAMBA_ROOT_PREFIX
+    chmod +x /usr/local/bin/micromamba
 
 # 4. Create academic research user
 RUN useradd -m -s /bin/bash -G sudo suews-dev && \
     echo 'suews-dev ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# 5. Switch to development user
+# 5. Switch to development user and set up environment
 USER suews-dev
 WORKDIR /home/suews-dev
 
-# 6. Set up shell environment
+# 6. Initialize micromamba for the user and create environment
+RUN micromamba shell init -s bash -p $MAMBA_ROOT_PREFIX && \
+    eval "$(micromamba shell hook --shell bash)" && \
+    micromamba create -n suews-dev -c conda-forge \
+        python=3.12 \
+        pip \
+        meson-python \
+        gfortran \
+        numpy \
+        scipy \
+        pandas \
+        matplotlib \
+        jupyter \
+        pytest \
+        && micromamba clean -a -y
+
+# 7. Set up shell environment
 RUN echo 'export PS1="\[\033[1;36m\]SUEWS-dev\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ "' >> ~/.bashrc && \
     echo 'export SUEWS_DEV_HOME=/workspace/SUEWS' >> ~/.bashrc && \
-    echo 'export PATH=/opt/conda/bin:$PATH' >> ~/.bashrc && \
+    echo 'export PATH=/usr/local/bin:/opt/conda/bin:$PATH' >> ~/.bashrc && \
     echo 'eval "$(micromamba shell hook --shell bash)" 2>/dev/null || true' >> ~/.bashrc && \
     echo 'micromamba activate suews-dev 2>/dev/null || true' >> ~/.bashrc && \
     echo 'cd $SUEWS_DEV_HOME 2>/dev/null || cd /workspace' >> ~/.bashrc
-
-# 7. Pre-create conda environment with essential packages
-RUN micromamba create -n suews-dev -c conda-forge \
-    python=3.12 \
-    pip \
-    meson-python \
-    gfortran \
-    numpy \
-    scipy \
-    pandas \
-    matplotlib \
-    jupyter \
-    pytest \
-    && micromamba clean -a -y
 
 # 8. Install development aliases and shortcuts
 RUN echo 'alias ll="ls -la"' >> ~/.bashrc && \
@@ -116,4 +117,4 @@ ENTRYPOINT ["claude", "--dangerously-skip-permissions"]
 
 # Health check to verify environment
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD micromamba list -n suews-dev > /dev/null 2>&1 || exit 1
+    CMD /usr/local/bin/micromamba list -n suews-dev > /dev/null 2>&1 || exit 1
