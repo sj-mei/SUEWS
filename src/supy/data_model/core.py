@@ -168,14 +168,56 @@ class SUEWSConfig(BaseModel):
             except Exception as e:
                 raise ValueError(f"[site #{i}] SeasonCheck failed: {e}")
 
+            # --- Land Cover Fractions Check ---
+            landcover_data = props.get("land_cover") or props.get("landcover")
+            if landcover_data is None:
+                raise ValueError(f"[site #{i}] Missing 'land_cover' section in site properties")
+            if not isinstance(landcover_data, dict):
+                raise TypeError(f"[site #{i}] 'land_cover' must be a dict, got {type(landcover_data).__name__}")
+
+            try:
+                print(f"[site #{i}] Checking land cover fractions.")
+
+                # Extract only the surface fraction values
+                sfr_values = {}
+                for surf_type, surf_data in landcover_data.items():
+                    if isinstance(surf_data, dict):
+                        sfr = surf_data.get("sfr", {})
+                        val = sfr.get("value")
+                        if isinstance(val, (int, float)):
+                            sfr_values[surf_type] = val
+
+                total = sum(sfr_values.values())
+
+                if 0.9999 <= total < 1.0:
+                    max_key = max(sfr_values, key=sfr_values.get)
+                    correction = 1.0 - total
+                    print(f"[site #{i}] land_cover sfr sum is {total:.6f} — rounding UP '{max_key}' by {correction:.6f}")
+                    landcover_data[max_key]["sfr"]["value"] += correction
+
+                elif 1.0 < total <= 1.0001:
+                    max_key = max(sfr_values, key=sfr_values.get)
+                    correction = total - 1.0
+                    print(f"[site #{i}] land_cover sfr sum is {total:.6f} — rounding DOWN '{max_key}' by {correction:.6f}")
+                    landcover_data[max_key]["sfr"]["value"] -= correction
+
+                elif abs(total - 1.0) > 0.0001:
+                    raise ValueError(f"❌ [site #{i}] Invalid land_cover sfr sum: {total:.6f} (must be ~1.0)")
+
+                # Validate the full land_cover
+                LandCover(**landcover_data)
+                print(f"[site #{i}] Land cover fractions checked/updated.")
+                props["land_cover"] = landcover_data
+
+            except ValidationError as e:
+                raise ValueError(f"[site #{i}] Invalid land_cover: {e}")
+
             # Update back the modified site properties
             site["properties"] = props
 
         # Update back the full config data
         data["site"] = sites_data
         return data
-
-
     @classmethod
     def from_yaml(cls, path: str, use_conditional_validation: bool = True, strict: bool = True) -> "SUEWSConfig":
         """Initialize SUEWSConfig from YAML file with conditional validation.
@@ -217,6 +259,7 @@ class SUEWSConfig(BaseModel):
             return cls(**config_data)
         else:
             # Original behavior - validate everything
+            print ("Entering SUEWSConfig pydantic validator...")
             return cls(**config_data)
 
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
