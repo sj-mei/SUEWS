@@ -76,7 +76,8 @@ WORKDIR /home/suews-dev
 # 6. Set up shell environment
 RUN echo 'export PS1="\[\033[1;36m\]SUEWS-dev\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ "' >> ~/.bashrc && \
     echo 'export SUEWS_DEV_HOME=/workspace/SUEWS' >> ~/.bashrc && \
-    echo 'export PATH=$MAMBA_ROOT_PREFIX/bin:$PATH' >> ~/.bashrc && \
+    echo 'export PATH=/opt/conda/bin:$PATH' >> ~/.bashrc && \
+    echo 'eval "$(micromamba shell hook --shell bash)" 2>/dev/null || true' >> ~/.bashrc && \
     echo 'micromamba activate suews-dev 2>/dev/null || true' >> ~/.bashrc && \
     echo 'cd $SUEWS_DEV_HOME 2>/dev/null || cd /workspace' >> ~/.bashrc
 
