@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate
+.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate claude-dev
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
