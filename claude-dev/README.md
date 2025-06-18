@@ -78,6 +78,7 @@ make claude-dev LOCATION=/Users/username/Projects/suews-research
 - **`Dockerfile.claude-dev`**: Production-ready container with complete SUEWS environment
 - **`claude-sandbox.config.json`**: Configuration for Claude Code Sandbox
 - **`setup-claude-dev.sh`**: Automated setup script
+- **`Makefile`**: Quick Docker testing and verification commands
 - **`test-docker-workflow.md`**: Comprehensive Docker testing workflow and troubleshooting guide
 - **`.dockerignore`**: Optimised Docker build context
 - **`README.md`**: This comprehensive guide
@@ -297,6 +298,34 @@ Mount external datasets by placing them in:
 - **File system**: Isolated container environment
 
 ## Troubleshooting
+
+### Quick Testing Commands
+
+The `claude-dev/Makefile` provides convenient commands for testing the Docker environment:
+
+```bash
+# Navigate to claude-dev directory
+cd claude-dev
+
+# Quick start - build and test everything
+make build && make test-all
+
+# Individual test commands
+make build           # Build Docker image
+make test-env        # Test basic environment (gfortran, Python, packages)
+make test-dev        # Test development tools (meson-python, f90wrap)
+make test-suews      # Test SUEWS build process
+make verify          # Quick verification of tools
+
+# Development commands
+make interactive     # Start interactive container session
+make benchmark       # Performance benchmarking
+make info           # Show Docker image information
+
+# Maintenance
+make clean          # Remove Docker image
+make help           # Show all available commands
+```
 
 ### Docker Testing Workflow
 
