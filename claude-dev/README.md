@@ -17,17 +17,60 @@ This integration provides:
 ### From Repository Root
 
 ```bash
-# Using Makefile (recommended)
+# Using Makefile (recommended) - creates workspace outside Dropbox
 make claude-dev
 
-# Or using setup script directly
+# Using custom location (e.g., for specific project folder)
+make claude-dev LOCATION=/tmp/suews-workspace
+
+# Or using setup script directly (from current location)
 ./claude-dev/setup-claude-dev.sh
 ```
 
 ### Start Development
 
+After running `make claude-dev`, navigate to the created workspace:
+
 ```bash
-./run-claude-dev.sh
+# Default location
+cd ~/claude-suews-workspace/SUEWS && ./run-claude-dev.sh
+
+# Or use the path shown in setup output
+cd /path/to/your/workspace/SUEWS && ./run-claude-dev.sh
+```
+
+### Dropbox Compatibility
+
+**Important**: Claude Code Sandbox cannot run properly from within Dropbox folders due to file monitoring conflicts. The `make claude-dev` recipe automatically:
+
+1. Creates a workspace outside Dropbox (default: `~/claude-suews-workspace`)
+2. Clones the SUEWS repository to that location
+3. Sets up Claude Code environment there
+
+**Recommended workflow for Dropbox users**:
+- Use `make claude-dev` instead of running setup directly
+- Work in the cloned workspace, not the Dropbox folder
+- Push changes back to the main repository when ready
+
+### Workspace Management
+
+The `make claude-dev` recipe handles workspace management intelligently:
+
+- **First run**: Clones SUEWS repository and sets up environment
+- **Subsequent runs**: Updates existing repository and refreshes setup
+- **Branch handling**: Automatically switches to `claude-dev` branch if available
+- **Custom locations**: Use `LOCATION=/your/path` to specify workspace directory
+
+**Example workflows**:
+```bash
+# Set up in default location
+make claude-dev
+
+# Set up in temporary directory
+make claude-dev LOCATION=/tmp/suews-dev
+
+# Set up in project-specific folder
+make claude-dev LOCATION=/Users/username/Projects/suews-research
 ```
 
 ## Files in This Directory

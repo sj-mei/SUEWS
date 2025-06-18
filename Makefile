@@ -57,7 +57,7 @@ help:
 	@echo "  dev             - Build and install SUEWS in editable mode"
 	@echo "  install         - Install SUEWS to current Python environment (not editable)"
 	@echo "  wheel           - Build distribution wheels"
-	@echo "  claude-dev      - Set up Claude Code development environment"
+	@echo "  claude-dev      - Set up Claude Code environment (use LOCATION=/path to specify workspace)"
 	@echo "  clean           - Clean all build artifacts"
 	@echo ""
 	@echo "Legacy/Manual Commands:"
@@ -215,15 +215,64 @@ deactivate:
 	echo "Please run the suggested command in your shell."
 
 # Claude Code development environment setup
+# Usage: make claude-dev [LOCATION=/path/to/workspace]
+# Default location: ~/claude-suews-workspace
+LOCATION ?= $(HOME)/claude-suews-workspace
+
 claude-dev:
 	@echo "🚀 Setting up SUEWS Claude Code development environment..."
-	@if [ ! -f claude-dev/setup-claude-dev.sh ]; then \
-		echo "❌ Error: claude-dev/setup-claude-dev.sh not found"; \
-		echo "Please ensure you're in the SUEWS repository root"; \
-		exit 1; \
-	fi
-	@chmod +x claude-dev/setup-claude-dev.sh
-	@./claude-dev/setup-claude-dev.sh
+	@echo "📍 Target location: $(LOCATION)"
 	@echo ""
-	@echo "✅ Setup complete! Run: ./run-claude-dev.sh to start development"
+	
+	# Create workspace directory if it doesn't exist
+	@mkdir -p "$(LOCATION)"
+	
+	# Clone or update SUEWS repository
+	@if [ -d "$(LOCATION)/SUEWS/.git" ]; then \
+		echo "📦 Updating existing SUEWS repository..."; \
+		cd "$(LOCATION)/SUEWS" && git fetch --all && git pull; \
+	else \
+		echo "📦 Cloning SUEWS repository..."; \
+		cd "$(LOCATION)" && git clone https://github.com/UMEP-dev/SUEWS.git; \
+		echo "📦 Initialising submodules..."; \
+		cd "$(LOCATION)/SUEWS" && git submodule init && git submodule update; \
+	fi
+	
+	# Check if we need to switch to claude-dev branch
+	@cd "$(LOCATION)/SUEWS" && \
+	if git show-ref --verify --quiet refs/heads/claude-dev; then \
+		echo "🔀 Switching to claude-dev branch..."; \
+		git checkout claude-dev && git pull origin claude-dev; \
+	elif git ls-remote --heads origin claude-dev | grep -q claude-dev; then \
+		echo "🔀 Checking out remote claude-dev branch..."; \
+		git checkout -b claude-dev origin/claude-dev; \
+	else \
+		echo "ℹ️  No claude-dev branch found, using current branch"; \
+	fi
+	
+	# Copy claude-dev folder from current location if not present in target
+	@if [ ! -d "$(LOCATION)/SUEWS/claude-dev" ]; then \
+		if [ -d "claude-dev" ]; then \
+			echo "📋 Copying claude-dev files from current location..."; \
+			cp -r claude-dev "$(LOCATION)/SUEWS/"; \
+		else \
+			echo "❌ Error: claude-dev folder not found in current location or target"; \
+			exit 1; \
+		fi \
+	fi
+	
+	# Run setup from the cloned location
+	@echo ""
+	@echo "🔧 Running Claude Code setup..."
+	@cd "$(LOCATION)/SUEWS" && chmod +x claude-dev/setup-claude-dev.sh
+	@cd "$(LOCATION)/SUEWS" && ./claude-dev/setup-claude-dev.sh
+	
+	@echo ""
+	@echo "✅ Setup complete!"
+	@echo "📂 SUEWS workspace: $(LOCATION)/SUEWS"
+	@echo "🚀 To start development:"
+	@echo "   cd $(LOCATION)/SUEWS && ./run-claude-dev.sh"
+	@echo ""
+	@echo "💡 Tip: Add to your shell profile for quick access:"
+	@echo "   alias suews-claude='cd $(LOCATION)/SUEWS && ./run-claude-dev.sh'"
 
