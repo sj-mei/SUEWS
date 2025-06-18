@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate claude-dev
+.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate claude-dev claude-clean
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
@@ -58,6 +58,7 @@ help:
 	@echo "  install         - Install SUEWS to current Python environment (not editable)"
 	@echo "  wheel           - Build distribution wheels"
 	@echo "  claude-dev      - Set up Claude Code environment (use LOCATION=/path to specify workspace)"
+	@echo "  claude-clean    - Remove Claude Code workspace directory"
 	@echo "  clean           - Clean all build artifacts"
 	@echo ""
 	@echo "Legacy/Manual Commands:"
@@ -275,4 +276,17 @@ claude-dev:
 	@echo ""
 	@echo "💡 Tip: Add to your shell profile for quick access:"
 	@echo "   alias suews-claude='cd $(LOCATION)/SUEWS && ./run-claude-dev.sh'"
+
+# Clean up Claude Code workspace
+claude-clean:
+	@echo "🧹 Cleaning Claude Code workspace..."
+	@if [ -d "$(LOCATION)" ]; then \
+		echo "📂 Removing workspace at: $(LOCATION)"; \
+		rm -rf "$(LOCATION)"; \
+		echo "✅ Workspace removed"; \
+	else \
+		echo "ℹ️  No workspace found at: $(LOCATION)"; \
+	fi
+	@echo ""
+	@echo "💡 Run 'make claude-dev' to create a fresh workspace"
 
