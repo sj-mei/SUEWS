@@ -18,7 +18,7 @@
     "echo 'Available space: '$(df -h . | tail -1 | awk '{print $4}')",
     
     "echo '🐍 Setting up Python environment...'",
-    "export PATH=/opt/conda/bin:$PATH",
+    "export PATH=/usr/local/bin:/opt/conda/bin:$PATH",
     "eval \"$(micromamba shell hook --shell bash)\"",
     "micromamba activate suews-dev",
     
