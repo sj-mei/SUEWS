@@ -177,7 +177,7 @@ echo "🐳 Container config: ./claude-dev/claude-sandbox.config.json"
 echo ""
 
 # Start Claude Code Sandbox
-claude-sandbox --config ./claude-dev/claude-sandbox.config.json
+claude-sandbox start -c ./claude-dev/claude-sandbox.config.json
 EOF
     chmod +x "$SUEWS_ROOT/run-claude-dev.sh"
     
