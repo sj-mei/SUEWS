@@ -80,6 +80,19 @@ pip show supy
 
 
 
+## Development Environment
+
+### Claude Code Integration
+
+For enhanced development productivity, SUEWS includes integration with Claude Code in a containerised environment:
+
+* **Setup Guide**: See [`claude-dev/README.md`](claude-dev/README.md) for complete setup instructions
+* **Quick Start**: Run `./claude-dev/setup-claude-dev.sh` from the repository root
+* **Features**: Intelligent code assistance, automated testing, British academic standards
+* **Benefits**: Isolated environment, reproducible development, AI-powered debugging
+
+### Traditional Development
+
 ## Developer Note
 
 > [!NOTE]

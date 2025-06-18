@@ -1,0 +1,122 @@
+{
+  "// Configuration": "SUEWS Claude Code Sandbox - Production Development Environment",
+  "// Description": "Optimised for SUEWS academic research and development",
+  "// Version": "1.0.0",
+
+  "// === Container Configuration ===": null,
+  "dockerfile": "./claude-dev/Dockerfile.claude-dev",
+  "containerPrefix": "suews-research",
+  
+  "// === Session Behaviour ===": null,
+  "autoStartClaude": true,
+  "detached": false,
+  "allowedTools": ["*"],
+  
+  "// === Claude Configuration ===": null,
+  "maxThinkingTokens": 150000,
+  "bashTimeout": 900000,
+  
+  "// === Git Integration ===": null,
+  "autoPush": false,
+  "autoCreatePR": false,
+  
+  "// === Environment Setup ===": null,
+  "setupCommands": [
+    "echo '🚀 Initialising SUEWS development environment...'",
+    "echo 'Working directory: '$(pwd)",
+    "echo 'Available space: '$(df -h . | tail -1 | awk '{print $4}')",
+    
+    "// Activate conda environment",
+    "eval \"$(micromamba shell hook --shell bash)\"",
+    "micromamba activate suews-dev",
+    
+    "// Verify SUEWS repository structure",
+    "if [ ! -d 'src/suews' ]; then echo '❌ SUEWS source not found'; exit 1; fi",
+    "if [ ! -d 'test' ]; then echo '❌ Test directory not found'; exit 1; fi",
+    "echo '✅ SUEWS repository structure verified'",
+    
+    "// Initialize git submodules (SPARTACUS)",
+    "echo '📦 Initialising git submodules...'",
+    "git submodule update --init --recursive",
+    
+    "// Install SUEWS in development mode",
+    "echo '🔨 Building SUEWS in development mode...'",
+    "make dev",
+    
+    "// Verify installation",
+    "echo '🧪 Verifying SUEWS installation...'",
+    "python -c \"import supy; print(f'✅ SuPy version: {supy.__version__}')\" || echo '⚠️  SuPy import failed - ready for debugging'",
+    
+    "// Run quick tests to verify functionality",
+    "echo '🔬 Running basic functionality tests...'",
+    "python -m pytest test/test_data_model.py -v || echo '⚠️  Some tests failed - ready for development'",
+    
+    "echo '🎉 SUEWS development environment ready!'",
+    "echo '📁 Repository: '$(pwd)",
+    "echo '🐍 Python environment: suews-dev'",
+    "echo '🛠️  Available commands: suews-build, suews-test, suews-docs, suews-clean'",
+    "echo '📚 Documentation: make livehtml'",
+    "echo '🏃 Sample run: cd src/supy/sample_run && suews-run .'",
+    "echo ''"
+  ],
+  
+  "// === File System Mounts ===": null,
+  "mounts": [
+    {
+      "// Description": "Mount additional research notebooks if available",
+      "source": "./notebooks",
+      "target": "/workspace/notebooks",
+      "readonly": false,
+      "optional": true
+    },
+    {
+      "// Description": "Mount custom configurations",
+      "source": "./configs",
+      "target": "/workspace/configs", 
+      "readonly": false,
+      "optional": true
+    },
+    {
+      "// Description": "Mount external data directory",
+      "source": "./external-data",
+      "target": "/workspace/external-data",
+      "readonly": true,
+      "optional": true
+    },
+    {
+      "// Description": "Mount output directory for simulations",
+      "source": "./outputs",
+      "target": "/workspace/outputs",
+      "readonly": false,
+      "optional": true
+    }
+  ],
+  
+  "// === Resource Limits ===": null,
+  "runArgs": [
+    "--cpus", "6",
+    "--memory", "12g",
+    "--shm-size", "2g",
+    "--pids-limit", "1024",
+    "--ulimit", "nofile=65536:65536"
+  ],
+  
+  "// === Development Features ===": null,
+  "features": {
+    "// Description": "Enable development-specific features",
+    "gitIntegration": true,
+    "liveReload": true,
+    "performanceMonitoring": true,
+    "memoryProfiling": true
+  },
+  
+  "// === Security Settings ===": null,
+  "security": {
+    "// Description": "Academic research security protocols",
+    "isolateNetwork": false,
+    "readOnlyRootFilesystem": false,
+    "allowPrivilegeEscalation": false,
+    "dropCapabilities": ["ALL"],
+    "addCapabilities": []
+  }
+}

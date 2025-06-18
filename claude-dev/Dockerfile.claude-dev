@@ -1,0 +1,118 @@
+# SUEWS Claude Code Development Environment
+# Optimised for academic research and development workflow
+# 
+# This Dockerfile creates a complete SUEWS development environment
+# integrated with Claude Code for enhanced development productivity.
+
+FROM claude-code-sandbox:latest
+
+# Metadata
+LABEL maintainer="SUEWS Development Team"
+LABEL description="SUEWS development environment with Claude Code integration"
+LABEL version="1.0"
+
+# Configure environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV MAMBA_ROOT_PREFIX=/opt/conda
+ENV PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
+ENV SUEWS_DEV_HOME=/workspace/SUEWS
+
+# 1. Install system dependencies optimised for SUEWS
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core build tools
+    build-essential \
+    gfortran-11 \
+    gcc-11 \
+    g++-11 \
+    cmake \
+    ninja-build \
+    # Scientific computing libraries
+    libopenmpi-dev \
+    libhdf5-dev \
+    libnetcdf-dev \
+    libfftw3-dev \
+    libblas-dev \
+    liblapack-dev \
+    # Development utilities
+    git-lfs \
+    curl \
+    wget \
+    ca-certificates \
+    # Documentation tools
+    doxygen \
+    graphviz \
+    # System utilities
+    tmux \
+    htop \
+    tree \
+    ripgrep \
+    fd-find \
+    # Text processing
+    pandoc \
+    texlive-latex-base \
+    texlive-latex-recommended \
+    texlive-fonts-recommended \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Set up compiler alternatives for SUEWS compatibility
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100 && \
+    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-11 100
+
+# 3. Install Micromamba for Python environment management
+RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-$(uname -m)/latest \
+    -o /usr/local/bin/micromamba && \
+    chmod +x /usr/local/bin/micromamba && \
+    micromamba shell init -s bash -p $MAMBA_ROOT_PREFIX
+
+# 4. Create academic research user
+RUN useradd -m -s /bin/bash -G sudo suews-dev && \
+    echo 'suews-dev ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# 5. Switch to development user
+USER suews-dev
+WORKDIR /home/suews-dev
+
+# 6. Set up shell environment
+RUN echo 'export PS1="\[\033[1;36m\]SUEWS-dev\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ "' >> ~/.bashrc && \
+    echo 'export SUEWS_DEV_HOME=/workspace/SUEWS' >> ~/.bashrc && \
+    echo 'export PATH=$MAMBA_ROOT_PREFIX/bin:$PATH' >> ~/.bashrc && \
+    echo 'micromamba activate suews-dev 2>/dev/null || true' >> ~/.bashrc && \
+    echo 'cd $SUEWS_DEV_HOME 2>/dev/null || cd /workspace' >> ~/.bashrc
+
+# 7. Pre-create conda environment with essential packages
+RUN micromamba create -n suews-dev -c conda-forge \
+    python=3.12 \
+    pip \
+    meson-python \
+    gfortran \
+    numpy \
+    scipy \
+    pandas \
+    matplotlib \
+    jupyter \
+    pytest \
+    && micromamba clean -a -y
+
+# 8. Install development aliases and shortcuts
+RUN echo 'alias ll="ls -la"' >> ~/.bashrc && \
+    echo 'alias la="ls -A"' >> ~/.bashrc && \
+    echo 'alias suews-build="make dev"' >> ~/.bashrc && \
+    echo 'alias suews-test="make test"' >> ~/.bashrc && \
+    echo 'alias suews-docs="make livehtml"' >> ~/.bashrc && \
+    echo 'alias suews-clean="make clean"' >> ~/.bashrc
+
+# 9. Create workspace structure
+USER root
+RUN mkdir -p /workspace && chown -R suews-dev:suews-dev /workspace
+USER suews-dev
+
+# 10. Set working directory
+WORKDIR /workspace
+
+# 11. Entry point with Claude Code
+ENTRYPOINT ["claude", "--dangerously-skip-permissions"]
+
+# Health check to verify environment
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD micromamba list -n suews-dev > /dev/null 2>&1 || exit 1
