@@ -57,6 +57,7 @@ help:
 	@echo "  dev             - Build and install SUEWS in editable mode"
 	@echo "  install         - Install SUEWS to current Python environment (not editable)"
 	@echo "  wheel           - Build distribution wheels"
+	@echo "  claude-dev      - Set up Claude Code development environment"
 	@echo "  clean           - Clean all build artifacts"
 	@echo ""
 	@echo "Legacy/Manual Commands:"
@@ -212,4 +213,17 @@ deactivate:
 	echo ""; \
 	echo "Environment deactivation commands cannot be executed from Makefiles."; \
 	echo "Please run the suggested command in your shell."
+
+# Claude Code development environment setup
+claude-dev:
+	@echo "🚀 Setting up SUEWS Claude Code development environment..."
+	@if [ ! -f claude-dev/setup-claude-dev.sh ]; then \
+		echo "❌ Error: claude-dev/setup-claude-dev.sh not found"; \
+		echo "Please ensure you're in the SUEWS repository root"; \
+		exit 1; \
+	fi
+	@chmod +x claude-dev/setup-claude-dev.sh
+	@./claude-dev/setup-claude-dev.sh
+	@echo ""
+	@echo "✅ Setup complete! Run: ./run-claude-dev.sh to start development"
 
