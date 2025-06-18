@@ -48,38 +48,16 @@
     "echo ''"
   ],
   
-  "mounts": [
-    {
-      "source": "./notebooks",
-      "target": "/workspace/notebooks",
-      "readonly": false,
-      "optional": true
-    },
-    {
-      "source": "./configs",
-      "target": "/workspace/configs", 
-      "readonly": false,
-      "optional": true
-    },
-    {
-      "source": "./external-data",
-      "target": "/workspace/external-data",
-      "readonly": true,
-      "optional": true
-    },
-    {
-      "source": "./outputs",
-      "target": "/workspace/outputs",
-      "readonly": false,
-      "optional": true
-    }
-  ],
-  
   "runArgs": [
     "--cpus", "6",
     "--memory", "12g",
     "--shm-size", "2g",
     "--pids-limit", "1024",
     "--ulimit", "nofile=65536:65536"
-  ]
+  ],
+  
+  "includeUntracked": false,
+  "gitConfig": {
+    "preserveHistory": false
+  }
 }
