@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate claude-dev claude-clean
+.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate claude-dev claude-clean claude-start claude-stop
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
@@ -58,6 +58,8 @@ help:
 	@echo "  install         - Install SUEWS to current Python environment (not editable)"
 	@echo "  wheel           - Build distribution wheels"
 	@echo "  claude-dev      - Set up Claude Code environment (use LOCATION=/path to specify workspace)"
+	@echo "  claude-start    - Start the Claude Code sandbox (forwards arguments)"
+	@echo "  claude-stop     - Stop the Claude Code sandbox"
 	@echo "  claude-clean    - Remove Claude Code workspace directory"
 	@echo "  clean           - Clean all build artifacts"
 	@echo ""
@@ -224,10 +226,10 @@ claude-dev:
 	@echo "🚀 Setting up SUEWS Claude Code development environment..."
 	@echo "📍 Target location: $(LOCATION)"
 	@echo ""
-	
+
 	# Create workspace directory if it doesn't exist
 	@mkdir -p "$(LOCATION)"
-	
+
 	# Clone or update SUEWS repository
 	@if [ -d "$(LOCATION)/SUEWS/.git" ]; then \
 		echo "📦 Updating existing SUEWS repository..."; \
@@ -238,19 +240,13 @@ claude-dev:
 		echo "📦 Initialising submodules..."; \
 		cd "$(LOCATION)/SUEWS" && git submodule init && git submodule update; \
 	fi
-	
-	# Check if we need to switch to claude-dev branch
-	@cd "$(LOCATION)/SUEWS" && \
-	if git show-ref --verify --quiet refs/heads/claude-dev; then \
-		echo "🔀 Switching to claude-dev branch..."; \
-		git checkout claude-dev && git pull origin claude-dev; \
-	elif git ls-remote --heads origin claude-dev | grep -q claude-dev; then \
-		echo "🔀 Checking out remote claude-dev branch..."; \
-		git checkout -b claude-dev origin/claude-dev; \
-	else \
-		echo "ℹ️  No claude-dev branch found, using current branch"; \
-	fi
-	
+
+	# The workspace will be on the default branch after cloning.
+	# You can specify a different branch when running run-claude-dev.sh, e.g.:
+	# ./run-claude-dev.sh --branch main
+	@echo ""
+	@echo "ℹ️  SUEWS workspace is on branch: $$(cd $(LOCATION)/SUEWS && git rev-parse --abbrev-ref HEAD)"
+
 	# Copy claude-dev folder from current location if not present in target
 	@if [ ! -d "$(LOCATION)/SUEWS/claude-dev" ]; then \
 		if [ -d "claude-dev" ]; then \
@@ -261,13 +257,13 @@ claude-dev:
 			exit 1; \
 		fi \
 	fi
-	
+
 	# Run setup from the cloned location
 	@echo ""
 	@echo "🔧 Running Claude Code setup..."
 	@cd "$(LOCATION)/SUEWS" && chmod +x claude-dev/setup-claude-dev.sh
 	@cd "$(LOCATION)/SUEWS" && ./claude-dev/setup-claude-dev.sh
-	
+
 	@echo ""
 	@echo "✅ Setup complete!"
 	@echo "📂 SUEWS workspace: $(LOCATION)/SUEWS"
@@ -276,6 +272,17 @@ claude-dev:
 	@echo ""
 	@echo "💡 Tip: Add to your shell profile for quick access:"
 	@echo "   alias suews-claude='cd $(LOCATION)/SUEWS && ./run-claude-dev.sh'"
+
+# Start Claude Code sandbox, passing any additional arguments
+# Usage: make claude-start ARGS="--rebuild --branch main"
+claude-start:
+	@echo "▶️  Starting Claude Code sandbox..."
+	@cd "$(LOCATION)/SUEWS" && ./start-claude-dev.sh $(ARGS)
+
+# Stop Claude Code sandbox
+claude-stop:
+	@echo "⏹️  Stopping Claude Code sandbox..."
+	@cd "$(LOCATION)/SUEWS" && ./stop-claude-dev.sh
 
 # Clean up Claude Code workspace
 claude-clean:

@@ -1,11 +1,11 @@
 #!/bin/bash
 # SUEWS Claude Code Development Environment Setup
-# 
+#
 # This script sets up a complete development environment for SUEWS
 # with Claude Code integration for enhanced productivity.
 #
 # Usage: ./setup-claude-dev.sh
-# 
+#
 # Prerequisites:
 # - Docker or Podman
 # - Node.js and npm
@@ -55,29 +55,29 @@ command_exists() {
 # Check prerequisites
 check_prerequisites() {
     log_header "Checking prerequisites..."
-    
+
     local missing_deps=()
-    
+
     # Check Docker or Podman
     if ! command_exists docker && ! command_exists podman; then
         missing_deps+=("docker or podman")
     fi
-    
+
     # Check Node.js
     if ! command_exists node; then
         missing_deps+=("node.js")
     fi
-    
+
     # Check npm
     if ! command_exists npm; then
         missing_deps+=("npm")
     fi
-    
+
     # Check git
     if ! command_exists git; then
         missing_deps+=("git")
     fi
-    
+
     if [ ${#missing_deps[@]} -ne 0 ]; then
         log_error "Missing dependencies: ${missing_deps[*]}"
         echo ""
@@ -87,22 +87,22 @@ check_prerequisites() {
         echo "  Fedora: sudo dnf install docker nodejs npm git"
         exit 1
     fi
-    
+
     log_success "All prerequisites satisfied"
 }
 
 # Install Claude Code Sandbox
 install_claude_sandbox() {
     log_header "Installing Claude Code Sandbox..."
-    
+
     if command_exists claude-sandbox; then
         log_info "Claude Code Sandbox already installed"
         return
     fi
-    
+
     log_info "Installing Claude Code and Sandbox tools..."
     npm install -g @anthropic-ai/claude-code @textcortex/claude-code-sandbox
-    
+
     if command_exists claude-sandbox; then
         log_success "Claude Code Sandbox installed successfully"
     else
@@ -114,30 +114,30 @@ install_claude_sandbox() {
 # Create directory structure
 create_directories() {
     log_header "Creating directory structure..."
-    
+
     # Create optional directories for mounts
     mkdir -p "$SUEWS_ROOT/notebooks"
-    mkdir -p "$SUEWS_ROOT/configs" 
+    mkdir -p "$SUEWS_ROOT/configs"
     mkdir -p "$SUEWS_ROOT/outputs"
     mkdir -p "$SUEWS_ROOT/external-data"
-    
+
     log_success "Directory structure created"
 }
 
 # Create environment file template
 create_env_template() {
     log_header "Creating environment configuration..."
-    
+
     local env_file="$SUEWS_ROOT/.env"
-    
+
     if [ -f "$env_file" ]; then
         log_info "Environment file already exists: $env_file"
         return
     fi
-    
+
     cat > "$env_file" << 'EOF'
 # SUEWS Development Environment Configuration
-# 
+#
 # Optional configuration file for development settings
 
 # === Development Configuration ===
@@ -156,31 +156,67 @@ SUEWS_BUILD_JOBS=4
 # Log level for development (DEBUG, INFO, WARNING, ERROR)
 SUEWS_LOG_LEVEL=INFO
 EOF
-    
+
     log_success "Environment template created: $env_file"
 }
 
 # Create convenience scripts
 create_scripts() {
     log_header "Creating convenience scripts..."
-    
-    # Create run script
-    cat > "$SUEWS_ROOT/run-claude-dev.sh" << 'EOF'
+
+    # Create start script
+    cat > "$SUEWS_ROOT/start-claude-dev.sh" << 'EOF'
 #!/bin/bash
 # Quick start script for SUEWS Claude Code development
 
 cd "$(dirname "$0")"
 
+REBUILD_FLAG=false
+OTHER_ARGS=()
+BASE_CONTEXT=$(git rev-parse --abbrev-ref HEAD) # Default to current branch
+
+# Separate --rebuild from other flags and determine the base context for the sandbox
+for arg in "$@"; do
+  if [[ "$arg" == "--rebuild" ]]; then
+    REBUILD_FLAG=true
+  else
+    OTHER_ARGS+=("$arg")
+  fi
+done
+
+# Find the user-specified context, if any
+for i in "${!OTHER_ARGS[@]}"; do
+  if [[ "${OTHER_ARGS[$i]}" == "--branch" || "${OTHER_ARGS[$i]}" == "-b" || "${OTHER_ARGS[$i]}" == "--remote-branch" ]]; then
+    BASE_CONTEXT="${OTHER_ARGS[$i+1]}"
+    break
+  elif [[ "${OTHER_ARGS[$i]}" == "--pr" ]]; then
+    BASE_CONTEXT="PR #${OTHER_ARGS[$i+1]}"
+    break
+  fi
+done
+
+if [[ "$REBUILD_FLAG" == true ]]; then
+  echo "🗑️  --rebuild flag detected. Forcing a full rebuild..."
+  docker rmi -f claude-code-sandbox:latest > /dev/null 2>&1 || true
+  echo "✅ Image removed. The next start will be a fresh build."
+fi
+
 echo "🚀 Starting SUEWS Claude Code development environment..."
+echo "🌿 Base context: $BASE_CONTEXT"
 echo "📁 Working directory: $(pwd)"
 echo "🐳 Container config: ./claude-dev/claude-sandbox.config.json"
+if [ ${#OTHER_ARGS[@]} -ne 0 ]; then
+    echo " passing additional arguments: ${OTHER_ARGS[*]}"
+fi
 echo ""
 
 # Start Claude Code Sandbox
-claude-sandbox start -c ./claude-dev/claude-sandbox.config.json
+# Docker will use its cache unless the image was removed via the --rebuild flag.
+# Pass any remaining arguments to claude-sandbox start
+claude-sandbox start -c ./claude-dev/claude-sandbox.config.json "${OTHER_ARGS[@]}"
 EOF
-    chmod +x "$SUEWS_ROOT/run-claude-dev.sh"
-    
+    chmod +x "$SUEWS_ROOT/start-claude-dev.sh"
+
     # Create stop script
     cat > "$SUEWS_ROOT/stop-claude-dev.sh" << 'EOF'
 #!/bin/bash
@@ -191,7 +227,7 @@ claude-sandbox stop
 echo "✅ Environment stopped"
 EOF
     chmod +x "$SUEWS_ROOT/stop-claude-dev.sh"
-    
+
     # Create cleanup script
     cat > "$SUEWS_ROOT/cleanup-claude-dev.sh" << 'EOF'
 #!/bin/bash
@@ -202,7 +238,7 @@ claude-sandbox clean --force
 echo "✅ Cleanup complete"
 EOF
     chmod +x "$SUEWS_ROOT/cleanup-claude-dev.sh"
-    
+
     log_success "Convenience scripts created"
 }
 
@@ -210,15 +246,15 @@ EOF
 # Verify installation
 verify_installation() {
     log_header "Verifying installation..."
-    
+
     # Check files exist
     local required_files=(
         "$DOCKER_DIR/Dockerfile.claude-dev"
         "$DOCKER_DIR/claude-sandbox.config.json"
         "$SUEWS_ROOT/.env"
-        "$SUEWS_ROOT/run-claude-dev.sh"
+        "$SUEWS_ROOT/start-claude-dev.sh"
     )
-    
+
     for file in "${required_files[@]}"; do
         if [ -f "$file" ]; then
             log_success "✓ $(basename "$file")"
@@ -227,7 +263,7 @@ verify_installation() {
             return 1
         fi
     done
-    
+
     # Check Claude Code Sandbox
     if command_exists claude-sandbox; then
         log_success "✓ claude-sandbox command available"
@@ -235,7 +271,7 @@ verify_installation() {
         log_error "✗ claude-sandbox command not found"
         return 1
     fi
-    
+
     log_success "Installation verification complete"
 }
 
@@ -244,19 +280,19 @@ main() {
     echo ""
     log_header "SUEWS Claude Code Development Environment Setup"
     echo ""
-    
+
     check_prerequisites
     install_claude_sandbox
     create_directories
     create_env_template
     create_scripts
     verify_installation
-    
+
     echo ""
     log_success "🎉 Setup complete!"
     echo ""
     echo "Next steps:"
-    echo "1. Run: ./run-claude-dev.sh"
+    echo "1. Run: ./start-claude-dev.sh"
     echo "2. Read: claude-dev/README.md for detailed usage"
     echo ""
     log_info "Happy coding with Claude! 🤖"
