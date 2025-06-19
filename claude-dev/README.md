@@ -11,74 +11,109 @@ This integration provides:
 - **Reproducible Research**: Version-controlled environment ensuring consistent results
 - **Academic Workflow**: Optimised for research, documentation, and publication
 - **British Standards**: All outputs follow British academic conventions
+- **Workspace Management**: Advanced multi-workspace support via `claude.sh`
 
 ## Quick Start
 
-### From Repository Root
+### Using the Workspace Manager (Recommended)
 
 ```bash
-# Using Makefile (recommended) - creates workspace outside Dropbox
-make claude-dev
+# Create and start a new workspace
+./claude-dev/claude.sh start myproject
 
-# Using custom location (e.g., for specific project folder)
-make claude-dev LOCATION=/tmp/suews-workspace
+# Start existing workspace or select from menu
+./claude-dev/claude.sh start
 
-# Or using setup script directly (from current location)
+# List all workspaces
+./claude-dev/claude.sh list
+```
+
+### Direct Setup (Current Directory)
+
+```bash
+# Run setup script from repository root
 ./claude-dev/setup-claude-dev.sh
+
+# After setup completes, start the environment
+./start-claude-dev.sh
 ```
 
 ### Start Development
 
-After running `make claude-dev`, navigate to the created workspace:
+After setup, you'll have either:
 
-```bash
-# Default location
-cd ~/claude-suews-workspace/SUEWS && ./run-claude-dev.sh
+1. **With claude.sh**: Navigate to workspace and use generated script
+   ```bash
+   cd ~/claude-suews-workspace/myproject/SUEWS
+   ./start-claude-dev.sh
+   ```
 
-# Or use the path shown in setup output
-cd /path/to/your/workspace/SUEWS && ./run-claude-dev.sh
-```
+2. **Direct setup**: Use script in current directory
+   ```bash
+   ./start-claude-dev.sh
+   ```
 
 ### Dropbox Compatibility
 
-**Important**: Claude Code Sandbox cannot run properly from within Dropbox folders due to file monitoring conflicts. The `make claude-dev` recipe automatically:
-
-1. Creates a workspace outside Dropbox (default: `~/claude-suews-workspace`)
-2. Clones the SUEWS repository to that location
-3. Sets up Claude Code environment there
+**Important**: Claude Code Sandbox cannot run properly from within Dropbox folders due to file monitoring conflicts. 
 
 **Recommended workflow for Dropbox users**:
-- Use `make claude-dev` instead of running setup directly
-- Work in the cloned workspace, not the Dropbox folder
+- Use `claude.sh` to create workspaces outside Dropbox
+- Default location: `~/claude-suews-workspace/`
+- Work in the isolated workspace, not the Dropbox folder
 - Push changes back to the main repository when ready
 
 ### Workspace Management
 
-The `make claude-dev` recipe handles workspace management intelligently:
+The `claude.sh` script provides comprehensive workspace management:
 
-- **First run**: Clones SUEWS repository and sets up environment
-- **Subsequent runs**: Updates existing repository and refreshes setup
-- **Branch handling**: Automatically switches to `claude-dev` branch if available
-- **Custom locations**: Use `LOCATION=/your/path` to specify workspace directory
+```bash
+# Create new workspace
+./claude-dev/claude.sh dev myproject
+
+# Start workspace (creates if needed)
+./claude-dev/claude.sh start myproject
+
+# Stop workspace
+./claude-dev/claude.sh stop myproject
+
+# List all workspaces
+./claude-dev/claude.sh list
+
+# Clean up workspace
+./claude-dev/claude.sh clean myproject
+
+# Interactive workspace selection
+./claude-dev/claude.sh start  # Shows menu
+```
+
+**Workspace features**:
+- **Isolation**: Each workspace is independent
+- **Parallel development**: Run multiple workspaces simultaneously
+- **Branch preservation**: Maintains git state per workspace
+- **Resource efficiency**: Share Docker images across workspaces
+- **Custom locations**: Set `LOCATION` environment variable
 
 **Example workflows**:
 ```bash
-# Set up in default location
-make claude-dev
+# Default location
+./claude-dev/claude.sh start feature-branch
 
-# Set up in temporary directory
-make claude-dev LOCATION=/tmp/suews-dev
+# Custom location
+LOCATION=/tmp/suews-dev ./claude-dev/claude.sh start experiment
 
-# Set up in project-specific folder
-make claude-dev LOCATION=/Users/username/Projects/suews-research
+# Pre-create workspace
+./claude-dev/claude.sh dev paper-revision
+./claude-dev/claude.sh start paper-revision
 ```
 
 ## Files in This Directory
 
+- **`claude.sh`**: Advanced workspace management script for parallel development
 - **`Dockerfile.claude-dev`**: Production-ready container with complete SUEWS environment
 - **`claude-sandbox.config.json`**: Configuration for Claude Code Sandbox
-- **`setup-claude-dev.sh`**: Automated setup script
-- **`Makefile`**: Quick Docker testing and verification commands
+- **`setup-claude-dev.sh`**: Automated setup script for direct installation
+- **`Makefile`**: Docker testing and verification commands
 - **`test-docker-workflow.md`**: Comprehensive Docker testing workflow and troubleshooting guide
 - **`.dockerignore`**: Optimised Docker build context
 - **`README.md`**: This comprehensive guide
@@ -428,8 +463,9 @@ htop
 
 ### Regular Cleanup
 
+#### For Direct Setup
 ```bash
-# Stop all containers
+# Stop container (if setup script was run)
 ./stop-claude-dev.sh
 
 # Clean up resources
@@ -439,6 +475,18 @@ htop
 docker image prune -f
 ```
 
+#### For Workspace Manager
+```bash
+# Stop specific workspace
+./claude-dev/claude.sh stop myproject
+
+# Clean specific workspace
+./claude-dev/claude.sh clean myproject
+
+# Clean all workspaces (careful!)
+./claude-dev/claude.sh clean-all force
+```
+
 ### Updates
 
 ```bash
@@ -446,7 +494,10 @@ docker image prune -f
 npm update -g @anthropic-ai/claude-code @textcortex/claude-code-sandbox
 
 # Rebuild container with latest dependencies
-docker build -t suews-claude-dev -f claude-dev/Dockerfile.claude-dev .
+cd claude-dev && make build-clean
+
+# Or manually
+docker build -t suews-claude-dev -f claude-dev/Dockerfile.claude-dev . --no-cache
 ```
 
 ## Support
