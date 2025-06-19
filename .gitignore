@@ -591,3 +591,4 @@ docs/source/_autosummary/
 
 cleanup-claude-dev.sh
 stop-claude-dev.sh
+start-claude-dev.sh
