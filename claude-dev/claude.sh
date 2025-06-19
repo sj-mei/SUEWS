@@ -45,6 +45,9 @@ Commands:
                         - DANGEROUS: This removes the entire workspace parent directory:
                           ${LOCATION}
 
+  parent <name>         Show the parent branch for a specific workspace.
+                        - Useful for checking where to merge changes back.
+
   help                  Show this help message.
 
 Examples:
@@ -103,12 +106,25 @@ cmd_dev() {
   ./claude-dev/setup-claude-dev.sh
 
   echo ""
-  echo "✅ Workspace with git history created successfully!"
-  echo "📂 Location: ${target_dir}"
+  echo "🌿 Creating isolated feature branch..."
+  local timestamp=$(date +%Y%m%d_%H%M%S)
+  local feature_branch="claude/${timestamp}_${copy_name}"
+  git checkout -b "${feature_branch}"
+  
+  # Save parent branch info for reference
+  echo "${source_branch}" > .claude-parent-branch
+  git add .claude-parent-branch
+  git commit -m "Track parent branch for Claude workspace" --quiet
+  
   echo ""
-  echo "💡 This workspace is a clean clone of the '${source_branch}' branch."
-  echo "🚀 To start working safely:"
-  echo "   cd \"${target_dir}\" && git checkout -b feature/${copy_name}"
+  echo "✅ Workspace created successfully!"
+  echo "📂 Location: ${target_dir}"
+  echo "🌿 Feature branch: ${feature_branch}"
+  echo "📌 Parent branch: ${source_branch}"
+  echo ""
+  echo "💡 Your changes are isolated in the '${feature_branch}' branch."
+  echo "🔄 When ready to merge, create a PR from '${feature_branch}' → '${source_branch}'"
+  echo "📝 Parent branch info saved in .claude-parent-branch file"
 }
 
 cmd_start() {
@@ -277,6 +293,53 @@ cmd_clean_all() {
   fi
 }
 
+cmd_parent() {
+  local name="$1"
+  
+  if [ -z "$name" ]; then
+    echo "❌ Error: Workspace name is required." >&2
+    echo "Usage: ./claude.sh parent <name>" >&2
+    exit 1
+  fi
+  
+  local target_dir="${LOCATION}/SUEWS-${name}"
+  
+  if [ ! -d "${target_dir}" ]; then
+    echo "❌ Error: Workspace '${name}' not found." >&2
+    echo "💡 Use './claude.sh list' to see available workspaces." >&2
+    exit 1
+  fi
+  
+  local parent_file="${target_dir}/.claude-parent-branch"
+  
+  if [ -f "${parent_file}" ]; then
+    local parent_branch=$(cat "${parent_file}")
+    echo "📌 Parent branch for workspace '${name}': ${parent_branch}"
+    echo ""
+    
+    # Get current branch in the workspace
+    if [ -d "${target_dir}/.git" ]; then
+      local current_branch=$(cd "${target_dir}" && git rev-parse --abbrev-ref HEAD 2>/dev/null)
+      if [ -n "${current_branch}" ]; then
+        echo "🌿 Current branch: ${current_branch}"
+        echo "🔄 To merge changes: Create PR from '${current_branch}' → '${parent_branch}'"
+      fi
+    fi
+  else
+    echo "⚠️  Parent branch information not found for workspace '${name}'."
+    echo "💡 This workspace may have been created before parent tracking was implemented."
+    
+    # Try to guess from git history
+    if [ -d "${target_dir}/.git" ]; then
+      local current_branch=$(cd "${target_dir}" && git rev-parse --abbrev-ref HEAD 2>/dev/null)
+      local upstream=$(cd "${target_dir}" && git rev-parse --abbrev-ref "${current_branch}@{upstream}" 2>/dev/null)
+      if [ -n "${upstream}" ]; then
+        echo "🔍 Detected upstream: ${upstream}"
+      fi
+    fi
+  fi
+}
+
 # --- Main Dispatcher ---
 main() {
   local cmd="$1"
@@ -304,6 +367,9 @@ main() {
       ;;
     clean-all)
       cmd_clean_all "$@"
+      ;;
+    parent)
+      cmd_parent "$@"
       ;;
     help|-h|--help)
       print_usage
