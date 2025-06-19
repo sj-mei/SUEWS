@@ -213,7 +213,19 @@ echo ""
 # Start Claude Code Sandbox
 # Docker will use its cache unless the image was removed via the --rebuild flag.
 # Pass any remaining arguments to claude-sandbox start
-claude-sandbox start -c ./claude-dev/claude-sandbox.config.json "${OTHER_ARGS[@]}"
+CONFIG_FILE="./claude-dev/claude-sandbox.config.json"
+
+# Check if jq is installed
+if ! command -v jq > /dev/null; then
+  echo "⚠️  jq is not installed. Mount paths with '~' may not work." >&2
+  echo "   Attempting to start anyway..." >&2
+  claude-sandbox start -c "$CONFIG_FILE" "${OTHER_ARGS[@]}"
+else
+  # Use jq to dynamically replace ~ with the user's home directory
+  # This ensures that mounts for .ssh and .gitconfig work correctly
+  jq "(.mounts[] | select(.source | startswith(\"~\"))).source |= \"$HOME\" + (. | ltrimstr(\"~\"))" "$CONFIG_FILE" | \
+  claude-sandbox start -c - "${OTHER_ARGS[@]}"
+fi
 EOF
     chmod +x "$SUEWS_ROOT/start-claude-dev.sh"
 
