@@ -268,10 +268,10 @@ claude-dev:
 	@echo "✅ Setup complete!"
 	@echo "📂 SUEWS workspace: $(LOCATION)/SUEWS"
 	@echo "🚀 To start development:"
-	@echo "   cd $(LOCATION)/SUEWS && ./run-claude-dev.sh"
+	@echo "   cd $(LOCATION)/SUEWS && ./start-claude-dev.sh"
 	@echo ""
 	@echo "💡 Tip: Add to your shell profile for quick access:"
-	@echo "   alias suews-claude='cd $(LOCATION)/SUEWS && ./run-claude-dev.sh'"
+	@echo "   alias suews-claude='cd $(LOCATION)/SUEWS && ./start-claude-dev.sh'"
 
 # Start Claude Code sandbox, passing any additional arguments
 # Usage: make claude-start ARGS="--rebuild --branch main"
