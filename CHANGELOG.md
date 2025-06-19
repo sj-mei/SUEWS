@@ -5,6 +5,16 @@
 <!-- [doc]: Documentation updates -->
 <!-- [change]: Changes exposed to users -->
 
+- 19 Jun 2025:
+  - [doc] Updated claude-dev/README.md to accurately reflect implementation with `claude.sh` workspace manager
+  - [doc] Documented advanced workspace management features for parallel development environments
+  - [doc] Fixed documentation inconsistencies: removed non-existent Makefile targets, corrected script names
+  - [doc] Reorganised README.md: moved Development Environment under Developer Note section
+  - [doc] Enhanced Traditional Development section with complete local setup instructions including prerequisites, workflow, and troubleshooting
+  - [doc] Simplified main README with Quick Start section for users, moving detailed compilation steps to developer documentation
+  - [maintenance] Updated main README.md and Makefile help text to reference actual Claude Code integration tools
+  - [maintenance] Enhanced documentation for Dropbox compatibility and multi-workspace development workflows
+
 - 15 Jun 2025:
   - [feature] Implemented cross-platform isolated build directories (`/tmp/suews-builds/`) to prevent environment conflicts
   - [feature] Enhanced `make dev` with automatic environment detection and appropriate build configuration
