@@ -181,6 +181,16 @@ RUN echo 'source /opt/conda/etc/profile.d/conda.sh' >> /root/.bashrc && \
     echo 'alias ll="ls -la"' >> /root/.bashrc && \
     echo 'alias la="ls -A"' >> /root/.bashrc
 
+# Create activation script for non-interactive shells
+RUN echo '#!/bin/bash' > /etc/profile.d/suews-dev.sh && \
+    echo 'source /opt/conda/etc/profile.d/conda.sh' >> /etc/profile.d/suews-dev.sh && \
+    echo 'conda activate suews-dev 2>/dev/null || true' >> /etc/profile.d/suews-dev.sh && \
+    echo 'export SUEWS_DEV_HOME=/workspace/SUEWS' >> /etc/profile.d/suews-dev.sh && \
+    chmod +x /etc/profile.d/suews-dev.sh
+
+# Set BASH_ENV to source activation script in non-interactive shells
+ENV BASH_ENV=/etc/profile.d/suews-dev.sh
+
 # Create entrypoint script
 RUN echo -e '#!/bin/bash\n\
 set -e\n\
