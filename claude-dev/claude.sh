@@ -99,6 +99,11 @@ cmd_dev() {
   echo "   This will create a clean copy with committed changes only."
   git clone --recurse-submodules --branch "${source_branch}" "${remote_url}" "${target_dir}"
 
+  # Get and display the commit hash
+  local commit_hash
+  commit_hash=$(cd "${target_dir}" && git rev-parse HEAD)
+  echo "🔗 Commit hash: ${commit_hash}"
+
   echo ""
   echo "🔧 Running workspace setup to generate launch scripts..."
   cd "${target_dir}"
@@ -110,12 +115,12 @@ cmd_dev() {
   local timestamp=$(date +%Y%m%d_%H%M%S)
   local feature_branch="claude/${timestamp}_${copy_name}"
   git checkout -b "${feature_branch}"
-  
+
   # Save parent branch info for reference
   echo "${source_branch}" > .claude-parent-branch
   git add .claude-parent-branch
   git commit -m "Track parent branch for Claude workspace" --quiet
-  
+
   echo ""
   echo "✅ Workspace created successfully!"
   echo "📂 Location: ${target_dir}"
@@ -295,28 +300,28 @@ cmd_clean_all() {
 
 cmd_parent() {
   local name="$1"
-  
+
   if [ -z "$name" ]; then
     echo "❌ Error: Workspace name is required." >&2
     echo "Usage: ./claude.sh parent <name>" >&2
     exit 1
   fi
-  
+
   local target_dir="${LOCATION}/SUEWS-${name}"
-  
+
   if [ ! -d "${target_dir}" ]; then
     echo "❌ Error: Workspace '${name}' not found." >&2
     echo "💡 Use './claude.sh list' to see available workspaces." >&2
     exit 1
   fi
-  
+
   local parent_file="${target_dir}/.claude-parent-branch"
-  
+
   if [ -f "${parent_file}" ]; then
     local parent_branch=$(cat "${parent_file}")
     echo "📌 Parent branch for workspace '${name}': ${parent_branch}"
     echo ""
-    
+
     # Get current branch in the workspace
     if [ -d "${target_dir}/.git" ]; then
       local current_branch=$(cd "${target_dir}" && git rev-parse --abbrev-ref HEAD 2>/dev/null)
@@ -328,7 +333,7 @@ cmd_parent() {
   else
     echo "⚠️  Parent branch information not found for workspace '${name}'."
     echo "💡 This workspace may have been created before parent tracking was implemented."
-    
+
     # Try to guess from git history
     if [ -d "${target_dir}/.git" ]; then
       local current_branch=$(cd "${target_dir}" && git rev-parse --abbrev-ref HEAD 2>/dev/null)
