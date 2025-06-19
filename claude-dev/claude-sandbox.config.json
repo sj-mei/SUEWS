@@ -53,11 +53,9 @@
     "--pids-limit", "1024",
     "--ulimit", "nofile=65536:65536"
   ],
-  
-  "volumes": [
-    "~/.gitconfig:/tmp/.gitconfig:ro"
-  ],
-  
+
+  "volumes": [],
+
   "comment": "SSH authentication via 'gh auth login' or SSH agent forwarding",
   "sshAgentForwarding": false,
 
