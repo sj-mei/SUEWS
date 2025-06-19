@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
 # --- Configuration ---
@@ -26,11 +26,10 @@ Usage:
   ./claude.sh <command> [arguments]
 
 Commands:
-  dev [name]            Create a new development workspace.
-                        - If [name] is provided, creates a named workspace (e.g., SUEWS-my-feature).
-                        - If no name is provided, creates a timestamped workspace.
+  dev [name]            Create a new workspace without starting it. (Optional)
+                        - Useful for pre-provisioning environments.
 
-  start [name] [args]   Start the Docker container for a given workspace.
+  start [name] [args]   Start a workspace. If it doesn't exist, it will be created.
                         - If [name] is omitted, an interactive selection menu is shown.
                         - Any additional [args] are passed to the start-claude-dev.sh script.
 
@@ -108,7 +107,7 @@ cmd_dev() {
   echo "📂 Location: ${target_dir}"
   echo ""
   echo "💡 This workspace is a clean clone of the '${source_branch}' branch."
-  echo "🚀 To start working safely, you can create a new feature branch:"
+  echo "🚀 To start working safely:"
   echo "   cd \"${target_dir}\" && git checkout -b feature/${copy_name}"
 }
 
@@ -119,41 +118,66 @@ cmd_start() {
   [ -n "$1" ] && shift
   local extra_args=("$@")
 
+  # --- Handle case where no name is provided (interactive menu) ---
   if [ -z "$name" ]; then
     echo "▶️  No workspace specified. Please choose one to start:"
 
-    local workspaces_raw
-    workspaces_raw=($(ls -d "${LOCATION}/SUEWS-"* 2>/dev/null))
-
-    if [ ${#workspaces_raw[@]} -eq 0 ]; then
-      echo "   No workspaces found."
-      exit 0
-    fi
-
     local workspaces=()
-    for ws in "${workspaces_raw[@]}"; do
-      workspaces+=("$(basename "$ws" | sed 's/SUEWS-//')")
-    done
-
-    PS3="Enter number: "
-    select choice in "${workspaces[@]}"; do
-      if [[ -n "$choice" ]]; then
-        name="$choice"
-        break
-      else
-        echo "Invalid selection. Please try again." >&2
+    # Safely populate the array using a glob, which is more robust than parsing ls.
+    for f in "${LOCATION}/SUEWS-"*; do
+      # This check also handles the case where the glob matches no files.
+      if [ -d "$f" ]; then
+        workspaces+=("$(basename "$f" | sed 's/SUEWS-//')")
       fi
     done
-    echo "" # Add a newline for better formatting
+
+    if [ ${#workspaces[@]} -eq 0 ]; then
+      echo "   No workspaces found."
+      read -rp "Enter a name for a new workspace, or leave blank to cancel: " new_name
+      if [ -z "$new_name" ]; then
+        echo "🛑 Aborted by user."
+        exit 0
+      fi
+      name="$new_name"
+      echo "" # Add spacing
+    else # Workspaces exist, show menu
+      local i=1
+      for ws in "${workspaces[@]}"; do
+          echo "  $i) $ws"
+          i=$((i+1))
+      done
+      echo ""
+
+      local choice_idx
+      while true; do
+        read -rp "Enter number (or q to quit): " choice_idx
+        if [[ "$choice_idx" == "q" ]]; then
+            echo "🛑 Aborted by user."
+            exit 0
+        fi
+        # Check if it's a valid number within the range
+        if [[ "$choice_idx" =~ ^[0-9]+$ ]] && [ "$choice_idx" -ge 1 ] && [ "$choice_idx" -le ${#workspaces[@]} ]; then
+            name="${workspaces[$((choice_idx-1))]}"
+            break
+        else
+            echo "Invalid selection. Please try again." >&2
+        fi
+      done
+      echo "" # Add a newline for better formatting
+    fi
   fi
 
   local target_dir="${LOCATION}/SUEWS-${name}"
 
+  # --- Create workspace if it doesn't exist ---
   if [ ! -d "${target_dir}" ]; then
-    echo "❌ Error: Workspace 'SUEWS-${name}' not found in '${LOCATION}'" >&2
-    exit 1
+    echo "ℹ️  Workspace 'SUEWS-${name}' not found. Creating it now..."
+    # Call the existing dev command to create it
+    cmd_dev "${name}"
+    echo "" # Add a newline for spacing after creation
   fi
 
+  # --- Proceed with starting the container ---
   echo "▶️  Starting Claude Code sandbox for 'SUEWS-${name}'..."
   cd "${target_dir}"
   # Pass any remaining arguments to the script
