@@ -196,10 +196,10 @@ RUN echo 'source /opt/conda/etc/profile.d/conda.sh' >> /root/.bashrc && \
 RUN echo -e '#!/bin/bash\n\
 set -e\n\
 \n\
-# Copy SSH keys if mounted\n\
-if [ -d "/tmp/.ssh" ]; then\n\
-    cp -r /tmp/.ssh/* /root/.ssh/ 2>/dev/null || true\n\
-    chmod 600 /root/.ssh/* 2>/dev/null || true\n\
+# Check for SSH agent forwarding\n\
+if [ -S "$SSH_AUTH_SOCK" ]; then\n\
+    echo "✓ SSH agent forwarding detected"\n\
+    ssh-add -l > /dev/null 2>&1 && echo "✓ SSH keys available in agent" || echo "⚠️ No keys in SSH agent"\n\
 fi\n\
 \n\
 # Copy git config if mounted\n\

@@ -41,7 +41,8 @@
     "echo 'To build documentation, run:    make docs'",
     "echo ''",
     "echo '🔐 Git Authentication:'",
-    "if [ -f /root/.ssh/id_rsa ] || [ -f /root/.ssh/id_ed25519 ]; then echo '  ✓ SSH keys mounted'; else echo '  ⚠️  No SSH keys found - use \"gh auth login\" to authenticate'; fi",
+    "echo '  Recommended: Run \"gh auth login\" for GitHub authentication'",
+    "echo '  Alternative: Use SSH agent forwarding (see README)'",
     "echo ''"
   ],
 
@@ -54,9 +55,11 @@
   ],
   
   "volumes": [
-    "~/.ssh:/tmp/.ssh:ro",
     "~/.gitconfig:/tmp/.gitconfig:ro"
   ],
+  
+  "comment": "SSH authentication via 'gh auth login' or SSH agent forwarding",
+  "sshAgentForwarding": false,
 
   "includeUntracked": false,
   "gitConfig": {
