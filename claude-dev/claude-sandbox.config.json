@@ -1,5 +1,24 @@
 {
-  "dockerfile": "./claude-dev/Dockerfile.claude-dev",
+  "containerName": "suews-claude-dev",
+  "dockerfile": "claude-dev/Dockerfile.claude-dev",
+  "context": ".",
+  "ports": ["8888:8888"],
+  "mounts": [
+    {
+      "source": "~/.ssh",
+      "destination": "/tmp/.ssh",
+      "type": "bind"
+    },
+    {
+      "source": "~/.gitconfig",
+      "destination": "/tmp/.gitconfig",
+      "type": "bind"
+    }
+  ],
+  "env": {
+    "SUEWS_DEV_HOME": "/workspace/SUEWS"
+  },
+
   "containerPrefix": "suews-research",
 
   "autoStartClaude": true,
