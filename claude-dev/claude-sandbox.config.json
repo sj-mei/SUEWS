@@ -39,6 +39,9 @@
     "echo 'To build the model, run:       conda run -n suews-dev make dev'",
     "echo 'To run tests, run:              conda run -n suews-dev make test'",
     "echo 'To build documentation, run:    make docs'",
+    "echo ''",
+    "echo '🔐 Git Authentication:'",
+    "if [ -f /root/.ssh/id_rsa ] || [ -f /root/.ssh/id_ed25519 ]; then echo '  ✓ SSH keys mounted'; else echo '  ⚠️  No SSH keys found - use \"gh auth login\" to authenticate'; fi",
     "echo ''"
   ],
 
@@ -48,6 +51,11 @@
     "--shm-size", "2g",
     "--pids-limit", "1024",
     "--ulimit", "nofile=65536:65536"
+  ],
+  
+  "volumes": [
+    "~/.ssh:/tmp/.ssh:ro",
+    "~/.gitconfig:/tmp/.gitconfig:ro"
   ],
 
   "includeUntracked": false,
