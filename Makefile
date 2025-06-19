@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate claude-dev claude-clean claude-start claude-stop
+.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
@@ -214,86 +214,6 @@ deactivate:
 		echo "No conda/mamba/virtual environment detected"; \
 	fi; \
 	echo ""; \
-	echo "Environment deactivation commands cannot be executed from Makefiles."; \
+	@echo "Environment deactivation commands cannot be executed from Makefiles."; \
 	echo "Please run the suggested command in your shell."
-
-# Claude Code development environment setup
-# Usage: make claude-dev [LOCATION=/path/to/workspace]
-# Default location: ~/claude-suews-workspace
-LOCATION ?= $(HOME)/claude-suews-workspace
-
-claude-dev:
-	@echo "🚀 Setting up SUEWS Claude Code development environment..."
-	@echo "📍 Target location: $(LOCATION)"
-	@echo ""
-
-	# Create workspace directory if it doesn't exist
-	@mkdir -p "$(LOCATION)"
-
-	# Clone or update SUEWS repository
-	@if [ -d "$(LOCATION)/SUEWS/.git" ]; then \
-		echo "📦 Updating existing SUEWS repository..."; \
-		cd "$(LOCATION)/SUEWS" && git fetch --all && git pull; \
-	else \
-		echo "📦 Cloning SUEWS repository..."; \
-		cd "$(LOCATION)" && git clone https://github.com/UMEP-dev/SUEWS.git; \
-		echo "📦 Initialising submodules..."; \
-		cd "$(LOCATION)/SUEWS" && git submodule init && git submodule update; \
-	fi
-
-	# The workspace will be on the default branch after cloning.
-	# You can specify a different branch when running run-claude-dev.sh, e.g.:
-	# ./run-claude-dev.sh --branch main
-	@echo ""
-	@echo "ℹ️  SUEWS workspace is on branch: $$(cd $(LOCATION)/SUEWS && git rev-parse --abbrev-ref HEAD)"
-
-	# Copy claude-dev folder from current location if not present in target
-	@if [ ! -d "$(LOCATION)/SUEWS/claude-dev" ]; then \
-		if [ -d "claude-dev" ]; then \
-			echo "📋 Copying claude-dev files from current location..."; \
-			cp -r claude-dev "$(LOCATION)/SUEWS/"; \
-		else \
-			echo "❌ Error: claude-dev folder not found in current location or target"; \
-			exit 1; \
-		fi \
-	fi
-
-	# Run setup from the cloned location
-	@echo ""
-	@echo "🔧 Running Claude Code setup..."
-	@cd "$(LOCATION)/SUEWS" && chmod +x claude-dev/setup-claude-dev.sh
-	@cd "$(LOCATION)/SUEWS" && ./claude-dev/setup-claude-dev.sh
-
-	@echo ""
-	@echo "✅ Setup complete!"
-	@echo "📂 SUEWS workspace: $(LOCATION)/SUEWS"
-	@echo "🚀 To start development:"
-	@echo "   cd $(LOCATION)/SUEWS && ./start-claude-dev.sh"
-	@echo ""
-	@echo "💡 Tip: Add to your shell profile for quick access:"
-	@echo "   alias suews-claude='cd $(LOCATION)/SUEWS && ./start-claude-dev.sh'"
-
-# Start Claude Code sandbox, passing any additional arguments
-# Usage: make claude-start ARGS="--rebuild --branch main"
-claude-start:
-	@echo "▶️  Starting Claude Code sandbox..."
-	@cd "$(LOCATION)/SUEWS" && ./start-claude-dev.sh $(ARGS)
-
-# Stop Claude Code sandbox
-claude-stop:
-	@echo "⏹️  Stopping Claude Code sandbox..."
-	@cd "$(LOCATION)/SUEWS" && ./stop-claude-dev.sh
-
-# Clean up Claude Code workspace
-claude-clean:
-	@echo "🧹 Cleaning Claude Code workspace..."
-	@if [ -d "$(LOCATION)" ]; then \
-		echo "📂 Removing workspace at: $(LOCATION)"; \
-		rm -rf "$(LOCATION)"; \
-		echo "✅ Workspace removed"; \
-	else \
-		echo "ℹ️  No workspace found at: $(LOCATION)"; \
-	fi
-	@echo ""
-	@echo "💡 Run 'make claude-dev' to create a fresh workspace"
 
