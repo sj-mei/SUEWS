@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
+# Disable macOS extended attributes in file operations
+export COPYFILE_DISABLE=1
+
 # --- Configuration ---
 # Default parent directory for all workspaces. Can be overridden with the LOCATION environment variable.
 LOCATION="${LOCATION:-$HOME/claude-suews-workspace}"
@@ -121,6 +124,11 @@ cmd_dev() {
   git add .claude-parent-branch
   git commit -m "Track parent branch for Claude workspace" --quiet
 
+  # Clear macOS extended attributes to prevent Docker copy errors
+  echo "🧹 Clearing macOS extended attributes from workspace..."
+  xattr -cr "${target_dir}" 2>/dev/null || true
+  export COPYFILE_DISABLE=1
+
   echo ""
   echo "✅ Workspace created successfully!"
   echo "📂 Location: ${target_dir}"
@@ -201,6 +209,11 @@ cmd_start() {
   # --- Proceed with starting the container ---
   echo "▶️  Starting Claude Code sandbox for 'SUEWS-${name}'..."
   cd "${target_dir}"
+  
+  # Clear macOS extended attributes before starting to prevent Docker copy errors
+  echo "🧹 Clearing macOS extended attributes..."
+  xattr -cr . 2>/dev/null || true
+  
   # Pass any remaining arguments to the script
   ./start-claude-dev.sh "${extra_args[@]}"
 }

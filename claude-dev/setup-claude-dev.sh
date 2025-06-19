@@ -210,6 +210,11 @@ if [ ${#OTHER_ARGS[@]} -ne 0 ]; then
 fi
 echo ""
 
+# Clear macOS extended attributes to prevent Docker copy errors
+echo "🧹 Clearing macOS extended attributes..."
+xattr -cr . 2>/dev/null || true
+export COPYFILE_DISABLE=1
+
 # Start Claude Code Sandbox
 # Docker will use its cache unless the image was removed via the --rebuild flag.
 # Pass any remaining arguments to claude-sandbox start
