@@ -5,6 +5,12 @@
 <!-- [doc]: Documentation updates -->
 <!-- [change]: Changes exposed to users -->
 
+- 20 Jun 2025:
+  - [bugfix] Fixed claude-dev rebuild flag not removing the correct Docker images
+    - Now removes both `claude-code-sandbox:latest` and `suews-claude-dev:test` images
+    - Added claude-sandbox clean command to ensure all cached images are removed
+    - Ensures fresh builds when using `./start-claude-dev.sh --rebuild`
+
 - 19 Jun 2025:
   - [doc] Updated claude-dev/README.md to accurately reflect implementation with `claude.sh` workspace manager
   - [doc] Documented advanced workspace management features for parallel development environments

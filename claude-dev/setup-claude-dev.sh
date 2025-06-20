@@ -197,8 +197,12 @@ done
 
 if [[ "$REBUILD_FLAG" == true ]]; then
   echo "🗑️  --rebuild flag detected. Forcing a full rebuild..."
+  # Remove both possible image names
   docker rmi -f claude-code-sandbox:latest > /dev/null 2>&1 || true
-  echo "✅ Image removed. The next start will be a fresh build."
+  docker rmi -f suews-claude-dev:test > /dev/null 2>&1 || true
+  # Also clean up any claude-sandbox cached images
+  claude-sandbox clean --images > /dev/null 2>&1 || true
+  echo "✅ Images removed. The next start will be a fresh build."
 fi
 
 echo "🚀 Starting SUEWS Claude Code development environment..."
