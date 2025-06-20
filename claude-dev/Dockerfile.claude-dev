@@ -87,23 +87,25 @@ RUN mkdir -p /root/.ssh && \
 RUN git config --global credential.helper 'cache --timeout=3600'
 
 # Create entrypoint script
-RUN echo -e '#!/bin/bash\n\
-set -e\n\
-\n\
-# Copy SSH keys if mounted\n\
-if [ -d "/tmp/.ssh" ]; then\n\
-    cp -r /tmp/.ssh/* /root/.ssh/ 2>/dev/null || true\n\
-    chmod 600 /root/.ssh/* 2>/dev/null || true\n\
-fi\n\
-\n\
-# Copy git config if mounted\n\
-if [ -f "/tmp/.gitconfig" ]; then\n\
-    cp /tmp/.gitconfig /root/.gitconfig\n\
-fi\n\
-\n\
-# Execute the command\n\
-exec "$@"' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+RUN cat > /entrypoint.sh << 'EOF'
+#!/bin/bash
+set -e
+
+# Copy SSH keys if mounted
+if [ -d "/tmp/.ssh" ]; then
+    cp -r /tmp/.ssh/* /root/.ssh/ 2>/dev/null || true
+    chmod 600 /root/.ssh/* 2>/dev/null || true
+fi
+
+# Copy git config if mounted
+if [ -f "/tmp/.gitconfig" ]; then
+    cp /tmp/.gitconfig /root/.gitconfig
+fi
+
+# Execute the command
+exec "$@"
+EOF
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
