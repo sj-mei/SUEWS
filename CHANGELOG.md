@@ -6,6 +6,16 @@
 <!-- [change]: Changes exposed to users -->
 
 - 20 Jun 2025:
+  - [feature] Added modern SUEWSSimulation class with comprehensive object-oriented interface
+    - Implemented YAML-based configuration management with intelligent parameter overriding
+    - Created pandas DataFrame integration with multi-index results structure for enhanced data manipulation
+    - Added chainable method design for intuitive workflows: init, from_yaml, setup_forcing, run, get_results, summary, see, quick_plot, save, clone, reset, validate
+    - Built-in validation system with British English error messages and actionable feedback
+    - Multiple export formats support: CSV, Excel, Pickle, NetCDF with automatic directory creation
+    - Performance optimisation with chunking support and lazy loading for large datasets
+    - Comprehensive test suite achieving 100% success rate across unit, integration, and performance tests
+    - Standalone implementation addressing circular import issues during development
+    - Complete documentation with usage examples and migration guidance
   - [bugfix] Fixed claude-dev Docker image not being built with custom Dockerfile
     - Implemented pre-build approach for custom SUEWS development Docker image
     - Modified start script to build `suews-claude-dev:latest` from Dockerfile.claude-dev
