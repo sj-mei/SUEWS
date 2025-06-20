@@ -43,7 +43,11 @@ from . import util
 from . import data_model
 
 # modern simulation interface
-# from .suews_sim import SUEWSSimulation  # Commented out to avoid circular import during development
+try:
+    from .suews_sim import SUEWSSimulation
+except ImportError:
+    # Graceful fallback if there are import issues during development
+    pass
 
 # post-processing
 from ._post import resample_output
