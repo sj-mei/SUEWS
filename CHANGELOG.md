@@ -6,10 +6,12 @@
 <!-- [change]: Changes exposed to users -->
 
 - 20 Jun 2025:
-  - [bugfix] Fixed claude-dev rebuild flag not removing the correct Docker images
-    - Now removes both `claude-code-sandbox:latest` and `suews-claude-dev:test` images
-    - Added claude-sandbox clean command to ensure all cached images are removed
-    - Ensures fresh builds when using `./start-claude-dev.sh --rebuild`
+  - [bugfix] Fixed claude-dev Docker image not being built with custom Dockerfile
+    - Implemented pre-build approach for custom SUEWS development Docker image
+    - Modified start script to build `suews-claude-dev:latest` from Dockerfile.claude-dev
+    - Removed dockerfile reference from claude-sandbox.config.json to use pre-built image
+    - Updated rebuild flag to handle all possible image names and force fresh builds
+    - Now correctly uses the comprehensive SUEWS development environment with conda, gfortran, etc.
 
 - 19 Jun 2025:
   - [doc] Updated claude-dev/README.md to accurately reflect implementation with `claude.sh` workspace manager

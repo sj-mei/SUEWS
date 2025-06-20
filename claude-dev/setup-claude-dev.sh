@@ -174,6 +174,7 @@ cd "$(dirname "$0")"
 REBUILD_FLAG=false
 OTHER_ARGS=()
 BASE_CONTEXT=$(git rev-parse --abbrev-ref HEAD) # Default to current branch
+CUSTOM_IMAGE="suews-claude-dev:latest"
 
 # Separate --rebuild from other flags and determine the base context for the sandbox
 for arg in "$@"; do
@@ -195,42 +196,59 @@ for i in "${!OTHER_ARGS[@]}"; do
   fi
 done
 
-if [[ "$REBUILD_FLAG" == true ]]; then
-  echo "🗑️  --rebuild flag detected. Forcing a full rebuild..."
-  # Remove both possible image names
-  docker rmi -f claude-code-sandbox:latest > /dev/null 2>&1 || true
-  docker rmi -f suews-claude-dev:test > /dev/null 2>&1 || true
-  # Also clean up any claude-sandbox cached images
-  claude-sandbox clean --images > /dev/null 2>&1 || true
-  echo "✅ Images removed. The next start will be a fresh build."
+# Build or rebuild the custom Docker image
+build_custom_image() {
+  echo "🏗️  Building custom SUEWS Claude Code Docker image..."
+  docker build -f claude-dev/Dockerfile.claude-dev -t "$CUSTOM_IMAGE" . || {
+    echo "❌ Failed to build Docker image"
+    exit 1
+  }
+  echo "✅ Custom Docker image built: $CUSTOM_IMAGE"
+}
+
+# Check if custom image exists or rebuild is requested
+if [[ "$REBUILD_FLAG" == true ]] || ! docker image inspect "$CUSTOM_IMAGE" >/dev/null 2>&1; then
+  if [[ "$REBUILD_FLAG" == true ]]; then
+    echo "🗑️  --rebuild flag detected. Forcing a full rebuild..."
+    # Remove all possible images
+    docker rmi -f claude-code-sandbox:latest > /dev/null 2>&1 || true
+    docker rmi -f "$CUSTOM_IMAGE" > /dev/null 2>&1 || true
+    docker rmi -f suews-claude-dev:test > /dev/null 2>&1 || true
+    # Also clean up any claude-sandbox cached images
+    claude-sandbox clean --images > /dev/null 2>&1 || true
+    echo "✅ Images removed. Building fresh image..."
+  else
+    echo "🔍 Custom Docker image not found. Building it now..."
+  fi
+  build_custom_image
 fi
 
 echo "🚀 Starting SUEWS Claude Code development environment..."
 echo "🌿 Base context: $BASE_CONTEXT"
 echo "📁 Working directory: $(pwd)"
+echo "🐳 Using custom image: $CUSTOM_IMAGE"
 echo "🐳 Container config: ./claude-dev/claude-sandbox.config.json"
 if [ ${#OTHER_ARGS[@]} -ne 0 ]; then
     echo " passing additional arguments: ${OTHER_ARGS[*]}"
 fi
 echo ""
 
-
 export COPYFILE_DISABLE=1
 
-# Start Claude Code Sandbox
-# Docker will use its cache unless the image was removed via the --rebuild flag.
-# Pass any remaining arguments to claude-sandbox start
+# Start Claude Code Sandbox with custom image
 CONFIG_FILE="./claude-dev/claude-sandbox.config.json"
 
 # Check if jq is installed
 if ! command -v jq > /dev/null; then
   echo "⚠️  jq is not installed. Mount paths with '~' may not work." >&2
   echo "   Attempting to start anyway..." >&2
-  claude-sandbox start -c "$CONFIG_FILE" "${OTHER_ARGS[@]}"
+  # Pass the custom image to claude-sandbox
+  claude-sandbox start -c "$CONFIG_FILE" --image "$CUSTOM_IMAGE" "${OTHER_ARGS[@]}"
 else
   # Use jq to dynamically replace ~ with the user's home directory
   # This ensures that mounts for .ssh and .gitconfig work correctly
-  jq "(.mounts[] | select(.source | startswith(\"~\"))).source |= \"$HOME\" + (. | ltrimstr(\"~\"))" "$CONFIG_FILE" | \
+  # Also inject the custom image into the config
+  jq ". + {\"image\": \"$CUSTOM_IMAGE\"} | (.mounts[] | select(.source | startswith(\"~\"))).source |= \"$HOME\" + (. | ltrimstr(\"~\"))" "$CONFIG_FILE" | \
   claude-sandbox start -c - "${OTHER_ARGS[@]}"
 fi
 EOF

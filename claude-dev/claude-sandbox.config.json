@@ -1,7 +1,5 @@
 {
   "containerName": "suews-claude-dev",
-  "dockerfile": "claude-dev/Dockerfile.claude-dev",
-  "context": ".",
   "ports": ["8888:8888"],
   "mounts": [
     {
