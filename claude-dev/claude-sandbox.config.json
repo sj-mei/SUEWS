@@ -4,15 +4,15 @@
   "ports": ["8888:8888"],
   "mounts": [
     {
-      "source": "~/.ssh",
+      "source": "$HOME/.ssh",
       "target": "/tmp/.ssh"
     },
     {
-      "source": "~/.gitconfig",
+      "source": "$HOME/.gitconfig",
       "target": "/tmp/.gitconfig"
     },
     {
-      "source": "~/.claude",
+      "source": "$HOME/.claude",
       "target": "/home/claude/.claude"
     }
   ],
