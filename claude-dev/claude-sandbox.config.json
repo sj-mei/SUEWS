@@ -12,6 +12,11 @@
       "source": "~/.gitconfig",
       "destination": "/tmp/.gitconfig",
       "type": "bind"
+    },
+    {
+      "source": "~/.claude",
+      "destination": "/home/claude/.claude",
+      "type": "bind"
     }
   ],
   "env": {
@@ -57,6 +62,10 @@
     "echo 'To build the model, run:       conda run -n suews-dev make dev'",
     "echo 'To run tests, run:              conda run -n suews-dev make test'",
     "echo 'To build documentation, run:    make docs'",
+    "echo ''",
+    "echo '📋 Sandbox Guidelines:'",
+    "echo '  Personal instructions: ~/.claude/CLAUDE.md'",
+    "echo '  Remember to create semantic branch names!'",
     "echo ''",
     "echo '🔐 Git Authentication:'",
     "echo '  Recommended: Run \"gh auth login\" for GitHub authentication'",
