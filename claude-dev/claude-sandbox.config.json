@@ -1,5 +1,6 @@
 {
   "containerName": "suews-claude-dev",
+  "dockerImage": "suews-claude-dev:latest",
   "ports": ["8888:8888"],
   "mounts": [
     {

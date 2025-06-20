@@ -203,7 +203,10 @@ build_custom_image() {
     echo "❌ Failed to build Docker image"
     exit 1
   }
+  # Tag it as claude-code-sandbox:latest so claude-sandbox will use it
+  docker tag "$CUSTOM_IMAGE" claude-code-sandbox:latest
   echo "✅ Custom Docker image built: $CUSTOM_IMAGE"
+  echo "✅ Tagged as claude-code-sandbox:latest for claude-sandbox compatibility"
 }
 
 # Check if custom image exists or rebuild is requested
@@ -236,20 +239,18 @@ echo ""
 
 export COPYFILE_DISABLE=1
 
-# Start Claude Code Sandbox with custom image
+# Start Claude Code Sandbox (will use claude-code-sandbox:latest)
 CONFIG_FILE="./claude-dev/claude-sandbox.config.json"
 
 # Check if jq is installed
 if ! command -v jq > /dev/null; then
   echo "⚠️  jq is not installed. Mount paths with '~' may not work." >&2
   echo "   Attempting to start anyway..." >&2
-  # Pass the custom image to claude-sandbox
-  claude-sandbox start -c "$CONFIG_FILE" --image "$CUSTOM_IMAGE" "${OTHER_ARGS[@]}"
+  claude-sandbox start -c "$CONFIG_FILE" "${OTHER_ARGS[@]}"
 else
   # Use jq to dynamically replace ~ with the user's home directory
   # This ensures that mounts for .ssh and .gitconfig work correctly
-  # Also inject the custom image into the config
-  jq ". + {\"image\": \"$CUSTOM_IMAGE\"} | (.mounts[] | select(.source | startswith(\"~\"))).source |= \"$HOME\" + (. | ltrimstr(\"~\"))" "$CONFIG_FILE" | \
+  jq "(.mounts[] | select(.source | startswith(\"~\"))).source |= \"$HOME\" + (. | ltrimstr(\"~\"))" "$CONFIG_FILE" | \
   claude-sandbox start -c - "${OTHER_ARGS[@]}"
 fi
 EOF
