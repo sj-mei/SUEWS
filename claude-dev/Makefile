@@ -5,7 +5,7 @@
 
 # Docker image settings
 IMAGE_NAME := suews-claude-dev
-IMAGE_TAG := test
+IMAGE_TAG := latest
 FULL_IMAGE := $(IMAGE_NAME):$(IMAGE_TAG)
 
 # Paths
@@ -36,8 +36,14 @@ help:
 # Build Docker image
 build:
 	@echo "🏗️  Building SUEWS Claude Code Docker image..."
+	@echo "📁 Build context: $(SUEWS_ROOT)"
+	@echo "📄 Dockerfile: $(DOCKERFILE)"
+	@echo "🏷️  Image tag: $(FULL_IMAGE)"
 	docker build -f $(DOCKERFILE) -t $(FULL_IMAGE) "$(SUEWS_ROOT)" --progress=plain
 	@echo "✅ Docker image built: $(FULL_IMAGE)"
+	@echo ""
+	@echo "To test the image interactively, run:"
+	@echo "  make interactive"
 
 # Build with no cache (clean build)
 build-clean:
@@ -78,10 +84,17 @@ test-dev:
 # Test SUEWS build process
 test-suews:
 	@echo "🧪 Testing SUEWS build process..."
-	docker run --rm -v "$(SUEWS_ROOT):/workspace/SUEWS" $(FULL_IMAGE) bash -c "\
+	@echo "🐳 Using image: $(FULL_IMAGE)"
+	@echo "📁 SUEWS source: $(SUEWS_ROOT)"
+	@echo ""
+	docker run --rm -v "$(SUEWS_ROOT):/workspace/SUEWS" -w /workspace/SUEWS $(FULL_IMAGE) bash -c "\
 		source /opt/conda/etc/profile.d/conda.sh && \
 		conda activate suews-dev && \
-		cd /workspace/SUEWS && \
+		echo '=== Verifying environment ===' && \
+		which gfortran && \
+		which meson && \
+		which ninja && \
+		echo '' && \
 		echo '=== Updating submodules ===' && \
 		git submodule update --init --recursive && \
 		echo '=== Cleaning previous build artifacts ===' && \
@@ -173,14 +186,36 @@ clean-all:
 # Quick verification (fast test)
 verify:
 	@echo "⚡ Quick verification of Docker environment..."
-	docker run --rm $(FULL_IMAGE) bash -c "\
+	@echo "🐳 Testing image: $(FULL_IMAGE)"
+	@echo ""
+	@docker run --rm $(FULL_IMAGE) bash -c "\
+		echo '=== System Information ===' && \
+		cat /etc/os-release | grep PRETTY_NAME && \
+		echo '' && \
+		echo '=== Conda Environment ===' && \
 		source /opt/conda/etc/profile.d/conda.sh && \
 		conda activate suews-dev && \
-		gfortran --version | head -1 && \
-		python --version && \
-		python -c 'import numpy; print(f\"NumPy {numpy.__version__}\")' && \
-		python -c 'import mesonpy; print(\"meson-python ✅\")' && \
-		python -c 'import f90wrap; print(\"f90wrap ✅\")' && \
+		conda info --envs | grep suews-dev && \
+		echo '' && \
+		echo '=== Critical Tools ===' && \
+		echo -n 'gfortran: ' && gfortran --version | head -1 && \
+		echo -n 'gcc:      ' && gcc --version | head -1 && \
+		echo -n 'python:   ' && python --version && \
+		echo -n 'meson:    ' && meson --version && \
+		echo -n 'ninja:    ' && ninja --version && \
+		echo '' && \
+		echo '=== Python Packages ===' && \
+		python -c 'import numpy; print(f\"numpy:    {numpy.__version__}\")' && \
+		python -c 'import pandas; print(f\"pandas:   {pandas.__version__}\")' && \
+		python -c 'import matplotlib; print(f\"matplotlib: {matplotlib.__version__}\")' && \
+		python -c 'import mesonpy; print(\"meson-python: ✅\")' && \
+		python -c 'import f90wrap; print(\"f90wrap:      ✅\")' && \
+		echo '' && \
+		echo '=== Additional Tools ===' && \
+		which gh > /dev/null && echo 'GitHub CLI: ✅' || echo 'GitHub CLI: ❌' && \
+		which jq > /dev/null && echo 'jq:         ✅' || echo 'jq:         ❌' && \
+		which doxygen > /dev/null && echo 'doxygen:    ✅' || echo 'doxygen:    ❌' && \
+		echo '' && \
 		echo '✅ Quick verification PASSED'"
 
 # Show Docker image information

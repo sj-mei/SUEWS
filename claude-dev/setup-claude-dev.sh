@@ -214,6 +214,7 @@ if [[ "$REBUILD_FLAG" == true ]] || ! docker image inspect "$CUSTOM_IMAGE" >/dev
     docker rmi -f claude-code-sandbox:latest > /dev/null 2>&1 || true
     docker rmi -f "$CUSTOM_IMAGE" > /dev/null 2>&1 || true
     docker rmi -f suews-claude-dev:test > /dev/null 2>&1 || true
+    docker rmi -f suews-claude-dev:latest > /dev/null 2>&1 || true
     # Also clean up any claude-sandbox cached images
     claude-sandbox clean --images > /dev/null 2>&1 || true
     echo "✅ Images removed. Building fresh image..."
