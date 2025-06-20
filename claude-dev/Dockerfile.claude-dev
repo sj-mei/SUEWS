@@ -64,7 +64,7 @@ RUN ARCH=$(dpkg --print-architecture) && \
 ENV PATH=/opt/conda/bin:$PATH
 
 # Copy environment definition and create Conda environment as root
-COPY env.yml /tmp/env.yml
+COPY ../env.yml /tmp/env.yml
 RUN mamba env create -f /tmp/env.yml -n suews-dev && \
     mamba clean -a -y && \
     rm /tmp/env.yml

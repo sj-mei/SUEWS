@@ -124,24 +124,7 @@ cmd_dev() {
   git add .claude-parent-branch
   git commit -m "Track parent branch for Claude workspace" --quiet
 
-  # Clear macOS extended attributes to prevent Docker copy errors
-  echo "🧹 Clearing macOS extended attributes from workspace..."
-  if command -v xattr >/dev/null 2>&1; then
-    # Try without sudo first
-    if xattr -cr "${target_dir}" 2>/dev/null; then
-      echo "   ✓ Extended attributes cleared"
-    else
-      # If that fails, try with sudo
-      echo "   ⚠️  Need elevated permissions to clear attributes"
-      if sudo xattr -cr "${target_dir}" 2>/dev/null; then
-        echo "   ✓ Extended attributes cleared with sudo"
-      else
-        echo "   ⚠️  Could not clear extended attributes (non-critical)"
-      fi
-    fi
-  else
-    echo "   ℹ️  xattr command not found (only needed on macOS)"
-  fi
+
   export COPYFILE_DISABLE=1
 
   echo ""
@@ -224,26 +207,7 @@ cmd_start() {
   # --- Proceed with starting the container ---
   echo "▶️  Starting Claude Code sandbox for 'SUEWS-${name}'..."
   cd "${target_dir}"
-  
-  # Clear macOS extended attributes before starting to prevent Docker copy errors
-  echo "🧹 Clearing macOS extended attributes..."
-  if command -v xattr >/dev/null 2>&1; then
-    # Try without sudo first
-    if xattr -cr . 2>/dev/null; then
-      echo "   ✓ Extended attributes cleared"
-    else
-      # If that fails, try with sudo
-      echo "   ⚠️  Need elevated permissions to clear attributes"
-      if sudo xattr -cr . 2>/dev/null; then
-        echo "   ✓ Extended attributes cleared with sudo"
-      else
-        echo "   ⚠️  Could not clear extended attributes (non-critical)"
-      fi
-    fi
-  else
-    echo "   ℹ️  xattr command not found (only needed on macOS)"
-  fi
-  
+
   # Pass any remaining arguments to the script
   ./start-claude-dev.sh "${extra_args[@]}"
 }

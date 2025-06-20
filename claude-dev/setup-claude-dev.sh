@@ -210,24 +210,7 @@ if [ ${#OTHER_ARGS[@]} -ne 0 ]; then
 fi
 echo ""
 
-# Clear macOS extended attributes to prevent Docker copy errors
-echo "🧹 Clearing macOS extended attributes..."
-if command -v xattr >/dev/null 2>&1; then
-  # Try without sudo first
-  if xattr -cr . 2>/dev/null; then
-    echo "   ✓ Extended attributes cleared"
-  else
-    # If that fails, try with sudo
-    echo "   ⚠️  Need elevated permissions to clear attributes"
-    if sudo xattr -cr . 2>/dev/null; then
-      echo "   ✓ Extended attributes cleared with sudo"
-    else
-      echo "   ⚠️  Could not clear extended attributes (non-critical)"
-    fi
-  fi
-else
-  echo "   ℹ️  xattr command not found (only needed on macOS)"
-fi
+
 export COPYFILE_DISABLE=1
 
 # Start Claude Code Sandbox
