@@ -201,11 +201,11 @@ class SUEWSConfig(BaseModel):
                     print(f"[site #{i}] Season detected: {season}")
 
                     # Update param based on season
-                    if season == "summer":
+                    if season in ("summer", "tropical", "equatorial"):
                         # Set snowalbmax to None if present
                         if "snowalbmax" in props:
                             props["snowalbmax"] = None
-                            print(f"[site #{i}] Set 'snowalbmax' to None for summer season")
+                            print(f"[site #{i}] Set 'snowalbmax' to None for {season} season")
                 else:
                     print(f"⚠️ [site #{i}] Skipping season check: missing lat")
             except Exception as e:
