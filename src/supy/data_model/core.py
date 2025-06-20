@@ -211,6 +211,47 @@ class SUEWSConfig(BaseModel):
             except Exception as e:
                 raise ValueError(f"[site #{i}] SeasonCheck failed: {e}")
 
+            # ── Step 1.1.1: Adjust LAI values for deciduous trees (conditional) ──
+            landcover_data = props.get("land_cover") or props.get("landcover")
+            if landcover_data is not None:
+                try:
+                    dectr = landcover_data.get("dectr", {})
+                    sfr_dectr = dectr.get("sfr", {}).get("value", 0)
+
+                    if sfr_dectr > 0:
+                        lai = dectr.get("lai", {})
+                        laimin = lai.get("laimin", {}).get("value")
+                        laimax = lai.get("laimax", {}).get("value")
+
+                        if laimin is not None and laimax is not None:
+                            if season in ("summer", "tropical", "equatorial"):
+                                lai["base"] = {"value": laimax}
+                                print(f"[site #{i}] LAI base set to laimax ({laimax}) for {season}")
+                            elif season == "winter":
+                                lai["base"] = {"value": laimin}
+                                print(f"[site #{i}] LAI base set to laimin ({laimin}) for winter")
+                            elif season in ("spring", "fall"):
+                                lai["base"] = {"value": (laimax + laimin) / 2}
+                                print(f"[site #{i}] LAI base set to average of laimax and laimin ({(laimax + laimin) / 2:.2f})")
+                        else:
+                            print(f"[site #{i}] Missing laimin or laimax under lai")
+
+                        dectr["lai"] = lai
+                        landcover_data["dectr"] = dectr
+                        props["land_cover"] = landcover_data
+                    else:
+                        # sfr == 0 → nullify all lai-related values 
+                        if "lai" in dectr:
+                            print(f"[site #{i}] Nullifying all LAI parameters (sfr_dectr = 0)")
+                            for key in dectr["lai"]:
+                                if isinstance(dectr["lai"][key], dict):
+                                    dectr["lai"][key]["value"] = None
+                                    print(f"Set {key} to {dectr['lai'][key]['value']}")
+                            landcover_data["dectr"] = dectr
+                            props["land_cover"] = landcover_data
+                except Exception as e:
+                    raise ValueError(f"[site #{i}] LAI seasonal adjustment failed: {e}")
+
             # --- Land Cover Fractions Check (only if land_cover section exists) ---
             landcover_data = props.get("land_cover") or props.get("landcover")
             if landcover_data is not None:
