@@ -5,18 +5,15 @@
   "mounts": [
     {
       "source": "~/.ssh",
-      "destination": "/tmp/.ssh",
-      "type": "bind"
+      "target": "/tmp/.ssh"
     },
     {
       "source": "~/.gitconfig",
-      "destination": "/tmp/.gitconfig",
-      "type": "bind"
+      "target": "/tmp/.gitconfig"
     },
     {
       "source": "~/.claude",
-      "destination": "/home/claude/.claude",
-      "type": "bind"
+      "target": "/home/claude/.claude"
     }
   ],
   "env": {
