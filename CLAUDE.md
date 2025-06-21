@@ -19,6 +19,12 @@ mamba activate suews-dev
 git submodule init
 git submodule update
 
+# IMPORTANT: Always activate suews-dev environment in sandbox development
+# This ensures all development dependencies are available
+source ~/miniforge3/etc/profile.d/conda.sh && conda activate suews-dev
+# OR
+mamba activate suews-dev
+
 # Development build (fast, no tests)
 make dev
 
@@ -95,6 +101,21 @@ The project recently migrated from `_config.py` to a new `data_model/` subpackag
 - **Framework**: pytest with coverage reporting
 - **Location**: `/test/` directory
 - **Command**: `make test` or `python -m pytest test -v`
+
+### Environment Activation for Testing
+**IMPORTANT**: Always ensure the suews-dev environment is activated before running tests:
+```bash
+# Activate environment first
+source ~/miniforge3/etc/profile.d/conda.sh && conda activate suews-dev
+
+# Then run tests
+make test
+# OR
+python -m pytest test -v --tb=short
+
+# Skip benchmark tests during development
+python -m pytest test -v -k "not test_benchmark"
+```
 
 ### Test Types
 - Single-grid multi-year simulations
