@@ -13,9 +13,16 @@
     - Built-in validation system with British English error messages and actionable feedback
     - Multiple export formats support: CSV, Excel, Pickle, NetCDF with automatic directory creation
     - Performance optimisation with chunking support and lazy loading for large datasets
-    - Comprehensive test suite achieving 100% success rate across unit, integration, and performance tests
+    - Comprehensive test suite with 48/48 tests passing (100% success rate) across unit, integration, and functionality tests
     - Standalone implementation addressing circular import issues during development
     - Complete documentation with usage examples and migration guidance
+  - [bugfix] Fixed SUEWSSimulation test failures using real SuPy sample data
+    - Updated test fixtures to use actual SuPy sample configuration and forcing data instead of mock objects
+    - Fixed import paths for mock decorators from 'supy.suews_sim' to 'supy._run' modules
+    - Implemented proper error handling with correct exception types (ValueError vs RuntimeError)
+    - Added fallback resampling functionality when SuPy's resample_output lacks required variables
+    - Enhanced mock configuration for matplotlib plotting tests with proper method assignments
+    - Fixed validation logic to properly handle missing vs. empty forcing data with appropriate error types
   - [bugfix] Fixed claude-dev Docker image not being built with custom Dockerfile
     - Implemented pre-build approach for custom SUEWS development Docker image
     - Modified start script to build `suews-claude-dev:latest` from Dockerfile.claude-dev

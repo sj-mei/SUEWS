@@ -25,6 +25,7 @@ from unittest.mock import Mock, patch, MagicMock
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+import supy as sp
 from supy.suews_sim import SUEWSSimulation
 from supy.data_model import SUEWSConfig
 
@@ -134,7 +135,7 @@ class TestSUEWSSimulationForcing:
             'Tair': [20.0, 21.0],
             'RH': [60.0, 65.0]
             # Missing other required columns
-        }, index=pd.date_range('2012-01-01', periods=2, freq='H'))
+        }, index=pd.date_range('2012-01-01', periods=2, freq='h'))
         
         # Should warn but not fail
         sim.setup_forcing(incomplete_forcing)
@@ -170,13 +171,14 @@ class TestSUEWSSimulationValidation:
         
         validation = sim.validate()
         
-        assert 'forcing' in str(validation['warnings']).lower()
+        assert validation['status'] == 'invalid'
+        assert 'forcing' in str(validation['errors']).lower()
 
 
 class TestSUEWSSimulationExecution:
     """Test simulation execution methods."""
     
-    @patch('supy.suews_sim.run_supy_ser')
+    @patch('supy._run.run_supy_ser')
     def test_run_basic_execution(self, mock_run_supy_ser, configured_simulation):
         """Test basic simulation execution."""
         # Mock successful simulation
@@ -195,7 +197,7 @@ class TestSUEWSSimulationExecution:
         assert len(results) == 48
         mock_run_supy_ser.assert_called_once()
     
-    @patch('supy.suews_sim.run_supy_par')
+    @patch('supy._run.run_supy_par')
     def test_run_parallel_execution(self, mock_run_supy_par, configured_simulation):
         """Test parallel simulation execution."""
         # Mock successful parallel simulation
@@ -217,11 +219,12 @@ class TestSUEWSSimulationExecution:
     
     def test_run_with_date_range(self, configured_simulation):
         """Test simulation with specific date range."""
-        with patch('supy.suews_sim.run_supy_ser') as mock_run:
+        with patch('supy._run.run_supy_ser') as mock_run:
             mock_run.return_value = (pd.DataFrame(), pd.DataFrame(), None, None)
             
-            start_date = datetime(2012, 6, 1)
-            end_date = datetime(2012, 8, 31)
+            # Use dates that exist in our sample forcing data (48 timesteps from 2012-01-01)
+            start_date = datetime(2012, 1, 1, 1, 0)  # Start from second timestep
+            end_date = datetime(2012, 1, 1, 2, 0)    # End at third timestep
             
             configured_simulation.run(start_date=start_date, end_date=end_date)
             
@@ -233,7 +236,7 @@ class TestSUEWSSimulationExecution:
     
     def test_run_with_options(self, configured_simulation):
         """Test simulation with various options."""
-        with patch('supy.suews_sim.run_supy_ser') as mock_run:
+        with patch('supy._run.run_supy_ser') as mock_run:
             mock_run.return_value = (pd.DataFrame(), pd.DataFrame(), None, None)
             
             configured_simulation.run(
@@ -258,7 +261,7 @@ class TestSUEWSSimulationExecution:
     
     def test_run_simulation_failure(self, configured_simulation):
         """Test handling of simulation execution failure."""
-        with patch('supy.suews_sim.run_supy_ser') as mock_run:
+        with patch('supy._run.run_supy_ser') as mock_run:
             mock_run.side_effect = Exception("Simulation kernel error")
             
             with pytest.raises(RuntimeError, match="Simulation execution failed"):
@@ -266,7 +269,7 @@ class TestSUEWSSimulationExecution:
     
     def test_run_metadata_tracking(self, configured_simulation):
         """Test run metadata is properly tracked."""
-        with patch('supy.suews_sim.run_supy_ser') as mock_run:
+        with patch('supy._run.run_supy_ser') as mock_run:
             mock_run.return_value = (pd.DataFrame(), pd.DataFrame(), None, None)
             
             start_time = datetime.now()
@@ -363,27 +366,33 @@ class TestSUEWSSimulationResults:
 class TestSUEWSSimulationPlotting:
     """Test plotting and visualisation functionality."""
     
+    @patch('pandas.Series.plot')
+    @patch('matplotlib.pyplot.tight_layout')
     @patch('matplotlib.pyplot.show')
     @patch('matplotlib.pyplot.subplots')
-    def test_quick_plot_default_variables(self, mock_subplots, mock_show, simulation_with_results):
+    def test_quick_plot_default_variables(self, mock_subplots, mock_show, mock_tight_layout, mock_plot, simulation_with_results):
         """Test quick plot with default variables."""
         # Mock matplotlib
         mock_fig = Mock()
         mock_axes = [Mock() for _ in range(4)]
         mock_subplots.return_value = (mock_fig, mock_axes)
+        mock_plot.return_value = Mock()
         
         simulation_with_results.quick_plot()
         
         mock_subplots.assert_called_once()
         mock_show.assert_called_once()
     
+    @patch('pandas.Series.plot')
+    @patch('matplotlib.pyplot.tight_layout')
     @patch('matplotlib.pyplot.show')
     @patch('matplotlib.pyplot.subplots')
-    def test_quick_plot_specific_variables(self, mock_subplots, mock_show, simulation_with_results):
+    def test_quick_plot_specific_variables(self, mock_subplots, mock_show, mock_tight_layout, mock_plot, simulation_with_results):
         """Test quick plot with specific variables."""
         mock_fig = Mock()
         mock_axes = [Mock(), Mock()]
         mock_subplots.return_value = (mock_fig, mock_axes)
+        mock_plot.return_value = Mock()
         
         simulation_with_results.quick_plot(['QH', 'QE'])
         
@@ -535,41 +544,29 @@ class TestSUEWSSimulationEdgeCases:
 
 
 # Test Fixtures
+
+# Get SuPy module directory
+supy_module_dir = Path(sp.__file__).parent
+
 @pytest.fixture
-def sample_yaml_config(tmp_path):
-    """Create a sample YAML configuration file."""
-    config_content = """
-name: test config
-description: test configuration for SUEWSSimulation
-model:
-  control:
-    tstep: 300
-    forcing_file:
-      value: forcing.csv
-    output_file: output.txt
-    diagnose: 0
-sites:
-- name: test site
-  gridiv: 1
-  properties:
-    lat:
-      value: 51.51
-    lng:
-      value: -0.12
-    alt:
-      value: 35.0
-"""
-    config_file = tmp_path / "test_config.yaml"
-    config_file.write_text(config_content)
-    return config_file
+def sample_yaml_config():
+    """Use the actual sample YAML configuration file from SuPy."""
+    return supy_module_dir / "sample_run" / "sample_config.yml"
+
+
+@pytest.fixture
+def sample_supy_data():
+    """Load real sample data from SuPy."""
+    df_state_init, df_forcing = sp.load_SampleData()
+    return df_state_init, df_forcing
 
 
 @pytest.fixture
 def sample_suews_config():
-    """Create a sample SUEWSConfig object."""
-    # This would create a minimal valid SUEWSConfig
-    # For now, return a mock
-    return Mock(spec=SUEWSConfig)
+    """Create a sample SUEWSConfig object using real SuPy initialization."""
+    from supy.data_model import init_config_from_yaml
+    config_path = supy_module_dir / "sample_run" / "sample_config.yml"
+    return init_config_from_yaml(config_path)
 
 
 @pytest.fixture
@@ -583,18 +580,11 @@ def sample_config_dict():
 
 
 @pytest.fixture
-def sample_forcing_dataframe():
-    """Create sample forcing data as DataFrame."""
-    dates = pd.date_range('2012-01-01', periods=48, freq='30min')
-    data = {
-        'Tair': np.random.normal(15, 5, 48),
-        'RH': np.random.normal(70, 15, 48),
-        'U': np.random.normal(3, 1, 48),
-        'pres': np.random.normal(1013, 10, 48),
-        'rain': np.random.exponential(0.1, 48),
-        'kdown': np.random.normal(200, 100, 48).clip(0)
-    }
-    return pd.DataFrame(data, index=dates)
+def sample_forcing_dataframe(sample_supy_data):
+    """Get sample forcing data from SuPy."""
+    _, df_forcing = sample_supy_data
+    # Return first 48 timesteps for quick testing
+    return df_forcing.iloc[:48]
 
 
 @pytest.fixture
@@ -612,9 +602,9 @@ def sample_forcing_data(sample_forcing_dataframe):
 
 
 @pytest.fixture
-def configured_simulation(sample_suews_config, sample_forcing_dataframe):
+def configured_simulation(sample_yaml_config, sample_forcing_dataframe):
     """Create a configured simulation ready for testing."""
-    sim = SUEWSSimulation(sample_suews_config)
+    sim = SUEWSSimulation(sample_yaml_config)
     sim.setup_forcing(sample_forcing_dataframe)
     return sim
 
@@ -622,17 +612,28 @@ def configured_simulation(sample_suews_config, sample_forcing_dataframe):
 @pytest.fixture
 def simulation_with_results(configured_simulation):
     """Create a simulation with mock results."""
-    # Create mock results
-    dates = pd.date_range('2012-01-01', periods=48, freq='30min')
-    columns = pd.MultiIndex.from_product([
-        ['SUEWS'],
-        ['QH', 'QE', 'QS', 'Tair', 'RH']
-    ])
+    # Create mock results matching SuPy output structure
+    dates = pd.date_range('2012-01-01', periods=48, freq='5min')
     
+    # Create multi-level columns matching SuPy output structure
+    # SuPy uses (group, variable) structure where group is like 'SUEWS'
+    columns = pd.MultiIndex.from_product([
+        ['SUEWS'],  # group
+        ['QH', 'QE', 'QS', 'Tair', 'RH']  # variables
+    ], names=['group', 'var'])
+    
+    # Create multi-level index with grid level for resample_output compatibility
+    index = pd.MultiIndex.from_product([
+        [1],  # grid
+        dates  # datetime
+    ], names=['grid', 'datetime'])
+    
+    # Create DataFrame with proper structure
+    data = np.random.randn(48, 5)
     results = pd.DataFrame(
-        np.random.randn(48, 5),
+        data,
         columns=columns,
-        index=dates
+        index=index
     )
     
     # Mock the simulation as completed

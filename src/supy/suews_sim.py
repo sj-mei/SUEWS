@@ -103,18 +103,18 @@ class SUEWSSimulation:
         """Get SuPy module with deferred import."""
         try:
             if module_name == "run":
-                from ._run import run_supy_ser, run_supy_par
-                return {"run_supy_ser": run_supy_ser, "run_supy_par": run_supy_par}
+                import supy._run
+                return {"run_supy_ser": supy._run.run_supy_ser, "run_supy_par": supy._run.run_supy_par}
             elif module_name == "load":
-                from ._load import load_InitialCond_grid_df
-                return {"load_InitialCond_grid_df": load_InitialCond_grid_df}
+                import supy._load
+                return {"load_InitialCond_grid_df": supy._load.load_InitialCond_grid_df}
             elif module_name == "post":
-                from ._post import resample_output
-                return {"resample_output": resample_output}
+                import supy._post
+                return {"resample_output": supy._post.resample_output}
             elif module_name == "data_model":
                 try:
-                    from .data_model import SUEWSConfig, init_config_from_yaml
-                    return {"SUEWSConfig": SUEWSConfig, "init_config_from_yaml": init_config_from_yaml}
+                    import supy.data_model
+                    return {"SUEWSConfig": supy.data_model.SUEWSConfig, "init_config_from_yaml": supy.data_model.init_config_from_yaml}
                 except ImportError:
                     # Return mock objects if data_model not available
                     return {"SUEWSConfig": dict, "init_config_from_yaml": lambda x: {}}
@@ -289,7 +289,8 @@ class SUEWSSimulation:
             
             # Check forcing data
             if self._df_forcing is None:
-                validation_report['warnings'].append("No forcing data loaded")
+                validation_report['errors'].append("No forcing data loaded")
+            # Note: empty forcing DataFrame (len=0) is handled in _prepare_forcing_for_run
             
             # Update status based on errors
             if validation_report['errors']:
@@ -355,7 +356,7 @@ class SUEWSSimulation:
         # Validate before running
         validation = self.validate()
         if validation['status'] == 'invalid':
-            raise RuntimeError(f"Simulation validation failed: {validation['errors']}")
+            raise RuntimeError(f"validation failed: {validation['errors']}")
         
         if validation['warnings']:
             for warning in validation['warnings']:
@@ -416,6 +417,10 @@ class SUEWSSimulation:
             
             return self._df_output
             
+        except ValueError as e:
+            # Re-raise ValueError directly for validation errors
+            self._log(f"SUEWS simulation failed: {e}", "error")
+            raise
         except Exception as e:
             self._log(f"SUEWS simulation failed: {e}", "error")
             raise RuntimeError(f"Simulation execution failed: {e}") from e
@@ -426,8 +431,8 @@ class SUEWSSimulation:
         end_date: Optional[datetime]
     ) -> pd.DataFrame:
         """Prepare forcing data for simulation run."""
-        if self._df_forcing is None:
-            raise ValueError("No forcing data available. Use setup_forcing() first.")
+        if self._df_forcing is None or len(self._df_forcing) == 0:
+            raise ValueError("No forcing data available")
         
         df_forcing = self._df_forcing.copy()
         
@@ -438,7 +443,7 @@ class SUEWSSimulation:
             df_forcing = df_forcing[df_forcing.index <= end_date]
         
         if len(df_forcing) == 0:
-            raise ValueError("No forcing data available for specified date range")
+            raise ValueError("No forcing data available")
         
         return df_forcing
     
@@ -477,7 +482,7 @@ class SUEWSSimulation:
         >>> energy_fluxes = sim.get_results(['QH', 'QE', 'QS'])
         
         >>> # Get hourly averages
-        >>> hourly = sim.get_results(resample_freq='H')
+        >>> hourly = sim.get_results(resample_freq='h')
         
         >>> # Get daily averages for specific period
         >>> daily = sim.get_results(
@@ -514,7 +519,22 @@ class SUEWSSimulation:
             post_module = self._get_supy_module("post")
             resample_output = post_module.get("resample_output")
             if resample_output:
-                df_results = resample_output(df_results, freq=resample_freq)
+                try:
+                    # SuPy resample_output expects multi-level index with 'grid' level
+                    # We need to add grid level if it doesn't exist
+                    if 'grid' not in df_results.index.names:
+                        df_results = pd.concat({1: df_results}, names=['grid'])
+                    df_results = resample_output(df_results, freq=resample_freq)
+                except (KeyError, ValueError) as e:
+                    # If resampling fails due to missing variables, do simple pandas resampling
+                    warnings.warn(f"SuPy resampling failed, using simple resampling: {e}")
+                    # Handle multi-level index for resampling
+                    if isinstance(df_results.index, pd.MultiIndex):
+                        # Use the datetime level for resampling
+                        datetime_level = 'datetime' if 'datetime' in df_results.index.names else -1
+                        df_results = df_results.groupby(level=0).resample(resample_freq, level=datetime_level).mean()
+                    else:
+                        df_results = df_results.resample(resample_freq).mean()
         
         return df_results
     
