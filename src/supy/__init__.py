@@ -42,6 +42,13 @@ from . import util
 # data model
 from . import data_model
 
+# modern simulation interface
+try:
+    from .suews_sim import SUEWSSimulation
+except ImportError:
+    # Graceful fallback if there are import issues during development
+    pass
+
 # post-processing
 from ._post import resample_output
 

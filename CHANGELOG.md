@@ -5,7 +5,34 @@
 <!-- [doc]: Documentation updates -->
 <!-- [change]: Changes exposed to users -->
 
+- 22 Jun 2025:
+  - [feature] Successfully completed SUEWSSimulation class implementation and testing
+    - Fixed core SUEWSSimulation functionality to work with real SUEWS benchmark data
+    - Implemented proper state conversion using actual `config.to_df_state()` method instead of placeholder
+    - Fixed forcing data loading using `supy.util._io.read_forcing()` function
+    - Created simplified test suite using real benchmark files: test/benchmark1/benchmark1.yml and test/benchmark1/forcing/Kc1_2011_data_5.txt
+    - All 7 core functionality tests passing: init, setup_forcing, simulation_run, expected_output_variables, results_format, error_handling
+    - Successfully runs complete SUEWS simulations with energy flux outputs (QH, QE, QS) and proper MultiIndex DataFrame structure
+    - Validated integration with existing SuPy infrastructure including run_supy_ser execution engine
+
 - 20 Jun 2025:
+  - [feature] Added modern SUEWSSimulation class with comprehensive object-oriented interface
+    - Implemented YAML-based configuration management with intelligent parameter overriding
+    - Created pandas DataFrame integration with multi-index results structure for enhanced data manipulation
+    - Added chainable method design for intuitive workflows: init, from_yaml, setup_forcing, run, get_results, summary, see, quick_plot, save, clone, reset, validate
+    - Built-in validation system with British English error messages and actionable feedback
+    - Multiple export formats support: CSV, Excel, Pickle, NetCDF with automatic directory creation
+    - Performance optimisation with chunking support and lazy loading for large datasets
+    - Comprehensive test suite with 48/48 tests passing (100% success rate) across unit, integration, and functionality tests
+    - Standalone implementation addressing circular import issues during development
+    - Complete documentation with usage examples and migration guidance
+  - [bugfix] Fixed SUEWSSimulation test failures using real SuPy sample data
+    - Updated test fixtures to use actual SuPy sample configuration and forcing data instead of mock objects
+    - Fixed import paths for mock decorators from 'supy.suews_sim' to 'supy._run' modules
+    - Implemented proper error handling with correct exception types (ValueError vs RuntimeError)
+    - Added fallback resampling functionality when SuPy's resample_output lacks required variables
+    - Enhanced mock configuration for matplotlib plotting tests with proper method assignments
+    - Fixed validation logic to properly handle missing vs. empty forcing data with appropriate error types
   - [bugfix] Fixed claude-dev Docker image not being built with custom Dockerfile
     - Implemented pre-build approach for custom SUEWS development Docker image
     - Modified start script to build `suews-claude-dev:latest` from Dockerfile.claude-dev

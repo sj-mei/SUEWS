@@ -33,7 +33,7 @@ class SUEWSConfig(BaseModel):
     sites: List[Site] = Field(
         default=[Site()],
         description="List of sites to simulate",
-        min_items=1,
+        min_length=1,
     )
 
     class Config:
