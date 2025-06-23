@@ -5,6 +5,12 @@ Python API Reference
 
 The Python interface (SuPy) provides the complete API for SUEWS with comprehensive functionality for urban climate modelling, data analysis, and integration with the scientific Python ecosystem.
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   api/simulation
+
 Core Functions
 ~~~~~~~~~~~~~~
 
@@ -19,6 +25,18 @@ Core Functions
     save_supy
     load_SampleData
     show_version
+
+Object-Oriented Interface
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: supy
+
+.. autosummary::
+    :toctree: _autosummary
+
+    SUEWSSimulation
+
+The :class:`SUEWSSimulation` class provides a modern, object-oriented interface for running SUEWS simulations. For detailed documentation and examples, see :doc:`api/simulation`.
 
 Utility Functions
 ~~~~~~~~~~~~~~~~~

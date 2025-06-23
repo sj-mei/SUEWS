@@ -267,29 +267,45 @@ This comprehensive notebook covers:
 Using Your Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Once you have a YAML configuration file:
+Once you have a YAML configuration file, you can use either the traditional functional approach or the new object-oriented interface:
+
+**Object-Oriented Approach (New):**
+
+.. code-block:: python
+
+   from supy import SUEWSSimulation
+   
+   # Create simulation from YAML configuration
+   sim = SUEWSSimulation.from_yaml("path/to/your/config_suews.yml")
+   
+   # Setup forcing data
+   sim.setup_forcing("path/to/forcing_data.txt")
+   
+   # Run simulation
+   sim.run()
+   
+   # Access results
+   results = sim.get_results()
+   print(sim.summary())
+   
+   # Save outputs
+   sim.save("outputs.csv")
+
+**Traditional Functional Approach:**
 
 .. code-block:: python
 
    import supy as sp
    
-   # Note: YAML configuration loading functionality is in development
+   # Note: Direct YAML loading in functional API is in development
    # For now, use sample data or legacy table-based inputs
-   # Future API will include:
-   # config = sp.load_config("path/to/your/config_suews.yml")
-   # df_state_init, df_forcing = sp.prepare_inputs(config)
-   
-   # Current approach for custom configurations:
    df_state_init, df_forcing = sp.load_sample_data()  # Start with sample data
    # Then modify parameters as needed using pandas operations
    
    # Run simulation for your site
    df_output, df_state_final = sp.run_supy(df_forcing, df_state_init)
-   
-   # Site-specific analysis
-   print(f"Simulation for {config['sites'][0]['name']}")
-   print(f"Location: {config['sites'][0]['properties']['lat']['value']:.2f}°N, "
-         f"{config['sites'][0]['properties']['lng']['value']:.2f}°E")
+
+For detailed examples of the new SUEWSSimulation class, see :doc:`/sub-tutorials/suews-simulation-tutorial`.
 
 Data Requirements and Quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
