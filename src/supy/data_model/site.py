@@ -792,12 +792,12 @@ class SnowParams(BaseModel):
         description="Maximum snow density",
         unit="kg m^-3"
     )
-    snowlimbldg: RefValue = Field(
+    snowlimbldg: FlexibleRefValue[float] = Field(
         default=0.1,
         description="Maximum snow depth limit on buildings",
         unit="m"
     )
-    snowlimpaved: RefValue = Field(
+    snowlimpaved: FlexibleRefValue[float] = Field(
         default=0.1,
         description="Maximum snow depth limit on paved surfaces",
         unit="m"
