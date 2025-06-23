@@ -7,7 +7,7 @@ import yaml
 import copy
 
 # Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from supy.data_model.core import SUEWSConfig
 from supy.data_model.type import RefValue
@@ -41,7 +41,16 @@ def test_flexible_refvalue_with_cleaning():
     print("=" * 70)
     
     # Load original sample config
-    sample_config_path = Path(__file__).parent.parent.parent / "src/supy/sample_run/sample_config.yml"
+    test_dir = Path(__file__).parent
+    repo_root = test_dir.parent
+    sample_config_path = repo_root / "src/supy/sample_run/sample_config.yml"
+    
+    if not sample_config_path.exists():
+        print(f"\nError: Sample config not found at: {sample_config_path}")
+        print(f"Current working directory: {Path.cwd()}")
+        print(f"Test directory: {test_dir}")
+        print(f"Repository root: {repo_root}")
+        return False
     
     print(f"\n1. Loading original sample config from: {sample_config_path}")
     with open(sample_config_path, 'r') as f:
