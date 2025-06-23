@@ -20,6 +20,18 @@ Core Functions
     load_SampleData
     show_version
 
+Object-Oriented Interface
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: supy
+
+.. autosummary::
+    :toctree: _autosummary
+
+    SUEWSSimulation
+
+The :class:`SUEWSSimulation` class provides a modern, object-oriented interface for running SUEWS simulations. For detailed documentation and examples, see :doc:`api-simulation`.
+
 Utility Functions
 ~~~~~~~~~~~~~~~~~
 
