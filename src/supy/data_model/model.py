@@ -1,7 +1,7 @@
 import yaml
 from typing import Optional
 import numpy as np
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import ConfigDict, BaseModel, Field, field_validator, model_validator
 import pandas as pd
 from enum import Enum
 
@@ -327,72 +327,69 @@ class ModelPhysics(BaseModel):
     netradiationmethod: FlexibleRefValue(NetRadiationMethod) = Field(
         default=NetRadiationMethod.LDOWN_AIR,
         description="Method used to calculate net all-wave radiation (Q*). Options include observed values, modelled with various longwave parameterisations, and SPARTACUS-Surface integration",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     emissionsmethod: FlexibleRefValue(EmissionsMethod) = Field(
         default=EmissionsMethod.J11,
         description="Method used to calculate anthropogenic heat flux (QF) and CO2 emissions. Options include observed values, Loridan et al. (2011) SAHP, Järvi et al. (2011) SAHP_2, and Järvi et al. (2019) methods",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     storageheatmethod: FlexibleRefValue(StorageHeatMethod) = Field(
         default=StorageHeatMethod.OHM_WITHOUT_QF,
         description="Method used to calculate storage heat flux (ΔQS). Options include observed values, Objective Hysteresis Model (OHM), AnOHM, Element Surface Temperature Method (ESTM), and extended ESTM",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     ohmincqf: FlexibleRefValue(OhmIncQf) = Field(
         default=OhmIncQf.EXCLUDE,
         description="Whether to include anthropogenic heat flux (QF) in OHM storage heat calculations. 0: use Q* only, 1: use Q*+QF",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     roughlenmommethod: FlexibleRefValue(RoughnessMethod) = Field(
         default=RoughnessMethod.VARIABLE,
         description="Method used to calculate momentum roughness length (z0). Options include fixed values, variable based on vegetation, MacDonald (1998), and Grimmond & Oke (1999) methods",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     roughlenheatmethod: FlexibleRefValue(RoughnessMethod) = Field(
         default=RoughnessMethod.VARIABLE,
         description="Method used to calculate heat roughness length (z0h). Options include fixed values, variable based on vegetation, MacDonald (1998), and Grimmond & Oke (1999) methods",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     stabilitymethod: FlexibleRefValue(StabilityMethod) = Field(
         default=StabilityMethod.CAMPBELL_NORMAN,
         description="Method used for atmospheric stability correction functions. Options include Dyer (1974)/Högström (1988), Campbell & Norman (1998), and Businger et al. (1971) formulations",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     smdmethod: FlexibleRefValue(SMDMethod) = Field(
         default=SMDMethod.MODELLED,
         description="Method used to calculate soil moisture deficit (SMD). Options include modelled using parameters, or observed volumetric/gravimetric soil moisture from forcing file",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     waterusemethod: FlexibleRefValue(WaterUseMethod) = Field(
         default=WaterUseMethod.MODELLED,
-        description="Method used to calculate external water use for irrigation. Options include modelled using parameters or observed values from forcing file",
-        unit="dimensionless"
+        description="Method used to calculate external water use for irrigation. Options include modelled using parameters or observed values from forcing file", json_schema_extra={"unit": "dimensionless"}
     )
     diagmethod: FlexibleRefValue(DiagMethod) = Field(
         default=DiagMethod.VARIABLE,
-        description="Method used for calculating near-surface diagnostics and profiles of temperature, humidity, and wind speed. Options include MOST, RST, or variable selection based on surface characteristics",
-        unit="dimensionless"
+        description="Method used for calculating near-surface diagnostics and profiles of temperature, humidity, and wind speed. Options include MOST, RST, or variable selection based on surface characteristics", json_schema_extra={"unit": "dimensionless"}
     )
     faimethod: FlexibleRefValue(FAIMethod) = Field(
         default=FAIMethod.FIXED,
         description="Method used to calculate frontal area index (FAI). Options include fixed values or variable based on vegetation state",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     localclimatemethod: FlexibleRefValue(LocalClimateMethod) = Field(
         default=LocalClimateMethod.NONE,
         description="Method used for accounting for local climate effects on surface processes (e.g. near-surface temperature impacts on phenology). Options include none, basic, or detailed approaches",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
     snowuse: FlexibleRefValue(SnowUse) = Field(
         default=SnowUse.DISABLED,
-        description="Whether to include snow calculations in the model. 0: snow calculations disabled, 1: snow calculations enabled",
-        unit="dimensionless"
+        description="Whether to include snow calculations in the model. 0: snow calculations disabled, 1: snow calculations enabled", json_schema_extra={"unit": "dimensionless"}
     )
     stebbsmethod: FlexibleRefValue(StebbsMethod) = Field(
         default=StebbsMethod.NONE,
         description="Method used for STEBBS (Surface Temperature Energy Balance Based Scheme) calculations. Options include none, default parameters, or user-provided parameters",
-        unit="dimensionless"
+        json_schema_extra={"unit": "dimensionless"}
     )
 
     ref: Optional[Reference] = None

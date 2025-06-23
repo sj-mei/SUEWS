@@ -1,24 +1,21 @@
 from typing import Optional
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 from .type import RefValue, Reference, FlexibleRefValue
 from .type import init_df_state
 
 
 class OHMCoefficients(BaseModel):
     a1: FlexibleRefValue(float) = Field(
-        description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation",
-        unit="dimensionless",
+        description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation", json_schema_extra={"unit": "dimensionless"},
         default=0.0,
     )
     a2: FlexibleRefValue(float) = Field(
-        description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation",
-        unit="h",
+        description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation", json_schema_extra={"unit": "h"},
         default=0.0,
     )
     a3: FlexibleRefValue(float) = Field(
-        description="OHM coefficient a3: constant offset term for storage heat flux",
-        unit="W m^-2",
+        description="OHM coefficient a3: constant offset term for storage heat flux", json_schema_extra={"unit": "W m^-2"},
         default=0.0,
     )
 

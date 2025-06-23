@@ -1,6 +1,6 @@
 from typing import Optional, Union, List, Literal, Type
 import pandas as pd
-from pydantic import BaseModel, Field, field_validator, model_validator, PrivateAttr
+from pydantic import ConfigDict, BaseModel, Field, field_validator, model_validator, PrivateAttr
 
 from .type import RefValue, Reference, FlexibleRefValue, init_df_state
 from .site import SurfaceType
@@ -13,62 +13,53 @@ class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
     state: FlexibleRefValue(float) = Field(
-        description="Initial water state of the surface",
-        unit="mm",
+        description="Initial water state of the surface", json_schema_extra={"unit": "mm"},
         default=0.0,
         ge=0,
     )  # Default set to 0.0 means dry surface.
     soilstore: FlexibleRefValue(float) = Field(
         description="Initial soil store (essential for QE)",
-        unit="mm",
+        json_schema_extra={"unit": "mm"},
         default=150.0,
         ge=10,
     )  # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
     snowfrac: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow fraction",
-        unit="dimensionless",
+        description="Snow fraction", json_schema_extra={"unit": "dimensionless"},
         default=0.0,
         ge=0,
         le=1,
     )  # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow pack",
-        unit="mm",
+        description="Snow pack", json_schema_extra={"unit": "mm"},
         default=0.0,
         ge=0,
     )
     icefrac: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Ice fraction",
-        unit="dimensionless",
+        description="Ice fraction", json_schema_extra={"unit": "dimensionless"},
         default=0.0,
         ge=0,
         le=1,
     )
     snowwater: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow water",
-        unit="mm",
+        description="Snow water", json_schema_extra={"unit": "mm"},
         default=0.0,
         ge=0,
     )
     snowdens: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow density",
-        unit="kg m^-3",
+        description="Snow density", json_schema_extra={"unit": "kg m^-3"},
         default=0.0,
         ge=0,
     )
     temperature: FlexibleRefValue(List[float]) = Field(
-        description="Initial temperature for each thermal layer",
-        unit="degC",
+        description="Initial temperature for each thermal layer", json_schema_extra={"unit": "degC"},
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
     )  # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
     tsfc: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Initial exterior surface temperature",
-        unit="degC",
+        description="Initial exterior surface temperature", json_schema_extra={"unit": "degC"},
         default=15.0,
     )
     tin: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Initial interior surface temperature",
-        unit="degC",
+        description="Initial interior surface temperature", json_schema_extra={"unit": "degC"},
         default=20.0,
     )  # We need to know which model is using this.
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
@@ -229,20 +220,17 @@ class SurfaceInitialState(BaseModel):
 
 class WaterUse(BaseModel):
     wu_total: FlexibleRefValue(float) = Field(
-        description="Total water use",
-        unit="mm",
+        description="Total water use", json_schema_extra={"unit": "mm"},
         default=0.0,
         ge=0,
     )  # Default set to 0.0 means no irrigation.
     wu_auto: FlexibleRefValue(float) = Field(
-        description="Automatic water use",
-        unit="mm",
+        description="Automatic water use", json_schema_extra={"unit": "mm"},
         default=0.0,
         ge=0,
     )
     wu_manual: FlexibleRefValue(float) = Field(
-        description="Manual water use",
-        unit="mm",
+        description="Manual water use", json_schema_extra={"unit": "mm"},
         default=0.0,
         ge=0,
     )
@@ -299,23 +287,19 @@ class InitialStateVeg(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
     alb_id: FlexibleRefValue(float) = Field(
-        description="Albedo at the start of the model run.",
-        unit="dimensionless",
+        description="Albedo at the start of the model run.", json_schema_extra={"unit": "dimensionless"},
         default=0.25,
     )
     lai_id: FlexibleRefValue(float) = Field(
-        description="Leaf area index at the start of the model run.",
-        unit="m^2 m^-2",
+        description="Leaf area index at the start of the model run.", json_schema_extra={"unit": "m^2 m^-2"},
         default=1.0,
     )
     gdd_id: FlexibleRefValue(float) = Field(
-        description="Growing degree days at the start of the model run",
-        unit="degC d",
+        description="Growing degree days at the start of the model run", json_schema_extra={"unit": "degC d"},
         default=0,
     )  # We need to check this and give info for setting values.
     sdd_id: FlexibleRefValue(float) = Field(
-        description="Senescence degree days at the start of the model run",
-        unit="degC d",
+        description="Senescence degree days at the start of the model run", json_schema_extra={"unit": "degC d"},
         default=0,
     )  # This need to be consistent with GDD.
     wu: WaterUse = Field(default_factory=WaterUse)
@@ -453,15 +437,13 @@ class InitialStateDectr(InitialStateVeg):
     """Initial state parameters for deciduous trees"""
 
     porosity_id: FlexibleRefValue(float) = Field(
-        description="Porosity for deciduous trees at the start of the model run",
-        unit="dimensionless",
+        description="Porosity for deciduous trees at the start of the model run", json_schema_extra={"unit": "dimensionless"},
         default=0.2,
         ge=0,
         le=1,
     )
     decidcap_id: FlexibleRefValue(float) = Field(
-        description="Deciduous capacity for deciduous trees at the start of the model run",
-        unit="mm",
+        description="Deciduous capacity for deciduous trees at the start of the model run", json_schema_extra={"unit": "mm"},
         default=0.3,
         ge=0,
     )
@@ -586,8 +568,7 @@ class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
     snowalb: FlexibleRefValue(float) = Field(
-        description="Snow albedo at the start of the model run",
-        unit="dimensionless",
+        description="Snow albedo at the start of the model run", json_schema_extra={"unit": "dimensionless"},
         default=0.5,
         ge=0,
         le=1,

@@ -158,9 +158,7 @@ def test_flexible_refvalue_with_cleaning():
     
     print("\n" + "=" * 70)
     
-    return all_match
-
-
+    assert all_match, "Some tests failed"
 def count_value_keys(data, count=0):
     """Count the number of 'value' keys that would be removed"""
     if isinstance(data, dict):

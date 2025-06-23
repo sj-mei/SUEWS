@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Union, Literal, Tuple, Type, Generic, TypeVar
 from pydantic import (
+    ConfigDict,
     BaseModel,
     Field,
     model_validator,
@@ -36,8 +37,7 @@ class SUEWSConfig(BaseModel):
         min_length=1,
     )
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
     # Sort the filtered columns numerically
     @staticmethod

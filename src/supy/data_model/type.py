@@ -1,5 +1,5 @@
 from typing import TypeVar, Optional, Generic, Union, Any
-from pydantic import BaseModel, Field, model_validator
+from pydantic import ConfigDict, BaseModel, Field, model_validator
 import numpy as np
 import pandas as pd
 from enum import Enum
@@ -44,15 +44,13 @@ class RefValue(BaseModel, Generic[T]):
         # Physical quantity with units
         temperature: RefValue[float] = Field(
             default=RefValue(15.0,
-            description="Air temperature",
-            unit="degC"
+            description="Air temperature", json_schema_extra={"unit": "degC"}
         )
 
         # Dimensionless ratio
         albedo: RefValue[float] = Field(
             default=RefValue(0.2,
-            description="Surface albedo",
-            unit="dimensionless"
+            description="Surface albedo", json_schema_extra={"unit": "dimensionless"}
         )
 
         # Configuration parameter (no unit needed)
