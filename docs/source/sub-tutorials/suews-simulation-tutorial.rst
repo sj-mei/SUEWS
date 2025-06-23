@@ -280,7 +280,7 @@ Common Issues
 Next Steps
 ----------
 
-- Explore the :doc:`/api-simulation` for detailed method documentation
+- Explore the :doc:`/api/simulation` for detailed method documentation
 - See :doc:`/inputs/yaml/index` for YAML configuration options
 - Review :doc:`/data-structures/df_output` for output variable descriptions
 - Try the :doc:`/sub-tutorials/tutorials` for more examples

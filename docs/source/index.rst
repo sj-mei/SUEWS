@@ -129,7 +129,6 @@ How to support SUEWS?
    inputs/index
    output_files/output_files
    api
-   api-simulation
    data-structures/supy-io
    integration/index
    troubleshooting
