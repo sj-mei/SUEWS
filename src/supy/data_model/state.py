@@ -12,61 +12,61 @@ from .site import SurfaceType
 class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
-    state: FlexibleRefValue[float] = Field(
+    state: FlexibleRefValue(float) = Field(
         description="Initial water state of the surface",
         unit="mm",
         default=0.0,
         ge=0,
     )  # Default set to 0.0 means dry surface.
-    soilstore: FlexibleRefValue[float] = Field(
+    soilstore: FlexibleRefValue(float) = Field(
         description="Initial soil store (essential for QE)",
         unit="mm",
         default=150.0,
         ge=10,
     )  # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
-    snowfrac: Optional[Union[FlexibleRefValue[float], None]] = Field(
+    snowfrac: Optional[Union[FlexibleRefValue(float), None]] = Field(
         description="Snow fraction",
         unit="dimensionless",
         default=0.0,
         ge=0,
         le=1,
     )  # Default set to 0.0 means no snow on the ground.
-    snowpack: Optional[Union[FlexibleRefValue[float], None]] = Field(
+    snowpack: Optional[Union[FlexibleRefValue(float), None]] = Field(
         description="Snow pack",
         unit="mm",
         default=0.0,
         ge=0,
     )
-    icefrac: Optional[Union[FlexibleRefValue[float], None]] = Field(
+    icefrac: Optional[Union[FlexibleRefValue(float), None]] = Field(
         description="Ice fraction",
         unit="dimensionless",
         default=0.0,
         ge=0,
         le=1,
     )
-    snowwater: Optional[Union[FlexibleRefValue[float], None]] = Field(
+    snowwater: Optional[Union[FlexibleRefValue(float), None]] = Field(
         description="Snow water",
         unit="mm",
         default=0.0,
         ge=0,
     )
-    snowdens: Optional[Union[FlexibleRefValue[float], None]] = Field(
+    snowdens: Optional[Union[FlexibleRefValue(float), None]] = Field(
         description="Snow density",
         unit="kg m^-3",
         default=0.0,
         ge=0,
     )
-    temperature: FlexibleRefValue[List[float]] = Field(
+    temperature: FlexibleRefValue(List[float]) = Field(
         description="Initial temperature for each thermal layer",
         unit="degC",
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
     )  # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
-    tsfc: Optional[Union[FlexibleRefValue[float], None]] = Field(
+    tsfc: Optional[Union[FlexibleRefValue(float), None]] = Field(
         description="Initial exterior surface temperature",
         unit="degC",
         default=15.0,
     )
-    tin: Optional[Union[FlexibleRefValue[float], None]] = Field(
+    tin: Optional[Union[FlexibleRefValue(float), None]] = Field(
         description="Initial interior surface temperature",
         unit="degC",
         default=20.0,
@@ -80,7 +80,7 @@ class SurfaceInitialState(BaseModel):
         if isinstance(v, dict):
             value = v["value"]
         else:
-            value = v.value
+            value = v.value if isinstance(v, RefValue) else v
         if len(value) != 5:
             raise ValueError("temperature must have exactly 5 items")
         return v
@@ -122,29 +122,30 @@ class SurfaceInitialState(BaseModel):
             idx = vert_idx
             str_type = "roof" if is_roof else "wall"
         # Set basic state parameters
-        df_state[(f"state_{str_type}", f"({idx},)")] = self.state.value
-        df_state[(f"soilstore_{str_type}", f"({idx},)")] = self.soilstore.value
+        df_state[(f"state_{str_type}", f"({idx},)")] = self.state.value if isinstance(self.state, RefValue) else self.state
+        df_state[(f"soilstore_{str_type}", f"({idx},)")] = self.soilstore.value if isinstance(self.soilstore, RefValue) else self.soilstore
 
         # Set snow/ice parameters if present
         if self.snowfrac is not None:
-            df_state[(f"snowfrac", f"({idx},)")] = self.snowfrac.value
+            df_state[(f"snowfrac", f"({idx},)")] = self.snowfrac.value if isinstance(self.snowfrac, RefValue) else self.snowfrac
         if self.snowpack is not None:
-            df_state[(f"snowpack", f"({idx},)")] = self.snowpack.value
+            df_state[(f"snowpack", f"({idx},)")] = self.snowpack.value if isinstance(self.snowpack, RefValue) else self.snowpack
         if self.icefrac is not None:
-            df_state[(f"icefrac", f"({idx},)")] = self.icefrac.value
+            df_state[(f"icefrac", f"({idx},)")] = self.icefrac.value if isinstance(self.icefrac, RefValue) else self.icefrac
         if self.snowwater is not None:
-            df_state[(f"snowwater", f"({idx},)")] = self.snowwater.value
+            df_state[(f"snowwater", f"({idx},)")] = self.snowwater.value if isinstance(self.snowwater, RefValue) else self.snowwater
         if self.snowdens is not None:
-            df_state[(f"snowdens", f"({idx},)")] = self.snowdens.value
+            df_state[(f"snowdens", f"({idx},)")] = self.snowdens.value if isinstance(self.snowdens, RefValue) else self.snowdens
 
         # Set temperature parameters
-        for i, temp in enumerate(self.temperature.value):
+        temp_values = self.temperature.value if isinstance(self.temperature, RefValue) else self.temperature
+        for i, temp in enumerate(temp_values):
             df_state[(f"temp_{str_type}", f"({idx}, {i})")] = temp
 
         if self.tsfc is not None:
-            df_state[(f"tsfc_{str_type}", f"({idx},)")] = self.tsfc.value
+            df_state[(f"tsfc_{str_type}", f"({idx},)")] = self.tsfc.value if isinstance(self.tsfc, RefValue) else self.tsfc
         if self.tin is not None:
-            df_state[(f"tin_{str_type}", f"({idx},)")] = self.tin.value
+            df_state[(f"tin_{str_type}", f"({idx},)")] = self.tin.value if isinstance(self.tin, RefValue) else self.tin
 
         return df_state
 
@@ -165,28 +166,28 @@ class SurfaceInitialState(BaseModel):
             SurfaceInitialState: Instance of SurfaceInitialState.
         """
         # Base surface state parameters
-        state = FlexibleRefValue[float](
+        state = RefValue(
             df.loc[grid_id, (f"state_{str_type}", f"({surf_idx},)")]
         )
-        soilstore = FlexibleRefValue[float](
+        soilstore = RefValue(
             df.loc[grid_id, (f"soilstore_{str_type}", f"({surf_idx},)")]
         )
 
         # Snow/ice parameters
         if str_type not in ["roof", "wall"]:
-            snowfrac = FlexibleRefValue[float](
+            snowfrac = RefValue(
                 df.loc[grid_id, (f"snowfrac", f"({surf_idx},)")]
             )
-            snowpack = FlexibleRefValue[float](
+            snowpack = RefValue(
                 df.loc[grid_id, (f"snowpack", f"({surf_idx},)")]
             )
-            icefrac = FlexibleRefValue[float](
+            icefrac = RefValue(
                 df.loc[grid_id, (f"icefrac", f"({surf_idx},)")]
             )
-            snowwater = FlexibleRefValue[float](
+            snowwater = RefValue(
                 df.loc[grid_id, (f"snowwater", f"({surf_idx},)")]
             )
-            snowdens = FlexibleRefValue[float](
+            snowdens = RefValue(
                 df.loc[grid_id, (f"snowdens", f"({surf_idx},)")]
             )
         else:
@@ -197,7 +198,7 @@ class SurfaceInitialState(BaseModel):
             snowdens = None
 
         # Temperature parameters
-        temperature = FlexibleRefValue[List[float]](
+        temperature = RefValue(
             [
                 df.loc[grid_id, (f"temp_{str_type}", f"({surf_idx}, {i})")]
                 for i in range(5)
@@ -205,10 +206,10 @@ class SurfaceInitialState(BaseModel):
         )
 
         # Exterior and interior surface temperature
-        tsfc = FlexibleRefValue[float](
+        tsfc = RefValue(
             df.loc[grid_id, (f"tsfc_{str_type}", f"({surf_idx},)")]
         )
-        tin = FlexibleRefValue[float](
+        tin = RefValue(
             df.loc[grid_id, (f"tin_{str_type}", f"({surf_idx},)")]
         )
 
@@ -227,19 +228,19 @@ class SurfaceInitialState(BaseModel):
 
 
 class WaterUse(BaseModel):
-    wu_total: FlexibleRefValue[float] = Field(
+    wu_total: FlexibleRefValue(float) = Field(
         description="Total water use",
         unit="mm",
         default=0.0,
         ge=0,
     )  # Default set to 0.0 means no irrigation.
-    wu_auto: FlexibleRefValue[float] = Field(
+    wu_auto: FlexibleRefValue(float) = Field(
         description="Automatic water use",
         unit="mm",
         default=0.0,
         ge=0,
     )
-    wu_manual: FlexibleRefValue[float] = Field(
+    wu_manual: FlexibleRefValue(float) = Field(
         description="Manual water use",
         unit="mm",
         default=0.0,
@@ -252,13 +253,13 @@ class WaterUse(BaseModel):
         """Convert water use to DataFrame state format."""
         df_state = init_df_state(grid_id)
         df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 0},)")] = (
-            self.wu_total.value
+            self.wu_total.value if isinstance(self.wu_total, RefValue) else self.wu_total
         )
         df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 1},)")] = (
-            self.wu_auto.value
+            self.wu_auto.value if isinstance(self.wu_auto, RefValue) else self.wu_auto
         )
         df_state.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")] = (
-            self.wu_manual.value
+            self.wu_manual.value if isinstance(self.wu_manual, RefValue) else self.wu_manual
         )
         return df_state
 
@@ -280,9 +281,9 @@ class WaterUse(BaseModel):
         wu_manual = df.loc[grid_id, ("wuday_id", f"({veg_idx * 3 + 2},)")].item()
 
         return cls(
-            wu_total=FlexibleRefValue[float](wu_total),
-            wu_auto=FlexibleRefValue[float](wu_auto),
-            wu_manual=FlexibleRefValue[float](wu_manual),
+            wu_total=RefValue(wu_total),
+            wu_auto=RefValue(wu_auto),
+            wu_manual=RefValue(wu_manual),
         )
 
 
@@ -297,22 +298,22 @@ class InitialStateBldgs(SurfaceInitialState):
 class InitialStateVeg(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
-    alb_id: FlexibleRefValue[float] = Field(
+    alb_id: FlexibleRefValue(float) = Field(
         description="Albedo at the start of the model run.",
         unit="dimensionless",
         default=0.25,
     )
-    lai_id: FlexibleRefValue[float] = Field(
+    lai_id: FlexibleRefValue(float) = Field(
         description="Leaf area index at the start of the model run.",
         unit="m^2 m^-2",
         default=1.0,
     )
-    gdd_id: FlexibleRefValue[float] = Field(
+    gdd_id: FlexibleRefValue(float) = Field(
         description="Growing degree days at the start of the model run",
         unit="degC d",
         default=0,
     )  # We need to check this and give info for setting values.
-    sdd_id: FlexibleRefValue[float] = Field(
+    sdd_id: FlexibleRefValue(float) = Field(
         description="Senescence degree days at the start of the model run",
         unit="degC d",
         default=0,
@@ -356,11 +357,11 @@ class InitialStateVeg(SurfaceInitialState):
 
         # Add vegetated surface specific parameters
         # alb is universal so use surf_idx
-        df_state[("alb", f"({surf_idx},)")] = self.alb_id.value
+        df_state[("alb", f"({surf_idx},)")] = self.alb_id.value if isinstance(self.alb_id, RefValue) else self.alb_id
         # others are aligned with veg_idx
-        df_state[("lai_id", f"({veg_idx},)")] = self.lai_id.value
-        df_state[("gdd_id", f"({veg_idx},)")] = self.gdd_id.value
-        df_state[("sdd_id", f"({veg_idx},)")] = self.sdd_id.value
+        df_state[("lai_id", f"({veg_idx},)")] = self.lai_id.value if isinstance(self.lai_id, RefValue) else self.lai_id
+        df_state[("gdd_id", f"({veg_idx},)")] = self.gdd_id.value if isinstance(self.gdd_id, RefValue) else self.gdd_id
+        df_state[("sdd_id", f"({veg_idx},)")] = self.sdd_id.value if isinstance(self.sdd_id, RefValue) else self.sdd_id
 
         # Add water use parameters
         df_wu = self.wu.to_df_state(veg_idx, grid_id)
@@ -391,10 +392,10 @@ class InitialStateVeg(SurfaceInitialState):
         sdd_id = df.loc[grid_id, sdd_key]
 
         # Convert to RefValue
-        alb_id = FlexibleRefValue[float](alb_id)
-        lai_id = FlexibleRefValue[float](lai_id)
-        gdd_id = FlexibleRefValue[float](gdd_id)
-        sdd_id = FlexibleRefValue[float](sdd_id)
+        alb_id = RefValue(alb_id)
+        lai_id = RefValue(lai_id)
+        gdd_id = RefValue(gdd_id)
+        sdd_id = RefValue(sdd_id)
 
         # Reconstruct WaterUse instance
         veg_idx = surf_idx - 2
@@ -416,7 +417,7 @@ class InitialStateEvetr(InitialStateVeg):
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert evergreen tree initial state to DataFrame state format."""
         df_state = super().to_df_state(grid_id)
-        df_state[("albevetr_id", "0")] = self.alb_id.value
+        df_state[("albevetr_id", "0")] = self.alb_id.value if isinstance(self.alb_id, RefValue) else self.alb_id
         return df_state
 
     @classmethod
@@ -451,14 +452,14 @@ class InitialStateEvetr(InitialStateVeg):
 class InitialStateDectr(InitialStateVeg):
     """Initial state parameters for deciduous trees"""
 
-    porosity_id: FlexibleRefValue[float] = Field(
+    porosity_id: FlexibleRefValue(float) = Field(
         description="Porosity for deciduous trees at the start of the model run",
         unit="dimensionless",
         default=0.2,
         ge=0,
         le=1,
     )
-    decidcap_id: FlexibleRefValue[float] = Field(
+    decidcap_id: FlexibleRefValue(float) = Field(
         description="Deciduous capacity for deciduous trees at the start of the model run",
         unit="mm",
         default=0.3,
@@ -492,9 +493,9 @@ class InitialStateDectr(InitialStateVeg):
         df_state = super().to_df_state(grid_id)
 
         # Add deciduous tree specific parameters
-        df_state[("porosity_id", "0")] = self.porosity_id.value
-        df_state[("decidcap_id", "0")] = self.decidcap_id.value
-        df_state[("albdectr_id", "0")] = self.alb_id.value
+        df_state[("porosity_id", "0")] = self.porosity_id.value if isinstance(self.porosity_id, RefValue) else self.porosity_id
+        df_state[("decidcap_id", "0")] = self.decidcap_id.value if isinstance(self.decidcap_id, RefValue) else self.decidcap_id
+        df_state[("albdectr_id", "0")] = self.alb_id.value if isinstance(self.alb_id, RefValue) else self.alb_id
 
         return df_state
 
@@ -522,8 +523,8 @@ class InitialStateDectr(InitialStateVeg):
         alb_id = df.loc[grid_id, ("albdectr_id", "0")]
 
         # Convert to RefValue
-        porosity_id = FlexibleRefValue[float](porosity_id)
-        decidcap_id = FlexibleRefValue[float](decidcap_id)
+        porosity_id = RefValue(porosity_id)
+        decidcap_id = RefValue(decidcap_id)
         base_instance_dict = base_instance.model_dump()
         base_instance_dict["alb_id"] = {"value": alb_id}  # Update alb_id explicitly
 
@@ -541,7 +542,7 @@ class InitialStateGrass(InitialStateVeg):
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert grass initial state to DataFrame state format."""
         df_state = super().to_df_state(grid_id)
-        df_state[("albgrass_id", "0")] = self.alb_id.value
+        df_state[("albgrass_id", "0")] = self.alb_id.value if isinstance(self.alb_id, RefValue) else self.alb_id
         return df_state
 
     @classmethod
@@ -584,7 +585,7 @@ class InitialStateWater(SurfaceInitialState):
 class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
-    snowalb: FlexibleRefValue[float] = Field(
+    snowalb: FlexibleRefValue(float) = Field(
         description="Snow albedo at the start of the model run",
         unit="dimensionless",
         default=0.5,
@@ -635,7 +636,7 @@ class InitialStates(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Add snowalb
-        df_state[("snowalb", "0")] = self.snowalb.value
+        df_state[("snowalb", "0")] = self.snowalb.value if isinstance(self.snowalb, RefValue) else self.snowalb
 
         # Add surface states
         surfaces = {
@@ -688,7 +689,7 @@ class InitialStates(BaseModel):
     @classmethod
     def from_df_state(cls, df: pd.DataFrame, grid_id: int) -> "InitialStates":
         snowalb = df.loc[grid_id, ("snowalb", "0")]
-        snowalb = FlexibleRefValue[float](snowalb)
+        snowalb = RefValue(snowalb)
 
         surface_types = {
             "paved": InitialStatePaved,

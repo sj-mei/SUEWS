@@ -23,76 +23,76 @@ from typing import List, Literal, Union, Dict, Tuple
 
 
 class VegetationParams(BaseModel):
-    porosity_id: FlexibleRefValue[int] = Field(description="Initial porosity for deciduous trees", unit="dimensionless")
-    gdd_id: FlexibleRefValue[int] = Field(description="Growing degree days ID", unit="degC d")
-    sdd_id: FlexibleRefValue[int] = Field(description="Senescence degree days ID", unit="degC d")
-    lai: Dict[str, Union[FlexibleRefValue[float], List[FlexibleRefValue[float]]]] = Field(
+    porosity_id: FlexibleRefValue(int) = Field(description="Initial porosity for deciduous trees", unit="dimensionless")
+    gdd_id: FlexibleRefValue(int) = Field(description="Growing degree days ID", unit="degC d")
+    sdd_id: FlexibleRefValue(int) = Field(description="Senescence degree days ID", unit="degC d")
+    lai: Dict[str, Union[FlexibleRefValue(float), List[FlexibleRefValue(float)]]] = Field(
         description="Leaf area index parameters",
         unit="m^2 m^-2"
     )
-    ie_a: FlexibleRefValue[float] = Field(description="Irrigation efficiency coefficient a", unit="dimensionless")
-    ie_m: FlexibleRefValue[float] = Field(description="Irrigation efficiency coefficient m", unit="dimensionless")
+    ie_a: FlexibleRefValue(float) = Field(description="Irrigation efficiency coefficient a", unit="dimensionless")
+    ie_m: FlexibleRefValue(float) = Field(description="Irrigation efficiency coefficient m", unit="dimensionless")
 
     ref: Optional[Reference] = None
 
 
 class Conductance(BaseModel):
-    g_max: FlexibleRefValue[float] = Field(
+    g_max: FlexibleRefValue(float) = Field(
         default=40.0,
         description="Maximum surface conductance for photosynthesis",
         unit="mm s^-1"
     )
-    g_k: FlexibleRefValue[float] = Field(
+    g_k: FlexibleRefValue(float) = Field(
         default=0.6,
         description="Conductance parameter related to incoming solar radiation",
         unit="dimensionless"
     )
-    g_q_base: FlexibleRefValue[float] = Field(
+    g_q_base: FlexibleRefValue(float) = Field(
         default=0.03,
         description="Base value for conductance parameter related to vapor pressure deficit",
         unit="kPa^-1"
     )
-    g_q_shape: FlexibleRefValue[float] = Field(
+    g_q_shape: FlexibleRefValue(float) = Field(
         default=0.9,
         description="Shape parameter for conductance related to vapor pressure deficit",
         unit="dimensionless"
     )
-    g_t: FlexibleRefValue[float] = Field(
+    g_t: FlexibleRefValue(float) = Field(
         default=30.0,
         description="Conductance parameter related to air temperature",
         unit="degC"
     )
-    g_sm: FlexibleRefValue[float] = Field(
+    g_sm: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Conductance parameter related to soil moisture",
         unit="dimensionless"
     )
-    kmax: FlexibleRefValue[float] = Field(
+    kmax: FlexibleRefValue(float) = Field(
         default=1200.0,
         description="Maximum incoming shortwave radiation",
         unit="W m^-2"
     )
-    gsmodel: FlexibleRefValue[int] = Field(
+    gsmodel: FlexibleRefValue(int) = Field(
         default=1,
         description="Stomatal conductance model selection",
         unit="dimensionless"
     )
-    s1: FlexibleRefValue[float] = Field(
+    s1: FlexibleRefValue(float) = Field(
         default=0.2,
         description="Lower soil moisture threshold for conductance response",
         unit="dimensionless"
     )
-    s2: FlexibleRefValue[float] = Field(
+    s2: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Parameter related to soil moisture dependence",
         unit="mm"
     )
-    tl: FlexibleRefValue[float] = Field(
+    tl: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Lower air temperature threshold for conductance response",
         unit="degC"
     )
-    th: FlexibleRefValue[float] = Field(
+    th: FlexibleRefValue(float) = Field(
         default=50.0,
         description="Upper air temperature threshold for conductance response",
         unit="degC"
@@ -129,7 +129,8 @@ class Conductance(BaseModel):
         }
 
         for param_name, value in scalar_params.items():
-            df_state.loc[grid_id, (param_name, "0")] = value.value
+            val = value.value if isinstance(value, RefValue) else value
+            df_state.loc[grid_id, (param_name, "0")] = val
 
         return df_state
 
@@ -169,22 +170,22 @@ class Conductance(BaseModel):
 
 
 class LAIPowerCoefficients(BaseModel):
-    growth_lai: FlexibleRefValue[float] = Field(
+    growth_lai: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Power coefficient for LAI in growth equation (LAIPower[1])",
         unit="dimensionless",
     )
-    growth_gdd: FlexibleRefValue[float] = Field(
+    growth_gdd: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Power coefficient for GDD in growth equation (LAIPower[2])",
         unit="dimensionless",
     )
-    senescence_lai: FlexibleRefValue[float] = Field(
+    senescence_lai: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Power coefficient for LAI in senescence equation (LAIPower[3])",
         unit="dimensionless",
     )
-    senescence_sdd: FlexibleRefValue[float] = Field(
+    senescence_sdd: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Power coefficient for SDD in senescence equation (LAIPower[4])",
         unit="dimensionless",
@@ -223,7 +224,8 @@ class LAIPowerCoefficients(BaseModel):
 
         # Set power coefficients in order
         for i, value in enumerate(self.to_list()):
-            set_df_value("laipower", (i, veg_idx), value.value)
+            val = value.value if isinstance(value, RefValue) else value
+            set_df_value("laipower", (i, veg_idx), val)
 
         return df_state
 
@@ -260,32 +262,32 @@ class LAIPowerCoefficients(BaseModel):
 
 
 class LAIParams(BaseModel):
-    baset: FlexibleRefValue[float] = Field(
+    baset: FlexibleRefValue(float) = Field(
         default=10.0,
         description="Base temperature for initiating growing degree days (GDD) for leaf growth",
         unit="degC"
     )
-    gddfull: FlexibleRefValue[float] = Field(
+    gddfull: FlexibleRefValue(float) = Field(
         default=100.0,
         description="Growing degree days (GDD) needed for full capacity of LAI",
         unit="degC*day"
     )
-    basete: FlexibleRefValue[float] = Field(
+    basete: FlexibleRefValue(float) = Field(
         default=10.0,
         description="Base temperature for initiating senescence degree days (SDD) for leaf off",
         unit="degC"
     )
-    sddfull: FlexibleRefValue[float] = Field(
+    sddfull: FlexibleRefValue(float) = Field(
         default=100.0,
         description="Senescence degree days (SDD) needed to initiate leaf off",
         unit="degC*day"
     )
-    laimin: FlexibleRefValue[float] = Field(
+    laimin: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Leaf-off wintertime LAI value",
         unit="m^2 m^-2"
     )
-    laimax: FlexibleRefValue[float] = Field(
+    laimax: FlexibleRefValue(float) = Field(
         default=10.0,
         description="Full leaf-on summertime LAI value",
         unit="m^2 m^-2"
@@ -294,7 +296,7 @@ class LAIParams(BaseModel):
         default_factory=LAIPowerCoefficients,
         description="LAI calculation power parameters for growth and senescence",
     )
-    laitype: FlexibleRefValue[int] = Field(
+    laitype: FlexibleRefValue(int) = Field(
         default=0,
         description="LAI calculation choice (0: original, 1: new high latitude)",
         unit="dimensionless"
@@ -304,13 +306,18 @@ class LAIParams(BaseModel):
 
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
-        if self.laimin > self.laimax:
+        laimin_val = self.laimin.value if isinstance(self.laimin, RefValue) else self.laimin
+        laimax_val = self.laimax.value if isinstance(self.laimax, RefValue) else self.laimax
+        baset_val = self.baset.value if isinstance(self.baset, RefValue) else self.baset
+        gddfull_val = self.gddfull.value if isinstance(self.gddfull, RefValue) else self.gddfull
+        
+        if laimin_val > laimax_val:
             raise ValueError(
-                f"laimin ({self.laimin})must be less than or equal to laimax ({self.laimax})."
+                f"laimin ({laimin_val})must be less than or equal to laimax ({laimax_val})."
             )
-        if self.baset > self.gddfull:
+        if baset_val > gddfull_val:
             raise ValueError(
-                f"baset {self.baset} must be less than gddfull ({self.gddfull})."
+                f"baset {baset_val} must be less than gddfull ({gddfull_val})."
             )
         return self
 
@@ -349,7 +356,8 @@ class LAIParams(BaseModel):
         }
 
         for param, value in lai_params.items():
-            set_df_value(param, (veg_idx,), value.value)
+            val = value.value if isinstance(value, RefValue) else value
+            set_df_value(param, (veg_idx,), val)
 
         # Add LAI power coefficients using the LAIPowerCoefficients to_df_state method
         if self.laipower:
@@ -405,64 +413,64 @@ class LAIParams(BaseModel):
 
 
 class VegetatedSurfaceProperties(SurfaceProperties):
-    alb: FlexibleRefValue[float] = Field(
+    alb: FlexibleRefValue(float) = Field(
         ge=0, le=1,
         description="Albedo",
         unit="dimensionless",
         default=0.2
     )
-    alb_min: FlexibleRefValue[float] = Field(
+    alb_min: FlexibleRefValue(float) = Field(
         ge=0, le=1,
         description="Minimum albedo",
         unit="dimensionless",
         default=0.2
     )
-    alb_max: FlexibleRefValue[float] = Field(
+    alb_max: FlexibleRefValue(float) = Field(
         ge=0, le=1,
         description="Maximum albedo",
         unit="dimensionless",
         default=0.3
     )
-    beta_bioco2: FlexibleRefValue[float] = Field(
+    beta_bioco2: FlexibleRefValue(float) = Field(
         default=0.6, description="Biogenic CO2 exchange coefficient", unit="dimensionless"
     )
-    beta_enh_bioco2: FlexibleRefValue[float] = Field(
+    beta_enh_bioco2: FlexibleRefValue(float) = Field(
         default=0.7,
         description="Enhanced biogenic CO2 exchange coefficient",
         unit="dimensionless",
     )
-    alpha_bioco2: FlexibleRefValue[float] = Field(
+    alpha_bioco2: FlexibleRefValue(float) = Field(
         default=0.8, description="Biogenic CO2 exchange coefficient", unit="dimensionless"
     )
-    alpha_enh_bioco2: FlexibleRefValue[float] = Field(
+    alpha_enh_bioco2: FlexibleRefValue(float) = Field(
         default=0.9,
         description="Enhanced biogenic CO2 exchange coefficient",
         unit="dimensionless",
     )
-    resp_a: FlexibleRefValue[float] = Field(
+    resp_a: FlexibleRefValue(float) = Field(
         default=1.0, description="Respiration coefficient", unit="umol m^-2 s^-1"
     )
-    resp_b: FlexibleRefValue[float] = Field(
+    resp_b: FlexibleRefValue(float) = Field(
         default=1.1, description="Respiration coefficient", unit="dimensionless"
     )
-    theta_bioco2: FlexibleRefValue[float] = Field(
+    theta_bioco2: FlexibleRefValue(float) = Field(
         default=1.2, description="Biogenic CO2 exchange coefficient", unit="dimensionless"
     )
-    maxconductance: FlexibleRefValue[float] = Field(
+    maxconductance: FlexibleRefValue(float) = Field(
         default=0.5, description="Maximum surface conductance", unit="mm s^-1"
     )
-    min_res_bioco2: FlexibleRefValue[float] = Field(
+    min_res_bioco2: FlexibleRefValue(float) = Field(
         default=0.1, description="Minimum respiratory biogenic CO2", unit="umol m^-2 s^-1"
     )
     lai: LAIParams = Field(
         default_factory=LAIParams, description="Leaf area index parameters"
     )
-    ie_a: FlexibleRefValue[float] = Field(
+    ie_a: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Irrigation efficiency coefficient-automatic",
         unit="dimensionless",
     )
-    ie_m: FlexibleRefValue[float] = Field(
+    ie_m: FlexibleRefValue(float) = Field(
         default=0.6,
         description="Irrigation efficiency coefficient-manual",
         unit="dimensionless",
@@ -472,9 +480,12 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
     @model_validator(mode="after")
     def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
-        if self.alb_min > self.alb_max:
+        alb_min_val = self.alb_min.value if isinstance(self.alb_min, RefValue) else self.alb_min
+        alb_max_val = self.alb_max.value if isinstance(self.alb_max, RefValue) else self.alb_max
+        
+        if alb_min_val > alb_max_val:
             raise ValueError(
-                f"alb_min (input {self.alb_min}) must be less than or equal to alb_max (entered {self.alb_max})."
+                f"alb_min (input {alb_min_val}) must be less than or equal to alb_max (entered {alb_max_val})."
             )
         return self
 
@@ -510,7 +521,9 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             "ie_a",
             "ie_m",
         ]:
-            set_df_value(attr, f"({surf_idx-2},)", getattr(self, attr).value)
+            field_val = getattr(self, attr)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            set_df_value(attr, f"({surf_idx-2},)", val)
 
         df_lai = self.lai.to_df_state(grid_id, surf_idx)
         df_state = pd.concat([df_state, df_lai], axis=1).sort_index(axis=1)
@@ -546,18 +559,18 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
 
 class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD here?
-    alb: FlexibleRefValue[float] = Field(
+    alb: FlexibleRefValue(float) = Field(
         ge=0, le=1,
         default=0.2,
         description="Albedo",
         unit="dimensionless"
     )
-    faievetree: FlexibleRefValue[float] = Field(
+    faievetree: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Frontal area index of evergreen trees",
         unit="dimensionless"
     )
-    evetreeh: FlexibleRefValue[float] = Field(
+    evetreeh: FlexibleRefValue(float) = Field(
         default=15.0,
         description="Evergreen tree height",
         unit="m"
@@ -587,12 +600,14 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
         # Add all non-inherited properties
         list_properties = ["faievetree", "evetreeh"]
         for attr in list_properties:
-            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr).value
+            field_val = getattr(self, attr)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df_state.loc[grid_id, (attr, "0")] = val
 
         # specific properties
-        df_state.loc[grid_id, ("alb", "(2,)")] = self.alb.value
-        df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min.value
-        df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max.value
+        df_state.loc[grid_id, ("alb", "(2,)")] = self.alb.value if isinstance(self.alb, RefValue) else self.alb
+        df_state.loc[grid_id, ("albmin_evetr", "0")] = self.alb_min.value if isinstance(self.alb_min, RefValue) else self.alb_min
+        df_state.loc[grid_id, ("albmax_evetr", "0")] = self.alb_max.value if isinstance(self.alb_max, RefValue) else self.alb_max
 
         return df_state
 
@@ -613,40 +628,40 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
 
 
 class DectrProperties(VegetatedSurfaceProperties):
-    alb: FlexibleRefValue[float] = Field(
+    alb: FlexibleRefValue(float) = Field(
         ge=0, le=1,
         default=0.2,
         description="Albedo",
         unit="dimensionless"
     )
-    faidectree: FlexibleRefValue[float] = Field(
+    faidectree: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Frontal area index of deciduous trees",
         unit="dimensionless"
     )
-    dectreeh: FlexibleRefValue[float] = Field(
+    dectreeh: FlexibleRefValue(float) = Field(
         default=15.0,
         description="Deciduous tree height",
         unit="m"
     )
-    pormin_dec: FlexibleRefValue[float] = Field(
+    pormin_dec: FlexibleRefValue(float) = Field(
         ge=0.1, le=0.9,
         default=0.2,
         description="Minimum porosity",
         unit="dimensionless"
     )  # pormin_dec cannot be less than 0.1 and greater than 0.9
-    pormax_dec: FlexibleRefValue[float] = Field(
+    pormax_dec: FlexibleRefValue(float) = Field(
         ge=0.1, le=0.9,
         default=0.6,
         description="Maximum porosity",
         unit="dimensionless"
     )  # pormax_dec cannot be less than 0.1 and greater than 0.9
-    capmax_dec: FlexibleRefValue[float] = Field(
+    capmax_dec: FlexibleRefValue(float) = Field(
         default=100.0,
         description="Maximum water capacity",
         unit="mm"
     )
-    capmin_dec: FlexibleRefValue[float] = Field(
+    capmin_dec: FlexibleRefValue(float) = Field(
         default=10.0,
         description="Minimum water capacity",
         unit="mm"
@@ -661,9 +676,12 @@ class DectrProperties(VegetatedSurfaceProperties):
 
     @model_validator(mode="after")
     def validate_porosity_range(self) -> "DectrProperties":
-        if self.pormin_dec >= self.pormax_dec:
+        pormin_dec_val = self.pormin_dec.value if isinstance(self.pormin_dec, RefValue) else self.pormin_dec
+        pormax_dec_val = self.pormax_dec.value if isinstance(self.pormax_dec, RefValue) else self.pormax_dec
+        
+        if pormin_dec_val >= pormax_dec_val:
             raise ValueError(
-                f"pormin_dec ({self.pormin_dec}) must be less than pormax_dec ({self.pormax_dec})."
+                f"pormin_dec ({pormin_dec_val}) must be less than pormax_dec ({pormax_dec_val})."
             )
         return self
 
@@ -682,12 +700,14 @@ class DectrProperties(VegetatedSurfaceProperties):
         ]
         # Add all non-inherited properties
         for attr in list_properties:
-            df_state.loc[grid_id, (attr, "0")] = getattr(self, attr).value
+            field_val = getattr(self, attr)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df_state.loc[grid_id, (attr, "0")] = val
 
         # specific properties
-        df_state.loc[grid_id, ("alb", "(3,)")] = self.alb.value
-        df_state.loc[grid_id, ("albmin_dectr", "0")] = self.alb_min.value
-        df_state.loc[grid_id, ("albmax_dectr", "0")] = self.alb_max.value
+        df_state.loc[grid_id, ("alb", "(3,)")] = self.alb.value if isinstance(self.alb, RefValue) else self.alb
+        df_state.loc[grid_id, ("albmin_dectr", "0")] = self.alb_min.value if isinstance(self.alb_min, RefValue) else self.alb_min
+        df_state.loc[grid_id, ("albmax_dectr", "0")] = self.alb_max.value if isinstance(self.alb_max, RefValue) else self.alb_max
 
         return df_state
 
@@ -712,7 +732,7 @@ class DectrProperties(VegetatedSurfaceProperties):
 
 
 class GrassProperties(VegetatedSurfaceProperties):
-    alb: FlexibleRefValue[float] = Field(
+    alb: FlexibleRefValue(float) = Field(
         ge=0, le=1, default=0.2, description="Minimum albedo", unit="dimensionless"
     )
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
@@ -727,9 +747,9 @@ class GrassProperties(VegetatedSurfaceProperties):
         df_state = super().to_df_state(grid_id)
 
         # add specific properties
-        df_state.loc[grid_id, ("alb", "(4,)")] = self.alb.value
-        df_state[("albmin_grass", "0")] = self.alb_min.value
-        df_state[("albmax_grass", "0")] = self.alb_max.value
+        df_state.loc[grid_id, ("alb", "(4,)")] = self.alb.value if isinstance(self.alb, RefValue) else self.alb
+        df_state[("albmin_grass", "0")] = self.alb_min.value if isinstance(self.alb_min, RefValue) else self.alb_min
+        df_state[("albmax_grass", "0")] = self.alb_max.value if isinstance(self.alb_max, RefValue) else self.alb_max
 
         return df_state
 
@@ -747,57 +767,57 @@ class GrassProperties(VegetatedSurfaceProperties):
 
 
 class SnowParams(BaseModel):
-    crwmax: FlexibleRefValue[float] = Field(
+    crwmax: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Maximum water holding capacity of snow",
         unit="mm"
     )
-    crwmin: FlexibleRefValue[float] = Field(
+    crwmin: FlexibleRefValue(float) = Field(
         default=0.05,
         description="Minimum water holding capacity of snow",
         unit="mm"
     )
-    narp_emis_snow: FlexibleRefValue[float] = Field(
+    narp_emis_snow: FlexibleRefValue(float) = Field(
         default=0.99,
         description="Snow surface emissivity",
         unit="dimensionless"
     )
-    preciplimit: FlexibleRefValue[float] = Field(
+    preciplimit: FlexibleRefValue(float) = Field(
         default=2.2,
         description="Temperature threshold for snow vs rain precipitation",
         unit="degC"
     )
-    preciplimitalb: FlexibleRefValue[float] = Field(
+    preciplimitalb: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Precipitation threshold for snow albedo aging",
         unit="mm"
     )
-    snowalbmax: FlexibleRefValue[float] = Field(
+    snowalbmax: FlexibleRefValue(float) = Field(
         default=0.85,
         description="Maximum snow albedo",
         unit="dimensionless"
     )
-    snowalbmin: FlexibleRefValue[float] = Field(
+    snowalbmin: FlexibleRefValue(float) = Field(
         default=0.4,
         description="Minimum snow albedo",
         unit="dimensionless"
     )
-    snowdensmin: FlexibleRefValue[float] = Field(
+    snowdensmin: FlexibleRefValue(float) = Field(
         default=100.0,
         description="Minimum snow density",
         unit="kg m^-3"
     )
-    snowdensmax: FlexibleRefValue[float] = Field(
+    snowdensmax: FlexibleRefValue(float) = Field(
         default=400.0,
         description="Maximum snow density",
         unit="kg m^-3"
     )
-    snowlimbldg: FlexibleRefValue[float] = Field(
+    snowlimbldg: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Maximum snow depth limit on buildings",
         unit="m"
     )
-    snowlimpaved: FlexibleRefValue[float] = Field(
+    snowlimpaved: FlexibleRefValue(float) = Field(
         default=0.1,
         description="Maximum snow depth limit on paved surfaces",
         unit="m"
@@ -805,27 +825,27 @@ class SnowParams(BaseModel):
     snowprof_24hr: HourlyProfile = Field(
         default_factory=HourlyProfile, description="24-hour snow profile"
     )
-    tau_a: FlexibleRefValue[float] = Field(
+    tau_a: FlexibleRefValue(float) = Field(
         default=0.018,
         description="Time constant for snow albedo aging in cold snow",
         unit="dimensionless"
     )
-    tau_f: FlexibleRefValue[float] = Field(
+    tau_f: FlexibleRefValue(float) = Field(
         default=0.11,
         description="Time constant for snow albedo aging in melting snow",
         unit="dimensionless"
     )
-    tau_r: FlexibleRefValue[float] = Field(
+    tau_r: FlexibleRefValue(float) = Field(
         default=0.05,
         description="Time constant for snow albedo aging in refreezing snow",
         unit="dimensionless"
     )
-    tempmeltfact: FlexibleRefValue[float] = Field(
+    tempmeltfact: FlexibleRefValue(float) = Field(
         default=0.12,
         description="Hourly temperature melt factor of snow",
         unit="mm K^-1 h^-1"
     )
-    radmeltfact: FlexibleRefValue[float] = Field(
+    radmeltfact: FlexibleRefValue(float) = Field(
         default=0.0016,
         description="Hourly radiation melt factor of snow",
         unit="mm W^-1 m^2 h^-1"
@@ -840,13 +860,18 @@ class SnowParams(BaseModel):
         so multiple errors (if any) can be raised together
         """
         errors = []
-        if self.crwmin >= self.crwmax:
+        crwmin_val = self.crwmin.value if isinstance(self.crwmin, RefValue) else self.crwmin
+        crwmax_val = self.crwmax.value if isinstance(self.crwmax, RefValue) else self.crwmax
+        snowalbmin_val = self.snowalbmin.value if isinstance(self.snowalbmin, RefValue) else self.snowalbmin
+        snowalbmax_val = self.snowalbmax.value if isinstance(self.snowalbmax, RefValue) else self.snowalbmax
+        
+        if crwmin_val >= crwmax_val:
             errors.append(
-                f"crwmin ({self.crwmin}) must be less than crwmax ({self.crwmax})."
+                f"crwmin ({crwmin_val}) must be less than crwmax ({crwmax_val})."
             )
-        if self.snowalbmin >= self.snowalbmax:
+        if snowalbmin_val >= snowalbmax_val:
             errors.append(
-                f"snowalbmin ({self.snowalbmin}) must be less than snowalbmax ({self.snowalbmax})."
+                f"snowalbmin ({snowalbmin_val}) must be less than snowalbmax ({snowalbmax_val})."
             )
         if errors:
             raise ValueError("\n".join(errors))
@@ -885,7 +910,8 @@ class SnowParams(BaseModel):
             "radmeltfact": self.radmeltfact,
         }
         for param_name, value in scalar_params.items():
-            df_state.loc[grid_id, (param_name, "0")] = value.value
+            val = value.value if isinstance(value, RefValue) else value
+            df_state.loc[grid_id, (param_name, "0")] = val
 
         df_hourly_profile = self.snowprof_24hr.to_df_state(grid_id, "snowprof_24hr")
         df_state = df_state.combine_first(df_hourly_profile)
@@ -1028,10 +1054,10 @@ class ArchetypeProperties(BaseModel):
 
     BuildingType: str = "SampleType"
     BuildingName: str = "SampleBuilding"
-    BuildingCount: FlexibleRefValue[int] = Field(
+    BuildingCount: FlexibleRefValue(int) = Field(
         default=1, description="Number of buildings of this archetype [-]", unit="dimensionless"
     )
-    Occupants: FlexibleRefValue[int] = Field(
+    Occupants: FlexibleRefValue(int) = Field(
         default=1,
         description="Number of occupants present in building [-]",
         unit="dimensionless",
@@ -1053,181 +1079,181 @@ class ArchetypeProperties(BaseModel):
     # age_19_64: int = Field(default=0, description="")
     # age_65plus: int = Field(default=0, description="")
 
-    stebbs_Height: FlexibleRefValue[float] = Field(
+    stebbs_Height: FlexibleRefValue(float) = Field(
         default=10.0,
         description="Building height [m]",
         unit="m",
         gt=0.0,
     )
-    FootprintArea: FlexibleRefValue[float] = Field(
+    FootprintArea: FlexibleRefValue(float) = Field(
         default=64.0,
         description="Building footprint area [m2]",
         unit="m^2",
         gt=0.0,
     )
-    WallExternalArea: FlexibleRefValue[float] = Field(
+    WallExternalArea: FlexibleRefValue(float) = Field(
         default=80.0,
         description="External wall area (including window area) [m2]",
         unit="m^2",
         gt=0.0,
     )
-    RatioInternalVolume: FlexibleRefValue[float] = Field(
+    RatioInternalVolume: FlexibleRefValue(float) = Field(
         default=0.01,
         description="Ratio of internal mass volume to total building volume [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WWR: FlexibleRefValue[float] = Field(
+    WWR: FlexibleRefValue(float) = Field(
         default=0.20,
         description="window to wall ratio [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WallThickness: FlexibleRefValue[float] = Field(
+    WallThickness: FlexibleRefValue(float) = Field(
         default=20.0,
         description="Thickness of external wall and roof (weighted) [m]",
         unit="m",
         gt=0.0,
     )
-    WallEffectiveConductivity: FlexibleRefValue[float] = Field(
+    WallEffectiveConductivity: FlexibleRefValue(float) = Field(
         default=60.0,
         description="Effective thermal conductivity of walls and roofs (weighted) [W m-1 K-1]",
         unit="W m^-1 K^-1",
         gt=0.0,
     )
-    WallDensity: FlexibleRefValue[float] = Field(
+    WallDensity: FlexibleRefValue(float) = Field(
         default=1600.0,
         description="Effective density of the walls and roof (weighted) [kg m-3]",
         unit="kg m^-3",
         gt=0.0,
     )
-    WallCp: FlexibleRefValue[float] = Field(
+    WallCp: FlexibleRefValue(float) = Field(
         default=850.0,
         description="Effective specific heat capacity of walls and roof (weighted) [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
         gt=0.0,
     )
-    Wallx1: FlexibleRefValue[float] = Field(
+    Wallx1: FlexibleRefValue(float) = Field(
         default=1.0,
         description="Weighting factor for heat capacity of walls and roof [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WallExternalEmissivity: FlexibleRefValue[float] = Field(
+    WallExternalEmissivity: FlexibleRefValue(float) = Field(
         default=0.9,
         description="Emissivity of the external surface of walls and roof [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WallInternalEmissivity: FlexibleRefValue[float] = Field(
+    WallInternalEmissivity: FlexibleRefValue(float) = Field(
         default=0.9,
         description="Emissivity of the internal surface of walls and roof [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WallTransmissivity: FlexibleRefValue[float] = Field(
+    WallTransmissivity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Transmissivity of walls and roof [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WallAbsorbtivity: FlexibleRefValue[float] = Field(
+    WallAbsorbtivity: FlexibleRefValue(float) = Field(
         default=0.8,
         description="Absorbtivity of walls and roof [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WallReflectivity: FlexibleRefValue[float] = Field(
+    WallReflectivity: FlexibleRefValue(float) = Field(
         default=0.2,
         description="Reflectivity of the external surface of walls and roof [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    FloorThickness: FlexibleRefValue[float] = Field(
+    FloorThickness: FlexibleRefValue(float) = Field(
         default=0.2,
         description="Thickness of ground floor [m]",
         unit="m",
         gt=0.0,
     )
-    GroundFloorEffectiveConductivity: FlexibleRefValue[float] = Field(
+    GroundFloorEffectiveConductivity: FlexibleRefValue(float) = Field(
         default=0.15,
         description="Effective thermal conductivity of ground floor [W m-1 K-1]",
         unit="W m^-1 K^-1",
         gt=0.0,
     )
-    GroundFloorDensity: FlexibleRefValue[float] = Field(
+    GroundFloorDensity: FlexibleRefValue(float) = Field(
         default=500.0,
         description="Density of the ground floor [kg m-3]",
         unit="kg m^-3",
         gt=0.0,
     )
-    GroundFloorCp: FlexibleRefValue[float] = Field(
+    GroundFloorCp: FlexibleRefValue(float) = Field(
         default=1500.0,
         description="Effective specific heat capacity of the ground floor [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
         gt=0.0,
     )
-    WindowThickness: FlexibleRefValue[float] = Field(
+    WindowThickness: FlexibleRefValue(float) = Field(
         default=0.015,
         description="Window thickness [m]",
         unit="m",
         gt=0.0,
     )
-    WindowEffectiveConductivity: FlexibleRefValue[float] = Field(
+    WindowEffectiveConductivity: FlexibleRefValue(float) = Field(
         default=1.0,
         description="Effective thermal conductivity of windows [W m-1 K-1]",
         unit="W m^-1 K^-1",
         gt=0.0,
     )
-    WindowDensity: FlexibleRefValue[float] = Field(
+    WindowDensity: FlexibleRefValue(float) = Field(
         default=2500.0,
         description="Effective density of the windows [kg m-3]",
         unit="kg m^-3",
         gt=0.0,
     )
-    WindowCp: FlexibleRefValue[float] = Field(
+    WindowCp: FlexibleRefValue(float) = Field(
         default=840.0,
         description="Effective specific heat capacity of windows [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
         gt=0.0,
     )
-    WindowExternalEmissivity: FlexibleRefValue[float] = Field(
+    WindowExternalEmissivity: FlexibleRefValue(float) = Field(
         default=0.90,
         description="Emissivity of the external surface of windows [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WindowInternalEmissivity: FlexibleRefValue[float] = Field(
+    WindowInternalEmissivity: FlexibleRefValue(float) = Field(
         default=0.90,
         description="Emissivity of the internal surface of windows [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WindowTransmissivity: FlexibleRefValue[float] = Field(
+    WindowTransmissivity: FlexibleRefValue(float) = Field(
         default=0.90,
         description="Transmissivity of windows [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WindowAbsorbtivity: FlexibleRefValue[float] = Field(
+    WindowAbsorbtivity: FlexibleRefValue(float) = Field(
         default=0.01,
         description="Absorbtivity of windows [-]",
         unit="dimensionless",
         ge=0.0,
         le=1.0,
     )
-    WindowReflectivity: FlexibleRefValue[float] = Field(
+    WindowReflectivity: FlexibleRefValue(float) = Field(
         default=0.09,
         description="Reflectivity of the external surface of windows [-]",
         unit="dimensionless",
@@ -1235,39 +1261,39 @@ class ArchetypeProperties(BaseModel):
         le=1.0,
     )
     # TODO: Add defaults below here
-    InternalMassDensity: FlexibleRefValue[float] = Field(
+    InternalMassDensity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective density of the internal mass [kg m-3]",
         unit="kg m^-3",
     )
-    InternalMassCp: FlexibleRefValue[float] = Field(
+    InternalMassCp: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Specific heat capacity of internal mass [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
     )
-    InternalMassEmissivity: FlexibleRefValue[float] = Field(
+    InternalMassEmissivity: FlexibleRefValue(float) = Field(
         default=0.0, description="Emissivity of internal mass [-]",
         unit="dimensionless",
     )
-    MaxHeatingPower: FlexibleRefValue[float] = Field(
+    MaxHeatingPower: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Maximum power demand of heating system [W]",
         unit="W",
     )
-    WaterTankWaterVolume: FlexibleRefValue[float] = Field(
+    WaterTankWaterVolume: FlexibleRefValue(float) = Field(
         default=0.0, description="Volume of water in hot water tank [m3]",
         unit="m^3",
     )
-    MaximumHotWaterHeatingPower: FlexibleRefValue[float] = Field(
+    MaximumHotWaterHeatingPower: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Maximum power demand of water heating system [W]",
         unit="W",
     )
-    HeatingSetpointTemperature: FlexibleRefValue[float] = Field(
+    HeatingSetpointTemperature: FlexibleRefValue(float) = Field(
         default=0.0, description="Heating setpoint temperature [degC]",
         unit="degC",
     )
-    CoolingSetpointTemperature: FlexibleRefValue[float] = Field(
+    CoolingSetpointTemperature: FlexibleRefValue(float) = Field(
         default=0.0, description="Cooling setpoint temperature [degC]",
         unit="degC",
     )
@@ -1322,301 +1348,301 @@ class ArchetypeProperties(BaseModel):
 
 
 class StebbsProperties(BaseModel):
-    WallInternalConvectionCoefficient: FlexibleRefValue[float] = Field(
+    WallInternalConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Internal convection coefficient of walls and roof [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    InternalMassConvectionCoefficient: FlexibleRefValue[float] = Field(
+    InternalMassConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Convection coefficient of internal mass [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    FloorInternalConvectionCoefficient: FlexibleRefValue[float] = Field(
+    FloorInternalConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Internal convection coefficient of ground floor [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    WindowInternalConvectionCoefficient: FlexibleRefValue[float] = Field(
+    WindowInternalConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Internal convection coefficient of windows [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    WallExternalConvectionCoefficient: FlexibleRefValue[float] = Field(
+    WallExternalConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial external convection coefficient of walls and roof [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    WindowExternalConvectionCoefficient: FlexibleRefValue[float] = Field(
+    WindowExternalConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial external convection coefficient of windows [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    GroundDepth: FlexibleRefValue[float] = Field(
+    GroundDepth: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Depth of external ground (deep soil) [m]",
         unit="m",
     )
-    ExternalGroundConductivity: FlexibleRefValue[float] = Field(
+    ExternalGroundConductivity: FlexibleRefValue(float) = Field(
         default=0.0, description="External ground thermal conductivity", unit="W m^-1 K^-1"
     )
-    IndoorAirDensity: FlexibleRefValue[float] = Field(
+    IndoorAirDensity: FlexibleRefValue(float) = Field(
         default=0.0, description="Density of indoor air [kg m-3]", unit="kg m^-3"
     )
-    IndoorAirCp: FlexibleRefValue[float] = Field(
+    IndoorAirCp: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Specific heat capacity of indoor air [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
     )
-    WallBuildingViewFactor: FlexibleRefValue[float] = Field(
+    WallBuildingViewFactor: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Building view factor of external walls [-]",
         unit="dimensionless",
     )
-    WallGroundViewFactor: FlexibleRefValue[float] = Field(
+    WallGroundViewFactor: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Ground view factor of external walls [-]",
         unit="dimensionless",
     )
-    WallSkyViewFactor: FlexibleRefValue[float] = Field(
+    WallSkyViewFactor: FlexibleRefValue(float) = Field(
         default=0.0, description="Sky view factor of external walls [-]", unit="dimensionless"
     )
-    MetabolicRate: FlexibleRefValue[float] = Field(
+    MetabolicRate: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Metabolic rate of building occupants [W]",
         unit="W",
     )
-    LatentSensibleRatio: FlexibleRefValue[float] = Field(
+    LatentSensibleRatio: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Latent-to-sensible ratio of metabolic energy release of occupants [-]",
         unit="dimensionless",
     )
-    ApplianceRating: FlexibleRefValue[float] = Field(
+    ApplianceRating: FlexibleRefValue(float) = Field(
         default=0.0, description="Power demand of single appliance [W]", unit="W"
     )
-    TotalNumberofAppliances: FlexibleRefValue[float] = Field(
+    TotalNumberofAppliances: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Number of appliances present in building [-]",
         unit="dimensionless",
     )
-    ApplianceUsageFactor: FlexibleRefValue[float] = Field(
+    ApplianceUsageFactor: FlexibleRefValue(float) = Field(
         default=0.0, description="Number of appliances in use [-]", unit="dimensionless"
     )
-    HeatingSystemEfficiency: FlexibleRefValue[float] = Field(
+    HeatingSystemEfficiency: FlexibleRefValue(float) = Field(
         default=0.0, description="Efficiency of space heating system [-]", unit="dimensionless"
     )
-    MaxCoolingPower: FlexibleRefValue[float] = Field(
+    MaxCoolingPower: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Maximum power demand of cooling system [W]",
         unit="W",
     )
-    CoolingSystemCOP: FlexibleRefValue[float] = Field(
+    CoolingSystemCOP: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Coefficient of performance of cooling system [-]",
         unit="dimensionless",
     )
-    VentilationRate: FlexibleRefValue[float] = Field(
+    VentilationRate: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Ventilation rate (air changes per hour, ACH) [h-1]",
         unit="h^-1",
     )
-    IndoorAirStartTemperature: FlexibleRefValue[float] = Field(
+    IndoorAirStartTemperature: FlexibleRefValue(float) = Field(
         default=0.0, description="Initial indoor air temperature [degC]",
         unit="degC",
     )
-    IndoorMassStartTemperature: FlexibleRefValue[float] = Field(
+    IndoorMassStartTemperature: FlexibleRefValue(float) = Field(
         default=0.0, description="Initial indoor mass temperature [degC]",
         unit="degC",
     )
-    WallIndoorSurfaceTemperature: FlexibleRefValue[float] = Field(
+    WallIndoorSurfaceTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial wall/roof indoor surface temperature [degC]",
         unit="degC",
     )
-    WallOutdoorSurfaceTemperature: FlexibleRefValue[float] = Field(
+    WallOutdoorSurfaceTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial wall/roof outdoor surface temperature [degC]",
         unit="degC",
     )
-    WindowIndoorSurfaceTemperature: FlexibleRefValue[float] = Field(
+    WindowIndoorSurfaceTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial window indoor surface temperature [degC]",
         unit="degC",
     )
-    WindowOutdoorSurfaceTemperature: FlexibleRefValue[float] = Field(
+    WindowOutdoorSurfaceTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial window outdoor surface temperature [degC]",
         unit="degC",
     )
-    GroundFloorIndoorSurfaceTemperature: FlexibleRefValue[float] = Field(
+    GroundFloorIndoorSurfaceTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial ground floor indoor surface temperature [degC]",
         unit="degC",
     )
-    GroundFloorOutdoorSurfaceTemperature: FlexibleRefValue[float] = Field(
+    GroundFloorOutdoorSurfaceTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial ground floor outdoor surface temperature [degC]",
         unit="degC",
     )
-    WaterTankTemperature: FlexibleRefValue[float] = Field(
+    WaterTankTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial water temperature in hot water tank [degC]",
         unit="degC",
     )
-    InternalWallWaterTankTemperature: FlexibleRefValue[float] = Field(
+    InternalWallWaterTankTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial hot water tank internal wall temperature [degC]",
         unit="degC",
     )
-    ExternalWallWaterTankTemperature: FlexibleRefValue[float] = Field(
+    ExternalWallWaterTankTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial hot water tank external wall temperature [degC]",
         unit="degC",
     )
-    WaterTankWallThickness: FlexibleRefValue[float] = Field(
+    WaterTankWallThickness: FlexibleRefValue(float) = Field(
         default=0.0, description="Hot water tank wall thickness [m]",
         unit="m",
     )
-    MainsWaterTemperature: FlexibleRefValue[float] = Field(
+    MainsWaterTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Temperature of water coming into the water tank [degC]",
         unit="degC",
     )
-    WaterTankSurfaceArea: FlexibleRefValue[float] = Field(
+    WaterTankSurfaceArea: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Surface area of hot water tank cylinder [m2]",
         unit="m^2",
     )
-    HotWaterHeatingSetpointTemperature: FlexibleRefValue[float] = Field(
+    HotWaterHeatingSetpointTemperature: FlexibleRefValue(float) = Field(
         default=0.0, description="Water tank setpoint temperature [degC]",
         unit="degC",
     )
-    HotWaterTankWallEmissivity: FlexibleRefValue[float] = Field(
+    HotWaterTankWallEmissivity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective external wall emissivity of the hot water tank [-]",
         unit="dimensionless",
     )
-    DomesticHotWaterTemperatureInUseInBuilding: FlexibleRefValue[float] = Field(
+    DomesticHotWaterTemperatureInUseInBuilding: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial water temperature of water held in use in building [degC]",
         unit="degC",
     )
-    InternalWallDHWVesselTemperature: FlexibleRefValue[float] = Field(
+    InternalWallDHWVesselTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial hot water vessel internal wall temperature [degC]",
         unit="degC",
     )
-    ExternalWallDHWVesselTemperature: FlexibleRefValue[float] = Field(
+    ExternalWallDHWVesselTemperature: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Initial hot water vessel external wall temperature [degC]",
         unit="degC",
     )
-    DHWVesselWallThickness: FlexibleRefValue[float] = Field(
+    DHWVesselWallThickness: FlexibleRefValue(float) = Field(
         default=0.0, description="Hot water vessel wall thickness [m]",
         unit="m",
     )
-    DHWWaterVolume: FlexibleRefValue[float] = Field(
+    DHWWaterVolume: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Volume of water held in use in building [m3]",
         unit="m^3",
     )
-    DHWSurfaceArea: FlexibleRefValue[float] = Field(
+    DHWSurfaceArea: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Surface area of hot water in vessels in building [m2]",
         unit="m^2",
     )
-    DHWVesselEmissivity: FlexibleRefValue[float] = Field(
+    DHWVesselEmissivity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="NEEDS CHECKED! NOT USED (assumed same as DHWVesselWallEmissivity) [-]",
         unit="dimensionless",
     )
-    HotWaterFlowRate: FlexibleRefValue[float] = Field(
+    HotWaterFlowRate: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Hot water flow rate from tank to vessel [m3 s-1]",
         unit="m^3 s^-1",
     )
-    DHWDrainFlowRate: FlexibleRefValue[float] = Field(
+    DHWDrainFlowRate: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Flow rate of hot water held in building to drain [m3 s-1]",
         unit="m^3 s^-1",
     )
-    DHWSpecificHeatCapacity: FlexibleRefValue[float] = Field(
+    DHWSpecificHeatCapacity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Specific heat capacity of hot water [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
     )
-    HotWaterTankSpecificHeatCapacity: FlexibleRefValue[float] = Field(
+    HotWaterTankSpecificHeatCapacity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Specific heat capacity of hot water tank wal [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
     )
-    DHWVesselSpecificHeatCapacity: FlexibleRefValue[float] = Field(
+    DHWVesselSpecificHeatCapacity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Specific heat capacity of vessels containing hot water in use in buildings [J kg-1 K-1]",
         unit="J kg^-1 K^-1",
     )
-    DHWDensity: FlexibleRefValue[float] = Field(
+    DHWDensity: FlexibleRefValue(float) = Field(
         default=0.0, description="Density of hot water in use [kg m-3]",
         unit="kg m^-3",
     )
-    HotWaterTankWallDensity: FlexibleRefValue[float] = Field(
+    HotWaterTankWallDensity: FlexibleRefValue(float) = Field(
         default=0.0, description="Density of hot water tank wall [kg m-3]",
         unit="kg m^-3",
     )
-    DHWVesselDensity: FlexibleRefValue[float] = Field(
+    DHWVesselDensity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Density of vessels containing hot water in use [kg m-3]",
         unit="kg m^-3",
     )
-    HotWaterTankBuildingWallViewFactor: FlexibleRefValue[float] = Field(
+    HotWaterTankBuildingWallViewFactor: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Water tank/vessel internal building wall/roof view factor [-]",
         unit="dimensionless",
     )
-    HotWaterTankInternalMassViewFactor: FlexibleRefValue[float] = Field(
+    HotWaterTankInternalMassViewFactor: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Water tank/vessel building internal mass view factor [-]",
         unit="dimensionless",
     )
-    HotWaterTankWallConductivity: FlexibleRefValue[float] = Field(
+    HotWaterTankWallConductivity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective wall conductivity of the hot water tank [W m-1 K-1]",
         unit="W m^-1 K^-1",
     )
-    HotWaterTankInternalWallConvectionCoefficient: FlexibleRefValue[float] = Field(
+    HotWaterTankInternalWallConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective internal wall convection coefficient of the hot water tank [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    HotWaterTankExternalWallConvectionCoefficient: FlexibleRefValue[float] = Field(
+    HotWaterTankExternalWallConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective external wall convection coefficient of the hot water tank [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    DHWVesselWallConductivity: FlexibleRefValue[float] = Field(
+    DHWVesselWallConductivity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective wall conductivity of the hot water tank [W m-1 K-1]",
         unit="W m^-1 K^-1",
     )
-    DHWVesselInternalWallConvectionCoefficient: FlexibleRefValue[float] = Field(
+    DHWVesselInternalWallConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective internal wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    DHWVesselExternalWallConvectionCoefficient: FlexibleRefValue[float] = Field(
+    DHWVesselExternalWallConvectionCoefficient: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective external wall convection coefficient of the vessels holding hot water in use in building [W m-2 K-1]",
         unit="W m^-2 K^-1",
     )
-    DHWVesselWallEmissivity: FlexibleRefValue[float] = Field(
+    DHWVesselWallEmissivity: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Effective external wall emissivity of hot water being used within building [-]",
         unit="dimensionless",
     )
-    HotWaterHeatingEfficiency: FlexibleRefValue[float] = Field(
+    HotWaterHeatingEfficiency: FlexibleRefValue(float) = Field(
         default=0.0, description="Efficiency of hot water system [-]", unit="dimensionless"
     )
-    MinimumVolumeOfDHWinUse: FlexibleRefValue[float] = Field(
+    MinimumVolumeOfDHWinUse: FlexibleRefValue(float) = Field(
         default=0.0, description="Minimum volume of hot water in use [m3]", unit="m^3"
     )
 
@@ -1638,9 +1664,9 @@ class StebbsProperties(BaseModel):
         for field_name, field_info in self.__class__.model_fields.items():
             if field_name == "ref":
                 continue
-            df_state.loc[grid_id, (field_name.lower(), "0")] = getattr(
-                self, field_name
-            ).value
+            field_val = getattr(self, field_name)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df_state.loc[grid_id, (field_name.lower(), "0")] = val
 
         return df_state
 
@@ -1662,70 +1688,70 @@ class StebbsProperties(BaseModel):
 
 
 class SPARTACUSParams(BaseModel):
-    air_ext_lw: FlexibleRefValue[float] = Field(
+    air_ext_lw: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Air extinction coefficient for longwave radiation",
         unit="m^-1",
     )
-    air_ext_sw: FlexibleRefValue[float] = Field(
+    air_ext_sw: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Air extinction coefficient for shortwave radiation",
         unit="m^-1",
     )
-    air_ssa_lw: FlexibleRefValue[float] = Field(
+    air_ssa_lw: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Air single scattering albedo for longwave radiation",
         unit="dimensionless",
     )
-    air_ssa_sw: FlexibleRefValue[float] = Field(
+    air_ssa_sw: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Air single scattering albedo for shortwave radiation",
         unit="dimensionless",
     )
-    ground_albedo_dir_mult_fact: FlexibleRefValue[float] = Field(
+    ground_albedo_dir_mult_fact: FlexibleRefValue(float) = Field(
         default=1.0,
         description="Multiplication factor for direct ground albedo",
         unit="dimensionless"
     )
-    n_stream_lw_urban: FlexibleRefValue[int] = Field(
+    n_stream_lw_urban: FlexibleRefValue(int) = Field(
         default=2,
         description="Number of streams for longwave radiation in urban areas",
         unit="dimensionless",
     )
-    n_stream_sw_urban: FlexibleRefValue[int] = Field(
+    n_stream_sw_urban: FlexibleRefValue(int) = Field(
         default=2,
         description="Number of streams for shortwave radiation in urban areas",
         unit="dimensionless",
     )
-    n_vegetation_region_urban: FlexibleRefValue[int] = Field(
+    n_vegetation_region_urban: FlexibleRefValue(int) = Field(
         default=1,
         description="Number of vegetation regions in urban areas",
         unit="dimensionless",
     )
-    sw_dn_direct_frac: FlexibleRefValue[float] = Field(
+    sw_dn_direct_frac: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Fraction of downward shortwave radiation that is direct",
         unit="dimensionless",
     )
-    use_sw_direct_albedo: FlexibleRefValue[float] = Field(
+    use_sw_direct_albedo: FlexibleRefValue(float) = Field(
         default=1.0,
         description="Flag to use direct albedo for shortwave radiation",
         unit="dimensionless"
     )
-    veg_contact_fraction_const: FlexibleRefValue[float] = Field(
+    veg_contact_fraction_const: FlexibleRefValue(float) = Field(
         default=0.5, description="Constant vegetation contact fraction", unit="dimensionless"
     )
-    veg_fsd_const: FlexibleRefValue[float] = Field(
+    veg_fsd_const: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Constant vegetation fractional standard deviation",
         unit="dimensionless",
     )
-    veg_ssa_lw: FlexibleRefValue[float] = Field(
+    veg_ssa_lw: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Vegetation single scattering albedo for longwave radiation",
         unit="dimensionless",
     )
-    veg_ssa_sw: FlexibleRefValue[float] = Field(
+    veg_ssa_sw: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Vegetation single scattering albedo for shortwave radiation",
         unit="dimensionless",
@@ -1766,7 +1792,8 @@ class SPARTACUSParams(BaseModel):
 
         # Assign each parameter to its corresponding column in the DataFrame
         for param_name, value in spartacus_params.items():
-            df_state[(param_name, "0")] = value.value
+            val = value.value if isinstance(value, RefValue) else value
+            df_state[(param_name, "0")] = val
 
         return df_state
 
@@ -1809,10 +1836,10 @@ class SPARTACUSParams(BaseModel):
 
 
 class LUMPSParams(BaseModel):
-    raincover: FlexibleRefValue[float] = Field(ge=0, le=1, default=0.25, description="Rain water coverage fraction", unit="dimensionless")
-    rainmaxres: FlexibleRefValue[float] = Field(ge=0, le=20, default=0.25, description="Maximum rain water storage", unit="mm")
-    drainrt: FlexibleRefValue[float] = Field(ge=0, le=1, default=0.25, description="Drainage rate coefficient", unit="dimensionless")
-    veg_type: FlexibleRefValue[int] = Field(default=1, description="Vegetation type selection", unit="dimensionless")
+    raincover: FlexibleRefValue(float) = Field(ge=0, le=1, default=0.25, description="Rain water coverage fraction", unit="dimensionless")
+    rainmaxres: FlexibleRefValue(float) = Field(ge=0, le=20, default=0.25, description="Maximum rain water storage", unit="mm")
+    drainrt: FlexibleRefValue(float) = Field(ge=0, le=1, default=0.25, description="Drainage rate coefficient", unit="dimensionless")
+    veg_type: FlexibleRefValue(int) = Field(default=1, description="Vegetation type selection", unit="dimensionless")
 
     ref: Optional[Reference] = None
 
@@ -1829,7 +1856,9 @@ class LUMPSParams(BaseModel):
 
         # Add all attributes
         for attr in ["raincover", "rainmaxres", "drainrt", "veg_type"]:
-            df_state[(attr, "0")] = getattr(self, attr).value
+            field_val = getattr(self, attr)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df_state[(attr, "0")] = val
 
         return df_state
 
@@ -1856,71 +1885,71 @@ class LUMPSParams(BaseModel):
 
 
 class SiteProperties(BaseModel):
-    lat: FlexibleRefValue[float] = Field(
+    lat: FlexibleRefValue(float) = Field(
         ge=-90,
         le=90,
         description="Latitude of the site in degrees",
         unit="degrees",
         default=51.5,
     )
-    lng: FlexibleRefValue[float] = Field(
+    lng: FlexibleRefValue(float) = Field(
         ge=-180,
         le=180,
         description="Longitude of the site in degrees",
         unit="degrees",
         default=-0.13,
     )
-    alt: FlexibleRefValue[float] = Field(
+    alt: FlexibleRefValue(float) = Field(
         gt=0,
         description="Altitude of the site above sea level",
         unit="m",
         default=40.0,
     )
-    timezone: FlexibleRefValue[int] = Field(
+    timezone: FlexibleRefValue(int) = Field(
         ge=-12,
         le=12,
         description="Time zone offset from UTC",
         unit="hour",
         default=0,
     )
-    surfacearea: FlexibleRefValue[float] = Field(
+    surfacearea: FlexibleRefValue(float) = Field(
         gt=0,
         description="Total surface area of the site",
         unit="ha",
         default=1.0,
     )
-    z: FlexibleRefValue[float] = Field(
+    z: FlexibleRefValue(float) = Field(
         gt=0,
         description="Measurement height",
         unit="m",
         default=10.0
     )
-    z0m_in: FlexibleRefValue[float] = Field(
+    z0m_in: FlexibleRefValue(float) = Field(
         gt=0,
         description="Momentum roughness length",
         unit="m",
         default=1.0,
     )
-    zdm_in: FlexibleRefValue[float] = Field(
+    zdm_in: FlexibleRefValue(float) = Field(
         gt=0,
         description="Zero-plane displacement height",
         unit="m",
         default=5.0,
     )
-    pipecapacity: FlexibleRefValue[float] = Field(
+    pipecapacity: FlexibleRefValue(float) = Field(
         gt=0,
         description="Maximum capacity of drainage pipes",
         unit="mm h^-1",
         default=100.0,
     )
-    runofftowater: FlexibleRefValue[float] = Field(
+    runofftowater: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
         description="Fraction of excess water going to water bodies",
         unit="dimensionless",
         default=0.0,
     )
-    narp_trans_site: FlexibleRefValue[float] = Field(
+    narp_trans_site: FlexibleRefValue(float) = Field(
         description="Site-specific NARP transmission coefficient",
         unit="dimensionless",
         default=0.2,
@@ -1965,19 +1994,19 @@ class SiteProperties(BaseModel):
         description="Parameters for vertical layer structure",
     )
 
-    n_buildings: FlexibleRefValue[int] = Field(
+    n_buildings: FlexibleRefValue(int) = Field(
         default=1,
         description="Number of buildings in the site",
         unit="dimensionless",
     )
 
-    h_std: FlexibleRefValue[float] = Field(
+    h_std: FlexibleRefValue(float) = Field(
         default=10.0,
         description="Standard deviation of building heights in the site",
         unit="m",
     )
 
-    lambda_c: FlexibleRefValue[float] = Field(
+    lambda_c: FlexibleRefValue(float) = Field(
         default=0,
         description="External building surface area to plan area ratio",
         unit="m^2 m^-2",
@@ -2023,13 +2052,15 @@ class SiteProperties(BaseModel):
             value = getattr(self, field, None)
             if value is None:
                 errors.append(f"Required field '{field}' is missing")
-            elif isinstance(value, RefValue) and value.value is None:
+            elif isinstance(value, RefValue) and (value.value if isinstance(value, RefValue) else value) is None:
                 errors.append(f"Required field '{field}' has no value")
 
         # Additional validation rules
-        if self.z0m_in.value >= self.zdm_in.value:
+        z0m_val = self.z0m_in.value if isinstance(self.z0m_in, RefValue) else self.z0m_in
+        zdm_val = self.zdm_in.value if isinstance(self.zdm_in, RefValue) else self.zdm_in
+        if z0m_val >= zdm_val:
             errors.append(
-                f"z0m_in ({self.z0m_in.value}) must be less than zdm_in ({self.zdm_in.value})"
+                f"z0m_in ({z0m_val}) must be less than zdm_in ({zdm_val})"
             )
 
         if errors:
@@ -2058,7 +2089,9 @@ class SiteProperties(BaseModel):
             "h_std",
             "lambda_c"
         ]:
-            df_state.loc[grid_id, (f"{var}", "0")] = getattr(self, var).value
+            field_val = getattr(self, var)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df_state.loc[grid_id, (f"{var}", "0")] = val
 
         # complex attributes
         df_lumps = self.lumps.to_df_state(grid_id)
@@ -2164,7 +2197,7 @@ class Site(BaseModel):
 
 
 class SnowAlb(BaseModel):
-    snowalb: FlexibleRefValue[float] = Field(
+    snowalb: FlexibleRefValue(float) = Field(
         description="Snow albedo",
         unit="dimensionless",
         default=0.7,
@@ -2182,7 +2215,7 @@ class SnowAlb(BaseModel):
             pd.DataFrame: DataFrame containing snow albedo parameters
         """
         df_state = init_df_state(grid_id)
-        df_state[("snowalb", "0")] = self.snowalb.value
+        df_state[("snowalb", "0")] = self.snowalb.value if isinstance(self.snowalb, RefValue) else self.snowalb
         return df_state
 
     @classmethod

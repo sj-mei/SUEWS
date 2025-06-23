@@ -324,72 +324,72 @@ for enum_class in [
 
 
 class ModelPhysics(BaseModel):
-    netradiationmethod: FlexibleRefValue[NetRadiationMethod] = Field(
+    netradiationmethod: FlexibleRefValue(NetRadiationMethod) = Field(
         default=NetRadiationMethod.LDOWN_AIR,
         description="Method used to calculate net all-wave radiation (Q*). Options include observed values, modelled with various longwave parameterisations, and SPARTACUS-Surface integration",
         unit="dimensionless"
     )
-    emissionsmethod: FlexibleRefValue[EmissionsMethod] = Field(
+    emissionsmethod: FlexibleRefValue(EmissionsMethod) = Field(
         default=EmissionsMethod.J11,
         description="Method used to calculate anthropogenic heat flux (QF) and CO2 emissions. Options include observed values, Loridan et al. (2011) SAHP, Järvi et al. (2011) SAHP_2, and Järvi et al. (2019) methods",
         unit="dimensionless"
     )
-    storageheatmethod: FlexibleRefValue[StorageHeatMethod] = Field(
+    storageheatmethod: FlexibleRefValue(StorageHeatMethod) = Field(
         default=StorageHeatMethod.OHM_WITHOUT_QF,
         description="Method used to calculate storage heat flux (ΔQS). Options include observed values, Objective Hysteresis Model (OHM), AnOHM, Element Surface Temperature Method (ESTM), and extended ESTM",
         unit="dimensionless"
     )
-    ohmincqf: FlexibleRefValue[OhmIncQf] = Field(
+    ohmincqf: FlexibleRefValue(OhmIncQf) = Field(
         default=OhmIncQf.EXCLUDE,
         description="Whether to include anthropogenic heat flux (QF) in OHM storage heat calculations. 0: use Q* only, 1: use Q*+QF",
         unit="dimensionless"
     )
-    roughlenmommethod: FlexibleRefValue[RoughnessMethod] = Field(
+    roughlenmommethod: FlexibleRefValue(RoughnessMethod) = Field(
         default=RoughnessMethod.VARIABLE,
         description="Method used to calculate momentum roughness length (z0). Options include fixed values, variable based on vegetation, MacDonald (1998), and Grimmond & Oke (1999) methods",
         unit="dimensionless"
     )
-    roughlenheatmethod: FlexibleRefValue[RoughnessMethod] = Field(
+    roughlenheatmethod: FlexibleRefValue(RoughnessMethod) = Field(
         default=RoughnessMethod.VARIABLE,
         description="Method used to calculate heat roughness length (z0h). Options include fixed values, variable based on vegetation, MacDonald (1998), and Grimmond & Oke (1999) methods",
         unit="dimensionless"
     )
-    stabilitymethod: FlexibleRefValue[StabilityMethod] = Field(
+    stabilitymethod: FlexibleRefValue(StabilityMethod) = Field(
         default=StabilityMethod.CAMPBELL_NORMAN,
         description="Method used for atmospheric stability correction functions. Options include Dyer (1974)/Högström (1988), Campbell & Norman (1998), and Businger et al. (1971) formulations",
         unit="dimensionless"
     )
-    smdmethod: FlexibleRefValue[SMDMethod] = Field(
+    smdmethod: FlexibleRefValue(SMDMethod) = Field(
         default=SMDMethod.MODELLED,
         description="Method used to calculate soil moisture deficit (SMD). Options include modelled using parameters, or observed volumetric/gravimetric soil moisture from forcing file",
         unit="dimensionless"
     )
-    waterusemethod: FlexibleRefValue[WaterUseMethod] = Field(
+    waterusemethod: FlexibleRefValue(WaterUseMethod) = Field(
         default=WaterUseMethod.MODELLED,
         description="Method used to calculate external water use for irrigation. Options include modelled using parameters or observed values from forcing file",
         unit="dimensionless"
     )
-    diagmethod: FlexibleRefValue[DiagMethod] = Field(
+    diagmethod: FlexibleRefValue(DiagMethod) = Field(
         default=DiagMethod.VARIABLE,
         description="Method used for calculating near-surface diagnostics and profiles of temperature, humidity, and wind speed. Options include MOST, RST, or variable selection based on surface characteristics",
         unit="dimensionless"
     )
-    faimethod: FlexibleRefValue[FAIMethod] = Field(
+    faimethod: FlexibleRefValue(FAIMethod) = Field(
         default=FAIMethod.FIXED,
         description="Method used to calculate frontal area index (FAI). Options include fixed values or variable based on vegetation state",
         unit="dimensionless"
     )
-    localclimatemethod: FlexibleRefValue[LocalClimateMethod] = Field(
+    localclimatemethod: FlexibleRefValue(LocalClimateMethod) = Field(
         default=LocalClimateMethod.NONE,
         description="Method used for accounting for local climate effects on surface processes (e.g. near-surface temperature impacts on phenology). Options include none, basic, or detailed approaches",
         unit="dimensionless"
     )
-    snowuse: FlexibleRefValue[SnowUse] = Field(
+    snowuse: FlexibleRefValue(SnowUse) = Field(
         default=SnowUse.DISABLED,
         description="Whether to include snow calculations in the model. 0: snow calculations disabled, 1: snow calculations enabled",
         unit="dimensionless"
     )
-    stebbsmethod: FlexibleRefValue[StebbsMethod] = Field(
+    stebbsmethod: FlexibleRefValue(StebbsMethod) = Field(
         default=StebbsMethod.NONE,
         description="Method used for STEBBS (Surface Temperature Energy Balance Based Scheme) calculations. Options include none, default parameters, or user-provided parameters",
         unit="dimensionless"
@@ -404,22 +404,27 @@ class ModelPhysics(BaseModel):
         so multiple errors (if any) can be raised together
         """
         errors = []
+        # Get values for comparison
+        storageheatmethod_val = self.storageheatmethod.value if isinstance(self.storageheatmethod, RefValue) else self.storageheatmethod
+        ohmincqf_val = self.ohmincqf.value if isinstance(self.ohmincqf, RefValue) else self.ohmincqf
+        snowuse_val = self.snowuse.value if isinstance(self.snowuse, RefValue) else self.snowuse
+        
         # storageheatmethod check
-        if self.storageheatmethod == 1 and self.ohmincqf != 0:
+        if storageheatmethod_val == 1 and ohmincqf_val != 0:
             errors.append(
-                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
+                f"\nStorageHeatMethod is set to {storageheatmethod_val} and OhmIncQf is set to {ohmincqf_val}.\n"
                 f"You should switch to OhmIncQf=0.\n"
             )
-        elif self.storageheatmethod == 2 and self.ohmincqf != 1:
+        elif storageheatmethod_val == 2 and ohmincqf_val != 1:
             errors.append(
-                f"\nStorageHeatMethod is set to {self.storageheatmethod} and OhmIncQf is set to {self.ohmincqf}.\n"
+                f"\nStorageHeatMethod is set to {storageheatmethod_val} and OhmIncQf is set to {ohmincqf_val}.\n"
                 f"You should switch to OhmIncQf=1.\n"
             )
 
         # snowusemethod check
-        if self.snowuse == 1:
+        if snowuse_val == 1:
             errors.append(
-                f"\nSnowUse is set to {self.snowuse}.\n"
+                f"\nSnowUse is set to {snowuse_val}.\n"
                 f"There are no checks implemented for this case (snow calculations included in the run).\n"
                 f"You should switch to SnowUse=0.\n"
             )
@@ -450,7 +455,8 @@ class ModelPhysics(BaseModel):
             if (col_name, idx_str) not in df_state.columns:
                 # df_state[(col_name, idx_str)] = np.nan
                 df_state[(col_name, idx_str)] = None
-            df_state.at[grid_id, (col_name, idx_str)] = int(value.value)
+            val = value.value if isinstance(value, RefValue) else value
+            df_state.at[grid_id, (col_name, idx_str)] = int(val)
 
         list_attr = [
             "netradiationmethod",
@@ -517,11 +523,11 @@ class ModelControl(BaseModel):
     tstep: int = Field(
         default=300, description="Time step in seconds for model calculations"
     )
-    forcing_file: FlexibleRefValue[str] = Field(
+    forcing_file: FlexibleRefValue(str) = Field(
         default="forcing.txt",
         description="Path to meteorological forcing data file",
     )
-    kdownzen: Optional[FlexibleRefValue[int]] = Field(
+    kdownzen: Optional[FlexibleRefValue(int)] = Field(
         default=None,
         description="Use zenithal correction for downward shortwave radiation",
     )
@@ -587,9 +593,12 @@ class Model(BaseModel):
 
     @model_validator(mode="after")
     def validate_radiation_method(self) -> "Model":
+        netradiationmethod_val = self.physics.netradiationmethod.value if isinstance(self.physics.netradiationmethod, RefValue) else self.physics.netradiationmethod
+        forcing_file_val = self.control.forcing_file.value if isinstance(self.control.forcing_file, RefValue) else self.control.forcing_file
+        
         if (
-            self.physics.netradiationmethod.value == 1
-            and self.control.forcing_file.value == "forcing.txt"
+            netradiationmethod_val == 1
+            and forcing_file_val == "forcing.txt"
         ):
             raise ValueError(
                 "NetRadiationMethod is set to 1 (using observed Ldown). "

@@ -7,63 +7,63 @@ import math
 
 class WaterDistribution(BaseModel):
     # Optional fields for all possible distributions
-    to_paved: Optional[FlexibleRefValue[float]] = Field(
+    to_paved: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water redistributed to paved surfaces within the grid",
         unit="dimensionless",
         ge=0,
         le=1,
     )
-    to_bldgs: Optional[FlexibleRefValue[float]] = Field(
+    to_bldgs: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water redistributed to building surfaces within the grid",
         unit="dimensionless",
         ge=0,
         le=1,
     )
-    to_dectr: Optional[FlexibleRefValue[float]] = Field(
+    to_dectr: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water redistributed to deciduous tree surfaces within the grid",
         unit="dimensionless",
         ge=0,
         le=1,
     )
-    to_evetr: Optional[FlexibleRefValue[float]] = Field(
+    to_evetr: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water redistributed to evergreen tree surfaces within the grid",
         unit="dimensionless",
         ge=0,
         le=1,
     )
-    to_grass: Optional[FlexibleRefValue[float]] = Field(
+    to_grass: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water redistributed to grass surfaces within the grid",
         unit="dimensionless",
         ge=0,
         le=1,
     )
-    to_bsoil: Optional[FlexibleRefValue[float]] = Field(
+    to_bsoil: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water redistributed to bare soil surfaces within the grid",
         unit="dimensionless",
         ge=0,
         le=1,
     )
-    to_water: Optional[FlexibleRefValue[float]] = Field(
+    to_water: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water redistributed to water surfaces within the grid",
         unit="dimensionless",
         ge=0,
         le=1,
     )
-    to_runoff: Optional[FlexibleRefValue[float]] = Field(
+    to_runoff: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water going to surface runoff (for impervious surfaces: paved and buildings)",
         unit="dimensionless",
         ge=0,
         le=1,
     )  # For paved/bldgs
-    to_soilstore: Optional[FlexibleRefValue[float]] = Field(
+    to_soilstore: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water going to subsurface soil storage (for pervious surfaces: vegetation and bare soil)",
         unit="dimensionless",
@@ -362,35 +362,35 @@ class WaterDistribution(BaseModel):
 
 
 class StorageDrainParams(BaseModel):
-    store_min: FlexibleRefValue[float] = Field(
+    store_min: FlexibleRefValue(float) = Field(
         ge=0,
         default=0.0,
         description="Minimum water storage capacity",
         unit="mm",
     )
-    store_max: FlexibleRefValue[float] = Field(
+    store_max: FlexibleRefValue(float) = Field(
         ge=0,
         default=10.0,
         description="Maximum water storage capacity",
         unit="mm",
     )
-    store_cap: FlexibleRefValue[float] = Field(
+    store_cap: FlexibleRefValue(float) = Field(
         ge=0,
         default=10.0,
         description="Water storage capacity",
         unit="mm",
     )
-    drain_eq: FlexibleRefValue[int] = Field(
+    drain_eq: FlexibleRefValue(int) = Field(
         default=0,
         description="Drainage equation selection (0: linear, 1: exponential)",
         unit="dimensionless",
     )
-    drain_coef_1: FlexibleRefValue[float] = Field(
+    drain_coef_1: FlexibleRefValue(float) = Field(
         default=0.013,
         description="Drainage coefficient 1 (rate parameter)",
         unit="mm h^-1",
     )
-    drain_coef_2: FlexibleRefValue[float] = Field(
+    drain_coef_2: FlexibleRefValue(float) = Field(
         default=1.71,
         description="Drainage coefficient 2 (shape parameter)",
         unit="dimensionless",
@@ -442,9 +442,9 @@ class StorageDrainParams(BaseModel):
                 "store_cap",
             ]
         ):
-            df.loc[grid_id, ("storedrainprm", f"({i}, {surf_idx})")] = getattr(
-                self, var
-            ).value
+            field_val = getattr(self, var)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df.loc[grid_id, ("storedrainprm", f"({i}, {surf_idx})")] = val
 
         return df
 

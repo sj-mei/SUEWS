@@ -6,17 +6,17 @@ from .type import init_df_state
 
 
 class OHMCoefficients(BaseModel):
-    a1: FlexibleRefValue[float] = Field(
+    a1: FlexibleRefValue(float) = Field(
         description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation",
         unit="dimensionless",
         default=0.0,
     )
-    a2: FlexibleRefValue[float] = Field(
+    a2: FlexibleRefValue(float) = Field(
         description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation",
         unit="h",
         default=0.0,
     )
-    a3: FlexibleRefValue[float] = Field(
+    a3: FlexibleRefValue(float) = Field(
         description="OHM coefficient a3: constant offset term for storage heat flux",
         unit="W m^-2",
         default=0.0,
@@ -46,7 +46,9 @@ class OHMCoefficients(BaseModel):
         # Set values for each season/wetness combination
         for aX, idx_a in a_map.items():
             str_idx = f"({surf_idx}, {idx_s}, {idx_a})"
-            df_state.loc[grid_id, ("ohm_coef", str_idx)] = getattr(self, aX).value
+            field_val = getattr(self, aX)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df_state.loc[grid_id, ("ohm_coef", str_idx)] = val
 
         return df_state
 

@@ -9,27 +9,27 @@ from .type import init_df_state
 class IrrigationParams(
     BaseModel
 ):  # TODO: May need to add RefValue to the profiles here
-    h_maintain: FlexibleRefValue[float] = Field(
+    h_maintain: FlexibleRefValue(float) = Field(
         default=0.5,
         description="Water depth to maintain through irrigation",
         unit="mm",
     )
-    faut: FlexibleRefValue[float] = Field(
+    faut: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Fraction of automatic irrigation",
         unit="dimensionless",
     )
-    ie_start: FlexibleRefValue[float] = Field(
+    ie_start: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Start time of irrigation",
         unit="hour",
     )
-    ie_end: FlexibleRefValue[float] = Field(
+    ie_end: FlexibleRefValue(float) = Field(
         default=0.0,
         description="End time of irrigation",
         unit="hour",
     )
-    internalwateruse_h: FlexibleRefValue[float] = Field(
+    internalwateruse_h: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Internal water use rate",
         unit="mm h^-1",
@@ -54,12 +54,12 @@ class IrrigationParams(
 
         df_state = init_df_state(grid_id)
 
-        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain.value
-        df_state.loc[grid_id, ("faut", "0")] = self.faut.value
-        df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start.value
-        df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end.value
+        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain.value if isinstance(self.h_maintain, RefValue) else self.h_maintain
+        df_state.loc[grid_id, ("faut", "0")] = self.faut.value if isinstance(self.faut, RefValue) else self.faut
+        df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start.value if isinstance(self.ie_start, RefValue) else self.ie_start
+        df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end.value if isinstance(self.ie_end, RefValue) else self.ie_end
         df_state.loc[grid_id, ("internalwateruse_h", "0")] = (
-            self.internalwateruse_h.value
+            self.internalwateruse_h.value if isinstance(self.internalwateruse_h, RefValue) else self.internalwateruse_h
         )
 
         df_daywatper = self.daywatper.to_df_state(grid_id, "daywatper")
@@ -274,17 +274,17 @@ class AnthropogenicHeat(
 
 
 class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profiles here
-    co2pointsource: FlexibleRefValue[float] = Field(
+    co2pointsource: FlexibleRefValue(float) = Field(
         default=0.0,
         description="CO2 point source emission factor",
         unit="kg m^-2 s^-1",
     )
-    ef_umolco2perj: FlexibleRefValue[float] = Field(
+    ef_umolco2perj: FlexibleRefValue(float) = Field(
         default=0.0,
         description="CO2 emission factor per unit of fuel energy",
         unit="umol J^-1",
     )
-    enef_v_jkm: FlexibleRefValue[float] = Field(
+    enef_v_jkm: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Vehicle energy consumption factor",
         unit="J km^-1",
@@ -293,32 +293,32 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
         description="Fuel consumption efficiency for vehicles",
         default_factory=DayProfile,
     )
-    frfossilfuel_heat: FlexibleRefValue[float] = Field(
+    frfossilfuel_heat: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Fraction of heating energy from fossil fuels",
         unit="dimensionless",
     )
-    frfossilfuel_nonheat: FlexibleRefValue[float] = Field(
+    frfossilfuel_nonheat: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Fraction of non-heating energy from fossil fuels",
         unit="dimensionless",
     )
-    maxfcmetab: FlexibleRefValue[float] = Field(
+    maxfcmetab: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Maximum metabolic CO2 flux rate",
         unit="umol m^-2 s^-1",
     )
-    maxqfmetab: FlexibleRefValue[float] = Field(
+    maxqfmetab: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Maximum metabolic heat flux rate",
         unit="W m^-2",
     )
-    minfcmetab: FlexibleRefValue[float] = Field(
+    minfcmetab: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Minimum metabolic CO2 flux rate",
         unit="umol m^-2 s^-1",
     )
-    minqfmetab: FlexibleRefValue[float] = Field(
+    minqfmetab: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Minimum metabolic heat flux rate",
         unit="W m^-2",
@@ -327,7 +327,7 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
         description="Traffic rate",
         default_factory=DayProfile,
     )
-    trafficunits: FlexibleRefValue[float] = Field(
+    trafficunits: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Units for traffic density normalization",
         unit="vehicle km ha^-1",
@@ -358,16 +358,16 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
         df_state = init_df_state(grid_id)
 
         scalar_params = {
-            "co2pointsource": self.co2pointsource.value,
-            "ef_umolco2perj": self.ef_umolco2perj.value,
-            "enef_v_jkm": self.enef_v_jkm.value,
-            "frfossilfuel_heat": self.frfossilfuel_heat.value,
-            "frfossilfuel_nonheat": self.frfossilfuel_nonheat.value,
-            "maxfcmetab": self.maxfcmetab.value,
-            "maxqfmetab": self.maxqfmetab.value,
-            "minfcmetab": self.minfcmetab.value,
-            "minqfmetab": self.minqfmetab.value,
-            "trafficunits": self.trafficunits.value,
+            "co2pointsource": self.co2pointsource.value if isinstance(self.co2pointsource, RefValue) else self.co2pointsource,
+            "ef_umolco2perj": self.ef_umolco2perj.value if isinstance(self.ef_umolco2perj, RefValue) else self.ef_umolco2perj,
+            "enef_v_jkm": self.enef_v_jkm.value if isinstance(self.enef_v_jkm, RefValue) else self.enef_v_jkm,
+            "frfossilfuel_heat": self.frfossilfuel_heat.value if isinstance(self.frfossilfuel_heat, RefValue) else self.frfossilfuel_heat,
+            "frfossilfuel_nonheat": self.frfossilfuel_nonheat.value if isinstance(self.frfossilfuel_nonheat, RefValue) else self.frfossilfuel_nonheat,
+            "maxfcmetab": self.maxfcmetab.value if isinstance(self.maxfcmetab, RefValue) else self.maxfcmetab,
+            "maxqfmetab": self.maxqfmetab.value if isinstance(self.maxqfmetab, RefValue) else self.maxqfmetab,
+            "minfcmetab": self.minfcmetab.value if isinstance(self.minfcmetab, RefValue) else self.minfcmetab,
+            "minqfmetab": self.minqfmetab.value if isinstance(self.minqfmetab, RefValue) else self.minqfmetab,
+            "trafficunits": self.trafficunits.value if isinstance(self.trafficunits, RefValue) else self.trafficunits,
         }
         for param_name, value in scalar_params.items():
             df_state.loc[grid_id, (param_name, "0")] = value
@@ -445,12 +445,12 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
 
 
 class AnthropogenicEmissions(BaseModel):
-    startdls: FlexibleRefValue[float] = Field(
+    startdls: FlexibleRefValue(float) = Field(
         default=0.0,
         description="Start of daylight savings time in decimal day of year",
         unit="day",
     )
-    enddls: FlexibleRefValue[float] = Field(
+    enddls: FlexibleRefValue(float) = Field(
         default=0.0,
         description="End of daylight savings time in decimal day of year",
         unit="day",
@@ -479,8 +479,8 @@ class AnthropogenicEmissions(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set start and end daylight saving times
-        df_state.loc[grid_id, ("startdls", "0")] = self.startdls.value
-        df_state.loc[grid_id, ("enddls", "0")] = self.enddls.value
+        df_state.loc[grid_id, ("startdls", "0")] = self.startdls.value if isinstance(self.startdls, RefValue) else self.startdls
+        df_state.loc[grid_id, ("enddls", "0")] = self.enddls.value if isinstance(self.enddls, RefValue) else self.enddls
 
         # Add heat parameters
         df_heat = self.heat.to_df_state(grid_id)
