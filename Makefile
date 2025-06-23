@@ -59,6 +59,10 @@ help:
 	@echo "  wheel           - Build distribution wheels"
 	@echo "  clean           - Clean all build artifacts"
 	@echo ""
+	@echo "Claude Code Integration:"
+	@echo "  Use ./claude-dev/claude.sh for workspace management"
+	@echo "  See claude-dev/README.md for complete documentation"
+	@echo ""
 	@echo "Legacy/Manual Commands:"
 	@echo "  mamba-dev       - Build SUEWS with mamba environment check (legacy - use 'make dev')"
 	@echo "  install-and-test - Install SUEWS to current Python environment + run tests (old 'make all')"
@@ -210,6 +214,6 @@ deactivate:
 		echo "No conda/mamba/virtual environment detected"; \
 	fi; \
 	echo ""; \
-	echo "Environment deactivation commands cannot be executed from Makefiles."; \
+	@echo "Environment deactivation commands cannot be executed from Makefiles."; \
 	echo "Please run the suggested command in your shell."
 
