@@ -163,13 +163,12 @@ class SUEWSSimulation:
     
     def _config_to_dataframe_state(self) -> pd.DataFrame:
         """Convert SUEWSConfig to DataFrame state format."""
-        # This would use existing conversion functions
-        # For now, create a minimal valid state
-        # In real implementation, this would call the config.to_df_state() method
         self._log("Converting configuration to DataFrame state format")
         
-        # Placeholder implementation - would use actual conversion logic
-        return pd.DataFrame(index=[1])  # Minimal valid state
+        # Use the actual config conversion method
+        df_state = self._config.to_df_state()
+        
+        return df_state
     
     @classmethod
     def from_yaml(cls, yaml_path: Union[str, Path], **kwargs) -> 'SUEWSSimulation':
@@ -236,14 +235,8 @@ class SUEWSSimulation:
     
     def _load_forcing_file(self, forcing_path: Path) -> pd.DataFrame:
         """Load forcing data from file using existing SuPy functions."""
-        # Use existing loading functions based on file extension
-        if forcing_path.suffix.lower() == '.csv':
-            df = pd.read_csv(forcing_path, index_col=0, parse_dates=True)
-        else:
-            # Use SuPy loading functions for other formats
-            df = pd.read_csv(forcing_path, index_col=0, parse_dates=True)  # Simplified
-        
-        return df
+        from supy.util._io import read_forcing
+        return read_forcing(str(forcing_path))
     
     def _validate_forcing(self):
         """Validate forcing data format and content."""
