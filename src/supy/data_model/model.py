@@ -554,8 +554,10 @@ class ModelControl(BaseModel):
 
     @model_validator(mode="after")
     def check_forcing(self):
-        from .._load import load_SUEWS_Forcing_met_df_yaml
-        forcing = load_SUEWS_Forcing_met_df_yaml(self.forcing_file.value)
+        # TODO: Implement forcing file validation
+        # from .._load import load_SUEWS_Forcing_met_df_yaml
+        # forcing = load_SUEWS_Forcing_met_df_yaml(self.forcing_file.value)
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model control properties to DataFrame state format."""
