@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 [... existing content remains unchanged ...]
 
+## Git and GitHub Tips
+
+- When using gh cli, first check remotes, only keep original - remove others
+
 ## Testing Resources
 
 ### Benchmark Test Files
