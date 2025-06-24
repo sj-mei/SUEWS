@@ -414,7 +414,10 @@ MODULE ctrl_output
       varAttr('DensSnow_Water', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
       varAttr('a1', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('a2', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('a3', 'to be added', f104, 'to be added', aL, 'DailyState', 0) &
+      varAttr('a3', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('a1_bldg', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('a2_bldg', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('a3_bldg', 'to be added', f104, 'to be added', aL, 'DailyState', 0) &
       /
 
    ! RSL profiles
