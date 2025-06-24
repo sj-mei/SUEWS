@@ -1,8 +1,8 @@
 from enum import Enum
-from pydantic import BaseModel, Field, PrivateAttr, model_validator
+from pydantic import ConfigDict, BaseModel, Field, PrivateAttr, model_validator
 from typing import Optional, Literal, List, Union
 import pandas as pd
-from .type import RefValue, Reference
+from .type import RefValue, Reference, FlexibleRefValue
 
 from .type import init_df_state
 
@@ -14,20 +14,17 @@ from .hydro import WaterDistribution, StorageDrainParams
 
 
 class ThermalLayers(BaseModel):
-    dz: RefValue[List[float]] = Field(
-        default=RefValue([0.1, 0.2, 0.3, 0.4, 0.5]),
-        description="Thickness of thermal layers from surface to depth",
-        unit="m",
+    dz: FlexibleRefValue(List[float]) = Field(
+        default=[0.1, 0.2, 0.3, 0.4, 0.5],
+        description="Thickness of thermal layers from surface to depth", json_schema_extra={"unit": "m"},
     )
-    k: RefValue[List[float]] = Field(
-        default=RefValue([1.0, 1.0, 1.0, 1.0, 1.0]),
-        description="Thermal conductivity of each thermal layer",
-        unit="W m^-1 K^-1",
+    k: FlexibleRefValue(List[float]) = Field(
+        default=[1.0, 1.0, 1.0, 1.0, 1.0],
+        description="Thermal conductivity of each thermal layer", json_schema_extra={"unit": "W m^-1 K^-1"},
     )
-    rho_cp: RefValue[List[float]] = Field(
-        default=RefValue([1000, 1000, 1000, 1000, 1000]),
-        description="Volumetric heat capacity of each thermal layer",
-        unit="J m^-3 K^-1",
+    rho_cp: FlexibleRefValue(List[float]) = Field(
+        default=[1000, 1000, 1000, 1000, 1000],
+        description="Volumetric heat capacity of each thermal layer", json_schema_extra={"unit": "J m^-3 K^-1"},
     )
 
     ref: Optional[Reference] = None
@@ -68,9 +65,12 @@ class ThermalLayers(BaseModel):
 
         # Add thermal layer parameters
         for i in range(5):
-            df_state[(f"dz_{suffix}", f"({idx}, {i})")] = self.dz.value[i]
-            df_state[(f"k_{suffix}", f"({idx}, {i})")] = self.k.value[i]
-            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = self.rho_cp.value[i] # TODO: Change df_state to use rho_cp instead of cp
+            dz_val = self.dz.value if isinstance(self.dz, RefValue) else self.dz
+            k_val = self.k.value if isinstance(self.k, RefValue) else self.k
+            rho_cp_val = self.rho_cp.value if isinstance(self.rho_cp, RefValue) else self.rho_cp
+            df_state[(f"dz_{suffix}", f"({idx}, {i})")] = dz_val[i]
+            df_state[(f"k_{suffix}", f"({idx}, {i})")] = k_val[i]
+            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = rho_cp_val[i] # TODO: Change df_state to use rho_cp instead of cp
 
         return df_state
 
@@ -112,9 +112,9 @@ class ThermalLayers(BaseModel):
             rho_cp.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
 
         # Convert to RefValue
-        dz = RefValue[List[float]](dz)
-        k = RefValue[List[float]](k)
-        rho_cp = RefValue[List[float]](rho_cp)
+        dz = RefValue(dz)
+        k = RefValue(k)
+        rho_cp = RefValue(rho_cp)
 
         # Return reconstructed instance
         return cls(dz=dz, k=k, rho_cp=rho_cp)
@@ -123,75 +123,60 @@ class ThermalLayers(BaseModel):
 class SurfaceProperties(BaseModel):
     """Base properties for all surface types"""
 
-    sfr: RefValue[float] = Field(
+    sfr: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface fraction of grid area covered by this surface type",
-        unit="dimensionless",
-        default=RefValue(1.0 / 7),
+        description="Surface fraction of grid area covered by this surface type", json_schema_extra={"unit": "dimensionless"},
+        default=1.0 / 7,
     )
-    emis: RefValue[float] = Field(
+    emis: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface emissivity for longwave radiation",
-        unit="dimensionless",
-        default=RefValue(
-            value=0.95,
-            ref=Reference(desc="example value description")
-        ),
+        description="Surface emissivity for longwave radiation", json_schema_extra={"unit": "dimensionless"},
+        default=0.95,
     )
-    ch_anohm: Optional[RefValue[float]] = Field(
-        default=RefValue(0.0),
-        description="Bulk transfer coefficient for this surface. Option: AnOHM",
-        unit="J m^-3 K^-1",
+    ch_anohm: Optional[FlexibleRefValue(float)] = Field(
+        default=0.0,
+        description="Bulk transfer coefficient for this surface. Option: AnOHM", json_schema_extra={"unit": "J m^-3 K^-1"},
     )
-    rho_cp_anohm: Optional[RefValue[float]] = Field(
-        default=RefValue(1200.0),
-        description="Volumetric heat capacity for this surface to use in AnOHM",
-        unit="J m^-3 K^-1",
+    rho_cp_anohm: Optional[FlexibleRefValue(float)] = Field(
+        default=1200.0,
+        description="Volumetric heat capacity for this surface to use in AnOHM", json_schema_extra={"unit": "J m^-3 K^-1"},
     )
-    k_anohm: Optional[RefValue[float]] = Field(
-        default=RefValue(0.4),
-        description="Thermal conductivity for this surface to use in AnOHM",
-        unit="W m^-1 K^-1",
+    k_anohm: Optional[FlexibleRefValue(float)] = Field(
+        default=0.4,
+        description="Thermal conductivity for this surface to use in AnOHM", json_schema_extra={"unit": "W m^-1 K^-1"},
     )
-    ohm_threshsw: Optional[RefValue[float]] = Field(
-        default=RefValue(0.0),
-        description="Summer/winter threshold based on temperature for OHM calculation",
-        unit="degC",
+    ohm_threshsw: Optional[FlexibleRefValue(float)] = Field(
+        default=0.0,
+        description="Summer/winter threshold based on temperature for OHM calculation", json_schema_extra={"unit": "degC"},
     )
-    ohm_threshwd: Optional[RefValue[float]] = Field(
-        default=RefValue(0.0),
-        description="Soil moisture threshold determining whether wet/dry OHM coefficients are applied",
-        unit="dimensionless",
+    ohm_threshwd: Optional[FlexibleRefValue(float)] = Field(
+        default=0.0,
+        description="Soil moisture threshold determining whether wet/dry OHM coefficients are applied", json_schema_extra={"unit": "dimensionless"},
     )
     ohm_coef: Optional[OHM_Coefficient_season_wetness] = Field(
         default_factory=OHM_Coefficient_season_wetness
     )
-    soildepth: RefValue[float] = Field(
-        default=RefValue(150),
-        description="Depth of soil layer for hydrological calculations",
-        unit="mm",
+    soildepth: FlexibleRefValue(float) = Field(
+        default=150,
+        description="Depth of soil layer for hydrological calculations", json_schema_extra={"unit": "mm"},
     )
-    soilstorecap: RefValue[float] = Field(
-        default=RefValue(150.0),
-        description="Maximum water storage capacity of soil",
-        unit="mm",
+    soilstorecap: FlexibleRefValue(float) = Field(
+        default=150.0,
+        description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm"},
     )
-    statelimit: RefValue[float] = Field(
-        default=RefValue(10.0), # TODO: Check if this is an appropriate default
-        description="Minimum water storage capacity for state change",
-        unit="mm",
+    statelimit: FlexibleRefValue(float) = Field(
+        default=10.0, # TODO: Check if this is an appropriate default
+        description="Minimum water storage capacity for state change", json_schema_extra={"unit": "mm"},
     )
-    wetthresh: RefValue[float] = Field(
-        default=RefValue(0.5),
-        description="Surface wetness threshold for OHM calculations",
-        unit="dimensionless",
+    wetthresh: FlexibleRefValue(float) = Field(
+        default=0.5,
+        description="Surface wetness threshold for OHM calculations", json_schema_extra={"unit": "dimensionless"},
     )
-    sathydraulicconduct: RefValue[float] = Field(
-        default=RefValue(0.0001),
-        description="Saturated hydraulic conductivity of soil",
-        unit="mm s^-1",
+    sathydraulicconduct: FlexibleRefValue(float) = Field(
+        default=0.0001,
+        description="Saturated hydraulic conductivity of soil", json_schema_extra={"unit": "mm s^-1"},
     )
     waterdist: Optional[WaterDistribution] = Field(
         default=None, # TODO: Can this be None?
@@ -201,18 +186,16 @@ class SurfaceProperties(BaseModel):
         default_factory=StorageDrainParams,
         description="Storage and drain parameters",
     )
-    snowpacklimit: Optional[RefValue[float]] = Field(
-        default=RefValue(10.0),
-        description="Limit of snow that can be held on surface",
-        unit="mm",
+    snowpacklimit: Optional[FlexibleRefValue(float)] = Field(
+        default=10.0,
+        description="Limit of snow that can be held on surface", json_schema_extra={"unit": "mm"},
     )
     thermal_layers: ThermalLayers = Field(
         default_factory=ThermalLayers, description="Thermal layers for the surface"
     )
-    irrfrac: Optional[RefValue[float]] = Field(
-        default=RefValue(0.0),
-        description="Fraction of surface area that can be irrigated",
-        unit="dimensionless",
+    irrfrac: Optional[FlexibleRefValue(float)] = Field(
+        default=0.0,
+        description="Fraction of surface area that can be irrigated", json_schema_extra={"unit": "dimensionless"},
     )
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
@@ -449,12 +432,11 @@ class SurfaceProperties(BaseModel):
 
 
 class NonVegetatedSurfaceProperties(SurfaceProperties):
-    alb: RefValue[float] = Field(
+    alb: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface albedo",
-        unit="dimensionless",
-        default=RefValue(0.1),
+        description="Surface albedo", json_schema_extra={"unit": "dimensionless"},
+        default=0.1,
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -470,7 +452,9 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
             df_base = pd.concat([df_base, df_waterdist], axis=1).sort_index(axis=1)
 
         for attr in ["alb"]:
-            df_base.loc[grid_id, (attr, f"({surf_idx},)")] = getattr(self, attr).value
+            field_val = getattr(self, attr)
+            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            df_base.loc[grid_id, (attr, f"({surf_idx},)")] = val
             df_base = df_base.sort_index(axis=1)
 
         return df_base
@@ -512,7 +496,6 @@ class PavedProperties(
         for attr in dir(self):
             if (
                 not attr.startswith("_")
-                and not callable(getattr(self, attr))
                 and not attr.startswith("model_")
                 and attr
                 not in [
@@ -523,6 +506,7 @@ class PavedProperties(
                     "ohm_coef",
                 ]
                 and attr not in dir(super())
+                and not callable(getattr(self, attr))
             ):
                 value = getattr(self, attr)
                 if not isinstance(value, (BaseModel, Enum)):
@@ -565,48 +549,41 @@ class PavedProperties(
 class BuildingLayer(
     BaseModel
 ):  # May need to move VWD for thermal layers here for referencing
-    alb: RefValue[float] = Field(
+    alb: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface albedo",
-        unit="dimensionless",
-        default=RefValue(0.1),
+        description="Surface albedo", json_schema_extra={"unit": "dimensionless"},
+        default=0.1,
     )
-    emis: RefValue[float] = Field(
+    emis: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface emissivity",
-        unit="dimensionless",
-        default=RefValue(0.95),
+        description="Surface emissivity", json_schema_extra={"unit": "dimensionless"},
+        default=0.95,
     )
     thermal_layers: ThermalLayers = Field(
         default_factory=ThermalLayers,
         description="Thermal layers for the surface",
     )
-    statelimit: RefValue[float] = Field(
-        default=RefValue(10.0),
-        description="Minimum water storage capacity for state change",
-        unit="mm",
+    statelimit: FlexibleRefValue(float) = Field(
+        default=10.0,
+        description="Minimum water storage capacity for state change", json_schema_extra={"unit": "mm"},
     )
-    soilstorecap: RefValue[float] = Field(
-        default=RefValue(150.0),
-        description="Maximum water storage capacity of soil",
-        unit="mm",
+    soilstorecap: FlexibleRefValue(float) = Field(
+        default=150.0,
+        description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm"},
     )
-    wetthresh: RefValue[float] = Field(
-        default=RefValue(0.5),
-        description="Surface wetness threshold for OHM calculations",
-        unit="dimensionless",
+    wetthresh: FlexibleRefValue(float) = Field(
+        default=0.5,
+        description="Surface wetness threshold for OHM calculations", json_schema_extra={"unit": "dimensionless"},
     )
-    roof_albedo_dir_mult_fact: Optional[RefValue[float]] = Field(
-        default=RefValue(0.1),
-        description="Directional albedo multiplication factor for roofs",
-        unit="dimensionless",
+    roof_albedo_dir_mult_fact: Optional[FlexibleRefValue(float)] = Field(
+        default=0.1,
+        description="Directional albedo multiplication factor for roofs", json_schema_extra={"unit": "dimensionless"},
     )
-    wall_specular_frac: Optional[RefValue[float]] = Field(
-        default=RefValue(0.1),
-        description="Specular reflection fraction for walls",
-        unit="dimensionless",
+    wall_specular_frac: Optional[FlexibleRefValue(float)] = Field(
+        default=0.1,
+        description="Specular reflection fraction for walls", json_schema_extra={"unit": "dimensionless"},
     )
     _facet_type: Literal["roof", "wall"] = PrivateAttr(default="roof")
 
@@ -630,15 +607,15 @@ class BuildingLayer(
         df_state = init_df_state(grid_id)
 
         # Add basic parameters
-        df_state[(f"alb_{facet_type}", f"({layer_idx},)")] = self.alb.value
-        df_state[(f"emis_{facet_type}", f"({layer_idx},)")] = self.emis.value
+        df_state[(f"alb_{facet_type}", f"({layer_idx},)")] = self.alb.value if isinstance(self.alb, RefValue) else self.alb
+        df_state[(f"emis_{facet_type}", f"({layer_idx},)")] = self.emis.value if isinstance(self.emis, RefValue) else self.emis
         df_state[(f"statelimit_{facet_type}", f"({layer_idx},)")] = (
-            self.statelimit.value
+            self.statelimit.value if isinstance(self.statelimit, RefValue) else self.statelimit
         )
         df_state[(f"soilstorecap_{facet_type}", f"({layer_idx},)")] = (
-            self.soilstorecap.value
+            self.soilstorecap.value if isinstance(self.soilstorecap, RefValue) else self.soilstorecap
         )
-        df_state[(f"wetthresh_{facet_type}", f"({layer_idx},)")] = self.wetthresh.value
+        df_state[(f"wetthresh_{facet_type}", f"({layer_idx},)")] = self.wetthresh.value if isinstance(self.wetthresh, RefValue) else self.wetthresh
 
         # Determine prefix based on layer type
         prefix = facet_type
@@ -646,11 +623,11 @@ class BuildingLayer(
         # Add layer-specific parameters
         if facet_type == "roof" and self.roof_albedo_dir_mult_fact is not None:
             df_state[(f"{prefix}_albedo_dir_mult_fact", f"(0, {layer_idx})")] = (
-                self.roof_albedo_dir_mult_fact.value
+                self.roof_albedo_dir_mult_fact.value if isinstance(self.roof_albedo_dir_mult_fact, RefValue) else self.roof_albedo_dir_mult_fact
             )
         elif facet_type == "wall" and self.wall_specular_frac is not None:
             df_state[(f"{prefix}_specular_frac", f"(0, {layer_idx})")] = (
-                self.wall_specular_frac.value
+                self.wall_specular_frac.value if isinstance(self.wall_specular_frac, RefValue) else self.wall_specular_frac
             )
 
         # Add thermal layers
@@ -720,14 +697,13 @@ class BldgsProperties(
     NonVegetatedSurfaceProperties
 ):  # May need to move VWD for waterdist to here for referencing
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
-    faibldg: RefValue[float] = Field(
+    faibldg: FlexibleRefValue(float) = Field(
         ge=0,
-        default=RefValue(0.3),
-        description="Frontal area index of buildings",
-        unit="dimensionless",
+        default=0.3,
+        description="Frontal area index of buildings", json_schema_extra={"unit": "dimensionless"},
     )
-    bldgh: RefValue[float] = Field(
-        ge=3, default=RefValue(10.0), description="Building height", unit="m"
+    bldgh: FlexibleRefValue(float) = Field(
+        ge=3, default=10.0, description="Building height", json_schema_extra={"unit": "m"}
     )  # We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
@@ -751,9 +727,9 @@ class BldgsProperties(
         """Convert building properties to DataFrame state format."""
         df_state = super().to_df_state(grid_id).sort_index(axis=1)
 
-        df_state.loc[grid_id, ("faibldg", "0")] = self.faibldg.value
+        df_state.loc[grid_id, ("faibldg", "0")] = self.faibldg.value if isinstance(self.faibldg, RefValue) else self.faibldg
         df_state = df_state.sort_index(axis=1)
-        df_state.loc[grid_id, ("bldgh", "0")] = self.bldgh.value
+        df_state.loc[grid_id, ("bldgh", "0")] = self.bldgh.value if isinstance(self.bldgh, RefValue) else self.bldgh
 
         return df_state
 
@@ -792,10 +768,9 @@ class BsoilProperties(
 
 class WaterProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
-    flowchange: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Change in water flow for water bodies",
-        unit="mm h^-1",
+    flowchange: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Change in water flow for water bodies", json_schema_extra={"unit": "mm h^-1"},
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -814,7 +789,7 @@ class WaterProperties(NonVegetatedSurfaceProperties):
         list_attr = ["flowchange"]
 
         # Add all non-inherited properties
-        df_state.loc[grid_id, ("flowchange", "0")] = self.flowchange.value
+        df_state.loc[grid_id, ("flowchange", "0")] = self.flowchange.value if isinstance(self.flowchange, RefValue) else self.flowchange
 
         return df_state
 
@@ -836,35 +811,29 @@ class WallLayer(BuildingLayer):
 
 
 class VerticalLayers(BaseModel):
-    nlayer: RefValue[int] = Field(
-        default=RefValue(3),
-        description="Number of vertical layers in the urban canopy",
-        unit="dimensionless",
+    nlayer: FlexibleRefValue(int) = Field(
+        default=3,
+        description="Number of vertical layers in the urban canopy", json_schema_extra={"unit": "dimensionless"},
     )
-    height: RefValue[List[float]] = Field(
-        default=RefValue([0.0, 10.0, 20.0, 30.0]),
-        description="Heights of layer boundaries, length must be nlayer+1",
-        unit="m",
+    height: FlexibleRefValue(List[float]) = Field(
+        default=[0.0, 10.0, 20.0, 30.0],
+        description="Heights of layer boundaries, length must be nlayer+1", json_schema_extra={"unit": "m"},
     )
-    veg_frac: RefValue[List[float]] = Field(
-        default=RefValue([0.0, 0.0, 0.0]),
-        description="Fraction of vegetation in each layer, length must be nlayer",
-        unit="dimensionless",
+    veg_frac: FlexibleRefValue(List[float]) = Field(
+        default=[0.0, 0.0, 0.0],
+        description="Fraction of vegetation in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
     )
-    veg_scale: RefValue[List[float]] = Field(
-        default=RefValue([1.0, 1.0, 1.0]),
-        description="Scaling factor for vegetation in each layer, length must be nlayer",
-        unit="dimensionless",
+    veg_scale: FlexibleRefValue(List[float]) = Field(
+        default=[1.0, 1.0, 1.0],
+        description="Scaling factor for vegetation in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
     )
-    building_frac: RefValue[List[float]] = Field(
-        default=RefValue([0.4, 0.3, 0.3]),
-        description="Fraction of buildings in each layer, must sum to 1.0, length must be nlayer",
-        unit="dimensionless",
+    building_frac: FlexibleRefValue(List[float]) = Field(
+        default=[0.4, 0.3, 0.3],
+        description="Fraction of buildings in each layer, must sum to 1.0, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
     )
-    building_scale: RefValue[List[float]] = Field(
-        default=RefValue([1.0, 1.0, 1.0]),
-        description="Scaling factor for buildings in each layer, length must be nlayer",
-        unit="dimensionless",
+    building_scale: FlexibleRefValue(List[float]) = Field(
+        default=[1.0, 1.0, 1.0],
+        description="Scaling factor for buildings in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
     )
     roofs: List[RoofLayer] = Field(
         default_factory=lambda: [RoofLayer(), RoofLayer(), RoofLayer()],
@@ -880,15 +849,20 @@ class VerticalLayers(BaseModel):
     @model_validator(mode="after")
     def validate_building(self) -> "VerticalLayers":
         # Validate building heights
-        if len(self.height.value) != self.nlayer.value + 1:
+        # Handle FlexibleRefValue fields (Union of RefValue and simple values)
+        height_val = self.height.value if isinstance(self.height, RefValue) else self.height
+        nlayer_val = self.nlayer.value if isinstance(self.nlayer, RefValue) else self.nlayer
+        
+        if len(height_val) != nlayer_val + 1:
             raise ValueError(
-                f"Number of building heights ({len(self.height.value)}) must match nlayer+1 = ({self.nlayer.value + 1})"
+                f"Number of building heights ({len(height_val)}) must match nlayer+1 = ({nlayer_val + 1})"
             )
 
         # Validate building fractions
-        if len(self.building_frac.value) != self.nlayer.value:
+        building_frac_val = self.building_frac.value if isinstance(self.building_frac, RefValue) else self.building_frac
+        if len(building_frac_val) != nlayer_val:
             raise ValueError(
-                f"Number of building fractions ({len(self.building_frac.value)}) must match nlayer ({self.nlayer.value})"
+                f"Number of building fractions ({len(building_frac_val)}) must match nlayer ({nlayer_val})"
             )
         # This rule is not correct, we just need building_frac to be in range [0,1]
         # if not math.isclose(sum(self.building_frac), 1.0, rel_tol=1e-9):
@@ -897,21 +871,22 @@ class VerticalLayers(BaseModel):
         #    )
 
         # Validate building scales
-        if len(self.building_scale.value) != self.nlayer.value:
+        building_scale_val = self.building_scale.value if isinstance(self.building_scale, RefValue) else self.building_scale
+        if len(building_scale_val) != nlayer_val:
             raise ValueError(
-                f"Number of building scales ({len(self.building_scale.value)}) must match nlayer ({self.nlayer.value})"
+                f"Number of building scales ({len(building_scale_val)}) must match nlayer ({nlayer_val})"
             )
 
         # Validate number of roof layers matches nlayer
-        if len(self.roofs) != self.nlayer.value:
+        if len(self.roofs) != nlayer_val:
             raise ValueError(
-                f"Number of roof layers ({len(self.roof)}) must match nlayer ({self.nlayer.value})"
+                f"Number of roof layers ({len(self.roofs)}) must match nlayer ({nlayer_val})"
             )
 
         # Validate number of wall layers matches nlayer
-        if len(self.walls) != self.nlayer.value:
+        if len(self.walls) != nlayer_val:
             raise ValueError(
-                f"Number of wall layers ({len(self.wall)}) must match nlayer ({self.nlayer.value})"
+                f"Number of wall layers ({len(self.walls)}) must match nlayer ({nlayer_val})"
             )
 
         return self
@@ -922,29 +897,33 @@ class VerticalLayers(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set number of vertical layers
-        df_state[(f"nlayer", "0")] = self.nlayer.value
+        nlayer_val = self.nlayer.value if isinstance(self.nlayer, RefValue) else self.nlayer
+        df_state[(f"nlayer", "0")] = nlayer_val
 
         # Set heights for each layer boundary (nlayer + 1 heights needed)
-        for i in range(self.nlayer.value + 1):
-            df_state[("height", f"({i},)")] = self.height.value[i]
+        height_val = self.height.value if isinstance(self.height, RefValue) else self.height
+        for i in range(nlayer_val + 1):
+            df_state[("height", f"({i},)")] = height_val[i]
 
         # Set vegetation and building parameters for each layer
         for var in ["veg_frac", "veg_scale", "building_frac", "building_scale"]:
-            for i in range(self.nlayer.value):
-                df_state[(f"{var}", f"({i},)")] = getattr(self, var).value[i]
+            field_val = getattr(self, var)
+            var_values = field_val.value if isinstance(field_val, RefValue) else field_val
+            for i in range(nlayer_val):
+                df_state[(f"{var}", f"({i},)")] = var_values[i]
 
         # Convert roof and wall properties to DataFrame format for each layer
         df_roofs = pd.concat(
             [
                 self.roofs[i].to_df_state(grid_id, i, "roof")
-                for i in range(self.nlayer.value)
+                for i in range(nlayer_val)
             ],
             axis=1,
         )
         df_walls = pd.concat(
             [
                 self.walls[i].to_df_state(grid_id, i, "wall")
-                for i in range(self.nlayer.value)
+                for i in range(nlayer_val)
             ],
             axis=1,
         )

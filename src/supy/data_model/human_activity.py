@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 from typing import Optional
 import pandas as pd
-from .type import RefValue, Reference
+from .type import RefValue, Reference, FlexibleRefValue
 from .profile import HourlyProfile, WeeklyProfile, DayProfile
 from .type import init_df_state
 
@@ -9,30 +9,25 @@ from .type import init_df_state
 class IrrigationParams(
     BaseModel
 ):  # TODO: May need to add RefValue to the profiles here
-    h_maintain: RefValue[float] = Field(
-        default=RefValue(0.5),
-        description="Water depth to maintain through irrigation",
-        unit="mm",
+    h_maintain: FlexibleRefValue(float) = Field(
+        default=0.5,
+        description="Water depth to maintain through irrigation", json_schema_extra={"unit": "mm"},
     )
-    faut: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Fraction of automatic irrigation",
-        unit="dimensionless",
+    faut: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Fraction of automatic irrigation", json_schema_extra={"unit": "dimensionless"},
     )
-    ie_start: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Start time of irrigation",
-        unit="hour",
+    ie_start: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Start time of irrigation", json_schema_extra={"unit": "hour"},
     )
-    ie_end: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="End time of irrigation",
-        unit="hour",
+    ie_end: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="End time of irrigation", json_schema_extra={"unit": "hour"},
     )
-    internalwateruse_h: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Internal water use rate",
-        unit="mm h^-1",
+    internalwateruse_h: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Internal water use rate", json_schema_extra={"unit": "mm h^-1"},
     )
     daywatper: WeeklyProfile = Field(default_factory=WeeklyProfile)
     daywat: WeeklyProfile = Field(default_factory=WeeklyProfile)
@@ -54,12 +49,12 @@ class IrrigationParams(
 
         df_state = init_df_state(grid_id)
 
-        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain.value
-        df_state.loc[grid_id, ("faut", "0")] = self.faut.value
-        df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start.value
-        df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end.value
+        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain.value if isinstance(self.h_maintain, RefValue) else self.h_maintain
+        df_state.loc[grid_id, ("faut", "0")] = self.faut.value if isinstance(self.faut, RefValue) else self.faut
+        df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start.value if isinstance(self.ie_start, RefValue) else self.ie_start
+        df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end.value if isinstance(self.ie_end, RefValue) else self.ie_end
         df_state.loc[grid_id, ("internalwateruse_h", "0")] = (
-            self.internalwateruse_h.value
+            self.internalwateruse_h.value if isinstance(self.internalwateruse_h, RefValue) else self.internalwateruse_h
         )
 
         df_daywatper = self.daywatper.to_df_state(grid_id, "daywatper")
@@ -173,8 +168,7 @@ class AnthropogenicHeat(
     )
     popdensnighttime: float = Field(
         default=10.0,
-        description="Nighttime population density",
-        unit="people ha^-1",
+        description="Nighttime population density", json_schema_extra={"unit": "people ha^-1"},
     )
     popprof_24hr: HourlyProfile = Field(
         description="24-hour profile of population density",
@@ -274,63 +268,53 @@ class AnthropogenicHeat(
 
 
 class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profiles here
-    co2pointsource: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="CO2 point source emission factor",
-        unit="kg m^-2 s^-1",
+    co2pointsource: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="CO2 point source emission factor", json_schema_extra={"unit": "kg m^-2 s^-1"},
     )
-    ef_umolco2perj: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="CO2 emission factor per unit of fuel energy",
-        unit="umol J^-1",
+    ef_umolco2perj: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="CO2 emission factor per unit of fuel energy", json_schema_extra={"unit": "umol J^-1"},
     )
-    enef_v_jkm: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Vehicle energy consumption factor",
-        unit="J km^-1",
+    enef_v_jkm: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Vehicle energy consumption factor", json_schema_extra={"unit": "J km^-1"},
     )
     fcef_v_kgkm: DayProfile = Field(
         description="Fuel consumption efficiency for vehicles",
         default_factory=DayProfile,
     )
-    frfossilfuel_heat: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Fraction of heating energy from fossil fuels",
-        unit="dimensionless",
+    frfossilfuel_heat: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Fraction of heating energy from fossil fuels", json_schema_extra={"unit": "dimensionless"},
     )
-    frfossilfuel_nonheat: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Fraction of non-heating energy from fossil fuels",
-        unit="dimensionless",
+    frfossilfuel_nonheat: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Fraction of non-heating energy from fossil fuels", json_schema_extra={"unit": "dimensionless"},
     )
-    maxfcmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Maximum metabolic CO2 flux rate",
-        unit="umol m^-2 s^-1",
+    maxfcmetab: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Maximum metabolic CO2 flux rate", json_schema_extra={"unit": "umol m^-2 s^-1"},
     )
-    maxqfmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Maximum metabolic heat flux rate",
-        unit="W m^-2",
+    maxqfmetab: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Maximum metabolic heat flux rate", json_schema_extra={"unit": "W m^-2"},
     )
-    minfcmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Minimum metabolic CO2 flux rate",
-        unit="umol m^-2 s^-1",
+    minfcmetab: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Minimum metabolic CO2 flux rate", json_schema_extra={"unit": "umol m^-2 s^-1"},
     )
-    minqfmetab: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Minimum metabolic heat flux rate",
-        unit="W m^-2",
+    minqfmetab: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Minimum metabolic heat flux rate", json_schema_extra={"unit": "W m^-2"},
     )
     trafficrate: DayProfile = Field(
         description="Traffic rate",
         default_factory=DayProfile,
     )
-    trafficunits: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Units for traffic density normalization",
-        unit="vehicle km ha^-1",
+    trafficunits: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Units for traffic density normalization", json_schema_extra={"unit": "vehicle km ha^-1"},
     )
     traffprof_24hr: HourlyProfile = Field(
         description="24-hour profile of traffic rate",
@@ -358,16 +342,16 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
         df_state = init_df_state(grid_id)
 
         scalar_params = {
-            "co2pointsource": self.co2pointsource.value,
-            "ef_umolco2perj": self.ef_umolco2perj.value,
-            "enef_v_jkm": self.enef_v_jkm.value,
-            "frfossilfuel_heat": self.frfossilfuel_heat.value,
-            "frfossilfuel_nonheat": self.frfossilfuel_nonheat.value,
-            "maxfcmetab": self.maxfcmetab.value,
-            "maxqfmetab": self.maxqfmetab.value,
-            "minfcmetab": self.minfcmetab.value,
-            "minqfmetab": self.minqfmetab.value,
-            "trafficunits": self.trafficunits.value,
+            "co2pointsource": self.co2pointsource.value if isinstance(self.co2pointsource, RefValue) else self.co2pointsource,
+            "ef_umolco2perj": self.ef_umolco2perj.value if isinstance(self.ef_umolco2perj, RefValue) else self.ef_umolco2perj,
+            "enef_v_jkm": self.enef_v_jkm.value if isinstance(self.enef_v_jkm, RefValue) else self.enef_v_jkm,
+            "frfossilfuel_heat": self.frfossilfuel_heat.value if isinstance(self.frfossilfuel_heat, RefValue) else self.frfossilfuel_heat,
+            "frfossilfuel_nonheat": self.frfossilfuel_nonheat.value if isinstance(self.frfossilfuel_nonheat, RefValue) else self.frfossilfuel_nonheat,
+            "maxfcmetab": self.maxfcmetab.value if isinstance(self.maxfcmetab, RefValue) else self.maxfcmetab,
+            "maxqfmetab": self.maxqfmetab.value if isinstance(self.maxqfmetab, RefValue) else self.maxqfmetab,
+            "minfcmetab": self.minfcmetab.value if isinstance(self.minfcmetab, RefValue) else self.minfcmetab,
+            "minqfmetab": self.minqfmetab.value if isinstance(self.minqfmetab, RefValue) else self.minqfmetab,
+            "trafficunits": self.trafficunits.value if isinstance(self.trafficunits, RefValue) else self.trafficunits,
         }
         for param_name, value in scalar_params.items():
             df_state.loc[grid_id, (param_name, "0")] = value
@@ -445,15 +429,13 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
 
 
 class AnthropogenicEmissions(BaseModel):
-    startdls: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="Start of daylight savings time in decimal day of year",
-        unit="day",
+    startdls: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="Start of daylight savings time in decimal day of year", json_schema_extra={"unit": "day"},
     )
-    enddls: RefValue[float] = Field(
-        default=RefValue(0.0),
-        description="End of daylight savings time in decimal day of year",
-        unit="day",
+    enddls: FlexibleRefValue(float) = Field(
+        default=0.0,
+        description="End of daylight savings time in decimal day of year", json_schema_extra={"unit": "day"},
     )
     heat: AnthropogenicHeat = Field(
         description="Anthropogenic heat emission parameters",
@@ -479,8 +461,8 @@ class AnthropogenicEmissions(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set start and end daylight saving times
-        df_state.loc[grid_id, ("startdls", "0")] = self.startdls.value
-        df_state.loc[grid_id, ("enddls", "0")] = self.enddls.value
+        df_state.loc[grid_id, ("startdls", "0")] = self.startdls.value if isinstance(self.startdls, RefValue) else self.startdls
+        df_state.loc[grid_id, ("enddls", "0")] = self.enddls.value if isinstance(self.enddls, RefValue) else self.enddls
 
         # Add heat parameters
         df_heat = self.heat.to_df_state(grid_id)
