@@ -6,6 +6,7 @@ from pydantic import (
     field_validator,
     PrivateAttr,
     conlist,
+    ValidationError
 )
 import numpy as np
 import pandas as pd
@@ -13,8 +14,11 @@ import yaml
 import ast
 import supy as sp
 
+#from .site import DLSValidator
 from .model import Model
-from .site import Site, SiteProperties, InitialStates
+from .site import Site, SiteProperties, InitialStates, LandCover
+from .site import SeasonCheck
+
 try:
     from ..validation import enhanced_from_yaml_validation, enhanced_to_df_state_validation
     _validation_available = True
@@ -75,6 +79,58 @@ class SUEWSConfig(BaseModel):
         except ValueError:
             return (col[0], col[1])
 
+    @model_validator(mode="before")
+    @classmethod
+    def precheck(cls, data):
+        sites_data = data.get("site", [])
+        
+        # Handle empty sites_data - return early and let default values be applied later
+        if not sites_data:
+            return data
+            
+        if not isinstance(sites_data, list):
+            raise TypeError("Expected 'site' to be a list.")
+
+        start_date = "2014-06-20"  # placeholder: to be passed externally
+        end_date = "2014-08-20"
+
+        for i, site in enumerate(sites_data):
+            # Handle both dictionary and Site object cases
+            if hasattr(site, 'properties'):
+                # This is already a Site object - skip precheck but keep it in the list
+                print(f"⚠️ [site #{i}] Skipping precheck for Site object")
+                continue
+            else:
+                # This is a dictionary
+                props = site.get("properties", {})
+
+            # --- Season Check ---
+            try:
+                lat = props.get("lat", {}).get("value")
+                if lat is not None:
+                    season_check = SeasonCheck(start_date=start_date, end_date=end_date, lat=lat)
+                    season = season_check.get_season()
+                    print(f"[site #{i}] Season detected: {season}")
+
+                    # Update param based on season
+                    if season == "summer":
+                        # Set snowalbmax to None if present
+                        if "snowalbmax" in props:
+                            props["snowalbmax"] = None
+                            print(f"[site #{i}] Set 'snowalbmax' to None for summer season")
+                else:
+                    print(f"⚠️ [site #{i}] Skipping season check: missing lat")
+            except Exception as e:
+                raise ValueError(f"[site #{i}] SeasonCheck failed: {e}")
+
+            # Update back the modified site properties
+            site["properties"] = props
+
+        # Update back the full config data
+        data["site"] = sites_data
+        return data
+
+
     @classmethod
     def from_yaml(cls, path: str, use_conditional_validation: bool = True, strict: bool = True) -> "SUEWSConfig":
         """Initialize SUEWSConfig from YAML file with conditional validation.
@@ -90,7 +146,8 @@ class SUEWSConfig(BaseModel):
         with open(path, "r") as file:
             config_data = yaml.load(file, Loader=yaml.FullLoader)
         
-        if use_conditional_validation and _validation_available:
+        
+        if use_conditional_validation and _validation_available: #_validation_available is always FALSE -- need to fix this
             # Step 1: Pre-validation with enhanced validation
             try:
                 enhanced_from_yaml_validation(config_data, strict=strict)
