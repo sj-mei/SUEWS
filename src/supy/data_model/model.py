@@ -257,6 +257,23 @@ class LocalClimateMethod(Enum):
     def __repr__(self):
         return str(self.value)
 
+class GSModel(Enum):
+    """
+    1: original parameterisation (Jarvi et al. 2011)
+    2:new parameterisation (Ward et al. 2016)
+    3:original parameterisation (Jarvi et al. 2011) with 2 m temperature
+    4:new parameterisation (Ward et al. 2016) with 2 m temperature
+    """
+    JARVI = 1
+    WARD = 2
+    JARVI_2M = 3
+    WARD_2M = 4
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self.value)
 
 class StebbsMethod(Enum):
     '''
@@ -316,6 +333,7 @@ for enum_class in [
     DiagMethod,
     FAIMethod,
     LocalClimateMethod,
+    GSModel,
     StebbsMethod,
     SnowUse,
     OhmIncQf,
@@ -382,9 +400,15 @@ class ModelPhysics(BaseModel):
         description="Method used for accounting for local climate effects on surface processes (e.g. near-surface temperature impacts on phenology). Options include none, basic, or detailed approaches",
         json_schema_extra={"unit": "dimensionless"}
     )
+    gsmodel: RefValue[GSModel] = Field(
+        default=RefValue(GSModel.WARD_2M),
+        description="Stomatal conductance model selection",
+        json_schema_extra={"unit": "dimensionless"}
+    )
     snowuse: FlexibleRefValue(SnowUse) = Field(
         default=SnowUse.DISABLED,
-        description="Whether to include snow calculations in the model. 0: snow calculations disabled, 1: snow calculations enabled", json_schema_extra={"unit": "dimensionless"}
+        description="Whether to include snow calculations in the model. 0: snow calculations disabled, 1: snow calculations enabled", 
+        json_schema_extra={"unit": "dimensionless"}
     )
     stebbsmethod: FlexibleRefValue(StebbsMethod) = Field(
         default=StebbsMethod.NONE,
@@ -468,6 +492,7 @@ class ModelPhysics(BaseModel):
             "diagmethod",
             "faimethod",
             "localclimatemethod",
+            "gsmodel",
             "snowuse",
             "stebbsmethod",
         ]
@@ -503,6 +528,7 @@ class ModelPhysics(BaseModel):
             "diagmethod",
             "faimethod",
             "localclimatemethod",
+            "gsmodel",
             "snowuse",
             "stebbsmethod",
         ]
@@ -535,6 +561,14 @@ class ModelControl(BaseModel):
     diagnose: int = Field(
         default=0,
         description="Level of diagnostic output (0=none, 1=basic, 2=detailed)",
+    )
+    start_time: Optional[str] = Field(
+        default=None,
+        description="Start time of model run. If None use forcing data bounds."
+    )
+    end_time: Optional[str] = Field(
+        default=None,
+        description="End time of model run. If None use forcing data bounds."
     )
 
     ref: Optional[Reference] = None

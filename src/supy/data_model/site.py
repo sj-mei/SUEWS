@@ -21,6 +21,13 @@ from .state import InitialStates
 import pandas as pd
 from typing import List, Literal, Union, Dict, Tuple
 
+from datetime import datetime
+from timezonefinder import TimezoneFinder
+from pytz import timezone
+from pytz.exceptions import AmbiguousTimeError, NonExistentTimeError
+import pytz
+import warnings
+
 
 class VegetationParams(BaseModel):
     porosity_id: FlexibleRefValue(int) = Field(
@@ -80,13 +87,10 @@ class Conductance(BaseModel):
         default=1200.0,
         description="Maximum incoming shortwave radiation", json_schema_extra={"unit": "W m^-2"}
     )
-    gsmodel: FlexibleRefValue(int) = Field(
-        default=1,
-        description="Stomatal conductance model selection", json_schema_extra={"unit": "dimensionless"}
-    )
     s1: FlexibleRefValue(float) = Field(
         default=0.2,
-        description="Lower soil moisture threshold for conductance response", json_schema_extra={"unit": "dimensionless"}
+        description="Lower soil moisture threshold for conductance response", 
+        json_schema_extra={"unit": "dimensionless"}
     )
     s2: FlexibleRefValue(float) = Field(
         default=0.5,
@@ -124,7 +128,6 @@ class Conductance(BaseModel):
             "g_t": self.g_t,
             "g_sm": self.g_sm,
             "kmax": self.kmax,
-            "gsmodel": self.gsmodel,
             "s1": self.s1,
             "s2": self.s2,
             "tl": self.tl,
@@ -157,7 +160,6 @@ class Conductance(BaseModel):
             "g_t": df.loc[grid_id, ("g_t", "0")],
             "g_sm": df.loc[grid_id, ("g_sm", "0")],
             "kmax": df.loc[grid_id, ("kmax", "0")],
-            "gsmodel": int(df.loc[grid_id, ("gsmodel", "0")]),
             "s1": df.loc[grid_id, ("s1", "0")],
             "s2": df.loc[grid_id, ("s2", "0")],
             "tl": df.loc[grid_id, ("tl", "0")],
@@ -978,6 +980,28 @@ class LandCover(BaseModel):
 
         return self
 
+    @model_validator(mode="after")
+    def validate_land_cover_fractions(self) -> "LandCover":
+        # Handle both RefValue and direct value types
+        def get_value(field):
+            return field.value if hasattr(field, 'value') else field
+        
+        fractions = {
+            "paved": get_value(self.paved.sfr),
+            "bldgs": get_value(self.bldgs.sfr),
+            "evetr": get_value(self.evetr.sfr),
+            "dectr": get_value(self.dectr.sfr),
+            "grass": get_value(self.grass.sfr),
+            "bsoil": get_value(self.bsoil.sfr),
+            "water": get_value(self.water.sfr),
+        }
+
+        total = sum(fractions.values())
+        if abs(total - 1.0) > 1e-6:
+            details = ", ".join(f"{k}={v:.3f}" for k, v in fractions.items())
+            raise ValueError(f"Land cover fractions must sum to 1.0 (got {total:.6f}): {details}")
+        return self
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert land cover to DataFrame state format"""
         # df_state = init_df_state(grid_id)
@@ -1796,8 +1820,9 @@ class SiteProperties(BaseModel):
     )
     surfacearea: FlexibleRefValue(float) = Field(
         gt=0,
-        description="Total surface area of the site", json_schema_extra={"unit": "ha"},
-        default=1.0,
+        description="Total surface area of the site",
+        json_schema_extra={"unit": "m^2"},
+        default=10000.0,  # 1 hectare in m²
     )
     z: FlexibleRefValue(float) = Field(
         gt=0,
@@ -2104,3 +2129,158 @@ class SnowAlb(BaseModel):
         """
         snowalb = df.loc[grid_id, ("snowalb", "0")]
         return cls(snowalb=RefValue(snowalb))
+
+
+class DLSCheck(BaseModel):
+    lat: float
+    lng: float
+    year: int
+    startdls: Optional[int] = None
+    enddls: Optional[int] = None
+
+    def compute_dst_transitions(self):
+        tf = TimezoneFinder()
+        tz_name = tf.timezone_at(lat=self.lat, lng=self.lng)
+
+        if not tz_name:
+            print(f"[DLS] ❌ Cannot determine timezone for lat={self.lat}, lng={self.lng}")
+            return None, None, None
+
+        tz = pytz.timezone(tz_name)
+
+        def find_transition(month: int) -> Optional[int]:
+            try:
+                prev_dt = tz.localize(datetime(self.year, month, 1, 12), is_dst=None)
+                prev_offset = prev_dt.utcoffset()
+                for day in range(2, 32):
+                    try:
+                        curr_dt = tz.localize(datetime(self.year, month, day, 12), is_dst=None)
+                        curr_offset = curr_dt.utcoffset()
+                        if curr_offset != prev_offset:
+                            return curr_dt.timetuple().tm_yday
+                        prev_offset = curr_offset
+                    except Exception:
+                        continue
+                return None
+            except Exception:
+                return None
+
+        if self.lat >= 0:  # Northern Hemisphere
+            start = find_transition(3) or find_transition(4)
+            end = find_transition(10) or find_transition(11)
+        else:  # Southern Hemisphere
+            start = find_transition(9) or find_transition(10)
+            end = find_transition(3) or find_transition(4)
+
+        return start, end, tz_name
+
+
+# class DLSValidator(BaseModel):
+#     lat: float
+#     lng: float
+#     startdls: Optional[float] = None
+#     enddls: Optional[float] = None
+#     year: int 
+
+#     def validate_dls(self):
+#         print("CHECKING -- Daylight-Saving dates.")
+#         print(f"[DEBUG] Running validate_dls with: self.lat={self.lat}, self.lng={self.lng}, self.startdls={self.startdls}, self.enddls={self.enddls}, self.year={self.year}")
+
+#         tf = TimezoneFinder()
+#         tz_name = tf.timezone_at(lat=self.lat, lng=self.lng)
+#         if not tz_name:
+#             print(f"[DEBUG] Cannot determine timezone for lat={self.lat}, lng={self.lng}; skipping DST check.")
+#             return
+
+#         if tz_name.startswith("Etc/"):
+#             print(f"[DEBUG] Timezone returned is '{tz_name}', which may not support DST.")
+#             return
+
+#         tz = pytz.timezone(tz_name)
+
+#         def find_transition(month: int) -> Optional[int]:
+#             try:
+#                 prev_dt = tz.localize(datetime(self.year, month, 1, 12, 0), is_dst=None)
+#             except Exception:
+#                 return None
+#             prev_off = prev_dt.utcoffset()
+
+#             for day in range(2, 32):
+#                 try:
+#                     curr_dt = tz.localize(datetime(self.year, month, day, 12, 0), is_dst=None)
+#                 except Exception:
+#                     continue
+#                 curr_off = curr_dt.utcoffset()
+#                 if curr_off != prev_off:
+#                     return curr_dt.timetuple().tm_yday
+#                 prev_off = curr_off
+#             return None
+
+#         if self.lat >= 0:
+#             actual_start = find_transition(3) or find_transition(4)
+#             actual_end = find_transition(10) or find_transition(11)
+#         else:
+#             actual_start = find_transition(9) or find_transition(10)
+#             actual_end = find_transition(3) or find_transition(4)
+
+#         print(f"[DEBUG] Computed DST start={actual_start}, end={actual_end}")
+#         print(f"[DEBUG] Provided startdls={self.startdls}, enddls={self.enddls}")
+
+#         if actual_start and actual_end:
+#             # Allow some tolerance for DST dates (within 7 days)
+#             start_diff = abs(self.startdls - actual_start) if self.startdls else 0
+#             end_diff = abs(self.enddls - actual_end) if self.enddls else 0
+#             
+#             if start_diff > 7 or end_diff > 7:
+#                 raise ValueError(
+#                     f"ERROR — DLS mismatch:\n"
+#                     f"  computed start={actual_start}, end={actual_end}\n"
+#                     f"  in YAML   start={self.startdls}, end={self.enddls}"
+#                 )
+#             else:
+#                 print(f"Daylight-Saving dates OK (tolerance: start_diff={start_diff}, end_diff={end_diff}).")
+#         else:
+#             print("⚠️ Unable to detect one or both DST transitions; please verify manually.")
+
+
+class SeasonCheck(BaseModel):
+    start_date: str  # YYYY-MM-DD
+    end_date: str
+    lat: float
+
+    def get_season(self) -> str:
+        try:
+            start = datetime.strptime(self.start_date, "%Y-%m-%d").timetuple().tm_yday
+            end = datetime.strptime(self.end_date, "%Y-%m-%d").timetuple().tm_yday
+        except ValueError:
+            raise ValueError("start_date and end_date must be in YYYY-MM-DD format")
+
+        abs_lat = abs(self.lat)
+
+        # Near equator: no season
+        if abs_lat <= 10:
+            return "equatorial"
+
+        # Tropical belt
+        if 10 < abs_lat < 23.5:
+            return "tropical"
+
+        # Standard seasonal logic
+        if self.lat >= 0:  # Northern Hemisphere
+            if 150 < start < 250 and 150 < end < 250:
+                return "summer"
+            elif 60 < start <= 150 and 60 < end <= 150:
+                return "spring"
+            elif (start <= 60 or start >= 335) and (end <= 60 or end >= 335):
+                return "winter"
+        else:  # Southern Hemisphere
+            if 150 < start < 250 and 150 < end < 250:
+                return "winter"
+            elif 60 < start <= 150 and 60 < end <= 150:
+                return "fall"
+            elif 250 <= start < 335 and 250 <= end < 335:
+                return "spring"
+            elif (start <= 60 or start >= 335) and (end <= 60 or end >= 335):
+                return "summer"
+
+        return "unknown"
