@@ -983,13 +983,13 @@ class LandCover(BaseModel):
     @model_validator(mode="after")
     def validate_land_cover_fractions(self) -> "LandCover":
         fractions = {
-            "paved": self.paved.sfr.value,
-            "bldgs": self.bldgs.sfr.value,
-            "evetr": self.evetr.sfr.value,
-            "dectr": self.dectr.sfr.value,
-            "grass": self.grass.sfr.value,
-            "bsoil": self.bsoil.sfr.value,
-            "water": self.water.sfr.value,
+            "paved": self.paved.sfr,
+            "bldgs": self.bldgs.sfr,
+            "evetr": self.evetr.sfr,
+            "dectr": self.dectr.sfr,
+            "grass": self.grass.sfr,
+            "bsoil": self.bsoil.sfr,
+            "water": self.water.sfr,
         }
 
         total = sum(fractions.values())
