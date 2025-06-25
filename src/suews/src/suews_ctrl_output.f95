@@ -84,7 +84,7 @@ MODULE ctrl_output
       varAttr('Kup', 'W m-2', f104, 'Outgoing shortwave radiation', aA, 'SUEWS', 0), &
       varAttr('Ldown', 'W m-2', f104, 'Incoming longwave radiation', aA, 'SUEWS', 0), &
       varAttr('Lup', 'W m-2', f104, 'Outgoing longwave radiation', aA, 'SUEWS', 0), &
-      varAttr('Ts', 'degC', f104, 'Bulk surface temperature', aA, 'SUEWS', 0), &
+      varAttr('Tsurf', 'degC', f104, 'Bulk surface temperature', aA, 'SUEWS', 0), &
       varAttr('QN', 'W m-2', f104, 'Net all-wave radiation', aA, 'SUEWS', 0), &
       varAttr('QF', 'W m-2', f104, 'Anthropogenic heat flux', aA, 'SUEWS', 0), &
       varAttr('QS', 'W m-2', f104, 'Net storage heat flux', aA, 'SUEWS', 0), &

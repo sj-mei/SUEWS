@@ -116,8 +116,8 @@ class TestSUEWSSimulationBasic:
         # Check for reasonable values (not all NaN or zero)
         # Energy fluxes should be in SUEWS group
         qh_values = results[('SUEWS', 'QH')]
-        assert not qh_values.isna().all(), "QH values are all NaN"
-        assert (qh_values != 0).any(), "QH values are all zero"
+        assert not qh_values.isna().all().all(), "QH values are all NaN"
+        assert (qh_values != 0).any().any(), "QH values are all zero"
 
 
 class TestSUEWSSimulationError:
