@@ -548,7 +548,7 @@ class ModelControl(BaseModel):
     )
     forcing_file: FlexibleRefValue(str) = Field(
         default="forcing.txt",
-        description="Path to meteorological forcing data file",
+        description="Path to meteorological forcing data file. The forcing file contains time-series meteorological data that drives SUEWS simulations. For detailed information about required variables, file format, and data preparation guidelines, see :ref:`met_input`.",
     )
     kdownzen: Optional[FlexibleRefValue(int)] = Field(
         default=None,

@@ -15,6 +15,15 @@ A SUEWS YAML configuration file is organized into two main sections:
 
 For a complete working example, please refer to the sample `config_suews.yml` file provided with SuPy.
 
+Data Files
+----------
+
+In addition to the YAML configuration file, SUEWS requires meteorological forcing data. The configuration specifies the path to these data files:
+
+- **Forcing data**: Meteorological time-series data file specified by ``model.control.forcing_file``
+
+For detailed information about the required format and variables for meteorological data, see :ref:`met_input`.
+
 Configuration Builder (Recommended)
 ------------------------------------
 
