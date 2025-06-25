@@ -18,11 +18,17 @@ For a complete working example, please refer to the sample `config_suews.yml` fi
 Data Files
 ----------
 
-In addition to the YAML configuration file, SUEWS requires meteorological forcing data. The configuration specifies the path to these data files:
+In addition to the YAML configuration file, SUEWS works with input and output data files:
 
+**Input Data:**
 - **Forcing data**: Meteorological time-series data file specified by ``model.control.forcing_file``
 
-For detailed information about the required format and variables for meteorological data, see :ref:`met_input`.
+**Output Data:**
+- **Model results**: Time-series output files specified by ``model.control.output_file``
+
+For detailed information about:
+- **Input data format and variables**: see :ref:`met_input`
+- **Output file formats and variables**: see :ref:`output_files`
 
 Configuration Builder (Recommended)
 ------------------------------------
