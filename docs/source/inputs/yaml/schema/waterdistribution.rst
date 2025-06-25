@@ -3,63 +3,63 @@ Waterdistribution
 
 **Parameters:**
 
-.. option:: to_paved <RefValue[float] (Optional)>
+.. option:: to_paved <RefValue[float] | float | NoneType>
 
    Fraction of water redistributed to paved surfaces within the grid
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_bldgs <RefValue[float] (Optional)>
+.. option:: to_bldgs <RefValue[float] | float | NoneType>
 
    Fraction of water redistributed to building surfaces within the grid
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_dectr <RefValue[float] (Optional)>
+.. option:: to_dectr <RefValue[float] | float | NoneType>
 
    Fraction of water redistributed to deciduous tree surfaces within the grid
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_evetr <RefValue[float] (Optional)>
+.. option:: to_evetr <RefValue[float] | float | NoneType>
 
    Fraction of water redistributed to evergreen tree surfaces within the grid
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_grass <RefValue[float] (Optional)>
+.. option:: to_grass <RefValue[float] | float | NoneType>
 
    Fraction of water redistributed to grass surfaces within the grid
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_bsoil <RefValue[float] (Optional)>
+.. option:: to_bsoil <RefValue[float] | float | NoneType>
 
    Fraction of water redistributed to bare soil surfaces within the grid
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_water <RefValue[float] (Optional)>
+.. option:: to_water <RefValue[float] | float | NoneType>
 
    Fraction of water redistributed to water surfaces within the grid
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_runoff <RefValue[float] (Optional)>
+.. option:: to_runoff <RefValue[float] | float | NoneType>
 
    Fraction of water going to surface runoff (for impervious surfaces: paved and buildings)
 
    :Unit: dimensionless
    :Default: Not specified
 
-.. option:: to_soilstore <RefValue[float] (Optional)>
+.. option:: to_soilstore <RefValue[float] | float | NoneType>
 
    Fraction of water going to subsurface soil storage (for pervious surfaces: vegetation and bare soil)
 

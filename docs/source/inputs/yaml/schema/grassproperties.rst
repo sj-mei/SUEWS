@@ -3,49 +3,49 @@ Grassproperties
 
 **Parameters:**
 
-.. option:: sfr <RefValue[float]>
+.. option:: sfr <RefValue[float] | float>
 
    Surface fraction of grid area covered by this surface type
 
    :Unit: dimensionless
    :Default: ``0.14285714285714285``
 
-.. option:: emis <RefValue[float]>
+.. option:: emis <RefValue[float] | float>
 
    Surface emissivity for longwave radiation
 
    :Unit: dimensionless
    :Default: ``0.95``
 
-.. option:: ch_anohm <RefValue[float] (Optional)>
+.. option:: ch_anohm <RefValue[float] | float | NoneType>
 
    Bulk transfer coefficient for this surface. Option: AnOHM
 
    :Unit: J m^-3 K^-1
    :Default: ``0.0``
 
-.. option:: rho_cp_anohm <RefValue[float] (Optional)>
+.. option:: rho_cp_anohm <RefValue[float] | float | NoneType>
 
    Volumetric heat capacity for this surface to use in AnOHM
 
    :Unit: J m^-3 K^-1
    :Default: ``1200.0``
 
-.. option:: k_anohm <RefValue[float] (Optional)>
+.. option:: k_anohm <RefValue[float] | float | NoneType>
 
    Thermal conductivity for this surface to use in AnOHM
 
    :Unit: W m^-1 K^-1
    :Default: ``0.4``
 
-.. option:: ohm_threshsw <RefValue[float] (Optional)>
+.. option:: ohm_threshsw <RefValue[float] | float | NoneType>
 
    Summer/winter threshold based on temperature for OHM calculation
 
    :Unit: degC
    :Default: ``0.0``
 
-.. option:: ohm_threshwd <RefValue[float] (Optional)>
+.. option:: ohm_threshwd <RefValue[float] | float | NoneType>
 
    Soil moisture threshold determining whether wet/dry OHM coefficients are applied
 
@@ -58,35 +58,35 @@ Grassproperties
 
    For ``ohm_coef``, if using the OHM_Coefficient_season_wetness structure, see :doc:`ohm_coefficient_season_wetness` for details.
 
-.. option:: soildepth <RefValue[float]>
+.. option:: soildepth <RefValue[float] | float>
 
    Depth of soil layer for hydrological calculations
 
    :Unit: mm
    :Default: ``150``
 
-.. option:: soilstorecap <RefValue[float]>
+.. option:: soilstorecap <RefValue[float] | float>
 
    Maximum water storage capacity of soil
 
    :Unit: mm
    :Default: ``150.0``
 
-.. option:: statelimit <RefValue[float]>
+.. option:: statelimit <RefValue[float] | float>
 
    Minimum water storage capacity for state change
 
    :Unit: mm
    :Default: ``10.0``
 
-.. option:: wetthresh <RefValue[float]>
+.. option:: wetthresh <RefValue[float] | float>
 
    Surface wetness threshold for OHM calculations
 
    :Unit: dimensionless
    :Default: ``0.5``
 
-.. option:: sathydraulicconduct <RefValue[float]>
+.. option:: sathydraulicconduct <RefValue[float] | float>
 
    Saturated hydraulic conductivity of soil
 
@@ -109,7 +109,7 @@ Grassproperties
 
    The ``storedrainprm`` parameter group is defined by the :doc:`storagedrainparams` structure.
 
-.. option:: snowpacklimit <RefValue[float] (Optional)>
+.. option:: snowpacklimit <RefValue[float] | float | NoneType>
 
    Limit of snow that can be held on surface
 
@@ -124,7 +124,7 @@ Grassproperties
 
    The ``thermal_layers`` parameter group is defined by the :doc:`thermallayers` structure.
 
-.. option:: irrfrac <RefValue[float] (Optional)>
+.. option:: irrfrac <RefValue[float] | float | NoneType>
 
    Fraction of surface area that can be irrigated
 
@@ -137,84 +137,84 @@ Grassproperties
 
    For ``ref``, if using the Reference structure, see :doc:`reference` for details.
 
-.. option:: alb <RefValue[float]>
+.. option:: alb <RefValue[float] | float>
 
    Minimum albedo
 
    :Unit: dimensionless
    :Default: ``0.2``
 
-.. option:: alb_min <RefValue[float]>
+.. option:: alb_min <RefValue[float] | float>
 
    Minimum albedo
 
    :Unit: dimensionless
    :Default: ``0.2``
 
-.. option:: alb_max <RefValue[float]>
+.. option:: alb_max <RefValue[float] | float>
 
    Maximum albedo
 
    :Unit: dimensionless
    :Default: ``0.3``
 
-.. option:: beta_bioco2 <RefValue[float]>
+.. option:: beta_bioco2 <RefValue[float] | float>
 
    Biogenic CO2 exchange coefficient
 
    :Unit: dimensionless
    :Default: ``0.6``
 
-.. option:: beta_enh_bioco2 <RefValue[float]>
+.. option:: beta_enh_bioco2 <RefValue[float] | float>
 
    Enhanced biogenic CO2 exchange coefficient
 
    :Unit: dimensionless
    :Default: ``0.7``
 
-.. option:: alpha_bioco2 <RefValue[float]>
+.. option:: alpha_bioco2 <RefValue[float] | float>
 
    Biogenic CO2 exchange coefficient
 
    :Unit: dimensionless
    :Default: ``0.8``
 
-.. option:: alpha_enh_bioco2 <RefValue[float]>
+.. option:: alpha_enh_bioco2 <RefValue[float] | float>
 
    Enhanced biogenic CO2 exchange coefficient
 
    :Unit: dimensionless
    :Default: ``0.9``
 
-.. option:: resp_a <RefValue[float]>
+.. option:: resp_a <RefValue[float] | float>
 
    Respiration coefficient
 
    :Unit: umol m^-2 s^-1
    :Default: ``1.0``
 
-.. option:: resp_b <RefValue[float]>
+.. option:: resp_b <RefValue[float] | float>
 
    Respiration coefficient
 
    :Unit: dimensionless
    :Default: ``1.1``
 
-.. option:: theta_bioco2 <RefValue[float]>
+.. option:: theta_bioco2 <RefValue[float] | float>
 
    Biogenic CO2 exchange coefficient
 
    :Unit: dimensionless
    :Default: ``1.2``
 
-.. option:: maxconductance <RefValue[float]>
+.. option:: maxconductance <RefValue[float] | float>
 
    Maximum surface conductance
 
    :Unit: mm s^-1
    :Default: ``0.5``
 
-.. option:: min_res_bioco2 <RefValue[float]>
+.. option:: min_res_bioco2 <RefValue[float] | float>
 
    Minimum respiratory biogenic CO2
 
@@ -229,14 +229,14 @@ Grassproperties
 
    The ``lai`` parameter group is defined by the :doc:`laiparams` structure.
 
-.. option:: ie_a <RefValue[float]>
+.. option:: ie_a <RefValue[float] | float>
 
    Irrigation efficiency coefficient-automatic
 
    :Unit: dimensionless
    :Default: ``0.5``
 
-.. option:: ie_m <RefValue[float]>
+.. option:: ie_m <RefValue[float] | float>
 
    Irrigation efficiency coefficient-manual
 

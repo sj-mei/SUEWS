@@ -209,9 +209,11 @@ class WaterUseMethod(Enum):
 
 class DiagMethod(Enum):
     '''
-    0: Use MOST (Monin-Obukhov Similarity Theory) to calculate near surface diagnostics
-    1: Use RST (Roughness Sublayer Theory) to calculate near surface diagnostics
-    2: Use a set of criteria based on plan area index, frontal area index and heights of roughness elements to determine if RSL or MOST should be used.
+    Method for calculating near-surface meteorological diagnostics (2m temperature, 2m humidity, 10m wind speed).
+    
+    0: MOST (Monin-Obukhov Similarity Theory) - Appropriate for relatively homogeneous, flat surfaces
+    1: RST (Roughness Sublayer Theory) - Appropriate for heterogeneous urban surfaces with tall roughness elements
+    2: VARIABLE - Automatically selects between MOST and RST based on surface morphology (plan area index, frontal area index, and roughness element heights)
     '''
     MOST = 0
     RST = 1
@@ -243,9 +245,12 @@ class FAIMethod(Enum):
 
 class LocalClimateMethod(Enum):
     '''
-    0: No local climate effects considered
-    1: Basic local climate method for accounting for local climate effects (e.g. near-surface temperature impacts on phenology)
-    2: Detailed local climate method for accounting for local climate effects
+    Method for incorporating local environmental feedbacks on surface processes, particularly vegetation phenology 
+    and evapotranspiration responses to urban heat island effects.
+    
+    0: NONE - No local climate adjustments; use forcing file meteorology directly
+    1: BASIC - Simple adjustments for urban temperature effects on leaf area index (LAI) and growing degree days
+    2: DETAILED - Comprehensive feedbacks including moisture stress, urban CO2 dome effects, and modified phenology cycles
     '''
     NONE = 0
     BASIC = 1
@@ -259,17 +264,13 @@ class LocalClimateMethod(Enum):
 
 class GSModel(Enum):
     """
-    1: original parameterisation (Jarvi et al. 2011)
-    2:new parameterisation (Ward et al. 2016)
+    Stomatal conductance parameterisation method for vegetation surfaces.
+    
+    1: JARVI - Original parameterisation (Järvi et al. 2011) based on environmental controls
+    2: WARD - Updated parameterisation (Ward et al. 2016) with improved temperature and VPD responses
     """
-    # 3:original parameterisation (Jarvi et al. 2011) with 2 m temperature
-    # 4:new parameterisation (Ward et al. 2016) with 2 m temperature
-
     JARVI = 1
     WARD = 2
-    # MP: Removed as dependent on localclimatemethod - legacy options for CO2 with 2 m temperature
-    # JARVI_2M = 3
-    # WARD_2M = 4
 
     def __int__(self):
         return self.value
@@ -344,6 +345,15 @@ for enum_class in [
 
 
 class ModelPhysics(BaseModel):
+    """
+    Model physics configuration options.
+    
+    Key method interactions:
+    - diagmethod: Determines HOW near-surface values (2m temp, 10m wind) are calculated from forcing data
+    - stabilitymethod: Provides stability correction functions used BY diagmethod calculations  
+    - localclimatemethod: Uses the near-surface values FROM diagmethod to modify vegetation processes
+    - gsmodel: Stomatal conductance model that may be influenced by localclimatemethod adjustments
+    """
     netradiationmethod: FlexibleRefValue(NetRadiationMethod) = Field(
         default=NetRadiationMethod.LDOWN_AIR,
         description="Method used to calculate net all-wave radiation (Q*). Options include observed values, modelled with various longwave parameterisations, and SPARTACUS-Surface integration",
@@ -390,7 +400,8 @@ class ModelPhysics(BaseModel):
     )
     diagmethod: FlexibleRefValue(DiagMethod) = Field(
         default=DiagMethod.VARIABLE,
-        description="Method used for calculating near-surface diagnostics and profiles of temperature, humidity, and wind speed. Options include MOST, RST, or variable selection based on surface characteristics", json_schema_extra={"unit": "dimensionless"}
+        description="Method for calculating near-surface meteorological diagnostics (2m temperature, 2m humidity, 10m wind speed). Options: 0 (MOST) = Monin-Obukhov Similarity Theory for homogeneous surfaces; 1 (RST) = Roughness Sublayer Theory for heterogeneous urban surfaces; 2 (VARIABLE) = Automatic selection based on surface morphology (plan area index, frontal area index, and roughness element heights)", 
+        json_schema_extra={"unit": "dimensionless"}
     )
     faimethod: FlexibleRefValue(FAIMethod) = Field(
         default=FAIMethod.FIXED,
@@ -399,12 +410,12 @@ class ModelPhysics(BaseModel):
     )
     localclimatemethod: FlexibleRefValue(LocalClimateMethod) = Field(
         default=LocalClimateMethod.NONE,
-        description="Method used for accounting for local climate effects on surface processes (e.g. near-surface temperature impacts on phenology). Options include none, basic, or detailed approaches",
+        description="Method for incorporating urban microclimate feedbacks on vegetation and evapotranspiration. Options: 0 (NONE) = No local climate adjustments, use forcing file meteorology directly; 1 (BASIC) = Simple adjustments for urban temperature effects on leaf area index and growing degree days; 2 (DETAILED) = Comprehensive feedbacks including moisture stress, urban CO2 dome effects, and modified phenology cycles",
         json_schema_extra={"unit": "dimensionless"}
     )
     gsmodel: RefValue[GSModel] = Field(
         default=RefValue(GSModel.WARD),
-        description="Stomatal conductance model selection",
+        description="Stomatal conductance parameterisation method for vegetation surfaces. Options: 1 (JARVI) = Original parameterisation (Järvi et al. 2011) based on environmental controls; 2 (WARD) = Updated parameterisation (Ward et al. 2016) with improved temperature and VPD responses",
         json_schema_extra={"unit": "dimensionless"}
     )
     snowuse: FlexibleRefValue(SnowUse) = Field(

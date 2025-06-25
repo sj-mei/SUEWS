@@ -3,70 +3,70 @@ Initialstategrass
 
 **Parameters:**
 
-.. option:: state <RefValue[float]>
+.. option:: state <RefValue[float] | float>
 
    Initial water state of the surface
 
    :Unit: mm
    :Default: ``0.0``
 
-.. option:: soilstore <RefValue[float]>
+.. option:: soilstore <RefValue[float] | float>
 
    Initial soil store (essential for QE)
 
    :Unit: mm
    :Default: ``150.0``
 
-.. option:: snowfrac <RefValue[float] (Optional)>
+.. option:: snowfrac <RefValue[float] | float | NoneType>
 
    Snow fraction
 
    :Unit: dimensionless
    :Default: ``0.0``
 
-.. option:: snowpack <RefValue[float] (Optional)>
+.. option:: snowpack <RefValue[float] | float | NoneType>
 
    Snow pack
 
    :Unit: mm
    :Default: ``0.0``
 
-.. option:: icefrac <RefValue[float] (Optional)>
+.. option:: icefrac <RefValue[float] | float | NoneType>
 
    Ice fraction
 
    :Unit: dimensionless
    :Default: ``0.0``
 
-.. option:: snowwater <RefValue[float] (Optional)>
+.. option:: snowwater <RefValue[float] | float | NoneType>
 
    Snow water
 
    :Unit: mm
    :Default: ``0.0``
 
-.. option:: snowdens <RefValue[float] (Optional)>
+.. option:: snowdens <RefValue[float] | float | NoneType>
 
    Snow density
 
    :Unit: kg m^-3
    :Default: ``0.0``
 
-.. option:: temperature <RefValue[List[float]]>
+.. option:: temperature <RefValue[List[float]] | List of float>
 
    Initial temperature for each thermal layer
 
    :Unit: degC
    :Default: ``[15.0, 15.0, 15.0, 15.0, 15.0]``
 
-.. option:: tsfc <RefValue[float] (Optional)>
+.. option:: tsfc <RefValue[float] | float | NoneType>
 
    Initial exterior surface temperature
 
    :Unit: degC
    :Default: ``15.0``
 
-.. option:: tin <RefValue[float] (Optional)>
+.. option:: tin <RefValue[float] | float | NoneType>
 
    Initial interior surface temperature
 
@@ -79,28 +79,28 @@ Initialstategrass
 
    For ``ref``, if using the Reference structure, see :doc:`reference` for details.
 
-.. option:: alb_id <RefValue[float]>
+.. option:: alb_id <RefValue[float] | float>
 
    Albedo at the start of the model run.
 
    :Unit: dimensionless
    :Default: ``0.25``
 
-.. option:: lai_id <RefValue[float]>
+.. option:: lai_id <RefValue[float] | float>
 
    Leaf area index at the start of the model run.
 
    :Unit: m^2 m^-2
    :Default: ``1.0``
 
-.. option:: gdd_id <RefValue[float]>
+.. option:: gdd_id <RefValue[float] | float>
 
    Growing degree days at the start of the model run
 
    :Unit: degC d
    :Default: ``0``
 
-.. option:: sdd_id <RefValue[float]>
+.. option:: sdd_id <RefValue[float] | float>
 
    Senescence degree days at the start of the model run
 

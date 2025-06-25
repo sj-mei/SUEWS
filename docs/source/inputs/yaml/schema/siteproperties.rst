@@ -3,77 +3,77 @@ Siteproperties
 
 **Parameters:**
 
-.. option:: lat <RefValue[float]>
+.. option:: lat <RefValue[float] | float>
 
    Latitude of the site in degrees
 
    :Unit: degrees
    :Default: ``51.5``
 
-.. option:: lng <RefValue[float]>
+.. option:: lng <RefValue[float] | float>
 
    Longitude of the site in degrees
 
    :Unit: degrees
    :Default: ``-0.13``
 
-.. option:: alt <RefValue[float]>
+.. option:: alt <RefValue[float] | float>
 
    Altitude of the site above sea level
 
    :Unit: m
    :Default: ``40.0``
 
-.. option:: timezone <RefValue[int]>
+.. option:: timezone <RefValue[int] | int>
 
    Time zone offset from UTC
 
    :Unit: hour
    :Default: ``0``
 
-.. option:: surfacearea <RefValue[float]>
+.. option:: surfacearea <RefValue[float] | float>
 
    Total surface area of the site
 
-   :Unit: ha
-   :Default: ``1.0``
+   :Unit: m^2
+   :Default: ``10000.0``
 
-.. option:: z <RefValue[float]>
+.. option:: z <RefValue[float] | float>
 
    Measurement height
 
    :Unit: m
    :Default: ``10.0``
 
-.. option:: z0m_in <RefValue[float]>
+.. option:: z0m_in <RefValue[float] | float>
 
    Momentum roughness length
 
    :Unit: m
    :Default: ``1.0``
 
-.. option:: zdm_in <RefValue[float]>
+.. option:: zdm_in <RefValue[float] | float>
 
    Zero-plane displacement height
 
    :Unit: m
    :Default: ``5.0``
 
-.. option:: pipecapacity <RefValue[float]>
+.. option:: pipecapacity <RefValue[float] | float>
 
    Maximum capacity of drainage pipes
 
    :Unit: mm h^-1
    :Default: ``100.0``
 
-.. option:: runofftowater <RefValue[float]>
+.. option:: runofftowater <RefValue[float] | float>
 
    Fraction of excess water going to water bodies
 
    :Unit: dimensionless
    :Default: ``0.0``
 
-.. option:: narp_trans_site <RefValue[float]>
+.. option:: narp_trans_site <RefValue[float] | float>
 
    Site-specific NARP transmission coefficient
 
@@ -160,21 +160,21 @@ Siteproperties
 
    The ``vertical_layers`` parameter group is defined by the :doc:`verticallayers` structure.
 
-.. option:: n_buildings <RefValue[int]>
+.. option:: n_buildings <RefValue[int] | int>
 
    Number of buildings in the site
 
    :Unit: dimensionless
    :Default: ``1``
 
-.. option:: h_std <RefValue[float]>
+.. option:: h_std <RefValue[float] | float>
 
    Standard deviation of building heights in the site
 
    :Unit: m
    :Default: ``10.0``
 
-.. option:: lambda_c <RefValue[float]>
+.. option:: lambda_c <RefValue[float] | float>
 
    External building surface area to plan area ratio
 

@@ -3,35 +3,35 @@ Irrigationparams
 
 **Parameters:**
 
-.. option:: h_maintain <RefValue[float]>
+.. option:: h_maintain <RefValue[float] | float>
 
    Water depth to maintain through irrigation
 
    :Unit: mm
    :Default: ``0.5``
 
-.. option:: faut <RefValue[float]>
+.. option:: faut <RefValue[float] | float>
 
    Fraction of automatic irrigation
 
    :Unit: dimensionless
    :Default: ``0.0``
 
-.. option:: ie_start <RefValue[float]>
+.. option:: ie_start <RefValue[float] | float>
 
    Start time of irrigation
 
    :Unit: hour
    :Default: ``0.0``
 
-.. option:: ie_end <RefValue[float]>
+.. option:: ie_end <RefValue[float] | float>
 
    End time of irrigation
 
    :Unit: hour
    :Default: ``0.0``
 
-.. option:: internalwateruse_h <RefValue[float]>
+.. option:: internalwateruse_h <RefValue[float] | float>
 
    Internal water use rate
 

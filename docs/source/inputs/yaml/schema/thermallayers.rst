@@ -3,21 +3,21 @@ Thermallayers
 
 **Parameters:**
 
-.. option:: dz <RefValue[List[float]]>
+.. option:: dz <RefValue[List[float]] | List of float>
 
    Thickness of thermal layers from surface to depth
 
    :Unit: m
    :Default: ``[0.1, 0.2, 0.3, 0.4, 0.5]``
 
-.. option:: k <RefValue[List[float]]>
+.. option:: k <RefValue[List[float]] | List of float>
 
    Thermal conductivity of each thermal layer
 
    :Unit: W m^-1 K^-1
    :Default: ``[1.0, 1.0, 1.0, 1.0, 1.0]``
 
-.. option:: rho_cp <RefValue[List[float]]>
+.. option:: rho_cp <RefValue[List[float]] | List of float>
 
    Volumetric heat capacity of each thermal layer
 

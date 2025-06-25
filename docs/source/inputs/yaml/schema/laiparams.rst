@@ -3,42 +3,42 @@ Laiparams
 
 **Parameters:**
 
-.. option:: baset <RefValue[float]>
+.. option:: baset <RefValue[float] | float>
 
    Base temperature for initiating growing degree days (GDD) for leaf growth
 
    :Unit: degC
    :Default: ``10.0``
 
-.. option:: gddfull <RefValue[float]>
+.. option:: gddfull <RefValue[float] | float>
 
    Growing degree days (GDD) needed for full capacity of LAI
 
    :Unit: degC*day
    :Default: ``100.0``
 
-.. option:: basete <RefValue[float]>
+.. option:: basete <RefValue[float] | float>
 
    Base temperature for initiating senescence degree days (SDD) for leaf off
 
    :Unit: degC
    :Default: ``10.0``
 
-.. option:: sddfull <RefValue[float]>
+.. option:: sddfull <RefValue[float] | float>
 
    Senescence degree days (SDD) needed to initiate leaf off
 
    :Unit: degC*day
    :Default: ``100.0``
 
-.. option:: laimin <RefValue[float]>
+.. option:: laimin <RefValue[float] | float>
 
    Leaf-off wintertime LAI value
 
    :Unit: m^2 m^-2
    :Default: ``0.1``
 
-.. option:: laimax <RefValue[float]>
+.. option:: laimax <RefValue[float] | float>
 
    Full leaf-on summertime LAI value
 
@@ -53,7 +53,7 @@ Laiparams
 
    The ``laipower`` parameter group is defined by the :doc:`laipowercoefficients` structure.
 
-.. option:: laitype <RefValue[int]>
+.. option:: laitype <RefValue[int] | int>
 
    LAI calculation choice (0: original, 1: new high latitude)
 

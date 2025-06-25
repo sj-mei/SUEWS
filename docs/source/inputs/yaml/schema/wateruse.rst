@@ -3,21 +3,21 @@ Wateruse
 
 **Parameters:**
 
-.. option:: wu_total <RefValue[float]>
+.. option:: wu_total <RefValue[float] | float>
 
    Total water use
 
    :Unit: mm
    :Default: ``0.0``
 
-.. option:: wu_auto <RefValue[float]>
+.. option:: wu_auto <RefValue[float] | float>
 
    Automatic water use
 
    :Unit: mm
    :Default: ``0.0``
 
-.. option:: wu_manual <RefValue[float]>
+.. option:: wu_manual <RefValue[float] | float>
 
    Manual water use
 

@@ -3,49 +3,49 @@ Bldgsproperties
 
 **Parameters:**
 
-.. option:: sfr <RefValue[float]>
+.. option:: sfr <RefValue[float] | float>
 
    Surface fraction of grid area covered by this surface type
 
    :Unit: dimensionless
    :Default: ``0.14285714285714285``
 
-.. option:: emis <RefValue[float]>
+.. option:: emis <RefValue[float] | float>
 
    Surface emissivity for longwave radiation
 
    :Unit: dimensionless
    :Default: ``0.95``
 
-.. option:: ch_anohm <RefValue[float] (Optional)>
+.. option:: ch_anohm <RefValue[float] | float | NoneType>
 
    Bulk transfer coefficient for this surface. Option: AnOHM
 
    :Unit: J m^-3 K^-1
    :Default: ``0.0``
 
-.. option:: rho_cp_anohm <RefValue[float] (Optional)>
+.. option:: rho_cp_anohm <RefValue[float] | float | NoneType>
 
    Volumetric heat capacity for this surface to use in AnOHM
 
    :Unit: J m^-3 K^-1
    :Default: ``1200.0``
 
-.. option:: k_anohm <RefValue[float] (Optional)>
+.. option:: k_anohm <RefValue[float] | float | NoneType>
 
    Thermal conductivity for this surface to use in AnOHM
 
    :Unit: W m^-1 K^-1
    :Default: ``0.4``
 
-.. option:: ohm_threshsw <RefValue[float] (Optional)>
+.. option:: ohm_threshsw <RefValue[float] | float | NoneType>
 
    Summer/winter threshold based on temperature for OHM calculation
 
    :Unit: degC
    :Default: ``0.0``
 
-.. option:: ohm_threshwd <RefValue[float] (Optional)>
+.. option:: ohm_threshwd <RefValue[float] | float | NoneType>
 
    Soil moisture threshold determining whether wet/dry OHM coefficients are applied
 
@@ -58,35 +58,35 @@ Bldgsproperties
 
    For ``ohm_coef``, if using the OHM_Coefficient_season_wetness structure, see :doc:`ohm_coefficient_season_wetness` for details.
 
-.. option:: soildepth <RefValue[float]>
+.. option:: soildepth <RefValue[float] | float>
 
    Depth of soil layer for hydrological calculations
 
    :Unit: mm
    :Default: ``150``
 
-.. option:: soilstorecap <RefValue[float]>
+.. option:: soilstorecap <RefValue[float] | float>
 
    Maximum water storage capacity of soil
 
    :Unit: mm
    :Default: ``150.0``
 
-.. option:: statelimit <RefValue[float]>
+.. option:: statelimit <RefValue[float] | float>
 
    Minimum water storage capacity for state change
 
    :Unit: mm
    :Default: ``10.0``
 
-.. option:: wetthresh <RefValue[float]>
+.. option:: wetthresh <RefValue[float] | float>
 
    Surface wetness threshold for OHM calculations
 
    :Unit: dimensionless
    :Default: ``0.5``
 
-.. option:: sathydraulicconduct <RefValue[float]>
+.. option:: sathydraulicconduct <RefValue[float] | float>
 
    Saturated hydraulic conductivity of soil
 
@@ -107,7 +107,7 @@ Bldgsproperties
 
    The ``storedrainprm`` parameter group is defined by the :doc:`storagedrainparams` structure.
 
-.. option:: snowpacklimit <RefValue[float] (Optional)>
+.. option:: snowpacklimit <RefValue[float] | float | NoneType>
 
    Limit of snow that can be held on surface
 
@@ -122,7 +122,7 @@ Bldgsproperties
 
    The ``thermal_layers`` parameter group is defined by the :doc:`thermallayers` structure.
 
-.. option:: irrfrac <RefValue[float] (Optional)>
+.. option:: irrfrac <RefValue[float] | float | NoneType>
 
    Fraction of surface area that can be irrigated
 
@@ -135,21 +135,21 @@ Bldgsproperties
 
    For ``ref``, if using the Reference structure, see :doc:`reference` for details.
 
-.. option:: alb <RefValue[float]>
+.. option:: alb <RefValue[float] | float>
 
    Surface albedo
 
    :Unit: dimensionless
    :Default: ``0.1``
 
-.. option:: faibldg <RefValue[float]>
+.. option:: faibldg <RefValue[float] | float>
 
    Frontal area index of buildings
 
    :Unit: dimensionless
    :Default: ``0.3``
 
-.. option:: bldgh <RefValue[float]>
+.. option:: bldgh <RefValue[float] | float>
 
    Building height
 

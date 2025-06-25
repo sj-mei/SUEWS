@@ -3,28 +3,28 @@ Laipowercoefficients
 
 **Parameters:**
 
-.. option:: growth_lai <RefValue[float]>
+.. option:: growth_lai <RefValue[float] | float>
 
    Power coefficient for LAI in growth equation (LAIPower[1])
 
    :Unit: dimensionless
    :Default: ``0.1``
 
-.. option:: growth_gdd <RefValue[float]>
+.. option:: growth_gdd <RefValue[float] | float>
 
    Power coefficient for GDD in growth equation (LAIPower[2])
 
    :Unit: dimensionless
    :Default: ``0.1``
 
-.. option:: senescence_lai <RefValue[float]>
+.. option:: senescence_lai <RefValue[float] | float>
 
    Power coefficient for LAI in senescence equation (LAIPower[3])
 
    :Unit: dimensionless
    :Default: ``0.1``
 
-.. option:: senescence_sdd <RefValue[float]>
+.. option:: senescence_sdd <RefValue[float] | float>
 
    Power coefficient for SDD in senescence equation (LAIPower[4])
 

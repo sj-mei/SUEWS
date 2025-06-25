@@ -3,21 +3,21 @@ Co2Params
 
 **Parameters:**
 
-.. option:: co2pointsource <RefValue[float]>
+.. option:: co2pointsource <RefValue[float] | float>
 
    CO2 point source emission factor
 
    :Unit: kg m^-2 s^-1
    :Default: ``0.0``
 
-.. option:: ef_umolco2perj <RefValue[float]>
+.. option:: ef_umolco2perj <RefValue[float] | float>
 
    CO2 emission factor per unit of fuel energy
 
    :Unit: umol J^-1
    :Default: ``0.0``
 
-.. option:: enef_v_jkm <RefValue[float]>
+.. option:: enef_v_jkm <RefValue[float] | float>
 
    Vehicle energy consumption factor
 
@@ -32,42 +32,42 @@ Co2Params
 
    The ``fcef_v_kgkm`` parameter group is defined by the :doc:`dayprofile` structure.
 
-.. option:: frfossilfuel_heat <RefValue[float]>
+.. option:: frfossilfuel_heat <RefValue[float] | float>
 
    Fraction of heating energy from fossil fuels
 
    :Unit: dimensionless
    :Default: ``0.0``
 
-.. option:: frfossilfuel_nonheat <RefValue[float]>
+.. option:: frfossilfuel_nonheat <RefValue[float] | float>
 
    Fraction of non-heating energy from fossil fuels
 
    :Unit: dimensionless
    :Default: ``0.0``
 
-.. option:: maxfcmetab <RefValue[float]>
+.. option:: maxfcmetab <RefValue[float] | float>
 
    Maximum metabolic CO2 flux rate
 
    :Unit: umol m^-2 s^-1
    :Default: ``0.0``
 
-.. option:: maxqfmetab <RefValue[float]>
+.. option:: maxqfmetab <RefValue[float] | float>
 
    Maximum metabolic heat flux rate
 
    :Unit: W m^-2
    :Default: ``0.0``
 
-.. option:: minfcmetab <RefValue[float]>
+.. option:: minfcmetab <RefValue[float] | float>
 
    Minimum metabolic CO2 flux rate
 
    :Unit: umol m^-2 s^-1
    :Default: ``0.0``
 
-.. option:: minqfmetab <RefValue[float]>
+.. option:: minqfmetab <RefValue[float] | float>
 
    Minimum metabolic heat flux rate
 
@@ -82,7 +82,7 @@ Co2Params
 
    The ``trafficrate`` parameter group is defined by the :doc:`dayprofile` structure.
 
-.. option:: trafficunits <RefValue[float]>
+.. option:: trafficunits <RefValue[float] | float>
 
    Units for traffic density normalization
 

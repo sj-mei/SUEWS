@@ -5,7 +5,7 @@ Initial conditions for the SUEWS model
 
 **Parameters:**
 
-.. option:: snowalb <RefValue[float]>
+.. option:: snowalb <RefValue[float] | float>
 
    Snow albedo at the start of the model run
 

@@ -3,14 +3,14 @@ Anthropogenicemissions
 
 **Parameters:**
 
-.. option:: startdls <RefValue[float]>
+.. option:: startdls <RefValue[float] | float>
 
    Start of daylight savings time in decimal day of year
 
    :Unit: day
    :Default: ``0.0``
 
-.. option:: enddls <RefValue[float]>
+.. option:: enddls <RefValue[float] | float>
 
    End of daylight savings time in decimal day of year
 

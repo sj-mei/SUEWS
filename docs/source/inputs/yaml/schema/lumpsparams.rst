@@ -3,28 +3,28 @@ Lumpsparams
 
 **Parameters:**
 
-.. option:: raincover <RefValue[float]>
+.. option:: raincover <RefValue[float] | float>
 
    Rain water coverage fraction
 
    :Unit: dimensionless
    :Default: ``0.25``
 
-.. option:: rainmaxres <RefValue[float]>
+.. option:: rainmaxres <RefValue[float] | float>
 
    Maximum rain water storage
 
    :Unit: mm
    :Default: ``0.25``
 
-.. option:: drainrt <RefValue[float]>
+.. option:: drainrt <RefValue[float] | float>
 
    Drainage rate coefficient
 
    :Unit: dimensionless
    :Default: ``0.25``
 
-.. option:: veg_type <RefValue[int]>
+.. option:: veg_type <RefValue[int] | int>
 
    Vegetation type selection
 
