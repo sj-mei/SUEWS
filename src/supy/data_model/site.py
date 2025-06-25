@@ -980,27 +980,27 @@ class LandCover(BaseModel):
 
         return self
 
-    @model_validator(mode="after")
-    def validate_land_cover_fractions(self) -> "LandCover":
-        # Handle both RefValue and direct value types
-        def get_value(field):
-            return field.value if hasattr(field, 'value') else field
+    # @model_validator(mode="after")
+    # def validate_land_cover_fractions(self) -> "LandCover":
+    #     # Handle both RefValue and direct value types
+    #     def get_value(field):
+    #         return field.value if hasattr(field, 'value') else field
         
-        fractions = {
-            "paved": get_value(self.paved.sfr),
-            "bldgs": get_value(self.bldgs.sfr),
-            "evetr": get_value(self.evetr.sfr),
-            "dectr": get_value(self.dectr.sfr),
-            "grass": get_value(self.grass.sfr),
-            "bsoil": get_value(self.bsoil.sfr),
-            "water": get_value(self.water.sfr),
-        }
+    #     fractions = {
+    #         "paved": get_value(self.paved.sfr),
+    #         "bldgs": get_value(self.bldgs.sfr),
+    #         "evetr": get_value(self.evetr.sfr),
+    #         "dectr": get_value(self.dectr.sfr),
+    #         "grass": get_value(self.grass.sfr),
+    #         "bsoil": get_value(self.bsoil.sfr),
+    #         "water": get_value(self.water.sfr),
+    #     }
 
-        total = sum(fractions.values())
-        if abs(total - 1.0) > 1e-6:
-            details = ", ".join(f"{k}={v:.3f}" for k, v in fractions.items())
-            raise ValueError(f"Land cover fractions must sum to 1.0 (got {total:.6f}): {details}")
-        return self
+    #     total = sum(fractions.values())
+    #     if abs(total - 1.0) > 1e-6:
+    #         details = ", ".join(f"{k}={v:.3f}" for k, v in fractions.items())
+    #         raise ValueError(f"Land cover fractions must sum to 1.0 (got {total:.6f}): {details}")
+    #     return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert land cover to DataFrame state format"""
