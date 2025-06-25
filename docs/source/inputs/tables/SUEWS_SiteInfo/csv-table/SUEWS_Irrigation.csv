@@ -5,12 +5,12 @@ No.,Column Name,Use,Description
 4,`InternalWaterUse`,`MU`,Internal water use [mm |h^-1|]
 5,`Faut`,`MU`,Fraction of irrigated area that is irrigated using automated systems
 6,`H_maintain`,`MU`,"water depth to maintain used in automatic irrigation (e.g., ponding water due to flooding irrigation in rice crop-field) [mm]."
-7,`Ie_a1`,`MD`,Coefficient for automatic irrigation model [mm |d^-1| ]
-8,`Ie_a2`,`MD`,Coefficient for automatic irrigation model [mm |d^-1| |K^-1|]
-9,`Ie_a3`,`MD`,Coefficient for automatic irrigation model [mm |d^-2| ]
-10,`Ie_m1`,`MD`,Coefficient for manual irrigation model [mm |d^-1| ]
-11,`Ie_m2`,`MD`,Coefficient for manual irrigation model [mm |d^-1| |K^-1|]
-12,`Ie_m3`,`MD`,Coefficient for manual irrigation model [mm |d^-2| ]
+7,`Ie_a1`,`MD`,Base irrigation rate coefficient for automatic irrigation model. Represents baseline daily irrigation amount [mm |d^-1| ]
+8,`Ie_a2`,`MD`,Temperature dependency coefficient for automatic irrigation model. Controls how irrigation responds to air temperature [mm |d^-1| |K^-1|]
+9,`Ie_a3`,`MD`,Nonlinear coefficient for automatic irrigation model. Modulates irrigation based on temperature and soil moisture interactions [mm |d^-2| ]
+10,`Ie_m1`,`MD`,Base irrigation rate coefficient for manual irrigation model. Represents baseline daily irrigation amount [mm |d^-1| ]
+11,`Ie_m2`,`MD`,Temperature dependency coefficient for manual irrigation model. Controls how manual irrigation responds to air temperature [mm |d^-1| |K^-1|]
+12,`Ie_m3`,`MD`,Nonlinear coefficient for manual irrigation model. Modulates irrigation based on temperature and soil moisture interactions [mm |d^-2| ]
 13,`DayWat(1)`,`MU`,"Irrigation allowed on Sundays [1], if not [0]"
 14,`DayWat(2)`,`MU`,"Irrigation allowed on Mondays [1], if not [0]"
 15,`DayWat(3)`,`MU`,"Irrigation allowed on Tuesdays [1], if not [0]"
