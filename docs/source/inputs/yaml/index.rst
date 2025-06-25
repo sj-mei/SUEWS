@@ -30,22 +30,27 @@ For detailed information about:
 - **Input data format and variables**: see :ref:`met_input`
 - **Output file formats and variables**: see :ref:`output_files`
 
-Configuration Builder (Recommended)
-------------------------------------
+Configuration Builder (Experimental)
+--------------------------------------
 
-.. tip::
+.. note::
 
-   **Interactive Configuration Builder**: Use our web-based configuration builder to create YAML files easily with guided forms and real-time validation.
+   **Interactive Configuration Builder**: An experimental web-based tool for creating YAML configuration files with guided forms.
 
    📝 **Access the builder**: `SUEWS Configuration Builder <../../_static/index.html>`__
 
+   .. warning::
+      
+      **Beta Status**: This configuration builder is currently in development and has not been fully tested. Please verify generated configurations carefully before use.
+
    Features:
 
-   - **Interactive forms**: Step-by-step guided configuration
-   - **Real-time validation**: Immediate feedback on parameter values
-   - **Export options**: Download complete YAML files ready for SUEWS
-   - **Parameter help**: Built-in documentation for all parameters
-   - **Schema validation**: Ensures your configuration is correct before running
+   - Interactive forms for parameter input
+   - Basic validation for parameter values
+   - YAML file export functionality
+   - Integrated parameter documentation
+   
+   **Alternative**: You can also create YAML files manually using the schema documentation below or by adapting the sample configuration files provided with SuPy.
 
 Data Model Schema
 -----------------
