@@ -19,6 +19,10 @@ from .model import Model
 from .site import Site, SiteProperties, InitialStates, LandCover
 from .type import SurfaceType
 
+from datetime import datetime
+from timezonefinder import TimezoneFinder
+import pytz
+
 try:
     from ..validation import enhanced_from_yaml_validation, enhanced_to_df_state_validation
     _validation_available = True
@@ -49,6 +53,95 @@ except ImportError:
 import os
 import warnings
 
+class SeasonCheck(BaseModel):
+    start_date: str  # Expected format: YYYY-MM-DD
+    lat: float
+
+    def get_season(self) -> str:
+        try:
+            start = datetime.strptime(self.start_date, "%Y-%m-%d").timetuple().tm_yday
+        except ValueError:
+            raise ValueError("start_date must be in YYYY-MM-DD format")
+
+        abs_lat = abs(self.lat)
+
+        if abs_lat <= 10:
+            return "equatorial"
+        if 10 < abs_lat < 23.5:
+            return "tropical"
+
+        if self.lat >= 0:  # Northern Hemisphere
+            if 150 < start < 250:
+                return "summer"
+            elif 60 < start <= 150:
+                return "spring"
+            elif 250 <= start < 335:
+                return "fall"
+            else:
+                return "winter"
+        else:  # Southern Hemisphere
+            if 150 < start < 250:
+                return "winter"
+            elif 60 < start <= 150:
+                return "fall"
+            elif 250 <= start < 335:
+                return "spring"
+            else:
+                return "summer"
+
+class DLSCheck(BaseModel):
+    lat: float
+    lng: float
+    year: int
+    startdls: Optional[int] = None
+    enddls: Optional[int] = None
+
+    def compute_dst_transitions(self):
+        tf = TimezoneFinder()
+        tz_name = tf.timezone_at(lat=self.lat, lng=self.lng)
+
+        if not tz_name:
+            print(f"[DLS] Cannot determine timezone for lat={self.lat}, lng={self.lng}")
+            return None, None, None
+
+        print(f"[DLS] Timezone identified as '{tz_name}'")
+        tz = pytz.timezone(tz_name)
+
+        def find_transition(month: int) -> Optional[int]:
+            try:
+                prev_dt = tz.localize(datetime(self.year, month, 1, 12), is_dst=None)
+                prev_offset = prev_dt.utcoffset()
+                for day in range(2, 32):
+                    try:
+                        curr_dt = tz.localize(datetime(self.year, month, day, 12), is_dst=None)
+                        curr_offset = curr_dt.utcoffset()
+                        if curr_offset != prev_offset:
+                            return curr_dt.timetuple().tm_yday
+                        prev_offset = curr_offset
+                    except Exception:
+                        continue
+                return None
+            except Exception:
+                return None
+
+        # Get standard UTC offset (in winter)
+        try:
+            std_dt = tz.localize(datetime(self.year, 1, 15), is_dst=False)
+            utc_offset_hours = int(std_dt.utcoffset().total_seconds() / 3600)
+            print(f"[DLS] UTC offset in standard time: {utc_offset_hours}")
+        except Exception as e:
+            print(f"[DLS] Failed to compute UTC offset: {e}")
+            utc_offset_hours = None
+
+        # Determine DST start and end days
+        if self.lat >= 0:  # Northern Hemisphere
+            start = find_transition(3) or find_transition(4)
+            end = find_transition(10) or find_transition(11)
+        else:  # Southern Hemisphere
+            start = find_transition(9) or find_transition(10)
+            end = find_transition(3) or find_transition(4)
+
+        return start, end, utc_offset_hours
 
 class SUEWSConfig(BaseModel):
     name: str = Field(
