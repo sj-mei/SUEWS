@@ -8,13 +8,25 @@ from supy.data_model.core import (
     SeasonCheck,
 )
 
+import tempfile
+import yaml
 
-def test_precheck_start_end_date_valid():
-    data = {}
-    updated_data, model_year, start_date, end_date = precheck_start_end_date(data)
-    assert updated_data == data
-    assert start_date == "2011-01-22"
-    assert end_date == "2011-02-22"
+
+def test_precheck_start_end_date_valid_from_yaml():
+    yaml_input = {
+        "model": {
+            "control": {
+                "start_time": "2011-01-01",
+                "end_time": "2013-12-31"
+            }
+        }
+    }
+
+    updated_data, model_year, start_date, end_date = precheck_start_end_date(yaml_input)
+
+    assert updated_data == yaml_input
+    assert start_date == "2011-01-01"
+    assert end_date == "2013-12-31"
     assert model_year == 2011
 
 
@@ -76,6 +88,10 @@ def test_model_physics_empty_value_raises():
 def test_diagmethod_stability_constraint_fails():
     yaml_input = {
         "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
             "physics": {
                 "diagmethod": {"value": 2},
                 "stabilitymethod": {"value": 1},
@@ -96,13 +112,21 @@ def test_diagmethod_stability_constraint_fails():
         "sites": [{}],
     }
 
-    with pytest.raises(ValueError, match=r"If diagmethod == 2.*stabilitymethod.*3"):
-        run_precheck(deepcopy(yaml_input))
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        with pytest.raises(ValueError, match=r"If diagmethod == 2.*must be 3"):
+            run_precheck(tmp.name)
+
 
 
 def test_model_physics_not_touched_by_empty_string_cleanup():
     yaml_input = {
         "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
             "physics": {
                 "diagmethod": {"value": ""},
                 "stabilitymethod": {"value": 3},
@@ -118,18 +142,42 @@ def test_model_physics_not_touched_by_empty_string_cleanup():
                 "localclimatemethod": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
-            },
-            "control": {"forcing_file": {"value": "dummy.txt"}}
+            }
         },
         "sites": [{"gridiv": 1, "properties": {"lat": {"value": 51.5}}}],
     }
 
-    with pytest.raises(ValueError, match=r"Empty or null values for"):
-        run_precheck(deepcopy(yaml_input))
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        with pytest.raises(ValueError, match=r"Empty or null values for"):
+            run_precheck(tmp.name)
 
 
 def test_empty_string_becomes_none():
     yaml_input = {
+        "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
+            "physics": {
+                "diagmethod": {"value": 1},
+                "stabilitymethod": {"value": 3},
+                "storageheatmethod": {"value": 1},
+                "netradiationmethod": {"value": 1},
+                "emissionsmethod": {"value": 1},
+                "ohmincqf": {"value": 1},
+                "roughlenmommethod": {"value": 1},
+                "roughlenheatmethod": {"value": 1},
+                "smdmethod": {"value": 1},
+                "waterusemethod": {"value": 1},
+                "faimethod": {"value": 1},
+                "localclimatemethod": {"value": 1},
+                "snowuse": {"value": 0},
+                "stebbsmethod": {"value": 0},
+            }
+        },
         "sites": [
             {
                 "site_name": "",
@@ -144,13 +192,40 @@ def test_empty_string_becomes_none():
             }
         ],
     }
-    result = run_precheck(deepcopy(yaml_input))
+
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        result = run_precheck(tmp.name)
+
     assert result["sites"][0]["site_name"] is None
     assert result["sites"][0]["properties"]["lat"]["value"] is None
 
 
 def test_empty_string_in_list_of_floats():
     yaml_input = {
+        "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
+            "physics": {
+                "diagmethod": {"value": 1},
+                "stabilitymethod": {"value": 3},
+                "storageheatmethod": {"value": 1},
+                "netradiationmethod": {"value": 1},
+                "emissionsmethod": {"value": 1},
+                "ohmincqf": {"value": 1},
+                "roughlenmommethod": {"value": 1},
+                "roughlenheatmethod": {"value": 1},
+                "smdmethod": {"value": 1},
+                "waterusemethod": {"value": 1},
+                "faimethod": {"value": 1},
+                "localclimatemethod": {"value": 1},
+                "snowuse": {"value": 0},
+                "stebbsmethod": {"value": 0},
+            }
+        },
         "sites": [
             {
                 "properties": {
@@ -165,12 +240,39 @@ def test_empty_string_in_list_of_floats():
             }
         ],
     }
-    result = run_precheck(deepcopy(yaml_input))
+
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        result = run_precheck(tmp.name)
+
     assert result["sites"][0]["properties"]["thermal_layers"]["dz"]["value"][1] is None
 
 
 def test_empty_string_in_nested_dict():
     yaml_input = {
+        "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
+            "physics": {
+                "diagmethod": {"value": 1},
+                "stabilitymethod": {"value": 3},
+                "storageheatmethod": {"value": 1},
+                "netradiationmethod": {"value": 1},
+                "emissionsmethod": {"value": 1},
+                "ohmincqf": {"value": 1},
+                "roughlenmommethod": {"value": 1},
+                "roughlenheatmethod": {"value": 1},
+                "smdmethod": {"value": 1},
+                "waterusemethod": {"value": 1},
+                "faimethod": {"value": 1},
+                "localclimatemethod": {"value": 1},
+                "snowuse": {"value": 0},
+                "stebbsmethod": {"value": 0},
+            }
+        },
         "sites": [
             {
                 "properties": {
@@ -188,12 +290,39 @@ def test_empty_string_in_nested_dict():
             }
         ],
     }
-    result = run_precheck(deepcopy(yaml_input))
+
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        result = run_precheck(tmp.name)
+
     assert result["sites"][0]["properties"]["ohm_coef"]["summer_dry"]["a1"]["value"] is None
 
 
 def test_empty_string_in_surface_type_dict():
     yaml_input = {
+        "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
+            "physics": {
+                "diagmethod": {"value": 1},
+                "stabilitymethod": {"value": 3},
+                "storageheatmethod": {"value": 1},
+                "netradiationmethod": {"value": 1},
+                "emissionsmethod": {"value": 1},
+                "ohmincqf": {"value": 1},
+                "roughlenmommethod": {"value": 1},
+                "roughlenheatmethod": {"value": 1},
+                "smdmethod": {"value": 1},
+                "waterusemethod": {"value": 1},
+                "faimethod": {"value": 1},
+                "localclimatemethod": {"value": 1},
+                "snowuse": {"value": 0},
+                "stebbsmethod": {"value": 0},
+            }
+        },
         "sites": [
             {
                 "properties": {
@@ -209,7 +338,12 @@ def test_empty_string_in_surface_type_dict():
             }
         ],
     }
-    result = run_precheck(deepcopy(yaml_input))
+
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        result = run_precheck(tmp.name)
+
     assert result["sites"][0]["properties"]["waterdist"]["to_grass"]["value"] is None
 
 

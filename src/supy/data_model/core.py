@@ -150,15 +150,22 @@ def precheck_printing(data: dict) -> dict:
     return data
 
 def precheck_start_end_date(data: dict) -> Tuple[dict, int, str, str]:
-    start_date = "2011-01-22"  # Placeholder: Replace with real YAML read
-    end_date = "2011-02-22"
+    control = data.get("model", {}).get("control", {})
+
+    start_date = control.get("start_time")
+    end_date = control.get("end_time")
 
     if not isinstance(start_date, str) or "-" not in start_date:
-        raise ValueError("Invalid 'start_time' — must be YYYY-MM-DD")
-    if not isinstance(end_date, str) or "-" not in end_date:
-        raise ValueError("Invalid 'end_time' — must be YYYY-MM-DD")
+        raise ValueError("Missing or invalid 'start_time' in model.control — must be in 'YYYY-MM-DD' format.")
 
-    model_year = int(start_date.split("-")[0])
+    if not isinstance(end_date, str) or "-" not in end_date:
+        raise ValueError("Missing or invalid 'end_time' in model.control — must be in 'YYYY-MM-DD' format.")
+
+    try:
+        model_year = int(start_date.split("-")[0])
+    except Exception:
+        raise ValueError("Could not extract model year from 'start_time'. Ensure it is in 'YYYY-MM-DD' format.")
+
     return data, model_year, start_date, end_date
 
 def precheck_model_physics_params(data: dict) -> dict:
@@ -354,7 +361,11 @@ def precheck_land_cover_fractions(data: dict) -> dict:
 
     return data
 
-def run_precheck(data: dict) -> dict:
+def run_precheck(path: str) -> dict:
+
+    # ---- Step 0: Load yaml from path into a dict ----
+    with open(path, "r") as file:
+        data = yaml.load(file, Loader=yaml.FullLoader)
 
     # ---- Step 1: Print start message ----
     data = precheck_printing(data)
