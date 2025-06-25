@@ -1,5 +1,5 @@
-from typing import TypeVar, Optional, Generic
-from pydantic import BaseModel
+from typing import TypeVar, Optional, Generic, Union, Any
+from pydantic import ConfigDict, BaseModel, Field, model_validator
 import numpy as np
 import pandas as pd
 from enum import Enum
@@ -18,9 +18,18 @@ T = TypeVar("T")
 
 
 class Reference(BaseModel):
-    desc: Optional[str] = None
-    ID: Optional[str] = None
-    DOI: Optional[str] = None
+    desc: Optional[str] = Field(
+        default=None,
+        description="Description of the reference source"
+    )
+    ID: Optional[str] = Field(
+        default=None,
+        description="Identifier for the reference (e.g., citation key)"
+    )
+    DOI: Optional[str] = Field(
+        default=None,
+        description="Digital Object Identifier for the reference"
+    )
 
 
 class RefValue(BaseModel, Generic[T]):
@@ -30,25 +39,23 @@ class RefValue(BaseModel, Generic[T]):
     It handles numeric type conversion and implements comparison operators.
 
     When used in Field definitions for physical quantities, units should be specified:
-    
+
     Examples:
         # Physical quantity with units
         temperature: RefValue[float] = Field(
-            default=RefValue(15.0),
-            description="Air temperature",
-            unit="degC"
+            default=RefValue(15.0,
+            description="Air temperature", json_schema_extra={"unit": "degC"}
         )
-        
+
         # Dimensionless ratio
         albedo: RefValue[float] = Field(
-            default=RefValue(0.2),
-            description="Surface albedo",
-            unit="dimensionless"
+            default=RefValue(0.2,
+            description="Surface albedo", json_schema_extra={"unit": "dimensionless"}
         )
-        
+
         # Configuration parameter (no unit needed)
         method: RefValue[int] = Field(
-            default=RefValue(1),
+            default=RefValue(1,
             description="Calculation method selection"
         )
 
@@ -73,6 +80,13 @@ class RefValue(BaseModel, Generic[T]):
         elif isinstance(value, (np.int64, np.int32)):
             value = int(value)
         super().__init__(value=value, ref=ref)
+
+    @classmethod
+    def wrap(cls, value: Union[T, 'RefValue[T]']) -> 'RefValue[T]':
+        """Auto-wrap simple values in RefValue, return RefValue unchanged"""
+        if isinstance(value, cls):
+            return value
+        return cls(value)
 
     def __str__(self):
         """String representation showing just the value"""
@@ -129,6 +143,11 @@ class RefValue(BaseModel, Generic[T]):
         if isinstance(other, RefValue):
             return self.value != other.value
         return self.value != other
+
+
+def FlexibleRefValue(type_param):
+    """Create a Union type that accepts both RefValue and simple values"""
+    return Union[RefValue[type_param], type_param]
 
 
 def init_df_state(grid_id: int) -> pd.DataFrame:
