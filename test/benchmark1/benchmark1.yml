@@ -32,6 +32,8 @@ model:
       value: 0
     localclimatemethod:
       value: 1
+    gsmodel:
+      value: 4
     snowuse:
       value: 0
     stebbsmethod:

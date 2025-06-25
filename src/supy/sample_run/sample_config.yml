@@ -32,6 +32,8 @@ model:
       value: 0
     localclimatemethod:
       value: 0
+    gsmodel:
+      value: 4
     snowuse:
       value: 0
     stebbsmethod:
@@ -323,8 +325,6 @@ site:
         value: 0.05
       kmax:
         value: 1200.0
-      gsmodel:
-        value: 1
       s1:
         value: 5.56
       s2:

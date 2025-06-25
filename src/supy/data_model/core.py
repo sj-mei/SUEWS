@@ -137,7 +137,7 @@ class SUEWSConfig(BaseModel):
             "netradiationmethod", "emissionsmethod", "storageheatmethod", "ohmincqf",
             "roughlenmommethod", "roughlenheatmethod", "stabilitymethod", "smdmethod",
             "waterusemethod", "diagmethod", "faimethod", "localclimatemethod",
-            "snowuse", "stebbsmethod"
+            "gsmodel", "snowuse", "stebbsmethod"
         ]
 
         if not isinstance(physics, dict):

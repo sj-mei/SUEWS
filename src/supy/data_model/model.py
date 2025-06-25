@@ -257,7 +257,7 @@ class LocalClimateMethod(Enum):
     def __repr__(self):
         return str(self.value)
 
-class gsmodel(Enum):
+class GSModel(Enum):
     """
     1: original parameterisation (Jarvi et al. 2011)
     2:new parameterisation (Ward et al. 2016)
@@ -333,6 +333,7 @@ for enum_class in [
     DiagMethod,
     FAIMethod,
     LocalClimateMethod,
+    GSModel,
     StebbsMethod,
     SnowUse,
     OhmIncQf,
@@ -401,8 +402,8 @@ class ModelPhysics(BaseModel):
         description="Method used for accounting for local climate effects on surface processes (e.g. near-surface temperature impacts on phenology). Options include none, basic, or detailed approaches",
         unit="dimensionless"
     )
-    gsmodel: RefValue[gsmodel] = Field(
-        default=RefValue(gsmodel.WARD_2M),
+    gsmodel: RefValue[GSModel] = Field(
+        default=RefValue(GSModel.WARD_2M),
         description="Stomatal conductance model selection",
         unit="dimensionless"
     )
