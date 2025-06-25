@@ -143,6 +143,243 @@ class DLSCheck(BaseModel):
 
         return start, end, utc_offset_hours
 
+def precheck_printing(data: dict) -> dict:
+    print("Running basic precheck...")
+    return data
+
+def precheck_start_end_date(data: dict) -> Tuple[dict, int, str, str]:
+    start_date = "2011-01-22"  # Placeholder: Replace with real YAML read
+    end_date = "2011-02-22"
+
+    if not isinstance(start_date, str) or "-" not in start_date:
+        raise ValueError("Invalid 'start_time' — must be YYYY-MM-DD")
+    if not isinstance(end_date, str) or "-" not in end_date:
+        raise ValueError("Invalid 'end_time' — must be YYYY-MM-DD")
+
+    model_year = int(start_date.split("-")[0])
+    return data, model_year, start_date, end_date
+
+def precheck_model_physics_params(data: dict) -> dict:
+    physics = data.get("model", {}).get("physics", {})
+
+    if not physics:
+        print("Skipping physics param check — physics is empty.")
+        return data
+
+    required = [
+        "netradiationmethod", "emissionsmethod", "storageheatmethod", "ohmincqf",
+        "roughlenmommethod", "roughlenheatmethod", "stabilitymethod", "smdmethod",
+        "waterusemethod", "diagmethod", "faimethod", "localclimatemethod",
+        "snowuse", "stebbsmethod"
+    ]
+
+    missing = [k for k in required if k not in physics]
+    if missing:
+        raise ValueError(f"[model.physics] Missing required params: {missing}")
+
+    empty = [k for k in required if physics.get(k, {}).get("value") in ("", None)]
+    if empty:
+        raise ValueError(f"[model.physics] Empty or null values for: {empty}")
+
+    print("All model.physics required params present and non-empty.")
+    return data
+
+def precheck_model_options_constraints(data: dict) -> dict:
+    physics = data.get("model", {}).get("physics", {})
+
+    diag = physics.get("diagmethod", {}).get("value")
+    stability = physics.get("stabilitymethod", {}).get("value")
+
+    if diag == 2 and stability != 3:
+        raise ValueError("[model.physics] If diagmethod == 2, stabilitymethod must be 3.")
+
+    print("diagmethod-stabilitymethod constraint passed.")
+    return data
+
+def precheck_replace_empty_strings_with_none(data: dict) -> dict:
+    ignore_keys = {"control", "physics"}
+
+    def recurse(obj: Any, path=()):
+        if isinstance(obj, dict):
+            new = {}
+            for k, v in obj.items():
+                sub_path = path + (k,)
+                if (
+                    v == ""
+                    and not (len(sub_path) >= 2 and sub_path[0] == "model" and sub_path[1] in ignore_keys)
+                ):
+                    new[k] = None
+                else:
+                    new[k] = recurse(v, sub_path)
+            return new
+        elif isinstance(obj, list):
+            return [None if item == "" else recurse(item, path) for item in obj]
+        else:
+            return obj
+
+    cleaned = recurse(data)
+    print("Empty strings replaced with None (except model.control and model.physics).")
+    return cleaned
+
+
+def precheck_site_season_adjustments(data: dict, start_date: str, model_year: int) -> dict:
+    cleaned_sites = []
+
+    for i, site in enumerate(data.get("sites", [])):
+        if isinstance(site, BaseModel):
+            site = site.model_dump(mode="python")
+
+        props = site.get("properties", {})
+        initial_states = site.get("initial_states", {})
+
+        # --------------------
+        # 1. Determine season
+        # --------------------
+        lat_entry = props.get("lat", {})
+        lat = lat_entry.get("value") if isinstance(lat_entry, dict) else lat_entry
+        lng = props.get("lng", {}).get("value")
+        season = None
+
+        try:
+            if lat is not None:
+                season = SeasonCheck(start_date=start_date, lat=lat).get_season()
+                print(f"[site #{i}] Season detected: {season}")
+
+                # If equatorial / tropical / summer → nullify snowalb
+                if season in ("summer", "tropical", "equatorial") and "snowalb" in initial_states:
+                    if isinstance(initial_states["snowalb"], dict):
+                        initial_states["snowalb"]["value"] = None
+                        print(f"[site #{i}] Set snowalb to None")
+        except Exception as e:
+            raise ValueError(f"[site #{i}] SeasonCheck failed: {e}")
+
+        # --------------------------------------
+        # 2. Seasonal adjustment for DecTrees LAI
+        # --------------------------------------
+        dectr = props.get("land_cover", {}).get("dectr", {})
+        sfr = dectr.get("sfr", {}).get("value", 0)
+
+        if sfr > 0:
+            lai = dectr.get("lai", {})
+            laimin = lai.get("laimin", {}).get("value")
+            laimax = lai.get("laimax", {}).get("value")
+            lai_val = None
+
+            if laimin is not None and laimax is not None:
+                if season == "summer":
+                    lai_val = laimax
+                elif season == "winter":
+                    lai_val = laimin
+                elif season in ("spring", "fall"):
+                    lai_val = (laimax + laimin) / 2
+
+                if "dectr" in initial_states:
+                    initial_states["dectr"]["lai_id"] = {"value": lai_val}
+                    print(f"[site #{i}] Set lai_id to {lai_val} for season {season}")
+        else:
+            if "dectr" in initial_states:
+                initial_states["dectr"]["lai_id"] = {"value": None}
+                print(f"[site #{i}] Nullified lai_id (no dectr surface)")
+
+        # --------------------------------------
+        # 3. DLS Check (timezone and DST start/end days)
+        # --------------------------------------
+        if lat is not None and lng is not None:
+            try:
+                dls = DLSCheck(lat=lat, lng=lng, year=model_year)
+                start_dls, end_dls, tz_offset = dls.compute_dst_transitions()
+
+                if start_dls and end_dls:
+                    props["anthropogenic_emissions"]["startdls"] = {"value": start_dls}
+                    props["anthropogenic_emissions"]["enddls"] = {"value": end_dls}
+                    print(f"[site #{i}] DLS: start={start_dls}, end={end_dls}")
+
+                if tz_offset is not None:
+                    props["timezone"] = {"value": tz_offset}
+                    print(f"[site #{i}] Timezone set to {tz_offset}")
+
+                print(f"[site #{i}] Overwriting pre-existing startdls and enddls with computed values.")
+            except Exception as e:
+                raise ValueError(f"[site #{i}] DLSCheck failed: {e}")
+
+        # Final update
+        site["properties"] = props
+        site["initial_states"] = initial_states
+        cleaned_sites.append(site)
+
+    data["sites"] = cleaned_sites
+    return data
+
+def precheck_land_cover_fractions(data: dict) -> dict:
+    for i, site in enumerate(data.get("sites", [])):
+        props = site.get("properties", {})
+
+        land_cover = props.get("land_cover")
+        if not land_cover:
+            raise ValueError(f"[site #{i}] Missing land_cover block.")
+
+        # Calculate sum of all surface fractions
+        sfr_sum = sum(
+            v.get("sfr", {}).get("value", 0)
+            for v in land_cover.values()
+            if isinstance(v, dict)
+        )
+
+        print(f"[site #{i}] Total land_cover sfr sum: {sfr_sum:.6f}")
+
+        # Auto-fix tiny floating point errors (epsilon ~0.0001)
+        if 0.9999 <= sfr_sum < 1.0:
+            max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
+            correction = 1.0 - sfr_sum
+            land_cover[max_key]["sfr"]["value"] += correction
+            print(f"[site #{i}] Adjusted {max_key}.sfr up by {correction:.6f} to reach 1.0")
+        elif 1.0 < sfr_sum <= 1.0001:
+            max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
+            correction = sfr_sum - 1.0
+            land_cover[max_key]["sfr"]["value"] -= correction
+            print(f"[site #{i}] Adjusted {max_key}.sfr down by {correction:.6f} to reach 1.0")
+        elif abs(sfr_sum - 1.0) > 0.0001:
+            raise ValueError(f"[site #{i}] Invalid land_cover sfr sum: {sfr_sum:.6f}")
+
+        # Validate using Pydantic LandCover model
+        try:
+            LandCover(**land_cover)
+        except ValidationError as e:
+            raise ValueError(f"[site #{i}] Invalid land_cover: {e}")
+
+        # Save back the potentially modified land_cover
+        site["properties"] = props
+
+    return data
+
+def run_precheck(data: dict) -> dict:
+
+    # ---- Step 1: Print start message ----
+    data = precheck_printing(data)
+
+    # ---- Step 2: Extract start_date, end_date, model_year ----
+    data, model_year, start_date, end_date = precheck_start_end_date(data)
+    print(f"Start date: {start_date}, end date: {end_date}, year: {model_year}")
+
+    # ---- Step 3: Check model.physics parameters ----
+    data = precheck_model_physics_params(data)
+
+    # ---- Step 4: Enforce model option constraints ----
+    data = precheck_model_options_constraints(data)
+
+    # ---- Step 5: Clean empty strings (except model.control and model.physics) ----
+    data = precheck_replace_empty_strings_with_none(data)
+
+    # ---- Step 6: Season + LAI + DLS adjustments per site ----
+    data = precheck_site_season_adjustments(data, start_date=start_date, model_year=model_year)
+
+    # ---- Step 7: Land Cover Fractions checks & adjustments ----
+    data = precheck_land_cover_fractions(data)
+
+    # ---- Step 8: Print completion ----
+    print("Precheck complete.\n")
+    return data
+
 class SUEWSConfig(BaseModel):
     name: str = Field(
         default="sample config", description="Name of the SUEWS configuration"
@@ -215,199 +452,7 @@ class SUEWSConfig(BaseModel):
     #                 surface_is.state.value = 0
     #     return self
 
-    @model_validator(mode="before")
-    @classmethod
-    def precheck(cls, data):
-        print("\nStarting precheck procedure...\n")
 
-        # ── Step 0.0: Check model.physics required keys (only if physics dict is provided) ──
-        model_data = data.get("model", {})
-        physics = model_data.get("physics", {})
-
-        required_physics_keys = [
-            "netradiationmethod", "emissionsmethod", "storageheatmethod", "ohmincqf",
-            "roughlenmommethod", "roughlenheatmethod", "stabilitymethod", "smdmethod",
-            "waterusemethod", "diagmethod", "faimethod", "localclimatemethod",
-            "gsmodel", "snowuse", "stebbsmethod"
-        ]
-
-        # Only validate physics if it's explicitly provided and contains all parameters
-        # This allows partial configurations where Pydantic fills in defaults
-        if physics:  # Only proceed if physics dict is not empty
-            if not isinstance(physics, dict):
-                raise TypeError("[model.physics] Expected a dictionary")
-
-            # Only require missing keys validation if most parameters are provided
-            # This allows test cases that provide minimal physics configs
-            provided_keys = [k for k in required_physics_keys if k in physics]
-            if len(provided_keys) >= len(required_physics_keys) * 0.8:  # 80% threshold
-                missing_keys = [k for k in required_physics_keys if k not in physics]
-                if missing_keys:
-                    raise ValueError(f"[model.physics] Missing required parameters: {missing_keys}")
-
-            # Check for empty string values in provided parameters only
-            empty_string_keys = [
-                k for k in physics.keys()
-                if k in required_physics_keys 
-                and isinstance(physics.get(k), dict) 
-                and physics[k].get("value") == (("") or (None))
-            ]
-            if empty_string_keys:
-                raise ValueError(f"[model.physics] Parameters with empty string or null values: {empty_string_keys}")
-
-            # ── Step 0.1: Logic check (only if both parameters are provided) ──
-            diag = physics.get("diagmethod", {}).get("value")
-            stab = physics.get("stabilitymethod", {}).get("value")
-            if diag is not None and stab is not None and diag == 2 and stab != 3:
-                raise ValueError("Invalid model logic: diagmethod == 2 requires stabilitymethod == 3")
-
-        # ── Step 0.2: Now clean the rest of the config from "" -> None ──
-        def clean_empty_strings(d):
-            for key, val in d.items():
-                if isinstance(val, dict):
-                    clean_empty_strings(val)
-                elif val == "":
-                    d[key] = None
-        clean_empty_strings(data)
-
-        # ── Step 1: Loop through sites ──
-        sites_data = data.get("site", [])
-        
-        # Handle empty sites_data - return early and let default values be applied later
-        if not sites_data:
-            return data
-            
-        if not isinstance(sites_data, list):
-            raise TypeError("Expected 'site' to be a list.")
-
-        start_date = "2014-06-20"  # placeholder: to be passed externally
-        end_date = "2014-08-20"
-
-        for i, site in enumerate(sites_data):
-            # Handle both dictionary and Site object cases
-            if hasattr(site, 'properties'):
-                # This is already a Site object - skip precheck but keep it in the list
-                print(f"⚠️ [site #{i}] Skipping precheck for Site object")
-                continue
-            else:
-                # This is a dictionary
-                props = site.get("properties", {})
-
-            # --- Season Check ---
-            try:
-                lat = props.get("lat", {}).get("value")
-                if lat is not None:
-                    season_check = SeasonCheck(start_date=start_date, end_date=end_date, lat=lat)
-                    season = season_check.get_season()
-                    print(f"[site #{i}] Season detected: {season}")
-
-                    # Update param based on season
-                    if season in ("summer", "tropical", "equatorial"):
-                        # Set snowalbmax to None if present
-                        if "snowalbmax" in props:
-                            props["snowalbmax"] = None
-                            print(f"[site #{i}] Set 'snowalbmax' to None for {season} season")
-                else:
-                    print(f"⚠️ [site #{i}] Skipping season check: missing lat")
-            except Exception as e:
-                raise ValueError(f"[site #{i}] SeasonCheck failed: {e}")
-
-            # ── Step 1.1.1: Adjust LAI values for deciduous trees (conditional) ──
-            landcover_data = props.get("land_cover") or props.get("landcover")
-            if landcover_data is not None:
-                try:
-                    dectr = landcover_data.get("dectr", {})
-                    sfr_dectr = dectr.get("sfr", {}).get("value", 0)
-
-                    if sfr_dectr > 0:
-                        lai = dectr.get("lai", {})
-                        laimin = lai.get("laimin", {}).get("value")
-                        laimax = lai.get("laimax", {}).get("value")
-
-                        if laimin is not None and laimax is not None:
-                            if season in ("summer", "tropical", "equatorial"):
-                                lai["base"] = {"value": laimax}
-                                print(f"[site #{i}] LAI base set to laimax ({laimax}) for {season}")
-                            elif season == "winter":
-                                lai["base"] = {"value": laimin}
-                                print(f"[site #{i}] LAI base set to laimin ({laimin}) for winter")
-                            elif season in ("spring", "fall"):
-                                lai["base"] = {"value": (laimax + laimin) / 2}
-                                print(f"[site #{i}] LAI base set to average of laimax and laimin ({(laimax + laimin) / 2:.2f})")
-                        else:
-                            print(f"[site #{i}] Missing laimin or laimax under lai")
-
-                        dectr["lai"] = lai
-                        landcover_data["dectr"] = dectr
-                        props["land_cover"] = landcover_data
-                    else:
-                        # sfr == 0 → nullify all lai-related values 
-                        if "lai" in dectr:
-                            print(f"[site #{i}] Nullifying all LAI parameters (sfr_dectr = 0)")
-                            for key in dectr["lai"]:
-                                if isinstance(dectr["lai"][key], dict):
-                                    dectr["lai"][key]["value"] = None
-                                    print(f"Set {key} to {dectr['lai'][key]['value']}")
-                            landcover_data["dectr"] = dectr
-                            props["land_cover"] = landcover_data
-                except Exception as e:
-                    raise ValueError(f"[site #{i}] LAI seasonal adjustment failed: {e}")
-
-            # --- Land Cover Fractions Check (only if land_cover section exists) ---
-            landcover_data = props.get("land_cover") or props.get("landcover")
-            if landcover_data is not None:
-                if not isinstance(landcover_data, dict):
-                    raise TypeError(f"[site #{i}] 'land_cover' must be a dict, got {type(landcover_data).__name__}")
-
-                try:
-                    print(f"[site #{i}] Checking land cover fractions.")
-
-                    # Extract only the surface fraction values
-                    sfr_values = {}
-                    for surf_type, surf_data in landcover_data.items():
-                        if isinstance(surf_data, dict):
-                            sfr = surf_data.get("sfr", {})
-                            val = sfr.get("value")
-                            if isinstance(val, (int, float)):
-                                sfr_values[surf_type] = val
-
-                    if sfr_values:  # Only proceed if we found some surface fraction values
-                        total = sum(sfr_values.values())
-
-                        if 0.9999 <= total < 1.0:
-                            max_key = max(sfr_values, key=sfr_values.get)
-                            correction = 1.0 - total
-                            print(f"[site #{i}] land_cover sfr sum is {total:.6f} — rounding UP '{max_key}' by {correction:.6f}")
-                            landcover_data[max_key]["sfr"]["value"] += correction
-
-                        elif 1.0 < total <= 1.0001:
-                            max_key = max(sfr_values, key=sfr_values.get)
-                            correction = total - 1.0
-                            print(f"[site #{i}] land_cover sfr sum is {total:.6f} — rounding DOWN '{max_key}' by {correction:.6f}")
-                            landcover_data[max_key]["sfr"]["value"] -= correction
-
-                        elif abs(total - 1.0) > 0.0001:
-                            raise ValueError(f"❌ [site #{i}] Invalid land_cover sfr sum: {total:.6f} (must be ~1.0)")
-
-                        # Validate the full land_cover
-                        LandCover(**landcover_data)
-                        print(f"[site #{i}] Land cover fractions checked/updated.")
-                        props["land_cover"] = landcover_data
-                    else:
-                        print(f"[site #{i}] No surface fractions found to validate.")
-
-                except ValidationError as e:
-                    raise ValueError(f"[site #{i}] Invalid land_cover: {e}")
-            else:
-                print(f"[site #{i}] No land_cover section found - skipping fractions check.")
-
-            # Update back the modified site properties
-            site["properties"] = props
-
-        # Update back the full config data
-        data["site"] = sites_data
-        print("\n Precheck complete. Proceeding with Pydantic validation...\n")
-        return data
     @classmethod
     def from_yaml(cls, path: str, use_conditional_validation: bool = True, strict: bool = True) -> "SUEWSConfig":
         """Initialize SUEWSConfig from YAML file with conditional validation.
