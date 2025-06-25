@@ -127,6 +127,49 @@ class SUEWSConfig(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def precheck(cls, data):
+        print("\nStarting precheck procedure...\n")
+
+        # ── Step 0.0: Check model.physics required keys and halt if any .value == "" ──
+        model_data = data.get("model", {})
+        physics = model_data.get("physics", {})
+
+        required_physics_keys = [
+            "netradiationmethod", "emissionsmethod", "storageheatmethod", "ohmincqf",
+            "roughlenmommethod", "roughlenheatmethod", "stabilitymethod", "smdmethod",
+            "waterusemethod", "diagmethod", "faimethod", "localclimatemethod",
+            "snowuse", "stebbsmethod"
+        ]
+
+        if not isinstance(physics, dict):
+            raise TypeError("[model.physics] Expected a dictionary")
+
+        missing_keys = [k for k in required_physics_keys if k not in physics]
+        if missing_keys:
+            raise ValueError(f"[model.physics] Missing required parameters: {missing_keys}")
+
+        empty_string_keys = [
+            k for k in required_physics_keys
+            if isinstance(physics.get(k), dict) and physics[k].get("value") == (("") or (None))
+        ]
+        if empty_string_keys:
+            raise ValueError(f"[model.physics] Parameters with empty string or null values: {empty_string_keys}")
+
+        # ── Step 0.1: Logic check ──
+        diag = physics.get("diagmethod", {}).get("value")
+        stab = physics.get("stabilitymethod", {}).get("value")
+        if diag == 2 and stab != 3:
+            raise ValueError("Invalid model logic: diagmethod == 2 requires stabilitymethod == 3")
+
+        # ── Step 0.2: Now clean the rest of the config from "" -> None ──
+        def clean_empty_strings(d):
+            for key, val in d.items():
+                if isinstance(val, dict):
+                    clean_empty_strings(val)
+                elif val == "":
+                    d[key] = None
+        clean_empty_strings(data)
+
+        # ── Step 1: Loop through sites ──
         sites_data = data.get("site", [])
         
         # Handle empty sites_data - return early and let default values be applied later
@@ -221,6 +264,7 @@ class SUEWSConfig(BaseModel):
 
         # Update back the full config data
         data["site"] = sites_data
+        print("\n Precheck complete. Proceeding with Pydantic validation...\n")
         return data
     @classmethod
     def from_yaml(cls, path: str, use_conditional_validation: bool = True, strict: bool = True) -> "SUEWSConfig":
