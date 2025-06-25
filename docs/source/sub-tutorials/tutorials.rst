@@ -40,6 +40,9 @@ Advanced Examples
 
 For experienced users working with custom parameterisations and model modifications:
 
+**Data Preparation:**
+- :ref:`Preparing input forcing data <prepare_forcing_data>` - How to format meteorological data for SUEWS simulations from weather stations, reanalysis datasets, and custom sources
+
 **Physics Customisation:**
 - :ref:`Adding custom OHM coefficients <ohm_custom_coefficients>` - How to derive and implement surface-specific storage heat flux coefficients
 - :ref:`Custom surface properties <custom_surface_properties>` - Modifying land cover parameters for specialised urban surfaces
