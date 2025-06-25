@@ -76,7 +76,7 @@ Where:
 
    import pandas as pd
    import supy as sp
-   from supy.util import derive_ohm_coef, replace_ohm_coeffs, compare_heat_storage
+   from supy.util import derive_ohm_coef, replace_ohm_coeffs, sim_ohm
    
    # Load your measured data (must have datetime index)
    df = pd.read_csv('surface_measurements.csv', index_col=0, parse_dates=True)
@@ -130,25 +130,14 @@ Where:
 
 **Step 4: Validation**
 
-Use SuPy's built-in validation utilities:
+Validate the derived coefficients using SuPy utilities:
 
 .. code-block:: python
 
-   # Generate validation plots and statistics
-   plot_diurnal, plot_comparison = compare_heat_storage(
-       ser_QN,    # observed net radiation
-       ser_QS,    # observed storage heat flux  
-       a1, a2, a3 # derived coefficients
-   )
-   
-   # Display plots
-   plot_diurnal.show()     # Diurnal cycle comparison
-   plot_comparison.show()  # 1:1 scatter plot with fit line
-   
-   # Calculate additional performance metrics
-   from supy.util import sim_ohm
    import numpy as np
+   import matplotlib.pyplot as plt
    
+   # Simulate storage heat flux using derived coefficients
    ser_qs_modelled = sim_ohm(ser_QN, a1, a2, a3)
    
    # Performance statistics
@@ -160,14 +149,35 @@ Use SuPy's built-in validation utilities:
    print(f"RMSE: {rmse:.2f} W m-2")
    print(f"R²: {r2:.3f}")
    print(f"Bias: {bias:.2f} W m-2")
+   
+   # Create validation plots
+   fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+   
+   # Scatter plot
+   ax1.scatter(ser_QS, ser_qs_modelled, alpha=0.5)
+   ax1.plot([ser_QS.min(), ser_QS.max()], [ser_QS.min(), ser_QS.max()], 'r--')
+   ax1.set_xlabel('Observed QS (W m⁻²)')
+   ax1.set_ylabel('Modelled QS (W m⁻²)')
+   ax1.set_title(f'1:1 Comparison (R² = {r2:.3f})')
+   
+   # Time series comparison (sample week)
+   sample_week = ser_QS.iloc[:168]  # First week
+   ax2.plot(sample_week.index, sample_week, label='Observed', alpha=0.7)
+   ax2.plot(sample_week.index, ser_qs_modelled.iloc[:168], label='Modelled', alpha=0.7)
+   ax2.set_xlabel('Time')
+   ax2.set_ylabel('QS (W m⁻²)')
+   ax2.set_title('Time Series Comparison')
+   ax2.legend()
+   
+   plt.tight_layout()
+   plt.show()
 
 **SuPy OHM Utilities:**
 
-The complete workflow uses SuPy's dedicated OHM utilities from ``supy.util``:
+The complete workflow uses SuPy's public OHM utilities from ``supy.util``:
 - ``derive_ohm_coef(ser_QS, ser_QN)`` - Derive coefficients from measurement data
 - ``replace_ohm_coeffs(df_state, coefs, land_cover_type)`` - Update model state  
 - ``sim_ohm(ser_qn, a1, a2, a3)`` - Simulate storage heat flux
-- ``compare_heat_storage(ser_qn_obs, ser_qs_obs, a1, a2, a3)`` - Validation plots
 
 **Best Practices:**
 
