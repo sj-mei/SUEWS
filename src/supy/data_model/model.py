@@ -261,13 +261,15 @@ class GSModel(Enum):
     """
     1: original parameterisation (Jarvi et al. 2011)
     2:new parameterisation (Ward et al. 2016)
-    3:original parameterisation (Jarvi et al. 2011) with 2 m temperature
-    4:new parameterisation (Ward et al. 2016) with 2 m temperature
     """
+    # 3:original parameterisation (Jarvi et al. 2011) with 2 m temperature
+    # 4:new parameterisation (Ward et al. 2016) with 2 m temperature
+
     JARVI = 1
     WARD = 2
-    JARVI_2M = 3
-    WARD_2M = 4
+    # MP: Removed as dependent on localclimatemethod - legacy options for CO2 with 2 m temperature
+    # JARVI_2M = 3
+    # WARD_2M = 4
 
     def __int__(self):
         return self.value
