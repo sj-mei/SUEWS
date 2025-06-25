@@ -689,3 +689,90 @@ def test_land_cover_invalid_structure_raises():
     }
     with pytest.raises(ValueError, match="Invalid land_cover"):
         precheck_land_cover_fractions(deepcopy(data))
+
+def test_diagmethod2_requires_faibldg_null_raises():
+    yaml_input = {
+        "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
+            "physics": {
+                "diagmethod": {"value": 2},
+                "stabilitymethod": {"value": 3},
+                "storageheatmethod": {"value": 1},
+                "netradiationmethod": {"value": 1},
+                "emissionsmethod": {"value": 1},
+                "ohmincqf": {"value": 1},
+                "roughlenmommethod": {"value": 1},
+                "roughlenheatmethod": {"value": 1},
+                "smdmethod": {"value": 1},
+                "waterusemethod": {"value": 1},
+                "faimethod": {"value": 1},
+                "localclimatemethod": {"value": 1},
+                "snowuse": {"value": 0},
+                "stebbsmethod": {"value": 0},
+            }
+        },
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {"sfr": {"value": 0.5}},
+                        "paved": {"sfr": {"value": 0.5}},
+                    },
+                    "faibldg": {"value": None},  # Explicit null
+                }
+            }
+        ],
+    }
+
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        with pytest.raises(ValueError, match=r"faibldg.*must be set and non-null"):
+            run_precheck(tmp.name)
+
+def test_diagmethod2_requires_faibldg_passes_if_present():
+    yaml_input = {
+        "model": {
+            "control": {
+                "start_time": "2025-01-01",
+                "end_time": "2025-12-31",
+            },
+            "physics": {
+                "diagmethod": {"value": 2},
+                "stabilitymethod": {"value": 3},
+                "storageheatmethod": {"value": 1},
+                "netradiationmethod": {"value": 1},
+                "emissionsmethod": {"value": 1},
+                "ohmincqf": {"value": 1},
+                "roughlenmommethod": {"value": 1},
+                "roughlenheatmethod": {"value": 1},
+                "smdmethod": {"value": 1},
+                "waterusemethod": {"value": 1},
+                "faimethod": {"value": 1},
+                "localclimatemethod": {"value": 1},
+                "snowuse": {"value": 0},
+                "stebbsmethod": {"value": 0},
+            }
+        },
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {"sfr": {"value": 0.5}},
+                        "paved": {"sfr": {"value": 0.5}},
+                    },
+                    "faibldg": {"value": 1.5},
+                }
+            }
+        ],
+    }
+
+    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
+        yaml.dump(yaml_input, tmp, sort_keys=False)
+        tmp.flush()
+        result = run_precheck(tmp.name)
+
+    assert result["sites"][0]["properties"]["faibldg"]["value"] == 1.5

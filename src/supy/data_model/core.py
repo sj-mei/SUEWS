@@ -361,6 +361,31 @@ def precheck_land_cover_fractions(data: dict) -> dict:
 
     return data
 
+def precheck_diagmethod(data: dict) -> dict:
+    physics = data.get("model", {}).get("physics", {})
+    diagmethod = physics.get("diagmethod", {}).get("value")
+
+    if diagmethod != 2:
+        logger_supy.debug("[precheck] diagmethod != 2, skipping faibldg check.")
+        return data
+
+    for i, site in enumerate(data.get("sites", [])):
+        props = site.get("properties", {})
+        land_cover = props.get("land_cover", {})
+        bldgs = land_cover.get("bldgs", {})
+        sfr = bldgs.get("sfr", {}).get("value", 0)
+
+        if sfr > 0:
+            faibldg = props.get("faibldg", {})
+            faibldg_value = faibldg.get("value")
+            if faibldg_value in (None, "", []):
+                raise ValueError(f"[site #{i}] For diagmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
+
+    logger_supy.info("[precheck] faibldg check for diagmethod==2 passed.")
+    return data
+
+
+
 def run_precheck(path: str) -> dict:
 
     # ---- Step 0: Load yaml from path into a dict ----
@@ -389,7 +414,10 @@ def run_precheck(path: str) -> dict:
     # ---- Step 7: Land Cover Fractions checks & adjustments ----
     data = precheck_land_cover_fractions(data)
 
-    # ---- Step 8: Print completion ----
+    # ---- Step 8: Rules associated to selected model options ----
+    data = precheck_diagmethod(data)
+
+    # ---- Step 9: Print completion ----
     logger_supy.info("Precheck complete.\n")
     return data
 
