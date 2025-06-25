@@ -23,6 +23,8 @@ from datetime import datetime
 from timezonefinder import TimezoneFinder
 import pytz
 
+from .._env import logger_supy
+
 try:
     from ..validation import enhanced_from_yaml_validation, enhanced_to_df_state_validation
     _validation_available = True
@@ -101,10 +103,10 @@ class DLSCheck(BaseModel):
         tz_name = tf.timezone_at(lat=self.lat, lng=self.lng)
 
         if not tz_name:
-            print(f"[DLS] Cannot determine timezone for lat={self.lat}, lng={self.lng}")
+            logger_supy.debug(f"[DLS] Cannot determine timezone for lat={self.lat}, lng={self.lng}")
             return None, None, None
 
-        print(f"[DLS] Timezone identified as '{tz_name}'")
+        logger_supy.debug(f"[DLS] Timezone identified as '{tz_name}'")
         tz = pytz.timezone(tz_name)
 
         def find_transition(month: int) -> Optional[int]:
@@ -128,9 +130,9 @@ class DLSCheck(BaseModel):
         try:
             std_dt = tz.localize(datetime(self.year, 1, 15), is_dst=False)
             utc_offset_hours = int(std_dt.utcoffset().total_seconds() / 3600)
-            print(f"[DLS] UTC offset in standard time: {utc_offset_hours}")
+            logger_supy.debug(f"[DLS] UTC offset in standard time: {utc_offset_hours}")
         except Exception as e:
-            print(f"[DLS] Failed to compute UTC offset: {e}")
+            logger_supy.debug(f"[DLS] Failed to compute UTC offset: {e}")
             utc_offset_hours = None
 
         # Determine DST start and end days
@@ -144,7 +146,7 @@ class DLSCheck(BaseModel):
         return start, end, utc_offset_hours
 
 def precheck_printing(data: dict) -> dict:
-    print("Running basic precheck...")
+    logger_supy.info("Running basic precheck...")
     return data
 
 def precheck_start_end_date(data: dict) -> Tuple[dict, int, str, str]:
@@ -163,7 +165,7 @@ def precheck_model_physics_params(data: dict) -> dict:
     physics = data.get("model", {}).get("physics", {})
 
     if not physics:
-        print("Skipping physics param check — physics is empty.")
+        logger_supy.debug("Skipping physics param check — physics is empty.")
         return data
 
     required = [
@@ -181,7 +183,7 @@ def precheck_model_physics_params(data: dict) -> dict:
     if empty:
         raise ValueError(f"[model.physics] Empty or null values for: {empty}")
 
-    print("All model.physics required params present and non-empty.")
+    logger_supy.debug("All model.physics required params present and non-empty.")
     return data
 
 def precheck_model_options_constraints(data: dict) -> dict:
@@ -193,7 +195,7 @@ def precheck_model_options_constraints(data: dict) -> dict:
     if diag == 2 and stability != 3:
         raise ValueError("[model.physics] If diagmethod == 2, stabilitymethod must be 3.")
 
-    print("diagmethod-stabilitymethod constraint passed.")
+    logger_supy.debug("diagmethod-stabilitymethod constraint passed.")
     return data
 
 def precheck_replace_empty_strings_with_none(data: dict) -> dict:
@@ -218,7 +220,7 @@ def precheck_replace_empty_strings_with_none(data: dict) -> dict:
             return obj
 
     cleaned = recurse(data)
-    print("Empty strings replaced with None (except model.control and model.physics).")
+    logger_supy.info("Empty strings replaced with None (except model.control and model.physics).")
     return cleaned
 
 
@@ -243,13 +245,13 @@ def precheck_site_season_adjustments(data: dict, start_date: str, model_year: in
         try:
             if lat is not None:
                 season = SeasonCheck(start_date=start_date, lat=lat).get_season()
-                print(f"[site #{i}] Season detected: {season}")
+                logger_supy.debug(f"[site #{i}] Season detected: {season}")
 
                 # If equatorial / tropical / summer → nullify snowalb
                 if season in ("summer", "tropical", "equatorial") and "snowalb" in initial_states:
                     if isinstance(initial_states["snowalb"], dict):
                         initial_states["snowalb"]["value"] = None
-                        print(f"[site #{i}] Set snowalb to None")
+                        logger_supy.info(f"[site #{i}] Set snowalb to None")
         except Exception as e:
             raise ValueError(f"[site #{i}] SeasonCheck failed: {e}")
 
@@ -275,11 +277,11 @@ def precheck_site_season_adjustments(data: dict, start_date: str, model_year: in
 
                 if "dectr" in initial_states:
                     initial_states["dectr"]["lai_id"] = {"value": lai_val}
-                    print(f"[site #{i}] Set lai_id to {lai_val} for season {season}")
+                    logger_supy.debug(f"[site #{i}] Set lai_id to {lai_val} for season {season}")
         else:
             if "dectr" in initial_states:
                 initial_states["dectr"]["lai_id"] = {"value": None}
-                print(f"[site #{i}] Nullified lai_id (no dectr surface)")
+                logger_supy.debug(f"[site #{i}] Nullified lai_id (no dectr surface)")
 
         # --------------------------------------
         # 3. DLS Check (timezone and DST start/end days)
@@ -292,13 +294,13 @@ def precheck_site_season_adjustments(data: dict, start_date: str, model_year: in
                 if start_dls and end_dls:
                     props["anthropogenic_emissions"]["startdls"] = {"value": start_dls}
                     props["anthropogenic_emissions"]["enddls"] = {"value": end_dls}
-                    print(f"[site #{i}] DLS: start={start_dls}, end={end_dls}")
+                    logger_supy.debug(f"[site #{i}] DLS: start={start_dls}, end={end_dls}")
 
                 if tz_offset is not None:
                     props["timezone"] = {"value": tz_offset}
-                    print(f"[site #{i}] Timezone set to {tz_offset}")
+                    logger_supy.debug(f"[site #{i}] Timezone set to {tz_offset}")
 
-                print(f"[site #{i}] Overwriting pre-existing startdls and enddls with computed values.")
+                logger_supy.info(f"[site #{i}] Overwriting pre-existing startdls and enddls with computed values.")
             except Exception as e:
                 raise ValueError(f"[site #{i}] DLSCheck failed: {e}")
 
@@ -325,19 +327,19 @@ def precheck_land_cover_fractions(data: dict) -> dict:
             if isinstance(v, dict)
         )
 
-        print(f"[site #{i}] Total land_cover sfr sum: {sfr_sum:.6f}")
+        logger_supy.debug(f"[site #{i}] Total land_cover sfr sum: {sfr_sum:.6f}")
 
         # Auto-fix tiny floating point errors (epsilon ~0.0001)
         if 0.9999 <= sfr_sum < 1.0:
             max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
             correction = 1.0 - sfr_sum
             land_cover[max_key]["sfr"]["value"] += correction
-            print(f"[site #{i}] Adjusted {max_key}.sfr up by {correction:.6f} to reach 1.0")
+            logger_supy.info(f"[site #{i}] Adjusted {max_key}.sfr up by {correction:.6f} to reach 1.0")
         elif 1.0 < sfr_sum <= 1.0001:
             max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
             correction = sfr_sum - 1.0
             land_cover[max_key]["sfr"]["value"] -= correction
-            print(f"[site #{i}] Adjusted {max_key}.sfr down by {correction:.6f} to reach 1.0")
+            logger_supy.info(f"[site #{i}] Adjusted {max_key}.sfr down by {correction:.6f} to reach 1.0")
         elif abs(sfr_sum - 1.0) > 0.0001:
             raise ValueError(f"[site #{i}] Invalid land_cover sfr sum: {sfr_sum:.6f}")
 
@@ -359,7 +361,7 @@ def run_precheck(data: dict) -> dict:
 
     # ---- Step 2: Extract start_date, end_date, model_year ----
     data, model_year, start_date, end_date = precheck_start_end_date(data)
-    print(f"Start date: {start_date}, end date: {end_date}, year: {model_year}")
+    logger_supy.debug(f"Start date: {start_date}, end date: {end_date}, year: {model_year}")
 
     # ---- Step 3: Check model.physics parameters ----
     data = precheck_model_physics_params(data)
@@ -377,7 +379,7 @@ def run_precheck(data: dict) -> dict:
     data = precheck_land_cover_fractions(data)
 
     # ---- Step 8: Print completion ----
-    print("Precheck complete.\n")
+    logger_supy.info("Precheck complete.\n")
     return data
 
 class SUEWSConfig(BaseModel):
@@ -494,7 +496,7 @@ class SUEWSConfig(BaseModel):
             return cls(**config_data)
         else:
             # Original behavior - validate everything
-            print ("Entering SUEWSConfig pydantic validator...")
+            logger_supy.info ("Entering SUEWSConfig pydantic validator...")
             return cls(**config_data)
 
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
