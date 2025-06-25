@@ -982,14 +982,18 @@ class LandCover(BaseModel):
 
     @model_validator(mode="after")
     def validate_land_cover_fractions(self) -> "LandCover":
+        # Handle both RefValue and direct value types
+        def get_value(field):
+            return field.value if hasattr(field, 'value') else field
+        
         fractions = {
-            "paved": self.paved.sfr,
-            "bldgs": self.bldgs.sfr,
-            "evetr": self.evetr.sfr,
-            "dectr": self.dectr.sfr,
-            "grass": self.grass.sfr,
-            "bsoil": self.bsoil.sfr,
-            "water": self.water.sfr,
+            "paved": get_value(self.paved.sfr),
+            "bldgs": get_value(self.bldgs.sfr),
+            "evetr": get_value(self.evetr.sfr),
+            "dectr": get_value(self.dectr.sfr),
+            "grass": get_value(self.grass.sfr),
+            "bsoil": get_value(self.bsoil.sfr),
+            "water": get_value(self.water.sfr),
         }
 
         total = sum(fractions.values())
