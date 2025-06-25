@@ -403,7 +403,7 @@ class ModelPhysics(BaseModel):
         json_schema_extra={"unit": "dimensionless"}
     )
     gsmodel: RefValue[GSModel] = Field(
-        default=RefValue(GSModel.WARD_2M),
+        default=RefValue(GSModel.WARD),
         description="Stomatal conductance model selection",
         json_schema_extra={"unit": "dimensionless"}
     )
