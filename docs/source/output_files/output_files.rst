@@ -70,6 +70,13 @@ Before these main data files are written out, SUEWS provides a summary of the co
 
 The variables included in the main output file are determined according to :option:`WriteOutOption` set in :ref:`RunControl.nml`.
 
+**Surface Temperature Variables:**
+
+- **Ts**: Bulk surface temperature (°C) - area-weighted average temperature of all surface types within the grid, used in energy balance calculations and radiation schemes
+- **Ts_[Surface]**: Surface temperatures (°C) for specific surface types (e.g., Ts_Paved, Ts_Bldgs, Ts_Grass) available in both EHC and debug output groups
+
+.. note::
+   **Consistent Naming**: All surface temperature variables now use the `Ts` prefix consistently across all output groups. The same `Ts_[Surface]` variables appear in both EHC and debug output. For detailed surface temperatures by urban facet (walls, roofs, ground layers), see the :ref:`ESTM output file <SSss_YYYY_ESTM_TT.txt>` which provides 5-layer temperature profiles for different surface elements.
 
 .. csv-table::
   :file: SSss_YYYY_SUEWS_TT.csv
@@ -157,6 +164,35 @@ If the ESTM model option is run, the following output file is created.
 
 .. note:: First time steps of storage output could give NaN values during the initial converging phase.
 
+**ESTM Surface Temperature Variables**
+
+The ESTM model calculates detailed surface temperatures for different urban facets:
+
+**Temperature Layers (5 layers each):**
+   - **Twall1-5**: Wall temperatures from outer-most (1) to inner-most (5) layer
+   - **Troof1-5**: Roof temperatures from outer-most (1) to inner-most (5) layer  
+   - **Tground1-5**: Ground temperatures from outer-most (1) to inner-most (5) layer
+   - **Tibld1-5**: Internal building element temperatures
+
+**Key Temperature Variables:**
+   - **Tabld**: Indoor air temperature within buildings
+
+.. note::
+   **Surface Temperature Convention**: ESTM uses detailed layer-specific temperatures (Twall1-5, Troof1-5, etc.) rather than the bulk `Tsurf` variable found in main SUEWS output. The layer temperatures provide much more detailed thermal analysis of urban facets.
+
+**Storage Heat Fluxes:**
+   - **QSnet**: Net storage heat flux (sum of all components)
+   - **QSwall/QSroof/QSground**: Component-specific storage fluxes
+   - **QSair**: Storage heat flux into air
+   - **QSibld**: Storage heat flux into internal building elements
+
+.. note::
+   These detailed temperature profiles enable analysis of heat transfer through urban facets and are particularly valuable for:
+   
+   - Building energy assessment
+   - Urban heat island analysis  
+   - Validation against thermal imaging data
+   - Surface temperature pattern studies
 
 ESTM output file format
 

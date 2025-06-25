@@ -38,11 +38,12 @@ df_var = get_output_info_df()
 dict_var_lower = {group.lower(): group for group in df_var.index.levels[0].str.strip()}
 
 #  generate dict of functions to apply for each variable
+# Use lambda for 'last' to avoid pandas compatibility issues
 dict_func_aggm = {
-    "T": "last",
+    "T": lambda x: x.iloc[-1] if len(x) > 0 else np.nan,  # last value
     "A": "mean",
     "S": "sum",
-    "L": "last",
+    "L": lambda x: x.iloc[-1] if len(x) > 0 else np.nan,  # last value
 }
 df_var["func"] = df_var.aggm.apply(lambda x: dict_func_aggm[x])
 

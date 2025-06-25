@@ -548,14 +548,14 @@ class ModelControl(BaseModel):
     )
     forcing_file: FlexibleRefValue(str) = Field(
         default="forcing.txt",
-        description="Path to meteorological forcing data file",
+        description="Path to meteorological forcing data file. The forcing file contains time-series meteorological data that drives SUEWS simulations. For detailed information about required variables, file format, and data preparation guidelines, see :ref:`met_input`.",
     )
     kdownzen: Optional[FlexibleRefValue(int)] = Field(
         default=None,
         description="Use zenithal correction for downward shortwave radiation",
     )
     output_file: str = Field(
-        default="output.txt", description="Path to model output file"
+        default="output.txt", description="Path to model output file. SUEWS generates multiple output files with time-series results and diagnostic information. For detailed information about output file formats, variables, and interpretation, see :ref:`output_files`."
     )
     # daylightsaving_method: int
     diagnose: int = Field(

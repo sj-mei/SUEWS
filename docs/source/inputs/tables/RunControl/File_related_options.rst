@@ -106,7 +106,7 @@ File related options
 	:Requirement:
 		Optional
 	:Description:
-		Specifies which variables are written in the output files.
+		Specifies which variables are written in the output files. For detailed information about output file formats and variables, see :ref:`output_files`.
 	:Configuration:
 		.. csv-table::
 			:file: csv-table/WriteOutOption.csv

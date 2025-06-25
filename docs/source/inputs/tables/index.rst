@@ -38,8 +38,14 @@ For existing users of table-based inputs, we provide comprehensive migration sup
 Legacy Format Reference
 -----------------------
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Input Files
 
-
+   met_input
+   RunControl/RunControl
+   SUEWS_SiteInfo/SUEWS_SiteSelect
+   Initial_Conditions/Initial_Conditions
 
 Values marked with 'MD' are examples of recommended values (see the suggested references to help decide how appropriate these are for your site/model domain);
 values marked with 'MU' need to be set (i.e. changed from the example) for your site/model domain.

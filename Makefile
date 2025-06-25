@@ -1,6 +1,6 @@
 # SUEWS Makefile - read the README file before editing
 
-.PHONY: main clean test pip supy docs dev livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate
+.PHONY: main clean test pip supy docs dev dev-fast livehtml schema proc-csv config-ui check-dev-install mamba-dev help deactivate
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
@@ -55,6 +55,7 @@ help:
 	@echo ""
 	@echo "Build and Development:"
 	@echo "  dev             - Build and install SUEWS in editable mode"
+	@echo "  dev-fast        - Build and install SUEWS in editable mode (optimized/faster compilation)"
 	@echo "  install         - Install SUEWS to current Python environment (not editable)"
 	@echo "  wheel           - Build distribution wheels"
 	@echo "  clean           - Clean all build artifacts"
@@ -106,13 +107,23 @@ dev:
 		$(PYTHON) -m pip install --no-build-isolation --editable .; \
 	fi
 
+# make supy and install locally with fast build optimizations
+dev-fast:
+	@echo "Building supy with fast development install (optimized compiler flags)..."
+	@if [ -x "/opt/homebrew/bin/gfortran" ]; then \
+		echo "Using Homebrew gfortran with fast build optimizations"; \
+		FC=/opt/homebrew/bin/gfortran $(PYTHON) -m pip install --no-build-isolation --editable . --config-settings=setup-args=-Dfast_build=true; \
+	else \
+		$(PYTHON) -m pip install --no-build-isolation --editable . --config-settings=setup-args=-Dfast_build=true; \
+	fi
+
 # install supy locally
 install:
 	$(PYTHON) -m pip install .
 
 # make supy dist and test
 test:
-	$(PYTHON) -m pytest test -v --tb=short --cov=supy --cov-report=term-missing
+	$(PYTHON) -m pytest test -v --tb=short
 
 # make supy wheels using cibuild
 wheel:
