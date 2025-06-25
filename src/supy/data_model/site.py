@@ -2175,6 +2175,50 @@ class SnowAlb(BaseModel):
         return cls(snowalb=RefValue(snowalb))
 
 
+class DLSCheck(BaseModel):
+    lat: float
+    lng: float
+    year: int
+    startdls: Optional[int] = None
+    enddls: Optional[int] = None
+
+    def compute_dst_transitions(self):
+        tf = TimezoneFinder()
+        tz_name = tf.timezone_at(lat=self.lat, lng=self.lng)
+
+        if not tz_name:
+            print(f"[DLS] ❌ Cannot determine timezone for lat={self.lat}, lng={self.lng}")
+            return None, None, None
+
+        tz = pytz.timezone(tz_name)
+
+        def find_transition(month: int) -> Optional[int]:
+            try:
+                prev_dt = tz.localize(datetime(self.year, month, 1, 12), is_dst=None)
+                prev_offset = prev_dt.utcoffset()
+                for day in range(2, 32):
+                    try:
+                        curr_dt = tz.localize(datetime(self.year, month, day, 12), is_dst=None)
+                        curr_offset = curr_dt.utcoffset()
+                        if curr_offset != prev_offset:
+                            return curr_dt.timetuple().tm_yday
+                        prev_offset = curr_offset
+                    except Exception:
+                        continue
+                return None
+            except Exception:
+                return None
+
+        if self.lat >= 0:  # Northern Hemisphere
+            start = find_transition(3) or find_transition(4)
+            end = find_transition(10) or find_transition(11)
+        else:  # Southern Hemisphere
+            start = find_transition(9) or find_transition(10)
+            end = find_transition(3) or find_transition(4)
+
+        return start, end, tz_name
+
+
 # class DLSValidator(BaseModel):
 #     lat: float
 #     lng: float

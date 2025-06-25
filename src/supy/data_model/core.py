@@ -17,7 +17,7 @@ import supy as sp
 #from .site import DLSValidator
 from .model import Model
 from .site import Site, SiteProperties, InitialStates, LandCover
-from .site import SeasonCheck
+from .site import SeasonCheck, DLSCheck
 from .type import SurfaceType
 
 try:
