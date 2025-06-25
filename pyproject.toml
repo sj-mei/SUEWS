@@ -41,6 +41,8 @@ dependencies = [
     "numdifftools",                                # required by `lmfit` for uncertainty estimation
     "pvlib",                                       # TMY-related solar radiation calculations
     "platypus-opt==1.0.4",                         # a multi-objective optimiser
+    "timezonefinder",                              # timezone detection from coordinates
+    "pytz",                                        # timezone handling
 ]
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",

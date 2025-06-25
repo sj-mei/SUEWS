@@ -24,7 +24,8 @@ class ThermalLayers(BaseModel):
     )
     rho_cp: FlexibleRefValue(List[float]) = Field(
         default=[1000, 1000, 1000, 1000, 1000],
-        description="Volumetric heat capacity of each thermal layer", json_schema_extra={"unit": "J m^-3 K^-1"},
+        description="Volumetric heat capacity of each thermal layer", 
+        json_schema_extra={"unit": "J m^-3 K^-1"},
     )
 
     ref: Optional[Reference] = None
@@ -110,11 +111,6 @@ class ThermalLayers(BaseModel):
             dz.append(df.loc[grid_id, (f"dz_{suffix}", f"({idx}, {i})")])
             k.append(df.loc[grid_id, (f"k_{suffix}", f"({idx}, {i})")])
             rho_cp.append(df.loc[grid_id, (f"cp_{suffix}", f"({idx}, {i})")])
-
-        # Convert to RefValue
-        dz = RefValue(dz)
-        k = RefValue(k)
-        rho_cp = RefValue(rho_cp)
 
         # Return reconstructed instance
         return cls(dz=dz, k=k, rho_cp=rho_cp)
