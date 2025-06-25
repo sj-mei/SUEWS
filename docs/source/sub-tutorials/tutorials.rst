@@ -35,6 +35,20 @@ The modern SUEWS interface uses Python and provides the most capable and user-fr
 **Scientific Foundation:**
 All SuPy results maintain the scientific rigour of SUEWS (see :ref:`SUEWS publications <Recent_publications>` and :ref:`Parameterisations and sub-models within SUEWS`), enhanced by the `Python scientific ecosystem <https://scipy.org>`_.
 
+Advanced Examples
+-----------------
+
+For experienced users working with custom parameterisations and model modifications:
+
+**Physics Customisation:**
+- :ref:`Adding custom OHM coefficients <ohm_custom_coefficients>` - How to derive and implement surface-specific storage heat flux coefficients
+- :ref:`Custom surface properties <custom_surface_properties>` - Modifying land cover parameters for specialised urban surfaces
+- :ref:`Multi-site parameter sensitivity <parameter_sensitivity>` - Systematic parameter variation across multiple locations
+
+**Model Development:**
+- :ref:`Fortran module development <fortran_development>` - Adding new physics modules to the SUEWS core
+- :ref:`Output variable customisation <custom_output>` - Creating custom diagnostic variables and output groups
+
 Additional Data Analysis Tools
 ------------------------------
 
