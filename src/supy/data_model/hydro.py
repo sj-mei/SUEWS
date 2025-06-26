@@ -9,57 +9,64 @@ class WaterDistribution(BaseModel):
     # Optional fields for all possible distributions
     to_paved: Optional[FlexibleRefValue(float)] = Field(
         None,
-        description="Fraction of water redistributed to paved surfaces within the grid", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of water redistributed to paved surfaces within the grid", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Paved"},
         ge=0,
         le=1,
     )
     to_bldgs: Optional[FlexibleRefValue(float)] = Field(
         None,
-        description="Fraction of water redistributed to building surfaces within the grid", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of water redistributed to building surfaces within the grid", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Buildings"},
         ge=0,
         le=1,
     )
     to_dectr: Optional[FlexibleRefValue(float)] = Field(
         None,
-        description="Fraction of water redistributed to deciduous tree surfaces within the grid", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of water redistributed to deciduous tree surfaces within the grid", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Deciduous Trees"},
         ge=0,
         le=1,
     )
     to_evetr: Optional[FlexibleRefValue(float)] = Field(
         None,
-        description="Fraction of water redistributed to evergreen tree surfaces within the grid", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of water redistributed to evergreen tree surfaces within the grid", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Evergreen Trees"},
         ge=0,
         le=1,
     )
     to_grass: Optional[FlexibleRefValue(float)] = Field(
         None,
-        description="Fraction of water redistributed to grass surfaces within the grid", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of water redistributed to grass surfaces within the grid", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Grass"},
         ge=0,
         le=1,
     )
     to_bsoil: Optional[FlexibleRefValue(float)] = Field(
         None,
-        description="Fraction of water redistributed to bare soil surfaces within the grid", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of water redistributed to bare soil surfaces within the grid", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Bare Soil"},
         ge=0,
         le=1,
     )
     to_water: Optional[FlexibleRefValue(float)] = Field(
         None,
-        description="Fraction of water redistributed to water surfaces within the grid", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of water redistributed to water surfaces within the grid", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Water"},
         ge=0,
         le=1,
     )
     to_runoff: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water going to surface runoff (for impervious surfaces: paved and buildings)",
-        json_schema_extra={"unit": "dimensionless"},
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Runoff"},
         ge=0,
         le=1,
     )  # For paved/bldgs
     to_soilstore: Optional[FlexibleRefValue(float)] = Field(
         None,
         description="Fraction of water going to subsurface soil storage (for pervious surfaces: vegetation and bare soil)",
-        json_schema_extra={"unit": "dimensionless"},
+        json_schema_extra={"unit": "dimensionless", "display_name": "To Soil Store"},
         ge=0,
         le=1,
     )  # For vegetated surfaces
@@ -358,32 +365,35 @@ class StorageDrainParams(BaseModel):
     store_min: FlexibleRefValue(float) = Field(
         ge=0,
         default=0.0,
-        description="Minimum water storage capacity", json_schema_extra={"unit": "mm"},
+        description="Minimum water storage capacity", 
+        json_schema_extra={"unit": "mm", "display_name": "Minimum Storage"},
     )
     store_max: FlexibleRefValue(float) = Field(
         ge=0,
         default=10.0,
-        description="Maximum water storage capacity", json_schema_extra={"unit": "mm"},
+        description="Maximum water storage capacity", 
+        json_schema_extra={"unit": "mm", "display_name": "Maximum Storage"},
     )
     store_cap: FlexibleRefValue(float) = Field(
         ge=0,
         default=10.0,
-        description="Current water storage capacity - the actual storage capacity available for surface water retention. This represents the depth of water that can be stored on or in the surface before drainage begins. For paved surfaces, this might represent depression storage; for vegetated surfaces, it includes canopy interception storage.", json_schema_extra={"unit": "mm"},
+        description="Current water storage capacity - the actual storage capacity available for surface water retention. This represents the depth of water that can be stored on or in the surface before drainage begins. For paved surfaces, this might represent depression storage; for vegetated surfaces, it includes canopy interception storage.", 
+        json_schema_extra={"unit": "mm", "display_name": "Storage Capacity"},
     )
     drain_eq: FlexibleRefValue(int) = Field(
         default=0,
         description="Drainage equation selection (0: linear, 1: exponential)",
-        json_schema_extra={"unit": "dimensionless"}
+        json_schema_extra={"unit": "dimensionless", "display_name": "Drainage Equation"}
     )
     drain_coef_1: FlexibleRefValue(float) = Field(
         default=0.013,
         description="Drainage coefficient 1 (rate parameter)",
-        json_schema_extra={"unit": "mm h^-1"}
+        json_schema_extra={"unit": "mm h^-1", "display_name": "Drainage Coefficient 1"}
     )
     drain_coef_2: FlexibleRefValue(float) = Field(
         default=1.71,
         description="Drainage coefficient 2 (shape parameter)",
-        json_schema_extra={"unit": "dimensionless"}
+        json_schema_extra={"unit": "dimensionless", "display_name": "Drainage Coefficient 2"}
     )
 
     ref: Optional[Reference] = None

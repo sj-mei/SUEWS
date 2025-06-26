@@ -16,16 +16,16 @@ from .hydro import WaterDistribution, StorageDrainParams
 class ThermalLayers(BaseModel):
     dz: FlexibleRefValue(List[float]) = Field(
         default=[0.1, 0.2, 0.3, 0.4, 0.5],
-        description="Thickness of thermal layers from surface to depth", json_schema_extra={"unit": "m"},
+        description="Thickness of thermal layers from surface to depth", json_schema_extra={"unit": "m", "display_name": "Layer Thickness"},
     )
     k: FlexibleRefValue(List[float]) = Field(
         default=[1.0, 1.0, 1.0, 1.0, 1.0],
-        description="Thermal conductivity of each thermal layer", json_schema_extra={"unit": "W m^-1 K^-1"},
+        description="Thermal conductivity of each thermal layer", json_schema_extra={"unit": "W m^-1 K^-1", "display_name": "Thermal Conductivity"},
     )
     rho_cp: FlexibleRefValue(List[float]) = Field(
         default=[1000, 1000, 1000, 1000, 1000],
         description="Volumetric heat capacity of each thermal layer", 
-        json_schema_extra={"unit": "J m^-3 K^-1"},
+        json_schema_extra={"unit": "J m^-3 K^-1", "display_name": "Volumetric Heat Capacity"},
     )
 
     ref: Optional[Reference] = None
@@ -122,57 +122,57 @@ class SurfaceProperties(BaseModel):
     sfr: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface fraction of grid area covered by this surface type", json_schema_extra={"unit": "dimensionless"},
+        description="Surface fraction of grid area covered by this surface type", json_schema_extra={"unit": "dimensionless", "display_name": "Surface Fraction"},
         default=1.0 / 7,
     )
     emis: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface emissivity for longwave radiation", json_schema_extra={"unit": "dimensionless"},
+        description="Surface emissivity for longwave radiation", json_schema_extra={"unit": "dimensionless", "display_name": "Emissivity"},
         default=0.95,
     )
     ch_anohm: Optional[FlexibleRefValue(float)] = Field(
         default=0.0,
-        description="Bulk transfer coefficient for this surface. Option: AnOHM", json_schema_extra={"unit": "J m^-3 K^-1"},
+        description="Bulk transfer coefficient for this surface. Option: AnOHM", json_schema_extra={"unit": "J m^-3 K^-1", "display_name": "ANOHM Bulk Transfer Coefficient"},
     )
     rho_cp_anohm: Optional[FlexibleRefValue(float)] = Field(
         default=1200.0,
-        description="Volumetric heat capacity for this surface to use in AnOHM", json_schema_extra={"unit": "J m^-3 K^-1"},
+        description="Volumetric heat capacity for this surface to use in AnOHM", json_schema_extra={"unit": "J m^-3 K^-1", "display_name": "ANOHM Volumetric Heat Capacity"},
     )
     k_anohm: Optional[FlexibleRefValue(float)] = Field(
         default=0.4,
-        description="Thermal conductivity for this surface to use in AnOHM", json_schema_extra={"unit": "W m^-1 K^-1"},
+        description="Thermal conductivity for this surface to use in AnOHM", json_schema_extra={"unit": "W m^-1 K^-1", "display_name": "ANOHM Thermal Conductivity"},
     )
     ohm_threshsw: Optional[FlexibleRefValue(float)] = Field(
         default=0.0,
-        description="Summer/winter threshold based on temperature for OHM calculation", json_schema_extra={"unit": "degC"},
+        description="Summer/winter threshold based on temperature for OHM calculation", json_schema_extra={"unit": "degC", "display_name": "OHM Summer Wet Threshold"},
     )
     ohm_threshwd: Optional[FlexibleRefValue(float)] = Field(
         default=0.0,
-        description="Soil moisture threshold determining whether wet/dry OHM coefficients are applied", json_schema_extra={"unit": "dimensionless"},
+        description="Soil moisture threshold determining whether wet/dry OHM coefficients are applied", json_schema_extra={"unit": "dimensionless", "display_name": "OHM Winter Dry Threshold"},
     )
     ohm_coef: Optional[OHM_Coefficient_season_wetness] = Field(
         default_factory=OHM_Coefficient_season_wetness
     )
     soildepth: FlexibleRefValue(float) = Field(
         default=150,
-        description="Depth of soil layer for hydrological calculations", json_schema_extra={"unit": "mm"},
+        description="Depth of soil layer for hydrological calculations", json_schema_extra={"unit": "mm", "display_name": "Soil Depth"},
     )
     soilstorecap: FlexibleRefValue(float) = Field(
         default=150.0,
-        description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm"},
+        description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm", "display_name": "Soil Store Capacity"},
     )
     statelimit: FlexibleRefValue(float) = Field(
         default=10.0, # TODO: Check if this is an appropriate default
-        description="Minimum water storage capacity for state change", json_schema_extra={"unit": "mm"},
+        description="Minimum water storage capacity for state change", json_schema_extra={"unit": "mm", "display_name": "State Limit"},
     )
     wetthresh: FlexibleRefValue(float) = Field(
         default=0.5,
-        description="Surface wetness threshold for OHM calculations", json_schema_extra={"unit": "dimensionless"},
+        description="Surface wetness threshold for OHM calculations", json_schema_extra={"unit": "dimensionless", "display_name": "Wetness Threshold"},
     )
     sathydraulicconduct: FlexibleRefValue(float) = Field(
         default=0.0001,
-        description="Saturated hydraulic conductivity of soil", json_schema_extra={"unit": "mm s^-1"},
+        description="Saturated hydraulic conductivity of soil", json_schema_extra={"unit": "mm s^-1", "display_name": "Saturated Hydraulic Conductivity"},
     )
     waterdist: Optional[WaterDistribution] = Field(
         default=None, # TODO: Can this be None?
@@ -184,14 +184,14 @@ class SurfaceProperties(BaseModel):
     )
     snowpacklimit: Optional[FlexibleRefValue(float)] = Field(
         default=10.0,
-        description="Limit of snow that can be held on surface", json_schema_extra={"unit": "mm"},
+        description="Limit of snow that can be held on surface", json_schema_extra={"unit": "mm", "display_name": "Snow Pack Limit"},
     )
     thermal_layers: ThermalLayers = Field(
         default_factory=ThermalLayers, description="Thermal layers for the surface"
     )
     irrfrac: Optional[FlexibleRefValue(float)] = Field(
         default=0.0,
-        description="Fraction of surface area that can be irrigated", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of surface area that can be irrigated", json_schema_extra={"unit": "dimensionless", "display_name": "Irrigation Fraction"},
     )
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
 
@@ -431,7 +431,7 @@ class NonVegetatedSurfaceProperties(SurfaceProperties):
     alb: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface albedo", json_schema_extra={"unit": "dimensionless"},
+        description="Surface albedo", json_schema_extra={"unit": "dimensionless", "display_name": "Albedo"},
         default=0.1,
     )
 
@@ -472,6 +472,7 @@ class PavedProperties(
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.PAVED),
         description="Water distribution fractions for paved surfaces",
+        json_schema_extra={"display_name": "Water Distribution"}
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -548,13 +549,13 @@ class BuildingLayer(
     alb: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface albedo", json_schema_extra={"unit": "dimensionless"},
+        description="Surface albedo", json_schema_extra={"unit": "dimensionless", "display_name": "Albedo"},
         default=0.1,
     )
     emis: FlexibleRefValue(float) = Field(
         ge=0,
         le=1,
-        description="Surface emissivity", json_schema_extra={"unit": "dimensionless"},
+        description="Surface emissivity", json_schema_extra={"unit": "dimensionless", "display_name": "Emissivity"},
         default=0.95,
     )
     thermal_layers: ThermalLayers = Field(
@@ -563,23 +564,23 @@ class BuildingLayer(
     )
     statelimit: FlexibleRefValue(float) = Field(
         default=10.0,
-        description="Minimum water storage capacity for state change", json_schema_extra={"unit": "mm"},
+        description="Minimum water storage capacity for state change", json_schema_extra={"unit": "mm", "display_name": "State Limit"},
     )
     soilstorecap: FlexibleRefValue(float) = Field(
         default=150.0,
-        description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm"},
+        description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm", "display_name": "Soil Store Capacity"},
     )
     wetthresh: FlexibleRefValue(float) = Field(
         default=0.5,
-        description="Surface wetness threshold for OHM calculations", json_schema_extra={"unit": "dimensionless"},
+        description="Surface wetness threshold for OHM calculations", json_schema_extra={"unit": "dimensionless", "display_name": "Wetness Threshold"},
     )
     roof_albedo_dir_mult_fact: Optional[FlexibleRefValue(float)] = Field(
         default=0.1,
-        description="Directional albedo multiplication factor for roofs", json_schema_extra={"unit": "dimensionless"},
+        description="Directional albedo multiplication factor for roofs", json_schema_extra={"unit": "dimensionless", "display_name": "Roof Albedo Direct Multiplier"},
     )
     wall_specular_frac: Optional[FlexibleRefValue(float)] = Field(
         default=0.1,
-        description="Specular reflection fraction for walls", json_schema_extra={"unit": "dimensionless"},
+        description="Specular reflection fraction for walls", json_schema_extra={"unit": "dimensionless", "display_name": "Wall Specular Fraction"},
     )
     _facet_type: Literal["roof", "wall"] = PrivateAttr(default="roof")
 
@@ -696,13 +697,14 @@ class BldgsProperties(
     faibldg: FlexibleRefValue(float) = Field(
         ge=0,
         default=0.3,
-        description="Frontal area index of buildings", json_schema_extra={"unit": "dimensionless"},
+        description="Frontal area index of buildings", json_schema_extra={"unit": "dimensionless", "display_name": "Building Frontal Area Index"},
     )
     bldgh: FlexibleRefValue(float) = Field(
-        ge=3, default=10.0, description="Building height", json_schema_extra={"unit": "m"}
+        ge=3, default=10.0, description="Building height", json_schema_extra={"unit": "m", "display_name": "Building Height"}
     )  # We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
-        default_factory=lambda: WaterDistribution(SurfaceType.BLDGS)
+        default_factory=lambda: WaterDistribution(SurfaceType.BLDGS),
+        json_schema_extra={"display_name": "Water Distribution"}
     )
 
     ref: Optional[Reference] = None
@@ -746,6 +748,7 @@ class BsoilProperties(
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BSOIL),
         description="Water distribution for bare soil",
+        json_schema_extra={"display_name": "Water Distribution"}
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -766,7 +769,7 @@ class WaterProperties(NonVegetatedSurfaceProperties):
     _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
     flowchange: FlexibleRefValue(float) = Field(
         default=0.0,
-        description="Change in water flow for water bodies", json_schema_extra={"unit": "mm h^-1"},
+        description="Change in water flow for water bodies", json_schema_extra={"unit": "mm h^-1", "display_name": "Flow Change"},
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -809,35 +812,37 @@ class WallLayer(BuildingLayer):
 class VerticalLayers(BaseModel):
     nlayer: FlexibleRefValue(int) = Field(
         default=3,
-        description="Number of vertical layers in the urban canopy", json_schema_extra={"unit": "dimensionless"},
+        description="Number of vertical layers in the urban canopy", json_schema_extra={"unit": "dimensionless", "display_name": "Number of Layers"},
     )
     height: FlexibleRefValue(List[float]) = Field(
         default=[0.0, 10.0, 20.0, 30.0],
-        description="Heights of layer boundaries, length must be nlayer+1", json_schema_extra={"unit": "m"},
+        description="Heights of layer boundaries, length must be nlayer+1", json_schema_extra={"unit": "m", "display_name": "Height"},
     )
     veg_frac: FlexibleRefValue(List[float]) = Field(
         default=[0.0, 0.0, 0.0],
-        description="Fraction of vegetation in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of vegetation in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless", "display_name": "Vegetation Fraction"},
     )
     veg_scale: FlexibleRefValue(List[float]) = Field(
         default=[1.0, 1.0, 1.0],
-        description="Scaling factor for vegetation in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
+        description="Scaling factor for vegetation in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless", "display_name": "Vegetation Scale"},
     )
     building_frac: FlexibleRefValue(List[float]) = Field(
         default=[0.4, 0.3, 0.3],
-        description="Fraction of buildings in each layer, must sum to 1.0, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
+        description="Fraction of buildings in each layer, must sum to 1.0, length must be nlayer", json_schema_extra={"unit": "dimensionless", "display_name": "Building Fraction"},
     )
     building_scale: FlexibleRefValue(List[float]) = Field(
         default=[1.0, 1.0, 1.0],
-        description="Scaling factor for buildings in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless"},
+        description="Scaling factor for buildings in each layer, length must be nlayer", json_schema_extra={"unit": "dimensionless", "display_name": "Building Scale"},
     )
     roofs: List[RoofLayer] = Field(
         default_factory=lambda: [RoofLayer(), RoofLayer(), RoofLayer()],
         description="Properties for roof surfaces in each layer, length must be nlayer",
+        json_schema_extra={"display_name": "Roofs"}
     )
     walls: List[WallLayer] = Field(
         default_factory=lambda: [WallLayer(), WallLayer(), WallLayer()],
         description="Properties for wall surfaces in each layer, length must be nlayer",
+        json_schema_extra={"display_name": "Walls"}
     )
 
     ref: Optional[Reference] = None

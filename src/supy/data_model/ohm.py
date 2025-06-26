@@ -7,15 +7,18 @@ from .type import init_df_state
 
 class OHMCoefficients(BaseModel):
     a1: FlexibleRefValue(float) = Field(
-        description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation", json_schema_extra={"unit": "dimensionless"},
+        description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation", 
+        json_schema_extra={"unit": "dimensionless", "display_name": "OHM Coefficient a1"},
         default=0.0,
     )
     a2: FlexibleRefValue(float) = Field(
-        description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation", json_schema_extra={"unit": "h"},
+        description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation", 
+        json_schema_extra={"unit": "h", "display_name": "OHM Coefficient a2"},
         default=0.0,
     )
     a3: FlexibleRefValue(float) = Field(
-        description="OHM coefficient a3: constant offset term for storage heat flux", json_schema_extra={"unit": "W m^-2"},
+        description="OHM coefficient a3: constant offset term for storage heat flux", 
+        json_schema_extra={"unit": "W m^-2", "display_name": "OHM Coefficient a3"},
         default=0.0,
     )
 
@@ -83,18 +86,22 @@ class OHM_Coefficient_season_wetness(BaseModel):
     summer_dry: OHMCoefficients = Field(
         description="OHM coefficient for summer dry conditions",
         default_factory=OHMCoefficients,
+        json_schema_extra={"display_name": "Summer Dry Coefficients"}
     )
     summer_wet: OHMCoefficients = Field(
         description="OHM coefficient for summer wet conditions",
         default_factory=OHMCoefficients,
+        json_schema_extra={"display_name": "Summer Wet Coefficients"}
     )
     winter_dry: OHMCoefficients = Field(
         description="OHM coefficient for winter dry conditions",
         default_factory=OHMCoefficients,
+        json_schema_extra={"display_name": "Winter Dry Coefficients"}
     )
     winter_wet: OHMCoefficients = Field(
         description="OHM coefficient for winter wet conditions",
         default_factory=OHMCoefficients,
+        json_schema_extra={"display_name": "Winter Wet Coefficients"}
     )
 
     ref: Optional[Reference] = None

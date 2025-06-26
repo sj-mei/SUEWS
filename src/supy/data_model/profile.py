@@ -6,8 +6,8 @@ from .type import init_df_state
 
 
 class DayProfile(BaseModel):
-    working_day: float = Field(default=1.0)
-    holiday: float = Field(default=0.0)
+    working_day: float = Field(default=1.0, json_schema_extra={"display_name": "Working Day"})
+    holiday: float = Field(default=0.0, json_schema_extra={"display_name": "Holiday"})
 
     ref: Optional[Reference] = None
 
