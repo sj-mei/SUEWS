@@ -207,11 +207,11 @@ class WaterUseMethod(Enum):
         return str(self.value)
 
 
-class DiagMethod(Enum):
+class RSLMethod(Enum):
     '''
     0: Use MOST (Monin-Obukhov Similarity Theory) to calculate near surface diagnostics
-    1: Use RST (Roughness Sublayer Theory) to calculate near surface diagnostics
-    2: Use a set of criteria based on plan area index, frontal area index and heights of roughness elements to determine if RSL or MOST should be used.
+    1: Use RST (Roughness Sublayer Theory) to calculate near surface diagnostics - Tang
+    2: Use a set of criteria based on plan area index, frontal area index and heights of roughness elements to determine if RSL or MOST should be used. - Vitor
     '''
     MOST = 0
     RST = 1
@@ -241,7 +241,7 @@ class FAIMethod(Enum):
         return str(self.value)
 
 
-class LocalClimateMethod(Enum):
+class RSLLevel(Enum):
     '''
     0: No local climate effects considered
     1: Basic local climate method for accounting for local climate effects (e.g. near-surface temperature impacts on phenology)
@@ -267,7 +267,7 @@ class GSModel(Enum):
 
     JARVI = 1
     WARD = 2
-    # MP: Removed as dependent on localclimatemethod - legacy options for CO2 with 2 m temperature
+    # MP: Removed as dependent on rsllevel - legacy options for CO2 with 2 m temperature
     # JARVI_2M = 3
     # WARD_2M = 4
 
@@ -332,9 +332,9 @@ for enum_class in [
     StabilityMethod,
     SMDMethod,
     WaterUseMethod,
-    DiagMethod,
+    RSLMethod,
     FAIMethod,
-    LocalClimateMethod,
+    RSLLevel,
     GSModel,
     StebbsMethod,
     SnowUse,
@@ -388,8 +388,8 @@ class ModelPhysics(BaseModel):
         default=WaterUseMethod.MODELLED,
         description="Method used to calculate external water use for irrigation. Options include modelled using parameters or observed values from forcing file", json_schema_extra={"unit": "dimensionless"}
     )
-    diagmethod: FlexibleRefValue(DiagMethod) = Field(
-        default=DiagMethod.VARIABLE,
+    rslmethod: FlexibleRefValue(RSLMethod) = Field(
+        default=RSLMethod.VARIABLE,
         description="Method used for calculating near-surface diagnostics and profiles of temperature, humidity, and wind speed. Options include MOST, RST, or variable selection based on surface characteristics", json_schema_extra={"unit": "dimensionless"}
     )
     faimethod: FlexibleRefValue(FAIMethod) = Field(
@@ -397,8 +397,8 @@ class ModelPhysics(BaseModel):
         description="Method used to calculate frontal area index (FAI). Options include fixed values or variable based on vegetation state",
         json_schema_extra={"unit": "dimensionless"}
     )
-    localclimatemethod: FlexibleRefValue(LocalClimateMethod) = Field(
-        default=LocalClimateMethod.NONE,
+    rsllevel: FlexibleRefValue(RSLLevel) = Field(
+        default=RSLLevel.NONE,
         description="Method used for accounting for local climate effects on surface processes (e.g. near-surface temperature impacts on phenology). Options include none, basic, or detailed approaches",
         json_schema_extra={"unit": "dimensionless"}
     )
@@ -491,14 +491,20 @@ class ModelPhysics(BaseModel):
             "stabilitymethod",
             "smdmethod",
             "waterusemethod",
-            "diagmethod",
+            "rslmethod",
             "faimethod",
-            "localclimatemethod",
+            "rsllevel",
             "gsmodel",
             "snowuse",
             "stebbsmethod",
         ]
         for attr in list_attr:
+            if attr == "rslmethod":
+                set_df_value("diagmethod", getattr(self, attr))
+                continue
+            if attr == "rsllevel":
+                set_df_value("localclimatemethod", getattr(self, attr))
+                continue
             set_df_value(attr, getattr(self, attr))
         return df_state
 
@@ -527,9 +533,9 @@ class ModelPhysics(BaseModel):
             "stabilitymethod",
             "smdmethod",
             "waterusemethod",
-            "diagmethod",
+            "rslmethod",
             "faimethod",
-            "localclimatemethod",
+            "rsllevel",
             "gsmodel",
             "snowuse",
             "stebbsmethod",

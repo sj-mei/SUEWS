@@ -136,7 +136,7 @@ class SUEWSConfig(BaseModel):
         required_physics_keys = [
             "netradiationmethod", "emissionsmethod", "storageheatmethod", "ohmincqf",
             "roughlenmommethod", "roughlenheatmethod", "stabilitymethod", "smdmethod",
-            "waterusemethod", "diagmethod", "faimethod", "localclimatemethod",
+            "waterusemethod", "rslmethod", "faimethod", "rsllevel",
             "gsmodel", "snowuse", "stebbsmethod"
         ]
 
@@ -165,10 +165,10 @@ class SUEWSConfig(BaseModel):
                 raise ValueError(f"[model.physics] Parameters with empty string or null values: {empty_string_keys}")
 
             # ── Step 0.1: Logic check (only if both parameters are provided) ──
-            diag = physics.get("diagmethod", {}).get("value")
+            diag = physics.get("rslmethod", {}).get("value")
             stab = physics.get("stabilitymethod", {}).get("value")
             if diag is not None and stab is not None and diag == 2 and stab != 3:
-                raise ValueError("Invalid model logic: diagmethod == 2 requires stabilitymethod == 3")
+                raise ValueError("Invalid model logic: rslmethod == 2 requires stabilitymethod == 3")
 
         # ── Step 0.2: Now clean the rest of the config from "" -> None ──
         def clean_empty_strings(d):
