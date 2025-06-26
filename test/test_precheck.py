@@ -1,22 +1,16 @@
 import pytest
 from copy import deepcopy
 from supy.data_model.core import (
-    run_precheck,
     precheck_model_physics_params,
     precheck_start_end_date,
     precheck_site_season_adjustments,
+    precheck_model_options_constraints,
+    precheck_diagmethod,
+    precheck_replace_empty_strings_with_none,
+    precheck_land_cover_fractions,
     SeasonCheck,
 )
-import tempfile
-import yaml
-import os
 
-def save_temp_yaml(yaml_input):
-    tmp = tempfile.NamedTemporaryFile("w", suffix=".yml", delete=False)
-    yaml.dump(yaml_input, tmp, sort_keys=False)
-    tmp_path = tmp.name
-    tmp.close()
-    return tmp_path
 
 def test_precheck_start_end_date_valid_from_yaml():
     yaml_input = {
@@ -94,10 +88,7 @@ def test_model_physics_empty_value_raises():
 def test_diagmethod_stability_constraint_fails():
     yaml_input = {
         "model": {
-            "control": {
-                "start_time": "2025-01-01",
-                "end_time": "2025-12-31",
-            },
+            "control": {"start_time": "2025-01-01", "end_time": "2025-12-31"},
             "physics": {
                 "diagmethod": {"value": 2},
                 "stabilitymethod": {"value": 1},
@@ -118,12 +109,8 @@ def test_diagmethod_stability_constraint_fails():
         "sites": [{}],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        with pytest.raises(ValueError, match=r"If diagmethod == 2.*must be 3"):
-            run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+    with pytest.raises(ValueError, match=r"If diagmethod == 2.*must be 3"):
+        precheck_model_options_constraints(yaml_input)
 
 
 
@@ -154,12 +141,9 @@ def test_model_physics_not_touched_by_empty_string_cleanup():
         "sites": [{"gridiv": 1, "properties": {"lat": {"value": 51.5}}}],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        with pytest.raises(ValueError, match=r"Empty or null values for"):
-            run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+    data = precheck_replace_empty_strings_with_none(yaml_input)
+    with pytest.raises(ValueError, match=r"Empty or null values for"):
+        precheck_model_physics_params(data)
 
 
 def test_empty_string_becomes_none():
@@ -201,11 +185,7 @@ def test_empty_string_becomes_none():
         ],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        result = run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+    result = precheck_replace_empty_strings_with_none(yaml_input)
 
     assert result["sites"][0]["site_name"] is None
     assert result["sites"][0]["properties"]["lat"]["value"] is None
@@ -250,11 +230,7 @@ def test_empty_string_in_list_of_floats():
         ],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        result = run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+    result = precheck_replace_empty_strings_with_none(yaml_input)
 
     assert result["sites"][0]["properties"]["thermal_layers"]["dz"]["value"][1] is None
 
@@ -302,14 +278,10 @@ def test_empty_string_in_nested_dict():
         ],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        result = run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+
+    result = precheck_replace_empty_strings_with_none(yaml_input)
 
     assert result["sites"][0]["properties"]["ohm_coef"]["summer_dry"]["a1"]["value"] is None
-
 
 
 def test_empty_string_in_surface_type_dict():
@@ -352,13 +324,10 @@ def test_empty_string_in_surface_type_dict():
         ],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        result = run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+    result = precheck_replace_empty_strings_with_none(yaml_input)
 
     assert result["sites"][0]["properties"]["waterdist"]["to_grass"]["value"] is None
+
 
 
 
@@ -608,9 +577,6 @@ def test_precheck_dls_overwrites_existing_values():
     assert isinstance(emissions["startdls"]["value"], int)
     assert isinstance(emissions["enddls"]["value"], int)
 
-from supy.data_model.core import precheck_land_cover_fractions
-from copy import deepcopy
-import pytest
 
 def test_land_cover_exact_sum():
     data = {
@@ -742,12 +708,9 @@ def test_diagmethod2_requires_faibldg_null_raises():
         ],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        with pytest.raises(ValueError, match=r"faibldg.*must be set and non-null"):
-            run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+    with pytest.raises(ValueError, match=r"faibldg.*must be set and non-null"):
+        precheck_diagmethod(yaml_input)
+
 
 
 def test_diagmethod2_requires_faibldg_passes_if_present():
@@ -787,11 +750,8 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
         ],
     }
 
-    tmp_path = save_temp_yaml(yaml_input)
-    try:
-        result = run_precheck(tmp_path)
-    finally:
-        os.remove(tmp_path)
+    result = precheck_diagmethod(yaml_input)
 
     assert result["sites"][0]["properties"]["faibldg"]["value"] == 1.5
+
 
