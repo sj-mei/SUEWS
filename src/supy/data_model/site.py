@@ -1798,50 +1798,58 @@ class SiteProperties(BaseModel):
     lat: FlexibleRefValue(float) = Field(
         ge=-90,
         le=90,
-        description="Latitude of the site in degrees", json_schema_extra={"unit": "degrees"},
+        description="Latitude of the site in degrees", 
+        json_schema_extra={"unit": "degrees", "display_name": "Latitude"},
         default=51.5,
     )
     lng: FlexibleRefValue(float) = Field(
         ge=-180,
         le=180,
-        description="Longitude of the site in degrees", json_schema_extra={"unit": "degrees"},
+        description="Longitude of the site in degrees", 
+        json_schema_extra={"unit": "degrees", "display_name": "Longitude"},
         default=-0.13,
     )
     alt: FlexibleRefValue(float) = Field(
         gt=0,
-        description="Altitude of the site above sea level", json_schema_extra={"unit": "m"},
+        description="Altitude of the site above sea level", 
+        json_schema_extra={"unit": "m", "display_name": "Altitude"},
         default=40.0,
     )
     timezone: FlexibleRefValue(int) = Field(
         ge=-12,
         le=12,
-        description="Time zone offset from UTC", json_schema_extra={"unit": "hour"},
+        description="Time zone offset from UTC", 
+        json_schema_extra={"unit": "hours", "display_name": "Time zone (UTC offset)"},
         default=0,
     )
     surfacearea: FlexibleRefValue(float) = Field(
         gt=0,
         description="Total surface area of the site",
-        json_schema_extra={"unit": "m^2"},
+        json_schema_extra={"unit": "m²", "display_name": "Surface area"},
         default=10000.0,  # 1 hectare in m²
     )
     z: FlexibleRefValue(float) = Field(
         gt=0,
-        description="Measurement height", json_schema_extra={"unit": "m"},
+        description="Measurement height", 
+        json_schema_extra={"unit": "m", "display_name": "Measurement height"},
         default=10.0
     )
     z0m_in: FlexibleRefValue(float) = Field(
         gt=0,
-        description="Momentum roughness length", json_schema_extra={"unit": "m"},
+        description="Momentum roughness length", 
+        json_schema_extra={"unit": "m", "display_name": "Z0M In - Momentum roughness length"},
         default=1.0,
     )
     zdm_in: FlexibleRefValue(float) = Field(
         gt=0,
-        description="Zero-plane displacement height", json_schema_extra={"unit": "m"},
+        description="Zero-plane displacement height", 
+        json_schema_extra={"unit": "m", "display_name": "Zdm In - Zero-plane displacement height"},
         default=5.0,
     )
     pipecapacity: FlexibleRefValue(float) = Field(
         gt=0,
-        description="Maximum capacity of drainage pipes", json_schema_extra={"unit": "mm h^-1"},
+        description="Maximum capacity of drainage pipes", 
+        json_schema_extra={"unit": "mm h^-1", "display_name": "Pipe capacity - Maximum drainage rate"},
         default=100.0,
     )
     runofftowater: FlexibleRefValue(float) = Field(

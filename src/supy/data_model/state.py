@@ -564,6 +564,116 @@ class InitialStateWater(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
 
 
+class HDD_ID(BaseModel):
+    """Heating Degree Days and related meteorological tracking parameters.
+    
+    This structure maintains both current day accumulations (fields 1-6) and 
+    previous day values (fields 7-12) for various meteorological parameters
+    used in anthropogenic heat and water use calculations.
+    """
+    
+    # Current day accumulations (updated throughout the day)
+    hdd_accum: float = Field(
+        default=0.0,
+        description="Current day's heating degree days accumulation [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    cdd_accum: float = Field(
+        default=0.0,
+        description="Current day's cooling degree days accumulation [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    temp_accum: float = Field(
+        default=0.0,
+        description="Current day's temperature accumulation for daily mean [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    temp_5day_accum: float = Field(
+        default=0.0,
+        description="5-day running mean temperature accumulation [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    precip_accum: float = Field(
+        default=0.0,
+        description="Current day's precipitation total [mm]",
+        json_schema_extra={"unit": "mm"}
+    )
+    days_since_rain_accum: float = Field(
+        default=0.0,
+        description="Days since rain counter (current) [days]",
+        json_schema_extra={"unit": "days"}
+    )
+    
+    # Previous day values (used in calculations)
+    hdd_daily: float = Field(
+        default=0.0,
+        description="Previous day's heating degree days for QF calculations [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    cdd_daily: float = Field(
+        default=0.0,
+        description="Previous day's cooling degree days for QF calculations [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    temp_daily_mean: float = Field(
+        default=0.0,
+        description="Previous day's mean temperature for water use calculations [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    temp_5day_mean: float = Field(
+        default=0.0,
+        description="Previous 5-day running mean temperature for QF calculations [degC]",
+        json_schema_extra={"unit": "degC"}
+    )
+    precip_daily_total: float = Field(
+        default=0.0,
+        description="Previous day's precipitation total [mm]",
+        json_schema_extra={"unit": "mm"}
+    )
+    days_since_rain: float = Field(
+        default=0.0,
+        description="Days since rain for irrigation calculations [days]",
+        json_schema_extra={"unit": "days"}
+    )
+    
+    def to_list(self) -> List[float]:
+        """Convert to list format for legacy compatibility."""
+        return [
+            self.hdd_accum,
+            self.cdd_accum,
+            self.temp_accum,
+            self.temp_5day_accum,
+            self.precip_accum,
+            self.days_since_rain_accum,
+            self.hdd_daily,
+            self.cdd_daily,
+            self.temp_daily_mean,
+            self.temp_5day_mean,
+            self.precip_daily_total,
+            self.days_since_rain
+        ]
+    
+    @classmethod
+    def from_list(cls, values: List[float]) -> "HDD_ID":
+        """Create from list format for legacy compatibility."""
+        if len(values) != 12:
+            raise ValueError(f"Expected 12 values for HDD_ID, got {len(values)}")
+        return cls(
+            hdd_accum=values[0],
+            cdd_accum=values[1],
+            temp_accum=values[2],
+            temp_5day_accum=values[3],
+            precip_accum=values[4],
+            days_since_rain_accum=values[5],
+            hdd_daily=values[6],
+            cdd_daily=values[7],
+            temp_daily_mean=values[8],
+            temp_5day_mean=values[9],
+            precip_daily_total=values[10],
+            days_since_rain=values[11]
+        )
+
+
 class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
@@ -608,8 +718,9 @@ class InitialStates(BaseModel):
     tmin_id: float = Field(default=0, description="Minimum temperature ID")
     tstep_prev: float = Field(default=0, description="Previous time step")
     snowfallcum: float = Field(default=0, description="Cumulative snowfall")
-    hdd_id: List[float] = Field(
-        default=[0] * 12, description="Heating degree days ID"
+    hdd_id: HDD_ID = Field(
+        default_factory=HDD_ID, 
+        description="Heating degree days and meteorological tracking parameters"
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -657,8 +768,9 @@ class InitialStates(BaseModel):
         df_state[("snowfallcum", "0")] = self.snowfallcum
 
         df_state = df_state.sort_index(axis=1)
-        # special treatment for hdd_id
-        for i, hdd in enumerate(self.hdd_id):
+        # special treatment for hdd_id - convert to list format for legacy compatibility
+        hdd_list = self.hdd_id.to_list()
+        for i, hdd in enumerate(hdd_list):
             df_state[(f"hdd_id", f"({i},)")] = hdd
         df_state = df_state.sort_index(axis=1)
 
@@ -717,7 +829,8 @@ class InitialStates(BaseModel):
         tmin_id = df.loc[grid_id, ("tmin_id", "0")]
         tstep_prev = df.loc[grid_id, ("tstep_prev", "0")]
         snowfallcum = df.loc[grid_id, ("snowfallcum", "0")]
-        hdd_id = [df.loc[grid_id, (f"hdd_id", f"({i},)")] for i in range(12)]
+        hdd_id_list = [df.loc[grid_id, (f"hdd_id", f"({i},)")] for i in range(12)]
+        hdd_id = HDD_ID.from_list(hdd_id_list)
 
         initital_state = {
             "snowalb": snowalb,

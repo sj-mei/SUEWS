@@ -1452,7 +1452,7 @@
             }
           ],
           "default": 0.0,
-          "description": "Units for traffic density normalization",
+          "description": "Units for traffic density normalisation",
           "title": "Trafficunits",
           "unit": "vehicle km ha^-1"
         },
@@ -1519,7 +1519,7 @@
             }
           ],
           "default": 0.03,
-          "description": "Base value for conductance parameter related to vapor pressure deficit",
+          "description": "Base value for conductance parameter related to vapour pressure deficit",
           "title": "G Q Base",
           "unit": "kPa^-1"
         },
@@ -1533,7 +1533,7 @@
             }
           ],
           "default": 0.9,
-          "description": "Shape parameter for conductance related to vapor pressure deficit",
+          "description": "Shape parameter for conductance related to vapour pressure deficit",
           "title": "G Q Shape",
           "unit": "dimensionless"
         },
@@ -3235,6 +3235,97 @@
         }
       },
       "title": "GrassProperties",
+      "type": "object"
+    },
+    "HDD_ID": {
+      "description": "Heating Degree Days and related meteorological tracking parameters.\n\nThis structure maintains both current day accumulations (fields 1-6) and \nprevious day values (fields 7-12) for various meteorological parameters\nused in anthropogenic heat and water use calculations.",
+      "properties": {
+        "hdd_accum": {
+          "default": 0.0,
+          "description": "Current day's heating degree days accumulation [degC]",
+          "title": "Hdd Accum",
+          "type": "number",
+          "unit": "degC"
+        },
+        "cdd_accum": {
+          "default": 0.0,
+          "description": "Current day's cooling degree days accumulation [degC]",
+          "title": "Cdd Accum",
+          "type": "number",
+          "unit": "degC"
+        },
+        "temp_accum": {
+          "default": 0.0,
+          "description": "Current day's temperature accumulation for daily mean [degC]",
+          "title": "Temp Accum",
+          "type": "number",
+          "unit": "degC"
+        },
+        "temp_5day_accum": {
+          "default": 0.0,
+          "description": "5-day running mean temperature accumulation [degC]",
+          "title": "Temp 5Day Accum",
+          "type": "number",
+          "unit": "degC"
+        },
+        "precip_accum": {
+          "default": 0.0,
+          "description": "Current day's precipitation total [mm]",
+          "title": "Precip Accum",
+          "type": "number",
+          "unit": "mm"
+        },
+        "days_since_rain_accum": {
+          "default": 0.0,
+          "description": "Days since rain counter (current) [days]",
+          "title": "Days Since Rain Accum",
+          "type": "number",
+          "unit": "days"
+        },
+        "hdd_daily": {
+          "default": 0.0,
+          "description": "Previous day's heating degree days for QF calculations [degC]",
+          "title": "Hdd Daily",
+          "type": "number",
+          "unit": "degC"
+        },
+        "cdd_daily": {
+          "default": 0.0,
+          "description": "Previous day's cooling degree days for QF calculations [degC]",
+          "title": "Cdd Daily",
+          "type": "number",
+          "unit": "degC"
+        },
+        "temp_daily_mean": {
+          "default": 0.0,
+          "description": "Previous day's mean temperature for water use calculations [degC]",
+          "title": "Temp Daily Mean",
+          "type": "number",
+          "unit": "degC"
+        },
+        "temp_5day_mean": {
+          "default": 0.0,
+          "description": "Previous 5-day running mean temperature for QF calculations [degC]",
+          "title": "Temp 5Day Mean",
+          "type": "number",
+          "unit": "degC"
+        },
+        "precip_daily_total": {
+          "default": 0.0,
+          "description": "Previous day's precipitation total [mm]",
+          "title": "Precip Daily Total",
+          "type": "number",
+          "unit": "mm"
+        },
+        "days_since_rain": {
+          "default": 0.0,
+          "description": "Days since rain for irrigation calculations [days]",
+          "title": "Days Since Rain",
+          "type": "number",
+          "unit": "days"
+        }
+      },
+      "title": "HDD_ID",
       "type": "object"
     },
     "HourlyProfile": {
@@ -5248,26 +5339,8 @@
           "type": "number"
         },
         "hdd_id": {
-          "default": [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0
-          ],
-          "description": "Heating degree days ID",
-          "items": {
-            "type": "number"
-          },
-          "title": "Hdd Id",
-          "type": "array"
+          "$ref": "#/$defs/HDD_ID",
+          "description": "Heating degree days and meteorological tracking parameters"
         }
       },
       "title": "InitialStates",
@@ -5803,7 +5876,7 @@
       "type": "object"
     },
     "ModelPhysics": {
-      "description": "Model physics configuration options.\n\nKey method interactions:\n- diagmethod: Determines HOW near-surface values (2m temp, 10m wind) are calculated from forcing data\n- stabilitymethod: Provides stability correction functions used BY diagmethod calculations  \n- localclimatemethod: Uses the near-surface values FROM diagmethod to modify vegetation processes\n- gsmodel: Stomatal conductance model that may be influenced by localclimatemethod adjustments",
+      "description": "Model physics configuration options.\n\nKey method interactions:\n\n- diagmethod: Determines HOW near-surface values (2m temp, 10m wind) are calculated from forcing data\n- stabilitymethod: Provides stability correction functions used BY diagmethod calculations  \n- localclimatemethod: Uses the near-surface values FROM diagmethod to modify vegetation processes\n- gsmodel: Stomatal conductance model that may be influenced by localclimatemethod adjustments",
       "properties": {
         "netradiationmethod": {
           "anyOf": [
@@ -5815,7 +5888,7 @@
             }
           ],
           "default": 3,
-          "description": "Method for calculating net all-wave radiation (Q*). Options: 0 (OBSERVED) = Uses observed Q* from forcing file; 1 (LDOWN_OBSERVED) = Models Q* using observed L↓; 2 (LDOWN_CLOUD) = Models Q* with L↓ from cloud cover; 3 (LDOWN_AIR) = Models Q* with L↓ from air temp and RH (recommended); 11-13 = Surface temp variants (not recommended); 100-300 = Zenith angle variants; 1001-1003 = SPARTACUS-Surface variants (experimental)",
+          "description": "Method for calculating net all-wave radiation (Q*). Options: 0 (OBSERVED) = Uses observed Q* from forcing file; 1 (LDOWN_OBSERVED) = Models Q* using observed L↓; 2 (LDOWN_CLOUD) = Models Q* with L↓ from cloud cover; 3 (LDOWN_AIR) = Models Q* with L↓ from air temp and RH (recommended); 11 (LDOWN_SURFACE) = Surface temp variant of method 1 (not recommended); 12 (LDOWN_CLOUD_SURFACE) = Surface temp variant of method 2 (not recommended); 13 (LDOWN_AIR_SURFACE) = Surface temp variant of method 3 (not recommended); 100 (LDOWN_ZENITH) = Zenith angle variant of method 1; 200 (LDOWN_CLOUD_ZENITH) = Zenith angle variant of method 2; 300 (LDOWN_AIR_ZENITH) = Zenith angle variant of method 3; 1001 (LDOWN_SS_OBSERVED) = SPARTACUS-Surface variant of method 1 (experimental); 1002 (LDOWN_SS_CLOUD) = SPARTACUS-Surface variant of method 2 (experimental); 1003 (LDOWN_SS_AIR) = SPARTACUS-Surface variant of method 3 (experimental)",
           "title": "Netradiationmethod",
           "unit": "dimensionless"
         },
@@ -5899,7 +5972,7 @@
             }
           ],
           "default": 3,
-          "description": "Atmospheric stability correction functions for momentum and heat fluxes. Options: 0-1 = Reserved; 2 (HOEGSTROM) = Dyer/Högström formulations (not recommended); 3 (CAMPBELL_NORMAN) = Campbell & Norman 1998 formulations (recommended); 4 (BUSINGER_HOEGSTROM) = Businger/Högström formulations (not recommended)",
+          "description": "Atmospheric stability correction functions for momentum and heat fluxes. Options: 0 = Reserved; 1 = Reserved; 2 (HOEGSTROM) = Dyer/Högström formulations (not recommended); 3 (CAMPBELL_NORMAN) = Campbell & Norman 1998 formulations (recommended); 4 (BUSINGER_HOEGSTROM) = Businger/Högström formulations (not recommended)",
           "title": "Stabilitymethod",
           "unit": "dimensionless"
         },
@@ -7292,6 +7365,7 @@
           ],
           "default": 51.5,
           "description": "Latitude of the site in degrees",
+          "display_name": "Latitude",
           "ge": -90,
           "le": 90,
           "title": "Lat",
@@ -7308,6 +7382,7 @@
           ],
           "default": -0.13,
           "description": "Longitude of the site in degrees",
+          "display_name": "Longitude",
           "ge": -180,
           "le": 180,
           "title": "Lng",
@@ -7324,6 +7399,7 @@
           ],
           "default": 40.0,
           "description": "Altitude of the site above sea level",
+          "display_name": "Altitude",
           "gt": 0,
           "title": "Alt",
           "unit": "m"
@@ -7339,10 +7415,11 @@
           ],
           "default": 0,
           "description": "Time zone offset from UTC",
+          "display_name": "Time zone (UTC offset)",
           "ge": -12,
           "le": 12,
           "title": "Timezone",
-          "unit": "hour"
+          "unit": "hours"
         },
         "surfacearea": {
           "anyOf": [
@@ -7355,9 +7432,10 @@
           ],
           "default": 10000.0,
           "description": "Total surface area of the site",
+          "display_name": "Surface area",
           "gt": 0,
           "title": "Surfacearea",
-          "unit": "m^2"
+          "unit": "m²"
         },
         "z": {
           "anyOf": [
@@ -7370,6 +7448,7 @@
           ],
           "default": 10.0,
           "description": "Measurement height",
+          "display_name": "Measurement height",
           "gt": 0,
           "title": "Z",
           "unit": "m"
@@ -7385,6 +7464,7 @@
           ],
           "default": 1.0,
           "description": "Momentum roughness length",
+          "display_name": "Z0M In - Momentum roughness length",
           "gt": 0,
           "title": "Z0M In",
           "unit": "m"
@@ -7400,6 +7480,7 @@
           ],
           "default": 5.0,
           "description": "Zero-plane displacement height",
+          "display_name": "Zdm In - Zero-plane displacement height",
           "gt": 0,
           "title": "Zdm In",
           "unit": "m"
@@ -7415,6 +7496,7 @@
           ],
           "default": 100.0,
           "description": "Maximum capacity of drainage pipes",
+          "display_name": "Pipe capacity - Maximum drainage rate",
           "gt": 0,
           "title": "Pipecapacity",
           "unit": "mm h^-1"
@@ -12008,20 +12090,20 @@
                 "wu_total": 0.0
               }
             },
-            "hdd_id": [
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0,
-              0.0
-            ],
+            "hdd_id": {
+              "cdd_accum": 0.0,
+              "cdd_daily": 0.0,
+              "days_since_rain": 0.0,
+              "days_since_rain_accum": 0.0,
+              "hdd_accum": 0.0,
+              "hdd_daily": 0.0,
+              "precip_accum": 0.0,
+              "precip_daily_total": 0.0,
+              "temp_5day_accum": 0.0,
+              "temp_5day_mean": 0.0,
+              "temp_accum": 0.0,
+              "temp_daily_mean": 0.0
+            },
             "lenday_id": 0,
             "paved": {
               "icefrac": 0.0,

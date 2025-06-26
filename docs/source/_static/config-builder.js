@@ -178,15 +178,38 @@ function initializeEmptyConfig() {
     if (schema && schema.properties) {
         Object.keys(schema.properties).forEach(key => {
             if (key !== 'name' && key !== 'description') {
-                if (schema.properties[key].type === 'array') {
-                    configData[key] = [];
-                    // Add one empty item for arrays
-                    if (schema.properties[key].items && schema.properties[key].items.type === 'object') {
-                        const emptyItem = createEmptyObject(schema.properties[key].items);
-                        configData[key].push(emptyItem);
+                const propSchema = schema.properties[key];
+                
+                // Check if it's an array type (direct or in anyOf)
+                let isArray = false;
+                let arraySchema = null;
+                
+                if (propSchema.type === 'array') {
+                    isArray = true;
+                    arraySchema = propSchema;
+                } else if (propSchema.anyOf) {
+                    // Check if anyOf contains an array option
+                    const arrayOption = propSchema.anyOf.find(option => option.type === 'array');
+                    if (arrayOption) {
+                        isArray = true;
+                        arraySchema = arrayOption;
                     }
-                } else if (schema.properties[key].type === 'object') {
-                    configData[key] = createEmptyObject(schema.properties[key]);
+                }
+                
+                if (isArray && arraySchema) {
+                    // Use default from schema if available
+                    if (propSchema.default && Array.isArray(propSchema.default)) {
+                        configData[key] = JSON.parse(JSON.stringify(propSchema.default));
+                    } else {
+                        configData[key] = [];
+                        // Add one empty item for arrays
+                        if (arraySchema.items) {
+                            const emptyItem = createEmptyObject(arraySchema.items);
+                            configData[key].push(emptyItem);
+                        }
+                    }
+                } else if (propSchema.type === 'object') {
+                    configData[key] = createEmptyObject(propSchema);
                 }
             }
         });
@@ -439,6 +462,71 @@ function formatPropertyName(name) {
         .replace(/_/g, ' ');
 }
 
+// Helper function to format field label
+function formatFieldLabel(propKey, propSchema) {
+    console.log(`formatFieldLabel for ${propKey}:`, {
+        display_name: propSchema.display_name,
+        unit: propSchema.unit,
+        title: propSchema.title,
+        hasAnyOf: !!propSchema.anyOf
+    });
+    
+    // For anyOf schemas, the display_name and unit are at the top level
+    let label = propSchema.display_name || propSchema.title || formatPropertyName(propKey);
+    
+    // Don't append units here - they're shown separately now
+    
+    return label;
+}
+
+// Helper function to render unit with KaTeX
+function renderUnit(unit, container) {
+    if (!unit || unit === 'dimensionless') {
+        return;
+    }
+    
+    const unitSpan = document.createElement('span');
+    unitSpan.className = 'field-unit text-muted ms-2';
+    
+    // Try to render as LaTeX if it contains math symbols
+    if (unit.includes('^') || unit.includes('_') || unit.includes('\\') || unit.includes(' ')) {
+        try {
+            // Convert simple notation to LaTeX with proper formatting
+            let latexUnit = unit
+                // First, wrap individual unit symbols in \textrm{}
+                .replace(/([A-Za-z]+)/g, '\\textrm{$1}')  // Wrap letters in textrm
+                // Handle negative exponents with spaces (e.g., "m^-1" or "m^-2")
+                .replace(/\s+/g, '\\,')                    // Convert spaces to LaTeX thin space
+                // Fix the exponents to be outside of textrm
+                .replace(/\\textrm{([A-Za-z]+)}\^(-?\d+)/g, '\\textrm{$1}^{$2}')  // Fix m^2 pattern
+                .replace(/\\textrm{([A-Za-z]+)}\^(-?\w+)/g, '\\textrm{$1}^{$2}')  // Fix m^n pattern
+                .replace(/\\textrm{([A-Za-z]+)}_(\d+)/g, '\\textrm{$1}_{$2}')     // Fix m_1 pattern
+                .replace(/\\textrm{([A-Za-z]+)}_(\w+)/g, '\\textrm{$1}_{$2}');    // Fix m_n pattern
+            
+            // Wrap in parentheses for display
+            latexUnit = `(${latexUnit})`;
+            
+            // Render with KaTeX
+            if (typeof katex !== 'undefined') {
+                katex.render(latexUnit, unitSpan, {
+                    throwOnError: false,
+                    displayMode: false
+                });
+            } else {
+                unitSpan.textContent = `(${unit})`;
+            }
+        } catch (e) {
+            // Fallback to plain text if KaTeX fails
+            console.warn('KaTeX rendering failed for unit:', unit, e);
+            unitSpan.textContent = `(${unit})`;
+        }
+    } else {
+        unitSpan.textContent = `(${unit})`;
+    }
+    
+    container.appendChild(unitSpan);
+}
+
 // Generate fields for an object
 function generateObjectFields(objSchema, objData, container, path) {
     console.log(`Generating object fields for ${path}...`);
@@ -550,7 +638,7 @@ function generateObjectFields(objSchema, objData, container, path) {
             collapseButton.className = 'btn btn-link';
             collapseButton.setAttribute('data-bs-toggle', 'collapse');
             collapseButton.setAttribute('data-bs-target', `#collapse-${propPath.replace(/\./g, '-')}`);
-            collapseButton.textContent = originalPropSchema.title || propSchema.title || formatPropertyName(propKey);
+            collapseButton.textContent = formatFieldLabel(propKey, originalPropSchema);
 
             cardTitle.appendChild(collapseButton);
             cardHeader.appendChild(cardTitle);
@@ -584,7 +672,7 @@ function generateObjectFields(objSchema, objData, container, path) {
             collapseButton.className = 'btn btn-link';
             collapseButton.setAttribute('data-bs-toggle', 'collapse');
             collapseButton.setAttribute('data-bs-target', `#collapse-${propPath.replace(/\./g, '-')}`);
-            collapseButton.textContent = originalPropSchema.title || propSchema.title || formatPropertyName(propKey);
+            collapseButton.textContent = formatFieldLabel(propKey, originalPropSchema);
 
             cardTitle.appendChild(collapseButton);
             cardHeader.appendChild(cardTitle);
@@ -688,13 +776,13 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
     const min = valueSchema.minimum !== undefined ? valueSchema.minimum : null;
     const max = valueSchema.maximum !== undefined ? valueSchema.maximum : null;
 
-    // Use the property's title first, then format the property name, avoiding the generic ValueWithDOI title
-    const displayLabel = propSchema.title || formatPropertyName(propKey);
+    // Use the helper function to format the field label with units
+    const displayLabel = formatFieldLabel(propKey, propSchema);
 
     // Get the description from the property schema first, then from the resolved schema
     const description = propSchema.description || resolvedSchema.description || null;
 
-    console.log(`ValueWithDOI field: ${path}, label: ${displayLabel}, description: ${description}`);
+    console.log(`ValueWithDOI field: ${path}, label: ${displayLabel}, unit: ${propSchema.unit}, display_name: ${propSchema.display_name}`);
 
     // Create form field with DOI
     createValueWithDOIField(
@@ -724,7 +812,8 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
         },
         options,
         min,
-        max
+        max,
+        propSchema.unit  // Pass the unit
     );
 }
 
@@ -958,6 +1047,11 @@ function cleanFlexibleRefValuesForExport(data, schemaObj) {
     
     function cleanObject(obj, objSchema, path = '') {
         if (!obj || typeof obj !== 'object' || !objSchema) return;
+        
+        // Remove UI-only flags
+        if (obj.__is_copied) {
+            delete obj.__is_copied;
+        }
         
         // Handle $ref in schema
         let resolvedSchema = objSchema;
@@ -1649,11 +1743,14 @@ function generatePrimitiveField(propSchema, propData, container, path, propKey) 
     const min = resolvedSchema.minimum !== undefined ? resolvedSchema.minimum : null;
     const max = resolvedSchema.maximum !== undefined ? resolvedSchema.maximum : null;
 
+    // Use the helper function to format the field label with units
+    const displayLabel = formatFieldLabel(propKey, originalPropSchema);
+    
     // Create form field
     createFormField(
         container,
         path.replace(/\./g, '-'),
-        originalPropSchema.title || resolvedSchema.title || formatPropertyName(propKey),
+        displayLabel,
         fieldType,
         propData,
         originalPropSchema.description || resolvedSchema.description,
@@ -1669,7 +1766,8 @@ function generatePrimitiveField(propSchema, propData, container, path, propKey) 
         },
         options,
         min,
-        max
+        max,
+        originalPropSchema.unit  // Pass the unit
     );
 }
 
@@ -1712,7 +1810,33 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
 
         const itemTitle = document.createElement('h5');
         itemTitle.className = 'mb-0';
-        itemTitle.textContent = `Item ${itemIndex + 1}`;
+        const isCopied = arrayData[itemIndex] && arrayData[itemIndex].__is_copied;
+        itemTitle.textContent = `Item ${itemIndex + 1}${isCopied ? ' (copied)' : ''}`;
+
+        // Create button container
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'd-flex gap-2';
+
+        // Create copy button
+        const copyButton = document.createElement('button');
+        copyButton.className = 'btn btn-sm btn-secondary';
+        copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy';
+        copyButton.addEventListener('click', () => {
+            // Deep copy the item data
+            const copiedData = JSON.parse(JSON.stringify(arrayData[itemIndex]));
+            
+            // Mark as copied
+            copiedData.__is_copied = true;
+            
+            // Add the copied item to the array
+            arrayData.push(copiedData);
+            
+            // Add the new item to the UI
+            addItem();
+            
+            // Update preview
+            updatePreview();
+        });
 
         const removeButton = document.createElement('button');
         removeButton.className = 'btn btn-sm btn-danger';
@@ -1728,15 +1852,19 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
             const items = itemsContainer.querySelectorAll('.array-item');
             items.forEach((item, idx) => {
                 item.dataset.index = idx;
-                item.querySelector('h5').textContent = `Item ${idx + 1}`;
+                const isCopied = arrayData[idx] && arrayData[idx].__is_copied;
+                item.querySelector('h5').textContent = `Item ${idx + 1}${isCopied ? ' (copied)' : ''}`;
             });
 
             // Update preview
             updatePreview();
         });
 
+        buttonContainer.appendChild(copyButton);
+        buttonContainer.appendChild(removeButton);
+
         itemHeader.appendChild(itemTitle);
-        itemHeader.appendChild(removeButton);
+        itemHeader.appendChild(buttonContainer);
         itemDiv.appendChild(itemHeader);
 
         // Create item body
@@ -1811,7 +1939,98 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
 
             const itemTitle = document.createElement('h5');
             itemTitle.className = 'mb-0';
-            itemTitle.textContent = `Item ${itemIndex + 1}`;
+            const isCopied = itemData && itemData.__is_copied;
+            itemTitle.textContent = `Item ${itemIndex + 1}${isCopied ? ' (copied)' : ''}`;
+
+            // Create button container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'd-flex gap-2';
+
+            // Create copy button
+            const copyButton = document.createElement('button');
+            copyButton.className = 'btn btn-sm btn-secondary';
+            copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy';
+            copyButton.addEventListener('click', () => {
+                // Deep copy the item data
+                const copiedData = JSON.parse(JSON.stringify(itemData));
+                
+                // Mark as copied
+                copiedData.__is_copied = true;
+                
+                // Add the copied item to the array
+                arrayData.push(copiedData);
+                
+                // Regenerate all array fields to include the new copy
+                itemsContainer.innerHTML = '';
+                arrayData.forEach((data, idx) => {
+                    const itemPath = `${path}[${idx}]`;
+                    
+                    // Create item container
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'array-item card mb-3';
+                    itemDiv.dataset.index = idx;
+                    
+                    // Create item header
+                    const itemHeader = document.createElement('div');
+                    itemHeader.className = 'card-header d-flex justify-content-between align-items-center';
+                    
+                    const itemTitle = document.createElement('h5');
+                    itemTitle.className = 'mb-0';
+                    const isCopied = data && data.__is_copied;
+                    itemTitle.textContent = `Item ${idx + 1}${isCopied ? ' (copied)' : ''}`;
+                    
+                    // Recreate buttons
+                    const btnContainer = document.createElement('div');
+                    btnContainer.className = 'd-flex gap-2';
+                    
+                    const newCopyBtn = document.createElement('button');
+                    newCopyBtn.className = 'btn btn-sm btn-secondary';
+                    newCopyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                    
+                    const newRemoveBtn = document.createElement('button');
+                    newRemoveBtn.className = 'btn btn-sm btn-danger';
+                    newRemoveBtn.innerHTML = '<i class="fas fa-times"></i> Remove';
+                    
+                    btnContainer.appendChild(newCopyBtn);
+                    btnContainer.appendChild(newRemoveBtn);
+                    
+                    itemHeader.appendChild(itemTitle);
+                    itemHeader.appendChild(btnContainer);
+                    itemDiv.appendChild(itemHeader);
+                    
+                    // Create item body
+                    const itemBody = document.createElement('div');
+                    itemBody.className = 'card-body';
+                    itemDiv.appendChild(itemBody);
+                    
+                    // Generate fields
+                    if (arraySchema.items) {
+                        let itemsSchema = arraySchema.items;
+                        if (itemsSchema.$ref && itemsSchema.$ref.startsWith('#/$defs/')) {
+                            const refPath = itemsSchema.$ref.replace('#/$defs/', '');
+                            if (schema.$defs && schema.$defs[refPath]) {
+                                itemsSchema = schema.$defs[refPath];
+                            }
+                        }
+                        
+                        if (itemsSchema.type === 'object') {
+                            generateObjectFields(itemsSchema, data, itemBody, itemPath);
+                        } else if (itemsSchema.type === 'array') {
+                            generateArrayFields(itemsSchema, data, itemBody, itemPath);
+                        } else {
+                            generatePrimitiveField(itemsSchema, data, itemBody, itemPath, 'value');
+                        }
+                    }
+                    
+                    itemsContainer.appendChild(itemDiv);
+                });
+                
+                // Re-run this function to reattach event listeners
+                generateArrayFields(arraySchema, arrayData, container, path);
+                
+                // Update preview
+                updatePreview();
+            });
 
             const removeButton = document.createElement('button');
             removeButton.className = 'btn btn-sm btn-danger';
@@ -1827,15 +2046,19 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
                 const items = itemsContainer.querySelectorAll('.array-item');
                 items.forEach((item, idx) => {
                     item.dataset.index = idx;
-                    item.querySelector('h5').textContent = `Item ${idx + 1}`;
+                    const isCopied = arrayData[idx] && arrayData[idx].__is_copied;
+                    item.querySelector('h5').textContent = `Item ${idx + 1}${isCopied ? ' (copied)' : ''}`;
                 });
 
                 // Update preview
                 updatePreview();
             });
 
+            buttonContainer.appendChild(copyButton);
+            buttonContainer.appendChild(removeButton);
+
             itemHeader.appendChild(itemTitle);
-            itemHeader.appendChild(removeButton);
+            itemHeader.appendChild(buttonContainer);
             itemDiv.appendChild(itemHeader);
 
             // Create item body
@@ -1876,7 +2099,7 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
 }
 
 // Add the missing createFormField function
-function createFormField(container, id, label, type, value, description, onChange, options = null, min = null, max = null) {
+function createFormField(container, id, label, type, value, description, onChange, options = null, min = null, max = null, unit = null) {
     console.log(`Creating form field: ${id}, type: ${type}`);
 
     const fieldDiv = document.createElement('div');
@@ -1891,6 +2114,9 @@ function createFormField(container, id, label, type, value, description, onChang
     labelEl.textContent = label;
 
     labelDiv.appendChild(labelEl);
+    
+    // Add unit display if available
+    renderUnit(unit, labelDiv);
 
     if (description) {
         const icon = document.createElement('i');
@@ -1999,7 +2225,7 @@ function createFormField(container, id, label, type, value, description, onChang
 }
 
 // Add the missing createValueWithDOIField function
-function createValueWithDOIField(container, id, label, type, value, ref, description, onValueChange, onRefChange, options = null, min = null, max = null) {
+function createValueWithDOIField(container, id, label, type, value, ref, description, onValueChange, onRefChange, options = null, min = null, max = null, unit = null) {
     console.log(`Creating ValueWithDOI field: ${id}, label: ${label}, type: ${type}`);
 
     const fieldDiv = document.createElement('div');
@@ -2016,6 +2242,9 @@ function createValueWithDOIField(container, id, label, type, value, ref, descrip
     labelEl.textContent = label;
 
     labelDiv.appendChild(labelEl);
+    
+    // Add unit display if available
+    renderUnit(unit, labelDiv);
 
     if (description) {
         const icon = document.createElement('i');
