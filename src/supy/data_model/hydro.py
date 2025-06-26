@@ -368,7 +368,7 @@ class StorageDrainParams(BaseModel):
     store_cap: FlexibleRefValue(float) = Field(
         ge=0,
         default=10.0,
-        description="Water storage capacity", json_schema_extra={"unit": "mm"},
+        description="Current water storage capacity - the actual storage capacity available for surface water retention. This represents the depth of water that can be stored on or in the surface before drainage begins. For paved surfaces, this might represent depression storage; for vegetated surfaces, it includes canopy interception storage.", json_schema_extra={"unit": "mm"},
     )
     drain_eq: FlexibleRefValue(int) = Field(
         default=0,

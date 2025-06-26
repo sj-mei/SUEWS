@@ -20,14 +20,31 @@ endif
 ##################################################################
 # set the compiler flags
 fortran_compiler = meson.get_compiler('fortran')
+
+# Check for fast build environment variable
+fast_build = get_option('fast_build')
+if fast_build
+  message('Using fast build configuration')
+endif
+
 if fortran_compiler.get_id() == 'gcc'
-  f90flags = [
-    '-fPIC',
-    '-fconvert=big-endian',
-    '-g',
-    '-O0',
-    '-fcheck=all',
-  ]
+  if fast_build
+    f90flags = [
+      '-fPIC',
+      '-fconvert=big-endian',
+      '-g',
+      '-O1',  # Faster than -O0
+      # Remove -fcheck=all for faster compilation
+    ]
+  else
+    f90flags = [
+      '-fPIC',
+      '-fconvert=big-endian',
+      '-g',
+      '-O0',
+      '-fcheck=all',
+    ]
+  endif
   fortran_program = find_program('gfortran')
 elif fortran_compiler.get_id() == 'intel'
   f90flags = ['-fpscomp logicals', '-fPIC']
@@ -36,12 +53,21 @@ endif
 add_global_arguments(f90flags, language: 'fortran')
 
 c_compiler = meson.get_compiler('c')
-cflags = [
-  '-fPIC',
-  '-D_POSIX_C_SOURCE=200809L',
-  '-g',
-  '-O0',
-]
+if fast_build
+  cflags = [
+    '-fPIC',
+    '-D_POSIX_C_SOURCE=200809L',
+    '-g',
+    '-O1',  # Faster than -O0
+  ]
+else
+  cflags = [
+    '-fPIC',
+    '-D_POSIX_C_SOURCE=200809L',
+    '-g',
+    '-O0',
+  ]
+endif
 if c_compiler.get_id() == 'clang'
   cflags += ['-fbracket-depth=1024']
 endif

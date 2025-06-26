@@ -22,10 +22,10 @@ No.,Column Name,Use,Description
 21,`PorosityMax`,`MD`,full leaf-on summertime value Used only for `DecTr` (can affect roughness calculation)
 22,`MaxConductance`,`MD`,The maximum conductance of each vegetation or surface type. [mm |s^-1|]
 23,`LAIEq`,`MD`,LAI calculation choice.
-24,`LeafGrowthPower1`,`MD`,a parameter required by LAI calculation in `LAIEq`
-25,`LeafGrowthPower2`,`MD`,a parameter required by LAI calculation [|K^-1|] in `LAIEq`
-26,`LeafOffPower1`,`MD`,a parameter required by LAI calculation [|K^-1|] in `LAIEq`
-27,`LeafOffPower2`,`MD`,a parameter required by LAI calculation [|K^-1|] in `LAIEq`
+24,`LeafGrowthPower1`,`MD`,Power parameter 1 for leaf growth phase in LAI calculation. Controls the shape of the growing season LAI curve as a function of growing degree days in `LAIEq`
+25,`LeafGrowthPower2`,`MD`,Power parameter 2 for leaf growth phase in LAI calculation [|K^-1|]. Temperature sensitivity parameter that modulates leaf growth rate in `LAIEq`
+26,`LeafOffPower1`,`MD`,Power parameter 1 for leaf senescence phase in LAI calculation [|K^-1|]. Controls the shape of the leaf-off LAI curve as a function of senescence degree days in `LAIEq`
+27,`LeafOffPower2`,`MD`,Power parameter 2 for leaf senescence phase in LAI calculation [|K^-1|]. Temperature sensitivity parameter that modulates leaf senescence rate in `LAIEq`
 28,`OHMCode_SummerWet`,`L`,"Code for OHM coefficients to use for this surface during wet conditions in summer, linking to `SUEWS_OHMCoefficients.txt`."
 29,`OHMCode_SummerDry`,`L`,"Code for OHM coefficients to use for this surface during dry conditions in summer, linking to `SUEWS_OHMCoefficients.txt`."
 30,`OHMCode_WinterWet`,`L`,"Code for OHM coefficients to use for this surface during wet conditions in winter, linking to `SUEWS_OHMCoefficients.txt`."
