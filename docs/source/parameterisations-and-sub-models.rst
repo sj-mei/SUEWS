@@ -27,13 +27,13 @@ incoming shortwave radiation to be provided.
 BEERS (Building Envelope Energy Radiation Scheme)
 --------------------------------------------------
 
-**BEERS** is the successor to SOLWEIG and provides advanced radiation modeling for urban environments. BEERS calculates detailed radiation components at specific points of interest (POI) within urban areas, considering the complex 3D geometry of buildings and vegetation.
+**BEERS** is the successor to SOLWEIG and provides advanced radiation modelling for urban environments. BEERS calculates detailed radiation components at specific points of interest (POI) within urban areas, considering the complex 3D geometry of buildings and vegetation.
 
 **Key Features:**
 
 - **Point-specific Analysis:** Calculates radiation at specific points rather than grid averages
 - **Directional Radiation:** Provides radiation from cardinal directions (north, south, east, west)
-- **Surface Temperature Modeling:** Computes ground, wall, and roof surface temperatures
+- **Surface Temperature Modelling:** Computes ground, wall, and roof surface temperatures
 - **Mean Radiant Temperature:** Calculates mean radiant temperature for human thermal comfort studies
 - **Shadow Analysis:** Models shadows cast by buildings and vegetation on ground and walls
 
@@ -63,7 +63,7 @@ BEERS solves the urban radiation balance by:
 - Urban climate analysis and heat island studies
 - Building energy assessment in urban contexts
 - Human thermal comfort evaluation in urban spaces
-- Urban planning and design optimization
+- Urban planning and design optimisation
 - Microclimate analysis for specific locations
 
 **Configuration:**

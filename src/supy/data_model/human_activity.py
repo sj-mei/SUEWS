@@ -314,7 +314,7 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
     )
     trafficunits: FlexibleRefValue(float) = Field(
         default=0.0,
-        description="Units for traffic density normalization", json_schema_extra={"unit": "vehicle km ha^-1"},
+        description="Units for traffic density normalisation", json_schema_extra={"unit": "vehicle km ha^-1"},
     )
     traffprof_24hr: HourlyProfile = Field(
         description="24-hour profile of traffic rate",

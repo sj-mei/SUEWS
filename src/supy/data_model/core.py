@@ -180,14 +180,14 @@ class SUEWSConfig(BaseModel):
         clean_empty_strings(data)
 
         # ── Step 1: Loop through sites ──
-        sites_data = data.get("site", [])
+        sites_data = data.get("sites", [])
         
         # Handle empty sites_data - return early and let default values be applied later
         if not sites_data:
             return data
             
         if not isinstance(sites_data, list):
-            raise TypeError("Expected 'site' to be a list.")
+            raise TypeError("Expected 'sites' to be a list.")
 
         start_date = "2014-06-20"  # placeholder: to be passed externally
         end_date = "2014-08-20"
@@ -314,7 +314,7 @@ class SUEWSConfig(BaseModel):
             site["properties"] = props
 
         # Update back the full config data
-        data["site"] = sites_data
+        data["sites"] = sites_data
         print("\n Precheck complete. Proceeding with Pydantic validation...\n")
         return data
     @classmethod

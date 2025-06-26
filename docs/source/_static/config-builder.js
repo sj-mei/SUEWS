@@ -244,10 +244,25 @@ function createEmptyObject(schemaObj) {
                     }
                 }
             } else {
-                // For ValueWithDOI type
-                if (resolvedPropSchema.properties &&
+                // Check for FlexibleRefValue (anyOf)
+                if (propSchema.anyOf && propSchema.anyOf.length === 2) {
+                    const hasRefValue = propSchema.anyOf.some(option => 
+                        option.$ref && option.$ref.includes('RefValue'));
+                    const hasEnum = propSchema.anyOf.some(option => 
+                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                        schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
+                    
+                    if (hasRefValue && hasEnum) {
+                        // This is a FlexibleRefValue with enum - use RefValue format
+                        obj[propKey] = { value: propSchema.default !== undefined ? propSchema.default : null, ref: null };
+                    } else {
+                        // Regular anyOf - use default
+                        obj[propKey] = propSchema.default !== undefined ? propSchema.default : null;
+                    }
+                } else if (resolvedPropSchema.properties &&
                     resolvedPropSchema.properties.value &&
                     resolvedPropSchema.properties.ref) {
+                    // For ValueWithDOI type
                     obj[propKey] = { value: null, ref: null };
                 } else {
                     // For primitive types, use default or null
@@ -500,10 +515,25 @@ function generateObjectFields(objSchema, objData, container, path) {
         // Generate field based on property type
         const propPath = `${path}.${propKey}`;
 
-        // Special handling for ValueWithDOI type
-        if (propSchema.properties &&
+        // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
+        let isFlexibleRefValue = false;
+        if (originalPropSchema.anyOf && originalPropSchema.anyOf.length === 2) {
+            // Check if one option is a RefValue and the other is a raw type
+            const hasRefValue = originalPropSchema.anyOf.some(option => 
+                option.$ref && option.$ref.includes('RefValue'));
+            const hasRawType = originalPropSchema.anyOf.some(option => 
+                option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
+            
+            if (hasRefValue && hasRawType) {
+                isFlexibleRefValue = true;
+            }
+        }
+
+        // Special handling for ValueWithDOI type or FlexibleRefValue
+        if ((propSchema.properties &&
             propSchema.properties.value &&
-            propSchema.properties.ref) {
+            propSchema.properties.ref) || isFlexibleRefValue) {
             generateValueWithDOIField(originalPropSchema, objData[propKey], section, propPath, propKey);
         } else if (propSchema.type === 'object') {
             // Create a collapsible card for nested objects
@@ -595,22 +625,56 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
         }
     }
 
+    // Handle FlexibleRefValue (anyOf case)
+    let valueSchema = null;
+    let isFlexibleRefValue = false;
+    
+    if (propSchema.anyOf && propSchema.anyOf.length === 2) {
+        // This is a FlexibleRefValue - find the RefValue option
+        const refValueOption = propSchema.anyOf.find(option => 
+            option.$ref && option.$ref.includes('RefValue'));
+        const enumOption = propSchema.anyOf.find(option => 
+            option.$ref && !option.$ref.includes('RefValue'));
+        
+        if (refValueOption && enumOption) {
+            isFlexibleRefValue = true;
+            // Resolve the RefValue schema
+            const refValuePath = refValueOption.$ref.replace('#/$defs/', '');
+            if (schema.$defs && schema.$defs[refValuePath]) {
+                resolvedSchema = schema.$defs[refValuePath];
+            }
+            
+            // Get the enum schema for the value
+            const enumPath = enumOption.$ref.replace('#/$defs/', '');
+            if (schema.$defs && schema.$defs[enumPath]) {
+                valueSchema = schema.$defs[enumPath];
+            }
+        }
+    }
+
     // Initialize data if needed
-    if (!propData || typeof propData !== 'object') {
+    // For FlexibleRefValue, propData might be either a raw value or a RefValue object
+    if (isFlexibleRefValue && propData !== null && typeof propData !== 'object') {
+        // Convert raw value to RefValue object
+        propData = { value: propData, ref: null };
+        setNestedProperty(configData, path, propData);
+    } else if (!propData || typeof propData !== 'object') {
         propData = { value: null, ref: null };
         setNestedProperty(configData, path, propData);
     }
 
-    // Get value schema
-    let valueSchema = resolvedSchema.properties && resolvedSchema.properties.value
-        ? resolvedSchema.properties.value
-        : { type: 'string' };
+    // If not already set by FlexibleRefValue handling, get value schema normally
+    if (!valueSchema) {
+        valueSchema = resolvedSchema.properties && resolvedSchema.properties.value
+            ? resolvedSchema.properties.value
+            : { type: 'string' };
 
-    // Handle $ref in value schema
-    if (valueSchema.$ref && valueSchema.$ref.startsWith('#/$defs/')) {
-        const refPath = valueSchema.$ref.replace('#/$defs/', '');
-        if (schema.$defs && schema.$defs[refPath]) {
-            valueSchema = schema.$defs[refPath];
+        // Handle $ref in value schema
+        if (valueSchema.$ref && valueSchema.$ref.startsWith('#/$defs/')) {
+            const refPath = valueSchema.$ref.replace('#/$defs/', '');
+            if (schema.$defs && schema.$defs[refPath]) {
+                valueSchema = schema.$defs[refPath];
+            }
         }
     }
 
@@ -731,8 +795,11 @@ function updatePreview() {
                 return;
             }
 
+            // Clean FlexibleRefValue objects for preview
+            const cleanedData = cleanFlexibleRefValuesForExport(configData, schema);
+            
             // Always generate YAML format
-            const yamlOutput = jsyaml.dump(configData, {
+            const yamlOutput = jsyaml.dump(cleanedData, {
                 indent: 2,
                 lineWidth: -1,
                 noRefs: true,
@@ -767,6 +834,68 @@ function importConfig() {
         return;
     }
 
+    // Convert raw values to FlexibleRefValue objects where needed
+    function convertToFlexibleRefValues(data, schemaObj) {
+        if (!data || !schemaObj) return data;
+        
+        function convertObject(obj, objSchema, path = '') {
+            if (!obj || typeof obj !== 'object' || !objSchema) return;
+            
+            // Handle $ref in schema
+            let resolvedSchema = objSchema;
+            if (objSchema.$ref && objSchema.$ref.startsWith('#/$defs/')) {
+                const refPath = objSchema.$ref.replace('#/$defs/', '');
+                if (schema.$defs && schema.$defs[refPath]) {
+                    resolvedSchema = schema.$defs[refPath];
+                }
+            }
+            
+            if (resolvedSchema.properties) {
+                Object.keys(resolvedSchema.properties).forEach(propKey => {
+                    if (obj[propKey] === undefined) return;
+                    
+                    const propSchema = resolvedSchema.properties[propKey];
+                    const propPath = path ? `${path}.${propKey}` : propKey;
+                    
+                    // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
+                    if (propSchema.anyOf && propSchema.anyOf.length === 2) {
+                        const hasRefValue = propSchema.anyOf.some(option => 
+                            option.$ref && option.$ref.includes('RefValue'));
+                        const hasEnum = propSchema.anyOf.some(option => 
+                            option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                            schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
+                        
+                        if (hasRefValue && hasEnum) {
+                            // This is a FlexibleRefValue
+                            // If it's not already an object with value/ref, convert it
+                            if (obj[propKey] !== null && (typeof obj[propKey] !== 'object' || !('value' in obj[propKey]))) {
+                                console.log(`Converting to FlexibleRefValue at ${propPath}: ${obj[propKey]} -> {value: ${obj[propKey]}, ref: null}`);
+                                obj[propKey] = { value: obj[propKey], ref: null };
+                            }
+                        }
+                    }
+                    
+                    // Recursively handle nested objects
+                    if (propSchema.type === 'object' && obj[propKey] && typeof obj[propKey] === 'object') {
+                        convertObject(obj[propKey], propSchema, propPath);
+                    } else if (propSchema.type === 'array' && Array.isArray(obj[propKey])) {
+                        // Handle arrays
+                        if (propSchema.items) {
+                            obj[propKey].forEach((item, index) => {
+                                if (propSchema.items.type === 'object') {
+                                    convertObject(item, propSchema.items, `${propPath}[${index}]`);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+        
+        convertObject(data, schemaObj);
+        return data;
+    }
+
     const processYaml = (yamlContent) => {
         try {
             // Parse YAML
@@ -774,14 +903,19 @@ function importConfig() {
 
             // Validate imported config against schema
             if (schema && ajv) {
+                // Transform FlexibleRefValue objects to raw values for validation
+                const transformedData = transformFlexibleRefValues(importedConfig, schema);
                 const validate = ajv.compile(schema);
-                const valid = validate(importedConfig);
+                const valid = validate(transformedData);
 
                 if (!valid) {
                     showValidationErrors(validate.errors);
                     return;
                 }
             }
+
+            // Convert raw values to FlexibleRefValue objects where needed
+            convertToFlexibleRefValues(importedConfig, schema);
 
             // Update config data
             configData = importedConfig;
@@ -815,20 +949,91 @@ function importConfig() {
 }
 
 // Export configuration
+// Clean FlexibleRefValue objects for export - if ref is null, export just the value
+function cleanFlexibleRefValuesForExport(data, schemaObj) {
+    if (!data || !schemaObj) return data;
+    
+    // Deep clone the data to avoid modifying the original
+    const cleaned = JSON.parse(JSON.stringify(data));
+    
+    function cleanObject(obj, objSchema, path = '') {
+        if (!obj || typeof obj !== 'object' || !objSchema) return;
+        
+        // Handle $ref in schema
+        let resolvedSchema = objSchema;
+        if (objSchema.$ref && objSchema.$ref.startsWith('#/$defs/')) {
+            const refPath = objSchema.$ref.replace('#/$defs/', '');
+            if (schema.$defs && schema.$defs[refPath]) {
+                resolvedSchema = schema.$defs[refPath];
+            }
+        }
+        
+        if (resolvedSchema.properties) {
+            Object.keys(resolvedSchema.properties).forEach(propKey => {
+                if (obj[propKey] === undefined || obj[propKey] === null) return;
+                
+                const propSchema = resolvedSchema.properties[propKey];
+                const propPath = path ? `${path}.${propKey}` : propKey;
+                
+                // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
+                if (propSchema.anyOf && propSchema.anyOf.length === 2) {
+                    const hasRefValue = propSchema.anyOf.some(option => 
+                        option.$ref && option.$ref.includes('RefValue'));
+                    const hasEnum = propSchema.anyOf.some(option => 
+                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                        schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
+                    
+                    if (hasRefValue && hasEnum) {
+                        // This is a FlexibleRefValue
+                        if (obj[propKey] && typeof obj[propKey] === 'object' && 'value' in obj[propKey]) {
+                            // If ref is null or empty, export just the value
+                            if (!obj[propKey].ref) {
+                                console.log(`Cleaning FlexibleRefValue at ${propPath}: ${JSON.stringify(obj[propKey])} -> ${obj[propKey].value}`);
+                                obj[propKey] = obj[propKey].value;
+                            }
+                            // Otherwise keep the RefValue object format
+                        }
+                    }
+                }
+                
+                // Recursively handle nested objects
+                if (propSchema.type === 'object' && obj[propKey] && typeof obj[propKey] === 'object') {
+                    cleanObject(obj[propKey], propSchema, propPath);
+                } else if (propSchema.type === 'array' && Array.isArray(obj[propKey])) {
+                    // Handle arrays
+                    if (propSchema.items) {
+                        obj[propKey].forEach((item, index) => {
+                            if (propSchema.items.type === 'object') {
+                                cleanObject(item, propSchema.items, `${propPath}[${index}]`);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+    
+    cleanObject(cleaned, schemaObj);
+    return cleaned;
+}
+
 function exportConfig(format) {
     try {
+        // Clean FlexibleRefValue objects for export
+        const cleanedData = cleanFlexibleRefValuesForExport(configData, schema);
+        
         let exportData;
         let mimeType;
         let filename;
 
         if (format === 'json') {
-            exportData = JSON.stringify(configData, null, 2);
+            exportData = JSON.stringify(cleanedData, null, 2);
             mimeType = 'application/json';
-            filename = `${configData.name || 'suews-config'}.json`;
+            filename = `${cleanedData.name || 'suews-config'}.json`;
         } else {
-            exportData = jsyaml.dump(configData);
+            exportData = jsyaml.dump(cleanedData);
             mimeType = 'text/yaml';
-            filename = `${configData.name || 'suews-config'}.yaml`;
+            filename = `${cleanedData.name || 'suews-config'}.yaml`;
         }
 
         // Create download link
@@ -890,6 +1095,70 @@ function convertSchemaToV6Compatible(schema) {
     return convertObject(schema);
 }
 
+// Transform FlexibleRefValue objects to raw values for validation
+function transformFlexibleRefValues(data, schemaObj) {
+    if (!data || !schemaObj) return data;
+    
+    // Deep clone the data to avoid modifying the original
+    const transformed = JSON.parse(JSON.stringify(data));
+    
+    function transformObject(obj, objSchema, path = '') {
+        if (!obj || typeof obj !== 'object' || !objSchema) return;
+        
+        // Handle $ref in schema
+        let resolvedSchema = objSchema;
+        if (objSchema.$ref && objSchema.$ref.startsWith('#/$defs/')) {
+            const refPath = objSchema.$ref.replace('#/$defs/', '');
+            if (schema.$defs && schema.$defs[refPath]) {
+                resolvedSchema = schema.$defs[refPath];
+            }
+        }
+        
+        if (resolvedSchema.properties) {
+            Object.keys(resolvedSchema.properties).forEach(propKey => {
+                if (obj[propKey] === undefined || obj[propKey] === null) return;
+                
+                const propSchema = resolvedSchema.properties[propKey];
+                const propPath = path ? `${path}.${propKey}` : propKey;
+                
+                // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
+                if (propSchema.anyOf && propSchema.anyOf.length === 2) {
+                    const hasRefValue = propSchema.anyOf.some(option => 
+                        option.$ref && option.$ref.includes('RefValue'));
+                    const hasEnum = propSchema.anyOf.some(option => 
+                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                        schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
+                    
+                    if (hasRefValue && hasEnum) {
+                        // This is a FlexibleRefValue - extract the value
+                        if (obj[propKey] && typeof obj[propKey] === 'object' && 'value' in obj[propKey]) {
+                            console.log(`Transforming FlexibleRefValue at ${propPath}: ${JSON.stringify(obj[propKey])} -> ${obj[propKey].value}`);
+                            obj[propKey] = obj[propKey].value;
+                        }
+                    }
+                }
+                
+                // Recursively handle nested objects
+                if (propSchema.type === 'object' && obj[propKey] && typeof obj[propKey] === 'object') {
+                    transformObject(obj[propKey], propSchema, propPath);
+                } else if (propSchema.type === 'array' && Array.isArray(obj[propKey])) {
+                    // Handle arrays
+                    if (propSchema.items) {
+                        obj[propKey].forEach((item, index) => {
+                            if (propSchema.items.type === 'object') {
+                                transformObject(item, propSchema.items, `${propPath}[${index}]`);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+    
+    transformObject(transformed, schemaObj);
+    return transformed;
+}
+
 // Validate configuration
 function validateConfig() {
     console.log('Validate button clicked');
@@ -920,8 +1189,12 @@ function validateConfig() {
             schemaToUse = convertSchemaToV6Compatible(schemaToUse);
         }
 
+        // Transform FlexibleRefValue objects to raw values for validation
+        const transformedData = transformFlexibleRefValues(configData, schema);
+        console.log('Transformed data for validation:', transformedData);
+
         const validate = ajv.compile(schemaToUse);
-        const valid = validate(configData);
+        const valid = validate(transformedData);
 
         console.log('Validation result:', valid);
         console.log('Validation errors:', validate.errors);
@@ -1103,23 +1376,23 @@ function hideLoading() {
 // Add a new site
 function addNewSite() {
     // Create new empty site
-    const newSite = createEmptyObject(schema.properties.site.items);
+    const newSite = createEmptyObject(schema.properties.sites.items);
 
     // Set default name
-    newSite.name = `Site ${configData.site.length + 1}`;
+    newSite.name = `Site ${configData.sites.length + 1}`;
 
     // Add to config data
-    configData.site.push(newSite);
+    configData.sites.push(newSite);
 
     // Regenerate site fields
     const siteContainer = document.getElementById('site-form-container');
-    generateArrayFields(schema.properties.site, configData.site, siteContainer, 'site');
+    generateArrayFields(schema.properties.sites, configData.sites, siteContainer, 'sites');
 
     // Update preview
     updatePreview();
 
     // Activate the new site tab
-    const newSiteIndex = configData.site.length - 1;
+    const newSiteIndex = configData.sites.length - 1;
     const newSiteTab = document.getElementById(`site-${newSiteIndex}-tab`);
     if (newSiteTab) {
         newSiteTab.click();
@@ -1128,18 +1401,18 @@ function addNewSite() {
 
 // Remove a site
 function removeSite(index) {
-    if (configData.site.length <= 1) {
+    if (configData.sites.length <= 1) {
         alert('Cannot remove the last site. At least one site is required.');
         return;
     }
 
-    if (confirm(`Are you sure you want to remove site "${configData.site[index].name || `Site ${index + 1}`}"?`)) {
+    if (confirm(`Are you sure you want to remove site "${configData.sites[index].name || `Site ${index + 1}`}"?`)) {
         // Remove from config data
-        configData.site.splice(index, 1);
+        configData.sites.splice(index, 1);
 
         // Regenerate site fields
         const siteContainer = document.getElementById('site-form-container');
-        generateArrayFields(schema.properties.site, configData.site, siteContainer, 'site');
+        generateArrayFields(schema.properties.sites, configData.sites, siteContainer, 'sites');
 
         // Update preview
         updatePreview();
@@ -1874,24 +2147,24 @@ function generateSiteFields() {
     container.innerHTML = '';
 
     // Check if schema is available
-    if (!schema || !schema.properties || !schema.properties.site) {
+    if (!schema || !schema.properties || !schema.properties.sites) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'alert alert-danger';
-        errorDiv.textContent = 'Schema for site not found';
+        errorDiv.textContent = 'Schema for sites not found';
         container.appendChild(errorDiv);
-        console.error('Schema for site not found', schema);
+        console.error('Schema for sites not found', schema);
         return;
     }
 
-    const siteSchema = schema.properties.site;
+    const siteSchema = schema.properties.sites;
 
-    // Initialize site array if it doesn't exist
-    if (!configData.site) {
-        configData.site = [createEmptyObject(siteSchema.items)];
+    // Initialize sites array if it doesn't exist
+    if (!configData.sites) {
+        configData.sites = [createEmptyObject(siteSchema.items)];
     }
 
-    // Generate array fields for site
-    generateArrayFields(siteSchema, configData.site, container, 'site');
+    // Generate array fields for sites
+    generateArrayFields(siteSchema, configData.sites, container, 'sites');
 
     console.log('Site fields generation completed');
 }

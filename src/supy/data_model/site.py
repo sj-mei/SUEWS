@@ -69,11 +69,11 @@ class Conductance(BaseModel):
     )
     g_q_base: FlexibleRefValue(float) = Field(
         default=0.03,
-        description="Base value for conductance parameter related to vapor pressure deficit", json_schema_extra={"unit": "kPa^-1"}
+        description="Base value for conductance parameter related to vapour pressure deficit", json_schema_extra={"unit": "kPa^-1"}
     )
     g_q_shape: FlexibleRefValue(float) = Field(
         default=0.9,
-        description="Shape parameter for conductance related to vapor pressure deficit", json_schema_extra={"unit": "dimensionless"}
+        description="Shape parameter for conductance related to vapour pressure deficit", json_schema_extra={"unit": "dimensionless"}
     )
     g_t: FlexibleRefValue(float) = Field(
         default=30.0,
