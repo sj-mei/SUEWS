@@ -24,7 +24,7 @@ def test_suews_config_basic():
     """Test basic SUEWSConfig functionality works."""
     config = SUEWSConfig()
     assert config.name == "sample config"
-    assert hasattr(config.model.physics, 'diagmethod')
+    assert hasattr(config.model.physics, 'rslmethod')
     
     # Test to_df_state works
     df_state = config.to_df_state()
@@ -47,24 +47,24 @@ def test_suews_config_enhanced_methods():
     assert df_state1.shape == df_state2.shape
 
 
-def test_suews_config_different_diagmethods():
-    """Test SUEWSConfig with different diagmethod settings."""
+def test_suews_config_different_rslmethods():
+    """Test SUEWSConfig with different rslmethod settings."""
     
     # Test MOST method
     config_most = SUEWSConfig()
-    config_most.model.physics.diagmethod = RefValue(DiagMethod.MOST)
+    config_most.model.physics.rslmethod = RefValue(RSLMethod.MOST)
     df_most = config_most.to_df_state(use_conditional_validation=True)
     assert df_most is not None
     
     # Test RST method
     config_rst = SUEWSConfig()
-    config_rst.model.physics.diagmethod = RefValue(DiagMethod.RST)
+    config_rst.model.physics.rslmethod = RefValue(RSLMethod.RST)
     df_rst = config_rst.to_df_state(use_conditional_validation=True)
     assert df_rst is not None
     
     # Test VARIABLE method
     config_var = SUEWSConfig()
-    config_var.model.physics.diagmethod = RefValue(DiagMethod.VARIABLE)
+    config_var.model.physics.rslmethod = RefValue(RSLMethod.VARIABLE)
     df_var = config_var.to_df_state(use_conditional_validation=True)
     assert df_var is not None
 
@@ -77,7 +77,7 @@ description: "Basic test configuration"
 
 model:
   physics:
-    diagmethod: 
+    rslmethod: 
       value: 0
     roughlenmommethod: 
       value: 1
@@ -163,7 +163,7 @@ def test_backward_compatibility():
 name: "Compatibility Test"
 model:
   physics:
-    diagmethod: 
+    rslmethod: 
       value: 2
 site:
   - gridiv: 1
@@ -220,7 +220,7 @@ def test_comprehensive_method_combinations():
     """Test various combinations of physics methods."""
     # Test MOST + OHM + Standard NetRad
     config1 = SUEWSConfig()
-    config1.model.physics.diagmethod = RefValue(DiagMethod.MOST)
+    config1.model.physics.rslmethod = RefValue(RSLMethod.MOST)
     config1.model.physics.storageheatmethod = RefValue(1)
     config1.model.physics.ohmincqf = RefValue(0)
     config1.model.physics.netradiationmethod = RefValue(3)
@@ -229,7 +229,7 @@ def test_comprehensive_method_combinations():
     
     # Test RST + ESTM + SPARTACUS
     config2 = SUEWSConfig()
-    config2.model.physics.diagmethod = RefValue(DiagMethod.RST)
+    config2.model.physics.rslmethod = RefValue(RSLMethod.RST)
     config2.model.physics.storageheatmethod = RefValue(4)
     config2.model.physics.netradiationmethod = RefValue(1002)
     df2 = config2.to_df_state(use_conditional_validation=True)
@@ -251,11 +251,11 @@ def test_integration_summary():
     print(f"✅ Enhanced to_df_state: shape {df_enhanced.shape}")
     
     # Test 3: Different diagnostic methods work
-    for method in [DiagMethod.MOST, DiagMethod.RST, DiagMethod.VARIABLE]:
+    for method in [RSLMethod.MOST, RSLMethod.RST, RSLMethod.VARIABLE]:
         config_test = SUEWSConfig()
-        config_test.model.physics.diagmethod = RefValue(method)
+        config_test.model.physics.rslmethod = RefValue(method)
         df_test = config_test.to_df_state(use_conditional_validation=True)
-        print(f"✅ {method.name} diagmethod: shape {df_test.shape}")
+        print(f"✅ {method.name} rslmethod: shape {df_test.shape}")
     
     # Test 4: Different storage heat methods
     for storage_method, ohmincqf in [(1, 0), (2, 1), (4, 0)]:
@@ -277,7 +277,7 @@ def test_integration_summary():
 name: "Comprehensive Test"
 model:
   physics:
-    diagmethod: 
+    rslmethod: 
       value: 0
     storageheatmethod:
       value: 1
