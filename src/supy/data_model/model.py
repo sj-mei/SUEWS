@@ -543,6 +543,12 @@ class ModelPhysics(BaseModel):
 
         for attr in list_attr:
             try:
+                if attr == "rslmethod":
+                    properties[attr] = RefValue(int(df.loc[grid_id, ("diagmethod", "0")]))
+                    continue
+                if attr == "rsllevel":
+                    properties[attr] = RefValue(int(df.loc[grid_id, ("localclimatemethod", "0")]))
+                    continue
                 properties[attr] = RefValue(int(df.loc[grid_id, (attr, "0")]))
             except KeyError:
                 raise ValueError(f"Missing attribute '{attr}' in the DataFrame")
