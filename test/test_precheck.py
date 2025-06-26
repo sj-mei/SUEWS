@@ -7,10 +7,16 @@ from supy.data_model.core import (
     precheck_site_season_adjustments,
     SeasonCheck,
 )
-
 import tempfile
 import yaml
+import os
 
+def save_temp_yaml(yaml_input):
+    tmp = tempfile.NamedTemporaryFile("w", suffix=".yml", delete=False)
+    yaml.dump(yaml_input, tmp, sort_keys=False)
+    tmp_path = tmp.name
+    tmp.close()
+    return tmp_path
 
 def test_precheck_start_end_date_valid_from_yaml():
     yaml_input = {
@@ -112,11 +118,12 @@ def test_diagmethod_stability_constraint_fails():
         "sites": [{}],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
         with pytest.raises(ValueError, match=r"If diagmethod == 2.*must be 3"):
-            run_precheck(tmp.name)
+            run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
 
 
 
@@ -147,11 +154,12 @@ def test_model_physics_not_touched_by_empty_string_cleanup():
         "sites": [{"gridiv": 1, "properties": {"lat": {"value": 51.5}}}],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
         with pytest.raises(ValueError, match=r"Empty or null values for"):
-            run_precheck(tmp.name)
+            run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
 
 
 def test_empty_string_becomes_none():
@@ -193,10 +201,11 @@ def test_empty_string_becomes_none():
         ],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
-        result = run_precheck(tmp.name)
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
+        result = run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
 
     assert result["sites"][0]["site_name"] is None
     assert result["sites"][0]["properties"]["lat"]["value"] is None
@@ -241,12 +250,14 @@ def test_empty_string_in_list_of_floats():
         ],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
-        result = run_precheck(tmp.name)
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
+        result = run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
 
     assert result["sites"][0]["properties"]["thermal_layers"]["dz"]["value"][1] is None
+
 
 
 def test_empty_string_in_nested_dict():
@@ -291,12 +302,14 @@ def test_empty_string_in_nested_dict():
         ],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
-        result = run_precheck(tmp.name)
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
+        result = run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
 
     assert result["sites"][0]["properties"]["ohm_coef"]["summer_dry"]["a1"]["value"] is None
+
 
 
 def test_empty_string_in_surface_type_dict():
@@ -339,12 +352,14 @@ def test_empty_string_in_surface_type_dict():
         ],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
-        result = run_precheck(tmp.name)
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
+        result = run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
 
     assert result["sites"][0]["properties"]["waterdist"]["to_grass"]["value"] is None
+
 
 
 def test_season_check_sets_snowalb_to_none():
@@ -727,11 +742,13 @@ def test_diagmethod2_requires_faibldg_null_raises():
         ],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
         with pytest.raises(ValueError, match=r"faibldg.*must be set and non-null"):
-            run_precheck(tmp.name)
+            run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
+
 
 def test_diagmethod2_requires_faibldg_passes_if_present():
     yaml_input = {
@@ -770,9 +787,11 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
         ],
     }
 
-    with tempfile.NamedTemporaryFile("w+", suffix=".yml") as tmp:
-        yaml.dump(yaml_input, tmp, sort_keys=False)
-        tmp.flush()
-        result = run_precheck(tmp.name)
+    tmp_path = save_temp_yaml(yaml_input)
+    try:
+        result = run_precheck(tmp_path)
+    finally:
+        os.remove(tmp_path)
 
     assert result["sites"][0]["properties"]["faibldg"]["value"] == 1.5
+
