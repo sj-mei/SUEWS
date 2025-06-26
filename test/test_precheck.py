@@ -8,6 +8,7 @@ from supy.data_model.core import (
     precheck_diagmethod,
     precheck_replace_empty_strings_with_none,
     precheck_land_cover_fractions,
+    precheck_nullify_zero_sfr_params,
     SeasonCheck,
 )
 
@@ -760,4 +761,54 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
     assert result["sites"][0]["properties"]["land_cover"]["bldgs"]["faibldg"]["value"] == 1.5
 
 
+def test_precheck_nullify_zero_sfr_params_nullifies_correctly():
+    yaml_input = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {"sfr": {"value": 0.0}, "alb": {"value": 0.12}, "irrfrac": {"value": 0.0}},
+                        "paved": {"sfr": {"value": 0.5}, "alb": {"value": 0.1}},
+                    },
+                    "faibldg": {"value": 1.2},
+                    "waterdist": {"to_bldgs": {"value": 0.3}},
+                }
+            }
+        ]
+    }
+
+    result = precheck_nullify_zero_sfr_params(deepcopy(yaml_input))
+    site_props = result["sites"][0]["properties"]
+
+    # All params under bldgs except sfr should now be None
+    assert site_props["land_cover"]["bldgs"]["sfr"]["value"] == 0.0
+    assert site_props["land_cover"]["bldgs"]["alb"]["value"] is None
+    assert site_props["land_cover"]["bldgs"]["irrfrac"]["value"] is None
+
+    # Params under paved should remain untouched
+    assert site_props["land_cover"]["paved"]["alb"]["value"] == 0.1
+
+    # faibldg should remain untouched (it's outside land_cover.bldgs)
+    assert site_props["faibldg"]["value"] == 1.2
+
+def test_precheck_nullify_zero_sfr_params_does_nothing_if_all_nonzero():
+    yaml_input = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {"sfr": {"value": 0.5}, "alb": {"value": 0.12}},
+                        "paved": {"sfr": {"value": 0.5}, "alb": {"value": 0.1}},
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_nullify_zero_sfr_params(deepcopy(yaml_input))
+    site_props = result["sites"][0]["properties"]
+
+    # Everything should remain untouched
+    assert site_props["land_cover"]["bldgs"]["alb"]["value"] == 0.12
+    assert site_props["land_cover"]["paved"]["alb"]["value"] == 0.1
 

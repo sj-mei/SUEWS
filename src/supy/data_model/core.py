@@ -361,6 +361,33 @@ def precheck_land_cover_fractions(data: dict) -> dict:
 
     return data
 
+def precheck_nullify_zero_sfr_params(data: dict) -> dict:
+    """For each site, nullify all land_cover parameters for surfaces with sfr == 0."""
+    for site_idx, site in enumerate(data.get("sites", [])):
+        land_cover = site.get("properties", {}).get("land_cover", {})
+        for surf_type, props in land_cover.items():
+            sfr = props.get("sfr", {}).get("value", 0)
+            if sfr == 0:
+                logger_supy.info(f"[site #{site_idx}] Nullifying params for surface '{surf_type}' with sfr == 0")
+                for param_key, param_val in props.items():
+                    if param_key == "sfr":
+                        continue
+                    # Nullify simple params
+                    if isinstance(param_val, dict) and "value" in param_val:
+                        param_val["value"] = None
+                    # Nullify nested blocks (like ohm_coef, thermal_layers etc)
+                    elif isinstance(param_val, dict):
+                        def recursive_nullify(d):
+                            for k, v in d.items():
+                                if isinstance(v, dict):
+                                    if "value" in v:
+                                        v["value"] = None
+                                    else:
+                                        recursive_nullify(v)
+                        recursive_nullify(param_val)
+    return data
+
+
 def precheck_diagmethod(data: dict) -> dict:
     physics = data.get("model", {}).get("physics", {})
     diagmethod = physics.get("diagmethod", {}).get("value")
@@ -383,8 +410,6 @@ def precheck_diagmethod(data: dict) -> dict:
 
     logger_supy.info("[precheck] faibldg check for diagmethod==2 passed.")
     return data
-
-
 
 
 def run_precheck(path: str) -> dict:
@@ -415,10 +440,13 @@ def run_precheck(path: str) -> dict:
     # ---- Step 7: Land Cover Fractions checks & adjustments ----
     data = precheck_land_cover_fractions(data)
 
-    # ---- Step 8: Rules associated to selected model options ----
+    # ---- Step 8: Nullify params for surfaces with sfr == 0 ----
+    data = precheck_nullify_zero_sfr_params(data)
+
+    # ---- Step 9: Rules associated to selected model options ----
     data = precheck_diagmethod(data)
 
-    # ---- Step 9: Save output YAML ----
+    # ---- Step 10: Save output YAML ----
     output_filename = f"py0_{os.path.basename(path)}"
     output_path = os.path.join(os.path.dirname(path), output_filename)
 
@@ -427,7 +455,7 @@ def run_precheck(path: str) -> dict:
 
     logger_supy.info(f"Precheck complete. Saved output to: {output_path}\n")
 
-    # ---- Step 10: Print completion ----
+    # ---- Step 11: Print completion ----
     logger_supy.info("Precheck complete.\n")
     return data
 
