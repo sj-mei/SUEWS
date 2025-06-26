@@ -726,6 +726,34 @@ class InitialStates(BaseModel):
         description="Heating degree days and meteorological tracking parameters"
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def convert_hdd_id_from_list(cls, data):
+        """Convert legacy list format for hdd_id to HDD_ID object."""
+        if isinstance(data, dict) and "hdd_id" in data:
+            hdd_value = data["hdd_id"]
+            if isinstance(hdd_value, list):
+                # Convert from legacy list format to HDD_ID object
+                if len(hdd_value) >= 12:
+                    data["hdd_id"] = {
+                        "hdd_accum": hdd_value[0],
+                        "cdd_accum": hdd_value[1],
+                        "temp_accum": hdd_value[2],
+                        "min_temp_daily": hdd_value[3],
+                        "max_temp_daily": hdd_value[4],
+                        "precip_accum": hdd_value[5],
+                        "hdd_prev": hdd_value[6],
+                        "cdd_prev": hdd_value[7],
+                        "temp_avg_prev": hdd_value[8],
+                        "min_temp_prev": hdd_value[9],
+                        "max_temp_prev": hdd_value[10],
+                        "precip_total_prev": hdd_value[11]
+                    }
+                else:
+                    # If list is too short, create default HDD_ID
+                    data["hdd_id"] = {}
+        return data
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
         df_state = init_df_state(grid_id)
