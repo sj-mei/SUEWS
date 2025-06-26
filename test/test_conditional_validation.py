@@ -16,7 +16,7 @@ import warnings
 
 # Basic imports that should always work
 from supy.data_model import SUEWSConfig
-from supy.data_model.model import DiagMethod, RoughnessMethod
+from supy.data_model.model import RSLMethod, RoughnessMethod
 from supy.data_model.type import RefValue
 
 # Test if enhanced functionality is working
