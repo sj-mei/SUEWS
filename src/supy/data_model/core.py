@@ -376,13 +376,14 @@ def precheck_diagmethod(data: dict) -> dict:
         sfr = bldgs.get("sfr", {}).get("value", 0)
 
         if sfr > 0:
-            faibldg = props.get("faibldg", {})
+            faibldg = bldgs.get("faibldg", {})
             faibldg_value = faibldg.get("value")
             if faibldg_value in (None, "", []):
                 raise ValueError(f"[site #{i}] For diagmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
 
     logger_supy.info("[precheck] faibldg check for diagmethod==2 passed.")
     return data
+
 
 
 
@@ -417,7 +418,16 @@ def run_precheck(path: str) -> dict:
     # ---- Step 8: Rules associated to selected model options ----
     data = precheck_diagmethod(data)
 
-    # ---- Step 9: Print completion ----
+    # ---- Step 9: Save output YAML ----
+    output_filename = f"py0_{os.path.basename(path)}"
+    output_path = os.path.join(os.path.dirname(path), output_filename)
+
+    with open(output_path, "w") as f:
+        yaml.dump(data, f, sort_keys=False, allow_unicode=True)
+
+    logger_supy.info(f"Precheck complete. Saved output to: {output_path}\n")
+
+    # ---- Step 10: Print completion ----
     logger_supy.info("Precheck complete.\n")
     return data
 

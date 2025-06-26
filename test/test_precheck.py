@@ -699,10 +699,12 @@ def test_diagmethod2_requires_faibldg_null_raises():
             {
                 "properties": {
                     "land_cover": {
-                        "bldgs": {"sfr": {"value": 0.5}},
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "faibldg": {"value": None},  # Correct position under bldgs
+                        },
                         "paved": {"sfr": {"value": 0.5}},
-                    },
-                    "faibldg": {"value": None},  # Explicit null
+                    }
                 }
             }
         ],
@@ -710,6 +712,7 @@ def test_diagmethod2_requires_faibldg_null_raises():
 
     with pytest.raises(ValueError, match=r"faibldg.*must be set and non-null"):
         precheck_diagmethod(yaml_input)
+
 
 
 
@@ -741,10 +744,12 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
             {
                 "properties": {
                     "land_cover": {
-                        "bldgs": {"sfr": {"value": 0.5}},
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "faibldg": {"value": 1.5},  # Correct position under bldgs
+                        },
                         "paved": {"sfr": {"value": 0.5}},
-                    },
-                    "faibldg": {"value": 1.5},
+                    }
                 }
             }
         ],
@@ -752,6 +757,7 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
 
     result = precheck_diagmethod(yaml_input)
 
-    assert result["sites"][0]["properties"]["faibldg"]["value"] == 1.5
+    assert result["sites"][0]["properties"]["land_cover"]["bldgs"]["faibldg"]["value"] == 1.5
+
 
 
