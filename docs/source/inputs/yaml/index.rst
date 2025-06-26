@@ -15,6 +15,7 @@ A SUEWS YAML configuration file is organized into two main sections:
 
 For a complete working example, please refer to the sample `config_suews.yml` file provided with SuPy.
 
+
 Data Files
 ----------
 
@@ -27,6 +28,7 @@ In addition to the YAML configuration file, SUEWS works with input and output da
 - **Model results**: Time-series output files specified by ``model.control.output_file``
 
 For detailed information about:
+
 - **Input data format and variables**: see :ref:`met_input`
 - **Output file formats and variables**: see :ref:`output_files`
 
@@ -40,7 +42,7 @@ Configuration Builder (Experimental)
    📝 **Access the builder**: `SUEWS Configuration Builder <../../_static/index.html>`__
 
    .. warning::
-      
+
       **Beta Status**: This configuration builder is currently in development and has not been fully tested. Please verify generated configurations carefully before use.
 
    Features:
@@ -49,13 +51,20 @@ Configuration Builder (Experimental)
    - Basic validation for parameter values
    - YAML file export functionality
    - Integrated parameter documentation
-   
+
    **Alternative**: You can also create YAML files manually using the schema documentation below or by adapting the sample configuration files provided with SuPy.
 
 Data Model Schema
 -----------------
 
 The following pages provide a detailed reference for every component of the YAML data model. Each page corresponds to a specific parameter group and details its available keys, expected data types, units, and default values.
+
+**Key Features of the Schema Documentation:**
+
+- **Clear Method Descriptions**: All model physics methods now include explicit explanations of what each numeric option represents (e.g., 0=MOST, 1=RST, 2=VARIABLE for diagnostic methods)
+- **Comprehensive Parameter Documentation**: Every parameter includes its purpose, units, default values, and constraints
+- **Hierarchical Organization**: The schema is organized hierarchically, with top-level components (model, site) linking to detailed sub-components
+- **Cross-References**: Related parameters and methods are cross-referenced for easier navigation
 
 .. toctree::
    :maxdepth: 2

@@ -8,6 +8,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - When using gh cli, first check remotes, only keep original - remove others
 
+## Style and Language Guidelines
+
+- Any human writing in this project should use British English - docs/code annotations etc
+
 ## Testing Resources
 
 ### Benchmark Test Files
