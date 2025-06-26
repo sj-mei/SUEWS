@@ -2,8 +2,7 @@ from typing import Optional, Union, List, Literal, Type
 import pandas as pd
 from pydantic import ConfigDict, BaseModel, Field, field_validator, model_validator, PrivateAttr
 
-from .type import RefValue, Reference, FlexibleRefValue, init_df_state
-from .site import SurfaceType
+from .type import RefValue, Reference, FlexibleRefValue, init_df_state, SurfaceType
 
 
 

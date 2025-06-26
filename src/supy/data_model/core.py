@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import yaml
 import ast
-import supy as sp
 
 from .model import Model
 from .site import Site, SiteProperties, InitialStates, LandCover

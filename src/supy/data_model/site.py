@@ -570,10 +570,9 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
     )
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
     waterdist: WaterDistribution = Field(
-        default_factory=lambda: WaterDistribution(SurfaceType.EVETR,
-        json_schema_extra={"display_name": "Water Distribution"}
-    ),
+        default_factory=lambda: WaterDistribution(SurfaceType.EVETR),
         description="Water distribution for evergreen trees",
+        json_schema_extra={"display_name": "Water Distribution"}
     )
 
     ref: Optional[Reference] = None
@@ -656,10 +655,9 @@ class DectrProperties(VegetatedSurfaceProperties):
     )
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
     waterdist: WaterDistribution = Field(
-        default_factory=lambda: WaterDistribution(SurfaceType.DECTR,
-        json_schema_extra={"display_name": "Water Distribution"}
-    ),
+        default_factory=lambda: WaterDistribution(SurfaceType.DECTR),
         description="Water distribution for deciduous trees",
+        json_schema_extra={"display_name": "Water Distribution"}
     )
 
     ref: Optional[Reference] = None
@@ -727,10 +725,9 @@ class GrassProperties(VegetatedSurfaceProperties):
     )
     _surface_type: Literal[SurfaceType.GRASS] = SurfaceType.GRASS
     waterdist: WaterDistribution = Field(
-        default_factory=lambda: WaterDistribution(SurfaceType.GRASS,
-        json_schema_extra={"display_name": "Water Distribution"}
-    ),
+        default_factory=lambda: WaterDistribution(SurfaceType.GRASS),
         description="Water distribution for grass",
+        json_schema_extra={"display_name": "Water Distribution"}
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
