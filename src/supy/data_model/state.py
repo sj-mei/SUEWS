@@ -597,19 +597,19 @@ class InitialStates(BaseModel):
         description="Initial states for wall layers",
     )
 
-    dqndt: float = Field(default=0, description="Change in net radiation")
-    dqnsdt: float = Field(default=0, description="Change in net shortwave radiation")
-    dt_since_start: float = Field(default=0, description="Time since start")
-    lenday_id: int = Field(default=0, description="Length of the day ID")
-    qn_av: float = Field(default=0, description="Average net radiation")
-    qn_s_av: float = Field(default=0, description="Average net shortwave radiation")
-    tair_av: float = Field(default=0, description="Average air temperature")
-    tmax_id: float = Field(default=0, description="Maximum temperature ID")
-    tmin_id: float = Field(default=0, description="Minimum temperature ID")
-    tstep_prev: float = Field(default=0, description="Previous time step")
-    snowfallcum: float = Field(default=0, description="Cumulative snowfall")
+    dqndt: float = Field(default=0, description="Change in net radiation", json_schema_extra={"display_name": "Change in Net Radiation"})
+    dqnsdt: float = Field(default=0, description="Change in net shortwave radiation", json_schema_extra={"display_name": "Change in Net Shortwave Radiation"})
+    dt_since_start: float = Field(default=0, description="Time since start", json_schema_extra={"display_name": "Time Since Start"})
+    lenday_id: int = Field(default=0, description="Length of the day ID", json_schema_extra={"display_name": "Length of Day ID"})
+    qn_av: float = Field(default=0, description="Average net radiation", json_schema_extra={"display_name": "Average Net Radiation"})
+    qn_s_av: float = Field(default=0, description="Average net shortwave radiation", json_schema_extra={"display_name": "Average Net Shortwave Radiation"})
+    tair_av: float = Field(default=0, description="Average air temperature", json_schema_extra={"display_name": "Average Air Temperature"})
+    tmax_id: float = Field(default=0, description="Maximum temperature ID", json_schema_extra={"display_name": "Maximum Temperature ID"})
+    tmin_id: float = Field(default=0, description="Minimum temperature ID", json_schema_extra={"display_name": "Minimum Temperature ID"})
+    tstep_prev: float = Field(default=0, description="Previous time step", json_schema_extra={"display_name": "Previous Time Step"})
+    snowfallcum: float = Field(default=0, description="Cumulative snowfall", json_schema_extra={"display_name": "Cumulative Snowfall"})
     hdd_id: List[float] = Field(
-        default=[0] * 12, description="Heating degree days ID"
+        default=[0] * 12, description="Heating degree days ID", json_schema_extra={"display_name": "Heating Degree Days ID"}
     )
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
