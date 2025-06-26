@@ -343,6 +343,7 @@ class ModelPhysics(BaseModel):
     Model physics configuration options.
     
     Key method interactions:
+    
     - diagmethod: Determines HOW near-surface values (2m temp, 10m wind) are calculated from forcing data
     - stabilitymethod: Provides stability correction functions used BY diagmethod calculations  
     - localclimatemethod: Uses the near-surface values FROM diagmethod to modify vegetation processes
@@ -350,7 +351,7 @@ class ModelPhysics(BaseModel):
     """
     netradiationmethod: FlexibleRefValue(NetRadiationMethod) = Field(
         default=NetRadiationMethod.LDOWN_AIR,
-        description="Method for calculating net all-wave radiation (Q*). Options: 0 (OBSERVED) = Uses observed Q* from forcing file; 1 (LDOWN_OBSERVED) = Models Q* using observed L↓; 2 (LDOWN_CLOUD) = Models Q* with L↓ from cloud cover; 3 (LDOWN_AIR) = Models Q* with L↓ from air temp and RH (recommended); 11-13 = Surface temp variants (not recommended); 100-300 = Zenith angle variants; 1001-1003 = SPARTACUS-Surface variants (experimental)",
+        description="Method for calculating net all-wave radiation (Q*). Options: 0 (OBSERVED) = Uses observed Q* from forcing file; 1 (LDOWN_OBSERVED) = Models Q* using observed L↓; 2 (LDOWN_CLOUD) = Models Q* with L↓ from cloud cover; 3 (LDOWN_AIR) = Models Q* with L↓ from air temp and RH (recommended); 11 (LDOWN_SURFACE) = Surface temp variant of method 1 (not recommended); 12 (LDOWN_CLOUD_SURFACE) = Surface temp variant of method 2 (not recommended); 13 (LDOWN_AIR_SURFACE) = Surface temp variant of method 3 (not recommended); 100 (LDOWN_ZENITH) = Zenith angle variant of method 1; 200 (LDOWN_CLOUD_ZENITH) = Zenith angle variant of method 2; 300 (LDOWN_AIR_ZENITH) = Zenith angle variant of method 3; 1001 (LDOWN_SS_OBSERVED) = SPARTACUS-Surface variant of method 1 (experimental); 1002 (LDOWN_SS_CLOUD) = SPARTACUS-Surface variant of method 2 (experimental); 1003 (LDOWN_SS_AIR) = SPARTACUS-Surface variant of method 3 (experimental)",
         json_schema_extra={"unit": "dimensionless"}
     )
     emissionsmethod: FlexibleRefValue(EmissionsMethod) = Field(
@@ -380,7 +381,7 @@ class ModelPhysics(BaseModel):
     )
     stabilitymethod: FlexibleRefValue(StabilityMethod) = Field(
         default=StabilityMethod.CAMPBELL_NORMAN,
-        description="Atmospheric stability correction functions for momentum and heat fluxes. Options: 0-1 = Reserved; 2 (HOEGSTROM) = Dyer/Högström formulations (not recommended); 3 (CAMPBELL_NORMAN) = Campbell & Norman 1998 formulations (recommended); 4 (BUSINGER_HOEGSTROM) = Businger/Högström formulations (not recommended)",
+        description="Atmospheric stability correction functions for momentum and heat fluxes. Options: 0 = Reserved; 1 = Reserved; 2 (HOEGSTROM) = Dyer/Högström formulations (not recommended); 3 (CAMPBELL_NORMAN) = Campbell & Norman 1998 formulations (recommended); 4 (BUSINGER_HOEGSTROM) = Businger/Högström formulations (not recommended)",
         json_schema_extra={"unit": "dimensionless"}
     )
     smdmethod: FlexibleRefValue(SMDMethod) = Field(

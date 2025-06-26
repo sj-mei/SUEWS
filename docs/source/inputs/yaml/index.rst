@@ -10,10 +10,31 @@ Overview
 
 A SUEWS YAML configuration file is organized into two main sections:
 
-1. **model**: Contains global settings that control the simulation, such as physics options, time stepping, and file paths.
-2. **sites**: A list of one or more sites to be simulated. Each site has its own set of properties, initial conditions, and land cover characteristics.
+1. :ref:`model <model>`: Contains global settings that control the simulation, such as physics options, time stepping, and file paths.
+2. :ref:`sites <site>`: A list of one or more sites to be simulated. Each site has its own set of properties, initial conditions, and land cover characteristics.
 
-For a complete working example, please refer to the sample `config_suews.yml` file provided with SuPy.
+Here's a minimal example of the YAML structure:
+
+.. code-block:: yaml
+
+   # SUEWS configuration file
+   model:
+     control:
+       tstep: 3600
+       forcing_file: "forcing.txt"
+     physics:
+       net_radiation_method: 3
+   
+   sites:
+     - name: "London_KCL"
+       latitude: 51.5115
+       longitude: -0.1160
+       land_cover:
+         paved: 0.38
+         bldgs: 0.37
+         grass: 0.14
+
+For a complete working example, please refer to the `sample configuration file <https://github.com/UMEP-dev/SUEWS/blob/master/src/supy/sample_run/sample_config.yml>`_ provided with SuPy.
 
 
 Data Files
@@ -22,10 +43,10 @@ Data Files
 In addition to the YAML configuration file, SUEWS works with input and output data files:
 
 **Input Data:**
-- **Forcing data**: Meteorological time-series data file specified by ``model.control.forcing_file``
+- **Forcing data**: Meteorological time-series data file specified by :ref:`model.control.forcing_file <modelcontrol>`
 
 **Output Data:**
-- **Model results**: Time-series output files specified by ``model.control.output_file``
+- **Model results**: Time-series output files specified by :ref:`model.control.output_file <modelcontrol>`
 
 For detailed information about:
 
