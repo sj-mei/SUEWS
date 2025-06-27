@@ -127,7 +127,7 @@ jobs:
           path: versions_to_delete.txt
           retention-days: 1
 
-      - name: 'Attempt deletion with pypi-cleanup'
+      - name: 'Attempt batch deletion with pypi-cleanup'
         if: ${{ github.event.inputs.dry_run != 'true' && env.TEST_PYPI_API_TOKEN != '' }}
         continue-on-error: true
         run: |
@@ -155,11 +155,14 @@ jobs:
           echo "- The --version flag doesn't exist in pypi-cleanup"
           echo ""
           echo "Running alternative cleanup strategy..."
+          echo "Note: To avoid deleting all versions, consider manual deletion in batches"
+          echo "Visit: https://test.pypi.org/manage/project/${PACKAGE_NAME}/releases/"
           
           # Use regex to delete old dev versions (keeping recent ones)
           # This will delete dev versions older than what we want to keep
           PACKAGE_NAME="${{ github.event.inputs.package_name || 'supy' }}"
           VERSIONS_TO_KEEP="${{ github.event.inputs.versions_to_keep || '50' }}"
+          BATCH_SIZE="${{ github.event.inputs.batch_size || '10' }}"
           
           echo "Attempting to clean old dev versions..."
           pypi-cleanup \
