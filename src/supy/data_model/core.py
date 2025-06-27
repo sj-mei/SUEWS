@@ -520,8 +520,7 @@ def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
     )
     return data
 
-
-def precheck_diagmethod(data: dict) -> dict:
+def precheck_rslmethod(data: dict) -> dict:
     physics = data.get("model", {}).get("physics", {})
     rslmethod = physics.get("rslmethod", {}).get("value")
 
@@ -667,8 +666,8 @@ def run_precheck(path: str) -> dict:
     data = precheck_land_cover_fractions(data)
 
     # ---- Step 10: Rules associated to selected model options ----
-    data = precheck_diagmethod(data)
-    data = precheck_storageheatmethod(data)
+    data = precheck_rslmethod(data)
+    data = precheck_storageheatmethod(data) 
     data = precheck_stebbsmethod(data)
 
     # ---- Step 11: Save output YAML ----

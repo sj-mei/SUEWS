@@ -9,7 +9,7 @@ from supy.data_model.core import (
     precheck_land_cover_fractions,
     precheck_nullify_zero_sfr_params,
     precheck_nonzero_sfr_requires_nonnull_params,
-    precheck_diagmethod,
+    precheck_rslmethod,
     precheck_storageheatmethod,
     precheck_stebbsmethod,
     SeasonCheck,
@@ -88,7 +88,7 @@ def test_model_physics_empty_value_raises():
         precheck_model_physics_params(yaml_input)
 
 
-def test_diagmethod_stability_constraint_fails():
+def test_rslmethod_stability_constraint_fails():
     yaml_input = {
         "model": {
             "control": {"start_time": "2025-01-01", "end_time": "2025-12-31"},
@@ -691,8 +691,7 @@ def test_land_cover_invalid_structure_raises():
     with pytest.raises(ValueError, match="Invalid land_cover"):
         precheck_land_cover_fractions(deepcopy(data))
 
-
-def test_diagmethod2_requires_faibldg_null_raises():
+def test_rslmethod2_requires_faibldg_null_raises():
     yaml_input = {
         "model": {
             "control": {
@@ -732,10 +731,12 @@ def test_diagmethod2_requires_faibldg_null_raises():
     }
 
     with pytest.raises(ValueError, match=r"faibldg.*must be set and non-null"):
-        precheck_diagmethod(yaml_input)
+        precheck_rslmethod(yaml_input)
 
 
-def test_diagmethod2_requires_faibldg_passes_if_present():
+
+
+def test_rslmethod2_requires_faibldg_passes_if_present():
     yaml_input = {
         "model": {
             "control": {
@@ -774,7 +775,7 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
         ],
     }
 
-    result = precheck_diagmethod(yaml_input)
+    result = precheck_rslmethod(yaml_input)
 
     assert (
         result["sites"][0]["properties"]["land_cover"]["bldgs"]["faibldg"]["value"]
