@@ -18,6 +18,10 @@ on:
         description: 'Number of old versions to delete per run'
         required: false
         default: '10'
+      target_month:
+        description: 'Specific year.month to delete (e.g., 2025.1) or leave empty for auto'
+        required: false
+        default: ''
       dry_run:
         description: 'Perform a dry run (show what would be deleted without deleting)'
         required: false
@@ -165,19 +169,50 @@ jobs:
           BATCH_SIZE="${{ github.event.inputs.batch_size || '10' }}"
           
           echo "Attempting to clean old dev versions..."
-          pypi-cleanup \
-                       -p "$PACKAGE_NAME" \
-                       -t https://test.pypi.org/ \
-                       -r '.*\.dev[0-9]+$' \
-                       --query-only || echo "Query failed"
           
-          # For actual deletion, uncomment below and remove --query-only above:
-          # pypi-cleanup -u __token__ \
-          #              -p "$PACKAGE_NAME" \
-          #              -t https://test.pypi.org/ \
-          #              -r '.*\.dev[0-9]+$' \
-          #              --do-it \
-          #              --yes
+          TARGET_MONTH="${{ github.event.inputs.target_month || '' }}"
+          
+          if [[ -n "$TARGET_MONTH" ]]; then
+            # Specific month targeted
+            echo "Targeting specific month: $TARGET_MONTH"
+            ESCAPED_MONTH=$(echo "$TARGET_MONTH" | sed 's/\./\\./g')
+            PATTERN="${ESCAPED_MONTH}\\..*\\.dev[0-9]+$"
+            
+            echo "Pattern: $PATTERN"
+            
+            if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+              echo "🔍 Query mode - checking what would be deleted..."
+              pypi-cleanup \
+                           -p "$PACKAGE_NAME" \
+                           -t https://test.pypi.org/ \
+                           -r "$PATTERN" \
+                           --query-only
+            else
+              echo "⚠️  DELETING all $TARGET_MONTH dev versions..."
+              pypi-cleanup \
+                           -p "$PACKAGE_NAME" \
+                           -t https://test.pypi.org/ \
+                           -r "$PATTERN" \
+                           --do-it \
+                           --yes
+            fi
+          else
+            # Auto mode - check multiple old months
+            echo "Auto mode - checking older months (2025.1 through 2025.5)"
+            
+            for MONTH in 1 2 3 4 5; do
+              echo ""
+              echo "Checking 2025.$MONTH.* dev versions..."
+              pypi-cleanup \
+                           -p "$PACKAGE_NAME" \
+                           -t https://test.pypi.org/ \
+                           -r "2025\.$MONTH\..*\.dev[0-9]+$" \
+                           --query-only || echo "No matches for 2025.$MONTH.*"
+            done
+            
+            echo ""
+            echo "💡 To delete a specific month, run again with target_month parameter"
+          fi
         env:
           PYPI_CLEANUP_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
           TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
