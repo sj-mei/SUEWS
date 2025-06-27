@@ -25,6 +25,10 @@ import pandas as pd
 import yaml
 import ast
 
+import csv
+import os
+from copy import deepcopy
+
 from .model import Model
 from .site import Site, SiteProperties, InitialStates, LandCover
 from .type import SurfaceType
@@ -171,6 +175,51 @@ class DLSCheck(BaseModel):
             end = find_transition(3) or find_transition(4)
 
         return start, end, utc_offset_hours
+
+def collect_yaml_differences(original: Any, updated: Any, path: str = "") -> List[dict]:
+    diffs = []
+
+    if isinstance(original, dict) and isinstance(updated, dict):
+        all_keys = set(original.keys()) | set(updated.keys())
+        for key in all_keys:
+            new_path = f"{path}.{key}" if path else key
+            orig_val = original.get(key, "__MISSING__")
+            updated_val = updated.get(key, "__MISSING__")
+            diffs.extend(collect_yaml_differences(orig_val, updated_val, new_path))
+
+    elif isinstance(original, list) and isinstance(updated, list):
+        max_len = max(len(original), len(updated))
+        for i in range(max_len):
+            orig_val = original[i] if i < len(original) else "__MISSING__"
+            updated_val = updated[i] if i < len(updated) else "__MISSING__"
+            new_path = f"{path}[{i}]"
+            diffs.extend(collect_yaml_differences(orig_val, updated_val, new_path))
+
+    else:
+        if original != updated:
+            # Extract site index
+            site = None
+            if "sites[" in path:
+                try:
+                    site = int(path.split("sites[")[1].split("]")[0])
+                except Exception:
+                    site = None
+
+            # Get param name: key before '.value' or the last part of the path
+            if ".value" in path:
+                param_name = path.split(".")[-2]
+            else:
+                param_name = path.split(".")[-1]
+
+            diffs.append({
+                "site": site,
+                "parameter": param_name,
+                "old_value": original,
+                "new_value": updated,
+                "reason": "Updated by precheck"
+            })
+
+    return diffs
 
 
 def precheck_printing(data: dict) -> dict:
@@ -528,7 +577,7 @@ def precheck_model_option_rules(data: dict) -> dict:
 
     physics = data.get("model", {}).get("physics", {})
     rslmethod = physics.get("rslmethod", {}).get("value")
-    storage_method = physics.get("storageheatmethod", {}).get("value")
+    storagemethod = physics.get("storageheatmethod", {}).get("value")
     stebbsmethod = physics.get("stebbsmethod", {}).get("value")
 
     # --- RSLMETHOD RULES (diagnostic method logic) ---
@@ -548,7 +597,7 @@ def precheck_model_option_rules(data: dict) -> dict:
                     raise ValueError(f"[site #{site_idx}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
 
     # --- STORAGEHEATMETHOD RULES (DyOHM logic) ---
-    if storage_method == 6:
+    if storagemethod == 6:
         logger_supy.info("[precheck] storageheatmethod==6 detected → checking wall thermal layers and lambda_c.")
 
         for site_idx, site in enumerate(data.get("sites", [])):
@@ -596,98 +645,13 @@ def precheck_model_option_rules(data: dict) -> dict:
     return data
 
 
-# def precheck_rslmethod(data: dict) -> dict:
-#     physics = data.get("model", {}).get("physics", {})
-#     rslmethod = physics.get("rslmethod", {}).get("value")
-
-#     if rslmethod != 2:
-#         logger_supy.debug("[precheck] rslmethod != 2, skipping faibldg check.")
-#         return data
-
-#     for i, site in enumerate(data.get("sites", [])):
-#         props = site.get("properties", {})
-#         land_cover = props.get("land_cover", {})
-#         bldgs = land_cover.get("bldgs", {})
-#         sfr = bldgs.get("sfr", {}).get("value", 0)
-
-#         if sfr > 0:
-#             faibldg = bldgs.get("faibldg", {})
-#             faibldg_value = faibldg.get("value")
-#             if faibldg_value in (None, "", []):
-#                 raise ValueError(f"[site #{i}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
-
-#     logger_supy.info("[precheck] faibldg check for rslmethod==2 passed.")
-#     return data
-
-# def precheck_storageheatmethod(data: dict) -> dict:
-#     """If storageheatmethod == 6, check required wall thermal properties and lambda_c.""" # <--- Placeholder: this case refers to DyOHM
-#     storage_method = data.get("model", {}).get("physics", {}).get("storageheatmethod", {}).get("value")
-
-#     if storage_method != 6:
-#         logger_supy.debug("[precheck] storageheatmethod != 6, skipping wall thermal layer checks.")
-#         return data
-
-#     for site_idx, site in enumerate(data.get("sites", [])):
-#         props = site.get("properties", {})
-#         vertical_layers = props.get("vertical_layers", {})
-#         walls = vertical_layers.get("walls", [])
-
-#         if not walls or not isinstance(walls, list) or len(walls) == 0:
-#             raise ValueError(f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6.")
-
-#         wall0 = walls[0]
-#         thermal = wall0.get("thermal_layers", {})
-
-#         for param in ["dz", "k", "cp"]:
-#             param_list = thermal.get(param, {}).get("value")
-#             if not isinstance(param_list, list) or len(param_list) == 0:
-#                 raise ValueError(f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6.")
-#             if param_list[0] in (None, ""):
-#                 raise ValueError(f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6.")
-
-#         lambda_c = props.get("lambda_c", {}).get("value")
-#         if lambda_c in (None, ""):
-#             raise ValueError(f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6.")
-
-#     logger_supy.info("[precheck] storageheatmethod == 6 → wall thermal layers and lambda_c check passed.")
-#     return data
-
-# def precheck_stebbsmethod(data: dict) -> dict:
-#     """
-#     If stebbsmethod == 0, nullify all parameters under each site's properties.stebbs block.
-#     """
-#     physics = data.get("model", {}).get("physics", {})
-#     stebbs_method = physics.get("stebbsmethod", {}).get("value")
-
-#     if stebbs_method != 0:
-#         logger_supy.info("[precheck] stebbsmethod != 0, skipping stebbs nullification.")
-#         return data
-
-#     logger_supy.info("[precheck] stebbsmethod == 0, nullifying stebbs parameters...")
-
-#     for site_idx, site in enumerate(data.get("sites", [])):
-#         props = site.get("properties", {})
-#         stebbs_block = props.get("stebbs", {})
-
-#         def recursive_nullify(d):
-#             for k, v in d.items():
-#                 if isinstance(v, dict):
-#                     if "value" in v:
-#                         v["value"] = None
-#                     else:
-#                         recursive_nullify(v)
-
-#         recursive_nullify(stebbs_block)
-#         site["properties"]["stebbs"] = stebbs_block
-
-#     return data
-
-
 def run_precheck(path: str) -> dict:
 
     # ---- Step 0: Load yaml from path into a dict ----
     with open(path, "r") as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
+
+    original_data = deepcopy(data)
 
     # ---- Step 1: Print start message ----
     data = precheck_printing(data)
@@ -736,7 +700,27 @@ def run_precheck(path: str) -> dict:
 
     logger_supy.info(f"Saved updated YAML file to: {output_path}")
 
-    # ---- Step 12: Print completion ----
+    # ---- Step 12: Generate precheck diff report CSV ----
+    diffs = collect_yaml_differences(original_data, data)
+
+    if diffs:
+        report_filename = f"precheck_report_{os.path.basename(path).replace('.yml', '.csv')}"
+        report_path = os.path.join(os.path.dirname(path), report_filename)
+
+        with open(report_path, "w", newline="") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=["site", "parameter", "old_value", "new_value", "reason"])
+            writer.writeheader()
+            for row in diffs:
+                for key in ["old_value", "new_value"]:
+                    if row[key] is None:
+                        row[key] = "null"
+                writer.writerow(row)
+
+        logger_supy.info(f"Precheck difference report saved to: {report_path}")
+    else:
+        logger_supy.info("No differences found between original and updated YAML.")
+
+    # ---- Step 13: Print completion ----
     logger_supy.info("Precheck complete.\n")
     return data
 
