@@ -61,7 +61,6 @@ Specific implementation details, gotchas, or important context
 - `path/to/file2.py`
 ```
 
-[... existing content remains unchanged ...]
 
 ## Git and GitHub Tips
 
