@@ -592,3 +592,6 @@ docs/source/_autosummary/
 docs/source/inputs/yaml/schema/*.rst
 
 .claude-parent-branch
+
+# Git worktrees directory for Claude Code access
+worktrees/
