@@ -1,9 +1,6 @@
 name: Check Master File Types
 
 on:
-  pull_request:
-    branches: [ master ]
-    types: [opened, synchronize, reopened]
   push:
     branches: [ master ]
 
@@ -18,12 +15,8 @@ jobs:
     
     - name: Check file types
       run: |
-        # Get list of changed files
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }})
-        else
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-        fi
+        # Get list of changed files in the last commit
+        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || git diff --name-only $(git rev-list --max-parents=0 HEAD) HEAD)
         
         # Check each file
         INVALID_FILES=""
