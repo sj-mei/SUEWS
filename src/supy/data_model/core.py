@@ -326,39 +326,44 @@ def precheck_land_cover_fractions(data: dict) -> dict:
         if not land_cover:
             raise ValueError(f"[site #{i}] Missing land_cover block.")
 
-        # Calculate sum of all surface fractions
+        # Calculate sum of all non-null surface fractions
         sfr_sum = sum(
             v.get("sfr", {}).get("value", 0)
             for v in land_cover.values()
-            if isinstance(v, dict)
+            if isinstance(v, dict) and v.get("sfr", {}).get("value") is not None
         )
 
         logger_supy.debug(f"[site #{i}] Total land_cover sfr sum: {sfr_sum:.6f}")
 
         # Auto-fix tiny floating point errors (epsilon ~0.0001)
         if 0.9999 <= sfr_sum < 1.0:
-            max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
+            max_key = max(
+                (k for k, v in land_cover.items() if v.get("sfr", {}).get("value") is not None),
+                key=lambda k: land_cover[k]["sfr"]["value"]
+            )
             correction = 1.0 - sfr_sum
             land_cover[max_key]["sfr"]["value"] += correction
             logger_supy.info(f"[site #{i}] Adjusted {max_key}.sfr up by {correction:.6f} to reach 1.0")
+
         elif 1.0 < sfr_sum <= 1.0001:
-            max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
+            max_key = max(
+                (k for k, v in land_cover.items() if v.get("sfr", {}).get("value") is not None),
+                key=lambda k: land_cover[k]["sfr"]["value"]
+            )
             correction = sfr_sum - 1.0
             land_cover[max_key]["sfr"]["value"] -= correction
             logger_supy.info(f"[site #{i}] Adjusted {max_key}.sfr down by {correction:.6f} to reach 1.0")
+
         elif abs(sfr_sum - 1.0) > 0.0001:
             raise ValueError(f"[site #{i}] Invalid land_cover sfr sum: {sfr_sum:.6f}")
 
-        # Validate using Pydantic LandCover model
-        try:
-            LandCover(**land_cover)
-        except ValidationError as e:
-            raise ValueError(f"[site #{i}] Invalid land_cover: {e}")
+        # NO Pydantic LandCover validation here anymore!
 
-        # Save back the potentially modified land_cover
+        # Save back
         site["properties"] = props
 
     return data
+
 
 def precheck_nullify_zero_sfr_params(data: dict) -> dict:
     """For each site, nullify all land_cover parameters for surfaces with sfr == 0."""
@@ -474,14 +479,14 @@ def run_precheck(path: str) -> dict:
     # ---- Step 6: Season + LAI + DLS adjustments per site ----
     data = precheck_site_season_adjustments(data, start_date=start_date, model_year=model_year)
 
-    # ---- Step 7: Land Cover Fractions checks & adjustments ----
-    data = precheck_land_cover_fractions(data)
-
-    # ---- Step 8: Nullify params for surfaces with sfr == 0 ----
+    # ---- Step 7: Nullify params for surfaces with sfr == 0 ----
     data = precheck_nullify_zero_sfr_params(data)
 
-    # ---- Step 10: Check existence of params for surfaces with sfr > 0 ----
+    # ---- Step 8: Check existence of params for surfaces with sfr > 0 ----
     data = precheck_nonzero_sfr_requires_nonnull_params(data)
+
+    # ---- Step 9: Land Cover Fractions checks & adjustments ----
+    data = precheck_land_cover_fractions(data)
 
     # ---- Step 10: Rules associated to selected model options ----
     data = precheck_diagmethod(data)
