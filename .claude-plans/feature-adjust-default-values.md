@@ -6,11 +6,12 @@ GitHub issue #428 reports that generated default values are causing issues in mo
 ## Progress Tracking
 - [x] Analyse current default values in pydantic models
 - [x] Identify problematic default values
-- [ ] Phase 1: Remove zero defaults for critical parameters (CO2, irrigation)
+- [x] Phase 1: Update zero defaults for critical parameters (CO2, irrigation, OHM)
+- [x] Debug runtime issue: Resolved by rebuilding with `make dev`
+- [x] Update dependent code (to_df_state methods handle None → 0.0 conversion)
+- [x] Test with partial YAML files - works correctly
 - [ ] Phase 2: Replace arbitrary physical defaults with None
 - [ ] Phase 3: Add validation/warnings
-- [ ] Update dependent code
-- [ ] Test with partial YAML files
 - [ ] Update documentation
 
 ## Key Decisions
@@ -18,6 +19,16 @@ GitHub issue #428 reports that generated default values are causing issues in mo
 2. **Phased approach**: Start with most critical parameters (CO2, irrigation) to test impact
 3. **Validation strategy**: Add model validators to check parameter consistency
 4. **Documentation**: Create migration guide for users
+
+## Resolution Summary
+
+Successfully implemented Phase 1 changes:
+- Changed critical zero defaults to None for CO2, irrigation, and OHM parameters
+- Updated to_df_state methods to handle None → 0.0 conversion for DataFrame compatibility
+- Resolved runtime issue by rebuilding with `make dev`
+- Verified with partial YAML tests that missing parameters now use None instead of 0.0
+
+This addresses the core issue in #428 where arbitrary default values were causing problems in model runs.
 
 ## Implementation Notes
 
