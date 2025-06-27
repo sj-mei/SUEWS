@@ -814,6 +814,46 @@ def test_precheck_nullify_zero_sfr_params_does_nothing_if_all_nonzero():
     assert site_props["land_cover"]["bldgs"]["alb"]["value"] == 0.12
     assert site_props["land_cover"]["paved"]["alb"]["value"] == 0.1
 
+
+def test_precheck_nullify_zero_sfr_params_handles_lists():
+    yaml_input = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.0},
+                            "thermal_layers": {
+                                "dz": {"value": [0.2, 0.1, 0.1]},
+                                "k": {"value": [1.2, 1.1, 1.1]},
+                                "cp": {"value": [1200000.0, 1100000.0, 1100000.0]},
+                            },
+                            "alb": {"value": 0.12},
+                        },
+                        "paved": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": 0.1},
+                        },
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_nullify_zero_sfr_params(deepcopy(yaml_input))
+    bldgs = result["sites"][0]["properties"]["land_cover"]["bldgs"]
+
+    # Check that all non-sfr parameters in bldgs are now None or list of None
+    assert bldgs["alb"]["value"] is None
+    assert bldgs["thermal_layers"]["dz"]["value"] == [None, None, None]
+    assert bldgs["thermal_layers"]["k"]["value"] == [None, None, None]
+    assert bldgs["thermal_layers"]["cp"]["value"] == [None, None, None]
+
+    # Check that paved remains untouched
+    paved = result["sites"][0]["properties"]["land_cover"]["paved"]
+    assert paved["alb"]["value"] == 0.1
+
+
 def test_nonzero_sfr_with_valid_params_passes():
     data = {
         "sites": [

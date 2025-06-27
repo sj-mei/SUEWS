@@ -382,7 +382,10 @@ def precheck_nullify_zero_sfr_params(data: dict) -> dict:
                             for k, v in d.items():
                                 if isinstance(v, dict):
                                     if "value" in v:
-                                        v["value"] = None
+                                        if isinstance(v["value"], list):
+                                            v["value"] = [None] * len(v["value"])
+                                        else:
+                                            v["value"] = None
                                     else:
                                         recursive_nullify(v)
                         recursive_nullify(param_val)
