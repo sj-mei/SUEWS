@@ -1,5 +1,6 @@
 import pytest
 from copy import deepcopy
+from datetime import datetime
 from supy.data_model.core import (
     precheck_model_physics_params,
     precheck_start_end_date,
@@ -11,6 +12,8 @@ from supy.data_model.core import (
     precheck_nonzero_sfr_requires_nonnull_params,
     precheck_model_option_rules,
     collect_yaml_differences,
+    precheck_update_surface_temperature, 
+    get_monthly_avg_temp,
     SeasonCheck,
 )
 
@@ -1069,3 +1072,60 @@ def test_collect_yaml_differences_simple():
             assert d["old_value"] == 2.0
             assert d["new_value"] == 5.0
             assert d["site"] == 0
+
+def build_minimal_yaml_for_surface_temp():
+    return {
+        "model": {
+            "control": {
+                "start_time": "2011-07-01",  # July → month = 7
+                "end_time": "2011-12-31"
+            }
+        },
+        "sites": [
+            {
+                "properties": {
+                    "lat": {"value": 45.0},  # midlatitudes
+                    "lng": {"value": 10.0}
+                },
+                "initial_states": {
+                    surf: {
+                        "temperature": {"value": [0, 0, 0, 0, 0]},
+                        "tsfc": {"value": 0},
+                        "tin": {"value": 0}
+                    } for surf in ["paved", "bldgs", "evetr", "dectr", "grass", "bsoil", "water"]
+                }
+            }
+        ]
+    }
+
+def test_precheck_update_surface_temperature():
+    data = build_minimal_yaml_for_surface_temp()
+    start_date = data["model"]["control"]["start_time"]
+    month = datetime.strptime(start_date, "%Y-%m-%d").month
+    lat = data["sites"][0]["properties"]["lat"]["value"]
+
+    expected_temp = get_monthly_avg_temp(lat, month)
+
+    updated = precheck_update_surface_temperature(deepcopy(data), start_date=start_date)
+
+    for surface in ["paved", "bldgs", "evetr", "dectr", "grass", "bsoil", "water"]:
+        temp_array = updated["sites"][0]["initial_states"][surface]["temperature"]["value"]
+        tsfc = updated["sites"][0]["initial_states"][surface]["tsfc"]["value"]
+        tin = updated["sites"][0]["initial_states"][surface]["tin"]["value"]
+
+        assert temp_array == [expected_temp] * 5, f"Mismatch in temperature array for {surface}"
+        assert tsfc == expected_temp, f"Mismatch in tsfc for {surface}"
+        assert tin == expected_temp, f"Mismatch in tin for {surface}"
+
+def test_precheck_update_surface_temperature_missing_lat():
+    data = build_minimal_yaml_for_surface_temp()
+    data["sites"][0]["properties"]["lat"] = None  # Simulate missing lat
+
+    start_date = data["model"]["control"]["start_time"]
+
+    # Should not raise, but skip update
+    updated = precheck_update_surface_temperature(deepcopy(data), start_date=start_date)
+
+    for surface in ["paved", "bldgs", "evetr", "dectr", "grass", "bsoil", "water"]:
+        temp_array = updated["sites"][0]["initial_states"][surface]["temperature"]["value"]
+        assert temp_array == [0, 0, 0, 0, 0], f"Temperature should stay unchanged for {surface} when lat is missing."

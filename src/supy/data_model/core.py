@@ -241,6 +241,29 @@ def save_precheck_diff_report(diffs: List[dict], original_yaml_path: str):
 
     logger_supy.info(f"Precheck difference report saved to: {report_path}")
 
+def get_monthly_avg_temp(lat: float, month: int) -> float:
+
+    lat_band = None
+    abs_lat = abs(lat)
+
+    if abs_lat < 10:
+        lat_band = "tropics"
+    elif abs_lat < 35:
+        lat_band = "subtropics"
+    elif abs_lat < 60:
+        lat_band = "midlatitudes"
+    else:
+        lat_band = "polar"
+
+    monthly_temp = {
+        "tropics": [26.0, 26.5, 27.0, 27.5, 28.0, 28.5, 28.0, 27.5, 27.0, 26.5, 26.0, 25.5],
+        "subtropics": [15.0, 16.0, 18.0, 20.0, 24.0, 28.0, 30.0, 29.0, 26.0, 22.0, 18.0, 15.0],
+        "midlatitudes": [5.0, 6.0, 9.0, 12.0, 17.0, 21.0, 23.0, 22.0, 19.0, 14.0, 9.0, 6.0],
+        "polar": [-15.0, -13.0, -10.0, -5.0, 0.0, 5.0, 8.0, 7.0, 3.0, -2.0, -8.0, -12.0],
+    }
+
+    return monthly_temp[lat_band][month - 1]
+
 
 def precheck_printing(data: dict) -> dict:
     logger_supy.info("Running basic precheck...")
@@ -452,6 +475,51 @@ def precheck_site_season_adjustments(
         cleaned_sites.append(site)
 
     data["sites"] = cleaned_sites
+    return data
+
+def precheck_update_surface_temperature(data: dict, start_date: str) -> dict:
+
+    month = datetime.strptime(start_date, "%Y-%m-%d").month
+
+    for site_idx, site in enumerate(data.get("sites", [])):
+        props = site.get("properties", {})
+        initial_states = site.get("initial_states", {})
+
+        # Get site latitude
+        lat_entry = props.get("lat", {})
+        lat = lat_entry.get("value") if isinstance(lat_entry, dict) else lat_entry
+        if lat is None:
+            logger_supy.warning(f"[site #{site_idx}] Latitude missing, skipping surface temperature update.")
+            continue
+
+        # Get estimated average temperature
+        avg_temp = get_monthly_avg_temp(lat, month)
+        logger_supy.info(f"[site #{site_idx}] Setting surface temperatures to {avg_temp} °C for month {month} (lat={lat})")
+
+        # Loop over all surface types
+        for surface_type in ["paved", "bldgs", "evetr", "dectr", "grass", "bsoil", "water"]:
+            surf = initial_states.get(surface_type, {})
+            if not isinstance(surf, dict):
+                continue
+
+            # Set 5-layer temperature array
+            if "temperature" in surf and isinstance(surf["temperature"], dict):
+                surf["temperature"]["value"] = [avg_temp] * 5
+
+            # Set tsfc
+            if "tsfc" in surf and isinstance(surf["tsfc"], dict):
+                surf["tsfc"]["value"] = avg_temp
+
+            # Set tin
+            if "tin" in surf and isinstance(surf["tin"], dict):
+                surf["tin"]["value"] = avg_temp
+
+            initial_states[surface_type] = surf
+
+        # Save back
+        site["initial_states"] = initial_states
+        data["sites"][site_idx] = site
+
     return data
 
 
@@ -696,19 +764,22 @@ def run_precheck(path: str) -> dict:
         data, start_date=start_date, model_year=model_year
     )
 
-    # ---- Step 7: Nullify params for surfaces with sfr == 0 ----
+    # ---- Step 7: Update surface temperatures from lat/month ----
+    data = precheck_update_surface_temperature(data, start_date=start_date)
+
+    # ---- Step 8: Nullify params for surfaces with sfr == 0 ----
     data = precheck_nullify_zero_sfr_params(data)
 
-    # ---- Step 8: Check existence of params for surfaces with sfr > 0 ----
+    # ---- Step 9: Check existence of params for surfaces with sfr > 0 ----
     data = precheck_nonzero_sfr_requires_nonnull_params(data)
 
-    # ---- Step 9: Land Cover Fractions checks & adjustments ----
+    # ---- Step 10: Land Cover Fractions checks & adjustments ----
     data = precheck_land_cover_fractions(data)
 
-    # ---- Step 10: Rules associated to selected model options ----
+    # ---- Step 11: Rules associated to selected model options ----
     data = precheck_model_option_rules(data)
 
-    # ---- Step 11: Save output YAML ----
+    # ---- Step 12: Save output YAML ----
     output_filename = f"py0_{os.path.basename(path)}"
     output_path = os.path.join(os.path.dirname(path), output_filename)
 
@@ -717,11 +788,11 @@ def run_precheck(path: str) -> dict:
 
     logger_supy.info(f"Saved updated YAML file to: {output_path}")
 
-    # ---- Step 12: Generate precheck diff report CSV ----
+    # ---- Step 13: Generate precheck diff report CSV ----
     diffs = collect_yaml_differences(original_data, data)
     save_precheck_diff_report(diffs, path)
 
-    # ---- Step 13: Print completion ----
+    # ---- Step 14: Print completion ----
     logger_supy.info("Precheck complete.\n")
     return data
 
