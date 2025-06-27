@@ -6,20 +6,20 @@ from .type import init_df_state
 
 
 class OHMCoefficients(BaseModel):
-    a1: FlexibleRefValue(float) = Field(
+    a1: Optional[FlexibleRefValue(float)] = Field(
         description="OHM coefficient a1: dimensionless coefficient relating storage heat flux to net radiation", 
         json_schema_extra={"unit": "dimensionless", "display_name": "OHM Coefficient a1"},
-        default=0.0,
+        default=None,
     )
-    a2: FlexibleRefValue(float) = Field(
+    a2: Optional[FlexibleRefValue(float)] = Field(
         description="OHM coefficient a2: time coefficient relating storage heat flux to rate of change of net radiation", 
         json_schema_extra={"unit": "h", "display_name": "OHM Coefficient a2"},
-        default=0.0,
+        default=None,
     )
-    a3: FlexibleRefValue(float) = Field(
+    a3: Optional[FlexibleRefValue(float)] = Field(
         description="OHM coefficient a3: constant offset term for storage heat flux", 
         json_schema_extra={"unit": "W m^-2", "display_name": "OHM Coefficient a3"},
-        default=0.0,
+        default=None,
     )
 
     ref: Optional[Reference] = None
@@ -47,7 +47,10 @@ class OHMCoefficients(BaseModel):
         for aX, idx_a in a_map.items():
             str_idx = f"({surf_idx}, {idx_s}, {idx_a})"
             field_val = getattr(self, aX)
-            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            if field_val is not None:
+                val = field_val.value if isinstance(field_val, RefValue) else field_val
+            else:
+                val = 0.0
             df_state.loc[grid_id, ("ohm_coef", str_idx)] = val
 
         return df_state
