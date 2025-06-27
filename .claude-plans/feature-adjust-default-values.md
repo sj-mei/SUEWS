@@ -27,7 +27,10 @@ GitHub issue #428 reports that generated default values are causing issues in mo
   - [x] Vegetation parameters validation
   - [x] Thermal layer parameters validation
   - [x] Test validation warnings
-- [ ] Update documentation
+- [x] Update documentation
+  - [x] Created comprehensive migration guide (MIGRATION_GUIDE_DEFAULT_VALUES.md)
+  - [x] Documented all changed parameters with previous defaults
+  - [x] Provided best practices and examples
 
 ## Key Decisions
 1. **Using None vs removing defaults**: Use None as default to make fields optional but detectable
