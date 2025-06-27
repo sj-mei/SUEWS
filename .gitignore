@@ -567,8 +567,10 @@ SUEWS_V20*
 # quick test script
 quick-test.py
 
-# CLAUDE.md is an auxiliary file for Claude AI used locally
+# Claude Code configuration and workspace
+# Only ignore local settings and truly temporary files
 .claude/settings.local.json
+.claude/workspace/temp-*
 
 # auto-generated files for building docs
 docs/schema.json
@@ -591,7 +593,6 @@ docs/source/_autosummary/
 # Auto-generated RST files from data model
 docs/source/inputs/yaml/schema/*.rst
 
-.claude-parent-branch
 
 # Git worktrees directory for Claude Code access
 worktrees/
