@@ -59,49 +59,49 @@ class VegetationParams(BaseModel):
 
 
 class Conductance(BaseModel):
-    g_max: FlexibleRefValue(float) = Field(
-        default=40.0,
+    g_max: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Maximum surface conductance for photosynthesis", json_schema_extra={"unit": "mm s^-1", "display_name": "G Max"}
     )
-    g_k: FlexibleRefValue(float) = Field(
-        default=0.6,
+    g_k: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Conductance parameter related to incoming solar radiation", json_schema_extra={"unit": "dimensionless", "display_name": "G K"}
     )
-    g_q_base: FlexibleRefValue(float) = Field(
-        default=0.03,
+    g_q_base: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Base value for conductance parameter related to vapour pressure deficit", json_schema_extra={"unit": "kPa^-1", "display_name": "G Q Base"}
     )
-    g_q_shape: FlexibleRefValue(float) = Field(
-        default=0.9,
+    g_q_shape: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Shape parameter for conductance related to vapour pressure deficit", json_schema_extra={"unit": "dimensionless", "display_name": "G Q Shape"}
     )
-    g_t: FlexibleRefValue(float) = Field(
-        default=30.0,
+    g_t: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Conductance parameter related to air temperature", json_schema_extra={"unit": "degC", "display_name": "G T"}
     )
-    g_sm: FlexibleRefValue(float) = Field(
-        default=0.5,
+    g_sm: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Conductance parameter related to soil moisture", json_schema_extra={"unit": "dimensionless", "display_name": "G Sm"}
     )
-    kmax: FlexibleRefValue(float) = Field(
-        default=1200.0,
+    kmax: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Maximum incoming shortwave radiation", json_schema_extra={"unit": "W m^-2", "display_name": "Kmax"}
     )
-    s1: FlexibleRefValue(float) = Field(
-        default=0.2,
+    s1: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Lower soil moisture threshold for conductance response", 
         json_schema_extra={"unit": "dimensionless", "display_name": "S1"}
     )
-    s2: FlexibleRefValue(float) = Field(
-        default=0.5,
+    s2: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Parameter related to soil moisture dependence", json_schema_extra={"unit": "mm", "display_name": "S2"}
     )
-    tl: FlexibleRefValue(float) = Field(
-        default=0.0,
+    tl: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Lower air temperature threshold for conductance response", json_schema_extra={"unit": "degC", "display_name": "Tl"}
     )
-    th: FlexibleRefValue(float) = Field(
-        default=50.0,
+    th: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Upper air temperature threshold for conductance response", json_schema_extra={"unit": "degC", "display_name": "Th"}
     )
 
@@ -135,7 +135,10 @@ class Conductance(BaseModel):
         }
 
         for param_name, value in scalar_params.items():
-            val = value.value if isinstance(value, RefValue) else value
+            if value is not None:
+                val = value.value if isinstance(value, RefValue) else value
+            else:
+                val = 0.0  # Default to 0.0 for DataFrame compatibility
             df_state.loc[grid_id, (param_name, "0")] = val
 
         return df_state

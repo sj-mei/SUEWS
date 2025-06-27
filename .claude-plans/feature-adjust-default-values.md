@@ -10,7 +10,10 @@ GitHub issue #428 reports that generated default values are causing issues in mo
 - [x] Debug runtime issue: Resolved by rebuilding with `make dev`
 - [x] Update dependent code (to_df_state methods handle None → 0.0 conversion)
 - [x] Test with partial YAML files - works correctly
-- [ ] Phase 2: Replace arbitrary physical defaults with None
+- [x] Phase 2: Replace arbitrary physical defaults with None
+  - [x] Conductance parameters (11 fields)
+  - [x] Drainage coefficients (4 fields)
+  - [x] Additional parameters (h_maintain, startdls, enddls)
 - [ ] Phase 3: Add validation/warnings
 - [ ] Update documentation
 

@@ -10,8 +10,8 @@ from .type import init_df_state
 class IrrigationParams(
     BaseModel
 ):  # TODO: May need to add RefValue to the profiles here
-    h_maintain: FlexibleRefValue(float) = Field(
-        default=0.5,
+    h_maintain: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Water depth to maintain through irrigation", json_schema_extra={"unit": "mm", "display_name": "Maintain Height"},
     )
     faut: FlexibleRefValue(float) = Field(
@@ -50,7 +50,7 @@ class IrrigationParams(
 
         df_state = init_df_state(grid_id)
 
-        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain.value if isinstance(self.h_maintain, RefValue) else self.h_maintain
+        df_state.loc[grid_id, ("h_maintain", "0")] = self.h_maintain.value if isinstance(self.h_maintain, RefValue) else self.h_maintain if self.h_maintain is not None else 0.0
         df_state.loc[grid_id, ("faut", "0")] = self.faut.value if isinstance(self.faut, RefValue) else self.faut
         df_state.loc[grid_id, ("ie_start", "0")] = self.ie_start.value if isinstance(self.ie_start, RefValue) else self.ie_start if self.ie_start is not None else 0.0
         df_state.loc[grid_id, ("ie_end", "0")] = self.ie_end.value if isinstance(self.ie_end, RefValue) else self.ie_end if self.ie_end is not None else 0.0
@@ -446,12 +446,12 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
 
 
 class AnthropogenicEmissions(BaseModel):
-    startdls: FlexibleRefValue(float) = Field(
-        default=0.0,
+    startdls: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Start of daylight savings time in decimal day of year", json_schema_extra={"unit": "day", "display_name": "Daylight Saving Start"},
     )
-    enddls: FlexibleRefValue(float) = Field(
-        default=0.0,
+    enddls: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="End of daylight savings time in decimal day of year", json_schema_extra={"unit": "day", "display_name": "Daylight Saving End"},
     )
     heat: AnthropogenicHeat = Field(
@@ -480,8 +480,8 @@ class AnthropogenicEmissions(BaseModel):
         df_state = init_df_state(grid_id)
 
         # Set start and end daylight saving times
-        df_state.loc[grid_id, ("startdls", "0")] = self.startdls.value if isinstance(self.startdls, RefValue) else self.startdls
-        df_state.loc[grid_id, ("enddls", "0")] = self.enddls.value if isinstance(self.enddls, RefValue) else self.enddls
+        df_state.loc[grid_id, ("startdls", "0")] = self.startdls.value if isinstance(self.startdls, RefValue) else self.startdls if self.startdls is not None else 0.0
+        df_state.loc[grid_id, ("enddls", "0")] = self.enddls.value if isinstance(self.enddls, RefValue) else self.enddls if self.enddls is not None else 0.0
 
         # Add heat parameters
         df_heat = self.heat.to_df_state(grid_id)

@@ -368,15 +368,15 @@ class StorageDrainParams(BaseModel):
         description="Minimum water storage capacity", 
         json_schema_extra={"unit": "mm", "display_name": "Minimum Storage"},
     )
-    store_max: FlexibleRefValue(float) = Field(
+    store_max: Optional[FlexibleRefValue(float)] = Field(
         ge=0,
-        default=10.0,
+        default=None,
         description="Maximum water storage capacity", 
         json_schema_extra={"unit": "mm", "display_name": "Maximum Storage"},
     )
-    store_cap: FlexibleRefValue(float) = Field(
+    store_cap: Optional[FlexibleRefValue(float)] = Field(
         ge=0,
-        default=10.0,
+        default=None,
         description="Current water storage capacity - the actual storage capacity available for surface water retention. This represents the depth of water that can be stored on or in the surface before drainage begins. For paved surfaces, this might represent depression storage; for vegetated surfaces, it includes canopy interception storage.", 
         json_schema_extra={"unit": "mm", "display_name": "Storage Capacity"},
     )
@@ -385,13 +385,13 @@ class StorageDrainParams(BaseModel):
         description="Drainage equation selection (0: linear, 1: exponential)",
         json_schema_extra={"unit": "dimensionless", "display_name": "Drainage Equation"}
     )
-    drain_coef_1: FlexibleRefValue(float) = Field(
-        default=0.013,
+    drain_coef_1: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Drainage coefficient 1 (rate parameter)",
         json_schema_extra={"unit": "mm h^-1", "display_name": "Drainage Coefficient 1"}
     )
-    drain_coef_2: FlexibleRefValue(float) = Field(
-        default=1.71,
+    drain_coef_2: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Drainage coefficient 2 (shape parameter)",
         json_schema_extra={"unit": "dimensionless", "display_name": "Drainage Coefficient 2"}
     )
@@ -443,7 +443,10 @@ class StorageDrainParams(BaseModel):
             ]
         ):
             field_val = getattr(self, var)
-            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            if field_val is not None:
+                val = field_val.value if isinstance(field_val, RefValue) else field_val
+            else:
+                val = 0.0  # Default to 0.0 for DataFrame compatibility
             df.loc[grid_id, ("storedrainprm", f"({i}, {surf_idx})")] = val
 
         return df
