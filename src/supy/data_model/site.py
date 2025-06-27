@@ -107,6 +107,36 @@ class Conductance(BaseModel):
 
     ref: Optional[Reference] = Reference(ref="Test ref", DOI="test doi", ID="test id")
 
+    @model_validator(mode="after")
+    def check_missing_conductance_params(self) -> "Conductance":
+        """Check for missing critical conductance parameters and issue warnings."""
+        missing_params = []
+        
+        # Check critical conductance parameters
+        critical_params = {
+            "g_max": "Maximum surface conductance",
+            "g_k": "Conductance parameter for solar radiation",
+            "g_sm": "Conductance parameter for soil moisture",
+            "s1": "Lower soil moisture threshold",
+            "s2": "Soil moisture dependence parameter",
+        }
+        
+        for param_name, description in critical_params.items():
+            value = getattr(self, param_name)
+            if value is None:
+                missing_params.append(f"{param_name} ({description})")
+        
+        if missing_params:
+            warnings.warn(
+                f"Missing critical surface conductance parameters which may affect evapotranspiration calculations:\n"
+                f"  - " + "\n  - ".join(missing_params) + "\n"
+                f"Consider providing values for these parameters in your configuration.",
+                UserWarning,
+                stacklevel=2
+            )
+        
+        return self
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert conductance parameters to DataFrame state format.
@@ -505,6 +535,32 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             raise ValueError(
                 f"alb_min (input {alb_min_val}) must be less than or equal to alb_max (entered {alb_max_val})."
             )
+        return self
+
+    @model_validator(mode="after")
+    def check_missing_vegetation_params(self) -> "VegetatedSurfaceProperties":
+        """Check for missing critical vegetation parameters and issue warnings."""
+        missing_params = []
+        
+        # Check critical vegetation parameters
+        if self.beta_bioco2 is None:
+            missing_params.append("beta_bioco2 (Biogenic CO2 exchange coefficient)")
+        if self.alpha_bioco2 is None:
+            missing_params.append("alpha_bioco2 (Biogenic CO2 exchange coefficient)")
+        if self.resp_a is None:
+            missing_params.append("resp_a (Respiration coefficient)")
+        if self.resp_b is None:
+            missing_params.append("resp_b (Respiration coefficient)")
+        
+        if missing_params:
+            warnings.warn(
+                f"Missing critical vegetation parameters which may affect CO2 flux calculations:\n"
+                f"  - " + "\n  - ".join(missing_params) + "\n"
+                f"Consider providing values for these parameters in your configuration.",
+                UserWarning,
+                stacklevel=2
+            )
+        
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:

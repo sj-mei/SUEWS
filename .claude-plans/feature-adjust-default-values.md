@@ -20,7 +20,13 @@ GitHub issue #428 reports that generated default values are causing issues in mo
   - [x] Soil parameters (3 fields: soildepth, soilstorecap, sathydraulicconduct)
   - [x] Building parameters (2 fields: bldgh, faibldg)
   - [x] Additional parameters (h_maintain, startdls, enddls)
-- [ ] Phase 3: Add validation/warnings
+- [x] Phase 3: Add validation/warnings
+  - [x] CO2 emission parameters validation
+  - [x] Conductance parameters validation
+  - [x] Building parameters validation (checks if fraction > 5%)
+  - [x] Vegetation parameters validation
+  - [x] Thermal layer parameters validation
+  - [x] Test validation warnings
 - [ ] Update documentation
 
 ## Key Decisions

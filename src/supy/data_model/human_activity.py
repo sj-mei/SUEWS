@@ -1,7 +1,8 @@
-from pydantic import ConfigDict, BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field, model_validator
 from pydantic_core import PydanticUndefined
 from typing import Optional, Union
 import pandas as pd
+import warnings
 from .type import RefValue, Reference, FlexibleRefValue
 from .profile import HourlyProfile, WeeklyProfile, DayProfile
 from .type import init_df_state
@@ -343,6 +344,35 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
     )
 
     ref: Optional[Reference] = None
+
+    @model_validator(mode="after")
+    def check_missing_co2_params(self) -> "CO2Params":
+        """Check for missing critical CO2 parameters and issue warnings."""
+        missing_params = []
+        
+        # Check critical CO2 emission parameters
+        critical_params = {
+            "co2pointsource": "CO2 point source emission factor",
+            "ef_umolco2perj": "CO2 emission factor per unit of fuel energy",
+            "frfossilfuel_heat": "Fraction of heating energy from fossil fuels",
+            "frfossilfuel_nonheat": "Fraction of non-heating energy from fossil fuels",
+        }
+        
+        for param_name, description in critical_params.items():
+            value = getattr(self, param_name)
+            if value is None:
+                missing_params.append(f"{param_name} ({description})")
+        
+        if missing_params:
+            warnings.warn(
+                f"Missing critical CO2 emission parameters which may affect model accuracy:\n"
+                f"  - " + "\n  - ".join(missing_params) + "\n"
+                f"Consider providing values for these parameters in your configuration.",
+                UserWarning,
+                stacklevel=2
+            )
+        
+        return self
 
     # DayProfile coulmns need to be fixed
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
