@@ -62,6 +62,8 @@ python -m supy.run your_config.yaml
 # Look for UserWarning messages about missing parameters
 ```
 
+**Note**: Warnings appear during model initialization, not during the run. They are Python UserWarnings that can be captured or filtered using Python's warnings module if needed.
+
 ### 3. Update Your Configuration
 
 Add the missing parameters to your YAML file. For example:
@@ -127,6 +129,20 @@ If the previous default values were appropriate for your use case, you can expli
 2. **Use validation warnings as a checklist** - The warnings indicate which parameters might be important for your simulation
 3. **Document your parameter choices** - Include comments in your YAML explaining why certain values were chosen
 4. **Test with known configurations** - Verify your model outputs against previous results
+
+## Additional Resources
+
+For detailed parameter descriptions and guidance:
+- [SUEWS Documentation](https://suews.readthedocs.io/)
+- [Site Parameters Guide](https://suews.readthedocs.io/en/latest/input_files/SUEWS_SiteInfo.html)
+- [Model Physics Parameters](https://suews.readthedocs.io/en/latest/input_files/RunControl/RunControl.html)
+- [Surface Properties Reference](https://suews.readthedocs.io/en/latest/notation.html)
+
+For specific parameter groups:
+- [Building Parameters](https://suews.readthedocs.io/en/latest/input_files/SUEWS_SiteInfo.html#suews-surface-characteristics)
+- [Vegetation Parameters](https://suews.readthedocs.io/en/latest/input_files/SUEWS_Veg.html)
+- [Conductance Parameters](https://suews.readthedocs.io/en/latest/parameterisations.html#conductances)
+- [Thermal Properties](https://suews.readthedocs.io/en/latest/recent-publications.html#surface-temperature-modelling)
 
 ## Backward Compatibility
 

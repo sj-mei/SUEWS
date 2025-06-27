@@ -3,6 +3,7 @@ from pydantic import ConfigDict, BaseModel, Field, model_validator
 from .type import RefValue, Reference, FlexibleRefValue
 from .profile import HourlyProfile
 from .type import init_df_state
+from .validation_utils import warn_missing_params, check_missing_params
 from .surface import (
     SurfaceType,
     SurfaceProperties,
@@ -110,8 +111,6 @@ class Conductance(BaseModel):
     @model_validator(mode="after")
     def check_missing_conductance_params(self) -> "Conductance":
         """Check for missing critical conductance parameters and issue warnings."""
-        missing_params = []
-        
         # Check critical conductance parameters
         critical_params = {
             "g_max": "Maximum surface conductance",
@@ -121,19 +120,8 @@ class Conductance(BaseModel):
             "s2": "Soil moisture dependence parameter",
         }
         
-        for param_name, description in critical_params.items():
-            value = getattr(self, param_name)
-            if value is None:
-                missing_params.append(f"{param_name} ({description})")
-        
-        if missing_params:
-            warnings.warn(
-                f"Missing critical surface conductance parameters which may affect evapotranspiration calculations:\n"
-                f"  - " + "\n  - ".join(missing_params) + "\n"
-                f"Consider providing values for these parameters in your configuration.",
-                UserWarning,
-                stacklevel=2
-            )
+        missing_params = check_missing_params(critical_params, self, "surface conductance", "evapotranspiration calculations")
+        warn_missing_params(missing_params, "surface conductance", "evapotranspiration calculations", stacklevel=2)
         
         return self
 
@@ -540,26 +528,16 @@ class VegetatedSurfaceProperties(SurfaceProperties):
     @model_validator(mode="after")
     def check_missing_vegetation_params(self) -> "VegetatedSurfaceProperties":
         """Check for missing critical vegetation parameters and issue warnings."""
-        missing_params = []
-        
         # Check critical vegetation parameters
-        if self.beta_bioco2 is None:
-            missing_params.append("beta_bioco2 (Biogenic CO2 exchange coefficient)")
-        if self.alpha_bioco2 is None:
-            missing_params.append("alpha_bioco2 (Biogenic CO2 exchange coefficient)")
-        if self.resp_a is None:
-            missing_params.append("resp_a (Respiration coefficient)")
-        if self.resp_b is None:
-            missing_params.append("resp_b (Respiration coefficient)")
+        critical_params = {
+            "beta_bioco2": "Biogenic CO2 exchange coefficient",
+            "alpha_bioco2": "Biogenic CO2 exchange coefficient", 
+            "resp_a": "Respiration coefficient",
+            "resp_b": "Respiration coefficient",
+        }
         
-        if missing_params:
-            warnings.warn(
-                f"Missing critical vegetation parameters which may affect CO2 flux calculations:\n"
-                f"  - " + "\n  - ".join(missing_params) + "\n"
-                f"Consider providing values for these parameters in your configuration.",
-                UserWarning,
-                stacklevel=2
-            )
+        missing_params = check_missing_params(critical_params, self, "vegetation", "CO2 flux calculations")
+        warn_missing_params(missing_params, "vegetation", "CO2 flux calculations", stacklevel=2)
         
         return self
 

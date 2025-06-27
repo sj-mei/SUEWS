@@ -103,7 +103,7 @@ def test_thermal_layers_warnings():
         # Check that warnings were issued
         assert len(w) >= 1
         warning_msg = str(w[0].message)
-        assert "Missing thermal layer parameters" in warning_msg
+        assert "Missing critical thermal layer parameters" in warning_msg
         assert "dz" in warning_msg
         assert "k" in warning_msg
         assert "rho_cp" in warning_msg

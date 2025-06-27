@@ -4,6 +4,7 @@ from typing import Optional, Literal, List, Union
 import pandas as pd
 import warnings
 from .type import RefValue, Reference, FlexibleRefValue
+from .validation_utils import warn_missing_params
 
 from .type import init_df_state
 
@@ -44,14 +45,7 @@ class ThermalLayers(BaseModel):
         if self.rho_cp is None:
             missing_params.append("rho_cp (Volumetric heat capacity)")
         
-        if missing_params:
-            warnings.warn(
-                f"Missing thermal layer parameters which may affect heat storage calculations:\n"
-                f"  - " + "\n  - ".join(missing_params) + "\n"
-                f"Default values will be used.",
-                UserWarning,
-                stacklevel=2
-            )
+        warn_missing_params(missing_params, "thermal layer", "heat storage calculations", stacklevel=2)
         
         return self
 
