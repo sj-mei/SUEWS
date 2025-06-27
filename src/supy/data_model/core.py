@@ -249,7 +249,7 @@ def precheck_site_season_adjustments(data: dict, start_date: str, model_year: in
         season = None
 
         try:
-            if lat is not None:
+            if lat is not None: # <- Placeholder: consider cases where lat is None
                 season = SeasonCheck(start_date=start_date, lat=lat).get_season()
                 logger_supy.debug(f"[site #{i}] Season detected: {season}")
 
@@ -292,7 +292,7 @@ def precheck_site_season_adjustments(data: dict, start_date: str, model_year: in
         # --------------------------------------
         # 3. DLS Check (timezone and DST start/end days)
         # --------------------------------------
-        if lat is not None and lng is not None:
+        if lat is not None and lng is not None: # <- Placeholder: consider cases where lat is None
             try:
                 dls = DLSCheck(lat=lat, lng=lng, year=model_year)
                 start_dls, end_dls, tz_offset = dls.compute_dst_transitions()
@@ -326,38 +326,107 @@ def precheck_land_cover_fractions(data: dict) -> dict:
         if not land_cover:
             raise ValueError(f"[site #{i}] Missing land_cover block.")
 
-        # Calculate sum of all surface fractions
+        # Calculate sum of all non-null surface fractions
         sfr_sum = sum(
             v.get("sfr", {}).get("value", 0)
             for v in land_cover.values()
-            if isinstance(v, dict)
+            if isinstance(v, dict) and v.get("sfr", {}).get("value") is not None
         )
 
         logger_supy.debug(f"[site #{i}] Total land_cover sfr sum: {sfr_sum:.6f}")
 
         # Auto-fix tiny floating point errors (epsilon ~0.0001)
         if 0.9999 <= sfr_sum < 1.0:
-            max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
+            max_key = max(
+                (k for k, v in land_cover.items() if v.get("sfr", {}).get("value") is not None),
+                key=lambda k: land_cover[k]["sfr"]["value"]
+            )
             correction = 1.0 - sfr_sum
             land_cover[max_key]["sfr"]["value"] += correction
             logger_supy.info(f"[site #{i}] Adjusted {max_key}.sfr up by {correction:.6f} to reach 1.0")
+
         elif 1.0 < sfr_sum <= 1.0001:
-            max_key = max(land_cover, key=lambda k: land_cover[k]["sfr"]["value"])
+            max_key = max(
+                (k for k, v in land_cover.items() if v.get("sfr", {}).get("value") is not None),
+                key=lambda k: land_cover[k]["sfr"]["value"]
+            )
             correction = sfr_sum - 1.0
             land_cover[max_key]["sfr"]["value"] -= correction
             logger_supy.info(f"[site #{i}] Adjusted {max_key}.sfr down by {correction:.6f} to reach 1.0")
+
         elif abs(sfr_sum - 1.0) > 0.0001:
             raise ValueError(f"[site #{i}] Invalid land_cover sfr sum: {sfr_sum:.6f}")
-
-        # Validate using Pydantic LandCover model
-        try:
-            LandCover(**land_cover)
-        except ValidationError as e:
-            raise ValueError(f"[site #{i}] Invalid land_cover: {e}")
-
-        # Save back the potentially modified land_cover
+        
         site["properties"] = props
 
+    return data
+
+
+def precheck_nullify_zero_sfr_params(data: dict) -> dict:
+    """For each site, nullify all land_cover parameters for surfaces with sfr == 0."""
+    for site_idx, site in enumerate(data.get("sites", [])):
+        land_cover = site.get("properties", {}).get("land_cover", {})
+        for surf_type, props in land_cover.items():
+            sfr = props.get("sfr", {}).get("value", 0)
+            if sfr == 0:
+                logger_supy.info(f"[site #{site_idx}] Nullifying params for surface '{surf_type}' with sfr == 0")
+                for param_key, param_val in props.items():
+                    if param_key == "sfr":
+                        continue
+                    # Nullify simple params
+                    if isinstance(param_val, dict) and "value" in param_val:
+                        param_val["value"] = None
+                    # Nullify nested blocks (like ohm_coef, thermal_layers etc)
+                    elif isinstance(param_val, dict):
+                        def recursive_nullify(d):
+                            for k, v in d.items():
+                                if isinstance(v, dict):
+                                    if "value" in v:
+                                        if isinstance(v["value"], list):
+                                            v["value"] = [None] * len(v["value"])
+                                        else:
+                                            v["value"] = None
+                                    else:
+                                        recursive_nullify(v)
+                        recursive_nullify(param_val)
+    return data
+
+def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
+    """
+    For each site, check that for all land_cover surface types with sfr > 0,
+    all related parameters (except 'sfr') are set (not None and not empty string),
+    recursively for nested structures.
+    """
+
+    def check_recursively(d: dict, path: list, site_idx: int):
+        if isinstance(d, dict):
+            if "value" in d:
+                val = d["value"]
+                if val in (None, "") or (isinstance(val, list) and any(v in (None, "") for v in val)):
+                    full_path = ".".join(path)
+                    raise ValueError(
+                        f"[site #{site_idx}] land_cover.{full_path} must be set (not None or empty) "
+                        f"because {path[0]}.sfr > 0"
+                    )
+            else:
+                for k, v in d.items():
+                    check_recursively(v, path + [k], site_idx)
+
+        elif isinstance(d, list):
+            for idx, item in enumerate(d):
+                check_recursively(item, path + [f"[{idx}]"], site_idx)
+
+    for site_idx, site in enumerate(data.get("sites", [])):
+        land_cover = site.get("properties", {}).get("land_cover", {})
+        for surf_type, props in land_cover.items():
+            sfr = props.get("sfr", {}).get("value", 0)
+            if sfr > 0:
+                for param_key, param_val in props.items():
+                    if param_key == "sfr":
+                        continue
+                    check_recursively(param_val, path=[surf_type, param_key], site_idx=site_idx)
+
+    logger_supy.info("[precheck] Nonzero sfr parameters validated (all required fields are set).")
     return data
 
 def precheck_diagmethod(data: dict) -> dict:
@@ -375,7 +444,7 @@ def precheck_diagmethod(data: dict) -> dict:
         sfr = bldgs.get("sfr", {}).get("value", 0)
 
         if sfr > 0:
-            faibldg = props.get("faibldg", {})
+            faibldg = bldgs.get("faibldg", {})
             faibldg_value = faibldg.get("value")
             if faibldg_value in (None, "", []):
                 raise ValueError(f"[site #{i}] For diagmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
@@ -383,6 +452,68 @@ def precheck_diagmethod(data: dict) -> dict:
     logger_supy.info("[precheck] faibldg check for diagmethod==2 passed.")
     return data
 
+def precheck_storageheatmethod(data: dict) -> dict:
+    """If storageheatmethod == 6, check required wall thermal properties and lambda_c.""" # <--- Placeholder: this case refers to DyOHM
+    storage_method = data.get("model", {}).get("physics", {}).get("storageheatmethod", {}).get("value")
+
+    if storage_method != 6:
+        logger_supy.debug("[precheck] storageheatmethod != 6, skipping wall thermal layer checks.")
+        return data
+
+    for site_idx, site in enumerate(data.get("sites", [])):
+        props = site.get("properties", {})
+        vertical_layers = props.get("vertical_layers", {})
+        walls = vertical_layers.get("walls", [])
+
+        if not walls or not isinstance(walls, list) or len(walls) == 0:
+            raise ValueError(f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6.")
+
+        wall0 = walls[0]
+        thermal = wall0.get("thermal_layers", {})
+
+        for param in ["dz", "k", "cp"]:
+            param_list = thermal.get(param, {}).get("value")
+            if not isinstance(param_list, list) or len(param_list) == 0:
+                raise ValueError(f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6.")
+            if param_list[0] in (None, ""):
+                raise ValueError(f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6.")
+
+        lambda_c = props.get("lambda_c", {}).get("value")
+        if lambda_c in (None, ""):
+            raise ValueError(f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6.")
+
+    logger_supy.info("[precheck] storageheatmethod == 6 → wall thermal layers and lambda_c check passed.")
+    return data
+
+def precheck_stebbsmethod(data: dict) -> dict:
+    """
+    If stebbsmethod == 0, nullify all parameters under each site's properties.stebbs block.
+    """
+    physics = data.get("model", {}).get("physics", {})
+    stebbs_method = physics.get("stebbsmethod", {}).get("value")
+
+    if stebbs_method != 0:
+        logger_supy.info("[precheck] stebbsmethod != 0, skipping stebbs nullification.")
+        return data
+
+    logger_supy.info("[precheck] stebbsmethod == 0, nullifying stebbs parameters...")
+
+    for site_idx, site in enumerate(data.get("sites", [])):
+        props = site.get("properties", {})
+        stebbs_block = props.get("stebbs", {})
+
+        def recursive_nullify(d):
+            for k, v in d.items():
+                if isinstance(v, dict):
+                    if "value" in v:
+                        v["value"] = None
+                    else:
+                        recursive_nullify(v)
+
+        recursive_nullify(stebbs_block)
+        site["properties"]["stebbs"] = stebbs_block
+
+    return data
 
 
 def run_precheck(path: str) -> dict:
@@ -410,13 +541,30 @@ def run_precheck(path: str) -> dict:
     # ---- Step 6: Season + LAI + DLS adjustments per site ----
     data = precheck_site_season_adjustments(data, start_date=start_date, model_year=model_year)
 
-    # ---- Step 7: Land Cover Fractions checks & adjustments ----
+    # ---- Step 7: Nullify params for surfaces with sfr == 0 ----
+    data = precheck_nullify_zero_sfr_params(data)
+
+    # ---- Step 8: Check existence of params for surfaces with sfr > 0 ----
+    data = precheck_nonzero_sfr_requires_nonnull_params(data)
+
+    # ---- Step 9: Land Cover Fractions checks & adjustments ----
     data = precheck_land_cover_fractions(data)
 
-    # ---- Step 8: Rules associated to selected model options ----
+    # ---- Step 10: Rules associated to selected model options ----
     data = precheck_diagmethod(data)
+    data = precheck_storageheatmethod(data) 
+    data = precheck_stebbsmethod(data)
 
-    # ---- Step 9: Print completion ----
+    # ---- Step 11: Save output YAML ----
+    output_filename = f"py0_{os.path.basename(path)}"
+    output_path = os.path.join(os.path.dirname(path), output_filename)
+
+    with open(output_path, "w") as f:
+        yaml.dump(data, f, sort_keys=False, allow_unicode=True)
+
+    logger_supy.info(f"Saved updated YAML file to: {output_path}")
+
+    # ---- Step 12: Print completion ----
     logger_supy.info("Precheck complete.\n")
     return data
 
