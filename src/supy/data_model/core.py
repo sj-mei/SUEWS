@@ -485,6 +485,36 @@ def precheck_storageheatmethod(data: dict) -> dict:
     logger_supy.info("[precheck] storageheatmethod == 6 → wall thermal layers and lambda_c check passed.")
     return data
 
+def precheck_stebbsmethod(data: dict) -> dict:
+    """
+    If stebbsmethod == 0, nullify all parameters under each site's properties.stebbs block.
+    """
+    physics = data.get("model", {}).get("physics", {})
+    stebbs_method = physics.get("stebbsmethod", {}).get("value")
+
+    if stebbs_method != 0:
+        logger_supy.info("[precheck] stebbsmethod != 0, skipping stebbs nullification.")
+        return data
+
+    logger_supy.info("[precheck] stebbsmethod == 0, nullifying stebbs parameters...")
+
+    for site_idx, site in enumerate(data.get("sites", [])):
+        props = site.get("properties", {})
+        stebbs_block = props.get("stebbs", {})
+
+        def recursive_nullify(d):
+            for k, v in d.items():
+                if isinstance(v, dict):
+                    if "value" in v:
+                        v["value"] = None
+                    else:
+                        recursive_nullify(v)
+
+        recursive_nullify(stebbs_block)
+        site["properties"]["stebbs"] = stebbs_block
+
+    return data
+
 
 def run_precheck(path: str) -> dict:
 
@@ -523,6 +553,7 @@ def run_precheck(path: str) -> dict:
     # ---- Step 10: Rules associated to selected model options ----
     data = precheck_diagmethod(data)
     data = precheck_storageheatmethod(data) 
+    data = precheck_stebbsmethod(data)
 
     # ---- Step 11: Save output YAML ----
     output_filename = f"py0_{os.path.basename(path)}"
@@ -531,7 +562,7 @@ def run_precheck(path: str) -> dict:
     with open(output_path, "w") as f:
         yaml.dump(data, f, sort_keys=False, allow_unicode=True)
 
-    logger_supy.info(f"Precheck complete. Saved output to: {output_path}\n")
+    logger_supy.info(f"Saved updated YAML file to: {output_path}")
 
     # ---- Step 12: Print completion ----
     logger_supy.info("Precheck complete.\n")

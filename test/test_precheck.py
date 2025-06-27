@@ -11,6 +11,7 @@ from supy.data_model.core import (
     precheck_nonzero_sfr_requires_nonnull_params,
     precheck_diagmethod,
     precheck_storageheatmethod,
+    precheck_stebbsmethod,
     SeasonCheck,
 )
 
@@ -1034,3 +1035,53 @@ def test_storageheatmethod6_null_lambda_c_raises():
     }
     with pytest.raises(ValueError, match=r"lambda_c.*storageheatmethod == 6"):
         precheck_storageheatmethod(deepcopy(yaml_input))
+
+
+def test_stebbs_nullified_when_method_zero():
+    yaml_input = {
+        "model": {
+            "physics": {
+                "stebbsmethod": {"value": 0}
+            }
+        },
+        "sites": [
+            {
+                "properties": {
+                    "stebbs": {
+                        "WallInternalConvectionCoefficient": {"value": 5.0},
+                        "WindowExternalConvectionCoefficient": {"value": 30.0},
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_stebbsmethod(deepcopy(yaml_input))
+
+    stebbs = result["sites"][0]["properties"]["stebbs"]
+    assert stebbs["WallInternalConvectionCoefficient"]["value"] is None
+    assert stebbs["WindowExternalConvectionCoefficient"]["value"] is None
+
+def test_stebbs_not_touched_if_method_nonzero():
+    yaml_input = {
+        "model": {
+            "physics": {
+                "stebbsmethod": {"value": 1}
+            }
+        },
+        "sites": [
+            {
+                "properties": {
+                    "stebbs": {
+                        "WallInternalConvectionCoefficient": {"value": 5.0},
+                        "WindowExternalConvectionCoefficient": {"value": 30.0},
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_stebbsmethod(deepcopy(yaml_input))
+    stebbs = result["sites"][0]["properties"]["stebbs"]
+    assert stebbs["WallInternalConvectionCoefficient"]["value"] == 5.0
+    assert stebbs["WindowExternalConvectionCoefficient"]["value"] == 30.0
