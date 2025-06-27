@@ -43,7 +43,30 @@ Data Files
 In addition to the YAML configuration file, SUEWS works with input and output data files:
 
 **Input Data:**
-- **Forcing data**: Meteorological time-series data file specified by :ref:`model.control.forcing_file <modelcontrol>`
+- **Forcing data**: Meteorological time-series data specified by :ref:`model.control.forcing_file <modelcontrol>`
+
+  The ``forcing_file`` parameter supports two modes:
+  
+  1. **Single file**: Specify a path to a single forcing file
+     
+     .. code-block:: yaml
+     
+        model:
+          control:
+            forcing_file: "forcing_2020.txt"
+     
+  2. **Multiple files**: Specify a list of file paths
+     
+     .. code-block:: yaml
+     
+        model:
+          control:
+            forcing_file: 
+              - "forcing_2020.txt"
+              - "forcing_2021.txt"
+              - "forcing_2022.txt"
+     
+     When multiple files are provided, they will be automatically loaded and concatenated in chronological order.
 
 **Output Data:**
 - **Model results**: Time-series output files specified by :ref:`model.control.output_file <modelcontrol>`
