@@ -3,14 +3,21 @@
 ## Context
 Following discussion about forcing file corrections and other advanced options, we need to hide certain options that are meant for developer/internal use only from the standard user documentation while keeping them functional in the code.
 
+## GitHub Issues
+- PRIMARY: #437 - Hide options for developers or internal use to users
+
 ## Progress Tracking
 - [x] Analyze all model options to identify internal/developer-only ones
 - [x] Create implementation plan
 - [x] Draft GitHub issue
-- [ ] Add metadata markers to internal options in data model
-- [ ] Update documentation generator to filter internal options
-- [ ] Test that internal options remain functional
-- [ ] Generate updated user documentation
+- [x] Create GitHub issue #437
+- [x] Add metadata markers to internal options in data model (NetRadiationMethod, StorageHeatMethod, EmissionsMethod)
+- [x] Update documentation generator to filter internal options
+- [x] Test that internal options are filtered from docs
+- [ ] Add remaining internal markers to other enums (StabilityMethod, RoughnessMethod, FAIMethod)
+- [ ] Add internal_only flag to ModelControl fields (kdownzen, diagnose)
+- [ ] Test that internal options remain functional in code
+- [ ] Generate final updated user documentation
 - [ ] Create developer documentation section
 
 ## Key Decisions

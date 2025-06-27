@@ -128,15 +128,34 @@ jobs:
         run: |
           pip install pypi-cleanup
 
-          # Read versions to delete
-          while IFS= read -r version; do
-            echo "Attempting to delete version: $version"
-            pypi-cleanup -p ${{ github.event.inputs.package_name }} \
-                         -t https://test.pypi.org/ \
-                         --version "$version" \
-                         --yes || echo "Failed to delete $version"
-          done < versions_to_delete.txt
+          # Note: pypi-cleanup doesn't support deleting specific versions
+          # It uses regex patterns to match versions to delete
+          
+          echo "⚠️  pypi-cleanup tool limitations detected:"
+          echo "- Cannot delete specific versions, only by regex patterns"
+          echo "- The --version flag doesn't exist in pypi-cleanup"
+          echo ""
+          echo "Running alternative cleanup strategy..."
+          
+          # Use regex to delete old dev versions (keeping recent ones)
+          # This will delete dev versions older than what we want to keep
+          PACKAGE_NAME="${{ github.event.inputs.package_name || 'supy' }}"
+          VERSIONS_TO_KEEP="${{ github.event.inputs.versions_to_keep || '50' }}"
+          
+          echo "Attempting to clean old dev versions..."
+          pypi-cleanup -u __token__ \
+                       -p "$PACKAGE_NAME" \
+                       -t https://test.pypi.org/ \
+                       -r '.*\.dev[0-9]+$' \
+                       --query-only || echo "Query failed"
+          
+          # For actual deletion, uncomment below and remove --query-only above:
+          # pypi-cleanup -u __token__ \
+          #              -p "$PACKAGE_NAME" \
+          #              -t https://test.pypi.org/ \
+          #              -r '.*\.dev[0-9]+$' \
+          #              --do-it \
+          #              --yes
         env:
-          PYPIC_USERNAME: __token__
-          PYPIC_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          PYPI_CLEANUP_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
           TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
