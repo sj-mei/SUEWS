@@ -221,6 +221,26 @@ def collect_yaml_differences(original: Any, updated: Any, path: str = "") -> Lis
 
     return diffs
 
+def save_precheck_diff_report(diffs: List[dict], original_yaml_path: str):
+    """Save precheck diff report as CSV next to the original YAML file."""
+    if not diffs:
+        logger_supy.info("No differences found between original and updated YAML.")
+        return
+
+    report_filename = f"precheck_report_{os.path.basename(original_yaml_path).replace('.yml', '.csv')}"
+    report_path = os.path.join(os.path.dirname(original_yaml_path), report_filename)
+
+    with open(report_path, "w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=["site", "parameter", "old_value", "new_value", "reason"])
+        writer.writeheader()
+        for row in diffs:
+            for key in ["old_value", "new_value"]:
+                if row[key] is None:
+                    row[key] = "null"
+            writer.writerow(row)
+
+    logger_supy.info(f"Precheck difference report saved to: {report_path}")
+
 
 def precheck_printing(data: dict) -> dict:
     logger_supy.info("Running basic precheck...")
@@ -686,9 +706,6 @@ def run_precheck(path: str) -> dict:
     data = precheck_land_cover_fractions(data)
 
     # ---- Step 10: Rules associated to selected model options ----
-    # data = precheck_rslmethod(data)
-    # data = precheck_storageheatmethod(data) 
-    # data = precheck_stebbsmethod(data)
     data = precheck_model_option_rules(data)
 
     # ---- Step 11: Save output YAML ----
@@ -702,23 +719,7 @@ def run_precheck(path: str) -> dict:
 
     # ---- Step 12: Generate precheck diff report CSV ----
     diffs = collect_yaml_differences(original_data, data)
-
-    if diffs:
-        report_filename = f"precheck_report_{os.path.basename(path).replace('.yml', '.csv')}"
-        report_path = os.path.join(os.path.dirname(path), report_filename)
-
-        with open(report_path, "w", newline="") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=["site", "parameter", "old_value", "new_value", "reason"])
-            writer.writeheader()
-            for row in diffs:
-                for key in ["old_value", "new_value"]:
-                    if row[key] is None:
-                        row[key] = "null"
-                writer.writerow(row)
-
-        logger_supy.info(f"Precheck difference report saved to: {report_path}")
-    else:
-        logger_supy.info("No differences found between original and updated YAML.")
+    save_precheck_diff_report(diffs, path)
 
     # ---- Step 13: Print completion ----
     logger_supy.info("Precheck complete.\n")
