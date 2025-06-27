@@ -127,6 +127,20 @@ jobs:
         continue-on-error: true
         run: |
           pip install pypi-cleanup
+          
+          # Create .pypirc configuration file
+          cat > ~/.pypirc << EOF
+          [distutils]
+          index-servers =
+              testpypi
+          
+          [testpypi]
+          repository = https://test.pypi.org/legacy/
+          username = __token__
+          password = ${{ secrets.TEST_PYPI_API_TOKEN }}
+          EOF
+          
+          chmod 600 ~/.pypirc
 
           # Note: pypi-cleanup doesn't support deleting specific versions
           # It uses regex patterns to match versions to delete
@@ -143,7 +157,7 @@ jobs:
           VERSIONS_TO_KEEP="${{ github.event.inputs.versions_to_keep || '50' }}"
           
           echo "Attempting to clean old dev versions..."
-          pypi-cleanup -u __token__ \
+          pypi-cleanup \
                        -p "$PACKAGE_NAME" \
                        -t https://test.pypi.org/ \
                        -r '.*\.dev[0-9]+$' \

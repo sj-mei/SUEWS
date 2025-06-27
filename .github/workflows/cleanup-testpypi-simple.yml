@@ -34,6 +34,21 @@ jobs:
       - name: 'Install pypi-cleanup'
         run: pip install pypi-cleanup
       
+      - name: 'Setup PyPI config'
+        run: |
+          cat > ~/.pypirc << EOF
+          [distutils]
+          index-servers =
+              testpypi
+          
+          [testpypi]
+          repository = https://test.pypi.org/legacy/
+          username = __token__
+          password = ${{ secrets.TEST_PYPI_API_TOKEN }}
+          EOF
+          
+          chmod 600 ~/.pypirc
+      
       - name: 'Run cleanup'
         run: |
           PACKAGE="${{ github.event.inputs.package_name || 'supy' }}"
@@ -48,14 +63,14 @@ jobs:
           
           if [[ "${{ github.event.inputs.dry_run || 'true' }}" == "true" ]]; then
             echo "🔍 Running in query-only mode..."
-            pypi-cleanup -u __token__ \
+            pypi-cleanup \
                          -p "$PACKAGE" \
                          -t https://test.pypi.org/ \
                          $FLAGS \
                          --query-only
           else
             echo "⚠️  Running actual deletion..."
-            pypi-cleanup -u __token__ \
+            pypi-cleanup \
                          -p "$PACKAGE" \
                          -t https://test.pypi.org/ \
                          $FLAGS \
