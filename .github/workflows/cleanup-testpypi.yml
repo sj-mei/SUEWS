@@ -113,7 +113,7 @@ jobs:
 
       - name: 'Upload deletion list'
         if: ${{ !inputs.dry_run }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: versions-to-delete
           path: versions_to_delete.txt
