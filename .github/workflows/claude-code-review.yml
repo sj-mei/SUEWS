@@ -1,15 +1,15 @@
 # Claude Code Review Workflow
 #
-# This workflow triggers Claude code review when YOU (and only you) mention @claude in a PR comment.
+# This workflow triggers Claude code review when YOU (and only you) mention @claude-review in a PR comment.
 # 
 # Usage:
-#   1. In any pull request, add a comment mentioning @claude
+#   1. In any pull request, add a comment mentioning @claude-review
 #   2. Include your specific review request in the comment
 #   3. Claude will respond with code review feedback
 #
 # Example:
-#   "@claude please review this code for security vulnerabilities"
-#   "@claude check if this follows our coding standards"
+#   "@claude-review please review this code for security vulnerabilities"
+#   "@claude-review check if this follows our coding standards"
 #
 # Note: Set CLAUDE_AUTHORIZED_USERS secret in repository settings
 # Format: comma-separated list of GitHub usernames (e.g., "sunt05,user2,user3")
@@ -24,13 +24,13 @@ on:
 
 jobs:
   claude-review:
-    # Only run when Claude is mentioned in a PR comment
+    # Only run when Claude-review is mentioned in a PR comment
     if: |
       ((github.event_name == 'issue_comment' && 
         github.event.issue.pull_request && 
-        contains(github.event.comment.body, '@claude')) || 
+        contains(github.event.comment.body, '@claude-review')) || 
        (github.event_name == 'pull_request_review_comment' && 
-        contains(github.event.comment.body, '@claude')))
+        contains(github.event.comment.body, '@claude-review')))
     
     runs-on: ubuntu-latest
     permissions:
@@ -70,7 +70,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '❌ Sorry, you are not authorized to trigger Claude reviews. Please contact the repository maintainers.'
+              body: '❌ Sorry, you are not authorized to trigger Claude. Please contact the repository maintainers.'
             };
             await github.rest.issues.createComment(comment);
             core.setFailed('Unauthorized user');
@@ -106,7 +106,7 @@ jobs:
           # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
           # model: "claude-opus-4-20250514"
           
-          # Extract the comment text and use it as the prompt
+          # Extract the comment text and use it as the prompt (removing the trigger phrase)
           direct_prompt: |
             ${{ github.event.comment.body }}
             
