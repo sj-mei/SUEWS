@@ -5,9 +5,13 @@ from supy.data_model.core import (
     precheck_start_end_date,
     precheck_site_season_adjustments,
     precheck_model_options_constraints,
-    precheck_diagmethod,
     precheck_replace_empty_strings_with_none,
     precheck_land_cover_fractions,
+    precheck_nullify_zero_sfr_params,
+    precheck_nonzero_sfr_requires_nonnull_params,
+    precheck_diagmethod,
+    precheck_storageheatmethod,
+    precheck_stebbsmethod,
     SeasonCheck,
 )
 
@@ -699,10 +703,12 @@ def test_diagmethod2_requires_faibldg_null_raises():
             {
                 "properties": {
                     "land_cover": {
-                        "bldgs": {"sfr": {"value": 0.5}},
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "faibldg": {"value": None},  # Correct position under bldgs
+                        },
                         "paved": {"sfr": {"value": 0.5}},
-                    },
-                    "faibldg": {"value": None},  # Explicit null
+                    }
                 }
             }
         ],
@@ -710,6 +716,7 @@ def test_diagmethod2_requires_faibldg_null_raises():
 
     with pytest.raises(ValueError, match=r"faibldg.*must be set and non-null"):
         precheck_diagmethod(yaml_input)
+
 
 
 
@@ -741,10 +748,12 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
             {
                 "properties": {
                     "land_cover": {
-                        "bldgs": {"sfr": {"value": 0.5}},
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "faibldg": {"value": 1.5},  # Correct position under bldgs
+                        },
                         "paved": {"sfr": {"value": 0.5}},
-                    },
-                    "faibldg": {"value": 1.5},
+                    }
                 }
             }
         ],
@@ -752,6 +761,327 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
 
     result = precheck_diagmethod(yaml_input)
 
-    assert result["sites"][0]["properties"]["faibldg"]["value"] == 1.5
+    assert result["sites"][0]["properties"]["land_cover"]["bldgs"]["faibldg"]["value"] == 1.5
 
 
+def test_precheck_nullify_zero_sfr_params_nullifies_correctly():
+    yaml_input = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {"sfr": {"value": 0.0}, "alb": {"value": 0.12}, "irrfrac": {"value": 0.0}},
+                        "paved": {"sfr": {"value": 0.5}, "alb": {"value": 0.1}},
+                    },
+                    "faibldg": {"value": 1.2},
+                    "waterdist": {"to_bldgs": {"value": 0.3}},
+                }
+            }
+        ]
+    }
+
+    result = precheck_nullify_zero_sfr_params(deepcopy(yaml_input))
+    site_props = result["sites"][0]["properties"]
+
+    # All params under bldgs except sfr should now be None
+    assert site_props["land_cover"]["bldgs"]["sfr"]["value"] == 0.0
+    assert site_props["land_cover"]["bldgs"]["alb"]["value"] is None
+    assert site_props["land_cover"]["bldgs"]["irrfrac"]["value"] is None
+
+    # Params under paved should remain untouched
+    assert site_props["land_cover"]["paved"]["alb"]["value"] == 0.1
+
+    # faibldg should remain untouched (it's outside land_cover.bldgs)
+    assert site_props["faibldg"]["value"] == 1.2
+
+def test_precheck_nullify_zero_sfr_params_does_nothing_if_all_nonzero():
+    yaml_input = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {"sfr": {"value": 0.5}, "alb": {"value": 0.12}},
+                        "paved": {"sfr": {"value": 0.5}, "alb": {"value": 0.1}},
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_nullify_zero_sfr_params(deepcopy(yaml_input))
+    site_props = result["sites"][0]["properties"]
+
+    # Everything should remain untouched
+    assert site_props["land_cover"]["bldgs"]["alb"]["value"] == 0.12
+    assert site_props["land_cover"]["paved"]["alb"]["value"] == 0.1
+
+
+def test_precheck_nullify_zero_sfr_params_handles_lists():
+    yaml_input = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.0},
+                            "thermal_layers": {
+                                "dz": {"value": [0.2, 0.1, 0.1]},
+                                "k": {"value": [1.2, 1.1, 1.1]},
+                                "cp": {"value": [1200000.0, 1100000.0, 1100000.0]},
+                            },
+                            "alb": {"value": 0.12},
+                        },
+                        "paved": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": 0.1},
+                        },
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_nullify_zero_sfr_params(deepcopy(yaml_input))
+    bldgs = result["sites"][0]["properties"]["land_cover"]["bldgs"]
+
+    # Check that all non-sfr parameters in bldgs are now None or list of None
+    assert bldgs["alb"]["value"] is None
+    assert bldgs["thermal_layers"]["dz"]["value"] == [None, None, None]
+    assert bldgs["thermal_layers"]["k"]["value"] == [None, None, None]
+    assert bldgs["thermal_layers"]["cp"]["value"] == [None, None, None]
+
+    # Check that paved remains untouched
+    paved = result["sites"][0]["properties"]["land_cover"]["paved"]
+    assert paved["alb"]["value"] == 0.1
+
+
+def test_nonzero_sfr_with_valid_params_passes():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": 0.12},
+                            "ohm_coef": {
+                                "summer_dry": {
+                                    "a1": {"value": 0.5}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    # Should not raise
+    result = precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+    assert isinstance(result, dict)
+
+def test_nonzero_sfr_missing_param_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": None},  # Should trigger error
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.alb.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+def test_nonzero_sfr_empty_string_param_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": ""},  # Should trigger error
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.alb.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+def test_nonzero_sfr_nested_param_null_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "ohm_coef": {
+                                "summer_dry": {
+                                    "a1": {"value": None}  # Should trigger error
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.ohm_coef\.summer_dry\.a1.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+def test_nonzero_sfr_with_list_containing_none_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "thermal_layers": {
+                                "dz": {"value": [None, None, None]}  # Should trigger error
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.thermal_layers\.dz.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+
+def test_storageheatmethod6_valid_passes():
+    yaml_input = {
+        "model": {"physics": {"storageheatmethod": {"value": 6}}},
+        "sites": [
+            {
+                "properties": {
+                    "vertical_layers": {
+                        "walls": [
+                            {
+                                "thermal_layers": {
+                                    "dz": {"value": [0.2]},
+                                    "k": {"value": [1.2]},
+                                    "cp": {"value": [1000000.0]},
+                                }
+                            }
+                        ]
+                    },
+                    "lambda_c": {"value": 3.0},
+                }
+            }
+        ]
+    }
+    result = precheck_storageheatmethod(deepcopy(yaml_input))
+    assert isinstance(result, dict)
+
+
+def test_storageheatmethod6_dz_null_raises():
+    yaml_input = {
+        "model": {"physics": {"storageheatmethod": {"value": 6}}},
+        "sites": [
+            {
+                "properties": {
+                    "vertical_layers": {
+                        "walls": [
+                            {
+                                "thermal_layers": {
+                                    "dz": {"value": [None]},  
+                                    "k": {"value": [1.2]},
+                                    "cp": {"value": [1000000.0]},
+                                }
+                            }
+                        ]
+                    },
+                    "lambda_c": {"value": 3.0},
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"thermal_layers\.dz.*must be set.*storageheatmethod == 6"):
+        precheck_storageheatmethod(deepcopy(yaml_input))
+
+
+
+def test_storageheatmethod6_null_lambda_c_raises():
+    yaml_input = {
+        "model": {"physics": {"storageheatmethod": {"value": 6}}},
+        "sites": [
+            {
+                "properties": {
+                    "vertical_layers": {
+                        "walls": [
+                            {
+                                "thermal_layers": {
+                                    "dz": {"value": [0.2]},
+                                    "k": {"value": [1.2]},
+                                    "cp": {"value": [1000000.0]},
+                                }
+                            }
+                        ]
+                    },
+                    "lambda_c": {"value": None},  # Invalid
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"lambda_c.*storageheatmethod == 6"):
+        precheck_storageheatmethod(deepcopy(yaml_input))
+
+
+def test_stebbs_nullified_when_method_zero():
+    yaml_input = {
+        "model": {
+            "physics": {
+                "stebbsmethod": {"value": 0}
+            }
+        },
+        "sites": [
+            {
+                "properties": {
+                    "stebbs": {
+                        "WallInternalConvectionCoefficient": {"value": 5.0},
+                        "WindowExternalConvectionCoefficient": {"value": 30.0},
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_stebbsmethod(deepcopy(yaml_input))
+
+    stebbs = result["sites"][0]["properties"]["stebbs"]
+    assert stebbs["WallInternalConvectionCoefficient"]["value"] is None
+    assert stebbs["WindowExternalConvectionCoefficient"]["value"] is None
+
+def test_stebbs_not_touched_if_method_nonzero():
+    yaml_input = {
+        "model": {
+            "physics": {
+                "stebbsmethod": {"value": 1}
+            }
+        },
+        "sites": [
+            {
+                "properties": {
+                    "stebbs": {
+                        "WallInternalConvectionCoefficient": {"value": 5.0},
+                        "WindowExternalConvectionCoefficient": {"value": 30.0},
+                    }
+                }
+            }
+        ]
+    }
+
+    result = precheck_stebbsmethod(deepcopy(yaml_input))
+    stebbs = result["sites"][0]["properties"]["stebbs"]
+    assert stebbs["WallInternalConvectionCoefficient"]["value"] == 5.0
+    assert stebbs["WindowExternalConvectionCoefficient"]["value"] == 30.0
