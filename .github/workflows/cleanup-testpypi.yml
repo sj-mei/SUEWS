@@ -153,6 +153,13 @@ jobs:
           EOF
 
           chmod 600 ~/.pypirc
+          
+          # Debug: Verify token is available
+          if [[ -n "${PYPI_CLEANUP_PASSWORD}" ]]; then
+            echo "✅ PYPI_CLEANUP_PASSWORD is set (length: ${#PYPI_CLEANUP_PASSWORD})"
+          else
+            echo "❌ PYPI_CLEANUP_PASSWORD is not available"
+          fi
 
           # Note: pypi-cleanup doesn't support deleting specific versions
           # It uses regex patterns to match versions to delete
@@ -241,3 +248,5 @@ jobs:
         env:
           PYPI_CLEANUP_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
           TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          PYPIC_USERNAME: __token__
+          PYPIC_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
