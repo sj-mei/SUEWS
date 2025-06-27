@@ -7,7 +7,7 @@ Table-based Input Files (Legacy Format)
 
    **DEPRECATED FORMAT**: Table-based input files are deprecated as of 2025 and will be removed by end of 2025.
 
-   **For new users**: Please use the modern :ref:`YAML format <yaml_input>` instead.
+   **For new users**: Please use the modern :doc:`YAML format <../yaml/index>` instead.
 
    **For existing users**: Please migrate to the YAML format using:
 

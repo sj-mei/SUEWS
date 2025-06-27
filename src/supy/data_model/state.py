@@ -2,8 +2,7 @@ from typing import Optional, Union, List, Literal, Type
 import pandas as pd
 from pydantic import ConfigDict, BaseModel, Field, field_validator, model_validator, PrivateAttr
 
-from .type import RefValue, Reference, FlexibleRefValue, init_df_state
-from .site import SurfaceType
+from .type import RefValue, Reference, FlexibleRefValue, init_df_state, SurfaceType
 
 
 
@@ -13,53 +12,53 @@ class SurfaceInitialState(BaseModel):
     """Base initial state parameters for all surface types"""
 
     state: FlexibleRefValue(float) = Field(
-        description="Initial water state of the surface", json_schema_extra={"unit": "mm"},
+        description="Initial water state of the surface", json_schema_extra={"unit": "mm", "display_name": "State"},
         default=0.0,
         ge=0,
     )  # Default set to 0.0 means dry surface.
     soilstore: FlexibleRefValue(float) = Field(
         description="Initial soil store (essential for QE)",
-        json_schema_extra={"unit": "mm"},
+        json_schema_extra={"unit": "mm", "display_name": "Soilstore"},
         default=150.0,
         ge=10,
     )  # Default set to 150.0 (wet soil) and ge=10 (less than 10 would be too dry) are physically reasonable for a model run.
     snowfrac: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow fraction", json_schema_extra={"unit": "dimensionless"},
+        description="Snow fraction", json_schema_extra={"unit": "dimensionless", "display_name": "Snow Fraction"},
         default=0.0,
         ge=0,
         le=1,
     )  # Default set to 0.0 means no snow on the ground.
     snowpack: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow pack", json_schema_extra={"unit": "mm"},
+        description="Snow pack", json_schema_extra={"unit": "mm", "display_name": "Snow Pack"},
         default=0.0,
         ge=0,
     )
     icefrac: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Ice fraction", json_schema_extra={"unit": "dimensionless"},
+        description="Ice fraction", json_schema_extra={"unit": "dimensionless", "display_name": "Ice Fraction"},
         default=0.0,
         ge=0,
         le=1,
     )
     snowwater: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow water", json_schema_extra={"unit": "mm"},
+        description="Snow water", json_schema_extra={"unit": "mm", "display_name": "Snow Water"},
         default=0.0,
         ge=0,
     )
     snowdens: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Snow density", json_schema_extra={"unit": "kg m^-3"},
+        description="Snow density", json_schema_extra={"unit": "kg m^-3", "display_name": "Snow Density"},
         default=0.0,
         ge=0,
     )
     temperature: FlexibleRefValue(List[float]) = Field(
-        description="Initial temperature for each thermal layer", json_schema_extra={"unit": "degC"},
+        description="Initial temperature for each thermal layer", json_schema_extra={"unit": "degC", "display_name": "Temperature"},
         default=[15.0, 15.0, 15.0, 15.0, 15.0],
     )  # We need to check/undestand what model are these temperatures related to. ESTM? What surface type (wall and roof) of building?
     tsfc: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Initial exterior surface temperature", json_schema_extra={"unit": "degC"},
+        description="Initial exterior surface temperature", json_schema_extra={"unit": "degC", "display_name": "Surface Temperature"},
         default=15.0,
     )
     tin: Optional[Union[FlexibleRefValue(float), None]] = Field(
-        description="Initial interior surface temperature", json_schema_extra={"unit": "degC"},
+        description="Initial interior surface temperature", json_schema_extra={"unit": "degC", "display_name": "Interior Temperature"},
         default=20.0,
     )  # We need to know which model is using this.
     _surface_type: Optional[SurfaceType] = PrivateAttr(default=None)
@@ -220,17 +219,17 @@ class SurfaceInitialState(BaseModel):
 
 class WaterUse(BaseModel):
     wu_total: FlexibleRefValue(float) = Field(
-        description="Total water use", json_schema_extra={"unit": "mm"},
+        description="Total water use", json_schema_extra={"unit": "mm", "display_name": "Wu Total"},
         default=0.0,
         ge=0,
     )  # Default set to 0.0 means no irrigation.
     wu_auto: FlexibleRefValue(float) = Field(
-        description="Automatic water use", json_schema_extra={"unit": "mm"},
+        description="Automatic water use", json_schema_extra={"unit": "mm", "display_name": "Wu Auto"},
         default=0.0,
         ge=0,
     )
     wu_manual: FlexibleRefValue(float) = Field(
-        description="Manual water use", json_schema_extra={"unit": "mm"},
+        description="Manual water use", json_schema_extra={"unit": "mm", "display_name": "Wu Manual"},
         default=0.0,
         ge=0,
     )
@@ -287,22 +286,22 @@ class InitialStateVeg(SurfaceInitialState):
     """Base initial state parameters for vegetated surfaces"""
 
     alb_id: FlexibleRefValue(float) = Field(
-        description="Albedo at the start of the model run.", json_schema_extra={"unit": "dimensionless"},
+        description="Albedo at the start of the model run.", json_schema_extra={"unit": "dimensionless", "display_name": "Alb Id"},
         default=0.25,
     )
     lai_id: FlexibleRefValue(float) = Field(
-        description="Leaf area index at the start of the model run.", json_schema_extra={"unit": "m^2 m^-2"},
+        description="Leaf area index at the start of the model run.", json_schema_extra={"unit": "m^2 m^-2", "display_name": "Lai Id"},
         default=1.0,
     )
     gdd_id: FlexibleRefValue(float) = Field(
-        description="Growing degree days at the start of the model run", json_schema_extra={"unit": "degC d"},
+        description="Growing degree days at the start of the model run", json_schema_extra={"unit": "degC d", "display_name": "Gdd Id"},
         default=0,
     )  # We need to check this and give info for setting values.
     sdd_id: FlexibleRefValue(float) = Field(
-        description="Senescence degree days at the start of the model run", json_schema_extra={"unit": "degC d"},
+        description="Senescence degree days at the start of the model run", json_schema_extra={"unit": "degC d", "display_name": "Sdd Id"},
         default=0,
     )  # This need to be consistent with GDD.
-    wu: WaterUse = Field(default_factory=WaterUse)
+    wu: WaterUse = Field(default_factory=WaterUse, json_schema_extra={"display_name": "Water Use"})
 
     ref: Optional[Reference] = None
 
@@ -437,13 +436,13 @@ class InitialStateDectr(InitialStateVeg):
     """Initial state parameters for deciduous trees"""
 
     porosity_id: FlexibleRefValue(float) = Field(
-        description="Porosity for deciduous trees at the start of the model run", json_schema_extra={"unit": "dimensionless"},
+        description="Porosity for deciduous trees at the start of the model run", json_schema_extra={"unit": "dimensionless", "display_name": "Porosity Id"},
         default=0.2,
         ge=0,
         le=1,
     )
     decidcap_id: FlexibleRefValue(float) = Field(
-        description="Deciduous capacity for deciduous trees at the start of the model run", json_schema_extra={"unit": "mm"},
+        description="Deciduous capacity for deciduous trees at the start of the model run", json_schema_extra={"unit": "mm", "display_name": "Decidcap Id"},
         default=0.3,
         ge=0,
     )
@@ -564,22 +563,132 @@ class InitialStateWater(SurfaceInitialState):
     _surface_type: Literal[SurfaceType.WATER] = SurfaceType.WATER
 
 
+class HDD_ID(BaseModel):
+    """Heating Degree Days and related meteorological tracking parameters.
+    
+    This structure maintains both current day accumulations (fields 1-6) and 
+    previous day values (fields 7-12) for various meteorological parameters
+    used in anthropogenic heat and water use calculations.
+    """
+    
+    # Current day accumulations (updated throughout the day)
+    hdd_accum: float = Field(
+        default=0.0,
+        description="Current day's heating degree days accumulation [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Hdd Accum"}
+    )
+    cdd_accum: float = Field(
+        default=0.0,
+        description="Current day's cooling degree days accumulation [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Cdd Accum"}
+    )
+    temp_accum: float = Field(
+        default=0.0,
+        description="Current day's temperature accumulation for daily mean [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Temp Accum"}
+    )
+    temp_5day_accum: float = Field(
+        default=0.0,
+        description="5-day running mean temperature accumulation [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Temp 5Day Accum"}
+    )
+    precip_accum: float = Field(
+        default=0.0,
+        description="Current day's precipitation total [mm]",
+        json_schema_extra={"unit": "mm", "display_name": "Precip Accum"}
+    )
+    days_since_rain_accum: float = Field(
+        default=0.0,
+        description="Days since rain counter (current) [days]",
+        json_schema_extra={"unit": "days", "display_name": "Days Since Rain Accum"}
+    )
+    
+    # Previous day values (used in calculations)
+    hdd_daily: float = Field(
+        default=0.0,
+        description="Previous day's heating degree days for QF calculations [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Hdd Daily"}
+    )
+    cdd_daily: float = Field(
+        default=0.0,
+        description="Previous day's cooling degree days for QF calculations [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Cdd Daily"}
+    )
+    temp_daily_mean: float = Field(
+        default=0.0,
+        description="Previous day's mean temperature for water use calculations [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Temp Daily Mean"}
+    )
+    temp_5day_mean: float = Field(
+        default=0.0,
+        description="Previous 5-day running mean temperature for QF calculations [degC]",
+        json_schema_extra={"unit": "degC", "display_name": "Temp 5Day Mean"}
+    )
+    precip_daily_total: float = Field(
+        default=0.0,
+        description="Previous day's precipitation total [mm]",
+        json_schema_extra={"unit": "mm", "display_name": "Precip Daily Total"}
+    )
+    days_since_rain: float = Field(
+        default=0.0,
+        description="Days since rain for irrigation calculations [days]",
+        json_schema_extra={"unit": "days", "display_name": "Days Since Rain"}
+    )
+    
+    def to_list(self) -> List[float]:
+        """Convert to list format for legacy compatibility."""
+        return [
+            self.hdd_accum,
+            self.cdd_accum,
+            self.temp_accum,
+            self.temp_5day_accum,
+            self.precip_accum,
+            self.days_since_rain_accum,
+            self.hdd_daily,
+            self.cdd_daily,
+            self.temp_daily_mean,
+            self.temp_5day_mean,
+            self.precip_daily_total,
+            self.days_since_rain
+        ]
+    
+    @classmethod
+    def from_list(cls, values: List[float]) -> "HDD_ID":
+        """Create from list format for legacy compatibility."""
+        if len(values) != 12:
+            raise ValueError(f"Expected 12 values for HDD_ID, got {len(values)}")
+        return cls(
+            hdd_accum=values[0],
+            cdd_accum=values[1],
+            temp_accum=values[2],
+            temp_5day_accum=values[3],
+            precip_accum=values[4],
+            days_since_rain_accum=values[5],
+            hdd_daily=values[6],
+            cdd_daily=values[7],
+            temp_daily_mean=values[8],
+            temp_5day_mean=values[9],
+            precip_daily_total=values[10],
+            days_since_rain=values[11]
+        )
+
+
 class InitialStates(BaseModel):
     """Initial conditions for the SUEWS model"""
 
     snowalb: FlexibleRefValue(float) = Field(
-        description="Snow albedo at the start of the model run", json_schema_extra={"unit": "dimensionless"},
+        description="Snow albedo at the start of the model run", json_schema_extra={"unit": "dimensionless", "display_name": "Snow Albedo"},
         default=0.5,
         ge=0,
         le=1,
     )
-    paved: InitialStatePaved = Field(default_factory=InitialStatePaved)
-    bldgs: InitialStateBldgs = Field(default_factory=InitialStateBldgs)
-    evetr: InitialStateEvetr = Field(default_factory=InitialStateEvetr)
-    dectr: InitialStateDectr = Field(default_factory=InitialStateDectr)
-    grass: InitialStateGrass = Field(default_factory=InitialStateGrass)
-    bsoil: InitialStateBsoil = Field(default_factory=InitialStateBsoil)
-    water: InitialStateWater = Field(default_factory=InitialStateWater)
+    paved: InitialStatePaved = Field(default_factory=InitialStatePaved, json_schema_extra={"display_name": "Paved"})
+    bldgs: InitialStateBldgs = Field(default_factory=InitialStateBldgs, json_schema_extra={"display_name": "Buildings"})
+    evetr: InitialStateEvetr = Field(default_factory=InitialStateEvetr, json_schema_extra={"display_name": "Evergreen Trees"})
+    dectr: InitialStateDectr = Field(default_factory=InitialStateDectr, json_schema_extra={"display_name": "Deciduous Trees"})
+    grass: InitialStateGrass = Field(default_factory=InitialStateGrass, json_schema_extra={"display_name": "Grass"})
+    bsoil: InitialStateBsoil = Field(default_factory=InitialStateBsoil, json_schema_extra={"display_name": "Bare Soil"})
+    water: InitialStateWater = Field(default_factory=InitialStateWater, json_schema_extra={"display_name": "Water"})
     roofs: Optional[List[SurfaceInitialState]] = Field(
         default=[
             SurfaceInitialState(),
@@ -587,6 +696,7 @@ class InitialStates(BaseModel):
             SurfaceInitialState(),
         ],
         description="Initial states for roof layers",
+        json_schema_extra={"display_name": "Roofs"}
     )
     walls: Optional[List[SurfaceInitialState]] = Field(
         default=[
@@ -595,12 +705,13 @@ class InitialStates(BaseModel):
             SurfaceInitialState(),
         ],
         description="Initial states for wall layers",
+        json_schema_extra={"display_name": "Walls"}
     )
 
-    dqndt: float = Field(default=0, description="Change in net radiation", json_schema_extra={"display_name": "Change in Net Radiation"})
-    dqnsdt: float = Field(default=0, description="Change in net shortwave radiation", json_schema_extra={"display_name": "Change in Net Shortwave Radiation"})
+    dqndt: float = Field(default=0, description="Change in net radiation", json_schema_extra={"display_name": "dQn/dt"})
+    dqnsdt: float = Field(default=0, description="Change in net shortwave radiation", json_schema_extra={"display_name": "dQns/dt"})
     dt_since_start: float = Field(default=0, description="Time since start", json_schema_extra={"display_name": "Time Since Start"})
-    lenday_id: int = Field(default=0, description="Length of the day ID", json_schema_extra={"display_name": "Length of Day ID"})
+    lenday_id: int = Field(default=0, description="Length of the day ID", json_schema_extra={"display_name": "Day Length ID"})
     qn_av: float = Field(default=0, description="Average net radiation", json_schema_extra={"display_name": "Average Net Radiation"})
     qn_s_av: float = Field(default=0, description="Average net shortwave radiation", json_schema_extra={"display_name": "Average Net Shortwave Radiation"})
     tair_av: float = Field(default=0, description="Average air temperature", json_schema_extra={"display_name": "Average Air Temperature"})
@@ -608,9 +719,39 @@ class InitialStates(BaseModel):
     tmin_id: float = Field(default=0, description="Minimum temperature ID", json_schema_extra={"display_name": "Minimum Temperature ID"})
     tstep_prev: float = Field(default=0, description="Previous time step", json_schema_extra={"display_name": "Previous Time Step"})
     snowfallcum: float = Field(default=0, description="Cumulative snowfall", json_schema_extra={"display_name": "Cumulative Snowfall"})
-    hdd_id: List[float] = Field(
-        default=[0] * 12, description="Heating degree days ID", json_schema_extra={"display_name": "Heating Degree Days ID"}
+    hdd_id: HDD_ID = Field(
+        default_factory=HDD_ID, 
+        json_schema_extra={"display_name": "Heating Degree Days ID"},
+        description="Heating degree days and meteorological tracking parameters"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def convert_hdd_id_from_list(cls, data):
+        """Convert legacy list format for hdd_id to HDD_ID object."""
+        if isinstance(data, dict) and "hdd_id" in data:
+            hdd_value = data["hdd_id"]
+            if isinstance(hdd_value, list):
+                # Convert from legacy list format to HDD_ID object
+                if len(hdd_value) >= 12:
+                    data["hdd_id"] = {
+                        "hdd_accum": hdd_value[0],
+                        "cdd_accum": hdd_value[1],
+                        "temp_accum": hdd_value[2],
+                        "temp_5day_accum": hdd_value[3],
+                        "precip_accum": hdd_value[4],
+                        "days_since_rain_accum": hdd_value[5],
+                        "hdd_daily": hdd_value[6],
+                        "cdd_daily": hdd_value[7],
+                        "temp_daily_mean": hdd_value[8],
+                        "temp_5day_mean": hdd_value[9],
+                        "precip_daily_total": hdd_value[10],
+                        "days_since_rain": hdd_value[11]
+                    }
+                else:
+                    # If list is too short, create default HDD_ID
+                    data["hdd_id"] = {}
+        return data
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
@@ -657,8 +798,9 @@ class InitialStates(BaseModel):
         df_state[("snowfallcum", "0")] = self.snowfallcum
 
         df_state = df_state.sort_index(axis=1)
-        # special treatment for hdd_id
-        for i, hdd in enumerate(self.hdd_id):
+        # special treatment for hdd_id - convert to list format for legacy compatibility
+        hdd_list = self.hdd_id.to_list()
+        for i, hdd in enumerate(hdd_list):
             df_state[(f"hdd_id", f"({i},)")] = hdd
         df_state = df_state.sort_index(axis=1)
 
@@ -717,7 +859,8 @@ class InitialStates(BaseModel):
         tmin_id = df.loc[grid_id, ("tmin_id", "0")]
         tstep_prev = df.loc[grid_id, ("tstep_prev", "0")]
         snowfallcum = df.loc[grid_id, ("snowfallcum", "0")]
-        hdd_id = [df.loc[grid_id, (f"hdd_id", f"({i},)")] for i in range(12)]
+        hdd_id_list = [df.loc[grid_id, (f"hdd_id", f"({i},)")] for i in range(12)]
+        hdd_id = HDD_ID.from_list(hdd_id_list)
 
         initital_state = {
             "snowalb": snowalb,

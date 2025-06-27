@@ -191,6 +191,6 @@ The complete workflow uses SuPy's public OHM utilities from ``supy.util``:
 
 - **Insufficient data**: Less than 6 months of data often leads to unstable coefficients
 - **Measurement errors**: ΔQS measurements are challenging; validate against energy balance closure
-- **Scale mismatch**: Point measurements may not represent grid-scale surface behavior
+- **Scale mismatch**: Point measurements may not represent grid-scale surface behaviour
 
-This approach enables SUEWS to better represent the thermal behavior of specialised urban surfaces through empirically-derived storage heat flux parameterisations.
+This approach enables SUEWS to better represent the thermal behaviour of specialised urban surfaces through empirically-derived storage heat flux parameterisations.

@@ -588,4 +588,7 @@ docs/source/tutorials/python/df_state.csv
 # Auto-generated Sphinx API documentation
 docs/source/_autosummary/
 
+# Auto-generated RST files from data model
+docs/source/inputs/yaml/schema/*.rst
+
 .claude-parent-branch

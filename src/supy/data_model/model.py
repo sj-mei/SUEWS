@@ -11,17 +11,14 @@ from .type import init_df_state
 
 class EmissionsMethod(Enum):
     '''
-    0: Uses values provided in the meteorological forcing file (SSss_YYYY_data_tt.txt) to calculate QF. If you do not want to include QF to the calculation of surface energy balance, you should set values in the meteorological forcing file to zero to prevent calculation of QF. UMEP provides two methods to calculate QF LQF which is simpler GQF which is more complete but requires more data inputs
-
-    1: Method according to Loridan et al. (2011): SAHP. QF calculated using linear relation with air temperature. Weekday/weekend differences due to profile only. Scales with population density. Modelled values will be used even if QF is provided in the meteorological forcing file. CO2 emission is not calculated
-
-    2: Method according to Järvi et al. (2011): SAHP_2. QF calculated using HDD and CDD. Weekday/weekend differences due to profile and coefficients QF_a,b,c. Scales with population density. Modelled values will be used even if QF is provided in the meteorological forcing file. CO2 emission is not calculated
-
-    3: Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature using coefficients specified. Linear relation with air temperature. Weekday/weekend differences due to profile only. Scales with population density. CO2 emission is not calculated
-
-    4: Järvi et al. (2019) method, in addition to anthropogenic heat due to building energy use calculated by Järvi et al. (2011), that due to metabolism and traffic is also calculated using coefficients specified and diurnal patterns specified. Modelled values will be used even if QF is provided in the meteorological forcing file. CO2 emission is not calculated
-
-    5: QF calculated using EmissionMethod = 4. Fc (both biogenic and anthropogenic) components calculated following Järvi et al. (2019). Emissions from traffic and human metabolism calculated as a bottom up approach using coefficients specified and diurnal patterns specified. Building emissions are calculated with the aid of heating and cooling degree days. Biogenic emissions and sinks are calculated using coefficients specified
+    Method for calculating anthropogenic heat flux (QF) and CO2 emissions.
+    
+    0: NO_EMISSIONS - Uses observed QF values from forcing file. Set to zero in forcing file to exclude QF from energy balance
+    1: L11 - Loridan et al. (2011) SAHP method. Linear relation with air temperature, weekday/weekend profiles, scales with population density
+    2: J11 - Järvi et al. (2011) SAHP_2 method. Uses heating/cooling degree days, weekday/weekend differences via profiles and coefficients
+    3: L11_UPDATED - Modified Loridan method using daily mean air temperature instead of instantaneous values
+    4: J19 - Järvi et al. (2019) method. Includes building energy use, human metabolism, and traffic contributions
+    5: J19_UPDATED - As method 4 but also calculates CO2 emissions (biogenic and anthropogenic components)
     '''
     # just a demo to show how to use Enum for emissionsmethod
     NO_EMISSIONS = 0
@@ -43,31 +40,15 @@ class EmissionsMethod(Enum):
 
 class NetRadiationMethod(Enum):
     '''
-    0: Uses observed values of Q* supplied in meteorological forcing file
-
-    1: Q* modelled with L↓ observations supplied in meteorological forcing file. Zenith angle not accounted for in albedo calculation
-
-    2: Q* modelled with L↓ modelled using cloud cover fraction supplied in meteorological forcing file [Loridan et al., 2011]. Zenith angle not accounted for in albedo calculation
-
-    3: Q* modelled with L↓ modelled using air temperature and relative humidity supplied in meteorological forcing file [Loridan et al., 2011]. Zenith angle not accounted for in albedo calculation
-
-    11: Same as 1 but with L↑ modelled using surface temperature. Not recommended in this version
-
-    12: Same as 2 but with L↑ modelled using surface temperature. Not recommended in this version
-
-    13: Same as 3 but with L↑ modelled using surface temperature. Not recommended in this version
-
-    100: Q* modelled with L↓ observations supplied in meteorological forcing file. Zenith angle accounted for in albedo calculation. SSss_YYYY_NARPOut.txt file produced. Not recommended in this version
-
-    200: Q* modelled with L↓ modelled using cloud cover fraction supplied in meteorological forcing file [Loridan et al., 2011]. Zenith angle accounted for in albedo calculation. SSss_YYYY_NARPOut.txt file produced. Not recommended in this version
-
-    300: Q* modelled with L↓ modelled using air temperature and relative humidity supplied in meteorological forcing file [Loridan et al., 2011]. Zenith angle accounted for in albedo calculation. SSss_YYYY_NARPOut.txt file produced. Not recommended in this version
-
-    1001: Q* modelled with SPARTACUS-Surface (SS) but with L↓ modelled as in 1. Experimental in this version
-
-    1002: Q* modelled with SPARTACUS-Surface (SS) but with L↓ modelled as in 2. Experimental in this version
-
-    1003: Q* modelled with SPARTACUS-Surface (SS) but with L↓ modelled as in 3. Experimental in this version
+    Method for calculating net all-wave radiation (Q*).
+    
+    0: OBSERVED - Uses observed Q* values from forcing file
+    1: LDOWN_OBSERVED - Models Q* using observed longwave down radiation (L↓) from forcing file
+    2: LDOWN_CLOUD - Models Q* with L↓ estimated from cloud cover fraction
+    3: LDOWN_AIR - Models Q* with L↓ estimated from air temperature and relative humidity (recommended for basic runs)
+    11-13: Surface temperature variants of methods 1-3 (not recommended)
+    100-300: Zenith angle correction variants with NARP output (not recommended)
+    1001-1003: SPARTACUS-Surface integration variants (experimental)
     '''
     OBSERVED = 0
     LDOWN_OBSERVED = 1
@@ -92,17 +73,14 @@ class NetRadiationMethod(Enum):
 
 class StorageHeatMethod(Enum):
     '''
-    0: Uses observed values of ΔQS supplied in meteorological forcing file
-
-    1: ΔQS modelled using the objective hysteresis model (OHM) [Grimmond et al., 1991] using parameters specified for each surface type
-
-    3: ΔQS modelled using AnOHM [Sun et al., 2017]. Not recommended in this version
-
-    4: ΔQS modelled using the Element Surface Temperature Method (ESTM) [Offerle et al., 2005]. Not recommended in this version
-
-    5: ΔQS modelled using extended ESTM with separate surface temperatures for different facets (roof, wall, ground surfaces)
-
-    6: ΔQS modelled using OHM with enhanced parameterisation
+    Method for calculating storage heat flux (ΔQS).
+    
+    0: OBSERVED - Uses observed ΔQS values from forcing file
+    1: OHM_WITHOUT_QF - Objective Hysteresis Model using Q* only (use with OhmIncQf=0)
+    3: ANOHM - Analytical OHM (Sun et al., 2017) - not recommended
+    4: ESTM - Element Surface Temperature Method (Offerle et al., 2005) - not recommended
+    5: ESTM_EXTENDED - Extended ESTM with separate roof/wall/ground temperatures
+    6: OHM_ENHANCED - OHM with enhanced parameterisation
     '''
     OBSERVED = 0
     OHM_WITHOUT_QF = 1
@@ -120,8 +98,10 @@ class StorageHeatMethod(Enum):
 
 class OhmIncQf(Enum):
     '''
-    0: ΔQS modelled Q* only
-    1: ΔQS modelled using Q*+QF
+    Controls inclusion of anthropogenic heat flux in OHM storage heat calculations.
+    
+    0: EXCLUDE - Use Q* only (required when StorageHeatMethod=1)
+    1: INCLUDE - Use Q*+QF (required when StorageHeatMethod=2)
     '''
     EXCLUDE = 0
     INCLUDE = 1
@@ -135,11 +115,13 @@ class OhmIncQf(Enum):
 
 class RoughnessMethod(Enum):
     '''
-    1: Fixed roughness length - use values set in SiteSelect
-    2: Variable roughness length based on vegetation state - Rule of thumb (Grimmond & Oke 1999)
-    3: Variable roughness length - MacDonald 1998 method
-    4: Variable roughness length - lambdaP dependent as in Fig.1a of Grimmond & Oke (1999)
-    5: Variable roughness length - alternative method
+    Method for calculating aerodynamic roughness length (z0m) and thermal roughness length (z0h).
+    
+    1: FIXED - Fixed roughness length from site parameters
+    2: VARIABLE - Variable based on vegetation LAI using rule of thumb (Grimmond & Oke 1999)
+    3: MACDONALD - MacDonald et al. (1998) morphometric method based on building geometry
+    4: LAMBDAP_DEPENDENT - Varies with plan area fraction λp (Grimmond & Oke 1999)
+    5: ALTERNATIVE - Alternative variable method
     '''
     FIXED = 1  # Fixed roughness length
     VARIABLE = 2  # Variable roughness length based on vegetation state
@@ -156,11 +138,13 @@ class RoughnessMethod(Enum):
 
 class StabilityMethod(Enum):
     '''
-    0: Not used
-    1: Not used
-    2: Momentum: unstable: Dyer [1974] modified by Högström [1988], stable: Van Ulden and Holtslag [1985]; Heat: Dyer [1974] modified by Högström [1988]. Not recommended in this version.
-    3: Momentum: Campbell and Norman [1998] (Eq 7.27, Pg97); Heat: unstable: Campbell and Norman [1998], stable: Campbell and Norman [1998]. Recommended in this version.
-    4: Momentum: Businger et al. [1971] modified by Högström [1988]; Heat: Businger et al. [1971] modified by Högström [1988]. Not recommended in this version.
+    Atmospheric stability correction functions for momentum and heat fluxes.
+    
+    0: NOT_USED - Reserved
+    1: NOT_USED2 - Reserved  
+    2: HOEGSTROM - Dyer (1974)/Högström (1988) for momentum, Van Ulden & Holtslag (1985) for stable conditions (not recommended)
+    3: CAMPBELL_NORMAN - Campbell & Norman (1998) formulations for both momentum and heat (recommended)
+    4: BUSINGER_HOEGSTROM - Businger et al. (1971)/Högström (1988) formulations (not recommended)
     '''
     NOT_USED = 0
     NOT_USED2 = 1
@@ -177,9 +161,11 @@ class StabilityMethod(Enum):
 
 class SMDMethod(Enum):
     '''
-    0: SMD modelled using parameters specified
-    1: Observed SM provided in the meteorological forcing file is used. Data are provided as volumetric soil moisture content. Metadata must be provided
-    2: Observed SM provided in the meteorological forcing file is used. Data are provided as gravimetric soil moisture content. Metadata must be provided
+    Method for determining soil moisture deficit (SMD).
+    
+    0: MODELLED - SMD calculated from water balance using soil parameters
+    1: OBSERVED_VOLUMETRIC - Uses observed volumetric soil moisture content (m³/m³) from forcing file
+    2: OBSERVED_GRAVIMETRIC - Uses observed gravimetric soil moisture content (kg/kg) from forcing file
     '''
     MODELLED = 0
     OBSERVED_VOLUMETRIC = 1
@@ -194,8 +180,10 @@ class SMDMethod(Enum):
 
 class WaterUseMethod(Enum):
     '''
-    0: External water use modelled using parameters specified
-    1: Observations of external water use provided in the meteorological forcing file are used.
+    Method for determining external water use (irrigation).
+    
+    0: MODELLED - Water use calculated based on soil moisture deficit and irrigation parameters
+    1: OBSERVED - Uses observed water use values from forcing file
     '''
     MODELLED = 0
     OBSERVED = 1
@@ -209,9 +197,11 @@ class WaterUseMethod(Enum):
 
 class RSLMethod(Enum):
     '''
-    0: Use MOST (Monin-Obukhov Similarity Theory) to calculate near surface diagnostics
-    1: Use RST (Roughness Sublayer Theory) to calculate near surface diagnostics - Tang
-    2: Use a set of criteria based on plan area index, frontal area index and heights of roughness elements to determine if RSL or MOST should be used. - Vitor
+    Method for calculating near-surface meteorological diagnostics (2m temperature, 2m humidity, 10m wind speed).
+    
+    0: MOST (Monin-Obukhov Similarity Theory) - Appropriate for relatively homogeneous, flat surfaces
+    1: RST (Roughness Sublayer Theory) - Appropriate for heterogeneous urban surfaces with tall roughness elements
+    2: VARIABLE - Automatically selects between MOST and RST based on surface morphology (plan area index, frontal area index, and roughness element heights)
     '''
     MOST = 0
     RST = 1
@@ -226,9 +216,11 @@ class RSLMethod(Enum):
 
 class FAIMethod(Enum):
     '''
-    0: Not documented - set to zero
-    1: Fixed frontal area index
-    2: Variable frontal area index based on vegetation state
+    Method for calculating frontal area index (FAI) - the ratio of frontal area to plan area.
+    
+    0: ZERO - FAI set to zero (typically for non-urban areas)
+    1: FIXED - Fixed FAI from site parameters
+    2: VARIABLE - Variable FAI based on vegetation LAI changes
     '''
     ZERO = 0 # Not documented
     FIXED = 1  # Fixed frontal area index
@@ -243,9 +235,12 @@ class FAIMethod(Enum):
 
 class RSLLevel(Enum):
     '''
-    0: No local climate effects considered
-    1: Basic local climate method for accounting for local climate effects (e.g. near-surface temperature impacts on phenology)
-    2: Detailed local climate method for accounting for local climate effects
+    Method for incorporating local environmental feedbacks on surface processes, particularly vegetation phenology 
+    and evapotranspiration responses to urban heat island effects.
+    
+    0: NONE - No local climate adjustments; use forcing file meteorology directly
+    1: BASIC - Simple adjustments for urban temperature effects on leaf area index (LAI) and growing degree days
+    2: DETAILED - Comprehensive feedbacks including moisture stress, urban CO2 dome effects, and modified phenology cycles
     '''
     NONE = 0
     BASIC = 1
@@ -259,12 +254,11 @@ class RSLLevel(Enum):
 
 class GSModel(Enum):
     """
-    1: original parameterisation (Jarvi et al. 2011)
-    2:new parameterisation (Ward et al. 2016)
+    Stomatal conductance parameterisation method for vegetation surfaces.
+    
+    1: JARVI - Original parameterisation (Järvi et al. 2011) based on environmental controls
+    2: WARD - Updated parameterisation (Ward et al. 2016) with improved temperature and VPD responses
     """
-    # 3:original parameterisation (Jarvi et al. 2011) with 2 m temperature
-    # 4:new parameterisation (Ward et al. 2016) with 2 m temperature
-
     JARVI = 1
     WARD = 2
     # MP: Removed as dependent on rsllevel - legacy options for CO2 with 2 m temperature
@@ -279,9 +273,11 @@ class GSModel(Enum):
 
 class StebbsMethod(Enum):
     '''
-    0: No STEBBS calculations
-    1: STEBBS used with default stebbs parameters
-    2: STEBBS used with provided stebbs parameters from user
+    Surface Temperature Energy Balance Based Scheme (STEBBS) for facet temperatures.
+    
+    0: NONE - STEBBS calculations disabled
+    1: DEFAULT - STEBBS enabled with default parameters
+    2: PROVIDED - STEBBS enabled with user-specified parameters
     '''
     NONE = 0
     DEFAULT = 1
@@ -295,8 +291,10 @@ class StebbsMethod(Enum):
 
 class SnowUse(Enum):
     '''
-    0: Snow calculations are not performed
-    1: Snow calculations are performed
+    Controls snow process calculations.
+    
+    0: DISABLED - Snow processes not included
+    1: ENABLED - Snow accumulation, melt, and albedo effects included
     '''
     DISABLED = 0
     ENABLED = 1
@@ -344,77 +342,89 @@ for enum_class in [
 
 
 class ModelPhysics(BaseModel):
+    """
+    Model physics configuration options.
+    
+    Key method interactions:
+    
+    - diagmethod: Determines HOW near-surface values (2m temp, 10m wind) are calculated from forcing data
+    - stabilitymethod: Provides stability correction functions used BY diagmethod calculations  
+    - localclimatemethod: Uses the near-surface values FROM diagmethod to modify vegetation processes
+    - gsmodel: Stomatal conductance model that may be influenced by localclimatemethod adjustments
+    """
     netradiationmethod: FlexibleRefValue(NetRadiationMethod) = Field(
         default=NetRadiationMethod.LDOWN_AIR,
-        description="Method used to calculate net all-wave radiation (Q*). Options include observed values, modelled with various longwave parameterisations, and SPARTACUS-Surface integration",
+        description="Method for calculating net all-wave radiation (Q*). Options: 0 (OBSERVED) = Uses observed Q* from forcing file; 1 (LDOWN_OBSERVED) = Models Q* using observed L↓; 2 (LDOWN_CLOUD) = Models Q* with L↓ from cloud cover; 3 (LDOWN_AIR) = Models Q* with L↓ from air temp and RH (recommended); 11 (LDOWN_SURFACE) = Surface temp variant of method 1 (not recommended); 12 (LDOWN_CLOUD_SURFACE) = Surface temp variant of method 2 (not recommended); 13 (LDOWN_AIR_SURFACE) = Surface temp variant of method 3 (not recommended); 100 (LDOWN_ZENITH) = Zenith angle variant of method 1; 200 (LDOWN_CLOUD_ZENITH) = Zenith angle variant of method 2; 300 (LDOWN_AIR_ZENITH) = Zenith angle variant of method 3; 1001 (LDOWN_SS_OBSERVED) = SPARTACUS-Surface variant of method 1 (experimental); 1002 (LDOWN_SS_CLOUD) = SPARTACUS-Surface variant of method 2 (experimental); 1003 (LDOWN_SS_AIR) = SPARTACUS-Surface variant of method 3 (experimental)",
         json_schema_extra={"unit": "dimensionless"}
     )
     emissionsmethod: FlexibleRefValue(EmissionsMethod) = Field(
         default=EmissionsMethod.J11,
-        description="Method used to calculate anthropogenic heat flux (QF) and CO2 emissions. Options include observed values, Loridan et al. (2011) SAHP, Järvi et al. (2011) SAHP_2, and Järvi et al. (2019) methods",
+        description="Method for calculating anthropogenic heat flux (QF) and CO2 emissions. Options: 0 (NO_EMISSIONS) = Observed QF from forcing file; 1 (L11) = Loridan et al. 2011 linear temp relation; 2 (J11) = Järvi et al. 2011 with HDD/CDD; 3 (L11_UPDATED) = Loridan with daily mean temp; 4 (J19) = Järvi et al. 2019 including metabolism and traffic; 5 (J19_UPDATED) = As 4 with CO2 emissions",
         json_schema_extra={"unit": "dimensionless"}
     )
     storageheatmethod: FlexibleRefValue(StorageHeatMethod) = Field(
         default=StorageHeatMethod.OHM_WITHOUT_QF,
-        description="Method used to calculate storage heat flux (ΔQS). Options include observed values, Objective Hysteresis Model (OHM), AnOHM, Element Surface Temperature Method (ESTM), and extended ESTM",
+        description="Method for calculating storage heat flux (ΔQS). Options: 0 (OBSERVED) = Uses observed ΔQS from forcing file; 1 (OHM_WITHOUT_QF) = Objective Hysteresis Model using Q* only; 3 (ANOHM) = Analytical OHM (not recommended); 4 (ESTM) = Element Surface Temperature Method (not recommended); 5 (ESTM_EXTENDED) = Extended ESTM with separate facet temps; 6 (OHM_ENHANCED) = Enhanced OHM parameterisation",
         json_schema_extra={"unit": "dimensionless"}
     )
     ohmincqf: FlexibleRefValue(OhmIncQf) = Field(
         default=OhmIncQf.EXCLUDE,
-        description="Whether to include anthropogenic heat flux (QF) in OHM storage heat calculations. 0: use Q* only, 1: use Q*+QF",
+        description="Controls inclusion of anthropogenic heat flux in OHM storage heat calculations. Options: 0 (EXCLUDE) = Use Q* only (required when StorageHeatMethod=1); 1 (INCLUDE) = Use Q*+QF (required when StorageHeatMethod=2)",
         json_schema_extra={"unit": "dimensionless"}
     )
     roughlenmommethod: FlexibleRefValue(RoughnessMethod) = Field(
         default=RoughnessMethod.VARIABLE,
-        description="Method used to calculate momentum roughness length (z0). Options include fixed values, variable based on vegetation, MacDonald (1998), and Grimmond & Oke (1999) methods",
+        description="Method for calculating momentum roughness length (z0m). Options: 1 (FIXED) = Fixed from site parameters; 2 (VARIABLE) = Varies with vegetation LAI; 3 (MACDONALD) = MacDonald et al. 1998 morphometric method; 4 (LAMBDAP_DEPENDENT) = Varies with plan area fraction; 5 (ALTERNATIVE) = Alternative variable method",
         json_schema_extra={"unit": "dimensionless"}
     )
     roughlenheatmethod: FlexibleRefValue(RoughnessMethod) = Field(
         default=RoughnessMethod.VARIABLE,
-        description="Method used to calculate heat roughness length (z0h). Options include fixed values, variable based on vegetation, MacDonald (1998), and Grimmond & Oke (1999) methods",
+        description="Method for calculating thermal roughness length (z0h). Options: 1 (FIXED) = Fixed from site parameters; 2 (VARIABLE) = Varies with vegetation LAI; 3 (MACDONALD) = MacDonald et al. 1998 morphometric method; 4 (LAMBDAP_DEPENDENT) = Varies with plan area fraction; 5 (ALTERNATIVE) = Alternative variable method",
         json_schema_extra={"unit": "dimensionless"}
     )
     stabilitymethod: FlexibleRefValue(StabilityMethod) = Field(
         default=StabilityMethod.CAMPBELL_NORMAN,
-        description="Method used for atmospheric stability correction functions. Options include Dyer (1974)/Högström (1988), Campbell & Norman (1998), and Businger et al. (1971) formulations",
+        description="Atmospheric stability correction functions for momentum and heat fluxes. Options: 0 = Reserved; 1 = Reserved; 2 (HOEGSTROM) = Dyer/Högström formulations (not recommended); 3 (CAMPBELL_NORMAN) = Campbell & Norman 1998 formulations (recommended); 4 (BUSINGER_HOEGSTROM) = Businger/Högström formulations (not recommended)",
         json_schema_extra={"unit": "dimensionless"}
     )
     smdmethod: FlexibleRefValue(SMDMethod) = Field(
         default=SMDMethod.MODELLED,
-        description="Method used to calculate soil moisture deficit (SMD). Options include modelled using parameters, or observed volumetric/gravimetric soil moisture from forcing file",
+        description="Method for determining soil moisture deficit (SMD). Options: 0 (MODELLED) = Calculated from water balance using soil parameters; 1 (OBSERVED_VOLUMETRIC) = Uses observed volumetric soil moisture (m³/m³) from forcing file; 2 (OBSERVED_GRAVIMETRIC) = Uses observed gravimetric soil moisture (kg/kg) from forcing file",
         json_schema_extra={"unit": "dimensionless"}
     )
     waterusemethod: FlexibleRefValue(WaterUseMethod) = Field(
         default=WaterUseMethod.MODELLED,
-        description="Method used to calculate external water use for irrigation. Options include modelled using parameters or observed values from forcing file", json_schema_extra={"unit": "dimensionless"}
+        description="Method for determining external water use (irrigation). Options: 0 (MODELLED) = Calculated based on soil moisture deficit and irrigation parameters; 1 (OBSERVED) = Uses observed water use values from forcing file",
+        json_schema_extra={"unit": "dimensionless"}
     )
     rslmethod: FlexibleRefValue(RSLMethod) = Field(
         default=RSLMethod.VARIABLE,
-        description="Method used for calculating near-surface diagnostics and profiles of temperature, humidity, and wind speed. Options include MOST, RST, or variable selection based on surface characteristics", json_schema_extra={"unit": "dimensionless"}
+        description="Method for calculating near-surface meteorological diagnostics (2m temperature, 2m humidity, 10m wind speed). Options: 0 (MOST) = Monin-Obukhov Similarity Theory for homogeneous surfaces; 1 (RST) = Roughness Sublayer Theory for heterogeneous urban surfaces; 2 (VARIABLE) = Automatic selection based on surface morphology (plan area index, frontal area index, and roughness element heights)", 
+        json_schema_extra={"unit": "dimensionless"}
     )
     faimethod: FlexibleRefValue(FAIMethod) = Field(
         default=FAIMethod.FIXED,
-        description="Method used to calculate frontal area index (FAI). Options include fixed values or variable based on vegetation state",
+        description="Method for calculating frontal area index (FAI) - the ratio of frontal area to plan area. Options: 0 (ZERO) = FAI set to zero (non-urban areas); 1 (FIXED) = Fixed FAI from site parameters; 2 (VARIABLE) = Variable FAI based on vegetation LAI changes",
         json_schema_extra={"unit": "dimensionless"}
     )
     rsllevel: FlexibleRefValue(RSLLevel) = Field(
         default=RSLLevel.NONE,
-        description="Method used for accounting for local climate effects on surface processes (e.g. near-surface temperature impacts on phenology). Options include none, basic, or detailed approaches",
+        description="Method for incorporating urban microclimate feedbacks on vegetation and evapotranspiration. Options: 0 (NONE) = No local climate adjustments, use forcing file meteorology directly; 1 (BASIC) = Simple adjustments for urban temperature effects on leaf area index and growing degree days; 2 (DETAILED) = Comprehensive feedbacks including moisture stress, urban CO2 dome effects, and modified phenology cycles",
         json_schema_extra={"unit": "dimensionless"}
     )
     gsmodel: RefValue[GSModel] = Field(
         default=RefValue(GSModel.WARD),
-        description="Stomatal conductance model selection",
+        description="Stomatal conductance parameterisation method for vegetation surfaces. Options: 1 (JARVI) = Original parameterisation (Järvi et al. 2011) based on environmental controls; 2 (WARD) = Updated parameterisation (Ward et al. 2016) with improved temperature and VPD responses",
         json_schema_extra={"unit": "dimensionless"}
     )
     snowuse: FlexibleRefValue(SnowUse) = Field(
         default=SnowUse.DISABLED,
-        description="Whether to include snow calculations in the model. 0: snow calculations disabled, 1: snow calculations enabled", 
+        description="Controls snow process calculations. Options: 0 (DISABLED) = Snow processes not included; 1 (ENABLED) = Snow accumulation, melt, and albedo effects included",
         json_schema_extra={"unit": "dimensionless"}
     )
     stebbsmethod: FlexibleRefValue(StebbsMethod) = Field(
         default=StebbsMethod.NONE,
-        description="Method used for STEBBS (Surface Temperature Energy Balance Based Scheme) calculations. Options include none, default parameters, or user-provided parameters",
+        description="Surface Temperature Energy Balance Based Scheme (STEBBS) for facet temperatures. Options: 0 (NONE) = STEBBS disabled; 1 (DEFAULT) = STEBBS with default parameters; 2 (PROVIDED) = STEBBS with user-specified parameters",
         json_schema_extra={"unit": "dimensionless"}
     )
 

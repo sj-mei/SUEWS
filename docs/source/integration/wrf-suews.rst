@@ -185,7 +185,7 @@ Getting Started
 
 **For Researchers New to WRF-SUEWS:**
 
-1. **Background Knowledge**: Familiarity with WRF and urban climate modeling essential
+1. **Background Knowledge**: Familiarity with WRF and urban climate modelling essential
 2. **Start Simple**: Begin with existing test cases before custom domains
 3. **Computational Resources**: Ensure adequate HPC access for meaningful simulations
 4. **Community Support**: Engage with WRF and SUEWS user communities
@@ -208,4 +208,4 @@ The WRF-SUEWS project welcomes contributions:
 
 .. note::
 
-   **Development Status**: WRF-SUEWS represents a sophisticated but complex integration. Future development should focus on simplifying the workflow and integrating with modern SUEWS/SuPy capabilities for broader adoption in the urban climate modeling community.
+   **Development Status**: WRF-SUEWS represents a sophisticated but complex integration. Future development should focus on simplifying the workflow and integrating with modern SUEWS/SuPy capabilities for broader adoption in the urban climate modelling community.

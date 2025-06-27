@@ -16,8 +16,7 @@ TESTMASTER ?= input_files/yaml_input
 LIVEHTML_OPTS  = \
 	-j auto \
 	--re-ignore 'supy\.util\..*' \
-	--ignore "source/SuPy.log" \
-	--ignore "source/inputs/yaml/schema/*.rst"
+	--ignore "source/SuPy.log"
 
 # Put it first so that "make" without argument is like "make help".
 help:
