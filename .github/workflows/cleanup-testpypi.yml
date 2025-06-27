@@ -139,24 +139,24 @@ jobs:
         continue-on-error: true
         run: |
           pip install pypi-cleanup
-          
+
           # Create .pypirc configuration file
           cat > ~/.pypirc << EOF
           [distutils]
           index-servers =
               testpypi
-          
+
           [testpypi]
           repository = https://test.pypi.org/legacy/
           username = __token__
           password = ${{ secrets.TEST_PYPI_API_TOKEN }}
           EOF
-          
+
           chmod 600 ~/.pypirc
 
           # Note: pypi-cleanup doesn't support deleting specific versions
           # It uses regex patterns to match versions to delete
-          
+
           echo "⚠️  pypi-cleanup tool limitations detected:"
           echo "- Cannot delete specific versions, only by regex patterns"
           echo "- The --version flag doesn't exist in pypi-cleanup"
@@ -164,25 +164,25 @@ jobs:
           echo "Running alternative cleanup strategy..."
           echo "Note: To avoid deleting all versions, consider manual deletion in batches"
           echo "Visit: https://test.pypi.org/manage/project/${PACKAGE_NAME}/releases/"
-          
+
           # Use regex to delete old dev versions (keeping recent ones)
           # This will delete dev versions older than what we want to keep
           PACKAGE_NAME="${{ github.event.inputs.package_name || 'supy' }}"
           VERSIONS_TO_KEEP="${{ github.event.inputs.versions_to_keep || '50' }}"
           BATCH_SIZE="${{ github.event.inputs.batch_size || '10' }}"
-          
+
           echo "Attempting to clean old dev versions..."
-          
+
           TARGET_MONTH="${{ github.event.inputs.target_month || '' }}"
-          
+
           if [[ -n "$TARGET_MONTH" ]]; then
             # Specific month targeted
             echo "Targeting specific month: $TARGET_MONTH"
             ESCAPED_MONTH=$(echo "$TARGET_MONTH" | sed 's/\./\\./g')
             PATTERN="${ESCAPED_MONTH}\\..*\\.dev[0-9]+$"
-            
+
             echo "Pattern: $PATTERN"
-            
+
             if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
               echo "🔍 Query mode - checking what would be deleted..."
               pypi-cleanup \
@@ -200,21 +200,43 @@ jobs:
                            --yes
             fi
           else
-            # Auto mode - check multiple old months
-            echo "Auto mode - checking older months (2025.1 through 2025.5)"
+            # Auto mode - check months from January to previous month
+            CURRENT_YEAR=$(date +%Y)
+            CURRENT_MONTH=$(date +%-m)
             
-            for MONTH in 1 2 3 4 5; do
-              echo ""
-              echo "Checking 2025.$MONTH.* dev versions..."
-              pypi-cleanup \
-                           -p "$PACKAGE_NAME" \
-                           -t https://test.pypi.org/ \
-                           -r "2025\.$MONTH\..*\.dev[0-9]+$" \
-                           --query-only || echo "No matches for 2025.$MONTH.*"
-            done
-            
+            # Calculate which months to check (all months before current month)
+            if [ $CURRENT_MONTH -gt 1 ]; then
+              LAST_MONTH=$((CURRENT_MONTH - 1))
+              echo "Auto mode - checking older months ($CURRENT_YEAR.1 through $CURRENT_YEAR.$LAST_MONTH)"
+              
+              for MONTH in $(seq 1 $LAST_MONTH); do
+                echo ""
+                echo "Checking $CURRENT_YEAR.$MONTH.* dev versions..."
+                pypi-cleanup \
+                             -p "$PACKAGE_NAME" \
+                             -t https://test.pypi.org/ \
+                             -r "$CURRENT_YEAR\.$MONTH\..*\.dev[0-9]+$" \
+                             --query-only || echo "No matches for $CURRENT_YEAR.$MONTH.*"
+              done
+            else
+              # January - check previous year
+              echo "It's January - checking previous year's months"
+              PREV_YEAR=$((CURRENT_YEAR - 1))
+              
+              for MONTH in $(seq 1 12); do
+                echo ""
+                echo "Checking $PREV_YEAR.$MONTH.* dev versions..."
+                pypi-cleanup \
+                             -p "$PACKAGE_NAME" \
+                             -t https://test.pypi.org/ \
+                             -r "$PREV_YEAR\.$MONTH\..*\.dev[0-9]+$" \
+                             --query-only || echo "No matches for $PREV_YEAR.$MONTH.*"
+              done
+            fi
+
             echo ""
             echo "💡 To delete a specific month, run again with target_month parameter"
+            echo "📅 Current month ($CURRENT_YEAR.$CURRENT_MONTH) is preserved to keep recent versions"
           fi
         env:
           PYPI_CLEANUP_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
