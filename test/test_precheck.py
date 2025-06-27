@@ -42,7 +42,7 @@ def test_model_physics_check_passes():
                 for k in [
                     "netradiationmethod", "emissionsmethod", "storageheatmethod", "ohmincqf",
                     "roughlenmommethod", "roughlenheatmethod", "stabilitymethod", "smdmethod",
-                    "waterusemethod", "diagmethod", "faimethod", "localclimatemethod",
+                    "waterusemethod", "rslmethod", "faimethod", "rsllevel",
                     "snowuse", "stebbsmethod"
                 ]
             }
@@ -56,7 +56,7 @@ def test_model_physics_missing_key_raises():
     yaml_input = {
         "model": {
             "physics": {
-                "diagmethod": {"value": 2}
+                "rslmethod": {"value": 2}
             }
         }
     }
@@ -68,7 +68,7 @@ def test_model_physics_empty_value_raises():
     yaml_input = {
         "model": {
             "physics": {
-                "diagmethod": {"value": 2},
+                "rslmethod": {"value": 2},
                 "stabilitymethod": {"value": None},
                 "netradiationmethod": {"value": 1},
                 "emissionsmethod": {"value": 1},
@@ -79,7 +79,7 @@ def test_model_physics_empty_value_raises():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }
@@ -94,7 +94,7 @@ def test_diagmethod_stability_constraint_fails():
         "model": {
             "control": {"start_time": "2025-01-01", "end_time": "2025-12-31"},
             "physics": {
-                "diagmethod": {"value": 2},
+                "rslmethod": {"value": 2},
                 "stabilitymethod": {"value": 1},
                 "storageheatmethod": {"value": 1},
                 "netradiationmethod": {"value": 1},
@@ -105,7 +105,7 @@ def test_diagmethod_stability_constraint_fails():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             },
@@ -113,7 +113,7 @@ def test_diagmethod_stability_constraint_fails():
         "sites": [{}],
     }
 
-    with pytest.raises(ValueError, match=r"If diagmethod == 2.*must be 3"):
+    with pytest.raises(ValueError, match=r"If rslmethod == 2.*must be 3"):
         precheck_model_options_constraints(yaml_input)
 
 
@@ -126,7 +126,7 @@ def test_model_physics_not_touched_by_empty_string_cleanup():
                 "end_time": "2025-12-31",
             },
             "physics": {
-                "diagmethod": {"value": ""},
+                "rslmethod": {"value": ""},
                 "stabilitymethod": {"value": 3},
                 "storageheatmethod": {"value": 3},
                 "netradiationmethod": {"value": 1},
@@ -137,7 +137,7 @@ def test_model_physics_not_touched_by_empty_string_cleanup():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }
@@ -158,7 +158,7 @@ def test_empty_string_becomes_none():
                 "end_time": "2025-12-31",
             },
             "physics": {
-                "diagmethod": {"value": 1},
+                "rslmethod": {"value": 1},
                 "stabilitymethod": {"value": 3},
                 "storageheatmethod": {"value": 1},
                 "netradiationmethod": {"value": 1},
@@ -169,7 +169,7 @@ def test_empty_string_becomes_none():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }
@@ -203,7 +203,7 @@ def test_empty_string_in_list_of_floats():
                 "end_time": "2025-12-31",
             },
             "physics": {
-                "diagmethod": {"value": 1},
+                "rslmethod": {"value": 1},
                 "stabilitymethod": {"value": 3},
                 "storageheatmethod": {"value": 1},
                 "netradiationmethod": {"value": 1},
@@ -214,7 +214,7 @@ def test_empty_string_in_list_of_floats():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }
@@ -248,7 +248,7 @@ def test_empty_string_in_nested_dict():
                 "end_time": "2025-12-31",
             },
             "physics": {
-                "diagmethod": {"value": 1},
+                "rslmethod": {"value": 1},
                 "stabilitymethod": {"value": 3},
                 "storageheatmethod": {"value": 1},
                 "netradiationmethod": {"value": 1},
@@ -259,7 +259,7 @@ def test_empty_string_in_nested_dict():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }
@@ -296,7 +296,7 @@ def test_empty_string_in_surface_type_dict():
                 "end_time": "2025-12-31",
             },
             "physics": {
-                "diagmethod": {"value": 1},
+                "rslmethod": {"value": 1},
                 "stabilitymethod": {"value": 3},
                 "storageheatmethod": {"value": 1},
                 "netradiationmethod": {"value": 1},
@@ -307,7 +307,7 @@ def test_empty_string_in_surface_type_dict():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }
@@ -683,7 +683,7 @@ def test_diagmethod2_requires_faibldg_null_raises():
                 "end_time": "2025-12-31",
             },
             "physics": {
-                "diagmethod": {"value": 2},
+                "rslmethod": {"value": 2},
                 "stabilitymethod": {"value": 3},
                 "storageheatmethod": {"value": 1},
                 "netradiationmethod": {"value": 1},
@@ -694,7 +694,7 @@ def test_diagmethod2_requires_faibldg_null_raises():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }
@@ -728,7 +728,7 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
                 "end_time": "2025-12-31",
             },
             "physics": {
-                "diagmethod": {"value": 2},
+                "rslmethod": {"value": 2},
                 "stabilitymethod": {"value": 3},
                 "storageheatmethod": {"value": 1},
                 "netradiationmethod": {"value": 1},
@@ -739,7 +739,7 @@ def test_diagmethod2_requires_faibldg_passes_if_present():
                 "smdmethod": {"value": 1},
                 "waterusemethod": {"value": 1},
                 "faimethod": {"value": 1},
-                "localclimatemethod": {"value": 1},
+                "rsllevel": {"value": 1},
                 "snowuse": {"value": 0},
                 "stebbsmethod": {"value": 0},
             }

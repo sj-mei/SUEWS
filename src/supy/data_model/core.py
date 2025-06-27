@@ -177,7 +177,7 @@ def precheck_model_physics_params(data: dict) -> dict:
     required = [
         "netradiationmethod", "emissionsmethod", "storageheatmethod", "ohmincqf",
         "roughlenmommethod", "roughlenheatmethod", "stabilitymethod", "smdmethod",
-        "waterusemethod", "diagmethod", "faimethod", "localclimatemethod",
+        "waterusemethod", "rslmethod", "faimethod", "rsllevel",
         "snowuse", "stebbsmethod"
     ]
 
@@ -195,13 +195,13 @@ def precheck_model_physics_params(data: dict) -> dict:
 def precheck_model_options_constraints(data: dict) -> dict:
     physics = data.get("model", {}).get("physics", {})
 
-    diag = physics.get("diagmethod", {}).get("value")
+    diag = physics.get("rslmethod", {}).get("value")
     stability = physics.get("stabilitymethod", {}).get("value")
 
     if diag == 2 and stability != 3:
-        raise ValueError("[model.physics] If diagmethod == 2, stabilitymethod must be 3.")
+        raise ValueError("[model.physics] If rslmethod == 2, stabilitymethod must be 3.")
 
-    logger_supy.debug("diagmethod-stabilitymethod constraint passed.")
+    logger_supy.debug("rslmethod-stabilitymethod constraint passed.")
     return data
 
 def precheck_replace_empty_strings_with_none(data: dict) -> dict:
@@ -431,10 +431,10 @@ def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
 
 def precheck_diagmethod(data: dict) -> dict:
     physics = data.get("model", {}).get("physics", {})
-    diagmethod = physics.get("diagmethod", {}).get("value")
+    rslmethod = physics.get("rslmethod", {}).get("value")
 
-    if diagmethod != 2:
-        logger_supy.debug("[precheck] diagmethod != 2, skipping faibldg check.")
+    if rslmethod != 2:
+        logger_supy.debug("[precheck] rslmethod != 2, skipping faibldg check.")
         return data
 
     for i, site in enumerate(data.get("sites", [])):
@@ -447,9 +447,9 @@ def precheck_diagmethod(data: dict) -> dict:
             faibldg = bldgs.get("faibldg", {})
             faibldg_value = faibldg.get("value")
             if faibldg_value in (None, "", []):
-                raise ValueError(f"[site #{i}] For diagmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
+                raise ValueError(f"[site #{i}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
 
-    logger_supy.info("[precheck] faibldg check for diagmethod==2 passed.")
+    logger_supy.info("[precheck] faibldg check for rslmethod==2 passed.")
     return data
 
 def precheck_storageheatmethod(data: dict) -> dict:
