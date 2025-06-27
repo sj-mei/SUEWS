@@ -192,7 +192,7 @@ See the :doc:`contributing/dev_guide` for detailed guidelines on:
    **Enhanced Documentation**: The Fortran API documentation has been significantly improved with:
    
    - Detailed driver subroutine workflow description
-   - Comprehensive module organization and functionality
+   - Comprehensive module organisation and functionality
    - Clear computational sequence and data flow
    - Better cross-references between components
    

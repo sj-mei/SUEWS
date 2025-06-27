@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import yaml
 import ast
-import supy as sp
 
 from .model import Model
 from .site import Site, SiteProperties, InitialStates, LandCover
@@ -461,7 +460,9 @@ def run_precheck(path: str) -> dict:
 
 class SUEWSConfig(BaseModel):
     name: str = Field(
-        default="sample config", description="Name of the SUEWS configuration", json_schema_extra={"display_name": "Configuration Name"}
+        default="sample config", 
+        description="Name of the SUEWS configuration",
+        json_schema_extra={"display_name": "Configuration Name"}
     )
     description: str = Field(
         default="this is a sample config for testing purposes ONLY - values are not realistic",
@@ -533,7 +534,6 @@ class SUEWSConfig(BaseModel):
     #             else:
     #                 surface_is.state.value = 0
     #     return self
-
 
     @classmethod
     def from_yaml(cls, path: str, use_conditional_validation: bool = True, strict: bool = True) -> "SUEWSConfig":

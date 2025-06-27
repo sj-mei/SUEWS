@@ -544,6 +544,23 @@ body {
     font-size: 0.875rem;
 }
 
+/* KaTeX unit styling */
+.field-unit {
+    font-size: 0.875rem;
+    color: #6c757d;
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+.field-unit .katex {
+    font-size: 0.9em;
+}
+
+.field-unit .katex-display {
+    display: inline-block;
+    margin: 0;
+}
+
 /* Print Styles */
 @media print {
     .modern-sidebar,
