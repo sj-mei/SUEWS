@@ -13,6 +13,12 @@ GitHub issue #428 reports that generated default values are causing issues in mo
 - [x] Phase 2: Replace arbitrary physical defaults with None
   - [x] Conductance parameters (11 fields)
   - [x] Drainage coefficients (4 fields)
+  - [x] Thermal layer parameters (3 fields)
+  - [x] Vegetation parameters (5 fields: beta_bioco2, alpha_bioco2, resp_a, resp_b, theta_bioco2)
+  - [x] Tree properties (4 fields: evetreeh, dectreeh, faievetree, faidectree)
+  - [x] Snow parameters (3 fields: preciplimit, snowdensmin, snowdensmax)
+  - [x] Soil parameters (3 fields: soildepth, soilstorecap, sathydraulicconduct)
+  - [x] Building parameters (2 fields: bldgh, faibldg)
   - [x] Additional parameters (h_maintain, startdls, enddls)
 - [ ] Phase 3: Add validation/warnings
 - [ ] Update documentation
