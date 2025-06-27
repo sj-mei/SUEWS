@@ -245,7 +245,7 @@ class WaterUseMethod(Enum):
         return str(self.value)
 
 
-class DiagMethod(Enum):
+class RSLMethod(Enum):
     '''
     Method for calculating near-surface meteorological diagnostics (2m temperature, 2m humidity, 10m wind speed).
     
@@ -293,7 +293,7 @@ class FAIMethod(Enum):
         return str(self.value)
 
 
-class LocalClimateMethod(Enum):
+class RSLLevel(Enum):
     '''
     Method for incorporating local environmental feedbacks on surface processes, particularly vegetation phenology 
     and evapotranspiration responses to urban heat island effects.
@@ -321,6 +321,9 @@ class GSModel(Enum):
     """
     JARVI = 1
     WARD = 2
+    # MP: Removed as dependent on rsllevel - legacy options for CO2 with 2 m temperature
+    # JARVI_2M = 3
+    # WARD_2M = 4
 
     def __int__(self):
         return self.value
@@ -387,9 +390,9 @@ for enum_class in [
     StabilityMethod,
     SMDMethod,
     WaterUseMethod,
-    DiagMethod,
+    RSLMethod,
     FAIMethod,
-    LocalClimateMethod,
+    RSLLevel,
     GSModel,
     StebbsMethod,
     SnowUse,
@@ -454,8 +457,8 @@ class ModelPhysics(BaseModel):
         description="Method for determining external water use (irrigation). Options: 0 (MODELLED) = Calculated based on soil moisture deficit and irrigation parameters; 1 (OBSERVED) = Uses observed water use values from forcing file",
         json_schema_extra={"unit": "dimensionless"}
     )
-    diagmethod: FlexibleRefValue(DiagMethod) = Field(
-        default=DiagMethod.VARIABLE,
+    rslmethod: FlexibleRefValue(RSLMethod) = Field(
+        default=RSLMethod.VARIABLE,
         description="Method for calculating near-surface meteorological diagnostics (2m temperature, 2m humidity, 10m wind speed). Options: 0 (MOST) = Monin-Obukhov Similarity Theory for homogeneous surfaces; 1 (RST) = Roughness Sublayer Theory for heterogeneous urban surfaces; 2 (VARIABLE) = Automatic selection based on surface morphology (plan area index, frontal area index, and roughness element heights)", 
         json_schema_extra={"unit": "dimensionless"}
     )
@@ -464,8 +467,8 @@ class ModelPhysics(BaseModel):
         description="Method for calculating frontal area index (FAI) - the ratio of frontal area to plan area. Options: 0 (ZERO) = FAI set to zero (non-urban areas); 1 (FIXED) = Fixed FAI from site parameters; 2 (VARIABLE) = Variable FAI based on vegetation LAI changes",
         json_schema_extra={"unit": "dimensionless"}
     )
-    localclimatemethod: FlexibleRefValue(LocalClimateMethod) = Field(
-        default=LocalClimateMethod.NONE,
+    rsllevel: FlexibleRefValue(RSLLevel) = Field(
+        default=RSLLevel.NONE,
         description="Method for incorporating urban microclimate feedbacks on vegetation and evapotranspiration. Options: 0 (NONE) = No local climate adjustments, use forcing file meteorology directly; 1 (BASIC) = Simple adjustments for urban temperature effects on leaf area index and growing degree days; 2 (DETAILED) = Comprehensive feedbacks including moisture stress, urban CO2 dome effects, and modified phenology cycles",
         json_schema_extra={"unit": "dimensionless"}
     )
@@ -558,14 +561,20 @@ class ModelPhysics(BaseModel):
             "stabilitymethod",
             "smdmethod",
             "waterusemethod",
-            "diagmethod",
+            "rslmethod",
             "faimethod",
-            "localclimatemethod",
+            "rsllevel",
             "gsmodel",
             "snowuse",
             "stebbsmethod",
         ]
         for attr in list_attr:
+            if attr == "rslmethod":
+                set_df_value("diagmethod", getattr(self, attr))
+                continue
+            if attr == "rsllevel":
+                set_df_value("localclimatemethod", getattr(self, attr))
+                continue
             set_df_value(attr, getattr(self, attr))
         return df_state
 
@@ -594,9 +603,9 @@ class ModelPhysics(BaseModel):
             "stabilitymethod",
             "smdmethod",
             "waterusemethod",
-            "diagmethod",
+            "rslmethod",
             "faimethod",
-            "localclimatemethod",
+            "rsllevel",
             "gsmodel",
             "snowuse",
             "stebbsmethod",
@@ -604,6 +613,12 @@ class ModelPhysics(BaseModel):
 
         for attr in list_attr:
             try:
+                if attr == "rslmethod":
+                    properties[attr] = RefValue(int(df.loc[grid_id, ("diagmethod", "0")]))
+                    continue
+                if attr == "rsllevel":
+                    properties[attr] = RefValue(int(df.loc[grid_id, ("localclimatemethod", "0")]))
+                    continue
                 properties[attr] = RefValue(int(df.loc[grid_id, (attr, "0")]))
             except KeyError:
                 raise ValueError(f"Missing attribute '{attr}' in the DataFrame")

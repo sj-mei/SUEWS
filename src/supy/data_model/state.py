@@ -2,8 +2,7 @@ from typing import Optional, Union, List, Literal, Type
 import pandas as pd
 from pydantic import ConfigDict, BaseModel, Field, field_validator, model_validator, PrivateAttr
 
-from .type import RefValue, Reference, FlexibleRefValue, init_df_state
-from .site import SurfaceType
+from .type import RefValue, Reference, FlexibleRefValue, init_df_state, SurfaceType
 
 
 
@@ -725,6 +724,34 @@ class InitialStates(BaseModel):
         json_schema_extra={"display_name": "Heating Degree Days ID"},
         description="Heating degree days and meteorological tracking parameters"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def convert_hdd_id_from_list(cls, data):
+        """Convert legacy list format for hdd_id to HDD_ID object."""
+        if isinstance(data, dict) and "hdd_id" in data:
+            hdd_value = data["hdd_id"]
+            if isinstance(hdd_value, list):
+                # Convert from legacy list format to HDD_ID object
+                if len(hdd_value) >= 12:
+                    data["hdd_id"] = {
+                        "hdd_accum": hdd_value[0],
+                        "cdd_accum": hdd_value[1],
+                        "temp_accum": hdd_value[2],
+                        "temp_5day_accum": hdd_value[3],
+                        "precip_accum": hdd_value[4],
+                        "days_since_rain_accum": hdd_value[5],
+                        "hdd_daily": hdd_value[6],
+                        "cdd_daily": hdd_value[7],
+                        "temp_daily_mean": hdd_value[8],
+                        "temp_5day_mean": hdd_value[9],
+                        "precip_daily_total": hdd_value[10],
+                        "days_since_rain": hdd_value[11]
+                    }
+                else:
+                    # If list is too short, create default HDD_ID
+                    data["hdd_id"] = {}
+        return data
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
