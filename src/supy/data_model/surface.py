@@ -1,7 +1,8 @@
 from enum import Enum
-from pydantic import ConfigDict, BaseModel, Field, PrivateAttr, model_validator
+from pydantic import ConfigDict, BaseModel, Field, PrivateAttr, model_validator, field_validator
 from typing import Optional, Literal, List, Union
 import pandas as pd
+import warnings
 from .type import RefValue, Reference, FlexibleRefValue
 
 from .type import init_df_state
@@ -709,17 +710,31 @@ class BldgsProperties(
 
     ref: Optional[Reference] = None
 
-    # @model_validator(mode="after")    # This is no longer appropriate - may be reintroduced and altered
-    # def validate_rsl_zd_range(self) -> "BldgsProperties":
-    #     sfr_bldg_lower_limit = 0.18
-    #     if self.sfr < sfr_bldg_lower_limit:
-    #         if self.faibldg.value < 0.25 * (1 - self.sfr.value):
-    #             raise ValueError(         # This should be a warning not raising an error
-    #                 "Frontal Area Index (FAI) is below a lower limit of: 0.25 * (1 - PAI), which is likely to cause a negative displacement height (zd) in the RSL.\n"
-    #                 f"\tYou have entered a building FAI of {self.faibldg} and a building PAI of {self.sfr}.\n"
-    #                 "\tFor more details, please refer to: https://github.com/UMEP-dev/SUEWS/issues/302"
-    #             )
-    #     return self
+    @model_validator(mode="after")
+    def validate_rsl_zd_range(self) -> "BldgsProperties":
+        """Validate FAI to warn about potential negative displacement height.
+        
+        Issues a warning if FAI < 0.25 * (1 - PAI) which may cause negative 
+        displacement height (zd) in the RSL calculations.
+        See https://github.com/UMEP-dev/SUEWS/issues/326 for details.
+        """
+        # Extract values from RefValue if needed
+        sfr_value = self.sfr.value if isinstance(self.sfr, RefValue) else self.sfr
+        faibldg_value = self.faibldg.value if isinstance(self.faibldg, RefValue) else self.faibldg
+        
+        # Check the FAI validation rule
+        min_fai = 0.25 * (1 - sfr_value)
+        if faibldg_value < min_fai:
+            warnings.warn(
+                f"Frontal Area Index (FAI={faibldg_value:.3f}) is below the recommended lower limit of 0.25 * (1 - PAI) = {min_fai:.3f}, "
+                f"which is likely to cause a negative displacement height (zd) in the RSL. "
+                f"Consider increasing FAI to at least {min_fai:.3f} to avoid this issue. "
+                f"(Building PAI = {sfr_value:.3f}). "
+                f"For more details, see: https://github.com/UMEP-dev/SUEWS/issues/326",
+                UserWarning
+            )
+        
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert building properties to DataFrame state format."""
