@@ -1,6 +1,9 @@
 name: 'Cleanup Old TestPyPI Packages'
 
 on:
+  schedule:
+    # Run on the 1st of every month at 2:00 AM UTC
+    - cron: '0 2 1 * *'
   workflow_dispatch:
     inputs:
       package_name:
@@ -44,9 +47,9 @@ jobs:
           from datetime import datetime
 
           # Configuration
-          package_name = "${{ github.event.inputs.package_name }}"
-          versions_to_keep = int("${{ github.event.inputs.versions_to_keep }}")
-          dry_run = "${{ github.event.inputs.dry_run }}" == "true"
+          package_name = "${{ github.event.inputs.package_name || 'supy' }}"
+          versions_to_keep = int("${{ github.event.inputs.versions_to_keep || '5' }}")
+          dry_run = "${{ github.event.inputs.dry_run || 'false' }}" == "true"
           
           # Get package info from TestPyPI
           url = f"https://test.pypi.org/pypi/{package_name}/json"
@@ -112,7 +115,7 @@ jobs:
           python cleanup_testpypi.py
 
       - name: 'Upload deletion list'
-        if: ${{ !inputs.dry_run }}
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: versions-to-delete
@@ -120,7 +123,7 @@ jobs:
           retention-days: 1
 
       - name: 'Attempt deletion with pypi-cleanup'
-        if: ${{ !inputs.dry_run && env.TEST_PYPI_API_TOKEN != '' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && env.TEST_PYPI_API_TOKEN != '' }}
         continue-on-error: true
         run: |
           pip install pypi-cleanup
