@@ -116,6 +116,18 @@ def process_unit_part(part: str) -> str:
 # --- Helper function to parse and format method options ---
 def get_enum_class_from_field(field_info: FieldInfo, field_type_hint: Any) -> Optional[Type]:
     """Extract the enum class from a field's type hint."""
+    from enum import Enum
+    
+    # Handle Union types
+    origin = get_origin(field_type_hint)
+    if origin is Union:
+        # Check each type in the Union
+        for arg in get_args(field_type_hint):
+            enum_class = get_enum_class_from_field(field_info, arg)
+            if enum_class:
+                return enum_class
+        return None
+    
     # Handle RefValue[EnumClass] and FlexibleRefValue(EnumClass)
     origin = get_origin(field_type_hint) or field_type_hint
     args = get_args(field_type_hint)
@@ -123,13 +135,11 @@ def get_enum_class_from_field(field_info: FieldInfo, field_type_hint: Any) -> Op
     if hasattr(origin, "__name__") and origin.__name__ in ["RefValue", "FlexibleRefValue"]:
         if args and hasattr(args[0], "__bases__"):
             # Check if it's an Enum
-            from enum import Enum
             if Enum in args[0].__bases__:
                 return args[0]
     
     # Direct enum type
     if hasattr(field_type_hint, "__bases__"):
-        from enum import Enum
         if Enum in field_type_hint.__bases__:
             return field_type_hint
     
@@ -164,6 +174,7 @@ def parse_method_options(description: str, enum_class: Optional[Type] = None, in
     Returns:
         tuple: (main_description, list_of_option_strings)
     """
+    
     # Check if description contains "Options:" pattern
     if "Options:" in description:
         parts = description.split("Options:", 1)
