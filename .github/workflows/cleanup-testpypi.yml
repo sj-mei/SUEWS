@@ -13,7 +13,7 @@ on:
       versions_to_keep:
         description: 'Number of recent versions to keep'
         required: false
-        default: '5'
+        default: '50'
       dry_run:
         description: 'Perform a dry run (show what would be deleted without deleting)'
         required: false
@@ -50,68 +50,68 @@ jobs:
           package_name = "${{ github.event.inputs.package_name || 'supy' }}"
           versions_to_keep = int("${{ github.event.inputs.versions_to_keep || '5' }}")
           dry_run = "${{ github.event.inputs.dry_run || 'false' }}" == "true"
-          
+
           # Get package info from TestPyPI
           url = f"https://test.pypi.org/pypi/{package_name}/json"
           response = requests.get(url)
-          
+
           if response.status_code != 200:
               print(f"❌ Failed to fetch package info: {response.status_code}")
               sys.exit(1)
-          
+
           data = response.json()
           releases = data.get("releases", {})
-          
+
           # Sort versions by release date (newest first)
           version_info = []
           for version, files in releases.items():
               if files:  # Skip versions with no files
                   upload_time = files[0].get("upload_time", "")
                   version_info.append((version, upload_time))
-          
+
           version_info.sort(key=lambda x: x[1], reverse=True)
-          
+
           print(f"📦 Package: {package_name}")
           print(f"📊 Total versions found: {len(version_info)}")
           print(f"🔒 Versions to keep: {versions_to_keep}")
           print(f"🧪 Dry run: {dry_run}")
           print()
-          
+
           # Determine versions to delete
           versions_to_delete = version_info[versions_to_keep:]
-          
+
           if not versions_to_delete:
               print("✅ No versions to delete. All versions are within the keep limit.")
               sys.exit(0)
-          
+
           print(f"🗑️  Versions to delete ({len(versions_to_delete)}):")
           for version, upload_time in versions_to_delete:
               print(f"  - {version} (uploaded: {upload_time})")
-          
+
           print()
           print(f"💾 Versions to keep ({min(len(version_info), versions_to_keep)}):")
           for version, upload_time in version_info[:versions_to_keep]:
               print(f"  - {version} (uploaded: {upload_time})")
-          
+
           if dry_run:
               print("\n⚠️  DRY RUN: No packages were actually deleted.")
               sys.exit(0)
-          
+
           # Note: Actual deletion would require pypi-cleanup or manual deletion
           # This script only identifies what should be deleted
           print("\n⚠️  Note: Automatic deletion requires 'pypi-cleanup' tool with proper authentication.")
           print("To delete these versions, you can:")
           print("1. Use pypi-cleanup tool with TEST_PYPI_API_TOKEN")
           print("2. Delete manually at https://test.pypi.org/manage/project/supy/releases/")
-          
+
           # Save list for potential use with pypi-cleanup
           with open("versions_to_delete.txt", "w") as f:
               for version, _ in versions_to_delete:
                   f.write(f"{version}\n")
-          
+
           print(f"\n📝 List of versions to delete saved to: versions_to_delete.txt")
           EOF
-          
+
           python cleanup_testpypi.py
 
       - name: 'Upload deletion list'
@@ -127,7 +127,7 @@ jobs:
         continue-on-error: true
         run: |
           pip install pypi-cleanup
-          
+
           # Read versions to delete
           while IFS= read -r version; do
             echo "Attempting to delete version: $version"
