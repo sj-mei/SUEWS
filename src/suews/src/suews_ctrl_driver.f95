@@ -856,6 +856,7 @@ CONTAINS
                QF => heatState%QF, &
                QF_SAHP => heatState%QF_SAHP, &
                T2_c => atmstate%t2_C, &
+               T_hbh_C => atmState%T_hbh_C, &
                Temp_C => forcing%Temp_C, &
                QF_obs => forcing%QF_obs &
                )
@@ -899,7 +900,7 @@ CONTAINS
                   qf = QF_obs
                ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
                   ! choose temperature for anthropogenic heat flux calculation
-                  Tair = MERGE(T2_c, Temp_C, localClimateMethod == 1)
+                  Tair = MERGE(T_hbh_C, MERGE(T2_C, Temp_C, localClimateMethod == 1), localClimateMethod == 2)
 
                   CALL AnthropogenicEmissions( &
                      CO2PointSource, EmissionsMethod, &
@@ -2984,6 +2985,7 @@ CONTAINS
             L_mod => atmState%L_mod, &
             RB => atmState%RB, &
             T2_C => atmState%T2_C, &
+            T_hbh_C => atmState%T_hbh_C, &
             QH_init => heatState%QH_init, &
             z0v => roughnessState%z0v, &
             zzd => roughnessState%zzd, &
@@ -3072,7 +3074,7 @@ CONTAINS
 
                IF (Diagnose == 1) WRITE (*, *) 'Calling SurfaceResistance...'
                ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
-               Tair = MERGE(T2_C, Temp_C, localClimateMethod == 1)
+               Tair = MERGE(T_hbh_C, MERGE(T2_C, Temp_C, localClimateMethod == 1), localClimateMethod == 2)
                CALL SurfaceResistance( &
                   id, it, & ! input:
                   SMDMethod, SnowFrac, sfr_surf, avkdn, Tair, dq, xsmd, vsmd, MaxConductance, &

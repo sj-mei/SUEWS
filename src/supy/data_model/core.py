@@ -461,20 +461,23 @@ def run_precheck(path: str) -> dict:
 
 class SUEWSConfig(BaseModel):
     name: str = Field(
-        default="sample config", description="Name of the SUEWS configuration"
+        default="sample config", description="Name of the SUEWS configuration", json_schema_extra={"display_name": "Configuration Name"}
     )
     description: str = Field(
         default="this is a sample config for testing purposes ONLY - values are not realistic",
         description="Description of this SUEWS configuration",
+        json_schema_extra={"display_name": "Configuration Description"}
     )
     model: Model = Field(
         default_factory=Model,
         description="Model control and physics parameters",
+        json_schema_extra={"display_name": "Model Parameters"}
     )
     sites: List[Site] = Field(
         default=[Site()],
         description="List of sites to simulate",
         min_length=1,
+        json_schema_extra={"display_name": "Sites"}
     )
 
     model_config = ConfigDict(extra="allow")
