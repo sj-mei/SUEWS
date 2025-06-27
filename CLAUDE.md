@@ -39,6 +39,32 @@ mamba activate suews-dev-my-feature
 make dev
 ```
 
+#### Important: Mamba Environment Setup in Claude Code
+
+**Mamba Configuration in Claude Code:**
+- Mamba is installed at: `/opt/homebrew/bin/mamba`
+- Mamba root prefix: `/Users/tingsun/.local/share/mamba`
+- Main environment: `suews-dev`
+
+**Creating Environments in Claude Code:**
+```bash
+# Option 1: Export and recreate (when --clone doesn't work)
+/opt/homebrew/bin/mamba env export -n suews-dev > /tmp/suews-dev-env.yml
+/opt/homebrew/bin/mamba env create -n suews-dev-{feature-name} -f /tmp/suews-dev-env.yml -y
+
+# Option 2: Initialize shell and use mamba normally
+source ~/.zshrc && mamba activate suews-dev-{feature-name}
+
+# Always build after creating environment
+cd worktrees/{feature-name}
+make dev
+```
+
+**Common Issues and Solutions:**
+- If `mamba activate` fails, use: `source ~/.zshrc` first
+- If environments fail to create, check with: `/opt/homebrew/bin/mamba env list`
+- Always use full path `/opt/homebrew/bin/mamba` if shell integration issues occur
+
 **Switching between worktrees:**
 ```bash
 # Step 1: Deactivate current environment (if any)
@@ -70,6 +96,10 @@ mamba env remove -n suews-dev-my-feature
 # Step 3: Verify cleanup
 git worktree list
 mamba env list | grep suews-dev-my-feature  # Should return nothing
+
+# Step 4: Remove the worktree plan file
+git rm .claude/worktree-plans/feature-{branch-name}.md
+git commit -m "chore: remove worktree plan for merged feature"
 ```
 
 ### Best Practices
@@ -77,6 +107,7 @@ mamba env list | grep suews-dev-my-feature  # Should return nothing
 - Use descriptive names matching the feature
 - **Each worktree gets its own `suews-dev-{name}` environment**
 - Clean up BOTH worktree AND environment after merging
+- **IMPORTANT**: Also remove `.claude/worktree-plans/feature-{branch-name}.md` when cleaning up merged worktrees
 - Never share environments between worktrees
 - Pull master in each worktree to access latest `.claude/worktree-plans/`
 
@@ -233,9 +264,11 @@ When working in a git worktree or on a specific feature branch, check for branch
 - Keep plans focused and actionable
 
 **Cleaning up completed plans:**
-- When a feature branch is merged, remove its plan file
+- When a feature branch is merged, remove its plan file AND worktree
 - Archive important decisions to main documentation if needed
-- Clean up with: `git rm .claude/worktree-plans/feature-{branch-name}.md`
+- Clean up worktree plan: `git rm .claude/worktree-plans/feature-{branch-name}.md`
+- Follow full worktree cleanup process as described in "Removing a worktree" section above
+- This ensures both the physical worktree and its documentation are removed together
 
 ### Example Plan Structure
 ```markdown

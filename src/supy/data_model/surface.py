@@ -4,6 +4,7 @@ from typing import Optional, Literal, List, Union
 import pandas as pd
 import warnings
 from .type import RefValue, Reference, FlexibleRefValue
+from .validation_utils import warn_missing_params
 
 from .type import init_df_state
 
@@ -15,21 +16,38 @@ from .hydro import WaterDistribution, StorageDrainParams
 
 
 class ThermalLayers(BaseModel):
-    dz: FlexibleRefValue(List[float]) = Field(
-        default=[0.1, 0.2, 0.3, 0.4, 0.5],
+    dz: Optional[FlexibleRefValue(List[float])] = Field(
+        default=None,
         description="Thickness of thermal layers from surface to depth", json_schema_extra={"unit": "m", "display_name": "Layer Thickness"},
     )
-    k: FlexibleRefValue(List[float]) = Field(
-        default=[1.0, 1.0, 1.0, 1.0, 1.0],
+    k: Optional[FlexibleRefValue(List[float])] = Field(
+        default=None,
         description="Thermal conductivity of each thermal layer", json_schema_extra={"unit": "W m^-1 K^-1", "display_name": "Thermal Conductivity"},
     )
-    rho_cp: FlexibleRefValue(List[float]) = Field(
-        default=[1000, 1000, 1000, 1000, 1000],
+    rho_cp: Optional[FlexibleRefValue(List[float])] = Field(
+        default=None,
         description="Volumetric heat capacity of each thermal layer", 
         json_schema_extra={"unit": "J m^-3 K^-1", "display_name": "Volumetric Heat Capacity"},
     )
 
     ref: Optional[Reference] = None
+
+    @model_validator(mode="after")
+    def check_missing_thermal_params(self) -> "ThermalLayers":
+        """Check for missing critical thermal layer parameters and issue warnings."""
+        missing_params = []
+        
+        # Check if all thermal parameters are None
+        if self.dz is None:
+            missing_params.append("dz (Layer thickness)")
+        if self.k is None:
+            missing_params.append("k (Thermal conductivity)")
+        if self.rho_cp is None:
+            missing_params.append("rho_cp (Volumetric heat capacity)")
+        
+        warn_missing_params(missing_params, "thermal layer", "heat storage calculations", stacklevel=2)
+        
+        return self
 
     def to_df_state(
         self,
@@ -67,12 +85,24 @@ class ThermalLayers(BaseModel):
 
         # Add thermal layer parameters
         for i in range(5):
-            dz_val = self.dz.value if isinstance(self.dz, RefValue) else self.dz
-            k_val = self.k.value if isinstance(self.k, RefValue) else self.k
-            rho_cp_val = self.rho_cp.value if isinstance(self.rho_cp, RefValue) else self.rho_cp
-            df_state[(f"dz_{suffix}", f"({idx}, {i})")] = dz_val[i]
-            df_state[(f"k_{suffix}", f"({idx}, {i})")] = k_val[i]
-            df_state[(f"cp_{suffix}", f"({idx}, {i})")] = rho_cp_val[i] # TODO: Change df_state to use rho_cp instead of cp
+            if self.dz is not None:
+                dz_val = self.dz.value if isinstance(self.dz, RefValue) else self.dz
+                df_state[(f"dz_{suffix}", f"({idx}, {i})")] = dz_val[i]
+            else:
+                df_state[(f"dz_{suffix}", f"({idx}, {i})")] = 0.1 * (i + 1)  # Default layer thickness
+            
+            if self.k is not None:
+                k_val = self.k.value if isinstance(self.k, RefValue) else self.k
+                df_state[(f"k_{suffix}", f"({idx}, {i})")] = k_val[i]
+            else:
+                df_state[(f"k_{suffix}", f"({idx}, {i})")] = 1.0  # Default thermal conductivity
+            
+            if self.rho_cp is not None:
+                rho_cp_val = self.rho_cp.value if isinstance(self.rho_cp, RefValue) else self.rho_cp
+                df_state[(f"cp_{suffix}", f"({idx}, {i})")] = rho_cp_val[i]
+            else:
+                df_state[(f"cp_{suffix}", f"({idx}, {i})")] = 1000.0  # Default heat capacity
+            # TODO: Change df_state to use rho_cp instead of cp
 
         return df_state
 
@@ -155,12 +185,12 @@ class SurfaceProperties(BaseModel):
     ohm_coef: Optional[OHM_Coefficient_season_wetness] = Field(
         default_factory=OHM_Coefficient_season_wetness
     )
-    soildepth: FlexibleRefValue(float) = Field(
-        default=150,
+    soildepth: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Depth of soil layer for hydrological calculations", json_schema_extra={"unit": "mm", "display_name": "Soil Depth"},
     )
-    soilstorecap: FlexibleRefValue(float) = Field(
-        default=150.0,
+    soilstorecap: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm", "display_name": "Soil Store Capacity"},
     )
     statelimit: FlexibleRefValue(float) = Field(
@@ -171,8 +201,8 @@ class SurfaceProperties(BaseModel):
         default=0.5,
         description="Surface wetness threshold for OHM calculations", json_schema_extra={"unit": "dimensionless", "display_name": "Wetness Threshold"},
     )
-    sathydraulicconduct: FlexibleRefValue(float) = Field(
-        default=0.0001,
+    sathydraulicconduct: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Saturated hydraulic conductivity of soil", json_schema_extra={"unit": "mm s^-1", "display_name": "Saturated Hydraulic Conductivity"},
     )
     waterdist: Optional[WaterDistribution] = Field(
@@ -299,7 +329,14 @@ class SurfaceProperties(BaseModel):
                 df_state.loc[grid_id, (f"{property}{surf_name}", "0")] = value
             elif property in ["sfr", "soilstorecap", "statelimit", "wetthresh"]:
                 value = getattr(self, property)
-                value = value.value if isinstance(value, RefValue) else value
+                if value is not None:
+                    value = value.value if isinstance(value, RefValue) else value
+                else:
+                    # Default values for None surface parameters
+                    defaults = {
+                        "soilstorecap": 150.0,
+                    }
+                    value = defaults.get(property, 0.0)
                 set_df_value(f"{property}_surf", value)
             elif property == "rho_cp_anohm":  # Moved to cp in df_state
                 value = getattr(self, property)
@@ -315,7 +352,15 @@ class SurfaceProperties(BaseModel):
                 set_df_value("kkanohm", value)
             else:
                 value = getattr(self, property)
-                value = value.value if isinstance(value, RefValue) else value
+                if value is not None:
+                    value = value.value if isinstance(value, RefValue) else value
+                else:
+                    # Default values for None surface parameters
+                    defaults = {
+                        "soildepth": 150.0,
+                        "sathydraulicconduct": 0.0001,
+                    }
+                    value = defaults.get(property, 0.0)
                 set_df_value(property, value)
             # except Exception as e:
             #     print(f"Warning: Could not set property {property}: {str(e)}")
@@ -567,8 +612,8 @@ class BuildingLayer(
         default=10.0,
         description="Minimum water storage capacity for state change", json_schema_extra={"unit": "mm", "display_name": "State Limit"},
     )
-    soilstorecap: FlexibleRefValue(float) = Field(
-        default=150.0,
+    soilstorecap: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Maximum water storage capacity of soil", json_schema_extra={"unit": "mm", "display_name": "Soil Store Capacity"},
     )
     wetthresh: FlexibleRefValue(float) = Field(
@@ -611,7 +656,7 @@ class BuildingLayer(
             self.statelimit.value if isinstance(self.statelimit, RefValue) else self.statelimit
         )
         df_state[(f"soilstorecap_{facet_type}", f"({layer_idx},)")] = (
-            self.soilstorecap.value if isinstance(self.soilstorecap, RefValue) else self.soilstorecap
+            self.soilstorecap.value if isinstance(self.soilstorecap, RefValue) else self.soilstorecap if self.soilstorecap is not None else 150.0
         )
         df_state[(f"wetthresh_{facet_type}", f"({layer_idx},)")] = self.wetthresh.value if isinstance(self.wetthresh, RefValue) else self.wetthresh
 
@@ -695,13 +740,13 @@ class BldgsProperties(
     NonVegetatedSurfaceProperties
 ):  # May need to move VWD for waterdist to here for referencing
     _surface_type: Literal[SurfaceType.BLDGS] = SurfaceType.BLDGS
-    faibldg: FlexibleRefValue(float) = Field(
+    faibldg: Optional[FlexibleRefValue(float)] = Field(
         ge=0,
-        default=0.3,
+        default=None,
         description="Frontal area index of buildings", json_schema_extra={"unit": "dimensionless", "display_name": "Building Frontal Area Index"},
     )
-    bldgh: FlexibleRefValue(float) = Field(
-        ge=3, default=10.0, description="Building height", json_schema_extra={"unit": "m", "display_name": "Building Height"}
+    bldgh: Optional[FlexibleRefValue(float)] = Field(
+        ge=3, default=None, description="Building height", json_schema_extra={"unit": "m", "display_name": "Building Height"}
     )  # We need to check if there is a building - and then this has to be greather than 0, accordingly.
     waterdist: WaterDistribution = Field(
         default_factory=lambda: WaterDistribution(SurfaceType.BLDGS),
@@ -711,6 +756,31 @@ class BldgsProperties(
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
+
+    def check_missing_building_params(self) -> "BldgsProperties":
+        """Check for missing critical building parameters and issue warnings."""
+        missing_params = []
+        
+        # Check if building fraction is significant but parameters are missing
+        sfr_val = self.sfr.value if isinstance(self.sfr, RefValue) else self.sfr
+        if sfr_val > 0.05:  # If building fraction is more than 5%
+            if self.bldgh is None:
+                missing_params.append("bldgh (Building height)")
+            if self.faibldg is None:
+                missing_params.append("faibldg (Frontal area index)")
+        
+        if missing_params:
+            warnings.warn(
+                f"Missing critical building parameters for a surface with {sfr_val:.1%} building fraction:\n"
+                f"  - " + "\n  - ".join(missing_params) + "\n"
+                f"These parameters are important for aerodynamic calculations.",
+                UserWarning,
+                stacklevel=2
+            )
+        
+        return self
+
+
     def validate_rsl_zd_range(self) -> "BldgsProperties":
         """Validate FAI to warn about potential negative displacement height.
         
@@ -736,13 +806,14 @@ class BldgsProperties(
         
         return self
 
+
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert building properties to DataFrame state format."""
         df_state = super().to_df_state(grid_id).sort_index(axis=1)
 
-        df_state.loc[grid_id, ("faibldg", "0")] = self.faibldg.value if isinstance(self.faibldg, RefValue) else self.faibldg
+        df_state.loc[grid_id, ("faibldg", "0")] = self.faibldg.value if isinstance(self.faibldg, RefValue) else self.faibldg if self.faibldg is not None else 0.3
         df_state = df_state.sort_index(axis=1)
-        df_state.loc[grid_id, ("bldgh", "0")] = self.bldgh.value if isinstance(self.bldgh, RefValue) else self.bldgh
+        df_state.loc[grid_id, ("bldgh", "0")] = self.bldgh.value if isinstance(self.bldgh, RefValue) else self.bldgh if self.bldgh is not None else 10.0
 
         return df_state
 
