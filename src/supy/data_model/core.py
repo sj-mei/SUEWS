@@ -249,7 +249,7 @@ def precheck_site_season_adjustments(data: dict, start_date: str, model_year: in
         season = None
 
         try:
-            if lat is not None:
+            if lat is not None: # <- Placeholder: consider cases where lat is None
                 season = SeasonCheck(start_date=start_date, lat=lat).get_season()
                 logger_supy.debug(f"[site #{i}] Season detected: {season}")
 
@@ -292,7 +292,7 @@ def precheck_site_season_adjustments(data: dict, start_date: str, model_year: in
         # --------------------------------------
         # 3. DLS Check (timezone and DST start/end days)
         # --------------------------------------
-        if lat is not None and lng is not None:
+        if lat is not None and lng is not None: # <- Placeholder: consider cases where lat is None
             try:
                 dls = DLSCheck(lat=lat, lng=lng, year=model_year)
                 start_dls, end_dls, tz_offset = dls.compute_dst_transitions()
@@ -356,10 +356,7 @@ def precheck_land_cover_fractions(data: dict) -> dict:
 
         elif abs(sfr_sum - 1.0) > 0.0001:
             raise ValueError(f"[site #{i}] Invalid land_cover sfr sum: {sfr_sum:.6f}")
-
-        # NO Pydantic LandCover validation here anymore!
-
-        # Save back
+        
         site["properties"] = props
 
     return data
@@ -428,8 +425,6 @@ def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
     logger_supy.info("[precheck] Nonzero sfr parameters validated (all required fields are set).")
     return data
 
-
-
 def precheck_diagmethod(data: dict) -> dict:
     physics = data.get("model", {}).get("physics", {})
     diagmethod = physics.get("diagmethod", {}).get("value")
@@ -451,6 +446,39 @@ def precheck_diagmethod(data: dict) -> dict:
                 raise ValueError(f"[site #{i}] For diagmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
 
     logger_supy.info("[precheck] faibldg check for diagmethod==2 passed.")
+    return data
+
+def precheck_storageheatmethod(data: dict) -> dict:
+    """If storageheatmethod == 6, check required wall thermal properties and lambda_c.""" # <--- Placeholder: this case refers to DyOHM
+    storage_method = data.get("model", {}).get("physics", {}).get("storageheatmethod", {}).get("value")
+
+    if storage_method != 6:
+        logger_supy.debug("[precheck] storageheatmethod != 6, skipping wall thermal layer checks.")
+        return data
+
+    for site_idx, site in enumerate(data.get("sites", [])):
+        props = site.get("properties", {})
+        vertical_layers = props.get("vertical_layers", {})
+        walls = vertical_layers.get("walls", [])
+
+        if not walls or not isinstance(walls, list) or len(walls) == 0:
+            raise ValueError(f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6.")
+
+        wall0 = walls[0]
+        thermal = wall0.get("thermal_layers", {})
+
+        for param in ["dz", "k", "cp"]:
+            param_list = thermal.get(param, {}).get("value")
+            if not isinstance(param_list, list) or len(param_list) == 0:
+                raise ValueError(f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6.")
+            if param_list[0] in (None, ""):
+                raise ValueError(f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6.")
+
+        lambda_c = props.get("lambda_c", {}).get("value")
+        if lambda_c in (None, ""):
+            raise ValueError(f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6.")
+
+    logger_supy.info("[precheck] storageheatmethod == 6 → wall thermal layers and lambda_c check passed.")
     return data
 
 
@@ -490,6 +518,7 @@ def run_precheck(path: str) -> dict:
 
     # ---- Step 10: Rules associated to selected model options ----
     data = precheck_diagmethod(data)
+    data = precheck_storageheatmethod(data) 
 
     # ---- Step 11: Save output YAML ----
     output_filename = f"py0_{os.path.basename(path)}"

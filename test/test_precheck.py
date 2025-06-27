@@ -5,11 +5,12 @@ from supy.data_model.core import (
     precheck_start_end_date,
     precheck_site_season_adjustments,
     precheck_model_options_constraints,
-    precheck_diagmethod,
     precheck_replace_empty_strings_with_none,
     precheck_land_cover_fractions,
     precheck_nullify_zero_sfr_params,
     precheck_nonzero_sfr_requires_nonnull_params,
+    precheck_diagmethod,
+    precheck_storageheatmethod,
     SeasonCheck,
 )
 
@@ -894,3 +895,81 @@ def test_nonzero_sfr_nested_param_null_raises():
     }
     with pytest.raises(ValueError, match=r"bldgs\.ohm_coef\.summer_dry\.a1.*must be set"):
         precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+def test_storageheatmethod6_valid_passes():
+    yaml_input = {
+        "model": {"physics": {"storageheatmethod": {"value": 6}}},
+        "sites": [
+            {
+                "properties": {
+                    "vertical_layers": {
+                        "walls": [
+                            {
+                                "thermal_layers": {
+                                    "dz": {"value": [0.2]},
+                                    "k": {"value": [1.2]},
+                                    "cp": {"value": [1000000.0]},
+                                }
+                            }
+                        ]
+                    },
+                    "lambda_c": {"value": 3.0},
+                }
+            }
+        ]
+    }
+    result = precheck_storageheatmethod(deepcopy(yaml_input))
+    assert isinstance(result, dict)
+
+
+def test_storageheatmethod6_dz_null_raises():
+    yaml_input = {
+        "model": {"physics": {"storageheatmethod": {"value": 6}}},
+        "sites": [
+            {
+                "properties": {
+                    "vertical_layers": {
+                        "walls": [
+                            {
+                                "thermal_layers": {
+                                    "dz": {"value": [None]},  
+                                    "k": {"value": [1.2]},
+                                    "cp": {"value": [1000000.0]},
+                                }
+                            }
+                        ]
+                    },
+                    "lambda_c": {"value": 3.0},
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"thermal_layers\.dz.*must be set.*storageheatmethod == 6"):
+        precheck_storageheatmethod(deepcopy(yaml_input))
+
+
+
+def test_storageheatmethod6_null_lambda_c_raises():
+    yaml_input = {
+        "model": {"physics": {"storageheatmethod": {"value": 6}}},
+        "sites": [
+            {
+                "properties": {
+                    "vertical_layers": {
+                        "walls": [
+                            {
+                                "thermal_layers": {
+                                    "dz": {"value": [0.2]},
+                                    "k": {"value": [1.2]},
+                                    "cp": {"value": [1000000.0]},
+                                }
+                            }
+                        ]
+                    },
+                    "lambda_c": {"value": None},  # Invalid
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"lambda_c.*storageheatmethod == 6"):
+        precheck_storageheatmethod(deepcopy(yaml_input))
