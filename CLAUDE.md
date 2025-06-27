@@ -39,6 +39,32 @@ mamba activate suews-dev-my-feature
 make dev
 ```
 
+#### Important: Mamba Environment Setup in Claude Code
+
+**Mamba Configuration in Claude Code:**
+- Mamba is installed at: `/opt/homebrew/bin/mamba`
+- Mamba root prefix: `/Users/tingsun/.local/share/mamba`
+- Main environment: `suews-dev`
+
+**Creating Environments in Claude Code:**
+```bash
+# Option 1: Export and recreate (when --clone doesn't work)
+/opt/homebrew/bin/mamba env export -n suews-dev > /tmp/suews-dev-env.yml
+/opt/homebrew/bin/mamba env create -n suews-dev-{feature-name} -f /tmp/suews-dev-env.yml -y
+
+# Option 2: Initialize shell and use mamba normally
+source ~/.zshrc && mamba activate suews-dev-{feature-name}
+
+# Always build after creating environment
+cd worktrees/{feature-name}
+make dev
+```
+
+**Common Issues and Solutions:**
+- If `mamba activate` fails, use: `source ~/.zshrc` first
+- If environments fail to create, check with: `/opt/homebrew/bin/mamba env list`
+- Always use full path `/opt/homebrew/bin/mamba` if shell integration issues occur
+
 **Switching between worktrees:**
 ```bash
 # Step 1: Deactivate current environment (if any)
