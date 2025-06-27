@@ -9,6 +9,7 @@ from supy.data_model.core import (
     precheck_replace_empty_strings_with_none,
     precheck_land_cover_fractions,
     precheck_nullify_zero_sfr_params,
+    precheck_nonzero_sfr_requires_nonnull_params,
     SeasonCheck,
 )
 
@@ -812,3 +813,84 @@ def test_precheck_nullify_zero_sfr_params_does_nothing_if_all_nonzero():
     assert site_props["land_cover"]["bldgs"]["alb"]["value"] == 0.12
     assert site_props["land_cover"]["paved"]["alb"]["value"] == 0.1
 
+def test_nonzero_sfr_with_valid_params_passes():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": 0.12},
+                            "ohm_coef": {
+                                "summer_dry": {
+                                    "a1": {"value": 0.5}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    # Should not raise
+    result = precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+    assert isinstance(result, dict)
+
+def test_nonzero_sfr_missing_param_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": None},  # Should trigger error
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.alb.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+def test_nonzero_sfr_empty_string_param_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "alb": {"value": ""},  # Should trigger error
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.alb.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+def test_nonzero_sfr_nested_param_null_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "ohm_coef": {
+                                "summer_dry": {
+                                    "a1": {"value": None}  # Should trigger error
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.ohm_coef\.summer_dry\.a1.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))

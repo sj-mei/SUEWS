@@ -386,6 +386,44 @@ def precheck_nullify_zero_sfr_params(data: dict) -> dict:
                         recursive_nullify(param_val)
     return data
 
+def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
+    """
+    For each site, check that for all land_cover surface types with sfr > 0,
+    all related parameters (except 'sfr') are set (not None and not empty string),
+    recursively for nested structures.
+    """
+
+    def check_recursively(d: dict, path: list, site_idx: int):
+        if isinstance(d, dict):
+            if "value" in d:
+                if d["value"] in (None, ""):
+                    full_path = ".".join(path)
+                    raise ValueError(
+                        f"[site #{site_idx}] land_cover.{full_path} must be set (not None or empty) "
+                        f"because {path[0]}.sfr > 0"
+                    )
+            else:
+                for k, v in d.items():
+                    check_recursively(v, path + [k], site_idx)
+
+        elif isinstance(d, list):
+            for idx, item in enumerate(d):
+                check_recursively(item, path + [f"[{idx}]"], site_idx)
+
+    for site_idx, site in enumerate(data.get("sites", [])):
+        land_cover = site.get("properties", {}).get("land_cover", {})
+        for surf_type, props in land_cover.items():
+            sfr = props.get("sfr", {}).get("value", 0)
+            if sfr > 0:
+                for param_key, param_val in props.items():
+                    if param_key == "sfr":
+                        continue
+                    check_recursively(param_val, path=[surf_type, param_key], site_idx=site_idx)
+
+    logger_supy.info("[precheck] Nonzero sfr parameters validated (all required fields are set).")
+    return data
+
+
 
 def precheck_diagmethod(data: dict) -> dict:
     physics = data.get("model", {}).get("physics", {})
@@ -442,10 +480,13 @@ def run_precheck(path: str) -> dict:
     # ---- Step 8: Nullify params for surfaces with sfr == 0 ----
     data = precheck_nullify_zero_sfr_params(data)
 
-    # ---- Step 9: Rules associated to selected model options ----
+    # ---- Step 10: Check existence of params for surfaces with sfr > 0 ----
+    data = precheck_nonzero_sfr_requires_nonnull_params(data)
+
+    # ---- Step 10: Rules associated to selected model options ----
     data = precheck_diagmethod(data)
 
-    # ---- Step 10: Save output YAML ----
+    # ---- Step 11: Save output YAML ----
     output_filename = f"py0_{os.path.basename(path)}"
     output_path = os.path.join(os.path.dirname(path), output_filename)
 
@@ -454,7 +495,7 @@ def run_precheck(path: str) -> dict:
 
     logger_supy.info(f"Precheck complete. Saved output to: {output_path}\n")
 
-    # ---- Step 11: Print completion ----
+    # ---- Step 12: Print completion ----
     logger_supy.info("Precheck complete.\n")
     return data
 
