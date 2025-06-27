@@ -738,15 +738,15 @@ class InitialStates(BaseModel):
                         "hdd_accum": hdd_value[0],
                         "cdd_accum": hdd_value[1],
                         "temp_accum": hdd_value[2],
-                        "min_temp_daily": hdd_value[3],
-                        "max_temp_daily": hdd_value[4],
-                        "precip_accum": hdd_value[5],
-                        "hdd_prev": hdd_value[6],
-                        "cdd_prev": hdd_value[7],
-                        "temp_avg_prev": hdd_value[8],
-                        "min_temp_prev": hdd_value[9],
-                        "max_temp_prev": hdd_value[10],
-                        "precip_total_prev": hdd_value[11]
+                        "temp_5day_accum": hdd_value[3],
+                        "precip_accum": hdd_value[4],
+                        "days_since_rain_accum": hdd_value[5],
+                        "hdd_daily": hdd_value[6],
+                        "cdd_daily": hdd_value[7],
+                        "temp_daily_mean": hdd_value[8],
+                        "temp_5day_mean": hdd_value[9],
+                        "precip_daily_total": hdd_value[10],
+                        "days_since_rain": hdd_value[11]
                     }
                 else:
                     # If list is too short, create default HDD_ID
