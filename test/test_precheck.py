@@ -936,6 +936,27 @@ def test_nonzero_sfr_nested_param_null_raises():
     with pytest.raises(ValueError, match=r"bldgs\.ohm_coef\.summer_dry\.a1.*must be set"):
         precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
 
+def test_nonzero_sfr_with_list_containing_none_raises():
+    data = {
+        "sites": [
+            {
+                "properties": {
+                    "land_cover": {
+                        "bldgs": {
+                            "sfr": {"value": 0.5},
+                            "thermal_layers": {
+                                "dz": {"value": [None, None, None]}  # Should trigger error
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match=r"bldgs\.thermal_layers\.dz.*must be set"):
+        precheck_nonzero_sfr_requires_nonnull_params(deepcopy(data))
+
+
 def test_storageheatmethod6_valid_passes():
     yaml_input = {
         "model": {"physics": {"storageheatmethod": {"value": 6}}},

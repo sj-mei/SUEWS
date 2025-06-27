@@ -401,7 +401,8 @@ def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
     def check_recursively(d: dict, path: list, site_idx: int):
         if isinstance(d, dict):
             if "value" in d:
-                if d["value"] in (None, ""):
+                val = d["value"]
+                if val in (None, "") or (isinstance(val, list) and any(v in (None, "") for v in val)):
                     full_path = ".".join(path)
                     raise ValueError(
                         f"[site #{site_idx}] land_cover.{full_path} must be set (not None or empty) "
