@@ -70,6 +70,10 @@ mamba env remove -n suews-dev-my-feature
 # Step 3: Verify cleanup
 git worktree list
 mamba env list | grep suews-dev-my-feature  # Should return nothing
+
+# Step 4: Remove the worktree plan file
+git rm .claude/worktree-plans/feature-{branch-name}.md
+git commit -m "chore: remove worktree plan for merged feature"
 ```
 
 ### Best Practices
@@ -77,6 +81,7 @@ mamba env list | grep suews-dev-my-feature  # Should return nothing
 - Use descriptive names matching the feature
 - **Each worktree gets its own `suews-dev-{name}` environment**
 - Clean up BOTH worktree AND environment after merging
+- **IMPORTANT**: Also remove `.claude/worktree-plans/feature-{branch-name}.md` when cleaning up merged worktrees
 - Never share environments between worktrees
 - Pull master in each worktree to access latest `.claude/worktree-plans/`
 
@@ -233,9 +238,11 @@ When working in a git worktree or on a specific feature branch, check for branch
 - Keep plans focused and actionable
 
 **Cleaning up completed plans:**
-- When a feature branch is merged, remove its plan file
+- When a feature branch is merged, remove its plan file AND worktree
 - Archive important decisions to main documentation if needed
-- Clean up with: `git rm .claude/worktree-plans/feature-{branch-name}.md`
+- Clean up worktree plan: `git rm .claude/worktree-plans/feature-{branch-name}.md`
+- Follow full worktree cleanup process as described in "Removing a worktree" section above
+- This ensures both the physical worktree and its documentation are removed together
 
 ### Example Plan Structure
 ```markdown
