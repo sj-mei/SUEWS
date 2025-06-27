@@ -3,6 +3,7 @@ from pydantic import ConfigDict, BaseModel, Field, model_validator
 from .type import RefValue, Reference, FlexibleRefValue
 from .profile import HourlyProfile
 from .type import init_df_state
+from .validation_utils import warn_missing_params, check_missing_params
 from .surface import (
     SurfaceType,
     SurfaceProperties,
@@ -59,53 +60,70 @@ class VegetationParams(BaseModel):
 
 
 class Conductance(BaseModel):
-    g_max: FlexibleRefValue(float) = Field(
-        default=40.0,
+    g_max: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Maximum surface conductance for photosynthesis", json_schema_extra={"unit": "mm s^-1", "display_name": "G Max"}
     )
-    g_k: FlexibleRefValue(float) = Field(
-        default=0.6,
+    g_k: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Conductance parameter related to incoming solar radiation", json_schema_extra={"unit": "dimensionless", "display_name": "G K"}
     )
-    g_q_base: FlexibleRefValue(float) = Field(
-        default=0.03,
+    g_q_base: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Base value for conductance parameter related to vapour pressure deficit", json_schema_extra={"unit": "kPa^-1", "display_name": "G Q Base"}
     )
-    g_q_shape: FlexibleRefValue(float) = Field(
-        default=0.9,
+    g_q_shape: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Shape parameter for conductance related to vapour pressure deficit", json_schema_extra={"unit": "dimensionless", "display_name": "G Q Shape"}
     )
-    g_t: FlexibleRefValue(float) = Field(
-        default=30.0,
+    g_t: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Conductance parameter related to air temperature", json_schema_extra={"unit": "degC", "display_name": "G T"}
     )
-    g_sm: FlexibleRefValue(float) = Field(
-        default=0.5,
+    g_sm: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Conductance parameter related to soil moisture", json_schema_extra={"unit": "dimensionless", "display_name": "G Sm"}
     )
-    kmax: FlexibleRefValue(float) = Field(
-        default=1200.0,
+    kmax: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Maximum incoming shortwave radiation", json_schema_extra={"unit": "W m^-2", "display_name": "Kmax"}
     )
-    s1: FlexibleRefValue(float) = Field(
-        default=0.2,
+    s1: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Lower soil moisture threshold for conductance response", 
         json_schema_extra={"unit": "dimensionless", "display_name": "S1"}
     )
-    s2: FlexibleRefValue(float) = Field(
-        default=0.5,
+    s2: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Parameter related to soil moisture dependence", json_schema_extra={"unit": "mm", "display_name": "S2"}
     )
-    tl: FlexibleRefValue(float) = Field(
-        default=0.0,
+    tl: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Lower air temperature threshold for conductance response", json_schema_extra={"unit": "degC", "display_name": "Tl"}
     )
-    th: FlexibleRefValue(float) = Field(
-        default=50.0,
+    th: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Upper air temperature threshold for conductance response", json_schema_extra={"unit": "degC", "display_name": "Th"}
     )
 
     ref: Optional[Reference] = Reference(ref="Test ref", DOI="test doi", ID="test id")
+
+    @model_validator(mode="after")
+    def check_missing_conductance_params(self) -> "Conductance":
+        """Check for missing critical conductance parameters and issue warnings."""
+        # Check critical conductance parameters
+        critical_params = {
+            "g_max": "Maximum surface conductance",
+            "g_k": "Conductance parameter for solar radiation",
+            "g_sm": "Conductance parameter for soil moisture",
+            "s1": "Lower soil moisture threshold",
+            "s2": "Soil moisture dependence parameter",
+        }
+        
+        missing_params = check_missing_params(critical_params, self, "surface conductance", "evapotranspiration calculations")
+        warn_missing_params(missing_params, "surface conductance", "evapotranspiration calculations", stacklevel=2)
+        
+        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -135,7 +153,10 @@ class Conductance(BaseModel):
         }
 
         for param_name, value in scalar_params.items():
-            val = value.value if isinstance(value, RefValue) else value
+            if value is not None:
+                val = value.value if isinstance(value, RefValue) else value
+            else:
+                val = 0.0  # Default to 0.0 for DataFrame compatibility
             df_state.loc[grid_id, (param_name, "0")] = val
 
         return df_state
@@ -175,23 +196,23 @@ class Conductance(BaseModel):
 
 
 class LAIPowerCoefficients(BaseModel):
-    growth_lai: FlexibleRefValue(float) = Field(
-        default=0.1,
+    growth_lai: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Power coefficient for LAI in growth equation (LAIPower[1])",
         json_schema_extra={"unit": "dimensionless", "display_name": "Growth Lai"}
     )
-    growth_gdd: FlexibleRefValue(float) = Field(
-        default=0.1,
+    growth_gdd: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Power coefficient for GDD in growth equation (LAIPower[2])",
         json_schema_extra={"unit": "dimensionless", "display_name": "Growth Gdd"}
     )
-    senescence_lai: FlexibleRefValue(float) = Field(
-        default=0.1,
+    senescence_lai: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Power coefficient for LAI in senescence equation (LAIPower[3])",
         json_schema_extra={"unit": "dimensionless", "display_name": "Senescence Lai"}
     )
-    senescence_sdd: FlexibleRefValue(float) = Field(
-        default=0.1,
+    senescence_sdd: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Power coefficient for SDD in senescence equation (LAIPower[4])",
         json_schema_extra={"unit": "dimensionless", "display_name": "Senescence Sdd"}
     )
@@ -201,10 +222,10 @@ class LAIPowerCoefficients(BaseModel):
     def to_list(self) -> List[float]:
         """Convert to list format for Fortran interface"""
         return [
-            self.growth_lai,
-            self.growth_gdd,
-            self.senescence_lai,
-            self.senescence_sdd,
+            self.growth_lai if self.growth_lai is not None else 0.1,
+            self.growth_gdd if self.growth_gdd is not None else 0.1,
+            self.senescence_lai if self.senescence_lai is not None else 0.1,
+            self.senescence_sdd if self.senescence_sdd is not None else 0.1,
         ]
 
     def to_df_state(self, grid_id: int, veg_idx: int) -> pd.DataFrame:
@@ -267,23 +288,23 @@ class LAIPowerCoefficients(BaseModel):
 
 
 class LAIParams(BaseModel):
-    baset: FlexibleRefValue(float) = Field(
-        default=10.0,
+    baset: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Base temperature for initiating growing degree days (GDD) for leaf growth",
         json_schema_extra={"unit": "degC", "display_name": "Baset"}
     )
-    gddfull: FlexibleRefValue(float) = Field(
-        default=100.0,
+    gddfull: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Growing degree days (GDD) needed for full capacity of LAI",
         json_schema_extra={"unit": "degC*day", "display_name": "Gddfull"}
     )
-    basete: FlexibleRefValue(float) = Field(
-        default=10.0,
+    basete: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Base temperature for initiating senescence degree days (SDD) for leaf off",
         json_schema_extra={"unit": "degC", "display_name": "Basete"}
     )
-    sddfull: FlexibleRefValue(float) = Field(
-        default=100.0,
+    sddfull: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Senescence degree days (SDD) needed to initiate leaf off",
         json_schema_extra={"unit": "degC*day", "display_name": "Sddfull"}
     )
@@ -291,8 +312,8 @@ class LAIParams(BaseModel):
         default=0.1,
         description="Leaf-off wintertime LAI value", json_schema_extra={"unit": "m^2 m^-2", "display_name": "Laimin"}
     )
-    laimax: FlexibleRefValue(float) = Field(
-        default=10.0,
+    laimax: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Full leaf-on summertime LAI value", json_schema_extra={"unit": "m^2 m^-2", "display_name": "Laimax"}
     )
     laipower: LAIPowerCoefficients = Field(
@@ -309,19 +330,26 @@ class LAIParams(BaseModel):
 
     @model_validator(mode="after")
     def validate_lai_ranges(self) -> "LAIParams":
-        laimin_val = self.laimin.value if isinstance(self.laimin, RefValue) else self.laimin
-        laimax_val = self.laimax.value if isinstance(self.laimax, RefValue) else self.laimax
-        baset_val = self.baset.value if isinstance(self.baset, RefValue) else self.baset
-        gddfull_val = self.gddfull.value if isinstance(self.gddfull, RefValue) else self.gddfull
+        # Only validate if values are not None
+        if self.laimin is not None and self.laimax is not None:
+            laimin_val = self.laimin.value if isinstance(self.laimin, RefValue) else self.laimin
+            laimax_val = self.laimax.value if isinstance(self.laimax, RefValue) else self.laimax
+            
+            if laimin_val > laimax_val:
+                raise ValueError(
+                    f"laimin ({laimin_val}) must be less than or equal to laimax ({laimax_val})."
+                )
         
-        if laimin_val > laimax_val:
-            raise ValueError(
-                f"laimin ({laimin_val})must be less than or equal to laimax ({laimax_val})."
-            )
-        if baset_val > gddfull_val:
-            raise ValueError(
-                f"baset {baset_val} must be less than gddfull ({gddfull_val})."
-            )
+        # Only validate baset/gddfull if both are provided
+        if self.baset is not None and self.gddfull is not None:
+            baset_val = self.baset.value if isinstance(self.baset, RefValue) else self.baset
+            gddfull_val = self.gddfull.value if isinstance(self.gddfull, RefValue) else self.gddfull
+            
+            if baset_val > gddfull_val:
+                raise ValueError(
+                    f"baset ({baset_val}) must be less than gddfull ({gddfull_val})."
+                )
+        
         return self
 
     def to_df_state(self, grid_id: int, surf_idx: int) -> pd.DataFrame:
@@ -359,7 +387,19 @@ class LAIParams(BaseModel):
         }
 
         for param, value in lai_params.items():
-            val = value.value if isinstance(value, RefValue) else value
+            if value is not None:
+                val = value.value if isinstance(value, RefValue) else value
+            else:
+                # Default values for None
+                defaults = {
+                    "baset": 10.0,
+                    "gddfull": 100.0,
+                    "basete": 10.0,
+                    "sddfull": 100.0,
+                    "laimax": 10.0,
+                    "laitype": 0
+                }
+                val = defaults.get(param, 0.0)
             set_df_value(param, (veg_idx,), val)
 
         # Add LAI power coefficients using the LAIPowerCoefficients to_df_state method
@@ -431,28 +471,28 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         description="Maximum albedo", json_schema_extra={"unit": "dimensionless", "display_name": "Alb Max"},
         default=0.3
     )
-    beta_bioco2: FlexibleRefValue(float) = Field(
-        default=0.6, description="Biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Beta Bioco2"}
+    beta_bioco2: Optional[FlexibleRefValue(float)] = Field(
+        default=None, description="Biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Beta Bioco2"}
     )
     beta_enh_bioco2: FlexibleRefValue(float) = Field(
         default=0.7,
         description="Enhanced biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Beta Enh Bioco2"},
     )
-    alpha_bioco2: FlexibleRefValue(float) = Field(
-        default=0.8, description="Biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Alpha Bioco2"}
+    alpha_bioco2: Optional[FlexibleRefValue(float)] = Field(
+        default=None, description="Biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Alpha Bioco2"}
     )
     alpha_enh_bioco2: FlexibleRefValue(float) = Field(
         default=0.9,
         description="Enhanced biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Alpha Enh Bioco2"},
     )
-    resp_a: FlexibleRefValue(float) = Field(
-        default=1.0, description="Respiration coefficient", json_schema_extra={"unit": "umol m^-2 s^-1", "display_name": "Resp A"}
+    resp_a: Optional[FlexibleRefValue(float)] = Field(
+        default=None, description="Respiration coefficient", json_schema_extra={"unit": "umol m^-2 s^-1", "display_name": "Resp A"}
     )
-    resp_b: FlexibleRefValue(float) = Field(
-        default=1.1, description="Respiration coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Resp B"}
+    resp_b: Optional[FlexibleRefValue(float)] = Field(
+        default=None, description="Respiration coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Resp B"}
     )
-    theta_bioco2: FlexibleRefValue(float) = Field(
-        default=1.2, description="Biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Theta Bioco2"}
+    theta_bioco2: Optional[FlexibleRefValue(float)] = Field(
+        default=None, description="Biogenic CO2 exchange coefficient", json_schema_extra={"unit": "dimensionless", "display_name": "Theta Bioco2"}
     )
     maxconductance: FlexibleRefValue(float) = Field(
         default=0.5, description="Maximum surface conductance", json_schema_extra={"unit": "mm s^-1", "display_name": "Maxconductance"}
@@ -483,6 +523,22 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             raise ValueError(
                 f"alb_min (input {alb_min_val}) must be less than or equal to alb_max (entered {alb_max_val})."
             )
+        return self
+
+    @model_validator(mode="after")
+    def check_missing_vegetation_params(self) -> "VegetatedSurfaceProperties":
+        """Check for missing critical vegetation parameters and issue warnings."""
+        # Check critical vegetation parameters
+        critical_params = {
+            "beta_bioco2": "Biogenic CO2 exchange coefficient",
+            "alpha_bioco2": "Biogenic CO2 exchange coefficient", 
+            "resp_a": "Respiration coefficient",
+            "resp_b": "Respiration coefficient",
+        }
+        
+        missing_params = check_missing_params(critical_params, self, "vegetation", "CO2 flux calculations")
+        warn_missing_params(missing_params, "vegetation", "CO2 flux calculations", stacklevel=2)
+        
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
@@ -518,7 +574,18 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             "ie_m",
         ]:
             field_val = getattr(self, attr)
-            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            if field_val is not None:
+                val = field_val.value if isinstance(field_val, RefValue) else field_val
+            else:
+                # Default values for None vegetation parameters
+                defaults = {
+                    "beta_bioco2": 0.6,
+                    "alpha_bioco2": 0.8,
+                    "resp_a": 1.0,
+                    "resp_b": 1.1,
+                    "theta_bioco2": 1.2,
+                }
+                val = defaults.get(attr, 0.0)
             set_df_value(attr, f"({surf_idx-2},)", val)
 
         df_lai = self.lai.to_df_state(grid_id, surf_idx)
@@ -560,12 +627,12 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
         default=0.2,
         description="Albedo", json_schema_extra={"unit": "dimensionless", "display_name": "Albedo"}
     )
-    faievetree: FlexibleRefValue(float) = Field(
-        default=0.1,
+    faievetree: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Frontal area index of evergreen trees", json_schema_extra={"unit": "dimensionless", "display_name": "Faievetree"}
     )
-    evetreeh: FlexibleRefValue(float) = Field(
-        default=15.0,
+    evetreeh: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Evergreen tree height", json_schema_extra={"unit": "m", "display_name": "Evetreeh"}
     )
     _surface_type: Literal[SurfaceType.EVETR] = SurfaceType.EVETR
@@ -595,7 +662,15 @@ class EvetrProperties(VegetatedSurfaceProperties):  # TODO: Move waterdist VWD h
         list_properties = ["faievetree", "evetreeh"]
         for attr in list_properties:
             field_val = getattr(self, attr)
-            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            if field_val is not None:
+                val = field_val.value if isinstance(field_val, RefValue) else field_val
+            else:
+                # Default values for None parameters
+                defaults = {
+                    "faievetree": 0.1,
+                    "evetreeh": 15.0,
+                }
+                val = defaults.get(attr, 0.0)
             df_state.loc[grid_id, (attr, "0")] = val
 
         # specific properties
@@ -627,12 +702,12 @@ class DectrProperties(VegetatedSurfaceProperties):
         default=0.2,
         description="Albedo", json_schema_extra={"unit": "dimensionless", "display_name": "Albedo"}
     )
-    faidectree: FlexibleRefValue(float) = Field(
-        default=0.1,
+    faidectree: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Frontal area index of deciduous trees", json_schema_extra={"unit": "dimensionless", "display_name": "Faidectree"}
     )
-    dectreeh: FlexibleRefValue(float) = Field(
-        default=15.0,
+    dectreeh: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Deciduous tree height", json_schema_extra={"unit": "m", "display_name": "Dectreeh"}
     )
     pormin_dec: FlexibleRefValue(float) = Field(
@@ -689,7 +764,15 @@ class DectrProperties(VegetatedSurfaceProperties):
         # Add all non-inherited properties
         for attr in list_properties:
             field_val = getattr(self, attr)
-            val = field_val.value if isinstance(field_val, RefValue) else field_val
+            if field_val is not None:
+                val = field_val.value if isinstance(field_val, RefValue) else field_val
+            else:
+                # Default values for None parameters
+                defaults = {
+                    "faidectree": 0.1,
+                    "dectreeh": 15.0,
+                }
+                val = defaults.get(attr, field_val)  # Keep existing defaults for others
             df_state.loc[grid_id, (attr, "0")] = val
 
         # specific properties
@@ -768,8 +851,8 @@ class SnowParams(BaseModel):
         default=0.99,
         description="Snow surface emissivity", json_schema_extra={"unit": "dimensionless", "display_name": "Narp Emis Snow"}
     )
-    preciplimit: FlexibleRefValue(float) = Field(
-        default=2.2,
+    preciplimit: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Temperature threshold for snow vs rain precipitation", json_schema_extra={"unit": "degC", "display_name": "Preciplimit"}
     )
     preciplimitalb: FlexibleRefValue(float) = Field(
@@ -784,12 +867,12 @@ class SnowParams(BaseModel):
         default=0.4,
         description="Minimum snow albedo", json_schema_extra={"unit": "dimensionless", "display_name": "Snowalbmin"}
     )
-    snowdensmin: FlexibleRefValue(float) = Field(
-        default=100.0,
+    snowdensmin: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Minimum snow density", json_schema_extra={"unit": "kg m^-3", "display_name": "Snowdensmin"}
     )
-    snowdensmax: FlexibleRefValue(float) = Field(
-        default=400.0,
+    snowdensmax: Optional[FlexibleRefValue(float)] = Field(
+        default=None,
         description="Maximum snow density", json_schema_extra={"unit": "kg m^-3", "display_name": "Snowdensmax"}
     )
     snowlimbldg: FlexibleRefValue(float) = Field(
@@ -883,7 +966,16 @@ class SnowParams(BaseModel):
             "radmeltfact": self.radmeltfact,
         }
         for param_name, value in scalar_params.items():
-            val = value.value if isinstance(value, RefValue) else value
+            if value is not None:
+                val = value.value if isinstance(value, RefValue) else value
+            else:
+                # Default values for None snow parameters
+                defaults = {
+                    "preciplimit": 2.2,
+                    "snowdensmin": 100.0,
+                    "snowdensmax": 400.0,
+                }
+                val = defaults.get(param_name, 0.0)
             df_state.loc[grid_id, (param_name, "0")] = val
 
         df_hourly_profile = self.snowprof_24hr.to_df_state(grid_id, "snowprof_24hr")
