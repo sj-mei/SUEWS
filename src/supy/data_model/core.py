@@ -520,115 +520,171 @@ def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
     )
     return data
 
-def precheck_rslmethod(data: dict) -> dict:
+def precheck_model_option_rules(data: dict) -> dict:
+    """
+    Unified handler for model-option-dependent rules.
+    Applies constraints and parameter nullification based on model.physics settings.
+    """
+
     physics = data.get("model", {}).get("physics", {})
     rslmethod = physics.get("rslmethod", {}).get("value")
+    storage_method = physics.get("storageheatmethod", {}).get("value")
+    stebbsmethod = physics.get("stebbsmethod", {}).get("value")
 
-    if rslmethod != 2:
-        logger_supy.debug("[precheck] rslmethod != 2, skipping faibldg check.")
-        return data
+    # --- RSLMETHOD RULES (diagnostic method logic) ---
+    if rslmethod == 2:
+        logger_supy.info("[precheck] rslmethod==2 detected → checking faibldg for bldgs with sfr > 0.")
 
-    for i, site in enumerate(data.get("sites", [])):
-        props = site.get("properties", {})
-        land_cover = props.get("land_cover", {})
-        bldgs = land_cover.get("bldgs", {})
-        sfr = bldgs.get("sfr", {}).get("value", 0)
+        for site_idx, site in enumerate(data.get("sites", [])):
+            props = site.get("properties", {})
+            land_cover = props.get("land_cover", {})
+            bldgs = land_cover.get("bldgs", {})
+            sfr = bldgs.get("sfr", {}).get("value", 0)
 
-        if sfr > 0:
-            faibldg = bldgs.get("faibldg", {})
-            faibldg_value = faibldg.get("value")
-            if faibldg_value in (None, "", []):
-                raise ValueError(
-                    f"[site #{i}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null."
-                )
+            if sfr > 0:
+                faibldg = bldgs.get("faibldg", {})
+                faibldg_value = faibldg.get("value")
+                if faibldg_value in (None, "", []):
+                    raise ValueError(f"[site #{site_idx}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
 
-    logger_supy.info("[precheck] faibldg check for rslmethod==2 passed.")
+    # --- STORAGEHEATMETHOD RULES (DyOHM logic) ---
+    if storage_method == 6:
+        logger_supy.info("[precheck] storageheatmethod==6 detected → checking wall thermal layers and lambda_c.")
+
+        for site_idx, site in enumerate(data.get("sites", [])):
+            props = site.get("properties", {})
+            vertical_layers = props.get("vertical_layers", {})
+            walls = vertical_layers.get("walls", [])
+
+            if not walls or not isinstance(walls, list) or len(walls) == 0:
+                raise ValueError(f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6.")
+
+            wall0 = walls[0]
+            thermal = wall0.get("thermal_layers", {})
+
+            for param in ["dz", "k", "cp"]:
+                param_list = thermal.get(param, {}).get("value")
+                if not isinstance(param_list, list) or len(param_list) == 0:
+                    raise ValueError(f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6.")
+                if param_list[0] in (None, ""):
+                    raise ValueError(f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6.")
+
+            lambda_c = props.get("lambda_c", {}).get("value")
+            if lambda_c in (None, ""):
+                raise ValueError(f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6.")
+
+    # --- STEBBSMETHOD RULES ---
+    if stebbsmethod == 0:
+        logger_supy.info("[precheck] stebbsmethod==0 detected → nullifying stebbs parameters at site level.")
+
+        for site_idx, site in enumerate(data.get("sites", [])):
+            props = site.get("properties", {})
+            stebbs_block = props.get("stebbs", {})
+
+            def recursive_nullify(d):
+                for k, v in d.items():
+                    if isinstance(v, dict):
+                        if "value" in v:
+                            v["value"] = None
+                        else:
+                            recursive_nullify(v)
+
+            recursive_nullify(stebbs_block)
+            site["properties"]["stebbs"] = stebbs_block
+
+    logger_supy.info("[precheck] Model-option-based rules completed.")
     return data
 
 
-def precheck_storageheatmethod(data: dict) -> dict:
-    """If storageheatmethod == 6, check required wall thermal properties and lambda_c."""  # <--- Placeholder: this case refers to DyOHM
-    storage_method = (
-        data.get("model", {})
-        .get("physics", {})
-        .get("storageheatmethod", {})
-        .get("value")
-    )
+# def precheck_rslmethod(data: dict) -> dict:
+#     physics = data.get("model", {}).get("physics", {})
+#     rslmethod = physics.get("rslmethod", {}).get("value")
 
-    if storage_method != 6:
-        logger_supy.debug(
-            "[precheck] storageheatmethod != 6, skipping wall thermal layer checks."
-        )
-        return data
+#     if rslmethod != 2:
+#         logger_supy.debug("[precheck] rslmethod != 2, skipping faibldg check.")
+#         return data
 
-    for site_idx, site in enumerate(data.get("sites", [])):
-        props = site.get("properties", {})
-        vertical_layers = props.get("vertical_layers", {})
-        walls = vertical_layers.get("walls", [])
+#     for i, site in enumerate(data.get("sites", [])):
+#         props = site.get("properties", {})
+#         land_cover = props.get("land_cover", {})
+#         bldgs = land_cover.get("bldgs", {})
+#         sfr = bldgs.get("sfr", {}).get("value", 0)
 
-        if not walls or not isinstance(walls, list) or len(walls) == 0:
-            raise ValueError(
-                f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6."
-            )
+#         if sfr > 0:
+#             faibldg = bldgs.get("faibldg", {})
+#             faibldg_value = faibldg.get("value")
+#             if faibldg_value in (None, "", []):
+#                 raise ValueError(f"[site #{i}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
 
-        wall0 = walls[0]
-        thermal = wall0.get("thermal_layers", {})
+#     logger_supy.info("[precheck] faibldg check for rslmethod==2 passed.")
+#     return data
 
-        for param in ["dz", "k", "cp"]:
-            param_list = thermal.get(param, {}).get("value")
-            if not isinstance(param_list, list) or len(param_list) == 0:
-                raise ValueError(
-                    f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6."
-                )
-            if param_list[0] in (None, ""):
-                raise ValueError(
-                    f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6."
-                )
+# def precheck_storageheatmethod(data: dict) -> dict:
+#     """If storageheatmethod == 6, check required wall thermal properties and lambda_c.""" # <--- Placeholder: this case refers to DyOHM
+#     storage_method = data.get("model", {}).get("physics", {}).get("storageheatmethod", {}).get("value")
 
-        lambda_c = props.get("lambda_c", {}).get("value")
-        if lambda_c in (None, ""):
-            raise ValueError(
-                f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6."
-            )
+#     if storage_method != 6:
+#         logger_supy.debug("[precheck] storageheatmethod != 6, skipping wall thermal layer checks.")
+#         return data
 
-    logger_supy.info(
-        "[precheck] storageheatmethod == 6 → wall thermal layers and lambda_c check passed."
-    )
-    return data
+#     for site_idx, site in enumerate(data.get("sites", [])):
+#         props = site.get("properties", {})
+#         vertical_layers = props.get("vertical_layers", {})
+#         walls = vertical_layers.get("walls", [])
 
+#         if not walls or not isinstance(walls, list) or len(walls) == 0:
+#             raise ValueError(f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6.")
 
-def precheck_stebbsmethod(data: dict) -> dict:
-    """
-    If stebbsmethod == 0, nullify all parameters under each site's properties.stebbs block.
-    """
-    physics = data.get("model", {}).get("physics", {})
-    stebbs_method = physics.get("stebbsmethod", {}).get("value")
+#         wall0 = walls[0]
+#         thermal = wall0.get("thermal_layers", {})
 
-    if stebbs_method != 0:
-        logger_supy.info("[precheck] stebbsmethod != 0, skipping stebbs nullification.")
-        return data
+#         for param in ["dz", "k", "cp"]:
+#             param_list = thermal.get(param, {}).get("value")
+#             if not isinstance(param_list, list) or len(param_list) == 0:
+#                 raise ValueError(f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6.")
+#             if param_list[0] in (None, ""):
+#                 raise ValueError(f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6.")
 
-    logger_supy.info("[precheck] stebbsmethod == 0, nullifying stebbs parameters...")
+#         lambda_c = props.get("lambda_c", {}).get("value")
+#         if lambda_c in (None, ""):
+#             raise ValueError(f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6.")
 
-    for site_idx, site in enumerate(data.get("sites", [])):
-        props = site.get("properties", {})
-        stebbs_block = props.get("stebbs", {})
+#     logger_supy.info("[precheck] storageheatmethod == 6 → wall thermal layers and lambda_c check passed.")
+#     return data
 
-        def recursive_nullify(d):
-            for k, v in d.items():
-                if isinstance(v, dict):
-                    if "value" in v:
-                        v["value"] = None
-                    else:
-                        recursive_nullify(v)
+# def precheck_stebbsmethod(data: dict) -> dict:
+#     """
+#     If stebbsmethod == 0, nullify all parameters under each site's properties.stebbs block.
+#     """
+#     physics = data.get("model", {}).get("physics", {})
+#     stebbs_method = physics.get("stebbsmethod", {}).get("value")
 
-        recursive_nullify(stebbs_block)
-        site["properties"]["stebbs"] = stebbs_block
+#     if stebbs_method != 0:
+#         logger_supy.info("[precheck] stebbsmethod != 0, skipping stebbs nullification.")
+#         return data
 
-    return data
+#     logger_supy.info("[precheck] stebbsmethod == 0, nullifying stebbs parameters...")
+
+#     for site_idx, site in enumerate(data.get("sites", [])):
+#         props = site.get("properties", {})
+#         stebbs_block = props.get("stebbs", {})
+
+#         def recursive_nullify(d):
+#             for k, v in d.items():
+#                 if isinstance(v, dict):
+#                     if "value" in v:
+#                         v["value"] = None
+#                     else:
+#                         recursive_nullify(v)
+
+#         recursive_nullify(stebbs_block)
+#         site["properties"]["stebbs"] = stebbs_block
+
+#     return data
 
 
 def run_precheck(path: str) -> dict:
+
     # ---- Step 0: Load yaml from path into a dict ----
     with open(path, "r") as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
@@ -666,9 +722,10 @@ def run_precheck(path: str) -> dict:
     data = precheck_land_cover_fractions(data)
 
     # ---- Step 10: Rules associated to selected model options ----
-    data = precheck_rslmethod(data)
-    data = precheck_storageheatmethod(data) 
-    data = precheck_stebbsmethod(data)
+    # data = precheck_rslmethod(data)
+    # data = precheck_storageheatmethod(data) 
+    # data = precheck_stebbsmethod(data)
+    data = precheck_model_option_rules(data)
 
     # ---- Step 11: Save output YAML ----
     output_filename = f"py0_{os.path.basename(path)}"
