@@ -1,0 +1,23 @@
+# Example: HDF5 output configuration
+# This example shows how to configure SUEWS to save output in HDF5 format
+
+model:
+  control:
+    tstep: 300  # 5-minute timestep
+    forcing_file: "forcing_2020.txt"
+    
+    # HDF5 output configuration
+    output_file:
+      format: hdf5      # Save as HDF5 file
+      freq: 3600        # Save hourly data (must be multiple of tstep)
+      # Note: groups parameter is ignored for HDF5 - all groups are saved
+      
+  physics:
+    netradiationmethod: 3
+    emissionsmethod: 2
+
+sites:
+  - name: "Urban_Site"
+    latitude: 51.5
+    longitude: -0.1
+    # ... other site parameters

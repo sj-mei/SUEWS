@@ -69,12 +69,34 @@ In addition to the YAML configuration file, SUEWS works with input and output da
      When multiple files are provided, they will be automatically loaded and concatenated in chronological order.
 
 **Output Data:**
-- **Model results**: Time-series output files specified by :ref:`model.control.output_file <modelcontrol>`
+- **Model results**: Time-series output files configured by :ref:`model.control.output_file <modelcontrol>`
+
+  The ``output_file`` parameter now supports advanced configuration:
+  
+  1. **Output format**: Choose between 'txt' (traditional text files) or 'hdf5' (single HDF5 file)
+  2. **Output frequency**: Specify custom output frequency (must be multiple of timestep)
+  3. **Output groups**: Select which groups to save (txt format only)
+  
+  Example configurations:
+  
+  .. code-block:: yaml
+  
+     # HDF5 output with hourly data
+     output_file:
+       format: hdf5
+       freq: 3600
+       
+     # Text output with selected groups at 30-minute intervals
+     output_file:
+       format: txt
+       freq: 1800
+       groups: ["SUEWS", "DailyState", "ESTM"]
 
 For detailed information about:
 
 - **Input data format and variables**: see :ref:`met_input`
 - **Output file formats and variables**: see :ref:`output_files`
+- **Output configuration options**: see :ref:`outputconfig`
 
 Configuration Builder (Experimental)
 --------------------------------------

@@ -566,6 +566,46 @@ class ModelPhysics(BaseModel):
         return cls(**properties)
 
 
+class OutputFormat(Enum):
+    '''
+    Output file format options.
+    
+    TXT: Traditional text files (one per year/grid/group)
+    HDF5: Single HDF5 file containing all output data
+    '''
+    TXT = "txt"
+    HDF5 = "hdf5"
+    
+    def __str__(self):
+        return self.value
+
+
+class OutputConfig(BaseModel):
+    '''Configuration for model output files.'''
+    
+    format: OutputFormat = Field(
+        default=OutputFormat.TXT,
+        description="Output file format. Options: 'txt' for traditional text files (one per year/grid/group), 'hdf5' for single HDF5 file containing all data"
+    )
+    freq: Optional[int] = Field(
+        default=None,
+        description="Output frequency in seconds. Must be a multiple of the model timestep (tstep). If not specified, defaults to 3600 (hourly)"
+    )
+    groups: Optional[List[str]] = Field(
+        default=None,
+        description="List of output groups to save (only applies to txt format). Available groups: 'SUEWS', 'DailyState', 'snow', 'ESTM', 'RSL', 'BL', 'debug'. If not specified, defaults to ['SUEWS', 'DailyState']"
+    )
+    
+    @field_validator('groups')
+    def validate_groups(cls, v):
+        if v is not None:
+            valid_groups = {'SUEWS', 'DailyState', 'snow', 'ESTM', 'RSL', 'BL', 'debug'}
+            invalid = set(v) - valid_groups
+            if invalid:
+                raise ValueError(f"Invalid output groups: {invalid}. Valid groups are: {valid_groups}")
+        return v
+
+
 class ModelControl(BaseModel):
     tstep: int = Field(
         default=300, description="Time step in seconds for model calculations"
@@ -578,8 +618,9 @@ class ModelControl(BaseModel):
         default=None,
         description="Use zenithal correction for downward shortwave radiation",
     )
-    output_file: str = Field(
-        default="output.txt", description="Path to model output file. SUEWS generates multiple output files with time-series results and diagnostic information. For detailed information about output file formats, variables, and interpretation, see :ref:`output_files`."
+    output_file: Union[str, OutputConfig] = Field(
+        default="output.txt", 
+        description="Output file configuration. This can be either: (1) A string for backward compatibility (ignored), or (2) An OutputConfig object specifying format ('txt' or 'hdf5'), frequency (seconds, must be multiple of tstep), and groups to save (for txt format only). Example: {'format': 'hdf5', 'freq': 3600} or {'format': 'txt', 'freq': 1800, 'groups': ['SUEWS', 'DailyState', 'ESTM']}. For detailed information about output variables and file structure, see :ref:`output_files`."
     )
     # daylightsaving_method: int
     diagnose: int = Field(
@@ -661,6 +702,19 @@ class Model(BaseModel):
                 "If not using sample forcing, ensure that the forcing file contains Ldown and rename from forcing.txt."
                 # TODO: This is a temporary solution. We need to provide a better way to catch this.
             )
+        return self
+    
+    @model_validator(mode="after")
+    def validate_output_config(self) -> "Model":
+        """Validate output configuration, especially frequency vs timestep."""
+        if isinstance(self.control.output_file, OutputConfig):
+            output_config = self.control.output_file
+            if output_config.freq is not None:
+                tstep = self.control.tstep
+                if output_config.freq % tstep != 0:
+                    raise ValueError(
+                        f"Output frequency ({output_config.freq}s) must be a multiple of timestep ({tstep}s)"
+                    )
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:

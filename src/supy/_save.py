@@ -176,6 +176,7 @@ def save_df_output(
     output_level=1,
     save_snow=True,
     debug=False,
+    output_groups=None,
 ) -> list:
     """save supy output dataframe to txt files
 
@@ -198,6 +199,8 @@ def save_df_output(
         whether to save snow-related output variables in a separate file, by default True.
     debug : bool, optional
         whether to enable debug mode (e.g., writing out in serial mode, and other debug uses), by default False.
+    output_groups : list, optional
+        list of output groups to save (e.g., ['SUEWS', 'DailyState', 'ESTM']). If None, defaults to ['SUEWS', 'DailyState'].
 
     Returns
     -------
@@ -212,9 +215,23 @@ def save_df_output(
 
     # resample output if `freq_s` is different from runtime `freq` (usually 5 min)
     freq_save = pd.Timedelta(freq_s, "s")
+    
+    # Handle output groups filtering
+    if output_groups is None:
+        # Default groups
+        output_groups = ['SUEWS', 'DailyState']
+    
+    # Get all available groups
+    all_groups = df_save.columns.get_level_values('group').unique().tolist()
+    
+    # Filter to only requested groups
+    groups_to_drop = [g for g in all_groups if g not in output_groups]
+    for group in groups_to_drop:
+        if group in df_save.columns.get_level_values('group'):
+            df_save = df_save.drop(group, axis=1, level='group')
 
-    # drop snow related group from output groups
-    if not save_snow:
+    # drop snow related group from output groups if not requested
+    if not save_snow and 'snow' in df_save.columns.get_level_values('group'):
         df_save = df_save.drop("snow", axis=1,level='group')
 
     # resample `df_output` at `freq_save`
@@ -520,3 +537,83 @@ def save_initcond_nml(
         # f90nml.write(nml, nml_file,force=True)
         list_path_nml.append(path_nml)
     return list_path_nml
+
+
+def save_df_output_hdf5(
+    df_output: pd.DataFrame,
+    df_state_final: pd.DataFrame,
+    freq_s: int = 3600,
+    site: str = "",
+    path_dir_save: Path = Path("."),
+    save_tstep=False,
+) -> list:
+    """Save supy output to HDF5 format.
+    
+    Parameters
+    ----------
+    df_output : pd.DataFrame
+        Output dataframe from supy simulation
+    df_state_final : pd.DataFrame
+        Final state dataframe
+    freq_s : int, optional
+        Output frequency in seconds (default 3600)
+    site : str, optional
+        Site identifier for filename
+    path_dir_save : Path, optional
+        Directory to save HDF5 file
+    save_tstep : bool, optional
+        Whether to save at simulation timestep resolution
+        
+    Returns
+    -------
+    list
+        List containing path to saved HDF5 file
+    """
+    from ._version import __version__
+    
+    # Resample if needed
+    df_save = df_output.copy()
+    freq_save = pd.Timedelta(freq_s, "s")
+    
+    if not save_tstep:
+        # Resample output
+        df_rsmp = resample_output(df_save, freq_save)
+        # Keep DailyState at original resolution
+        if 'DailyState' in df_save.columns.get_level_values('group'):
+            df_daily = df_save.loc[:, ["DailyState"]]
+            # Combine for saving
+            df_to_save = pd.concat([df_rsmp, df_daily], axis=1)
+        else:
+            df_to_save = df_rsmp
+    else:
+        df_to_save = df_save
+    
+    # Construct filename
+    filename = f"{site}_SUEWS_output.h5" if site else "SUEWS_output.h5"
+    path_save = path_dir_save / filename
+    
+    # Save to HDF5
+    with pd.HDFStore(path_save, mode='w') as store:
+        # Save output data - each grid and group combination as a separate key
+        for grid in df_to_save.index.get_level_values('grid').unique():
+            df_grid = df_to_save.loc[grid]
+            for group in df_grid.columns.get_level_values('group').unique():
+                df_group = df_grid[group]
+                key = f'/output/grid_{grid}/{group}'
+                store.put(key, df_group, format='table', data_columns=True)
+        
+        # Save final state
+        store.put('/state_final', df_state_final, format='table')
+        
+        # Save metadata
+        metadata = {
+            'site': site,
+            'output_frequency_s': freq_s,
+            'save_tstep': save_tstep,
+            'creation_time': pd.Timestamp.now().isoformat(),
+            'supy_version': __version__
+        }
+        store.get_storer('/state_final').attrs.metadata = metadata
+    
+    logger_supy.info(f"Saved HDF5 output to {path_save}")
+    return [path_save]

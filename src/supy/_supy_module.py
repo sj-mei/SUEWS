@@ -36,7 +36,7 @@ from ._load import (
     load_SUEWS_Forcing_met_df_yaml,
 )
 from ._run import run_supy_par, run_supy_ser
-from ._save import get_save_info, save_df_output, save_df_state, save_initcond_nml
+from ._save import get_save_info, save_df_output, save_df_state, save_initcond_nml, save_df_output_hdf5
 from ._post import resample_output
 from ._version import __version__
 
@@ -502,6 +502,7 @@ def save_supy(
     logging_level=50,
     output_level=1,
     debug=False,
+    output_config=None,
 ) -> list:
     """Save SuPy run results to files
 
@@ -530,6 +531,8 @@ def save_supy(
         Notes: 0 for all but snow-related; 1 for all; 2 for a minimal set without land cover specific information.
     debug : bool, optional
         whether to enable debug mode (e.g., writing out in serial mode, and other debug uses), by default False.
+    output_config : OutputConfig, optional
+        Output configuration object specifying format, frequency, and groups to save. If provided, overrides freq_s parameter.
 
 
     Returns
@@ -562,6 +565,22 @@ def save_supy(
             path_runcontrol
         )
 
+    # Handle output configuration if provided
+    output_format = "txt"  # default
+    output_groups = None  # default will be handled in save_df_output
+    
+    if output_config is not None:
+        from .data_model.model import OutputConfig, OutputFormat
+        if isinstance(output_config, OutputConfig):
+            # Override frequency if specified in config
+            if output_config.freq is not None:
+                freq_s = output_config.freq
+            # Get format
+            output_format = str(output_config.format)
+            # Get groups for txt format
+            if output_format == "txt" and output_config.groups is not None:
+                output_groups = output_config.groups
+
     # determine `save_snow` option
     snowuse = df_state_final.iloc[-1].loc["snowuse"].values.item()
     save_snow = True if snowuse == 1 else False
@@ -571,17 +590,30 @@ def save_supy(
     if not path_dir_save.exists():
         path_dir_save.mkdir(parents=True)
 
-    # save df_output to several files
-    list_path_save = save_df_output(
-        df_output,
-        freq_s,
-        site,
-        path_dir_save,
-        save_tstep,
-        output_level,
-        save_snow,
-        debug,
-    )
+    # save based on format
+    if output_format == "hdf5":
+        # Save as HDF5
+        list_path_save = save_df_output_hdf5(
+            df_output,
+            df_state_final,
+            freq_s,
+            site,
+            path_dir_save,
+            save_tstep,
+        )
+    else:
+        # Save as text files (existing behavior)
+        list_path_save = save_df_output(
+            df_output,
+            freq_s,
+            site,
+            path_dir_save,
+            save_tstep,
+            output_level,
+            save_snow,
+            debug,
+            output_groups=output_groups,
+        )
 
     # save df_state
     if path_runcontrol is not None:
