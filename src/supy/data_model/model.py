@@ -713,7 +713,7 @@ class ModelControl(BaseModel):
     )
     output_file: Union[str, OutputConfig] = Field(
         default="output.txt", 
-        description="Output file configuration. This can be either: (1) A string for backward compatibility (ignored), or (2) An OutputConfig object specifying format ('txt' or 'parquet'), frequency (seconds, must be multiple of tstep), and groups to save (for txt format only). Example: {'format': 'parquet', 'freq': 3600} or {'format': 'txt', 'freq': 1800, 'groups': ['SUEWS', 'DailyState', 'ESTM']}. For detailed information about output variables and file structure, see :ref:`output_files`."
+        description="Output file configuration. DEPRECATED: String values are ignored and will issue a warning. Please use an OutputConfig object specifying format ('txt' or 'parquet'), frequency (seconds, must be multiple of tstep), and groups to save (for txt format only). Example: {'format': 'parquet', 'freq': 3600} or {'format': 'txt', 'freq': 1800, 'groups': ['SUEWS', 'DailyState', 'ESTM']}. For detailed information about output variables and file structure, see :ref:`output_files`."
     )
     # daylightsaving_method: int
     diagnose: int = Field(
@@ -814,6 +814,16 @@ class Model(BaseModel):
                     raise ValueError(
                         f"Output frequency ({output_config.freq}s) must be a multiple of timestep ({tstep}s)"
                     )
+        elif isinstance(self.control.output_file, str) and self.control.output_file != "output.txt":
+            # Issue warning for non-default string values
+            import warnings
+            warnings.warn(
+                f"The 'output_file' parameter with value '{self.control.output_file}' is deprecated and was never used. "
+                "Please use the new OutputConfig format or remove this parameter. "
+                "Example: output_file: {format: 'parquet', freq: 3600}",
+                DeprecationWarning,
+                stacklevel=3
+            )
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:

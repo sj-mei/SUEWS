@@ -624,6 +624,19 @@ def save_supy(
             # Get groups for txt format
             if output_format == "txt" and output_config.groups is not None:
                 output_groups = output_config.groups
+        elif isinstance(output_config, str):
+            # Legacy string format - issue deprecation warning
+            import warnings
+            warnings.warn(
+                "The 'output_file' parameter as a string is deprecated and was never used. "
+                "Please use the new OutputConfig format or remove this parameter. "
+                "Falling back to default text output. "
+                "Example: output_file: {format: 'parquet', freq: 3600}",
+                DeprecationWarning,
+                stacklevel=2
+            )
+            # Fall back to default text format
+            output_format = "txt"
 
     # determine `save_snow` option
     snowuse = df_state_final.iloc[-1].loc["snowuse"].values.item()

@@ -112,3 +112,30 @@ model:
     config = SUEWSConfig(**config_dict)
     
     assert config.model.control.output_file == "output.txt"
+
+
+def test_deprecation_warning():
+    """Test deprecation warning for non-default string output_file"""
+    import warnings
+    
+    # Test that non-default string triggers warning
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        model = Model(
+            control=ModelControl(
+                output_file="custom_output.txt"
+            )
+        )
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+        assert "deprecated" in str(w[-1].message)
+        
+    # Test that default string doesn't trigger warning
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        model = Model(
+            control=ModelControl(
+                output_file="output.txt"  # default value
+            )
+        )
+        assert len(w) == 0  # No warning for default value
