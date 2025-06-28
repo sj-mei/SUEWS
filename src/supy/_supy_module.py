@@ -36,7 +36,7 @@ from ._load import (
     load_SUEWS_Forcing_met_df_yaml,
 )
 from ._run import run_supy_par, run_supy_ser
-from ._save import get_save_info, save_df_output, save_df_state, save_initcond_nml, save_df_output_hdf5
+from ._save import get_save_info, save_df_output, save_df_state, save_initcond_nml, save_df_output_parquet
 from ._post import resample_output
 from ._version import __version__
 
@@ -635,9 +635,9 @@ def save_supy(
         path_dir_save.mkdir(parents=True)
 
     # save based on format
-    if output_format == "hdf5":
-        # Save as HDF5
-        list_path_save = save_df_output_hdf5(
+    if output_format == "parquet":
+        # Save as Parquet
+        list_path_save = save_df_output_parquet(
             df_output,
             df_state_final,
             freq_s,

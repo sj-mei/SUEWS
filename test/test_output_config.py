@@ -16,11 +16,11 @@ def test_output_config_creation():
     
     # Custom config
     config = OutputConfig(
-        format=OutputFormat.HDF5,
+        format=OutputFormat.PARQUET,
         freq=1800,
         groups=['SUEWS', 'DailyState', 'ESTM']
     )
-    assert config.format == OutputFormat.HDF5
+    assert config.format == OutputFormat.PARQUET
     assert config.freq == 1800
     assert config.groups == ['SUEWS', 'DailyState', 'ESTM']
 
@@ -43,10 +43,10 @@ def test_model_control_with_output_config():
     assert control.output_file == "output.txt"
     
     # OutputConfig object
-    output_config = OutputConfig(format=OutputFormat.HDF5, freq=3600)
+    output_config = OutputConfig(format=OutputFormat.PARQUET, freq=3600)
     control = ModelControl(output_file=output_config)
     assert isinstance(control.output_file, OutputConfig)
-    assert control.output_file.format == OutputFormat.HDF5
+    assert control.output_file.format == OutputFormat.PARQUET
 
 
 def test_frequency_validation():
@@ -78,7 +78,7 @@ model:
   control:
     tstep: 300
     output_file:
-      format: hdf5
+      format: parquet
       freq: 1800
       groups:
         - SUEWS
@@ -93,7 +93,7 @@ model:
     
     # Pydantic automatically converts the dict to OutputConfig
     assert isinstance(config.model.control.output_file, OutputConfig)
-    assert config.model.control.output_file.format == OutputFormat.HDF5
+    assert config.model.control.output_file.format == OutputFormat.PARQUET
     assert config.model.control.output_file.freq == 1800
     assert config.model.control.output_file.groups == ['SUEWS', 'DailyState', 'ESTM']
 

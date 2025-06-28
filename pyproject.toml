@@ -74,7 +74,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "ruff",
-    "tables",  # HDF5 support for pandas
+    "pyarrow",  # Parquet support for pandas (recommended for output format)
     # Personal analysis tools
     "geopandas",
     "scikit-learn",

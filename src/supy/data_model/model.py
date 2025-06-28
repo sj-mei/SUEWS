@@ -663,10 +663,10 @@ class OutputFormat(Enum):
     Output file format options.
     
     TXT: Traditional text files (one per year/grid/group)
-    HDF5: Single HDF5 file containing all output data
+    PARQUET: Single Parquet file containing all output data (efficient columnar format)
     '''
     TXT = "txt"
-    HDF5 = "hdf5"
+    PARQUET = "parquet"
     
     def __str__(self):
         return self.value
@@ -677,7 +677,7 @@ class OutputConfig(BaseModel):
     
     format: OutputFormat = Field(
         default=OutputFormat.TXT,
-        description="Output file format. Options: 'txt' for traditional text files (one per year/grid/group), 'hdf5' for single HDF5 file containing all data"
+        description="Output file format. Options: 'txt' for traditional text files (one per year/grid/group), 'parquet' for single Parquet file containing all data"
     )
     freq: Optional[int] = Field(
         default=None,
@@ -713,7 +713,7 @@ class ModelControl(BaseModel):
     )
     output_file: Union[str, OutputConfig] = Field(
         default="output.txt", 
-        description="Output file configuration. This can be either: (1) A string for backward compatibility (ignored), or (2) An OutputConfig object specifying format ('txt' or 'hdf5'), frequency (seconds, must be multiple of tstep), and groups to save (for txt format only). Example: {'format': 'hdf5', 'freq': 3600} or {'format': 'txt', 'freq': 1800, 'groups': ['SUEWS', 'DailyState', 'ESTM']}. For detailed information about output variables and file structure, see :ref:`output_files`."
+        description="Output file configuration. This can be either: (1) A string for backward compatibility (ignored), or (2) An OutputConfig object specifying format ('txt' or 'parquet'), frequency (seconds, must be multiple of tstep), and groups to save (for txt format only). Example: {'format': 'parquet', 'freq': 3600} or {'format': 'txt', 'freq': 1800, 'groups': ['SUEWS', 'DailyState', 'ESTM']}. For detailed information about output variables and file structure, see :ref:`output_files`."
     )
     # daylightsaving_method: int
     diagnose: int = Field(

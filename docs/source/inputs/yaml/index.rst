@@ -73,7 +73,7 @@ In addition to the YAML configuration file, SUEWS works with input and output da
 
   The ``output_file`` parameter now supports advanced configuration:
   
-  1. **Output format**: Choose between 'txt' (traditional text files) or 'hdf5' (single HDF5 file)
+  1. **Output format**: Choose between 'txt' (traditional text files) or 'parquet' (efficient columnar format)
   2. **Output frequency**: Specify custom output frequency (must be multiple of timestep)
   3. **Output groups**: Select which groups to save (txt format only)
   
@@ -81,9 +81,9 @@ In addition to the YAML configuration file, SUEWS works with input and output da
   
   .. code-block:: yaml
   
-     # HDF5 output with hourly data
+     # Parquet output with hourly data
      output_file:
-       format: hdf5
+       format: parquet
        freq: 3600
        
      # Text output with selected groups at 30-minute intervals

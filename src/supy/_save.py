@@ -551,7 +551,7 @@ def save_initcond_nml(
     return list_path_nml
 
 
-def save_df_output_hdf5(
+def save_df_output_parquet(
     df_output: pd.DataFrame,
     df_state_final: pd.DataFrame,
     freq_s: int = 3600,
@@ -559,7 +559,7 @@ def save_df_output_hdf5(
     path_dir_save: Path = Path("."),
     save_tstep=False,
 ) -> list:
-    """Save supy output to HDF5 format.
+    """Save supy output to Parquet format.
     
     Parameters
     ----------
@@ -572,23 +572,28 @@ def save_df_output_hdf5(
     site : str, optional
         Site identifier for filename
     path_dir_save : Path, optional
-        Directory to save HDF5 file
+        Directory to save Parquet file
     save_tstep : bool, optional
         Whether to save at simulation timestep resolution
         
     Returns
     -------
     list
-        List containing path to saved HDF5 file
+        List containing paths to saved Parquet files
     """
-    # Check if tables is available for HDF5 support
+    # Check if pyarrow or fastparquet is available
     try:
-        import tables
+        import pyarrow
+        engine = 'pyarrow'
     except ImportError:
-        raise ImportError(
-            "HDF5 output requires 'tables' package. "
-            "Install it with: pip install tables"
-        )
+        try:
+            import fastparquet
+            engine = 'fastparquet'
+        except ImportError:
+            raise ImportError(
+                "Parquet output requires either 'pyarrow' or 'fastparquet'. "
+                "Install with: pip install pyarrow (recommended) or pip install fastparquet"
+            )
     
     from ._version import __version__
     
@@ -609,32 +614,48 @@ def save_df_output_hdf5(
     else:
         df_to_save = df_save
     
-    # Construct filename
-    filename = f"{site}_SUEWS_output.h5" if site else "SUEWS_output.h5"
-    path_save = path_dir_save / filename
+    # Construct filenames
+    list_path_save = []
     
-    # Save to HDF5
-    with pd.HDFStore(path_save, mode='w') as store:
-        # Save output data - each grid and group combination as a separate key
-        for grid in df_to_save.index.get_level_values('grid').unique():
-            df_grid = df_to_save.loc[grid]
-            for group in df_grid.columns.get_level_values('group').unique():
-                df_group = df_grid[group]
-                key = f'/output/grid_{grid}/{group}'
-                store.put(key, df_group, format='table', data_columns=True)
-        
-        # Save final state
-        store.put('/state_final', df_state_final, format='table')
-        
-        # Save metadata
-        metadata = {
-            'site': site,
-            'output_frequency_s': freq_s,
-            'save_tstep': save_tstep,
-            'creation_time': pd.Timestamp.now().isoformat(),
-            'supy_version': __version__
-        }
-        store.get_storer('/state_final').attrs.metadata = metadata
+    # Save output data
+    filename_output = f"{site}_SUEWS_output.parquet" if site else "SUEWS_output.parquet"
+    path_output = path_dir_save / filename_output
     
-    logger_supy.info(f"Saved HDF5 output to {path_save}")
-    return [path_save]
+    # Save with metadata
+    metadata = {
+        'site': site,
+        'output_frequency_s': freq_s,
+        'save_tstep': save_tstep,
+        'creation_time': pd.Timestamp.now().isoformat(),
+        'supy_version': __version__
+    }
+    
+    # Write output data
+    df_to_save.to_parquet(
+        path_output, 
+        engine=engine, 
+        compression='snappy',
+        index=True  # Preserve multi-index
+    )
+    list_path_save.append(path_output)
+    
+    # Save final state separately
+    filename_state = f"{site}_SUEWS_state_final.parquet" if site else "SUEWS_state_final.parquet"
+    path_state = path_dir_save / filename_state
+    df_state_final.to_parquet(
+        path_state,
+        engine=engine,
+        compression='snappy',
+        index=True
+    )
+    list_path_save.append(path_state)
+    
+    # Save metadata as a separate small parquet file
+    filename_meta = f"{site}_SUEWS_metadata.parquet" if site else "SUEWS_metadata.parquet"
+    path_meta = path_dir_save / filename_meta
+    df_meta = pd.DataFrame([metadata])
+    df_meta.to_parquet(path_meta, engine=engine)
+    list_path_save.append(path_meta)
+    
+    logger_supy.info(f"Saved Parquet output to {path_output}")
+    return list_path_save
