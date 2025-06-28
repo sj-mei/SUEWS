@@ -97,6 +97,7 @@ For detailed information about:
 - **Input data format and variables**: see :ref:`met_input`
 - **Output file formats and variables**: see :ref:`output_files`
 - **Output configuration options**: see :ref:`outputconfig`
+- **Parquet output format**: see :ref:`parquet_note`
 
 Configuration Builder (Experimental)
 --------------------------------------
