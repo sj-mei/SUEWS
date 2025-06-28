@@ -106,37 +106,38 @@ class RefValue(BaseModel, Generic[T]):
             return self.value != other.value
         return self.value != other
 
-    def __lt__(self, other):
-        """Less than comparison operator — raises if None involved"""
+    def __ge__(self, other):
+        """Greater than or equal comparison operator that allows None."""
         if self.value is None or (isinstance(other, RefValue) and other.value is None):
-            raise ValueError(f"Cannot compare None in '<' between {self} and {other}")
+            return True
         if isinstance(other, RefValue):
-            return self.value < other.value
-        return self.value < other
-
-    def __le__(self, other):
-        """Less than or equal comparison operator — raises if None involved"""
-        if self.value is None or (isinstance(other, RefValue) and other.value is None):
-            raise ValueError(f"Cannot compare None in '<=' between {self} and {other}")
-        if isinstance(other, RefValue):
-            return self.value <= other.value
-        return self.value <= other
+            return self.value >= other.value
+        return self.value >= other
 
     def __gt__(self, other):
-        """Greater than comparison operator — raises if None involved"""
+        """Greater than comparison operator that allows None."""
         if self.value is None or (isinstance(other, RefValue) and other.value is None):
-            raise ValueError(f"Cannot compare None in '>' between {self} and {other}")
+            return True
         if isinstance(other, RefValue):
             return self.value > other.value
         return self.value > other
 
-    def __ge__(self, other):
-        """Greater than or equal comparison operator — raises if None involved"""
+    def __le__(self, other):
+        """Less than or equal comparison operator that allows None."""
         if self.value is None or (isinstance(other, RefValue) and other.value is None):
-            raise ValueError(f"Cannot compare None in '>=' between {self} and {other}")
+            return True
         if isinstance(other, RefValue):
-            return self.value >= other.value
-        return self.value >= other
+            return self.value <= other.value
+        return self.value <= other
+
+    def __lt__(self, other):
+        """Less than comparison operator that allows None."""
+        if self.value is None or (isinstance(other, RefValue) and other.value is None):
+            return True
+        if isinstance(other, RefValue):
+            return self.value < other.value
+        return self.value < other
+
 
 
 

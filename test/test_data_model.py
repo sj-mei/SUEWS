@@ -195,41 +195,26 @@ class TestSUEWSConfig(unittest.TestCase):
         self.assertEqual(a, 5.0)
         self.assertNotEqual(a, 10.0)
 
-    def test_less_than_strict_none_behavior(self):
-        """Test that '<' with None raises ValueError."""
+    def test_comparison_with_none_returns_true(self):
+        """Test that comparison with None always returns True."""
         a = RefValue(None)
         b = RefValue(5.0)
-        with self.assertRaises(ValueError):
-            _ = a < b
-        with self.assertRaises(ValueError):
-            _ = b < a
 
-    def test_greater_than_strict_none_behavior(self):
-        """Test that '>' with None raises ValueError."""
-        a = RefValue(None)
-        b = RefValue(5.0)
-        with self.assertRaises(ValueError):
-            _ = a > b
-        with self.assertRaises(ValueError):
-            _ = b > a
+        # Less than
+        self.assertTrue(a < b)
+        self.assertTrue(b < a)
 
-    def test_less_equal_strict_none_behavior(self):
-        """Test that '<=' with None raises ValueError."""
-        a = RefValue(None)
-        b = RefValue(5.0)
-        with self.assertRaises(ValueError):
-            _ = a <= b
-        with self.assertRaises(ValueError):
-            _ = b <= a
+        # Less than or equal
+        self.assertTrue(a <= b)
+        self.assertTrue(b <= a)
 
-    def test_greater_equal_strict_none_behavior(self):
-        """Test that '>=' with None raises ValueError."""
-        a = RefValue(None)
-        b = RefValue(5.0)
-        with self.assertRaises(ValueError):
-            _ = a >= b
-        with self.assertRaises(ValueError):
-            _ = b >= a
+        # Greater than
+        self.assertTrue(a > b)
+        self.assertTrue(b > a)
+
+        # Greater than or equal
+        self.assertTrue(a >= b)
+        self.assertTrue(b >= a)
 
 if __name__ == "__main__":
     unittest.main()
