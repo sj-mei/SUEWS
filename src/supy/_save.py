@@ -581,6 +581,15 @@ def save_df_output_hdf5(
     list
         List containing path to saved HDF5 file
     """
+    # Check if tables is available for HDF5 support
+    try:
+        import tables
+    except ImportError:
+        raise ImportError(
+            "HDF5 output requires 'tables' package. "
+            "Install it with: pip install tables"
+        )
+    
     from ._version import __version__
     
     # Resample if needed
