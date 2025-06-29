@@ -596,3 +596,4 @@ docs/source/inputs/yaml/schema/*.rst
 
 # Git worktrees directory for Claude Code access
 worktrees/
+.claude-plans/
