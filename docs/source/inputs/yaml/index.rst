@@ -109,6 +109,21 @@ In addition to the YAML configuration file, SUEWS works with input and output da
        freq: [300, 3600]
        groups: ["SUEWS", "DailyState"]
 
+  **Output File Naming Convention**:
+  
+  - **Text format**: ``{site_name}_{group}_{freq}s_{year}.txt``
+    
+    - ``site_name``: Name from site configuration
+    - ``group``: Output group name (SUEWS, DailyState, ESTM, etc.)
+    - ``freq``: Output frequency in seconds
+    - ``year``: Year of simulation
+    - Example: ``London_KCL_SUEWS_3600s_2020.txt``
+  
+  - **Parquet format**: ``{site_name}_output.parquet``
+    
+    - All groups and frequencies saved in a single file
+    - Example: ``London_KCL_output.parquet``
+
 For detailed information about:
 
 - **Input data format and variables**: see :ref:`met_input`
