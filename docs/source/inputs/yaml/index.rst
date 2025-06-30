@@ -111,13 +111,20 @@ In addition to the YAML configuration file, SUEWS works with input and output da
 
   **Output File Naming Convention**:
   
-  - **Text format**: ``{site_name}_{group}_{freq}s_{year}.txt``
+  - **Text format**: 
     
-    - ``site_name``: Name from site configuration
-    - ``group``: Output group name (SUEWS, DailyState, ESTM, etc.)
-    - ``freq``: Output frequency in seconds
-    - ``year``: Year of simulation
-    - Example: ``London_KCL_SUEWS_3600s_2020.txt``
+    - Regular groups: ``{site_name}_{year}_{group}_{freq_min}.txt``
+      
+      - ``site_name``: Name from site configuration  
+      - ``year``: Year of simulation
+      - ``group``: Output group name (SUEWS, ESTM, RSL, etc.)
+      - ``freq_min``: Output frequency in minutes
+      - Example: ``London_KCL_2020_SUEWS_60.txt``
+    
+    - DailyState: ``{site_name}_{year}_DailyState.txt``
+      
+      - No frequency suffix as it always contains daily data
+      - Example: ``London_KCL_2020_DailyState.txt``
   
   - **Parquet format**: ``{site_name}_output.parquet``
     

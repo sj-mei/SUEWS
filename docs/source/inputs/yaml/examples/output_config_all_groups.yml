@@ -19,8 +19,8 @@ model:
         - snow          # Snow-related output
         - debug         # Debug output (if debug mode is enabled)
       
-      # Note: DailyState files will always be named with '86400s' (daily) 
-      # regardless of the freq setting, as they contain daily-only data
+      # Note: DailyState files will have no frequency suffix in the filename
+      # (e.g., London_KCL_2020_DailyState.txt) as they contain daily-only data
       
   physics:
     netradiationmethod: 3

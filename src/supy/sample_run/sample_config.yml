@@ -10,7 +10,9 @@ model:
     # - Detailed configuration (recommended):
     output_file:
       format: txt  # Options: txt (default), parquet
-      freq: 3600   # Output frequency in seconds (default: 3600)
+      freq:
+        - 300   # Output frequency in seconds (default: 300; as time step)
+        - 3600  # Output frequency in seconds (3600; hourly)
       groups:      # Output groups to save (default: ['SUEWS', 'DailyState'])
         - SUEWS
         - DailyState
