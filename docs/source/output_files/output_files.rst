@@ -245,6 +245,8 @@ SPARTACUS output file format
 Parquet Format Output Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note:: The parquet output format was introduced alongside the YAML input format. It is only available when using YAML configuration files, not with the legacy namelist format.
+
 When using parquet format, SUEWS produces two output files containing all simulation data:
 
 SSss_SUEWS_output.parquet

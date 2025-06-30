@@ -3,12 +3,23 @@
 About Parquet Output Format
 ===========================
 
-Parquet is a columnar storage format that SUEWS supports as an alternative to traditional text output files.
+Parquet is a columnar storage format that SUEWS supports as an alternative to traditional text output files. This feature was introduced with the YAML input format and is only available when using YAML configuration files.
 
 What is Parquet?
 ----------------
 
 Apache Parquet is an open-source columnar data format widely used in data science and analytics. It stores data by column rather than by row, enabling efficient compression and fast queries.
+
+Configuration
+-------------
+
+To enable Parquet output in your YAML configuration::
+
+   model:
+     control:
+       output_file:
+         format: parquet
+         freq: 3600  # Output frequency in seconds
 
 Installation
 ------------
