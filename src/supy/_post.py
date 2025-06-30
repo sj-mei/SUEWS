@@ -189,6 +189,9 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
     list_grid = df_output.index.get_level_values("grid").unique()
     list_group = df_output.columns.get_level_values("group").unique()
 
+    # Skip DailyState if it somehow gets here (it should be handled separately)
+    list_group = [g for g in list_group if g != 'DailyState']
+
     # resampling output according to different rules defined in dict_aggm
     # note the setting in .resample: (closed='right',label='right')
     # which is to conform to SUEWS convention

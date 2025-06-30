@@ -74,12 +74,23 @@ In addition to the YAML configuration file, SUEWS works with input and output da
   The ``output_file`` parameter now supports advanced configuration:
   
   1. **Output format**: Choose between 'txt' (traditional text files) or 'parquet' (efficient columnar format)
-  2. **Output frequency**: Specify custom output frequency (must be multiple of timestep)
+  2. **Output frequency**: Specify custom output frequency in seconds
+     - Single value: e.g., ``freq: 3600`` for hourly output
+     - Multiple values: e.g., ``freq: [300, 3600]`` for both 5-minute and hourly output
+     - Must be multiples of the model timestep
   3. **Output groups**: Select which groups to save (txt format only)
+  
+  .. note::
+     **Backward Compatibility**: When using a simple string value for ``output_file`` (e.g., ``output_file: "output.txt"``), 
+     SUEWS will use default settings: txt format, hourly output (3600s), and save only the SUEWS and DailyState groups. 
+     This ensures compatibility with existing configuration files.
   
   Example configurations:
   
   .. code-block:: yaml
+  
+     # Simple backward-compatible configuration (saves only SUEWS and DailyState)
+     output_file: "output.txt"
   
      # Parquet output with hourly data
      output_file:
@@ -91,6 +102,12 @@ In addition to the YAML configuration file, SUEWS works with input and output da
        format: txt
        freq: 1800
        groups: ["SUEWS", "DailyState", "ESTM"]
+  
+     # Output at multiple frequencies (5-minute and hourly)
+     output_file:
+       format: txt
+       freq: [300, 3600]
+       groups: ["SUEWS", "DailyState"]
 
 For detailed information about:
 
