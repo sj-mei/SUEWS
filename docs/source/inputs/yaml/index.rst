@@ -100,7 +100,7 @@ In addition to the YAML configuration file, SUEWS works with input and output da
      output_file:
        format: txt
        freq: 1800
-       groups: ["SUEWS", "DailyState", "ESTM"]
+       groups: ["SUEWS", "DailyState", "debug"]
 
   **Output File Naming Convention**:
   
@@ -110,7 +110,7 @@ In addition to the YAML configuration file, SUEWS works with input and output da
       
       - ``site_name``: Name from site configuration  
       - ``year``: Year of simulation
-      - ``group``: Output group name (SUEWS, ESTM, RSL, etc.)
+      - ``group``: Output group name (SUEWS, RSL, BL, debug, etc.)
       - ``freq_min``: Output frequency in minutes
       - Example: ``London_KCL_2020_SUEWS_60.txt``
     
