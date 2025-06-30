@@ -76,8 +76,7 @@ In addition to the YAML configuration file, SUEWS works with input and output da
   1. **Output format**: Choose between 'txt' (traditional text files) or 'parquet' (efficient columnar format)
   2. **Output frequency**: Specify custom output frequency in seconds
      - Single value: e.g., ``freq: 3600`` for hourly output
-     - Multiple values: e.g., ``freq: [300, 3600]`` for both 5-minute and hourly output
-     - Must be multiples of the model timestep
+     - Must be a multiple of the model timestep
   3. **Output groups**: Select which groups to save (txt format only)
   
   .. note::
@@ -102,12 +101,6 @@ In addition to the YAML configuration file, SUEWS works with input and output da
        format: txt
        freq: 1800
        groups: ["SUEWS", "DailyState", "ESTM"]
-  
-     # Output at multiple frequencies (5-minute and hourly)
-     output_file:
-       format: txt
-       freq: [300, 3600]
-       groups: ["SUEWS", "DailyState"]
 
   **Output File Naming Convention**:
   
@@ -126,10 +119,20 @@ In addition to the YAML configuration file, SUEWS works with input and output da
       - No frequency suffix as it always contains daily data
       - Example: ``London_KCL_2020_DailyState.txt``
   
-  - **Parquet format**: ``{site_name}_output.parquet``
+  - **Parquet format**: 
     
-    - All groups and frequencies saved in a single file
-    - Example: ``London_KCL_output.parquet``
+    - Output data: ``{site_name}_SUEWS_output.parquet``
+      
+      - All groups and frequencies saved in a single file
+      - Contains all years of simulation data
+      - Example: ``London_KCL_SUEWS_output.parquet``
+    
+    - Final state: ``{site_name}_SUEWS_state_final.parquet``
+      
+      - Final model state for restart runs
+      - Example: ``London_KCL_SUEWS_state_final.parquet``
+    
+    Note: Parquet format does not split by year - all simulation data is in one file
 
 For detailed information about:
 
