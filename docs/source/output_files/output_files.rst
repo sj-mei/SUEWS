@@ -73,7 +73,7 @@ SUEWS supports two output formats:
 2. **Parquet format**: Modern columnar storage format
 
    - All data in two files (output and state)
-   - Typically ~90% smaller file sizes (1/10 the size)
+   - Typically 70-80% smaller file sizes (2-5x compression)
    - Much faster to read in Python/R/MATLAB
    - Requires specific libraries to read
 
@@ -261,8 +261,9 @@ Contains all output data from the simulation in a single file:
 
 Typical file size reduction:
 
-- Parquet files are typically 1/10 the size of equivalent text files
-- Exact compression ratio depends on data content and patterns
+- Parquet files are typically 70-80% smaller than equivalent text files
+- Provides 2-5x compression compared to uncompressed CSV/text files
+- Exact compression ratio depends on data characteristics and patterns
 
 SSss_SUEWS_state_final.parquet
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

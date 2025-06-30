@@ -50,7 +50,7 @@ Key Differences from Text Output
 
 - **Single file**: All output data in one file (vs multiple text files per year/group)
 - **Binary format**: Not human-readable (use the code examples above to read)
-- **Smaller size**: Typically ~90% smaller than equivalent text files (1/10 the size)
+- **Smaller size**: Typically 70-80% smaller than equivalent text files (2-5x compression)
 - **Faster loading**: Especially when reading specific columns
 
 For more information about Parquet: https://parquet.apache.org/
