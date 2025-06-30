@@ -26,7 +26,7 @@ sites:
 
 # Benefits of Parquet format:
 # - Single file output (instead of multiple text files per year/group)
-# - ~70% smaller file size compared to text
+# - Typically ~90% smaller file size (1/10 the size of text files)
 # - Much faster to read into pandas/Python
 # - Preserves data types (no parsing needed)
 # - Works well with cloud storage and big data tools

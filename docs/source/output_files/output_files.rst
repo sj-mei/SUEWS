@@ -73,7 +73,7 @@ SUEWS supports two output formats:
 2. **Parquet format**: Modern columnar storage format
 
    - All data in two files (output and state)
-   - ~70% smaller file sizes
+   - Typically ~90% smaller file sizes (1/10 the size)
    - Much faster to read in Python/R/MATLAB
    - Requires specific libraries to read
 
@@ -259,10 +259,10 @@ Contains all output data from the simulation in a single file:
 - Data is stored in columnar format for efficient compression and fast queries
 - Multi-index structure preserves grid and temporal information
 
-Example file sizes:
+Typical file size reduction:
 
-- 1 year of hourly data: ~5-10 MB (vs ~50 MB for text)
-- 10 years of hourly data: ~50-100 MB (vs ~500 MB for text)
+- Parquet files are typically 1/10 the size of equivalent text files
+- Exact compression ratio depends on data content and patterns
 
 SSss_SUEWS_state_final.parquet
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -276,7 +276,7 @@ Contains the final model state for all grids:
 Reading Parquet Files
 ^^^^^^^^^^^^^^^^^^^^^
 
-**Python**::
+Example Python code to read parquet output::
 
    import pandas as pd
    
@@ -288,17 +288,5 @@ Reading Parquet Files
    
    # Access specific variable
    qh = df_output[('SUEWS', 'QH')]
-
-**R**::
-
-   library(arrow)
-   
-   # Read output data
-   df_output <- read_parquet('London_KCL_SUEWS_output.parquet')
-
-**MATLAB** (R2019a+)::
-
-   % Read output data
-   data = parquetread('London_KCL_SUEWS_output.parquet');
 
 For more information about working with parquet files, see :ref:`parquet_note`.

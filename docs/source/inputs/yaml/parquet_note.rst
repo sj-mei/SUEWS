@@ -31,26 +31,26 @@ To use Parquet output, install PyArrow::
 Reading Parquet Files
 ---------------------
 
-**Python**::
+Example Python code::
 
    import pandas as pd
+   
+   # Read the parquet file
    df = pd.read_parquet('TestSite_SUEWS_output.parquet')
-
-**R**::
-
-   library(arrow)
-   df <- read_parquet('TestSite_SUEWS_output.parquet')
-
-**MATLAB** (R2019a+)::
-
-   data = parquetread('TestSite_SUEWS_output.parquet');
+   
+   # The dataframe has a multi-level column index: (group, variable)
+   # Access specific group
+   df_suews = df['SUEWS']
+   
+   # Access specific variable
+   qh = df[('SUEWS', 'QH')]
 
 Key Differences from Text Output
 ---------------------------------
 
 - **Single file**: All output data in one file (vs multiple text files per year/group)
 - **Binary format**: Not human-readable (use the code examples above to read)
-- **Smaller size**: Typically 50-80% smaller than equivalent CSV files
+- **Smaller size**: Typically ~90% smaller than equivalent text files (1/10 the size)
 - **Faster loading**: Especially when reading specific columns
 
 For more information about Parquet: https://parquet.apache.org/
