@@ -177,6 +177,33 @@ class DLSCheck(BaseModel):
         return start, end, utc_offset_hours
 
 def collect_yaml_differences(original: Any, updated: Any, path: str = "") -> List[dict]:
+
+    """
+    Recursively compare two YAML data structures and collect all differences.
+
+    For each mismatch between the original and updated YAML dictionaries or lists, this function:
+
+    - Records the site index (if applicable, extracted from path strings like `sites[0]`).
+    - Identifies the affected parameter (either the key before `.value` or the final key in the path).
+    - Reports the old and new values.
+    - Includes a standard reason string: "Updated by precheck".
+
+    This function is used to build a human-readable report of all changes made during precheck.
+
+    Args:
+        original (Any): The original YAML data (typically before precheck adjustments).
+        updated (Any): The updated YAML data (after precheck).
+        path (str, optional): The current nested path within the YAML structure (used internally for recursion).
+
+    Returns:
+        List[dict]: A list of dictionaries, each describing a difference with keys:
+            - 'site' (int or None)
+            - 'parameter' (str)
+            - 'old_value' (Any)
+            - 'new_value' (Any)
+            - 'reason' (str)
+    """
+
     diffs = []
 
     if isinstance(original, dict) and isinstance(updated, dict):
@@ -222,7 +249,28 @@ def collect_yaml_differences(original: Any, updated: Any, path: str = "") -> Lis
     return diffs
 
 def save_precheck_diff_report(diffs: List[dict], original_yaml_path: str):
-    """Save precheck diff report as CSV next to the original YAML file."""
+    """
+    Save the list of YAML differences found during precheck as a CSV report.
+
+    The report is saved in the same directory as the original YAML file, with a filename like
+    `precheck_report_<original_filename>.csv`.
+
+    Each row in the CSV contains:
+    - Site index (or None if not site-specific)
+    - Parameter name
+    - Old value
+    - New value
+    - Reason for the change (typically "Updated by precheck")
+
+    If no differences are found, the function logs an info message and does not create any file.
+
+    Args:
+        diffs (List[dict]): List of differences produced by `collect_yaml_differences`.
+        original_yaml_path (str): Full path to the original YAML file (used to determine output location and name).
+
+    Returns:
+        None
+    """
     if not diffs:
         logger_supy.info("No differences found between original and updated YAML.")
         return
@@ -242,6 +290,29 @@ def save_precheck_diff_report(diffs: List[dict], original_yaml_path: str):
     logger_supy.info(f"Precheck difference report saved to: {report_path}")
 
 def get_monthly_avg_temp(lat: float, month: int) -> float:
+
+    """
+    Estimate the average air temperature for a given latitude and month.
+
+    This function uses predefined climatological values for four broad latitude bands:
+    - Tropics (|lat| < 10°)
+    - Subtropics (10° ≤ |lat| < 35°)
+    - Midlatitudes (35° ≤ |lat| < 60°)
+    - Polar regions (|lat| ≥ 60°)
+
+    The returned value represents a typical monthly average temperature (°C)
+    for the specified latitude band and month.
+
+    Args:
+        lat (float): Site latitude in degrees (positive for Northern Hemisphere, negative for Southern).
+        month (int): Month of the year (1 = January, 12 = December).
+
+    Returns:
+        float: Estimated average air temperature for the given latitude and month.
+
+    Raises:
+        ValueError: If the input month is not between 1 and 12.
+    """
 
     lat_band = None
     abs_lat = abs(lat)
@@ -264,13 +335,47 @@ def get_monthly_avg_temp(lat: float, month: int) -> float:
 
     return monthly_temp[lat_band][month - 1]
 
-
 def precheck_printing(data: dict) -> dict:
+
+    """
+    Log the start of the precheck process.
+
+    This function prints a simple info message to indicate that the precheck process has started.
+    It does not modify the input data.
+
+    Args:
+        data (dict): The SUEWS configuration dictionary.
+
+    Returns:
+        dict: The original input data, unmodified.
+    """
+
     logger_supy.info("Running basic precheck...")
     return data
 
-
 def precheck_start_end_date(data: dict) -> Tuple[dict, int, str, str]:
+
+    """
+    Extract model year, start date, and end date from YAML dict.
+
+    This function reads the 'start_time' and 'end_time' fields from the input YAML dict
+    (under 'model.control'), validates that both exist and are in 'YYYY-MM-DD' format,
+    and extracts the model year from the start date.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Raises:
+        ValueError: If 'start_time' or 'end_time' is missing or has an invalid format.
+
+    Returns:
+        Tuple[dict, int, str, str]:
+            - Unmodified input data (for chaining)
+            - Model year (int, extracted from start date)
+            - Start date (str, in YYYY-MM-DD format)
+            - End date (str, in YYYY-MM-DD format)
+    """
+
     control = data.get("model", {}).get("control", {})
 
     start_date = control.get("start_time")
@@ -295,8 +400,41 @@ def precheck_start_end_date(data: dict) -> Tuple[dict, int, str, str]:
 
     return data, model_year, start_date, end_date
 
-
 def precheck_model_physics_params(data: dict) -> dict:
+
+    """
+    Validate presence and non-emptiness of required model physics parameters.
+
+    This function checks that all required keys exist under 'model.physics' in the YAML
+    dict and that none of them are empty or null. If 'model.physics' is empty, the check
+    is skipped (used to allow partial configurations during early stages).
+
+    Required fields include:
+        - netradiationmethod
+        - emissionsmethod
+        - storageheatmethod
+        - ohmincqf
+        - roughlenmommethod
+        - roughlenheatmethod
+        - stabilitymethod
+        - smdmethod
+        - waterusemethod
+        - rslmethod
+        - faimethod
+        - rsllevel
+        - snowuse
+        - stebbsmethod
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Raises:
+        ValueError: If required parameters are missing or contain empty/null values.
+
+    Returns:
+        dict: Unmodified input data (for chaining).
+    """
+
     physics = data.get("model", {}).get("physics", {})
 
     if not physics:
@@ -331,8 +469,25 @@ def precheck_model_physics_params(data: dict) -> dict:
     logger_supy.debug("All model.physics required params present and non-empty.")
     return data
 
-
 def precheck_model_options_constraints(data: dict) -> dict:
+
+    """
+    Enforce internal consistency between model physics options.
+
+    This function verifies logical dependencies between selected model physics methods.
+    Specifically, if 'rslmethod' is set to 2, it enforces that 'stabilitymethod' equals 3,
+    as required for diagnostic aerodynamic calculations.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Raises:
+        ValueError: If model physics options violate internal consistency rules.
+
+    Returns:
+        dict: Unmodified input data (for chaining).
+    """
+
     physics = data.get("model", {}).get("physics", {})
 
     diag = physics.get("rslmethod", {}).get("value")
@@ -346,8 +501,23 @@ def precheck_model_options_constraints(data: dict) -> dict:
     logger_supy.debug("rslmethod-stabilitymethod constraint passed.")
     return data
 
-
 def precheck_replace_empty_strings_with_none(data: dict) -> dict:
+
+    """
+    Replace empty string values with None across the entire YAML dictionary,
+    except for parameters inside 'model.control' and 'model.physics'.
+
+    This step ensures that empty strings are treated as missing values for Pydantic validation,
+    while preserving intentional empty strings in control and physics settings.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Returns:
+        dict: Cleaned YAML dictionary with empty strings replaced by None,
+              except within 'model.control' and 'model.physics'.
+    """
+
     ignore_keys = {"control", "physics"}
 
     def recurse(obj: Any, path=()):
@@ -375,10 +545,28 @@ def precheck_replace_empty_strings_with_none(data: dict) -> dict:
     )
     return cleaned
 
-
 def precheck_site_season_adjustments(
     data: dict, start_date: str, model_year: int
 ) -> dict:
+    
+    """
+    Adjust site-specific parameters based on season and geographic location.
+
+    This step:
+    - Determines the season (summer, winter, spring, fall, tropical, equatorial) for each site based on latitude and start_date.
+    - Nullifies 'snowalb' in initial states for summer/tropical/equatorial sites.
+    - Sets 'lai_id' for deciduous trees based on the detected season and LAI min/max values.
+    - Runs DLSCheck to calculate daylight saving time start/end days and timezone offset for each site, overwriting any existing values.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+        start_date (str): Start date of the simulation (format 'YYYY-MM-DD').
+        model_year (int): Model year extracted from start_date.
+
+    Returns:
+        dict: Updated YAML dictionary with site-level season-dependent adjustments.
+    """
+
     cleaned_sites = []
 
     for i, site in enumerate(data.get("sites", [])):
@@ -479,6 +667,22 @@ def precheck_site_season_adjustments(
 
 def precheck_update_surface_temperature(data: dict, start_date: str) -> dict:
 
+    """
+    Set initial surface temperatures for all surface types based on latitude and start month.
+
+    For each site:
+    - Uses the site's latitude and the month from start_date to estimate an average temperature.
+    - Applies this temperature to all layers of surface temperature arrays, as well as 'tsfc' and 'tin' for each surface type (paved, bldgs, evetr, dectr, grass, bsoil, water).
+    - If latitude is missing, the site is skipped with a warning.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+        start_date (str): Start date of the simulation (format 'YYYY-MM-DD').
+
+    Returns:
+        dict: Updated YAML dictionary with surface temperatures initialised.
+    """
+
     month = datetime.strptime(start_date, "%Y-%m-%d").month
 
     for site_idx, site in enumerate(data.get("sites", [])):
@@ -522,8 +726,29 @@ def precheck_update_surface_temperature(data: dict, start_date: str) -> dict:
 
     return data
 
-
 def precheck_land_cover_fractions(data: dict) -> dict:
+
+    """
+    Validate and adjust land cover surface fractions (`sfr`) for each site.
+
+    For each site in the configuration, this function:
+
+    - Calculates the total sum of all surface fractions (`sfr` values) across land cover types.
+    - Allows small floating point inaccuracies (~0.0001):
+        - If the total is slightly below 1.0 (e.g., 0.9999 ≤ sum < 1.0), it auto-increases the largest surface fraction to force the sum to exactly 1.0.
+        - If the total is slightly above 1.0 (e.g., 1.0 < sum ≤ 1.0001), it auto-decreases the largest surface fraction to force the sum to exactly 1.0.
+    - If the total `sfr` differs from 1.0 by more than the allowed epsilon, raises an error.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Returns:
+        dict: The updated YAML dictionary with corrected `sfr` sums.
+
+    Raises:
+        ValueError: If land cover fractions sum too low or too high beyond the allowed tolerance.
+    """
+
     for i, site in enumerate(data.get("sites", [])):
         props = site.get("properties", {})
 
@@ -578,9 +803,25 @@ def precheck_land_cover_fractions(data: dict) -> dict:
 
     return data
 
-
 def precheck_nullify_zero_sfr_params(data: dict) -> dict:
-    """For each site, nullify all land_cover parameters for surfaces with sfr == 0."""
+
+    """
+    Nullify all land cover parameters for surface types with zero surface fraction (sfr == 0).
+
+    For each site:
+    - Loops through all surface types under 'land_cover'.
+    - If a surface type has sfr == 0:
+        - Sets all associated parameters (except 'sfr') to None.
+        - This includes both single-value parameters and nested structures (e.g., thermal_layers, ohm_coef).
+        - For list-valued parameters, replaces each element with None.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Returns:
+        dict: Updated YAML dictionary with unused surface type parameters nullified.
+    """
+
     for site_idx, site in enumerate(data.get("sites", [])):
         land_cover = site.get("properties", {}).get("land_cover", {})
         for surf_type, props in land_cover.items():
@@ -614,8 +855,22 @@ def precheck_nullify_zero_sfr_params(data: dict) -> dict:
 
 def precheck_warn_zero_sfr_params(data: dict) -> dict:
     """
-    For each site, log a compact warning listing all land_cover parameters
-    for surfaces with sfr == 0 that have not been physically prechecked.
+    Log an informational warning listing all land cover parameters that were not prechecked for surfaces with zero surface fraction (sfr == 0).
+
+    For each site:
+    - Scans all surface types under 'land_cover'.
+    - If a surface type has sfr == 0:
+        - Collects the names of all parameters (including nested ones) defined under that surface type.
+        - Logs a compact info message listing these parameters, warning that they have not been physically prechecked.
+
+    Note:
+        This function does not modify the input data.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Returns:
+        dict: The original, unmodified YAML dictionary.
     """
     for site_idx, site in enumerate(data.get("sites", [])):
         land_cover = site.get("properties", {}).get("land_cover", {})
@@ -645,13 +900,28 @@ def precheck_warn_zero_sfr_params(data: dict) -> dict:
 
     return data
 
-
-
 def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
     """
-    For each site, check that for all land_cover surface types with sfr > 0,
-    all related parameters (except 'sfr') are set (not None and not empty string),
-    recursively for nested structures.
+    Validate that all parameters for land cover surfaces with nonzero surface fraction (sfr > 0) are set and non-null.
+
+    For each site:
+    - Iterates over all surface types in 'land_cover'.
+    - For each surface where sfr > 0:
+        - Recursively checks that all associated parameters (except 'sfr') are:
+            - Not None
+            - Not empty strings
+            - For lists: do not contain None or empty string elements
+
+    If any required parameter is unset (None or empty), the function raises a ValueError with details.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Returns:
+        dict: The validated YAML dictionary (unchanged if all checks pass).
+
+    Raises:
+        ValueError: If any required parameter for a nonzero-sfr surface is unset or empty.
     """
 
     def check_recursively(d: dict, path: list, site_idx: int):
@@ -693,8 +963,29 @@ def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
 
 def precheck_model_option_rules(data: dict) -> dict:
     """
-    Unified handler for model-option-dependent rules.
-    Applies constraints and parameter nullification based on model.physics settings.
+    Apply model-option-dependent validation rules and parameter adjustments based on model physics settings.
+
+    For each site, this function applies checks and actions depending on selected model options in `model.physics`:
+
+    - **If `rslmethod == 2` (diagnostic method enabled):**
+        - For any site where `bldgs.sfr > 0`, verifies that `faibldg` is set and non-null.
+
+    - **If `storageheatmethod == 6` (DyOHM method):**
+        - Verifies that `vertical_layers.walls` exists and contains at least one wall.
+        - Checks that the first wall has non-empty lists for `dz`, `k`, and `cp` in `thermal_layers`.
+        - Verifies that `lambda_c` is set and non-null.
+
+    - **If `stebbsmethod == 0`:**
+        - Recursively nullifies all parameters under the `stebbs` block at site level.
+
+    Args:
+        data (dict): YAML configuration data loaded as a dictionary.
+
+    Returns:
+        dict: The updated YAML dictionary after applying model-option rules.
+
+    Raises:
+        ValueError: If any required condition based on model options is violated.
     """
 
     physics = data.get("model", {}).get("physics", {})
@@ -768,6 +1059,36 @@ def precheck_model_option_rules(data: dict) -> dict:
 
 
 def run_precheck(path: str) -> dict:
+
+    """
+    Perform full preprocessing (precheck) on a YAML configuration file.
+
+    This function runs the complete SUEWS precheck pipeline, applying a sequence of
+    automated corrections, defaults, nullifications, and consistency checks to a YAML
+    configuration file before Pydantic validation.
+
+    The steps include:
+    1. Loading the YAML file into a Python dictionary.
+    2. Extracting simulation dates and model year.
+    3. Validating and completing `model.physics` parameters.
+    4. Enforcing constraints between model physics options.
+    5. Replacing empty strings with `None` (except in `model.control` and `model.physics`).
+    6. Applying site-specific seasonal and location-based adjustments (e.g., LAI, snowalb, DLS).
+    7. Setting initial surface temperatures based on latitude and month.
+    8. Logging warnings for parameters of surfaces with `sfr == 0` that were not prechecked.
+    9. Validating that parameters for surfaces with `sfr > 0` are not empty or null.
+    10. Checking and auto-fixing small floating point errors in land cover surface fractions.
+    11. Applying model-option-dependent rules (e.g., RSL, DyOHM, Stebbs).
+    12. Saving the updated YAML to a new file (prefixed with `py0_`).
+    13. Writing a CSV diff report listing all changes made.
+    14. Logging completion.
+
+    Args:
+        path (str): Full path to the input YAML configuration file.
+
+    Returns:
+        dict: The fully prechecked and updated YAML configuration dictionary.
+    """
 
     # ---- Step 0: Load yaml from path into a dict ----
     with open(path, "r") as file:
