@@ -374,7 +374,14 @@ When creating a plan for Claude Code, follow these guidelines to ensure consiste
 
 ## Git and GitHub Tips
 
-- When using gh cli, first check remotes, only keep original - remove others
+- **IMPORTANT**: Always use `origin` as the only git remote for this repository
+- When using gh cli, first check remotes with `git remote -v`
+- If multiple remotes exist, remove all except `origin`:
+  ```bash
+  git remote remove upstream
+  git remote remove Urban-Meteorology-Reading
+  # Keep only: origin -> git@github.com:UMEP-dev/SUEWS.git
+  ```
 
 ## Style and Language Guidelines
 
