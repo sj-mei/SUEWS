@@ -56,9 +56,9 @@ except ImportError:
             result = validate_suews_config_conditional(
                 config_data, strict=False, verbose=True
             )
-            if result["errors"] and strict:
-                error_msg = f"SUEWS Configuration Validation Failed: {len(result['errors'])} errors\n"
-                error_msg += "\n".join(f"  - {err}" for err in result["errors"])
+            if result.errors and strict:
+                error_msg = f"SUEWS Configuration Validation Failed: {len(result.errors)} errors\n"
+                error_msg += "\n".join(f"  - {err}" for err in result.errors)
                 raise ValueError(error_msg)
             return result
 
@@ -66,11 +66,11 @@ except ImportError:
             result = validate_suews_config_conditional(
                 config_data, strict=False, verbose=False
             )
-            if result["errors"] and strict:
+            if result.errors and strict:
                 error_msg = (
-                    f"Configuration validation found {len(result['errors'])} issues\n"
+                    f"Configuration validation found {len(result.errors)} issues\n"
                 )
-                error_msg += "\n".join(f"  - {err}" for err in result["errors"])
+                error_msg += "\n".join(f"  - {err}" for err in result.errors)
                 raise ValueError(error_msg)
             return result
 

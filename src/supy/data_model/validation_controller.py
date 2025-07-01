@@ -140,7 +140,7 @@ class ValidationController(BaseModel):
         Returns:
             ValidationResult: Comprehensive validation results
         """
-        result = ValidationResult()
+        result = ValidationResult(status="passed")
 
         if verbose:
             print("=== Running SUEWS Conditional Validation ===")
