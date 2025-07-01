@@ -1,7 +1,7 @@
 # Feature: Parameter Validation Fixes
 
 ## Context
-Fix parameter validation issues including false positive warnings for supplied parameters and site/sites configuration problems that allow the model to run without proper parameters.
+Fix parameter validation issues including false positive warnings for supplied parameters and site/sites configuration problems that allow the model to run without proper parameters. These are standalone issues in the YAML configuration system.
 
 ## GitHub Issues
 - #444 - Fix parameter validation false positives and site/sites configuration issues (PRIMARY)
