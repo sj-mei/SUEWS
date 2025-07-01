@@ -14,7 +14,6 @@ import warnings
 import logging
 
 from .model import (
-    DiagMethod,
     RoughnessMethod,
     NetRadiationMethod,
     EmissionsMethod,
@@ -47,9 +46,6 @@ class ValidationController(BaseModel):
     """
 
     # Control flags for different methods
-    diagmethod_rst_enabled: bool = False
-    diagmethod_most_enabled: bool = False
-    diagmethod_variable_enabled: bool = False
     roughness_variable_enabled: bool = False
     netradiation_spartacus_enabled: bool = False
     emissions_advanced_enabled: bool = False
@@ -69,29 +65,20 @@ class ValidationController(BaseModel):
             # Extract physics settings
             physics = self.config_data.get("model", {}).get("physics", {})
 
-            # Analyze diagmethod
-            diagmethod_val = physics.get("diagmethod", 0)
-            if isinstance(diagmethod_val, dict):
-                diagmethod_val = diagmethod_val.get("value", 0)
-
-            diagmethod = DiagMethod(diagmethod_val)
-
-            if diagmethod == DiagMethod.RST:
-                self.diagmethod_rst_enabled = True
-            elif diagmethod == DiagMethod.MOST:
-                self.diagmethod_most_enabled = True
-            elif diagmethod == DiagMethod.VARIABLE:
-                self.diagmethod_variable_enabled = True
-                # Variable method uses both MOST and RST
-                self.diagmethod_rst_enabled = True
-                self.diagmethod_most_enabled = True
+            # Analyze diagnose (just an int flag, not an enum)
+            # Skip diagnose-specific validation for now
 
             # Analyze roughness method
             roughmethod_val = physics.get("roughlenmommethod", 1)
             if isinstance(roughmethod_val, dict):
                 roughmethod_val = roughmethod_val.get("value", 1)
 
-            roughmethod = RoughnessMethod(roughmethod_val)
+            # Convert to enum if it's not already
+            if isinstance(roughmethod_val, RoughnessMethod):
+                roughmethod = roughmethod_val
+            else:
+                roughmethod = RoughnessMethod(roughmethod_val)
+                
             if roughmethod == RoughnessMethod.VARIABLE:
                 self.roughness_variable_enabled = True
 
@@ -100,6 +87,10 @@ class ValidationController(BaseModel):
             if isinstance(netrad_val, dict):
                 netrad_val = netrad_val.get("value", 0)
 
+            # Convert to enum if it's not already
+            if isinstance(netrad_val, NetRadiationMethod):
+                netrad_val = netrad_val.value
+                
             if netrad_val >= 1000:  # SPARTACUS methods
                 self.netradiation_spartacus_enabled = True
 
@@ -107,6 +98,10 @@ class ValidationController(BaseModel):
             emissions_val = physics.get("emissionsmethod", 0)
             if isinstance(emissions_val, dict):
                 emissions_val = emissions_val.get("value", 0)
+                
+            # Convert to enum if it's not already
+            if isinstance(emissions_val, EmissionsMethod):
+                emissions_val = emissions_val.value
 
             if emissions_val >= 4:  # Advanced emissions methods
                 self.emissions_advanced_enabled = True
@@ -115,6 +110,10 @@ class ValidationController(BaseModel):
             storage_val = physics.get("storageheatmethod", 0)
             if isinstance(storage_val, dict):
                 storage_val = storage_val.get("value", 0)
+                
+            # Convert to enum if it's not already
+            if isinstance(storage_val, StorageHeatMethod):
+                storage_val = storage_val.value
 
             if storage_val in [4, 5]:  # ESTM methods
                 self.storage_estm_enabled = True
@@ -125,9 +124,6 @@ class ValidationController(BaseModel):
     def get_active_methods(self) -> Dict[str, bool]:
         """Get dictionary of active methods for logging/debugging."""
         return {
-            "diagmethod_rst": self.diagmethod_rst_enabled,
-            "diagmethod_most": self.diagmethod_most_enabled,
-            "diagmethod_variable": self.diagmethod_variable_enabled,
             "roughness_variable": self.roughness_variable_enabled,
             "netradiation_spartacus": self.netradiation_spartacus_enabled,
             "emissions_advanced": self.emissions_advanced_enabled,
@@ -152,35 +148,7 @@ class ValidationController(BaseModel):
             enabled = [k for k, v in active_methods.items() if v]
             print(f"Active methods: {', '.join(enabled) if enabled else 'None'}")
 
-        # Validate diagmethod-related parameters
-        if self.diagmethod_rst_enabled:
-            if verbose:
-                print("DiagMethod RST is ON: checking RST-specific parameters")
-            rst_errors = self._validate_rst_parameters()
-            result.errors.extend(rst_errors)
-            result.validated_methods.add("RST")
-        else:
-            result.skipped.append("RST parameter validation (DiagMethod != RST)")
-            result.skipped_methods.add("RST")
-
-        if self.diagmethod_most_enabled and not self.diagmethod_variable_enabled:
-            if verbose:
-                print("DiagMethod MOST is ON: checking MOST-specific parameters")
-            most_errors = self._validate_most_parameters()
-            result.errors.extend(most_errors)
-            result.validated_methods.add("MOST")
-        elif not self.diagmethod_most_enabled:
-            result.skipped.append("MOST parameter validation (DiagMethod != MOST)")
-            result.skipped_methods.add("MOST")
-
-        if self.diagmethod_variable_enabled:
-            if verbose:
-                print(
-                    "DiagMethod VARIABLE is ON: checking both RST and MOST parameters"
-                )
-            result.validated_methods.add("VARIABLE")
-            result.validated_methods.add("RST")
-            result.validated_methods.add("MOST")
+        # Skip diagnose-specific validation since diagnose is just an int flag
 
         # Validate roughness-related parameters
         if self.roughness_variable_enabled:

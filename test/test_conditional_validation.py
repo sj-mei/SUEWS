@@ -23,7 +23,16 @@ from supy.data_model.type import RefValue
 # Test if enhanced functionality is working
 def test_suews_config_basic():
     """Test basic SUEWSConfig functionality works."""
-    config = SUEWSConfig()
+    # Create config with at least one site
+    config = SUEWSConfig(sites=[{
+        "gridiv": 1,
+        "properties": {
+            "lat": {"value": 51.5},
+            "lng": {"value": -0.1},
+            "alt": {"value": 10.0},
+            "timezone": {"value": 0}
+        }
+    }])
     assert config.name == "sample config"
     assert hasattr(config.model.physics, "rslmethod")
 
@@ -35,7 +44,16 @@ def test_suews_config_basic():
 
 def test_suews_config_enhanced_methods():
     """Test that enhanced methods exist and can be called."""
-    config = SUEWSConfig()
+    # Create config with at least one site
+    config = SUEWSConfig(sites=[{
+        "gridiv": 1,
+        "properties": {
+            "lat": {"value": 51.5},
+            "lng": {"value": -0.1},
+            "alt": {"value": 10.0},
+            "timezone": {"value": 0}
+        }
+    }])
 
     # Test enhanced to_df_state with conditional validation parameter
     df_state1 = config.to_df_state(use_conditional_validation=True)
