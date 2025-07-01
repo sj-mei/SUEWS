@@ -1,17 +1,19 @@
-name: testcase2
-description: testcase3 for precheck procedure
+name: sample config
+description: this is a sample config for testing purposes ONLY - values are not realistic
 model:
   control:
     tstep: 300
     forcing_file:
-      value: ../forcing/Kc_Ward2016/
-    output_file: output.txt
+      value: ../forcing/denise/Sw1_data_ldown.txt
+    output_file:
+      format: parquet
+      freq: 3600
     diagnose: 0
     start_time: "2011-01-01"
     end_time: "2013-12-31"
   physics:
     netradiationmethod:
-      value: 3
+      value: 1
     emissionsmethod:
       value: 2
     storageheatmethod:
@@ -19,7 +21,7 @@ model:
     ohmincqf:
       value: 0
     roughlenmommethod:
-      value: 2
+      value: 1
     roughlenheatmethod:
       value: 2
     stabilitymethod:
@@ -33,7 +35,7 @@ model:
     faimethod:
       value: 0
     rsllevel:
-      value: 0
+      value: 1
     gsmodel:
       value: 2
     snowuse:
@@ -42,24 +44,24 @@ model:
       value: 0
 sites:
 - name: test site
-  gridiv: 1
+  gridiv: 09_22_01_02
   properties:
     lat:
-      value: 51.51
+      value: 51.5846
     lng:
-      value: -0.12
+      value: 1.7981
     alt:
-      value: 35.0
+      value: 108.0
     timezone:
       value: 0
     surfacearea:
-      value: 22215600.0
+      value: 269104.0
     z:
-      value: 49.6
+      value: 10.6
     z0m_in:
-      value: 1.9
+      value: 0.38
     zdm_in:
-      value: 14.2
+      value: 1.38
     pipecapacity:
       value: 100.0
     runofftowater:
@@ -166,7 +168,7 @@ sites:
       GroundFloorOutdoorSurfaceTemperature:
         value: 22.0
       WaterTankTemperature:
-        value: not_a_float
+        value: not_a_float #25.0
       InternalWallWaterTankTemperature:
         value: 25.0
       ExternalWallWaterTankTemperature:
@@ -234,36 +236,36 @@ sites:
       MinimumVolumeOfDHWinUse:
         value: 1.0
     building_archetype:
-      BuildingType: test
-      BuildingName: test
+      BuildingType: 2000-2008
+      BuildingName: SampleBuilding
       BuildingCount:
         value: 1
       Occupants:
         value: 0
       stebbs_Height:
-        value: 10.0
+        value: 5.5
       FootprintArea:
-        value: 50.0
+        value: 59.1
       WallExternalArea:
-        value: 330.0
+        value: 98.4
       RatioInternalVolume:
         value: 0.1
       WWR:
-        value: 0.2
+        value: 0.25
       WallThickness:
-        value: 0.125
+        value: 0.469
       WallEffectiveConductivity:
-        value: 0.5
+        value: 0.174
       WallDensity:
-        value: 1500.0
+        value: 1538.85
       WallCp:
-        value: 1000.0
+        value: 1000.8
       Wallx1:
-        value: 0.2
+        value: 0.5
       WallExternalEmissivity:
-        value: 0.85
+        value: 0.9
       WallInternalEmissivity:
-        value: 0.85
+        value: 0.91
       WallTransmissivity:
         value: 0.0
       WallAbsorbtivity:
@@ -271,31 +273,31 @@ sites:
       WallReflectivity:
         value: 0.2
       FloorThickness:
-        value: 0.25
+        value: 0.227
       GroundFloorEffectiveConductivity:
-        value: 0.1
+        value: 0.193
       GroundFloorDensity:
-        value: 400.0
+        value: 299.5
       GroundFloorCp:
-        value: 1600.0
+        value: 1528.5
       WindowThickness:
-        value: 0.0025
+        value: 0.004
       WindowEffectiveConductivity:
-        value: 0.06
+        value: 1.05
       WindowDensity:
-        value: 2750.0
+        value: 2500.0
       WindowCp:
-        value: 900.0
+        value: 840.0
       WindowExternalEmissivity:
-        value: 0.7
+        value: 0.84
       WindowInternalEmissivity:
-        value: 0.7
+        value: 0.84
       WindowTransmissivity:
-        value: 0.9
+        value: 0.8
       WindowAbsorbtivity:
-        value: 0.09
+        value: 0.15
       WindowReflectivity:
-        value: 0.01
+        value: 0.05
       InternalMassDensity:
         value: 1750.0
       InternalMassCp:
@@ -477,14 +479,14 @@ sites:
           working_day: 0.88
           holiday: 0.88
         qf_a:
-          working_day: 0.3081357
-          holiday: 0.3081357
+          working_day: 0.1446
+          holiday: 0.1329
         qf_b:
-          working_day: 0.0098631
-          holiday: 0.0098631
+          working_day: 0.0
+          holiday: 0.0
         qf_c:
-          working_day: 0.0101826
-          holiday: 0.0101826
+          working_day: 0.0037
+          holiday: 0.0038
         baset_cooling:
           working_day: 7.0
           holiday: 7.0
@@ -527,85 +529,85 @@ sites:
             '23': 0.8
             '24': 0.7
           holiday:
-            '1': 0.65
-            '2': 0.49
-            '3': 0.46
-            '4': 0.47
-            '5': 0.47
-            '6': 0.53
-            '7': 0.7
-            '8': 1.13
-            '9': 1.37
-            '10': 1.37
-            '11': 1.3
-            '12': 1.37
-            '13': 1.33
-            '14': 1.3
-            '15': 1.27
-            '16': 1.36
-            '17': 1.44
-            '18': 1.3
-            '19': 1.1
-            '20': 0.98
-            '21': 0.84
-            '22': 0.9
-            '23': 0.87
-            '24': 0.74
+            '1': 0.57
+            '2': 0.45
+            '3': 0.43
+            '4': 0.4
+            '5': 0.4
+            '6': 0.45
+            '7': 0.71
+            '8': 1.2
+            '9': 1.44
+            '10': 1.29
+            '11': 1.28
+            '12': 1.31
+            '13': 1.3
+            '14': 1.32
+            '15': 1.35
+            '16': 1.44
+            '17': 1.51
+            '18': 1.41
+            '19': 1.14
+            '20': 0.99
+            '21': 0.86
+            '22': 0.85
+            '23': 0.8
+            '24': 0.7
         popdensdaytime:
-          working_day: 204.58
-          holiday: 204.58
-        popdensnighttime: 204.58
+          working_day: 47.63
+          holiday: 47.63
+        popdensnighttime: 47.63
         popprof_24hr:
           working_day:
-            '1': 1.0
-            '2': 1.0
-            '3': 1.0
-            '4': 1.0
-            '5': 1.0
-            '6': 1.5
-            '7': 2.0
-            '8': 2.0
-            '9': 2.0
-            '10': 2.0
-            '11': 2.0
-            '12': 2.0
-            '13': 2.0
-            '14': 2.0
-            '15': 2.0
-            '16': 2.0
-            '17': 2.0
-            '18': 2.0
-            '19': 2.0
-            '20': 2.0
-            '21': 2.0
-            '22': 1.5
-            '23': 1.0
-            '24': 1.0
+            '1': 0.57
+            '2': 0.45
+            '3': 0.43
+            '4': 0.4
+            '5': 0.4
+            '6': 0.45
+            '7': 0.71
+            '8': 1.2
+            '9': 1.44
+            '10': 1.29
+            '11': 1.28
+            '12': 1.31
+            '13': 1.3
+            '14': 1.32
+            '15': 1.35
+            '16': 1.44
+            '17': 1.51
+            '18': 1.41
+            '19': 1.14
+            '20': 0.99
+            '21': 0.86
+            '22': 0.85
+            '23': 0.8
+            '24': 0.7
           holiday:
-            '1': 1.0
-            '2': 1.0
-            '3': 1.0
-            '4': 1.0
-            '5': 1.0
-            '6': 1.0
-            '7': 1.0
-            '8': 1.0
-            '9': 1.5
-            '10': 2.0
-            '11': 2.0
-            '12': 2.0
-            '13': 2.0
-            '14': 2.0
-            '15': 2.0
-            '16': 2.0
-            '17': 2.0
-            '18': 2.0
-            '19': 2.0
-            '20': 2.0
-            '21': 2.0
-            '22': 2.0
-            '23': 1.5
-            '24': 1.0
+            '1': 0.57
+            '2': 0.45
+            '3': 0.43
+            '4': 0.4
+            '5': 0.4
+            '6': 0.45
+            '7': 0.71
+            '8': 1.2
+            '9': 1.44
+            '10': 1.29
+            '11': 1.28
+            '12': 1.31
+            '13': 1.3
+            '14': 1.32
+            '15': 1.35
+            '16': 1.44
+            '17': 1.51
+            '18': 1.41
+            '19': 1.14
+            '20': 0.99
+            '21': 0.86
+            '22': 0.85
+            '23': 0.8
+            '24': 0.7
       co2:
         co2pointsource:
           value: 0.0
@@ -614,12 +616,12 @@ sites:
         enef_v_jkm:
           value: 3970000.0
         fcef_v_kgkm:
-          working_day: 0.2069
-          holiday: 0.2069
+          working_day: 0.285
+          holiday: 0.285
         frfossilfuel_heat:
-          value: 0.7
+          value: 0.05
         frfossilfuel_nonheat:
-          value: 0.7
+          value: 0.0
         maxfcmetab:
           value: 280.0
         maxqfmetab:
@@ -635,106 +637,106 @@ sites:
           value: 1.0
         traffprof_24hr:
           working_day:
-            '1': 0.19
-            '2': 0.14
-            '3': 0.12
-            '4': 0.13
-            '5': 0.2
-            '6': 0.59
-            '7': 1.21
-            '8': 1.67
-            '9': 1.57
-            '10': 1.32
-            '11': 1.27
+            '1': 0.57
+            '2': 0.45
+            '3': 0.43
+            '4': 0.4
+            '5': 0.4
+            '6': 0.45
+            '7': 0.71
+            '8': 1.2
+            '9': 1.44
+            '10': 1.29
+            '11': 1.28
             '12': 1.31
-            '13': 1.37
-            '14': 1.44
-            '15': 1.74
-            '16': 2.01
-            '17': 1.9
-            '18': 1.53
-            '19': 1.2
-            '20': 1.0
-            '21': 0.83
-            '22': 0.59
-            '23': 0.4
-            '24': 0.3
+            '13': 1.3
+            '14': 1.32
+            '15': 1.35
+            '16': 1.44
+            '17': 1.51
+            '18': 1.41
+            '19': 1.14
+            '20': 0.99
+            '21': 0.86
+            '22': 0.85
+            '23': 0.8
+            '24': 0.7
           holiday:
-            '1': 0.55
-            '2': 0.54
-            '3': 0.51
-            '4': 0.46
-            '5': 0.36
-            '6': 0.31
-            '7': 0.38
-            '8': 0.49
-            '9': 0.73
-            '10': 1.04
-            '11': 1.3
-            '12': 1.51
-            '13': 1.69
-            '14': 1.79
-            '15': 1.79
-            '16': 1.76
-            '17': 1.71
-            '18': 1.61
-            '19': 1.43
-            '20': 1.23
-            '21': 1.0
-            '22': 0.75
-            '23': 0.58
-            '24': 0.5
+            '1': 0.57
+            '2': 0.45
+            '3': 0.43
+            '4': 0.4
+            '5': 0.4
+            '6': 0.45
+            '7': 0.71
+            '8': 1.2
+            '9': 1.44
+            '10': 1.29
+            '11': 1.28
+            '12': 1.31
+            '13': 1.3
+            '14': 1.32
+            '15': 1.35
+            '16': 1.44
+            '17': 1.51
+            '18': 1.41
+            '19': 1.14
+            '20': 0.99
+            '21': 0.86
+            '22': 0.85
+            '23': 0.8
+            '24': 0.7
         humactivity_24hr:
           working_day:
-            '1': 1.0
-            '2': 1.0
-            '3': 1.0
-            '4': 1.0
-            '5': 1.0
-            '6': 1.0
-            '7': 1.0
-            '8': 1.5
-            '9': 2.0
-            '10': 2.0
-            '11': 2.0
-            '12': 2.0
-            '13': 2.0
-            '14': 2.0
-            '15': 2.0
-            '16': 2.0
-            '17': 2.0
-            '18': 2.0
-            '19': 2.0
-            '20': 2.0
-            '21': 2.0
-            '22': 2.0
-            '23': 1.5
-            '24': 1.0
+            '1': 0.57
+            '2': 0.45
+            '3': 0.43
+            '4': 0.4
+            '5': 0.4
+            '6': 0.45
+            '7': 0.71
+            '8': 1.2
+            '9': 1.44
+            '10': 1.29
+            '11': 1.28
+            '12': 1.31
+            '13': 1.3
+            '14': 1.32
+            '15': 1.35
+            '16': 1.44
+            '17': 1.51
+            '18': 1.41
+            '19': 1.14
+            '20': 0.99
+            '21': 0.86
+            '22': 0.85
+            '23': 0.8
+            '24': 0.7
           holiday:
-            '1': 1.0
-            '2': 1.0
-            '3': 1.0
-            '4': 1.0
-            '5': 1.0
-            '6': 1.0
-            '7': 1.0
-            '8': 1.0
-            '9': 1.5
-            '10': 2.0
-            '11': 2.0
-            '12': 2.0
-            '13': 2.0
-            '14': 2.0
-            '15': 2.0
-            '16': 2.0
-            '17': 2.0
-            '18': 2.0
-            '19': 2.0
-            '20': 2.0
-            '21': 2.0
-            '22': 2.0
-            '23': 1.5
-            '24': 1.0
+            '1': 0.57
+            '2': 0.45
+            '3': 0.43
+            '4': 0.4
+            '5': 0.4
+            '6': 0.45
+            '7': 0.71
+            '8': 1.2
+            '9': 1.44
+            '10': 1.29
+            '11': 1.28
+            '12': 1.31
+            '13': 1.3
+            '14': 1.32
+            '15': 1.35
+            '16': 1.44
+            '17': 1.51
+            '18': 1.41
+            '19': 1.14
+            '20': 0.99
+            '21': 0.86
+            '22': 0.85
+            '23': 0.8
+            '24': 0.7
     snow:
       crwmax:
         value: 0.1
@@ -822,7 +824,7 @@ sites:
     land_cover:
       paved:
         sfr:
-          value: 0.23
+          value: 0.332
         emis:
           value: 0.95
         chanohm:
@@ -932,7 +934,7 @@ sites:
           value: 0.1
       bldgs:
         sfr:
-          value: 0.38
+          value: 0.18
         emis:
           value: 0.91
         chanohm:
@@ -986,13 +988,13 @@ sites:
           value: 0.0005
         waterdist:
           to_paved:
-            value: 0.1
+            value: 0.08
           to_dectr:
             value: 0.0
           to_evetr:
             value: 0.0
           to_grass:
-            value: 0.0
+            value: 0.02
           to_bsoil:
             value: 0.0
           to_water:
@@ -1041,176 +1043,12 @@ sites:
         alb:
           value: 0.12
         faibldg:
-          value: -0.3
+          value: -0.1
         bldgh:
-          value: 22.0
-      evetr:
-        sfr:
-          value: 0.1
-        emis:
-          value: 0.98
-        chanohm:
-          value: 4.0
-        cpanohm:
-          value: 100000.0
-        kkanohm:
-          value: 1.2
-        ohm_threshsw:
-          value: 10.0
-        ohm_threshwd:
-          value: 0.9
-        ohm_coef:
-          summer_dry:
-            a1:
-              value: 0.23
-            a2:
-              value: 0.325
-            a3:
-              value: -16.91
-          summer_wet:
-            a1:
-              value: 0.23
-            a2:
-              value: 0.325
-            a3:
-              value: -16.91
-          winter_dry:
-            a1:
-              value: 0.27
-            a2:
-              value: 0.325
-            a3:
-              value: 6.62
-          winter_wet:
-            a1:
-              value: 0.27
-            a2:
-              value: 0.325
-            a3:
-              value: 6.62
-        soildepth:
-          value: 350.0
-        soilstorecap:
-          value: 150.0
-        statelimit:
-          value: 1.3
-        wetthresh:
-          value: 1.8
-        sathydraulicconduct:
-          value: 0.0005
-        waterdist:
-          to_paved:
-            value: 0.1
-          to_bldgs:
-            value: 0.0
-          to_dectr:
-            value: 0.0
-          to_grass:
-            value: 0.0
-          to_bsoil:
-            value: 0.0
-          to_water:
-            value: 0.0
-          to_soilstore:
-            value: 0.9
-        storedrainprm:
-          store_min:
-            value: 1.3
-          store_max:
-            value: 1.3
-          store_cap:
-            value: 1.3
-          drain_eq:
-            value: 2
-          drain_coef_1:
-            value: 0.013
-          drain_coef_2:
-            value: 1.71
-        snowpacklimit:
-          value: -999.0
-        thermal_layers:
-          dz:
-            value:
-            - 0.2
-            - 0.1
-            - 0.1
-            - 0.5
-            - 1.6
-          k:
-            value:
-            - 1.2
-            - 1.1
-            - 1.1
-            - 1.5
-            - 1.6
-          cp:
-            value:
-            - 3200000.0
-            - 1100000.0
-            - 1100000.0
-            - 1500000.0
-            - 1600000.0
-        irrfrac:
-          value: 0.0
-        alb:
-          value: 0.1
-        alb_min:
-          value: 0.1
-        alb_max:
-          value: 0.1
-        beta_bioco2:
-          value: 8.747
-        beta_enh_bioco2:
-          value: 33.454
-        alpha_bioco2:
-          value: 0.005
-        alpha_enh_bioco2:
-          value: 0.016
-        resp_a:
-          value: 2.43
-        resp_b:
-          value: 0.0
-        theta_bioco2:
-          value: 0.96
-        maxconductance:
-          value: 7.4
-        min_res_bioco2:
-          value: 0.6
-        lai:
-          baset:
-            value: 6.0
-          gddfull:
-            value: 300.0
-          basete:
-            value: 11.0
-          sddfull:
-            value: -450.0
-          laimin:
-            value: 4.0
-          laimax:
-            value: 5.1
-          laipower:
-            growth_lai:
-              value: 0.04
-            growth_gdd:
-              value: 0.001
-            senescence_lai:
-              value: -1.5
-            senescence_sdd:
-              value: 0.0015
-          laitype:
-            value: 1
-        ie_a:
-          value: 0.0
-        ie_m:
-          value: 0.0
-        faievetree:
-          value: 0.05
-        evetreeh:
-          value: 13.1
+          value: 4.19
       dectr:
         sfr:
-          value: 0.02
+          value: 0.027
         emis:
           value: 0.98
         chanohm:
@@ -1264,7 +1102,7 @@ sites:
           value: 0.0005
         waterdist:
           to_paved:
-            value: 0.1
+            value: 0.0
           to_bldgs:
             value: 0.0
           to_evetr:
@@ -1276,7 +1114,7 @@ sites:
           to_water:
             value: 0.0
           to_soilstore:
-            value: 0.9
+            value: 1.0
         storedrainprm:
           store_min:
             value: 0.3
@@ -1316,8 +1154,6 @@ sites:
             - 1600000.0
         irrfrac:
           value: 0.0
-        alb:
-          value: 0.18
         alb_min:
           value: 0.12
         alb_max:
@@ -1325,9 +1161,9 @@ sites:
         beta_bioco2:
           value: 8.747
         beta_enh_bioco2:
-          value: 33.454
+          value: 33.353
         alpha_bioco2:
-          value: 0.005
+          value: 0.004
         alpha_enh_bioco2:
           value: 0.016
         resp_a:
@@ -1369,9 +1205,9 @@ sites:
         ie_m:
           value: 0.0
         faidectree:
-          value: 0.05
+          value: 0.06
         dectreeh:
-          value: 13.1
+          value: 5.0
         pormin_dec:
           value: 0.1
         pormax_dec:
@@ -1380,9 +1216,171 @@ sites:
           value: 0.8
         capmin_dec:
           value: 0.3
+      evetr:
+        sfr:
+          value: 0.007
+        emis:
+          value: 0.98
+        chanohm:
+          value: 4.0
+        cpanohm:
+          value: 100000.0
+        kkanohm:
+          value: 1.2
+        ohm_threshsw:
+          value: 10.0
+        ohm_threshwd:
+          value: 0.9
+        ohm_coef:
+          summer_dry:
+            a1:
+              value: 0.23
+            a2:
+              value: 0.325
+            a3:
+              value: -16.91
+          summer_wet:
+            a1:
+              value: 0.23
+            a2:
+              value: 0.325
+            a3:
+              value: -16.91
+          winter_dry:
+            a1:
+              value: 0.27
+            a2:
+              value: 0.325
+            a3:
+              value: 6.62
+          winter_wet:
+            a1:
+              value: 0.27
+            a2:
+              value: 0.325
+            a3:
+              value: 6.62
+        soildepth:
+          value: 350.0
+        soilstorecap:
+          value: 150.0
+        statelimit:
+          value: 1.3
+        wetthresh:
+          value: 1.8
+        sathydraulicconduct:
+          value: 0.0005
+        waterdist:
+          to_paved:
+            value: 0.0
+          to_bldgs:
+            value: 0.0
+          to_dectr:
+            value: 0.0
+          to_grass:
+            value: 0.0
+          to_bsoil:
+            value: 0.0
+          to_water:
+            value: 0.0
+          to_soilstore:
+            value: 1.0
+        storedrainprm:
+          store_min:
+            value: 1.3
+          store_max:
+            value: 1.3
+          store_cap:
+            value: 1.3
+          drain_eq:
+            value: 2
+          drain_coef_1:
+            value: 0.013
+          drain_coef_2:
+            value: 1.71
+        snowpacklimit:
+          value: -999.0
+        thermal_layers:
+          dz:
+            value:
+            - 0.2
+            - 0.1
+            - 0.1
+            - 0.5
+            - 1.6
+          k:
+            value:
+            - 1.2
+            - 1.1
+            - 1.1
+            - 1.5
+            - 1.6
+          cp:
+            value:
+            - 3200000.0
+            - 1100000.0
+            - 1100000.0
+            - 1500000.0
+            - 1600000.0
+        irrfrac:
+          value: 0.0
+        alb_min:
+          value: 0.1
+        alb_max:
+          value: 0.1
+        beta_bioco2:
+          value: 8.747
+        beta_enh_bioco2:
+          value: 33.353
+        alpha_bioco2:
+          value: 0.004
+        alpha_enh_bioco2:
+          value: 0.016
+        resp_a:
+          value: 2.43
+        resp_b:
+          value: 0.0
+        theta_bioco2:
+          value: 0.96
+        maxconductance:
+          value: 7.4
+        min_res_bioco2:
+          value: 0.6
+        lai:
+          baset:
+            value: 6.0
+          gddfull:
+            value: 300.0
+          basete:
+            value: 11.0
+          sddfull:
+            value: -450.0
+          laimin:
+            value: 4.0
+          laimax:
+            value: 5.1
+          laipower:
+            growth_lai:
+              value: 0.04
+            growth_gdd:
+              value: 0.001
+            senescence_lai:
+              value: -1.5
+            senescence_sdd:
+              value: 0.0015
+          laitype:
+            value: 1
+        ie_a:
+          value: 0.0
+        ie_m:
+          value: 0.0
+        faievetree:
+          value: 0.06
+        evetreeh:
+          value: 5.0
       grass:
         sfr:
-          value: 0.03
+          value: 0.451
         emis:
           value: 0.93
         chanohm:
@@ -1488,8 +1486,6 @@ sites:
             - 1600000.0
         irrfrac:
           value: 0.0
-        alb:
-          value: 0.21
         alb_min:
           value: 0.18
         alb_max:
@@ -1497,9 +1493,9 @@ sites:
         beta_bioco2:
           value: 8.747
         beta_enh_bioco2:
-          value: 33.454
+          value: 33.353
         alpha_bioco2:
-          value: 0.005
+          value: 0.004
         alpha_enh_bioco2:
           value: 0.016
         resp_a:
@@ -1542,7 +1538,7 @@ sites:
           value: 0.0
       bsoil:
         sfr:
-          value: 0.1
+          value: 0.003
         emis:
           value: 0.94
         chanohm:
@@ -1652,13 +1648,13 @@ sites:
           value: 0.18
       water:
         sfr:
-          value: 0.14
+          value: 0.000
         emis:
           value: 0.95
         chanohm:
           value: 4.0
         cpanohm:
-          value: 10000.0
+          value: 100000.0
         kkanohm:
           value: 1.2
         ohm_threshsw:
@@ -1699,7 +1695,7 @@ sites:
         soilstorecap:
           value: 0.0
         statelimit:
-          value: 30000.0
+          value: 1000.0
         wetthresh:
           value: 0.5
         sathydraulicconduct:
@@ -1893,21 +1889,21 @@ sites:
         thermal_layers:
           dz:
             value:
-            - 0.2
+            - 0.141
             - 0.1
             - 0.1
             - 0.01
             - 0.01
           k:
             value:
-            - 1.2
+            - 0.528
             - 1.2
             - 1.2
             - 1.2
             - 1.2
           cp:
             value:
-            - 3000000.0
+            - 1527372.0
             - 2000000.0
             - 2000000.0
             - 2000000.0
@@ -1995,14 +1991,14 @@ sites:
         wall_specular_frac:
           value: 0.0
     n_buildings:
-      value: 150
+      value: 726
     h_std:
-      value: 5.0
+      value: 2.20
     lambda_c:
-      value: 1.0
+      value: 2.74
   initial_states:
     snowalb:
-      value: 0.3
+      value: 0.0
     paved:
       state:
         value: 0.0
@@ -2138,7 +2134,7 @@ sites:
         wu_manual:
           value: 0.0
       porosity_id:
-        value: 0.9
+        value: 0.6
       decidcap_id:
         value: 0.3
     grass:
@@ -2210,7 +2206,7 @@ sites:
         value: 2.0
     water:
       state:
-        value: 20000.0
+        value: 1000.0
       soilstore:
         value: 10.0
       snowfrac:
@@ -2326,7 +2322,17 @@ sites:
         value: 5.0
       tin:
         value: 5.0
+    dqndt: 0.0
+    dqnsdt: 0.0
+    dt_since_start: 0.0
+    lenday_id: 0
+    qn_av: 0.0
+    qn_s_av: 0.0
     tair_av: 273.15
+    tmax_id: -90.0
+    tmin_id: 90.0
+    tstep_prev: 300.0
+    snowfallcum: 0.0
     hdd_id:
     - 0.0
     - 0.0

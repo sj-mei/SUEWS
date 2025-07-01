@@ -612,6 +612,40 @@ def precheck_nullify_zero_sfr_params(data: dict) -> dict:
                         recursive_nullify(param_val)
     return data
 
+def precheck_warn_zero_sfr_params(data: dict) -> dict:
+    """
+    For each site, log a compact warning listing all land_cover parameters
+    for surfaces with sfr == 0 that have not been physically prechecked.
+    """
+    for site_idx, site in enumerate(data.get("sites", [])):
+        land_cover = site.get("properties", {}).get("land_cover", {})
+        for surf_type, props in land_cover.items():
+            sfr = props.get("sfr", {}).get("value", 0)
+            if sfr == 0:
+                param_list = []
+
+                def collect_param_names(d: dict, prefix: str = ""):
+                    for k, v in d.items():
+                        if k == "sfr":
+                            continue
+                        current_path = f"{prefix}.{k}" if prefix else k
+                        if isinstance(v, dict):
+                            if "value" in v:
+                                param_list.append(current_path)
+                            else:
+                                collect_param_names(v, current_path)
+
+                collect_param_names(props)
+
+                if param_list:
+                    param_str = "', '".join(param_list)
+                    logger_supy.info(
+                        f"[site #{site_idx}] As '{surf_type}' (sfr == 0), the following parameters are not prechecked for this surface type : '{param_str}'"
+                    )
+
+    return data
+
+
 
 def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
     """
@@ -768,7 +802,10 @@ def run_precheck(path: str) -> dict:
     data = precheck_update_surface_temperature(data, start_date=start_date)
 
     # ---- Step 8: Nullify params for surfaces with sfr == 0 ----
-    data = precheck_nullify_zero_sfr_params(data)
+    #data = precheck_nullify_zero_sfr_params(data)
+
+    # ---- Step 8: Print warnings for params related to surfaces with sfr == 0 ----
+    data = precheck_warn_zero_sfr_params(data)
 
     # ---- Step 9: Check existence of params for surfaces with sfr > 0 ----
     data = precheck_nonzero_sfr_requires_nonnull_params(data)
