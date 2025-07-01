@@ -117,11 +117,13 @@ See `.claude/howto/setup-worktree.md` for the complete commands. Quick example:
 # Ultra-fast setup with uv
 git worktree add worktrees/feature-name feature/feature-name
 cd worktrees/feature-name
-uv venv && source .venv/bin/activate
+uv venv && source .venv/bin/activate  # ALWAYS create venv for each worktree!
 uv pip install pandas scipy matplotlib # ... (see guide)
 make dev
 uv run make test  # No activation needed!
 ```
+
+**⚠️ REMINDER**: Always use `uv venv` when starting work in a worktree! Never use the base environment.
 
 #### Why Separate Environments Are Required
 
@@ -212,6 +214,11 @@ When working in a git worktree or on a specific feature branch, check for branch
    cd worktrees/{feature-name}
    git branch --show-current  # Verify branch
    cat ../../.claude/plans/doing/feature-{branch-name}.md  # Read plan
+   
+   # IMPORTANT: Always use uv venv in worktrees!
+   source .venv/bin/activate  # Activate the worktree's venv
+   # Or use uv run commands without activation
+   
    make dev  # Ensure build is ready
    ```
 
