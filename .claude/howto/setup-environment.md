@@ -48,23 +48,6 @@ uv pip install pandas scipy matplotlib-base matplotlib-inline scikit-learn sciki
 make dev
 ```
 
-## Alternative: Standard Python venv
-
-If uv is not available in your environment:
-
-```bash
-# Create and activate
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-
-# Install packages (slower than uv)
-pip install --upgrade pip
-pip install pandas scipy matplotlib  # etc.
-
-# Deactivate when done
-deactivate
-```
-
 ## Compiler Requirements
 
 SUEWS requires a Fortran compiler:
@@ -101,12 +84,8 @@ which gfortran
 uv venv                    # Create environment
 uv pip install package     # Install package
 uv run python script.py    # Run without activation
-
-# venv commands (fallback)
-python -m venv .venv       # Create environment
-source .venv/bin/activate  # Activate
-pip install package        # Install package
-deactivate                 # Deactivate
+uv run pytest             # Run tests without activation
+uv run make test          # Run make commands
 ```
 
-For mamba/conda setup (complex scientific environments only), see the legacy documentation or SUEWS development guide.
+For legacy setup methods (venv, mamba/conda), see the SUEWS development guide.
