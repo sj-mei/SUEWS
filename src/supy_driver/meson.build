@@ -246,11 +246,18 @@ incdir_numpy = run_command(
   check: true,
 ).stdout().strip()
 
+# Create a dependency for numpy includes instead of using include_directories with absolute paths
+numpy_inc = declare_dependency(compile_args: ['-I' + incdir_numpy])
+
 # this is the path to the f2py source code - better compatibility with older numpy versions
 incdir_f2py = incdir_numpy / '..' / '..' / 'f2py' / 'src'
+f2py_inc = declare_dependency(compile_args: ['-I' + incdir_f2py])
 fortranobject_c = incdir_f2py / 'fortranobject.c'
 
-# Create compiler arguments for numpy include directories
+# Combine the dependencies
+inc_np_dep = declare_dependency(compile_args: ['-I' + incdir_numpy, '-I' + incdir_f2py])
+
+# Create compiler arguments for numpy include directories (for backward compatibility)
 numpy_inc_args = ['-I' + incdir_numpy, '-I' + incdir_f2py]
 
 # gh-25000
@@ -260,12 +267,11 @@ dep_quadmath = fortran_compiler.find_library('quadmath', required: false)
 lib_fortranobject = static_library(
   '_fortranobject',
   fortranobject_c,
-  dependencies: dep_py,
-  c_args: numpy_inc_args,
+  dependencies: [dep_py, inc_np_dep],
 )
 dep_fortranobject = declare_dependency(
   link_with: lib_fortranobject,
-  compile_args: numpy_inc_args,
+  dependencies: [inc_np_dep],
 )
 
 dep_lib_src = declare_dependency(
@@ -313,6 +319,7 @@ ext_supy_driver = py.extension_module(
     dep_py,
     dep_fortranobject,
     dep_quadmath,
+    inc_np_dep,
     dep_suews,
   ],
   link_args: link_args_windows,
