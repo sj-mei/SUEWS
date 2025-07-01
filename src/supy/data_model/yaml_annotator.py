@@ -174,92 +174,198 @@ class YAMLAnnotator:
         return output_path
     
     def _create_annotated_yaml(self, yaml_content: str, data: Dict[str, Any]) -> str:
-        """Create annotated YAML with a simpler approach."""
+        """Create annotated YAML with inline annotations."""
         header = """# ANNOTATED SUEWS CONFIGURATION
 # ================================
-# This file has been annotated with validation feedback.
+# This file has been annotated with inline validation feedback.
 # Look for:
-#   ⚠️  WARNING: Validation issues that should be addressed
-#   💡 FIX: Suggested solutions
-#   EXAMPLE: Sample values you can use
+#   ⚠️  MISSING: Parameters that need to be added
+#   💡 ADD: Ready-to-use parameter blocks
 #
-# To use this file:
-# 1. Review all WARNING comments
-# 2. Add missing parameters as suggested
-# 3. Replace <INSERT_VALUE> with appropriate values
-# 4. Remove comment lines after fixing
+# To fix:
+# 1. Find the ⚠️  MISSING comments
+# 2. Uncomment the suggested ADD blocks
+# 3. Adjust values as needed
+# 4. Remove the warning comments
 # ================================
 
 """
         
-        # Start with the header
-        result = header
+        # Parse YAML to get line numbers for each path
+        lines = yaml_content.split('\n')
         
-        # Add the original YAML
-        result += yaml_content + "\n\n"
+        # Create a mapping of paths to line numbers
+        path_to_line = self._build_path_line_mapping(lines)
         
-        # Add a section with all validation issues organized by site
-        result += "\n# ================================\n"
-        result += "# VALIDATION ISSUES TO ADDRESS:\n"
-        result += "# ================================\n\n"
+        # Sort issues by line number for insertion
+        issues_by_line = self._organize_issues_by_line(path_to_line)
         
-        # Group issues by site
-        sites_issues = defaultdict(list)
-        for issue in self.issues:
-            # Extract site from path
-            if 'sites[' in issue.path:
-                site_match = re.search(r'sites\[(\d+)\]', issue.path)
-                if site_match:
-                    site_idx = int(site_match.group(1))
-                    sites_issues[site_idx].append(issue)
+        # Insert annotations inline
+        annotated_lines = []
+        i = 0
         
-        # Add issues for each site
-        for site_idx in sorted(sites_issues.keys()):
-            site_name = data['sites'][site_idx].get('name', f'Site {site_idx + 1}')
-            result += f"# {site_name}:\n"
-            result += f"# {'='*len(site_name)}:\n"
+        while i < len(lines):
+            line = lines[i]
             
-            # Group by issue type
-            by_type = defaultdict(list)
-            for issue in sites_issues[site_idx]:
-                # Extract the component (e.g., bldgs, conductance, etc.)
-                if '/land_cover/' in issue.path:
-                    component = issue.path.split('/land_cover/')[-1].split('/')[0]
-                    by_type[f"land_cover.{component}"].append(issue)
-                elif '/conductance' in issue.path:
-                    by_type['conductance'].append(issue)
-                elif '/anthropogenic_emissions/co2' in issue.path:
-                    by_type['anthropogenic_emissions.co2'].append(issue)
-                else:
-                    by_type['other'].append(issue)
+            # Add the original line
+            annotated_lines.append(line)
             
-            # Add issues by type
-            for component, issues in sorted(by_type.items()):
-                result += f"#\n# {component}:\n"
-                for issue in issues:
-                    result += f"#   ⚠️  {issue.level}: {issue.message}\n"
-                    result += f"#   💡 FIX: {issue.fix}\n"
+            # Check if we need to insert annotations after this line
+            if i in issues_by_line:
+                # Get indentation of current line
+                indent = len(line) - len(line.lstrip())
+                
+                # Add annotations for all issues at this location
+                for issue in issues_by_line[i]:
+                    # Add warning comment
+                    annotated_lines.append(' ' * indent + f"# ⚠️  MISSING: {issue.message}")
                     
-                    # Add example based on parameter
+                    # Add fix suggestion with proper indentation
                     if issue.param == 'bldgh':
-                        result += f"#   EXAMPLE: bldgh: {{value: 20.0}}  # typical urban building height\n"
+                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# bldgh: {value: 20.0}  # building height in meters")
+                    
                     elif issue.param == 'faibldg':
-                        result += f"#   EXAMPLE: faibldg: {{value: 0.5}}  # frontal area index\n"
+                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# faibldg: {value: 0.5}  # frontal area index (0.1-0.7)")
+                    
                     elif issue.param == 'thermal_layers':
-                        result += f"#   EXAMPLE:\n"
-                        result += f"#     thermal_layers:\n"
-                        result += f"#       dz: {{value: [0.2, 0.1, 0.1, 0.5, 1.6]}}  # layer thickness (m)\n"
-                        result += f"#       k: {{value: [1.2, 1.1, 1.1, 1.5, 1.6]}}  # conductivity (W/m/K)\n"
-                        result += f"#       rho_cp: {{value: [1.2e6, 1.1e6, 1.1e6, 1.5e6, 1.6e6]}}  # heat capacity (J/m3/K)\n"
+                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# thermal_layers:")
+                        annotated_lines.append(' ' * indent + "#   dz: {value: [0.2, 0.1, 0.1, 0.5, 1.6]}  # layer thickness (m)")
+                        annotated_lines.append(' ' * indent + "#   k: {value: [1.2, 1.1, 1.1, 1.5, 1.6]}  # conductivity (W/m/K)")
+                        annotated_lines.append(' ' * indent + "#   rho_cp: {value: [1.2e6, 1.1e6, 1.1e6, 1.5e6, 1.6e6]}  # heat capacity (J/m3/K)")
+                    
+                    elif issue.param == 'conductance':
+                        annotated_lines.append(' ' * indent + "# 💡 ADD the following block under 'properties:':")
+                        annotated_lines.append(' ' * indent + "# conductance:")
+                        annotated_lines.append(' ' * indent + "#   g_max: {value: 3.5}  # maximum surface conductance")
+                        annotated_lines.append(' ' * indent + "#   g_k: {value: 200.0}  # solar radiation coefficient")
+                        annotated_lines.append(' ' * indent + "#   g_q_base: {value: 0.13}  # VPD coefficient base")
+                        annotated_lines.append(' ' * indent + "#   g_q_shape: {value: 0.7}  # VPD coefficient shape")
+                        annotated_lines.append(' ' * indent + "#   g_t: {value: 30.0}  # temperature coefficient")
+                        annotated_lines.append(' ' * indent + "#   g_sm: {value: 0.05}  # soil moisture coefficient")
+                        annotated_lines.append(' ' * indent + "#   kmax: {value: 1200.0}  # maximum solar radiation")
+                        annotated_lines.append(' ' * indent + "#   s1: {value: 5.56}  # soil moisture threshold 1")
+                        annotated_lines.append(' ' * indent + "#   s2: {value: 0.0}  # soil moisture threshold 2")
+                    
                     elif 'g_' in issue.param or issue.param in ['s1', 's2', 'kmax']:
-                        result += f"#   EXAMPLE: {issue.param}: {{value: <see documentation>}}\n"
+                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + f"# {issue.param}: {{value: <CHECK_DOCS>}}  # {issue.fix}")
+                    
                     elif 'co2' in issue.param.lower():
-                        result += f"#   EXAMPLE: {issue.param}: {{value: <see documentation>}}\n"
-                    result += "#\n"
+                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        if issue.param == 'co2pointsource':
+                            annotated_lines.append(' ' * indent + "# co2pointsource: {value: 0.0}  # point source emissions")
+                        elif issue.param == 'ef_umolco2perj':
+                            annotated_lines.append(' ' * indent + "# ef_umolco2perj: {value: 1.159}  # emission factor")
+                        elif issue.param == 'frfossilfuel_heat':
+                            annotated_lines.append(' ' * indent + "# frfossilfuel_heat: {value: 0.7}  # fossil fuel fraction for heating")
+                        elif issue.param == 'frfossilfuel_nonheat':
+                            annotated_lines.append(' ' * indent + "# frfossilfuel_nonheat: {value: 0.7}  # fossil fuel fraction for non-heating")
+                        else:
+                            annotated_lines.append(' ' * indent + f"# {issue.param}: {{value: <CHECK_DOCS>}}")
+                    
+                    else:
+                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + f"# {issue.param}: {{value: <TODO>}}  # {issue.fix}")
+                    
+                    # Add blank line between issues
+                    annotated_lines.append("")
             
-            result += "\n"
+            i += 1
         
-        return result
+        # Combine header and annotated content
+        return header + '\n'.join(annotated_lines)
+    
+    def _build_path_line_mapping(self, lines: List[str]) -> Dict[str, int]:
+        """Build a mapping of YAML paths to line numbers."""
+        path_to_line = {}
+        current_path = []
+        indent_stack = []
+        
+        for i, line in enumerate(lines):
+            if not line.strip() or line.strip().startswith('#'):
+                continue
+            
+            indent = len(line) - len(line.lstrip())
+            
+            # Manage path based on indentation
+            while indent_stack and indent <= indent_stack[-1][1]:
+                indent_stack.pop()
+                current_path.pop()
+            
+            if ':' in line and not line.strip().startswith('-'):
+                key = line.split(':')[0].strip()
+                current_path.append(key)
+                indent_stack.append((key, indent))
+                
+                # Store the path
+                path_str = '/'.join(current_path)
+                path_to_line[path_str] = i
+            elif line.strip().startswith('- '):
+                # Handle list items
+                if current_path:
+                    # Approximate list index
+                    list_index = 0  # Simplified - would need proper tracking
+                    indexed_path = current_path[:-1] + [f"{current_path[-1]}[{list_index}]"]
+                    path_str = '/'.join(indexed_path)
+                    path_to_line[path_str] = i
+        
+        return path_to_line
+    
+    def _organize_issues_by_line(self, path_to_line: Dict[str, int]) -> Dict[int, List[ValidationIssue]]:
+        """Organize issues by the line number where they should be inserted."""
+        issues_by_line = defaultdict(list)
+        
+        for issue in self.issues:
+            # Find the best matching line for this issue
+            best_line = self._find_best_insertion_line(issue, path_to_line)
+            if best_line is not None:
+                issues_by_line[best_line].append(issue)
+        
+        return issues_by_line
+    
+    def _find_best_insertion_line(self, issue: ValidationIssue, path_to_line: Dict[str, int]) -> Optional[int]:
+        """Find the best line to insert an annotation for this issue."""
+        # Convert issue path to match our path format
+        issue_path = issue.path.replace('sites[', 'sites[')  # Keep as is
+        
+        # Try to find exact match or parent path
+        path_parts = issue_path.split('/')
+        
+        # For building parameters, insert after 'sfr' line within bldgs
+        if 'land_cover/bldgs' in issue_path and issue.param in ['bldgh', 'faibldg']:
+            for path, line in path_to_line.items():
+                if path.endswith('land_cover/bldgs/sfr'):
+                    return line
+            # Fallback to bldgs line
+            for path, line in path_to_line.items():
+                if path.endswith('land_cover/bldgs'):
+                    return line
+        
+        # For thermal layers, insert after the surface type
+        if 'thermal_layers' in issue.param:
+            surface_type = None
+            if '/land_cover/' in issue_path:
+                surface_type = issue_path.split('/land_cover/')[-1].split('/')[0]
+                for path, line in path_to_line.items():
+                    if path.endswith(f'land_cover/{surface_type}'):
+                        return line
+        
+        # For conductance, insert after 'properties:'
+        if 'conductance' in issue_path:
+            for path, line in path_to_line.items():
+                if path.endswith('properties'):
+                    return line
+        
+        # For CO2 params, insert after 'co2:'
+        if 'anthropogenic_emissions/co2' in issue_path:
+            for path, line in path_to_line.items():
+                if path.endswith('anthropogenic_emissions/co2'):
+                    return line
+        
+        return None
     
     def _extract_issues_from_report(self, report):
         """Extract issues from a validation report."""
