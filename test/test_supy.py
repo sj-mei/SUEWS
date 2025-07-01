@@ -461,11 +461,9 @@ class TestSuPy(TestCase):
 
         # single-step results
         df_output, df_state = sp.run_supy(df_forcing_part, df_state_init)
-        # Access DailyState using loc to handle MultiIndex columns properly
-        df_dailystate = df_output.loc[:, 'DailyState']
-        # Remove all-NaN rows (DailyState only has values at end of each day)
-        df_dailystate_clean = df_dailystate.dropna(how='all')
-        n_days_test = df_dailystate_clean.shape[0]
+        # Use xs() for robust MultiIndex column access across platforms
+        df_dailystate = df_output.xs('DailyState', level='group', axis=1)
+        n_days_test = df_dailystate.dropna().drop_duplicates().shape[0]
         self.assertEqual(n_days_test, n_days)
 
     # test if the water balance is closed
