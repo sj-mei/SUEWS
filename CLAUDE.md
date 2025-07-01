@@ -135,13 +135,13 @@ uv run make test  # No activation needed!
 #### Testing Requirements
 - **After each task**: Run `make test`
 - **Before commits**: Run full test suite
-- **For Fortran changes**: `make clean && make dev && make test`
+- **For Fortran changes**: `make dev && make test`
 - **Quick tests**: `pytest test/test_supy.py -v`
 
-#### When to Rebuild (make dev)
+#### When to Rebuild
 - **Not needed**: If supy is already installed and you're only changing Python code
-- **Needed**: After Fortran changes, when switching branches, or first time setup
-- **Full rebuild (make clean && make dev)**: Only when tests fail unexpectedly or after major changes
+- **make dev**: After Fortran changes, when switching branches, or first time setup
+- **make clean && make dev**: Only when serious issues occur (build errors, import failures, unexpected test failures)
 
 See:
 - `.claude/howto/setup-worktree.md` for complete setup workflows
@@ -234,7 +234,7 @@ When working in a git worktree or on a specific feature branch, check for branch
 
 2. **During Development**
    - After Python changes: `make test`
-   - After Fortran changes: `make clean && make dev && make test`
+   - After Fortran changes: `make dev && make test`
    - Update plan progress immediately when tasks complete
 
 3. **Before Committing**
@@ -242,7 +242,10 @@ When working in a git worktree or on a specific feature branch, check for branch
    # For Python-only changes:
    make test  # Usually sufficient
    
-   # For Fortran changes or if tests fail unexpectedly:
+   # For Fortran changes:
+   make dev && make test
+   
+   # Only if serious issues occur (build errors, import failures):
    make clean && make dev && make test  # Full rebuild
    
    # Only commit if all tests pass!
