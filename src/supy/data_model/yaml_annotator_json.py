@@ -202,14 +202,22 @@ class JsonYamlAnnotator:
                             if isinstance(sub_value, dict):
                                 comment = sub_value.get('_comment', '')
                                 value = sub_value.get('value', 'TODO')
-                                lines.append(f"{indent_str}#   {sub_key}: {{value: {self._format_value(value)}}}  # {comment}")
+                                # Use simple format when no reference info
+                                if 'ref' in sub_value and sub_value['ref'] is not None:
+                                    lines.append(f"{indent_str}#   {sub_key}: {{value: {self._format_value(value)}, ref: ...}}  # {comment}")
+                                else:
+                                    lines.append(f"{indent_str}#   {sub_key}: {self._format_value(value)}  # {comment}")
                             else:
                                 lines.append(f"{indent_str}#   {sub_key}: {self._format_value(sub_value)}")
                     else:
                         # Simple parameter
                         comment = example.get('_comment', '')
                         value = example.get('value', 'TODO')
-                        lines.append(f"{indent_str}# {param}: {{value: {self._format_value(value)}}}  # {comment}")
+                        # Use simple format when no reference info
+                        if isinstance(example, dict) and 'ref' in example and example['ref'] is not None:
+                            lines.append(f"{indent_str}# {param}: {{value: {self._format_value(value)}, ref: ...}}  # {comment}")
+                        else:
+                            lines.append(f"{indent_str}# {param}: {self._format_value(value)}  # {comment}")
                     
                     lines.append("")  # Empty line after annotation
                 

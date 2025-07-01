@@ -1,16 +1,12 @@
-"""Test suite for spurious validation warnings."""
+"""Test suite for verifying no spurious validation warnings."""
 
 import warnings
 import pytest
-
 from supy.data_model import SUEWSConfig
-from supy.data_model.surface import BldgsProperties
-from supy.data_model.human_activity import CO2Params
-from supy.data_model.site import Conductance
 
 
-class TestSpuriousWarnings:
-    """Test that spurious warnings are suppressed while legitimate warnings are shown."""
+class TestNoSpuriousWarnings:
+    """Test that spurious warnings are eliminated in the new validation approach."""
     
     def test_import_no_warnings(self):
         """Test that importing SUEWSConfig doesn't generate warnings."""
@@ -22,124 +18,37 @@ class TestSpuriousWarnings:
             importlib.reload(supy.data_model)
             
         # Check no warnings were generated
-        assert len(w) == 0, f"Import generated {len(w)} unexpected warnings: {[str(x.message)[:80] for x in w[:3]]}"
+        assert len(w) == 0, f"Import generated {len(w)} unexpected warnings"
     
-    def test_co2_params_missing_parameters(self):
-        """Test that CO2Params without parameters doesn't generate warnings (trade-off)."""
+    def test_component_creation_no_warnings(self):
+        """Test that creating components doesn't generate validation warnings."""
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
+            
+            # Import and create various components
+            from supy.data_model.human_activity import CO2Params
+            from supy.data_model.site import Conductance
+            from supy.data_model.surface import BldgsProperties, ThermalLayers
+            from supy.data_model.type import RefValue
+            
+            # Create components with missing parameters
             co2 = CO2Params()
-            
-        # With top-level validation, direct object creation won't warn
-        co2_warnings = [
-            warn for warn in w
-            if "Missing critical CO2 emission parameters" in str(warn.message)
-        ]
-        assert len(co2_warnings) == 0, f"Expected 0 CO2 warnings (trade-off), got {len(co2_warnings)}"
-    
-    def test_co2_params_complete_no_warnings(self):
-        """Test that CO2Params with all parameters doesn't generate warnings."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            co2 = CO2Params(
-                co2pointsource=0.0,
-                ef_umolco2perj=1.159,
-                frfossilfuel_heat=0.7,
-                frfossilfuel_nonheat=0.7
-            )
-            
-        # Should have no warnings
-        co2_warnings = [
-            warn for warn in w
-            if "Missing critical CO2 emission parameters" in str(warn.message)
-        ]
-        assert len(co2_warnings) == 0, "Should not warn with complete CO2 parameters"
-    
-    def test_conductance_missing_parameters(self):
-        """Test that Conductance without parameters doesn't generate warnings (trade-off)."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
             cond = Conductance()
+            bldgs = BldgsProperties(sfr=RefValue(0.3))
+            thermal = ThermalLayers()
             
-        # With top-level validation, direct object creation won't warn
-        cond_warnings = [
-            warn for warn in w
-            if "Missing critical surface conductance parameters" in str(warn.message)
-        ]
-        assert len(cond_warnings) == 0, f"Expected 0 conductance warnings (trade-off), got {len(cond_warnings)}"
-    
-    def test_conductance_complete_no_warnings(self):
-        """Test that Conductance with all parameters doesn't generate warnings."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            cond = Conductance(
-                g_max=3.5,
-                g_k=200.0,
-                g_q_base=0.13,
-                g_q_shape=0.7,
-                g_t=30.0,
-                g_sm=0.05,
-                kmax=1200.0,
-                s1=5.56,
-                s2=0.0
+            # Create components with complete parameters
+            co2_complete = CO2Params(
+                co2pointsource=RefValue(0.0),
+                ef_umolco2perj=RefValue(1.159),
+                frfossilfuel_heat=RefValue(0.7),
+                frfossilfuel_nonheat=RefValue(0.7)
             )
             
-        # Should have no warnings
-        cond_warnings = [
-            warn for warn in w
-            if "Missing critical surface conductance parameters" in str(warn.message)
-        ]
-        assert len(cond_warnings) == 0, "Should not warn with complete conductance parameters"
+        # No warnings should be generated at component level
+        assert len(w) == 0, f"Component creation generated {len(w)} warnings"
     
-    def test_building_missing_parameters(self):
-        """Test that BldgsProperties without critical params doesn't generate warnings (trade-off)."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            # Building with significant fraction but missing critical params
-            bldgs = BldgsProperties(sfr=0.3)
-            
-        # With top-level validation, direct object creation won't warn
-        building_warnings = [
-            warn for warn in w
-            if "Missing critical building parameters" in str(warn.message)
-        ]
-        thermal_warnings = [
-            warn for warn in w
-            if "Missing critical thermal layer parameters" in str(warn.message)
-        ]
-        
-        assert len(building_warnings) == 0, f"Expected 0 building warnings (trade-off), got {len(building_warnings)}"
-        assert len(thermal_warnings) == 0, f"Expected 0 thermal warnings (trade-off), got {len(thermal_warnings)}"
-    
-    def test_building_complete_no_warnings(self):
-        """Test that BldgsProperties with all parameters doesn't generate warnings."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            bldgs = BldgsProperties(
-                sfr=0.3,
-                faibldg=0.5,
-                bldgh=20.0,
-                thermal_layers={
-                    "dz": [0.2, 0.1, 0.1, 0.5, 1.6],
-                    "k": [1.2, 1.1, 1.1, 1.5, 1.6],
-                    "rho_cp": [1.2e6, 1.1e6, 1.1e6, 1.5e6, 1.6e6]
-                }
-            )
-            
-        # Should have no warnings
-        building_warnings = [
-            warn for warn in w
-            if "Missing critical building parameters" in str(warn.message)
-        ]
-        thermal_warnings = [
-            warn for warn in w
-            if "Missing critical thermal layer parameters" in str(warn.message)
-        ]
-        
-        assert len(building_warnings) == 0, "Should not warn with complete building parameters"
-        assert len(thermal_warnings) == 0, "Should not warn with complete thermal parameters"
-    
-    def test_minimal_config_creation(self):
+    def test_minimal_config_creation_no_warnings(self):
         """Test creating a minimal SUEWSConfig doesn't generate spurious warnings."""
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -147,8 +56,7 @@ class TestSpuriousWarnings:
             # Create minimal config
             config = SUEWSConfig(
                 sites=[{
-                    "name": "test",
-                    "gridiv": 1,
+                    "site_id": "test",
                     "properties": {
                         "lat": {"value": 51.5},
                         "lng": {"value": -0.1},
@@ -158,13 +66,65 @@ class TestSpuriousWarnings:
                 }]
             )
         
-        # Filter out legitimate warnings (missing params) and check for spurious ones
-        # Spurious warnings would come from internal validation during import/default creation
+        # Should not have spurious warnings during creation
+        # (Validation warnings only appear when explicitly run)
         spurious_warnings = [
             warn for warn in w
             if "lambda" in str(warn.filename) or 
                "default_factory" in str(warn.message) or
-               warn.lineno == -1  # Internal pydantic warnings often have -1 lineno
+               warn.lineno == -1  # Internal pydantic warnings
         ]
         
         assert len(spurious_warnings) == 0, f"Found {len(spurious_warnings)} spurious warnings"
+    
+    def test_yaml_loading_no_spurious_warnings(self):
+        """Test that loading from YAML only shows intentional validation warnings."""
+        import tempfile
+        from pathlib import Path
+        import logging
+        import io
+        
+        yaml_content = """
+sites:
+  - site_id: test_site
+    properties:
+      lat: {value: 51.5}
+      lng: {value: -0.1}
+      alt: {value: 10.0}
+      timezone: {value: 0}
+"""
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+            f.write(yaml_content)
+            yaml_path = Path(f.name)
+        
+        try:
+            # Capture all warnings
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                
+                # Also capture logging output
+                log_capture = io.StringIO()
+                handler = logging.StreamHandler(log_capture)
+                handler.setLevel(logging.WARNING)
+                logger = logging.getLogger('SuPy')
+                original_handlers = logger.handlers.copy()
+                logger.handlers.clear()
+                logger.addHandler(handler)
+                
+                try:
+                    config = SUEWSConfig.from_yaml(yaml_path)
+                    log_output = log_capture.getvalue()
+                finally:
+                    logger.removeHandler(handler)
+                    logger.handlers = original_handlers
+            
+            # Check warnings are appropriate
+            # Should have no Python warnings
+            assert len(w) == 0, f"Got {len(w)} Python warnings"
+            
+            # Should have validation summary in log (not a spurious warning)
+            assert "VALIDATION SUMMARY" in log_output
+            
+        finally:
+            yaml_path.unlink()
