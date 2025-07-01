@@ -80,7 +80,7 @@ sites:
             log_output = log_capture.getvalue()
             assert "VALIDATION SUMMARY" in log_output
             assert "Missing building parameters" in log_output
-            assert "generate_annotated_yaml" in log_output
+            assert "will shortly be generated" in log_output
             
             logger.removeHandler(handler)
             
