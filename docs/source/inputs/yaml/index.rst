@@ -74,12 +74,22 @@ In addition to the YAML configuration file, SUEWS works with input and output da
   The ``output_file`` parameter now supports advanced configuration:
   
   1. **Output format**: Choose between 'txt' (traditional text files) or 'parquet' (efficient columnar format)
-  2. **Output frequency**: Specify custom output frequency (must be multiple of timestep)
+  2. **Output frequency**: Specify custom output frequency in seconds
+     - Single value: e.g., ``freq: 3600`` for hourly output
+     - Must be a multiple of the model timestep
   3. **Output groups**: Select which groups to save (txt format only)
+  
+  .. note::
+     **Backward Compatibility**: When using a simple string value for ``output_file`` (e.g., ``output_file: "output.txt"``), 
+     SUEWS will use default settings: txt format, hourly output (3600s), and save only the SUEWS and DailyState groups. 
+     This ensures compatibility with existing configuration files.
   
   Example configurations:
   
   .. code-block:: yaml
+  
+     # Simple backward-compatible configuration (saves only SUEWS and DailyState)
+     output_file: "output.txt"
   
      # Parquet output with hourly data
      output_file:
@@ -90,7 +100,39 @@ In addition to the YAML configuration file, SUEWS works with input and output da
      output_file:
        format: txt
        freq: 1800
-       groups: ["SUEWS", "DailyState", "ESTM"]
+       groups: ["SUEWS", "DailyState", "debug"]
+
+  **Output File Naming Convention**:
+  
+  - **Text format**: 
+    
+    - Regular groups: ``{site_name}_{year}_{group}_{freq_min}.txt``
+      
+      - ``site_name``: Name from site configuration  
+      - ``year``: Year of simulation
+      - ``group``: Output group name (SUEWS, RSL, BL, debug, etc.)
+      - ``freq_min``: Output frequency in minutes
+      - Example: ``London_KCL_2020_SUEWS_60.txt``
+    
+    - DailyState: ``{site_name}_{year}_DailyState.txt``
+      
+      - No frequency suffix as it always contains daily data
+      - Example: ``London_KCL_2020_DailyState.txt``
+  
+  - **Parquet format**: 
+    
+    - Output data: ``{site_name}_SUEWS_output.parquet``
+      
+      - All groups and frequencies saved in a single file
+      - Contains all years of simulation data
+      - Example: ``London_KCL_SUEWS_output.parquet``
+    
+    - Final state: ``{site_name}_SUEWS_state_final.parquet``
+      
+      - Final model state for restart runs
+      - Example: ``London_KCL_SUEWS_state_final.parquet``
+    
+    Note: Parquet format does not split by year - all simulation data is in one file
 
 For detailed information about:
 
