@@ -39,7 +39,7 @@ from timezonefinder import TimezoneFinder
 import pytz
 
 from .._env import logger_supy
-from .yaml_annotator import YAMLAnnotator
+from .yaml_annotator_json import JsonYamlAnnotator as YAMLAnnotator
 
 try:
     from ..validation import (
@@ -1081,7 +1081,7 @@ class SUEWSConfig(BaseModel):
     def _collect_validation_issues(self, site: Site, site_name: str, site_index: int, annotator: YAMLAnnotator) -> None:
         """Collect validation issues for annotation."""
         
-        if not site.properties:
+        if not hasattr(site, 'properties') or not site.properties:
             return
         
         # Check conductance
