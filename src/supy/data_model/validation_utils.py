@@ -1,7 +1,10 @@
 """Validation utilities for SUEWS data models."""
 
 import warnings
-from typing import List, Dict
+from typing import List, Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .type import RefValue
 
 
 def warn_missing_params(
@@ -45,7 +48,17 @@ def check_missing_params(
 
     for param_name, description in params_dict.items():
         value = getattr(instance, param_name)
+        
+        # Check if value is None or if it's a RefValue with None value
+        is_missing = False
         if value is None:
+            is_missing = True
+        elif hasattr(value, 'value') and hasattr(value, 'ref'):
+            # This is likely a RefValue object
+            if value.value is None:
+                is_missing = True
+        
+        if is_missing:
             missing_params.append(f"{param_name} ({description})")
 
     return missing_params
