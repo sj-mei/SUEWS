@@ -138,6 +138,11 @@ uv run make test  # No activation needed!
 - **For Fortran changes**: `make clean && make dev && make test`
 - **Quick tests**: `pytest test/test_supy.py -v`
 
+#### When to Rebuild (make dev)
+- **Not needed**: If supy is already installed and you're only changing Python code
+- **Needed**: After Fortran changes, when switching branches, or first time setup
+- **Full rebuild (make clean && make dev)**: Only when tests fail unexpectedly or after major changes
+
 See:
 - `.claude/howto/setup-worktree.md` for complete setup workflows
 - `.claude/howto/setup-environment.md` for all environment options
@@ -219,7 +224,12 @@ When working in a git worktree or on a specific feature branch, check for branch
    source .venv/bin/activate  # Activate the worktree's venv
    # Or use uv run commands without activation
    
-   make dev  # Ensure build is ready
+   # Check if supy is already installed locally
+   if python -c "import supy" 2>/dev/null; then
+       echo "✓ supy already installed, skipping rebuild"
+   else
+       make dev  # Initial build
+   fi
    ```
 
 2. **During Development**
@@ -229,7 +239,12 @@ When working in a git worktree or on a specific feature branch, check for branch
 
 3. **Before Committing**
    ```bash
-   make clean && make dev && make test  # Full rebuild and test
+   # For Python-only changes:
+   make test  # Usually sufficient
+   
+   # For Fortran changes or if tests fail unexpectedly:
+   make clean && make dev && make test  # Full rebuild
+   
    # Only commit if all tests pass!
    ```
 
