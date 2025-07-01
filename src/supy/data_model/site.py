@@ -6,7 +6,6 @@ from .type import init_df_state
 from .validation_utils import (
     warn_missing_params, 
     check_missing_params,
-    suppress_internal_validation_warnings,
     validate_only_when_complete
 )
 from .surface import (
@@ -124,34 +123,6 @@ class Conductance(BaseModel):
     )
 
     ref: Optional[Reference] = Reference(ref="Test ref", DOI="test doi", ID="test id")
-
-    @model_validator(mode="after")
-    @suppress_internal_validation_warnings
-    def check_missing_conductance_params(self) -> "Conductance":
-        """Check for missing critical conductance parameters and issue warnings."""
-        # Check critical conductance parameters
-        critical_params = {
-            "g_max": "Maximum surface conductance",
-            "g_k": "Conductance parameter for solar radiation",
-            "g_sm": "Conductance parameter for soil moisture",
-            "s1": "Lower soil moisture threshold",
-            "s2": "Soil moisture dependence parameter",
-        }
-
-        missing_params = check_missing_params(
-            critical_params,
-            self,
-            "surface conductance",
-            "evapotranspiration calculations",
-        )
-        warn_missing_params(
-            missing_params,
-            "surface conductance",
-            "evapotranspiration calculations",
-            stacklevel=2,
-        )
-
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -589,27 +560,6 @@ class VegetatedSurfaceProperties(SurfaceProperties):
             raise ValueError(
                 f"alb_min (input {alb_min_val}) must be less than or equal to alb_max (entered {alb_max_val})."
             )
-        return self
-
-    @model_validator(mode="after")
-    @suppress_internal_validation_warnings
-    def check_missing_vegetation_params(self) -> "VegetatedSurfaceProperties":
-        """Check for missing critical vegetation parameters and issue warnings."""
-        # Check critical vegetation parameters
-        critical_params = {
-            "beta_bioco2": "Biogenic CO2 exchange coefficient",
-            "alpha_bioco2": "Biogenic CO2 exchange coefficient",
-            "resp_a": "Respiration coefficient",
-            "resp_b": "Respiration coefficient",
-        }
-
-        missing_params = check_missing_params(
-            critical_params, self, "vegetation", "CO2 flux calculations"
-        )
-        warn_missing_params(
-            missing_params, "vegetation", "CO2 flux calculations", stacklevel=2
-        )
-
         return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:

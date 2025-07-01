@@ -13,7 +13,6 @@ import warnings
 from .type import RefValue, Reference, FlexibleRefValue
 from .validation_utils import (
     warn_missing_params,
-    suppress_internal_validation_warnings,
     validate_only_when_complete
 )
 
@@ -50,26 +49,6 @@ class ThermalLayers(BaseModel):
     )
 
     ref: Optional[Reference] = None
-
-    @model_validator(mode="after")
-    @suppress_internal_validation_warnings
-    def check_missing_thermal_params(self) -> "ThermalLayers":
-        """Check for missing critical thermal layer parameters and issue warnings."""
-        missing_params = []
-
-        # Check if all thermal parameters are None
-        if self.dz is None:
-            missing_params.append("dz (Layer thickness)")
-        if self.k is None:
-            missing_params.append("k (Thermal conductivity)")
-        if self.rho_cp is None:
-            missing_params.append("rho_cp (Volumetric heat capacity)")
-
-        warn_missing_params(
-            missing_params, "thermal layer", "heat storage calculations", stacklevel=2
-        )
-
-        return self
 
     def to_df_state(
         self,
@@ -863,36 +842,6 @@ class BldgsProperties(
     )
 
     ref: Optional[Reference] = None
-
-    @model_validator(mode="after")
-    @suppress_internal_validation_warnings
-    def check_missing_building_params(self) -> "BldgsProperties":
-        """Check for missing critical building parameters and issue warnings."""
-        # Extract sfr value
-        sfr_val = self.sfr.value if isinstance(self.sfr, RefValue) else self.sfr
-        
-        # Only check if building fraction is significant
-        if sfr_val is None or sfr_val <= 0.05:
-            return self
-        
-        # Check for missing parameters
-        missing_params = []
-        
-        if self.bldgh is None:
-            missing_params.append("bldgh (Building height)")
-        if self.faibldg is None:
-            missing_params.append("faibldg (Frontal area index)")
-
-        if missing_params:
-            warnings.warn(
-                f"Missing critical building parameters for a surface with {sfr_val:.1%} building fraction:\n"
-                f"  - " + "\n  - ".join(missing_params) + "\n"
-                f"These parameters are important for aerodynamic calculations.",
-                UserWarning,
-                stacklevel=2,
-            )
-
-        return self
 
     def validate_rsl_zd_range(self) -> "BldgsProperties":
         """Validate FAI to warn about potential negative displacement height.
