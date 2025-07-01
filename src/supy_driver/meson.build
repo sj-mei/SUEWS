@@ -246,14 +246,12 @@ incdir_numpy = run_command(
   check: true,
 ).stdout().strip()
 
-inc_np = include_directories(incdir_numpy)
-
 # this is the path to the f2py source code - better compatibility with older numpy versions
 incdir_f2py = incdir_numpy / '..' / '..' / 'f2py' / 'src'
-inc_f2py = include_directories(incdir_f2py)
 fortranobject_c = incdir_f2py / 'fortranobject.c'
 
-inc_np = include_directories(incdir_numpy, incdir_f2py)
+# Create compiler arguments for numpy include directories
+numpy_inc_args = ['-I' + incdir_numpy, '-I' + incdir_f2py]
 
 # gh-25000
 dep_quadmath = fortran_compiler.find_library('quadmath', required: false)
@@ -263,11 +261,11 @@ lib_fortranobject = static_library(
   '_fortranobject',
   fortranobject_c,
   dependencies: dep_py,
-  include_directories: [inc_np, inc_f2py],
+  c_args: numpy_inc_args,
 )
 dep_fortranobject = declare_dependency(
   link_with: lib_fortranobject,
-  include_directories: [inc_np, inc_f2py],
+  compile_args: numpy_inc_args,
 )
 
 dep_lib_src = declare_dependency(
@@ -308,10 +306,9 @@ ext_supy_driver = py.extension_module(
     fortranobject_c,
   ],
   include_directories: [
-    inc_np,
     inc_suews_mod, # the path is relative to the current directory where the meson.build file is located
   ],
-  c_args: c_args_windows,
+  c_args: c_args_windows + numpy_inc_args,
   dependencies: [
     dep_py,
     dep_fortranobject,
