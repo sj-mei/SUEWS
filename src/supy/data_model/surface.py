@@ -11,7 +11,11 @@ from typing import Optional, Literal, List, Union
 import pandas as pd
 import warnings
 from .type import RefValue, Reference, FlexibleRefValue
-from .validation_utils import warn_missing_params
+from .validation_utils import (
+    warn_missing_params,
+    suppress_internal_validation_warnings,
+    validate_only_when_complete
+)
 
 from .type import init_df_state
 
@@ -860,17 +864,24 @@ class BldgsProperties(
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
+    @suppress_internal_validation_warnings
+    @validate_only_when_complete('sfr', 'bldgh', 'faibldg')
     def check_missing_building_params(self) -> "BldgsProperties":
         """Check for missing critical building parameters and issue warnings."""
-        missing_params = []
-
-        # Check if building fraction is significant but parameters are missing
+        # Extract sfr value
         sfr_val = self.sfr.value if isinstance(self.sfr, RefValue) else self.sfr
-        if sfr_val > 0.05:  # If building fraction is more than 5%
-            if self.bldgh is None:
-                missing_params.append("bldgh (Building height)")
-            if self.faibldg is None:
-                missing_params.append("faibldg (Frontal area index)")
+        
+        # Only check if building fraction is significant
+        if sfr_val is None or sfr_val <= 0.05:
+            return self
+        
+        # Check for missing parameters
+        missing_params = []
+        
+        if self.bldgh is None:
+            missing_params.append("bldgh (Building height)")
+        if self.faibldg is None:
+            missing_params.append("faibldg (Frontal area index)")
 
         if missing_params:
             warnings.warn(

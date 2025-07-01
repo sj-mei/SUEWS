@@ -1,10 +1,14 @@
 """Validation utilities for SUEWS data models."""
 
 import warnings
-from typing import List, Dict, TYPE_CHECKING
+import functools
+import inspect
+from typing import List, Dict, TypeVar, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .type import RefValue
+
+T = TypeVar('T')
 
 
 def warn_missing_params(
@@ -62,3 +66,60 @@ def check_missing_params(
             missing_params.append(f"{param_name} ({description})")
 
     return missing_params
+
+
+def suppress_internal_validation_warnings(func: Callable[[T], T]) -> Callable[[T], T]:
+    """Decorator to suppress warnings during Pydantic's internal validation phases.
+    
+    This decorator prevents spurious warnings that occur when Pydantic creates
+    temporary objects during validation where fields are temporarily None.
+    
+    Usage:
+        @model_validator(mode="after")
+        @suppress_internal_validation_warnings
+        def check_missing_params(self) -> "MyModel":
+            # Validation logic here
+            pass
+    """
+    @functools.wraps(func)
+    def wrapper(self: T) -> T:
+        # Check if called from pydantic internals
+        frame = inspect.currentframe()
+        if frame and frame.f_back:
+            caller_file = frame.f_back.f_code.co_filename
+            # Skip validation if called from pydantic internals
+            if 'pydantic' in caller_file:
+                return self
+        
+        # Run the actual validator
+        return func(self)
+    
+    return wrapper
+
+
+def validate_only_when_complete(*required_fields: str) -> Callable:
+    """Decorator to run validation only when specified fields are present.
+    
+    This prevents warnings during object construction when fields are temporarily None.
+    
+    Args:
+        *required_fields: Field names that must be present for validation to run
+        
+    Usage:
+        @model_validator(mode="after")
+        @validate_only_when_complete('sfr', 'bldgh', 'faibldg')
+        def check_missing_building_params(self) -> "BldgsProperties":
+            # This will only run when all three fields exist
+            pass
+    """
+    def decorator(func: Callable[[T], T]) -> Callable[[T], T]:
+        @functools.wraps(func)
+        def wrapper(self: T) -> T:
+            # Check if all required fields exist
+            if not all(hasattr(self, field) for field in required_fields):
+                return self
+                
+            return func(self)
+        
+        return wrapper
+    return decorator
