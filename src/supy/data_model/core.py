@@ -28,6 +28,7 @@ import ast
 import csv
 import os
 from copy import deepcopy
+from pathlib import Path
 import warnings
 
 from .model import Model
@@ -861,17 +862,19 @@ class SUEWSConfig(BaseModel):
         yaml_path = getattr(self, '_yaml_path', None)
         
         if yaml_path:
+            # When loaded from YAML, we know the source file
+            annotated_filename = Path(yaml_path).stem + "_annotated.yml"
             fix_instructions = (
-                f"💡 To see detailed issues and fixes:\n"
-                f"   Run: config.generate_annotated_yaml('{yaml_path}')\n"
-                f"   Then open the generated annotated file for specific guidance"
+                f"To see detailed fixes for each parameter:\n"
+                f"   An annotated YAML file '{annotated_filename}' can be generated\n"
+                f"   with inline guidance showing exactly where to add missing parameters"
             )
         else:
             fix_instructions = (
-                f"💡 To see detailed issues and fixes:\n"
+                f"To see detailed fixes for each parameter:\n"
                 f"   1. Save your configuration to a YAML file\n"
-                f"   2. Run: config.generate_annotated_yaml('your_config.yml')\n"
-                f"   3. Open the generated annotated file for specific guidance"
+                f"   2. Call config.generate_annotated_yaml('your_config.yml')\n"
+                f"   3. Review the generated annotated file for inline guidance"
             )
         
         logger_supy.warning(
