@@ -126,6 +126,7 @@ class Conductance(BaseModel):
     ref: Optional[Reference] = Reference(ref="Test ref", DOI="test doi", ID="test id")
 
     @model_validator(mode="after")
+    @suppress_internal_validation_warnings
     def check_missing_conductance_params(self) -> "Conductance":
         """Check for missing critical conductance parameters and issue warnings."""
         # Check critical conductance parameters
@@ -591,6 +592,7 @@ class VegetatedSurfaceProperties(SurfaceProperties):
         return self
 
     @model_validator(mode="after")
+    @suppress_internal_validation_warnings
     def check_missing_vegetation_params(self) -> "VegetatedSurfaceProperties":
         """Check for missing critical vegetation parameters and issue warnings."""
         # Check critical vegetation parameters

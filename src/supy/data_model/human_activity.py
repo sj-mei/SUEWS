@@ -436,6 +436,7 @@ class CO2Params(BaseModel):  # TODO: May need to add the RefValue to the profile
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
+    @suppress_internal_validation_warnings
     def check_missing_co2_params(self) -> "CO2Params":
         """Check for missing critical CO2 parameters and issue warnings."""
         # Check critical CO2 emission parameters

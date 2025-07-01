@@ -814,7 +814,7 @@ class SUEWSConfig(BaseModel):
         json_schema_extra={"display_name": "Model Parameters"},
     )
     sites: List[Site] = Field(
-        default=[Site()],
+        default_factory=lambda: [Site()],
         description="List of sites to simulate",
         min_length=1,
         json_schema_extra={"display_name": "Sites"},

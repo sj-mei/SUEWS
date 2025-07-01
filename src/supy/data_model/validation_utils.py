@@ -83,13 +83,32 @@ def suppress_internal_validation_warnings(func: Callable[[T], T]) -> Callable[[T
     """
     @functools.wraps(func)
     def wrapper(self: T) -> T:
-        # Check if called from pydantic internals
+        # Get the current call stack
         frame = inspect.currentframe()
-        if frame and frame.f_back:
-            caller_file = frame.f_back.f_code.co_filename
-            # Skip validation if called from pydantic internals
-            if 'pydantic' in caller_file:
-                return self
+        if not frame:
+            return func(self)
+            
+        # Check if we're being called during default factory execution
+        # This is the key indicator of spurious warnings
+        depth = 0
+        current_frame = frame
+        
+        while current_frame and depth < 20:
+            if current_frame.f_code:
+                filename = current_frame.f_code.co_filename
+                function = current_frame.f_code.co_name
+                
+                # Check if we're in a default factory lambda
+                if function == '<lambda>' and 'core.py' in filename:
+                    # This is likely the default_factory=lambda: [Site()] case
+                    return self
+                    
+                # Check for model construction during class definition
+                if function == 'SUEWSConfig' and '<module>' in str(current_frame.f_back.f_code.co_name if current_frame.f_back else ''):
+                    return self
+                    
+            current_frame = current_frame.f_back
+            depth += 1
         
         # Run the actual validator
         return func(self)

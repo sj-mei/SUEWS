@@ -52,6 +52,7 @@ class ThermalLayers(BaseModel):
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
+    @suppress_internal_validation_warnings
     def check_missing_thermal_params(self) -> "ThermalLayers":
         """Check for missing critical thermal layer parameters and issue warnings."""
         missing_params = []
@@ -864,6 +865,7 @@ class BldgsProperties(
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
+    @suppress_internal_validation_warnings
     def check_missing_building_params(self) -> "BldgsProperties":
         """Check for missing critical building parameters and issue warnings."""
         # Extract sfr value
