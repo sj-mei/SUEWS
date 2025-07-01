@@ -1,11 +1,11 @@
 """
-Simplified parameter validation tests for the new top-down approach.
+Tests for top-down parameter validation approach.
 
-This replaces the legacy component-level validation tests with tests that:
-1. Verify validation happens at config level
-2. Test the validation summary functionality  
-3. Test annotated YAML generation
-4. Ensure no spurious warnings during normal operations
+This module tests the new validation system where:
+1. Validation happens at SUEWSConfig level (not components)
+2. Clear validation summaries are provided to users  
+3. Annotated YAML files help fix missing parameters
+4. No spurious warnings during normal operations
 """
 
 import pytest
