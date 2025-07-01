@@ -316,7 +316,7 @@ def validate_suews_config_conditional(
     validated_methods = set()
     skipped_methods = set()
 
-    sites = config_data.get("site", [])
+    sites = config_data.get("sites", [])
     physics = config_data.get("model", {}).get("physics", {})
 
     # Diagnostic method validation

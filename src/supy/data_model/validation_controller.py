@@ -249,7 +249,7 @@ class ValidationController(BaseModel):
         errors = []
 
         # Check site parameters for RST requirements
-        sites = self.config_data.get("site", [])
+        sites = self.config_data.get("sites", [])
         for i, site in enumerate(sites):
             site_props = site.get("properties", {})
 
@@ -274,7 +274,7 @@ class ValidationController(BaseModel):
         """Validate parameters specific to MOST (Monin-Obukhov Similarity Theory) method."""
         errors = []
 
-        sites = self.config_data.get("site", [])
+        sites = self.config_data.get("sites", [])
         for i, site in enumerate(sites):
             site_props = site.get("properties", {})
 
@@ -299,7 +299,7 @@ class ValidationController(BaseModel):
         """Validate parameters for variable roughness calculation."""
         errors = []
 
-        sites = self.config_data.get("site", [])
+        sites = self.config_data.get("sites", [])
         for i, site in enumerate(sites):
             site_props = site.get("properties", {})
 
@@ -324,7 +324,7 @@ class ValidationController(BaseModel):
         """Validate parameters for SPARTACUS radiation scheme."""
         errors = []
 
-        sites = self.config_data.get("site", [])
+        sites = self.config_data.get("sites", [])
         for i, site in enumerate(sites):
             site_props = site.get("properties", {})
 
@@ -341,7 +341,7 @@ class ValidationController(BaseModel):
         """Validate parameters for advanced emissions calculations."""
         errors = []
 
-        sites = self.config_data.get("site", [])
+        sites = self.config_data.get("sites", [])
         for i, site in enumerate(sites):
             # Advanced emissions need population and traffic data
             site_props = site.get("properties", {})
@@ -360,7 +360,7 @@ class ValidationController(BaseModel):
         """Validate parameters for ESTM (Element Surface Temperature Method)."""
         errors = []
 
-        sites = self.config_data.get("site", [])
+        sites = self.config_data.get("sites", [])
         for i, site in enumerate(sites):
             site_props = site.get("properties", {})
 
