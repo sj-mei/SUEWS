@@ -864,8 +864,6 @@ class BldgsProperties(
     ref: Optional[Reference] = None
 
     @model_validator(mode="after")
-    @suppress_internal_validation_warnings
-    @validate_only_when_complete('sfr', 'bldgh', 'faibldg')
     def check_missing_building_params(self) -> "BldgsProperties":
         """Check for missing critical building parameters and issue warnings."""
         # Extract sfr value
