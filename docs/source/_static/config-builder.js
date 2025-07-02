@@ -7,6 +7,118 @@ let validationModal = null;
 
 console.log('config-builder.js loaded');
 
+// Define which fields are considered "advanced"
+const advancedSections = ['lumps', 'spartacus', 'stebbs', 'beers', 'evetr', 'water', 'snow', 'bldgh', 'irrigation', 'anthropogenic_heat'];
+const advancedFields = ['zdm_in', 'z0m_in', 'lambda_c', 'lambda_b', 'lambda_p', 'radmeltfact', 'preciplimitalb', 'preciplimitcap'];
+
+// Function to perform search
+function performSearch(searchTerm) {
+    const formFields = document.querySelectorAll('.form-field, .card');
+    
+    if (!searchTerm) {
+        // Clear all search classes
+        formFields.forEach(field => {
+            field.classList.remove('search-highlight', 'search-no-match');
+        });
+        updateFieldVisibility();
+        return;
+    }
+    
+    const lowerSearch = searchTerm.toLowerCase();
+    
+    formFields.forEach(field => {
+        const label = field.querySelector('label');
+        const description = field.querySelector('.field-description, .description-icon');
+        const cardTitle = field.querySelector('.card-header h5, .section-title');
+        
+        let textContent = '';
+        if (label) textContent += label.textContent.toLowerCase() + ' ';
+        if (description) textContent += (description.textContent || description.getAttribute('title') || '').toLowerCase() + ' ';
+        if (cardTitle) textContent += cardTitle.textContent.toLowerCase() + ' ';
+        
+        if (textContent.includes(lowerSearch)) {
+            field.classList.remove('search-no-match');
+            field.classList.add('search-highlight');
+            
+            // Expand parent sections if needed
+            let parent = field.closest('.collapse');
+            while (parent) {
+                parent.classList.add('show');
+                parent = parent.parentElement.closest('.collapse');
+            }
+        } else {
+            field.classList.add('search-no-match');
+            field.classList.remove('search-highlight');
+        }
+    });
+}
+
+// Function to format values for display (replace null with meaningful defaults)
+function formatDisplayValue(value, schema) {
+    if (value === null || value === undefined) {
+        // Return meaningful defaults based on type
+        if (schema && schema.default !== undefined) {
+            return schema.default;
+        }
+        if (schema && schema.type === 'number') {
+            return 0;
+        }
+        if (schema && schema.type === 'string') {
+            return '';
+        }
+        if (schema && schema.type === 'boolean') {
+            return false;
+        }
+        if (schema && schema.type === 'array') {
+            return [];
+        }
+        return '';
+    }
+    return value;
+}
+
+// Function to update field visibility based on mode
+function updateFieldVisibility() {
+    const isAdvancedMode = document.body.classList.contains('advanced-mode');
+    const searchActive = document.getElementById('parameterSearch')?.value.trim() !== '';
+    
+    // Don't hide fields if search is active
+    if (searchActive) return;
+    
+    document.querySelectorAll('.card').forEach(card => {
+        const cardHeader = card.querySelector('.card-header h5');
+        if (!cardHeader) return;
+        
+        const sectionName = cardHeader.textContent.toLowerCase();
+        const isAdvancedSection = advancedSections.some(section => 
+            sectionName.includes(section.toLowerCase())
+        );
+        
+        if (isAdvancedSection && !isAdvancedMode) {
+            card.style.display = 'none';
+        } else {
+            card.style.display = '';
+        }
+    });
+    
+    // Hide specific advanced fields
+    document.querySelectorAll('.form-field').forEach(field => {
+        const label = field.querySelector('label');
+        if (!label) return;
+        
+        const fieldName = label.textContent.toLowerCase();
+        const isAdvancedField = advancedFields.some(advField => 
+            fieldName.includes(advField.replace('_', ' '))
+        );
+        
+        if (isAdvancedField && !isAdvancedMode) {
+            field.classList.add('advanced-only');
+        } else {
+            field.classList.remove('advanced-only');
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM loaded, initializing application...');
     console.log('Preview container exists:', !!document.getElementById('preview-container'));
@@ -53,6 +165,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Set up event listeners for buttons if they exist
     setupEventListeners();
+    
+    // Show welcome message for first-time users
+    const hasVisited = localStorage.getItem('suews-config-builder-visited');
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    if (!hasVisited && welcomeMessage) {
+        welcomeMessage.style.display = 'block';
+        localStorage.setItem('suews-config-builder-visited', 'true');
+    }
 
     // Load the schema with a small delay to ensure DOM is ready
     setTimeout(() => {
@@ -97,6 +217,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Add a new function to set up event listeners
 function setupEventListeners() {
+    // Advanced mode toggle
+    const advancedModeToggle = document.getElementById('advancedModeToggle');
+    if (advancedModeToggle) {
+        advancedModeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('advanced-mode');
+                localStorage.setItem('suews-advanced-mode', 'true');
+            } else {
+                document.body.classList.remove('advanced-mode');
+                localStorage.setItem('suews-advanced-mode', 'false');
+            }
+            updateFieldVisibility();
+        });
+        
+        // Restore saved preference
+        const savedMode = localStorage.getItem('suews-advanced-mode');
+        if (savedMode === 'true') {
+            advancedModeToggle.checked = true;
+            document.body.classList.add('advanced-mode');
+        }
+    }
+    
+    // Parameter search
+    const parameterSearch = document.getElementById('parameterSearch');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    
+    if (parameterSearch) {
+        let searchTimeout;
+        parameterSearch.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const searchTerm = this.value.trim();
+            
+            // Show/hide clear button
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            }
+            
+            // Debounce search
+            searchTimeout = setTimeout(() => {
+                performSearch(searchTerm);
+            }, 300);
+        });
+    }
+    
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            parameterSearch.value = '';
+            clearSearchBtn.style.display = 'none';
+            performSearch('');
+        });
+    }
+    
     // Import button
     const importBtn = document.getElementById('importBtn');
     if (importBtn) {
@@ -423,6 +595,9 @@ function generateForm() {
 
     // Log completion
     console.log('Form generation completed');
+    
+    // Update field visibility based on advanced mode
+    updateFieldVisibility();
 }
 
 // Update the generateModelFields function to use the schema
@@ -974,11 +1149,36 @@ function getInputType(propSchema) {
 function getEnumOptions(propSchema) {
     if (!propSchema.enum) return null;
 
+    // Try to parse descriptions from the schema description field
+    let enumDescriptions = {};
+    if (propSchema.description && propSchema.description.includes('\n')) {
+        // Parse multi-line descriptions that follow pattern "0: NAME - Description"
+        const lines = propSchema.description.split('\n');
+        lines.forEach(line => {
+            const match = line.match(/^(\d+):\s*([A-Z_]+)\s*-\s*(.+)$/);
+            if (match) {
+                const [, num, name, desc] = match;
+                enumDescriptions[parseInt(num)] = `${num}: ${name} - ${desc.trim()}`;
+            }
+        });
+    }
+
     return propSchema.enum.map((value, index) => {
         let text = value.toString();
-        if (propSchema.enumNames && propSchema.enumNames[index]) {
+        
+        // First check for parsed descriptions from schema
+        if (enumDescriptions[value]) {
+            text = enumDescriptions[value];
+        }
+        // Then check for enumNames
+        else if (propSchema.enumNames && propSchema.enumNames[index]) {
             text = propSchema.enumNames[index];
         }
+        // For simple enums, try to make them more readable
+        else if (propSchema.title && propSchema.title.toLowerCase().includes('method')) {
+            text = `Option ${value}`;
+        }
+        
         return { value, text };
     });
 }

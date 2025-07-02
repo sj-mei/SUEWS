@@ -555,6 +555,57 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* UX Controls Bar */
+        .ux-controls-bar {
+            background-color: #f8f9fa;
+            padding: 1rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .ux-controls-bar .form-check-label {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .ux-controls-bar .input-group {
+            max-width: 400px;
+            margin-left: auto;
+        }
+        
+        /* Advanced mode styling */
+        .basic-only {
+            display: block;
+        }
+        
+        .advanced-only {
+            display: none;
+        }
+        
+        body.advanced-mode .basic-only {
+            display: none;
+        }
+        
+        body.advanced-mode .advanced-only {
+            display: block;
+        }
+        
+        /* Search highlighting */
+        .search-highlight {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 4px;
+            padding: 2px;
+        }
+        
+        .search-no-match {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -659,6 +710,49 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="content-body">
+                <!-- Welcome Message for New Users -->
+                <div class="alert alert-info alert-dismissible fade show" role="alert" id="welcomeMessage" style="display: none;">
+                    <h5 class="alert-heading"><i class="fas fa-lightbulb"></i> Welcome to SUEWS Configuration Builder!</h5>
+                    <p class="mb-2">This tool helps you create configuration files for the SUEWS urban climate model. Here are some tips to get started:</p>
+                    <ul class="mb-2">
+                        <li><strong>Basic Mode (default):</strong> Shows only essential parameters - perfect for beginners</li>
+                        <li><strong>Advanced Mode:</strong> Toggle on to see all physics options and detailed parameters</li>
+                        <li><strong>Search:</strong> Use the search box to quickly find specific parameters</li>
+                        <li><strong>Help Icons:</strong> Hover over <i class="fas fa-info-circle text-muted"></i> for parameter descriptions</li>
+                    </ul>
+                    <p class="mb-0">Start by entering your site name and description in the General Settings, then navigate to Site Information to configure your location.</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- User Experience Controls -->
+                <div class="ux-controls-bar">
+                    <div class="container-fluid">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch d-inline-flex align-items-center">
+                                    <input class="form-check-input" type="checkbox" id="advancedModeToggle" role="switch">
+                                    <label class="form-check-label ms-2" for="advancedModeToggle">
+                                        <strong>Advanced Mode</strong>
+                                        <small class="text-muted d-block">Show all parameters and physics options</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="parameterSearch" 
+                                           placeholder="Search parameters..." 
+                                           aria-label="Search parameters">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" 
+                                            style="display: none;" title="Clear search">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Form Panel -->
                 <div class="form-panel" id="formPanel">
                     <div id="general-section" class="config-section active">
@@ -772,7 +866,7 @@
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ajv@6.12.6/dist/ajv.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="config-builder.js?v=10"></script>
+    <script src="config-builder.js?v=11"></script>
     <script>
         // Modern UI Controller for direct configuration builder
         document.addEventListener('DOMContentLoaded', () => {
