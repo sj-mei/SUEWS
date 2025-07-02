@@ -2284,17 +2284,17 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
         removeButton.innerHTML = '<i class="fas fa-times"></i> Remove';
         
         // Check if this is a vertical layer array
-        const isVerticalLayerArray = path.includes('vertical_layers') && 
+        const isVerticalLayerArrayRemove = path.includes('vertical_layers') && 
             (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
              path.includes('building_frac') || path.includes('building_scale') || 
              path.includes('roofs') || path.includes('walls'));
         
-        if (isVerticalLayerArray) {
+        if (isVerticalLayerArrayRemove) {
             removeButton.style.display = 'none';
         }
         
         removeButton.addEventListener('click', () => {
-            if (!isVerticalLayerArray) {
+            if (!isVerticalLayerArrayRemove) {
                 // Remove item from array
                 arrayData.splice(itemIndex, 1);
 
