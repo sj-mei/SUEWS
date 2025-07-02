@@ -257,6 +257,9 @@ fortranobject_c = incdir_f2py / 'fortranobject.c'
 # Combine the dependencies
 inc_np_dep = declare_dependency(compile_args: ['-I' + incdir_numpy, '-I' + incdir_f2py])
 
+# Create compiler arguments for numpy include directories (for backward compatibility)
+numpy_inc_args = ['-I' + incdir_numpy, '-I' + incdir_f2py]
+
 # gh-25000
 dep_quadmath = fortran_compiler.find_library('quadmath', required: false)
 
@@ -311,7 +314,7 @@ ext_supy_driver = py.extension_module(
   include_directories: [
     inc_suews_mod, # the path is relative to the current directory where the meson.build file is located
   ],
-  c_args: c_args_windows,
+  c_args: c_args_windows + numpy_inc_args,
   dependencies: [
     dep_py,
     dep_fortranobject,
