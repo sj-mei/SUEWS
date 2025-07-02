@@ -42,46 +42,16 @@ import pytz
 from .._env import logger_supy
 from .yaml_annotator_json import JsonYamlAnnotator as YAMLAnnotator
 
-try:
-    from ..validation import (
-        enhanced_from_yaml_validation,
-        enhanced_to_df_state_validation,
-    )
+_validation_available = False
+enhanced_from_yaml_validation = None
+enhanced_to_df_state_validation = None
 
-    _validation_available = True
-except ImportError:
-    try:
-        from .validation_controller import validate_suews_config_conditional
-
-        def enhanced_from_yaml_validation(config_data, strict=True):
-            result = validate_suews_config_conditional(
-                config_data, strict=False, verbose=True
-            )
-            if result.errors and strict:
-                error_msg = f"SUEWS Configuration Validation Failed: {len(result.errors)} errors\n"
-                error_msg += "\n".join(f"  - {err}" for err in result.errors)
-                raise ValueError(error_msg)
-            return result
-
-        def enhanced_to_df_state_validation(config_data, strict=False):
-            result = validate_suews_config_conditional(
-                config_data, strict=False, verbose=False
-            )
-            if result.errors and strict:
-                error_msg = (
-                    f"Configuration validation found {len(result.errors)} issues\n"
-                )
-                error_msg += "\n".join(f"  - {err}" for err in result.errors)
-                raise ValueError(error_msg)
-            return result
-
-        _validation_available = True
-    except ImportError:
-        _validation_available = False
-        enhanced_from_yaml_validation = None
-        enhanced_to_df_state_validation = None
 import os
 import warnings
+
+def _is_valid_layer_array(field) -> bool:
+    return hasattr(field, "value") and isinstance(field.value, list) and len(field.value) > 0
+
 
 
 class SUEWSConfig(BaseModel):
@@ -343,12 +313,16 @@ class SUEWSConfig(BaseModel):
         """Check thermal layer parameters. Returns True if issues found."""
         missing_params = []
 
-        if not hasattr(thermal_layers, "dz") or thermal_layers.dz is None:
+        def _is_valid_layer_array(field):
+            return hasattr(field, "value") and isinstance(field.value, list) and len(field.value) > 0
+
+        if not hasattr(thermal_layers, "dz") or not _is_valid_layer_array(thermal_layers.dz):
             missing_params.append("dz (Layer thickness)")
-        if not hasattr(thermal_layers, "k") or thermal_layers.k is None:
+        if not hasattr(thermal_layers, "k") or not _is_valid_layer_array(thermal_layers.k):
             missing_params.append("k (Thermal conductivity)")
-        if not hasattr(thermal_layers, "rho_cp") or thermal_layers.rho_cp is None:
-            missing_params.append("rho_cp (Volumetric heat capacity)")
+        if not hasattr(thermal_layers, "rho_cp") or not _is_valid_layer_array(thermal_layers.rho_cp):
+            missing_params.append("cp (Volumetric heat capacity)")
+
 
         if missing_params:
             self._validation_summary["total_warnings"] += len(missing_params)
@@ -517,19 +491,17 @@ class SUEWSConfig(BaseModel):
                             and surface.thermal_layers
                         ):
                             thermal = surface.thermal_layers
-                            if (
-                                not hasattr(thermal, "dz")
-                                or thermal.dz is None
-                                or not hasattr(thermal, "k")
-                                or thermal.k is None
-                                or not hasattr(thermal, "rho_cp")
-                                or thermal.rho_cp is None
-                            ):
+                        if (
+                            not _is_valid_layer_array(getattr(thermal, "dz", None)) or
+                            not _is_valid_layer_array(getattr(thermal, "k", None)) or
+                            not _is_valid_layer_array(getattr(thermal, "rho_cp", None))
+                        ):
+
                                 annotator.add_issue(
                                     path=f"{path}/thermal_layers",
                                     param="thermal_layers",
                                     message="Incomplete thermal layer properties",
-                                    fix="Add dz (thickness), k (conductivity), and rho_cp (heat capacity) arrays",
+                                    fix="Add dz (thickness), k (conductivity), and cp (heat capacity) arrays",
                                     level="WARNING",
                                 )
 
@@ -597,39 +569,13 @@ class SUEWSConfig(BaseModel):
         # Store yaml path in config data for later use
         config_data["_yaml_path"] = path
 
-        if (
-            use_conditional_validation and _validation_available
-        ):  # _validation_available is always FALSE -- need to fix this
-            # Step 1: Pre-validation with enhanced validation
-            try:
-                enhanced_from_yaml_validation(config_data, strict=strict)
-            except ValueError:
-                if strict:
-                    raise
-                # Continue with warnings already issued
-
-            # Step 2: Create config with conditional validation applied
-            try:
-                return cls(**config_data)
-            except Exception as e:
-                if strict:
-                    raise ValueError(
-                        f"Failed to create SUEWSConfig after conditional validation: {e}"
-                    )
-                else:
-                    warnings.warn(f"Config creation warning: {e}")
-                    # Try with model_construct to bypass strict validation
-                    return cls.model_construct(**config_data)
-        elif use_conditional_validation and not _validation_available:
-            warnings.warn(
-                "Conditional validation requested but not available. Using standard validation."
-            )
-            # Fall back to original behavior
+        if use_conditional_validation:
+            logger_supy.info("Using internal validation only (SUEWSConfig.validate_parameter_completeness).")
             return cls(**config_data)
         else:
-            # Original behavior - validate everything
-            logger_supy.info("Entering SUEWSConfig pydantic validator...")
-            return cls(**config_data)
+            logger_supy.info("Validation disabled by user. Loading without checks.")
+            return cls.model_construct(**config_data)
+
 
     def create_multi_index_columns(self, columns_file: str) -> pd.MultiIndex:
         """Create MultiIndex from df_state_columns.txt"""

@@ -26,6 +26,7 @@ from .hydro import WaterDistribution, StorageDrainParams
 
 
 class ThermalLayers(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
     dz: Optional[FlexibleRefValue(List[float])] = Field(
         default=None,
         description="Thickness of thermal layers from surface to depth",
@@ -41,6 +42,7 @@ class ThermalLayers(BaseModel):
     )
     rho_cp: Optional[FlexibleRefValue(List[float])] = Field(
         default=None,
+        alias="cp",
         description="Volumetric heat capacity of each thermal layer",
         json_schema_extra={
             "unit": "J m^-3 K^-1",
