@@ -112,8 +112,8 @@ sites:
             content = annotated_path.read_text()
             
             # Should have missing parameter annotations
-            assert "🔴 MISSING:" in content
-            assert "💡 ADD HERE:" in content
+            assert "[ERROR] MISSING:" in content
+            assert "[TIP] ADD HERE:" in content
             assert "bldgh:" in content  # Missing building height
             assert "faibldg:" in content  # Missing frontal area
             

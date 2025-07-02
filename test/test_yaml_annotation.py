@@ -60,8 +60,8 @@ sites:
             annotated_content = f.read()
         
         # Verify annotations are present
-        assert "🔴 MISSING:" in annotated_content
-        assert "💡 ADD HERE:" in annotated_content
+        assert "[ERROR] MISSING:" in annotated_content
+        assert "[TIP] ADD HERE:" in annotated_content
         
         # Verify specific missing parameters are annotated
         assert "bldgh:" in annotated_content
