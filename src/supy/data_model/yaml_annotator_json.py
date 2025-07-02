@@ -101,11 +101,11 @@ class JsonYamlAnnotator:
 # This file has been annotated with validation feedback.
 # 
 # Look for these markers:
-#   🔴 MISSING: Required parameters that must be added
-#   💡 ADD HERE: Ready-to-use parameter blocks
+#   [ERROR] MISSING: Required parameters that must be added
+#   [TIP] ADD HERE: Ready-to-use parameter blocks
 #
 # To fix your configuration:
-# 1. Search for "🔴 MISSING" markers
+# 1. Search for "[ERROR] MISSING" markers
 # 2. Uncomment the suggested parameter blocks
 # 3. Adjust values for your specific site
 # 4. Remove the comment markers after fixing
@@ -188,8 +188,8 @@ class JsonYamlAnnotator:
                     # This is an annotation
                     ann = value
                     indent_str = "  " * indent
-                    lines.append(f"{indent_str}# 🔴 MISSING: {ann['_message']}")
-                    lines.append(f"{indent_str}# 💡 ADD HERE:")
+                    lines.append(f"{indent_str}# [ERROR] MISSING: {ann['_message']}")
+                    lines.append(f"{indent_str}# [TIP] ADD HERE:")
                     
                     # Format the example
                     example = ann['_example']

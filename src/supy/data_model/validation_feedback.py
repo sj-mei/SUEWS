@@ -40,9 +40,9 @@ class ValidationIssue:
     def __str__(self):
         """Format issue for display."""
         level_symbol = {
-            ValidationLevel.ERROR: "❌",
-            ValidationLevel.WARNING: "⚠️ ",
-            ValidationLevel.INFO: "💡"
+            ValidationLevel.ERROR: "[FAILED]",
+            ValidationLevel.WARNING: "[WARNING] ",
+            ValidationLevel.INFO: "[TIP]"
         }[self.level]
         
         msg = f"{level_symbol} {self.location}: {self.message}"
@@ -98,7 +98,7 @@ class ValidationReport:
     def display(self, max_issues: int = 10, verbose: bool = False):
         """Display validation results in a user-friendly format."""
         if not self.issues:
-            print("✅ Configuration validation passed!")
+            print("[PASSED] Configuration validation passed!")
             return
         
         print("\n" + "="*60)
@@ -109,7 +109,7 @@ class ValidationReport:
         # Group by location for better readability
         for location in sorted(self._grouped_issues.keys()):
             location_issues = self._grouped_issues[location]
-            print(f"\n📍 {location}:")
+            print(f"\n[LOCATION] {location}:")
             
             # Show errors first, then warnings, then info
             for level in [ValidationLevel.ERROR, ValidationLevel.WARNING, ValidationLevel.INFO]:
@@ -130,7 +130,7 @@ class ValidationReport:
                     print(f"  ... and {remaining} more {level.value}(s)")
         
         if not verbose and sum(len(v) for v in self._grouped_issues.values()) > max_issues:
-            print(f"\n💡 Run with --verbose to see all {len(self.issues)} issues")
+            print(f"\n[TIP] Run with --verbose to see all {len(self.issues)} issues")
         
         print("\n" + "="*60)
     

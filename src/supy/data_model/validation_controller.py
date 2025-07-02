@@ -383,24 +383,24 @@ class ValidationController(BaseModel):
     def _print_validation_summary(self, result: ValidationResult) -> None:
         """Print a summary of validation results."""
         if result.errors:
-            print(f"\n❌ Validation FAILED: {len(result.errors)} errors found")
+            print(f"\n[FAILED] Validation FAILED: {len(result.errors)} errors found")
             for error in result.errors:
                 print(f"   • {error}")
         else:
-            print(f"\n✅ Validation PASSED: All active rules satisfied")
+            print(f"\n[PASSED] Validation PASSED: All active rules satisfied")
 
         if result.warnings:
-            print(f"\n⚠️  Warnings: {len(result.warnings)} issues")
+            print(f"\n[WARNING]  Warnings: {len(result.warnings)} issues")
             for warning in result.warnings:
                 print(f"   • {warning}")
 
         if result.skipped:
-            print(f"\n⏭  Skipped validations: {len(result.skipped)}")
+            print(f"\n[SKIPPED]  Skipped validations: {len(result.skipped)}")
             for skip in result.skipped:
                 print(f"   • {skip}")
 
         print(
-            f"\n📊 Summary: Validated {len(result.validated_methods)} method(s), "
+            f"\n[SUMMARY] Summary: Validated {len(result.validated_methods)} method(s), "
             f"skipped {len(result.skipped_methods)} method(s)"
         )
 

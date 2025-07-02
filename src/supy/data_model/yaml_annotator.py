@@ -96,8 +96,8 @@ class YAMLAnnotator:
                 # Add comment lines for each issue
                 for issue in matching_issues:
                     comment_indent = ' ' * (indent + 2)
-                    annotated_lines.append(f"{comment_indent}# ⚠️  {issue.level}: {issue.message}")
-                    annotated_lines.append(f"{comment_indent}# 💡 FIX: {issue.fix}")
+                    annotated_lines.append(f"{comment_indent}# [WARNING]  {issue.level}: {issue.message}")
+                    annotated_lines.append(f"{comment_indent}# [TIP] FIX: {issue.fix}")
                     if issue.param not in line:
                         # Add example fix
                         annotated_lines.append(f"{comment_indent}# EXAMPLE:")
@@ -179,11 +179,11 @@ class YAMLAnnotator:
 # ================================
 # This file has been annotated with inline validation feedback.
 # Look for:
-#   ⚠️  MISSING: Parameters that need to be added
-#   💡 ADD: Ready-to-use parameter blocks
+#   [WARNING]  MISSING: Parameters that need to be added
+#   [TIP] ADD: Ready-to-use parameter blocks
 #
 # To fix:
-# 1. Find the ⚠️  MISSING comments
+# 1. Find the [WARNING]  MISSING comments
 # 2. Uncomment the suggested ADD blocks
 # 3. Adjust values as needed
 # 4. Remove the warning comments
@@ -218,26 +218,26 @@ class YAMLAnnotator:
                 # Add annotations for all issues at this location
                 for issue in issues_by_line[i]:
                     # Add warning comment
-                    annotated_lines.append(' ' * indent + f"# ⚠️  MISSING: {issue.message}")
+                    annotated_lines.append(' ' * indent + f"# [WARNING]  MISSING: {issue.message}")
                     
                     # Add fix suggestion with proper indentation
                     if issue.param == 'bldgh':
-                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# [TIP] ADD:")
                         annotated_lines.append(' ' * indent + "# bldgh: {value: 20.0}  # building height in meters")
                     
                     elif issue.param == 'faibldg':
-                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# [TIP] ADD:")
                         annotated_lines.append(' ' * indent + "# faibldg: {value: 0.5}  # frontal area index (0.1-0.7)")
                     
                     elif issue.param == 'thermal_layers':
-                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# [TIP] ADD:")
                         annotated_lines.append(' ' * indent + "# thermal_layers:")
                         annotated_lines.append(' ' * indent + "#   dz: {value: [0.2, 0.1, 0.1, 0.5, 1.6]}  # layer thickness (m)")
                         annotated_lines.append(' ' * indent + "#   k: {value: [1.2, 1.1, 1.1, 1.5, 1.6]}  # conductivity (W/m/K)")
                         annotated_lines.append(' ' * indent + "#   rho_cp: {value: [1.2e6, 1.1e6, 1.1e6, 1.5e6, 1.6e6]}  # heat capacity (J/m3/K)")
                     
                     elif issue.param == 'conductance':
-                        annotated_lines.append(' ' * indent + "# 💡 ADD the following block under 'properties:':")
+                        annotated_lines.append(' ' * indent + "# [TIP] ADD the following block under 'properties:':")
                         annotated_lines.append(' ' * indent + "# conductance:")
                         annotated_lines.append(' ' * indent + "#   g_max: {value: 3.5}  # maximum surface conductance")
                         annotated_lines.append(' ' * indent + "#   g_k: {value: 200.0}  # solar radiation coefficient")
@@ -250,11 +250,11 @@ class YAMLAnnotator:
                         annotated_lines.append(' ' * indent + "#   s2: {value: 0.0}  # soil moisture threshold 2")
                     
                     elif 'g_' in issue.param or issue.param in ['s1', 's2', 'kmax']:
-                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# [TIP] ADD:")
                         annotated_lines.append(' ' * indent + f"# {issue.param}: {{value: <CHECK_DOCS>}}  # {issue.fix}")
                     
                     elif 'co2' in issue.param.lower():
-                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# [TIP] ADD:")
                         if issue.param == 'co2pointsource':
                             annotated_lines.append(' ' * indent + "# co2pointsource: {value: 0.0}  # point source emissions")
                         elif issue.param == 'ef_umolco2perj':
@@ -267,7 +267,7 @@ class YAMLAnnotator:
                             annotated_lines.append(' ' * indent + f"# {issue.param}: {{value: <CHECK_DOCS>}}")
                     
                     else:
-                        annotated_lines.append(' ' * indent + "# 💡 ADD:")
+                        annotated_lines.append(' ' * indent + "# [TIP] ADD:")
                         annotated_lines.append(' ' * indent + f"# {issue.param}: {{value: <TODO>}}  # {issue.fix}")
                     
                     # Add blank line between issues
@@ -435,8 +435,8 @@ def create_example_annotated_yaml():
 # ================================
 # This file shows validation issues found in your configuration.
 # Look for:
-#   ⚠️  WARNING: Issues that should be addressed
-#   💡 FIX: How to fix each issue
+#   [WARNING]  WARNING: Issues that should be addressed
+#   [TIP] FIX: How to fix each issue
 #   EXAMPLE: Sample parameter blocks you can use
 # ================================
 
