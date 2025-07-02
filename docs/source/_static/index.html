@@ -558,24 +558,71 @@
         
         /* UX Controls Bar */
         .ux-controls-bar {
-            background-color: #f8f9fa;
-            padding: 1rem 0;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            border-radius: 0 0 12px 12px;
         }
         
         .ux-controls-bar .form-check-label {
             cursor: pointer;
             user-select: none;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .ux-controls-bar .form-check-label small {
+            color: rgba(255, 255, 255, 0.8) !important;
         }
         
         .ux-controls-bar .input-group {
             max-width: 400px;
             margin-left: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            overflow: hidden;
+        }
+        
+        .ux-controls-bar .input-group-text {
+            background: white;
+            border: none;
+            padding-left: 1rem;
+        }
+        
+        .ux-controls-bar .form-control {
+            border: none;
+            padding-right: 1rem;
+        }
+        
+        .ux-controls-bar .form-control:focus {
+            box-shadow: none;
+        }
+        
+        .ux-controls-bar .btn-outline-secondary {
+            border: none;
+            background: white;
+            color: #6c757d;
+        }
+        
+        /* Modern form switch */
+        .form-check-input:checked {
+            background-color: #48bb78;
+            border-color: #48bb78;
+        }
+        
+        .form-check-input {
+            width: 3rem;
+            height: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
         }
         
         /* Advanced mode styling */
@@ -605,6 +652,175 @@
         
         .search-no-match {
             display: none !important;
+        }
+        
+        /* Welcome Hero */
+        .welcome-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .welcome-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-30px, -30px) rotate(180deg); }
+        }
+        
+        .welcome-content {
+            position: relative;
+            text-align: center;
+            color: white;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .feature-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .feature-card p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .btn-close-white {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+        
+        /* Modern form improvements */
+        .form-field {
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .form-field:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        
+        .field-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        /* Section improvements */
+        .config-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .section-title i {
+            color: #667eea;
+            margin-right: 0.5rem;
+        }
+        
+        /* Card improvements */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
         }
     </style>
 </head>
@@ -711,17 +927,43 @@
         <main class="main-content">
             <div class="content-body">
                 <!-- Welcome Message for New Users -->
-                <div class="alert alert-info alert-dismissible fade show" role="alert" id="welcomeMessage" style="display: none;">
-                    <h5 class="alert-heading"><i class="fas fa-lightbulb"></i> Welcome to SUEWS Configuration Builder!</h5>
-                    <p class="mb-2">This tool helps you create configuration files for the SUEWS urban climate model. Here are some tips to get started:</p>
-                    <ul class="mb-2">
-                        <li><strong>Basic Mode (default):</strong> Shows only essential parameters - perfect for beginners</li>
-                        <li><strong>Advanced Mode:</strong> Toggle on to see all physics options and detailed parameters</li>
-                        <li><strong>Search:</strong> Use the search box to quickly find specific parameters</li>
-                        <li><strong>Help Icons:</strong> Hover over <i class="fas fa-info-circle text-muted"></i> for parameter descriptions</li>
-                    </ul>
-                    <p class="mb-0">Start by entering your site name and description in the General Settings, then navigate to Site Information to configure your location.</p>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="welcome-hero" id="welcomeMessage" style="display: none;">
+                    <div class="welcome-content">
+                        <button type="button" class="btn-close btn-close-white" onclick="document.getElementById('welcomeMessage').style.display='none'" aria-label="Close"></button>
+                        <h2 class="welcome-title">
+                            <i class="fas fa-rocket"></i>
+                            Welcome to SUEWS Configuration Builder
+                        </h2>
+                        <p class="welcome-subtitle">Create urban climate model configurations with ease</p>
+                        
+                        <div class="welcome-features">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-toggle-off"></i>
+                                </div>
+                                <h4>Smart Modes</h4>
+                                <p>Start simple with Basic Mode, switch to Advanced when ready</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h4>Quick Search</h4>
+                                <p>Find any parameter instantly with smart search</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h4>Helpful Guides</h4>
+                                <p>Tooltips and descriptions for every parameter</p>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-light btn-lg mt-4" onclick="document.getElementById('welcomeMessage').style.display='none'">
+                            Get Started <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- User Experience Controls -->
@@ -866,7 +1108,7 @@
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ajv@6.12.6/dist/ajv.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="config-builder.js?v=11"></script>
+    <script src="config-builder.js?v=12"></script>
     <script>
         // Modern UI Controller for direct configuration builder
         document.addEventListener('DOMContentLoaded', () => {
