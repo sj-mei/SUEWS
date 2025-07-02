@@ -82,6 +82,7 @@ py.install_sources(
             'data_model/validation_utils.py',
             'data_model/yaml_annotator.py',
             'data_model/yaml_annotator_json.py',
+            'data_model/precheck.py'
         ],
     ],
     subdir: 'supy',
