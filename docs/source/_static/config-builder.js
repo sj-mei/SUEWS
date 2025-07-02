@@ -896,6 +896,17 @@ function generateObjectFields(objSchema, objData, container, path) {
 
         // Generate field based on property type
         const propPath = `${path}.${propKey}`;
+        
+        // Debug logging for roofs/walls
+        if (propKey === 'roofs' || propKey === 'walls') {
+            console.log(`Processing ${propKey} field:`, {
+                propPath,
+                propSchema,
+                originalPropSchema,
+                dataValue: objData[propKey],
+                schemaType: propSchema.type
+            });
+        }
 
         // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
         let isFlexibleRefValue = false;
@@ -923,10 +934,20 @@ function generateObjectFields(objSchema, objData, container, path) {
             propSchema.properties.value &&
             propSchema.properties.ref) || isFlexibleRefValue) {
             generateValueWithDOIField(originalPropSchema, objData[propKey], section, propPath, propKey);
-        } else if (hasArrayOption) {
-            // Handle FlexibleRefValue with array option as a regular array
+        } else if (hasArrayOption || (originalPropSchema.anyOf && originalPropSchema.anyOf.some(opt => opt.type === 'array'))) {
+            // Handle anyOf with array option as a regular array
             const arrayOption = originalPropSchema.anyOf.find(option => option.type === 'array');
-            generateArrayFields(arrayOption, objData[propKey], section, propPath);
+            if (arrayOption) {
+                console.log(`Handling ${propKey} as array from anyOf`);
+                // Initialize array if null
+                if (objData[propKey] === null || objData[propKey] === undefined) {
+                    objData[propKey] = arrayOption.default || [];
+                }
+                generateArrayFields(arrayOption, objData[propKey], section, propPath);
+            } else {
+                // Fallback to primitive field
+                generatePrimitiveField(originalPropSchema, objData[propKey], section, propPath, propKey);
+            }
         } else if (propSchema.type === 'object') {
             // Create a collapsible card for nested objects
             const card = document.createElement('div');
@@ -997,6 +1018,7 @@ function generateObjectFields(objSchema, objData, container, path) {
             section.appendChild(card);
         } else {
             // Generate field for primitive type
+            console.log(`Generating primitive field for ${propKey}, type: ${propSchema.type}, value:`, objData[propKey]);
             generatePrimitiveField(originalPropSchema, objData[propKey], section, propPath, propKey);
         }
     });
