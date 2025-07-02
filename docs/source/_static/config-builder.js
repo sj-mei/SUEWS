@@ -382,8 +382,15 @@ function createEmptyObject(schemaObj) {
                         // This is a FlexibleRefValue with enum - use RefValue format
                         obj[propKey] = { value: propSchema.default !== undefined ? propSchema.default : null, ref: null };
                     } else {
-                        // Regular anyOf - use default
-                        obj[propKey] = propSchema.default !== undefined ? propSchema.default : null;
+                        // Check if this is an array type in anyOf
+                        const arrayOption = propSchema.anyOf.find(option => option.type === 'array');
+                        if (hasRefValue && arrayOption) {
+                            // This is a FlexibleRefValue with array - use raw array value
+                            obj[propKey] = propSchema.default !== undefined ? propSchema.default : [];
+                        } else {
+                            // Regular anyOf - use default
+                            obj[propKey] = propSchema.default !== undefined ? propSchema.default : null;
+                        }
                     }
                 } else if (resolvedPropSchema.properties &&
                     resolvedPropSchema.properties.value &&
