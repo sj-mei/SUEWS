@@ -28,6 +28,8 @@ import ast
 import csv
 import os
 from copy import deepcopy
+from pathlib import Path
+import warnings
 
 from .model import Model
 from .site import Site, SiteProperties, InitialStates, LandCover
@@ -38,6 +40,7 @@ from timezonefinder import TimezoneFinder
 import pytz
 
 from .._env import logger_supy
+from .yaml_annotator_json import JsonYamlAnnotator as YAMLAnnotator
 
 try:
     from ..validation import (
@@ -54,9 +57,9 @@ except ImportError:
             result = validate_suews_config_conditional(
                 config_data, strict=False, verbose=True
             )
-            if result["errors"] and strict:
-                error_msg = f"SUEWS Configuration Validation Failed: {len(result['errors'])} errors\n"
-                error_msg += "\n".join(f"  - {err}" for err in result["errors"])
+            if result.errors and strict:
+                error_msg = f"SUEWS Configuration Validation Failed: {len(result.errors)} errors\n"
+                error_msg += "\n".join(f"  - {err}" for err in result.errors)
                 raise ValueError(error_msg)
             return result
 
@@ -64,11 +67,11 @@ except ImportError:
             result = validate_suews_config_conditional(
                 config_data, strict=False, verbose=False
             )
-            if result["errors"] and strict:
+            if result.errors and strict:
                 error_msg = (
-                    f"Configuration validation found {len(result['errors'])} issues\n"
+                    f"Configuration validation found {len(result.errors)} issues\n"
                 )
-                error_msg += "\n".join(f"  - {err}" for err in result["errors"])
+                error_msg += "\n".join(f"  - {err}" for err in result.errors)
                 raise ValueError(error_msg)
             return result
 
@@ -176,6 +179,7 @@ class DLSCheck(BaseModel):
 
         return start, end, utc_offset_hours
 
+
 def collect_yaml_differences(original: Any, updated: Any, path: str = "") -> List[dict]:
 
     """
@@ -243,10 +247,11 @@ def collect_yaml_differences(original: Any, updated: Any, path: str = "") -> Lis
                 "parameter": param_name,
                 "old_value": original,
                 "new_value": updated,
-                "reason": "Updated by precheck"
+                "reason": "Updated by precheck",
             })
 
     return diffs
+
 
 def save_precheck_diff_report(diffs: List[dict], original_yaml_path: str):
     """
@@ -279,7 +284,10 @@ def save_precheck_diff_report(diffs: List[dict], original_yaml_path: str):
     report_path = os.path.join(os.path.dirname(original_yaml_path), report_filename)
 
     with open(report_path, "w", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=["site", "parameter", "old_value", "new_value", "reason"])
+        writer = csv.DictWriter(
+            csvfile,
+            fieldnames=["site", "parameter", "old_value", "new_value", "reason"],
+        )
         writer.writeheader()
         for row in diffs:
             for key in ["old_value", "new_value"]:
@@ -314,6 +322,7 @@ def get_monthly_avg_temp(lat: float, month: int) -> float:
         ValueError: If the input month is not between 1 and 12.
     """
 
+def get_monthly_avg_temp(lat: float, month: int) -> float:
     lat_band = None
     abs_lat = abs(lat)
 
@@ -327,10 +336,62 @@ def get_monthly_avg_temp(lat: float, month: int) -> float:
         lat_band = "polar"
 
     monthly_temp = {
-        "tropics": [26.0, 26.5, 27.0, 27.5, 28.0, 28.5, 28.0, 27.5, 27.0, 26.5, 26.0, 25.5],
-        "subtropics": [15.0, 16.0, 18.0, 20.0, 24.0, 28.0, 30.0, 29.0, 26.0, 22.0, 18.0, 15.0],
-        "midlatitudes": [5.0, 6.0, 9.0, 12.0, 17.0, 21.0, 23.0, 22.0, 19.0, 14.0, 9.0, 6.0],
-        "polar": [-15.0, -13.0, -10.0, -5.0, 0.0, 5.0, 8.0, 7.0, 3.0, -2.0, -8.0, -12.0],
+        "tropics": [
+            26.0,
+            26.5,
+            27.0,
+            27.5,
+            28.0,
+            28.5,
+            28.0,
+            27.5,
+            27.0,
+            26.5,
+            26.0,
+            25.5,
+        ],
+        "subtropics": [
+            15.0,
+            16.0,
+            18.0,
+            20.0,
+            24.0,
+            28.0,
+            30.0,
+            29.0,
+            26.0,
+            22.0,
+            18.0,
+            15.0,
+        ],
+        "midlatitudes": [
+            5.0,
+            6.0,
+            9.0,
+            12.0,
+            17.0,
+            21.0,
+            23.0,
+            22.0,
+            19.0,
+            14.0,
+            9.0,
+            6.0,
+        ],
+        "polar": [
+            -15.0,
+            -13.0,
+            -10.0,
+            -5.0,
+            0.0,
+            5.0,
+            8.0,
+            7.0,
+            3.0,
+            -2.0,
+            -8.0,
+            -12.0,
+        ],
     }
 
     return monthly_temp[lat_band][month - 1]
@@ -683,6 +744,7 @@ def precheck_update_surface_temperature(data: dict, start_date: str) -> dict:
         dict: Updated YAML dictionary with surface temperatures initialised.
     """
 
+def precheck_update_surface_temperature(data: dict, start_date: str) -> dict:
     month = datetime.strptime(start_date, "%Y-%m-%d").month
 
     for site_idx, site in enumerate(data.get("sites", [])):
@@ -693,15 +755,27 @@ def precheck_update_surface_temperature(data: dict, start_date: str) -> dict:
         lat_entry = props.get("lat", {})
         lat = lat_entry.get("value") if isinstance(lat_entry, dict) else lat_entry
         if lat is None:
-            logger_supy.warning(f"[site #{site_idx}] Latitude missing, skipping surface temperature update.")
+            logger_supy.warning(
+                f"[site #{site_idx}] Latitude missing, skipping surface temperature update."
+            )
             continue
 
         # Get estimated average temperature
         avg_temp = get_monthly_avg_temp(lat, month)
-        logger_supy.info(f"[site #{site_idx}] Setting surface temperatures to {avg_temp} °C for month {month} (lat={lat})")
+        logger_supy.info(
+            f"[site #{site_idx}] Setting surface temperatures to {avg_temp} °C for month {month} (lat={lat})"
+        )
 
         # Loop over all surface types
-        for surface_type in ["paved", "bldgs", "evetr", "dectr", "grass", "bsoil", "water"]:
+        for surface_type in [
+            "paved",
+            "bldgs",
+            "evetr",
+            "dectr",
+            "grass",
+            "bsoil",
+            "water",
+        ]:
             surf = initial_states.get(surface_type, {})
             if not isinstance(surf, dict):
                 continue
@@ -961,6 +1035,7 @@ def precheck_nonzero_sfr_requires_nonnull_params(data: dict) -> dict:
     )
     return data
 
+
 def precheck_model_option_rules(data: dict) -> dict:
     """
     Apply model-option-dependent validation rules and parameter adjustments based on model physics settings.
@@ -995,7 +1070,9 @@ def precheck_model_option_rules(data: dict) -> dict:
 
     # --- RSLMETHOD RULES (diagnostic method logic) ---
     if rslmethod == 2:
-        logger_supy.info("[precheck] rslmethod==2 detected → checking faibldg for bldgs with sfr > 0.")
+        logger_supy.info(
+            "[precheck] rslmethod==2 detected → checking faibldg for bldgs with sfr > 0."
+        )
 
         for site_idx, site in enumerate(data.get("sites", [])):
             props = site.get("properties", {})
@@ -1007,11 +1084,15 @@ def precheck_model_option_rules(data: dict) -> dict:
                 faibldg = bldgs.get("faibldg", {})
                 faibldg_value = faibldg.get("value")
                 if faibldg_value in (None, "", []):
-                    raise ValueError(f"[site #{site_idx}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null.")
+                    raise ValueError(
+                        f"[site #{site_idx}] For rslmethod==2 and bldgs.sfr > 0, faibldg must be set and non-null."
+                    )
 
     # --- STORAGEHEATMETHOD RULES (DyOHM logic) ---
     if storagemethod == 6:
-        logger_supy.info("[precheck] storageheatmethod==6 detected → checking wall thermal layers and lambda_c.")
+        logger_supy.info(
+            "[precheck] storageheatmethod==6 detected → checking wall thermal layers and lambda_c."
+        )
 
         for site_idx, site in enumerate(data.get("sites", [])):
             props = site.get("properties", {})
@@ -1019,7 +1100,9 @@ def precheck_model_option_rules(data: dict) -> dict:
             walls = vertical_layers.get("walls", [])
 
             if not walls or not isinstance(walls, list) or len(walls) == 0:
-                raise ValueError(f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6.")
+                raise ValueError(
+                    f"[site #{site_idx}] Missing vertical_layers.walls for storageheatmethod == 6."
+                )
 
             wall0 = walls[0]
             thermal = wall0.get("thermal_layers", {})
@@ -1027,17 +1110,25 @@ def precheck_model_option_rules(data: dict) -> dict:
             for param in ["dz", "k", "cp"]:
                 param_list = thermal.get(param, {}).get("value")
                 if not isinstance(param_list, list) or len(param_list) == 0:
-                    raise ValueError(f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6.")
+                    raise ValueError(
+                        f"[site #{site_idx}] Missing wall thermal_layers.{param} for storageheatmethod == 6."
+                    )
                 if param_list[0] in (None, ""):
-                    raise ValueError(f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6.")
+                    raise ValueError(
+                        f"[site #{site_idx}] wall thermal_layers.{param}[0] must be set for storageheatmethod == 6."
+                    )
 
             lambda_c = props.get("lambda_c", {}).get("value")
             if lambda_c in (None, ""):
-                raise ValueError(f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6.")
+                raise ValueError(
+                    f"[site #{site_idx}] properties.lambda_c must be set for storageheatmethod == 6."
+                )
 
     # --- STEBBSMETHOD RULES ---
     if stebbsmethod == 0:
-        logger_supy.info("[precheck] stebbsmethod==0 detected → nullifying stebbs parameters at site level.")
+        logger_supy.info(
+            "[precheck] stebbsmethod==0 detected → nullifying stebbs parameters at site level."
+        )
 
         for site_idx, site in enumerate(data.get("sites", [])):
             props = site.get("properties", {})
@@ -1172,7 +1263,7 @@ class SUEWSConfig(BaseModel):
         json_schema_extra={"display_name": "Model Parameters"},
     )
     sites: List[Site] = Field(
-        default=[Site()],
+        default_factory=list,
         description="List of sites to simulate",
         min_length=1,
         json_schema_extra={"display_name": "Sites"},
@@ -1187,6 +1278,422 @@ class SUEWSConfig(BaseModel):
             return (col[0], ast.literal_eval(col[1]))
         except ValueError:
             return (col[0], col[1])
+
+    @model_validator(mode="after")
+    def validate_parameter_completeness(self) -> "SUEWSConfig":
+        """
+        Validate all parameters after complete construction.
+        This runs AFTER all values are populated from YAML.
+        """
+        # Track validation issues for summary
+        self._validation_summary = {
+            "total_warnings": 0,
+            "sites_with_issues": [],
+            "issue_types": set(),
+            "yaml_path": None,
+        }
+
+        for i, site in enumerate(self.sites):
+            self._validate_site_parameters(site, site_index=i)
+
+        # Show summary if there are warnings
+        if self._validation_summary["total_warnings"] > 0:
+            self._show_validation_summary()
+
+        return self
+
+    def _show_validation_summary(self) -> None:
+        """Show a concise summary of validation issues."""
+        # Check if we have a yaml path stored
+        yaml_path = getattr(self, "_yaml_path", None)
+
+        if yaml_path:
+            # When loaded from YAML, we know the source file
+            annotated_filename = Path(yaml_path).stem + "_annotated.yml"
+            fix_instructions = (
+                f"To see detailed fixes for each parameter: please refer to inline guidance "
+                f"in '{annotated_filename}' that will shortly be generated"
+            )
+        else:
+            fix_instructions = (
+                f"To see detailed fixes for each parameter:\n"
+                f"   1. Save your configuration to a YAML file\n"
+                f"   2. Call config.generate_annotated_yaml('your_config.yml')\n"
+                f"   3. An annotated file with inline guidance will be generated"
+            )
+
+        logger_supy.warning(
+            f"\n{'=' * 60}\n"
+            f"VALIDATION SUMMARY\n"
+            f"{'=' * 60}\n"
+            f"Found {self._validation_summary['total_warnings']} parameter issue(s) across "
+            f"{len(self._validation_summary['sites_with_issues'])} site(s).\n\n"
+            f"Issue types:\n"
+            f"  - "
+            + "\n  - ".join(sorted(self._validation_summary["issue_types"]))
+            + "\n\n"
+            f"{fix_instructions}\n"
+            f"{'=' * 60}"
+        )
+
+    def _validate_site_parameters(self, site: Site, site_index: int) -> None:
+        """Validate all parameters for a single site."""
+
+        if not site.properties:
+            return
+
+        site_name = getattr(site, "name", f"Site {site_index}")
+        site_has_issues = False
+
+        # Validate conductance parameters
+        if hasattr(site.properties, "conductance") and site.properties.conductance:
+            if self._check_conductance(site.properties.conductance, site_name):
+                site_has_issues = True
+
+        # Validate CO2 parameters
+        if (
+            hasattr(site.properties, "anthropogenic_emissions")
+            and site.properties.anthropogenic_emissions
+            and hasattr(site.properties.anthropogenic_emissions, "co2")
+            and site.properties.anthropogenic_emissions.co2
+        ):
+            if self._check_co2_params(
+                site.properties.anthropogenic_emissions.co2, site_name
+            ):
+                site_has_issues = True
+
+        # Validate land cover parameters
+        if hasattr(site.properties, "land_cover") and site.properties.land_cover:
+            if self._check_land_cover(site.properties.land_cover, site_name):
+                site_has_issues = True
+
+        # Track sites with issues
+        if (
+            site_has_issues
+            and site_name not in self._validation_summary["sites_with_issues"]
+        ):
+            self._validation_summary["sites_with_issues"].append(site_name)
+
+    def _check_conductance(self, conductance, site_name: str) -> bool:
+        """Check for missing conductance parameters. Returns True if issues found."""
+        from .validation_utils import check_missing_params
+
+        critical_params = {
+            "g_max": "Maximum surface conductance",
+            "g_k": "Conductance parameter for solar radiation",
+            "g_sm": "Conductance parameter for soil moisture",
+            "s1": "Lower soil moisture threshold",
+            "s2": "Soil moisture dependence parameter",
+        }
+
+        missing_params = check_missing_params(
+            critical_params,
+            conductance,
+            "surface conductance",
+            "evapotranspiration calculations",
+        )
+
+        if missing_params:
+            self._validation_summary["total_warnings"] += len(missing_params)
+            self._validation_summary["issue_types"].add(
+                "Missing conductance parameters"
+            )
+            return True
+        return False
+
+    def _check_co2_params(self, co2, site_name: str) -> bool:
+        """Check for missing CO2 parameters. Returns True if issues found."""
+        from .validation_utils import check_missing_params
+
+        critical_params = {
+            "co2pointsource": "CO2 point source emission factor",
+            "ef_umolco2perj": "CO2 emission factor per unit of fuel energy",
+            "frfossilfuel_heat": "Fraction of heating energy from fossil fuels",
+            "frfossilfuel_nonheat": "Fraction of non-heating energy from fossil fuels",
+        }
+
+        missing_params = check_missing_params(
+            critical_params, co2, "CO2 emission", "model accuracy"
+        )
+
+        if missing_params:
+            self._validation_summary["total_warnings"] += len(missing_params)
+            self._validation_summary["issue_types"].add(
+                "Missing CO2 emission parameters"
+            )
+            return True
+        return False
+
+    def _check_land_cover(self, land_cover, site_name: str) -> bool:
+        """Check land cover parameters. Returns True if issues found."""
+        # Check each surface type
+        surface_types = ["bldgs", "grass", "dectr", "evetr", "bsoil", "paved", "water"]
+        has_issues = False
+
+        for surface_type in surface_types:
+            if hasattr(land_cover, surface_type):
+                surface = getattr(land_cover, surface_type)
+                if surface:
+                    if self._check_surface_parameters(surface, surface_type, site_name):
+                        has_issues = True
+
+        return has_issues
+
+    def _check_surface_parameters(
+        self, surface, surface_type: str, site_name: str
+    ) -> bool:
+        """Check parameters for a specific surface type. Returns True if issues found."""
+        from .validation_utils import check_missing_params
+
+        has_issues = False
+
+        # Get surface fraction value
+        sfr_value = 0
+        if hasattr(surface, "sfr") and surface.sfr is not None:
+            sfr_value = getattr(surface.sfr, "value", surface.sfr)
+
+        # Only validate if surface fraction > 0
+        if sfr_value > 0:
+            # Check building-specific parameters
+            if surface_type == "bldgs" and sfr_value > 0.05:
+                missing_params = []
+
+                if not hasattr(surface, "bldgh") or surface.bldgh is None:
+                    missing_params.append("bldgh (Building height)")
+                if not hasattr(surface, "faibldg") or surface.faibldg is None:
+                    missing_params.append("faibldg (Frontal area index)")
+
+                if missing_params:
+                    self._validation_summary["total_warnings"] += len(missing_params)
+                    self._validation_summary["issue_types"].add(
+                        "Missing building parameters"
+                    )
+                    has_issues = True
+
+            # Check vegetation parameters for grass, dectr, evetr
+            if surface_type in ["grass", "dectr", "evetr"]:
+                vegetation_params = {
+                    "beta_bioco2": "Biogenic CO2 exchange coefficient",
+                    "alpha_bioco2": "Biogenic CO2 exchange coefficient",
+                    "resp_a": "Respiration coefficient",
+                    "resp_b": "Respiration coefficient",
+                }
+
+                missing_params = check_missing_params(
+                    vegetation_params, surface, "vegetation", "CO2 flux calculations"
+                )
+
+                if missing_params:
+                    self._validation_summary["total_warnings"] += len(missing_params)
+                    self._validation_summary["issue_types"].add(
+                        "Missing vegetation parameters"
+                    )
+                    has_issues = True
+
+            # Check thermal layers for all surfaces
+            if hasattr(surface, "thermal_layers") and surface.thermal_layers:
+                if self._check_thermal_layers(
+                    surface.thermal_layers, surface_type, site_name
+                ):
+                    has_issues = True
+
+        return has_issues
+
+    def _check_thermal_layers(
+        self, thermal_layers, surface_type: str, site_name: str
+    ) -> bool:
+        """Check thermal layer parameters. Returns True if issues found."""
+        missing_params = []
+
+        if not hasattr(thermal_layers, "dz") or thermal_layers.dz is None:
+            missing_params.append("dz (Layer thickness)")
+        if not hasattr(thermal_layers, "k") or thermal_layers.k is None:
+            missing_params.append("k (Thermal conductivity)")
+        if not hasattr(thermal_layers, "rho_cp") or thermal_layers.rho_cp is None:
+            missing_params.append("rho_cp (Volumetric heat capacity)")
+
+        if missing_params:
+            self._validation_summary["total_warnings"] += len(missing_params)
+            self._validation_summary["issue_types"].add(
+                "Missing thermal layer parameters"
+            )
+            return True
+        return False
+
+    def generate_annotated_yaml(
+        self, yaml_path: str, output_path: Optional[str] = None
+    ) -> str:
+        """
+        Generate an annotated YAML file with validation feedback.
+
+        Args:
+            yaml_path: Path to the original YAML file
+            output_path: Optional path for the annotated file
+
+        Returns:
+            Path to the generated annotated file
+        """
+        from pathlib import Path
+
+        annotator = YAMLAnnotator()
+
+        # Collect validation issues by running validation
+        for i, site in enumerate(self.sites):
+            site_name = getattr(site, "name", f"Site {i}")
+            self._collect_validation_issues(site, site_name, i, annotator)
+
+        # Generate annotated file
+        input_path = Path(yaml_path)
+        if output_path:
+            output_path = Path(output_path)
+        else:
+            output_path = input_path.parent / f"{input_path.stem}_annotated.yml"
+
+        annotated_path = annotator.generate_annotated_file(input_path, output_path)
+
+        logger_supy.info(f"Generated annotated YAML file: {annotated_path}")
+        return str(annotated_path)
+
+    def _collect_validation_issues(
+        self, site: Site, site_name: str, site_index: int, annotator: YAMLAnnotator
+    ) -> None:
+        """Collect validation issues for annotation."""
+
+        if not hasattr(site, "properties") or not site.properties:
+            return
+
+        # Check conductance
+        if hasattr(site.properties, "conductance") and site.properties.conductance:
+            from .validation_utils import check_missing_params
+
+            critical_params = {
+                "g_max": "Maximum surface conductance",
+                "g_k": "Conductance parameter for solar radiation",
+                "g_sm": "Conductance parameter for soil moisture",
+                "s1": "Lower soil moisture threshold",
+                "s2": "Soil moisture dependence parameter",
+            }
+
+            missing_params = check_missing_params(
+                critical_params,
+                site.properties.conductance,
+                "surface conductance",
+                "evapotranspiration calculations",
+            )
+
+            for param, desc in critical_params.items():
+                if param in missing_params:
+                    annotator.add_issue(
+                        path=f"sites[{site_index}]/properties/conductance",
+                        param=param,
+                        message=f"Missing {desc}",
+                        fix=f"Add {param} value for accurate evapotranspiration",
+                        level="WARNING",
+                    )
+
+        # Check CO2 parameters
+        if (
+            hasattr(site.properties, "anthropogenic_emissions")
+            and site.properties.anthropogenic_emissions
+            and hasattr(site.properties.anthropogenic_emissions, "co2")
+            and site.properties.anthropogenic_emissions.co2
+        ):
+            from .validation_utils import check_missing_params
+
+            critical_params = {
+                "co2pointsource": "CO2 point source emission factor",
+                "ef_umolco2perj": "CO2 emission factor per unit of fuel energy",
+                "frfossilfuel_heat": "Fraction of heating energy from fossil fuels",
+                "frfossilfuel_nonheat": "Fraction of non-heating energy from fossil fuels",
+            }
+
+            missing_params = check_missing_params(
+                critical_params,
+                site.properties.anthropogenic_emissions.co2,
+                "CO2 emission",
+                "model accuracy",
+            )
+
+            for param, desc in critical_params.items():
+                if param in missing_params:
+                    annotator.add_issue(
+                        path=f"sites[{site_index}]/properties/anthropogenic_emissions/co2",
+                        param=param,
+                        message=f"Missing {desc}",
+                        fix=f"Add {param} value for CO2 emission calculations",
+                        level="WARNING",
+                    )
+
+        # Check land cover
+        if hasattr(site.properties, "land_cover") and site.properties.land_cover:
+            self._collect_land_cover_issues(
+                site.properties.land_cover, site_name, site_index, annotator
+            )
+
+    def _collect_land_cover_issues(
+        self, land_cover, site_name: str, site_index: int, annotator: YAMLAnnotator
+    ) -> None:
+        """Collect land cover validation issues."""
+        surface_types = ["bldgs", "grass", "dectr", "evetr", "bsoil", "paved", "water"]
+
+        for surface_type in surface_types:
+            if hasattr(land_cover, surface_type):
+                surface = getattr(land_cover, surface_type)
+                if surface:
+                    # Get surface fraction
+                    sfr_value = 0
+                    if hasattr(surface, "sfr") and surface.sfr is not None:
+                        sfr_value = getattr(surface.sfr, "value", surface.sfr)
+
+                    if sfr_value > 0:
+                        path = (
+                            f"sites[{site_index}]/properties/land_cover/{surface_type}"
+                        )
+
+                        # Building-specific checks
+                        if surface_type == "bldgs" and sfr_value > 0.05:
+                            if not hasattr(surface, "bldgh") or surface.bldgh is None:
+                                annotator.add_issue(
+                                    path=path,
+                                    param="bldgh",
+                                    message=f"Building height required (fraction: {sfr_value:.1%})",
+                                    fix="Add building height in meters (e.g., 10-50m for urban areas)",
+                                    level="WARNING",
+                                )
+
+                            if (
+                                not hasattr(surface, "faibldg")
+                                or surface.faibldg is None
+                            ):
+                                annotator.add_issue(
+                                    path=path,
+                                    param="faibldg",
+                                    message="Frontal area index needed for wind calculations",
+                                    fix="Add frontal area index (typical: 0.1-0.7)",
+                                    level="WARNING",
+                                )
+
+                        # Thermal layers check
+                        if (
+                            hasattr(surface, "thermal_layers")
+                            and surface.thermal_layers
+                        ):
+                            thermal = surface.thermal_layers
+                            if (
+                                not hasattr(thermal, "dz")
+                                or thermal.dz is None
+                                or not hasattr(thermal, "k")
+                                or thermal.k is None
+                                or not hasattr(thermal, "rho_cp")
+                                or thermal.rho_cp is None
+                            ):
+                                annotator.add_issue(
+                                    path=f"{path}/thermal_layers",
+                                    param="thermal_layers",
+                                    message="Incomplete thermal layer properties",
+                                    fix="Add dz (thickness), k (conductivity), and rho_cp (heat capacity) arrays",
+                                    level="WARNING",
+                                )
 
     # @model_validator(mode="after")
     # def check_forcing(self):
@@ -1248,6 +1755,9 @@ class SUEWSConfig(BaseModel):
         """
         with open(path, "r") as file:
             config_data = yaml.load(file, Loader=yaml.FullLoader)
+
+        # Store yaml path in config data for later use
+        config_data["_yaml_path"] = path
 
         if (
             use_conditional_validation and _validation_available
