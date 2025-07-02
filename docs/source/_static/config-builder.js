@@ -1154,6 +1154,31 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
             }
         }
     }
+    
+    // Also refresh any inline array containers that might exist
+    arraysToSync.forEach(arrayName => {
+        const arrayPath = `${basePath}.${arrayName}`;
+        const inlineContainer = document.querySelector(`[data-path="${arrayPath}"] .inline-array-container`);
+        if (inlineContainer && inlineContainer.parentElement) {
+            // Clear and regenerate the inline display
+            inlineContainer.parentElement.innerHTML = '';
+            const arraySchema = schema.$defs.VerticalLayers.properties[arrayName];
+            if (arraySchema && verticalLayers[arrayName]) {
+                generateInlinePrimitiveArray(arraySchema, verticalLayers[arrayName], inlineContainer.parentElement, arrayPath);
+            }
+        }
+    });
+    
+    // Also refresh height array (nlayer + 1)
+    const heightPath = `${basePath}.height`;
+    const heightContainer = document.querySelector(`[data-path="${heightPath}"] .inline-array-container`);
+    if (heightContainer && heightContainer.parentElement) {
+        heightContainer.parentElement.innerHTML = '';
+        const heightSchema = schema.$defs.VerticalLayers.properties.height;
+        if (heightSchema && verticalLayers.height) {
+            generateInlinePrimitiveArray(heightSchema, verticalLayers.height, heightContainer.parentElement, heightPath);
+        }
+    }
 }
 
 // Update the preview (YAML format only)
@@ -2086,9 +2111,93 @@ function generatePrimitiveField(propSchema, propData, container, path, propKey) 
     );
 }
 
+// Generate inline display for primitive arrays (used for vertical layers)
+function generateInlinePrimitiveArray(arraySchema, arrayData, container, path) {
+    console.log(`Generating inline primitive array for ${path}`);
+    
+    // Create a container for the inline inputs
+    const inlineContainer = document.createElement('div');
+    inlineContainer.className = 'inline-array-container';
+    inlineContainer.style.display = 'flex';
+    inlineContainer.style.flexWrap = 'wrap';
+    inlineContainer.style.gap = '10px';
+    inlineContainer.style.marginTop = '10px';
+    
+    // Render each array element as an individual input
+    arrayData.forEach((value, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'inline-array-item';
+        itemDiv.style.flex = '1';
+        itemDiv.style.minWidth = '80px';
+        itemDiv.style.maxWidth = '150px';
+        
+        // Create label
+        const label = document.createElement('label');
+        label.className = 'form-label small text-muted';
+        label.textContent = `Layer ${index + 1}`;
+        label.style.fontSize = '0.8rem';
+        label.style.marginBottom = '2px';
+        itemDiv.appendChild(label);
+        
+        // Create input
+        const input = document.createElement('input');
+        input.type = arraySchema.items.type === 'number' || arraySchema.items.type === 'integer' ? 'number' : 'text';
+        input.className = 'form-control form-control-sm';
+        input.value = value !== null && value !== undefined ? value : '';
+        
+        // Add min/max if specified
+        if (arraySchema.items.minimum !== undefined) {
+            input.min = arraySchema.items.minimum;
+        }
+        if (arraySchema.items.maximum !== undefined) {
+            input.max = arraySchema.items.maximum;
+        }
+        
+        // Add change handler
+        input.addEventListener('change', (e) => {
+            let newValue = e.target.value;
+            
+            // Convert to appropriate type
+            if (arraySchema.items.type === 'number') {
+                newValue = parseFloat(newValue);
+                if (isNaN(newValue)) newValue = 0;
+            } else if (arraySchema.items.type === 'integer') {
+                newValue = parseInt(newValue);
+                if (isNaN(newValue)) newValue = 0;
+            }
+            
+            // Update array data
+            arrayData[index] = newValue;
+            
+            // Update preview
+            updatePreview();
+        });
+        
+        itemDiv.appendChild(input);
+        inlineContainer.appendChild(itemDiv);
+    });
+    
+    container.appendChild(inlineContainer);
+    
+    // Add note about nlayer control
+    const noteDiv = document.createElement('div');
+    noteDiv.className = 'text-muted small mt-2';
+    noteDiv.innerHTML = '<i class="fas fa-info-circle"></i> Number of layers is controlled by nlayer parameter';
+    container.appendChild(noteDiv);
+}
+
 // Add the missing generateArrayFields function
 function generateArrayFields(arraySchema, arrayData, container, path) {
     console.log(`Generating array fields for ${path}...`);
+
+    // Check if this is a vertical layer primitive array
+    const isVerticalLayerArray = path.includes('vertical_layers') && 
+        (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
+         path.includes('building_frac') || path.includes('building_scale'));
+    
+    const isPrimitiveArray = arraySchema.items && 
+        (arraySchema.items.type === 'number' || arraySchema.items.type === 'integer' || 
+         arraySchema.items.type === 'string' || arraySchema.items.type === 'boolean');
 
     // Create array container
     const arrayContainer = document.createElement('div');
@@ -2103,7 +2212,13 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
         arrayContainer.appendChild(descriptionDiv);
     }
 
-    // Create items container
+    // For vertical layer primitive arrays, use a special inline display
+    if (isVerticalLayerArray && isPrimitiveArray) {
+        generateInlinePrimitiveArray(arraySchema, arrayData, arrayContainer, path);
+        return;
+    }
+
+    // Create items container for regular arrays
     const itemsContainer = document.createElement('div');
     itemsContainer.className = 'array-items';
     itemsContainer.id = `${path.replace(/\./g, '-')}-items`;

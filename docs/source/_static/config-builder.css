@@ -581,3 +581,46 @@ body {
         background: white !important;
     }
 }
+/* Inline Array Styles for Vertical Layers */
+.inline-array-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.inline-array-item {
+    flex: 1;
+    min-width: 80px;
+    max-width: 150px;
+}
+
+.inline-array-item label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+.inline-array-item input {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 0.875rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.inline-array-item input:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.inline-array-item input:hover {
+    border-color: #adb5bd;
+}
