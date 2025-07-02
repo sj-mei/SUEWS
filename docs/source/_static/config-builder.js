@@ -1105,7 +1105,9 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
             propData.value = convertedValue;
 
             // Special handling for nlayer field in vertical_layers
-            if (path.includes('vertical_layers.nlayer')) {
+            console.log(`Field changed at path: ${path}, value: ${convertedValue}`);
+            if (path.includes('vertical_layers') && path.includes('nlayer')) {
+                console.log('Detected nlayer change, synchronizing arrays...');
                 synchronizeVerticalLayerArrays(path, convertedValue);
             }
 
@@ -1279,20 +1281,30 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
     console.log(`Synchronizing vertical layer arrays for nlayer change to ${newNlayer}`);
     
     // Extract the base path to vertical_layers from the nlayer path
-    const basePath = nlayerPath.replace('.nlayer', '');
+    // Handle both direct paths and paths with .value
+    const basePath = nlayerPath.replace('.nlayer.value', '').replace('.nlayer', '');
     
     // Get the vertical_layers object
     const verticalLayers = getNestedProperty(configData, basePath);
     if (!verticalLayers) {
-        console.error('Could not find vertical_layers object');
+        console.error('Could not find vertical_layers object at path:', basePath);
         return;
     }
+    
+    console.log('Found vertical_layers:', verticalLayers);
     
     // Ensure newNlayer is a valid integer
     const nlayerValue = parseInt(newNlayer);
     if (isNaN(nlayerValue) || nlayerValue < 1) {
         console.error('Invalid nlayer value:', newNlayer);
         return;
+    }
+    
+    // Update the nlayer value in the data structure
+    if (verticalLayers.nlayer && typeof verticalLayers.nlayer === 'object') {
+        verticalLayers.nlayer.value = nlayerValue;
+    } else {
+        verticalLayers.nlayer = nlayerValue;
     }
     
     // Arrays that need to match nlayer length
@@ -1372,30 +1384,41 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
         }
     }
     
-    // Also refresh any inline array containers that might exist
-    arraysToSync.forEach(arrayName => {
-        const arrayPath = `${basePath}.${arrayName}`;
-        const inlineContainer = document.querySelector(`[data-path="${arrayPath}"] .inline-array-container`);
-        if (inlineContainer && inlineContainer.parentElement) {
-            // Clear and regenerate the inline display
-            inlineContainer.parentElement.innerHTML = '';
-            const arraySchema = schema.$defs.VerticalLayers.properties[arrayName];
-            if (arraySchema && verticalLayers[arrayName]) {
-                generateInlinePrimitiveArray(arraySchema, verticalLayers[arrayName], inlineContainer.parentElement, arrayPath);
-            }
-        }
-    });
+    // Update the preview to reflect data changes
+    updatePreview();
     
-    // Also refresh height array (nlayer + 1)
-    const heightPath = `${basePath}.height`;
-    const heightContainer = document.querySelector(`[data-path="${heightPath}"] .inline-array-container`);
-    if (heightContainer && heightContainer.parentElement) {
-        heightContainer.parentElement.innerHTML = '';
-        const heightSchema = schema.$defs.VerticalLayers.properties.height;
-        if (heightSchema && verticalLayers.height) {
-            generateInlinePrimitiveArray(heightSchema, verticalLayers.height, heightContainer.parentElement, heightPath);
-        }
-    }
+    // For inline arrays, we need to regenerate them completely
+    const allArrays = ['height', ...arraysToSync];
+    
+    allArrays.forEach(arrayName => {
+        const arrayPath = `${basePath}.${arrayName}`;
+        console.log(`Looking for array container at path: ${arrayPath}`);
+        
+        // Find all containers that might contain this array
+        const possibleContainers = document.querySelectorAll(`[id*="${arrayPath.replace(/\./g, '-')}"]`);
+        possibleContainers.forEach(container => {
+            const parent = container.closest('.form-field, .array-container');
+            if (parent) {
+                console.log(`Found container for ${arrayName}, regenerating...`);
+                // Clear the entire parent
+                parent.innerHTML = '';
+                
+                // Regenerate the array field
+                const arraySchema = schema.$defs.VerticalLayers.properties[arrayName];
+                if (arraySchema) {
+                    // Check if it's a FlexibleRefValue array
+                    if (arraySchema.anyOf) {
+                        const arrayOption = arraySchema.anyOf.find(opt => opt.type === 'array');
+                        if (arrayOption) {
+                            generateArrayFields(arrayOption, verticalLayers[arrayName], parent, arrayPath);
+                        }
+                    } else {
+                        generateArrayFields(arraySchema, verticalLayers[arrayName], parent, arrayPath);
+                    }
+                }
+            }
+        });
+    });
 }
 
 // Update the preview (YAML format only)
@@ -2314,7 +2337,9 @@ function generatePrimitiveField(propSchema, propData, container, path, propKey) 
             setNestedProperty(configData, path, convertedValue);
 
             // Special handling for nlayer field in vertical_layers
-            if (path.includes('vertical_layers.nlayer')) {
+            console.log(`Field changed at path: ${path}, value: ${convertedValue}`);
+            if (path.includes('vertical_layers') && path.includes('nlayer')) {
+                console.log('Detected nlayer change, synchronizing arrays...');
                 synchronizeVerticalLayerArrays(path, convertedValue);
             }
 
