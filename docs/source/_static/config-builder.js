@@ -2376,12 +2376,12 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
     addButton.innerHTML = '<i class="fas fa-plus"></i> Add Item';
     
     // Check if this is a vertical layer array
-    const isVerticalLayerArray = path.includes('vertical_layers') && 
+    const isVerticalLayerArrayAdd = path.includes('vertical_layers') && 
         (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
          path.includes('building_frac') || path.includes('building_scale') || 
          path.includes('roofs') || path.includes('walls'));
     
-    if (isVerticalLayerArray) {
+    if (isVerticalLayerArrayAdd) {
         addButton.disabled = true;
         addButton.title = 'Array length is controlled by nlayer';
         addButton.innerHTML = '<i class="fas fa-lock"></i> Array length controlled by nlayer';
@@ -2514,18 +2514,18 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
             removeButton.className = 'btn btn-sm btn-danger';
             removeButton.innerHTML = '<i class="fas fa-times"></i> Remove';
             
-            // Check if this is a vertical layer array
-            const isVerticalLayerArray = path.includes('vertical_layers') && 
+            // Check if this is a vertical layer array (using already declared variable)
+            const isVerticalLayerArrayRemove2 = path.includes('vertical_layers') && 
                 (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
                  path.includes('building_frac') || path.includes('building_scale') || 
                  path.includes('roofs') || path.includes('walls'));
             
-            if (isVerticalLayerArray) {
+            if (isVerticalLayerArrayRemove2) {
                 removeButton.style.display = 'none';
             }
             
             removeButton.addEventListener('click', () => {
-                if (!isVerticalLayerArray) {
+                if (!isVerticalLayerArrayRemove2) {
                     // Remove item from array
                     arrayData.splice(itemIndex, 1);
 
