@@ -1365,24 +1365,8 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
         }
     });
     
-    // Regenerate the form to reflect the changes
-    const verticalLayersContainer = document.querySelector(`[data-path="${basePath}"]`);
-    if (verticalLayersContainer) {
-        // Find the parent container and regenerate just the vertical_layers section
-        const parentCard = verticalLayersContainer.closest('.card');
-        if (parentCard) {
-            const cardBody = parentCard.querySelector('.card-body');
-            if (cardBody) {
-                cardBody.innerHTML = '';
-                generateObjectFields(
-                    schema.$defs.VerticalLayers,
-                    verticalLayers,
-                    cardBody,
-                    basePath
-                );
-            }
-        }
-    }
+    // Don't regenerate the entire form - just update the specific arrays
+    console.log('Skipping full form regeneration to preserve other fields');
     
     // Update the preview to reflect data changes
     updatePreview();
@@ -2893,7 +2877,14 @@ function createFormField(container, id, label, type, value, description, onChang
             input.type = 'text';
             input.className = 'form-control';
             input.id = id;
-            input.value = value !== undefined && value !== null ? value : '';
+            // Don't try to display arrays or objects as text
+            if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                console.warn(`Attempting to display ${typeof value} as text field:`, value);
+                input.value = '';
+                input.placeholder = 'Complex data - use array editor';
+            } else {
+                input.value = value !== undefined && value !== null ? value : '';
+            }
             break;
 
         case 'number':
@@ -2911,7 +2902,14 @@ function createFormField(container, id, label, type, value, description, onChang
             input.className = 'form-control';
             input.id = id;
             input.rows = 3;
-            input.value = value !== undefined && value !== null ? value : '';
+            // Don't try to display arrays or objects as text
+            if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                console.warn(`Attempting to display ${typeof value} as textarea:`, value);
+                input.value = '';
+                input.placeholder = 'Complex data - use array editor';
+            } else {
+                input.value = value !== undefined && value !== null ? value : '';
+            }
             break;
 
         case 'select':
