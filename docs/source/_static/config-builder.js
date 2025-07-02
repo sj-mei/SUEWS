@@ -717,6 +717,7 @@ function generateObjectFields(objSchema, objData, container, path) {
 
         // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
         let isFlexibleRefValue = false;
+        let hasArrayOption = false;
         if (originalPropSchema.anyOf && originalPropSchema.anyOf.length === 2) {
             // Check if one option is a RefValue and the other is a raw type
             const hasRefValue = originalPropSchema.anyOf.some(option => 
@@ -724,9 +725,14 @@ function generateObjectFields(objSchema, objData, container, path) {
             const hasRawType = originalPropSchema.anyOf.some(option => 
                 option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
                 schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
+            const arrayOption = originalPropSchema.anyOf.find(option => 
+                option.type === 'array');
             
             if (hasRefValue && hasRawType) {
                 isFlexibleRefValue = true;
+            } else if (hasRefValue && arrayOption) {
+                // This is a FlexibleRefValue with array option - handle as array
+                hasArrayOption = true;
             }
         }
 
@@ -735,6 +741,10 @@ function generateObjectFields(objSchema, objData, container, path) {
             propSchema.properties.value &&
             propSchema.properties.ref) || isFlexibleRefValue) {
             generateValueWithDOIField(originalPropSchema, objData[propKey], section, propPath, propKey);
+        } else if (hasArrayOption) {
+            // Handle FlexibleRefValue with array option as a regular array
+            const arrayOption = originalPropSchema.anyOf.find(option => option.type === 'array');
+            generateArrayFields(arrayOption, objData[propKey], section, propPath);
         } else if (propSchema.type === 'object') {
             // Create a collapsible card for nested objects
             const card = document.createElement('div');
