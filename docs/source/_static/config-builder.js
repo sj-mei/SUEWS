@@ -14,7 +14,7 @@ const advancedFields = ['zdm_in', 'z0m_in', 'lambda_c', 'lambda_b', 'lambda_p', 
 // Function to perform search
 function performSearch(searchTerm) {
     const formFields = document.querySelectorAll('.form-field, .card');
-    
+
     if (!searchTerm) {
         // Clear all search classes
         formFields.forEach(field => {
@@ -23,23 +23,23 @@ function performSearch(searchTerm) {
         updateFieldVisibility();
         return;
     }
-    
+
     const lowerSearch = searchTerm.toLowerCase();
-    
+
     formFields.forEach(field => {
         const label = field.querySelector('label');
         const description = field.querySelector('.field-description, .description-icon');
         const cardTitle = field.querySelector('.card-header h5, .section-title');
-        
+
         let textContent = '';
         if (label) textContent += label.textContent.toLowerCase() + ' ';
         if (description) textContent += (description.textContent || description.getAttribute('title') || '').toLowerCase() + ' ';
         if (cardTitle) textContent += cardTitle.textContent.toLowerCase() + ' ';
-        
+
         if (textContent.includes(lowerSearch)) {
             field.classList.remove('search-no-match');
             field.classList.add('search-highlight');
-            
+
             // Expand parent sections if needed
             let parent = field.closest('.collapse');
             while (parent) {
@@ -81,36 +81,36 @@ function formatDisplayValue(value, schema) {
 function updateFieldVisibility() {
     const isAdvancedMode = document.body.classList.contains('advanced-mode');
     const searchActive = document.getElementById('parameterSearch')?.value.trim() !== '';
-    
+
     // Don't hide fields if search is active
     if (searchActive) return;
-    
+
     document.querySelectorAll('.card').forEach(card => {
         const cardHeader = card.querySelector('.card-header h5');
         if (!cardHeader) return;
-        
+
         const sectionName = cardHeader.textContent.toLowerCase();
-        const isAdvancedSection = advancedSections.some(section => 
+        const isAdvancedSection = advancedSections.some(section =>
             sectionName.includes(section.toLowerCase())
         );
-        
+
         if (isAdvancedSection && !isAdvancedMode) {
             card.style.display = 'none';
         } else {
             card.style.display = '';
         }
     });
-    
+
     // Hide specific advanced fields
     document.querySelectorAll('.form-field').forEach(field => {
         const label = field.querySelector('label');
         if (!label) return;
-        
+
         const fieldName = label.textContent.toLowerCase();
-        const isAdvancedField = advancedFields.some(advField => 
+        const isAdvancedField = advancedFields.some(advField =>
             fieldName.includes(advField.replace('_', ' '))
         );
-        
+
         if (isAdvancedField && !isAdvancedMode) {
             field.classList.add('advanced-only');
         } else {
@@ -122,7 +122,7 @@ function updateFieldVisibility() {
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM loaded, initializing application...');
     console.log('Preview container exists:', !!document.getElementById('preview-container'));
-    
+
     // Clear initial loading message
     const previewContainer = document.getElementById('preview-container');
     if (previewContainer) {
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Set up event listeners for buttons if they exist
     setupEventListeners();
-    
+
     // Show welcome message for first-time users
     const hasVisited = localStorage.getItem('suews-config-builder-visited');
     const welcomeMessage = document.getElementById('welcomeMessage');
@@ -230,7 +230,7 @@ function setupEventListeners() {
             }
             updateFieldVisibility();
         });
-        
+
         // Restore saved preference
         const savedMode = localStorage.getItem('suews-advanced-mode');
         if (savedMode === 'true') {
@@ -238,29 +238,29 @@ function setupEventListeners() {
             document.body.classList.add('advanced-mode');
         }
     }
-    
+
     // Parameter search
     const parameterSearch = document.getElementById('parameterSearch');
     const clearSearchBtn = document.getElementById('clearSearchBtn');
-    
+
     if (parameterSearch) {
         let searchTimeout;
         parameterSearch.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const searchTerm = this.value.trim();
-            
+
             // Show/hide clear button
             if (clearSearchBtn) {
                 clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
             }
-            
+
             // Debounce search
             searchTimeout = setTimeout(() => {
                 performSearch(searchTerm);
             }, 300);
         });
     }
-    
+
     if (clearSearchBtn) {
         clearSearchBtn.addEventListener('click', function() {
             parameterSearch.value = '';
@@ -268,7 +268,7 @@ function setupEventListeners() {
             performSearch('');
         });
     }
-    
+
     // Import button
     const importBtn = document.getElementById('importBtn');
     if (importBtn) {
@@ -318,13 +318,13 @@ function displayDebug(message, containerId = 'general-form-container') {
 function loadSchema() {
     console.log('loadSchema called');
     displayDebug('Loading schema...');
-    
+
     // Update preview to show loading state
     const previewContainer = document.getElementById('preview-container');
     if (previewContainer) {
         previewContainer.textContent = '# Loading schema file...';
     }
-    
+
     showLoading();
     fetch('suews-config-schema.json')
         .then(response => {
@@ -355,13 +355,13 @@ function loadSchema() {
             console.error('Error loading schema:', error);
             displayDebug(`Error loading schema: ${error.message}`);
             hideLoading();
-            
+
             // Update preview container with error message
             const previewContainer = document.getElementById('preview-container');
             if (previewContainer) {
                 previewContainer.textContent = `# Error loading configuration schema\n# ${error.message}\n\n# Please check:\n# 1. The file 'suews-config-schema.json' exists\n# 2. You are accessing this page via a web server (not file://)`;
             }
-            
+
             // Show error in form container
             const generalContainer = document.getElementById('general-form-container');
             if (generalContainer) {
@@ -389,11 +389,11 @@ function initializeEmptyConfig() {
             Object.keys(schema.properties).forEach(key => {
                 if (key !== 'name' && key !== 'description') {
                     const propSchema = schema.properties[key];
-                    
+
                     // Check if it's an array type (direct or in anyOf)
                     let isArray = false;
                 let arraySchema = null;
-                
+
                 if (propSchema.type === 'array') {
                     isArray = true;
                     arraySchema = propSchema;
@@ -405,7 +405,7 @@ function initializeEmptyConfig() {
                         arraySchema = arrayOption;
                     }
                 }
-                
+
                 if (isArray && arraySchema) {
                     // Use default from schema if available
                     if (propSchema.default && Array.isArray(propSchema.default)) {
@@ -449,7 +449,7 @@ function initializeEmptyConfig() {
 // Convert default array values to FlexibleRefValue format
 function convertDefaultArrayToFlexibleRefValues(arrayData, itemsSchema) {
     if (!Array.isArray(arrayData) || !itemsSchema) return arrayData;
-    
+
     return arrayData.map(item => {
         return convertDefaultObjectToFlexibleRefValues(item, itemsSchema);
     });
@@ -458,7 +458,7 @@ function convertDefaultArrayToFlexibleRefValues(arrayData, itemsSchema) {
 // Convert default object values to FlexibleRefValue format
 function convertDefaultObjectToFlexibleRefValues(objData, objSchema) {
     if (!objData || typeof objData !== 'object' || !objSchema) return objData;
-    
+
     // Handle $ref in schema
     let resolvedSchema = objSchema;
     if (objSchema.$ref && objSchema.$ref.startsWith('#/$defs/')) {
@@ -467,24 +467,24 @@ function convertDefaultObjectToFlexibleRefValues(objData, objSchema) {
             resolvedSchema = schema.$defs[refPath];
         }
     }
-    
+
     if (!resolvedSchema.properties) return objData;
-    
+
     const convertedObj = { ...objData };
-    
+
     Object.keys(resolvedSchema.properties).forEach(propKey => {
         if (convertedObj[propKey] === undefined) return;
-        
+
         const propSchema = resolvedSchema.properties[propKey];
-        
+
         // Check if this property should be a FlexibleRefValue
         if (propSchema.anyOf && propSchema.anyOf.length === 2) {
-            const hasRefValue = propSchema.anyOf.some(option => 
+            const hasRefValue = propSchema.anyOf.some(option =>
                 option.$ref && option.$ref.includes('RefValue'));
-            const hasEnum = propSchema.anyOf.some(option => 
-                option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+            const hasEnum = propSchema.anyOf.some(option =>
+                option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] &&
                 schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
-            
+
             if (hasRefValue && hasEnum) {
                 // Convert raw value to FlexibleRefValue format
                 if (convertedObj[propKey] !== null && (typeof convertedObj[propKey] !== 'object' || !('value' in convertedObj[propKey]))) {
@@ -492,7 +492,7 @@ function convertDefaultObjectToFlexibleRefValues(objData, objSchema) {
                 }
             }
         }
-        
+
         // Handle nested objects and arrays
         if (propSchema.type === 'object' && convertedObj[propKey] && typeof convertedObj[propKey] === 'object') {
             convertedObj[propKey] = convertDefaultObjectToFlexibleRefValues(convertedObj[propKey], propSchema);
@@ -500,7 +500,7 @@ function convertDefaultObjectToFlexibleRefValues(objData, objSchema) {
             convertedObj[propKey] = convertDefaultArrayToFlexibleRefValues(convertedObj[propKey], propSchema.items);
         }
     });
-    
+
     return convertedObj;
 }
 
@@ -544,12 +544,12 @@ function createEmptyObject(schemaObj) {
             } else {
                 // Check for FlexibleRefValue (anyOf)
                 if (propSchema.anyOf && propSchema.anyOf.length === 2) {
-                    const hasRefValue = propSchema.anyOf.some(option => 
+                    const hasRefValue = propSchema.anyOf.some(option =>
                         option.$ref && option.$ref.includes('RefValue'));
-                    const hasEnum = propSchema.anyOf.some(option => 
-                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                    const hasEnum = propSchema.anyOf.some(option =>
+                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] &&
                         schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
-                    
+
                     if (hasRefValue && hasEnum) {
                         // This is a FlexibleRefValue with enum - use RefValue format
                         obj[propKey] = { value: propSchema.default !== undefined ? propSchema.default : null, ref: null };
@@ -595,7 +595,7 @@ function generateForm() {
 
     // Log completion
     console.log('Form generation completed');
-    
+
     // Update field visibility based on advanced mode
     updateFieldVisibility();
 }
@@ -755,12 +755,12 @@ function formatFieldLabel(propKey, propSchema) {
         title: propSchema.title,
         hasAnyOf: !!propSchema.anyOf
     });
-    
+
     // For anyOf schemas, the display_name and unit are at the top level
     let label = propSchema.display_name || propSchema.title || formatPropertyName(propKey);
-    
+
     // Don't append units here - they're shown separately now
-    
+
     return label;
 }
 
@@ -769,10 +769,10 @@ function renderUnit(unit, container) {
     if (!unit || unit === 'dimensionless') {
         return;
     }
-    
+
     const unitSpan = document.createElement('span');
     unitSpan.className = 'field-unit text-muted ms-2';
-    
+
     // Try to render as LaTeX if it contains math symbols
     if (unit.includes('^') || unit.includes('_') || unit.includes('\\') || unit.includes(' ')) {
         try {
@@ -787,10 +787,10 @@ function renderUnit(unit, container) {
                 .replace(/\\textrm{([A-Za-z]+)}\^(-?\w+)/g, '\\textrm{$1}^{$2}')  // Fix m^n pattern
                 .replace(/\\textrm{([A-Za-z]+)}_(\d+)/g, '\\textrm{$1}_{$2}')     // Fix m_1 pattern
                 .replace(/\\textrm{([A-Za-z]+)}_(\w+)/g, '\\textrm{$1}_{$2}');    // Fix m_n pattern
-            
+
             // Wrap in parentheses for display
             latexUnit = `(${latexUnit})`;
-            
+
             // Render with KaTeX
             if (typeof katex !== 'undefined') {
                 katex.render(latexUnit, unitSpan, {
@@ -808,7 +808,7 @@ function renderUnit(unit, container) {
     } else {
         unitSpan.textContent = `(${unit})`;
     }
-    
+
     container.appendChild(unitSpan);
 }
 
@@ -896,7 +896,7 @@ function generateObjectFields(objSchema, objData, container, path) {
 
         // Generate field based on property type
         const propPath = `${path}.${propKey}`;
-        
+
         // Debug logging for roofs/walls
         if (propKey === 'roofs' || propKey === 'walls') {
             console.log(`Processing ${propKey} field:`, {
@@ -913,14 +913,14 @@ function generateObjectFields(objSchema, objData, container, path) {
         let hasArrayOption = false;
         if (originalPropSchema.anyOf && originalPropSchema.anyOf.length === 2) {
             // Check if one option is a RefValue and the other is a raw type
-            const hasRefValue = originalPropSchema.anyOf.some(option => 
+            const hasRefValue = originalPropSchema.anyOf.some(option =>
                 option.$ref && option.$ref.includes('RefValue'));
-            const hasRawType = originalPropSchema.anyOf.some(option => 
-                option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+            const hasRawType = originalPropSchema.anyOf.some(option =>
+                option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] &&
                 schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
-            const arrayOption = originalPropSchema.anyOf.find(option => 
+            const arrayOption = originalPropSchema.anyOf.find(option =>
                 option.type === 'array');
-            
+
             if (hasRefValue && hasRawType) {
                 isFlexibleRefValue = true;
             } else if (hasRefValue && arrayOption) {
@@ -943,35 +943,70 @@ function generateObjectFields(objSchema, objData, container, path) {
                 if (objData[propKey] === null || objData[propKey] === undefined) {
                     objData[propKey] = arrayOption.default || [];
                 }
-                
-                // Check if this is a vertical layer inline array
-                const isVerticalLayerInlineArray = path.includes('vertical_layers') && 
-                    (propKey === 'height' || propKey === 'veg_frac' || propKey === 'veg_scale' || 
+
+                // Check if this is an inline array that needs a label
+                const isVerticalLayerInlineArray = path.includes('vertical_layers') &&
+                    (propKey === 'height' || propKey === 'veg_frac' || propKey === 'veg_scale' ||
                      propKey === 'building_frac' || propKey === 'building_scale');
-                
-                if (isVerticalLayerInlineArray) {
+
+                // Note: roofs and walls are arrays of objects, not inline primitive arrays
+                // They should use the standard collapsible card format
+                const needsInlineLabel = isVerticalLayerInlineArray;
+
+                if (needsInlineLabel) {
                     // For inline arrays, create a simple container with label
                     const fieldContainer = document.createElement('div');
                     fieldContainer.className = 'form-field mb-3';
-                    
+
                     // Add field label
                     const label = document.createElement('label');
                     label.className = 'form-label';
                     label.textContent = formatFieldLabel(propKey, originalPropSchema);
                     fieldContainer.appendChild(label);
-                    
+
                     // Add unit if available
                     if (originalPropSchema.unit) {
                         renderUnit(originalPropSchema.unit, label);
                     }
-                    
+
                     // Generate the array fields
                     generateArrayFields(arrayOption, objData[propKey], fieldContainer, propPath);
-                    
+
                     section.appendChild(fieldContainer);
                 } else {
-                    // For regular arrays, just generate without wrapper
-                    generateArrayFields(arrayOption, objData[propKey], section, propPath);
+                    // For regular arrays (like roofs/walls), create a collapsible card
+                    const card = document.createElement('div');
+                    card.className = 'card mb-3';
+
+                    const cardHeader = document.createElement('div');
+                    cardHeader.className = 'card-header';
+
+                    const cardTitle = document.createElement('h5');
+                    cardTitle.className = 'mb-0';
+
+                    const collapseButton = document.createElement('button');
+                    collapseButton.className = 'btn btn-link';
+                    collapseButton.setAttribute('data-bs-toggle', 'collapse');
+                    collapseButton.setAttribute('data-bs-target', `#collapse-${propPath.replace(/\./g, '-')}`);
+                    collapseButton.textContent = formatFieldLabel(propKey, originalPropSchema);
+
+                    cardTitle.appendChild(collapseButton);
+                    cardHeader.appendChild(cardTitle);
+                    card.appendChild(cardHeader);
+
+                    const collapseDiv = document.createElement('div');
+                    collapseDiv.id = `collapse-${propPath.replace(/\./g, '-')}`;
+                    collapseDiv.className = 'collapse';
+
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body';
+
+                    // Generate fields for array
+                    generateArrayFields(arrayOption, objData[propKey], cardBody, propPath);
+
+                    collapseDiv.appendChild(cardBody);
+                    card.appendChild(collapseDiv);
+                    section.appendChild(card);
                 }
             } else {
                 // Fallback to primitive field
@@ -1012,6 +1047,11 @@ function generateObjectFields(objSchema, objData, container, path) {
             card.appendChild(collapseDiv);
             section.appendChild(card);
         } else if (propSchema.type === 'array') {
+            // Ensure the array exists in data so that fields render even when initially missing (e.g., roofs / walls)
+            if (objData[propKey] === undefined || objData[propKey] === null) {
+                objData[propKey] = Array.isArray(propSchema.default) ? JSON.parse(JSON.stringify(propSchema.default)) : [];
+            }
+
             // Create a collapsible card for arrays
             const card = document.createElement('div');
             card.className = 'card mb-3';
@@ -1071,14 +1111,14 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
     // Handle FlexibleRefValue (anyOf case)
     let valueSchema = null;
     let isFlexibleRefValue = false;
-    
+
     if (propSchema.anyOf && propSchema.anyOf.length === 2) {
         // This is a FlexibleRefValue - find the RefValue option
-        const refValueOption = propSchema.anyOf.find(option => 
+        const refValueOption = propSchema.anyOf.find(option =>
             option.$ref && option.$ref.includes('RefValue'));
-        const enumOption = propSchema.anyOf.find(option => 
+        const enumOption = propSchema.anyOf.find(option =>
             option.$ref && !option.$ref.includes('RefValue'));
-        
+
         if (refValueOption && enumOption) {
             isFlexibleRefValue = true;
             // Resolve the RefValue schema
@@ -1086,7 +1126,7 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
             if (schema.$defs && schema.$defs[refValuePath]) {
                 resolvedSchema = schema.$defs[refValuePath];
             }
-            
+
             // Get the enum schema for the value
             const enumPath = enumOption.$ref.replace('#/$defs/', '');
             if (schema.$defs && schema.$defs[enumPath]) {
@@ -1218,7 +1258,7 @@ function getEnumOptions(propSchema) {
 
     return propSchema.enum.map((value, index) => {
         let text = value.toString();
-        
+
         // First check for parsed descriptions from schema
         if (enumDescriptions[value]) {
             text = enumDescriptions[value];
@@ -1231,7 +1271,7 @@ function getEnumOptions(propSchema) {
         else if (propSchema.title && propSchema.title.toLowerCase().includes('method')) {
             text = `Option ${value}`;
         }
-        
+
         return { value, text };
     });
 }
@@ -1258,7 +1298,7 @@ function ensureVerticalLayersSync(verticalLayers) {
     if (!verticalLayers || !verticalLayers.nlayer) {
         return;
     }
-    
+
     // Get the actual nlayer value
     let nlayerValue;
     if (typeof verticalLayers.nlayer === 'object' && verticalLayers.nlayer.value !== undefined) {
@@ -1266,23 +1306,23 @@ function ensureVerticalLayersSync(verticalLayers) {
     } else {
         nlayerValue = parseInt(verticalLayers.nlayer);
     }
-    
+
     if (isNaN(nlayerValue) || nlayerValue < 1) {
         return;
     }
-    
+
     console.log(`Ensuring vertical layers are synchronized with nlayer=${nlayerValue}`);
-    
+
     // Arrays that need to match nlayer length
     const arraysToSync = ['veg_frac', 'veg_scale', 'building_frac', 'building_scale', 'roofs', 'walls'];
-    
+
     // Height array needs to be nlayer + 1
     if (!verticalLayers.height) {
         verticalLayers.height = [];
     }
     const targetHeightLength = nlayerValue + 1;
     const currentHeightLength = verticalLayers.height.length;
-    
+
     if (currentHeightLength < targetHeightLength) {
         const lastHeight = verticalLayers.height[currentHeightLength - 1] || 0;
         for (let i = currentHeightLength; i < targetHeightLength; i++) {
@@ -1291,19 +1331,19 @@ function ensureVerticalLayersSync(verticalLayers) {
     } else if (currentHeightLength > targetHeightLength) {
         verticalLayers.height.length = targetHeightLength;
     }
-    
+
     // Synchronize other arrays
     arraysToSync.forEach(arrayName => {
         if (!verticalLayers[arrayName]) {
             verticalLayers[arrayName] = [];
         }
-        
+
         const currentLength = verticalLayers[arrayName].length;
-        
+
         if (currentLength < nlayerValue) {
             for (let i = currentLength; i < nlayerValue; i++) {
                 let newItem;
-                
+
                 if (arrayName === 'roofs' || arrayName === 'walls') {
                     const itemSchemaPath = arrayName === 'roofs' ? 'RoofLayer' : 'WallLayer';
                     if (schema.$defs && schema.$defs[itemSchemaPath]) {
@@ -1318,7 +1358,7 @@ function ensureVerticalLayersSync(verticalLayers) {
                         newItem = 1.0;
                     }
                 }
-                
+
                 verticalLayers[arrayName].push(newItem);
             }
         } else if (currentLength > nlayerValue) {
@@ -1330,42 +1370,42 @@ function ensureVerticalLayersSync(verticalLayers) {
 // Synchronize vertical layer arrays when nlayer changes
 function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
     console.log(`Synchronizing vertical layer arrays for nlayer change to ${newNlayer}`);
-    
+
     // Extract the base path to vertical_layers from the nlayer path
     // Handle both direct paths and paths with .value
     const basePath = nlayerPath.replace('.nlayer.value', '').replace('.nlayer', '');
-    
+
     // Get the vertical_layers object
     const verticalLayers = getNestedProperty(configData, basePath);
     if (!verticalLayers) {
         console.error('Could not find vertical_layers object at path:', basePath);
         return;
     }
-    
+
     console.log('Found vertical_layers:', verticalLayers);
-    
+
     // Ensure newNlayer is a valid integer
     const nlayerValue = parseInt(newNlayer);
     if (isNaN(nlayerValue) || nlayerValue < 1) {
         console.error('Invalid nlayer value:', newNlayer);
         return;
     }
-    
+
     // Update the nlayer value in the data structure
     if (verticalLayers.nlayer && typeof verticalLayers.nlayer === 'object') {
         verticalLayers.nlayer.value = nlayerValue;
     } else {
         verticalLayers.nlayer = nlayerValue;
     }
-    
+
     // Arrays that need to match nlayer length
     const arraysToSync = ['veg_frac', 'veg_scale', 'building_frac', 'building_scale', 'roofs', 'walls'];
-    
+
     // Height array needs to be nlayer + 1
     if (verticalLayers.height) {
         const currentHeightLength = verticalLayers.height.length;
         const targetHeightLength = nlayerValue + 1;
-        
+
         if (currentHeightLength < targetHeightLength) {
             // Add new height values
             const lastHeight = verticalLayers.height[currentHeightLength - 1] || 0;
@@ -1377,20 +1417,20 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
             verticalLayers.height.length = targetHeightLength;
         }
     }
-    
+
     // Synchronize other arrays to match nlayer
     arraysToSync.forEach(arrayName => {
         if (!verticalLayers[arrayName]) {
             verticalLayers[arrayName] = [];
         }
-        
+
         const currentLength = verticalLayers[arrayName].length;
-        
+
         if (currentLength < nlayerValue) {
             // Add new items
             for (let i = currentLength; i < nlayerValue; i++) {
                 let newItem;
-                
+
                 if (arrayName === 'roofs' || arrayName === 'walls') {
                     // For roofs and walls, create empty objects based on schema
                     const itemSchemaPath = arrayName === 'roofs' ? 'RoofLayer' : 'WallLayer';
@@ -1407,7 +1447,7 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
                         newItem = 1.0;
                     }
                 }
-                
+
                 verticalLayers[arrayName].push(newItem);
             }
         } else if (currentLength > nlayerValue) {
@@ -1415,14 +1455,14 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
             verticalLayers[arrayName].length = nlayerValue;
         }
     });
-    
+
     // Find the vertical_layers container and regenerate it completely
     console.log('Regenerating entire vertical_layers section to ensure all fields are visible');
-    
+
     // Find the card body that contains the vertical_layers fields
     const verticalLayersContainers = document.querySelectorAll('.card-body');
     let verticalLayersContainer = null;
-    
+
     verticalLayersContainers.forEach(container => {
         // Check if this container has vertical layers fields
         const hasVerticalLayersFields = container.querySelector('[id*="vertical_layers"]');
@@ -1430,13 +1470,13 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
             verticalLayersContainer = container;
         }
     });
-    
+
     if (verticalLayersContainer) {
         console.log('Found vertical_layers container, regenerating all fields...');
-        
+
         // Clear and regenerate the entire vertical_layers object fields
         verticalLayersContainer.innerHTML = '';
-        
+
         // Get the vertical_layers schema
         const verticalLayersSchema = schema.$defs.VerticalLayers;
         if (verticalLayersSchema) {
@@ -1446,14 +1486,14 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
     } else {
         // Fallback to the original approach if we can't find the container
         console.log('Could not find vertical_layers container, using fallback approach');
-        
+
         // For inline arrays, we need to regenerate them completely
         const allArrays = ['height', ...arraysToSync];
-        
+
         allArrays.forEach(arrayName => {
             const arrayPath = `${basePath}.${arrayName}`;
             console.log(`Looking for array container at path: ${arrayPath}`);
-            
+
             // Find all containers that might contain this array
             const possibleContainers = document.querySelectorAll(`[id*="${arrayPath.replace(/\./g, '-')}"]`);
             possibleContainers.forEach(container => {
@@ -1462,7 +1502,7 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
                     console.log(`Found container for ${arrayName}, regenerating...`);
                     // Clear the entire parent
                     parent.innerHTML = '';
-                    
+
                     // Regenerate the array field
                     const arraySchema = schema.$defs.VerticalLayers.properties[arrayName];
                     if (arraySchema) {
@@ -1480,7 +1520,7 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
             });
         });
     }
-    
+
     // Update the preview to reflect data changes
     updatePreview();
 }
@@ -1511,7 +1551,7 @@ function updatePreview() {
 
             // Clean FlexibleRefValue objects for preview
             const cleanedData = cleanFlexibleRefValuesForExport(configData, schema);
-            
+
             // Always generate YAML format
             const yamlOutput = jsyaml.dump(cleanedData, {
                 indent: 2,
@@ -1551,10 +1591,10 @@ function importConfig() {
     // Convert raw values to FlexibleRefValue objects where needed
     function convertToFlexibleRefValues(data, schemaObj) {
         if (!data || !schemaObj) return data;
-        
+
         function convertObject(obj, objSchema, path = '') {
             if (!obj || typeof obj !== 'object' || !objSchema) return;
-            
+
             // Handle $ref in schema
             let resolvedSchema = objSchema;
             if (objSchema.$ref && objSchema.$ref.startsWith('#/$defs/')) {
@@ -1563,22 +1603,22 @@ function importConfig() {
                     resolvedSchema = schema.$defs[refPath];
                 }
             }
-            
+
             if (resolvedSchema.properties) {
                 Object.keys(resolvedSchema.properties).forEach(propKey => {
                     if (obj[propKey] === undefined) return;
-                    
+
                     const propSchema = resolvedSchema.properties[propKey];
                     const propPath = path ? `${path}.${propKey}` : propKey;
-                    
+
                     // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
                     if (propSchema.anyOf && propSchema.anyOf.length === 2) {
-                        const hasRefValue = propSchema.anyOf.some(option => 
+                        const hasRefValue = propSchema.anyOf.some(option =>
                             option.$ref && option.$ref.includes('RefValue'));
-                        const hasEnum = propSchema.anyOf.some(option => 
-                            option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                        const hasEnum = propSchema.anyOf.some(option =>
+                            option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] &&
                             schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
-                        
+
                         if (hasRefValue && hasEnum) {
                             // This is a FlexibleRefValue
                             // If it's not already an object with value/ref, convert it
@@ -1588,7 +1628,7 @@ function importConfig() {
                             }
                         }
                     }
-                    
+
                     // Recursively handle nested objects
                     if (propSchema.type === 'object' && obj[propKey] && typeof obj[propKey] === 'object') {
                         convertObject(obj[propKey], propSchema, propPath);
@@ -1605,7 +1645,7 @@ function importConfig() {
                 });
             }
         }
-        
+
         convertObject(data, schemaObj);
         return data;
     }
@@ -1675,18 +1715,18 @@ function importConfig() {
 // Clean FlexibleRefValue objects for export - if ref is null, export just the value
 function cleanFlexibleRefValuesForExport(data, schemaObj) {
     if (!data || !schemaObj) return data;
-    
+
     // Deep clone the data to avoid modifying the original
     const cleaned = JSON.parse(JSON.stringify(data));
-    
+
     function cleanObject(obj, objSchema, path = '') {
         if (!obj || typeof obj !== 'object' || !objSchema) return;
-        
+
         // Remove UI-only flags
         if (obj.__is_copied) {
             delete obj.__is_copied;
         }
-        
+
         // Handle $ref in schema
         let resolvedSchema = objSchema;
         if (objSchema.$ref && objSchema.$ref.startsWith('#/$defs/')) {
@@ -1695,22 +1735,22 @@ function cleanFlexibleRefValuesForExport(data, schemaObj) {
                 resolvedSchema = schema.$defs[refPath];
             }
         }
-        
+
         if (resolvedSchema.properties) {
             Object.keys(resolvedSchema.properties).forEach(propKey => {
                 if (obj[propKey] === undefined || obj[propKey] === null) return;
-                
+
                 const propSchema = resolvedSchema.properties[propKey];
                 const propPath = path ? `${path}.${propKey}` : propKey;
-                
+
                 // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
                 if (propSchema.anyOf && propSchema.anyOf.length === 2) {
-                    const hasRefValue = propSchema.anyOf.some(option => 
+                    const hasRefValue = propSchema.anyOf.some(option =>
                         option.$ref && option.$ref.includes('RefValue'));
-                    const hasEnum = propSchema.anyOf.some(option => 
-                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                    const hasEnum = propSchema.anyOf.some(option =>
+                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] &&
                         schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
-                    
+
                     if (hasRefValue && hasEnum) {
                         // This is a FlexibleRefValue
                         if (obj[propKey] && typeof obj[propKey] === 'object' && 'value' in obj[propKey]) {
@@ -1723,7 +1763,7 @@ function cleanFlexibleRefValuesForExport(data, schemaObj) {
                         }
                     }
                 }
-                
+
                 // Recursively handle nested objects
                 if (propSchema.type === 'object' && obj[propKey] && typeof obj[propKey] === 'object') {
                     cleanObject(obj[propKey], propSchema, propPath);
@@ -1740,7 +1780,7 @@ function cleanFlexibleRefValuesForExport(data, schemaObj) {
             });
         }
     }
-    
+
     cleanObject(cleaned, schemaObj);
     return cleaned;
 }
@@ -1749,7 +1789,7 @@ function exportConfig(format) {
     try {
         // Clean FlexibleRefValue objects for export
         const cleanedData = cleanFlexibleRefValuesForExport(configData, schema);
-        
+
         let exportData;
         let mimeType;
         let filename;
@@ -1826,13 +1866,13 @@ function convertSchemaToV6Compatible(schema) {
 // Transform FlexibleRefValue objects to raw values for validation
 function transformFlexibleRefValues(data, schemaObj) {
     if (!data || !schemaObj) return data;
-    
+
     // Deep clone the data to avoid modifying the original
     const transformed = JSON.parse(JSON.stringify(data));
-    
+
     function transformObject(obj, objSchema, path = '') {
         if (!obj || typeof obj !== 'object' || !objSchema) return;
-        
+
         // Handle $ref in schema
         let resolvedSchema = objSchema;
         if (objSchema.$ref && objSchema.$ref.startsWith('#/$defs/')) {
@@ -1841,22 +1881,22 @@ function transformFlexibleRefValues(data, schemaObj) {
                 resolvedSchema = schema.$defs[refPath];
             }
         }
-        
+
         if (resolvedSchema.properties) {
             Object.keys(resolvedSchema.properties).forEach(propKey => {
                 if (obj[propKey] === undefined || obj[propKey] === null) return;
-                
+
                 const propSchema = resolvedSchema.properties[propKey];
                 const propPath = path ? `${path}.${propKey}` : propKey;
-                
+
                 // Check if this is a FlexibleRefValue (anyOf with RefValue and raw type)
                 if (propSchema.anyOf && propSchema.anyOf.length === 2) {
-                    const hasRefValue = propSchema.anyOf.some(option => 
+                    const hasRefValue = propSchema.anyOf.some(option =>
                         option.$ref && option.$ref.includes('RefValue'));
-                    const hasEnum = propSchema.anyOf.some(option => 
-                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] && 
+                    const hasEnum = propSchema.anyOf.some(option =>
+                        option.$ref && schema.$defs && schema.$defs[option.$ref.replace('#/$defs/', '')] &&
                         schema.$defs[option.$ref.replace('#/$defs/', '')].enum);
-                    
+
                     if (hasRefValue && hasEnum) {
                         // This is a FlexibleRefValue - extract the value
                         if (obj[propKey] && typeof obj[propKey] === 'object' && 'value' in obj[propKey]) {
@@ -1865,7 +1905,7 @@ function transformFlexibleRefValues(data, schemaObj) {
                         }
                     }
                 }
-                
+
                 // Recursively handle nested objects
                 if (propSchema.type === 'object' && obj[propKey] && typeof obj[propKey] === 'object') {
                     transformObject(obj[propKey], propSchema, propPath);
@@ -1882,7 +1922,7 @@ function transformFlexibleRefValues(data, schemaObj) {
             });
         }
     }
-    
+
     transformObject(transformed, schemaObj);
     return transformed;
 }
@@ -2384,7 +2424,7 @@ function generatePrimitiveField(propSchema, propData, container, path, propKey) 
 
     // Use the helper function to format the field label with units
     const displayLabel = formatFieldLabel(propKey, originalPropSchema);
-    
+
     // Create form field
     createFormField(
         container,
@@ -2420,7 +2460,7 @@ function generatePrimitiveField(propSchema, propData, container, path, propKey) 
 // Generate inline display for primitive arrays (used for vertical layers)
 function generateInlinePrimitiveArray(arraySchema, arrayData, container, path) {
     console.log(`Generating inline primitive array for ${path}`);
-    
+
     // Create a container for the inline inputs
     const inlineContainer = document.createElement('div');
     inlineContainer.className = 'inline-array-container';
@@ -2428,7 +2468,7 @@ function generateInlinePrimitiveArray(arraySchema, arrayData, container, path) {
     inlineContainer.style.flexWrap = 'wrap';
     inlineContainer.style.gap = '10px';
     inlineContainer.style.marginTop = '10px';
-    
+
     // Render each array element as an individual input
     arrayData.forEach((value, index) => {
         const itemDiv = document.createElement('div');
@@ -2436,7 +2476,7 @@ function generateInlinePrimitiveArray(arraySchema, arrayData, container, path) {
         itemDiv.style.flex = '1';
         itemDiv.style.minWidth = '80px';
         itemDiv.style.maxWidth = '150px';
-        
+
         // Create label
         const label = document.createElement('label');
         label.className = 'form-label small text-muted';
@@ -2444,13 +2484,13 @@ function generateInlinePrimitiveArray(arraySchema, arrayData, container, path) {
         label.style.fontSize = '0.8rem';
         label.style.marginBottom = '2px';
         itemDiv.appendChild(label);
-        
+
         // Create input
         const input = document.createElement('input');
         input.type = arraySchema.items.type === 'number' || arraySchema.items.type === 'integer' ? 'number' : 'text';
         input.className = 'form-control form-control-sm';
         input.value = value !== null && value !== undefined ? value : '';
-        
+
         // Add min/max if specified
         if (arraySchema.items.minimum !== undefined) {
             input.min = arraySchema.items.minimum;
@@ -2458,11 +2498,11 @@ function generateInlinePrimitiveArray(arraySchema, arrayData, container, path) {
         if (arraySchema.items.maximum !== undefined) {
             input.max = arraySchema.items.maximum;
         }
-        
+
         // Add change handler
         input.addEventListener('change', (e) => {
             let newValue = e.target.value;
-            
+
             // Convert to appropriate type
             if (arraySchema.items.type === 'number') {
                 newValue = parseFloat(newValue);
@@ -2471,20 +2511,20 @@ function generateInlinePrimitiveArray(arraySchema, arrayData, container, path) {
                 newValue = parseInt(newValue);
                 if (isNaN(newValue)) newValue = 0;
             }
-            
+
             // Update array data
             arrayData[index] = newValue;
-            
+
             // Update preview
             updatePreview();
         });
-        
+
         itemDiv.appendChild(input);
         inlineContainer.appendChild(itemDiv);
     });
-    
+
     container.appendChild(inlineContainer);
-    
+
     // Add note about nlayer control
     const noteDiv = document.createElement('div');
     noteDiv.className = 'text-muted small mt-2';
@@ -2497,12 +2537,15 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
     console.log(`Generating array fields for ${path}...`);
 
     // Check if this is a vertical layer primitive array
-    const isVerticalLayerArray = path.includes('vertical_layers') && 
-        (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
+    const isVerticalLayerArray = path.includes('vertical_layers') &&
+        (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') ||
          path.includes('building_frac') || path.includes('building_scale'));
-    
-    const isPrimitiveArray = arraySchema.items && 
-        (arraySchema.items.type === 'number' || arraySchema.items.type === 'integer' || 
+
+    // Only vertical layer arrays should be inline
+    const isInlineArray = isVerticalLayerArray;
+
+    const isPrimitiveArray = arraySchema.items &&
+        (arraySchema.items.type === 'number' || arraySchema.items.type === 'integer' ||
          arraySchema.items.type === 'string' || arraySchema.items.type === 'boolean');
 
     // Create array container
@@ -2518,8 +2561,8 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
         arrayContainer.appendChild(descriptionDiv);
     }
 
-    // For vertical layer primitive arrays, use a special inline display
-    if (isVerticalLayerArray && isPrimitiveArray) {
+    // For inline primitive arrays, use a special inline display
+    if (isInlineArray && isPrimitiveArray) {
         generateInlinePrimitiveArray(arraySchema, arrayData, arrayContainer, path);
         return;
     }
@@ -2557,30 +2600,30 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
         const copyButton = document.createElement('button');
         copyButton.className = 'btn btn-sm btn-secondary';
         copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy';
-        
+
         // Check if this is a vertical layer array
-        const isVerticalLayerArrayForCopy = path.includes('vertical_layers') && 
-            (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
-             path.includes('building_frac') || path.includes('building_scale') || 
+        const isVerticalLayerArrayForCopy = path.includes('vertical_layers') &&
+            (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') ||
+             path.includes('building_frac') || path.includes('building_scale') ||
              path.includes('roofs') || path.includes('walls'));
-        
+
         if (isVerticalLayerArrayForCopy) {
             copyButton.style.display = 'none';
         }
-        
+
         copyButton.addEventListener('click', () => {
             // Deep copy the item data
             const copiedData = JSON.parse(JSON.stringify(arrayData[itemIndex]));
-            
+
             // Mark as copied
             copiedData.__is_copied = true;
-            
+
             // Add the copied item to the array
             arrayData.push(copiedData);
-            
+
             // Add the new item to the UI
             addItem();
-            
+
             // Update preview
             updatePreview();
         });
@@ -2588,17 +2631,17 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
         const removeButton = document.createElement('button');
         removeButton.className = 'btn btn-sm btn-danger';
         removeButton.innerHTML = '<i class="fas fa-times"></i> Remove';
-        
+
         // Check if this is a vertical layer array
-        const isVerticalLayerArrayRemove = path.includes('vertical_layers') && 
-            (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
-             path.includes('building_frac') || path.includes('building_scale') || 
+        const isVerticalLayerArrayRemove = path.includes('vertical_layers') &&
+            (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') ||
+             path.includes('building_frac') || path.includes('building_scale') ||
              path.includes('roofs') || path.includes('walls'));
-        
+
         if (isVerticalLayerArrayRemove) {
             removeButton.style.display = 'none';
         }
-        
+
         removeButton.addEventListener('click', () => {
             if (!isVerticalLayerArrayRemove) {
                 // Remove item from array
@@ -2627,13 +2670,22 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
         itemHeader.appendChild(buttonContainer);
         itemDiv.appendChild(itemHeader);
 
+        // Create collapsible wrapper for item body
+        const collapseDiv = document.createElement('div');
+        collapseDiv.id = `collapse-${path.replace(/\./g, '-')}-${itemIndex}`;
+        collapseDiv.className = 'collapse show'; // expanded by default
+
+        // Make the header clickable to toggle this collapse
+        itemHeader.style.cursor = 'pointer';
+        itemHeader.setAttribute('data-bs-toggle', 'collapse');
+        itemHeader.setAttribute('data-bs-target', `#${collapseDiv.id}`);
+
         // Create item body
         const itemBody = document.createElement('div');
         itemBody.className = 'card-body';
-        itemDiv.appendChild(itemBody);
 
-        // Create new item data
-        let newItemData;
+        collapseDiv.appendChild(itemBody);
+        itemDiv.appendChild(collapseDiv);
 
         // Handle different item types
         if (arraySchema.items) {
@@ -2680,19 +2732,19 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
     const addButton = document.createElement('button');
     addButton.className = 'btn btn-primary mt-2';
     addButton.innerHTML = '<i class="fas fa-plus"></i> Add Item';
-    
+
     // Check if this is a vertical layer array
-    const isVerticalLayerArrayAdd = path.includes('vertical_layers') && 
-        (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
-         path.includes('building_frac') || path.includes('building_scale') || 
+    const isVerticalLayerArrayAdd = path.includes('vertical_layers') &&
+        (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') ||
+         path.includes('building_frac') || path.includes('building_scale') ||
          path.includes('roofs') || path.includes('walls'));
-    
+
     if (isVerticalLayerArrayAdd) {
         addButton.disabled = true;
         addButton.title = 'Array length is controlled by nlayer';
         addButton.innerHTML = '<i class="fas fa-lock"></i> Array length controlled by nlayer';
     }
-    
+
     addButton.addEventListener('click', addItem);
     arrayContainer.appendChild(addButton);
 
@@ -2723,70 +2775,70 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
             const copyButton = document.createElement('button');
             copyButton.className = 'btn btn-sm btn-secondary';
             copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy';
-            
+
             // Check if this is a vertical layer array
-            const isVerticalLayerArrayForCopy = path.includes('vertical_layers') && 
-                (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
-                 path.includes('building_frac') || path.includes('building_scale') || 
+            const isVerticalLayerArrayForCopy = path.includes('vertical_layers') &&
+                (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') ||
+                 path.includes('building_frac') || path.includes('building_scale') ||
                  path.includes('roofs') || path.includes('walls'));
-            
+
             if (isVerticalLayerArrayForCopy) {
                 copyButton.style.display = 'none';
             }
-            
+
             copyButton.addEventListener('click', () => {
                 // Deep copy the item data
                 const copiedData = JSON.parse(JSON.stringify(itemData));
-                
+
                 // Mark as copied
                 copiedData.__is_copied = true;
-                
+
                 // Add the copied item to the array
                 arrayData.push(copiedData);
-                
+
                 // Regenerate all array fields to include the new copy
                 itemsContainer.innerHTML = '';
                 arrayData.forEach((data, idx) => {
                     const itemPath = `${path}[${idx}]`;
-                    
+
                     // Create item container
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'array-item card mb-3';
                     itemDiv.dataset.index = idx;
-                    
+
                     // Create item header
                     const itemHeader = document.createElement('div');
                     itemHeader.className = 'card-header d-flex justify-content-between align-items-center';
-                    
+
                     const itemTitle = document.createElement('h5');
                     itemTitle.className = 'mb-0';
                     const isCopied = data && data.__is_copied;
                     itemTitle.textContent = `Item ${idx + 1}${isCopied ? ' (copied)' : ''}`;
-                    
+
                     // Recreate buttons
                     const btnContainer = document.createElement('div');
                     btnContainer.className = 'd-flex gap-2';
-                    
+
                     const newCopyBtn = document.createElement('button');
                     newCopyBtn.className = 'btn btn-sm btn-secondary';
                     newCopyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-                    
+
                     const newRemoveBtn = document.createElement('button');
                     newRemoveBtn.className = 'btn btn-sm btn-danger';
                     newRemoveBtn.innerHTML = '<i class="fas fa-times"></i> Remove';
-                    
+
                     btnContainer.appendChild(newCopyBtn);
                     btnContainer.appendChild(newRemoveBtn);
-                    
+
                     itemHeader.appendChild(itemTitle);
                     itemHeader.appendChild(btnContainer);
                     itemDiv.appendChild(itemHeader);
-                    
+
                     // Create item body
                     const itemBody = document.createElement('div');
                     itemBody.className = 'card-body';
                     itemDiv.appendChild(itemBody);
-                    
+
                     // Generate fields
                     if (arraySchema.items) {
                         let itemsSchema = arraySchema.items;
@@ -2796,7 +2848,7 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
                                 itemsSchema = schema.$defs[refPath];
                             }
                         }
-                        
+
                         if (itemsSchema.type === 'object') {
                             generateObjectFields(itemsSchema, data, itemBody, itemPath);
                         } else if (itemsSchema.type === 'array') {
@@ -2805,13 +2857,13 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
                             generatePrimitiveField(itemsSchema, data, itemBody, itemPath, 'value');
                         }
                     }
-                    
+
                     itemsContainer.appendChild(itemDiv);
                 });
-                
+
                 // Re-run this function to reattach event listeners
                 generateArrayFields(arraySchema, arrayData, container, path);
-                
+
                 // Update preview
                 updatePreview();
             });
@@ -2819,17 +2871,17 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
             const removeButton = document.createElement('button');
             removeButton.className = 'btn btn-sm btn-danger';
             removeButton.innerHTML = '<i class="fas fa-times"></i> Remove';
-            
+
             // Check if this is a vertical layer array (using already declared variable)
-            const isVerticalLayerArrayRemove2 = path.includes('vertical_layers') && 
-                (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') || 
-                 path.includes('building_frac') || path.includes('building_scale') || 
+            const isVerticalLayerArrayRemove2 = path.includes('vertical_layers') &&
+                (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') ||
+                 path.includes('building_frac') || path.includes('building_scale') ||
                  path.includes('roofs') || path.includes('walls'));
-            
+
             if (isVerticalLayerArrayRemove2) {
                 removeButton.style.display = 'none';
             }
-            
+
             removeButton.addEventListener('click', () => {
                 if (!isVerticalLayerArrayRemove2) {
                     // Remove item from array
@@ -2858,10 +2910,22 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
             itemHeader.appendChild(buttonContainer);
             itemDiv.appendChild(itemHeader);
 
+            // Create collapsible wrapper for item body
+            const collapseDiv = document.createElement('div');
+            collapseDiv.id = `collapse-${path.replace(/\./g, '-')}-${itemIndex}`;
+            collapseDiv.className = 'collapse show'; // Show by default
+
+            // Make the header clickable to toggle collapse
+            itemHeader.style.cursor = 'pointer';
+            itemHeader.setAttribute('data-bs-toggle', 'collapse');
+            itemHeader.setAttribute('data-bs-target', `#${collapseDiv.id}`);
+
             // Create item body
             const itemBody = document.createElement('div');
             itemBody.className = 'card-body';
-            itemDiv.appendChild(itemBody);
+
+            collapseDiv.appendChild(itemBody);
+            itemDiv.appendChild(collapseDiv);
 
             // Handle different item types
             if (arraySchema.items) {
@@ -2894,14 +2958,14 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
     if (isVerticalLayerArray) {
         // Hide the Add button for vertical layer arrays
         addButton.style.display = 'none';
-        
+
         // Also hide all remove buttons for vertical layer arrays
         const allRemoveButtons = itemsContainer.querySelectorAll('.btn-danger');
         allRemoveButtons.forEach(btn => {
             btn.style.display = 'none';
         });
     }
-    
+
     // If array is empty and not a vertical layer array, add one item by default
     if (!arrayData.length && !isVerticalLayerArray) {
         addItem();
@@ -2924,7 +2988,7 @@ function createFormField(container, id, label, type, value, description, onChang
     labelEl.textContent = label;
 
     labelDiv.appendChild(labelEl);
-    
+
     // Add unit display if available
     renderUnit(unit, labelDiv);
 
@@ -3066,7 +3130,7 @@ function createValueWithDOIField(container, id, label, type, value, ref, descrip
     labelEl.textContent = label;
 
     labelDiv.appendChild(labelEl);
-    
+
     // Add unit display if available
     renderUnit(unit, labelDiv);
 
