@@ -42,11 +42,13 @@ window.configBuilder.schema.initializeEmptyConfig = function() {
     window.configBuilderState.configData = configData;
     
     // Ensure site and model exist
-    if (!configData.site) {
-        configData.site = window.configBuilder.schema.createEmptyObject(schema.properties.site);
-    }
-    if (!configData.model) {
-        configData.model = window.configBuilder.schema.createEmptyObject(schema.properties.model);
+    if (schema.properties) {
+        if (!configData.site && schema.properties.site) {
+            configData.site = window.configBuilder.schema.createEmptyObject(schema.properties.site);
+        }
+        if (!configData.model && schema.properties.model) {
+            configData.model = window.configBuilder.schema.createEmptyObject(schema.properties.model);
+        }
     }
     
     // Special handling for vertical_layers

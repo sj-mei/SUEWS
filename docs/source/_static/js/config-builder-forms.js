@@ -29,7 +29,7 @@ window.configBuilder.forms.generateForm = function() {
     window.configBuilder.forms.generateModelFields();
     
     // Generate Site Information fields if site exists
-    if (schema.properties.site) {
+    if (schema.properties && schema.properties.site) {
         const siteContainer = document.getElementById('site-form-container');
         if (siteContainer) {
             siteContainer.innerHTML = '';
@@ -60,7 +60,8 @@ window.configBuilder.forms.generateModelFields = function() {
     const configData = window.configBuilderState.configData;
     const modelContainer = document.getElementById('model-form-container');
     
-    if (!modelContainer || !schema.properties.model) {
+    if (!modelContainer || !schema || !schema.properties || !schema.properties.model || !schema.properties.model.properties) {
+        console.warn('Model container, schema or model properties not available');
         return;
     }
     
