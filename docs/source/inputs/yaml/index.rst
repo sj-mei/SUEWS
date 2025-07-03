@@ -149,6 +149,8 @@ Configuration Builder (Experimental)
    **Interactive Configuration Builder**: An experimental web-based tool for creating YAML configuration files with guided forms.
 
    📝 **Access the builder**: `SUEWS Configuration Builder <../../_static/index.html>`__
+   
+   📖 **User Guide**: See :ref:`config_builder_guide` for detailed instructions on using the configuration builder.
 
    .. warning::
 
@@ -157,9 +159,12 @@ Configuration Builder (Experimental)
    Features:
 
    - Interactive forms for parameter input
-   - Basic validation for parameter values
-   - YAML file export functionality
-   - Integrated parameter documentation
+   - Basic/Advanced mode toggle
+   - Real-time YAML preview
+   - Parameter search functionality
+   - Import/Export capabilities
+   - Automatic array synchronisation
+   - Built-in validation
 
    **Alternative**: You can also create YAML files manually using the schema documentation below or by adapting the sample configuration files provided with SuPy.
 
