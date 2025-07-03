@@ -22,7 +22,75 @@ window.configBuilder.forms.generateForm = function() {
     // Clear existing form
     const formContainer = document.getElementById('general-form-container');
     if (formContainer) {
+        console.log('Clearing general-form-container');
         formContainer.innerHTML = '';
+        
+        // Generate general settings fields (name and description)
+        if (schema.properties) {
+            // Create fields for root level properties (name, description)
+            const generalProps = ['name', 'description'];
+            generalProps.forEach(propKey => {
+                if (schema.properties[propKey]) {
+                    const propSchema = schema.properties[propKey];
+                    
+                    // Create form group
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'mb-3';
+                    
+                    // Create label
+                    const label = document.createElement('label');
+                    label.className = 'form-label';
+                    label.textContent = propSchema.title || propKey.charAt(0).toUpperCase() + propKey.slice(1);
+                    label.setAttribute('for', `general-${propKey}`);
+                    formGroup.appendChild(label);
+                    
+                    // Create input based on type
+                    if (propKey === 'description' || (propSchema.type === 'string' && propSchema.maxLength > 100)) {
+                        // Use textarea for description
+                        const textarea = document.createElement('textarea');
+                        textarea.className = 'form-control';
+                        textarea.id = `general-${propKey}`;
+                        textarea.rows = 3;
+                        textarea.value = configData[propKey] || '';
+                        textarea.placeholder = propSchema.description || '';
+                        
+                        textarea.addEventListener('input', () => {
+                            configData[propKey] = textarea.value;
+                            window.configBuilder.preview.updatePreview();
+                        });
+                        
+                        formGroup.appendChild(textarea);
+                    } else {
+                        // Use input for name
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'form-control';
+                        input.id = `general-${propKey}`;
+                        input.value = configData[propKey] || '';
+                        input.placeholder = propSchema.description || '';
+                        
+                        input.addEventListener('input', () => {
+                            configData[propKey] = input.value;
+                            window.configBuilder.preview.updatePreview();
+                        });
+                        
+                        formGroup.appendChild(input);
+                    }
+                    
+                    // Add description as help text
+                    if (propSchema.description) {
+                        const helpText = document.createElement('small');
+                        helpText.className = 'form-text text-muted';
+                        helpText.textContent = propSchema.description;
+                        formGroup.appendChild(helpText);
+                    }
+                    
+                    formContainer.appendChild(formGroup);
+                }
+            });
+        }
+    } else {
+        console.log('general-form-container not found!');
     }
     
     // Generate Model Configuration fields
@@ -60,11 +128,20 @@ window.configBuilder.forms.generateModelFields = function() {
     const configData = window.configBuilderState.configData;
     const modelContainer = document.getElementById('model-form-container');
     
-    if (!modelContainer || !schema || !schema.properties || !schema.properties.model || !schema.properties.model.properties) {
-        console.warn('Model container, schema or model properties not available');
+    if (!modelContainer) {
+        console.warn('Model container not found');
         return;
     }
     
+    if (!schema || !schema.properties || !schema.properties.model || !schema.properties.model.properties) {
+        console.warn('Schema or model properties not available');
+        console.log('schema:', schema);
+        console.log('schema.properties:', schema?.properties);
+        console.log('schema.properties.model:', schema?.properties?.model);
+        return;
+    }
+    
+    console.log('Clearing model container and generating tabs');
     modelContainer.innerHTML = '';
     
     // Ensure model data exists
