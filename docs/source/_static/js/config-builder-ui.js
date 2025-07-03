@@ -417,13 +417,7 @@ window.configBuilder.ui.validateConfig = function() {
         ajv.addFormat('date-time', true);
         ajv.addFormat('uri', true);
         
-        // Add custom error messages
-        ajv.addKeyword({
-            keyword: 'betterErrors',
-            compile: function() {
-                return function validate() { return true; };
-            }
-        });
+        // Remove custom keyword - not needed for validation
         
         // Add the schema with definitions
         const validate = ajv.compile(schema);
