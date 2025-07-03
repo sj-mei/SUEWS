@@ -217,9 +217,31 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
         names=["grid"],
     )
 
+    if "DailyState" in df_output:
+        df_dailystate_rsmp = pd.concat(
+            {
+                grid: pd.concat(
+                    {
+                        "DailyState": df_output.loc[grid, "DailyState"].dropna()
+                        .resample(
+                            freq,
+                            closed="right",
+                            label="left",
+                        )
+                        .agg(dict_aggm["DailyState"])
+                    },
+                    axis=1,
+                    names=["group", "var"],
+                )
+                for grid in list_grid
+            },
+            names=["grid"],
+        )
+
+        df_rsmp = pd.concat([df_rsmp, df_dailystate_rsmp], axis=1)
+
     # clean results
     df_rsmp = df_rsmp.dropna(how="all", axis=0)
-
     return df_rsmp
 
 
