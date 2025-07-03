@@ -1,7 +1,7 @@
-# Feature: SUEWS Configuration Builder Improvements
+# Feature: SUEWS Configuration Builder Workflow Enhancement
 
 ## Context
-Users struggle with creating valid SUEWS YAML configuration files due to:
+While the configuration builder UI has been improved (see doing/feature-config-builder-improvements.md), users still struggle with creating valid SUEWS YAML configuration files due to:
 - Complex nested structure (5-6 levels deep)
 - Conditional parameter requirements based on physics options
 - 100+ parameters with unclear dependencies
