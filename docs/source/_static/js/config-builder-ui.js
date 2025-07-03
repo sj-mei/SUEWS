@@ -396,11 +396,21 @@ window.configBuilder.ui.exportConfig = function(format) {
  */
 window.configBuilder.ui.validateConfig = function() {
     try {
+        console.log('Starting validation...');
         const configData = window.configBuilderState.configData;
         const schema = window.configBuilderState.schema;
         
         if (!configData || !schema) {
             alert('No configuration to validate');
+            return;
+        }
+        
+        console.log('Config data:', configData);
+        console.log('Schema:', schema);
+        
+        // Check if Ajv is available
+        if (typeof Ajv === 'undefined') {
+            alert('AJV library not loaded. Please refresh the page.');
             return;
         }
         
@@ -416,8 +426,6 @@ window.configBuilder.ui.validateConfig = function() {
         // Add formats
         ajv.addFormat('date-time', true);
         ajv.addFormat('uri', true);
-        
-        // Remove custom keyword - not needed for validation
         
         // Add the schema with definitions
         const validate = ajv.compile(schema);
@@ -435,8 +443,10 @@ window.configBuilder.ui.validateConfig = function() {
         const valid = validate(cleanedData);
         
         if (valid) {
-            // Update validation status
-            window.updateValidationStatus('valid', 'Configuration is valid');
+            // Update validation status - function may not exist, so check first
+            if (typeof window.updateValidationStatus === 'function') {
+                window.updateValidationStatus('valid', 'Configuration is valid');
+            }
             alert('Configuration is valid!');
         } else {
             // Process errors for better readability
@@ -465,7 +475,10 @@ window.configBuilder.ui.validateConfig = function() {
                 errorMessage += '\n';
             });
             
-            window.updateValidationStatus('invalid', 'Configuration has errors');
+            // Update validation status - function may not exist, so check first
+            if (typeof window.updateValidationStatus === 'function') {
+                window.updateValidationStatus('invalid', 'Configuration has errors');
+            }
             
             // Show in console for debugging
             console.error('Validation errors:', validate.errors);
