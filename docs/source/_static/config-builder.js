@@ -1200,6 +1200,8 @@ function generateValueWithDOIField(propSchema, propData, container, path, propKe
             if (path.includes('vertical_layers') && path.includes('nlayer')) {
                 console.log('Detected nlayer change, synchronizing arrays...');
                 synchronizeVerticalLayerArrays(path, convertedValue);
+                // Also synchronize initial state arrays that depend on nlayer
+                synchronizeInitialStateArrays(convertedValue);
             }
 
             // Update preview
@@ -1522,6 +1524,91 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
     }
 
     // Update the preview to reflect data changes
+    updatePreview();
+}
+
+// Synchronize initial state arrays (roofs/walls) with nlayer
+function synchronizeInitialStateArrays(nlayer) {
+    const nlayerValue = parseInt(nlayer);
+    if (isNaN(nlayerValue) || nlayerValue < 1) {
+        return;
+    }
+    
+    console.log(`Synchronizing initial state arrays with nlayer=${nlayerValue}`);
+    
+    // Find all initial state sections that have roofs/walls arrays
+    const initialStates = ['paved', 'buildings', 'evergreen', 'deciduous', 'grass', 'bsoil', 'water'];
+    
+    initialStates.forEach(surfaceType => {
+        const basePath = `site.initial_state.${surfaceType}`;
+        
+        // Get the data object for this surface type
+        let surfaceData = configData?.site?.initial_state?.[surfaceType];
+        if (!surfaceData) {
+            return;
+        }
+        
+        // Synchronize roofs and walls arrays if they exist
+        ['roofs', 'walls'].forEach(arrayName => {
+            if (surfaceData[arrayName] !== undefined && surfaceData[arrayName] !== null) {
+                // Ensure it's an array
+                if (!Array.isArray(surfaceData[arrayName])) {
+                    surfaceData[arrayName] = [];
+                }
+                
+                const currentLength = surfaceData[arrayName].length;
+                
+                if (currentLength < nlayerValue) {
+                    // Add missing items
+                    for (let i = currentLength; i < nlayerValue; i++) {
+                        // Create new initial state object
+                        const newItem = {
+                            state: 0.0,
+                            soilstore: 150.0,
+                            snowfrac: 0.0,
+                            snowpack: 0.0
+                        };
+                        surfaceData[arrayName].push(newItem);
+                    }
+                } else if (currentLength > nlayerValue) {
+                    // Remove excess items
+                    surfaceData[arrayName].length = nlayerValue;
+                }
+            }
+        });
+    });
+    
+    // Regenerate the form to reflect changes
+    console.log('Regenerating initial state arrays to reflect nlayer changes');
+    
+    // Find and regenerate each initial state roofs/walls array
+    initialStates.forEach(surfaceType => {
+        ['roofs', 'walls'].forEach(arrayName => {
+            const arrayPath = `site.initial_state.${surfaceType}.${arrayName}`;
+            const arrayContainer = document.querySelector(`[id*="${arrayPath.replace(/\./g, '-')}"]`);
+            
+            if (arrayContainer) {
+                const parent = arrayContainer.closest('.card-body');
+                if (parent) {
+                    // Clear and regenerate
+                    parent.innerHTML = '';
+                    
+                    // Get the surface data
+                    const surfaceData = configData?.site?.initial_state?.[surfaceType];
+                    if (surfaceData && surfaceData[arrayName]) {
+                        // Get the schema for this array
+                        const arraySchema = { 
+                            type: 'array',
+                            items: { $ref: '#/$defs/SurfaceInitialState' }
+                        };
+                        generateArrayFields(arraySchema, surfaceData[arrayName], parent, arrayPath);
+                    }
+                }
+            }
+        });
+    });
+    
+    // Update the preview
     updatePreview();
 }
 
@@ -2601,13 +2688,16 @@ function generateArrayFields(arraySchema, arrayData, container, path) {
         copyButton.className = 'btn btn-sm btn-secondary';
         copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy';
 
-        // Check if this is a vertical layer array
+        // Check if this is a vertical layer array or initial state array
         const isVerticalLayerArrayForCopy = path.includes('vertical_layers') &&
             (path.includes('height') || path.includes('veg_frac') || path.includes('veg_scale') ||
              path.includes('building_frac') || path.includes('building_scale') ||
              path.includes('roofs') || path.includes('walls'));
+        
+        const isInitialStateArrayForCopy = path.includes('initial_state') &&
+            (path.includes('roofs') || path.includes('walls'));
 
-        if (isVerticalLayerArrayForCopy) {
+        if (isVerticalLayerArrayForCopy || isInitialStateArrayForCopy) {
             copyButton.style.display = 'none';
         }
 
