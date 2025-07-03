@@ -96,22 +96,42 @@ window.configBuilder.forms.generateForm = function() {
     // Generate Model Configuration fields
     window.configBuilder.forms.generateModelFields();
     
-    // Generate Site Information fields if site exists
-    if (schema.properties && schema.properties.site) {
+    // Generate Site Information fields
+    // Note: The schema has 'sites' array, but we'll work with the first site for the UI
+    if (schema.properties && schema.properties.sites) {
         const siteContainer = document.getElementById('site-form-container');
         if (siteContainer) {
             siteContainer.innerHTML = '';
             
-            // Ensure site data exists
-            if (!configData.site) {
-                configData.site = window.configBuilder.schema.createEmptyObject(schema.properties.site);
+            // Ensure sites array exists and has at least one site
+            if (!configData.sites) {
+                configData.sites = [];
+            }
+            if (configData.sites.length === 0) {
+                // Create empty site based on the items schema
+                const siteItemSchema = schema.properties.sites.items;
+                configData.sites.push(window.configBuilder.schema.createEmptyObject(siteItemSchema));
             }
             
+            // Work with the first site
+            const siteItemSchema = schema.properties.sites.items;
+            
+            // Resolve site schema if it has a $ref
+            let siteSchema = siteItemSchema;
+            if (siteSchema.$ref && siteSchema.$ref.startsWith('#/$defs/')) {
+                const refPath = siteSchema.$ref.replace('#/$defs/', '');
+                if (schema.$defs && schema.$defs[refPath]) {
+                    siteSchema = schema.$defs[refPath];
+                    console.log('Resolved site schema from $ref:', refPath);
+                }
+            }
+            
+            // Generate fields for the first site
             window.configBuilder.forms.generateObjectFields(
-                schema.properties.site,
-                configData.site,
+                siteSchema,
+                configData.sites[0],
                 siteContainer,
-                'site'
+                'sites[0]'
             );
         }
     }
@@ -133,11 +153,26 @@ window.configBuilder.forms.generateModelFields = function() {
         return;
     }
     
-    if (!schema || !schema.properties || !schema.properties.model || !schema.properties.model.properties) {
-        console.warn('Schema or model properties not available');
-        console.log('schema:', schema);
-        console.log('schema.properties:', schema?.properties);
-        console.log('schema.properties.model:', schema?.properties?.model);
+    if (!schema || !schema.properties || !schema.properties.model) {
+        console.warn('Schema or model not available');
+        return;
+    }
+    
+    // Resolve model schema if it has a $ref
+    let modelSchema = schema.properties.model;
+    if (modelSchema.$ref && modelSchema.$ref.startsWith('#/$defs/')) {
+        const refPath = modelSchema.$ref.replace('#/$defs/', '');
+        if (schema.$defs && schema.$defs[refPath]) {
+            modelSchema = schema.$defs[refPath];
+            console.log('Resolved model schema from $ref:', refPath);
+        } else {
+            console.error('Could not resolve model $ref:', modelSchema.$ref);
+            return;
+        }
+    }
+    
+    if (!modelSchema.properties) {
+        console.warn('Model schema has no properties');
         return;
     }
     
@@ -161,8 +196,8 @@ window.configBuilder.forms.generateModelFields = function() {
     tabContent.className = 'tab-content mt-3';
     
     // Process each model property
-    Object.keys(schema.properties.model.properties).forEach((propKey, index) => {
-        const propSchema = schema.properties.model.properties[propKey];
+    Object.keys(modelSchema.properties).forEach((propKey, index) => {
+        const propSchema = modelSchema.properties[propKey];
         
         // Create tab item
         const tabItem = document.createElement('li');
