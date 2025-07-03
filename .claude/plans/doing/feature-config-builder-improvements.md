@@ -49,6 +49,22 @@ The SUEWS Configuration Builder web interface has been significantly improved wi
 - `docs/source/_static/suews-config-schema.json` - Schema updates
 - `docs/gen_schema.py` - Schema generation script
 
+## Additional Improvements (2025-07-03)
+- [x] Fixed missing display names in vertical layers section
+- [x] Made roofs/walls array items collapsible in initial states
+- [x] Synchronized roofs/walls arrays with nlayer setting
+- [x] Hid copy/remove buttons for nlayer-controlled arrays
+- [x] Modularized config-builder.js into 6 separate modules:
+  - config-builder-core.js (initialization and state)
+  - config-builder-schema.js (schema loading and manipulation)
+  - config-builder-arrays.js (array operations and synchronization)
+  - config-builder-ui.js (UI utilities and event handlers)
+  - config-builder-forms.js (form generation)
+  - config-builder-preview.js (YAML preview)
+- [x] Fixed initialization errors with proper null checks
+- [x] Added general settings form generation (name/description)
+- [x] Fixed model and site sections by resolving $ref schemas
+
 ## Completion Summary
 All planned work for this PR has been completed:
 1. ✅ Successfully merged all 18 config builder commits from parameter-validation branch
@@ -56,5 +72,7 @@ All planned work for this PR has been completed:
 3. ✅ Documented all technical improvements in CONFIG_BUILDER_IMPROVEMENTS.md
 4. ✅ All tests pass (113 passed, 10 skipped)
 5. ✅ Config builder is fully functional with all improvements
+6. ✅ Modularized the monolithic config-builder.js for better maintainability
+7. ✅ Fixed several UI/UX issues and improved form generation
 
 Ready to create PR for review.
