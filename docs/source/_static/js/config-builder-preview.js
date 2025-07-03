@@ -35,9 +35,18 @@ window.configBuilder.preview.updatePreview = function() {
                 return;
             }
             
-            // Clean the config data for export (remove internal properties)
+            // First filter out FlexibleRefValue form entries (like sites[0], model.control, etc.)
+            const filteredData = {};
+            for (const [key, value] of Object.entries(configData)) {
+                // Skip entries that look like form paths (contain brackets or dots)
+                if (!key.includes('[') && !key.includes('.')) {
+                    filteredData[key] = value;
+                }
+            }
+            
+            // Then clean the remaining data for export (remove internal properties)
             const cleanedData = window.configBuilder.ui.cleanFlexibleRefValuesForExport(
-                JSON.parse(JSON.stringify(configData)), 
+                JSON.parse(JSON.stringify(filteredData)), 
                 window.configBuilderState.schema
             );
             
