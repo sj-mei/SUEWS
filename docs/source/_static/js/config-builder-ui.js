@@ -453,6 +453,8 @@ window.configBuilder.ui.validateConfig = function() {
         // Validate
         const valid = validate(fullyCleanedData);
         
+        console.log('Raw validation errors:', validate.errors);
+        
         if (valid) {
             // Update validation status - function may not exist, so check first
             if (typeof window.updateValidationStatus === 'function') {
@@ -481,7 +483,12 @@ window.configBuilder.ui.validateConfig = function() {
             errorsBySection.forEach((errors, section) => {
                 errorMessage += `${section}:\n`;
                 errors.forEach(error => {
-                    errorMessage += `  - ${error.field}: ${error.message}\n`;
+                    // Add more detail for debugging
+                    errorMessage += `  - ${error.field}: ${error.message}`;
+                    if (error.path) {
+                        errorMessage += ` (at path: ${error.path})`;
+                    }
+                    errorMessage += '\n';
                 });
                 errorMessage += '\n';
             });
@@ -508,31 +515,98 @@ window.configBuilder.ui.validateConfig = function() {
  */
 window.configBuilder.ui.processValidationErrors = function(errors, data, schema) {
     const processedErrors = [];
-    const errorPaths = new Set();
+    const errorsByPath = new Map();
     
-    // First pass: collect all error paths to filter out parent anyOf errors
+    // Group errors by path to handle anyOf errors better
     errors.forEach(err => {
-        if (err.instancePath) {
-            errorPaths.add(err.instancePath);
+        const path = err.instancePath || '';
+        if (!errorsByPath.has(path)) {
+            errorsByPath.set(path, []);
+        }
+        errorsByPath.get(path).push(err);
+    });
+    
+    // Process each path's errors
+    errorsByPath.forEach((pathErrors, path) => {
+        // For anyOf errors, try to find the most specific error
+        const anyOfError = pathErrors.find(e => e.keyword === 'anyOf');
+        const typeErrors = pathErrors.filter(e => e.keyword === 'type');
+        const otherErrors = pathErrors.filter(e => e.keyword !== 'anyOf' && e.keyword !== 'type');
+        
+        // If we have anyOf errors, let's look at the actual data to provide better messages
+        if (anyOfError) {
+            const pathParts = path.split('/').filter(p => p);
+            let currentData = data;
+            let fieldName = 'value';
+            
+            // Navigate to the actual data
+            for (const part of pathParts) {
+                if (currentData && typeof currentData === 'object') {
+                    currentData = currentData[part];
+                    fieldName = part;
+                }
+            }
+            
+            // Get the field schema to understand what's expected
+            let fieldSchema = schema;
+            let schemaPath = anyOfError.schemaPath.replace('#/', '').split('/');
+            
+            // Navigate to the field schema
+            for (const part of schemaPath) {
+                if (part && fieldSchema) {
+                    if (part === 'anyOf') break;
+                    fieldSchema = fieldSchema[part];
+                }
+            }
+            
+            // Build helpful error message based on what we found
+            let message = '';
+            const actualType = currentData === null ? 'null' : 
+                             currentData === undefined ? 'undefined' : 
+                             Array.isArray(currentData) ? 'array' : 
+                             typeof currentData;
+            
+            // Check if this is a FlexibleRefValue field
+            if (fieldSchema && fieldSchema.anyOf) {
+                const hasRefValue = fieldSchema.anyOf.some(opt => opt.$ref && opt.$ref.includes('RefValue'));
+                const simpleTypes = fieldSchema.anyOf
+                    .filter(opt => opt.type && !opt.$ref)
+                    .map(opt => opt.type);
+                
+                if (hasRefValue && simpleTypes.length > 0) {
+                    // This is a FlexibleRefValue field
+                    if (actualType === 'object' && currentData && 'value' in currentData) {
+                        message = `Field value is invalid. Expected ${simpleTypes.join(' or ')} but the 'value' property contains ${typeof currentData.value}`;
+                    } else {
+                        message = `Expected ${simpleTypes.join(' or ')} or a reference object with 'value' property, but got ${actualType}`;
+                    }
+                } else if (simpleTypes.length > 0) {
+                    message = `Expected ${simpleTypes.join(' or ')}, but got ${actualType}`;
+                } else {
+                    message = `Invalid value type: ${actualType}`;
+                }
+            } else {
+                message = `Invalid value type: ${actualType}`;
+            }
+            
+            // Add the processed error
+            const processedError = processErrorPath(path, pathParts, fieldName, message, currentData);
+            processedErrors.push(processedError);
+        } else {
+            // Process other errors normally
+            const errorToProcess = otherErrors[0] || typeErrors[0];
+            if (errorToProcess) {
+                const pathParts = path.split('/').filter(p => p);
+                const fieldName = pathParts[pathParts.length - 1] || 'Root';
+                const message = formatErrorMessage(errorToProcess);
+                const processedError = processErrorPath(path, pathParts, fieldName, message, errorToProcess.data);
+                processedErrors.push(processedError);
+            }
         }
     });
     
-    errors.forEach(err => {
-        // Skip generic anyOf errors if we have more specific errors for child paths
-        if (err.keyword === 'anyOf') {
-            let hasChildErrors = false;
-            errorPaths.forEach(path => {
-                if (path.startsWith(err.instancePath) && path !== err.instancePath) {
-                    hasChildErrors = true;
-                }
-            });
-            if (hasChildErrors) {
-                return;
-            }
-        }
-        
-        // Extract meaningful path components
-        const pathParts = err.instancePath ? err.instancePath.split('/').filter(p => p) : [];
+    // Helper function to process error path
+    function processErrorPath(path, pathParts, fieldName, message, data) {
         let section = 'General';
         let fieldPath = '';
         
@@ -558,7 +632,7 @@ window.configBuilder.ui.processValidationErrors = function(errors, data, schema)
             }
             
             // Build human-readable field path
-            fieldPath = pathParts.slice(1).map(part => {
+            fieldPath = pathParts.map((part, idx) => {
                 // Convert array indices to readable format
                 if (/^\d+$/.test(part)) {
                     return `[${parseInt(part) + 1}]`;
@@ -568,57 +642,44 @@ window.configBuilder.ui.processValidationErrors = function(errors, data, schema)
                     word.charAt(0).toUpperCase() + word.slice(1)
                 ).join(' ');
             }).join(' > ');
-            
-            if (!fieldPath && pathParts.length === 1) {
-                fieldPath = pathParts[0].split('_').map(word => 
-                    word.charAt(0).toUpperCase() + word.slice(1)
-                ).join(' ');
-            }
         }
         
-        // Create readable error message
-        let message = err.message;
-        
+        return {
+            section: section,
+            field: fieldPath || 'Configuration',
+            message: message,
+            path: path,
+            data: data
+        };
+    }
+    
+    // Helper function to format standard error messages
+    function formatErrorMessage(err) {
         if (err.keyword === 'required') {
             const missingField = err.params.missingProperty;
             const readableField = missingField.split('_').map(word => 
                 word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' ');
-            message = `Missing required field: ${readableField}`;
-            fieldPath = fieldPath || 'Configuration';
+            return `Missing required field: ${readableField}`;
         } else if (err.keyword === 'type') {
             const expectedType = err.params.type;
             const actualType = err.data === null ? 'null' : 
                              err.data === undefined ? 'undefined' : 
                              Array.isArray(err.data) ? 'array' : 
                              typeof err.data;
-            message = `Expected ${expectedType} but got ${actualType}`;
+            return `Expected ${expectedType} but got ${actualType}`;
         } else if (err.keyword === 'additionalProperties') {
-            message = `Unknown property: ${err.params.additionalProperty}`;
+            return `Unknown property: ${err.params.additionalProperty}`;
         } else if (err.keyword === 'enum') {
             const allowedValues = err.params.allowedValues;
-            message = `Must be one of: ${allowedValues.join(', ')}`;
+            return `Must be one of: ${allowedValues.join(', ')}`;
         } else if (err.keyword === 'minimum' || err.keyword === 'maximum') {
-            message = `Value ${err.data} is out of range (${err.message})`;
+            return `Value ${err.data} is out of range (${err.message})`;
         } else if (err.keyword === 'minItems' || err.keyword === 'maxItems') {
-            message = err.message.charAt(0).toUpperCase() + err.message.slice(1);
-        } else if (err.keyword === 'anyOf') {
-            // For anyOf errors, try to provide more context
-            if (err.schemaPath.includes('sites') && err.schemaPath.includes('properties')) {
-                message = 'Invalid value for this field';
-            } else {
-                message = 'Value does not match expected format';
-            }
+            return err.message.charAt(0).toUpperCase() + err.message.slice(1);
         }
-        
-        processedErrors.push({
-            section: section,
-            field: fieldPath || 'Root',
-            message: message,
-            path: err.instancePath,
-            keyword: err.keyword
-        });
-    });
+        return err.message;
+    }
     
     // Sort errors by section and field
     processedErrors.sort((a, b) => {
