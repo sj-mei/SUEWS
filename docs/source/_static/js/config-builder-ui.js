@@ -430,17 +430,31 @@ window.configBuilder.ui.validateConfig = function() {
         // Add the schema with definitions
         const validate = ajv.compile(schema);
         
-        // Clean the data for validation
-        const cleanedData = window.configBuilder.ui.cleanFlexibleRefValuesForExport(
-            JSON.parse(JSON.stringify(configData)), 
+        // Clean the data for validation - only keep the main properties
+        const dataToValidate = JSON.parse(JSON.stringify(configData));
+        
+        // Remove FlexibleRefValue versions of properties
+        const cleanedData = {};
+        
+        // Only copy top-level properties that don't have array indices
+        for (const [key, value] of Object.entries(dataToValidate)) {
+            if (!key.includes('[') && !key.includes(']')) {
+                cleanedData[key] = value;
+            }
+        }
+        
+        // Now clean the FlexibleRefValues within the cleaned data
+        const fullyCleanedData = window.configBuilder.ui.cleanFlexibleRefValuesForExport(
+            cleanedData, 
             schema
         );
         
-        console.log('Validating data:', cleanedData);
-        console.log('Validating with schema:', schema);
+        console.log('Original data keys:', Object.keys(dataToValidate));
+        console.log('Cleaned data keys:', Object.keys(fullyCleanedData));
+        console.log('Validating data:', fullyCleanedData);
         
         // Validate
-        const valid = validate(cleanedData);
+        const valid = validate(fullyCleanedData);
         
         if (valid) {
             // Update validation status - function may not exist, so check first
@@ -450,7 +464,7 @@ window.configBuilder.ui.validateConfig = function() {
             alert('Configuration is valid!');
         } else {
             // Process errors for better readability
-            const processedErrors = window.configBuilder.ui.processValidationErrors(validate.errors, cleanedData, schema);
+            const processedErrors = window.configBuilder.ui.processValidationErrors(validate.errors, fullyCleanedData, schema);
             
             // Format errors for display
             let errorMessage = 'Validation errors:\n\n';
@@ -521,7 +535,7 @@ window.configBuilder.ui.processValidationErrors = function(errors, data, schema)
         }
         
         // Extract meaningful path components
-        const pathParts = err.instancePath.split('/').filter(p => p);
+        const pathParts = err.instancePath ? err.instancePath.split('/').filter(p => p) : [];
         let section = 'General';
         let fieldPath = '';
         
