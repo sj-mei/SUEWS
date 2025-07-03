@@ -951,8 +951,9 @@ window.configBuilder.forms.generateArrayFields = function(arraySchema, arrayData
                 window.configBuilder.forms.generatePrimitiveField(itemsSchema, newItemData, itemBody, itemPath, 'value');
             }
         } else {
-            // Default to empty object if items schema not specified
-            newItemData = {};
+            // Default to null if items schema not specified
+            console.warn(`No items schema specified for array at ${path}, using null`);
+            newItemData = null;
             arrayData.push(newItemData);
         }
         

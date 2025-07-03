@@ -110,8 +110,21 @@ window.configBuilder.schema.createEmptyObject = function(schemaObj) {
                 obj[key] = [];
                 // Add one empty item for arrays
                 if (arraySchema.items) {
-                    const emptyItem = window.configBuilder.schema.createEmptyObject(arraySchema.items);
-                    obj[key].push(emptyItem);
+                    // Check if items is a primitive type
+                    if (arraySchema.items.type && ['number', 'integer', 'string', 'boolean'].includes(arraySchema.items.type)) {
+                        // For primitive arrays, use the default or appropriate empty value
+                        const emptyItem = arraySchema.items.default !== undefined ? 
+                            arraySchema.items.default : 
+                            (arraySchema.items.type === 'number' || arraySchema.items.type === 'integer' ? 0 : 
+                             arraySchema.items.type === 'string' ? '' : 
+                             arraySchema.items.type === 'boolean' ? false : null);
+                        obj[key].push(emptyItem);
+                    } else if (arraySchema.items.type === 'object' || arraySchema.items.$ref) {
+                        // For object arrays, create empty object
+                        const emptyItem = window.configBuilder.schema.createEmptyObject(arraySchema.items);
+                        obj[key].push(emptyItem);
+                    }
+                    // For other cases (like anyOf), don't add default items
                 }
             }
         } else if (propSchema.type === 'object') {
