@@ -943,7 +943,36 @@ function generateObjectFields(objSchema, objData, container, path) {
                 if (objData[propKey] === null || objData[propKey] === undefined) {
                     objData[propKey] = arrayOption.default || [];
                 }
-                generateArrayFields(arrayOption, objData[propKey], section, propPath);
+                
+                // Check if this is a vertical layer inline array
+                const isVerticalLayerInlineArray = path.includes('vertical_layers') && 
+                    (propKey === 'height' || propKey === 'veg_frac' || propKey === 'veg_scale' || 
+                     propKey === 'building_frac' || propKey === 'building_scale');
+                
+                if (isVerticalLayerInlineArray) {
+                    // For inline arrays, create a simple container with label
+                    const fieldContainer = document.createElement('div');
+                    fieldContainer.className = 'form-field mb-3';
+                    
+                    // Add field label
+                    const label = document.createElement('label');
+                    label.className = 'form-label';
+                    label.textContent = formatFieldLabel(propKey, originalPropSchema);
+                    fieldContainer.appendChild(label);
+                    
+                    // Add unit if available
+                    if (originalPropSchema.unit) {
+                        renderUnit(originalPropSchema.unit, label);
+                    }
+                    
+                    // Generate the array fields
+                    generateArrayFields(arrayOption, objData[propKey], fieldContainer, propPath);
+                    
+                    section.appendChild(fieldContainer);
+                } else {
+                    // For regular arrays, just generate without wrapper
+                    generateArrayFields(arrayOption, objData[propKey], section, propPath);
+                }
             } else {
                 // Fallback to primitive field
                 generatePrimitiveField(originalPropSchema, objData[propKey], section, propPath, propKey);
@@ -1387,44 +1416,73 @@ function synchronizeVerticalLayerArrays(nlayerPath, newNlayer) {
         }
     });
     
-    // Don't regenerate the entire form - just update the specific arrays
-    console.log('Skipping full form regeneration to preserve other fields');
+    // Find the vertical_layers container and regenerate it completely
+    console.log('Regenerating entire vertical_layers section to ensure all fields are visible');
+    
+    // Find the card body that contains the vertical_layers fields
+    const verticalLayersContainers = document.querySelectorAll('.card-body');
+    let verticalLayersContainer = null;
+    
+    verticalLayersContainers.forEach(container => {
+        // Check if this container has vertical layers fields
+        const hasVerticalLayersFields = container.querySelector('[id*="vertical_layers"]');
+        if (hasVerticalLayersFields && container.querySelector('[id*="nlayer"]')) {
+            verticalLayersContainer = container;
+        }
+    });
+    
+    if (verticalLayersContainer) {
+        console.log('Found vertical_layers container, regenerating all fields...');
+        
+        // Clear and regenerate the entire vertical_layers object fields
+        verticalLayersContainer.innerHTML = '';
+        
+        // Get the vertical_layers schema
+        const verticalLayersSchema = schema.$defs.VerticalLayers;
+        if (verticalLayersSchema) {
+            // Regenerate all object fields for vertical_layers
+            generateObjectFields(verticalLayersSchema, verticalLayers, verticalLayersContainer, basePath);
+        }
+    } else {
+        // Fallback to the original approach if we can't find the container
+        console.log('Could not find vertical_layers container, using fallback approach');
+        
+        // For inline arrays, we need to regenerate them completely
+        const allArrays = ['height', ...arraysToSync];
+        
+        allArrays.forEach(arrayName => {
+            const arrayPath = `${basePath}.${arrayName}`;
+            console.log(`Looking for array container at path: ${arrayPath}`);
+            
+            // Find all containers that might contain this array
+            const possibleContainers = document.querySelectorAll(`[id*="${arrayPath.replace(/\./g, '-')}"]`);
+            possibleContainers.forEach(container => {
+                const parent = container.closest('.form-field, .array-container');
+                if (parent) {
+                    console.log(`Found container for ${arrayName}, regenerating...`);
+                    // Clear the entire parent
+                    parent.innerHTML = '';
+                    
+                    // Regenerate the array field
+                    const arraySchema = schema.$defs.VerticalLayers.properties[arrayName];
+                    if (arraySchema) {
+                        // Check if it's a FlexibleRefValue array
+                        if (arraySchema.anyOf) {
+                            const arrayOption = arraySchema.anyOf.find(opt => opt.type === 'array');
+                            if (arrayOption) {
+                                generateArrayFields(arrayOption, verticalLayers[arrayName], parent, arrayPath);
+                            }
+                        } else {
+                            generateArrayFields(arraySchema, verticalLayers[arrayName], parent, arrayPath);
+                        }
+                    }
+                }
+            });
+        });
+    }
     
     // Update the preview to reflect data changes
     updatePreview();
-    
-    // For inline arrays, we need to regenerate them completely
-    const allArrays = ['height', ...arraysToSync];
-    
-    allArrays.forEach(arrayName => {
-        const arrayPath = `${basePath}.${arrayName}`;
-        console.log(`Looking for array container at path: ${arrayPath}`);
-        
-        // Find all containers that might contain this array
-        const possibleContainers = document.querySelectorAll(`[id*="${arrayPath.replace(/\./g, '-')}"]`);
-        possibleContainers.forEach(container => {
-            const parent = container.closest('.form-field, .array-container');
-            if (parent) {
-                console.log(`Found container for ${arrayName}, regenerating...`);
-                // Clear the entire parent
-                parent.innerHTML = '';
-                
-                // Regenerate the array field
-                const arraySchema = schema.$defs.VerticalLayers.properties[arrayName];
-                if (arraySchema) {
-                    // Check if it's a FlexibleRefValue array
-                    if (arraySchema.anyOf) {
-                        const arrayOption = arraySchema.anyOf.find(opt => opt.type === 'array');
-                        if (arrayOption) {
-                            generateArrayFields(arrayOption, verticalLayers[arrayName], parent, arrayPath);
-                        }
-                    } else {
-                        generateArrayFields(arraySchema, verticalLayers[arrayName], parent, arrayPath);
-                    }
-                }
-            }
-        });
-    });
 }
 
 // Update the preview (YAML format only)
