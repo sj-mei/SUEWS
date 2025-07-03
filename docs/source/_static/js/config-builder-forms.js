@@ -746,18 +746,24 @@ window.configBuilder.forms.convertValueToType = function(value, type) {
  * Set nested property in object
  */
 window.configBuilder.forms.setNestedProperty = function(obj, path, value) {
-    const parts = path.split('.');
+    const parts = path.split(/[\.\[\]]+/).filter(p => p);
     let current = obj;
     
     for (let i = 0; i < parts.length - 1; i++) {
         const part = parts[i];
+        const nextPart = parts[i + 1];
+        
+        // Check if next part is numeric (array index)
+        const isNextArray = !isNaN(parseInt(nextPart));
+        
         if (!current[part]) {
-            current[part] = {};
+            current[part] = isNextArray ? [] : {};
         }
         current = current[part];
     }
     
-    current[parts[parts.length - 1]] = value;
+    const lastPart = parts[parts.length - 1];
+    current[lastPart] = value;
 };
 
 /**
