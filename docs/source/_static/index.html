@@ -94,6 +94,67 @@
             color: white;
             transform: translateY(-1px);
         }
+        
+        /* Header Search */
+        .header-search {
+            max-width: 300px;
+        }
+        
+        .header-search .input-group {
+            height: 38px;
+        }
+        
+        .header-search .input-group-text {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .header-search .form-control {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .header-search .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .header-search .form-control:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+        }
+        
+        .header-search .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Header Switch */
+        .header-switch {
+            display: inline-flex;
+            align-items: center;
+            margin: 0;
+        }
+        
+        .header-switch .form-check-input {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .header-switch .form-check-input:checked {
+            background-color: #48bb78;
+            border-color: #48bb78;
+        }
+        
+        .header-switch .form-check-label {
+            color: white;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
 
         /* App Container */
         .app-container {
@@ -268,11 +329,9 @@
             display: flex;
             overflow: hidden;
             transition: flex-direction 0.3s ease;
+            width: 100%;
         }
 
-        .content-body.horizontal {
-            flex-direction: column;
-        }
 
         .form-panel {
             flex: 1;
@@ -324,26 +383,6 @@
             color: white;
         }
 
-        .content-body.horizontal .resize-handle {
-            width: 100%;
-            height: 8px;
-            cursor: row-resize;
-            flex-direction: row;
-        }
-
-        .content-body.horizontal .resize-handle-line {
-            height: 1px;
-            width: auto;
-            flex: 1;
-        }
-
-        .content-body.horizontal .resize-handle-grip {
-            padding: 0 0.5rem;
-        }
-
-        .content-body.horizontal .resize-handle-grip i {
-            transform: rotate(90deg);
-        }
 
         .preview-panel {
             width: 400px;
@@ -355,18 +394,6 @@
             transition: all 0.3s ease;
         }
 
-        .content-body.horizontal .preview-panel {
-            width: 100%;
-            height: 400px;
-            min-height: 300px;
-            border-left: none;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .content-body.horizontal .form-panel {
-            width: 100%;
-            min-width: auto;
-        }
 
         .preview-header {
             padding: 1rem 1.5rem;
@@ -557,56 +584,7 @@
         }
         
         /* UX Controls Bar */
-        .ux-controls-bar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1.5rem 0;
-            margin-bottom: 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-            border-radius: 0 0 12px 12px;
-        }
         
-        .ux-controls-bar .form-check-label {
-            cursor: pointer;
-            user-select: none;
-            color: white;
-            font-weight: 500;
-        }
-        
-        .ux-controls-bar .form-check-label small {
-            color: rgba(255, 255, 255, 0.8) !important;
-        }
-        
-        .ux-controls-bar .input-group {
-            max-width: 400px;
-            margin-left: auto;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 25px;
-            overflow: hidden;
-        }
-        
-        .ux-controls-bar .input-group-text {
-            background: white;
-            border: none;
-            padding-left: 1rem;
-        }
-        
-        .ux-controls-bar .form-control {
-            border: none;
-            padding-right: 1rem;
-        }
-        
-        .ux-controls-bar .form-control:focus {
-            box-shadow: none;
-        }
-        
-        .ux-controls-bar .btn-outline-secondary {
-            border: none;
-            background: white;
-            color: #6c757d;
-        }
         
         /* Modern form switch */
         .form-check-input:checked {
@@ -839,6 +817,13 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <!-- Advanced Mode Toggle -->
+                    <div class="form-check form-switch header-switch">
+                        <input class="form-check-input" type="checkbox" id="advancedModeToggle" role="switch">
+                        <label class="form-check-label" for="advancedModeToggle">
+                            <i class="fas fa-sliders-h"></i> Advanced
+                        </label>
+                    </div>
                     <button id="importBtn" class="btn btn-header">
                         <i class="fas fa-file-import"></i> Import
                     </button>
@@ -848,10 +833,19 @@
                     <button id="validateBtn" class="btn btn-header">
                         <i class="fas fa-check-circle"></i> Validate
                     </button>
-                    <button id="layoutToggleBtn" class="btn btn-header">
-                        <i class="fas fa-columns"></i>
-                        <span class="d-none d-lg-inline ms-1">Horizontal</span>
-                    </button>
+                    <!-- Search Bar -->
+                    <div class="header-search">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="parameterSearch" 
+                                   placeholder="Search parameters..." 
+                                   aria-label="Search parameters">
+                            <button class="btn btn-outline-light" type="button" id="clearSearchBtn" 
+                                    style="display: none;" title="Clear search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                     <button id="newBtn" class="btn btn-header">
                         <i class="fas fa-file"></i> New
                     </button>
@@ -871,7 +865,7 @@
     <!-- Configuration Builder -->
     <div class="app-container">
         <!-- Sidebar Navigation -->
-        <nav class="modern-sidebar" id="sidebar">
+        <nav class="modern-sidebar hidden" id="sidebar">
             <div class="sidebar-header">
                 <button id="toggleSidebar" class="sidebar-toggle-btn">
                     <i class="fas fa-chevron-left"></i>
@@ -926,74 +920,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="content-body">
-                <!-- Welcome Message for New Users -->
-                <div class="welcome-hero" id="welcomeMessage" style="display: none;">
-                    <div class="welcome-content">
-                        <button type="button" class="btn-close btn-close-white" onclick="document.getElementById('welcomeMessage').style.display='none'" aria-label="Close"></button>
-                        <h2 class="welcome-title">
-                            <i class="fas fa-rocket"></i>
-                            Welcome to SUEWS Configuration Builder
-                        </h2>
-                        <p class="welcome-subtitle">Create urban climate model configurations with ease</p>
-                        
-                        <div class="welcome-features">
-                            <div class="feature-card">
-                                <div class="feature-icon">
-                                    <i class="fas fa-toggle-off"></i>
-                                </div>
-                                <h4>Smart Modes</h4>
-                                <p>Start simple with Basic Mode, switch to Advanced when ready</p>
-                            </div>
-                            <div class="feature-card">
-                                <div class="feature-icon">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <h4>Quick Search</h4>
-                                <p>Find any parameter instantly with smart search</p>
-                            </div>
-                            <div class="feature-card">
-                                <div class="feature-icon">
-                                    <i class="fas fa-info-circle"></i>
-                                </div>
-                                <h4>Helpful Guides</h4>
-                                <p>Tooltips and descriptions for every parameter</p>
-                            </div>
-                        </div>
-                        
-                        <button class="btn btn-light btn-lg mt-4" onclick="document.getElementById('welcomeMessage').style.display='none'">
-                            Get Started <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
                 
-                <!-- User Experience Controls -->
-                <div class="ux-controls-bar">
-                    <div class="container-fluid">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="form-check form-switch d-inline-flex align-items-center">
-                                    <input class="form-check-input" type="checkbox" id="advancedModeToggle" role="switch">
-                                    <label class="form-check-label ms-2" for="advancedModeToggle">
-                                        <strong>Advanced Mode</strong>
-                                        <small class="text-muted d-block">Show all parameters and physics options</small>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                    <input type="text" class="form-control" id="parameterSearch" 
-                                           placeholder="Search parameters..." 
-                                           aria-label="Search parameters">
-                                    <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" 
-                                            style="display: none;" title="Clear search">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- Form Panel -->
                 <div class="form-panel" id="formPanel">
@@ -1128,8 +1055,6 @@
             // Initialize resize functionality
             initializeResize();
 
-            // Initialize layout toggle
-            initializeLayoutToggle();
 
             function switchSection(sectionName) {
                 // Update navigation
@@ -1170,7 +1095,8 @@
                     return;
                 }
 
-                let sidebarHidden = false;
+                // Check if sidebar has hidden class initially
+                let sidebarHidden = sidebar.classList.contains('hidden');
 
                 const updateToggleButtons = () => {
                     const isMobile = window.innerWidth <= 768;
@@ -1259,64 +1185,6 @@
                 updateToggleButtons();
             }
 
-            // Initialize layout toggle functionality
-            function initializeLayoutToggle() {
-                const layoutToggleBtn = document.getElementById('layoutToggleBtn');
-                const contentBody = document.querySelector('.content-body');
-
-                if (!layoutToggleBtn || !contentBody) {
-                    console.warn('Layout toggle elements not found');
-                    return;
-                }
-
-                let isHorizontal = false;
-
-                const toggleLayout = () => {
-                    isHorizontal = !isHorizontal;
-                    contentBody.classList.toggle('horizontal', isHorizontal);
-
-                    // Update button icon and text
-                    const icon = layoutToggleBtn.querySelector('i');
-                    const text = layoutToggleBtn.querySelector('span');
-
-                    if (isHorizontal) {
-                        icon.className = 'fas fa-grip-lines';
-                        if (text) text.textContent = 'Vertical';
-                    } else {
-                        icon.className = 'fas fa-columns';
-                        if (text) text.textContent = 'Horizontal';
-                    }
-
-                    // Reset any custom sizing when switching layouts
-                    const formPanel = document.getElementById('formPanel');
-                    const previewPanel = document.getElementById('previewPanel');
-
-                    if (formPanel && previewPanel) {
-                        if (isHorizontal) {
-                            // Reset to default sizes for horizontal layout
-                            formPanel.style.flex = '1';
-                            formPanel.style.width = '';
-                            formPanel.style.height = '';
-                            previewPanel.style.width = '';
-                            previewPanel.style.height = '400px';
-                        } else {
-                            // Reset to default sizes for vertical layout
-                            formPanel.style.flex = '1';
-                            formPanel.style.width = '';
-                            formPanel.style.height = '';
-                            previewPanel.style.width = '400px';
-                            previewPanel.style.height = '';
-                        }
-                    }
-                };
-
-                // Layout toggle button click
-                layoutToggleBtn.addEventListener('click', toggleLayout);
-
-                // Store the toggle function globally for potential external use
-                window.toggleLayout = toggleLayout;
-            }
-
             // Initialize resize functionality
             function initializeResize() {
                 const resizeHandle = document.getElementById('resizeHandle');
@@ -1339,19 +1207,12 @@
 
                 resizeHandle.addEventListener('mousedown', (e) => {
                     isResizing = true;
-                    const isHorizontalLayout = contentBody.classList.contains('horizontal');
-
-                    if (isHorizontalLayout) {
-                        startY = e.clientY;
-                        startFormHeight = formPanel.offsetHeight;
-                        startPreviewHeight = previewPanel.offsetHeight;
-                        document.body.style.cursor = 'row-resize';
-                    } else {
-                        startX = e.clientX;
-                        startFormWidth = formPanel.offsetWidth;
-                        startPreviewWidth = previewPanel.offsetWidth;
-                        document.body.style.cursor = 'col-resize';
-                    }
+                    
+                    // Only vertical layout (resize horizontally)
+                    startX = e.clientX;
+                    startFormWidth = formPanel.offsetWidth;
+                    startPreviewWidth = previewPanel.offsetWidth;
+                    document.body.style.cursor = 'col-resize';
 
                     resizeHandle.classList.add('resizing');
                     document.body.style.userSelect = 'none';
@@ -1359,60 +1220,32 @@
                     e.preventDefault();
                 });
 
-                                document.addEventListener('mousemove', (e) => {
+                document.addEventListener('mousemove', (e) => {
                     if (!isResizing) return;
 
-                    const isHorizontalLayout = contentBody.classList.contains('horizontal');
+                    // Only vertical layout: resize horizontally
+                    const deltaX = e.clientX - startX;
+                    const containerWidth = contentBody.offsetWidth - 8; // Subtract handle width
 
-                    if (isHorizontalLayout) {
-                        // Horizontal layout: resize vertically
-                        const deltaY = e.clientY - startY;
-                        const containerHeight = contentBody.offsetHeight - 8; // Subtract handle height
+                    let newFormWidth = startFormWidth + deltaX;
+                    let newPreviewWidth = startPreviewWidth - deltaX;
 
-                        let newFormHeight = startFormHeight + deltaY;
-                        let newPreviewHeight = startPreviewHeight - deltaY;
+                    // Enforce minimum widths
+                    const minFormWidth = 300;
+                    const minPreviewWidth = 250;
 
-                        // Enforce minimum heights
-                        const minFormHeight = 200;
-                        const minPreviewHeight = 150;
-
-                        if (newFormHeight < minFormHeight) {
-                            newFormHeight = minFormHeight;
-                            newPreviewHeight = containerHeight - newFormHeight;
-                        } else if (newPreviewHeight < minPreviewHeight) {
-                            newPreviewHeight = minPreviewHeight;
-                            newFormHeight = containerHeight - newPreviewHeight;
-                        }
-
-                        // Apply the new heights
-                        formPanel.style.flex = 'none';
-                        formPanel.style.height = `${newFormHeight}px`;
-                        previewPanel.style.height = `${newPreviewHeight}px`;
-                    } else {
-                        // Vertical layout: resize horizontally
-                        const deltaX = e.clientX - startX;
-                        const containerWidth = contentBody.offsetWidth - 8; // Subtract handle width
-
-                        let newFormWidth = startFormWidth + deltaX;
-                        let newPreviewWidth = startPreviewWidth - deltaX;
-
-                        // Enforce minimum widths
-                        const minFormWidth = 300;
-                        const minPreviewWidth = 250;
-
-                        if (newFormWidth < minFormWidth) {
-                            newFormWidth = minFormWidth;
-                            newPreviewWidth = containerWidth - newFormWidth;
-                        } else if (newPreviewWidth < minPreviewWidth) {
-                            newPreviewWidth = minPreviewWidth;
-                            newFormWidth = containerWidth - newPreviewWidth;
-                        }
-
-                        // Apply the new widths
-                        formPanel.style.flex = 'none';
-                        formPanel.style.width = `${newFormWidth}px`;
-                        previewPanel.style.width = `${newPreviewWidth}px`;
+                    if (newFormWidth < minFormWidth) {
+                        newFormWidth = minFormWidth;
+                        newPreviewWidth = containerWidth - newFormWidth;
+                    } else if (newPreviewWidth < minPreviewWidth) {
+                        newPreviewWidth = minPreviewWidth;
+                        newFormWidth = containerWidth - newPreviewWidth;
                     }
+
+                    // Apply the new widths
+                    formPanel.style.flex = 'none';
+                    formPanel.style.width = `${newFormWidth}px`;
+                    previewPanel.style.width = `${newPreviewWidth}px`;
                 });
 
                 document.addEventListener('mouseup', () => {
@@ -1426,21 +1259,10 @@
 
                 // Handle double-click to reset to default sizes
                 resizeHandle.addEventListener('dblclick', () => {
-                    const isHorizontalLayout = contentBody.classList.contains('horizontal');
-
+                    // Reset to default sizes for vertical layout
                     formPanel.style.flex = '1';
-
-                    if (isHorizontalLayout) {
-                        formPanel.style.height = '';
-                        previewPanel.style.height = '400px';
-                        formPanel.style.width = '';
-                        previewPanel.style.width = '';
-                    } else {
-                        formPanel.style.width = '';
-                        previewPanel.style.width = '400px';
-                        formPanel.style.height = '';
-                        previewPanel.style.height = '';
-                    }
+                    formPanel.style.width = '';
+                    previewPanel.style.width = '400px';
                 });
             }
 
