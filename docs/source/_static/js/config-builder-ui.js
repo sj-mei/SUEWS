@@ -46,6 +46,18 @@ window.configBuilder.ui.setupEventListeners = function() {
         exportJsonBtn.addEventListener('click', () => window.configBuilder.ui.exportConfig('json'));
     }
     
+    // Export YAML button (in header)
+    const exportYamlBtn = document.getElementById('exportYamlBtn');
+    if (exportYamlBtn) {
+        exportYamlBtn.addEventListener('click', () => window.configBuilder.ui.exportConfig('yaml'));
+    }
+    
+    // Validate button
+    const validateBtn = document.getElementById('validateBtn');
+    if (validateBtn) {
+        validateBtn.addEventListener('click', () => window.configBuilder.ui.validateConfig());
+    }
+    
     // Reset button
     const resetBtn = document.getElementById('resetBtn');
     if (resetBtn) {
@@ -377,6 +389,240 @@ window.configBuilder.ui.exportConfig = function(format) {
     } catch (error) {
         alert('Error exporting configuration: ' + error.message);
     }
+};
+
+/**
+ * Validate configuration
+ */
+window.configBuilder.ui.validateConfig = function() {
+    try {
+        const configData = window.configBuilderState.configData;
+        const schema = window.configBuilderState.schema;
+        
+        if (!configData || !schema) {
+            alert('No configuration to validate');
+            return;
+        }
+        
+        // Initialize AJV validator with better error messages
+        const ajv = new Ajv({ 
+            allErrors: true,
+            strict: false,
+            verbose: true,
+            jsonPointers: true,
+            validateSchema: false  // Disable schema validation to avoid meta-schema issues
+        });
+        
+        // Add formats
+        ajv.addFormat('date-time', true);
+        ajv.addFormat('uri', true);
+        
+        // Add custom error messages
+        ajv.addKeyword({
+            keyword: 'betterErrors',
+            compile: function() {
+                return function validate() { return true; };
+            }
+        });
+        
+        // Add the schema with definitions
+        const validate = ajv.compile(schema);
+        
+        // Clean the data for validation
+        const cleanedData = window.configBuilder.ui.cleanFlexibleRefValuesForExport(
+            JSON.parse(JSON.stringify(configData)), 
+            schema
+        );
+        
+        console.log('Validating data:', cleanedData);
+        console.log('Validating with schema:', schema);
+        
+        // Validate
+        const valid = validate(cleanedData);
+        
+        if (valid) {
+            // Update validation status
+            window.updateValidationStatus('valid', 'Configuration is valid');
+            alert('Configuration is valid!');
+        } else {
+            // Process errors for better readability
+            const processedErrors = window.configBuilder.ui.processValidationErrors(validate.errors, cleanedData, schema);
+            
+            // Format errors for display
+            let errorMessage = 'Validation errors:\n\n';
+            
+            // Group errors by section
+            const errorsBySection = new Map();
+            
+            processedErrors.forEach(error => {
+                const section = error.section || 'General';
+                if (!errorsBySection.has(section)) {
+                    errorsBySection.set(section, []);
+                }
+                errorsBySection.get(section).push(error);
+            });
+            
+            // Display errors by section
+            errorsBySection.forEach((errors, section) => {
+                errorMessage += `${section}:\n`;
+                errors.forEach(error => {
+                    errorMessage += `  - ${error.field}: ${error.message}\n`;
+                });
+                errorMessage += '\n';
+            });
+            
+            window.updateValidationStatus('invalid', 'Configuration has errors');
+            
+            // Show in console for debugging
+            console.error('Validation errors:', validate.errors);
+            console.error('Processed errors:', processedErrors);
+            
+            alert(errorMessage);
+        }
+    } catch (error) {
+        console.error('Validation error:', error);
+        alert('Error validating configuration: ' + error.message);
+    }
+};
+
+/**
+ * Process validation errors for better readability
+ */
+window.configBuilder.ui.processValidationErrors = function(errors, data, schema) {
+    const processedErrors = [];
+    const errorPaths = new Set();
+    
+    // First pass: collect all error paths to filter out parent anyOf errors
+    errors.forEach(err => {
+        if (err.instancePath) {
+            errorPaths.add(err.instancePath);
+        }
+    });
+    
+    errors.forEach(err => {
+        // Skip generic anyOf errors if we have more specific errors for child paths
+        if (err.keyword === 'anyOf') {
+            let hasChildErrors = false;
+            errorPaths.forEach(path => {
+                if (path.startsWith(err.instancePath) && path !== err.instancePath) {
+                    hasChildErrors = true;
+                }
+            });
+            if (hasChildErrors) {
+                return;
+            }
+        }
+        
+        // Extract meaningful path components
+        const pathParts = err.instancePath.split('/').filter(p => p);
+        let section = 'General';
+        let fieldPath = '';
+        
+        if (pathParts.length > 0) {
+            // Determine section based on top-level property
+            const topLevel = pathParts[0];
+            switch (topLevel) {
+                case 'model':
+                    section = 'Model Configuration';
+                    break;
+                case 'sites':
+                    section = 'Site Information';
+                    if (pathParts[1] === '0') {
+                        pathParts[1] = 'Site 1';
+                    }
+                    break;
+                case 'name':
+                case 'description':
+                    section = 'General Settings';
+                    break;
+                default:
+                    section = topLevel.charAt(0).toUpperCase() + topLevel.slice(1);
+            }
+            
+            // Build human-readable field path
+            fieldPath = pathParts.slice(1).map(part => {
+                // Convert array indices to readable format
+                if (/^\d+$/.test(part)) {
+                    return `[${parseInt(part) + 1}]`;
+                }
+                // Convert snake_case to readable format
+                return part.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }).join(' > ');
+            
+            if (!fieldPath && pathParts.length === 1) {
+                fieldPath = pathParts[0].split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }
+        }
+        
+        // Create readable error message
+        let message = err.message;
+        
+        if (err.keyword === 'required') {
+            const missingField = err.params.missingProperty;
+            const readableField = missingField.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            message = `Missing required field: ${readableField}`;
+            fieldPath = fieldPath || 'Configuration';
+        } else if (err.keyword === 'type') {
+            const expectedType = err.params.type;
+            const actualType = err.data === null ? 'null' : 
+                             err.data === undefined ? 'undefined' : 
+                             Array.isArray(err.data) ? 'array' : 
+                             typeof err.data;
+            message = `Expected ${expectedType} but got ${actualType}`;
+        } else if (err.keyword === 'additionalProperties') {
+            message = `Unknown property: ${err.params.additionalProperty}`;
+        } else if (err.keyword === 'enum') {
+            const allowedValues = err.params.allowedValues;
+            message = `Must be one of: ${allowedValues.join(', ')}`;
+        } else if (err.keyword === 'minimum' || err.keyword === 'maximum') {
+            message = `Value ${err.data} is out of range (${err.message})`;
+        } else if (err.keyword === 'minItems' || err.keyword === 'maxItems') {
+            message = err.message.charAt(0).toUpperCase() + err.message.slice(1);
+        } else if (err.keyword === 'anyOf') {
+            // For anyOf errors, try to provide more context
+            if (err.schemaPath.includes('sites') && err.schemaPath.includes('properties')) {
+                message = 'Invalid value for this field';
+            } else {
+                message = 'Value does not match expected format';
+            }
+        }
+        
+        processedErrors.push({
+            section: section,
+            field: fieldPath || 'Root',
+            message: message,
+            path: err.instancePath,
+            keyword: err.keyword
+        });
+    });
+    
+    // Sort errors by section and field
+    processedErrors.sort((a, b) => {
+        if (a.section !== b.section) {
+            return a.section.localeCompare(b.section);
+        }
+        return a.field.localeCompare(b.field);
+    });
+    
+    // Remove duplicates
+    const uniqueErrors = [];
+    const seenErrors = new Set();
+    
+    processedErrors.forEach(error => {
+        const key = `${error.section}-${error.field}-${error.message}`;
+        if (!seenErrors.has(key)) {
+            seenErrors.add(key);
+            uniqueErrors.push(error);
+        }
+    });
+    
+    return uniqueErrors;
 };
 
 /**

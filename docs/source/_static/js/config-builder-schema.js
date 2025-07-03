@@ -41,19 +41,27 @@ window.configBuilder.schema.initializeEmptyConfig = function() {
     const configData = window.configBuilder.schema.createEmptyObject(schema);
     window.configBuilderState.configData = configData;
     
-    // Ensure site and model exist
+    // Ensure sites array and model exist  
     if (schema.properties) {
-        if (!configData.site && schema.properties.site) {
-            configData.site = window.configBuilder.schema.createEmptyObject(schema.properties.site);
+        // Sites is an array in the schema
+        if (!configData.sites && schema.properties.sites) {
+            configData.sites = [];
+            // Add one default site
+            if (schema.properties.sites.items) {
+                const siteSchema = schema.properties.sites.items;
+                const defaultSite = window.configBuilder.schema.createEmptyObject(siteSchema);
+                configData.sites.push(defaultSite);
+            }
         }
+        
         if (!configData.model && schema.properties.model) {
             configData.model = window.configBuilder.schema.createEmptyObject(schema.properties.model);
         }
     }
     
     // Special handling for vertical_layers
-    if (configData.site && configData.site.vertical_layers) {
-        window.configBuilder.arrays.ensureVerticalLayersSync(configData.site.vertical_layers);
+    if (configData.sites && configData.sites.length > 0 && configData.sites[0].vertical_layers) {
+        window.configBuilder.arrays.ensureVerticalLayersSync(configData.sites[0].vertical_layers);
     }
 };
 
