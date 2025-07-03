@@ -185,6 +185,25 @@ def pack_df_output_block(dict_output_block, df_forcing_block):
 
 # resample supy output
 def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
+    # Helper function to resample a group with specified parameters
+    def _resample_group(df_group, freq, label, dict_aggm_group):
+        """Resample a dataframe group with specified aggregation rules.
+        
+        Args:
+            df_group: DataFrame group to resample
+            freq: Resampling frequency
+            label: Label parameter for resample ('left' or 'right')
+            dict_aggm_group: Aggregation dictionary for this group
+        
+        Returns:
+            Resampled DataFrame
+        """
+        return df_group.dropna().resample(
+            freq, 
+            closed="right", 
+            label=label
+        ).agg(dict_aggm_group)
+    
     # get grid and group names
     list_grid = df_output.index.get_level_values("grid").unique()
     list_group = df_output.columns.get_level_values("group").unique()
@@ -200,13 +219,12 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
         {
             grid: pd.concat(
                 {
-                    group: df_output.loc[grid, group]
-                    .resample(
+                    group: _resample_group(
+                        df_output.loc[grid, group],
                         freq,
-                        closed="right",
-                        label="right",
+                        "right",  # Regular variables use 'right' label
+                        dict_aggm[group]
                     )
-                    .agg(dict_aggm[group])
                     for group in list_group
                 },
                 axis=1,
@@ -217,18 +235,20 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
         names=["grid"],
     )
 
-    if "DailyState" in df_output:
+    # Handle DailyState separately if present
+    if "DailyState" in df_output and "DailyState" in dict_aggm:
+        # DailyState uses label="left" as it represents state at the beginning of the period
+        # whereas other variables use label="right" following SUEWS convention for period-ending values
         df_dailystate_rsmp = pd.concat(
             {
                 grid: pd.concat(
                     {
-                        "DailyState": df_output.loc[grid, "DailyState"].dropna()
-                        .resample(
+                        "DailyState": _resample_group(
+                            df_output.loc[grid, "DailyState"],
                             freq,
-                            closed="right",
-                            label="left",
+                            "left",  # DailyState uses 'left' label
+                            dict_aggm["DailyState"]
                         )
-                        .agg(dict_aggm["DailyState"])
                     },
                     axis=1,
                     names=["group", "var"],
