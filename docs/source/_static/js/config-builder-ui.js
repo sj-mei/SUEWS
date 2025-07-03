@@ -430,26 +430,23 @@ window.configBuilder.ui.validateConfig = function() {
         // Add the schema with definitions
         const validate = ajv.compile(schema);
         
-        // Clean the data for validation - only keep the main properties
-        const dataToValidate = JSON.parse(JSON.stringify(configData));
-        
-        // Remove FlexibleRefValue versions of properties
-        const cleanedData = {};
-        
-        // Only copy top-level properties that don't have array indices
-        for (const [key, value] of Object.entries(dataToValidate)) {
-            if (!key.includes('[') && !key.includes(']')) {
-                cleanedData[key] = value;
+        // First filter out FlexibleRefValue form entries (like sites[0], model.control, etc.)
+        const filteredData = {};
+        for (const [key, value] of Object.entries(configData)) {
+            // Skip entries that look like form paths (contain brackets or dots)
+            if (!key.includes('[') && !key.includes('.')) {
+                filteredData[key] = value;
             }
         }
         
-        // Now clean the FlexibleRefValues within the cleaned data
+        // Then clean the remaining data for export (remove internal properties)
         const fullyCleanedData = window.configBuilder.ui.cleanFlexibleRefValuesForExport(
-            cleanedData, 
+            JSON.parse(JSON.stringify(filteredData)), 
             schema
         );
         
-        console.log('Original data keys:', Object.keys(dataToValidate));
+        console.log('Original data keys:', Object.keys(configData));
+        console.log('Filtered data keys:', Object.keys(filteredData));
         console.log('Cleaned data keys:', Object.keys(fullyCleanedData));
         console.log('Validating data:', fullyCleanedData);
         
