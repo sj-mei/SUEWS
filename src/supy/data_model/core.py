@@ -90,25 +90,38 @@ class SUEWSConfig(BaseModel):
     @model_validator(mode="after")
     def validate_parameter_completeness(self) -> "SUEWSConfig":
         """
-        Validate all parameters after complete construction.
-        This runs AFTER all values are populated from YAML.
+        Validate all parameters after full construction.
+        This runs AFTER all values have been populated from YAML.
         """
-        # Track validation issues for summary
+        ## 1) Initialize the summary of validation issues
         self._validation_summary = {
             "total_warnings": 0,
             "sites_with_issues": [],
             "issue_types": set(),
-            "yaml_path": None,
+            "yaml_path": getattr(self, "_yaml_path", None),
         }
 
+        ## 2) Run the standard site-by-site checks
         for i, site in enumerate(self.sites):
             self._validate_site_parameters(site, site_index=i)
 
-        # Show summary if there are warnings
+        ## 3) Run any conditional validations (e.g. STEBBS when stebbsmethod==1)
+        cond_issues = self._validate_conditional_parameters()
+        if cond_issues:
+            ## Tally them
+            self._validation_summary["total_warnings"] += len(cond_issues)
+            self._validation_summary["issue_types"].add("Conditional STEBBS parameters")
+            ## And log each one for detail
+            for issue_msg in cond_issues:
+                logger_supy.warning(f"Conditional validation issue: {issue_msg}")
+
+        ## 4) If there were any warnings, show the summary
         if self._validation_summary["total_warnings"] > 0:
             self._show_validation_summary()
 
         return self
+
+
 
     def _show_validation_summary(self) -> None:
         """Show a concise summary of validation issues."""
@@ -331,6 +344,117 @@ class SUEWSConfig(BaseModel):
             )
             return True
         return False
+    
+    def _needs_stebbs_validation(self) -> bool:
+        """
+        Return True if STEBBS should be validated,
+        i.e. physics.stebbsmethod == 1.
+        """
+        ## First check if physics and stebbsmethod exist
+        if not hasattr(self.model, 'physics') or not hasattr(self.model.physics, 'stebbsmethod'):
+            return False
+            
+        ## Get the stebbsmethod value, handling various types
+        stebbsmethod = self.model.physics.stebbsmethod
+        
+        ## Handle enum type (StebbsMethod)
+        if hasattr(stebbsmethod, 'value'):
+            stebbsmethod = stebbsmethod.value
+        
+        ## If it's still an enum, convert to int
+        if hasattr(stebbsmethod, '__int__'):
+            stebbsmethod = int(stebbsmethod)
+        
+        ## Check for string "1" as well
+        if isinstance(stebbsmethod, str) and stebbsmethod == "1":
+            stebbsmethod = 1
+            
+        print(f"Final stebbsmethod value for validation: {stebbsmethod} (type: {type(stebbsmethod)})")
+        
+        ## Return True if stebbsmethod is 1
+        return stebbsmethod == 1
+
+    def _validate_stebbs(self, site: Site, site_index: int) -> List[str]:
+        """
+        If stebbsmethod==1, enforce that site.properties.stebbs
+        has WallInternalConvectionCoefficient != None.
+        Returns a list of issue messages.
+        """
+        issues: List[str] = []
+        
+        print(f"Validating STEBBS for site {site_index}")
+        
+        ## First check if properties exists
+        if not hasattr(site, 'properties'):
+            print("  - Missing 'properties' section")
+            issues.append("Missing 'properties' section (required for STEBBS validation)")
+            return issues
+        
+        props = site.properties
+        
+        ## 1) must have a stebbs block
+        if not hasattr(props, 'stebbs') or props.stebbs is None:
+            print("  - Missing 'stebbs' section")
+            issues.append("Missing 'stebbs' section (required when stebbsmethod=1)")
+            return issues
+        
+        stebbs = props.stebbs
+        print(f"  - Found stebbs section: {stebbs}")
+        
+        ## 2) must have WallInternalConvectionCoefficient
+        if not hasattr(stebbs, 'WallInternalConvectionCoefficient'):
+            print("  - Missing WallInternalConvectionCoefficient attribute")
+            issues.append("Missing WallInternalConvectionCoefficient (required when stebbsmethod=1)")
+            return issues
+        
+        ## 3) grab the field and its .value if it exists
+        wicc = stebbs.WallInternalConvectionCoefficient
+        print(f"  - WallInternalConvectionCoefficient: {wicc} (type: {type(wicc)})")
+        
+        if hasattr(wicc, 'value'):
+            wicc = wicc.value
+            print(f"  - WallInternalConvectionCoefficient.value: {wicc} (type: {type(wicc)})")
+        
+        ## 4) enforce not None/null
+        if wicc is None:
+            print("  - WallInternalConvectionCoefficient is None - adding issue")
+            issues.append("WallInternalConvectionCoefficient must be set (not null) when stebbsmethod=1")
+        
+        return issues
+    
+    def _validate_conditional_parameters(self) -> List[str]:
+        """
+        Run STEBBS check only if stebbsmethod==1,
+        collect any messages from _validate_stebbs.
+        """
+        all_issues: List[str] = []
+        
+        if not hasattr(self, "_validation_summary"):
+            self._validation_summary = {
+                "total_warnings": 0,
+                "sites_with_issues": [],
+                "issue_types": set(),
+                "yaml_path": getattr(self, "_yaml_path", None),
+            }
+
+        if self._needs_stebbs_validation() and self.sites:  
+            for idx, site in enumerate(self.sites):
+                stebbs_issues = self._validate_stebbs(site, idx)
+                if stebbs_issues:
+                    site_name = getattr(site, "name", f"Site {idx}")
+                    
+                    ## Don't increment counter here - let validate_parameter_completeness do it
+                    ## self._validation_summary["total_warnings"] += len(stebbs_issues)
+                    
+                    if site_name not in self._validation_summary["sites_with_issues"]:
+                        self._validation_summary["sites_with_issues"].append(site_name)
+                    
+                    self._validation_summary["issue_types"].add("Missing STEBBS parameters")
+
+                    for msg in stebbs_issues:
+                        all_issues.append(f"{site_name}: {msg}")
+
+        return all_issues
 
     def generate_annotated_yaml(
         self, yaml_path: str, output_path: Optional[str] = None
