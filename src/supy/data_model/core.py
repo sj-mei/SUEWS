@@ -505,36 +505,78 @@ class SUEWSConfig(BaseModel):
         
         return issues
     
+    def _needs_rsl_validation(self) -> bool:
+        """
+        Return True if RSL diagnostic method is enabled,
+        i.e. physics.rslmethod == 2.
+        """
+        rm = self.model.physics.rslmethod
+        method = getattr(rm, "value", rm)
+        try:
+            method = int(method)
+        except (TypeError, ValueError):
+            pass
+        return method == 2
+
+    def _validate_rsl(self, site: Site, site_index: int) -> List[str]:
+        """
+        If rslmethod==2, then for any site where bldgs.sfr > 0,
+        bldgs.faibldg must be set and non-null.
+        """
+        issues: List[str] = []
+        props = getattr(site, "properties", None)
+        if not props or not hasattr(props, "land_cover") or not props.land_cover:
+            return issues
+
+        lc = props.land_cover
+        bldgs = getattr(lc, "bldgs", None)
+        if not bldgs or not hasattr(bldgs, "sfr") or bldgs.sfr is None:
+            return issues
+
+        sfr = getattr(bldgs.sfr, "value", bldgs.sfr)
+        try:
+            sfr = float(sfr)
+        except (TypeError, ValueError):
+            sfr = 0.0
+
+        if sfr > 0:
+            faibldg = getattr(bldgs, "faibldg", None)
+            val = getattr(faibldg, "value", faibldg) if faibldg is not None else None
+            if val is None:
+                site_name = getattr(site, "name", f"Site {site_index}")
+                issues.append(
+                    f"{site_name}: for rslmethod=2 and bldgs.sfr={sfr}, bldgs.faibldg must be set"
+                )
+        return issues
+
     def _validate_conditional_parameters(self) -> List[str]:
         """
-        Run STEBBS check only if stebbsmethod==1,
-        collect any messages from _validate_stebbs.
+        Run any method-specific validations (STEBBS, RSL, …) and
+        return all issue messages.
         """
         all_issues: List[str] = []
-        
-        if not hasattr(self, "_validation_summary"):
-            self._validation_summary = {
-                "total_warnings": 0,
-                "sites_with_issues": [],
-                "issue_types": set(),
-                "yaml_path": getattr(self, "_yaml_path", None),
-            }
 
-        if self._needs_stebbs_validation() and self.sites:  
+        # STEBBS checks (when stebbsmethod==1)
+        if self._needs_stebbs_validation():
             for idx, site in enumerate(self.sites):
                 stebbs_issues = self._validate_stebbs(site, idx)
                 if stebbs_issues:
-                    site_name = getattr(site, "name", f"Site {idx}")
-                    
-                    ## Add site to the sites with issues list
-                    if site_name not in self._validation_summary["sites_with_issues"]:
-                        self._validation_summary["sites_with_issues"].append(site_name)
-                    
-                    ## Use a single issue type
                     self._validation_summary["issue_types"].add("STEBBS parameters")
+                    self._validation_summary["sites_with_issues"].append(
+                        getattr(site, "name", f"Site {idx}")
+                    )
+                    all_issues.extend(stebbs_issues)
 
-                    for msg in stebbs_issues:
-                        all_issues.append(f"{site_name}: {msg}")
+        # RSL checks (when rslmethod==2)
+        if self._needs_rsl_validation():
+            for idx, site in enumerate(self.sites):
+                rsl_issues = self._validate_rsl(site, idx)
+                if rsl_issues:
+                    self._validation_summary["issue_types"].add("RSL faibldg")
+                    self._validation_summary["sites_with_issues"].append(
+                        getattr(site, "name", f"Site {idx}")
+                    )
+                    all_issues.extend(rsl_issues)
 
         return all_issues
 
