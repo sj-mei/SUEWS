@@ -93,29 +93,33 @@ class SUEWSConfig(BaseModel):
         Validate all parameters after full construction.
         This runs AFTER all values have been populated from YAML.
         """
-        ## 1) Initialize the summary of validation issues
+        ### 1) Initialize the summary of validation issues
         self._validation_summary = {
             "total_warnings": 0,
             "sites_with_issues": [],
             "issue_types": set(),
             "yaml_path": getattr(self, "_yaml_path", None),
+            "detailed_messages": [],  ## Add this line to store detailed messages
         }
 
-        ## 2) Run the standard site-by-site checks
+        ### 2) Run the standard site-by-site checks
         for i, site in enumerate(self.sites):
             self._validate_site_parameters(site, site_index=i)
 
-        ## 3) Run any conditional validations (e.g. STEBBS when stebbsmethod==1)
+        ### 3) Run any conditional validations (e.g. STEBBS when stebbsmethod==1)
         cond_issues = self._validate_conditional_parameters()
         if cond_issues:
-            ## Tally them
+            ### Tally the warnings
             self._validation_summary["total_warnings"] += len(cond_issues)
-            self._validation_summary["issue_types"].add("Conditional STEBBS parameters")
-            ## And log each one for detail
-            for issue_msg in cond_issues:
-                logger_supy.warning(f"Conditional validation issue: {issue_msg}")
+            
+            ### Store the detailed messages for the summary
+            self._validation_summary["detailed_messages"].extend(cond_issues)
+            
+            ### No need to log each issue individually
+            ## for issue_msg in cond_issues:
+            ##    logger_supy.warning(f"Conditional validation issue: {issue_msg}")
 
-        ## 4) If there were any warnings, show the summary
+        ### 4) If there were any warnings, show the summary
         if self._validation_summary["total_warnings"] > 0:
             self._show_validation_summary()
 
@@ -125,11 +129,11 @@ class SUEWSConfig(BaseModel):
 
     def _show_validation_summary(self) -> None:
         """Show a concise summary of validation issues."""
-        # Check if we have a yaml path stored
+        ## Check if we have a yaml path stored
         yaml_path = getattr(self, "_yaml_path", None)
 
         if yaml_path:
-            # When loaded from YAML, we know the source file
+            ## When loaded from YAML, we know the source file
             annotated_filename = Path(yaml_path).stem + "_annotated.yml"
             fix_instructions = (
                 f"To see detailed fixes for each parameter: please refer to inline guidance "
@@ -143,19 +147,35 @@ class SUEWSConfig(BaseModel):
                 f"   3. An annotated file with inline guidance will be generated"
             )
 
-        logger_supy.warning(
+        ## Build the summary message
+        summary_message = (
             f"\n{'=' * 60}\n"
             f"VALIDATION SUMMARY\n"
             f"{'=' * 60}\n"
             f"Found {self._validation_summary['total_warnings']} parameter issue(s) across "
             f"{len(self._validation_summary['sites_with_issues'])} site(s).\n\n"
+        )
+        
+        ## Add issue types
+        summary_message += (
             f"Issue types:\n"
             f"  - "
             + "\n  - ".join(sorted(self._validation_summary["issue_types"]))
             + "\n\n"
-            f"{fix_instructions}\n"
-            f"{'=' * 60}"
         )
+        
+        ## Add detailed messages if available
+        if self._validation_summary.get("detailed_messages"):
+            summary_message += "Detailed issues:\n"
+            for msg in self._validation_summary["detailed_messages"]:
+                summary_message += f"  - {msg}\n"
+            summary_message += "\n"
+        
+        ## Add fix instructions
+        summary_message += f"{fix_instructions}\n{'=' * 60}"
+        
+        ## Log the complete summary
+        logger_supy.warning(summary_message)
 
     def _validate_site_parameters(self, site: Site, site_index: int) -> None:
         """Validate all parameters for a single site."""
@@ -350,75 +370,138 @@ class SUEWSConfig(BaseModel):
         Return True if STEBBS should be validated,
         i.e. physics.stebbsmethod == 1.
         """
-        ## First check if physics and stebbsmethod exist
+
         if not hasattr(self.model, 'physics') or not hasattr(self.model.physics, 'stebbsmethod'):
             return False
             
-        ## Get the stebbsmethod value, handling various types
         stebbsmethod = self.model.physics.stebbsmethod
         
-        ## Handle enum type (StebbsMethod)
+
         if hasattr(stebbsmethod, 'value'):
             stebbsmethod = stebbsmethod.value
-        
-        ## If it's still an enum, convert to int
         if hasattr(stebbsmethod, '__int__'):
             stebbsmethod = int(stebbsmethod)
-        
-        ## Check for string "1" as well
         if isinstance(stebbsmethod, str) and stebbsmethod == "1":
             stebbsmethod = 1
             
-        print(f"Final stebbsmethod value for validation: {stebbsmethod} (type: {type(stebbsmethod)})")
+        #print(f"Final stebbsmethod value for validation: {stebbsmethod} (type: {type(stebbsmethod)})")
         
-        ## Return True if stebbsmethod is 1
         return stebbsmethod == 1
 
     def _validate_stebbs(self, site: Site, site_index: int) -> List[str]:
         """
         If stebbsmethod==1, enforce that site.properties.stebbs
-        has WallInternalConvectionCoefficient != None.
+        has all required parameters with non-null values.
         Returns a list of issue messages.
         """
         issues: List[str] = []
         
-        print(f"Validating STEBBS for site {site_index}")
-        
         ## First check if properties exists
         if not hasattr(site, 'properties'):
-            print("  - Missing 'properties' section")
             issues.append("Missing 'properties' section (required for STEBBS validation)")
             return issues
         
         props = site.properties
         
-        ## 1) must have a stebbs block
+        ## Must have a stebbs block
         if not hasattr(props, 'stebbs') or props.stebbs is None:
-            print("  - Missing 'stebbs' section")
             issues.append("Missing 'stebbs' section (required when stebbsmethod=1)")
             return issues
         
         stebbs = props.stebbs
-        print(f"  - Found stebbs section: {stebbs}")
         
-        ## 2) must have WallInternalConvectionCoefficient
-        if not hasattr(stebbs, 'WallInternalConvectionCoefficient'):
-            print("  - Missing WallInternalConvectionCoefficient attribute")
-            issues.append("Missing WallInternalConvectionCoefficient (required when stebbsmethod=1)")
-            return issues
+        ## Define all required STEBBS parameters
+        required_params = [
+            "WallInternalConvectionCoefficient",
+            "InternalMassConvectionCoefficient",
+            "FloorInternalConvectionCoefficient",
+            "WindowInternalConvectionCoefficient",
+            "WallExternalConvectionCoefficient",
+            "WindowExternalConvectionCoefficient",
+            "GroundDepth",
+            "ExternalGroundConductivity",
+            "IndoorAirDensity",
+            "IndoorAirCp",
+            "WallBuildingViewFactor",
+            "WallGroundViewFactor",
+            "WallSkyViewFactor",
+            "MetabolicRate",
+            "LatentSensibleRatio",
+            "ApplianceRating",
+            "TotalNumberofAppliances",
+            "ApplianceUsageFactor",
+            "HeatingSystemEfficiency",
+            "MaxCoolingPower",
+            "CoolingSystemCOP",
+            "VentilationRate",
+            "IndoorAirStartTemperature",
+            "IndoorMassStartTemperature",
+            "WallIndoorSurfaceTemperature",
+            "WallOutdoorSurfaceTemperature",
+            "WindowIndoorSurfaceTemperature",
+            "WindowOutdoorSurfaceTemperature",
+            "GroundFloorIndoorSurfaceTemperature",
+            "GroundFloorOutdoorSurfaceTemperature",
+            "WaterTankTemperature",
+            "InternalWallWaterTankTemperature",
+            "ExternalWallWaterTankTemperature",
+            "WaterTankWallThickness",
+            "MainsWaterTemperature",
+            "WaterTankSurfaceArea",
+            "HotWaterHeatingSetpointTemperature",
+            "HotWaterTankWallEmissivity",
+            "DomesticHotWaterTemperatureInUseInBuilding",
+            "InternalWallDHWVesselTemperature",
+            "ExternalWallDHWVesselTemperature",
+            "DHWVesselWallThickness",
+            "DHWWaterVolume",
+            "DHWSurfaceArea",
+            "DHWVesselEmissivity",
+            "HotWaterFlowRate",
+            "DHWDrainFlowRate",
+            "DHWSpecificHeatCapacity",
+            "HotWaterTankSpecificHeatCapacity",
+            "DHWVesselSpecificHeatCapacity",
+            "DHWDensity",
+            "HotWaterTankWallDensity",
+            "DHWVesselDensity",
+            "HotWaterTankBuildingWallViewFactor",
+            "HotWaterTankInternalMassViewFactor",
+            "HotWaterTankWallConductivity",
+            "HotWaterTankInternalWallConvectionCoefficient",
+            "HotWaterTankExternalWallConvectionCoefficient",
+            "DHWVesselWallConductivity",
+            "DHWVesselInternalWallConvectionCoefficient",
+            "DHWVesselExternalWallConvectionCoefficient",
+            "DHWVesselWallEmissivity",
+            "HotWaterHeatingEfficiency",
+            "MinimumVolumeOfDHWinUse"
+        ]
         
-        ## 3) grab the field and its .value if it exists
-        wicc = stebbs.WallInternalConvectionCoefficient
-        print(f"  - WallInternalConvectionCoefficient: {wicc} (type: {type(wicc)})")
+        ## Check each parameter
+        missing_params = []
+        for param in required_params:
+            ## Check if parameter exists
+            if not hasattr(stebbs, param):
+                missing_params.append(param)
+                continue
+                
+            ## Get parameter value
+            param_obj = getattr(stebbs, param)
+            
+            ## Check if the parameter has a value attribute that is None
+            if hasattr(param_obj, 'value') and param_obj.value is None:
+                missing_params.append(param)
+                continue
+                
+            ## If the parameter itself is None
+            if param_obj is None:
+                missing_params.append(param)
         
-        if hasattr(wicc, 'value'):
-            wicc = wicc.value
-            print(f"  - WallInternalConvectionCoefficient.value: {wicc} (type: {type(wicc)})")
-        
-        ## 4) enforce not None/null
-        if wicc is None:
-            print("  - WallInternalConvectionCoefficient is None - adding issue")
-            issues.append("WallInternalConvectionCoefficient must be set (not null) when stebbsmethod=1")
+        ## Always list all missing parameters, regardless of count
+        if missing_params:
+            param_list = ", ".join(missing_params)
+            issues.append(f"Missing required STEBBS parameters: {param_list} (required when stebbsmethod=1)")
         
         return issues
     
@@ -443,13 +526,12 @@ class SUEWSConfig(BaseModel):
                 if stebbs_issues:
                     site_name = getattr(site, "name", f"Site {idx}")
                     
-                    ## Don't increment counter here - let validate_parameter_completeness do it
-                    ## self._validation_summary["total_warnings"] += len(stebbs_issues)
-                    
+                    ## Add site to the sites with issues list
                     if site_name not in self._validation_summary["sites_with_issues"]:
                         self._validation_summary["sites_with_issues"].append(site_name)
                     
-                    self._validation_summary["issue_types"].add("Missing STEBBS parameters")
+                    ## Use a single issue type
+                    self._validation_summary["issue_types"].add("STEBBS parameters")
 
                     for msg in stebbs_issues:
                         all_issues.append(f"{site_name}: {msg}")
