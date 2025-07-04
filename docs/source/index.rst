@@ -127,7 +127,6 @@ How to support SUEWS?
    workflow
    sub-tutorials/tutorials
    inputs/index
-   configuration-builder-guide
    output_files/output_files
    api
    data-structures/supy-io
