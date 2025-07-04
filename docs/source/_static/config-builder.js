@@ -854,6 +854,12 @@ function generateObjectFields(objSchema, objData, container, path) {
         const originalPropSchema = resolvedSchema.properties[propKey];
         let propSchema = originalPropSchema;
 
+        // Skip internal-only fields
+        if (originalPropSchema.internal_only === true) {
+            console.log(`Skipping internal-only field: ${path}.${propKey}`);
+            return;
+        }
+
         // Handle $ref in property schema
         if (propSchema.$ref && propSchema.$ref.startsWith('#/$defs/')) {
             const refPath = propSchema.$ref.replace('#/$defs/', '');
