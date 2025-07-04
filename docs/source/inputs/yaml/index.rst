@@ -166,8 +166,6 @@ Configuration Builder (Experimental)
    **Interactive Configuration Builder**: An experimental web-based tool for creating YAML configuration files with guided forms.
 
    📝 **Access the builder**: `SUEWS Configuration Builder <../../_static/index.html>`__
-   
-   📖 **User Guide**: See :ref:`config_builder_guide` for detailed instructions on using the configuration builder.
 
    .. warning::
 
@@ -176,7 +174,6 @@ Configuration Builder (Experimental)
    Features:
 
    - Interactive forms for parameter input
-   - Basic/Advanced mode toggle
    - Real-time YAML preview
    - Parameter search functionality
    - Import/Export capabilities
