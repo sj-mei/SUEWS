@@ -296,6 +296,12 @@ window.configBuilder.ui.importConfig = function() {
                 // Regenerate form
                 window.configBuilder.forms.generateForm();
                 
+                // Update preview without marking as unsaved (this is a fresh import)
+                window.configBuilder.preview.updatePreview(true);
+                
+                // Clear unsaved changes flag
+                window.configBuilder.clearUnsavedChanges();
+                
                 // Close modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
                 modal.hide();
@@ -329,6 +335,12 @@ window.configBuilder.ui.importConfig = function() {
             
             // Regenerate form
             window.configBuilder.forms.generateForm();
+            
+            // Update preview without marking as unsaved (this is a fresh import)
+            window.configBuilder.preview.updatePreview(true);
+            
+            // Clear unsaved changes flag
+            window.configBuilder.clearUnsavedChanges();
             
             // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
@@ -386,6 +398,9 @@ window.configBuilder.ui.exportConfig = function(format) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        // Clear unsaved changes after successful export
+        window.configBuilder.clearUnsavedChanges();
     } catch (error) {
         alert('Error exporting configuration: ' + error.message);
     }

@@ -10,7 +10,8 @@ window.configBuilderState = {
     schema: null,
     configData: {},
     isLoading: false,
-    validationErrors: []
+    validationErrors: [],
+    hasUnsavedChanges: false
 };
 
 // Export functions to global scope for use by other modules
@@ -44,9 +45,21 @@ window.configBuilder.init = async function() {
         console.log('Event listeners set up');
         
         console.log('Step 5: Updating preview...');
-        // Initial preview update
-        window.configBuilder.preview.updatePreview();
+        // Initial preview update (skip marking as unsaved since this is initial load)
+        window.configBuilder.preview.updatePreview(true);
         console.log('Preview updated');
+        
+        console.log('Step 6: Setting up unsaved changes warning...');
+        // Setup beforeunload warning
+        window.addEventListener('beforeunload', function(e) {
+            if (window.configBuilderState.hasUnsavedChanges) {
+                const message = 'You have unsaved changes. Are you sure you want to leave?';
+                e.preventDefault();
+                e.returnValue = message;
+                return message;
+            }
+        });
+        console.log('Unsaved changes warning set up');
         
         console.log('Configuration builder initialized successfully');
     } catch (error) {
@@ -75,6 +88,34 @@ window.configBuilder.setConfigData = function(data) {
  */
 window.configBuilder.getSchema = function() {
     return window.configBuilderState.schema;
+};
+
+/**
+ * Mark that there are unsaved changes
+ */
+window.configBuilder.markUnsavedChanges = function() {
+    window.configBuilderState.hasUnsavedChanges = true;
+    // Optionally update UI to show unsaved indicator
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn && !exportBtn.querySelector('.unsaved-indicator')) {
+        const indicator = document.createElement('span');
+        indicator.className = 'unsaved-indicator ms-1';
+        indicator.innerHTML = '<i class="fas fa-circle text-warning" style="font-size: 0.5rem;"></i>';
+        indicator.title = 'Unsaved changes';
+        exportBtn.appendChild(indicator);
+    }
+};
+
+/**
+ * Clear unsaved changes flag
+ */
+window.configBuilder.clearUnsavedChanges = function() {
+    window.configBuilderState.hasUnsavedChanges = false;
+    // Remove unsaved indicator from UI
+    const indicator = document.querySelector('.unsaved-indicator');
+    if (indicator) {
+        indicator.remove();
+    }
 };
 
 // Initialize when DOM is ready

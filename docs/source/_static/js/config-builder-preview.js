@@ -10,7 +10,7 @@ window.configBuilder.preview = {};
 /**
  * Update the preview (YAML format only)
  */
-window.configBuilder.preview.updatePreview = function() {
+window.configBuilder.preview.updatePreview = function(skipUnsavedMark = false) {
     try {
         const previewContainer = document.getElementById('preview-container');
         
@@ -18,6 +18,11 @@ window.configBuilder.preview.updatePreview = function() {
         if (!previewContainer) {
             console.error('Preview container not found in the DOM');
             return; // Exit the function if container doesn't exist
+        }
+        
+        // Mark unsaved changes unless explicitly skipped (e.g., during initial load or import)
+        if (!skipUnsavedMark) {
+            window.configBuilder.markUnsavedChanges();
         }
         
         try {
