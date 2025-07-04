@@ -49,20 +49,7 @@ window.configBuilder.init = async function() {
         window.configBuilder.preview.updatePreview(true);
         console.log('Preview updated');
         
-        console.log('Step 6: Setting up unsaved changes warning...');
-        // Setup beforeunload warning
-        window.addEventListener('beforeunload', function(e) {
-            console.log('beforeunload triggered, hasUnsavedChanges:', window.configBuilderState.hasUnsavedChanges);
-            if (window.configBuilderState.hasUnsavedChanges) {
-                const message = 'You have unsaved changes. Are you sure you want to leave?';
-                // Modern browsers require both preventDefault and returnValue
-                e.preventDefault();
-                e.returnValue = message;
-                // Some browsers still use the return value
-                return message;
-            }
-        });
-        console.log('Unsaved changes warning set up');
+        console.log('Step 6: Unsaved changes warning already set up globally');
         
         console.log('Configuration builder initialized successfully');
     } catch (error) {
@@ -114,12 +101,21 @@ window.configBuilder.markUnsavedChanges = function() {
  * Clear unsaved changes flag
  */
 window.configBuilder.clearUnsavedChanges = function() {
+    console.log('clearUnsavedChanges called, setting hasUnsavedChanges to false');
     window.configBuilderState.hasUnsavedChanges = false;
     // Remove unsaved indicator from UI
     const indicator = document.querySelector('.unsaved-indicator');
     if (indicator) {
         indicator.remove();
     }
+};
+
+// Debug function to test unsaved changes
+window.testUnsavedChanges = function() {
+    console.log('Testing unsaved changes...');
+    window.configBuilder.markUnsavedChanges();
+    console.log('hasUnsavedChanges is now:', window.configBuilderState.hasUnsavedChanges);
+    console.log('Try refreshing the page or closing the tab now!');
 };
 
 // Setup global beforeunload handler immediately
@@ -136,6 +132,16 @@ window.onbeforeunload = function(e) {
         return message;
     }
 };
+
+// Also add as event listener for redundancy
+window.addEventListener('beforeunload', function(e) {
+    console.log('addEventListener beforeunload triggered, hasUnsavedChanges:', window.configBuilderState?.hasUnsavedChanges);
+    if (window.configBuilderState && window.configBuilderState.hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+    }
+});
 
 // Initialize when DOM is ready
 // Use a more robust initialization approach
