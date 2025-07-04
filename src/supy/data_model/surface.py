@@ -27,12 +27,12 @@ from .hydro import WaterDistribution, StorageDrainParams
 
 class ThermalLayers(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    dz: Optional[FlexibleRefValue(List[float])] = Field(
+    dz: Optional[FlexibleRefValue(List[Optional[float]])] = Field(
         default=None,
         description="Thickness of thermal layers from surface to depth",
         json_schema_extra={"unit": "m", "display_name": "Layer Thickness"},
     )
-    k: Optional[FlexibleRefValue(List[float])] = Field(
+    k: Optional[FlexibleRefValue(List[Optional[float]])] = Field(
         default=None,
         description="Thermal conductivity of each thermal layer",
         json_schema_extra={
@@ -40,7 +40,7 @@ class ThermalLayers(BaseModel):
             "display_name": "Thermal Conductivity",
         },
     )
-    rho_cp: Optional[FlexibleRefValue(List[float])] = Field(
+    rho_cp: Optional[FlexibleRefValue(List[Optional[float]])] = Field(
         default=None,
         description="Volumetric heat capacity of each thermal layer",
         json_schema_extra={

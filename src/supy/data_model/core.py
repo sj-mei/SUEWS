@@ -549,6 +549,54 @@ class SUEWSConfig(BaseModel):
                 )
         return issues
 
+    def _needs_storage_validation(self) -> bool:
+        """
+        Return True if DyOHM storage‐heat method is enabled,
+        i.e. physics.storageheatmethod == 6.
+        """
+        shm = getattr(self.model.physics.storageheatmethod, "value", None)
+        try:
+            shm = int(shm)
+        except (TypeError, ValueError):
+            pass
+        return shm == 6
+
+    def _validate_storage(self, site: Site, site_index: int) -> List[str]:
+        
+        issues: List[str] = []
+        # prendi sempre il nome
+        site_name = getattr(site, "name", f"Site {site_index}")
+        props = getattr(site, "properties", None)
+        if not props:
+            return issues
+
+        vl = getattr(props, "vertical_layers", None)
+        walls = getattr(vl, "walls", None) if vl else None
+        if not walls or len(walls) == 0:
+            issues.append(
+                f"{site_name}: storageheatmethod=6 → missing vertical_layers.walls"
+            )
+            return issues
+
+        th = getattr(walls[0], "thermal_layers", None)
+        for arr in ("dz", "k", "rho_cp"):
+            field = getattr(th, arr, None) if th else None
+            vals = getattr(field, "value", None) if field else None
+            if not isinstance(vals, list) or len(vals) == 0 or any(v is None for v in vals):
+                issues.append(
+                    f"{site_name}: storageheatmethod=6 → "
+                    f"thermal_layers.{arr} must be a non‐empty list of numeric values (no nulls)"
+                )
+
+        lam = getattr(getattr(props, "lambda_c", None), "value", None)
+        if lam in (None, ""):
+            issues.append(
+                f"{site_name}: storageheatmethod=6 → properties.lambda_c must be set and non-null"
+            )
+
+        return issues
+
+
     def _validate_conditional_parameters(self) -> List[str]:
         """
         Run any method-specific validations (STEBBS, RSL, …) and
@@ -577,6 +625,15 @@ class SUEWSConfig(BaseModel):
                         getattr(site, "name", f"Site {idx}")
                     )
                     all_issues.extend(rsl_issues)
+
+        # — DyOHM STORAGEHEAT (if storageheatmethod==6) —
+        if self._needs_storage_validation():
+            for idx, site in enumerate(self.sites):
+                for msg in self._validate_storage(site, idx):
+                    all_issues.append(msg)
+            if any("storageheatmethod" in m for m in all_issues):
+                self._validation_summary["issue_types"].add("StorageHeat parameters")
+
 
         return all_issues
 
