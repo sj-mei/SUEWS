@@ -195,8 +195,11 @@ window.configBuilder.forms.generateModelFields = function() {
     const tabContent = document.createElement('div');
     tabContent.className = 'tab-content mt-3';
     
+    // Get ordered keys for model properties (control and physics)
+    const modelKeys = Object.keys(modelSchema.properties);
+    
     // Process each model property
-    Object.keys(modelSchema.properties).forEach((propKey, index) => {
+    modelKeys.forEach((propKey, index) => {
         const propSchema = modelSchema.properties[propKey];
         
         // Create tab item
@@ -286,8 +289,12 @@ window.configBuilder.forms.generateObjectFields = function(objSchema, objData, c
     defaultSection.className = 'form-section';
     container.appendChild(defaultSection);
     
-    // Process each property in the schema
-    Object.keys(resolvedSchema.properties).forEach(propKey => {
+    // Get ordered keys based on path
+    const fieldOrder = window.configBuilder.fieldOrder.getFieldOrderForPath(path);
+    const orderedKeys = window.configBuilder.fieldOrder.getOrderedKeys(resolvedSchema.properties, fieldOrder);
+    
+    // Process each property in the schema in the logical order
+    orderedKeys.forEach(propKey => {
         const originalPropSchema = resolvedSchema.properties[propKey];
         let propSchema = originalPropSchema;
         
@@ -670,12 +677,36 @@ window.configBuilder.forms.generateValueWithDOIField = function(propSchema, prop
  * Generate primitive field
  */
 window.configBuilder.forms.generatePrimitiveField = function(propSchema, propData, container, path, propKey) {
-    const fieldType = window.configBuilder.forms.getInputType(propSchema);
-    const options = window.configBuilder.schema.getEnumOptions(propSchema);
+    // Check if this field has a special UI control configuration
+    const fieldTypeConfig = window.configBuilder.fieldTypes.getFieldTypeConfig(path);
     
-    // Get min/max for number fields
-    const min = propSchema.minimum !== undefined ? propSchema.minimum : null;
-    const max = propSchema.maximum !== undefined ? propSchema.maximum : null;
+    let fieldType, options, min, max;
+    
+    if (fieldTypeConfig) {
+        // Use the special field type configuration
+        fieldType = fieldTypeConfig.type;
+        
+        // Handle different configuration types
+        if (fieldTypeConfig.type === 'dropdown' && fieldTypeConfig.groups) {
+            // For grouped dropdowns, flatten the groups for now
+            // (we'll enhance createFormField to handle grouped options)
+            options = fieldTypeConfig.groups;
+        } else if (fieldTypeConfig.type === 'radio' && fieldTypeConfig.options) {
+            options = fieldTypeConfig.options;
+        } else if (fieldTypeConfig.type === 'range' || fieldTypeConfig.type === 'number') {
+            min = fieldTypeConfig.min;
+            max = fieldTypeConfig.max;
+            options = null;
+        } else {
+            options = fieldTypeConfig.options || null;
+        }
+    } else {
+        // Fall back to default behavior
+        fieldType = window.configBuilder.forms.getInputType(propSchema);
+        options = window.configBuilder.schema.getEnumOptions(propSchema);
+        min = propSchema.minimum !== undefined ? propSchema.minimum : null;
+        max = propSchema.maximum !== undefined ? propSchema.maximum : null;
+    }
     
     // Use the helper function to format the field label
     const displayLabel = window.configBuilder.ui.formatFieldLabel(propKey, propSchema);
@@ -701,7 +732,8 @@ window.configBuilder.forms.generatePrimitiveField = function(propSchema, propDat
         options,
         min,
         max,
-        propSchema.unit  // Pass the unit
+        propSchema.unit,  // Pass the unit
+        fieldTypeConfig   // Pass the full config for additional options
     );
 };
 
@@ -1215,7 +1247,7 @@ window.configBuilder.forms.generateInlinePrimitiveArray = function(arraySchema, 
 /**
  * Create form field
  */
-window.configBuilder.forms.createFormField = function(container, id, label, type, value, description, onChange, options = null, min = null, max = null, unit = null) {
+window.configBuilder.forms.createFormField = function(container, id, label, type, value, description, onChange, options = null, min = null, max = null, unit = null, fieldTypeConfig = null) {
     console.log(`Creating form field: ${id}, type: ${type}`);
     
     const fieldDiv = document.createElement('div');
@@ -1277,6 +1309,9 @@ window.configBuilder.forms.createFormField = function(container, id, label, type
             input.value = value !== undefined && value !== null ? value : '';
             if (min !== null) input.min = min;
             if (max !== null) input.max = max;
+            if (fieldTypeConfig && fieldTypeConfig.step !== undefined) {
+                input.step = fieldTypeConfig.step;
+            }
             break;
             
         case 'textarea':
@@ -1312,6 +1347,133 @@ window.configBuilder.forms.createFormField = function(container, id, label, type
             }
             break;
             
+        case 'dropdown':
+            // Enhanced dropdown with grouped options
+            input = document.createElement('select');
+            input.className = 'form-select';
+            input.id = id;
+            
+            if (options && typeof options === 'object') {
+                // Handle grouped options
+                for (const [groupName, groupOptions] of Object.entries(options)) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = groupName;
+                    
+                    // Add class for styling if it's an advanced/internal group
+                    if (groupName.toLowerCase().includes('advanced') || 
+                        groupName.toLowerCase().includes('internal') ||
+                        groupName.toLowerCase().includes('not recommended')) {
+                        optgroup.className = 'text-muted';
+                    }
+                    
+                    for (const [optValue, optLabel] of Object.entries(groupOptions)) {
+                        const optEl = document.createElement('option');
+                        optEl.value = optValue;
+                        optEl.textContent = `${optValue} - ${optLabel}`;
+                        if (String(value) === String(optValue)) {
+                            optEl.selected = true;
+                        }
+                        optgroup.appendChild(optEl);
+                    }
+                    
+                    input.appendChild(optgroup);
+                }
+            }
+            
+            // Set default value if no value is set
+            if (!value && fieldTypeConfig && fieldTypeConfig.default) {
+                input.value = fieldTypeConfig.default;
+            }
+            break;
+            
+        case 'radio':
+            // Radio button group
+            input = document.createElement('div');
+            input.className = 'radio-group';
+            
+            if (options && typeof options === 'object') {
+                for (const [optValue, optLabel] of Object.entries(options)) {
+                    const radioDiv = document.createElement('div');
+                    radioDiv.className = 'form-check';
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.className = 'form-check-input';
+                    radioInput.name = id;
+                    radioInput.id = `${id}-${optValue}`;
+                    radioInput.value = optValue;
+                    radioInput.checked = String(value) === String(optValue);
+                    
+                    const radioLabel = document.createElement('label');
+                    radioLabel.className = 'form-check-label';
+                    radioLabel.setAttribute('for', `${id}-${optValue}`);
+                    radioLabel.textContent = optLabel;
+                    
+                    radioDiv.appendChild(radioInput);
+                    radioDiv.appendChild(radioLabel);
+                    input.appendChild(radioDiv);
+                    
+                    // Add change event
+                    radioInput.addEventListener('change', () => {
+                        if (radioInput.checked) {
+                            onChange(radioInput.value);
+                        }
+                    });
+                }
+            }
+            
+            // Set default value if no value is set
+            if (!value && fieldTypeConfig && fieldTypeConfig.default) {
+                const defaultRadio = input.querySelector(`input[value="${fieldTypeConfig.default}"]`);
+                if (defaultRadio) {
+                    defaultRadio.checked = true;
+                }
+            }
+            break;
+            
+        case 'range':
+            // Range slider with coupled number input
+            input = document.createElement('div');
+            input.className = 'range-input-group';
+            input.style.display = 'flex';
+            input.style.alignItems = 'center';
+            input.style.gap = '10px';
+            
+            const rangeInput = document.createElement('input');
+            rangeInput.type = 'range';
+            rangeInput.className = 'form-range';
+            rangeInput.id = `${id}-slider`;
+            rangeInput.style.flex = '1';
+            rangeInput.min = min !== null ? min : 0;
+            rangeInput.max = max !== null ? max : 1;
+            rangeInput.step = fieldTypeConfig && fieldTypeConfig.step ? fieldTypeConfig.step : 0.01;
+            rangeInput.value = value !== undefined && value !== null ? value : '';
+            
+            const numberInput = document.createElement('input');
+            numberInput.type = 'number';
+            numberInput.className = 'form-control';
+            numberInput.id = id;
+            numberInput.style.width = '80px';
+            numberInput.min = min !== null ? min : 0;
+            numberInput.max = max !== null ? max : 1;
+            numberInput.step = fieldTypeConfig && fieldTypeConfig.step ? fieldTypeConfig.step : 0.01;
+            numberInput.value = value !== undefined && value !== null ? value : '';
+            
+            // Sync the inputs
+            rangeInput.addEventListener('input', () => {
+                numberInput.value = rangeInput.value;
+                onChange(rangeInput.value);
+            });
+            
+            numberInput.addEventListener('input', () => {
+                rangeInput.value = numberInput.value;
+                onChange(numberInput.value);
+            });
+            
+            input.appendChild(rangeInput);
+            input.appendChild(numberInput);
+            break;
+            
         case 'checkbox':
             input = document.createElement('div');
             input.className = 'form-check';
@@ -1335,10 +1497,40 @@ window.configBuilder.forms.createFormField = function(container, id, label, type
                 onChange(checkbox.checked);
             });
             break;
+            
+        case 'file':
+            // File input field
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control';
+            input.id = id;
+            input.value = value !== undefined && value !== null ? value : '';
+            if (fieldTypeConfig && fieldTypeConfig.placeholder) {
+                input.placeholder = fieldTypeConfig.placeholder;
+            }
+            
+            // For now, just use a text input for file paths
+            // In future, could add a file browser button
+            break;
+            
+        default:
+            // Default to text input
+            console.warn(`Unknown field type: ${type}, defaulting to text`);
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control';
+            input.id = id;
+            input.value = value !== undefined && value !== null ? value : '';
+            break;
     }
     
-    // Add change event for non-checkbox inputs
-    if (type !== 'checkbox') {
+    // Add change event for standard inputs (not checkbox, radio, dropdown, or range which have their own handlers)
+    if (type !== 'checkbox' && type !== 'radio' && type !== 'dropdown' && type !== 'range') {
+        input.addEventListener('change', () => {
+            onChange(input.value);
+        });
+    } else if (type === 'dropdown') {
+        // Add change event for dropdown
         input.addEventListener('change', () => {
             onChange(input.value);
         });
