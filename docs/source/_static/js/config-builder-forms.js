@@ -1416,7 +1416,13 @@ window.configBuilder.forms.createFormField = function(container, id, label, type
                     // Add change event
                     radioInput.addEventListener('change', () => {
                         if (radioInput.checked) {
-                            onChange(radioInput.value);
+                            // Convert the value to number if the field expects a number
+                            let convertedValue = radioInput.value;
+                            // Check if the value should be numeric (all option values are numeric)
+                            if (options && Object.keys(options).every(key => !isNaN(parseInt(key)))) {
+                                convertedValue = parseInt(radioInput.value);
+                            }
+                            onChange(convertedValue);
                         }
                     });
                 }
