@@ -52,10 +52,13 @@ window.configBuilder.init = async function() {
         console.log('Step 6: Setting up unsaved changes warning...');
         // Setup beforeunload warning
         window.addEventListener('beforeunload', function(e) {
+            console.log('beforeunload triggered, hasUnsavedChanges:', window.configBuilderState.hasUnsavedChanges);
             if (window.configBuilderState.hasUnsavedChanges) {
                 const message = 'You have unsaved changes. Are you sure you want to leave?';
+                // Modern browsers require both preventDefault and returnValue
                 e.preventDefault();
                 e.returnValue = message;
+                // Some browsers still use the return value
                 return message;
             }
         });
@@ -94,6 +97,7 @@ window.configBuilder.getSchema = function() {
  * Mark that there are unsaved changes
  */
 window.configBuilder.markUnsavedChanges = function() {
+    console.log('markUnsavedChanges called, setting hasUnsavedChanges to true');
     window.configBuilderState.hasUnsavedChanges = true;
     // Optionally update UI to show unsaved indicator
     const exportBtn = document.getElementById('exportBtn');
@@ -115,6 +119,21 @@ window.configBuilder.clearUnsavedChanges = function() {
     const indicator = document.querySelector('.unsaved-indicator');
     if (indicator) {
         indicator.remove();
+    }
+};
+
+// Setup global beforeunload handler immediately
+window.onbeforeunload = function(e) {
+    console.log('window.onbeforeunload triggered, hasUnsavedChanges:', window.configBuilderState?.hasUnsavedChanges);
+    if (window.configBuilderState && window.configBuilderState.hasUnsavedChanges) {
+        const message = 'You have unsaved changes. Are you sure you want to leave?';
+        e = e || window.event;
+        // For IE and Firefox
+        if (e) {
+            e.returnValue = message;
+        }
+        // For Chrome and Safari
+        return message;
     }
 };
 
