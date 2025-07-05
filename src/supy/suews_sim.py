@@ -81,6 +81,7 @@ class SUEWSSimulation:
             If configuration or forcing files cannot be found.
         """
         self._config = None
+        self._config_path = None
         self._df_state_init = None
         self._df_forcing = None
         self._df_output = None
@@ -94,12 +95,52 @@ class SUEWSSimulation:
         # Set up forcing data if provided
         if forcing_file is not None:
             self.setup_forcing(forcing_file)
+        else:
+            # Try to load forcing from config if not explicitly provided
+            self._try_load_forcing_from_config()
 
         self._log("SUEWSSimulation initialised successfully")
 
     def _log(self, message: str, level: str = "info"):
         """Simple logging that doesn't depend on SuPy logger."""
         print(f"[{level.upper()}] {message}")
+
+    def _try_load_forcing_from_config(self):
+        """
+        Try to load forcing data from configuration if not explicitly provided.
+        
+        This implements the fallback mechanism requested in issue #458.
+        """
+        if self._config is None:
+            return
+        
+        try:
+            # Check if config has forcing_file in model.control
+            if hasattr(self._config, 'model') and hasattr(self._config.model, 'control'):
+                forcing_file_obj = getattr(self._config.model.control, 'forcing_file', None)
+                
+                if forcing_file_obj is not None:
+                    # Handle RefValue wrapper
+                    if hasattr(forcing_file_obj, 'value'):
+                        forcing_path = forcing_file_obj.value
+                    else:
+                        forcing_path = forcing_file_obj
+                    
+                    # Skip default placeholder value
+                    if forcing_path and forcing_path != "forcing.txt":
+                        # Handle relative paths - make them relative to config file location
+                        forcing_path = Path(forcing_path)
+                        if not forcing_path.is_absolute() and hasattr(self, '_config_path'):
+                            # Make relative to config file directory
+                            config_dir = self._config_path.parent
+                            forcing_path = config_dir / forcing_path
+                        
+                        self._log(f"Loading forcing data from config: {forcing_path}")
+                        self.setup_forcing(forcing_path)
+                    
+        except Exception as e:
+            # Don't fail initialization if forcing can't be loaded
+            self._log(f"Could not load forcing from config: {e}", "warning")
 
     def _get_supy_module(self, module_name: str):
         """Get SuPy module with deferred import."""
@@ -157,6 +198,8 @@ class SUEWSSimulation:
                         f"Configuration file not found: {config_path}"
                     )
                 self._config = init_config_from_yaml(config_path)
+                # Store config path for relative path resolution
+                self._config_path = config_path
             else:
                 raise ValueError(f"Unsupported configuration type: {type(config)}")
 
@@ -250,10 +293,31 @@ class SUEWSSimulation:
             raise
 
     def _load_forcing_file(self, forcing_path: Path) -> pd.DataFrame:
-        """Load forcing data from file using existing SuPy functions."""
+        """Load forcing data from file or directory using existing SuPy functions."""
         from supy.util._io import read_forcing
 
-        return read_forcing(str(forcing_path))
+        # Check if it's a directory
+        if forcing_path.is_dir():
+            # Find forcing files in directory (common patterns)
+            patterns = ['*.txt', '*.csv', '*.met']
+            forcing_files = []
+            for pattern in patterns:
+                forcing_files.extend(sorted(forcing_path.glob(pattern)))
+            
+            if not forcing_files:
+                raise FileNotFoundError(f"No forcing files found in directory: {forcing_path}")
+            
+            # For now, concatenate all files (sorted by name)
+            # This handles multi-year forcing data
+            dfs = []
+            for file in forcing_files:
+                self._log(f"Reading forcing file: {file.name}")
+                dfs.append(read_forcing(str(file)))
+            
+            # Concatenate all dataframes
+            return pd.concat(dfs, axis=0).sort_index()
+        else:
+            return read_forcing(str(forcing_path))
 
     def _validate_forcing(self):
         """Validate forcing data format and content."""
@@ -702,7 +766,7 @@ class SUEWSSimulation:
         plt.show()
 
     def save(
-        self, output_path: Union[str, Path], format: str = "csv", **save_kwargs
+        self, output_path: Union[str, Path], format: str = None, **save_kwargs
     ) -> Path:
         """
         Save simulation results to file.
@@ -710,30 +774,42 @@ class SUEWSSimulation:
         Parameters
         ----------
         output_path : str or Path
-            Output file path.
-        format : str, default 'csv'
-            Output format: 'csv', 'excel', 'pickle', 'netcdf'.
+            Output file path. For txt format, this should be a directory.
+        format : str, optional
+            Output format: 'csv', 'excel', 'pickle', 'netcdf', 'parquet', 'txt'.
+            If None, uses format from OutputConfig in model configuration.
         **save_kwargs
             Additional arguments passed to save function.
 
         Returns
         -------
         Path
-            Path to saved file.
+            Path to saved file or directory.
 
         Examples
         --------
         >>> sim.save("results.csv")
         >>> sim.save("results.xlsx", format="excel")
         >>> sim.save("results.nc", format="netcdf")
+        >>> sim.save("results.parquet", format="parquet")
+        >>> sim.save("output_dir/", format="txt")  # Legacy txt format
         """
         if not self._run_completed:
             raise RuntimeError("No simulation results available. Run simulation first.")
 
         output_path = Path(output_path)
+        
+        # Get format from OutputConfig if not specified
+        if format is None:
+            format = self._get_output_format_from_config()
+            self._log(f"Using output format from config: {format}")
 
         # Ensure output directory exists
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        if format.lower() == "txt":
+            # For txt format, output_path is a directory
+            output_path.mkdir(parents=True, exist_ok=True)
+        else:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
 
         if format.lower() == "csv":
             self._df_output.to_csv(output_path, **save_kwargs)
@@ -741,6 +817,9 @@ class SUEWSSimulation:
             self._df_output.to_excel(output_path, **save_kwargs)
         elif format.lower() == "pickle":
             self._df_output.to_pickle(output_path, **save_kwargs)
+        elif format.lower() == "parquet":
+            # Use parquet for efficient columnar storage
+            self._df_output.to_parquet(output_path, **save_kwargs)
         elif format.lower() == "netcdf":
             # Convert to xarray and save as netCDF
             try:
@@ -750,11 +829,96 @@ class SUEWSSimulation:
                 ds.to_netcdf(output_path, **save_kwargs)
             except ImportError:
                 raise ImportError("xarray required for netCDF export")
+        elif format.lower() == "txt":
+            # Legacy txt format - save different groups to separate files
+            self._save_txt_format(output_path, **save_kwargs)
         else:
             raise ValueError(f"Unsupported format: {format}")
 
         self._log(f"Results saved to: {output_path}")
         return output_path
+
+    def _get_output_format_from_config(self) -> str:
+        """
+        Get output format from OutputConfig in model configuration.
+        
+        Returns default 'csv' if no OutputConfig is found.
+        """
+        try:
+            if (self._config and 
+                hasattr(self._config, 'model') and 
+                hasattr(self._config.model, 'control') and
+                hasattr(self._config.model.control, 'output_file')):
+                
+                output_config = self._config.model.control.output_file
+                
+                # Check if it's an OutputConfig object (not a string)
+                if hasattr(output_config, 'format') and not isinstance(output_config, str):
+                    # Handle both direct attribute and value wrapper
+                    format_val = output_config.format
+                    if hasattr(format_val, 'value'):
+                        return str(format_val.value)
+                    elif hasattr(format_val, 'name'):  # Enum value
+                        return str(format_val.value)
+                    else:
+                        return str(format_val)
+        except Exception as e:
+            self._log(f"Could not get output format from config: {e}", "warning")
+        
+        # Default format
+        return "csv"
+    
+    def _save_txt_format(self, output_dir: Path, **kwargs):
+        """
+        Save results in legacy txt format with separate files for different groups.
+        
+        This mimics the traditional SUEWS output format where different variable
+        groups are saved to separate text files.
+        """
+        # Get output groups from config or use defaults
+        output_groups = self._get_output_groups_from_config()
+        
+        # Group variables by their group name (first level of MultiIndex)
+        groups = self._df_output.columns.get_level_values(0).unique()
+        
+        for group in groups:
+            if output_groups and group not in output_groups:
+                continue
+                
+            # Select columns for this group
+            group_data = self._df_output.xs(group, axis=1, level=0)
+            
+            # Create filename
+            filename = output_dir / f"{group}_output.txt"
+            
+            # Save with appropriate formatting
+            group_data.to_csv(filename, sep='\t', float_format='%.6f', **kwargs)
+            self._log(f"Saved {group} data to {filename}")
+    
+    def _get_output_groups_from_config(self) -> Optional[List[str]]:
+        """
+        Get output groups from OutputConfig in model configuration.
+        
+        Returns None if no groups specified (save all groups).
+        """
+        try:
+            if (self._config and 
+                hasattr(self._config, 'model') and 
+                hasattr(self._config.model, 'control') and
+                hasattr(self._config.model.control, 'output_file')):
+                
+                output_config = self._config.model.control.output_file
+                
+                # Check if it's an OutputConfig object with groups
+                if hasattr(output_config, 'groups'):
+                    groups = output_config.groups
+                    if groups:
+                        return groups
+        except Exception as e:
+            self._log(f"Could not get output groups from config: {e}", "warning")
+        
+        # Default groups if not specified
+        return ['SUEWS', 'DailyState']
 
     def clone(self) -> "SUEWSSimulation":
         """
