@@ -935,38 +935,47 @@ class SUEWSSimulation:
             # Use existing save_supy function for backward compatibility
             supy = importlib.import_module("supy")
             
-            # Get output configuration
-            output_config = None
-            if (self._config and 
-                hasattr(self._config, 'model') and 
-                hasattr(self._config.model, 'control') and
-                hasattr(self._config.model.control, 'output_file') and
-                not isinstance(self._config.model.control.output_file, str)):
-                output_config = self._config.model.control.output_file
-            
-            # Get frequency from config or use default
+            # Extract parameters from config
             freq_s = 3600  # default hourly
-            if output_config and hasattr(output_config, 'freq') and output_config.freq is not None:
-                freq_s = output_config.freq
-            
-            # Get site name from config if available
             site = ""
+            output_level = 1  # default
+            
+            # Get output configuration if available
             if (self._config and 
                 hasattr(self._config, 'model') and 
-                hasattr(self._config.model, 'control') and
-                hasattr(self._config.model.control, 'file_code')):
-                site = str(self._config.model.control.file_code)
-                if hasattr(site, 'value'):
-                    site = str(site.value)
+                hasattr(self._config.model, 'control')):
+                
+                control = self._config.model.control
+                
+                # Get output frequency from OutputConfig
+                if (hasattr(control, 'output_file') and 
+                    not isinstance(control.output_file, str) and
+                    hasattr(control.output_file, 'freq') and 
+                    control.output_file.freq is not None):
+                    freq_s = control.output_file.freq
+                    if hasattr(freq_s, 'value'):
+                        freq_s = freq_s.value
+                
+                # Get site code
+                if hasattr(control, 'file_code'):
+                    site = str(control.file_code)
+                    if hasattr(site, 'value'):
+                        site = str(site.value)
+                
+                # Get output level
+                if hasattr(control, 'write_out_option'):
+                    output_level = control.write_out_option
+                    if hasattr(output_level, 'value'):
+                        output_level = output_level.value
             
-            # Use save_supy for txt format
+            # Use save_supy for txt format - without passing output_config
             list_path_save = supy.save_supy(
                 df_output=self._df_output,
                 df_state_final=self._df_state_final,
-                freq_s=freq_s,
+                freq_s=int(freq_s),
                 site=site,
                 path_dir_save=str(output_path),
-                output_config=output_config,
+                output_level=int(output_level),
                 **save_kwargs
             )
             
