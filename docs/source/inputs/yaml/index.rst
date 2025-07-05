@@ -155,7 +155,7 @@ For detailed information about:
 
 - **Input data format and variables**: see :ref:`met_input`
 - **Output file formats and variables**: see :ref:`output_files`
-- **Output configuration options**: see :ref:`outputconfig`
+- **Output configuration options**: see the `Output Data`_ section above
 - **Parquet output format**: see :ref:`parquet_note`
 
 Configuration Builder (Experimental)
@@ -174,11 +174,13 @@ Configuration Builder (Experimental)
    Features:
 
    - Interactive forms for parameter input
-   - Basic validation for parameter values
-   - YAML file export functionality
-   - Integrated parameter documentation
+   - Real-time YAML preview
+   - Parameter search functionality
+   - Import/Export capabilities
+   - Automatic array synchronisation
+   - Built-in validation
 
-   **Alternative**: You can also create YAML files manually using the schema documentation below or by adapting the sample configuration files provided with SuPy.
+   **Alternative**: You can also create YAML files manually using the schema documentation below or by adapting the `sample configuration files <https://github.com/UMEP-dev/SUEWS/blob/master/src/supy/sample_run/sample_config.yml>`_ provided with SuPy.
 
 Data Model Schema
 -----------------
