@@ -875,7 +875,7 @@ class SUEWSSimulation:
 
     def save(
         self, output_path: Union[str, Path], format: str = None, **save_kwargs
-    ) -> Path:
+    ) -> Union[Path, List[Path]]:
         """
         Save simulation results to file.
 
@@ -884,22 +884,21 @@ class SUEWSSimulation:
         output_path : str or Path
             Output file path. For txt format, this should be a directory.
         format : str, optional
-            Output format: 'csv', 'excel', 'pickle', 'netcdf', 'parquet', 'txt'.
+            Output format: 'txt' or 'parquet'.
             If None, uses format from OutputConfig in model configuration.
+            Default is 'parquet' if no OutputConfig is present.
         **save_kwargs
             Additional arguments passed to save function.
 
         Returns
         -------
-        Path
-            Path to saved file or directory.
+        Path or List[Path]
+            Path to saved file (parquet) or list of paths (txt).
 
         Examples
         --------
-        >>> sim.save("results.csv")
-        >>> sim.save("results.xlsx", format="excel")
-        >>> sim.save("results.nc", format="netcdf")
-        >>> sim.save("results.parquet", format="parquet")
+        >>> sim.save("results.parquet")  # Default format
+        >>> sim.save("results.parquet", format="parquet")  # Explicit parquet
         >>> sim.save("output_dir/", format="txt")  # Legacy txt format
         """
         if not self._run_completed:
@@ -912,6 +911,14 @@ class SUEWSSimulation:
             format = self._get_output_format_from_config()
             self._log(f"Using output format from config: {format}")
 
+        # Validate format
+        valid_formats = ['txt', 'parquet']
+        if format.lower() not in valid_formats:
+            raise ValueError(
+                f"Unsupported format: '{format}'. "
+                f"Valid formats are: {', '.join(valid_formats)}"
+            )
+
         # Ensure output directory exists
         if format.lower() == "txt":
             # For txt format, output_path is a directory
@@ -919,38 +926,58 @@ class SUEWSSimulation:
         else:
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        if format.lower() == "csv":
-            self._df_output.to_csv(output_path, **save_kwargs)
-        elif format.lower() == "excel":
-            self._df_output.to_excel(output_path, **save_kwargs)
-        elif format.lower() == "pickle":
-            self._df_output.to_pickle(output_path, **save_kwargs)
-        elif format.lower() == "parquet":
+        if format.lower() == "parquet":
             # Use parquet for efficient columnar storage
             self._df_output.to_parquet(output_path, **save_kwargs)
-        elif format.lower() == "netcdf":
-            # Convert to xarray and save as netCDF
-            try:
-                import xarray as xr
-
-                ds = xr.Dataset.from_dataframe(self._df_output)
-                ds.to_netcdf(output_path, **save_kwargs)
-            except ImportError:
-                raise ImportError("xarray required for netCDF export")
+            self._log(f"Results saved to: {output_path}")
+            return output_path
         elif format.lower() == "txt":
-            # Legacy txt format - save different groups to separate files
-            self._save_txt_format(output_path, **save_kwargs)
-        else:
-            raise ValueError(f"Unsupported format: {format}")
-
-        self._log(f"Results saved to: {output_path}")
-        return output_path
+            # Use existing save_supy function for backward compatibility
+            supy = importlib.import_module("supy")
+            
+            # Get output configuration
+            output_config = None
+            if (self._config and 
+                hasattr(self._config, 'model') and 
+                hasattr(self._config.model, 'control') and
+                hasattr(self._config.model.control, 'output_file') and
+                not isinstance(self._config.model.control.output_file, str)):
+                output_config = self._config.model.control.output_file
+            
+            # Get frequency from config or use default
+            freq_s = 3600  # default hourly
+            if output_config and hasattr(output_config, 'freq') and output_config.freq is not None:
+                freq_s = output_config.freq
+            
+            # Get site name from config if available
+            site = ""
+            if (self._config and 
+                hasattr(self._config, 'model') and 
+                hasattr(self._config.model, 'control') and
+                hasattr(self._config.model.control, 'file_code')):
+                site = str(self._config.model.control.file_code)
+                if hasattr(site, 'value'):
+                    site = str(site.value)
+            
+            # Use save_supy for txt format
+            list_path_save = supy.save_supy(
+                df_output=self._df_output,
+                df_state_final=self._df_state_final,
+                freq_s=freq_s,
+                site=site,
+                path_dir_save=str(output_path),
+                output_config=output_config,
+                **save_kwargs
+            )
+            
+            self._log(f"Results saved to: {output_path}")
+            return list_path_save
 
     def _get_output_format_from_config(self) -> str:
         """
         Get output format from OutputConfig in model configuration.
         
-        Returns default 'csv' if no OutputConfig is found.
+        Returns default 'parquet' if no OutputConfig is found.
         """
         try:
             if (self._config and 
@@ -974,59 +1001,8 @@ class SUEWSSimulation:
             self._log(f"Could not get output format from config: {e}", "warning")
         
         # Default format
-        return "csv"
+        return "parquet"
     
-    def _save_txt_format(self, output_dir: Path, **kwargs):
-        """
-        Save results in legacy txt format with separate files for different groups.
-        
-        This mimics the traditional SUEWS output format where different variable
-        groups are saved to separate text files.
-        """
-        # Get output groups from config or use defaults
-        output_groups = self._get_output_groups_from_config()
-        
-        # Group variables by their group name (first level of MultiIndex)
-        groups = self._df_output.columns.get_level_values(0).unique()
-        
-        for group in groups:
-            if output_groups and group not in output_groups:
-                continue
-                
-            # Select columns for this group
-            group_data = self._df_output.xs(group, axis=1, level=0)
-            
-            # Create filename
-            filename = output_dir / f"{group}_output.txt"
-            
-            # Save with appropriate formatting
-            group_data.to_csv(filename, sep='\t', float_format='%.6f', **kwargs)
-            self._log(f"Saved {group} data to {filename}")
-    
-    def _get_output_groups_from_config(self) -> Optional[List[str]]:
-        """
-        Get output groups from OutputConfig in model configuration.
-        
-        Returns None if no groups specified (save all groups).
-        """
-        try:
-            if (self._config and 
-                hasattr(self._config, 'model') and 
-                hasattr(self._config.model, 'control') and
-                hasattr(self._config.model.control, 'output_file')):
-                
-                output_config = self._config.model.control.output_file
-                
-                # Check if it's an OutputConfig object with groups
-                if hasattr(output_config, 'groups'):
-                    groups = output_config.groups
-                    if groups:
-                        return groups
-        except Exception as e:
-            self._log(f"Could not get output groups from config: {e}", "warning")
-        
-        # Default groups if not specified
-        return ['SUEWS', 'DailyState']
 
     def clone(self) -> "SUEWSSimulation":
         """

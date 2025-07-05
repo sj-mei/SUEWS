@@ -260,19 +260,6 @@ class TestSUEWSSimulationOutputFormats:
         
         return sim
     
-    def test_save_csv_format(self, sim_with_results):
-        """Test saving results in CSV format."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_path = Path(tmpdir) / "results.csv"
-            saved_path = sim_with_results.save(output_path, format="csv")
-            
-            assert saved_path.exists()
-            assert saved_path.suffix == ".csv"
-            
-            # Verify content
-            df = pd.read_csv(saved_path, index_col=0)
-            assert len(df) > 0
-    
     def test_save_parquet_format(self, sim_with_results):
         """Test saving results in Parquet format."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -290,40 +277,42 @@ class TestSUEWSSimulationOutputFormats:
         """Test saving results in legacy TXT format."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "txt_output"
-            saved_path = sim_with_results.save(output_dir, format="txt")
+            saved_paths = sim_with_results.save(output_dir, format="txt")
             
-            assert saved_path.exists()
-            assert saved_path.is_dir()
+            # save_supy returns a list of paths
+            assert isinstance(saved_paths, list)
+            assert len(saved_paths) > 0
             
-            # Check for output files
-            txt_files = list(saved_path.glob("*.txt"))
-            assert len(txt_files) >= 2  # At least SUEWS and DailyState
+            # Check that output directory exists
+            assert output_dir.exists()
+            assert output_dir.is_dir()
             
-            # Check file names
-            file_names = [f.name for f in txt_files]
-            assert any("SUEWS" in name for name in file_names)
-            assert any("DailyState" in name for name in file_names)
-    
-    def test_save_pickle_format(self, sim_with_results):
-        """Test saving results in Pickle format."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_path = Path(tmpdir) / "results.pkl"
-            saved_path = sim_with_results.save(output_path, format="pickle")
+            # Check for output files (save_supy creates files with site code and timestamp)
+            txt_files = list(output_dir.glob("*.txt"))
+            assert len(txt_files) >= 1  # At least one output file
             
-            assert saved_path.exists()
-            assert saved_path.suffix == ".pkl"
-            
-            # Verify content
-            df = pd.read_pickle(saved_path)
-            assert len(df) > 0
+            # Check that some files were created
+            csv_files = list(output_dir.glob("*.csv"))  # State files are CSV
+            all_files = txt_files + csv_files
+            assert len(all_files) >= 2  # Output + state files
     
     def test_save_default_format(self, sim_with_results):
-        """Test that default format is CSV when not specified."""
+        """Test that default format is parquet when not specified."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            output_path = Path(tmpdir) / "results_default.csv"
+            output_path = Path(tmpdir) / "results_default.parquet"
             saved_path = sim_with_results.save(output_path)  # No format specified
             
             assert saved_path.exists()
-            # Should default to CSV
-            df = pd.read_csv(saved_path, index_col=0)
+            # Should default to parquet
+            df = pd.read_parquet(saved_path)
             assert len(df) > 0
+    
+    def test_invalid_format_rejected(self, sim_with_results):
+        """Test that invalid formats are rejected."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "results.csv"
+            
+            # Test various invalid formats
+            for invalid_format in ["csv", "excel", "pickle", "netcdf", "json"]:
+                with pytest.raises(ValueError, match="Unsupported format"):
+                    sim_with_results.save(output_path, format=invalid_format)
