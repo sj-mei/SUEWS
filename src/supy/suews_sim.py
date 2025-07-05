@@ -129,7 +129,7 @@ class SUEWSSimulation:
                     # Skip default placeholder value
                     if forcing_value and forcing_value != "forcing.txt":
                         self._log(f"Loading forcing data from config")
-                        self.setup_forcing(forcing_value)
+                        self.setup_forcing(forcing_value, _from_config=True)
                     
         except Exception as e:
             # Don't fail initialization if forcing can't be loaded
@@ -250,7 +250,8 @@ class SUEWSSimulation:
         """
         return cls(yaml_path, **kwargs)
 
-    def setup_forcing(self, forcing_data: Union[str, Path, List[Union[str, Path]], pd.DataFrame]):
+    def setup_forcing(self, forcing_data: Union[str, Path, List[Union[str, Path]], pd.DataFrame], 
+                      _from_config: bool = False):
         """
         Load and validate meteorological forcing data.
 
@@ -262,6 +263,8 @@ class SUEWSSimulation:
             - List of paths to forcing data files (will be concatenated in order)
             - Path to directory containing forcing files (deprecated - issues warning)
             - DataFrame with forcing data
+        _from_config : bool, optional
+            Internal flag indicating if path comes from config (for relative path resolution)
             
         Notes
         -----
@@ -286,9 +289,9 @@ class SUEWSSimulation:
                 self._df_forcing = forcing_data.copy()
             elif isinstance(forcing_data, list):
                 # Handle list of files
-                self._df_forcing = self._load_forcing_from_list(forcing_data)
+                self._df_forcing = self._load_forcing_from_list(forcing_data, _from_config)
             elif isinstance(forcing_data, (str, Path)):
-                forcing_path = self._resolve_forcing_path(forcing_data)
+                forcing_path = self._resolve_forcing_path(forcing_data, _from_config)
                 if not forcing_path.exists():
                     raise FileNotFoundError(f"Forcing path not found: {forcing_path}")
                 # Use existing loading functions
@@ -305,12 +308,15 @@ class SUEWSSimulation:
             self._log(f"Failed to setup forcing data: {e}", "error")
             raise
     
-    def _resolve_forcing_path(self, forcing_path: Union[str, Path]) -> Path:
+    def _resolve_forcing_path(self, forcing_path: Union[str, Path], from_config: bool = False) -> Path:
         """Resolve forcing path, handling relative paths."""
         forcing_path = Path(forcing_path)
-        # Only resolve relative paths when we have a config path
-        # and the forcing path is not already resolved
-        if (not forcing_path.is_absolute() and 
+        # Only resolve relative paths when:
+        # 1. Path is from config (not user-provided)
+        # 2. Path is not absolute
+        # 3. We have a config path to resolve relative to
+        if (from_config and 
+            not forcing_path.is_absolute() and 
             hasattr(self, '_config_path') and 
             self._config_path is not None):
             # Make relative to config file directory
@@ -318,7 +324,7 @@ class SUEWSSimulation:
             return config_dir / forcing_path
         return forcing_path
     
-    def _load_forcing_from_list(self, forcing_list: List[Union[str, Path]]) -> pd.DataFrame:
+    def _load_forcing_from_list(self, forcing_list: List[Union[str, Path]], from_config: bool = False) -> pd.DataFrame:
         """
         Load forcing data from a list of files.
         
@@ -349,7 +355,7 @@ class SUEWSSimulation:
         has_directory = False
         
         for item in forcing_list:
-            path = self._resolve_forcing_path(item)
+            path = self._resolve_forcing_path(item, from_config)
             
             if not path.exists():
                 raise FileNotFoundError(f"Forcing file not found: {path}")
