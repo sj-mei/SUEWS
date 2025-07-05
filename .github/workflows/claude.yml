@@ -182,7 +182,7 @@ jobs:
             3. Always follow the SUEWS project guidelines and use British English.
 
           # Turn limit for Claude
-          turn_limit: 5
+          max_turns: 5
 
           # Environment variables for Claude
           claude_env: |
