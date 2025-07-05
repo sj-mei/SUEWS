@@ -36,22 +36,22 @@ class TestSUEWSSimulationBasic:
             pytest.skip("Benchmark config file not found")
 
         sim = SUEWSSimulation(benchmark_config)
-        assert sim._config is not None
+        assert sim.config is not None
         assert sim._df_state_init is not None
         assert sim._df_state_init.shape[0] >= 1  # At least one grid
         assert isinstance(sim._df_state_init.columns, pd.MultiIndex)
 
-    def test_setup_forcing(self, benchmark_config, benchmark_forcing):
-        """Test forcing data setup."""
+    def test_update_forcing(self, benchmark_config, benchmark_forcing):
+        """Test forcing data update."""
         if not benchmark_config.exists() or not benchmark_forcing.exists():
             pytest.skip("Benchmark files not found")
 
         sim = SUEWSSimulation(benchmark_config)
-        sim.setup_forcing(benchmark_forcing)
+        sim.update_forcing(benchmark_forcing)
 
-        assert sim._df_forcing is not None
-        assert len(sim._df_forcing) > 0
-        assert isinstance(sim._df_forcing.index, pd.DatetimeIndex)
+        assert sim.forcing is not None
+        assert len(sim.forcing) > 0
+        assert isinstance(sim.forcing.index, pd.DatetimeIndex)
 
     def test_simulation_run(self, benchmark_config, benchmark_forcing):
         """Test complete simulation run."""
@@ -59,7 +59,7 @@ class TestSUEWSSimulationBasic:
             pytest.skip("Benchmark files not found")
 
         sim = SUEWSSimulation(benchmark_config)
-        sim.setup_forcing(benchmark_forcing)
+        sim.update_forcing(benchmark_forcing)
 
         # Run short simulation
         start_date = pd.Timestamp("2011-01-01 00:05:00")
@@ -79,7 +79,7 @@ class TestSUEWSSimulationBasic:
             pytest.skip("Benchmark files not found")
 
         sim = SUEWSSimulation(benchmark_config)
-        sim.setup_forcing(benchmark_forcing)
+        sim.update_forcing(benchmark_forcing)
 
         start_date = pd.Timestamp("2011-01-01 00:05:00")
         end_date = pd.Timestamp("2011-01-01 01:00:00")
@@ -98,7 +98,7 @@ class TestSUEWSSimulationBasic:
             pytest.skip("Benchmark files not found")
 
         sim = SUEWSSimulation(benchmark_config)
-        sim.setup_forcing(benchmark_forcing)
+        sim.update_forcing(benchmark_forcing)
 
         start_date = pd.Timestamp("2011-01-01 00:05:00")
         end_date = pd.Timestamp("2011-01-01 02:00:00")  # 2 hours
@@ -138,7 +138,7 @@ class TestSUEWSSimulationError:
 
         sim = SUEWSSimulation(benchmark_config)
 
-        with pytest.raises(RuntimeError, match="validation failed"):
+        with pytest.raises(RuntimeError, match="No forcing data loaded"):
             sim.run()
 
 
