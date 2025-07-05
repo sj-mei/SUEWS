@@ -122,21 +122,14 @@ class SUEWSSimulation:
                 if forcing_file_obj is not None:
                     # Handle RefValue wrapper
                     if hasattr(forcing_file_obj, 'value'):
-                        forcing_path = forcing_file_obj.value
+                        forcing_value = forcing_file_obj.value
                     else:
-                        forcing_path = forcing_file_obj
+                        forcing_value = forcing_file_obj
                     
                     # Skip default placeholder value
-                    if forcing_path and forcing_path != "forcing.txt":
-                        # Handle relative paths - make them relative to config file location
-                        forcing_path = Path(forcing_path)
-                        if not forcing_path.is_absolute() and hasattr(self, '_config_path'):
-                            # Make relative to config file directory
-                            config_dir = self._config_path.parent
-                            forcing_path = config_dir / forcing_path
-                        
-                        self._log(f"Loading forcing data from config: {forcing_path}")
-                        self.setup_forcing(forcing_path)
+                    if forcing_value and forcing_value != "forcing.txt":
+                        self._log(f"Loading forcing data from config")
+                        self.setup_forcing(forcing_value)
                     
         except Exception as e:
             # Don't fail initialization if forcing can't be loaded
@@ -186,11 +179,15 @@ class SUEWSSimulation:
 
             if hasattr(config, "__class__") and "SUEWSConfig" in str(config.__class__):
                 self._config = config
+                # No config path when using existing object
+                self._config_path = None
             elif isinstance(config, dict):
                 if SUEWSConfig != dict:
                     self._config = SUEWSConfig(**config)
                 else:
                     self._config = config
+                # No config path when using dict
+                self._config_path = None
             elif isinstance(config, (str, Path)):
                 config_path = Path(config)
                 if not config_path.exists():
@@ -253,31 +250,47 @@ class SUEWSSimulation:
         """
         return cls(yaml_path, **kwargs)
 
-    def setup_forcing(self, forcing_data: Union[str, Path, pd.DataFrame]):
+    def setup_forcing(self, forcing_data: Union[str, Path, List[Union[str, Path]], pd.DataFrame]):
         """
         Load and validate meteorological forcing data.
 
         Parameters
         ----------
-        forcing_data : str, Path, or DataFrame
+        forcing_data : str, Path, list of paths, or DataFrame
             Forcing data source:
-            - Path to forcing data file (CSV, netCDF, etc.)
+            - Path to a single forcing data file
+            - List of paths to forcing data files (will be concatenated in order)
+            - Path to directory containing forcing files (deprecated - issues warning)
             - DataFrame with forcing data
+            
+        Notes
+        -----
+        Supported scenarios:
+        - Single file: Recommended for single-period simulations
+        - List of files: Recommended for multi-period simulations
+        - Directory: Deprecated, retained for backward compatibility only
+        
+        Not allowed:
+        - Mixed lists containing both directories and files
+        - Nonexistent file paths
 
         Raises
         ------
         ValueError
-            If forcing data format is invalid
+            If forcing data format is invalid or contains mixed types
         FileNotFoundError
-            If forcing file cannot be found
+            If forcing file(s) cannot be found
         """
         try:
             if isinstance(forcing_data, pd.DataFrame):
                 self._df_forcing = forcing_data.copy()
+            elif isinstance(forcing_data, list):
+                # Handle list of files
+                self._df_forcing = self._load_forcing_from_list(forcing_data)
             elif isinstance(forcing_data, (str, Path)):
-                forcing_path = Path(forcing_data)
+                forcing_path = self._resolve_forcing_path(forcing_data)
                 if not forcing_path.exists():
-                    raise FileNotFoundError(f"Forcing file not found: {forcing_path}")
+                    raise FileNotFoundError(f"Forcing path not found: {forcing_path}")
                 # Use existing loading functions
                 self._df_forcing = self._load_forcing_file(forcing_path)
             else:
@@ -291,6 +304,85 @@ class SUEWSSimulation:
         except Exception as e:
             self._log(f"Failed to setup forcing data: {e}", "error")
             raise
+    
+    def _resolve_forcing_path(self, forcing_path: Union[str, Path]) -> Path:
+        """Resolve forcing path, handling relative paths."""
+        forcing_path = Path(forcing_path)
+        # Only resolve relative paths when we have a config path
+        # and the forcing path is not already resolved
+        if (not forcing_path.is_absolute() and 
+            hasattr(self, '_config_path') and 
+            self._config_path is not None):
+            # Make relative to config file directory
+            config_dir = self._config_path.parent
+            return config_dir / forcing_path
+        return forcing_path
+    
+    def _load_forcing_from_list(self, forcing_list: List[Union[str, Path]]) -> pd.DataFrame:
+        """
+        Load forcing data from a list of files.
+        
+        Parameters
+        ----------
+        forcing_list : list of str or Path
+            List of forcing file paths
+            
+        Returns
+        -------
+        pd.DataFrame
+            Concatenated forcing data
+            
+        Raises
+        ------
+        ValueError
+            If list contains directories or mixed types
+        FileNotFoundError
+            If any file in the list doesn't exist
+        """
+        from supy.util._io import read_forcing
+        
+        if not forcing_list:
+            raise ValueError("Empty forcing file list provided")
+        
+        # First pass: validate all paths
+        resolved_paths = []
+        has_directory = False
+        
+        for item in forcing_list:
+            path = self._resolve_forcing_path(item)
+            
+            if not path.exists():
+                raise FileNotFoundError(f"Forcing file not found: {path}")
+            
+            if path.is_dir():
+                has_directory = True
+            
+            resolved_paths.append(path)
+        
+        # Check for mixed types
+        all_files = all(p.is_file() for p in resolved_paths)
+        if has_directory and all_files:
+            raise ValueError(
+                "Mixed directories and files in forcing list not allowed. "
+                "Please use either all files or a single directory."
+            )
+        
+        # Load all files
+        dfs = []
+        for path in resolved_paths:
+            if path.is_file():
+                self._log(f"Reading forcing file: {path.name}")
+                df = read_forcing(str(path))
+                dfs.append(df)
+            else:
+                raise ValueError(
+                    f"Directory '{path}' found in forcing file list. "
+                    "Directories are not allowed in lists. "
+                    "Use a single directory path instead of a list."
+                )
+        
+        # Concatenate all dataframes
+        return pd.concat(dfs, axis=0).sort_index()
 
     def _load_forcing_file(self, forcing_path: Path) -> pd.DataFrame:
         """Load forcing data from file or directory using existing SuPy functions."""
@@ -298,6 +390,16 @@ class SUEWSSimulation:
 
         # Check if it's a directory
         if forcing_path.is_dir():
+            # Issue deprecation warning for directory usage
+            import warnings
+            warnings.warn(
+                f"Loading forcing data from directory '{forcing_path}' is deprecated. "
+                "This functionality is retained for backward compatibility only. "
+                "Please specify individual files or use a list of files instead.",
+                DeprecationWarning,
+                stacklevel=3
+            )
+            
             # Find forcing files in directory (common patterns)
             patterns = ['*.txt', '*.csv', '*.met']
             forcing_files = []
@@ -307,7 +409,7 @@ class SUEWSSimulation:
             if not forcing_files:
                 raise FileNotFoundError(f"No forcing files found in directory: {forcing_path}")
             
-            # For now, concatenate all files (sorted by name)
+            # Concatenate all files (sorted by name)
             # This handles multi-year forcing data
             dfs = []
             for file in forcing_files:
