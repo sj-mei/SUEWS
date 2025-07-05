@@ -679,6 +679,8 @@ class SUEWSConfig(BaseModel):
                 list_df_site.append(df_site)
 
             df = pd.concat(list_df_site, axis=0)
+            df["config"] = self.name
+            df["description"] = self.description
             # remove duplicate columns
             df = df.loc[:, ~df.columns.duplicated()]
         except Exception as e:
@@ -786,6 +788,9 @@ class SUEWSConfig(BaseModel):
 
         # Reconstruct model
         config.model = Model.from_df_state(df, grid_ids[0])
+
+        config.name = df["config"].iloc[0]
+        config.description = df["description"].iloc[0]
 
         return config
 
