@@ -564,7 +564,7 @@ class SUEWSConfig(BaseModel):
     def _validate_storage(self, site: Site, site_index: int) -> List[str]:
         
         issues: List[str] = []
-        # prendi sempre il nome
+
         site_name = getattr(site, "name", f"Site {site_index}")
         props = getattr(site, "properties", None)
         if not props:
@@ -596,46 +596,94 @@ class SUEWSConfig(BaseModel):
 
         return issues
 
-
     def _validate_conditional_parameters(self) -> List[str]:
         """
-        Run any method-specific validations (STEBBS, RSL, …) and
-        return all issue messages.
+        Run any method‐specific validations (STEBBS, RSL, StorageHeat) in one
+        site-loop. Returns all issue messages.
         """
         all_issues: List[str] = []
 
-        # STEBBS checks (when stebbsmethod==1)
-        if self._needs_stebbs_validation():
-            for idx, site in enumerate(self.sites):
+        # Determine which checks to run once up front
+        needs_stebbs  = self._needs_stebbs_validation()
+        needs_rsl     = self._needs_rsl_validation()
+        needs_storage = self._needs_storage_validation()
+
+        # Nothing to do?
+        if not (needs_stebbs or needs_rsl or needs_storage):
+            return all_issues
+
+        for idx, site in enumerate(self.sites):
+            site_name = getattr(site, "name", f"Site {idx}")
+
+            # STEBBS
+            if needs_stebbs:
                 stebbs_issues = self._validate_stebbs(site, idx)
                 if stebbs_issues:
                     self._validation_summary["issue_types"].add("STEBBS parameters")
-                    self._validation_summary["sites_with_issues"].append(
-                        getattr(site, "name", f"Site {idx}")
-                    )
+                    if site_name not in self._validation_summary["sites_with_issues"]:
+                        self._validation_summary["sites_with_issues"].append(site_name)
                     all_issues.extend(stebbs_issues)
 
-        # RSL checks (when rslmethod==2)
-        if self._needs_rsl_validation():
-            for idx, site in enumerate(self.sites):
+            # RSL
+            if needs_rsl:
                 rsl_issues = self._validate_rsl(site, idx)
                 if rsl_issues:
                     self._validation_summary["issue_types"].add("RSL faibldg")
-                    self._validation_summary["sites_with_issues"].append(
-                        getattr(site, "name", f"Site {idx}")
-                    )
+                    if site_name not in self._validation_summary["sites_with_issues"]:
+                        self._validation_summary["sites_with_issues"].append(site_name)
                     all_issues.extend(rsl_issues)
 
-        # — DyOHM STORAGEHEAT (if storageheatmethod==6) —
-        if self._needs_storage_validation():
-            for idx, site in enumerate(self.sites):
-                for msg in self._validate_storage(site, idx):
-                    all_issues.append(msg)
-            if any("storageheatmethod" in m for m in all_issues):
-                self._validation_summary["issue_types"].add("StorageHeat parameters")
-
+            # StorageHeat (DyOHM)
+            if needs_storage:
+                storage_issues = self._validate_storage(site, idx)
+                if storage_issues:
+                    self._validation_summary["issue_types"].add("StorageHeat parameters")
+                    if site_name not in self._validation_summary["sites_with_issues"]:
+                        self._validation_summary["sites_with_issues"].append(site_name)
+                    all_issues.extend(storage_issues)
 
         return all_issues
+
+
+    # def _validate_conditional_parameters(self) -> List[str]:
+    #     """
+    #     Run any method-specific validations (STEBBS, RSL, …) and
+    #     return all issue messages.
+    #     """
+    #     all_issues: List[str] = []
+
+    #     # STEBBS checks (when stebbsmethod==1)
+    #     if self._needs_stebbs_validation():
+    #         for idx, site in enumerate(self.sites):
+    #             stebbs_issues = self._validate_stebbs(site, idx)
+    #             if stebbs_issues:
+    #                 self._validation_summary["issue_types"].add("STEBBS parameters")
+    #                 self._validation_summary["sites_with_issues"].append(
+    #                     getattr(site, "name", f"Site {idx}")
+    #                 )
+    #                 all_issues.extend(stebbs_issues)
+
+    #     # RSL checks (when rslmethod==2)
+    #     if self._needs_rsl_validation():
+    #         for idx, site in enumerate(self.sites):
+    #             rsl_issues = self._validate_rsl(site, idx)
+    #             if rsl_issues:
+    #                 self._validation_summary["issue_types"].add("RSL faibldg")
+    #                 self._validation_summary["sites_with_issues"].append(
+    #                     getattr(site, "name", f"Site {idx}")
+    #                 )
+    #                 all_issues.extend(rsl_issues)
+
+    #     # — DyOHM STORAGEHEAT (if storageheatmethod==6) —
+    #     if self._needs_storage_validation():
+    #         for idx, site in enumerate(self.sites):
+    #             for msg in self._validate_storage(site, idx):
+    #                 all_issues.append(msg)
+    #         if any("storageheatmethod" in m for m in all_issues):
+    #             self._validation_summary["issue_types"].add("StorageHeat parameters")
+
+
+    #     return all_issues
 
     def generate_annotated_yaml(
         self, yaml_path: str, output_path: Optional[str] = None
