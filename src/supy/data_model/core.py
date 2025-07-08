@@ -424,7 +424,7 @@ class SUEWSConfig(BaseModel):
         if not hasattr(thermal_layers, "k") or not _is_valid_layer_array(thermal_layers.k):
             missing_params.append("k (Thermal conductivity)")
         if not hasattr(thermal_layers, "rho_cp") or not _is_valid_layer_array(thermal_layers.rho_cp):
-            missing_params.append("cp (Volumetric heat capacity)")
+            missing_params.append("rho_cp (Volumetric heat capacity)")
 
 
         if missing_params:
@@ -882,7 +882,7 @@ class SUEWSConfig(BaseModel):
                                     path=f"{path}/thermal_layers",
                                     param="thermal_layers",
                                     message="Incomplete thermal layer properties",
-                                    fix="Add dz (thickness), k (conductivity), and cp (heat capacity) arrays",
+                                    fix="Add dz (thickness), k (conductivity), and rho_cp (heat capacity) arrays",
                                     level="WARNING",
                                 )
 
