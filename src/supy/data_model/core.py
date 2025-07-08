@@ -466,8 +466,8 @@ class SUEWSConfig(BaseModel):
         """
         issues: List[str] = []
         
-        ## First check if properties exists
-        if not hasattr(site, 'properties'):
+        ## First check if properties exists and is not None
+        if not hasattr(site, 'properties') or site.properties is None:
             issues.append("Missing 'properties' section (required for STEBBS validation)")
             return issues
         
