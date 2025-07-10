@@ -25,12 +25,56 @@ jobs:
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
+      - name: Check user authorization
+        id: auth-check
+        env:
+          AUTHORIZED_USERS: ${{ secrets.CLAUDE_AUTHORIZED_USERS }}
+          COMMENT_USER: ${{ github.event.comment.user.login || github.event.issue.user.login || github.event.pull_request.user.login || github.event.review.user.login }}
+        run: |
+          # STRICT ACCESS: Require CLAUDE_AUTHORIZED_USERS to be configured
+          if [ -z "$AUTHORIZED_USERS" ]; then
+            echo "❌ CLAUDE_AUTHORIZED_USERS secret not configured - access denied"
+            echo "authorized=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check if user is in the authorized list (supports both comma-separated and newline-separated)
+          # Convert commas to newlines for easier matching
+          USERS_LIST=$(echo "$AUTHORIZED_USERS" | tr ',' '\n' | tr -d ' ')
+
+          if echo "$USERS_LIST" | grep -q "^$COMMENT_USER$"; then
+            echo "✅ User $COMMENT_USER is authorised"
+            echo "authorized=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ User $COMMENT_USER is not authorised"
+            echo "authorized=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment if unauthorised
+        if: steps.auth-check.outputs.authorized == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.issue?.number || context.payload.pull_request?.number || context.payload.issue?.number;
+            if (issueNumber) {
+              const comment = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: '❌ Access denied. Claude is restricted to authorised users only. Please contact the repository maintainers to request access.'
+              };
+              await github.rest.issues.createComment(comment);
+            }
+            core.setFailed('Unauthorised user');
+
       - name: Checkout repository
+        if: steps.auth-check.outputs.authorized == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
       - name: Run Claude Code
+        if: steps.auth-check.outputs.authorized == 'true'
         id: claude
         uses: anthropics/claude-code-action@beta
         with:
@@ -40,25 +84,50 @@ jobs:
           additional_permissions: |
             actions: read
           
-          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
-          # model: "claude-opus-4-20250514"
+          # Use Claude Opus 4 for complex tasks (optional)
+          model: ${{ contains(github.event.comment.body || github.event.issue.body || '', 'complex') && 'claude-opus-4-20250514' || 'claude-sonnet-4-20250514' }}
           
-          # Optional: Customize the trigger phrase (default: @claude)
-          # trigger_phrase: "/claude"
+          # Enhanced allowed tools for SUEWS development
+          allowed_tools: |
+            Bash(make dev),
+            Bash(make test),
+            Bash(make clean),
+            Bash(pytest test/*),
+            Bash(python -m pytest test/* -v),
+            Bash(pip install -e .),
+            Bash(git status),
+            Bash(git diff),
+            Bash(git log --oneline -10),
+            Bash(rg *),
+            Bash(find . -name "*.py" -o -name "*.f95"),
+            Read,Write,Edit,MultiEdit,
+            Grep,Glob,LS,
+            TodoRead,TodoWrite,
+            WebSearch,WebFetch
           
-          # Optional: Trigger when specific user is assigned to an issue
-          # assignee_trigger: "claude-bot"
+          # Custom instructions based on CLAUDE.md and project standards
+          custom_instructions: |
+            You are working on SUEWS (Surface Urban Energy and Water Balance Scheme), a Fortran/Python urban climate model.
+            
+            Key project information:
+            - Main languages: Fortran (f95), Python
+            - Build system: meson-python
+            - Testing: pytest
+            - Documentation: Sphinx
+            - Python wrapper: supy
+            
+            Follow these guidelines:
+            1. Always run 'make test' after making changes
+            2. Use British English in all documentation and comments
+            3. Follow existing code patterns and conventions
+            4. For Fortran changes, run 'make dev' to rebuild
+            5. Check CLAUDE.md for project-specific instructions
+            6. When creating PRs, reference related GitHub issues
           
-          # Optional: Allow Claude to run specific commands
-          # allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
-          
-          # Optional: Add custom instructions for Claude to customize its behavior for your project
-          # custom_instructions: |
-          #   Follow our coding standards
-          #   Ensure all new code has tests
-          #   Use TypeScript for new files
-          
-          # Optional: Custom environment variables for Claude
-          # claude_env: |
-          #   NODE_ENV: test
+          # Environment variables for Claude
+          claude_env: |
+            GITHUB_ISSUE_NUMBER: ${{ github.issue.number || github.event.pull_request.number }}
+            GITHUB_ACTOR: ${{ github.actor }}
+            GITHUB_EVENT_NAME: ${{ github.event_name }}
+            PROJECT_NAME: SUEWS
 
