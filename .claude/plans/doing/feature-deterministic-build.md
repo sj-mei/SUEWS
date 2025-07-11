@@ -13,7 +13,7 @@ Implement deterministic build mode for SUEWS to guarantee identical results acro
 - [x] Add deterministic build flags to meson.build
 - [x] Add deterministic build flags to Makefile.gfortran
 - [x] Set up dedicated worktree with uv environment
-- [ ] Test basic compilation with deterministic flags
+- [x] Test basic compilation with deterministic flags
 
 ### Phase 2: Code Modifications
 - [ ] Replace SUM() with det_sum() in critical modules
@@ -23,8 +23,8 @@ Implement deterministic build mode for SUEWS to guarantee identical results acro
 - [ ] Handle big-endian conversion consistently
 
 ### Phase 3: Testing Infrastructure
-- [ ] Create cross-platform test cases
-- [ ] Implement numerical fingerprinting
+- [x] Create cross-platform test cases
+- [x] Implement numerical fingerprinting
 - [ ] Add CI matrix for Linux/macOS/Windows
 - [ ] Create Docker test environment
 - [ ] Document performance impact
@@ -58,4 +58,11 @@ Implement deterministic build mode for SUEWS to guarantee identical results acro
 - Test suite additions (pending)
 
 ## Current Status
-Working in dedicated worktree `worktrees/deterministic-build` with uv environment set up. Ready to test compilation and begin code modifications.
+Working in dedicated worktree `worktrees/deterministic-build` with uv environment set up. Successfully built with deterministic flags (`-ffp-contract=off`, `-fno-fast-math`, etc.). 
+
+Test results show that deterministic flags alone are not sufficient - still getting small variations between runs (e.g., QN.mean differs by ~2e-5). This confirms that we need to:
+1. Replace SUM() intrinsic with det_sum() throughout the Fortran code
+2. Address order-dependent operations in physics modules
+3. Standardize tolerances and convergence criteria
+
+Created `test/test_deterministic.py` with fingerprinting tests to track progress.
