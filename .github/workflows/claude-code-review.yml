@@ -34,7 +34,7 @@ jobs:
         run: |
           # STRICT ACCESS: Require CLAUDE_AUTHORIZED_USERS to be configured
           if [ -z "$AUTHORIZED_USERS" ]; then
-            echo "❌ CLAUDE_AUTHORIZED_USERS secret not configured - skipping review"
+            echo "CLAUDE_AUTHORIZED_USERS secret not configured - skipping review"
             echo "authorized=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -44,10 +44,10 @@ jobs:
           USERS_LIST=$(echo "$AUTHORIZED_USERS" | tr ',' '\n' | tr -d ' ')
 
           if echo "$USERS_LIST" | grep -q "^$PR_USER$"; then
-            echo "✅ PR author $PR_USER is authorised for Claude review"
+            echo "✓ PR author $PR_USER is authorised for Claude review"
             echo "authorized=true" >> $GITHUB_OUTPUT
           else
-            echo "ℹ️ PR author $PR_USER is not in the authorized list - skipping Claude review"
+            echo "PR author $PR_USER is not in the authorized list - skipping Claude review"
             echo "authorized=false" >> $GITHUB_OUTPUT
           fi
 
@@ -64,8 +64,8 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
-          # model: "claude-opus-4-20250514"
+          # Use Claude Opus 4 for better code review quality
+          model: claude-opus-4-20250514
           
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
