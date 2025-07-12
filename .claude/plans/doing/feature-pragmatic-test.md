@@ -1,7 +1,7 @@
-# Feature: Cross-Platform Deterministic Build
+# Feature: Pragmatic Robustness Testing
 
 ## Context
-Implement deterministic build mode for SUEWS to guarantee identical results across different platforms, compilers, and architectures with the same input. This addresses the need for reproducible scientific computations and consistent validation across development environments.
+Implement comprehensive robustness testing for SUEWS focusing on scientific validity rather than bit-for-bit determinism. This pragmatic approach ensures model outputs are physically reasonable and scientifically consistent across platforms within appropriate tolerances.
 
 ## GitHub Issues
 - None directly related (new feature)
