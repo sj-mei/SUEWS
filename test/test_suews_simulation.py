@@ -65,7 +65,7 @@ class TestSUEWSSimulationBasic:
         start_date = pd.Timestamp("2011-01-01 00:05:00")
         end_date = pd.Timestamp("2011-01-01 01:00:00")
 
-        results = sim.run()
+        results = sim.run(start_date=start_date, end_date=end_date)
 
         assert results is not None
         assert len(results) > 0
@@ -84,7 +84,7 @@ class TestSUEWSSimulationBasic:
         start_date = pd.Timestamp("2011-01-01 00:05:00")
         end_date = pd.Timestamp("2011-01-01 01:00:00")
 
-        results = sim.run()
+        results = sim.run(start_date=start_date, end_date=end_date)
         variables = results.columns.get_level_values("var")
 
         # Check for key SUEWS output variables
@@ -103,7 +103,7 @@ class TestSUEWSSimulationBasic:
         start_date = pd.Timestamp("2011-01-01 00:05:00")
         end_date = pd.Timestamp("2011-01-01 02:00:00")  # 2 hours
 
-        results = sim.run()
+        results = sim.run(start_date=start_date, end_date=end_date)
 
         # Check result structure - SuPy returns MultiIndex (grid, datetime)
         assert isinstance(results.index, pd.MultiIndex)
@@ -137,8 +137,9 @@ class TestSUEWSSimulationError:
             pytest.skip("Benchmark config file not found")
 
         sim = SUEWSSimulation(benchmark_config)
+        sim._df_forcing = None # Forcing read in on initialisation - force no forcing
 
-        with pytest.raises(RuntimeError, match="No forcing data loaded"):
+        with pytest.raises(RuntimeError, match="No forcing data loaded. Use update_forcing\\(\\) first."):
             sim.run()
 
 
@@ -162,6 +163,7 @@ class TestSUEWSSimulationForcing:
         
         forcing_file = forcing_dir / "Kc1_2011_data_5.txt"
         sim = SUEWSSimulation(benchmark_config)
+        sim.update_forcing(forcing_file)
         
         assert sim._df_forcing is not None
         assert len(sim._df_forcing) == 105120  # One year of 5-min data
@@ -176,6 +178,7 @@ class TestSUEWSSimulationForcing:
             str(forcing_dir / "Kc1_2012_data_5.txt")
         ]
         sim = SUEWSSimulation(benchmark_config)
+        sim.update_forcing(forcing_files)
         
         assert sim._df_forcing is not None
         # Two years of 5-min data (2012 is leap year)
@@ -210,7 +213,8 @@ class TestSUEWSSimulationForcing:
         ]
         
         with pytest.raises(ValueError, match="Directory.*not allowed in lists"):
-            SUEWSSimulation(benchmark_config)
+            sim = SUEWSSimulation(benchmark_config)
+            sim.update_forcing(mixed_list)
 
     def test_nonexistent_file_rejected(self, benchmark_config):
         """Test that nonexistent files are rejected."""
@@ -218,7 +222,7 @@ class TestSUEWSSimulationForcing:
             pytest.skip("Benchmark config file not found")
         
         with pytest.raises(FileNotFoundError):
-            SUEWSSimulation(benchmark_config)
+            SUEWSSimulation(benchmark_config).update_forcing("./nonexistentfile.txt")
 
     def test_forcing_fallback_from_config(self, forcing_dir):
         """Test that forcing is loaded from config when not explicitly provided."""
@@ -256,7 +260,7 @@ class TestSUEWSSimulationOutputFormats:
         # Run short simulation
         start_date = pd.Timestamp("2011-01-01 00:05:00")
         end_date = pd.Timestamp("2011-01-01 02:00:00")
-        sim.run()
+        sim.run(start_date=start_date, end_date=end_date)
         
         return sim
     
@@ -264,10 +268,11 @@ class TestSUEWSSimulationOutputFormats:
         """Test saving results in Parquet format."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "results.parquet"
-            saved_path = sim_with_results.save(output_path, format="parquet")
+            saved_paths = sim_with_results.save(output_path, format="parquet")
             
-            assert saved_path.exists()
-            assert saved_path.suffix == ".parquet"
+            for saved_path in saved_paths:
+                assert saved_path.exists()
+                assert saved_path.suffix == ".parquet"
             
             # Verify content
             df = pd.read_parquet(saved_path)
@@ -300,12 +305,13 @@ class TestSUEWSSimulationOutputFormats:
         """Test that default format is parquet when not specified."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "results_default.parquet"
-            saved_path = sim_with_results.save(output_path)  # No format specified
+            saved_paths = sim_with_results.save(output_path)  # No format specified
             
-            assert saved_path.exists()
-            # Should default to parquet
-            df = pd.read_parquet(saved_path)
-            assert len(df) > 0
+            for saved_path in saved_paths:
+                assert saved_path.exists()
+                # Should default to parquet
+                df = pd.read_parquet(saved_path)
+                assert len(df) > 0
     
     def test_invalid_format_rejected(self, sim_with_results):
         """Test that invalid formats are rejected."""
@@ -314,5 +320,5 @@ class TestSUEWSSimulationOutputFormats:
             
             # Test various invalid formats
             for invalid_format in ["csv", "excel", "pickle", "netcdf", "json"]:
-                with pytest.raises(ValueError, match="Unsupported format"):
+                with pytest.raises(ValueError, match="Unsupported format"): # TODO: No catch for format type
                     sim_with_results.save(output_path, format=invalid_format)
