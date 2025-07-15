@@ -222,7 +222,6 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
             # This ensures we have the full time range even if data is sparse
             full_index = df_group.resample(freq, closed="right", label=label).asfreq().index
             df_resampled = df_resampled.reindex(full_index)
-
             return df_resampled
         else:
             df_to_resample = df_group
@@ -253,6 +252,7 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
                         group_name=group
                     )
                     for group in list_group
+                    if group in dict_aggm  # Only process groups that are in dict_aggm
                 },
                 axis=1,
                 names=["group", "var"],
