@@ -3,6 +3,7 @@ import pandas as pd
 import copy
 from .supy_driver import suews_driver as sd
 from .supy_driver import suews_def_dts as sd_dts
+from ._env import logger_supy
 
 
 ##############################################################################
@@ -202,7 +203,27 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
         # Only apply dropna to DailyState group
         # Other groups may have NaN values in some variables (e.g., Fcld)
         if group_name == 'DailyState':
-            df_to_resample = df_group.dropna()
+            # DailyState contains sparse data (values only at end of each day)
+            # Use dropna(how='all') to preserve rows with partial data
+            df_with_data = df_group.dropna(how='all')
+
+            if df_with_data.empty:
+                # No data at all - return empty DataFrame with proper structure
+                return pd.DataFrame(index=pd.DatetimeIndex([]), columns=df_group.columns)
+
+            # Resample the non-empty data
+            df_resampled = df_with_data.resample(
+                freq, 
+                closed="right", 
+                label=label
+            ).agg(dict_aggm_group)
+
+            # Reindex to match the expected output timerange
+            # This ensures we have the full time range even if data is sparse
+            full_index = df_group.resample(freq, closed="right", label=label).asfreq().index
+            df_resampled = df_resampled.reindex(full_index)
+
+            return df_resampled
         else:
             df_to_resample = df_group
             
@@ -216,9 +237,6 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
     list_grid = df_output.index.get_level_values("grid").unique()
     list_group = df_output.columns.get_level_values("group").unique()
 
-    # Skip DailyState if it somehow gets here (it should be handled separately)
-    list_group = [g for g in list_group if g != 'DailyState']
-
     # resampling output according to different rules defined in dict_aggm
     # note the setting in .resample: (closed='right',label='right')
     # which is to conform to SUEWS convention
@@ -230,7 +248,7 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
                     group: _resample_group(
                         df_output.xs(grid, level='grid')[group],
                         freq,
-                        "right",  # Regular variables use 'right' label
+                        "right" if group != "DailyState" else "left",  # DailyState uses 'left' label
                         dict_aggm[group],
                         group_name=group
                     )
@@ -243,32 +261,6 @@ def resample_output(df_output, freq="60T", dict_aggm=dict_var_aggm):
         },
         names=["grid"],
     )
-
-    # Handle DailyState separately if present
-    if "DailyState" in df_output and "DailyState" in dict_aggm:
-        # DailyState uses label="left" as it represents state at the beginning of the period
-        # whereas other variables use label="right" following SUEWS convention for period-ending values
-        df_dailystate_rsmp = pd.concat(
-            {
-                grid: pd.concat(
-                    {
-                        "DailyState": _resample_group(
-                            df_output.xs(grid, level='grid')["DailyState"],
-                            freq,
-                            "left",  # DailyState uses 'left' label
-                            dict_aggm["DailyState"],
-                            group_name="DailyState"
-                        )
-                    },
-                    axis=1,
-                    names=["group", "var"],
-                )
-                for grid in list_grid
-            },
-            names=["grid"],
-        )
-
-        df_rsmp = pd.concat([df_rsmp, df_dailystate_rsmp], axis=1)
 
     # clean results
     df_rsmp = df_rsmp.dropna(how="all", axis=0)

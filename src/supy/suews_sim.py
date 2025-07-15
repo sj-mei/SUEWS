@@ -274,11 +274,13 @@ class SUEWSSimulation:
             raise RuntimeError("No forcing data loaded. Use update_forcing() first.")
 
         # Run simulation
-        self._df_output, self._df_state_final, df_debug, dict_dts_state = run_supy_ser(
+        result = run_supy_ser(
             self._df_forcing.loc[start_date:end_date],
             self._df_state_init,
             # **run_kwargs # Causes problems - requires explicit arguments
         )
+        self._df_output = result[0]
+        self._df_state_final = result[1]
         
         self._run_completed = True
         return self._df_output
