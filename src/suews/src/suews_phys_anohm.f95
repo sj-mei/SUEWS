@@ -18,6 +18,47 @@ MODULE AnOHM_module
    IMPLICIT NONE
 CONTAINS
 
+   SUBROUTINE reset_anohm_state()
+      ! Reset AnOHM persistent state variables to prevent state pollution
+      ! between different simulation runs
+      ! Added to fix QE/QH discrepancy issue - 2025-07-16
+      IMPLICIT NONE
+      
+      ! Call the internal reset subroutine
+      CALL reset_anohm_coef_cache()
+      
+   END SUBROUTINE reset_anohm_state
+
+   SUBROUTINE reset_anohm_coef_cache()
+      ! Reset the coefficient cache in AnOHM_coef subroutine
+      ! This forces recalculation of coefficients instead of using cached values
+      IMPLICIT NONE
+      
+      ! Module-level variables to track reset state
+      LOGICAL, SAVE :: reset_requested = .FALSE.
+      
+      ! Set the reset flag - this will be checked in AnOHM_coef
+      reset_requested = .TRUE.
+      
+   END SUBROUTINE reset_anohm_coef_cache
+
+   FUNCTION should_reset_anohm_cache() RESULT(reset_flag)
+      ! Check if AnOHM cache should be reset
+      IMPLICIT NONE
+      LOGICAL :: reset_flag
+      
+      ! Module-level variables to track reset state
+      LOGICAL, SAVE :: reset_requested = .FALSE.
+      
+      reset_flag = reset_requested
+      
+      ! Reset the flag after checking
+      IF (reset_requested) THEN
+         reset_requested = .FALSE.
+      END IF
+      
+   END FUNCTION should_reset_anohm_cache
+
    !========================================================================================
    !> High level wrapper for AnOHM calculation
    !! @brief
@@ -73,7 +114,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: deltaQi(nsurf) !< storage heat flux of snow surfaces
 
       INTEGER :: is, xid !< @var qn1 net all-wave radiation
-      INTEGER, SAVE :: id_save ! store index of the valid day with enough data
+      INTEGER, SAVE :: id_save ! store index of the valid day with enough data ! TODO: Remove SAVE states from the model
       REAL(KIND(1D0)), PARAMETER :: NotUsed = -55.5 !< @var qn1 net all-wave radiation
       INTEGER, PARAMETER :: notUsedI = -55 !< @var qn1 net all-wave radiation
       LOGICAL :: idQ ! whether id contains enough data
@@ -211,11 +252,15 @@ CONTAINS
       INTEGER, SAVE :: id_save, grid_save
       REAL(KIND(1D0)), SAVE :: coeff_grid_day(7, 3) = -999.
 
+      ! Check if cache should be reset to prevent state pollution
+      LOGICAL :: should_reset_cache
+      should_reset_cache = should_reset_anohm_cache()
+      
       ! PRINT*, 'xid,id_save',xid,id_save
       ! PRINT*, 'xgrid,grid_save',xgrid,grid_save
       ! PRINT*, 'sfc_typ',sfc_typ
       ! PRINT*, 'coeff_grid_day',coeff_grid_day(sfc_typ,:)
-      IF (xid == id_save .AND. xgrid == grid_save) THEN
+      IF (xid == id_save .AND. xgrid == grid_save .AND. .NOT. should_reset_cache) THEN
          ! if coefficients have been calculated, just reload them
          !  print*, 'here no repetition'
          xa1 = coeff_grid_day(sfc_typ, 1)
