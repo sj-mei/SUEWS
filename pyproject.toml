@@ -73,6 +73,7 @@ dev = [
     # Development and testing
     "pytest",
     "pytest-cov",
+    "pytest-order",  # Ensures test_sample_output runs first to avoid state interference
     "ruff",
     "pyarrow",  # Parquet support for pandas (recommended for output format)
     # Personal analysis tools
