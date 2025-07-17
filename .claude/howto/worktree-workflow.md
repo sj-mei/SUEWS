@@ -14,8 +14,9 @@ The `/worktree` command provides four simple subcommands for managing feature de
 
 ### 1. Starting a New Feature
 
-```bash
-claude -p "/worktree new"
+In Claude Code interactive mode, type:
+```
+/worktree new
 ```
 
 Claude will interactively ask for:
@@ -36,8 +37,8 @@ What happens:
 While developing, you may need to:
 
 **Sync with master** (pull latest changes):
-```bash
-claude -p "/worktree sync"
+```
+/worktree sync
 ```
 
 This will:
@@ -47,8 +48,8 @@ This will:
 - Rebuild if necessary
 
 **Check status**:
-```bash
-claude -p "/worktree"
+```
+/worktree
 ```
 
 Shows current worktree status and suggests next actions.
@@ -57,8 +58,8 @@ Shows current worktree status and suggests next actions.
 
 When ready to submit your work:
 
-```bash
-claude -p "/worktree pr"
+```
+/worktree pr
 ```
 
 This will:
@@ -72,8 +73,8 @@ This will:
 
 When done (either merged or abandoned):
 
-```bash
-claude -p "/worktree finish"
+```
+/worktree finish
 ```
 
 Claude will ask:
