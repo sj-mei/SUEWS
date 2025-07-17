@@ -195,20 +195,67 @@ When working in a git worktree or on a specific feature branch, check for branch
 4. **Update file lists** - Add any newly identified files to modify
 5. **Record completion status** - Note what was accomplished in each session
 
-**Example update during work:**
+**How Plan Updates Work - Recommended Workflow:**
+
+Plans live in the master branch's `.claude/plans/` directory. The smoothest workflow is to **always launch Claude Code from the master branch** and work directly:
+
+```bash
+# Always start from the main repository (master branch)
+cd ~/Dropbox\ \(Personal\)/6.Repos/SUEWS
+claude .  # Launch Claude Code from master
+```
+
+**Benefits of launching from master:**
+- Claude Code can directly see and edit plans in `.claude/plans/`
+- Edit files in worktrees using paths like `worktrees/my-feature/src/file.py`
+- Plan updates are simple - just edit and commit normally
+- No cd or branch switching needed
+- Everything is accessible from one place
+
+**Working pattern:**
+1. Launch Claude Code from master branch
+2. Work primarily from master - Claude Code can access everything
+3. Edit worktree files using full paths: `worktrees/feature-name/path/to/file.py`
+4. Update plans directly: `.claude/plans/doing/feature-{name}.md`
+5. When needed for specific tasks, temporarily cd into worktree:
+   - `cd worktrees/feature-name` for focused work
+   - Run tests, commits, or complex operations
+   - Return to master: `cd ../..` when done
+
+**Alternative: Updating from within a worktree** (if Claude Code was launched from worktree):
+```bash
+# Edit using relative path
+vim ../../.claude/plans/doing/feature-{branch-name}.md
+
+# Then you'll need to switch branches to commit (less smooth)
+cd ../..
+git checkout master
+git add .claude/plans/doing/feature-{branch-name}.md
+git commit -m "chore: update plan progress"
+git push
+cd worktrees/{feature-name}
+```
+
+**Example plan update during work:**
 ```bash
 # After completing a task, update the plan:
-# Edit .claude/plans/doing/feature-{branch-name}.md and:
+# Edit ../../.claude/plans/doing/feature-{branch-name}.md and:
 # - Change "- [ ] Fix validation bug" to "- [x] Fix validation bug"
 # - Add notes like "Found issue in line 234 of validation.py"
 # - Document any new tasks discovered
 ```
 
+**Why this workflow?**
+- **Single source of truth**: One plan shared across all worktrees and sessions
+- **No merge conflicts**: Plans aren't part of feature branches
+- **Always current**: Latest plan is always in master
+- **Clean feature branches**: Feature branches contain only code changes
+
 **End of session checklist:**
 - [ ] Update all completed tasks in the plan
 - [ ] Add notes about any unfinished work
 - [ ] Document any blocking issues for next session
-- [ ] Commit plan updates to master branch
+- [ ] Commit plan updates to master branch (see steps above)
 
 ### Development and Testing Workflow
 

@@ -10,11 +10,41 @@ The `/worktree` command provides four simple subcommands for managing feature de
 - `pr` - Create a pull request
 - `finish` - Complete or abandon the feature
 
+## Recommended Launch Method
+
+**Always launch Claude Code from the master branch** for the smoothest workflow:
+
+```bash
+# Navigate to main repository (master branch)
+cd ~/Dropbox\ \(Personal\)/6.Repos/SUEWS
+claude .  # Launch from master
+```
+
+Then Claude Code works primarily from master:
+- Has full visibility of all files and plans
+- Can edit any file using paths: `worktrees/feature-name/src/file.py`
+- Can update plans directly: `.claude/plans/doing/feature-name.md`
+
+When specific operations are needed:
+```bash
+cd worktrees/feature-name  # Enter worktree for focused work
+make test                  # Run tests
+git add -A                 # Stage changes
+git commit                 # Commit
+cd ../..                   # Return to master
+```
+
+This approach ensures:
+- Claude Code maintains full project context from master
+- Plans are always directly accessible
+- Temporary cd for specific operations only
+- Clean separation between overview (master) and focused work (worktree)
+
 ## Complete Workflow Example
 
 ### 1. Starting a New Feature
 
-In Claude Code interactive mode, type:
+In Claude Code interactive mode (launched from master), type:
 ```
 /worktree new
 ```
