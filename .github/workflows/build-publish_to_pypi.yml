@@ -17,6 +17,7 @@ on:
       - "src/supy/**"
       - "src/supy_driver/**"
       - ".github/workflows/build-publish_to_pypi.yml"
+      - "test/**"
       - "pyproject.toml"
       - "meson.build"
 jobs:
@@ -99,11 +100,6 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.0.0
 
-      - name: Setup tmate session for debugging
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 15
-
       - name: upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -125,11 +121,6 @@ jobs:
         with:
           path: dist/
           merge-multiple: true
-
-      - name: Setup tmate session for debugging
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 15
 
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1.8
