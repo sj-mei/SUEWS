@@ -1233,17 +1233,6 @@ CONTAINS
       CALL self%hydroState%ALLOCATE(nlayer)
       CALL self%heatState%ALLOCATE(nsurf, nlayer, ndepth)
 
-      ! Initialize critical atmospheric state variables to prevent state pollution
-      ! These variables were causing QE/QH discrepancies between runs
-      self%atmState%RA_h = 0.0D0
-      self%atmState%RS = 0.0D0
-      self%atmState%UStar = 0.0D0
-      self%atmState%TStar = 0.0D0
-      self%atmState%RB = 0.0D0
-      self%atmState%L_mod = 0.0D0
-      self%atmState%zL = 0.0D0
-      self%atmState%rss_surf = 0.0D0
-
    END SUBROUTINE allocSUEWSState_c
 
    SUBROUTINE deallocSUEWSState_c(self)
