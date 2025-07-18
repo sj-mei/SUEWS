@@ -5,15 +5,12 @@ This module tests all data loading and initialization functions in supy,
 including state initialization, forcing data loading, and configuration loading.
 """
 
-import tempfile
-import warnings
 from pathlib import Path
+import tempfile
 from unittest import TestCase
-import shutil
+import warnings
 
-import numpy as np
 import pandas as pd
-import pytest
 import yaml
 
 import supy as sp
@@ -218,7 +215,7 @@ class TestConfigLoading(TestCase):
         print("\n========================================")
         print("Testing init_config_from_yaml...")
 
-        from supy.data_model import init_config_from_yaml
+        from supy.data_model import init_config_from_yaml  # noqa: PLC0415
 
         config = init_config_from_yaml(self.sample_config)
 
@@ -256,7 +253,7 @@ class TestConfigLoading(TestCase):
         except ModuleNotFoundError:
             # Expected due to bug in supy._supy_module.py line 368
             # Test the underlying functionality instead
-            from supy.data_model.core import SUEWSConfig
+            from supy.data_model.core import SUEWSConfig  # noqa: PLC0415
 
             config = SUEWSConfig.from_df_state(df_state)
             self.assertIsNotNone(config)
@@ -279,9 +276,6 @@ class TestLoadingScenarios(TestCase):
 
         # Load sample data
         df_state, df_forcing = sp.load_SampleData()
-
-        # Modify state (if MultiIndex columns exist)
-        original_columns = len(df_state.columns)
 
         # Run simulation with modified state
         df_output, df_state_final = sp.run_supy(

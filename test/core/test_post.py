@@ -5,14 +5,13 @@ This module tests all post-processing functions in supy, including
 output resampling, aggregation, and data manipulation utilities.
 """
 
-import warnings
 from unittest import TestCase
+import warnings
 
-import numpy as np
 import pandas as pd
 
 import supy as sp
-from supy._post import resample_output, dict_var_aggm
+from supy._post import dict_var_aggm, resample_output  # noqa: PLC2701
 
 
 class TestResampleOutput(TestCase):
@@ -35,9 +34,6 @@ class TestResampleOutput(TestCase):
         """Test resampling output to hourly frequency."""
         print("\n========================================")
         print("Testing resample_output to hourly...")
-
-        # Import the correct aggregation dictionary
-        from supy._post import dict_var_aggm
 
         # Resample to hourly
         df_hourly = resample_output(self.df_output, freq="60T", dict_aggm=dict_var_aggm)
@@ -74,9 +70,6 @@ class TestResampleOutput(TestCase):
         """Test resampling output to daily frequency."""
         print("\n========================================")
         print("Testing resample_output to daily...")
-
-        # Import the correct aggregation dictionary
-        from supy._post import dict_var_aggm
 
         # Resample to daily
         df_daily = resample_output(self.df_output, freq="D", dict_aggm=dict_var_aggm)
@@ -120,7 +113,7 @@ class TestResampleOutput(TestCase):
         df_hourly = resample_output(self.df_output, freq="60T")
         self.assertAlmostEqual(len(df_30min), len(df_hourly) * 2, delta=2)
 
-        print(f"✓ Custom frequency resampling works correctly")
+        print("✓ Custom frequency resampling works correctly")
 
     def test_resample_output_custom_aggm(self):
         """Test resampling with custom aggregation methods."""
@@ -206,7 +199,7 @@ class TestAggregationMethods(TestCase):
         # Check aggregation methods are valid
         valid_methods = ["mean", "sum", "max", "min", "first", "last"]
         # Also accept lambda functions
-        for group, var_dict in dict_var_aggm.items():
+        for _, var_dict in dict_var_aggm.items():
             for var, method in var_dict.items():
                 if not callable(method):
                     self.assertIn(
@@ -472,9 +465,6 @@ class TestErrorHandling(TestCase):
         """Test handling of empty DataFrame."""
         print("\n========================================")
         print("Testing error handling for empty DataFrame...")
-
-        # Import the correct aggregation dictionary
-        from supy._post import dict_var_aggm
 
         # Create empty DataFrame with correct structure and at least one grid
         # The resample_output function expects to find at least one grid
