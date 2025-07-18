@@ -243,40 +243,141 @@ Each major component should have a README explaining:
 
 ## Testing Requirements
 
-### 5.1 Test Coverage
+### 5.1 Test File Organisation
 
-- All new functionality must include tests
-- Tests should cover edge cases and error conditions
-- Use descriptive test names that explain what is being tested
-
-### 5.2 Test Organisation
-
-```python
-class TestFeatureName(TestCase):
-    def setUp(self):
-        """Set up test fixtures."""
-        ...
-
-    def test_normal_operation(self):
-        """Test feature under normal conditions."""
-        ...
-
-    def test_edge_case(self):
-        """Test feature with edge case inputs."""
-        ...
+Tests are organised by functionality:
+```
+test/
+├── core/               # Essential functionality tests
+├── data_model/         # Configuration and validation tests
+├── physics/            # Scientific validation tests
+├── io_tests/           # Input/output tests
+└── fixtures/           # Test data and configurations
 ```
 
-### 5.3 Running Tests
+### 5.2 Test Naming Conventions
 
-Before committing:
+- **Files**: `test_*.py` (e.g., `test_supy.py`, `test_benchmark.py`)
+- **Classes**: `TestFeatureName` using `unittest.TestCase`
+- **Methods**: Descriptive names explaining what's tested
+  ```python
+  def test_energy_balance_closure(self):
+      """Test that energy balance is conserved."""
+  
+  def test_yaml_loading_no_spurious_warnings(self):
+      """Test that loading YAML doesn't produce warnings."""
+  ```
+
+### 5.3 Test Structure
+
+#### Class-based Tests (unittest)
+```python
+class TestSuPy(TestCase):
+    def setUp(self):
+        """Set up test fixtures."""
+        warnings.simplefilter("ignore", category=ImportWarning)
+        self.df_input = sp.load_SampleData()
+    
+    def test_normal_operation(self):
+        """Test feature under normal conditions."""
+        result = sp.run_supy(self.df_input)
+        self.assertIsNotNone(result)
+    
+    def tearDown(self):
+        """Clean up after tests."""
+        # Cleanup if needed
+```
+
+#### Function-based Tests (pytest)
+```python
+def test_sample_output_validation():
+    """Validate sample output against expected results."""
+    df_input = sp.load_SampleData()
+    result = sp.run_supy(df_input)
+    assert result is not None
+```
+
+### 5.4 Assertion Patterns
+
+- **unittest**: `self.assertTrue()`, `self.assertEqual()`, `self.assertAlmostEqual()`
+- **pytest**: Simple `assert` statements
+- **Pandas**: `pd.testing.assert_frame_equal()` for DataFrames
+- **NumPy**: `np.testing.assert_array_almost_equal()` for arrays
+- **Physical bounds**: Always check outputs are within realistic ranges
+
+### 5.5 Test Data Management
+
+- **Sample data**: Use `sp.load_SampleData()` for consistent test data
+- **Fixtures**: Store test data in `test/fixtures/` directory
+- **Temporary files**: Use `tempfile.TemporaryDirectory()` for file operations
+- **Benchmark data**: Store expected results in `.pkl` files for regression testing
+
+### 5.6 Physics and Scientific Testing
+
+When testing scientific functionality:
+```python
+def test_energy_balance_closure(self):
+    """Test energy balance: Rn = QH + QE + QS + QF."""
+    result = sp.run_supy(df_input)
+    
+    # Extract fluxes
+    rn = result.SUEWS['Rn']
+    qh = result.SUEWS['QH']
+    qe = result.SUEWS['QE']
+    qs = result.SUEWS['QS']
+    qf = result.SUEWS['QF']
+    
+    # Check energy balance within tolerance
+    balance = rn - (qh + qe + qs - qf)
+    tolerance = 10.0  # W/m²
+    self.assertTrue(
+        abs(balance.mean()) < tolerance,
+        f"Energy balance error: {balance.mean():.2f} W/m²"
+    )
+```
+
+### 5.7 State Isolation
+
+Ensure tests don't pollute each other:
+- Load fresh data in each test
+- Use `setUp()` and `tearDown()` methods
+- Be aware of Fortran state persistence issues
+- Run tests individually and in suite to detect pollution
+
+### 5.8 Best Practices
+
+1. **Descriptive names**: Test names should explain what's being tested
+2. **Docstrings**: Add docstrings explaining the test purpose
+3. **One concept per test**: Each test should verify one specific behaviour
+4. **Fast tests**: Keep individual tests fast (< 1 second where possible)
+5. **Reproducibility**: Tests should produce identical results on repeated runs
+6. **Platform awareness**: Consider platform-specific behaviour
+7. **Warning handling**: Suppress expected warnings, fail on unexpected ones
+
+### 5.9 Running Tests
+
 ```bash
 # Run all tests
 make test
 
+# Run specific test file
+python -m pytest test/test_supy.py -v
+
+# Run with coverage
+python -m pytest test --cov=supy
+
 # Check for state pollution
-python -m pytest test/test_specific.py -v
-python -m pytest test -v  # Full suite
+python -m pytest test/test_specific.py -v  # Run alone
+python -m pytest test -v                   # Run in suite
 ```
+
+### 5.10 Test Execution Order
+
+Critical tests run first via `conftest.py`:
+- Sample output validation
+- Benchmark tests
+- Core functionality
+This ensures fundamental features are tested before complex scenarios.
 
 ## Version Control Practices
 
