@@ -435,27 +435,26 @@ fprettify \
 
 ### 8.4 CI/CD Integration
 
-**Single Source of Truth**: Code formatting is enforced via GitHub Actions to ensure consistency across the codebase.
+**Automated Formatting Philosophy**: Let machines handle formatting so developers can focus on functionality.
 
-#### GitHub Actions Workflow: `code-quality.yml`
+#### GitHub Actions Workflow: `auto-format.yml`
 
-This unified workflow handles both PR checks and master branch formatting:
+The master branch is automatically formatted after every merge:
 
-**For Pull Requests:**
-- Checks Python formatting and linting with ruff
-- Checks Fortran formatting with fprettify  
-- Posts helpful comments with fix instructions
-- Blocks merge if formatting issues exist
-- Provides clear job summaries
-
-**For Master Branch:**
-- Automatically formats code if needed after merge
-- Creates minimal commit history (only when changes needed)
-- Uses `[skip ci]` to avoid triggering unnecessary builds
+- **Triggers**: On push to master containing Python or Fortran files
+- **Actions**: 
+  - Formats Python code with ruff
+  - Formats Fortran code with fprettify
+  - Only creates commit if changes are needed
+  - Uses `[skip ci]` to avoid build loops
+- **Benefits**:
+  - Zero friction for contributors
+  - Guaranteed consistency on master
+  - Clear formatting commits in history
 
 #### Local Development:
 
-Developers are encouraged to format code locally before pushing:
+While formatting is optional for contributors, these tools are available:
 
 ```bash
 make format      # Format all code locally

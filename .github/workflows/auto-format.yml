@@ -1,0 +1,135 @@
+name: Auto-format Master
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - '**.py'
+      - '**.f90'
+      - '**.f95'
+      - '.ruff.toml'
+      - '.fprettify.rc'
+  workflow_dispatch:
+
+jobs:
+  format:
+    # Only run on master branch
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Cache formatting tools
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-format-${{ hashFiles('.ruff.toml', '.fprettify.rc') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-format-
+          
+    - name: Install formatting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff fprettify
+        
+    - name: Format Python code
+      run: |
+        echo "::group::Formatting Python code"
+        ruff format src/supy test || true
+        echo "::endgroup::"
+        
+    - name: Format Fortran code  
+      run: |
+        echo "::group::Formatting Fortran code"
+        # Create .fprettify.rc if it doesn't exist
+        if [ ! -f .fprettify.rc ]; then
+          cat > .fprettify.rc << 'EOF'
+# fprettify configuration for SUEWS
+indent = 3
+line-length = 132
+whitespace = 2
+strict-indent = True
+enable-decl = True
+case = 1 1 1 1
+whitespace-type = 0
+whitespace-decl = 1
+whitespace-relational = False
+whitespace-logical = True
+whitespace-plusminus = True
+whitespace-multdiv = True
+whitespace-print = True
+whitespace-intrinsics = True
+disable-indent-mod = True
+EOF
+        fi
+        
+        # Format all Fortran files except special ones
+        find src/suews/src -name "*.f95" -o -name "*.f90" | \
+        grep -v suews_util_datetime.f95 | \
+        xargs -r fprettify --config .fprettify.rc 2>/dev/null || true
+        echo "::endgroup::"
+        
+    - name: Check for changes
+      id: verify
+      run: |
+        # Check if any files were modified
+        if git diff --quiet; then
+          echo "No formatting changes needed ✨"
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "Formatting changes detected"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          
+          # Show what changed
+          echo "::group::Files with formatting changes"
+          git diff --name-only
+          echo "::endgroup::"
+        fi
+        
+    - name: Commit changes
+      if: steps.verify.outputs.has_changes == 'true'
+      run: |
+        # Configure git
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        # Stage all changes
+        git add -A
+        
+        # Create commit with [skip ci] to avoid triggering builds
+        git commit -m "style: auto-format Python and Fortran code [skip ci]
+
+This commit was automatically generated to maintain consistent code formatting.
+- Python: formatted with ruff (see .ruff.toml)
+- Fortran: formatted with fprettify (see .fprettify.rc)"
+        
+        # Push changes
+        git push
+        
+    - name: Summary
+      if: always()
+      run: |
+        echo "## Auto-format Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ steps.verify.outputs.has_changes }}" == "true" ]]; then
+          echo "✅ Code has been automatically formatted" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The following tools were used:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Python**: ruff format" >> $GITHUB_STEP_SUMMARY
+          echo "- **Fortran**: fprettify" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✨ No formatting changes needed - code is already properly formatted!" >> $GITHUB_STEP_SUMMARY
+        fi

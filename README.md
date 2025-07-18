@@ -161,20 +161,22 @@ SUEWS/
 
 ### Code Style and Formatting
 
-SUEWS follows strict coding guidelines to ensure consistency across the codebase:
+SUEWS maintains consistent code style through automated formatting:
 
 * **Coding Standards**: See [`CODING_GUIDELINES.md`](CODING_GUIDELINES.md) for detailed standards
-* **Automated Formatting**: Code on the master branch is automatically formatted via GitHub Actions
-* **Languages**:
-  - Python: Formatted with [`ruff`](https://docs.astral.sh/ruff/) (configuration in `.ruff.toml`)
-  - Fortran: Formatted with [`fprettify`](https://github.com/pseewald/fprettify) (configuration in `.fprettify.rc`)
-* **Local Development**:
-  ```bash
-  make format  # Format all code
-  make lint    # Check code style
-  ```
+* **Automated Formatting**: The master branch is automatically formatted after merge
+* **Zero Friction**: Contributors can focus on functionality; formatting is handled by machines
+* **Tools Used**:
+  - Python: [`ruff`](https://docs.astral.sh/ruff/) (configuration in `.ruff.toml`)
+  - Fortran: [`fprettify`](https://github.com/pseewald/fprettify) (configuration in `.fprettify.rc`)
 
-**Note**: All code merged to master will be automatically formatted to maintain consistency. PRs will be checked for formatting compliance.
+**For Contributors**: Just write working code! Formatting will be applied automatically after merge.
+
+**For Local Development** (optional):
+```bash
+make format  # Format code locally
+make lint    # Check code style
+```
 
 
 ### Debugging with GDB
