@@ -30,8 +30,8 @@ except ImportError:
     def capture_test_artifacts(name): return lambda func: func
 
 # Get the test data directory from the environment variable
-test_data_dir = Path(__file__).parent / "data_test"
-# test_data_dir = os.environ.get('TEST_DATA_DIR', Path(__file__).parent / 'data_test')
+test_data_dir = Path(__file__).parent.parent / "fixtures" / "data_test"
+# test_data_dir = os.environ.get('TEST_DATA_DIR', Path(__file__).parent.parent / 'fixtures' / 'data_test')
 
 # Note: sample_output.pkl testing has been moved to test_sample_output.py
 
@@ -290,7 +290,7 @@ class TestSuPy(TestCase):
         # test forcing generation
 
         # skip this test if under cibuild environment where the test data is not available
-        p_data_test = Path("./supy/test/data_test/multi-grid")
+        p_data_test = Path("test/fixtures/data_test/multi-grid")
         if not p_data_test.exists():
             self.assertTrue(True)
         else:

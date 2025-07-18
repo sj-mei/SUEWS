@@ -61,7 +61,7 @@ import pytest
 import supy as sp
 
 # Get the test data directory
-test_data_dir = Path(__file__).parent / "data_test"
+test_data_dir = Path(__file__).parent.parent / "fixtures" / "data_test"
 p_df_sample = Path(test_data_dir) / "sample_output.pkl"
 
 

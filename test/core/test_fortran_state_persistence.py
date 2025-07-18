@@ -72,7 +72,7 @@ class TestFortranStatePersistence(TestCase):
 
     def run_benchmark_test(self):
         """Run the benchmark test that causes pollution."""
-        p_config = Path("test/benchmark1/benchmark1.yml")
+        p_config = Path("test/fixtures/benchmark1/benchmark1.yml")
         if p_config.exists():
             df_state_init = sp.init_supy(p_config, force_reload=True)
             df_forcing_tstep = sp.load_forcing_grid(
@@ -84,7 +84,7 @@ class TestFortranStatePersistence(TestCase):
 
     def run_short_benchmark(self):
         """Run a short version of benchmark test to minimize execution time."""
-        p_config = Path("test/benchmark1/benchmark1.yml")
+        p_config = Path("test/fixtures/benchmark1/benchmark1.yml")
         if p_config.exists():
             df_state_init = sp.init_supy(p_config, force_reload=True)
             df_forcing_tstep = sp.load_forcing_grid(
