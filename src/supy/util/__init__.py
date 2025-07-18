@@ -49,6 +49,8 @@ from ._gs import (
 
 from ._io import read_suews, read_forcing
 
+from ._missing import to_nan, from_nan, SUEWS_MISSING
+
 from ._wrf import extract_reclassification, plot_reclassification
 
 from ._roughness import cal_z0zd, cal_neutral
