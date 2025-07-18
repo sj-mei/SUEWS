@@ -24,32 +24,41 @@ SUEWS/
 ### Working with Worktrees
 
 **🚀 Quick Start with uv (Recommended - Ultra Fast!):**
-Use `uv` for blazing fast worktree setup. See `.claude/guides/worktree-setup-guide.md` for the complete workflow.
+Use `uv` for blazing fast worktree setup. See `.claude/howto/setup-worktree.md` for the complete workflow.
 
 ```bash
 # One-time: Install uv
 brew install uv  # or: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Quick setup (from the guide)
+# Quick setup
 FEATURE="my-feature"
 git worktree add worktrees/$FEATURE feature/$FEATURE
 cd worktrees/$FEATURE
 uv venv
-source .venv/bin/activate  # or use uv run
-uv pip install pandas scipy matplotlib # ... see guide for full list
-make dev
+source .venv/bin/activate  # Required due to Python 3.13 compatibility
 
-# Work without activation!
-uv run python           # Run Python
-uv run pytest          # Run tests
-uv run make test       # Run make commands
+# Install with correct pip package names
+uv pip install pandas scipy matplotlib matplotlib-inline scikit-learn scikit-image \
+    geopandas rtree openpyxl tables psutil salem==0.3.8 floweaver==2.0.0 \
+    f90nml click pydantic ipykernel jupyter_client jupyter_core \
+    pytest pytest-cov ruff f90wrap==0.2.16 atmosp "meson-python>=0.17.0"
+
+# Build and test
+make dev
+make test
 ```
 
 **Why uv?**
 - 10-100x faster than pip/mamba
-- No environment activation needed
+- Modern dependency resolver
 - Single command setup
 - Works everywhere
+
+**Important Notes:**
+- Use `matplotlib` not `matplotlib-base` (conda name)
+- Use `tables` not `pytables` (conda name)
+- Activate environment for now (Python 3.13 compatibility)
+- `uv run` commands temporarily limited by Python 3.13 package support
 
 See:
 - `.claude/howto/setup-worktree.md` - Complete setup and cleanup commands
@@ -95,9 +104,10 @@ git commit -m "chore: remove worktree plan for merged feature"
 - Always create worktrees under `worktrees/` directory
 - Use descriptive names matching the feature
 - **Use uv for speed** - setup takes seconds, not minutes
-- **No activation needed** - just use `uv run` commands
+- **Currently: activate environment** due to Python 3.13 compatibility
 - See cleanup commands in `.claude/howto/setup-worktree.md`
 - **IMPORTANT**: Also remove `.claude/plans/*/feature-{branch-name}.md` when cleaning up merged worktrees
+- Use correct pip package names: `matplotlib` (not matplotlib-base), `tables` (not pytables)
 - Pull master in each worktree to access latest `.claude/plans/`
 
 ### Build System and Testing

@@ -20,11 +20,12 @@ cd worktrees/$FEATURE
 uv venv
 source .venv/bin/activate
 
-# Install core requirements (matches env.yml)
-uv pip install pandas scipy matplotlib-base matplotlib-inline scikit-learn scikit-image \
-    geopandas rtree openpyxl pytables psutil salem==0.3.8 floweaver==2.0.0 \
+# Install core requirements (matches env.yml, with corrected pip names)
+# IMPORTANT: Use 'matplotlib' not 'matplotlib-base', 'tables' not 'pytables'
+uv pip install pandas scipy matplotlib matplotlib-inline scikit-learn scikit-image \
+    geopandas rtree openpyxl tables psutil salem==0.3.8 floweaver==2.0.0 \
     f90nml click pydantic ipykernel jupyter_client jupyter_core \
-    pytest pytest-cov ruff f90wrap==0.2.16 atmosp meson-python>=0.17.0
+    pytest pytest-cov ruff f90wrap==0.2.16 atmosp "meson-python>=0.17.0"
 
 # Install SUEWS in development mode
 make dev  # This will auto-detect uv and use it!
@@ -38,12 +39,21 @@ python -c "import supy; print(f'✓ SuPy {supy.__version__} ready')"
 
 ## Working Without Environment Activation
 
-With uv, you don't need to activate environments:
+**Note**: Due to Python 3.13 compatibility issues with some packages, `uv run` may attempt to rebuild dependencies. For now, use activated environments:
 
 ```bash
 cd worktrees/my-feature
+source .venv/bin/activate
 
-# Run commands directly with uv
+# Then run commands normally
+python script.py
+pytest
+make test
+```
+
+Once packages have full Python 3.13 support, you'll be able to use:
+```bash
+# Future capability (not yet stable with Python 3.13)
 uv run python script.py
 uv run pytest
 uv run make test
@@ -87,7 +97,10 @@ source .venv/bin/activate
 
 # Install dependencies (slower than uv)
 pip install --upgrade pip setuptools wheel
-pip install pandas scipy matplotlib # ... (same list as above)
+pip install pandas scipy matplotlib matplotlib-inline scikit-learn scikit-image \
+    geopandas rtree openpyxl tables psutil salem==0.3.8 floweaver==2.0.0 \
+    f90nml click pydantic ipykernel jupyter_client jupyter_core \
+    pytest pytest-cov ruff f90wrap==0.2.16 atmosp "meson-python>=0.17.0"
 
 # Install SUEWS
 make dev
@@ -209,10 +222,11 @@ For a complete development environment with uv:
 
 ```bash
 # Core packages (always needed)
-uv pip install pandas scipy matplotlib-base matplotlib-inline scikit-learn scikit-image \
-    geopandas rtree openpyxl pytables psutil salem==0.3.8 floweaver==2.0.0 \
+# Note: pip names differ from conda - use 'matplotlib' and 'tables'
+uv pip install pandas scipy matplotlib matplotlib-inline scikit-learn scikit-image \
+    geopandas rtree openpyxl tables psutil salem==0.3.8 floweaver==2.0.0 \
     f90nml click pydantic ipykernel jupyter_client jupyter_core \
-    pytest pytest-cov ruff f90wrap==0.2.16 atmosp meson-python>=0.17.0
+    pytest pytest-cov ruff f90wrap==0.2.16 atmosp "meson-python>=0.17.0"
 
 # Documentation packages (optional - only if working on docs)
 uv pip install "sphinx>=4.0,<8.2" sphinx-autobuild pybtex nbsphinx recommonmark \
