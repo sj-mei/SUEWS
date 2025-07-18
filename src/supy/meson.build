@@ -32,6 +32,7 @@ py.install_sources(
             'util/_gap_filler.py',
             'util/_gs.py',
             'util/_io.py',
+            'util/_missing.py',
             'util/_ohm.py',
             'util/_plot.py',
             'util/_roughness.py',
