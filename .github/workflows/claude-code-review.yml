@@ -94,6 +94,12 @@ jobs:
           # Use Claude Opus 4 for better code review quality
           model: claude-opus-4-20250514
 
+          # Custom instructions for British English
+          custom_instructions: |
+            IMPORTANT: Always use British English spelling and grammar in all your responses, reviews, and written content.
+            This project follows British English conventions throughout its documentation and codebase.
+            Examples: use "organisation" not "organization", "colour" not "color", "centre" not "center", etc.
+
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
             Please review this pull request and provide structured feedback using collapsible HTML sections for better organization.

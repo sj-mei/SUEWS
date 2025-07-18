@@ -107,6 +107,8 @@ jobs:
           
           # Custom instructions based on CLAUDE.md and project standards
           custom_instructions: |
+            IMPORTANT: Always use British English spelling and grammar in all your responses and written content.
+            
             You are working on SUEWS (Surface Urban Energy and Water Balance Scheme), a Fortran/Python urban climate model.
             
             Key project information:
