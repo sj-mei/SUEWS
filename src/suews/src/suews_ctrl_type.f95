@@ -28,7 +28,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: SnowUse = 0 !
       LOGICAL :: use_sw_direct_albedo = .FALSE. !boolean, Specify ground and roof albedos separately for direct solar radiation [-]
       INTEGER :: ohmIncQF = 0 ! Determines whether the storage heat flux calculation uses Q* or ( Q* +QF) [-]
-      INTEGER :: DiagQS 0 ! flag for printing diagnostic info for QS module during runtime [N/A] ! not used and will be removed
+      INTEGER :: DiagQS = 0 ! flag for printing diagnostic info for QS module during runtime [N/A] ! not used and will be removed
       INTEGER :: EvapMethod = 0 ! Evaporation calculated according to Rutter (1) or Shuttleworth (2) [-]
       INTEGER :: LAImethod = 0 ! boolean to determine if calculate LAI [-]
       INTEGER :: localClimateMethod = 0 ! method to choose local climate variables [-] 0: not use; 1: use local climate variables
@@ -152,7 +152,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: tuesday_percent = 0.0D0
       REAL(KIND(1D0)) :: wednesday_flag = 0.0D0
       REAL(KIND(1D0)) :: wednesday_percent = 0.0D0
-      REAL(KIND(1D0)) :: thursday_flagv = 0.0D0
+      REAL(KIND(1D0)) :: thursday_flag = 0.0D0
       REAL(KIND(1D0)) :: thursday_percent = 0.0D0
       REAL(KIND(1D0)) :: friday_flag = 0.0D0
       REAL(KIND(1D0)) :: friday_percent = 0.0D0
@@ -226,7 +226,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: air_ext_sw = 0.0D0
       REAL(KIND(1D0)) :: air_ssa_lw = 0.0D0
       REAL(KIND(1D0)) :: air_ssa_sw = 0.0D0
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: height = 0.0D0
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: height
       REAL(KIND(1D0)) :: ground_albedo_dir_mult_fact = 0.0D0
       INTEGER :: n_stream_lw_urban ! LW streams per hemisphere [-]
       INTEGER :: n_stream_sw_urban ! shortwave diffuse streams per hemisphere [-]
@@ -240,16 +240,16 @@ MODULE SUEWS_DEF_DTS
    END TYPE SPARTACUS_PRM
 
    TYPE, PUBLIC :: SPARTACUS_LAYER_PRM
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: building_frac = 0.0D0 ! building fraction [-]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: building_scale = 0.0D0 ! diameter of buildings [[m]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_frac = 0.0D0 ! vegetation fraction [-]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_scale = 0.0D0 ! scale of tree crowns [m]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_roof = 0.0D0 ! albedo of roof [-]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_roof = 0.0D0 ! emissivity of roof [-]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_wall = 0.0D0 ! albedo of wall [-]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_wall = 0.0D0 ! emissivity of wall [-]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: roof_albedo_dir_mult_fact = 0.0D0 !Ratio of the direct and diffuse albedo of the roof[-]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wall_specular_frac = 0.0D0 ! Fraction of wall reflection that is specular [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: building_frac ! building fraction [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: building_scale ! diameter of buildings [[m]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_frac ! vegetation fraction [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: veg_scale ! scale of tree crowns [m]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_roof ! albedo of roof [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_roof ! emissivity of roof [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: alb_wall ! albedo of wall [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: emis_wall ! emissivity of wall [-]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: roof_albedo_dir_mult_fact !Ratio of the direct and diffuse albedo of the roof[-]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: wall_specular_frac ! Fraction of wall reflection that is specular [-]
    CONTAINS
       PROCEDURE :: ALLOCATE => allocate_spartacus_layer_prm_c
       PROCEDURE :: DEALLOCATE => deallocate_spartacus_layer_prm_c
@@ -272,24 +272,24 @@ MODULE SUEWS_DEF_DTS
    END TYPE LUMPS_PRM
 
    TYPE, PUBLIC :: EHC_PRM
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soil_storecap_roof = 0.0D0 ! Capacity of soil store for roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soil_storecap_wall = 0.0D0 ! Capacity of soil store for wall [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_limit_roof = 0.0D0 ! Limit for state_id of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_limit_wall = 0.0D0 ! Limit for state_id of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wet_thresh_roof = 0.0D0 ! wetness threshold  of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wet_thresh_wall = 0.0D0 ! wetness threshold  of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_roof = 0.0D0 ! indoor temperature for roof [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_wall = 0.0D0 ! indoor temperature for wall [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_surf = 0.0D0 ! deep bottom temperature for each surface [degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_roof = 0.0D0 ! thermal conductivity of roof [W m-1 K]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_wall = 0.0D0 ! thermal conductivity of wall [W m-1 K]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_surf = 0.0D0 ! thermal conductivity of v [W m-1 K]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof = 0.0D0 ! Volumetric Heat capacity of roof [J m-3 K-1]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall = 0.0D0 ! Volumetric Heat capacity of wall [J m-3 K-1]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf = 0.0D0 ! Volumetric Heat capacity of each surface [J m-3 K-1]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof = 0.0D0 ! thickness of each layer in roof [m]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall = 0.0D0 ! thickness of each layer in wall [m]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf = 0.0D0 ! thickness of each layer in surface [m]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soil_storecap_roof ! Capacity of soil store for roof [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soil_storecap_wall ! Capacity of soil store for wall [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_limit_roof ! Limit for state_id of roof [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_limit_wall ! Limit for state_id of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wet_thresh_roof ! wetness threshold  of roof [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: wet_thresh_wall ! wetness threshold  of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_roof ! indoor temperature for roof [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_wall ! indoor temperature for wall [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tin_surf ! deep bottom temperature for each surface [degC]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_roof ! thermal conductivity of roof [W m-1 K]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_wall ! thermal conductivity of wall [W m-1 K]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: k_surf ! thermal conductivity of v [W m-1 K]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_roof ! Volumetric Heat capacity of roof [J m-3 K-1]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_wall ! Volumetric Heat capacity of wall [J m-3 K-1]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: cp_surf ! Volumetric Heat capacity of each surface [J m-3 K-1]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_roof ! thickness of each layer in roof [m]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_wall ! thickness of each layer in wall [m]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dz_surf ! thickness of each layer in surface [m]
    CONTAINS
       PROCEDURE :: ALLOCATE => allocate_ehc_prm_c
       PROCEDURE :: DEALLOCATE => deallocate_ehc_prm_c
@@ -540,8 +540,8 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: ImpervFraction = 0.0D0 !fractioin of impervious surface [-]
       REAL(KIND(1D0)) :: PervFraction = 0.0D0 !fraction of pervious surfaces [-]
       REAL(KIND(1D0)) :: NonWaterFraction = 0.0D0 !fraction of non-water [-]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_roof = 0.0D0 !fraction of roof facets [-]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_wall = 0.0D0 !fraction of wall facets [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_roof !fraction of roof facets [-]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: sfr_wall !fraction of wall facets [-]
 
       INTEGER :: nlayer ! number of vertical layers in urban canyon [-]
       TYPE(SPARTACUS_PRM) :: spartacus
@@ -726,7 +726,7 @@ MODULE SUEWS_DEF_DTS
 
       REAL(KIND(1D0)) :: qn_snow = 0.0D0 !net all-wave radiation on snow surface [W m-2]
       REAL(KIND(1D0)) :: Qm = 0.0D0 !Snowmelt-related heat [W m-2]
-      REAL(KIND(1D0)) :: QmFreez 0.0D0 !heat related to freezing of surface store [W m-2]
+      REAL(KIND(1D0)) :: QmFreez = 0.0D0 !heat related to freezing of surface store [W m-2]
       REAL(KIND(1D0)) :: QmRain = 0.0D0 !melt heat for rain on snow [W m-2]
 
       REAL(KIND(1D0)) :: swe = 0.0D0 !overall snow water equavalent[mm]
@@ -772,13 +772,13 @@ MODULE SUEWS_DEF_DTS
       ! WUDay_id(9) - Manual irrigation for Irr Grass [mm]
       ! ==================================================
 
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof = 0.0D0 ! Soil moisture of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof = 0.0D0 ! wetness status of roof [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall = 0.0D0 ! Soil moisture of wall [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall = 0.0D0 ! wetness status of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_roof ! Soil moisture of roof [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_roof ! wetness status of roof [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: soilstore_wall ! Soil moisture of wall [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: state_wall ! wetness status of wall [mm]
 
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_roof = 0.0D0 ! evapotranspiration of each roof layer [mm]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall = 0.0D0 ! evapotranspiration of each wall type [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_roof ! evapotranspiration of each roof layer [mm]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: ev_wall ! evapotranspiration of each wall type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev0_surf = 0.0D0 ! evapotranspiration from PM of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: ev_surf = 0.0D0 ! evapotranspiration of each surface type [mm]
       REAL(KIND(1D0)), DIMENSION(NSURF) :: wu_surf = 0.0D0 !external water use of each surface type [mm]
@@ -793,7 +793,7 @@ MODULE SUEWS_DEF_DTS
 
       REAL(KIND(1D0)) :: runoffAGveg = 0.0D0 !Above ground runoff from vegetated surfaces for all surface area [mm]
       REAL(KIND(1D0)) :: runoffAGimpervious = 0.0D0 !Above ground runoff from impervious surface for all surface area [mm]
-      REAL(KIND(1D0)) :: runoff_per_tstep = = 0.0D0 !runoff water at each time step [mm]
+      REAL(KIND(1D0)) :: runoff_per_tstep = 0.0D0 !runoff water at each time step [mm]
       REAL(KIND(1D0)) :: runoffPipes = 0.0 !runoff to pipes [mm]
       REAL(KIND(1D0)) :: runoffSoil_per_tstep = 0.0D0 !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
       REAL(KIND(1D0)) :: runoffwaterbody = 0.0D0 !Above ground runoff from water body for all surface area [mm]
@@ -828,29 +828,29 @@ MODULE SUEWS_DEF_DTS
    END TYPE HYDRO_STATE
 
    TYPE, PUBLIC :: HEAT_STATE
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof = 0.0D0 ! interface temperature between depth layers in roof [degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall = 0.0D0 ! interface temperature between depth layers in wall [degC]
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf = 0.0D0 ! interface temperature between depth layers [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof = 0.0D0 ! roof surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall = 0.0D0 ! wall surface temperature [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf = 0.0D0 ! surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_roof ! interface temperature between depth layers in roof [degC]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_wall ! interface temperature between depth layers in wall [degC]
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: temp_surf ! interface temperature between depth layers [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof ! roof surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall ! wall surface temperature [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf ! surface temperature [degC]
 
       ! surface temperature saved at the beginning of the time step - not updated during the time step
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof_stepstart = 0.0D0 !surface temperature of roof saved at the beginning of the time step [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall_stepstart = 0.0D0 !surface temperature of wall saved at the beginning of the time step [degC]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf_stepstart = 0.0D0 !surface temperature saved at the beginning of the time step [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_roof_stepstart !surface temperature of roof saved at the beginning of the time step [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_wall_stepstart !surface temperature of wall saved at the beginning of the time step [degC]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: tsfc_surf_stepstart !surface temperature saved at the beginning of the time step [degC]
 
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_roof = 0.0D0 ! heat storage flux for roof component [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_roof = 0.0D0 ! net all-wave radiation of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_roof = 0.0D0 ! latent heat flux of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_roof = 0.0D0 ! sensible heat flux of roof surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_roof = 0.0D0 ! resist-based sensible heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_roof ! heat storage flux for roof component [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_roof ! net all-wave radiation of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_roof ! latent heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_roof ! sensible heat flux of roof surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_roof ! resist-based sensible heat flux of roof surface [W m-2]
 
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_wall = 0.0D0 ! heat storage flux for wall component [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_wall = 0.0D0 ! net all-wave radiation of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_wall = 0.0D0 ! latent heat flux of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_wall = 0.0D0 ! sensible heat flux of wall surface [W m-2]
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_wall = 0.0D0 ! resistance based sensible heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QS_wall ! heat storage flux for wall component [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: QN_wall ! net all-wave radiation of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qe_wall ! latent heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_wall ! sensible heat flux of wall surface [W m-2]
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: qh_resist_wall ! resistance based sensible heat flux of wall surface [W m-2]
 
       REAL(KIND(1D0)), DIMENSION(nsurf) :: qs_surf = 0.0D0 ! aggregated heat storage of of individual surface [W m-2]
       REAL(KIND(1D0)), DIMENSION(nsurf) :: QN_surf = 0.0D0 ! net all-wave radiation of individual surface [W m-2]
@@ -1004,7 +1004,7 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: qn1_obs = 0.0D0 !
       REAL(KIND(1D0)) :: qs_obs = 0.0D0 !
       REAL(KIND(1D0)) :: temp_c = 0.0D0 !
-      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: Ts5mindata_ir = 0.0D0 !surface temperature input data[degC] used in ESTM --> may be deprecated in the future once EHC is more mature
+      REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: Ts5mindata_ir !surface temperature input data[degC] used in ESTM --> may be deprecated in the future once EHC is more mature
    END TYPE SUEWS_FORCING
 
    TYPE, PUBLIC :: SUEWS_TIMER
@@ -1033,17 +1033,17 @@ MODULE SUEWS_DEF_DTS
    END TYPE SUEWS_TIMER
 
    TYPE, PUBLIC :: output_block
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSUEWS = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSnow = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockESTM = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockEHC = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockRSL = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockBEERS = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDebug = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSPARTACUS = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDailyState = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSTEBBS = -999
-      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockNHood = -999
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSUEWS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSnow
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockESTM
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockEHC
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockRSL
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockBEERS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDebug
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSPARTACUS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockDailyState
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockSTEBBS
+      REAL(KIND(1D0)), DIMENSION(:, :), ALLOCATABLE :: dataOutBlockNHood
    CONTAINS
       ! Procedures
       PROCEDURE :: init => output_block_init
