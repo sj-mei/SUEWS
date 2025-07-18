@@ -317,7 +317,7 @@ MODULE SUEWS_DEF_DTS
       TYPE(OHM_PRM) :: ohm
       TYPE(SOIL_PRM) :: soil
       REAL(KIND(1D0)) :: state = 0.0D0
-      REAL(KIND(1D0)) :: statelimit  = 0.0D0 ! upper limit to the surface state [mm]
+      REAL(KIND(1D0)) :: statelimit = 0.0D0 ! upper limit to the surface state [mm]
       REAL(KIND(1D0)) :: irrfracbldgs = 0.0D0
       REAL(KIND(1D0)) :: wetthresh = 0.0D0
       TYPE(WATER_DIST_PRM) :: waterdist
@@ -574,7 +574,7 @@ MODULE SUEWS_DEF_DTS
 
    ! ********** SUEWS_stateVars schema **********
    TYPE, PUBLIC :: flag_STATE
-      LOGICAL :: flag_converge = .FALSE.! flag for convergence of surface temperature
+      LOGICAL :: flag_converge = .FALSE. ! flag for convergence of surface temperature
       INTEGER :: i_iter = 0 ! number of iterations for convergence
 
       ! flag for iteration safety - YES - as we this should be updated every iteration
@@ -793,7 +793,7 @@ MODULE SUEWS_DEF_DTS
 
       REAL(KIND(1D0)) :: runoffAGveg = 0.0D0 !Above ground runoff from vegetated surfaces for all surface area [mm]
       REAL(KIND(1D0)) :: runoffAGimpervious = 0.0D0 !Above ground runoff from impervious surface for all surface area [mm]
-      REAL(KIND(1D0)) :: runoff_per_tstep = = 0.0D0 !runoff water at each time step [mm]
+      REAL(KIND(1D0)) :: runoff_per_tstep == 0.0D0 !runoff water at each time step [mm]
       REAL(KIND(1D0)) :: runoffPipes = 0.0 !runoff to pipes [mm]
       REAL(KIND(1D0)) :: runoffSoil_per_tstep = 0.0D0 !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
       REAL(KIND(1D0)) :: runoffwaterbody = 0.0D0 !Above ground runoff from water body for all surface area [mm]
@@ -1022,7 +1022,7 @@ MODULE SUEWS_DEF_DTS
       INTEGER :: nsh = 0 ! number of timesteps per hour
       REAL(KIND(1D0)) :: nsh_real = 0.0D0 ! nsh in type real [-]
       REAL(KIND(1D0)) :: tstep_real = 0.0D0 ! tstep in type real
-      REAL(KIND(1D0)) :: dectime = 0.0D0!decimal time [-]
+      REAL(KIND(1D0)) :: dectime = 0.0D0 !decimal time [-]
 
       INTEGER, DIMENSION(3) :: dayofWeek_id = 0 ! 1 - day of week; 2 - month; 3 - season
 
