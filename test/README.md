@@ -1,8 +1,8 @@
 # SUEWS Test Suite
 
-This directory contains the test suite for SUEWS/SuPy, organized by functionality to improve maintainability and clarity.
+This directory contains the test suite for SUEWS/SuPy, organised by functionality to improve maintainability and clarity.
 
-## Test Organization
+## Test Organisation
 
 ### Core Tests (`core/`)
 Essential core functionality tests including:
