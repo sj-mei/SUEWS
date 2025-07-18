@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Style Guidelines
+
+- **Language**: Use British English for all documentation, code comments, and communication
+
 ## Git Worktrees for Claude Code
 
 This repository uses nested git worktrees to enable parallel development with Claude Code. All worktrees are located under `worktrees/` directory for Claude Code accessibility.
@@ -458,3 +462,91 @@ REAL(KIND(1D0)) :: rss_surf = 0.0D0 ! surface resistance [s m-1]
    - Always provide explicit default values in type definitions
    - Test for state leakage between function calls
    - Use comprehensive test suites to catch edge cases
+
+## Documentation & Code Maintenance Principles
+
+### Documentation Principles
+
+1. **Single Source of Truth (DRY)**
+   - Every piece of information should exist in exactly ONE place
+   - Example: Package lists in one file, referenced everywhere else
+
+2. **Reference Over Duplication**
+   - Use `See: path/to/doc.md` instead of copying content
+   - Example: `For complete setup, see .claude/howto/setup-worktree.md`
+
+3. **Clear Documentation Hierarchy**
+   ```
+   .claude/
+   ├── howto/          # Step-by-step guides (practical)
+   ├── reference/      # Technical details & specifications
+   ├── templates/      # Reusable templates
+   └── plans/          # Feature-specific work tracking
+   ```
+
+4. **Focused Documents**
+   - Each file should have ONE clear purpose
+   - Example: `build-isolation.md` only explains why isolation is needed
+
+5. **Brief Overview Pattern**
+   - Main files (like CLAUDE.md) should be concise overviews
+   - Details go in sub-documents with clear references
+
+6. **Centralize Common Lists**
+   - Package lists, commands, requirements → single file
+   - Example: `core-requirements.txt` instead of inline lists everywhere
+
+### Code Principles
+
+7. **Single Responsibility**
+   - Each function/class does ONE thing well
+   - Example: `save_supy()` only saves, doesn't validate or transform
+
+8. **Explicit Over Implicit**
+   ```python
+   # Good: Clear what parameters are needed
+   save_supy(df_output, df_state, freq_s=3600, site="London")
+   
+   # Bad: Hidden configuration dependencies
+   save_supy(df_output, df_state, config_obj)
+   ```
+
+9. **Extract Common Patterns**
+   - Common operations in utility functions
+   - Example: Validation logic in `validation_utils.py`
+
+10. **Configuration Over Code Duplication**
+    ```python
+    # Define once, use everywhere
+    PACKAGE_MAPPING = {
+        'matplotlib-base': 'matplotlib',  # conda → pip name
+        'pytables': 'tables'
+    }
+    ```
+
+11. **Composition Over Complex Inheritance**
+    ```python
+    # Flexible and testable
+    class Model:
+        def __init__(self, validator, processor, saver):
+            self.validator = validator
+            self.processor = processor
+            self.saver = saver
+    ```
+
+12. **Version/Platform Isolation**
+    ```python
+    # compat.py - isolate compatibility code
+    if sys.version_info >= (3, 13):
+        from new_module import feature
+    else:
+        from old_module import feature
+    ```
+
+### Maintenance Best Practices
+
+- **Important information first**: Style guidelines, critical warnings at the top
+- **Progressive disclosure**: Quick start → Details → Troubleshooting
+- **Cross-reference related content**: "See also:" sections for navigation
+- **Use templates for repetitive patterns**: Avoid explaining the same structure multiple times
+- **Document package name differences ONCE**: Create mappings, reference everywhere
