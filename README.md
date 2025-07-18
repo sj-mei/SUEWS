@@ -157,6 +157,26 @@ SUEWS/
 ```
 
 
+## Contributing
+
+### Code Style and Formatting
+
+SUEWS follows strict coding guidelines to ensure consistency across the codebase:
+
+* **Coding Standards**: See [`CODING_GUIDELINES.md`](CODING_GUIDELINES.md) for detailed standards
+* **Automated Formatting**: Code on the master branch is automatically formatted via GitHub Actions
+* **Languages**:
+  - Python: Formatted with [`ruff`](https://docs.astral.sh/ruff/) (configuration in `.ruff.toml`)
+  - Fortran: Formatted with [`fprettify`](https://github.com/pseewald/fprettify) (configuration in `.fprettify.rc`)
+* **Local Development**:
+  ```bash
+  make format  # Format all code
+  make lint    # Check code style
+  ```
+
+**Note**: All code merged to master will be automatically formatted to maintain consistency. PRs will be checked for formatting compliance.
+
+
 ### Debugging with GDB
 
 GDB is a generic debugging tool used along with gfortran.
