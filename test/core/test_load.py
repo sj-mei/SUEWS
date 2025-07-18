@@ -137,16 +137,22 @@ class TestLoadForcing(TestCase):
         print("\n========================================")
         print("Testing load_forcing_grid with benchmark data...")
         
-        if not self.benchmark_config.exists():
+        # Use short benchmark config for faster testing
+        benchmark_short = Path(__file__).parent.parent / "fixtures" / "benchmark1" / "benchmark1_short.yml"
+        if not benchmark_short.exists():
+            # Fall back to full benchmark if short version not available
+            benchmark_short = self.benchmark_config
+        
+        if not benchmark_short.exists():
             self.skipTest("Benchmark config not available")
         
         # Initialize state first
-        df_state = sp.init_supy(self.benchmark_config)
+        df_state = sp.init_supy(benchmark_short)
         grid_id = df_state.index[0]
         
         # Load forcing
         df_forcing = sp.load_forcing_grid(
-            self.benchmark_config,
+            benchmark_short,
             grid=grid_id,
             df_state_init=df_state
         )
@@ -154,7 +160,13 @@ class TestLoadForcing(TestCase):
         # Validation
         self.assertIsInstance(df_forcing, pd.DataFrame)
         self.assertFalse(df_forcing.empty)
-        self.assertGreater(len(df_forcing), 100000)  # Should have full year data
+        # For short version: 7 days * 24 hours * 12 (5-min intervals) = 2016
+        # For full version: > 100000
+        expected_len = 2016 if "short" in str(benchmark_short) else 100000
+        if "short" in str(benchmark_short):
+            self.assertGreaterEqual(len(df_forcing), expected_len)
+        else:
+            self.assertGreater(len(df_forcing), expected_len)
         
         print(f"✓ Loaded benchmark forcing with {len(df_forcing)} timesteps")
     
