@@ -56,23 +56,23 @@ jobs:
         # Create .fprettify.rc if it doesn't exist
         if [ ! -f .fprettify.rc ]; then
           cat > .fprettify.rc << 'EOF'
-# fprettify configuration for SUEWS
-indent = 3
-line-length = 132
-whitespace = 2
-strict-indent = True
-enable-decl = True
-case = 1 1 1 1
-whitespace-type = 0
-whitespace-decl = 1
-whitespace-relational = False
-whitespace-logical = True
-whitespace-plusminus = True
-whitespace-multdiv = True
-whitespace-print = True
-whitespace-intrinsics = True
-disable-indent-mod = True
-EOF
+        # fprettify configuration for SUEWS
+        indent = 3
+        line-length = 132
+        whitespace = 2
+        strict-indent = True
+        enable-decl = True
+        case = 1 1 1 1
+        whitespace-type = 0
+        whitespace-decl = 1
+        whitespace-relational = False
+        whitespace-logical = True
+        whitespace-plusminus = True
+        whitespace-multdiv = True
+        whitespace-print = True
+        whitespace-intrinsics = True
+        disable-indent-mod = True
+        EOF
         fi
         
         # Format all Fortran files except special ones
