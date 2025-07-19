@@ -5,11 +5,11 @@ import sys
 from pathlib import Path
 import yaml
 import copy
-import supy as sp
 
 try:
     from importlib.resources import files
 except ImportError:
+    # backport for python < 3.9
     from importlib_resources import files
 
 # Add src to path for imports
@@ -46,26 +46,15 @@ def test_flexible_refvalue_with_cleaning():
     print("Testing FlexibleRefValue by removing 'value' keys from sample config")
     print("=" * 70)
 
-    # Load original sample config
-    # Use importlib.resources for reliable resource access in different environments
-    try:
-        # Try using importlib.resources first (more reliable in CI)
-        sample_config_resource = files("supy").joinpath("sample_run/sample_config.yml")
-        print(f"\n1. Loading original sample config using importlib.resources")
-        original_data = yaml.safe_load(sample_config_resource.read_text())
-    except Exception as e:
-        # Fallback to file path approach
-        print(f"Failed to load with importlib.resources: {e}")
-        sample_config_path = Path(sp.__file__).parent / "sample_run" / "sample_config.yml"
-        
-        if not sample_config_path.exists():
-            print(f"\nError: Sample config not found at: {sample_config_path}")
-            print(f"Current working directory: {Path.cwd()}")
-            assert False, f"Sample config not found at: {sample_config_path}"
-        
-        print(f"\n1. Loading original sample config from: {sample_config_path}")
-        with open(sample_config_path, "r") as f:
-            original_data = yaml.safe_load(f)
+    # Load original sample config using proper package resource loading
+    print("\n1. Loading original sample config from supy package resources...")
+    
+    # Get the supy package resource traversable
+    supy_resources = files("supy")
+    sample_config_resource = supy_resources / "sample_run" / "sample_config.yml"
+    
+    # Load the config data
+    original_data = yaml.safe_load(sample_config_resource.read_text())
 
     # Create a cleaned version
     cleaned_data = copy.deepcopy(original_data)
