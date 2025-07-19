@@ -109,11 +109,10 @@ jobs:
         git add -A
         
         # Create commit with [skip ci] to avoid triggering builds
-        git commit -m "style: auto-format Python and Fortran code [skip ci]
-
-This commit was automatically generated to maintain consistent code formatting.
-- Python: formatted with ruff (see .ruff.toml)
-- Fortran: formatted with fprettify (see .fprettify.rc)"
+        git commit -m "style: auto-format Python and Fortran code [skip ci]" \
+          -m "This commit was automatically generated to maintain consistent code formatting." \
+          -m "- Python: formatted with ruff (see .ruff.toml)" \
+          -m "- Fortran: formatted with fprettify (see .fprettify.rc)"
         
         # Push changes
         git push
