@@ -38,12 +38,19 @@ AI-powered workflow automation using Claude. Mention `@claude` to:
 ### 2. Format PR (`format-pr.yml`)
 Simplified PR-based formatting workflow that:
 - Runs on pull requests when code changes are detected
+- Can be manually triggered via Actions tab for any PR
 - Formats Python code using ruff v0.8.6
 - Formats Fortran code using fprettify v0.3.7
 - Commits directly to the PR branch
 - Posts a comment notifying about formatting changes
 - Skips forked repositories automatically
 - No permission issues or workflow chains
+
+**Manual Trigger:**
+1. Go to Actions tab → Format PR workflow
+2. Click "Run workflow"
+3. Enter the PR number to format
+4. Click "Run workflow" button
 
 ### 3. Build and Publish (`build-publish_to_pypi.yml`)
 Automated build and publish workflow that:
