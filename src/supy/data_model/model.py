@@ -705,7 +705,7 @@ class ModelControl(BaseModel):
     tstep: int = Field(
         default=300, description="Time step in seconds for model calculations"
     )
-    forcing_file: Union[FlexibleRefValue(str), List[str]] = Field(
+    forcing_file: Union[FlexibleRefValue(str), FlexibleRefValue(List[str])] = Field(
         default="forcing.txt",
         description="Path(s) to meteorological forcing data file(s). This can be either: (1) A single file path as a string (e.g., 'forcing.txt'), or (2) A list of file paths (e.g., ['forcing_2020.txt', 'forcing_2021.txt', 'forcing_2022.txt']). When multiple files are provided, they will be automatically concatenated in chronological order. The forcing data contains time-series meteorological measurements that drive SUEWS simulations. For detailed information about required variables, file format, and data preparation guidelines, see :ref:`met_input`.",
     )
