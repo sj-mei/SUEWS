@@ -53,29 +53,41 @@ class TestRSLMOSTSeparation:
 
         # Get height array to determine which levels are valid
         z_cols = sorted(
-            [col for col in df_output.columns if col[0] == 'RSL' and col[1].startswith('z_')],
-            key=lambda x: int(x[1].split('_')[1])
+            [
+                col
+                for col in df_output.columns
+                if col[0] == "RSL" and col[1].startswith("z_")
+            ],
+            key=lambda x: int(x[1].split("_")[1]),
         )
-        
+
         # Get roughness parameters
-        zdm = df_output[('ROUGHNESS', 'zdm')].iloc[0] if ('ROUGHNESS', 'zdm') in df_output.columns else 7.0
-        z0m = df_output[('ROUGHNESS', 'z0m')].iloc[0] if ('ROUGHNESS', 'z0m') in df_output.columns else 1.0
+        zdm = (
+            df_output[("ROUGHNESS", "zdm")].iloc[0]
+            if ("ROUGHNESS", "zdm") in df_output.columns
+            else 7.0
+        )
+        z0m = (
+            df_output[("ROUGHNESS", "z0m")].iloc[0]
+            if ("ROUGHNESS", "z0m") in df_output.columns
+            else 1.0
+        )
         min_valid_height = zdm + z0m  # MOST starts from above displacement + roughness
-        
+
         # Check that we have valid values above displacement height
-        rsl_profile_vars = ['U_', 'T_', 'q_']
+        rsl_profile_vars = ["U_", "T_", "q_"]
         nan_above_disp = []
-        
+
         for i, z_col in enumerate(z_cols, 1):
             height = df_output[z_col].iloc[0]
-            
+
             # Only check levels that should have valid values (above displacement)
             if height > min_valid_height * 1.1:  # 10% margin for numerical stability
                 for var_prefix in rsl_profile_vars:
-                    col = ('RSL', f'{var_prefix}{i}')
+                    col = ("RSL", f"{var_prefix}{i}")
                     if col in df_output.columns:
                         if df_output[col].isna().any():
-                            nan_above_disp.append((col, f'height={height:.2f}m'))
+                            nan_above_disp.append((col, f"height={height:.2f}m"))
 
         assert not nan_above_disp, (
             f"Found unexpected NaN values above displacement height (>{min_valid_height:.2f}m): {nan_above_disp}"
@@ -103,7 +115,7 @@ class TestRSLMOSTSeparation:
             # Arrange
             df_state_init.loc[:, "bldgh"] = bldgh
             df_state_init.loc[:, "stabilitymethod"] = 2  # MOST stability
-            df_state_init.loc[:, "diagmethod"] = 0      # MOST diagnostic
+            df_state_init.loc[:, "diagmethod"] = 0  # MOST diagnostic
 
             # Act
             df_output, _ = sp.run_supy(df_forcing, df_state_init)
@@ -141,7 +153,7 @@ class TestRSLMOSTSeparation:
         # Test with typical urban configuration
         df_state_init.loc[:, "bldgh"] = 20.0
         df_state_init.loc[:, "stabilitymethod"] = 2  # MOST stability
-        df_state_init.loc[:, "diagmethod"] = 1      # RSL diagnostic
+        df_state_init.loc[:, "diagmethod"] = 1  # RSL diagnostic
 
         # Act
         df_output, _ = sp.run_supy(df_forcing, df_state_init)
@@ -176,7 +188,7 @@ class TestRSLMOSTSeparation:
         # Configure for MOST diagnostics with conditions that triggered the bug
         df_state_init.loc[:, "bldgh"] = 10.0
         df_state_init.loc[:, "stabilitymethod"] = 2  # MOST stability
-        df_state_init.loc[:, "diagmethod"] = 0      # MOST diagnostic
+        df_state_init.loc[:, "diagmethod"] = 0  # MOST diagnostic
 
         df_output, _ = sp.run_supy(df_forcing, df_state_init)
 
@@ -212,20 +224,36 @@ class TestRSLMOSTSeparation:
 
         # Extract profiles
         z_cols = sorted(
-            [col for col in df_output.columns if col[0] == 'RSL' and col[1].startswith('z_')],
-            key=lambda x: int(x[1].split('_')[1])
+            [
+                col
+                for col in df_output.columns
+                if col[0] == "RSL" and col[1].startswith("z_")
+            ],
+            key=lambda x: int(x[1].split("_")[1]),
         )
         u_cols = sorted(
-            [col for col in df_output.columns if col[0] == 'RSL' and col[1].startswith('U_') and col[1] != 'U10_ms'],
-            key=lambda x: int(x[1].split('_')[1])
+            [
+                col
+                for col in df_output.columns
+                if col[0] == "RSL" and col[1].startswith("U_") and col[1] != "U10_ms"
+            ],
+            key=lambda x: int(x[1].split("_")[1]),
         )
         t_cols = sorted(
-            [col for col in df_output.columns if col[0] == 'RSL' and col[1].startswith('T_') and col[1] != 'T2_C'],
-            key=lambda x: int(x[1].split('_')[1])
+            [
+                col
+                for col in df_output.columns
+                if col[0] == "RSL" and col[1].startswith("T_") and col[1] != "T2_C"
+            ],
+            key=lambda x: int(x[1].split("_")[1]),
         )
         q_cols = sorted(
-            [col for col in df_output.columns if col[0] == 'RSL' and col[1].startswith('q_')],
-            key=lambda x: int(x[1].split('_')[1])
+            [
+                col
+                for col in df_output.columns
+                if col[0] == "RSL" and col[1].startswith("q_")
+            ],
+            key=lambda x: int(x[1].split("_")[1]),
         )
 
         if z_cols and u_cols and t_cols and q_cols:
@@ -245,7 +273,7 @@ class TestRSLMOSTSeparation:
                 wind_mono = np.all(np.diff(winds[start_idx:]) >= 0)
                 assert wind_mono, (
                     f"Wind profile not monotonic above displacement height. "
-                    f"Wind values: {winds[start_idx:start_idx+5]}"
+                    f"Wind values: {winds[start_idx : start_idx + 5]}"
                 )
 
                 # Temperature can increase (stable) or decrease (unstable) but should be monotonic
@@ -253,7 +281,7 @@ class TestRSLMOSTSeparation:
                 temp_mono = np.all(temp_diffs >= -1e-6) or np.all(temp_diffs <= 1e-6)
                 assert temp_mono, (
                     f"Temperature profile not monotonic above displacement height. "
-                    f"Temp values: {temps[start_idx:start_idx+5]}"
+                    f"Temp values: {temps[start_idx : start_idx + 5]}"
                 )
 
                 # Humidity typically decreases with height but can vary
@@ -298,7 +326,9 @@ class TestRSLMOSTSeparation:
 
             # Check that height arrays are monotonic (main fix verification)
             heights = self._extract_height_array(df_output)
-            assert np.all(np.diff(heights) > 0), f"Non-monotonic heights for {case['desc']}"
+            assert np.all(np.diff(heights) > 0), (
+                f"Non-monotonic heights for {case['desc']}"
+            )
 
     @pytest.mark.integration
     def test_auto_method_selection(self, sample_data):
@@ -347,22 +377,32 @@ class TestRSLMOSTSeparation:
         for idx in [0, -1]:
             # Extract heights for this timestep
             z_cols = sorted(
-                [col for col in df_output.columns if col[0] == 'RSL' and col[1].startswith('z_')],
-                key=lambda x: int(x[1].split('_')[1])
+                [
+                    col
+                    for col in df_output.columns
+                    if col[0] == "RSL" and col[1].startswith("z_")
+                ],
+                key=lambda x: int(x[1].split("_")[1]),
             )
 
             if z_cols:
                 heights = np.array([df_output[col].iloc[idx] for col in z_cols])
-                assert np.all(np.diff(heights) > 0), f"Non-monotonic heights at timestep {idx}"
+                assert np.all(np.diff(heights) > 0), (
+                    f"Non-monotonic heights at timestep {idx}"
+                )
 
     def _extract_height_array(self, df_output):
         """Extract height array from RSL output columns."""
-        if 'RSL' not in df_output.columns.get_level_values(0):
+        if "RSL" not in df_output.columns.get_level_values(0):
             raise ValueError("No RSL output in results")
 
         z_cols = sorted(
-            [col for col in df_output.columns if col[0] == 'RSL' and col[1].startswith('z_')],
-            key=lambda x: int(x[1].split('_')[1])
+            [
+                col
+                for col in df_output.columns
+                if col[0] == "RSL" and col[1].startswith("z_")
+            ],
+            key=lambda x: int(x[1].split("_")[1]),
         )
 
         if not z_cols:
