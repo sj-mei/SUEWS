@@ -1304,3 +1304,278 @@ class TestAlbedoRangesValidator:
             else:
                 with pytest.raises(ValidationError, match=expected_error):
                     SUEWSConfig(**config_data)
+
+
+class TestDeciduousPorosityRangesValidator:
+    """Test cases for the validate_deciduous_porosity_ranges validator migrated to SUEWSConfig."""
+
+    def test_validate_deciduous_porosity_ranges_valid_range_passes(self):
+        """Test that deciduous trees with valid porosity ranges pass validation."""
+        config = SUEWSConfig(
+            name="test_valid_deciduous_porosity",
+            description="Test deciduous trees with valid porosity range",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "land_cover": {
+                        "dectr": {
+                            "pormin_dec": {"value": 0.3},  # < pormax_dec ✓
+                            "pormax_dec": {"value": 0.7}
+                        }
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise any validation errors
+        assert config.sites[0].properties.land_cover.dectr.pormin_dec.value == 0.3
+        assert config.sites[0].properties.land_cover.dectr.pormax_dec.value == 0.7
+
+    def test_validate_deciduous_porosity_ranges_violation_equal_values(self):
+        """Test that pormin_dec = pormax_dec raises ValidationError."""
+        with pytest.raises(ValidationError, match="test_site deciduous trees.*pormin_dec.*must be less than pormax_dec"):
+            SUEWSConfig(
+                name="test_equal_porosity_violation",
+                description="Test pormin_dec = pormax_dec violation",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "pormin_dec": {"value": 0.5},  # = pormax_dec - should fail
+                                "pormax_dec": {"value": 0.5}
+                            }
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_deciduous_porosity_ranges_violation_greater_than(self):
+        """Test that pormin_dec > pormax_dec raises ValidationError."""
+        with pytest.raises(ValidationError, match="test_site deciduous trees.*pormin_dec.*must be less than pormax_dec"):
+            SUEWSConfig(
+                name="test_greater_than_porosity_violation",
+                description="Test pormin_dec > pormax_dec violation",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "pormin_dec": {"value": 0.8},  # > pormax_dec - should fail
+                                "pormax_dec": {"value": 0.6}
+                            }
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_deciduous_porosity_ranges_with_refvalue_wrappers(self):
+        """Test deciduous porosity range validation with RefValue wrapper objects."""
+        from supy.data_model.type import RefValue
+        
+        config = SUEWSConfig(
+            name="test_refvalue_deciduous_porosity",
+            description="Test deciduous porosity ranges with RefValue wrappers",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "land_cover": {
+                        "dectr": {
+                            "pormin_dec": RefValue(0.25),
+                            "pormax_dec": RefValue(0.75)
+                        }
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.land_cover.dectr.pormin_dec.value == 0.25
+        assert config.sites[0].properties.land_cover.dectr.pormax_dec.value == 0.75
+
+    def test_validate_deciduous_porosity_ranges_multiple_sites(self):
+        """Test deciduous porosity range validation across multiple sites."""
+        config = SUEWSConfig(
+            name="test_multi_site_deciduous_porosity",
+            description="Test deciduous porosity range validation across multiple sites",
+            sites=[
+                {
+                    "name": "site1_valid",
+                    "gridiv": 0,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "pormin_dec": {"value": 0.2},
+                                "pormax_dec": {"value": 0.6}
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "site2_valid",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "pormin_dec": {"value": 0.3},
+                                "pormax_dec": {"value": 0.8}
+                            }
+                        }
+                    }
+                }
+            ]
+        )
+        
+        # Both sites should pass validation
+        assert len(config.sites) == 2
+        assert config.sites[0].properties.land_cover.dectr.pormin_dec.value == 0.2
+        assert config.sites[1].properties.land_cover.dectr.pormin_dec.value == 0.3
+
+    def test_validate_deciduous_porosity_ranges_multiple_sites_with_errors(self):
+        """Test deciduous porosity range validation with errors across multiple sites."""
+        with pytest.raises(ValidationError, match="site1 deciduous trees.*pormin_dec.*must be less than pormax_dec.*site2 deciduous trees.*pormin_dec.*must be less than pormax_dec"):
+            SUEWSConfig(
+                name="test_multi_site_deciduous_porosity_errors",
+                description="Test multiple sites with deciduous porosity violations",
+                sites=[
+                    {
+                        "name": "site1",
+                        "gridiv": 0,
+                        "properties": {
+                            "land_cover": {
+                                "dectr": {
+                                    "pormin_dec": {"value": 0.7},  # > pormax_dec ✗
+                                    "pormax_dec": {"value": 0.5}
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "site2",
+                        "gridiv": 1,
+                        "properties": {
+                            "land_cover": {
+                                "dectr": {
+                                    "pormin_dec": {"value": 0.9},  # > pormax_dec ✗
+                                    "pormax_dec": {"value": 0.6}
+                                }
+                            }
+                        }
+                    }
+                ]
+            )
+
+    def test_validate_deciduous_porosity_ranges_sites_without_dectr(self):
+        """Test that sites without deciduous trees are skipped gracefully."""
+        # This should pass because sites without dectr properties are skipped
+        config = SUEWSConfig(
+            name="test_no_dectr_sites",
+            description="Test sites without deciduous trees",
+            sites=[
+                {
+                    "name": "site_with_dectr",
+                    "gridiv": 0,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "pormin_dec": {"value": 0.3},
+                                "pormax_dec": {"value": 0.7}
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "site_without_dectr",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "evetr": {  # Only evergreen trees, no deciduous
+                                "alb_min": {"value": 0.1},
+                                "alb_max": {"value": 0.3}
+                            }
+                        }
+                    }
+                }
+            ]
+        )
+        
+        # Should pass - only site with dectr is validated
+        assert config.sites[0].properties.land_cover.dectr.pormin_dec.value == 0.3
+        assert config.sites[1].properties.land_cover.evetr.alb_min.value == 0.1
+
+    def test_validate_deciduous_porosity_ranges_edge_cases(self):
+        """Test deciduous porosity range validation with edge case values."""
+        test_cases = [
+            # (pormin_dec, pormax_dec, should_pass, expected_error)
+            (0.1, 0.9, True, None),        # Valid range ✓
+            (0.2, 0.8, True, None),        # Valid range ✓
+            (0.4, 0.6, True, None),        # Valid mid-range ✓
+            (0.5, 0.5, False, "deciduous"), # Equal values ✗
+            (0.7, 0.3, False, "deciduous"), # pormin > pormax ✗
+            (0.8, 0.2, False, "deciduous"), # Large difference but wrong order ✗
+        ]
+        
+        for i, (pormin_dec, pormax_dec, should_pass, expected_error) in enumerate(test_cases):
+            config_data = {
+                "name": f"test_porosity_edge_case_{i}",
+                "description": f"Porosity edge case test {i}",
+                "sites": [{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "pormin_dec": {"value": pormin_dec},
+                                "pormax_dec": {"value": pormax_dec}
+                            }
+                        }
+                    }
+                }]
+            }
+            
+            if should_pass:
+                config = SUEWSConfig(**config_data)
+                assert config.sites[0].properties.land_cover.dectr.pormin_dec.value == pormin_dec
+                assert config.sites[0].properties.land_cover.dectr.pormax_dec.value == pormax_dec
+            else:
+                with pytest.raises(ValidationError, match=expected_error):
+                    SUEWSConfig(**config_data)
+
+    def test_validate_deciduous_porosity_mixed_valid_invalid_sites(self):
+        """Test validation with mix of valid and invalid deciduous porosity across sites."""
+        # Test that one valid site and one invalid site correctly reports only the invalid one
+        with pytest.raises(ValidationError, match="site2 deciduous trees.*pormin_dec.*must be less than pormax_dec"):
+            SUEWSConfig(
+                name="test_mixed_deciduous_porosity",
+                description="Test mixed valid/invalid deciduous porosity sites",
+                sites=[
+                    {
+                        "name": "site1",
+                        "gridiv": 0,
+                        "properties": {
+                            "land_cover": {
+                                "dectr": {
+                                    "pormin_dec": {"value": 0.2},  # Valid ✓
+                                    "pormax_dec": {"value": 0.8}
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "site2", 
+                        "gridiv": 1,
+                        "properties": {
+                            "land_cover": {
+                                "dectr": {
+                                    "pormin_dec": {"value": 0.9},  # Invalid ✗
+                                    "pormax_dec": {"value": 0.4}
+                                }
+                            }
+                        }
+                    }
+                ]
+            )

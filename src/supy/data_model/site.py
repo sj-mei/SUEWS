@@ -734,24 +734,6 @@ class DectrProperties(VegetatedSurfaceProperties):
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def validate_porosity_range(self) -> "DectrProperties":
-        pormin_dec_val = (
-            self.pormin_dec.value
-            if isinstance(self.pormin_dec, RefValue)
-            else self.pormin_dec
-        )
-        pormax_dec_val = (
-            self.pormax_dec.value
-            if isinstance(self.pormax_dec, RefValue)
-            else self.pormax_dec
-        )
-
-        if pormin_dec_val >= pormax_dec_val:
-            raise ValueError(
-                f"pormin_dec ({pormin_dec_val}) must be less than pormax_dec ({pormax_dec_val})."
-            )
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree properties to DataFrame state format."""

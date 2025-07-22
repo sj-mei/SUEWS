@@ -439,6 +439,51 @@ class SUEWSConfig(BaseModel):
             
         return self
 
+    @model_validator(mode="after")  
+    def validate_deciduous_porosity_ranges(self) -> "SUEWSConfig":
+        """
+        Validate porosity ranges for deciduous trees in all sites.
+        Migrated from DectrProperties.validate_porosity_range for centralized validation.
+        
+        Checks:
+        - pormin_dec < pormax_dec (minimum porosity < maximum porosity)
+        
+        This ensures proper porosity parameter ranges for deciduous tree modeling.
+        """
+        from .type import RefValue  # Import here to avoid circular import
+        
+        errors = []
+        
+        for i, site in enumerate(self.sites):
+            if not site.properties or not site.properties.land_cover or not site.properties.land_cover.dectr:
+                continue
+                
+            site_name = getattr(site, 'name', f'Site {i}')
+            dectr_props = site.properties.land_cover.dectr
+            
+            # Extract porosity values handling RefValue wrappers
+            pormin_dec_val = (
+                dectr_props.pormin_dec.value 
+                if isinstance(dectr_props.pormin_dec, RefValue) 
+                else dectr_props.pormin_dec
+            )
+            pormax_dec_val = (
+                dectr_props.pormax_dec.value 
+                if isinstance(dectr_props.pormax_dec, RefValue) 
+                else dectr_props.pormax_dec
+            )
+            
+            # Validate porosity range
+            if pormin_dec_val >= pormax_dec_val:
+                errors.append(
+                    f"{site_name} deciduous trees: pormin_dec ({pormin_dec_val}) must be less than pormax_dec ({pormax_dec_val})"
+                )
+        
+        if errors:
+            raise ValueError("; ".join(errors))
+            
+        return self
+
     def _show_validation_summary(self) -> None:
         """Show a concise summary of validation issues."""
         ## Check if we have a yaml path stored
