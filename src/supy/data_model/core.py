@@ -260,6 +260,66 @@ class SUEWSConfig(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def validate_site_required_fields(self) -> "SUEWSConfig":
+        """
+        Validate that all sites have required fields with valid values.
+        Migrated from SiteProperties.validate_required_fields for centralized validation.
+        
+        Checks:
+        - Presence of critical site properties like lat, lng, alt, timezone
+        - RefValue wrapper validation
+        - Physical constraint validation (z0m_in < zdm_in)
+        """
+        from .type import RefValue  # Import here to avoid circular import
+        
+        errors = []
+        
+        # Required fields that must be present and non-None
+        required_fields = [
+            "lat", "lng", "alt", "timezone", "surfacearea", "z", "z0m_in", "zdm_in",
+            "pipecapacity", "runofftowater", "narp_trans_site", "lumps", "spartacus",
+            "conductance", "irrigation", "anthropogenic_emissions", "snow", 
+            "land_cover", "vertical_layers"
+        ]
+        
+        for i, site in enumerate(self.sites):
+            if not site.properties:
+                errors.append(f"Site {i} ({getattr(site, 'name', 'unnamed')}) is missing properties")
+                continue
+                
+            site_name = getattr(site, 'name', f'Site {i}')
+            
+            # Check required fields
+            for field in required_fields:
+                value = getattr(site.properties, field, None)
+                if value is None:
+                    errors.append(f"{site_name}: Required field '{field}' is missing")
+                elif isinstance(value, RefValue) and value.value is None:
+                    errors.append(f"{site_name}: Required field '{field}' has no value")
+            
+            # Additional physical constraint validation
+            if site.properties.z0m_in is not None and site.properties.zdm_in is not None:
+                z0m_val = (
+                    site.properties.z0m_in.value 
+                    if isinstance(site.properties.z0m_in, RefValue) 
+                    else site.properties.z0m_in
+                )
+                zdm_val = (
+                    site.properties.zdm_in.value 
+                    if isinstance(site.properties.zdm_in, RefValue) 
+                    else site.properties.zdm_in
+                )
+                if z0m_val is not None and zdm_val is not None and z0m_val >= zdm_val:
+                    errors.append(
+                        f"{site_name}: z0m_in ({z0m_val}) must be less than zdm_in ({zdm_val})"
+                    )
+        
+        if errors:
+            raise ValueError("; ".join(errors))
+        
+        return self
+
     def _show_validation_summary(self) -> None:
         """Show a concise summary of validation issues."""
         ## Check if we have a yaml path stored

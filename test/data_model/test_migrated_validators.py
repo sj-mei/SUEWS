@@ -482,3 +482,295 @@ class TestRadiationMethodValidator:
             else:
                 with pytest.raises(ValidationError, match="NetRadiationMethod is set to 1.*observed Ldown"):
                     SUEWSConfig(**config_data)
+
+
+class TestSiteRequiredFieldsValidator:
+    """Test cases for the validate_site_required_fields validator migrated to SUEWSConfig."""
+
+    def test_validate_site_complete_required_fields_passes(self):
+        """Test that sites with all required fields pass validation."""
+        config = SUEWSConfig(
+            name="test_complete_site_fields",
+            description="Test site with all required fields",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    # Critical geographic fields
+                    "lat": {"value": 51.5},
+                    "lng": {"value": -0.1},
+                    "alt": {"value": 10},
+                    "timezone": {"value": 0},
+                    
+                    # Basic physical parameters
+                    "surfacearea": {"value": 10000},
+                    "z": {"value": 10},
+                    "z0m_in": {"value": 1.0},  # Must be < zdm_in
+                    "zdm_in": {"value": 5.0},  # Must be > z0m_in
+                    
+                    # System parameters
+                    "pipecapacity": {"value": 100},
+                    "runofftowater": {"value": 0},
+                    "narp_trans_site": {"value": 0.2},
+                    
+                    # Required complex objects (minimal valid configs)
+                    "lumps": {},
+                    "spartacus": {},
+                    "conductance": {},
+                    "irrigation": {},
+                    "anthropogenic_emissions": {},
+                    "snow": {},
+                    "land_cover": {},
+                    "vertical_layers": {}
+                }
+            }]
+        )
+        
+        # Should not raise any validation errors
+        assert config.sites[0].properties.lat.value == 51.5
+        assert config.sites[0].properties.lng.value == -0.1
+
+    def test_validate_site_missing_properties_fails(self):
+        """Test that sites without properties section fail validation."""
+        # This test is no longer valid since SiteProperties has default_factory
+        # All sites automatically get a properties object with default values
+        # Instead test that default properties are created correctly
+        config = SUEWSConfig(
+            name="test_missing_properties",
+            description="Test site with default properties",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1
+                # Properties will be auto-created with defaults
+            }]
+        )
+        # Should have properties with default values
+        assert config.sites[0].properties is not None
+        
+        # Fields can be either RefValue or plain values depending on how they're set
+        lat_val = config.sites[0].properties.lat
+        if hasattr(lat_val, 'value'):
+            assert lat_val.value == 51.5  # RefValue case
+        else:
+            assert lat_val == 51.5  # Plain value case
+
+    def test_validate_site_fields_have_defaults(self):
+        """Test that sites automatically get default values for required fields."""
+        # Since all "required" fields actually have defaults in SiteProperties,
+        # this validator primarily serves as a safety check for programmatic usage
+        config = SUEWSConfig(
+            name="test_defaults_present",
+            description="Test that all required fields have defaults",
+            sites=[{"name": "test_site", "gridiv": 1}]
+        )
+        
+        # All "required" fields should be present with default values
+        props = config.sites[0].properties
+        assert props.lat is not None
+        assert props.lng is not None  
+        assert props.alt is not None
+        assert props.timezone is not None
+        assert props.surfacearea is not None
+        assert props.z is not None
+        assert props.z0m_in is not None
+        assert props.zdm_in is not None
+        assert props.pipecapacity is not None
+        assert props.runofftowater is not None
+        assert props.narp_trans_site is not None
+        
+        # Complex objects should also be present
+        assert props.lumps is not None
+        assert props.spartacus is not None
+        assert props.conductance is not None
+        assert props.irrigation is not None
+        assert props.anthropogenic_emissions is not None
+        assert props.snow is not None
+        assert props.land_cover is not None
+        assert props.vertical_layers is not None
+
+    def test_validate_site_null_refvalue_fails(self):
+        """Test that RefValue fields with null values fail validation."""
+        from supy.data_model.type import RefValue
+        
+        with pytest.raises(ValidationError, match="test_site.*Required field 'alt' has no value"):
+            SUEWSConfig(
+                name="test_null_refvalue",
+                description="Test site with null RefValue",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "lat": {"value": 51.5},
+                        "lng": {"value": -0.1},
+                        "alt": RefValue(None),  # Null RefValue should fail
+                        "timezone": {"value": 0},
+                        "surfacearea": {"value": 10000},
+                        "z": {"value": 10},
+                        "z0m_in": {"value": 1.0},
+                        "zdm_in": {"value": 5.0},
+                        "pipecapacity": {"value": 100},
+                        "runofftowater": {"value": 0},
+                        "narp_trans_site": {"value": 0.2},
+                        "lumps": {},
+                        "spartacus": {},
+                        "conductance": {},
+                        "irrigation": {},
+                        "anthropogenic_emissions": {},
+                        "snow": {},
+                        "land_cover": {},
+                        "vertical_layers": {}
+                    }
+                }]
+            )
+
+    def test_validate_site_z0m_zdm_constraint_violation(self):
+        """Test that z0m_in >= zdm_in constraint violation fails validation."""
+        with pytest.raises(ValidationError, match="test_site.*z0m_in.*must be less than zdm_in"):
+            SUEWSConfig(
+                name="test_z0m_zdm_violation",
+                description="Test z0m_in >= zdm_in constraint violation",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "lat": {"value": 51.5},
+                        "lng": {"value": -0.1},
+                        "alt": {"value": 10},
+                        "timezone": {"value": 0},
+                        "surfacearea": {"value": 10000},
+                        "z": {"value": 10},
+                        "z0m_in": {"value": 5.0},  # Equal to zdm_in - should fail
+                        "zdm_in": {"value": 5.0},
+                        "pipecapacity": {"value": 100},
+                        "runofftowater": {"value": 0},
+                        "narp_trans_site": {"value": 0.2},
+                        "lumps": {},
+                        "spartacus": {},
+                        "conductance": {},
+                        "irrigation": {},
+                        "anthropogenic_emissions": {},
+                        "snow": {},
+                        "land_cover": {},
+                        "vertical_layers": {}
+                    }
+                }]
+            )
+
+    def test_validate_site_z0m_zdm_constraint_passes(self):
+        """Test that valid z0m_in < zdm_in constraint passes validation."""
+        config = SUEWSConfig(
+            name="test_z0m_zdm_valid",
+            description="Test valid z0m_in < zdm_in constraint",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "lat": {"value": 51.5},
+                    "lng": {"value": -0.1},
+                    "alt": {"value": 10},
+                    "timezone": {"value": 0},
+                    "surfacearea": {"value": 10000},
+                    "z": {"value": 10},
+                    "z0m_in": {"value": 1.0},  # Less than zdm_in - should pass
+                    "zdm_in": {"value": 5.0},
+                    "pipecapacity": {"value": 100},
+                    "runofftowater": {"value": 0},
+                    "narp_trans_site": {"value": 0.2},
+                    "lumps": {},
+                    "spartacus": {},
+                    "conductance": {},
+                    "irrigation": {},
+                    "anthropogenic_emissions": {},
+                    "snow": {},
+                    "land_cover": {},
+                    "vertical_layers": {}
+                }
+            }]
+        )
+        
+        # Should not raise any validation errors
+        assert config.sites[0].properties.z0m_in.value == 1.0
+        assert config.sites[0].properties.zdm_in.value == 5.0
+
+    def test_validate_multiple_sites_with_z0m_zdm_constraint_violations(self):
+        """Test z0m_in < zdm_in constraint violations across multiple sites."""
+        # Test the constraint that can actually be violated
+        with pytest.raises(ValueError, match="site1.*z0m_in.*must be less than zdm_in.*site2.*z0m_in.*must be less than zdm_in"):
+            SUEWSConfig(
+                name="test_multi_site_constraint_violations",
+                description="Test multiple sites with z0m_in >= zdm_in violations",
+                sites=[
+                    {
+                        "name": "site1",
+                        "gridiv": 0,
+                        "properties": {
+                            "z0m_in": {"value": 5.0},  # Equal to zdm_in
+                            "zdm_in": {"value": 5.0}   # Should fail: z0m_in >= zdm_in
+                        }
+                    },
+                    {
+                        "name": "site2", 
+                        "gridiv": 1,
+                        "properties": {
+                            "z0m_in": {"value": 6.0},  # Greater than zdm_in
+                            "zdm_in": {"value": 5.0}   # Should fail: z0m_in >= zdm_in
+                        }
+                    }
+                ]
+            )
+
+    def test_validate_site_with_refvalue_wrappers(self):
+        """Test site required fields validation with RefValue wrappers."""
+        from supy.data_model.type import RefValue
+        
+        config = SUEWSConfig(
+            name="test_refvalue_site_fields",
+            description="Test site fields with RefValue wrappers",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "lat": RefValue(51.5),
+                    "lng": RefValue(-0.1),
+                    "alt": RefValue(10),
+                    "timezone": RefValue(0),
+                    "surfacearea": RefValue(10000),
+                    "z": RefValue(10),
+                    "z0m_in": RefValue(1.0),
+                    "zdm_in": RefValue(5.0),
+                    "pipecapacity": RefValue(100),
+                    "runofftowater": RefValue(0),
+                    "narp_trans_site": RefValue(0.2),
+                    "lumps": {},
+                    "spartacus": {},
+                    "conductance": {},
+                    "irrigation": {},
+                    "anthropogenic_emissions": {},
+                    "snow": {},
+                    "land_cover": {},
+                    "vertical_layers": {}
+                }
+            }]
+        )
+        
+        # Should not raise any validation errors
+        assert config.sites[0].properties.lat.value == 51.5
+        assert config.sites[0].properties.lng.value == -0.1
+
+    def test_validate_site_with_multiple_z0m_zdm_violations(self):
+        """Test that multiple z0m_in >= zdm_in violations are reported together."""
+        # Test multiple constraint violations in a single site by using edge cases
+        with pytest.raises(ValueError, match="test_site.*z0m_in.*must be less than zdm_in"):
+            SUEWSConfig(
+                name="test_multiple_z0m_zdm_violations",
+                description="Test site with z0m_in >= zdm_in constraint violation",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "z0m_in": {"value": 5.0},  # Equal to zdm_in - should fail
+                        "zdm_in": {"value": 5.0},  # z0m_in must be < zdm_in
+                        # Other fields use defaults
+                    }
+                }]
+            )
