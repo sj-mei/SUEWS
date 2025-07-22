@@ -51,6 +51,30 @@ import os
 import warnings
 
 
+def _unwrap_value(val):
+    """
+    Unwrap RefValue and Enum values consistently.
+    
+    This helper ensures consistent handling of RefValue wrappers and Enum values
+    throughout the validation logic.
+    
+    Args:
+        val: The value to unwrap (could be RefValue, Enum, or raw value)
+    
+    Returns:
+        The unwrapped raw value
+    """
+    # Handle RefValue wrapper
+    if hasattr(val, 'value') and hasattr(val, '__class__') and 'RefValue' in val.__class__.__name__:
+        val = val.value
+    
+    # Handle Enum values (which also have .value attribute)
+    if hasattr(val, 'value') and hasattr(val, '__class__') and 'Enum' in str(val.__class__.__bases__):
+        val = val.value
+    
+    return val
+
+
 def _is_valid_layer_array(field) -> bool:
     return (
         hasattr(field, "value")
@@ -207,6 +231,12 @@ class SUEWSConfig(BaseModel):
         if isinstance(self.model.control.output_file, OutputConfig):
             output_config = self.model.control.output_file
             if output_config.freq is not None:
+                # Validate frequency is positive
+                if output_config.freq <= 0:
+                    raise ValueError(
+                        f"Output frequency must be positive, got {output_config.freq}s"
+                    )
+                
                 tstep = self.model.control.tstep
                 if output_config.freq % tstep != 0:
                     raise ValueError(
@@ -234,29 +264,24 @@ class SUEWSConfig(BaseModel):
         Validate radiation method configuration compatibility with forcing file.
         Migrated from Model class to SUEWSConfig for comprehensive validation.
         """
-        from .type import RefValue  # Import here to avoid circular import
+        # Use the helper for consistent unwrapping
+        netradiationmethod_val = _unwrap_value(self.model.physics.netradiationmethod)
+        forcing_file_val = _unwrap_value(self.model.control.forcing_file)
 
-        netradiationmethod_val = (
-            self.model.physics.netradiationmethod.value
-            if isinstance(self.model.physics.netradiationmethod, RefValue)
-            else self.model.physics.netradiationmethod
-        )
-        forcing_file_val = (
-            self.model.control.forcing_file.value
-            if isinstance(self.model.control.forcing_file, RefValue)
-            else self.model.control.forcing_file
-        )
-
-        # For Enum values, we need to extract the actual integer value
-        if hasattr(netradiationmethod_val, "value"):
-            netradiationmethod_val = netradiationmethod_val.value
-
-        if netradiationmethod_val == 1 and forcing_file_val == "forcing.txt":
-            raise ValueError(
-                "NetRadiationMethod is set to 1 (using observed Ldown). "
-                "The sample forcing file lacks observed Ldown. Use netradiation = 3 for sample forcing. "
-                "If not using sample forcing, ensure that the forcing file contains Ldown and rename from forcing.txt."
-                # TODO: This is a temporary solution. We need to provide a better way to catch this.
+        # Check for the sample forcing file - this is still based on filename
+        # TODO: Future improvement - add a flag to indicate sample forcing or check actual column presence
+        # For now, we check both common sample forcing filenames
+        sample_forcing_names = ["forcing.txt", "sample_forcing.txt", "test_forcing.txt"]
+        
+        if netradiationmethod_val == 1 and any(name in str(forcing_file_val).lower() for name in sample_forcing_names):
+            import warnings
+            warnings.warn(
+                f"NetRadiationMethod is set to 1 (using observed Ldown) with what appears to be a sample forcing file '{forcing_file_val}'. "
+                "Sample forcing files typically lack observed Ldown data. "
+                "If this is sample data, use netradiationmethod = 3. "
+                "If this is real data with Ldown, consider renaming the file to avoid this warning.",
+                UserWarning,
+                stacklevel=2
             )
         return self
 
@@ -320,16 +345,8 @@ class SUEWSConfig(BaseModel):
                 site.properties.z0m_in is not None
                 and site.properties.zdm_in is not None
             ):
-                z0m_val = (
-                    site.properties.z0m_in.value
-                    if isinstance(site.properties.z0m_in, RefValue)
-                    else site.properties.z0m_in
-                )
-                zdm_val = (
-                    site.properties.zdm_in.value
-                    if isinstance(site.properties.zdm_in, RefValue)
-                    else site.properties.zdm_in
-                )
+                z0m_val = _unwrap_value(site.properties.z0m_in)
+                zdm_val = _unwrap_value(site.properties.zdm_in)
                 if z0m_val is not None and zdm_val is not None and z0m_val >= zdm_val:
                     errors.append(
                         f"{site_name}: z0m_in ({z0m_val}) must be less than zdm_in ({zdm_val})"
@@ -364,32 +381,36 @@ class SUEWSConfig(BaseModel):
             site_name = getattr(site, "name", f"Site {i}")
             snow_params = site.properties.snow
 
-            # Extract values handling RefValue wrappers
-            crwmin_val = (
-                snow_params.crwmin.value
-                if isinstance(snow_params.crwmin, RefValue)
-                else snow_params.crwmin
-            )
-            crwmax_val = (
-                snow_params.crwmax.value
-                if isinstance(snow_params.crwmax, RefValue)
-                else snow_params.crwmax
-            )
-            snowalbmin_val = (
-                snow_params.snowalbmin.value
-                if isinstance(snow_params.snowalbmin, RefValue)
-                else snow_params.snowalbmin
-            )
-            snowalbmax_val = (
-                snow_params.snowalbmax.value
-                if isinstance(snow_params.snowalbmax, RefValue)
-                else snow_params.snowalbmax
-            )
+            # Extract values using helper for consistent unwrapping
+            crwmin_val = _unwrap_value(snow_params.crwmin)
+            crwmax_val = _unwrap_value(snow_params.crwmax)
+            snowalbmin_val = _unwrap_value(snow_params.snowalbmin)
+            snowalbmax_val = _unwrap_value(snow_params.snowalbmax)
 
             # Validate critical water content range
             if crwmin_val >= crwmax_val:
                 errors.append(
                     f"{site_name}: crwmin ({crwmin_val}) must be less than crwmax ({crwmax_val})"
+                )
+            
+            # Validate physical bounds for critical water content
+            if not (0 <= crwmin_val <= 1):
+                errors.append(
+                    f"{site_name}: crwmin ({crwmin_val}) must be in range [0, 1]"
+                )
+            if not (0 <= crwmax_val <= 1):
+                errors.append(
+                    f"{site_name}: crwmax ({crwmax_val}) must be in range [0, 1]"
+                )
+
+            # Validate physical bounds for snow albedo
+            if not (0 <= snowalbmin_val <= 1):
+                errors.append(
+                    f"{site_name}: snowalbmin ({snowalbmin_val}) must be in range [0, 1]"
+                )
+            if not (0 <= snowalbmax_val <= 1):
+                errors.append(
+                    f"{site_name}: snowalbmax ({snowalbmax_val}) must be in range [0, 1]"
                 )
 
             # Validate snow albedo range
@@ -436,22 +457,24 @@ class SUEWSConfig(BaseModel):
                 if not surface_props:
                     continue
 
-                # Extract albedo values handling RefValue wrappers
-                alb_min_val = (
-                    surface_props.alb_min.value
-                    if isinstance(surface_props.alb_min, RefValue)
-                    else surface_props.alb_min
-                )
-                alb_max_val = (
-                    surface_props.alb_max.value
-                    if isinstance(surface_props.alb_max, RefValue)
-                    else surface_props.alb_max
-                )
+                # Extract albedo values using helper for consistent unwrapping
+                alb_min_val = _unwrap_value(surface_props.alb_min)
+                alb_max_val = _unwrap_value(surface_props.alb_max)
 
-                # Validate albedo range
-                if alb_min_val > alb_max_val:
+                # Validate physical bounds for albedo values
+                if not (0 <= alb_min_val <= 1):
                     errors.append(
-                        f"{site_name} {surface_description}: alb_min ({alb_min_val}) must be less than or equal to alb_max ({alb_max_val})"
+                        f"{site_name} {surface_description}: alb_min ({alb_min_val}) must be in range [0, 1]"
+                    )
+                if not (0 <= alb_max_val <= 1):
+                    errors.append(
+                        f"{site_name} {surface_description}: alb_max ({alb_max_val}) must be in range [0, 1]"
+                    )
+                
+                # Validate albedo range - use strict inequality for consistency
+                if alb_min_val >= alb_max_val:
+                    errors.append(
+                        f"{site_name} {surface_description}: alb_min ({alb_min_val}) must be less than alb_max ({alb_max_val})"
                     )
 
         if errors:
@@ -485,17 +508,19 @@ class SUEWSConfig(BaseModel):
             site_name = getattr(site, "name", f"Site {i}")
             dectr_props = site.properties.land_cover.dectr
 
-            # Extract porosity values handling RefValue wrappers
-            pormin_dec_val = (
-                dectr_props.pormin_dec.value
-                if isinstance(dectr_props.pormin_dec, RefValue)
-                else dectr_props.pormin_dec
-            )
-            pormax_dec_val = (
-                dectr_props.pormax_dec.value
-                if isinstance(dectr_props.pormax_dec, RefValue)
-                else dectr_props.pormax_dec
-            )
+            # Extract porosity values using helper for consistent unwrapping
+            pormin_dec_val = _unwrap_value(dectr_props.pormin_dec)
+            pormax_dec_val = _unwrap_value(dectr_props.pormax_dec)
+
+            # Validate physical bounds for porosity
+            if not (0 <= pormin_dec_val <= 1):
+                errors.append(
+                    f"{site_name} deciduous trees: pormin_dec ({pormin_dec_val}) must be in range [0, 1]"
+                )
+            if not (0 <= pormax_dec_val <= 1):
+                errors.append(
+                    f"{site_name} deciduous trees: pormax_dec ({pormax_dec_val}) must be in range [0, 1]"
+                )
 
             # Validate porosity range
             if pormin_dec_val >= pormax_dec_val:
@@ -1515,23 +1540,15 @@ class SUEWSConfig(BaseModel):
 
             vertical_layers = site.properties.vertical_layers
 
-            # Extract nlayer value
-            nlayer_val = (
-                vertical_layers.nlayer.value
-                if isinstance(vertical_layers.nlayer, RefValue)
-                else vertical_layers.nlayer
-            )
+            # Extract nlayer value using helper for consistent unwrapping
+            nlayer_val = _unwrap_value(vertical_layers.nlayer)
 
             # Validate building heights array
             if (
                 hasattr(vertical_layers, "height")
                 and vertical_layers.height is not None
             ):
-                heights_val = (
-                    vertical_layers.height.value
-                    if isinstance(vertical_layers.height, RefValue)
-                    else vertical_layers.height
-                )
+                heights_val = _unwrap_value(vertical_layers.height)
                 expected_height_len = nlayer_val + 1
                 if len(heights_val) != expected_height_len:
                     raise ValueError(
@@ -1544,11 +1561,7 @@ class SUEWSConfig(BaseModel):
                 hasattr(vertical_layers, "building_frac")
                 and vertical_layers.building_frac is not None
             ):
-                fractions_val = (
-                    vertical_layers.building_frac.value
-                    if isinstance(vertical_layers.building_frac, RefValue)
-                    else vertical_layers.building_frac
-                )
+                fractions_val = _unwrap_value(vertical_layers.building_frac)
                 if len(fractions_val) != nlayer_val:
                     raise ValueError(
                         f"{site_name}: Building fractions array length ({len(fractions_val)}) "
@@ -1715,7 +1728,17 @@ class SUEWSConfig(BaseModel):
                     if hasattr(land_cover, surface_name):
                         surface_prop = getattr(land_cover, surface_name)
                         if surface_prop and hasattr(surface_prop, "set_surface_type"):
-                            surface_prop.set_surface_type(surface_type)
+                            try:
+                                surface_prop.set_surface_type(surface_type)
+                            except Exception as e:
+                                # Log the error but continue processing other surfaces
+                                site_name = getattr(site, "name", f"Site {site_index}")
+                                import warnings
+                                warnings.warn(
+                                    f"{site_name}: Failed to set surface type for {surface_name}: {str(e)}",
+                                    UserWarning,
+                                    stacklevel=2
+                                )
 
         return self
 
@@ -1737,24 +1760,10 @@ class SUEWSConfig(BaseModel):
         physics = self.model.physics
         errors = []
 
-        # Get values for comparison (handle RefValue wrappers)
-        # RefValue.value gives the enum, then enum.value gives the integer
-        # Direct enum.value gives the integer
-        storageheatmethod_val = (
-            physics.storageheatmethod.value.value
-            if isinstance(physics.storageheatmethod, RefValue)
-            else physics.storageheatmethod.value
-        )
-        ohmincqf_val = (
-            physics.ohmincqf.value.value
-            if isinstance(physics.ohmincqf, RefValue)
-            else physics.ohmincqf.value
-        )
-        snowuse_val = (
-            physics.snowuse.value.value
-            if isinstance(physics.snowuse, RefValue)
-            else physics.snowuse.value
-        )
+        # Use helper for consistent unwrapping - handles both RefValue and Enum
+        storageheatmethod_val = _unwrap_value(physics.storageheatmethod)
+        ohmincqf_val = _unwrap_value(physics.ohmincqf)
+        snowuse_val = _unwrap_value(physics.snowuse)
 
         # StorageHeatMethod compatibility check
         # Only method 1 (OHM_WITHOUT_QF) has specific compatibility requirements
