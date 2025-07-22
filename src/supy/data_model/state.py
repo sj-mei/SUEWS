@@ -347,22 +347,6 @@ class InitialStateVeg(SurfaceInitialState):
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def validate_surface_state(self) -> "InitialStateVeg":
-        """Validate state based on surface type"""
-        # Skip validation if surface type not yet set
-        if not hasattr(self, "_surface_type") or self._surface_type is None:
-            return self
-
-        if self._surface_type not in [
-            SurfaceType.DECTR,
-            SurfaceType.EVETR,
-            SurfaceType.GRASS,
-        ]:
-            raise ValueError(
-                f"Invalid surface type {self._surface_type} for vegetated surface"
-            )
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert vegetated surface initial state to DataFrame state format.
@@ -504,16 +488,6 @@ class InitialStateDectr(InitialStateVeg):
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def validate_surface_state(self) -> "InitialStateDectr":
-        """Validate state based on surface type"""
-        # Skip validation if surface type not yet set
-        if not hasattr(self, "_surface_type") or self._surface_type is None:
-            return self
-
-        if self._surface_type != SurfaceType.DECTR:
-            raise ValueError("This state is only valid for deciduous trees")
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree initial state to DataFrame state format.

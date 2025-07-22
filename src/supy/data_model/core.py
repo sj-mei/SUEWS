@@ -1554,6 +1554,49 @@ class SUEWSConfig(BaseModel):
                         
         return self
 
+    @model_validator(mode="after")
+    def validate_surface_states(self) -> "SUEWSConfig":
+        """Validate surface state types match expected surface types across all sites.
+        
+        Ensures that initial states have appropriate surface types:
+        - InitialStateVeg: DECTR, EVETR, or GRASS
+        - InitialStateDectr: DECTR only
+        - All surface-specific initial state classes have correct surface types
+        """
+        from .type import SurfaceType  # Import here to avoid circular import
+        
+        for site_index, site in enumerate(self.sites):
+            site_name = f"Site {site_index + 1}"
+            
+            # Get initial states
+            if not site.initial_states:
+                continue
+                
+            initial_states = site.initial_states
+            
+            # Validate vegetated surface states (evetr, dectr, grass) 
+            vegetated_surfaces = ["evetr", "dectr", "grass"]
+            for surface_name in vegetated_surfaces:
+                if hasattr(initial_states, surface_name):
+                    surface_state = getattr(initial_states, surface_name)
+                    if surface_state and hasattr(surface_state, "_surface_type"):
+                        surface_type = surface_state._surface_type
+                        expected_types = [SurfaceType.DECTR, SurfaceType.EVETR, SurfaceType.GRASS]
+                        
+                        # For vegetated surfaces, check they're in valid vegetated types
+                        if surface_name in ["evetr", "grass"] and surface_type not in expected_types:
+                            raise ValueError(
+                                f"{site_name}: Invalid surface type {surface_type} for vegetated surface {surface_name}"
+                            )
+                        
+                        # For deciduous trees, check it's specifically DECTR
+                        if surface_name == "dectr" and surface_type != SurfaceType.DECTR:
+                            raise ValueError(
+                                f"{site_name}: {surface_name} state is only valid for deciduous trees, got {surface_type}"
+                            )
+        
+        return self
+
     @classmethod
     def from_yaml(
         cls, path: str, use_conditional_validation: bool = True, strict: bool = True
