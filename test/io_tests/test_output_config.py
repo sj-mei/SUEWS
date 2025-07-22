@@ -58,15 +58,7 @@ def test_frequency_validation():
     """Test output frequency validation against timestep"""
     # Valid: freq is multiple of tstep - should work with SUEWSConfig
     config = SUEWSConfig(
-        sites=[{}],
-        model={
-            "control": {
-                "tstep": 300,
-                "output_file": {
-                    "freq": 3600
-                }
-            }
-        }
+        sites=[{}], model={"control": {"tstep": 300, "output_file": {"freq": 3600}}}
     )
     assert config.model.control.tstep == 300
     assert config.model.control.output_file.freq == 3600
@@ -80,9 +72,9 @@ def test_frequency_validation():
                     "tstep": 300,
                     "output_file": {
                         "freq": 1000  # Not multiple of 300
-                    }
+                    },
                 }
-            }
+            },
         )
 
 
@@ -137,12 +129,7 @@ def test_deprecation_warning():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         config = SUEWSConfig(
-            sites=[{}],
-            model={
-                "control": {
-                    "output_file": "custom_output.txt"
-                }
-            }
+            sites=[{}], model={"control": {"output_file": "custom_output.txt"}}
         )
         assert len(w) == 1
         assert issubclass(w[-1].category, DeprecationWarning)
@@ -157,6 +144,6 @@ def test_deprecation_warning():
                 "control": {
                     "output_file": "output.txt"  # default value
                 }
-            }
+            },
         )
         assert len(w) == 0  # No warning for default value
