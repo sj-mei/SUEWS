@@ -1671,6 +1671,64 @@ class SUEWSConfig(BaseModel):
         
         return self
 
+    @model_validator(mode="after")
+    def validate_model_physics_compatibility(self) -> "SUEWSConfig":
+        """Validate model physics parameter compatibility across all sites.
+        
+        Checks for incompatible combinations of physics options that would
+        cause model errors. This includes storage heat method compatibility
+        with QF inclusion options and experimental/unsupported features.
+        Migrated from ModelPhysics.check_all to provide centralized validation.
+        """
+        from .type import RefValue  # Import here to avoid circular import
+        
+        # Check global model physics (not per-site)
+        if not hasattr(self, 'model') or not self.model or not self.model.physics:
+            return self
+            
+        physics = self.model.physics
+        errors = []
+        
+        # Get values for comparison (handle RefValue wrappers)
+        # RefValue.value gives the enum, then enum.value gives the integer
+        # Direct enum.value gives the integer
+        storageheatmethod_val = (
+            physics.storageheatmethod.value.value
+            if isinstance(physics.storageheatmethod, RefValue)
+            else physics.storageheatmethod.value
+        )
+        ohmincqf_val = (
+            physics.ohmincqf.value.value
+            if isinstance(physics.ohmincqf, RefValue)
+            else physics.ohmincqf.value
+        )
+        snowuse_val = (
+            physics.snowuse.value.value 
+            if isinstance(physics.snowuse, RefValue) 
+            else physics.snowuse.value
+        )
+
+        # StorageHeatMethod compatibility check
+        # Only method 1 (OHM_WITHOUT_QF) has specific compatibility requirements
+        if storageheatmethod_val == 1 and ohmincqf_val != 0:
+            errors.append(
+                f"StorageHeatMethod is set to {storageheatmethod_val} and OhmIncQf is set to {ohmincqf_val}. "
+                f"You should switch to OhmIncQf=0."
+            )
+
+        # Snow calculations check (experimental feature)
+        if snowuse_val == 1:
+            errors.append(
+                f"SnowUse is set to {snowuse_val}. "
+                f"There are no checks implemented for this case (snow calculations included in the run). "
+                f"You should switch to SnowUse=0."
+            )
+
+        if errors:
+            raise ValueError("\n".join(errors))
+        
+        return self
+
     @classmethod
     def from_yaml(
         cls, path: str, use_conditional_validation: bool = True, strict: bool = True

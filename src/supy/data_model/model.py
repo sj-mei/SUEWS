@@ -508,60 +508,6 @@ class ModelPhysics(BaseModel):
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def check_all(self) -> "ModelPhysics":
-        """
-        Collect and aggregate all validation checks for ModelPhysics,
-        so multiple errors (if any) can be raised together
-        """
-        errors = []
-        # Get values for comparison
-        storageheatmethod_val = (
-            self.storageheatmethod.value
-            if isinstance(self.storageheatmethod, RefValue)
-            else self.storageheatmethod
-        )
-        ohmincqf_val = (
-            self.ohmincqf.value
-            if isinstance(self.ohmincqf, RefValue)
-            else self.ohmincqf
-        )
-        snowuse_val = (
-            self.snowuse.value if isinstance(self.snowuse, RefValue) else self.snowuse
-        )
-
-        # storageheatmethod check
-        if storageheatmethod_val == 1 and ohmincqf_val != 0:
-            errors.append(
-                f"\nStorageHeatMethod is set to {storageheatmethod_val} and OhmIncQf is set to {ohmincqf_val}.\n"
-                f"You should switch to OhmIncQf=0.\n"
-            )
-        elif storageheatmethod_val == 2 and ohmincqf_val != 1:
-            errors.append(
-                f"\nStorageHeatMethod is set to {storageheatmethod_val} and OhmIncQf is set to {ohmincqf_val}.\n"
-                f"You should switch to OhmIncQf=1.\n"
-            )
-
-        # snowusemethod check
-        if snowuse_val == 1:
-            errors.append(
-                f"\nSnowUse is set to {snowuse_val}.\n"
-                f"There are no checks implemented for this case (snow calculations included in the run).\n"
-                f"You should switch to SnowUse=0.\n"
-            )
-
-        # emissionsmethod check
-        # if self.emissionsmethod == 45:
-        #     errors.append(
-        #         f"\nEmissionsMethod is set to {self.emissionsmethod}.\n"
-        #         f"There are no checks implemented for this case (CO2 calculations included in the run).\n"
-        #         f"You should switch to EmissionsMethod=0, 1, 2, 3, or 4.\n"
-        #     )
-
-        if errors:
-            raise ValueError("\n".join(errors))
-
-        return self
 
     # We then need to set to 0 (or None) all the CO2-related parameters or rules
     # in the code and return them accordingly in the yml file.

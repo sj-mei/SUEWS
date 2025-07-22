@@ -2525,3 +2525,172 @@ class TestSurfaceTypesValidator:
         # Should not raise errors - validator is defensive
         result = SUEWSConfig(**config_data)
         assert len(result.sites) == 1
+
+
+class TestModelPhysicsValidator:
+    """Test model physics compatibility validation migrated from ModelPhysics.check_all"""
+    
+    def test_validate_model_physics_compatibility_valid_config(self):
+        """Test valid model physics configuration passes validation"""
+        config_data = {
+            "model": {
+                "physics": {
+                    "storageheatmethod": 1,  # OHM_WITHOUT_QF
+                    "ohmincqf": 0,          # EXCLUDE (compatible)
+                    "snowuse": 0            # DISABLED
+                }
+            },
+            "sites": [{"name": "test_site"}]
+        }
+        
+        # Should create successfully with compatible settings
+        result = SUEWSConfig(**config_data)
+        assert result.model.physics.storageheatmethod.value == 1
+        assert result.model.physics.ohmincqf.value == 0
+        assert result.model.physics.snowuse.value == 0
+    
+    def test_validate_model_physics_compatibility_storage_heat_method_1_error(self):
+        """Test StorageHeatMethod=1 with incompatible OhmIncQf raises error"""
+        config_data = {
+            "model": {
+                "physics": {
+                    "storageheatmethod": 1,  # OHM_WITHOUT_QF
+                    "ohmincqf": 1,          # INCLUDE (incompatible!)
+                    "snowuse": 0
+                }
+            },
+            "sites": [{"name": "test_site"}]
+        }
+        
+        with pytest.raises(ValueError, match="StorageHeatMethod is set to 1 and OhmIncQf is set to 1"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_model_physics_compatibility_storage_heat_method_invalid_enum(self):
+        """Test invalid StorageHeatMethod value raises Pydantic error"""
+        config_data = {
+            "model": {
+                "physics": {
+                    "storageheatmethod": 2,  # Invalid - not in enum
+                    "ohmincqf": 0,
+                    "snowuse": 0
+                }
+            },
+            "sites": [{"name": "test_site"}]
+        }
+        
+        # Should raise ValidationError for invalid enum value, not our custom error
+        from pydantic_core import ValidationError as CoreValidationError
+        with pytest.raises(CoreValidationError, match="Input should be 0, 1, 3, 4, 5 or 6"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_model_physics_compatibility_snow_use_enabled_error(self):
+        """Test SnowUse=1 raises error (experimental feature)"""
+        config_data = {
+            "model": {
+                "physics": {
+                    "storageheatmethod": 1,
+                    "ohmincqf": 0,
+                    "snowuse": 1           # ENABLED (experimental!)
+                }
+            },
+            "sites": [{"name": "test_site"}]
+        }
+        
+        with pytest.raises(ValueError, match="SnowUse is set to 1.*There are no checks implemented"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_model_physics_compatibility_multiple_errors(self):
+        """Test multiple physics errors are reported together"""
+        config_data = {
+            "model": {
+                "physics": {
+                    "storageheatmethod": 1,  # Incompatible with ohmincqf=1
+                    "ohmincqf": 1,          # Error 1: Wrong OhmIncQf for method 1
+                    "snowuse": 1            # Error 2: Experimental feature
+                }
+            },
+            "sites": [{"name": "test_site"}]
+        }
+        
+        with pytest.raises(ValueError) as exc_info:
+            SUEWSConfig(**config_data)
+        
+        error_msg = str(exc_info.value)
+        # Should contain both errors
+        assert "StorageHeatMethod is set to 1 and OhmIncQf is set to 1" in error_msg
+        assert "SnowUse is set to 1" in error_msg
+    
+    def test_validate_model_physics_compatibility_refvalue_handling(self):
+        """Test validator handles RefValue wrappers correctly"""
+        config_data = {
+            "model": {
+                "physics": {
+                    "storageheatmethod": {"value": 1},  # RefValue format
+                    "ohmincqf": {"value": 1},          # RefValue format (incompatible!)
+                    "snowuse": {"value": 0}
+                }
+            },
+            "sites": [{"name": "test_site"}]
+        }
+        
+        with pytest.raises(ValueError, match="StorageHeatMethod is set to 1 and OhmIncQf is set to 1"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_model_physics_compatibility_error_message_format(self):
+        """Test error message format for physics compatibility errors"""
+        config_data = {
+            "model": {
+                "physics": {
+                    "storageheatmethod": 1,
+                    "ohmincqf": 1,          # Error condition
+                    "snowuse": 0
+                }
+            },
+            "sites": [{"name": "test_site"}]
+        }
+        
+        with pytest.raises(ValueError) as exc_info:
+            SUEWSConfig(**config_data)
+        
+        # Error should contain specific information about the incompatible settings
+        error_msg = str(exc_info.value)
+        assert "StorageHeatMethod is set to 1 and OhmIncQf is set to 1" in error_msg
+        assert "You should switch to OhmIncQf=0" in error_msg
+    
+    def test_validate_model_physics_compatibility_missing_model_graceful(self):
+        """Test validator handles missing model configuration gracefully"""
+        config_data = {
+            # No model section
+            "sites": [{"name": "test_site"}]
+        }
+        
+        # Should create successfully - validator is defensive
+        result = SUEWSConfig(**config_data)
+        assert len(result.sites) == 1
+    
+    def test_validate_model_physics_compatibility_valid_combinations(self):
+        """Test all valid storage heat method combinations"""
+        valid_combinations = [
+            (1, 0),  # OHM_WITHOUT_QF + EXCLUDE (compatible)
+            (0, 0),  # OBSERVED + EXCLUDE
+            (0, 1),  # OBSERVED + INCLUDE
+            (3, 0),  # ANOHM + EXCLUDE
+            (3, 1),  # ANOHM + INCLUDE
+        ]
+        
+        for storageheat, ohmincqf in valid_combinations:
+            config_data = {
+                "model": {
+                    "physics": {
+                        "storageheatmethod": storageheat,
+                        "ohmincqf": ohmincqf,
+                        "snowuse": 0
+                    }
+                },
+                "sites": [{"name": f"test_{storageheat}_{ohmincqf}"}]
+            }
+            
+            # Should create successfully
+            result = SUEWSConfig(**config_data)
+            assert result.model.physics.storageheatmethod.value == storageheat
+            assert result.model.physics.ohmincqf.value == ohmincqf
