@@ -383,6 +383,62 @@ class SUEWSConfig(BaseModel):
             
         return self
 
+    @model_validator(mode="after")  
+    def validate_albedo_ranges(self) -> "SUEWSConfig":
+        """
+        Validate albedo ranges for vegetated surfaces in all sites.
+        Migrated from VegetatedSurfaceProperties.validate_albedo_range for centralized validation.
+        
+        Checks:
+        - alb_min <= alb_max for all vegetated surfaces (evetr, dectr, grass)
+        
+        This ensures proper albedo parameter ranges for vegetation modeling.
+        """
+        from .type import RefValue  # Import here to avoid circular import
+        
+        errors = []
+        
+        for i, site in enumerate(self.sites):
+            if not site.properties or not site.properties.land_cover:
+                continue
+                
+            site_name = getattr(site, 'name', f'Site {i}')
+            land_cover = site.properties.land_cover
+            
+            # Check all vegetated surface types
+            vegetated_surfaces = [
+                ("evetr", land_cover.evetr, "evergreen trees"),
+                ("dectr", land_cover.dectr, "deciduous trees"),
+                ("grass", land_cover.grass, "grass")
+            ]
+            
+            for surface_name, surface_props, surface_description in vegetated_surfaces:
+                if not surface_props:
+                    continue
+                    
+                # Extract albedo values handling RefValue wrappers
+                alb_min_val = (
+                    surface_props.alb_min.value 
+                    if isinstance(surface_props.alb_min, RefValue) 
+                    else surface_props.alb_min
+                )
+                alb_max_val = (
+                    surface_props.alb_max.value 
+                    if isinstance(surface_props.alb_max, RefValue) 
+                    else surface_props.alb_max
+                )
+                
+                # Validate albedo range
+                if alb_min_val > alb_max_val:
+                    errors.append(
+                        f"{site_name} {surface_description}: alb_min ({alb_min_val}) must be less than or equal to alb_max ({alb_max_val})"
+                    )
+        
+        if errors:
+            raise ValueError("; ".join(errors))
+            
+        return self
+
     def _show_validation_summary(self) -> None:
         """Show a concise summary of validation issues."""
         ## Check if we have a yaml path stored

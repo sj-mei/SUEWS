@@ -998,3 +998,309 @@ class TestSnowParametersValidator:
             else:
                 with pytest.raises(ValidationError, match=expected_error):
                     SUEWSConfig(**config_data)
+
+
+class TestAlbedoRangesValidator:
+    """Test cases for the validate_albedo_ranges validator migrated to SUEWSConfig."""
+
+    def test_validate_albedo_ranges_valid_ranges_pass(self):
+        """Test that vegetated surfaces with valid albedo ranges pass validation."""
+        config = SUEWSConfig(
+            name="test_valid_albedo_ranges",
+            description="Test vegetated surfaces with valid albedo ranges",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "land_cover": {
+                        "evetr": {
+                            "alb_min": {"value": 0.1},  # < alb_max ✓
+                            "alb_max": {"value": 0.3}
+                        },
+                        "dectr": {
+                            "alb_min": {"value": 0.15}, # < alb_max ✓
+                            "alb_max": {"value": 0.35}
+                        },
+                        "grass": {
+                            "alb_min": {"value": 0.2},  # < alb_max ✓
+                            "alb_max": {"value": 0.4}
+                        }
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise any validation errors
+        assert config.sites[0].properties.land_cover.evetr.alb_min.value == 0.1
+        assert config.sites[0].properties.land_cover.evetr.alb_max.value == 0.3
+        assert config.sites[0].properties.land_cover.dectr.alb_min.value == 0.15
+        assert config.sites[0].properties.land_cover.dectr.alb_max.value == 0.35
+        assert config.sites[0].properties.land_cover.grass.alb_min.value == 0.2
+        assert config.sites[0].properties.land_cover.grass.alb_max.value == 0.4
+
+    def test_validate_albedo_ranges_evetr_violation(self):
+        """Test that alb_min > alb_max for evergreen trees raises ValidationError."""
+        with pytest.raises(ValidationError, match="test_site evergreen trees.*alb_min.*must be less than or equal to alb_max"):
+            SUEWSConfig(
+                name="test_evetr_albedo_violation",
+                description="Test alb_min > alb_max for evergreen trees",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "evetr": {
+                                "alb_min": {"value": 0.5},  # > alb_max - should fail
+                                "alb_max": {"value": 0.3}
+                            }
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_albedo_ranges_dectr_violation(self):
+        """Test that alb_min > alb_max for deciduous trees raises ValidationError."""  
+        with pytest.raises(ValidationError, match="test_site deciduous trees.*alb_min.*must be less than or equal to alb_max"):
+            SUEWSConfig(
+                name="test_dectr_albedo_violation", 
+                description="Test alb_min > alb_max for deciduous trees",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "alb_min": {"value": 0.6},  # > alb_max - should fail
+                                "alb_max": {"value": 0.4}
+                            }
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_albedo_ranges_grass_violation(self):
+        """Test that alb_min > alb_max for grass raises ValidationError."""  
+        with pytest.raises(ValidationError, match="test_site grass.*alb_min.*must be less than or equal to alb_max"):
+            SUEWSConfig(
+                name="test_grass_albedo_violation", 
+                description="Test alb_min > alb_max for grass",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "grass": {
+                                "alb_min": {"value": 0.7},  # > alb_max - should fail
+                                "alb_max": {"value": 0.5}
+                            }
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_albedo_ranges_multiple_violations(self):
+        """Test that multiple albedo range violations are reported together."""
+        with pytest.raises(ValidationError, match="test_site evergreen trees.*alb_min.*must be less than or equal to alb_max.*test_site grass.*alb_min.*must be less than or equal to alb_max"):
+            SUEWSConfig(
+                name="test_multiple_albedo_violations",
+                description="Test multiple albedo range violations",
+                sites=[{
+                    "name": "test_site", 
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "evetr": {
+                                "alb_min": {"value": 0.6},  # > alb_max ✗
+                                "alb_max": {"value": 0.4}
+                            },
+                            "dectr": {
+                                "alb_min": {"value": 0.2},  # < alb_max ✓
+                                "alb_max": {"value": 0.3}
+                            },
+                            "grass": {
+                                "alb_min": {"value": 0.8},  # > alb_max ✗
+                                "alb_max": {"value": 0.6}
+                            }
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_albedo_ranges_with_refvalue_wrappers(self):
+        """Test albedo range validation with RefValue wrapper objects."""
+        from supy.data_model.type import RefValue
+        
+        config = SUEWSConfig(
+            name="test_refvalue_albedo_ranges",
+            description="Test albedo ranges with RefValue wrappers",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "land_cover": {
+                        "evetr": {
+                            "alb_min": RefValue(0.15),
+                            "alb_max": RefValue(0.35)
+                        },
+                        "dectr": {
+                            "alb_min": RefValue(0.2),
+                            "alb_max": RefValue(0.4)
+                        },
+                        "grass": {
+                            "alb_min": RefValue(0.25),
+                            "alb_max": RefValue(0.45)
+                        }
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.land_cover.evetr.alb_min.value == 0.15
+        assert config.sites[0].properties.land_cover.evetr.alb_max.value == 0.35
+
+    def test_validate_albedo_ranges_multiple_sites(self):
+        """Test albedo range validation across multiple sites."""
+        config = SUEWSConfig(
+            name="test_multi_site_albedo_ranges",
+            description="Test albedo range validation across multiple sites",
+            sites=[
+                {
+                    "name": "site1_valid",
+                    "gridiv": 0,
+                    "properties": {
+                        "land_cover": {
+                            "evetr": {
+                                "alb_min": {"value": 0.1},
+                                "alb_max": {"value": 0.3}
+                            },
+                            "grass": {
+                                "alb_min": {"value": 0.2},
+                                "alb_max": {"value": 0.4}
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "site2_valid",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {
+                                "alb_min": {"value": 0.15},
+                                "alb_max": {"value": 0.35}
+                            },
+                            "grass": {
+                                "alb_min": {"value": 0.25},
+                                "alb_max": {"value": 0.45}
+                            }
+                        }
+                    }
+                }
+            ]
+        )
+        
+        # Both sites should pass validation
+        assert len(config.sites) == 2
+        assert config.sites[0].properties.land_cover.evetr.alb_min.value == 0.1
+        assert config.sites[1].properties.land_cover.dectr.alb_min.value == 0.15
+
+    def test_validate_albedo_ranges_multiple_sites_with_errors(self):
+        """Test albedo range validation with errors across multiple sites."""
+        with pytest.raises(ValidationError, match="site1 evergreen trees.*alb_min.*must be less than or equal to alb_max.*site2 grass.*alb_min.*must be less than or equal to alb_max"):
+            SUEWSConfig(
+                name="test_multi_site_albedo_errors",
+                description="Test multiple sites with different albedo range violations",
+                sites=[
+                    {
+                        "name": "site1",
+                        "gridiv": 0,
+                        "properties": {
+                            "land_cover": {
+                                "evetr": {
+                                    "alb_min": {"value": 0.5},  # > alb_max ✗
+                                    "alb_max": {"value": 0.3}
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "site2",
+                        "gridiv": 1,
+                        "properties": {
+                            "land_cover": {
+                                "grass": {
+                                    "alb_min": {"value": 0.8},  # > alb_max ✗
+                                    "alb_max": {"value": 0.6}
+                                }
+                            }
+                        }
+                    }
+                ]
+            )
+
+    def test_validate_albedo_ranges_equal_values_pass(self):
+        """Test that alb_min = alb_max passes validation (edge case)."""
+        # The original validation allowed equal values (<=), so this should pass
+        config = SUEWSConfig(
+            name="test_equal_albedo_values",
+            description="Test alb_min = alb_max edge case",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "land_cover": {
+                        "evetr": {
+                            "alb_min": {"value": 0.3},  # = alb_max - should pass
+                            "alb_max": {"value": 0.3}
+                        },
+                        "grass": {
+                            "alb_min": {"value": 0.4},  # = alb_max - should pass  
+                            "alb_max": {"value": 0.4}
+                        }
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.land_cover.evetr.alb_min.value == 0.3
+        assert config.sites[0].properties.land_cover.evetr.alb_max.value == 0.3
+
+    def test_validate_albedo_ranges_edge_cases(self):
+        """Test albedo range validation with various edge case values."""
+        test_cases = [
+            # (alb_min, alb_max, should_pass, surface_type, expected_error)
+            (0.1, 0.3, True, "evetr", None),         # Valid range ✓
+            (0.3, 0.3, True, "evetr", None),         # Equal values ✓ (original allowed <=)
+            (0.4, 0.2, False, "evetr", "evergreen"), # alb_min > alb_max ✗
+            (0.0, 1.0, True, "grass", None),         # Full range ✓
+            (0.5, 0.4, False, "dectr", "deciduous"), # alb_min > alb_max ✗
+        ]
+        
+        for i, (alb_min, alb_max, should_pass, surface_type, expected_error) in enumerate(test_cases):
+            config_data = {
+                "name": f"test_edge_case_{i}",
+                "description": f"Edge case test {i} for {surface_type}",
+                "sites": [{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            surface_type: {
+                                "alb_min": {"value": alb_min},
+                                "alb_max": {"value": alb_max}
+                            }
+                        }
+                    }
+                }]
+            }
+            
+            if should_pass:
+                config = SUEWSConfig(**config_data)
+                surface_props = getattr(config.sites[0].properties.land_cover, surface_type)
+                assert surface_props.alb_min.value == alb_min
+                assert surface_props.alb_max.value == alb_max
+            else:
+                with pytest.raises(ValidationError, match=expected_error):
+                    SUEWSConfig(**config_data)

@@ -513,20 +513,6 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def validate_albedo_range(self) -> "VegetatedSurfaceProperties":
-        alb_min_val = (
-            self.alb_min.value if isinstance(self.alb_min, RefValue) else self.alb_min
-        )
-        alb_max_val = (
-            self.alb_max.value if isinstance(self.alb_max, RefValue) else self.alb_max
-        )
-
-        if alb_min_val > alb_max_val:
-            raise ValueError(
-                f"alb_min (input {alb_min_val}) must be less than or equal to alb_max (entered {alb_max_val})."
-            )
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert vegetated surface properties to DataFrame state format."""
