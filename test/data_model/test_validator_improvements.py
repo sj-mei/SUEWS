@@ -154,7 +154,7 @@ class TestAlbedoBoundsValidation:
         # Should not raise an error
         config = SUEWSConfig(**config_data)
         assert config is not None
-        
+
     def test_albedo_consistency_invalid_range(self):
         """Test albedo min > max raises error."""
         config_data = {
@@ -177,7 +177,9 @@ class TestAlbedoBoundsValidation:
         with pytest.raises(ValidationError) as exc_info:
             SUEWSConfig(**config_data)
 
-        assert "alb_min (0.5) must be less than or equal to alb_max (0.3)" in str(exc_info.value)
+        assert "alb_min (0.5) must be less than or equal to alb_max (0.3)" in str(
+            exc_info.value
+        )
 
 
 class TestSnowParameterBounds:
@@ -302,8 +304,12 @@ class TestPorosityBounds:
 
         error_str = str(exc_info.value)
         # Field-level validation catches these with Pydantic's messages
-        assert "Input should be greater than or equal to 0.1" in error_str  # pormin_dec constraint
-        assert "Input should be less than or equal to 0.9" in error_str  # pormax_dec constraint
+        assert (
+            "Input should be greater than or equal to 0.1" in error_str
+        )  # pormin_dec constraint
+        assert (
+            "Input should be less than or equal to 0.9" in error_str
+        )  # pormax_dec constraint
 
 
 class TestOutputFrequencyValidation:
@@ -406,6 +412,7 @@ class TestForcingFileValidation:
 
         # Should not trigger warning
         import warnings
+
         with warnings.catch_warnings(record=True) as warn_info:
             warnings.simplefilter("always")
             config = SUEWSConfig(**config_data)
