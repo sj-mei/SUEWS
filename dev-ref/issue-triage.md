@@ -1,22 +1,23 @@
 # SUEWS Issue Triage Guide
 
-This guide provides a systematic approach for triaging issues in the SUEWS repository using a simplified label system with numeric prefixes.
+This guide provides a systematic approach for triaging issues in the SUEWS repository using a MECE (Mutually Exclusive, Collectively Exhaustive) label system.
 
 ## Quick Reference
 
 ### Label System Overview
-Every issue gets exactly 3 labels with numeric prefixes showing the triage order:
+Every issue gets labels from these dimensions:
 - **1-** prefix = Type (what is it?)
 - **2-** prefix = Priority (how urgent?)
 - **3-** prefix = Status (current state)
+- **No prefix** = Area (what part of system?)
 
-### Required Labels (Pick ONE from each)
-1. **Type**: `1-bug`, `1-feature`, `1-docs`, `1-question`
+### Required Labels
+1. **Type**: `1-bug`, `1-feature`, `1-question`
 2. **Priority**: `2-P0`, `2-P1`, `2-P2`
-3. **Status**: `3-ready`, `3-in-progress`, `3-blocked`
+3. **Status**: `3-triage`, `3-ready`, `3-in-progress`, `3-blocked`
+4. **Area**: `module:*`, `infra:*`, `doc:*`
 
 ### Optional Labels
-- **Module**: For physics bugs only (e.g., `module:ohm`, `module:snow`)
 - **Special**: `good-first-issue`, `help-wanted`
 
 ## Triage Decision Tree
@@ -29,11 +30,8 @@ Is it reporting a problem?
 Is it requesting new functionality?
   └─> 1-feature
 
-Is it asking a question?
+Is it asking a question or unclear about something?
   └─> 1-question
-
-Is it about documentation only?
-  └─> 1-docs
 ```
 
 ### Step 2: Priority (PICK ONE)
@@ -49,16 +47,23 @@ For Features/Docs/Questions → 2-P2 (default)
 ### Step 3: Status (PICK ONE)
 ```
 What's the current state?
-├─ No assignee & actionable → 3-ready
-├─ Someone assigned → 3-in-progress
+├─ Needs assessment → 3-triage
+├─ Ready for work → 3-ready
+├─ Being worked on → 3-in-progress
 └─ Stuck/needs info → 3-blocked
 ```
 
-### Step 4: Module (OPTIONAL - for physics bugs only)
+### Step 4: Area (PICK ONE)
 ```
-Which physics component is affected?
-└─> module:ohm, module:rsl, module:snow, etc.
-   (See full module list below)
+What part of the system?
+├─ Project meta? → meta:xxx
+│   └─> meta:governance, meta:release
+├─ Physics module? → module:xxx
+│   └─> module:ohm, module:snow, etc.
+├─ Infrastructure? → infra:xxx
+│   └─> infra:data-model, infra:ci, infra:build, etc.
+└─ Documentation? → doc:xxx
+    └─> doc:user, doc:api, doc:dev
 ```
 
 ### Step 5: Special Labels (OPTIONAL)
@@ -72,8 +77,7 @@ Need community help? → help-wanted
 ### Type Labels (Pick ONE)
 - `1-bug` - Something isn't working
 - `1-feature` - New functionality request
-- `1-question` - User question/support
-- `1-docs` - Documentation only
+- `1-question` - User question/support/unclear
 
 ### Priority Labels (Pick ONE)
 - `2-P0` - Critical (crashes/data loss)
@@ -81,11 +85,18 @@ Need community help? → help-wanted
 - `2-P2` - Normal (everything else)
 
 ### Status Labels (Pick ONE)
+- `3-triage` - Needs assessment
 - `3-ready` - Ready for work
 - `3-in-progress` - Being worked on
 - `3-blocked` - Stuck, needs something
 
-### Module Labels (Physics)
+### Area Labels (Pick ONE)
+
+#### Meta/Project
+- `meta:governance` - Project governance and process
+- `meta:release` - Release planning and management
+
+#### Physics Modules
 - `module:anohm` - Analytical OHM
 - `module:anthro` - Anthropogenic heat
 - `module:atmmoiststab` - Atmospheric stability
@@ -107,6 +118,25 @@ Need community help? → help-wanted
 - `module:stebbs` - Surface Temperature Energy Balance
 - `module:waterdist` - Water distribution
 
+#### Infrastructure
+- `infra:data-model` - Pydantic data models & validation
+- `infra:ci` - CI/CD pipelines, GitHub Actions
+- `infra:build` - Build system (meson, setup.py, compilation)
+- `infra:packaging` - Package distribution, dependencies
+- `infra:test` - Testing infrastructure, pytest
+- `infra:fortran-python` - Fortran-Python interface
+- `infra:logging` - Logging, debugging, and diagnostic output
+- `infra:type-safety` - Type safety and compiler compatibility
+- `infra:code-refactor` - Code refactoring and cleanup
+- `infra:input` - Input data handling and validation
+- `infra:output` - Output formatting and export
+- `infra:utility` - Utility functions and helpers
+
+#### Documentation
+- `doc:user` - User guides, tutorials
+- `doc:api` - API documentation
+- `doc:dev` - Developer documentation
+
 ### Special Labels (Use when helpful)
 - `good-first-issue` - Good for newcomers
 - `help-wanted` - Need community help
@@ -123,12 +153,13 @@ Labels:
 - `module:snow`
 
 ### Example 2: Feature Request
-**Issue**: "Add YAML configuration support"
+**Issue**: "Add support for Pydantic validation in YAML config"
 
 Labels:
 - `1-feature`
 - `2-P2`
 - `3-ready`
+- `infra:data-model`
 
 ### Example 3: User Question
 **Issue**: "How to configure anthropogenic heat?"
@@ -137,6 +168,16 @@ Labels:
 - `1-question`
 - `2-P2`
 - `3-ready`
+- `doc:user`
+
+### Example 4: CI Build Failure
+**Issue**: "Build fails on macOS ARM64 with Python 3.11"
+
+Labels:
+- `1-bug`
+- `2-P0` (blocks releases)
+- `3-triage`
+- `infra:ci`
 
 ## GitHub Projects Integration
 
@@ -149,55 +190,58 @@ label:1-bug
 # High priority items ready to work
 label:2-P0,2-P1 label:3-ready
 
-# Unassigned bugs
-label:1-bug label:3-ready no:assignee
+# Infrastructure issues
+label:infra:pydantic,infra:ci,infra:build
+
+# Physics module bugs
+label:1-bug label:module:ohm,module:snow,module:estm
 
 # In progress work
 label:3-in-progress
 
 # Good first issues
 label:good-first-issue
+
+# Needs triage
+label:3-triage
 ```
 
-## Simplified Label System
+## MECE Label System
 
-### What Changed
-- **Removed prefixes**: `type:bug` → `bug`, `status:ready` → `ready`
-- **Simplified priorities**: Just P0/P1/P2 (no P3/P4)
-- **Removed categories**: No more area/impact/needs/platform labels
-- **Kept modules**: Physics module labels unchanged
-- **Added specials**: `good-first-issue`, `help-wanted`
+### Design Principles
+- **Mutually Exclusive**: Each label dimension has clear, non-overlapping categories
+- **Collectively Exhaustive**: Every issue can be properly categorized
+- **Scalable**: Easy to add new areas as the project grows
 
-### Migration Complete
-- ✅ All issues now use simplified labels
-- ✅ Old complex labels removed
-- ✅ Documentation updated
+### Label Requirements
 
-## Label Requirements
-
-**Every issue must have exactly 3 labels**:
-1. Type: `1-bug`, `1-feature`, `1-docs`, or `1-question`
+**Every issue must have labels from these dimensions**:
+1. Type: `1-bug`, `1-feature`, or `1-question`
 2. Priority: `2-P0`, `2-P1`, or `2-P2`
-3. Status: `3-ready`, `3-in-progress`, or `3-blocked`
+3. Status: `3-triage`, `3-ready`, `3-in-progress`, or `3-blocked`
+4. Area: `meta:*`, `module:*`, `infra:*`, or `doc:*`
 
 **Optional labels**:
-- Module label for physics bugs
 - `good-first-issue` or `help-wanted` when appropriate
+
+### Note on Closed Issues
+- No need for "done" status label - GitHub tracks closed issues automatically
+- When an issue is completed, simply close it rather than changing labels
 
 ## Best Practices
 
-1. **Label immediately** - Every new issue gets 3 labels
-2. **Keep it simple** - Don't overthink priority
+1. **Label immediately** - Every new issue gets labels from all 4 dimensions
+2. **Start with triage** - New issues begin at `3-triage` status
 3. **Update status** - Change when work starts/stops
 4. **Use comments** - Details go in comments, not labels
-5. **Close old issues** - If no activity > 6 months
+5. **Close completed work** - Don't use "done" label, just close the issue
 
 ## Quick Triage Checklist
 
-- [ ] Set type label (`1-bug`, `1-feature`, `1-docs`, `1-question`)
+- [ ] Set type label (`1-bug`, `1-feature`, `1-question`)
 - [ ] Set priority label (`2-P0`, `2-P1`, `2-P2`)
-- [ ] Set status label (`3-ready`, `3-in-progress`, `3-blocked`)
-- [ ] Add module label if physics bug
+- [ ] Set status label (`3-triage`, `3-ready`, `3-in-progress`, `3-blocked`)
+- [ ] Set area label (`meta:*`, `module:*`, `infra:*`, `doc:*`)
 - [ ] Add `good-first-issue` if appropriate
 - [ ] Assign if someone will work on it
 - [ ] Link related issues
