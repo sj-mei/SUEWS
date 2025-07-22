@@ -2694,3 +2694,310 @@ class TestModelPhysicsValidator:
             result = SUEWSConfig(**config_data)
             assert result.model.physics.storageheatmethod.value == storageheat
             assert result.model.physics.ohmincqf.value == ohmincqf
+
+
+class TestHourlyProfileValidator:
+    """Test hourly profile validation migrated from HourlyProfile.validate_hours"""
+    
+    def test_validate_hourly_profile_hours_valid_profiles(self):
+        """Test valid hourly profiles pass validation"""
+        # Create valid 24-hour profiles
+        valid_profile = {str(h): 1.0/24.0 for h in range(1, 25)}
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": valid_profile.copy(),
+                            "holiday": valid_profile.copy()
+                        }
+                    },
+                    "irrigation": {
+                        "wuprofa_24hr": {
+                            "working_day": valid_profile.copy(),
+                            "holiday": valid_profile.copy()
+                        },
+                        "wuprofm_24hr": {
+                            "working_day": valid_profile.copy(), 
+                            "holiday": valid_profile.copy()
+                        }
+                    }
+                }
+            }]
+        }
+        
+        # Should create successfully with valid profiles
+        result = SUEWSConfig(**config_data)
+        assert len(result.sites) == 1
+        
+        # Verify the profiles were created correctly
+        snow_profile = result.sites[0].properties.snow.snowprof_24hr
+        assert len(snow_profile.working_day) == 24
+        assert len(snow_profile.holiday) == 24
+    
+    def test_validate_hourly_profile_hours_missing_hours_error(self):
+        """Test missing hours in profile raises error"""
+        # Create profile missing hour 24
+        invalid_profile = {str(h): 1.0/23.0 for h in range(1, 24)}  # Missing hour 24
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": invalid_profile,
+                            "holiday": {str(h): 1.0/24.0 for h in range(1, 25)}
+                        }
+                    }
+                }
+            }]
+        }
+        
+        with pytest.raises(ValueError, match="missing hours: \\[24\\]"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_hourly_profile_hours_extra_hours_error(self):
+        """Test extra hours in profile raises error"""
+        # Create profile with extra hour 25
+        invalid_profile = {str(h): 1.0/25.0 for h in range(1, 26)}  # Extra hour 25
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": invalid_profile,
+                            "holiday": {str(h): 1.0/24.0 for h in range(1, 25)}
+                        }
+                    }
+                }
+            }]
+        }
+        
+        with pytest.raises(ValueError, match="extra hours: \\[25\\]"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_hourly_profile_hours_out_of_range_error(self):
+        """Test hour values outside 1-24 range raise error"""
+        # Create profile with hour 0 (invalid)
+        invalid_profile = {str(h): 1.0/24.0 for h in range(0, 24)}  # Hour 0 instead of 24
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": invalid_profile,
+                            "holiday": {str(h): 1.0/24.0 for h in range(1, 25)}
+                        }
+                    }
+                }
+            }]
+        }
+        
+        with pytest.raises(ValueError, match="hour values outside range 1-24"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_hourly_profile_hours_invalid_hour_keys_error(self):
+        """Test non-numeric hour keys raise error"""
+        # Create profile with invalid hour keys
+        invalid_profile = {
+            "morning": 0.5,
+            "afternoon": 0.3,
+            "evening": 0.2
+        }
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": invalid_profile,
+                            "holiday": {str(h): 1.0/24.0 for h in range(1, 25)}
+                        }
+                    }
+                }
+            }]
+        }
+        
+        with pytest.raises(ValueError, match="invalid hour keys"):
+            SUEWSConfig(**config_data)
+    
+    def test_validate_hourly_profile_hours_multiple_profile_types(self):
+        """Test validation across different profile types"""
+        valid_profile = {str(h): 1.0/24.0 for h in range(1, 25)}
+        invalid_profile = {str(h): 1.0/23.0 for h in range(2, 25)}  # Missing hour 1
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": valid_profile.copy(),
+                            "holiday": valid_profile.copy()
+                        }
+                    },
+                    "irrigation": {
+                        "wuprofa_24hr": {
+                            "working_day": invalid_profile,  # Error here
+                            "holiday": valid_profile.copy()
+                        }
+                    }
+                }
+            }]
+        }
+        
+        with pytest.raises(ValueError) as exc_info:
+            SUEWSConfig(**config_data)
+        
+        error_msg = str(exc_info.value)
+        assert "irrigation.wuprofa_24hr.working_day" in error_msg
+        assert "missing hours: [1]" in error_msg
+    
+    def test_validate_hourly_profile_hours_multi_site_error_naming(self):
+        """Test proper site naming in multi-site configurations"""
+        valid_profile = {str(h): 1.0/24.0 for h in range(1, 25)}
+        invalid_profile = {str(h): 1.0/23.0 for h in range(1, 24)}  # Missing hour 24
+        
+        config_data = {
+            "sites": [
+                {
+                    "properties": {
+                        "snow": {
+                            "snowprof_24hr": {
+                                "working_day": valid_profile.copy(),
+                                "holiday": valid_profile.copy()
+                            }
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "snow": {
+                            "snowprof_24hr": {
+                                "working_day": invalid_profile,  # Error in site 2
+                                "holiday": valid_profile.copy()
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+        
+        with pytest.raises(ValueError) as exc_info:
+            SUEWSConfig(**config_data)
+        
+        error_msg = str(exc_info.value)
+        assert "Site 2:" in error_msg  # Multi-site should use "Site N:"
+        assert "missing hours: [24]" in error_msg
+    
+    def test_validate_hourly_profile_hours_missing_profiles_graceful(self):
+        """Test validator handles missing profile configurations gracefully"""
+        config_data = {
+            "sites": [{
+                # No properties specified - should handle gracefully
+            }]
+        }
+        
+        # Should create successfully - validator is defensive
+        result = SUEWSConfig(**config_data)
+        assert len(result.sites) == 1
+    
+    def test_validate_hourly_profile_hours_all_profile_types(self):
+        """Test validation works for all supported profile types"""
+        valid_profile = {str(h): 1.0/24.0 for h in range(1, 25)}
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": valid_profile.copy(),
+                            "holiday": valid_profile.copy()
+                        }
+                    },
+                    "irrigation": {
+                        "wuprofa_24hr": {
+                            "working_day": valid_profile.copy(),
+                            "holiday": valid_profile.copy()
+                        },
+                        "wuprofm_24hr": {
+                            "working_day": valid_profile.copy(),
+                            "holiday": valid_profile.copy()
+                        }
+                    },
+                    "anthropogenic_emissions": {
+                        "heat": {
+                            "ahprof_24hr": {
+                                "working_day": valid_profile.copy(),
+                                "holiday": valid_profile.copy()
+                            },
+                            "popprof_24hr": {
+                                "working_day": valid_profile.copy(),
+                                "holiday": valid_profile.copy()
+                            }
+                        },
+                        "co2": {
+                            "traffprof_24hr": {
+                                "working_day": valid_profile.copy(),
+                                "holiday": valid_profile.copy()
+                            },
+                            "humactivity_24hr": {
+                                "working_day": valid_profile.copy(),
+                                "holiday": valid_profile.copy()
+                            }
+                        }
+                    }
+                }
+            }]
+        }
+        
+        # Should create successfully with all profile types valid
+        result = SUEWSConfig(**config_data)
+        assert len(result.sites) == 1
+        
+        # Verify all profiles were created
+        props = result.sites[0].properties
+        assert props.snow.snowprof_24hr is not None
+        assert props.irrigation.wuprofa_24hr is not None
+        assert props.irrigation.wuprofm_24hr is not None
+        assert props.anthropogenic_emissions.heat.ahprof_24hr is not None
+        assert props.anthropogenic_emissions.heat.popprof_24hr is not None
+        assert props.anthropogenic_emissions.co2.traffprof_24hr is not None
+        assert props.anthropogenic_emissions.co2.humactivity_24hr is not None
+    
+    def test_validate_hourly_profile_hours_mixed_errors_reporting(self):
+        """Test multiple errors are reported together with details"""
+        valid_profile = {str(h): 1.0/24.0 for h in range(1, 25)}
+        missing_hours_profile = {str(h): 1.0/22.0 for h in range(1, 23)}  # Missing 23, 24
+        extra_hours_profile = {str(h): 1.0/26.0 for h in range(0, 26)}  # Hour 0, 25 invalid
+        
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "snow": {
+                        "snowprof_24hr": {
+                            "working_day": missing_hours_profile,
+                            "holiday": valid_profile.copy()
+                        }
+                    },
+                    "irrigation": {
+                        "wuprofa_24hr": {
+                            "working_day": extra_hours_profile,
+                            "holiday": valid_profile.copy()
+                        }
+                    }
+                }
+            }]
+        }
+        
+        with pytest.raises(ValueError) as exc_info:
+            SUEWSConfig(**config_data)
+        
+        error_msg = str(exc_info.value)
+        # Should contain both errors
+        assert "snow.snowprof_24hr.working_day" in error_msg
+        assert "missing hours: [23, 24]" in error_msg
+        assert "irrigation.wuprofa_24hr.working_day" in error_msg
+        assert "hour values outside range 1-24" in error_msg

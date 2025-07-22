@@ -1729,6 +1729,100 @@ class SUEWSConfig(BaseModel):
         
         return self
 
+    @model_validator(mode="after")
+    def validate_hourly_profile_hours(self) -> "SUEWSConfig":
+        """Validate hourly profiles have complete and valid hour coverage.
+        
+        Ensures all HourlyProfile instances across all sites have:
+        - All hour keys between 1 and 24 (inclusive)
+        - Exactly hours 1-24 with no missing hours or duplicates
+        
+        This applies to profiles like snow, irrigation, anthropogenic heat, 
+        population, traffic, and human activity profiles.
+        Migrated from HourlyProfile.validate_hours for centralized validation.
+        """
+        for site_index, site in enumerate(self.sites):
+            site_name = f"Site {site_index + 1}" if len(self.sites) > 1 else "Site"
+            errors = []
+            
+            # Collect all HourlyProfile instances from this site
+            hourly_profiles = []
+            
+            # Snow profiles
+            if site.properties and site.properties.snow:
+                hourly_profiles.append(("snow.snowprof_24hr", site.properties.snow.snowprof_24hr))
+            
+            # Irrigation profiles
+            if site.properties and site.properties.irrigation:
+                irrigation = site.properties.irrigation
+                hourly_profiles.extend([
+                    ("irrigation.wuprofa_24hr", irrigation.wuprofa_24hr),
+                    ("irrigation.wuprofm_24hr", irrigation.wuprofm_24hr),
+                ])
+            
+            # Anthropogenic emissions profiles (heat)
+            if site.properties and site.properties.anthropogenic_emissions:
+                anthro_heat = site.properties.anthropogenic_emissions.heat
+                hourly_profiles.extend([
+                    ("anthropogenic_emissions.heat.ahprof_24hr", anthro_heat.ahprof_24hr),
+                    ("anthropogenic_emissions.heat.popprof_24hr", anthro_heat.popprof_24hr),
+                ])
+                
+                # CO2 profiles (traffic and human activity)
+                anthro_co2 = site.properties.anthropogenic_emissions.co2
+                hourly_profiles.extend([
+                    ("anthropogenic_emissions.co2.traffprof_24hr", anthro_co2.traffprof_24hr),
+                    ("anthropogenic_emissions.co2.humactivity_24hr", anthro_co2.humactivity_24hr),
+                ])
+            
+            # Validate each profile
+            for profile_name, profile in hourly_profiles:
+                if profile is None:
+                    continue
+                    
+                # Validate both working_day and holiday profiles
+                for day_type in ["working_day", "holiday"]:
+                    day_profile = getattr(profile, day_type, None)
+                    if day_profile is None:
+                        continue
+                        
+                    # Check hour keys can be converted to integers and are in valid range
+                    try:
+                        hours = [int(h) for h in day_profile.keys()]
+                    except (ValueError, TypeError):
+                        errors.append(
+                            f"{site_name}: {profile_name}.{day_type} has invalid hour keys. "
+                            f"Hour keys must be convertible to integers."
+                        )
+                        continue
+                    
+                    # Check hour range (1-24)
+                    if not all(1 <= h <= 24 for h in hours):
+                        errors.append(
+                            f"{site_name}: {profile_name}.{day_type} has hour values outside range 1-24. "
+                            f"Found hours: {sorted(hours)}"
+                        )
+                    
+                    # Check complete coverage (must have hours 1-24)
+                    if sorted(hours) != list(range(1, 25)):
+                        missing_hours = set(range(1, 25)) - set(hours)
+                        extra_hours = set(hours) - set(range(1, 25))
+                        error_parts = []
+                        if missing_hours:
+                            error_parts.append(f"missing hours: {sorted(missing_hours)}")
+                        if extra_hours:
+                            error_parts.append(f"extra hours: {sorted(extra_hours)}")
+                        
+                        errors.append(
+                            f"{site_name}: {profile_name}.{day_type} must have all hours from 1 to 24. "
+                            f"Issues: {', '.join(error_parts)}"
+                        )
+            
+            if errors:
+                raise ValueError("\n".join(errors))
+        
+        return self
+
     @classmethod
     def from_yaml(
         cls, path: str, use_conditional_validation: bool = True, strict: bool = True
