@@ -1579,3 +1579,361 @@ class TestDeciduousPorosityRangesValidator:
                     }
                 ]
             )
+
+
+class TestBuildingLayersValidator:
+    """Test class for validate_building_layers validator migration."""
+
+    def test_validate_building_layers_valid_configuration(self):
+        """Test that valid building layer configuration passes validation."""
+        # Create a config with valid building layer setup
+        config = SUEWSConfig(
+            name="test_valid_building_layers",
+            description="Test valid building layer configuration",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "vertical_layers": {
+                        "nlayer": 3,
+                        "height": [0.0, 10.0, 20.0, 30.0],  # nlayer+1 = 4 elements
+                        "building_frac": [0.4, 0.3, 0.3],   # nlayer = 3 elements
+                        "building_scale": [1.0, 1.0, 1.0],  # nlayer = 3 elements
+                        "roofs": [
+                            {"layers": [], "properties": {}},
+                            {"layers": [], "properties": {}},
+                            {"layers": [], "properties": {}}  # nlayer = 3 elements
+                        ],
+                        "walls": [
+                            {"layers": [], "properties": {}},
+                            {"layers": [], "properties": {}},
+                            {"layers": [], "properties": {}}  # nlayer = 3 elements
+                        ]
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.vertical_layers.nlayer == 3
+        assert len(config.sites[0].properties.vertical_layers.height) == 4
+        assert len(config.sites[0].properties.vertical_layers.building_frac) == 3
+
+    def test_validate_building_layers_invalid_height_array(self):
+        """Test that height array length != nlayer+1 raises ValidationError."""
+        with pytest.raises(ValidationError, match="Site 1.*Building heights array length.*must be nlayer\\+1"):
+            SUEWSConfig(
+                name="test_invalid_height_array",
+                description="Test invalid height array length",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 3,
+                            "height": [0.0, 10.0, 20.0],  # Should be 4 elements (nlayer+1)
+                            "building_frac": [0.4, 0.3, 0.3],
+                            "building_scale": [1.0, 1.0, 1.0]
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_building_layers_invalid_fractions_array(self):
+        """Test that building_frac array length != nlayer raises ValidationError."""
+        with pytest.raises(ValidationError, match="Site 1.*Building fractions array length.*must match nlayer"):
+            SUEWSConfig(
+                name="test_invalid_fractions_array",
+                description="Test invalid building fractions array length",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 3,
+                            "height": [0.0, 10.0, 20.0, 30.0],
+                            "building_frac": [0.4, 0.3],  # Should be 3 elements (nlayer)
+                            "building_scale": [1.0, 1.0, 1.0]
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_building_layers_invalid_scales_array(self):
+        """Test that building_scale array length != nlayer raises ValidationError."""
+        with pytest.raises(ValidationError, match="Site 1.*Building scales array length.*must match nlayer"):
+            SUEWSConfig(
+                name="test_invalid_scales_array",
+                description="Test invalid building scales array length",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 3,
+                            "height": [0.0, 10.0, 20.0, 30.0],
+                            "building_frac": [0.4, 0.3, 0.3],
+                            "building_scale": [1.0, 1.0, 1.0, 1.0]  # Should be 3 elements (nlayer)
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_building_layers_invalid_roof_layers_count(self):
+        """Test that roof layers count != nlayer raises ValidationError."""
+        with pytest.raises(ValidationError, match="Site 1.*Roof layers count.*must match nlayer"):
+            SUEWSConfig(
+                name="test_invalid_roof_layers",
+                description="Test invalid roof layers count",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 3,
+                            "height": [0.0, 10.0, 20.0, 30.0],
+                            "building_frac": [0.4, 0.3, 0.3],
+                            "building_scale": [1.0, 1.0, 1.0],
+                            "roofs": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # Should be 3 elements (nlayer)
+                            ]
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_building_layers_invalid_wall_layers_count(self):
+        """Test that wall layers count != nlayer raises ValidationError."""
+        with pytest.raises(ValidationError, match="Site 1.*Wall layers count.*must match nlayer"):
+            SUEWSConfig(
+                name="test_invalid_wall_layers",
+                description="Test invalid wall layers count",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 3,
+                            "height": [0.0, 10.0, 20.0, 30.0],
+                            "building_frac": [0.4, 0.3, 0.3],
+                            "building_scale": [1.0, 1.0, 1.0],
+                            "walls": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # Should be 3 elements (nlayer)
+                            ]
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_building_layers_with_refvalue_wrappers(self):
+        """Test building layer validation with RefValue wrapper objects."""
+        from supy.data_model.type import RefValue
+        
+        config = SUEWSConfig(
+            name="test_refvalue_building_layers",
+            description="Test building layer validation with RefValue wrappers",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "vertical_layers": {
+                        "nlayer": RefValue(2),
+                        "height": RefValue([0.0, 15.0, 30.0]),  # nlayer+1 = 3 elements
+                        "building_frac": RefValue([0.6, 0.4]),   # nlayer = 2 elements
+                        "building_scale": RefValue([1.2, 0.8]),  # nlayer = 2 elements
+                        "roofs": [
+                            {"layers": [], "properties": {}},
+                            {"layers": [], "properties": {}}  # nlayer = 2 elements
+                        ],
+                        "walls": [
+                            {"layers": [], "properties": {}},
+                            {"layers": [], "properties": {}}  # nlayer = 2 elements
+                        ]
+                    }
+                    }
+                }
+            ]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.vertical_layers.nlayer.value == 2
+        assert len(config.sites[0].properties.vertical_layers.height.value) == 3
+        assert len(config.sites[0].properties.vertical_layers.building_frac.value) == 2
+
+    def test_validate_building_layers_multi_site_validation(self):
+        """Test building layer validation across multiple sites."""
+        config = SUEWSConfig(
+            name="test_multi_site_building_layers",
+            description="Test building layer validation with multiple sites",
+            sites=[
+                {
+                    "name": "site1",
+                    "gridiv": 0,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 2,
+                            "height": [0.0, 12.0, 24.0],  # Valid: nlayer+1 = 3
+                            "building_frac": [0.7, 0.3],   # Valid: nlayer = 2
+                            "building_scale": [1.0, 1.0],  # Valid: nlayer = 2
+                            "roofs": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # nlayer = 2 elements
+                            ],
+                            "walls": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # nlayer = 2 elements
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "site2",
+                    "gridiv": 1,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 4,
+                            "height": [0.0, 5.0, 10.0, 15.0, 20.0],  # Valid: nlayer+1 = 5
+                            "building_frac": [0.25, 0.25, 0.25, 0.25],  # Valid: nlayer = 4
+                            "building_scale": [1.0, 1.0, 1.0, 1.0],     # Valid: nlayer = 4
+                            "roofs": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # nlayer = 4 elements
+                            ],
+                            "walls": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # nlayer = 4 elements
+                            ]
+                        }
+                    }
+                }
+            ]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.vertical_layers.nlayer == 2
+        assert config.sites[1].properties.vertical_layers.nlayer == 4
+
+    def test_validate_building_layers_multi_site_with_error(self):
+        """Test building layer validation with one invalid site among multiple."""
+        # Test that one valid site and one invalid site correctly reports only the invalid one
+        with pytest.raises(ValidationError, match="Site 2.*Building heights array length.*must be nlayer\\+1"):
+            SUEWSConfig(
+                name="test_mixed_building_layers",
+                description="Test mixed valid/invalid building layer sites",
+                sites=[
+                    {
+                        "name": "site1",
+                        "gridiv": 0,
+                        "properties": {
+                            "vertical_layers": {
+                                "nlayer": 2,
+                                "height": [0.0, 12.0, 24.0],  # Valid: nlayer+1 = 3
+                                "building_frac": [0.7, 0.3],   # Valid: nlayer = 2
+                                "building_scale": [1.0, 1.0],  # Valid: nlayer = 2
+                                "roofs": [
+                                    {"layers": [], "properties": {}},
+                                    {"layers": [], "properties": {}}  # nlayer = 2 elements
+                                ],
+                                "walls": [
+                                    {"layers": [], "properties": {}},
+                                    {"layers": [], "properties": {}}  # nlayer = 2 elements
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "site2",
+                        "gridiv": 1,
+                        "properties": {
+                            "vertical_layers": {
+                                "nlayer": 3,
+                                "height": [0.0, 10.0],  # Invalid: should be nlayer+1 = 4
+                                "building_frac": [0.4, 0.3, 0.3],
+                                "building_scale": [1.0, 1.0, 1.0]
+                            }
+                        }
+                    }
+                ]
+            )
+
+    def test_validate_building_layers_skip_sites_without_bldg(self):
+        """Test that sites without building surface are skipped."""
+        config = SUEWSConfig(
+            name="test_skip_no_bldg",
+            description="Test sites without building surface are skipped",
+            sites=[
+                {
+                    "name": "site_with_bldgs",
+                    "gridiv": 0,
+                    "properties": {
+                        "vertical_layers": {
+                            "nlayer": 2,
+                            "height": [0.0, 12.0, 24.0],
+                            "building_frac": [0.7, 0.3],
+                            "building_scale": [1.0, 1.0],
+                            "roofs": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # nlayer = 2 elements
+                            ],
+                            "walls": [
+                                {"layers": [], "properties": {}},
+                                {"layers": [], "properties": {}}  # nlayer = 2 elements
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "site_without_bldgs",
+                    "gridiv": 1,
+                    "properties": {
+                        "land_cover": {
+                            "grass": {"lai": {"laimax": 5.0}}
+                        }
+                        # No vertical_layers specified - will use defaults
+                    }
+                }
+            ]
+        )
+        
+        # Should not raise validation errors, both sites have valid vertical_layers
+        assert config.sites[0].properties.vertical_layers.nlayer == 2
+        # Site without explicit vertical_layers still has default VerticalLayers object
+        assert config.sites[1].properties.vertical_layers is not None
+
+    def test_validate_building_layers_edge_case_nlayer_1(self):
+        """Test building layer validation with nlayer=1 (minimum case)."""
+        config = SUEWSConfig(
+            name="test_nlayer_1",
+            description="Test building layer validation with nlayer=1",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "vertical_layers": {
+                            "nlayer": 1,
+                            "height": [0.0, 20.0],      # nlayer+1 = 2 elements
+                            "building_frac": [1.0],     # nlayer = 1 element
+                            "building_scale": [1.0],    # nlayer = 1 element
+                            "roofs": [
+                                {"layers": [], "properties": {}}  # nlayer = 1 element
+                            ],
+                            "walls": [
+                                {"layers": [], "properties": {}}  # nlayer = 1 element
+                            ]
+                        }
+                    }
+                }
+            ]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.vertical_layers.nlayer == 1
+        assert len(config.sites[0].properties.vertical_layers.height) == 2

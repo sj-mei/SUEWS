@@ -1480,6 +1480,7 @@ class SUEWSConfig(BaseModel):
         - Roof layers count must match nlayer
         - Wall layers count must match nlayer
         """
+        from .type import RefValue  # Import here to avoid circular import
         for site_index, site in enumerate(self.sites):
             site_name = f"Site {site_index + 1}"
             
