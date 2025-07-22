@@ -235,7 +235,7 @@ class SUEWSConfig(BaseModel):
         Migrated from Model class to SUEWSConfig for comprehensive validation.
         """
         from .type import RefValue  # Import here to avoid circular import
-        
+
         netradiationmethod_val = (
             self.model.physics.netradiationmethod.value
             if isinstance(self.model.physics.netradiationmethod, RefValue)
@@ -246,9 +246,9 @@ class SUEWSConfig(BaseModel):
             if isinstance(self.model.control.forcing_file, RefValue)
             else self.model.control.forcing_file
         )
-        
+
         # For Enum values, we need to extract the actual integer value
-        if hasattr(netradiationmethod_val, 'value'):
+        if hasattr(netradiationmethod_val, "value"):
             netradiationmethod_val = netradiationmethod_val.value
 
         if netradiationmethod_val == 1 and forcing_file_val == "forcing.txt":
@@ -265,31 +265,48 @@ class SUEWSConfig(BaseModel):
         """
         Validate that all sites have required fields with valid values.
         Migrated from SiteProperties.validate_required_fields for centralized validation.
-        
+
         Checks:
         - Presence of critical site properties like lat, lng, alt, timezone
         - RefValue wrapper validation
         - Physical constraint validation (z0m_in < zdm_in)
         """
         from .type import RefValue  # Import here to avoid circular import
-        
+
         errors = []
-        
+
         # Required fields that must be present and non-None
         required_fields = [
-            "lat", "lng", "alt", "timezone", "surfacearea", "z", "z0m_in", "zdm_in",
-            "pipecapacity", "runofftowater", "narp_trans_site", "lumps", "spartacus",
-            "conductance", "irrigation", "anthropogenic_emissions", "snow", 
-            "land_cover", "vertical_layers"
+            "lat",
+            "lng",
+            "alt",
+            "timezone",
+            "surfacearea",
+            "z",
+            "z0m_in",
+            "zdm_in",
+            "pipecapacity",
+            "runofftowater",
+            "narp_trans_site",
+            "lumps",
+            "spartacus",
+            "conductance",
+            "irrigation",
+            "anthropogenic_emissions",
+            "snow",
+            "land_cover",
+            "vertical_layers",
         ]
-        
+
         for i, site in enumerate(self.sites):
             if not site.properties:
-                errors.append(f"Site {i} ({getattr(site, 'name', 'unnamed')}) is missing properties")
+                errors.append(
+                    f"Site {i} ({getattr(site, 'name', 'unnamed')}) is missing properties"
+                )
                 continue
-                
-            site_name = getattr(site, 'name', f'Site {i}')
-            
+
+            site_name = getattr(site, "name", f"Site {i}")
+
             # Check required fields
             for field in required_fields:
                 value = getattr(site.properties, field, None)
@@ -297,62 +314,65 @@ class SUEWSConfig(BaseModel):
                     errors.append(f"{site_name}: Required field '{field}' is missing")
                 elif isinstance(value, RefValue) and value.value is None:
                     errors.append(f"{site_name}: Required field '{field}' has no value")
-            
+
             # Additional physical constraint validation
-            if site.properties.z0m_in is not None and site.properties.zdm_in is not None:
+            if (
+                site.properties.z0m_in is not None
+                and site.properties.zdm_in is not None
+            ):
                 z0m_val = (
-                    site.properties.z0m_in.value 
-                    if isinstance(site.properties.z0m_in, RefValue) 
+                    site.properties.z0m_in.value
+                    if isinstance(site.properties.z0m_in, RefValue)
                     else site.properties.z0m_in
                 )
                 zdm_val = (
-                    site.properties.zdm_in.value 
-                    if isinstance(site.properties.zdm_in, RefValue) 
+                    site.properties.zdm_in.value
+                    if isinstance(site.properties.zdm_in, RefValue)
                     else site.properties.zdm_in
                 )
                 if z0m_val is not None and zdm_val is not None and z0m_val >= zdm_val:
                     errors.append(
                         f"{site_name}: z0m_in ({z0m_val}) must be less than zdm_in ({zdm_val})"
                     )
-        
+
         if errors:
             raise ValueError("; ".join(errors))
-        
+
         return self
 
-    @model_validator(mode="after")  
+    @model_validator(mode="after")
     def validate_snow_parameters(self) -> "SUEWSConfig":
         """
         Validate snow parameters for all sites in the configuration.
         Migrated from SnowParams.validate_all for centralized validation.
-        
+
         Checks:
         - crwmin < crwmax (critical water content range)
         - snowalbmin < snowalbmax (snow albedo range)
-        
+
         These are critical constraints that must be satisfied for proper
         snow modeling, so they raise ValidationError rather than warnings.
         """
         from .type import RefValue  # Import here to avoid circular import
-        
+
         errors = []
-        
+
         for i, site in enumerate(self.sites):
             if not site.properties or not site.properties.snow:
                 continue
-                
-            site_name = getattr(site, 'name', f'Site {i}')
+
+            site_name = getattr(site, "name", f"Site {i}")
             snow_params = site.properties.snow
-            
+
             # Extract values handling RefValue wrappers
             crwmin_val = (
-                snow_params.crwmin.value 
-                if isinstance(snow_params.crwmin, RefValue) 
+                snow_params.crwmin.value
+                if isinstance(snow_params.crwmin, RefValue)
                 else snow_params.crwmin
             )
             crwmax_val = (
-                snow_params.crwmax.value 
-                if isinstance(snow_params.crwmax, RefValue) 
+                snow_params.crwmax.value
+                if isinstance(snow_params.crwmax, RefValue)
                 else snow_params.crwmax
             )
             snowalbmin_val = (
@@ -371,117 +391,121 @@ class SUEWSConfig(BaseModel):
                 errors.append(
                     f"{site_name}: crwmin ({crwmin_val}) must be less than crwmax ({crwmax_val})"
                 )
-                
-            # Validate snow albedo range  
+
+            # Validate snow albedo range
             if snowalbmin_val >= snowalbmax_val:
                 errors.append(
                     f"{site_name}: snowalbmin ({snowalbmin_val}) must be less than snowalbmax ({snowalbmax_val})"
                 )
-        
+
         if errors:
             raise ValueError("; ".join(errors))
-            
+
         return self
 
-    @model_validator(mode="after")  
+    @model_validator(mode="after")
     def validate_albedo_ranges(self) -> "SUEWSConfig":
         """
         Validate albedo ranges for vegetated surfaces in all sites.
         Migrated from VegetatedSurfaceProperties.validate_albedo_range for centralized validation.
-        
+
         Checks:
         - alb_min <= alb_max for all vegetated surfaces (evetr, dectr, grass)
-        
+
         This ensures proper albedo parameter ranges for vegetation modeling.
         """
         from .type import RefValue  # Import here to avoid circular import
-        
+
         errors = []
-        
+
         for i, site in enumerate(self.sites):
             if not site.properties or not site.properties.land_cover:
                 continue
-                
-            site_name = getattr(site, 'name', f'Site {i}')
+
+            site_name = getattr(site, "name", f"Site {i}")
             land_cover = site.properties.land_cover
-            
+
             # Check all vegetated surface types
             vegetated_surfaces = [
                 ("evetr", land_cover.evetr, "evergreen trees"),
                 ("dectr", land_cover.dectr, "deciduous trees"),
-                ("grass", land_cover.grass, "grass")
+                ("grass", land_cover.grass, "grass"),
             ]
-            
+
             for surface_name, surface_props, surface_description in vegetated_surfaces:
                 if not surface_props:
                     continue
-                    
+
                 # Extract albedo values handling RefValue wrappers
                 alb_min_val = (
-                    surface_props.alb_min.value 
-                    if isinstance(surface_props.alb_min, RefValue) 
+                    surface_props.alb_min.value
+                    if isinstance(surface_props.alb_min, RefValue)
                     else surface_props.alb_min
                 )
                 alb_max_val = (
-                    surface_props.alb_max.value 
-                    if isinstance(surface_props.alb_max, RefValue) 
+                    surface_props.alb_max.value
+                    if isinstance(surface_props.alb_max, RefValue)
                     else surface_props.alb_max
                 )
-                
+
                 # Validate albedo range
                 if alb_min_val > alb_max_val:
                     errors.append(
                         f"{site_name} {surface_description}: alb_min ({alb_min_val}) must be less than or equal to alb_max ({alb_max_val})"
                     )
-        
+
         if errors:
             raise ValueError("; ".join(errors))
-            
+
         return self
 
-    @model_validator(mode="after")  
+    @model_validator(mode="after")
     def validate_deciduous_porosity_ranges(self) -> "SUEWSConfig":
         """
         Validate porosity ranges for deciduous trees in all sites.
         Migrated from DectrProperties.validate_porosity_range for centralized validation.
-        
+
         Checks:
         - pormin_dec < pormax_dec (minimum porosity < maximum porosity)
-        
+
         This ensures proper porosity parameter ranges for deciduous tree modeling.
         """
         from .type import RefValue  # Import here to avoid circular import
-        
+
         errors = []
-        
+
         for i, site in enumerate(self.sites):
-            if not site.properties or not site.properties.land_cover or not site.properties.land_cover.dectr:
+            if (
+                not site.properties
+                or not site.properties.land_cover
+                or not site.properties.land_cover.dectr
+            ):
                 continue
-                
-            site_name = getattr(site, 'name', f'Site {i}')
+
+            site_name = getattr(site, "name", f"Site {i}")
             dectr_props = site.properties.land_cover.dectr
-            
+
             # Extract porosity values handling RefValue wrappers
             pormin_dec_val = (
-                dectr_props.pormin_dec.value 
-                if isinstance(dectr_props.pormin_dec, RefValue) 
+                dectr_props.pormin_dec.value
+                if isinstance(dectr_props.pormin_dec, RefValue)
                 else dectr_props.pormin_dec
             )
             pormax_dec_val = (
-                dectr_props.pormax_dec.value 
-                if isinstance(dectr_props.pormax_dec, RefValue) 
+                dectr_props.pormax_dec.value
+                if isinstance(dectr_props.pormax_dec, RefValue)
                 else dectr_props.pormax_dec
             )
-            
+
             # Validate porosity range
             if pormin_dec_val >= pormax_dec_val:
                 errors.append(
                     f"{site_name} deciduous trees: pormin_dec ({pormin_dec_val}) must be less than pormax_dec ({pormax_dec_val})"
                 )
-        
+
         if errors:
             raise ValueError("; ".join(errors))
-            
+
         return self
 
     def _show_validation_summary(self) -> None:
@@ -1472,35 +1496,40 @@ class SUEWSConfig(BaseModel):
     @model_validator(mode="after")
     def validate_building_layers(self) -> "SUEWSConfig":
         """Validate building layer consistency across all sites.
-        
+
         Checks that building-related arrays have consistent lengths:
         - Building heights array must have nlayer+1 elements
-        - Building fractions array must have nlayer elements  
+        - Building fractions array must have nlayer elements
         - Building scales array must have nlayer elements
         - Roof layers count must match nlayer
         - Wall layers count must match nlayer
         """
         from .type import RefValue  # Import here to avoid circular import
+
         for site_index, site in enumerate(self.sites):
             site_name = f"Site {site_index + 1}"
-            
+
             # Get vertical layers (building validation is on vertical layers, not bldgs)
             if not site.properties or not site.properties.vertical_layers:
                 continue
-                
+
             vertical_layers = site.properties.vertical_layers
-            
+
             # Extract nlayer value
             nlayer_val = (
-                vertical_layers.nlayer.value if isinstance(vertical_layers.nlayer, RefValue) 
+                vertical_layers.nlayer.value
+                if isinstance(vertical_layers.nlayer, RefValue)
                 else vertical_layers.nlayer
             )
-            
+
             # Validate building heights array
-            if hasattr(vertical_layers, 'height') and vertical_layers.height is not None:
+            if (
+                hasattr(vertical_layers, "height")
+                and vertical_layers.height is not None
+            ):
                 heights_val = (
-                    vertical_layers.height.value 
-                    if isinstance(vertical_layers.height, RefValue) 
+                    vertical_layers.height.value
+                    if isinstance(vertical_layers.height, RefValue)
                     else vertical_layers.height
                 )
                 expected_height_len = nlayer_val + 1
@@ -1509,12 +1538,15 @@ class SUEWSConfig(BaseModel):
                         f"{site_name}: Building heights array length ({len(heights_val)}) "
                         f"must be nlayer+1 ({expected_height_len})"
                     )
-                    
+
             # Validate building fractions array
-            if hasattr(vertical_layers, 'building_frac') and vertical_layers.building_frac is not None:
+            if (
+                hasattr(vertical_layers, "building_frac")
+                and vertical_layers.building_frac is not None
+            ):
                 fractions_val = (
-                    vertical_layers.building_frac.value 
-                    if isinstance(vertical_layers.building_frac, RefValue) 
+                    vertical_layers.building_frac.value
+                    if isinstance(vertical_layers.building_frac, RefValue)
                     else vertical_layers.building_frac
                 )
                 if len(fractions_val) != nlayer_val:
@@ -1522,12 +1554,15 @@ class SUEWSConfig(BaseModel):
                         f"{site_name}: Building fractions array length ({len(fractions_val)}) "
                         f"must match nlayer ({nlayer_val})"
                     )
-                    
+
             # Validate building scales array
-            if hasattr(vertical_layers, 'building_scale') and vertical_layers.building_scale is not None:
+            if (
+                hasattr(vertical_layers, "building_scale")
+                and vertical_layers.building_scale is not None
+            ):
                 scales_val = (
-                    vertical_layers.building_scale.value 
-                    if isinstance(vertical_layers.building_scale, RefValue) 
+                    vertical_layers.building_scale.value
+                    if isinstance(vertical_layers.building_scale, RefValue)
                     else vertical_layers.building_scale
                 )
                 if len(scales_val) != nlayer_val:
@@ -1535,73 +1570,83 @@ class SUEWSConfig(BaseModel):
                         f"{site_name}: Building scales array length ({len(scales_val)}) "
                         f"must match nlayer ({nlayer_val})"
                     )
-                    
+
             # Validate roof layers count
-            if hasattr(vertical_layers, 'roofs') and vertical_layers.roofs is not None:
+            if hasattr(vertical_layers, "roofs") and vertical_layers.roofs is not None:
                 if len(vertical_layers.roofs) != nlayer_val:
                     raise ValueError(
                         f"{site_name}: Roof layers count ({len(vertical_layers.roofs)}) "
                         f"must match nlayer ({nlayer_val})"
                     )
-                        
-            # Validate wall layers count  
-            if hasattr(vertical_layers, 'walls') and vertical_layers.walls is not None:
+
+            # Validate wall layers count
+            if hasattr(vertical_layers, "walls") and vertical_layers.walls is not None:
                 if len(vertical_layers.walls) != nlayer_val:
                     raise ValueError(
                         f"{site_name}: Wall layers count ({len(vertical_layers.walls)}) "
                         f"must match nlayer ({nlayer_val})"
                     )
-                        
+
         return self
 
     @model_validator(mode="after")
     def validate_surface_states(self) -> "SUEWSConfig":
         """Validate surface state types match expected surface types across all sites.
-        
+
         Ensures that initial states have appropriate surface types:
         - InitialStateVeg: DECTR, EVETR, or GRASS
         - InitialStateDectr: DECTR only
         - All surface-specific initial state classes have correct surface types
         """
         from .type import SurfaceType  # Import here to avoid circular import
-        
+
         for site_index, site in enumerate(self.sites):
             site_name = f"Site {site_index + 1}"
-            
+
             # Get initial states
             if not site.initial_states:
                 continue
-                
+
             initial_states = site.initial_states
-            
-            # Validate vegetated surface states (evetr, dectr, grass) 
+
+            # Validate vegetated surface states (evetr, dectr, grass)
             vegetated_surfaces = ["evetr", "dectr", "grass"]
             for surface_name in vegetated_surfaces:
                 if hasattr(initial_states, surface_name):
                     surface_state = getattr(initial_states, surface_name)
                     if surface_state and hasattr(surface_state, "_surface_type"):
                         surface_type = surface_state._surface_type
-                        expected_types = [SurfaceType.DECTR, SurfaceType.EVETR, SurfaceType.GRASS]
-                        
+                        expected_types = [
+                            SurfaceType.DECTR,
+                            SurfaceType.EVETR,
+                            SurfaceType.GRASS,
+                        ]
+
                         # For vegetated surfaces, check they're in valid vegetated types
-                        if surface_name in ["evetr", "grass"] and surface_type not in expected_types:
+                        if (
+                            surface_name in ["evetr", "grass"]
+                            and surface_type not in expected_types
+                        ):
                             raise ValueError(
                                 f"{site_name}: Invalid surface type {surface_type} for vegetated surface {surface_name}"
                             )
-                        
+
                         # For deciduous trees, check it's specifically DECTR
-                        if surface_name == "dectr" and surface_type != SurfaceType.DECTR:
+                        if (
+                            surface_name == "dectr"
+                            and surface_type != SurfaceType.DECTR
+                        ):
                             raise ValueError(
                                 f"{site_name}: {surface_name} state is only valid for deciduous trees, got {surface_type}"
                             )
-        
+
         return self
 
     @model_validator(mode="before")
     @classmethod
     def convert_legacy_hdd_formats(cls, data):
         """Convert legacy HDD_ID list formats across all sites.
-        
+
         This handles backward compatibility for HDD_ID data that may be provided
         as lists instead of dictionaries. Migrated from InitialStates class
         to ensure consistent handling across all sites in configuration.
@@ -1612,7 +1657,10 @@ class SUEWSConfig(BaseModel):
                 for site in sites:
                     if isinstance(site, dict) and "initial_states" in site:
                         initial_states = site["initial_states"]
-                        if isinstance(initial_states, dict) and "hdd_id" in initial_states:
+                        if (
+                            isinstance(initial_states, dict)
+                            and "hdd_id" in initial_states
+                        ):
                             hdd_value = initial_states["hdd_id"]
                             if isinstance(hdd_value, list):
                                 # Convert from legacy list format to HDD_ID object
@@ -1639,14 +1687,14 @@ class SUEWSConfig(BaseModel):
     @model_validator(mode="after")
     def set_surface_types_validation(self) -> "SUEWSConfig":
         """Set surface types on all land cover properties across all sites.
-        
+
         This validator ensures that all surface property objects have their
         surface type identifiers properly set. This is required for internal
         validation and processing logic. Migrated from LandCover.set_surface_types
         to provide centralized validation across all sites.
         """
         from .type import SurfaceType  # Import here to avoid circular import
-        
+
         # Surface type mapping
         surface_map = {
             "paved": SurfaceType.PAVED,
@@ -1657,38 +1705,38 @@ class SUEWSConfig(BaseModel):
             "bsoil": SurfaceType.BSOIL,
             "water": SurfaceType.WATER,
         }
-        
+
         for site_index, site in enumerate(self.sites):
             if site.properties and site.properties.land_cover:
                 land_cover = site.properties.land_cover
-                
+
                 # Set surface types for each surface property
                 for surface_name, surface_type in surface_map.items():
                     if hasattr(land_cover, surface_name):
                         surface_prop = getattr(land_cover, surface_name)
                         if surface_prop and hasattr(surface_prop, "set_surface_type"):
                             surface_prop.set_surface_type(surface_type)
-        
+
         return self
 
     @model_validator(mode="after")
     def validate_model_physics_compatibility(self) -> "SUEWSConfig":
         """Validate model physics parameter compatibility across all sites.
-        
+
         Checks for incompatible combinations of physics options that would
         cause model errors. This includes storage heat method compatibility
         with QF inclusion options and experimental/unsupported features.
         Migrated from ModelPhysics.check_all to provide centralized validation.
         """
         from .type import RefValue  # Import here to avoid circular import
-        
+
         # Check global model physics (not per-site)
-        if not hasattr(self, 'model') or not self.model or not self.model.physics:
+        if not hasattr(self, "model") or not self.model or not self.model.physics:
             return self
-            
+
         physics = self.model.physics
         errors = []
-        
+
         # Get values for comparison (handle RefValue wrappers)
         # RefValue.value gives the enum, then enum.value gives the integer
         # Direct enum.value gives the integer
@@ -1703,8 +1751,8 @@ class SUEWSConfig(BaseModel):
             else physics.ohmincqf.value
         )
         snowuse_val = (
-            physics.snowuse.value.value 
-            if isinstance(physics.snowuse, RefValue) 
+            physics.snowuse.value.value
+            if isinstance(physics.snowuse, RefValue)
             else physics.snowuse.value
         )
 
@@ -1726,32 +1774,35 @@ class SUEWSConfig(BaseModel):
 
         if errors:
             raise ValueError("\n".join(errors))
-        
+
         return self
 
     @model_validator(mode="after")
     def validate_hourly_profile_hours(self) -> "SUEWSConfig":
         """Validate hourly profiles have complete and valid hour coverage.
-        
+
         Ensures all HourlyProfile instances across all sites have:
         - All hour keys between 1 and 24 (inclusive)
         - Exactly hours 1-24 with no missing hours or duplicates
-        
-        This applies to profiles like snow, irrigation, anthropogenic heat, 
+
+        This applies to profiles like snow, irrigation, anthropogenic heat,
         population, traffic, and human activity profiles.
         Migrated from HourlyProfile.validate_hours for centralized validation.
         """
         for site_index, site in enumerate(self.sites):
             site_name = f"Site {site_index + 1}" if len(self.sites) > 1 else "Site"
             errors = []
-            
+
             # Collect all HourlyProfile instances from this site
             hourly_profiles = []
-            
+
             # Snow profiles
             if site.properties and site.properties.snow:
-                hourly_profiles.append(("snow.snowprof_24hr", site.properties.snow.snowprof_24hr))
-            
+                hourly_profiles.append((
+                    "snow.snowprof_24hr",
+                    site.properties.snow.snowprof_24hr,
+                ))
+
             # Irrigation profiles
             if site.properties and site.properties.irrigation:
                 irrigation = site.properties.irrigation
@@ -1759,33 +1810,45 @@ class SUEWSConfig(BaseModel):
                     ("irrigation.wuprofa_24hr", irrigation.wuprofa_24hr),
                     ("irrigation.wuprofm_24hr", irrigation.wuprofm_24hr),
                 ])
-            
+
             # Anthropogenic emissions profiles (heat)
             if site.properties and site.properties.anthropogenic_emissions:
                 anthro_heat = site.properties.anthropogenic_emissions.heat
                 hourly_profiles.extend([
-                    ("anthropogenic_emissions.heat.ahprof_24hr", anthro_heat.ahprof_24hr),
-                    ("anthropogenic_emissions.heat.popprof_24hr", anthro_heat.popprof_24hr),
+                    (
+                        "anthropogenic_emissions.heat.ahprof_24hr",
+                        anthro_heat.ahprof_24hr,
+                    ),
+                    (
+                        "anthropogenic_emissions.heat.popprof_24hr",
+                        anthro_heat.popprof_24hr,
+                    ),
                 ])
-                
+
                 # CO2 profiles (traffic and human activity)
                 anthro_co2 = site.properties.anthropogenic_emissions.co2
                 hourly_profiles.extend([
-                    ("anthropogenic_emissions.co2.traffprof_24hr", anthro_co2.traffprof_24hr),
-                    ("anthropogenic_emissions.co2.humactivity_24hr", anthro_co2.humactivity_24hr),
+                    (
+                        "anthropogenic_emissions.co2.traffprof_24hr",
+                        anthro_co2.traffprof_24hr,
+                    ),
+                    (
+                        "anthropogenic_emissions.co2.humactivity_24hr",
+                        anthro_co2.humactivity_24hr,
+                    ),
                 ])
-            
+
             # Validate each profile
             for profile_name, profile in hourly_profiles:
                 if profile is None:
                     continue
-                    
+
                 # Validate both working_day and holiday profiles
                 for day_type in ["working_day", "holiday"]:
                     day_profile = getattr(profile, day_type, None)
                     if day_profile is None:
                         continue
-                        
+
                     # Check hour keys can be converted to integers and are in valid range
                     try:
                         hours = [int(h) for h in day_profile.keys()]
@@ -1795,32 +1858,34 @@ class SUEWSConfig(BaseModel):
                             f"Hour keys must be convertible to integers."
                         )
                         continue
-                    
+
                     # Check hour range (1-24)
                     if not all(1 <= h <= 24 for h in hours):
                         errors.append(
                             f"{site_name}: {profile_name}.{day_type} has hour values outside range 1-24. "
                             f"Found hours: {sorted(hours)}"
                         )
-                    
+
                     # Check complete coverage (must have hours 1-24)
                     if sorted(hours) != list(range(1, 25)):
                         missing_hours = set(range(1, 25)) - set(hours)
                         extra_hours = set(hours) - set(range(1, 25))
                         error_parts = []
                         if missing_hours:
-                            error_parts.append(f"missing hours: {sorted(missing_hours)}")
+                            error_parts.append(
+                                f"missing hours: {sorted(missing_hours)}"
+                            )
                         if extra_hours:
                             error_parts.append(f"extra hours: {sorted(extra_hours)}")
-                        
+
                         errors.append(
                             f"{site_name}: {profile_name}.{day_type} must have all hours from 1 to 24. "
                             f"Issues: {', '.join(error_parts)}"
                         )
-            
+
             if errors:
                 raise ValueError("\n".join(errors))
-        
+
         return self
 
     @classmethod

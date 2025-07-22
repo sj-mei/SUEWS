@@ -513,7 +513,6 @@ class VegetatedSurfaceProperties(SurfaceProperties):
 
     ref: Optional[Reference] = None
 
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert vegetated surface properties to DataFrame state format."""
         # Get base properties
@@ -734,7 +733,6 @@ class DectrProperties(VegetatedSurfaceProperties):
 
     ref: Optional[Reference] = None
 
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree properties to DataFrame state format."""
         # Get base properties from parent
@@ -928,7 +926,6 @@ class SnowParams(BaseModel):
 
     ref: Optional[Reference] = None
 
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
         Convert snow parameters to DataFrame state format.
@@ -1049,7 +1046,6 @@ class LandCover(BaseModel):
     )
 
     ref: Optional[Reference] = None
-
 
     # @model_validator(mode="after")
     # def validate_land_cover_fractions(self) -> "LandCover":
@@ -2353,7 +2349,6 @@ class SiteProperties(BaseModel):
         validate_assignment=True,  # This will validate fields on assignment
         validate_default=True,  # This will validate default values
     )
-
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert site properties to DataFrame state format"""

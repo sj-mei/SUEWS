@@ -1023,7 +1023,6 @@ class VerticalLayers(BaseModel):
 
     ref: Optional[Reference] = None
 
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert vertical layers to DataFrame state format."""
         # Initialize empty DataFrame with grid_id index

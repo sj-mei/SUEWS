@@ -108,20 +108,13 @@ class TestSUEWSConfig(unittest.TestCase):
                 model={
                     "physics": {
                         "storageheatmethod": {"value": 1},
-                        "ohmincqf": {"value": 1}
+                        "ohmincqf": {"value": 1},
                     }
-                }
+                },
             )
 
         with self.assertRaises(ValueError):
-            SUEWSConfig(
-                sites=[{}],
-                model={
-                    "physics": {
-                        "snowuse": {"value": 1}
-                    }
-                }
-            )
+            SUEWSConfig(sites=[{}], model={"physics": {"snowuse": {"value": 1}}})
 
     def test_site_properties(self):
         """Test site properties data model."""

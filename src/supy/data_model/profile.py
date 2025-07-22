@@ -178,7 +178,6 @@ class HourlyProfile(BaseModel):
             return {str(k): float(v) for k, v in v.items()}
         return v
 
-
     def to_df_state(self, grid_id: int, param_name: str) -> pd.DataFrame:
         """Convert hourly profile to DataFrame state format.
 

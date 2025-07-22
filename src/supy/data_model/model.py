@@ -508,7 +508,6 @@ class ModelPhysics(BaseModel):
 
     ref: Optional[Reference] = None
 
-
     # We then need to set to 0 (or None) all the CO2-related parameters or rules
     # in the code and return them accordingly in the yml file.
 
@@ -729,8 +728,6 @@ class Model(BaseModel):
         default_factory=ModelPhysics,
         description="Model physics parameters including surface properties, coefficients, etc.",
     )
-
-
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model to DataFrame state format"""

@@ -347,7 +347,6 @@ class InitialStateVeg(SurfaceInitialState):
 
     ref: Optional[Reference] = None
 
-
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert vegetated surface initial state to DataFrame state format.
 
@@ -487,7 +486,6 @@ class InitialStateDectr(InitialStateVeg):
     _surface_type: Literal[SurfaceType.DECTR] = SurfaceType.DECTR
 
     ref: Optional[Reference] = None
-
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert deciduous tree initial state to DataFrame state format.
@@ -889,7 +887,6 @@ class InitialStates(BaseModel):
         json_schema_extra={"display_name": "Heating Degree Days ID"},
         description="Heating degree days and meteorological tracking parameters",
     )
-
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert initial states to DataFrame state format."""
