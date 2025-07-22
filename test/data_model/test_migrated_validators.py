@@ -774,3 +774,227 @@ class TestSiteRequiredFieldsValidator:
                     }
                 }]
             )
+
+
+class TestSnowParametersValidator:
+    """Test cases for the validate_snow_parameters validator migrated to SUEWSConfig."""
+
+    def test_validate_snow_parameters_valid_ranges_pass(self):
+        """Test that snow parameters with valid ranges pass validation."""
+        config = SUEWSConfig(
+            name="test_valid_snow_ranges",
+            description="Test snow parameters with valid ranges",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "snow": {
+                        "crwmin": {"value": 0.1},    # < crwmax ✓
+                        "crwmax": {"value": 0.3},
+                        "snowalbmin": {"value": 0.4}, # < snowalbmax ✓  
+                        "snowalbmax": {"value": 0.8}
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise any validation errors
+        assert config.sites[0].properties.snow.crwmin.value == 0.1
+        assert config.sites[0].properties.snow.crwmax.value == 0.3
+        assert config.sites[0].properties.snow.snowalbmin.value == 0.4
+        assert config.sites[0].properties.snow.snowalbmax.value == 0.8
+
+    def test_validate_snow_parameters_crw_range_violation(self):
+        """Test that crwmin >= crwmax raises ValidationError."""
+        with pytest.raises(ValidationError, match="test_site.*crwmin.*must be less than crwmax"):
+            SUEWSConfig(
+                name="test_crw_range_violation",
+                description="Test crwmin >= crwmax violation",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "snow": {
+                            "crwmin": {"value": 0.3},  # Equal to crwmax - should fail
+                            "crwmax": {"value": 0.3},
+                            "snowalbmin": {"value": 0.4},
+                            "snowalbmax": {"value": 0.8}
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_snow_parameters_snowalb_range_violation(self):
+        """Test that snowalbmin >= snowalbmax raises ValidationError."""  
+        with pytest.raises(ValidationError, match="test_site.*snowalbmin.*must be less than snowalbmax"):
+            SUEWSConfig(
+                name="test_snowalb_range_violation", 
+                description="Test snowalbmin >= snowalbmax violation",
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "snow": {
+                            "crwmin": {"value": 0.1},
+                            "crwmax": {"value": 0.3},
+                            "snowalbmin": {"value": 0.8},  # Greater than snowalbmax - should fail
+                            "snowalbmax": {"value": 0.4}
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_snow_parameters_multiple_violations(self):
+        """Test that multiple snow parameter violations are reported together."""
+        with pytest.raises(ValidationError, match="test_site.*crwmin.*must be less than crwmax.*snowalbmin.*must be less than snowalbmax"):
+            SUEWSConfig(
+                name="test_multiple_snow_violations",
+                description="Test multiple snow parameter violations", 
+                sites=[{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "snow": {
+                            "crwmin": {"value": 0.5},     # > crwmax (0.3) ✗
+                            "crwmax": {"value": 0.3},
+                            "snowalbmin": {"value": 0.9}, # > snowalbmax (0.4) ✗
+                            "snowalbmax": {"value": 0.4}
+                        }
+                    }
+                }]
+            )
+
+    def test_validate_snow_parameters_with_refvalue_wrappers(self):
+        """Test snow parameter validation with RefValue wrapper objects."""
+        from supy.data_model.type import RefValue
+        
+        config = SUEWSConfig(
+            name="test_refvalue_snow_params",
+            description="Test snow parameters with RefValue wrappers",
+            sites=[{
+                "name": "test_site",
+                "gridiv": 1,
+                "properties": {
+                    "snow": {
+                        "crwmin": RefValue(0.1),
+                        "crwmax": RefValue(0.3), 
+                        "snowalbmin": RefValue(0.4),
+                        "snowalbmax": RefValue(0.8)
+                    }
+                }
+            }]
+        )
+        
+        # Should not raise validation errors
+        assert config.sites[0].properties.snow.crwmin.value == 0.1
+        assert config.sites[0].properties.snow.crwmax.value == 0.3
+
+    def test_validate_snow_parameters_multiple_sites(self):
+        """Test snow parameter validation across multiple sites."""
+        config = SUEWSConfig(
+            name="test_multi_site_snow_params",
+            description="Test snow parameter validation across multiple sites",
+            sites=[
+                {
+                    "name": "site1_valid",
+                    "gridiv": 0,
+                    "properties": {
+                        "snow": {
+                            "crwmin": {"value": 0.1},
+                            "crwmax": {"value": 0.3},
+                            "snowalbmin": {"value": 0.4},
+                            "snowalbmax": {"value": 0.8}
+                        }
+                    }
+                },
+                {
+                    "name": "site2_valid", 
+                    "gridiv": 1,
+                    "properties": {
+                        "snow": {
+                            "crwmin": {"value": 0.05},
+                            "crwmax": {"value": 0.25},
+                            "snowalbmin": {"value": 0.3},
+                            "snowalbmax": {"value": 0.7}
+                        }
+                    }
+                }
+            ]
+        )
+        
+        # Both sites should pass validation
+        assert len(config.sites) == 2
+        assert config.sites[0].properties.snow.crwmin.value == 0.1
+        assert config.sites[1].properties.snow.crwmin.value == 0.05
+
+    def test_validate_snow_parameters_multiple_sites_with_errors(self):
+        """Test snow parameter validation with errors across multiple sites."""
+        with pytest.raises(ValidationError, match="site1.*crwmin.*must be less than crwmax.*site2.*snowalbmin.*must be less than snowalbmax"):
+            SUEWSConfig(
+                name="test_multi_site_snow_errors",
+                description="Test multiple sites with different snow parameter violations",
+                sites=[
+                    {
+                        "name": "site1",
+                        "gridiv": 0,
+                        "properties": {
+                            "snow": {
+                                "crwmin": {"value": 0.4},  # > crwmax (0.3) ✗
+                                "crwmax": {"value": 0.3},
+                                "snowalbmin": {"value": 0.4},
+                                "snowalbmax": {"value": 0.8}
+                            }
+                        }
+                    },
+                    {
+                        "name": "site2",
+                        "gridiv": 1,
+                        "properties": {
+                            "snow": {
+                                "crwmin": {"value": 0.1},
+                                "crwmax": {"value": 0.3},
+                                "snowalbmin": {"value": 0.9}, # > snowalbmax (0.4) ✗
+                                "snowalbmax": {"value": 0.4}
+                            }
+                        }
+                    }
+                ]
+            )
+
+    def test_validate_snow_parameters_edge_case_equal_values(self):
+        """Test snow parameter validation with edge case equal values."""
+        # Test that equal values (>=) are properly caught
+        test_cases = [
+            # (crwmin, crwmax, snowalbmin, snowalbmax, should_pass, expected_error)
+            (0.1, 0.3, 0.4, 0.8, True, None),           # Valid ranges ✓
+            (0.3, 0.3, 0.4, 0.8, False, "crwmin"),      # crwmin = crwmax ✗
+            (0.1, 0.3, 0.8, 0.8, False, "snowalbmin"),  # snowalbmin = snowalbmax ✗
+            (0.3, 0.3, 0.8, 0.8, False, "crwmin.*snowalbmin"), # Both equal ✗
+            (0.4, 0.1, 0.4, 0.8, False, "crwmin"),      # crwmin > crwmax ✗
+            (0.1, 0.3, 0.9, 0.4, False, "snowalbmin"),  # snowalbmin > snowalbmax ✗
+        ]
+        
+        for i, (crwmin, crwmax, snowalbmin, snowalbmax, should_pass, expected_error) in enumerate(test_cases):
+            config_data = {
+                "name": f"test_edge_case_{i}",
+                "description": f"Edge case test {i}",
+                "sites": [{
+                    "name": "test_site",
+                    "gridiv": 1,
+                    "properties": {
+                        "snow": {
+                            "crwmin": {"value": crwmin},
+                            "crwmax": {"value": crwmax},
+                            "snowalbmin": {"value": snowalbmin},
+                            "snowalbmax": {"value": snowalbmax}
+                        }
+                    }
+                }]
+            }
+            
+            if should_pass:
+                config = SUEWSConfig(**config_data)
+                assert config.sites[0].properties.snow.crwmin.value == crwmin
+            else:
+                with pytest.raises(ValidationError, match=expected_error):
+                    SUEWSConfig(**config_data)

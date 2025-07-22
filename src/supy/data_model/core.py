@@ -320,6 +320,69 @@ class SUEWSConfig(BaseModel):
         
         return self
 
+    @model_validator(mode="after")  
+    def validate_snow_parameters(self) -> "SUEWSConfig":
+        """
+        Validate snow parameters for all sites in the configuration.
+        Migrated from SnowParams.validate_all for centralized validation.
+        
+        Checks:
+        - crwmin < crwmax (critical water content range)
+        - snowalbmin < snowalbmax (snow albedo range)
+        
+        These are critical constraints that must be satisfied for proper
+        snow modeling, so they raise ValidationError rather than warnings.
+        """
+        from .type import RefValue  # Import here to avoid circular import
+        
+        errors = []
+        
+        for i, site in enumerate(self.sites):
+            if not site.properties or not site.properties.snow:
+                continue
+                
+            site_name = getattr(site, 'name', f'Site {i}')
+            snow_params = site.properties.snow
+            
+            # Extract values handling RefValue wrappers
+            crwmin_val = (
+                snow_params.crwmin.value 
+                if isinstance(snow_params.crwmin, RefValue) 
+                else snow_params.crwmin
+            )
+            crwmax_val = (
+                snow_params.crwmax.value 
+                if isinstance(snow_params.crwmax, RefValue) 
+                else snow_params.crwmax
+            )
+            snowalbmin_val = (
+                snow_params.snowalbmin.value
+                if isinstance(snow_params.snowalbmin, RefValue)
+                else snow_params.snowalbmin
+            )
+            snowalbmax_val = (
+                snow_params.snowalbmax.value
+                if isinstance(snow_params.snowalbmax, RefValue)
+                else snow_params.snowalbmax
+            )
+
+            # Validate critical water content range
+            if crwmin_val >= crwmax_val:
+                errors.append(
+                    f"{site_name}: crwmin ({crwmin_val}) must be less than crwmax ({crwmax_val})"
+                )
+                
+            # Validate snow albedo range  
+            if snowalbmin_val >= snowalbmax_val:
+                errors.append(
+                    f"{site_name}: snowalbmin ({snowalbmin_val}) must be less than snowalbmax ({snowalbmax_val})"
+                )
+        
+        if errors:
+            raise ValueError("; ".join(errors))
+            
+        return self
+
     def _show_validation_summary(self) -> None:
         """Show a concise summary of validation issues."""
         ## Check if we have a yaml path stored

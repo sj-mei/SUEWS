@@ -960,42 +960,6 @@ class SnowParams(BaseModel):
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def validate_all(self) -> "SnowParams":
-        """
-        Aggregate all validation checks for SnowParams,
-        so multiple errors (if any) can be raised together
-        """
-        errors = []
-        crwmin_val = (
-            self.crwmin.value if isinstance(self.crwmin, RefValue) else self.crwmin
-        )
-        crwmax_val = (
-            self.crwmax.value if isinstance(self.crwmax, RefValue) else self.crwmax
-        )
-        snowalbmin_val = (
-            self.snowalbmin.value
-            if isinstance(self.snowalbmin, RefValue)
-            else self.snowalbmin
-        )
-        snowalbmax_val = (
-            self.snowalbmax.value
-            if isinstance(self.snowalbmax, RefValue)
-            else self.snowalbmax
-        )
-
-        if crwmin_val >= crwmax_val:
-            errors.append(
-                f"crwmin ({crwmin_val}) must be less than crwmax ({crwmax_val})."
-            )
-        if snowalbmin_val >= snowalbmax_val:
-            errors.append(
-                f"snowalbmin ({snowalbmin_val}) must be less than snowalbmax ({snowalbmax_val})."
-            )
-        if errors:
-            raise ValueError("\n".join(errors))
-
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """
@@ -2439,58 +2403,6 @@ class SiteProperties(BaseModel):
         validate_default=True,  # This will validate default values
     )
 
-    @model_validator(mode="after")
-    def validate_required_fields(self) -> "SiteProperties":
-        """Validate that all required fields are present and have valid values."""
-        errors = []
-
-        # List of required fields that must be present and non-None
-        required_fields = [
-            "lat",
-            "lng",
-            "alt",
-            "timezone",
-            "surfacearea",
-            "z",
-            "z0m_in",
-            "zdm_in",
-            "pipecapacity",
-            "runofftowater",
-            "narp_trans_site",
-            "lumps",
-            "spartacus",
-            "conductance",
-            "irrigation",
-            "anthropogenic_emissions",
-            "snow",
-            "land_cover",
-            "vertical_layers",
-        ]
-
-        for field in required_fields:
-            value = getattr(self, field, None)
-            if value is None:
-                errors.append(f"Required field '{field}' is missing")
-            elif (
-                isinstance(value, RefValue)
-                and (value.value if isinstance(value, RefValue) else value) is None
-            ):
-                errors.append(f"Required field '{field}' has no value")
-
-        # Additional validation rules
-        z0m_val = (
-            self.z0m_in.value if isinstance(self.z0m_in, RefValue) else self.z0m_in
-        )
-        zdm_val = (
-            self.zdm_in.value if isinstance(self.zdm_in, RefValue) else self.zdm_in
-        )
-        if z0m_val >= zdm_val:
-            errors.append(f"z0m_in ({z0m_val}) must be less than zdm_in ({zdm_val})")
-
-        if errors:
-            raise ValueError("\n".join(errors))
-
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert site properties to DataFrame state format"""
