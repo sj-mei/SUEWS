@@ -54,24 +54,32 @@ import warnings
 def _unwrap_value(val):
     """
     Unwrap RefValue and Enum values consistently.
-    
+
     This helper ensures consistent handling of RefValue wrappers and Enum values
     throughout the validation logic.
-    
+
     Args:
         val: The value to unwrap (could be RefValue, Enum, or raw value)
-    
+
     Returns:
         The unwrapped raw value
     """
     # Handle RefValue wrapper
-    if hasattr(val, 'value') and hasattr(val, '__class__') and 'RefValue' in val.__class__.__name__:
+    if (
+        hasattr(val, "value")
+        and hasattr(val, "__class__")
+        and "RefValue" in val.__class__.__name__
+    ):
         val = val.value
-    
+
     # Handle Enum values (which also have .value attribute)
-    if hasattr(val, 'value') and hasattr(val, '__class__') and 'Enum' in str(val.__class__.__bases__):
+    if (
+        hasattr(val, "value")
+        and hasattr(val, "__class__")
+        and "Enum" in str(val.__class__.__bases__)
+    ):
         val = val.value
-    
+
     return val
 
 
@@ -236,7 +244,7 @@ class SUEWSConfig(BaseModel):
                     raise ValueError(
                         f"Output frequency must be positive, got {output_config.freq}s"
                     )
-                
+
                 tstep = self.model.control.tstep
                 if output_config.freq % tstep != 0:
                     raise ValueError(
@@ -272,16 +280,19 @@ class SUEWSConfig(BaseModel):
         # TODO: Future improvement - add a flag to indicate sample forcing or check actual column presence
         # For now, we check both common sample forcing filenames
         sample_forcing_names = ["forcing.txt", "sample_forcing.txt", "test_forcing.txt"]
-        
-        if netradiationmethod_val == 1 and any(name in str(forcing_file_val).lower() for name in sample_forcing_names):
+
+        if netradiationmethod_val == 1 and any(
+            name in str(forcing_file_val).lower() for name in sample_forcing_names
+        ):
             import warnings
+
             warnings.warn(
                 f"NetRadiationMethod is set to 1 (using observed Ldown) with what appears to be a sample forcing file '{forcing_file_val}'. "
                 "Sample forcing files typically lack observed Ldown data. "
                 "If this is sample data, use netradiationmethod = 3. "
                 "If this is real data with Ldown, consider renaming the file to avoid this warning.",
                 UserWarning,
-                stacklevel=2
+                stacklevel=2,
             )
         return self
 
@@ -392,7 +403,7 @@ class SUEWSConfig(BaseModel):
                 errors.append(
                     f"{site_name}: crwmin ({crwmin_val}) must be less than crwmax ({crwmax_val})"
                 )
-            
+
             # Validate physical bounds for critical water content
             if not (0 <= crwmin_val <= 1):
                 errors.append(
@@ -470,7 +481,7 @@ class SUEWSConfig(BaseModel):
                     errors.append(
                         f"{site_name} {surface_description}: alb_max ({alb_max_val}) must be in range [0, 1]"
                     )
-                
+
                 # Validate albedo range - use strict inequality for consistency
                 if alb_min_val >= alb_max_val:
                     errors.append(
@@ -1734,10 +1745,11 @@ class SUEWSConfig(BaseModel):
                                 # Log the error but continue processing other surfaces
                                 site_name = getattr(site, "name", f"Site {site_index}")
                                 import warnings
+
                                 warnings.warn(
                                     f"{site_name}: Failed to set surface type for {surface_name}: {str(e)}",
                                     UserWarning,
-                                    stacklevel=2
+                                    stacklevel=2,
                                 )
 
         return self

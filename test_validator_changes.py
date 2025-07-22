@@ -8,41 +8,45 @@ from src.supy.data_model.core import SUEWSConfig, _unwrap_value
 from src.supy.data_model.type import RefValue
 from pydantic import ValidationError
 
+
 def test_unwrap_helper():
     """Test the _unwrap_value helper function."""
     print("Testing _unwrap_value helper...")
-    
+
     # Test raw value
     assert _unwrap_value(42) == 42
     print("✓ Raw value unwrapping works")
-    
+
     # Test RefValue
     ref = RefValue(value=100)
     assert _unwrap_value(ref) == 100
     print("✓ RefValue unwrapping works")
-    
+
     return True
+
 
 def test_albedo_bounds():
     """Test albedo bounds validation."""
     print("\nTesting albedo bounds validation...")
-    
+
     # Test invalid albedo below 0
     config_data = {
-        "sites": [{
-            "gridiv": 1,
-            "properties": {
-                "land_cover": {
-                    "grass": {
-                        "sfr": 1.0,
-                        "alb_min": -0.1,  # Invalid
-                        "alb_max": 0.3
+        "sites": [
+            {
+                "gridiv": 1,
+                "properties": {
+                    "land_cover": {
+                        "grass": {
+                            "sfr": 1.0,
+                            "alb_min": -0.1,  # Invalid
+                            "alb_max": 0.3,
+                        }
                     }
-                }
+                },
             }
-        }]
+        ]
     }
-    
+
     try:
         SUEWSConfig(**config_data)
         print("✗ Failed to catch negative albedo")
@@ -53,11 +57,11 @@ def test_albedo_bounds():
         else:
             print(f"✗ Wrong error message: {e}")
             return False
-    
+
     # Test albedo equality (should fail with strict inequality)
     config_data["sites"][0]["properties"]["land_cover"]["grass"]["alb_min"] = 0.3
     config_data["sites"][0]["properties"]["land_cover"]["grass"]["alb_max"] = 0.3
-    
+
     try:
         SUEWSConfig(**config_data)
         print("✗ Failed to catch albedo equality")
@@ -68,13 +72,14 @@ def test_albedo_bounds():
         else:
             print(f"✗ Wrong error message: {e}")
             return False
-    
+
     return True
+
 
 def test_output_frequency():
     """Test output frequency validation."""
     print("\nTesting output frequency validation...")
-    
+
     # Test negative frequency
     config_data = {
         "model": {
@@ -82,13 +87,13 @@ def test_output_frequency():
                 "tstep": 300,
                 "output_file": {
                     "format": "txt",
-                    "freq": -3600  # Invalid
-                }
+                    "freq": -3600,  # Invalid
+                },
             }
         },
-        "sites": [{"gridiv": 1}]
+        "sites": [{"gridiv": 1}],
     }
-    
+
     try:
         SUEWSConfig(**config_data)
         print("✗ Failed to catch negative frequency")
@@ -99,19 +104,16 @@ def test_output_frequency():
         else:
             print(f"✗ Wrong error message: {e}")
             return False
-    
+
     return True
+
 
 def main():
     """Run all tests."""
     print("Testing validator improvements...\n")
-    
-    tests = [
-        test_unwrap_helper,
-        test_albedo_bounds,
-        test_output_frequency
-    ]
-    
+
+    tests = [test_unwrap_helper, test_albedo_bounds, test_output_frequency]
+
     all_passed = True
     for test in tests:
         try:
@@ -120,14 +122,15 @@ def main():
         except Exception as e:
             print(f"✗ Test {test.__name__} failed with exception: {e}")
             all_passed = False
-    
-    print("\n" + "="*50)
+
+    print("\n" + "=" * 50)
     if all_passed:
         print("✓ All validator improvement tests passed!")
     else:
         print("✗ Some tests failed!")
-    
+
     return all_passed
+
 
 if __name__ == "__main__":
     success = main()
