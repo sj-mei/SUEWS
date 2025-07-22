@@ -1469,6 +1469,90 @@ class SUEWSConfig(BaseModel):
     #                 surface_is.state.value = 0
     #     return self
 
+    @model_validator(mode="after")
+    def validate_building_layers(self) -> "SUEWSConfig":
+        """Validate building layer consistency across all sites.
+        
+        Checks that building-related arrays have consistent lengths:
+        - Building heights array must have nlayer+1 elements
+        - Building fractions array must have nlayer elements  
+        - Building scales array must have nlayer elements
+        - Roof layers count must match nlayer
+        - Wall layers count must match nlayer
+        """
+        for site_index, site in enumerate(self.sites):
+            site_name = f"Site {site_index + 1}"
+            
+            # Get vertical layers (building validation is on vertical layers, not bldgs)
+            if not site.properties or not site.properties.vertical_layers:
+                continue
+                
+            vertical_layers = site.properties.vertical_layers
+            
+            # Extract nlayer value
+            nlayer_val = (
+                vertical_layers.nlayer.value if isinstance(vertical_layers.nlayer, RefValue) 
+                else vertical_layers.nlayer
+            )
+            
+            # Validate building heights array
+            if hasattr(vertical_layers, 'height') and vertical_layers.height is not None:
+                heights_val = (
+                    vertical_layers.height.value 
+                    if isinstance(vertical_layers.height, RefValue) 
+                    else vertical_layers.height
+                )
+                expected_height_len = nlayer_val + 1
+                if len(heights_val) != expected_height_len:
+                    raise ValueError(
+                        f"{site_name}: Building heights array length ({len(heights_val)}) "
+                        f"must be nlayer+1 ({expected_height_len})"
+                    )
+                    
+            # Validate building fractions array
+            if hasattr(vertical_layers, 'building_frac') and vertical_layers.building_frac is not None:
+                fractions_val = (
+                    vertical_layers.building_frac.value 
+                    if isinstance(vertical_layers.building_frac, RefValue) 
+                    else vertical_layers.building_frac
+                )
+                if len(fractions_val) != nlayer_val:
+                    raise ValueError(
+                        f"{site_name}: Building fractions array length ({len(fractions_val)}) "
+                        f"must match nlayer ({nlayer_val})"
+                    )
+                    
+            # Validate building scales array
+            if hasattr(vertical_layers, 'building_scale') and vertical_layers.building_scale is not None:
+                scales_val = (
+                    vertical_layers.building_scale.value 
+                    if isinstance(vertical_layers.building_scale, RefValue) 
+                    else vertical_layers.building_scale
+                )
+                if len(scales_val) != nlayer_val:
+                    raise ValueError(
+                        f"{site_name}: Building scales array length ({len(scales_val)}) "
+                        f"must match nlayer ({nlayer_val})"
+                    )
+                    
+            # Validate roof layers count
+            if hasattr(vertical_layers, 'roofs') and vertical_layers.roofs is not None:
+                if len(vertical_layers.roofs) != nlayer_val:
+                    raise ValueError(
+                        f"{site_name}: Roof layers count ({len(vertical_layers.roofs)}) "
+                        f"must match nlayer ({nlayer_val})"
+                    )
+                        
+            # Validate wall layers count  
+            if hasattr(vertical_layers, 'walls') and vertical_layers.walls is not None:
+                if len(vertical_layers.walls) != nlayer_val:
+                    raise ValueError(
+                        f"{site_name}: Wall layers count ({len(vertical_layers.walls)}) "
+                        f"must match nlayer ({nlayer_val})"
+                    )
+                        
+        return self
+
     @classmethod
     def from_yaml(
         cls, path: str, use_conditional_validation: bool = True, strict: bool = True
