@@ -806,32 +806,6 @@ class Model(BaseModel):
             )
         return self
 
-    @model_validator(mode="after")
-    def validate_output_config(self) -> "Model":
-        """Validate output configuration, especially frequency vs timestep."""
-        if isinstance(self.control.output_file, OutputConfig):
-            output_config = self.control.output_file
-            if output_config.freq is not None:
-                tstep = self.control.tstep
-                if output_config.freq % tstep != 0:
-                    raise ValueError(
-                        f"Output frequency ({output_config.freq}s) must be a multiple of timestep ({tstep}s)"
-                    )
-        elif (
-            isinstance(self.control.output_file, str)
-            and self.control.output_file != "output.txt"
-        ):
-            # Issue warning for non-default string values
-            import warnings
-
-            warnings.warn(
-                f"The 'output_file' parameter with value '{self.control.output_file}' is deprecated and was never used. "
-                "Please use the new OutputConfig format or remove this parameter. "
-                "Example: output_file: {format: 'parquet', freq: 3600}",
-                DeprecationWarning,
-                stacklevel=3,
-            )
-        return self
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:
         """Convert model to DataFrame state format"""

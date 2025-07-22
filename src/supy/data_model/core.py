@@ -32,7 +32,7 @@ from copy import deepcopy
 from pathlib import Path
 import warnings
 
-from .model import Model
+from .model import Model, OutputConfig
 from .site import Site, SiteProperties, InitialStates, LandCover
 from .type import SurfaceType
 
@@ -196,6 +196,36 @@ class SUEWSConfig(BaseModel):
         if self._validation_summary["total_warnings"] > 0:
             self._show_validation_summary()
 
+        return self
+
+    @model_validator(mode="after")
+    def validate_model_output_config(self) -> "SUEWSConfig":
+        """
+        Validate output configuration, especially frequency vs timestep.
+        Migrated from Model class to SUEWSConfig for more comprehensive validation.
+        """
+        if isinstance(self.model.control.output_file, OutputConfig):
+            output_config = self.model.control.output_file
+            if output_config.freq is not None:
+                tstep = self.model.control.tstep
+                if output_config.freq % tstep != 0:
+                    raise ValueError(
+                        f"Output frequency ({output_config.freq}s) must be a multiple of timestep ({tstep}s)"
+                    )
+        elif (
+            isinstance(self.model.control.output_file, str)
+            and self.model.control.output_file != "output.txt"
+        ):
+            # Issue warning for non-default string values
+            import warnings
+
+            warnings.warn(
+                f"The 'output_file' parameter with value '{self.model.control.output_file}' is deprecated and was never used. "
+                "Please use the new OutputConfig format or remove this parameter. "
+                "Example: output_file: {format: 'parquet', freq: 3600}",
+                DeprecationWarning,
+                stacklevel=3,
+            )
         return self
 
     def _show_validation_summary(self) -> None:
