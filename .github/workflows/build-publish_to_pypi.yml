@@ -3,6 +3,8 @@ name: Build and Publish Python wheels to PyPI and TestPyPI
 on:
   push:
     branches: [master]
+    tags:
+      - '*'  # Trigger on any tag push
     paths: # Push events containing matching files
       - "src/suews/**"
       - "src/supy/**"
