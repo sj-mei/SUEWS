@@ -1050,23 +1050,6 @@ class LandCover(BaseModel):
 
     ref: Optional[Reference] = None
 
-    @model_validator(mode="after")
-    def set_surface_types(self) -> "LandCover":
-        # Set surface types and validate
-        surface_map = {
-            "paved": (self.paved, SurfaceType.PAVED),
-            "bldgs": (self.bldgs, SurfaceType.BLDGS),
-            "dectr": (self.dectr, SurfaceType.DECTR),
-            "evetr": (self.evetr, SurfaceType.EVETR),
-            "grass": (self.grass, SurfaceType.GRASS),
-            "bsoil": (self.bsoil, SurfaceType.BSOIL),
-            "water": (self.water, SurfaceType.WATER),
-        }
-
-        for prop, surface_type in surface_map.values():
-            prop.set_surface_type(surface_type)
-
-        return self
 
     # @model_validator(mode="after")
     # def validate_land_cover_fractions(self) -> "LandCover":

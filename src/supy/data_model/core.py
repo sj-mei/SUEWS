@@ -1597,6 +1597,80 @@ class SUEWSConfig(BaseModel):
         
         return self
 
+    @model_validator(mode="before")
+    @classmethod
+    def convert_legacy_hdd_formats(cls, data):
+        """Convert legacy HDD_ID list formats across all sites.
+        
+        This handles backward compatibility for HDD_ID data that may be provided
+        as lists instead of dictionaries. Migrated from InitialStates class
+        to ensure consistent handling across all sites in configuration.
+        """
+        if isinstance(data, dict) and "sites" in data:
+            sites = data["sites"]
+            if isinstance(sites, list):
+                for site in sites:
+                    if isinstance(site, dict) and "initial_states" in site:
+                        initial_states = site["initial_states"]
+                        if isinstance(initial_states, dict) and "hdd_id" in initial_states:
+                            hdd_value = initial_states["hdd_id"]
+                            if isinstance(hdd_value, list):
+                                # Convert from legacy list format to HDD_ID object
+                                if len(hdd_value) >= 12:
+                                    initial_states["hdd_id"] = {
+                                        "hdd_accum": hdd_value[0],
+                                        "cdd_accum": hdd_value[1],
+                                        "temp_accum": hdd_value[2],
+                                        "temp_5day_accum": hdd_value[3],
+                                        "precip_accum": hdd_value[4],
+                                        "days_since_rain_accum": hdd_value[5],
+                                        "hdd_daily": hdd_value[6],
+                                        "cdd_daily": hdd_value[7],
+                                        "temp_daily_mean": hdd_value[8],
+                                        "temp_5day_mean": hdd_value[9],
+                                        "precip_daily_total": hdd_value[10],
+                                        "days_since_rain": hdd_value[11],
+                                    }
+                                else:
+                                    # If list is too short, create default HDD_ID
+                                    initial_states["hdd_id"] = {}
+        return data
+
+    @model_validator(mode="after")
+    def set_surface_types_validation(self) -> "SUEWSConfig":
+        """Set surface types on all land cover properties across all sites.
+        
+        This validator ensures that all surface property objects have their
+        surface type identifiers properly set. This is required for internal
+        validation and processing logic. Migrated from LandCover.set_surface_types
+        to provide centralized validation across all sites.
+        """
+        from .type import SurfaceType  # Import here to avoid circular import
+        
+        # Surface type mapping
+        surface_map = {
+            "paved": SurfaceType.PAVED,
+            "bldgs": SurfaceType.BLDGS,
+            "dectr": SurfaceType.DECTR,
+            "evetr": SurfaceType.EVETR,
+            "grass": SurfaceType.GRASS,
+            "bsoil": SurfaceType.BSOIL,
+            "water": SurfaceType.WATER,
+        }
+        
+        for site_index, site in enumerate(self.sites):
+            if site.properties and site.properties.land_cover:
+                land_cover = site.properties.land_cover
+                
+                # Set surface types for each surface property
+                for surface_name, surface_type in surface_map.items():
+                    if hasattr(land_cover, surface_name):
+                        surface_prop = getattr(land_cover, surface_name)
+                        if surface_prop and hasattr(surface_prop, "set_surface_type"):
+                            surface_prop.set_surface_type(surface_type)
+        
+        return self
+
     @classmethod
     def from_yaml(
         cls, path: str, use_conditional_validation: bool = True, strict: bool = True

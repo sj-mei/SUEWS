@@ -2094,3 +2094,434 @@ class TestSurfaceStatesValidator:
         # Note: When passed as dict values, they're not RefValue wrapped
         assert config.sites[0].properties.snow.crwmin == 0.15
         assert config.sites[0].properties.snow.crwmax == 0.25
+
+
+class TestHDDIDConverterValidator:
+    """Test class for convert_legacy_hdd_formats validator migration."""
+
+    def test_convert_legacy_hdd_formats_valid_list_conversion(self):
+        """Test that legacy HDD_ID list format converts to dictionary."""
+        # Create config with legacy list format
+        config_data = {
+            "name": "test_hdd_conversion",
+            "description": "Test HDD ID conversion from list format",
+            "sites": [{
+                "name": "test_site",
+                "gridiv": 1,
+                "initial_states": {
+                    "hdd_id": [
+                        1.0,  # hdd_accum
+                        2.0,  # cdd_accum  
+                        3.0,  # temp_accum
+                        4.0,  # temp_5day_accum
+                        5.0,  # precip_accum
+                        6.0,  # days_since_rain_accum
+                        7.0,  # hdd_daily
+                        8.0,  # cdd_daily
+                        9.0,  # temp_daily_mean
+                        10.0, # temp_5day_mean
+                        11.0, # precip_daily_total
+                        12.0  # days_since_rain
+                    ]
+                }
+            }]
+        }
+        
+        config = SUEWSConfig(**config_data)
+        
+        # Should convert list to dictionary structure
+        hdd_id = config.sites[0].initial_states.hdd_id
+        assert hdd_id.hdd_accum == 1.0
+        assert hdd_id.cdd_accum == 2.0
+        assert hdd_id.temp_accum == 3.0
+        assert hdd_id.temp_5day_accum == 4.0
+        assert hdd_id.precip_accum == 5.0
+        assert hdd_id.days_since_rain_accum == 6.0
+        assert hdd_id.hdd_daily == 7.0
+        assert hdd_id.cdd_daily == 8.0
+        assert hdd_id.temp_daily_mean == 9.0
+        assert hdd_id.temp_5day_mean == 10.0
+        assert hdd_id.precip_daily_total == 11.0
+        assert hdd_id.days_since_rain == 12.0
+
+    def test_convert_legacy_hdd_formats_short_list_defaults(self):
+        """Test that short HDD_ID list creates default empty dictionary."""
+        config_data = {
+            "name": "test_hdd_short_list",
+            "description": "Test HDD ID with short list",
+            "sites": [{
+                "name": "test_site", 
+                "gridiv": 1,
+                "initial_states": {
+                    "hdd_id": [1.0, 2.0, 3.0]  # Only 3 elements, should create defaults
+                }
+            }]
+        }
+        
+        config = SUEWSConfig(**config_data)
+        
+        # Should create default HDD_ID object (all zeros)
+        hdd_id = config.sites[0].initial_states.hdd_id
+        assert hdd_id.hdd_accum == 0.0
+        assert hdd_id.cdd_accum == 0.0
+        assert hdd_id.temp_accum == 0.0
+
+    def test_convert_legacy_hdd_formats_dict_unchanged(self):
+        """Test that existing dictionary format is left unchanged."""
+        config_data = {
+            "name": "test_hdd_dict_format",
+            "description": "Test HDD ID with existing dict format",
+            "sites": [{
+                "name": "test_site",
+                "gridiv": 1, 
+                "initial_states": {
+                    "hdd_id": {
+                        "hdd_accum": 100.0,
+                        "cdd_accum": 200.0,
+                        "temp_accum": 300.0
+                    }
+                }
+            }]
+        }
+        
+        config = SUEWSConfig(**config_data)
+        
+        # Dictionary format should be preserved
+        hdd_id = config.sites[0].initial_states.hdd_id
+        assert hdd_id.hdd_accum == 100.0
+        assert hdd_id.cdd_accum == 200.0
+        assert hdd_id.temp_accum == 300.0
+
+    def test_convert_legacy_hdd_formats_no_hdd_id_field(self):
+        """Test sites without hdd_id field are handled gracefully."""
+        config_data = {
+            "name": "test_no_hdd_id",
+            "description": "Test site without HDD ID field",
+            "sites": [{
+                "name": "test_site",
+                "gridiv": 1,
+                "initial_states": {
+                    # No hdd_id field - should use defaults
+                }
+            }]
+        }
+        
+        config = SUEWSConfig(**config_data)
+        
+        # Should create default HDD_ID object
+        hdd_id = config.sites[0].initial_states.hdd_id
+        assert hdd_id.hdd_accum == 0.0
+        assert hdd_id.cdd_accum == 0.0
+
+    def test_convert_legacy_hdd_formats_multi_site_conversion(self):
+        """Test HDD ID conversion across multiple sites."""
+        config_data = {
+            "name": "test_multi_site_hdd_conversion", 
+            "description": "Test HDD ID conversion with multiple sites",
+            "sites": [
+                {
+                    "name": "site1",
+                    "gridiv": 0,
+                    "initial_states": {
+                        "hdd_id": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 
+                                  70.0, 80.0, 90.0, 100.0, 110.0, 120.0]
+                    }
+                },
+                {
+                    "name": "site2",
+                    "gridiv": 1,
+                    "initial_states": {
+                        "hdd_id": {
+                            "hdd_accum": 999.0,
+                            "cdd_accum": 888.0
+                        }
+                    }
+                }
+            ]
+        }
+        
+        config = SUEWSConfig(**config_data)
+        
+        # Site1 should have converted list to dict
+        hdd_id1 = config.sites[0].initial_states.hdd_id
+        assert hdd_id1.hdd_accum == 10.0
+        assert hdd_id1.cdd_accum == 20.0
+        assert hdd_id1.days_since_rain == 120.0
+        
+        # Site2 should preserve existing dict
+        hdd_id2 = config.sites[1].initial_states.hdd_id
+        assert hdd_id2.hdd_accum == 999.0
+        assert hdd_id2.cdd_accum == 888.0
+
+    def test_convert_legacy_hdd_formats_mixed_sites_with_without_hdd(self):
+        """Test conversion with mix of sites that have/don't have HDD ID."""
+        config_data = {
+            "name": "test_mixed_hdd_sites",
+            "description": "Test mixed sites with and without HDD ID",
+            "sites": [
+                {
+                    "name": "site_with_hdd_list",
+                    "gridiv": 0,
+                    "initial_states": {
+                        "hdd_id": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0,
+                                  7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+                    }
+                },
+                {
+                    "name": "site_without_hdd",
+                    "gridiv": 1,
+                    "initial_states": {
+                        # No hdd_id field
+                    }
+                },
+                {
+                    "name": "site_with_short_list", 
+                    "gridiv": 2,
+                    "initial_states": {
+                        "hdd_id": [100.0, 200.0]  # Short list
+                    }
+                }
+            ]
+        }
+        
+        config = SUEWSConfig(**config_data)
+        
+        # Site 1: Full list conversion
+        assert config.sites[0].initial_states.hdd_id.hdd_accum == 1.0
+        assert config.sites[0].initial_states.hdd_id.days_since_rain == 12.0
+        
+        # Site 2: Default HDD_ID object  
+        assert config.sites[1].initial_states.hdd_id.hdd_accum == 0.0
+        
+        # Site 3: Short list creates defaults
+        assert config.sites[2].initial_states.hdd_id.hdd_accum == 0.0
+
+    def test_convert_legacy_hdd_formats_backward_compatibility(self):
+        """Test that conversion maintains full backward compatibility."""
+        # This test validates the exact same field mapping as the original
+        legacy_list = [
+            1.5,  # hdd_accum
+            2.5,  # cdd_accum
+            3.5,  # temp_accum
+            4.5,  # temp_5day_accum
+            5.5,  # precip_accum
+            6.5,  # days_since_rain_accum
+            7.5,  # hdd_daily
+            8.5,  # cdd_daily
+            9.5,  # temp_daily_mean
+            10.5, # temp_5day_mean
+            11.5, # precip_daily_total
+            12.5  # days_since_rain
+        ]
+        
+        config_data = {
+            "name": "test_backward_compatibility",
+            "description": "Test exact backward compatibility",
+            "sites": [{
+                "name": "test_site",
+                "gridiv": 1,
+                "initial_states": {
+                    "hdd_id": legacy_list
+                }
+            }]
+        }
+        
+        config = SUEWSConfig(**config_data)
+        hdd_id = config.sites[0].initial_states.hdd_id
+        
+        # Verify exact field mapping matches original converter
+        field_mapping = [
+            ("hdd_accum", 0),
+            ("cdd_accum", 1),
+            ("temp_accum", 2), 
+            ("temp_5day_accum", 3),
+            ("precip_accum", 4),
+            ("days_since_rain_accum", 5),
+            ("hdd_daily", 6),
+            ("cdd_daily", 7),
+            ("temp_daily_mean", 8),
+            ("temp_5day_mean", 9),
+            ("precip_daily_total", 10),
+            ("days_since_rain", 11)
+        ]
+        
+        for field_name, index in field_mapping:
+            expected_value = legacy_list[index]
+            actual_value = getattr(hdd_id, field_name)
+            assert actual_value == expected_value, f"Field {field_name} mismatch: expected {expected_value}, got {actual_value}"
+
+
+class TestSurfaceTypesValidator:
+    """Test surface types validation migrated from LandCover.set_surface_types"""
+    
+    def test_set_surface_types_validation_basic(self):
+        """Test basic surface type setting functionality"""
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "land_cover": {
+                        "paved": {"sfr": 0.2},
+                        "bldgs": {"sfr": 0.3},
+                        "dectr": {"sfr": 0.1},
+                        "evetr": {"sfr": 0.1},
+                        "grass": {"sfr": 0.2},
+                        "bsoil": {"sfr": 0.05},
+                        "water": {"sfr": 0.05}
+                    }
+                }
+            }]
+        }
+        
+        # Should create successfully - validator sets surface types
+        result = SUEWSConfig(**config_data)
+        
+        # Verify surface types were set correctly
+        land_cover = result.sites[0].properties.land_cover
+        from supy.data_model.type import SurfaceType
+        
+        # Each surface property should have its surface type set
+        assert hasattr(land_cover.paved, "_surface_type")
+        assert land_cover.paved._surface_type == SurfaceType.PAVED
+        assert land_cover.bldgs._surface_type == SurfaceType.BLDGS
+        assert land_cover.dectr._surface_type == SurfaceType.DECTR
+        assert land_cover.evetr._surface_type == SurfaceType.EVETR
+        assert land_cover.grass._surface_type == SurfaceType.GRASS
+        assert land_cover.bsoil._surface_type == SurfaceType.BSOIL
+        assert land_cover.water._surface_type == SurfaceType.WATER
+    
+    def test_set_surface_types_validation_multi_site(self):
+        """Test surface types setting across multiple sites"""
+        config_data = {
+            "sites": [
+                {
+                    "properties": {
+                        "land_cover": {
+                            "paved": {"sfr": 0.4},
+                            "bldgs": {"sfr": 0.4},
+                            "grass": {"sfr": 0.2}
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "land_cover": {
+                            "dectr": {"sfr": 0.3},
+                            "evetr": {"sfr": 0.3},
+                            "water": {"sfr": 0.4}
+                        }
+                    }
+                }
+            ]
+        }
+        
+        result = SUEWSConfig(**config_data)
+        from supy.data_model.type import SurfaceType
+        
+        # Check first site
+        land_cover_1 = result.sites[0].properties.land_cover
+        assert land_cover_1.paved._surface_type == SurfaceType.PAVED
+        assert land_cover_1.bldgs._surface_type == SurfaceType.BLDGS
+        assert land_cover_1.grass._surface_type == SurfaceType.GRASS
+        
+        # Check second site
+        land_cover_2 = result.sites[1].properties.land_cover
+        assert land_cover_2.dectr._surface_type == SurfaceType.DECTR
+        assert land_cover_2.evetr._surface_type == SurfaceType.EVETR
+        assert land_cover_2.water._surface_type == SurfaceType.WATER
+    
+    def test_set_surface_types_validation_missing_land_cover(self):
+        """Test validator handles missing land_cover gracefully"""
+        config_data = {
+            "sites": [{
+                # No land_cover specified
+            }]
+        }
+        
+        # Should create successfully - validator handles missing land_cover
+        result = SUEWSConfig(**config_data)
+        assert len(result.sites) == 1
+        # land_cover should be created with defaults
+        assert result.sites[0].properties.land_cover is not None
+    
+    def test_set_surface_types_validation_partial_surfaces(self):
+        """Test validator with only some surfaces defined"""
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "land_cover": {
+                        "paved": {"sfr": 0.5},
+                        "grass": {"sfr": 0.3},
+                        "water": {"sfr": 0.2}
+                        # Only 3 surfaces defined
+                    }
+                }
+            }]
+        }
+        
+        result = SUEWSConfig(**config_data)
+        from supy.data_model.type import SurfaceType
+        
+        land_cover = result.sites[0].properties.land_cover
+        
+        # Defined surfaces should have correct types
+        assert land_cover.paved._surface_type == SurfaceType.PAVED
+        assert land_cover.grass._surface_type == SurfaceType.GRASS
+        assert land_cover.water._surface_type == SurfaceType.WATER
+        
+        # Default surfaces should also have types set
+        assert land_cover.bldgs._surface_type == SurfaceType.BLDGS
+        assert land_cover.dectr._surface_type == SurfaceType.DECTR
+        assert land_cover.evetr._surface_type == SurfaceType.EVETR
+        assert land_cover.bsoil._surface_type == SurfaceType.BSOIL
+    
+    def test_set_surface_types_validation_surface_mapping(self):
+        """Test surface type mapping is complete and correct"""
+        config_data = {
+            "sites": [{
+                "properties": {
+                    "land_cover": {
+                        "paved": {"sfr": 0.1},
+                        "bldgs": {"sfr": 0.1},
+                        "dectr": {"sfr": 0.1},
+                        "evetr": {"sfr": 0.1},
+                        "grass": {"sfr": 0.1},
+                        "bsoil": {"sfr": 0.1},
+                        "water": {"sfr": 0.4}
+                    }
+                }
+            }]
+        }
+        
+        result = SUEWSConfig(**config_data)
+        from supy.data_model.type import SurfaceType
+        
+        land_cover = result.sites[0].properties.land_cover
+        
+        # Test all expected surface type mappings
+        surface_mappings = {
+            "paved": SurfaceType.PAVED,
+            "bldgs": SurfaceType.BLDGS,
+            "dectr": SurfaceType.DECTR,
+            "evetr": SurfaceType.EVETR,
+            "grass": SurfaceType.GRASS,
+            "bsoil": SurfaceType.BSOIL,
+            "water": SurfaceType.WATER,
+        }
+        
+        for surface_name, expected_type in surface_mappings.items():
+            surface_prop = getattr(land_cover, surface_name)
+            assert hasattr(surface_prop, "_surface_type")
+            assert surface_prop._surface_type == expected_type, (
+                f"Surface {surface_name} should have type {expected_type}, "
+                f"got {surface_prop._surface_type}"
+            )
+    
+    def test_set_surface_types_validation_no_error_on_empty_site(self):
+        """Test validator handles empty site configuration"""
+        config_data = {
+            "sites": [{}]  # Completely empty site
+        }
+        
+        # Should not raise errors - validator is defensive
+        result = SUEWSConfig(**config_data)
+        assert len(result.sites) == 1
