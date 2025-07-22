@@ -337,10 +337,10 @@ class TestRadiationMethodValidator:
         assert config.model.physics.netradiationmethod.value == 3
 
     def test_validate_radiation_method_incompatible_config(self):
-        """Test that incompatible radiation method configurations raise ValidationError."""
-        # Test case: netradiationmethod=1 with forcing.txt (should fail)
-        with pytest.raises(
-            ValidationError, match="NetRadiationMethod is set to 1.*observed Ldown"
+        """Test that incompatible radiation method configurations trigger warning."""
+        # Test case: netradiationmethod=1 with forcing.txt (should warn)
+        with pytest.warns(
+            UserWarning, match="NetRadiationMethod is set to 1.*observed Ldown"
         ):
             SUEWSConfig(
                 name="test_incompatible_radiation_method",
@@ -467,8 +467,8 @@ class TestRadiationMethodValidator:
                 )
                 assert forcing_file_val == forcing_file
             else:
-                with pytest.raises(
-                    ValidationError,
+                with pytest.warns(
+                    UserWarning,
                     match="NetRadiationMethod is set to 1.*observed Ldown",
                 ):
                     SUEWSConfig(**config_data)
@@ -522,8 +522,8 @@ class TestRadiationMethodValidator:
                 method_val = config.model.physics.netradiationmethod.value
                 assert int(method_val) == 1
             else:
-                with pytest.raises(
-                    ValidationError,
+                with pytest.warns(
+                    UserWarning,
                     match="NetRadiationMethod is set to 1.*observed Ldown",
                 ):
                     SUEWSConfig(**config_data)

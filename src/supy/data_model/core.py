@@ -482,10 +482,10 @@ class SUEWSConfig(BaseModel):
                         f"{site_name} {surface_description}: alb_max ({alb_max_val}) must be in range [0, 1]"
                     )
 
-                # Validate albedo range - use strict inequality for consistency
-                if alb_min_val >= alb_max_val:
+                # Validate albedo range - allow equality for constant albedo
+                if alb_min_val > alb_max_val:
                     errors.append(
-                        f"{site_name} {surface_description}: alb_min ({alb_min_val}) must be less than alb_max ({alb_max_val})"
+                        f"{site_name} {surface_description}: alb_min ({alb_min_val}) must be less than or equal to alb_max ({alb_max_val})"
                     )
 
         if errors:
