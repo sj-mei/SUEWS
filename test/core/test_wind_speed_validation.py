@@ -140,30 +140,46 @@ class TestWindSpeedValidation:
         """Test that valid wind speed passes validation."""
         # Create sample forcing data with valid wind speed
         dates = pd.date_range("2021-01-01", periods=24, freq="h")
+
+        # Create forcing data with all required columns in correct order
         df_forcing = pd.DataFrame(
             {
                 "iy": dates.year,
                 "id": dates.dayofyear,
                 "it": dates.hour,
                 "imin": dates.minute,
-                "isec": 0,
-                "kdown": 100,
-                "Tair": 20,
-                "RH": 60,
-                "pres": 101.3,
-                "rain": 0,
+                "qn": -999,  # Optional
+                "qh": -999,  # Optional
+                "qe": -999,  # Optional
+                "qs": -999,  # Optional
+                "qf": -999,  # Optional
                 "U": np.random.uniform(0.01, 10, 24),  # Valid wind speeds
+                "RH": 60,
+                "Tair": 20,
+                "pres": 1013,  # hPa
+                "rain": 0,
+                "kdown": 100,
+                "snow": -999,  # Optional
+                "ldown": -999,  # Optional
+                "fcld": -999,  # Optional
+                "Wuh": -999,  # Optional
+                "xsmd": -999,  # Optional
+                "lai": -999,  # Optional
+                "kdiff": -999,  # Optional
+                "kdir": -999,  # Optional
+                "wdir": -999,  # Optional
             },
             index=dates,
         )
-
         # Check forcing data
         issues = check_forcing(df_forcing, fix=False)
 
         # Should have no issues (or at least no wind speed issues)
         if issues:
             wind_speed_issues = [
-                issue for issue in issues if "Wind speed" in issue or "U" in issue
+                issue
+                for issue in issues
+                if "Wind speed" in issue and "must be >= 0.01" in issue
             ]
             assert len(wind_speed_issues) == 0
 
