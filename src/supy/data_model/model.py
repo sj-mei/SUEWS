@@ -784,27 +784,6 @@ class Model(BaseModel):
         description="Model physics parameters including surface properties, coefficients, etc.",
     )
 
-    @model_validator(mode="after")
-    def validate_radiation_method(self) -> "Model":
-        netradiationmethod_val = (
-            self.physics.netradiationmethod.value
-            if isinstance(self.physics.netradiationmethod, RefValue)
-            else self.physics.netradiationmethod
-        )
-        forcing_file_val = (
-            self.control.forcing_file.value
-            if isinstance(self.control.forcing_file, RefValue)
-            else self.control.forcing_file
-        )
-
-        if netradiationmethod_val == 1 and forcing_file_val == "forcing.txt":
-            raise ValueError(
-                "NetRadiationMethod is set to 1 (using observed Ldown). "
-                "The sample forcing file lacks observed Ldown. Use netradiation = 3 for sample forcing. "
-                "If not using sample forcing, ensure that the forcing file contains Ldown and rename from forcing.txt."
-                # TODO: This is a temporary solution. We need to provide a better way to catch this.
-            )
-        return self
 
 
     def to_df_state(self, grid_id: int) -> pd.DataFrame:

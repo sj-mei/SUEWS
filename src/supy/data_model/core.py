@@ -228,6 +228,38 @@ class SUEWSConfig(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def validate_model_radiation_method(self) -> "SUEWSConfig":
+        """
+        Validate radiation method configuration compatibility with forcing file.
+        Migrated from Model class to SUEWSConfig for comprehensive validation.
+        """
+        from .type import RefValue  # Import here to avoid circular import
+        
+        netradiationmethod_val = (
+            self.model.physics.netradiationmethod.value
+            if isinstance(self.model.physics.netradiationmethod, RefValue)
+            else self.model.physics.netradiationmethod
+        )
+        forcing_file_val = (
+            self.model.control.forcing_file.value
+            if isinstance(self.model.control.forcing_file, RefValue)
+            else self.model.control.forcing_file
+        )
+        
+        # For Enum values, we need to extract the actual integer value
+        if hasattr(netradiationmethod_val, 'value'):
+            netradiationmethod_val = netradiationmethod_val.value
+
+        if netradiationmethod_val == 1 and forcing_file_val == "forcing.txt":
+            raise ValueError(
+                "NetRadiationMethod is set to 1 (using observed Ldown). "
+                "The sample forcing file lacks observed Ldown. Use netradiation = 3 for sample forcing. "
+                "If not using sample forcing, ensure that the forcing file contains Ldown and rename from forcing.txt."
+                # TODO: This is a temporary solution. We need to provide a better way to catch this.
+            )
+        return self
+
     def _show_validation_summary(self) -> None:
         """Show a concise summary of validation issues."""
         ## Check if we have a yaml path stored
