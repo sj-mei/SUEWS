@@ -14,8 +14,16 @@
     - Identifies documentation files that need updating based on code changes
     - Runs documentation generation scripts when data models or schemas change
     - Uses Claude Code's built-in slash command system with metadata and bash integration
-  - [doc] Enhanced documentation update requirements for Claude Code workflows
+  - [maintenance] Created CHANGELOG management scripts (PR #547)
+    - Added `.claude/scripts/changelog_restructure.py` for parsing, cleaning, and sorting entries
+    - Restructured entire CHANGELOG.md file with proper reverse chronological ordering
+    - Extended historical coverage from 65 to 117 dates by analyzing git commit history
+    - Filled documentation gaps from 2020-2024 with comprehensive analysis of 3,418 commits
+    - Established automated workflow for ongoing CHANGELOG maintenance
+  - [maintenance] Enhanced CLAUDE.md with documentation update requirements for Claude Code workflows
     - Updated CLAUDE.md to emphasise updating documentation and CHANGELOG.md for code changes
+    - Clarified that documentation generation scripts run ONLY for specific data model changes
+    - Added reminder that CLAUDE.md updates should be categorised as [maintenance]
     - Modified claude.yml and claude-code-review.yml workflows to check for documentation updates
     - Added explicit CHANGELOG.md update requirements with category guidelines
 
@@ -26,6 +34,16 @@
     - Added validation to prevent division by zero in atmospheric calculations
     - Fixed wind speed validation test to use correct forcing data structure
     - Prevents model crashes when wind speed approaches zero
+  - [bugfix] Fixed snow warning spam (PR #542, fixes #528)
+    - Limited snow warning message to appear only once per simulation run
+    - Added module-level flag to track warning display status
+    - Prevents console spam when SnowUse=1 is enabled
+  - [maintenance] Migrated all model validators to SUEWSConfig (PR #546)
+    - Completed systematic migration of 12 model validators from individual Pydantic classes
+    - Centralised all validation logic in SUEWSConfig for better maintainability
+    - Added 99 comprehensive tests for migrated validators
+    - Updated legacy tests to use new centralised validation architecture
+    - Improved albedo validation to allow equality for constant albedo scenarios
   - [doc] Enhanced documentation for Claude Code and issue triage
     - Updated CLAUDE.md with feature planning and spec system documentation
     - Added comprehensive SUEWS issue triage guide with MECE label system
