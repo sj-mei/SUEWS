@@ -26,7 +26,7 @@ Analyse code changes and fill the gap in CHANGELOG.md from the last documented d
    - [feature]: New functionality added
    - [bugfix]: Bug fixes (note if GitHub issue should be created)
    - [change]: User-facing changes
-   - [maintenance]: Codebase maintenance  
+   - [maintenance]: Codebase maintenance (including Claude Code/dev tooling)
    - [doc]: Documentation updates
 
 4. **Update CHANGELOG.md**:

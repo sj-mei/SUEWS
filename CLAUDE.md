@@ -501,7 +501,7 @@ When making code changes to SUEWS/SuPy:
   - [feature]: New features
   - [bugfix]: Bug fixes (also create GitHub issue)
   - [change]: User-facing changes
-  - [maintenance]: Codebase maintenance
+  - [maintenance]: Codebase maintenance (including Claude Code development aspects)
   - [doc]: Documentation updates
 
 ### Documentation Principles
