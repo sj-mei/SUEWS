@@ -1280,12 +1280,14 @@ class SUEWSConfig(BaseModel):
             if not input_path.exists():
                 logger_supy.error(f"Input file does not exist: {yaml_path}")
                 return None
-                
+
             if output_path:
                 output_path = Path(output_path)
                 # Check if output directory exists
                 if not output_path.parent.exists():
-                    logger_supy.error(f"Output directory does not exist: {output_path.parent}")
+                    logger_supy.error(
+                        f"Output directory does not exist: {output_path.parent}"
+                    )
                     return None
             else:
                 output_path = input_path.parent / f"{input_path.stem}_annotated.yml"
