@@ -552,9 +552,11 @@ class SUEWSConfig(BaseModel):
         if yaml_path:
             ## When loaded from YAML, we know the source file
             yaml_path_obj = Path(yaml_path)
-            annotated_path = yaml_path_obj.parent / f"{yaml_path_obj.stem}_annotated.yml"
+            annotated_path = (
+                yaml_path_obj.parent / f"{yaml_path_obj.stem}_annotated.yml"
+            )
             auto_generate = getattr(self, "_auto_generate_annotated", False)
-            
+
             if auto_generate:
                 fix_instructions = (
                     f"To see detailed fixes for each parameter: please refer to inline guidance "
@@ -604,7 +606,7 @@ class SUEWSConfig(BaseModel):
 
         ## Log the complete summary
         logger_supy.warning(summary_message)
-        
+
         ## Optionally generate the annotated YAML file automatically
         auto_generate = getattr(self, "_auto_generate_annotated", False)
         if auto_generate and yaml_path and Path(yaml_path).exists():
@@ -1931,8 +1933,11 @@ class SUEWSConfig(BaseModel):
 
     @classmethod
     def from_yaml(
-        cls, path: str, use_conditional_validation: bool = True, strict: bool = True,
-        auto_generate_annotated: bool = False
+        cls,
+        path: str,
+        use_conditional_validation: bool = True,
+        strict: bool = True,
+        auto_generate_annotated: bool = False,
     ) -> "SUEWSConfig":
         """Initialize SUEWSConfig from YAML file with conditional validation.
 

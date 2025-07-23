@@ -18,7 +18,9 @@ def test_tstep_direct_value():
 
 def test_tstep_refvalue():
     """Test tstep with RefValue syntax."""
-    control = ModelControl(tstep=RefValue(value=1800, ref={"desc": "30 minute timestep"}))
+    control = ModelControl(
+        tstep=RefValue(value=1800, ref={"desc": "30 minute timestep"})
+    )
     # Check the value is accessible
     assert control.tstep.value == 1800
     assert control.tstep.ref.desc == "30 minute timestep"
@@ -32,7 +34,9 @@ def test_diagnose_direct_value():
 
 def test_diagnose_refvalue():
     """Test diagnose with RefValue syntax."""
-    control = ModelControl(diagnose=RefValue(value=2, ref={"desc": "Detailed diagnostics"}))
+    control = ModelControl(
+        diagnose=RefValue(value=2, ref={"desc": "Detailed diagnostics"})
+    )
     assert control.diagnose.value == 2
     assert control.diagnose.ref.desc == "Detailed diagnostics"
 
@@ -53,11 +57,11 @@ model:
     tstep: 300
     diagnose: 0
 """
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
         f.write(yaml_content)
         yaml_path = Path(f.name)
-    
+
     try:
         config = SUEWSConfig.from_yaml(str(yaml_path))
         assert config.model.control.tstep == 300
@@ -88,18 +92,18 @@ model:
       ref:
         desc: "Full diagnostics enabled"
 """
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
         f.write(yaml_content)
         yaml_path = Path(f.name)
-    
+
     try:
         config = SUEWSConfig.from_yaml(str(yaml_path))
         # Check values are accessible
         tstep = config.model.control.tstep
         assert tstep.value == 3600
         assert tstep.ref.desc == "Hourly timestep for long simulations"
-        
+
         diagnose = config.model.control.diagnose
         assert diagnose.value == 2
         assert diagnose.ref.desc == "Full diagnostics enabled"
@@ -125,11 +129,11 @@ model:
       ref:
         desc: "Basic diagnostics"
 """
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
         f.write(yaml_content)
         yaml_path = Path(f.name)
-    
+
     try:
         config = SUEWSConfig.from_yaml(str(yaml_path))
         # Direct value

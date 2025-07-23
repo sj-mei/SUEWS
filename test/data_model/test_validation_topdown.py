@@ -148,34 +148,37 @@ sites:
           sfr: {value: 0.4}
           # Missing bldgh and faibldg parameters
 """
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             f.write(config_yaml)
             yaml_path = Path(f.name)
-        
+
         try:
             # Test with auto_generate_annotated=True
             config = SUEWSConfig.from_yaml(yaml_path, auto_generate_annotated=True)
-            
+
             # Check that annotated file was automatically generated
             annotated_path = yaml_path.parent / f"{yaml_path.stem}_annotated.yml"
-            assert annotated_path.exists(), "Annotated YAML should be generated when auto_generate_annotated=True"
-            
+            assert annotated_path.exists(), (
+                "Annotated YAML should be generated when auto_generate_annotated=True"
+            )
+
             # Verify content
             content = annotated_path.read_text()
             assert "ANNOTATED SUEWS CONFIGURATION" in content
             assert "bldgh" in content
-            
+
             # Clean up
             annotated_path.unlink()
-            
+
             # Test with auto_generate_annotated=False (default)
             config2 = SUEWSConfig.from_yaml(yaml_path, auto_generate_annotated=False)
-            assert not annotated_path.exists(), "Annotated YAML should not be generated when auto_generate_annotated=False"
-            
+            assert not annotated_path.exists(), (
+                "Annotated YAML should not be generated when auto_generate_annotated=False"
+            )
+
         finally:
             yaml_path.unlink()
-
 
 
 class TestValidationUtils:
