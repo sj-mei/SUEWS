@@ -700,3 +700,105 @@
   - [feature] Added serial mode for run_supy for better robustness
   - [bugfix] Fixed ERA5 data file location issues
   - [maintenance] Enhanced testing with pytest integration
+
+- 15 Nov 2019:
+  - [feature] Version 2019a release
+    - Added anthropogenic emission module (Järvi et al. 2019)
+    - Added canyon profile module (RSL) for within-canyon diagnostics (Theeuwes et al. 2019)
+    - Recovered BLUEWS functionality with CBLUse parameter
+  - [bugfix] Fixed LAI calculation for long-term runs
+  - [bugfix] Fixed net all-wave radiation differential calculation for OHM
+  - [bugfix] Fixed GDD/SDD calculation cross-contamination between vegetative surfaces
+  - [bugfix] Fixed water redistribution bug in snow module
+  - [change] Renamed SUEWS_AnthropogenicHeat.txt to SUEWS_AnthropogenicEmission.txt
+    - Added new parameters: MinFCMetab, MaxFCMetab, FrPDDwe, FcEF_v_kgkmWD, FcEF_v_kgkmWE
+  - [maintenance] Removed SOLWEIG from codebase (use separate SOLWEIG implementation)
+  - [maintenance] Removed netCDF output support (use SuPy with pandas/xarray instead)
+
+- 24 Oct 2019:
+  - [bugfix] Fixed T2 diagnostics in RSL module
+  - [bugfix] Fixed bug in translating iceFrac for multi-grid runs
+  - [bugfix] Fixed surface temperature (T_sfc) calculation
+  - [bugfix] Fixed Lup_snow calculation
+  - [maintenance] Improved RSL module consistency and stability
+
+- 21 Feb 2019:
+  - [feature] Version 2018c release
+  - [feature] Introduced SuPy (SUEWS in Python) - Python wrapper for SUEWS
+    - Facilitates more fluent urban climate research workflows
+    - Enhanced with Python ecosystem capabilities
+  - [maintenance] Improved benchmark report system with more testing sites
+
+- 01 Jan 2019:
+  - [feature] Added multi-timestep mode support in driver
+  - [maintenance] Added version tracking to supy_driver
+  - [maintenance] Trimmed unnecessary output groups
+  - [doc] Major documentation improvements and restructuring
+
+- 28 Dec 2018:
+  - [change] Renamed interface variables for consistency with documentation
+    - meltwaterstore → snowwater
+    - soilmoist → soilstore
+  - [maintenance] Fixed interface issues for SuMin (WRF coupling)
+  - [maintenance] Added annotations for HDD_id, GDD_id, LAI_id, and WUDay_id layouts
+
+- 17 Dec 2018:
+  - [feature] Version 2018b release
+  - [bugfix] Fixed external water use pickup from meteorological forcing file
+  - [maintenance] Improved OHM radiation calculation using time-step-weighted dQ*
+    - Better memory usage and supports variable time-step simulations
+    - Essential for WRF-SUEWS coupling
+
+- 02 Aug 2018:
+  - [feature] Version 2018a release
+  - [feature] New readthedocs.org-based documentation system
+  - [feature] Added input_converter for version migration
+  - [feature] Added benchmark_report for release validation
+  - [feature] Improved near-surface diagnostics (T2, Q2, U10)
+  - [feature] Improved skin temperature calculation (Ts)
+  - [change] StabilityMethod recommended option changed from 2 to 3
+  - [change] Energy use profile selections moved from SUEWS_SiteSelect.txt to SUEWS_AnthropogenicHeat.txt
+  - [change] Added BiogenCO2Code to SUEWS_Veg.txt for new SUEWS_BiogenCO2.txt lookup
+  - [change] Expanded weekday/weekend options for multiple parameters
+    - TrafficRate_WD/WE, QF0_BEU_WD/WE
+    - AHMin_WD/WE, AHSlope_WD/WE, TCritic_WD/WE with cooling/heating settings
+  - [change] AnthropHeatMethod renamed to EmissionsMethod
+  - [maintenance] Major code restructuring for better modularity
+    - Added explicit interface intent for module coupling
+    - Restructured physics scheme layout
+    - Improved output file alignment
+  - [maintenance] Removed AnthropCO2Method from RunControl.nml
+
+- 02 Aug 2017:
+  - [feature] Version 2017b release
+  - [feature] Added surface-level diagnostics as default output
+    - T2 (air temperature at 2 m agl)
+    - Q2 (air specific humidity at 2 m agl)
+    - U10 (wind speed at 10 m agl)
+  - [feature] Added netCDF output format support (disabled in public release)
+  - [maintenance] Development of new storage heat flux options (AnOHM, ESTM) - not for production use
+  - [maintenance] Development of carbon dioxide flux modelling - not for production use
+
+- 01 Feb 2017:
+  - [feature] Version 2017a release
+  - [feature] Automatic forcing disaggregation and output aggregation
+    - Removes need for Python wrapper
+    - Model handles time-step conversions internally
+  - [feature] Improved InitialConditions handling
+    - SUEWS approximates most initial conditions if unknown
+    - Detailed initial conditions still supported if available
+  - [feature] Surface-specific LAI calculations
+    - Each vegetated surface uses its own LAI development parameters
+    - Previously only deciduous tree parameters were used
+  - [feature] Adapted storage heat flux for sub-hourly time-steps
+    - Hysteresis based on hourly running means
+  - [feature] Improved error handling
+    - Separate files: problems.txt (serious), warnings.txt (less critical)
+  - [change] Major changes to input file formats
+    - Simplified RunControl.nml and InitialConditions files
+    - Met forcing files no longer need -9 termination rows
+    - Single InitialConditions file can serve multiple grids
+  - [change] Longitude sign convention corrected
+    - Negative values = west, positive values = east
+  - [change] Configurable output variable selection
+    - Option to write subset of variables instead of all
