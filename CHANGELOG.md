@@ -5,6 +5,130 @@
 <!-- [doc]: Documentation updates -->
 <!-- [change]: Changes exposed to users -->
 
+- 23 Jul 2025:
+  - [doc] Enhanced documentation update requirements for Claude Code workflows
+    - Updated CLAUDE.md to emphasise updating documentation and CHANGELOG.md for code changes
+    - Modified claude.yml and claude-code-review.yml workflows to check for documentation updates
+    - Added explicit CHANGELOG.md update requirements with category guidelines
+  - [feature] Added `/log-changes` slash command for automated documentation updates
+    - Created custom slash command in `.claude/commands/log-changes.md`
+    - Analyses git commits to fill gaps between last documented date and today
+    - Uses actual commit dates to maintain accurate historical record
+    - Groups commits by date and categorises changes appropriately
+    - Identifies documentation files that need updating based on code changes
+    - Runs documentation generation scripts when data models or schemas change
+    - Uses Claude Code's built-in slash command system with metadata and bash integration
+
+- 22 Jul 2025:
+  - [bugfix] Fixed input validation for zero wind speed (PR #545, fixes #314)
+    - Added validation to prevent division by zero in atmospheric calculations
+    - Fixed wind speed validation test to use correct forcing data structure
+    - Prevents model crashes when wind speed approaches zero
+  - [feature] Enhanced CI workflow to trigger on tag pushes
+    - Build workflow now triggers on version tag pushes for release automation
+  - [doc] Enhanced documentation for Claude Code and issue triage
+    - Updated CLAUDE.md with feature planning and spec system documentation
+    - Added comprehensive SUEWS issue triage guide with MECE label system
+    - Added scientific review process documentation
+
+- 21 Jul 2025:
+  - [feature] Allow lists under RefValue for forcing data (PR #540, fixes #538)
+    - Added iteration functionality to RefValue when value is a list
+    - Enables more flexible configuration of forcing data parameters
+    - Added comprehensive test coverage for list handling in RefValue
+
+- 20 Jul 2025:
+  - [feature] Enhanced code formatting automation
+    - Added ability to create format-only PRs via workflow dispatch
+    - Replaced master auto-format with PR-based formatting for better review
+    - Added GitHub Actions workflow for Fortran code formatting
+  - [maintenance] Repository cleanup and reorganisation
+    - Removed .ropeproject from tracking
+    - Removed disabled workflow files for auto-formatting
+    - Reorganised developer documentation into dev-ref directory
+
+- 19 Jul 2025:
+  - [maintenance] Improved auto-format workflow
+    - Updated workflow to create PR instead of direct push
+    - Removed pre-commit configuration
+    - Fixed conflicting .fprettify.yml file
+
+- 18 Jul 2025:
+  - [feature] Added comprehensive testing improvements (PRs #525, #526)
+    - Added extensive utility tests for core functionality
+    - Added comprehensive coding guidelines and testing documentation
+    - Implemented automatic code formatting on master branch
+  - [bugfix] Fixed CI errors in test suite
+    - Disabled cmd tests to fix CI errors on Python 3.9/3.10
+    - Used importlib.resources for reliable sample config access in CI
+  - [maintenance] Removed WRF-SUEWS integration utilities
+
+- 17 Jul 2025:
+  - [feature] Enhanced Claude workflows with skip functionality
+    - Added ability to skip reviews based on PR title keywords
+    - Converted Claude code review to manual workflow dispatch
+  - [feature] Added cibuildwheel debug workflow with SSH access (PR #522)
+  - [maintenance] Test suite improvements
+    - Added pytest-order to dev dependencies
+    - Enabled all tests on all platforms (PR #513)
+    - Reorganised test suite by functionality
+
+- 16 Jul 2025:
+  - [bugfix] Fixed QE/QH discrepancy with atmospheric state initialization
+    - Replaced exact equality checks with epsilon-based comparisons
+    - Added floating-point epsilon constant for numerical stability
+    - Initialised all atmospheric state variables to prevent state pollution
+    - Added comprehensive floating-point stability test suite
+
+- 15 Jul 2025:
+  - [change] Updated data model to use rho_cp instead of cp parameter
+    - Changed thermal layer specification for consistency
+    - Updated pydantic data model validation
+
+- 13 Jul 2025:
+  - [feature] Improved Claude Code review formatting (PR #474)
+    - Added collapsible HTML sections for better organisation
+    - Enhanced review structure with categorised feedback
+
+- 11 Jul 2025:
+  - [feature] Added Claude Code GitHub Actions workflows (PRs #466, #467)
+    - Added Claude PR Assistant workflow for automated reviews
+    - Preserved security checks for authorised users
+    - Added worktree command for Claude Code integration
+
+- 10 Jul 2025:
+  - [bugfix] Fixed version tag preservation (PR #465)
+    - Preserved .dev suffix in version tags
+    - Fixed metadata variable error suppression during packing
+    - Applied dropna only to DailyState group in resample_output
+
+- 08 Jul 2025:
+  - [feature] Added conditional validation for model options (PR #460)
+    - Implemented validation for storage, RSL, and STEBBS options
+    - Added comprehensive test coverage for conditional validation
+    - Improved validation error messages with detailed issues
+
+- 05 Jul 2025:
+  - [feature] Simplified SUEWSSimulation API (PR #463)
+    - Refactored class for cleaner, more intuitive interface
+    - Fixed forcing file path handling issues (#458, #459)
+    - Added comprehensive tests for various forcing scenarios
+    - Updated documentation for new API
+
+- 04 Jul 2025:
+  - [feature] Enhanced SUEWS configuration builder (PR #455)
+    - Added unsaved changes warning
+    - Implemented field-specific UI controls
+    - Fixed radio button styling and type conversion
+    - Added experimental warnings and version info
+    - Improved validation error messages
+    - Modularised config-builder.js for better maintainability
+
+- 03 Jul 2025:
+  - [change] Added DailyState resampling option (PR #456)
+    - Improved resampling implementation for DailyState outputs
+    - Enhanced output flexibility for different temporal resolutions
+
 - 02 Jul 2025:
   - [feature] Added automatic annotated YAML generation for parameter validation errors
     - Generates helpful annotated YAML files when configuration validation fails
