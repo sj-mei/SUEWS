@@ -488,6 +488,22 @@ REAL(KIND(1D0)) :: rss_surf = 0.0D0 ! surface resistance [s m-1]
 
 ## Documentation & Code Maintenance Principles
 
+### Documentation Updates for Code Changes
+
+When making code changes to SUEWS/SuPy:
+- **Always update relevant documentation** in `docs/` directory when functionality changes
+- Update Sphinx documentation for user-facing changes
+- Run `python docs/generate_datamodel_rst.py` when data model changes
+- Update `docs/gen_schema.py` when configuration schema changes
+- Ensure examples and tutorials reflect current API
+- Update parameter tables and input file documentation as needed
+- **Update CHANGELOG.md promptly** for remarkable changes using categories:
+  - [feature]: New features
+  - [bugfix]: Bug fixes (also create GitHub issue)
+  - [change]: User-facing changes
+  - [maintenance]: Codebase maintenance
+  - [doc]: Documentation updates
+
 ### Documentation Principles
 
 1. **Single Source of Truth (DRY)**
