@@ -145,6 +145,16 @@ For complete guide, see:
   # Keep only: origin -> git@github.com:UMEP-dev/SUEWS.git
   ```
 
+## Issue Triage and Labeling
+
+- For detailed issue triage process, see `dev-ref/issue-triage.md`
+- Use four-tier labeling system: Type (1-*), Area (2-*), Priority (3-*), Status (4-*)
+- Numbers enable quick filtering in GitHub web interface (e.g., type "2-" to see all areas)
+- Status labels include:
+  - `4-needs-science` - Requires scientific input/decision (flags for domain experts)
+  - `4-needs-deps` - Waiting on other issues/PRs to complete first
+- Unlabeled issues implicitly need triage - no separate triage label needed
+
 ## Style and Language Guidelines
 
 - Any human writing in this project should use British English - docs/code annotations etc
