@@ -702,7 +702,7 @@ class OutputConfig(BaseModel):
 
 
 class ModelControl(BaseModel):
-    tstep: int = Field(
+    tstep: FlexibleRefValue(int) = Field(
         default=300, description="Time step in seconds for model calculations"
     )
     forcing_file: Union[FlexibleRefValue(str), List[str]] = Field(
@@ -719,7 +719,7 @@ class ModelControl(BaseModel):
         description="Output file configuration. DEPRECATED: String values are ignored and will issue a warning. Please use an OutputConfig object specifying format ('txt' or 'parquet'), frequency (seconds, must be multiple of tstep), and groups to save (for txt format only). Example: {'format': 'parquet', 'freq': 3600} or {'format': 'txt', 'freq': 1800, 'groups': ['SUEWS', 'DailyState', 'ESTM']}. For detailed information about output variables and file structure, see :ref:`output_files`.",
     )
     # daylightsaving_method: int
-    diagnose: int = Field(
+    diagnose: FlexibleRefValue(int) = Field(
         default=0,
         description="Level of diagnostic output (0=none, 1=basic, 2=detailed)",
         json_schema_extra={"internal_only": True},
@@ -812,10 +812,12 @@ class Model(BaseModel):
         if isinstance(self.control.output_file, OutputConfig):
             output_config = self.control.output_file
             if output_config.freq is not None:
+                # Handle both direct value and RefValue
                 tstep = self.control.tstep
-                if output_config.freq % tstep != 0:
+                tstep_value = tstep.value if isinstance(tstep, RefValue) else tstep
+                if output_config.freq % tstep_value != 0:
                     raise ValueError(
-                        f"Output frequency ({output_config.freq}s) must be a multiple of timestep ({tstep}s)"
+                        f"Output frequency ({output_config.freq}s) must be a multiple of timestep ({tstep_value}s)"
                     )
         elif (
             isinstance(self.control.output_file, str)
