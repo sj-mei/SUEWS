@@ -614,7 +614,7 @@ class SUEWSConfig(BaseModel):
                 generated_path = self.generate_annotated_yaml(yaml_path)
                 logger_supy.info(f"Annotated YAML file generated: {generated_path}")
             except Exception as e:
-                logger_supy.debug(f"Could not generate annotated YAML: {e}")
+                logger_supy.info(f"Could not generate annotated YAML: {e}")
 
     def _validate_site_parameters(self, site: Site, site_index: int) -> None:
         """Validate all parameters for a single site."""
@@ -1275,16 +1275,28 @@ class SUEWSConfig(BaseModel):
             self._collect_validation_issues(site, site_name, i, annotator)
 
         # Generate annotated file
-        input_path = Path(yaml_path)
-        if output_path:
-            output_path = Path(output_path)
-        else:
-            output_path = input_path.parent / f"{input_path.stem}_annotated.yml"
+        try:
+            input_path = Path(yaml_path)
+            if not input_path.exists():
+                logger_supy.error(f"Input file does not exist: {yaml_path}")
+                return None
+                
+            if output_path:
+                output_path = Path(output_path)
+                # Check if output directory exists
+                if not output_path.parent.exists():
+                    logger_supy.error(f"Output directory does not exist: {output_path.parent}")
+                    return None
+            else:
+                output_path = input_path.parent / f"{input_path.stem}_annotated.yml"
 
-        annotated_path = annotator.generate_annotated_file(input_path, output_path)
+            annotated_path = annotator.generate_annotated_file(input_path, output_path)
 
-        logger_supy.info(f"Generated annotated YAML file: {annotated_path}")
-        return str(annotated_path)
+            logger_supy.info(f"Generated annotated YAML file: {annotated_path}")
+            return str(annotated_path)
+        except Exception as e:
+            logger_supy.error(f"Failed to generate annotated YAML: {e}")
+            return None
 
     def _collect_validation_issues(
         self, site: Site, site_name: str, site_index: int, annotator: YAMLAnnotator

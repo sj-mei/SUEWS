@@ -198,7 +198,7 @@ When your YAML configuration has missing or invalid parameters, SUEWS will:
 
 The annotated YAML file features:
    
-   - File location: ``{config_file}_annotated_{timestamp}.yml``
+   - File location: ``{config_file}_annotated.yml``
    - Missing parameters are marked with ``[ERROR] MISSING:``
    - Helpful tips are marked with ``[TIP] ADD HERE:``
    - Each error includes the expected type and description
