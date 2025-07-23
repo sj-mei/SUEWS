@@ -4,7 +4,11 @@ Comprehensive CHANGELOG restructuring script that:
 1. Parses CHANGELOG.md to structured JSON
 2. Cleans duplicates and merges entries
 3. Sorts properly by date
-4. Formats back to clean markdown
+4. Formats back to clean markdown with:
+   - Table of Contents by year
+   - Annual statistics table
+   - GitHub PR/issue links
+   - Proper heading levels
 """
 
 import re
@@ -13,13 +17,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 import hashlib
+from collections import defaultdict
 
 
 class ChangelogRestructurer:
     def __init__(self, changelog_path: str = 'CHANGELOG.md'):
         self.changelog_path = Path(changelog_path)
-        self.date_pattern = re.compile(r'^- (\d{1,2} \w+ \d{4}):\s*$')
-        self.entry_pattern = re.compile(r'^  - \[(\w+)\] (.+)$')
+        # Support both old format (- DATE:) and new format (### DATE)
+        self.date_pattern = re.compile(r'^(?:- |### )(\d{1,2} \w+ \d{4})(?::\s*)?$')
+        self.entry_pattern = re.compile(r'^(?:  )?- \[(\w+)\] (.+)$')
         
     def parse_to_json(self) -> Dict:
         """Parse CHANGELOG.md into structured JSON format"""
@@ -65,7 +71,7 @@ class ChangelogRestructurer:
             elif in_header:
                 data['header'].append(line)
                 
-            elif line.startswith('  - '):
+            elif self.entry_pattern.match(line):
                 # This is an entry line
                 entry_match = self.entry_pattern.match(line)
                 if entry_match:
@@ -79,10 +85,15 @@ class ChangelogRestructurer:
                         'details': []
                     }
                     
-                    # Look ahead for detail lines (starting with '    -')
+                    # Look ahead for detail lines (starting with '  -' or '    -')
                     j = i + 1
-                    while j < len(lines) and lines[j].startswith('    -'):
-                        detail = lines[j].strip()[2:]  # Remove '- '
+                    while j < len(lines) and (lines[j].startswith('    -') or lines[j].startswith('  -')):
+                        # Skip if it's another category entry
+                        if self.entry_pattern.match(lines[j]):
+                            break
+                        detail = lines[j].strip()
+                        if detail.startswith('- '):
+                            detail = detail[2:]  # Remove '- '
                         current_entry['details'].append(detail)
                         j += 1
                     
@@ -147,38 +158,159 @@ class ChangelogRestructurer:
         # Return sorted list of (date_str, entries) tuples
         return [(date_str, entries) for _, date_str, entries in date_entries]
     
+    def format_github_links(self, text: str) -> str:
+        """Convert #xxx and PR #xxx to GitHub links"""
+        # Check if already formatted (contains markdown links)
+        if '](https://github.com/' in text:
+            return text
+            
+        # Pattern for PR mentions
+        pr_pattern = r'PR #(\d+)'
+        text = re.sub(pr_pattern, r'[PR #\1](https://github.com/UMEP-dev/SUEWS/pull/\1)', text)
+        
+        # Pattern for issue mentions (but not PR mentions and not already in brackets)
+        issue_pattern = r'(?<!PR )(?<!\[)#(\d+)(?!\])'
+        text = re.sub(issue_pattern, r'[#\1](https://github.com/UMEP-dev/SUEWS/issues/\1)', text)
+        
+        return text
+    
+    def generate_toc(self, sorted_entries: List[Tuple[str, List]]) -> List[str]:
+        """Generate table of contents by year"""
+        years = set()
+        for date_str, _ in sorted_entries:
+            try:
+                date_obj = datetime.strptime(date_str, '%d %b %Y')
+                years.add(date_obj.year)
+            except ValueError:
+                pass
+        
+        toc_lines = ["## Table of Contents", ""]
+        for year in sorted(years, reverse=True):
+            toc_lines.append(f"- [{year}](#{year})")
+        
+        return toc_lines
+    
+    def generate_stats_table(self, sorted_entries: List[Tuple[str, List]]) -> List[str]:
+        """Generate annual statistics table"""
+        # Collect stats by year
+        stats_by_year = defaultdict(lambda: defaultdict(int))
+        
+        for date_str, entries in sorted_entries:
+            try:
+                date_obj = datetime.strptime(date_str, '%d %b %Y')
+                year = date_obj.year
+                
+                for entry in entries:
+                    category = entry['category']
+                    stats_by_year[year][category] += 1
+                    stats_by_year[year]['total'] += 1
+                    
+            except ValueError:
+                pass
+        
+        # Generate table
+        table_lines = [
+            "",
+            "## Annual Statistics",
+            "",
+            "| Year | Features | Bugfixes | Changes | Maintenance | Docs | Total |",
+            "|------|----------|----------|---------|-------------|------|-------|"
+        ]
+        
+        categories = ['feature', 'bugfix', 'change', 'maintenance', 'doc']
+        
+        for year in sorted(stats_by_year.keys(), reverse=True):
+            stats = stats_by_year[year]
+            row = f"| {year} |"
+            for cat in categories:
+                count = stats.get(cat, 0)
+                row += f" {count} |"
+            row += f" {stats['total']} |"
+            table_lines.append(row)
+        
+        return table_lines
+
     def format_to_markdown(self, data: Dict, sorted_entries: List[Tuple[str, List]]) -> str:
         """Format the cleaned and sorted data back to markdown"""
         lines = []
         
-        # Add header
-        lines.extend(data['header'])
+        # Add header (but skip any existing TOC or stats tables)
+        for line in data['header']:
+            # Skip lines that are part of TOC or stats table
+            if line.startswith('## Table of Contents') or line.startswith('## Annual Statistics'):
+                break
+            if line.startswith('| Year |') or line.startswith('|------|'):
+                continue
+            if line.startswith('- [20') and '](#20' in line:  # TOC entry
+                continue
+            lines.append(line)
         
-        # Add sorted entries
-        for i, (date_str, entries) in enumerate(sorted_entries):
-            # Add blank line before date (except for first entry)
-            if i > 0:
-                lines.append('')
+        # Remove trailing empty lines from header
+        while lines and lines[-1] == "":
+            lines.pop()
+        
+        lines.append("")  # Add single blank line after header
+        
+        # Add TOC
+        toc = self.generate_toc(sorted_entries)
+        lines.extend(toc)
+        
+        # Add stats table
+        stats_table = self.generate_stats_table(sorted_entries)
+        lines.extend(stats_table)
+        lines.append("")  # Extra blank line
+        
+        # Group entries by year
+        entries_by_year = defaultdict(list)
+        for date_str, entries in sorted_entries:
+            try:
+                date_obj = datetime.strptime(date_str, '%d %b %Y')
+                year = date_obj.year
+                entries_by_year[year].append((date_str, entries))
+            except ValueError:
+                # If date parsing fails, put in "Unknown" year
+                entries_by_year[0].append((date_str, entries))
+        
+        # Add entries grouped by year
+        for year in sorted(entries_by_year.keys(), reverse=True):
+            if year == 0:
+                lines.append("\n## Unknown Year")
+            else:
+                lines.append(f"\n## {year}")
             
-            lines.append(f'- {date_str}:')
+            lines.append("")
             
-            # Group entries by category for better organization
-            by_category = {}
-            for entry in entries:
-                cat = entry['category']
-                if cat not in by_category:
-                    by_category[cat] = []
-                by_category[cat].append(entry)
-            
-            # Output in preferred category order
-            category_order = ['feature', 'bugfix', 'change', 'maintenance', 'doc']
-            
-            for category in category_order:
-                if category in by_category:
-                    for entry in by_category[category]:
-                        lines.append(f"  - [{entry['category']}] {entry['description']}")
-                        for detail in entry['details']:
-                            lines.append(f"    - {detail}")
+            for date_str, entries in entries_by_year[year]:
+                lines.append(f"### {date_str}")
+                
+                # Group entries by category for better organization
+                by_category = {}
+                for entry in entries:
+                    cat = entry['category']
+                    if cat not in by_category:
+                        by_category[cat] = []
+                    by_category[cat].append(entry)
+                
+                # Output in preferred category order
+                category_order = ['feature', 'bugfix', 'change', 'maintenance', 'doc']
+                
+                for category in category_order:
+                    if category in by_category:
+                        for entry in by_category[category]:
+                            # Format description with GitHub links
+                            description = self.format_github_links(entry['description'])
+                            lines.append(f"- [{entry['category']}] {description}")
+                            
+                            # Format details with GitHub links
+                            for detail in entry['details']:
+                                formatted_detail = self.format_github_links(detail)
+                                lines.append(f"  - {formatted_detail}")
+                
+                lines.append("")  # Blank line after each date
+        
+        # Remove trailing blank lines
+        while lines and lines[-1] == "":
+            lines.pop()
         
         return '\n'.join(lines)
     
