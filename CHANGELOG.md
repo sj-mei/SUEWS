@@ -565,6 +565,12 @@
 - 16 Mar 2022:
   - [bugfix] Fixed height/level calculation bug in RSL module
 
+- 23 Feb 2022:
+  - [feature] ESTM coupling via surface temperature now working
+    - Completed ESTM (Extended Surface Temperature Method) integration
+    - Working coupling through surface temperature calculations
+    - Updated SUEWS_SPARTACUS documentation
+
 - 14 Feb 2022:
   - [bugfix] Fixed array allocation issues
 
@@ -580,3 +586,99 @@
 
 - 17 Jan 2022:
   - [maintenance] Moved SPARTACUS-specific output files to output section (#77)
+
+- 11 Dec 2021:
+  - [doc] Restructured documentation around QF calculations (#26)
+  - [doc] Improved documentation for RSL module (#56)
+  - [doc] Enhanced spinup documentation (#27)
+  - [doc] Clarified XSMD description in meteorological input file (#9)
+
+- 23 Nov 2021:
+  - [feature] Added Python 3.10 support
+  - [bugfix] Fixed test issues for Python 3.10 by removing deprecated nose test
+  - [bugfix] Fixed pressure and relative humidity units issue (#38)
+  - [maintenance] Updated gfortran to v11 for testing
+  - [maintenance] Fixed Linux and manylinux build recipes
+
+- 01 Nov 2021:
+  - [feature] Added option to use existing surface temperature for outgoing longwave radiation
+
+- 27 Oct 2021:
+  - [bugfix] Fixed RH diagnostics by setting upper limit of 100%
+  - [doc] Added BibTeX support for references
+  - [doc] Fixed documentation formatting issues
+
+- 26 Jul 2021:
+  - [maintenance] Updated RTD configuration and version history structure
+
+- 23 Jul 2021:
+  - [bugfix] Fixed ERA5 download issue due to CDS variable renaming
+
+- 15 Jul 2021:
+  - [bugfix] Fixed parameter table loading issue with pandas 1.3.x
+
+- 30 May 2021:
+  - [feature] SUEWS-SPARTACUS integration completed
+    - Integrated SPARTACUS radiation model with SUEWS
+    - Added SPARTACUS as git submodule
+    - Implemented coupling for albedo calculations
+    - Added vegetation extinction calculation based on LAI
+    - Made profiles constant with height
+    - Added SPARTACUS namelist configuration files
+
+- 25 May 2021:
+  - [feature] Enhanced RSL (Roughness Sublayer) module
+    - Reduced mean building height threshold for RSL activation from 6m to 5m
+    - Fixed zero QE issue when vegetation fraction is zero
+    - Added dynamic z0 and zd calculations based on plan area index
+
+- 11 May 2021:
+  - [change] Version 2021a release
+    - Improved RSL computational stability
+    - Added comprehensive test suite for 2021a
+
+- 08 Dec 2020:
+  - [feature] Added debug output group for runtime diagnostics
+  - [doc] Fixed multiple documentation issues and references
+
+- 06 Aug 2020:
+  - [feature] Version 2020b release
+    - Major improvements to RSL module stability
+    - Fixed overlarge T2 issue by restricting Lc parameter
+    - Enhanced numeric stability of RSL calculations
+    - Fixed NaN issues within canyon for corner cases
+
+- 14 Jul 2020:
+  - [bugfix] Fixed argument list issue in GFORTRAN v10
+  - [maintenance] Improved computational stability in RSL diagnostics (#130)
+
+- 01 Jul 2020:
+  - [feature] Added option to use existing ERA5 files for forcing generation (#165)
+  - [doc] Updated tutorials for UMEP workshop (#169)
+
+- 26 Jun 2020:
+  - [feature] Version 2020a2 release with RSL improvements
+  - [bugfix] Fixed QF parameter issues in sample data (#163)
+
+- 15 May 2020:
+  - [feature] Version 2020a release (#114)
+    - Added RSL (Roughness Sublayer) model for within-canyon diagnostics
+    - Enhanced forcing data resampling with different methods for different variables
+    - Added plotting function for RSL output (#144)
+    - Improved ERA5 downloader functionality
+
+- 10 May 2020:
+  - [bugfix] Fixed TMY radiation calculations
+  - [maintenance] Updated sample data to match Ward et al. (2016, Urban Climate)
+
+- 28 Feb 2020:
+  - [bugfix] Fixed ERA5 data download permission issues (#127)
+
+- 02 Feb 2020:
+  - [feature] Added Python 3.8 support
+  - [bugfix] Fixed issues with pandas 1.0 compatibility
+
+- 23 Jan 2020:
+  - [feature] Added serial mode for run_supy for better robustness
+  - [bugfix] Fixed ERA5 data file location issues
+  - [maintenance] Enhanced testing with pytest integration
