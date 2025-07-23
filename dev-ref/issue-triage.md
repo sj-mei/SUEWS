@@ -14,7 +14,7 @@ Every issue gets labels from these dimensions:
 ### Required Labels
 1. **Type**: `1-bug`, `1-feature`, `1-question`
 2. **Priority**: `2-P0`, `2-P1`, `2-P2`
-3. **Status**: `3-triage`, `3-ready`, `3-in-progress`, `3-blocked`
+3. **Status**: `3-triage`, `3-ready`, `3-in-progress`, `3-needs-science`, `3-needs-deps`
 4. **Area**: `module:*`, `infra:*`, `doc:*`
 
 ### Optional Labels
@@ -50,7 +50,8 @@ What's the current state?
 ├─ Needs assessment → 3-triage
 ├─ Ready for work → 3-ready
 ├─ Being worked on → 3-in-progress
-└─ Stuck/needs info → 3-blocked
+├─ Needs scientific input → 3-needs-science
+└─ Waiting on dependencies → 3-needs-deps
 ```
 
 ### Step 4: Area (PICK ONE)
@@ -88,7 +89,8 @@ Need community help? → help-wanted
 - `3-triage` - Needs assessment
 - `3-ready` - Ready for work
 - `3-in-progress` - Being worked on
-- `3-blocked` - Stuck, needs something
+- `3-needs-science` - Requires scientific input/decision
+- `3-needs-deps` - Waiting on other issues/PRs
 
 ### Area Labels (Pick ONE)
 
@@ -179,6 +181,24 @@ Labels:
 - `3-triage`
 - `infra:ci`
 
+### Example 5: Science Question
+**Issue**: "What albedo values should be used for new green roof type?"
+
+Labels:
+- `1-feature`
+- `2-P2`
+- `3-needs-science`
+- `module:ohm`
+
+### Example 6: Dependency Blocked
+**Issue**: "Update to Pydantic v3 once numpy compatibility fixed"
+
+Labels:
+- `1-feature`
+- `2-P2`
+- `3-needs-deps`
+- `infra:data-model`
+
 ## GitHub Projects Integration
 
 Use these filters in GitHub Projects:
@@ -204,6 +224,12 @@ label:good-first-issue
 
 # Needs triage
 label:3-triage
+
+# Needs science input
+label:3-needs-science
+
+# Blocked by dependencies
+label:3-needs-deps
 ```
 
 ## MECE Label System
@@ -218,7 +244,7 @@ label:3-triage
 **Every issue must have labels from these dimensions**:
 1. Type: `1-bug`, `1-feature`, or `1-question`
 2. Priority: `2-P0`, `2-P1`, or `2-P2`
-3. Status: `3-triage`, `3-ready`, `3-in-progress`, or `3-blocked`
+3. Status: `3-triage`, `3-ready`, `3-in-progress`, `3-needs-science`, or `3-needs-deps`
 4. Area: `meta:*`, `module:*`, `infra:*`, or `doc:*`
 
 **Optional labels**:
@@ -240,7 +266,7 @@ label:3-triage
 
 - [ ] Set type label (`1-bug`, `1-feature`, `1-question`)
 - [ ] Set priority label (`2-P0`, `2-P1`, `2-P2`)
-- [ ] Set status label (`3-triage`, `3-ready`, `3-in-progress`, `3-blocked`)
+- [ ] Set status label (`3-triage`, `3-ready`, `3-in-progress`, `3-needs-science`, `3-needs-deps`)
 - [ ] Set area label (`meta:*`, `module:*`, `infra:*`, `doc:*`)
 - [ ] Add `good-first-issue` if appropriate
 - [ ] Assign if someone will work on it
