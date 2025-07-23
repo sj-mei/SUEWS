@@ -148,10 +148,12 @@ For complete guide, see:
 ## Issue Triage and Labeling
 
 - For detailed issue triage process, see `dev-ref/issue-triage.md`
-- Use three-tier labeling system: Type (1-*), Priority (2-*), Status (3-*)
+- Use four-tier labeling system: Type (1-*), Area (2-*), Priority (3-*), Status (4-*)
+- Numbers enable quick filtering in GitHub web interface (e.g., type "2-" to see all areas)
 - Status labels include:
-  - `3-needs-science` - Requires scientific input/decision (flags for domain experts)
-  - `3-needs-deps` - Waiting on other issues/PRs to complete first
+  - `4-needs-science` - Requires scientific input/decision (flags for domain experts)
+  - `4-needs-deps` - Waiting on other issues/PRs to complete first
+- Unlabeled issues implicitly need triage - no separate triage label needed
 
 ## Style and Language Guidelines
 
