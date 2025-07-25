@@ -21,7 +21,7 @@
 
 | Year | Features | Bugfixes | Changes | Maintenance | Docs | Total |
 |------|----------|----------|---------|-------------|------|-------|
-| 2025 | 25 | 12 | 3 | 24 | 10 | 74 |
+| 2025 | 25 | 12 | 3 | 24 | 11 | 75 |
 | 2024 | 12 | 17 | 1 | 12 | 1 | 43 |
 | 2023 | 11 | 14 | 3 | 9 | 1 | 38 |
 | 2022 | 15 | 18 | 0 | 7 | 0 | 40 |
@@ -33,6 +33,13 @@
 
 
 ## 2025
+
+### 25 Jul 2025
+- [doc] Improved clarity of tstep_prev purpose for WRF-SUEWS coupling ([#551](https://github.com/UMEP-dev/SUEWS/issues/551), [#553](https://github.com/UMEP-dev/SUEWS/issues/553))
+  - Added explanatory comments at all tstep_prev usage sites
+  - Enhanced type definition documentation in SUEWS_TIMER
+  - Added module-level documentation explaining WRF coupling support
+  - Clarified that tstep_prev equals tstep in standalone SUEWS but allows adaptive timesteps in WRF
 
 ### 23 Jul 2025
 - [maintenance] Added `/log-changes` slash command for automated documentation updates
