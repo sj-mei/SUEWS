@@ -873,9 +873,9 @@ class InitialStates(BaseModel):
         default=0,
         description="Previous time step",
         json_schema_extra={
-            "display_name": "Previous Time Step", 
+            "display_name": "Previous Time Step",
             "internal_only": True,
-            "note": "Required for WRF adaptive timestep scheme. Must equal tstep in standalone SUEWS"
+            "note": "Required for WRF adaptive timestep scheme. Must equal tstep in standalone SUEWS",
         },
     )
     snowfallcum: float = Field(
