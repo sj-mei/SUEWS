@@ -408,8 +408,10 @@ CONTAINS
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
          dataoutLineURSL(z) = UStar_RSL/kappa * (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0 + psihatm_z(z))
-         dataoutLineTRSL(z) = TStar_RSL/kappa * (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz))
-         dataoutLineqRSL(z) = qStar_RSL/kappa * (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz))
+         dataoutLineTRSL(z) = TStar_RSL/kappa * &
+                             (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz))
+         dataoutLineqRSL(z) = qStar_RSL/kappa * &
+                             (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(nz))
       END DO
 
       ! Step 4: Within canopy profiles (exponential)
