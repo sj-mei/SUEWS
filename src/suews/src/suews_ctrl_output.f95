@@ -164,6 +164,7 @@ MODULE ctrl_output
       varAttr('T2', 'degC', f94, 'Air temperature at 2 m', aA, 'SUEWS', 0), &
       varAttr('Q2', 'g kg-1', f94, 'Specific humidity at 2 m', aA, 'SUEWS', 0), &
       varAttr('U10', 'm s-1', f94, 'Wind speed at 10 m', aA, 'SUEWS', 0), &
+      varAttr('U2', 'm s-1', f94, 'Pedestrian wind speed at 2 m', aA, 'SUEWS', 0), &
       varAttr('RH2', '%', f94, 'Relative humidity at 2 m', aA, 'SUEWS', 0) &
       /
 

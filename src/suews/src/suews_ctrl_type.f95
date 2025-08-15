@@ -665,7 +665,8 @@ MODULE SUEWS_DEF_DTS
       REAL(KIND(1D0)) :: sIce_hpa = 0.0D0 !Vapour pressure versus temperature slope in hPa above ice/snow
       REAL(KIND(1D0)) :: vpd_hPa = 0.0D0 !Vapour pressure deficit in hPa
       REAL(KIND(1D0)) :: vpd_pa = 0.0D0 !Vapour pressure deficit in Pa
-      REAL(KIND(1D0)) :: U10_ms = 0.0D0 !average wind speed at 10m [W m-1]
+      REAL(KIND(1D0)) :: U10_ms = 0.0D0 !average wind speed at 10m [m s-1]
+      REAL(KIND(1D0)) :: U2_ms = 0.0D0 !pedestrian wind speed at 2m [m s-1]
       REAL(KIND(1D0)) :: U_hbh = 0.0D0 ! wind speed at half building height [m s-1]
       REAL(KIND(1D0)) :: T2_C = 0.0D0 !modelled 2 meter air temperature [degC]
       REAL(KIND(1D0)) :: T_hbh_C = 0.0D0 ! air temperature at half building height [Deg C]

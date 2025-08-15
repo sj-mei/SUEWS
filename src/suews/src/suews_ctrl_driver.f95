@@ -3184,6 +3184,7 @@ CONTAINS
             iy => timer%iy, &
             AdditionalWater => hydroState%AdditionalWater, &
             avU10_ms => atmState%U10_ms, &
+            avU2_ms => atmState%U2_ms, &
             azimuth => solarState%azimuth_deg, &
             SnowAlb => snowState%SnowAlb, &
             chSnow_per_interval => snowState%chSnow_per_interval, &
@@ -3304,7 +3305,7 @@ CONTAINS
                                qn_snowfree, qn_snow, SnowAlb, &
                                Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
                                SnowRemoval(1:2), &
-                               tsfc_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
+                               tsfc_C, t2_C, q2_gkg, avU10_ms, avU2_ms, RH2_pct & ! surface-level diagonostics
                                ]
             ! set invalid values to NAN
             ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)

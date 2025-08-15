@@ -1027,6 +1027,7 @@ CONTAINS
       REAL(KIND(1D0)) :: TStar_RSL ! temperature scale
       REAL(KIND(1D0)) :: UStar_RSL ! friction velocity used in RSL
       REAL(KIND(1D0)) :: UStar_heat ! friction velocity derived from RA_h with correction/restriction
+      REAL(KIND(1D0)) :: U2_ms ! wind speed at 2m [m s-1]
       ! REAL(KIND(1D0)) :: PAI ! plan area index, including areas of roughness elements: buildings and trees
       ! REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
       REAL(KIND(1D0)) :: L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
@@ -1312,17 +1313,26 @@ CONTAINS
                T2_C = interp_z(2D0, zarray, dataoutLineTRSL)
                q2_gkg = interp_z(2D0, zarray, dataoutLineqRSL)
                U10_ms = interp_z(10D0, zarray, dataoutLineURSL)
+               U2_ms = interp_z(2D0, zarray, dataoutLineURSL)
             ELSE
                ! MOST approach: diagnostics at heights above zdm+z0m to avoid insane values
                T2_C = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineTRSL)
                q2_gkg = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineqRSL)
                U10_ms = interp_z(10D0 + zd_rsl + z0_rsl, zarray, dataoutLineURSL)
+               U2_ms = interp_z(2D0 + zd_rsl + z0_rsl, zarray, dataoutLineURSL)
             END IF
             ! get relative humidity:
             RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
             ! get wind speed and air temp at half building height
             U_hbh = dataoutLineURSL(10)
             T_hbh_C = dataoutLineTRSL(10)
+
+            ! assign calculated values to atmospheric state
+            atmState%T2_C = T2_C
+            atmState%q2_gkg = q2_gkg
+            atmState%U10_ms = U10_ms
+            atmState%U2_ms = U2_ms
+            atmState%RH2 = RH2
 
          END ASSOCIATE
       END ASSOCIATE
@@ -1442,6 +1452,9 @@ CONTAINS
 
          ! U10_ms: Wind speed at 10m  
          atmState%U10_ms = interp_z(10.0D0, z_levels, dataoutLineURSL)
+
+         ! U2_ms: Pedestrian wind speed at 2m (from CFD parameterization)
+         atmState%U2_ms = U_pedestrian
 
          ! q2_gkg: Specific humidity at 2m
          qa_gkg = RH2qa(forcing%RH / 100.0D0, forcing%pres, atmState%T2_C)
