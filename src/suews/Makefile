@@ -173,6 +173,8 @@ PHYS =	suews_phys_narp.o \
 	suews_phys_spartacus.o \
 	suews_phys_atmmoiststab.o \
 	suews_phys_resist.o \
+	suews_phys_windparam.o \
+	suews_phys_morphconv.o \
 	suews_ctrl_error.o  \
 	suews_ctrl_input.o  \
 	suews_phys_bluews.o \
@@ -339,6 +341,13 @@ src/suews_phys_spartacus.o: src/suews_phys_spartacus.f95 libspartacus
 %.o: %$(suffix_code)
 	@echo $^
 	$(FC) $(FCFLAGS) -c $^ -o $@
+
+# Test target for CFD wind parameterization validation
+test-windparam: $(addprefix $(DIR_SRC_SUEWS), $(C_MODULE) $(UTILS) $(PHYS) suews_test_windparam$(suffix_code))
+	@echo "Building CFD wind parameterization validation test..."
+	$(FC) $(FCFLAGS) $^ -o $(DIR_BIN_SUEWS)/test_windparam
+	@echo "Running validation test..."
+	cd $(DIR_BIN_SUEWS) && ./test_windparam
 
 clean: clean-obj clean-mods clean-lib clean-bin clean-ext
 

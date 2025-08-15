@@ -4,6 +4,8 @@ MODULE rsl_module
    USE allocateArray, ONLY: &
       nsurf, BldgSurf, ConifSurf, DecidSurf, ncolumnsDataOutRSL
    USE PhysConstants, ONLY: eps_fp
+   USE windparam_module, ONLY: CFD_WindSpeed, CFD_WindProfile
+   USE morphconv_module, ONLY: convert_FAI_PAI_to_lambda
    IMPLICIT NONE
 
    INTEGER, PARAMETER :: nz = 30 ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
@@ -1324,6 +1326,126 @@ CONTAINS
       END ASSOCIATE
 
    END SUBROUTINE RSLProfile_DTS
+
+   SUBROUTINE CFD_WindDiagnostics_DTS( &
+      timer, config, forcing, siteInfo, & ! input
+      modState, & ! input/output:
+      dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, &
+      dataoutLineRSL) ! output
+      !-----------------------------------------------------
+      ! calculates wind diagnostics using CFD-based parameterization
+      ! based on: Niu, J., Mei, S.-J., & Sun, T. (2025). Efficient city-scale wind mapping from building morphology: 
+      !           A CFD-based parameterization scheme. Sustainable Cities and Society, 131, 106688.
+      !
+      ! This subroutine integrates the CFD-based wind parameterization with SUEWS
+      ! diagnostic framework, providing T2, U10, and RH2 calculations using
+      ! morphological parameters λp and λf.
+      !
+      ! last modified by:
+      ! SJ Mei & Claude Code, Dec 2024 - Initial implementation for SUEWS integration
+      !
+      !-----------------------------------------------------
+      USE SUEWS_DEF_DTS, ONLY: SUEWS_CONFIG, SUEWS_TIMER, SUEWS_FORCING, &
+                               SUEWS_SITE, SUEWS_STATE
+
+      IMPLICIT NONE
+
+      TYPE(SUEWS_CONFIG), INTENT(IN) :: config
+      TYPE(SUEWS_TIMER), INTENT(IN) :: timer
+      TYPE(SUEWS_FORCING), INTENT(IN) :: forcing
+      TYPE(SUEWS_SITE), INTENT(IN) :: siteInfo
+
+      TYPE(SUEWS_STATE), INTENT(INOUT) :: modState
+
+      ! Output arrays (compatible with RSL output format)
+      REAL(KIND(1D0)), DIMENSION(nz), INTENT(out) :: dataoutLineURSL ! wind speed array [m s-1]
+      REAL(KIND(1D0)), DIMENSION(nz), INTENT(out) :: dataoutLineTRSL ! Temperature array [C]
+      REAL(KIND(1D0)), DIMENSION(nz), INTENT(out) :: dataoutLineqRSL ! Specific humidity array [g kg-1]
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(out) :: dataoutLineRSL
+
+      ! Local variables for wind calculation
+      REAL(KIND(1D0)) :: lambda_f, lambda_p              ! CFD morphological parameters
+      REAL(KIND(1D0)) :: U_canopy, U_pedestrian         ! Wind speeds from CFD parameterization
+      REAL(KIND(1D0)), DIMENSION(nz) :: z_levels        ! Height levels
+      REAL(KIND(1D0)), DIMENSION(nz) :: U_profile       ! Wind speed profile
+      REAL(KIND(1D0)) :: qa_gkg                         ! Specific humidity
+      REAL(KIND(1D0)) :: z_step                         ! Height step
+      INTEGER :: i
+
+      ! Associate with modState components for easier access
+      ASSOCIATE ( &
+         atmState => modState%atmState, &
+         roughnessState => modState%roughnessState, &
+         heatState => modState%heatState &
+         )
+
+         ! Convert SUEWS morphological parameters to CFD parameters
+         CALL convert_FAI_PAI_to_lambda( &
+            roughnessState%FAI, roughnessState%PAI, &
+            roughnessState%Zh, siteInfo%surfacearea, &
+            lambda_f, lambda_p)
+
+         ! Calculate CFD-based wind speeds
+         CALL CFD_WindSpeed( &
+            lambda_p, lambda_f, &                    ! morphological parameters
+            forcing%U, siteInfo%Z, &                 ! reference wind and height
+            roughnessState%Zh, &                     ! building height
+            U_canopy, U_pedestrian)                  ! output wind speeds
+
+         ! Set up height levels for profile calculation (same as RSL method)
+         z_step = 3.0D0 * roughnessState%Zh / REAL(nz - 10, KIND(1D0))
+         DO i = 1, 10
+            z_levels(i) = REAL(i, KIND(1D0)) * roughnessState%Zh / 10.0D0  ! Within canopy
+         END DO
+         DO i = 11, nz
+            z_levels(i) = roughnessState%Zh + REAL(i - 10, KIND(1D0)) * z_step  ! Above canopy
+         END DO
+
+         ! Calculate wind profile using CFD parameterization
+         CALL CFD_WindProfile( &
+            config%DiagMethod, &
+            lambda_p, lambda_f, &
+            forcing%U, siteInfo%Z, &
+            roughnessState%Zh, &
+            z_levels, nz, &
+            U_profile)
+
+         ! Fill output arrays
+         dataoutLineURSL = U_profile
+
+         ! For temperature and humidity, use simple scaling from atmospheric conditions
+         ! This is a simplification - more sophisticated methods could be implemented
+         DO i = 1, nz
+            ! Temperature decreases with height (standard lapse rate approximation)
+            dataoutLineTRSL(i) = forcing%Temp_C - 0.006D0 * z_levels(i)
+            
+            ! Humidity assumed constant (can be improved with more sophisticated models)
+            dataoutLineqRSL(i) = RH2qa(forcing%RH / 100.0D0, forcing%pres, dataoutLineTRSL(i))
+         END DO
+
+         ! Calculate standard diagnostic variables
+         ! T2_C: Temperature at 2m
+         atmState%T2_C = dataoutLineTRSL(2)  ! Approximate 2m level
+
+         ! U10_ms: Wind speed at 10m  
+         atmState%U10_ms = interp_z(10.0D0, z_levels, dataoutLineURSL)
+
+         ! q2_gkg: Specific humidity at 2m
+         qa_gkg = RH2qa(forcing%RH / 100.0D0, forcing%pres, atmState%T2_C)
+         
+         ! RH2: Relative humidity at 2m
+         atmState%RH2 = qa2RH(qa_gkg, forcing%pres, atmState%T2_C)
+
+         ! Fill diagnostic output array (simplified for now)
+         dataoutLineRSL = 0.0D0  ! Initialize all to zero
+         dataoutLineRSL(1) = lambda_p    ! Store λp for diagnostics
+         dataoutLineRSL(2) = lambda_f    ! Store λf for diagnostics  
+         dataoutLineRSL(3) = U_canopy    ! Store canopy wind speed
+         dataoutLineRSL(4) = U_pedestrian ! Store pedestrian wind speed
+
+      END ASSOCIATE
+
+   END SUBROUTINE CFD_WindDiagnostics_DTS
 
    FUNCTION interp_z(z_x, z, v) RESULT(v_x)
 

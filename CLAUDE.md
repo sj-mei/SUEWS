@@ -67,6 +67,48 @@ For complete build and testing information, see:
 - For an overview of all active branches and their associated GitHub issues, see `.claude/plans/claude-dev-notes.md`
 - For parallel development instructions, see `.claude/howto/parallel-development.md`
 
+## CFD-Based Wind Parameterization Integration
+
+### Overview
+SUEWS now includes a CFD-based wind parameterization scheme (DiagMethod=3) that enables accurate city-scale wind prediction using morphological parameters. This implementation is based on:
+
+> Niu, J., Mei, S.-J., & Sun, T. (2025). Efficient city-scale wind mapping from building morphology: A CFD-based parameterization scheme. Sustainable Cities and Society, 131, 106688.
+
+### Key Features
+- **Advanced Wind Modeling**: Uses both plan area density (λp) and frontal area density (λf) for improved accuracy
+- **Seamless Integration**: Integrates with existing SUEWS diagnostic framework via DiagMethod=3
+- **Computational Efficiency**: Provides CFD-quality results without computational overhead
+- **Morphological Interface**: Automatic conversion from SUEWS FAI/PAI parameters
+
+### Implementation Files
+- **`src/suews/src/suews_phys_windparam.f95`**: Core CFD wind parameterization module
+- **`src/suews/src/suews_phys_morphconv.f95`**: Morphological parameter conversion utilities  
+- **`src/suews/src/suews_phys_rslprof.f95`**: Integration with RSL diagnostics (CFD_WindDiagnostics_DTS)
+- **`src/suews/src/suews_ctrl_driver.f95`**: Driver integration for DiagMethod=3
+- **`src/suews/src/suews_test_windparam.f95`**: Validation test suite
+
+### Usage
+Set `DiagMethod = 3` in SUEWS configuration to enable CFD-based wind diagnostics. The method will:
+1. Convert existing FAI/PAI values to λf/λp parameters
+2. Apply CFD parameterization equations for canopy and pedestrian wind speeds
+3. Generate wind profiles compatible with standard SUEWS output
+
+### Equations Implemented
+**Canopy Layer**: `U*c = 0.017L^(-2.2) + 0.09` (R² = 0.996)
+**Pedestrian Level**: `U*p = exp(-43L^4) × (0.74 - 2.52L) / L + 0.297` (R² = 0.988)
+
+Where L combines morphological parameters:
+- Canopy: `L = -0.36λp + 0.98λf + 0.1`
+- Pedestrian: `L = -0.26λp + 0.97λf + 0.1`
+
+### Testing
+Run validation tests with: `make test-windparam`
+
+### Scientific Impact
+- Addresses systematic errors in existing multilayer canopy models (MLUCM)
+- Particularly valuable for high-density Asian cities where traditional methods show limitations
+- Bridges detailed CFD understanding with practical urban modeling needs
+
 ### Claude Code Resources
 - `.claude/README.md` - Overview of the .claude directory structure and purpose
 - `.claude/howto/` - Step-by-step guides for common tasks
