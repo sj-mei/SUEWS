@@ -1368,7 +1368,9 @@ CONTAINS
       REAL(KIND(1D0)) :: U_canopy, U_pedestrian         ! Wind speeds from CFD parameterization
       REAL(KIND(1D0)), DIMENSION(nz) :: z_levels        ! Height levels
       REAL(KIND(1D0)), DIMENSION(nz) :: U_profile       ! Wind speed profile
+      REAL(KIND(1D0)), DIMENSION(nz) :: U_profile_temp  ! Temporary wind profile for MOST
       REAL(KIND(1D0)) :: qa_gkg                         ! Specific humidity
+      REAL(KIND(1D0)) :: TStar_temp, qStar_temp         ! Temporary scaling parameters for MOST
       REAL(KIND(1D0)) :: z_step                         ! Height step
       INTEGER :: i
 
@@ -1413,19 +1415,28 @@ CONTAINS
          ! Fill output arrays
          dataoutLineURSL = U_profile
 
-         ! For temperature and humidity, use simple scaling from atmospheric conditions
-         ! This is a simplification - more sophisticated methods could be implemented
-         DO i = 1, nz
-            ! Temperature decreases with height (standard lapse rate approximation)
-            dataoutLineTRSL(i) = forcing%Temp_C - 0.006D0 * z_levels(i)
-            
-            ! Humidity assumed constant (can be improved with more sophisticated models)
-            dataoutLineqRSL(i) = RH2qa(forcing%RH / 100.0D0, forcing%pres, dataoutLineTRSL(i))
-         END DO
+         ! CFD focuses on wind fields only - use proper physics for temperature
+         ! Calculate temperature and humidity scaling parameters (from MOST method)
+         TStar_temp = atmState%TStar
+         IF (ABS(heatState%QE) <= eps_fp) THEN
+            qStar_temp = 10.**(-10)
+         ELSE
+            qStar_temp = -1.*(heatState%QE/atmState%lv_J_kg*atmState%avdens)/atmState%UStar
+         END IF
+         
+         ! Calculate specific humidity
+         qa_gkg = RH2qa(forcing%RH / 100.0D0, forcing%pres, forcing%Temp_C)
+         
+         ! Use MOST approach for temperature and humidity profiles
+         CALL cal_profile_MOST( &
+            config%StabilityMethod, nz, siteInfo%Z, roughnessState%zdm, &
+            roughnessState%z0m, roughnessState%z0v, atmState%L_mod, &
+            forcing%U, forcing%Temp_C, &
+            TStar_temp, qStar_temp, qa_gkg, &
+            z_levels, U_profile_temp, dataoutLineTRSL, dataoutLineqRSL)
 
-         ! Calculate standard diagnostic variables
-         ! T2_C: Temperature at 2m
-         atmState%T2_C = dataoutLineTRSL(2)  ! Approximate 2m level
+         ! Extract temperature diagnostic at 2m using proper physics
+         atmState%T2_C = interp_z(2.0D0, z_levels, dataoutLineTRSL)
 
          ! U10_ms: Wind speed at 10m  
          atmState%U10_ms = interp_z(10.0D0, z_levels, dataoutLineURSL)
