@@ -37,6 +37,7 @@ MODULE NARP_MODULE
    !==============================================================================================
    ! USE allocateArray
    USE time_module, ONLY: day2month, dectime_to_timevec
+   USE RADIATION_3D_MODULE, ONLY: RADIATION_3D_MORPHOLOGY
 
    IMPLICIT NONE
 
@@ -91,6 +92,31 @@ CONTAINS
             NetRadiationMethod_use = NetRadiationMethod/100
 
             !choose Ldown method for Spartacus
+         ELSEIF (NetRadiationMethod >= 400 .AND. NetRadiationMethod < 700) THEN
+            ! 3D morphological radiation scheme (Mei et al. 2025)
+            AlbedoChoice = 2  ! morphology-dependent albedo
+            IF (NetRadiationMethod >= 400 .AND. NetRadiationMethod < 500) THEN
+               ! 400 series: 3D morphological with observed LDOWN
+               ldown_option = 1
+               NetRadiationMethod_use = NetRadiationMethod - 399  ! 401->2, 402->3, 403->4
+            ELSEIF (NetRadiationMethod >= 500 .AND. NetRadiationMethod < 600) THEN
+               ! 500 series: 3D morphological with LDOWN from observed FCLD
+               ldown_option = 2
+               NetRadiationMethod_use = NetRadiationMethod - 499  ! 501->2, 502->3, 503->4
+            ELSEIF (NetRadiationMethod >= 600 .AND. NetRadiationMethod < 700) THEN
+               ! 600 series: 3D morphological with LDOWN modelled from RH,TA
+               ldown_option = 3
+               NetRadiationMethod_use = NetRadiationMethod - 599  ! 601->2, 602->3, 603->4
+            END IF
+            
+            ! Validate the method
+            IF (NetRadiationMethod_use < 1 .OR. NetRadiationMethod_use > 3) THEN
+               WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod
+               WRITE (*, *) 'Invalid 3D morphological radiation method'
+               WRITE (*, *) 'Valid options: 401-403, 501-503, 601-603'
+               STOP
+            END IF
+            
          ELSEIF (NetRadiationMethod > 1000) THEN
             AlbedoChoice = 0
             NetRadiationMethod_use = MOD(NetRadiationMethod, 10)
@@ -108,11 +134,13 @@ CONTAINS
 
          END IF
 
-         !If bad NetRadiationMethod value
-         IF (MOD(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
-            WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
-            WRITE (*, *) 'Value not usable'
-            STOP
+         !If bad NetRadiationMethod value (exclude 3D morphological methods)
+         IF (NetRadiationMethod < 400 .OR. NetRadiationMethod >= 700) THEN
+            IF (MOD(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
+               WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
+               WRITE (*, *) 'Value not usable'
+               STOP
+            END IF
          END IF
       END IF
 
@@ -254,6 +282,14 @@ CONTAINS
       ! REAL(KIND(1D0)),PARAMETER   ::RAD2DEG=57.29577951
       REAL(KIND(1D0)), PARAMETER :: SIGMA_SB = 5.67E-8
 
+      ! Variables for 3D morphological radiation scheme
+      REAL(KIND(1D0)) :: lambda_f, lambda_p                    ! morphological densities
+      REAL(KIND(1D0)) :: zenith_rad, azimuth_rad              ! solar angles in radians
+      REAL(KIND(1D0)) :: urban_albedo_3d                      ! morphology-dependent albedo
+      REAL(KIND(1D0)) :: solar_gain_ground_3d, solar_gain_canyon_3d ! surface-specific gains
+      REAL(KIND(1D0)) :: sky_view_ground_3d, sky_view_canyon_3d     ! sky view factors
+      REAL(KIND(1D0)) :: absorptivity_ucl_3d, absorptivity_canyon_3d, absorptivity_ground_3d
+
       ! NB: NARP_G is not assigned with a value in SUEWS_translate.
       ! 3.0 is used here as annual average for mid-latitude areas. TS 24 Oct 2017
       REAL(KIND(1D0)), DIMENSION(365), PARAMETER :: NARP_G = 3.0
@@ -315,6 +351,26 @@ CONTAINS
          IF (sfr_surf(is) /= 0) SF_all = SF_all + sfr_surf(is)*(1 - SnowFrac(is))
       END DO
 
+      !Calculate 3D morphological radiation if enabled
+      IF (AlbedoChoice == 2) THEN
+         ! Use default morphological parameters until FAI/PAI are available in SUEWS
+         ! TODO: Replace with actual FAI/PAI parameters when available
+         lambda_f = 1.0D0     ! Default frontal area density (typical urban)
+         lambda_p = 0.4D0     ! Default plan area density (typical urban)
+         
+         ! Convert angles to radians and calculate azimuth (simplified)
+         zenith_rad = ZENITH_deg * DEG2RAD
+         azimuth_rad = 0.0D0  ! Assume south-facing for now (could be improved)
+         
+         ! Calculate 3D morphological radiation components
+         CALL RADIATION_3D_MORPHOLOGY( &
+            lambda_f, lambda_p, zenith_rad, azimuth_rad, &
+            kdown, ldown, alb(1), emis(1), &  ! Use first surface as representative
+            urban_albedo_3d, solar_gain_ground_3d, solar_gain_canyon_3d, &
+            sky_view_ground_3d, sky_view_canyon_3d, &
+            absorptivity_ucl_3d, absorptivity_canyon_3d, absorptivity_ground_3d)
+      END IF
+
       !looping over the surfaces
       DO is = 1, nsurf
          IF (DiagQN == 1) WRITE (*, *) 'is ', is
@@ -327,6 +383,9 @@ CONTAINS
          !NARP
          IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
             albedo_snowfree = ALB(is) + 0.5E-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
+         ELSEIF (AlbedoChoice == 2) THEN
+            ! 3D morphological radiation scheme - use calculated urban albedo
+            albedo_snowfree = urban_albedo_3d
          ELSE
             albedo_snowfree = ALB(is)
          END IF

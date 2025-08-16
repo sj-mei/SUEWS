@@ -116,6 +116,9 @@ src_f95_all = [
   # 'suews_phys_estm.f95',
   'suews_phys_spartacus.f95',
   'suews_phys_stebbs.f95',
+  'suews_phys_morphconv.f95',       # morphological parameter conversion
+  'suews_phys_windparam.f95',       # CFD wind parameterization  
+  'suews_phys_radiation_3d.f95',    # 3D morphological radiation
   'suews_ctrl_driver.f95',
 ]
 
