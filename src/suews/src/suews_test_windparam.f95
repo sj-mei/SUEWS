@@ -135,9 +135,10 @@ CONTAINS
          CALL record_test_result(.FALSE.)
       END IF
       
-      ! Expected pedestrian wind speed: U*p = exp(-43*L^4) * (0.74 - 2.52*L) / L + 0.297
-      expected_pedestrian = EXP(-43D0 * L**4) * (0.74D0 - 2.52D0 * L) / L + 0.297D0
-      CALL calculate_normalized_pedestrian_wind(L, U_star_pedestrian)
+      ! Expected pedestrian wind speed: U*p = (lambda_f / lambda_p) * ln(11/1)
+      ! Use test parameters: lambda_f = 0.6, lambda_p = 0.3
+      expected_pedestrian = (0.6D0 / 0.3D0) * LOG(11.0D0)  ! = 2.0 * ln(11) ≈ 4.796
+      CALL calculate_normalized_pedestrian_wind(0.6D0, 0.3D0, U_star_pedestrian)
       
       IF (ABS(U_star_pedestrian - expected_pedestrian) < tolerance) THEN
          WRITE(*,'(A,F6.3,A,F6.3)') '  ✓ Pedestrian wind equation: ', U_star_pedestrian, ' (expected: ', expected_pedestrian, ')'
