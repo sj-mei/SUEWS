@@ -43,7 +43,7 @@ MODULE windparam_module
       lambda_f_max = 1.74D0, &      ! maximum frontal area density (at 25m height)
       
       ! Physical constants
-      kappa = 0.4D0                  ! von Karman constant
+      kappa = 0.41D0                 ! von Karman constant
 
 CONTAINS
 
@@ -95,7 +95,7 @@ CONTAINS
       
       ! Calculate normalized wind speeds using CFD parameterization equations
       CALL calculate_normalized_canopy_wind(L_canopy, U_star_canopy)
-      CALL calculate_normalized_pedestrian_wind(L_pedestrian, U_star_pedestrian)
+      CALL calculate_normalized_pedestrian_wind(U_ref, U_star_pedestrian)
       
       ! Convert normalized wind speeds to physical wind speeds
       ! Based on paper normalization: U*c = AUc/∫U(z)dz and U*p = AUp/(Hu*)
@@ -111,8 +111,9 @@ CONTAINS
       ! Assuming A ≈ building spacing, use building_height as characteristic length
       U_canopy = U_star_canopy * reference_profile_integral / building_height
       
-      ! For pedestrian: U*p = A*Up/(H*u*)  => Up = U*p * H * u* / A  
-      U_pedestrian = U_star_pedestrian * building_height * u_friction / building_height
+      ! For pedestrian: Up = Up_star * FAI * PAI * U_star using new formula
+      ! where Up_star is calculated from U10, and U_star is friction velocity  
+      U_pedestrian = U_star_pedestrian * lambda_f * lambda_p * u_friction
       
       ! Apply reasonable bounds to prevent unrealistic values
       U_canopy = MAX(0.1D0, MIN(U_canopy, 2.0D0 * U_ref))
@@ -139,27 +140,23 @@ CONTAINS
       
    END SUBROUTINE calculate_normalized_canopy_wind
 
-   SUBROUTINE calculate_normalized_pedestrian_wind(L, U_star)
-      ! Calculate normalized pedestrian wind speed: 
-      ! U*p = exp(-43*L^4) * (0.74 - 2.52*L) / L + 0.297
+   SUBROUTINE calculate_normalized_pedestrian_wind(U10, Up_star)
+      ! Calculate Up_star using: Up_star = U10 * kappa / ln(11/1)
+      ! Based on modified CFD parameterization approach
       IMPLICIT NONE
-      REAL(KIND(1D0)), INTENT(in) :: L
-      REAL(KIND(1D0)), INTENT(out) :: U_star
+      REAL(KIND(1D0)), INTENT(in) :: U10      ! 10m reference wind speed [m/s]
+      REAL(KIND(1D0)), INTENT(out) :: Up_star ! normalized pedestrian wind coefficient
       
-      REAL(KIND(1D0)) :: exp_term, numerator, L_power4
+      REAL(KIND(1D0)) :: ln_ratio
       
-      IF (ABS(L) > eps_fp) THEN
-         L_power4 = L**coeff_2_pedestrian
-         exp_term = EXP(coeff_1_pedestrian * L_power4)
-         numerator = coeff_3_pedestrian + coeff_4_pedestrian * L
-         U_star = exp_term * numerator / L + coeff_5_pedestrian
-      ELSE
-         ! For L ≈ 0, use limiting behavior (L'Hôpital's rule or series expansion)
-         U_star = coeff_3_pedestrian/eps_fp + coeff_5_pedestrian  ! Approximate limiting behavior
-      END IF
+      ! Calculate ln(11/1) = ln(11) ≈ 2.398
+      ln_ratio = LOG(11.0D0)
+      
+      ! Calculate Up_star = U10 * kappa / ln(11/1)
+      Up_star = U10 * kappa / ln_ratio
       
       ! Ensure reasonable values
-      U_star = MAX(0.01D0, MIN(U_star, 3.0D0))
+      Up_star = MAX(0.01D0, MIN(Up_star, 5.0D0))
       
    END SUBROUTINE calculate_normalized_pedestrian_wind
 
