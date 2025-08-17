@@ -289,6 +289,7 @@ CONTAINS
       REAL(KIND(1D0)) :: solar_gain_ground_3d, solar_gain_canyon_3d ! surface-specific gains
       REAL(KIND(1D0)) :: sky_view_ground_3d, sky_view_canyon_3d     ! sky view factors
       REAL(KIND(1D0)) :: absorptivity_ucl_3d, absorptivity_canyon_3d, absorptivity_ground_3d
+      REAL(KIND(1D0)) :: absorption_ground_3d, absorption_ucl_3d, absorption_total_3d ! solar absorptions [W/m²]
 
       ! NB: NARP_G is not assigned with a value in SUEWS_translate.
       ! 3.0 is used here as annual average for mid-latitude areas. TS 24 Oct 2017
@@ -362,13 +363,14 @@ CONTAINS
          zenith_rad = ZENITH_deg * DEG2RAD
          azimuth_rad = 0.0D0  ! Assume south-facing for now (could be improved)
          
-         ! Calculate 3D morphological radiation components
+         ! Calculate 3D morphological radiation components including solar absorptions
          CALL RADIATION_3D_MORPHOLOGY( &
             lambda_f, lambda_p, zenith_rad, azimuth_rad, &
             kdown, ldown, alb(1), emis(1), &  ! Use first surface as representative
             urban_albedo_3d, solar_gain_ground_3d, solar_gain_canyon_3d, &
             sky_view_ground_3d, sky_view_canyon_3d, &
-            absorptivity_ucl_3d, absorptivity_canyon_3d, absorptivity_ground_3d)
+            absorptivity_ucl_3d, absorptivity_canyon_3d, absorptivity_ground_3d, &
+            absorption_ground_3d, absorption_ucl_3d, absorption_total_3d)
       END IF
 
       !looping over the surfaces
