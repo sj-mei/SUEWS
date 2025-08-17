@@ -251,8 +251,8 @@ CONTAINS
       absorptivity_ucl, absorptivity_canyon, absorptivity_ground)
       
       ! Calculate directional solar absorptivities based on solar angles
-      ! Based on Equations (8-10) from Mei et al. (2025) - simplified implementation
-      ! Full polynomial implementation would be very complex, so using key terms
+      ! Based on complete Equations (8), (9), and (10) from Mei et al. (2025)
+      ! Using exact polynomial coefficients from the paper
       
       IMPLICIT NONE
       
@@ -268,41 +268,54 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out) :: absorptivity_ground  ! ground absorptivity [-]
       
       ! Local variables
-      REAL(KIND(1D0)) :: phi_effective    ! effective azimuth angle [rad]
-      REAL(KIND(1D0)) :: theta            ! solar elevation angle [rad]
-      REAL(KIND(1D0)) :: cos_zenith       ! cosine of zenith angle
-      REAL(KIND(1D0)) :: zenith_factor    ! zenith angle effect
-      REAL(KIND(1D0)) :: morphology_factor ! morphological influence
+      REAL(KIND(1D0)) :: phi_eff          ! effective azimuth angle [rad] (Φ in paper)
+      REAL(KIND(1D0)) :: theta            ! solar elevation angle [rad] (θ in paper)
       
-      ! Convert zenith to elevation and handle symmetry
+      ! Convert zenith to elevation and handle azimuth symmetry
       theta = PI/2.0D0 - zenith_rad
-      cos_zenith = COS(zenith_rad)
       
-      ! Handle azimuth symmetry: use effective angle in [0, π/2]
-      phi_effective = MIN(azimuth_rad, PI - azimuth_rad)
-      IF (phi_effective > PI/2.0D0) phi_effective = PI - phi_effective
+      ! Handle azimuth symmetry: Φ = min(φ, π - φ) for angles outside [0, π/2]
+      phi_eff = MIN(azimuth_rad, PI - azimuth_rad)
+      IF (phi_eff > PI/2.0D0) phi_eff = PI - phi_eff
       
-      ! Calculate zenith angle effect (higher sun = more direct radiation)
-      zenith_factor = MAX(0.0D0, cos_zenith)
+      ! UCL directional absorptivity (Eq. 8 from Mei et al. 2025)
+      ! αo,u = 0.835 + 0.019Φ + 0.003θ - 0.084λp + 0.138λf + ... (complete polynomial)
+      absorptivity_ucl = 0.835D0 + 0.019D0*phi_eff + 0.003D0*theta - 0.084D0*lambda_p + 0.138D0*lambda_f - &
+                        0.006D0*phi_eff**2 + 0.011D0*phi_eff*theta - 0.033D0*phi_eff*lambda_p - 0.024D0*phi_eff*lambda_f - &
+                        0.051D0*theta**2 + 0.037D0*theta*lambda_p + 0.073D0*theta*lambda_f + 0.188D0*lambda_p**2 - &
+                        0.287D0*lambda_p*lambda_f - 0.055D0*lambda_f**2 - 0.003D0*phi_eff**3 - 0.007D0*phi_eff**2*theta + &
+                        0.010D0*phi_eff**2*lambda_p + 0.012D0*phi_eff**2*lambda_f - 0.000D0*phi_eff*theta**2 + &
+                        0.001D0*phi_eff*theta*lambda_p - 0.000D0*phi_eff*theta*lambda_f + 0.016D0*phi_eff*lambda_p**2 + &
+                        0.001D0*phi_eff*lambda_p*lambda_f + 0.001D0*phi_eff*lambda_f**2 + 0.011D0*theta**3 + &
+                        0.018D0*theta**2*lambda_p + 0.003D0*theta**2*lambda_f - 0.027D0*theta*lambda_p**2 - &
+                        0.061D0*theta*lambda_p*lambda_f - 0.008D0*theta*lambda_f**2 - 0.189D0*lambda_p**3 + &
+                        0.150D0*lambda_p**2*lambda_f + 0.061D0*lambda_p*lambda_f**2 + 0.003D0*lambda_f**3
+
+      ! Canyon directional absorptivity (Eq. 9 from Mei et al. 2025) 
+      ! αo,c = 0.840 - 0.020Φ + 0.003θ - 0.886λp + 0.137λf + ... (complete polynomial)
+      absorptivity_canyon = 0.840D0 - 0.020D0*phi_eff + 0.003D0*theta - 0.886D0*lambda_p + 0.137D0*lambda_f - &
+                            0.006D0*phi_eff**2 + 0.011D0*phi_eff*theta - 0.033D0*phi_eff*lambda_p - 0.024D0*phi_eff*lambda_f - &
+                            0.051D0*theta**2 + 0.036D0*theta*lambda_p + 0.073D0*theta*lambda_f + 0.239D0*lambda_p**2 - &
+                            0.286D0*lambda_p*lambda_f - 0.055D0*lambda_f**2 - 0.003D0*phi_eff**3 - 0.007D0*phi_eff**2*theta + &
+                            0.010D0*phi_eff**2*lambda_p + 0.012D0*phi_eff**2*lambda_f + 0.000D0*phi_eff*theta**2 + &
+                            0.002D0*phi_eff*theta*lambda_p + 0.000D0*phi_eff*theta*lambda_f + 0.016D0*phi_eff*lambda_p**2 + &
+                            0.001D0*phi_eff*lambda_p*lambda_f + 0.001D0*phi_eff*lambda_f**2 + 0.011D0*theta**3 + &
+                            0.018D0*theta**2*lambda_p + 0.003D0*theta**2*lambda_f - 0.027D0*theta*lambda_p**2 - &
+                            0.061D0*theta*lambda_p*lambda_f - 0.008D0*theta*lambda_f**2 - 0.121D0*lambda_p**3 + &
+                            0.147D0*lambda_p**2*lambda_f + 0.062D0*lambda_p*lambda_f**2 + 0.003D0*lambda_f**3
       
-      ! Calculate morphological influence
-      morphology_factor = 1.0D0 - 0.5D0 * lambda_p + 0.3D0 * lambda_f
-      
-      ! Simplified UCL absorptivity (base + morphological + angular effects)
-      absorptivity_ucl = 0.835D0 + &                       ! base absorptivity
-                        (-0.084D0 * lambda_p + 0.138D0 * lambda_f) + &  ! morphological terms
-                        (0.003D0 * theta * zenith_factor)              ! angular correction
-      
-      ! Simplified canyon absorptivity 
-      absorptivity_canyon = 0.840D0 + &                    ! base absorptivity  
-                           (-0.886D0 * lambda_p + 0.137D0 * lambda_f) + & ! morphological terms
-                           (0.003D0 * theta * zenith_factor)              ! angular correction
-      
-      ! Simplified ground absorptivity (more complex angular dependence)
-      absorptivity_ground = 0.324D0 + &                    ! base absorptivity
-                           (-0.160D0 * lambda_p - 0.566D0 * lambda_f) + & ! morphological terms
-                           (0.653D0 * theta * zenith_factor) - &          ! strong angular dependence  
-                           (0.511D0 * phi_effective / (PI/2.0D0))         ! azimuth effect
+      ! Ground directional absorptivity (Eq. 10 from Mei et al. 2025)
+      ! αo,g = 0.324 - 0.511Φ + 0.653θ - 0.160λp - 0.566λf + ... (complete polynomial)
+      absorptivity_ground = 0.324D0 - 0.511D0*phi_eff + 0.653D0*theta - 0.160D0*lambda_p - 0.566D0*lambda_f + &
+                            0.294D0*phi_eff**2 - 0.049D0*phi_eff*theta + 0.363D0*phi_eff*lambda_p + 0.023D0*phi_eff*lambda_f - &
+                            0.069D0*theta**2 - 0.479D0*theta*lambda_p - 0.319D0*theta*lambda_f - 0.646D0*lambda_p**2 + &
+                            0.881D0*lambda_p*lambda_f + 0.201D0*lambda_f**2 + 0.025D0*phi_eff**3 - 0.040D0*phi_eff**2*theta - &
+                            0.327D0*phi_eff**2*lambda_p + 0.004D0*phi_eff**2*lambda_f + 0.082D0*phi_eff*theta**2 - &
+                            0.001D0*phi_eff*theta*lambda_p - 0.036D0*phi_eff*theta*lambda_f + 0.188D0*phi_eff*lambda_p**2 - &
+                            0.006D0*phi_eff*lambda_p*lambda_f + 0.004D0*phi_eff*lambda_f**2 - 0.009D0*theta**3 - &
+                            0.124D0*theta**2*lambda_p + 0.193D0*theta**2*lambda_f + 0.173D0*theta*lambda_p**2 + &
+                            0.051D0*theta*lambda_p*lambda_f - 0.013D0*theta*lambda_f**2 + 0.402D0*lambda_p**3 - &
+                            0.244D0*lambda_p**2*lambda_f - 0.198D0*lambda_p*lambda_f**2 - 0.006D0*lambda_f**3
       
       ! Ensure physical bounds (0 <= absorptivity <= 1)
       absorptivity_ucl = MAX(0.0D0, MIN(1.0D0, absorptivity_ucl))
@@ -504,8 +517,10 @@ CONTAINS
       REAL(KIND(1D0)) :: phi_eff                 ! effective azimuth [rad]
       REAL(KIND(1D0)) :: alpha_dir_ground         ! directional absorptivity ground
       REAL(KIND(1D0)) :: alpha_dir_ucl           ! directional absorptivity UCL
+      REAL(KIND(1D0)) :: alpha_dir_canyon         ! directional absorptivity canyon
       REAL(KIND(1D0)) :: alpha_diff_ground        ! diffuse absorptivity ground
       REAL(KIND(1D0)) :: alpha_diff_ucl          ! diffuse absorptivity UCL
+      REAL(KIND(1D0)) :: alpha_diff_canyon        ! diffuse absorptivity canyon
       REAL(KIND(1D0)) :: svf_ground              ! sky view factor ground
       REAL(KIND(1D0)) :: svf_canyon              ! sky view factor canyon (not used here)
       REAL(KIND(1D0)) :: f_dir                   ! direct radiation fraction
@@ -529,22 +544,47 @@ CONTAINS
       ! Calculate sky view factors
       CALL CALCULATE_SKY_VIEW_MORPHOLOGY(lambda_f, lambda_p, svf_ground, svf_canyon)
       
-      ! Calculate directional absorptivities with full Mei et al. (2025) equations
+      ! Calculate directional absorptivities with complete Mei et al. (2025) equations
+      ! Using exact polynomial coefficients from equations (8), (9), and (10)
       
-      ! Ground directional absorptivity (Eq. 10 - key polynomial terms)
-      alpha_dir_ground = 0.324D0 - 0.160D0 * lambda_p - 0.566D0 * lambda_f + &
-                        0.653D0 * theta * cos_zenith - &
-                        0.511D0 * phi_eff / (PI/2.0D0) + &
-                        0.395D0 * lambda_p**2 - 0.127D0 * lambda_f**2 + &
-                        0.246D0 * lambda_p * lambda_f
-      
-      ! UCL directional absorptivity (Eq. 8 - key polynomial terms)
-      alpha_dir_ucl = 0.835D0 - 0.084D0 * lambda_p + 0.138D0 * lambda_f + &
-                     0.003D0 * theta * cos_zenith + &
-                     0.156D0 * lambda_p**2 - 0.298D0 * lambda_p * lambda_f - &
-                     0.059D0 * lambda_f**2 - 0.176D0 * lambda_p**3 + &
-                     0.142D0 * lambda_p**2 * lambda_f + 0.059D0 * lambda_p * lambda_f**2 + &
-                     0.003D0 * lambda_f**3
+      ! UCL directional absorptivity (Eq. 8 from Mei et al. 2025)
+      ! αo,u = 0.835 + 0.019Φ + 0.003θ - 0.084λp + 0.138λf + ... (full polynomial)
+      alpha_dir_ucl = 0.835D0 + 0.019D0*phi_eff + 0.003D0*theta - 0.084D0*lambda_p + 0.138D0*lambda_f - &
+                     0.006D0*phi_eff**2 + 0.011D0*phi_eff*theta - 0.033D0*phi_eff*lambda_p - 0.024D0*phi_eff*lambda_f - &
+                     0.051D0*theta**2 + 0.037D0*theta*lambda_p + 0.073D0*theta*lambda_f + 0.188D0*lambda_p**2 - &
+                     0.287D0*lambda_p*lambda_f - 0.055D0*lambda_f**2 - 0.003D0*phi_eff**3 - 0.007D0*phi_eff**2*theta + &
+                     0.010D0*phi_eff**2*lambda_p + 0.012D0*phi_eff**2*lambda_f - 0.000D0*phi_eff*theta**2 + &
+                     0.001D0*phi_eff*theta*lambda_p - 0.000D0*phi_eff*theta*lambda_f + 0.016D0*phi_eff*lambda_p**2 + &
+                     0.001D0*phi_eff*lambda_p*lambda_f + 0.001D0*phi_eff*lambda_f**2 + 0.011D0*theta**3 + &
+                     0.018D0*theta**2*lambda_p + 0.003D0*theta**2*lambda_f - 0.027D0*theta*lambda_p**2 - &
+                     0.061D0*theta*lambda_p*lambda_f - 0.008D0*theta*lambda_f**2 - 0.189D0*lambda_p**3 + &
+                     0.150D0*lambda_p**2*lambda_f + 0.061D0*lambda_p*lambda_f**2 + 0.003D0*lambda_f**3
+
+      ! Ground directional absorptivity (Eq. 10 from Mei et al. 2025)
+      ! αo,g = 0.324 - 0.511Φ + 0.653θ - 0.160λp - 0.566λf + ... (full polynomial)
+      alpha_dir_ground = 0.324D0 - 0.511D0*phi_eff + 0.653D0*theta - 0.160D0*lambda_p - 0.566D0*lambda_f + &
+                        0.294D0*phi_eff**2 - 0.049D0*phi_eff*theta + 0.363D0*phi_eff*lambda_p + 0.023D0*phi_eff*lambda_f - &
+                        0.069D0*theta**2 - 0.479D0*theta*lambda_p - 0.319D0*theta*lambda_f - 0.646D0*lambda_p**2 + &
+                        0.881D0*lambda_p*lambda_f + 0.201D0*lambda_f**2 + 0.025D0*phi_eff**3 - 0.040D0*phi_eff**2*theta - &
+                        0.327D0*phi_eff**2*lambda_p + 0.004D0*phi_eff**2*lambda_f + 0.082D0*phi_eff*theta**2 - &
+                        0.001D0*phi_eff*theta*lambda_p - 0.036D0*phi_eff*theta*lambda_f + 0.188D0*phi_eff*lambda_p**2 - &
+                        0.006D0*phi_eff*lambda_p*lambda_f + 0.004D0*phi_eff*lambda_f**2 - 0.009D0*theta**3 - &
+                        0.124D0*theta**2*lambda_p + 0.193D0*theta**2*lambda_f + 0.173D0*theta*lambda_p**2 + &
+                        0.051D0*theta*lambda_p*lambda_f - 0.013D0*theta*lambda_f**2 + 0.402D0*lambda_p**3 - &
+                        0.244D0*lambda_p**2*lambda_f - 0.198D0*lambda_p*lambda_f**2 - 0.006D0*lambda_f**3
+
+      ! Canyon directional absorptivity (Eq. 9 from Mei et al. 2025)
+      ! αo,c = 0.840 - 0.020Φ + 0.003θ - 0.886λp + 0.137λf + ... (full polynomial)
+      alpha_dir_canyon = 0.840D0 - 0.020D0*phi_eff + 0.003D0*theta - 0.886D0*lambda_p + 0.137D0*lambda_f - &
+                        0.006D0*phi_eff**2 + 0.011D0*phi_eff*theta - 0.033D0*phi_eff*lambda_p - 0.024D0*phi_eff*lambda_f - &
+                        0.051D0*theta**2 + 0.036D0*theta*lambda_p + 0.073D0*theta*lambda_f + 0.239D0*lambda_p**2 - &
+                        0.286D0*lambda_p*lambda_f - 0.055D0*lambda_f**2 - 0.003D0*phi_eff**3 - 0.007D0*phi_eff**2*theta + &
+                        0.010D0*phi_eff**2*lambda_p + 0.012D0*phi_eff**2*lambda_f + 0.000D0*phi_eff*theta**2 + &
+                        0.002D0*phi_eff*theta*lambda_p + 0.000D0*phi_eff*theta*lambda_f + 0.016D0*phi_eff*lambda_p**2 + &
+                        0.001D0*phi_eff*lambda_p*lambda_f + 0.001D0*phi_eff*lambda_f**2 + 0.011D0*theta**3 + &
+                        0.018D0*theta**2*lambda_p + 0.003D0*theta**2*lambda_f - 0.027D0*theta*lambda_p**2 - &
+                        0.061D0*theta*lambda_p*lambda_f - 0.008D0*theta*lambda_f**2 - 0.121D0*lambda_p**3 + &
+                        0.147D0*lambda_p**2*lambda_f + 0.062D0*lambda_p*lambda_f**2 + 0.003D0*lambda_f**3
       
       ! Calculate diffuse absorptivities (complete Eqs. 11-13)
       alpha_diff_ground = 0.672D0 - 0.657D0 * lambda_p - 0.756D0 * lambda_f - &
@@ -558,12 +598,21 @@ CONTAINS
                       0.065D0 * lambda_f**2 - 0.184D0 * lambda_p**3 + &
                       0.157D0 * lambda_p**2 * lambda_f + 0.065D0 * lambda_p * lambda_f**2 + &
                       0.003D0 * lambda_f**3
+
+      ! Canyon diffuse absorptivity (Eq. 12 from Mei et al. 2025)
+      alpha_diff_canyon = 0.817D0 - 0.843D0 * lambda_p + 0.195D0 * lambda_f + &
+                          0.208D0 * lambda_p**2 - 0.347D0 * lambda_p * lambda_f - &
+                          0.065D0 * lambda_f**2 - 0.114D0 * lambda_p**3 + &
+                          0.155D0 * lambda_p**2 * lambda_f + 0.065D0 * lambda_p * lambda_f**2 + &
+                          0.003D0 * lambda_f**3
       
       ! Ensure physical bounds
       alpha_dir_ground = MAX(0.0D0, MIN(1.0D0, alpha_dir_ground))
       alpha_dir_ucl = MAX(0.0D0, MIN(1.0D0, alpha_dir_ucl))
+      alpha_dir_canyon = MAX(0.0D0, MIN(1.0D0, alpha_dir_canyon))
       alpha_diff_ground = MAX(0.0D0, MIN(1.0D0, alpha_diff_ground))
       alpha_diff_ucl = MAX(0.0D0, MIN(1.0D0, alpha_diff_ucl))
+      alpha_diff_canyon = MAX(0.0D0, MIN(1.0D0, alpha_diff_canyon))
       
       ! Calculate direct/diffuse fractions based on atmospheric conditions and solar geometry
       ! Following standard clear-sky models (Hottel, 1976; Liu & Jordan, 1960)
